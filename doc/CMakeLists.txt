@@ -29,7 +29,8 @@ IF(LATEX_COMPILER)
   INCLUDE(${CMAKE_SOURCE_DIR}/cmake/UseLATEX.cmake)
   SET(LATEX_OUTPUT_PATH ${CMAKE_BINARY_DIR})
   ADD_LATEX_DOCUMENT(usermanual/allpix-manual.tex 
-    INPUTS 
+    INPUTS
+    usermanual/symbols.tex
     usermanual/references.tex
     NO_DEFAULT
     )

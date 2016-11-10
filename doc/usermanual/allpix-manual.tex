@@ -1,0 +1,54 @@
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass{scrartcl}
+
+\usepackage{siunitx} % Provides the \SI{}{} command for typesetting SI units
+\usepackage{booktabs}
+
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{color}
+
+\usepackage{graphicx} % Required for the inclusion of images
+\usepackage{listings}
+\setlength\parindent{0pt} % Removes all indentation from paragraphs
+
+\renewcommand{\labelenumi}{\alph{enumi}.} % Make numbering in the enumerate environment by letter rather than number (e.g. section 6)
+
+%----------------------------------------------------------------------------------------
+%	DOCUMENT INFORMATION
+%----------------------------------------------------------------------------------------
+
+\input{usermanual/symbols.tex}
+
+\title{allpix\textsuperscript{2} User Manual} % Title
+
+\author{
+} % Author names
+
+\date{\today} % Date for the report
+
+\begin{document}
+
+\maketitle % Insert the title, author and date
+
+
+\begin{abstract}
+\end{abstract}
+
+\newpage
+% Table Of Contents
+\tableofcontents
+
+\newpage
+\clearpage
+\phantomsection
+\addcontentsline{toc}{section}{References}
+\begin{thebibliography}{99}
+  \input{usermanual/references.tex}
+\end{thebibliography}  
+
+
+\end{document}
