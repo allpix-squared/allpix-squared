@@ -24,13 +24,22 @@ namespace allpix {
 
     /** Default destructor for liballpix API
      *
-     *  Will power down the DTB, disconnect properly from the testboard,
-     *  and destroy all member objects.
+     *  Will destroy all pointer data members from Geant4.
      */
     ~allpixCore();
 
+    /** Copy constructor
+	FIXME add copy constructor because we have pointer members!
+     */
+    //allpixcore(const allpixCore &L);
+
+    /** Assignment
+	FIXME add assignment declaration because we have pointer members!
+     */
+    //allpixCore & operator=(const allpixCore &L);
+
   private:
-    G4RunManager m_runmanager;
+    G4RunManager * m_runmanager;
 
   }; // class allpixCore
 
