@@ -1,12 +1,16 @@
 #ifndef ALLPIX_INCLUDED_Configuration
 #define ALLPIX_INCLUDED_Configuration
 
+#include <iomanip>
+#include <vector>
 #include <string>
 #include <map>
 
+#include "utils.h"
+
 namespace allpix {
 
-  class DLLEXPORT Configuration {
+  class Configuration {
   public:
     Configuration(const std::string &config = "",
                   const std::string &section = "");
@@ -24,7 +28,7 @@ namespace allpix {
     int64_t Get(const std::string &key, int64_t def) const;
     uint64_t Get(const std::string &key, uint64_t def) const;
     template <typename T> T Get(const std::string &key, T def) const {
-      return eudaq::from_string(Get(key, to_string(def)), def);
+      return allpix::from_string(Get(key, to_string(def)), def);
     }
     int Get(const std::string &key, int def) const;
     template <typename T>

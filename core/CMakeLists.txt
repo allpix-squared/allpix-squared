@@ -7,6 +7,7 @@ SET(LIB_SOURCE_FILES
   "allpix/allpix.cc"
   # utilities
   "utils/configuration.cc"
+  "utils/utils.cc"
   )
 
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${LIB_SOURCE_FILES})

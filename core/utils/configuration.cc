@@ -1,4 +1,5 @@
 #include "configuration.hh"
+#include "exceptions.h"
 
 #include <fstream>
 #include <iostream>
@@ -112,7 +113,7 @@ namespace allpix {
                                  const std::string &def) const {
     try {
       return GetString(key);
-    } catch (const Exception &) {
+    } catch (const allpix::exception &) {
       // ignore: return default
     }
     return def;
@@ -121,7 +122,7 @@ namespace allpix {
   double Configuration::Get(const std::string &key, double def) const {
     try {
       return from_string(GetString(key), def);
-    } catch (const Exception &) {
+    } catch (const allpix::exception &) {
       // ignore: return default
     }
     return def;
@@ -131,7 +132,7 @@ namespace allpix {
     try {
       std::string s = GetString(key);
       return std::strtoll(s.c_str(), 0, 0);
-    } catch (const Exception &) {
+    } catch (const allpix::exception &) {
       // ignore: return default
     }
     return def;
@@ -140,7 +141,7 @@ namespace allpix {
     try {
       std::string s = GetString(key);
       return std::strtoull(s.c_str(), 0, 0);
-    } catch (const Exception &) {
+    } catch (const allpix::exception &) {
       // ignore: return default
     }
     return def;
@@ -150,7 +151,7 @@ namespace allpix {
     try {
       std::string s = GetString(key);
       return std::strtol(s.c_str(), 0, 0);
-    } catch (const Exception &) {
+    } catch (const allpix::exception &) {
       // ignore: return default
     }
     return def;
@@ -169,7 +170,7 @@ namespace allpix {
     if (i != m_cur->end()) {
       return i->second;
     }
-    throw Exception("Configuration: key not found");
+    throw allpix::exception("Configuration: key not found");
   }
 
   void Configuration::SetString(const std::string &key,

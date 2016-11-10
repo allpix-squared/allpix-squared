@@ -4,9 +4,13 @@
 #include <string>
 #include <sstream>
 #include <stdexcept>
+#include <iomanip>
+#include <vector>
 
 namespace allpix {
 
+  std::string trim(const std::string &s);
+  
   /** Converts a string to any type.
    * \param x The string to be converted.
    * \param def The default value to be used in case of an invalid string,
