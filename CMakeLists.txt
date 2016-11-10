@@ -58,7 +58,9 @@ FIND_PACKAGE(ROOT REQUIRED)
 ###################################
 
 # Include directories
-INCLUDE_DIRECTORIES(core/utils core/include)
+INCLUDE_DIRECTORIES(core/utils
+  core/include
+  ${GEANT4_INCLUDE_DIR})
 
 # Always build main allpix library;
 ADD_SUBDIRECTORY(core)
