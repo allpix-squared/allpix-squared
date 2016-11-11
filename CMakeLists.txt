@@ -60,6 +60,13 @@ ENDIF(HAS_MODULE_Geant4)
 
 # ROOT is required for histogramming
 FIND_PACKAGE(ROOT REQUIRED)
+IF(ROOT_FOUND)
+  INCLUDE_DIRECTORIES(${ROOT_INCLUDE_DIR})
+  LINK_DIRECTORIES(${ROOT_LIBRARY_DIR})
+ELSE(ROOT_FOUND)
+MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
+    "$ source YOUR_ROOT_DIR/bin/thisroot.sh")
+ENDIF(ROOT_FOUND)
 
 
 ###################################
