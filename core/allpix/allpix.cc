@@ -5,6 +5,8 @@
 #include "allpix.h"
 #include "exceptions.h"
 #include "configuration.h"
+#include "log.h"
+#include "config.h"
 
 #include <istream>
 
@@ -12,10 +14,13 @@ using namespace allpix;
 
 allpixCore::allpixCore(std::string config) {
 
+  LOG(logQUIET) << "This is " << PACKAGE_STRING;
+
   std::ifstream cfgfile(config);
   if (cfgfile.is_open()) {
     m_config = Configuration(cfgfile);
     m_config.Set("Name", config);
+    LOG(logDEBUG) << "Successfully loaded configuration file " << config;
   } else {
     throw allpix::exception("Unable to open file '" + config + "'");
   }

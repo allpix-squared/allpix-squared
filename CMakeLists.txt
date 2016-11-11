@@ -8,8 +8,10 @@ ENDIF(COMMAND CMAKE_POLICY)
 
 # Project name
 PROJECT(allpix)
-
 INCLUDE("cmake/tools.cmake")
+
+# Prepare version number
+GetVersionString()
 
 #########################
 # allpix2 build options #
@@ -92,6 +94,6 @@ ADD_SUBDIRECTORY(doc)
 ADD_EXECUTABLE(runallpix main/runallpix.cc )
 TARGET_LINK_LIBRARIES(runallpix ${PROJECT_NAME} ${Geant4_LIBRARIES})
 
-INSTALL(TARGETS ${ALLPIX_EXECUTABLE}
+INSTALL(TARGETS runallpix
   RUNTIME DESTINATION bin
   ARCHIVE DESTINATION lib)
