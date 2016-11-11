@@ -9,6 +9,7 @@ ENDIF(COMMAND CMAKE_POLICY)
 # Project name
 PROJECT(allpix)
 
+INCLUDE("cmake/tools.cmake")
 
 #########################
 # allpix2 build options #
@@ -46,8 +47,16 @@ ENDIF("${isSystemDir}" STREQUAL "-1")
 # Check prerequisities for allpix #
 ###################################
 
-# Geant4 is required for geometry description and charge deposition
-FIND_PACKAGE(Geant4 REQUIRED)
+# Geant4 is required for geometry description and charge deposition.
+# Check first, if CMake finds a "FindGeant4" module or warn the user otherwise
+CheckHasModule(Geant4)
+IF(HAS_MODULE_Geant4)
+  FIND_PACKAGE(Geant4 REQUIRED)
+  INCLUDE(${Geant4_USE_FILE})
+ELSE(HAS_MODULE_Geant4)
+  MESSAGE(FATAL_ERROR "Could not find Geant4, make sure to source the Geant4 environment\n"
+    "$ source YOUR_GEANT4_DIR/bin/geant4.sh")
+ENDIF(HAS_MODULE_Geant4)
 
 # ROOT is required for histogramming
 FIND_PACKAGE(ROOT REQUIRED)
@@ -59,7 +68,7 @@ FIND_PACKAGE(ROOT REQUIRED)
 
 # Include directories
 INCLUDE_DIRECTORIES(core/utils
-  core/include
+  core/allpix
   ${GEANT4_INCLUDE_DIR})
 
 # Always build main allpix library;
