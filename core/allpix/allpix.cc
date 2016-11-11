@@ -3,6 +3,7 @@
  */
 
 #include "allpix.h"
+#include "exceptions.h"
 #include "configuration.h"
 
 #include <istream>
@@ -12,8 +13,8 @@ using namespace allpix;
 allpixCore::allpixCore(std::string config) {
 
   std::ifstream cfgfile(config);
-  if (file.is_open()) {
-    m_config = Configuration(file);
+  if (cfgfile.is_open()) {
+    m_config = Configuration(cfgfile);
     m_config.Set("Name", config);
   } else {
     throw allpix::exception("Unable to open file '" + config + "'");

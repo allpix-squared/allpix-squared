@@ -1,4 +1,4 @@
-#include "configuration.hh"
+#include "configuration.h"
 #include "exceptions.h"
 
 #include <fstream>
