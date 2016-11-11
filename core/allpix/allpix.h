@@ -6,6 +6,7 @@
 #define ALLPIX_API_H
 
 #include "G4RunManager.hh"
+#include "configuration.h"
 
 namespace allpix {
 
@@ -20,7 +21,7 @@ namespace allpix {
      *  Instantiates a Geant4 RunManager instance
      *
      */
-    allpixCore();
+    allpixCore(std::string config);
 
     /** Default destructor for liballpix API
      *
@@ -41,6 +42,8 @@ namespace allpix {
   private:
     G4RunManager * m_runmanager;
 
+    Configuration m_config;
+    
   }; // class allpixCore
 
 } //namespace allpix

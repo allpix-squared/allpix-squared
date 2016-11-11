@@ -80,3 +80,11 @@ ENDIF(BUILD_spice)
 
 # Add targets for Doxygen code reference and LaTeX User manual
 ADD_SUBDIRECTORY(doc)
+
+# Add target for the main executable
+ADD_EXECUTABLE(ALLPIX_EXECUTABLE main/runallpix.cc )
+TARGET_LINK_LIBRARIES(${ALLPIX_EXECUTABLE} ${PROJECT_NAME} ${GEANT4_LIBRARIES})
+
+INSTALL(TARGETS ${ALLPIX_EXECUTABLE}
+  RUNTIME DESTINATION bin
+  ARCHIVE DESTINATION lib)
