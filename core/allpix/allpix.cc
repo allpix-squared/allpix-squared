@@ -7,6 +7,7 @@
 #include "configuration.h"
 #include "log.h"
 #include "config.h"
+#include "detector.h"
 
 #include <istream>
 
@@ -22,11 +23,16 @@ allpixCore::allpixCore(std::string config) {
     m_config.Set("Name", config);
     LOG(logDEBUG) << "Successfully loaded configuration file " << config;
   } else {
+    LOG(logCRITICAL) << "Unable to open file '" << config << "'";
     throw allpix::exception("Unable to open file '" + config + "'");
   }
 
-  
+  // Initialize Geant4 run manager:
   m_runmanager = new G4RunManager();
+
+
+  // Initialize allpix detector description:
+  m_detector = allpix::Detector(m_config);
 }
 
 allpixCore::~allpixCore() {

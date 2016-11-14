@@ -78,6 +78,7 @@ ENDIF(ROOT_FOUND)
 # Include directories
 INCLUDE_DIRECTORIES(core/utils
   core/allpix
+  core/detector
   ${GEANT4_INCLUDE_DIR})
 
 # Always build main allpix library;

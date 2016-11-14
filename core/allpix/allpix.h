@@ -7,6 +7,7 @@
 
 #include "G4RunManager.hh"
 #include "configuration.h"
+#include "detector.h"
 
 namespace allpix {
 
@@ -43,6 +44,8 @@ namespace allpix {
     G4RunManager * m_runmanager;
 
     Configuration m_config;
+
+    Detector m_detector;
     
   }; // class allpixCore
 

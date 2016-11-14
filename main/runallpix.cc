@@ -1,4 +1,5 @@
 #include "allpix.h"
+#include "exceptions.h"
 #include "configuration.h"
 #include "log.h"
 
@@ -21,7 +22,7 @@ int main(int /*argc*/, const char ** argv) {
     std::string config = "testconfig.cfg";
     
     allpixCore * apx = new allpixCore(config);
-  } catch(...) {}
+  } catch(allpix::exception &e) { LOG(logCRITICAL) << e.what(); }
   
-    return 0;
+  return 0;
 }

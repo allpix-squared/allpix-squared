@@ -8,6 +8,8 @@ SET(LIB_SOURCE_FILES
   # utilities
   "utils/configuration.cc"
   "utils/utils.cc"
+  # detector construction
+  "detector/detector.cc"
   )
 
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${LIB_SOURCE_FILES})
