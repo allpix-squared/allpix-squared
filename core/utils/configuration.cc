@@ -70,7 +70,6 @@ namespace allpix {
         if (line[0] == '[' && line[line.length() - 1] == ']') {
           line = std::string(line, 1, line.length() - 2);
           // TODO: check name is alphanumeric?
-          // std::cerr << "Section " << line << std::endl;
           cur_sec = &config[line];
         }
       } else {
@@ -86,7 +85,6 @@ namespace allpix {
           if (i != std::string::npos)
             line = trim(std::string(line, 0, i));
         }
-        // std::cerr << "Key " << key << " = " << line << std::endl;
         (*cur_sec)[key] = line;
       }
     }
