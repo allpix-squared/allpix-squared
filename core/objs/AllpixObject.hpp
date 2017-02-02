@@ -32,7 +32,8 @@ public:
   std::string m_detectorID;
 
   // ROOT I/O class definition - update version number when you change this class!
-  ClassDef(AllpixObject,1)
+  //FIXME: this gives a linking error 
+  //ClassDef(AllpixObject,1);
 
 };
 
