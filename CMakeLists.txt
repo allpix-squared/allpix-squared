@@ -32,6 +32,7 @@ SET(INSTALL_PREFIX "${PROJECT_SOURCE_DIR}" CACHE PATH "Prefix prepended to insta
 SET(CMAKE_INSTALL_PREFIX "${INSTALL_PREFIX}" CACHE INTERNAL "Prefix prepended to install directories" FORCE)
 
 # Set up the RPATH so executables find the libraries even when installed in non-default location
+SET(CMAKE_MACOSX_RPATH 1)
 SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
 SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
 SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
@@ -49,6 +50,17 @@ ENDIF("${isSystemDir}" STREQUAL "-1")
 # Check prerequisities for allpix #
 ###################################
 
+# ROOT is required for histogramming
+FIND_PACKAGE(ROOT REQUIRED COMPONENTS GenVector)
+IF(ROOT_FOUND)
+INCLUDE_DIRECTORIES(SYSTEM ${ROOT_INCLUDE_DIRS})
+LINK_LIBRARIES(${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES})
+ELSE(ROOT_FOUND)
+MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
+"$ source YOUR_ROOT_DIR/bin/thisroot.sh")
+ENDIF(ROOT_FOUND)
+
+
 # Geant4 is required for geometry description and charge deposition.
 # Check first, if CMake finds a "FindGeant4" module or warn the user otherwise
 CheckHasModule(Geant4)
@@ -60,15 +72,7 @@ ELSE(HAS_MODULE_Geant4)
     "$ source YOUR_GEANT4_DIR/bin/geant4.sh")
 ENDIF(HAS_MODULE_Geant4)
 
-# ROOT is required for histogramming
-FIND_PACKAGE(ROOT REQUIRED)
-IF(ROOT_FOUND)
-  INCLUDE_DIRECTORIES(${ROOT_INCLUDE_DIR})
-  LINK_DIRECTORIES(${ROOT_LIBRARY_DIR})
-ELSE(ROOT_FOUND)
-MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
-    "$ source YOUR_ROOT_DIR/bin/thisroot.sh")
-ENDIF(ROOT_FOUND)
+
 
 
 ###################################
@@ -76,12 +80,16 @@ ENDIF(ROOT_FOUND)
 ###################################
 
 # Include directories
-INCLUDE_DIRECTORIES(core/utils
+INCLUDE_DIRECTORIES(
+  core/utils
   core/allpix
+  core/objs
   core/detector
+  algorithms
   ${GEANT4_INCLUDE_DIR})
 
 # Always build main allpix library;
+ADD_SUBDIRECTORY(algorithms)
 ADD_SUBDIRECTORY(core)
 
 IF(BUILD_spice)
@@ -92,8 +100,8 @@ ENDIF(BUILD_spice)
 ADD_SUBDIRECTORY(doc)
 
 # Add target for the main executable
-ADD_EXECUTABLE(runallpix main/runallpix.cc )
-TARGET_LINK_LIBRARIES(runallpix ${PROJECT_NAME} ${Geant4_LIBRARIES})
+ADD_EXECUTABLE(runallpix main/allpixExecutable.cc )
+TARGET_LINK_LIBRARIES(runallpix ${PROJECT_NAME} Algorithms ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 
 INSTALL(TARGETS runallpix
   RUNTIME DESTINATION bin
