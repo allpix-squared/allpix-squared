@@ -28,7 +28,10 @@ namespace allpix {
     int64_t Get(const std::string &key, int64_t def) const;
     uint64_t Get(const std::string &key, uint64_t def) const;
     template <typename T> T Get(const std::string &key, T def) const {
-      return allpix::from_string(Get(key, to_string(def)), def);
+      return allpix::from_string(Get(key, allpix::to_string(def)), def);
+    }
+    template <typename T> std::vector<T> Get(const std::string &key, std::vector<T> def) const {
+      return split(Get(key,std::string()),def,',');
     }
     int Get(const std::string &key, int def) const;
     template <typename T>
@@ -68,7 +71,7 @@ namespace allpix {
 
   template <typename T>
   inline void Configuration::Set(const std::string &key, const T &val) {
-    SetString(key, to_string(val));
+    SetString(key, allpix::to_string(val));
   }
 }
 

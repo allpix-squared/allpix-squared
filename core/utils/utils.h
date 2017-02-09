@@ -56,6 +56,11 @@ namespace allpix {
     return static_cast<uint32_t>(from_string(x, (uint64_t)def));
   }
 
+  template <>
+    inline uint8_t from_string(const std::string &x, const uint8_t &def) {
+    return static_cast<uint8_t>(from_string(x, (int64_t)def));
+  }
+
   
   /** Converts any type to a string.
    * \param x The value to be converted.
@@ -90,6 +95,26 @@ namespace allpix {
   }
 
   inline std::string to_string(const char *x, int /*digits*/ = 0) { return x; }
+
+  
+  /** Splits string s into elements at delimiter "delim" and returns them as vector
+   */
+  template <typename T>
+    std::vector<T> &split(const std::string &s, std::vector<T> &elems, char delim) {
+
+    // If the input string is empty, simply return the default elements:
+    if (s.empty()) return elems;
+
+    // Else we have data, clear the default elements and chop the string:
+    elems.clear();
+    std::stringstream ss(s);
+    std::string item;
+    T def;
+    while (std::getline(ss, item, delim)) {
+      elems.push_back(from_string(item, def));
+    }
+    return elems;
+  }
 
 }
 
