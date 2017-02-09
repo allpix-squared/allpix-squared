@@ -101,7 +101,7 @@ ADD_SUBDIRECTORY(doc)
 
 # Add target for the main executable
 ADD_EXECUTABLE(runallpix main/allpixExecutable.cc )
-TARGET_LINK_LIBRARIES(runallpix ${PROJECT_NAME} Algorithms ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
+TARGET_LINK_LIBRARIES(runallpix ${PROJECT_NAME} ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 
 INSTALL(TARGETS runallpix
   RUNTIME DESTINATION bin

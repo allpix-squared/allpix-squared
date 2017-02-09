@@ -6,7 +6,7 @@
 // Local includes
 #include "Parameters.hpp"
 #include "Allpix2.hpp"
-#include "DummyModule.hpp"
+//#include "DummyModule.hpp"
 #include "logger.hpp"
 
 //-------------------------------------------------------------------------------
@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
   bool globalDebug = false;
 
   // Algorithm list - this should be replaced by dynamic library loading
-  TestAlgorithm* testAlgorithm = new TestAlgorithm(globalDebug);
+  //TestAlgorithm* testAlgorithm = new TestAlgorithm(globalDebug);
   
   // Overwrite steering file values from command line
   parameters->readCommandLineOptions(argc,argv);
@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
   
   // Initialise the analysis object and add algorithms to run (again, replaced by dynamic library loading)
   allpix2 = new Allpix2(parameters);
-  allpix2->add(testAlgorithm);
+  //allpix2->add(testAlgorithm);
   
   // Run the algorithm chain
   allpix2->run();
