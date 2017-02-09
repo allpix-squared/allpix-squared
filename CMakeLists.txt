@@ -85,11 +85,11 @@ INCLUDE_DIRECTORIES(
   core/allpix
   core/objs
   core/detector
-  algorithms
+  modules
   ${GEANT4_INCLUDE_DIR})
 
 # Always build main allpix library;
-ADD_SUBDIRECTORY(algorithms)
+ADD_SUBDIRECTORY(modules)
 ADD_SUBDIRECTORY(core)
 
 IF(BUILD_spice)

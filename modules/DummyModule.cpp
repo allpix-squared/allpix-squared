@@ -3,7 +3,7 @@
 #include <cstdlib>
 
 // Local includes
-#include "TestAlgorithm.hpp"
+#include "DummyModule.hpp"
 
 TestAlgorithm::TestAlgorithm(bool debugging)
 : Algorithm("TestAlgorithm"){

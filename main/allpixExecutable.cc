@@ -6,7 +6,7 @@
 // Local includes
 #include "Parameters.hpp"
 #include "Allpix2.hpp"
-#include "TestAlgorithm.hpp"
+#include "DummyModule.hpp"
 #include "logger.hpp"
 
 //-------------------------------------------------------------------------------

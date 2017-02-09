@@ -1,10 +1,8 @@
-# Add source files for the allpix core library
-
-#INCLUDE_DIRECTORIES()
+# For every module, build a separate library to be loaded by allpix core
 
 SET(LIB_SOURCE_FILES
   # all algorithms
-  "TestAlgorithm.cpp"
+  "DummyModule.cpp"
   )
 
 ADD_LIBRARY(Algorithms SHARED ${LIB_SOURCE_FILES})
