@@ -1,14 +1,13 @@
 # For every module, build a separate library to be loaded by allpix core
 
-macro(option_build_module dir)
-  if(${dir} MATCHES "dummy")
-    option(BUILD_${dir} "Build module in directory ${dir}?" ON)
-  ELSE()
-    option(BUILD_${dir} "Build module in directory ${dir}?" OFF)
-  ENDIF()
+MACRO(option_build_module dir)
+    IF(${dir} MATCHES "dummy")
+        OPTION(BUILD_${dir} "Build module in directory ${dir}?" ON)
+    ELSE()
+        OPTION(BUILD_${dir} "Build module in directory ${dir}?" OFF)
+    ENDIF()
 
-  if(BUILD_${dir} OR BUILD_allmodules)
-    #build_module(${dir})
+  IF(BUILD_${dir} OR BUILD_allmodules)
     MESSAGE( STATUS "Building module: " ${dir} )
 
     INCLUDE_DIRECTORIES(${dir})
@@ -24,12 +23,11 @@ macro(option_build_module dir)
       RUNTIME DESTINATION bin
       LIBRARY DESTINATION lib
       ARCHIVE DESTINATION lib)
-  endif()
-endmacro()
+  ENDIF()
+ENDMACRO()
 
 # Option to build all modules
-option(BUILD_allmodules "Build all modules?" OFF)
+OPTION(BUILD_allmodules "Build all modules?" OFF)
 
-# Example module implementation - check this directory as a starting point
-# for your own module implementation
+# Example module implementation - check this directory as a starting point for your own module implementation
 option_build_module(dummy)

@@ -1,178 +1,43 @@
-#include "configuration.h"
-#include "exceptions.h"
+/**
+ *  @author Simon Spannagel <simon.spannagel@cern.ch>
+ *  @author Koen Wolters <koen.wolters@cern.ch>
+ */
+
+#include "Configuration.hpp"
 
 #include <fstream>
 #include <iostream>
 #include <cstdlib>
 
-namespace allpix {
+#include "../utils/exceptions.h"
 
-  Configuration::Configuration(const std::string &config,
-                               const std::string &section)
-      : m_cur(&m_config[""]) {
-    std::istringstream confstr(config);
-    Load(confstr, section);
-  }
+using namespace allpix;
 
-  Configuration::Configuration(std::istream &conffile,
-                               const std::string &section)
-      : m_cur(&m_config[""]) {
-    Load(conffile, section);
-  }
+Configuration::Configuration(std::string name): name_(name) {}
 
-  Configuration::Configuration(const Configuration &other)
-      : m_config(other.m_config) {
-    SetSection(other.m_section);
-  }
+std::string Configuration::getName() const {
+    return name_;
+}
 
-  std::string Configuration::Name() const {
-    map_t::const_iterator it = m_config.find("");
-    if (it == m_config.end())
-      return "";
-    section_t::const_iterator it2 = it->second.find("Name");
-    if (it2 == it->second.end())
-      return "";
-    return it2->second;
-  }
-
-  void Configuration::Save(std::ostream &stream) const {
-    for (map_t::const_iterator i = m_config.begin(); i != m_config.end(); ++i) {
-      if (i->first != "") {
-        stream << "[" << i->first << "]\n";
-      }
-      for (section_t::const_iterator j = i->second.begin();
-           j != i->second.end(); ++j) {
-        stream << j->first << " = " << j->second << "\n";
-      }
-      stream << "\n";
+void Configuration::print(std::ostream &out) const {
+    for (auto iter = config_.begin(); iter != config_.end(); ++iter) {
+        out << iter->first << " : " << iter->second << std::endl;
     }
-  }
+}
 
-  Configuration &Configuration::operator=(const Configuration &other) {
-    m_config = other.m_config;
-    SetSection(other.m_section);
-    return *this;
-  }
+void Configuration::print() const { 
+    print(std::cout); 
+}
 
-  void Configuration::Load(std::istream &stream, const std::string &section) {
-    map_t config;
-    section_t *cur_sec = &config[""];
-    for (;;) {
-      std::string line;
-      if (stream.eof())
-        break;
-      std::getline(stream, line);
-      size_t equals = line.find('=');
-      if (equals == std::string::npos) {
-        line = trim(line);
-        if (line == "" || line[0] == ';' || line[0] == '#')
-          continue;
-        if (line[0] == '[' && line[line.length() - 1] == ']') {
-          line = std::string(line, 1, line.length() - 2);
-          // TODO: check name is alphanumeric?
-          cur_sec = &config[line];
-        }
-      } else {
-        std::string key = trim(std::string(line, 0, equals));
-        // TODO: check key does not already exist
-        // handle lines like: blah = "foo said ""bar""; ok." # not "baz"
-        line = trim(std::string(line, equals + 1));
-        if ((line[0] == '\'' && line[line.length() - 1] == '\'') ||
-            (line[0] == '\"' && line[line.length() - 1] == '\"')) {
-          line = std::string(line, 1, line.length() - 2);
-        } else {
-          size_t i = line.find_first_of(";#");
-          if (i != std::string::npos)
-            line = trim(std::string(line, 0, i));
-        }
-        (*cur_sec)[key] = line;
-      }
-    }
-    m_config = config;
-    SetSection(section);
-  }
-
-  bool Configuration::SetSection(const std::string &section) const {
-    map_t::const_iterator i = m_config.find(section);
-    if (i == m_config.end())
-      return false;
-    m_section = section;
-    m_cur = const_cast<section_t *>(&i->second);
-    return true;
-  }
-
-  bool Configuration::SetSection(const std::string &section) {
-    m_section = section;
-    m_cur = &m_config[section];
-    return true;
-  }
-
-  std::string Configuration::Get(const std::string &key,
-                                 const std::string &def) const {
-    try {
-      return GetString(key);
-    } catch (const allpix::exception &) {
-      // ignore: return default
-    }
-    return def;
-  }
-
-  double Configuration::Get(const std::string &key, double def) const {
-    try {
-      return from_string(GetString(key), def);
-    } catch (const allpix::exception &) {
-      // ignore: return default
-    }
-    return def;
-  }
-
-  int64_t Configuration::Get(const std::string &key, int64_t def) const {
-    try {
-      std::string s = GetString(key);
-      return std::strtoll(s.c_str(), 0, 0);
-    } catch (const allpix::exception &) {
-      // ignore: return default
-    }
-    return def;
-  }
-  uint64_t Configuration::Get(const std::string &key, uint64_t def) const {
-    try {
-      std::string s = GetString(key);
-      return std::strtoull(s.c_str(), 0, 0);
-    } catch (const allpix::exception &) {
-      // ignore: return default
-    }
-    return def;
-  }
-
-  int Configuration::Get(const std::string &key, int def) const {
-    try {
-      std::string s = GetString(key);
-      return std::strtol(s.c_str(), 0, 0);
-    } catch (const allpix::exception &) {
-      // ignore: return default
-    }
-    return def;
-  }
-
-  void Configuration::Print(std::ostream &out) const {
-    for (section_t::iterator it = m_cur->begin(); it != m_cur->end(); ++it) {
-      out << it->first << " : " << it->second << std::endl;
-    }
-  }
-
-  void Configuration::Print() const { Print(std::cout); }
-
-  std::string Configuration::GetString(const std::string &key) const {
-    section_t::const_iterator i = m_cur->find(key);
-    if (i != m_cur->end()) {
-      return i->second;
+std::string Configuration::get_string(const std::string &key) const {
+    config_t::const_iterator iter = config_.find(key);
+    if (iter != config_.end()) {
+        return iter->second;
     }
     throw allpix::exception("Configuration: key not found");
-  }
+}
 
-  void Configuration::SetString(const std::string &key,
-                                const std::string &val) {
-    (*m_cur)[key] = val;
-  }
+void Configuration::set_string(const std::string &key,
+                            const std::string &val) {
+    config_[key] = val;
 }

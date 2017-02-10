@@ -1,28 +1,31 @@
-#include "allpix.h"
-#include "exceptions.h"
-#include "configuration.h"
-#include "log.h"
-
 #include <iostream>
 #include <ostream>
 #include <vector>
 
+#include "../core/AllPix.hpp"
+
+#include "../core/utils/exceptions.h"
+#include "../core/utils/log.h"
+
 using namespace allpix;
 
-int main(int /*argc*/, const char ** argv) {
-
-  std::string logLevel = "DEBUG";
-
-  try {
-
-    // Set global log level:
-    Log::ReportingLevel() = Log::FromString(logLevel);
-    LOG(logINFO) << "Log level: " << logLevel;
-
-    std::string config = "testconfig.cfg";
+int main(int argc, const char ** argv) {
     
-    allpixCore * apx = new allpixCore(config);
-  } catch(allpix::exception &e) { LOG(logCRITICAL) << e.what(); }
-  
-  return 0;
+    std::string logLevel = "DEBUG";
+    
+    AllPix *apx = 0;
+    try {
+        
+        // Set global log level:
+        Log::ReportingLevel() = Log::FromString(logLevel);
+        LOG(logINFO) << "Log level: " << logLevel;
+        
+        apx = new AllPix();
+    } catch(allpix::exception &e) { 
+        LOG(logCRITICAL) << e.what(); 
+    }
+    
+    delete apx;
+    
+    return 0;
 }

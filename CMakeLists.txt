@@ -53,11 +53,11 @@ ENDIF("${isSystemDir}" STREQUAL "-1")
 # ROOT is required for histogramming
 FIND_PACKAGE(ROOT REQUIRED COMPONENTS GenVector)
 IF(ROOT_FOUND)
-INCLUDE_DIRECTORIES(SYSTEM ${ROOT_INCLUDE_DIRS})
-LINK_LIBRARIES(${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES})
+    #INCLUDE_DIRECTORIES(SYSTEM ${ROOT_INCLUDE_DIRS})
+    #LINK_LIBRARIES(${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES})
 ELSE(ROOT_FOUND)
-MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
-"$ source YOUR_ROOT_DIR/bin/thisroot.sh")
+    MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
+    "$ source YOUR_ROOT_DIR/bin/thisroot.sh")
 ENDIF(ROOT_FOUND)
 
 
@@ -65,44 +65,29 @@ ENDIF(ROOT_FOUND)
 # Check first, if CMake finds a "FindGeant4" module or warn the user otherwise
 CheckHasModule(Geant4)
 IF(HAS_MODULE_Geant4)
-  FIND_PACKAGE(Geant4 REQUIRED)
-  INCLUDE(${Geant4_USE_FILE})
+  #FIND_PACKAGE(Geant4 REQUIRED)
+  #INCLUDE(${Geant4_USE_FILE})
 ELSE(HAS_MODULE_Geant4)
   MESSAGE(FATAL_ERROR "Could not find Geant4, make sure to source the Geant4 environment\n"
     "$ source YOUR_GEANT4_DIR/bin/geant4.sh")
 ENDIF(HAS_MODULE_Geant4)
 
-
-
-
 ###################################
 # Define build targets for allpix #
 ###################################
 
-# Include directories
-INCLUDE_DIRECTORIES(
-  core/utils
-  core/allpix
-  core/objs
-  core/detector
-  modules
-  ${GEANT4_INCLUDE_DIR})
-
 # Always build main allpix library;
-ADD_SUBDIRECTORY(modules)
-ADD_SUBDIRECTORY(core)
+ADD_SUBDIRECTORY(src/core)
 
-IF(BUILD_spice)
-  ADD_SUBDIRECTORY(interfaces/spice)
-ENDIF(BUILD_spice)
+# Possibly build modules
+# ADD_SUBDIRECTORY(src/modules)
+
+#IF(BUILD_spice)
+#  ADD_SUBDIRECTORY(interfaces/spice)
+#ENDIF(BUILD_spice)
 
 # Add targets for Doxygen code reference and LaTeX User manual
 ADD_SUBDIRECTORY(doc)
 
-# Add target for the main executable
-ADD_EXECUTABLE(runallpix main/allpixExecutable.cc )
-TARGET_LINK_LIBRARIES(runallpix ${PROJECT_NAME} ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
-
-INSTALL(TARGETS runallpix
-  RUNTIME DESTINATION bin
-  ARCHIVE DESTINATION lib)
+# BUILD EXECUTABLE 
+ADD_SUBDIRECTORY(src/exec)
