@@ -5,203 +5,185 @@
 #ifndef ALLPIX_LOG_H
 #define ALLPIX_LOG_H
 
-/** Cannot use stdint.h when running rootcint on WIN32 */
-#if ((defined WIN32) && (defined __CINT__))
-typedef unsigned int uint32_t;
-typedef unsigned int DWORD;
-#include <Windows4Root.h>
-#else
-#if (defined WIN32)
-typedef unsigned int uint32_t;
-#include <Windows.h>
-#else
-#include <sys/time.h>
-#include <stdint.h>
-#endif //WIN32
-#endif //WIN32 && CINT
-
 #ifdef WIN32
 #define __func__ __FUNCTION__
 #endif // WIN32
 
+#include <vector>
+#include <string>
+#include <ostream>
+#include <iostream>
 #include <sstream>
+#include <cstring>
+#include <cstdint>
+#include <chrono>
+#include <ctime>
 #include <iomanip>
 #include <cstdio>
-#include <string.h>
-
 
 namespace allpix {
-
-  enum TLogLevel {
-    logQUIET,
-    logCRITICAL,
-    logERROR,
-    logWARNING,
-    logINFO,
-    logDEBUG
-  };
-
-  template <typename T>
-    class allpixLog {
-  public:
-    allpixLog();
-    virtual ~allpixLog();
-    std::ostringstream& Get(TLogLevel level = logINFO, std::string file = "", std::string function = "", uint32_t line = 0);
-    static std::string& logName(std::string setLogName = "") {
-        static std::string logName("");
-        static bool is_initialized = false;
-        if (!is_initialized && setLogName.size() > 0) {
-          is_initialized = true;
-          logName = setLogName;
-        }
-        return logName;
-    }; 
-  public:
-    static TLogLevel& ReportingLevel();
-    static std::string ToString(TLogLevel level);
-    static TLogLevel FromString(const std::string& level);
-  protected:
-    std::ostringstream os;
-  private:
-    allpixLog(const allpixLog&);
-    allpixLog& operator =(const allpixLog&);
-    std::string NowTime();
-  };
-
-  template <typename T>
-    allpixLog<T>::allpixLog() {}
-
-
-#ifdef WIN32
-
-  template <typename T>
-    std::string allpixLog<T>::NowTime(){
-    const int MAX_LEN = 200;
-    char buffer[MAX_LEN];
-    if (GetTimeFormatA(LOCALE_USER_DEFAULT, 0, 0, 
-            "HH':'mm':'ss", buffer, MAX_LEN) == 0)
-        return "Error in NowTime()";
-
-    char result[100] = {0};
-    static DWORD first = GetTickCount();
-    std::sprintf(result, "%s.%03ld", buffer, static_cast<long>(GetTickCount() - first) % 1000); 
-    return result;
-}
-
-#else
-
-  template <typename T>
-    std::string allpixLog<T>::NowTime() {
-    char buffer[11];
-    time_t t;
-    time(&t);
-    tm r = * localtime(&t);
-    strftime(buffer, sizeof(buffer), "%X", localtime_r(&t, &r));
-    struct timeval tv;
-    gettimeofday(&tv, 0);
-    char result[100] = {0};
-    std::sprintf(result, "%s.%03ld", buffer, static_cast<long>(tv.tv_usec) / 1000); 
-    return result;
-  }
-
-#endif //WIN32
-
-  template <typename T>
-    std::ostringstream& allpixLog<T>::Get(TLogLevel level, std::string file, std::string function, uint32_t line) {
-    os << "[" << NowTime() << "] ";
-    if (logName().size() > 0) {
-      os << "<" << logName() << "> ";
-    }
-    os << std::setw(8) << ToString(level) << ": ";
+    enum class LogLevel {
+        QUIET = 0,
+        CRITICAL,
+        ERROR,
+        WARNING,
+        INFO,
+        DEBUG
+    };
     
-    // For debug levels we want also function name and line number printed:
-    if (level != logINFO && level != logQUIET && level != logWARNING)
-      os << "<" << file << "/" << function << ":L" << line << "> ";
+    class DefaultLogger {
+    public:
+        // constructors
+        DefaultLogger();
+        ~DefaultLogger();
+        
+        // disallow copy
+        DefaultLogger(const DefaultLogger &) = delete;
+        DefaultLogger &operator=(const DefaultLogger &) = delete;
+        
+        // get a stream for logging
+        std::ostringstream& getStream(LogLevel level = LogLevel::INFO, std::string file = "", std::string function = "", uint32_t line = 0);
+        
+        // set reporting options
+        static LogLevel getReportingLevel();
+        static void setReportingLevel(LogLevel);
 
-    return os;
-  }
+        // set streams (std::cerr is default)
+        // NOTE: cannot remove a stream yet 
+        // WARNING: caller has to make sure that ostream exist while the logger is available
+        static void addStream(std::ostream&);
+        static void clearStreams();
+        static const std::vector<std::ostream*>& getStreams();
+        
+        // convert log level to string
+        static LogLevel getLevelFromString(const std::string &level);
+        static std::string getStringFromLevel(LogLevel level);
+    protected:
+        std::ostringstream os;
+    private:
+        int exception_count_;
+        
+        int get_uncaught_exceptions(bool);
+        std::string get_current_date();
+        static LogLevel &get_reporting_level();
+        static std::vector<std::ostream*> &get_streams();
+    };
+    
+    //NOTE: we have to check for exceptions before we do the actual logging (which may also throw exceptions)
+    DefaultLogger::DefaultLogger () {
+        exception_count_ = get_uncaught_exceptions(true);
+    }
+    DefaultLogger::~DefaultLogger() {
+        // check if it is potentially safe to throw 
+        if(exception_count_ != get_uncaught_exceptions(false)) return;
+        
+        os << std::endl;
+        for(auto stream : get_streams()){
+            (*stream) << os.str();
+        }
+    }
+    
+    std::ostringstream& DefaultLogger::getStream(LogLevel level, std::string file, std::string function, uint32_t line) {
+        os << "[" << get_current_date() << "] ";
+        /*if (logName().size() > 0) {
+            os << "<" << logName() << "> ";
+        }*/
+        os << std::setw(8) << getStringFromLevel(level) << ": ";
+        
+        // For debug levels we want also function name and line number printed:
+        if (level != LogLevel::INFO && level != LogLevel::QUIET && level != LogLevel::WARNING)
+            os << "<" << file << "/" << function << ":L" << line << "> ";
+        
+        return os;
+    }
+    
+    // set reporting level 
+    LogLevel &DefaultLogger::get_reporting_level(){
+        static LogLevel reporting_level;
+        return reporting_level;
+    }
+    void DefaultLogger::setReportingLevel(LogLevel level) {
+        get_reporting_level() = level;
+    }
+    LogLevel DefaultLogger::getReportingLevel() {
+        return get_reporting_level();
+    }
+    
+    //change streams
+    std::vector<std::ostream*> &DefaultLogger::get_streams(){
+        static std::vector<std::ostream*> streams = {&std::cerr};
+        return streams;
+    }
+    const std::vector<std::ostream*> &DefaultLogger::getStreams(){
+        return get_streams();
+    }
+    void DefaultLogger::clearStreams(){
+        get_streams().clear();
+    }
+    void DefaultLogger::addStream(std::ostream &stream){
+        get_streams().push_back(&stream);
+    }
 
-  template <typename T>
-    allpixLog<T>::~allpixLog() {
-    os << std::endl;
-    T::Output(os.str());
-  }
+    // convert string to log level and vice versa
+    std::string DefaultLogger::getStringFromLevel(LogLevel level) {
+        static const std::array<std::string, 6> type = {"QUIET","CRITICAL","ERROR", "WARNING", "INFO", "DEBUG"};
+        return type[static_cast<int>(level)];
+    }
+    
+    LogLevel DefaultLogger::getLevelFromString(const std::string& level) {
+        if (level == "DEBUG")
+            return LogLevel::DEBUG;
+        if (level == "INFO")
+            return LogLevel::INFO;
+        if (level == "WARNING")
+            return LogLevel::WARNING;
+        if (level == "ERROR")
+            return LogLevel::ERROR;
+        if (level == "CRITICAL")
+            return LogLevel::CRITICAL;
+        if (level == "QUIET")
+            return LogLevel::QUIET;
+        
+        DefaultLogger().getStream(LogLevel::WARNING) << "Unknown logging level '" << level << "'. Using WARNING level as default.";
+        return LogLevel::WARNING;
+    }
 
-  template <typename T>
-    TLogLevel& allpixLog<T>::ReportingLevel() {
-    static TLogLevel reportingLevel = logINFO;
-    return reportingLevel;
-  }
-
-  template <typename T>
-    std::string allpixLog<T>::ToString(TLogLevel level) {
-    static const char* const buffer[] = {"QUIET","CRITICAL","ERROR", "WARNING", "INFO", "DEBUG"};
-    return buffer[level];
-  }
-
-  template <typename T>
-    TLogLevel allpixLog<T>::FromString(const std::string& level) {
-    if (level == "DEBUG")
-      return logDEBUG;
-    if (level == "INFO")
-      return logINFO;
-    if (level == "WARNING")
-      return logWARNING;
-    if (level == "ERROR")
-      return logERROR;
-    if (level == "CRITICAL")
-      return logCRITICAL;
-    if (level == "QUIET")
-      return logQUIET;
-    allpixLog<T>().Get(logWARNING) << "Unknown logging level '" << level << "'. Using WARNING level as default.";
-    return logWARNING;
-  }
-
-
-  class SetLogOutput
-  {
-  public:
-    static FILE*& Stream();
-    static bool& Duplicate();
-    static void Output(const std::string& msg);
-  };
-
-  inline bool& SetLogOutput::Duplicate()
-  {
-    static bool duplic = false;
-    return duplic;
-  }
-
-  inline FILE*& SetLogOutput::Stream()
-  {
-    static FILE* pStream = stderr;
-    return pStream;
-  }
-
-  inline void SetLogOutput::Output(const std::string& msg)
-  {   
-    FILE* pStream = Stream();
-    if (!pStream)
-      return;
-    // Check if duplication to stderr is needed:
-    if (Duplicate() && pStream != stderr)
-      fprintf(stderr, "%s", msg.c_str());
-    fprintf(pStream, "%s", msg.c_str());
-    fflush(pStream);
-  }
-
-typedef allpixLog<SetLogOutput> Log;
-
+    std::string DefaultLogger::get_current_date()
+    {
+        auto now = std::chrono::high_resolution_clock::now();
+        auto in_time_t = std::chrono::system_clock::to_time_t(now);
+        
+        std::stringstream ss;
+        ss << std::put_time(std::localtime(&in_time_t), "%X");
+        
+        auto seconds_from_epoch = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch());
+        auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch() - seconds_from_epoch).count();
+        ss << "." << millis;
+        return ss.str();
+    }
+    
+    int DefaultLogger::get_uncaught_exceptions(bool cons = false) {
+#if __cplusplus > 201402L
+        //we can only do this fully correctly in C++17
+        return std::uncaught_exceptions();
+#else
+        if(cons) return 0;
+        else return std::uncaught_exception();    
+#endif
+    }
+    
+    using Log = DefaultLogger;
+            
 #define __FILE_NAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
-
-#define IFLOG(level) \
-  if (level > allpix::Log::ReportingLevel() || !allpix::SetLogOutput::Stream()) ; \
-  else 
-
-#define LOG(level)				\
-  if (level > allpix::Log::ReportingLevel() || !allpix::SetLogOutput::Stream()) ; \
-  else allpix::Log().Get(level,__FILE_NAME__,__func__,__LINE__)
-
+    
+//#define IFLOG(level) 
+//    if (level > allpix::Log::ReportingLevel() || !allpix::SetLogOutput::Stream()) ; 
+//    else 
+            
+#define LOG(level) \
+    if (LogLevel::level > allpix::Log::getReportingLevel() || allpix::Log::getStreams().empty()) ; \
+    else allpix::Log().getStream(LogLevel::level,__FILE_NAME__,__func__,__LINE__)
+                    
 } //namespace allpix
 
 #endif /* ALLPIX_LOG_H */

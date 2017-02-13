@@ -27,7 +27,7 @@ Messenger::~Messenger(){
 // FIXME universal reference
 void Messenger::dispatchMessage(std::string name, const Message &msg, Module *){
     if(delegates_[name].empty()){
-        LOG(logWARNING) << "Dispatched message has no receivers... this is probably not what you want!";
+        LOG(WARNING) << "Dispatched message has no receivers... this is probably not what you want!";
     }
     
     for(const auto &del : delegates_[name]){

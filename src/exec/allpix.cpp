@@ -14,9 +14,6 @@
 using namespace allpix;
 
 int main(int, const char **) {
-    
-    std::string logLevel = "DEBUG";
-    
     //TEMP TEST
     Messenger *msg = new Messenger();
     TestModuleOne test1;
@@ -26,16 +23,19 @@ int main(int, const char **) {
     delete msg;
     //END TEST
     
+    
+    
     AllPix *apx = 0;
     try {
-        
         // Set global log level:
-        Log::ReportingLevel() = Log::FromString(logLevel);
-        LOG(logINFO) << "Log level: " << logLevel;
+        LogLevel log_level = Log::getLevelFromString("DEBUG");
+        Log::setReportingLevel(log_level);
+        
+        LOG(INFO) << "Log level: " << Log::getStringFromLevel(log_level);
         
         apx = new AllPix();
     } catch(allpix::exception &e) { 
-        LOG(logCRITICAL) << e.what(); 
+        LOG(CRITICAL) << e.what(); 
     }
     
     delete apx;
