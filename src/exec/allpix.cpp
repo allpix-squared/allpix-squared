@@ -4,14 +4,27 @@
 
 #include "../core/AllPix.hpp"
 
+#include "../core/module/Module.hpp"
+
 #include "../core/utils/exceptions.h"
 #include "../core/utils/log.h"
 
+#include "examples.h"
+
 using namespace allpix;
 
-int main(int argc, const char ** argv) {
+int main(int, const char **) {
     
     std::string logLevel = "DEBUG";
+    
+    //TEMP TEST
+    Messenger *msg = new Messenger();
+    TestModuleOne test1;
+    TestModuleTwo test2;
+    test2.start(msg);
+    test1.start(msg);
+    delete msg;
+    //END TEST
     
     AllPix *apx = 0;
     try {

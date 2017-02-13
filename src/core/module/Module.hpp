@@ -6,6 +6,7 @@
 #define ALLPIX_MODULE_H
 
 #include <vector>
+#include <string>
 
 namespace allpix{
 
