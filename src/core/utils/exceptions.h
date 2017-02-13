@@ -1,5 +1,7 @@
 /**
- * allpix API exception classes
+ * AllPix exception classes
+ * 
+ * @author Simon Spannagel <simon.spannagel@cern.ch>
  */
 
 #ifndef ALLPIX_EXCEPTIONS_H

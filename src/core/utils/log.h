@@ -1,5 +1,8 @@
 /**
- * allpix logging class
+ * AllPix logger class
+ * 
+ * @author Simon Spannagel <simon.spannagel@cern.ch>
+ * @author Koen Wolters <koen.wolters@cern.ch>
  */
 
 #ifndef ALLPIX_LOG_H

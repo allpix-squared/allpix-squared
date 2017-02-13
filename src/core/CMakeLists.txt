@@ -10,6 +10,7 @@
 SET(CMAKE_CXX_FLAGS "-g -Wall -Wextra -pedantic ${CMAKE_CXX_FLAGS}")
 
 ADD_LIBRARY(allpixcore SHARED
+    utils/string.cpp
     messenger/Messenger.cpp
     config/Configuration.cpp
     AllPix.cpp

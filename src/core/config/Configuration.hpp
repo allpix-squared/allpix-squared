@@ -27,7 +27,7 @@ namespace allpix {
         //uint64_t get(const std::string &key, uint64_t def) const;
         //int get(const std::string &key, int def) const;
         template <typename T> T get(const std::string &key, T def) const {
-            return allpix::from_string(Get(key, allpix::to_string(def)), def);
+            return allpix::from_string(Get(key, std::to_string(def)), def);
         }
         template <typename T> T get(const std::string &key, const std::string fallback,
             const T &def) const {
