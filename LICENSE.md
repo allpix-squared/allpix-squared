@@ -1,7 +1,7 @@
 The MIT License (MIT)
 =====================
 
-Copyright © 2017 Daniel Hynds, Koen Sander Wolters, Simon Spannagel
+Copyright © 2017 Daniel Hynds, Koen Wolters, Simon Spannagel
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
