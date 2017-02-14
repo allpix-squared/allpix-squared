@@ -16,13 +16,13 @@ namespace allpix {
    */
   class exception : public std::exception {
   public:
-    exception(const std::string& what_arg) : std::exception(),ErrorMessage(what_arg) {}
+    exception(const std::string& what_arg) : std::exception(),error_message(what_arg) {}
     ~exception() throw() {};
     virtual const char* what() const throw(){
-      return ErrorMessage.c_str();
+      return error_message.c_str();
     };
   private:
-    std::string ErrorMessage;
+    std::string error_message;
   };
   
 } //namespace allpix

@@ -6,18 +6,9 @@
 
 using namespace allpix;
 
-// Default constructor
-AllPix::AllPix(): conf_mgr_(0), mod_mgr_(0), geo_mgr_(0), msg_(0), state_(State::Unitialized) {}
-AllPix::AllPix(ConfigManager *conf_mgr, ModuleManager *mod_mgr, GeometryManager *geo_mgr, Messenger *msg):
-    conf_mgr_(conf_mgr), mod_mgr_(mod_mgr), geo_mgr_(geo_mgr), msg_(msg), state_(State::Unitialized) {}
-    
-// Destructor
-AllPix::~AllPix() {
-    delete conf_mgr_;
-    delete mod_mgr_;
-    delete geo_mgr_;
-    delete msg_;
-}
+// Default constructor (FIXME: decide what to pass and what should be standard)
+AllPix::AllPix(std::unique_ptr<ConfigManager> conf_mgr, std::unique_ptr<ModuleManager> mod_mgr, std::unique_ptr<Messenger> msg, std::unique_ptr<GeometryManager> geo_mgr):
+    conf_mgr_(std::move(conf_mgr)), mod_mgr_(std::move(mod_mgr)), geo_mgr_(std::move(geo_mgr)), msg_(std::move(msg)), state_(State::Unitialized) {}
 
 // Get state
 AllPix::State AllPix::getState() const {
@@ -26,22 +17,22 @@ AllPix::State AllPix::getState() const {
 
 // Get managers
 ConfigManager *AllPix::getConfigManager() {
-    return conf_mgr_;
+    return conf_mgr_.get();
 }
 GeometryManager *AllPix::getGeometryManager() {
-    return geo_mgr_;
+    return geo_mgr_.get();
 }
 ModuleManager *AllPix::getModuleManager(){
-    return mod_mgr_;
+    return mod_mgr_.get();
 }
 Messenger *AllPix::getMessenger(){
-    return msg_;
+    return msg_.get();
 }
 
 // Initialize
 void AllPix::init() {
     //TODO: implement
-    mod_mgr_->load();
+    mod_mgr_->load(this);
 }
 
 void AllPix::run() {

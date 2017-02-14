@@ -27,11 +27,10 @@ namespace allpix{
         
         // Constructor and destructor
         // NOTE: AllPix object responsible for deletion of managers
-        AllPix(); // FIXME: temporary
-        AllPix(ConfigManager *conf_mgr, ModuleManager *mod_mgr, GeometryManager *geo_mgr, Messenger *msg);
-        ~AllPix();
+        AllPix(std::unique_ptr<ConfigManager> conf_mgr, std::unique_ptr<ModuleManager> mod_mgr, std::unique_ptr<Messenger> msg, std::unique_ptr<GeometryManager> geo_mgr);
         
         // Get managers
+        // FIXME: pass pointer or references
         ConfigManager *getConfigManager();
         GeometryManager *getGeometryManager();
         ModuleManager *getModuleManager();
@@ -49,10 +48,10 @@ namespace allpix{
         // Finalize run, check if everything has finished
         void finalize();
     private:
-        ConfigManager *conf_mgr_;
-        ModuleManager *mod_mgr_;
-        GeometryManager *geo_mgr_;
-        Messenger *msg_;
+        std::unique_ptr<ConfigManager> conf_mgr_;
+        std::unique_ptr<ModuleManager> mod_mgr_;
+        std::unique_ptr<GeometryManager> geo_mgr_;
+        std::unique_ptr<Messenger> msg_;
         
         State state_;
     };

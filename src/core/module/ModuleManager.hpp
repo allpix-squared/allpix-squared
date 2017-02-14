@@ -5,10 +5,12 @@
 #ifndef ALLPIX_MODULE_MANAGER_H
 #define ALLPIX_MODULE_MANAGER_H
 
-#include <vector>
+#include "Module.hpp"
 
 namespace allpix{
 
+    class AllPix;
+    
     class ModuleManager{
     public:
         // Constructor and destructors
@@ -19,8 +21,12 @@ namespace allpix{
         ModuleManager(const ModuleManager&) = delete;
         ModuleManager &operator=(const ModuleManager&) = delete;
         
+        // Modify run queue
+        // FIXME: right name?
+        virtual void addToRunQueue(Module *) = 0; 
+        
         // Load modules
-        virtual void load() = 0;
+        virtual void load(AllPix*) = 0;
         
         // Run modules (until no other module available)
         virtual void run() = 0;

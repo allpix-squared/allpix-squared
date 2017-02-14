@@ -10,6 +10,8 @@
 
 namespace allpix{
 
+    class AllPix;
+    
     class Module{
     public:
         // AllPix running state
@@ -32,6 +34,10 @@ namespace allpix{
         // Modules should have a unique name (for configuration)
         // TODO: depends on implementation how this should work with dynamic loading
         virtual std::string getName() = 0;
+        
+        //Initialize the module and pass the configuration etc.
+        //FIXME: also depending on constraints possible to do this in the constructor
+        virtual void init(AllPix *) = 0;
         
         // Execute the function of the module
         virtual void run() = 0;
