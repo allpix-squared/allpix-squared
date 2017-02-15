@@ -8,16 +8,21 @@
 #include <vector>
 #include <queue>
 #include <memory>
+#include <functional>
 
 #include "Module.hpp"
 #include "ModuleManager.hpp"
 
 namespace allpix{
 
+    class AllPix;
+    
     class StaticModuleManager : public ModuleManager{
     public:
+        using GeneratorFunction = std::function<Module*(std::string, AllPix*)>;
+        
         // Constructor and destructors
-        StaticModuleManager(Module* (*func)(std::string));
+        StaticModuleManager(GeneratorFunction);
         ~StaticModuleManager() {}
         
         // Load modules
@@ -37,7 +42,7 @@ namespace allpix{
         std::vector<std::unique_ptr<Module>> modules_;
         std::queue<Module*> run_queue_;
         
-        Module* (*generator_func_)(std::string);
+        GeneratorFunction generator_func_;
         
         AllPix *allpix_;
     };

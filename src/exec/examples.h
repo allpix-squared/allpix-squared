@@ -36,15 +36,16 @@ class TestModuleOne : public Module{
 public:
     static const std::string name;
     
+    TestModuleOne(AllPix *apx): Module(apx) {}
+    
     std::string getName(){
         return TestModuleOne::name;
     }
     
-    void init(AllPix *apx){
-        apx_ = apx;
+    void init(Configuration){
         LOG(DEBUG) << "(1) init first module";
         
-        apx_->getModuleManager()->addToRunQueue(this);
+        getModuleManager()->addToRunQueue(this);
     }
     
     void run(){
@@ -52,15 +53,12 @@ public:
         TestMessageTwo test;
         test.setText("hello from module 1");
         
-        apx_->getMessenger()->dispatchMessage("test", test);
+        getMessenger()->dispatchMessage("test", test);
     }
     
     void finalize(){
         LOG(DEBUG) << "(1) this is the end of module 1";
     }
-    
-private:
-    AllPix *apx_;
 };
 
 const std::string TestModuleOne::name = "test1";
@@ -69,18 +67,19 @@ class TestModuleTwo : public Module{
 public:
     static const std::string name;
     
-    void init(AllPix *apx){
-        apx_ = apx;
+    TestModuleTwo(AllPix *apx): Module(apx) {}
+    
+    void init(Configuration){
         LOG(DEBUG) << "(2) init registering listeners for module 2";
         
-        apx_->getMessenger()->registerListener(this, &TestModuleTwo::receive, "test");
+        getMessenger()->registerListener(this, &TestModuleTwo::receive, "test");
     }
     
     void receive(TestMessageTwo msg){
         LOG(DEBUG) << "(2) received a message: " << msg.getText();
         LOG(DEBUG) << "    add to run queue ";
         
-        apx_->getModuleManager()->addToRunQueue(this);
+        getModuleManager()->addToRunQueue(this);
     }
     
     std::string getName(){
@@ -94,15 +93,12 @@ public:
     void finalize(){
         LOG(DEBUG) << "(2) finished";
     }
-    
-private:
-    AllPix *apx_;
 };
 
 const std::string TestModuleTwo::name = "test2";
 
-Module *generator(std::string str){
-    if(str == TestModuleOne::name) return new TestModuleOne;
-    if(str == TestModuleTwo::name) return new TestModuleTwo;
+Module *generator(std::string str, AllPix *allpix){
+    if(str == TestModuleOne::name) return new TestModuleOne(allpix);
+    if(str == TestModuleTwo::name) return new TestModuleTwo(allpix);
     return nullptr;
 }

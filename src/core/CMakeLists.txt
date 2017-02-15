@@ -11,6 +11,7 @@ SET(CMAKE_CXX_FLAGS "-g -Wall -Wextra -pedantic ${CMAKE_CXX_FLAGS}")
 
 ADD_LIBRARY(allpixcore SHARED
     utils/string.cpp
+    module/Module.cpp
     module/StaticModuleManager.cpp
     messenger/Messenger.cpp
     config/Configuration.cpp

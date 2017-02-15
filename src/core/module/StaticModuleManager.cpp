@@ -7,12 +7,13 @@
 #include <memory>
 
 #include "Module.hpp"
+#include "../config/Configuration.hpp"
 #include "../AllPix.hpp"
 #include "../utils/exceptions.h"
 
 using namespace allpix;
 
-StaticModuleManager::StaticModuleManager(Module* (*func)(std::string)): generator_func_(func) {
+StaticModuleManager::StaticModuleManager(GeneratorFunction func): generator_func_(func) {
     if(generator_func_ == nullptr) throw allpix::exception("Generator function should not be zero");
 }
 
@@ -46,10 +47,10 @@ void StaticModuleManager::finalize(){
 }
 
 void StaticModuleManager::add_module(std::string name){
-    std::unique_ptr<Module> mod = std::unique_ptr<Module>(generator_func_(name));
+    std::unique_ptr<Module> mod = std::unique_ptr<Module>(generator_func_(name, allpix_));
     if(mod == nullptr){
         throw allpix::exception("Module cannot be instantiated");
     }
-    mod->init(allpix_);
+    mod->init(Configuration(name));
     modules_.push_back(std::move(mod));
 }
