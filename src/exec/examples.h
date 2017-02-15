@@ -56,7 +56,7 @@ public:
         TestMessageTwo test;
         test.setText(conf_.get<std::string>("message"));
         
-        getMessenger()->dispatchMessage("test", test);
+        getMessenger()->dispatchMessage(test, "random_name");
     }
     
     void finalize(){
@@ -79,7 +79,7 @@ public:
         conf_.setDefault("name", "standard_two_name");
         LOG(DEBUG) << "(2) init registering listeners for module " << conf_.get<std::string>("name");
         
-        getMessenger()->registerListener(this, &TestModuleTwo::receive, "test");
+        getMessenger()->registerListener(this, &TestModuleTwo::receive);
     }
     
     void receive(TestMessageTwo msg){

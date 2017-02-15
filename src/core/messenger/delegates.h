@@ -6,6 +6,7 @@
 #define ALLPIX_DELEGATE_H
 
 #include <typeinfo>
+#include <cassert>
 
 #include "Message.hpp"
 #include "../utils/exceptions.h"
@@ -25,10 +26,9 @@ namespace allpix{
         ~Delegate(){}
         
         void call(const Message &msg) const{
-            if(typeid(msg) != typeid(R)){
-                //TODO: we can fetch this earlier and make this an assert
-                throw allpix::exception("Incorrect message forwarded!");
-            }
+            //the type names should have been correctly resolved earlier
+            assert(typeid(msg) == typeid(R));
+            
             //NOTE: this dynamic cast is not perfect, but otherwise dynamic linking will break
             (obj_->*method_)(dynamic_cast<const R&>(msg));
         }

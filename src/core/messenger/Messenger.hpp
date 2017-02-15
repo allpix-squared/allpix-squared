@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <map>
+#include <typeindex>
 
 #include "delegates.h"
 #include "../module/Module.hpp"
@@ -25,12 +26,13 @@ namespace allpix{
         Messenger &operator=(const Messenger&) = delete;
         
         // Register a listener
-        template <typename T, typename R> void registerListener(T *receiver, void (T::*method)(R), std::string message_type);
+        // FIXME: is the empty string a proper catch-all or do we want to have a clearer separation?
+        template <typename T, typename R> void registerListener(T *receiver, void (T::*method)(R), std::string message_type = "");
         
         // Dispatch message
-        void dispatchMessage(std::string name, const Message &msg, Module *source = 0);
+        void dispatchMessage(const Message &msg, std::string name = "");
     private:
-        using DelegateMap = std::map<std::string, std::vector<BaseDelegate*> >;
+        using DelegateMap = std::map<std::type_index, std::map<std::string, std::vector<BaseDelegate*>>>;
         
         DelegateMap delegates_;
     };
@@ -40,9 +42,7 @@ namespace allpix{
         static_assert(std::is_base_of<Message, R>::value, "Notifier method should take a message as argument");
         
         BaseDelegate *delegate = new Delegate<T, R>(receiver, method);
-        //FIXME: add a check if previous delegates of same name take the same message
-        //if(!delegates_[message_type].empty() && typeid(delegates_[message_type].front()) != typeid(R)
-        delegates_[message_type].push_back(delegate);
+        delegates_[std::type_index(typeid(R))][message_type].push_back(delegate);
     }
 }
 

@@ -15,22 +15,34 @@ using namespace allpix;
 // Destructor
 Messenger::~Messenger(){
     // delete all delegates
-    for(auto &iter : delegates_){
-        for(auto &del : iter.second){
-            delete del;
+    for(auto &type_delegates : delegates_){
+        for(auto &name_delegates : type_delegates.second){
+            for(auto &delegate : name_delegates.second){
+                delete delegate;
+            }
         }
-        iter.second.clear();
     }
 }
 
 // Dispatch message
-// FIXME universal reference
-void Messenger::dispatchMessage(std::string name, const Message &msg, Module *){
-    if(delegates_[name].empty()){
-        LOG(WARNING) << "Dispatched message has no receivers... this is probably not what you want!";
+void Messenger::dispatchMessage(const Message &msg, std::string name){
+    bool send = false;
+    
+    // NOTE: we are not sending messages with unspecified names to everyone listening
+    if(!name.empty()){
+        for(auto &delegate : delegates_[typeid(msg)][name]) {
+            delegate->call(msg);
+            send = true;
+        }
     }
     
-    for(const auto &del : delegates_[name]){
-        del->call(msg);
+    // NOTE: we do send all messages also to general listeners
+    for(auto &delegate : delegates_[typeid(msg)][""]) {
+        delegate->call(msg);
+        send = true;
+    }
+    
+    if(!send){
+        LOG(WARNING) << "Dispatched message has no receivers... this is probably not what you want!";
     }
 }
