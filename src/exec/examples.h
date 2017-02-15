@@ -42,8 +42,9 @@ public:
         return TestModuleOne::name;
     }
     
-    void init(Configuration){
-        LOG(DEBUG) << "(1) init first module";
+    void init(Configuration conf){
+        conf.setDefault("name", "standard_name");
+        LOG(DEBUG) << "(1) init first module " << conf.get<std::string>("name");
         
         getModuleManager()->addToRunQueue(this);
     }

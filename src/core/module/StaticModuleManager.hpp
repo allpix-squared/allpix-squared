@@ -37,7 +37,7 @@ namespace allpix{
         // Finalize and check if every module did what it should do
         void finalize();
     private:
-        void add_module(std::string name);
+        void add_module(std::string name, const Configuration&);
         
         std::vector<std::unique_ptr<Module>> modules_;
         std::queue<Module*> run_queue_;

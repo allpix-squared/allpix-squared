@@ -20,26 +20,28 @@ namespace allpix {
         //Constructor
         Configuration(std::string name);
         
+        // Has value
+        bool has(const std::string &key) const;
+        
         // Get members
-        //std::string get(const std::string &key, const std::string &def) const;
-        //double get(const std::string &key, double def) const;
-        //int64_t get(const std::string &key, int64_t def) const;
-        //uint64_t get(const std::string &key, uint64_t def) const;
-        //int get(const std::string &key, int def) const;
-        template <typename T> T get(const std::string &key, T def) const {
-            return allpix::from_string(Get(key, std::to_string(def)), def);
-        }
-        template <typename T> T get(const std::string &key, const std::string fallback,
-            const T &def) const {
-            return get(key, get(fallback, def));
-        }
-        /*template <typename T> std::vector<T> getArray(const std::string &key, std::vector<T> def) const {
-            *      return split(Get(key,std::string()),def,',');
-        }*/
+        template <typename T> T get(const std::string &key) const;
+        template <typename T> T get(const std::string &key, T def) const;
+        // FIXME: also specialize this for other container types (and use same structure as above)
+        template <typename T> std::vector<T> getArray(const std::string &key) const;
+        template <typename T> std::vector<T> getArray(const std::string &key, std::vector<T> def) const;
         
         // Set members
+        // NOTE: see FIXME above
         template <typename T> void set(const std::string &key, const T &val);
+        template <typename T> void setArray(const std::string &key, const std::vector<T> &val);
+        
+        // Set defaults
+        // NOTE: see FIXME above
+        template <typename T> void setDefault(const std::string &key, const T &val);
+        template <typename T> void setDefaultArray(const std::string &key, const std::vector<T> &val);
 
+        // FIXME: overload [] operator too
+        
         // Configuration name
         std::string getName() const;
             
@@ -52,11 +54,48 @@ namespace allpix {
         std::string get_string(const std::string &key) const;
         void set_string(const std::string &key, const std::string &val);
         
-        typedef std::map<std::string, std::string> config_t;
-        config_t config_;
+        using ConfigMap = std::map<std::string, std::string>;
+        ConfigMap config_;
         
         std::string name_;
     };
+    
+    template <typename T> T Configuration::get(const std::string &key) const{
+        return allpix::from_string<T>(config_.at(key));
+    }
+    template <typename T> T Configuration::get(const std::string &key, T def) const {
+        if(has(key)) return get<T>(key);
+        else return def;
+    }
+    
+    template <typename T> std::vector<T> Configuration::getArray(const std::string &key) const{
+        std::string str = config_.at(key);
+        return allpix::split<T>(str, " ,");
+    }
+    template <typename T> std::vector<T> Configuration::getArray(const std::string &key, std::vector<T> def) const{
+        if(has(key)) return getArray<T>(key);
+        else return def;
+    }
+    
+    template <typename T> void Configuration::set(const std::string &key, const T &val) {
+        config_[key] = val;
+    }
+    template <typename T> void Configuration::setArray(const std::string &key, const std::vector<T> &val) {
+        //NOTE: not the most elegant way to support arrays
+        std::string str;
+        for(auto &el : val){
+            str += " ";
+            str += val;
+        }
+        set(key, str);
+    }
+    
+    template <typename T> void Configuration::setDefault(const std::string &key, const T &val) {
+        if(!has(key)) set<T>(key, val);
+    }
+    template <typename T> void Configuration::setDefaultArray(const std::string &key, const std::vector<T> &val) {
+        if(!has(key)) setArray<T>(key, val);
+    }
 }
 
 #endif // ALLPIX_CONFIGURATION_H

@@ -20,9 +20,12 @@ StaticModuleManager::StaticModuleManager(GeneratorFunction func): generator_func
 void StaticModuleManager::load(AllPix *allpix){
     allpix_ = allpix;
     
+    Configuration conf("test");
+    conf.set("name", "a_random_name");
+    
     // instantiate a module by name
-    add_module("test1");
-    add_module("test2");
+    add_module("test1", conf);
+    add_module("test2", conf);
 }
 
 void StaticModuleManager::addToRunQueue(Module *mod){
@@ -46,11 +49,11 @@ void StaticModuleManager::finalize(){
     }
 }
 
-void StaticModuleManager::add_module(std::string name){
+void StaticModuleManager::add_module(std::string name, const Configuration& conf){
     std::unique_ptr<Module> mod = std::unique_ptr<Module>(generator_func_(name, allpix_));
     if(mod == nullptr){
         throw allpix::exception("Module cannot be instantiated");
     }
-    mod->init(Configuration(name));
+    mod->init(conf);
     modules_.push_back(std::move(mod));
 }

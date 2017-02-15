@@ -7,15 +7,22 @@
 
 #include <string>
 #include <sstream>
-#include <stdexcept>
-#include <iomanip>
 #include <vector>
+
+#include <iostream>
 
 namespace allpix {
     
     /** Trims the leading and trailing white space from a string
      */
-    inline std::string trim(const std::string &s);
+    inline std::string trim(const std::string &s, const std::string &delims = " \t\n\r\v"){
+        size_t b = s.find_first_not_of(delims);
+        size_t e = s.find_last_not_of(delims);
+        if (b == std::string::npos || e == std::string::npos) {
+            return "";
+        }
+        return std::string(s, b, e - b + 1);
+    }
     
     /** Converts a string to any type.
      * \param x The string to be converted.
@@ -25,36 +32,44 @@ namespace allpix {
      * \return An object of type T with the value represented in x, or if
      *         that is not valid then the value of def.
      */
-    template <typename T>
-    inline T from_string(const std::string &x, const T &def = 0) {
-        if (x == "")
-            return def;
-        T ret = def;
-        std::istringstream s(x);
-        s >> ret;
-        char remain = '\0';
-        s >> remain;
-        if (remain)
-            throw std::invalid_argument("Invalid argument: " + x);
+    
+    // FIXME: include exceptions better
+    template <typename T> T from_string(std::string str) {
+        str = trim(str);
+        if (str == "")
+            throw std::invalid_argument("String is empty");
+        
+        T ret;
+        std::istringstream stream(str);
+        stream >> ret;
+        
+        std::string tmp;
+        stream >> tmp;
+        if (!tmp.empty())
+            throw std::invalid_argument("Remaining data at end of '" + str + "'");
         return ret;
     }
     
     /** Splits string s into elements at delimiter "delim" and returns them as vector
      */
-    template <typename T>
-    std::vector<T> &split(const std::string &s, std::vector<T> &elems, char delim) {
+    template <typename T> std::vector<T> split(std::string str, const std::string &delims) {
+        str = trim(str, delims);
         
-        // If the input string is empty, simply return the default elements:
-        if (s.empty()) return elems;
+        // if the input string is empty, simply return empty container
+        if (str.empty()) return std::vector<T>();
         
-        // Else we have data, clear the default elements and chop the string:
-        elems.clear();
-        std::stringstream ss(s);
-        std::string item;
-        T def;
-        while (std::getline(ss, item, delim)) {
-            elems.push_back(from_string(item, def));
+        // else we have data, clear the default elements and chop the string:
+        std::vector<T> elems;
+        
+        std::size_t prev = 0, pos;
+        while ((pos = str.find_first_of(delims, prev)) != std::string::npos){
+            if (pos > prev)
+                elems.push_back(from_string<T>(str.substr(prev, pos-prev)));
+            prev = pos+1;
         }
+        if (prev < str.length())
+            elems.push_back(from_string<T>(str.substr(prev, std::string::npos)));
+        
         return elems;
     }
     
