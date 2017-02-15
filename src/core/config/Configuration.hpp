@@ -18,6 +18,8 @@ namespace allpix {
     class Configuration {
     public:
         //Constructor
+        // FIXME: we need a default constructor for temporary configuration objects, do we want this...
+        Configuration();
         Configuration(std::string name);
         
         // Has value
@@ -51,9 +53,6 @@ namespace allpix {
         void print() const;
                                     
     private:
-        std::string get_string(const std::string &key) const;
-        void set_string(const std::string &key, const std::string &val);
-        
         using ConfigMap = std::map<std::string, std::string>;
         ConfigMap config_;
         
@@ -78,7 +77,7 @@ namespace allpix {
     }
     
     template <typename T> void Configuration::set(const std::string &key, const T &val) {
-        config_[key] = val;
+        config_[key] = allpix::to_string(val);
     }
     template <typename T> void Configuration::setArray(const std::string &key, const std::vector<T> &val) {
         //NOTE: not the most elegant way to support arrays

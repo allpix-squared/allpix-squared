@@ -24,17 +24,17 @@ namespace allpix{
         ConfigManager &operator=(const ConfigManager&) = delete;
         
         // Check if configuration section exist
-        virtual bool hasConfiguration(std::string name) = 0;
-        virtual int countConfigurations(std::string name) = 0;
+        virtual bool hasConfiguration(std::string name) const = 0;
+        virtual int countConfigurations(std::string name) const = 0;
         
         // FIXME: do we want to have a special function for types where only a single instance make sense
         //Configuration getConfiguration(std::string name) = 0;
         
         // Return configuration sections by name
-        virtual std::vector<Configuration> getConfigurations(std::string name) = 0;
+        virtual std::vector<Configuration> getConfigurations(std::string name) const = 0;
         
         // Return all configurations with their name
-        virtual std::vector<std::pair<std::string, Configuration > > getConfigurations() = 0;
+        virtual std::vector<Configuration> getConfigurations() const = 0;
     };
 }
 

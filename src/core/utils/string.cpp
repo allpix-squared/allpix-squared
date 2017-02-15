@@ -5,4 +5,3 @@
 #include "string.h"
 
 using namespace allpix;
-

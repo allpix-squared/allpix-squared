@@ -43,16 +43,18 @@ public:
     }
     
     void init(Configuration conf){
-        conf.setDefault("name", "standard_name");
-        LOG(DEBUG) << "(1) init first module " << conf.get<std::string>("name");
+        conf.setDefault("name", "standard_one_name");
+        conf.setDefault("message", "standard_message");
+        LOG(DEBUG) << "(1) init and add to run queue for module " << conf.get<std::string>("name");
         
+        conf_ = conf;
         getModuleManager()->addToRunQueue(this);
     }
     
     void run(){
         LOG(DEBUG) << "(1) running first module";
         TestMessageTwo test;
-        test.setText("hello from module 1");
+        test.setText(conf_.get<std::string>("message"));
         
         getMessenger()->dispatchMessage("test", test);
     }
@@ -60,6 +62,8 @@ public:
     void finalize(){
         LOG(DEBUG) << "(1) this is the end of module 1";
     }
+private:
+    Configuration conf_;
 };
 
 const std::string TestModuleOne::name = "test1";
@@ -70,13 +74,16 @@ public:
     
     TestModuleTwo(AllPix *apx): Module(apx) {}
     
-    void init(Configuration){
-        LOG(DEBUG) << "(2) init registering listeners for module 2";
+    void init(Configuration conf){
+        conf_ = conf;
+        conf_.setDefault("name", "standard_two_name");
+        LOG(DEBUG) << "(2) init registering listeners for module " << conf_.get<std::string>("name");
         
         getMessenger()->registerListener(this, &TestModuleTwo::receive, "test");
     }
     
     void receive(TestMessageTwo msg){
+        messages_.push_back(msg.getText());
         LOG(DEBUG) << "(2) received a message: " << msg.getText();
         LOG(DEBUG) << "    add to run queue ";
         
@@ -88,12 +95,20 @@ public:
     }
     
     void run(){
-        LOG(DEBUG) << "(2) running";
+        IFLOG(DEBUG) {
+            std::string str = "";
+            for(auto &msg : messages_) str += msg+", ";
+            if(!str.empty()) str = str.substr(0, str.size()-2);
+            LOG(DEBUG) << " (2) running second module with message " << str;
+        }
     }
     
     void finalize(){
         LOG(DEBUG) << "(2) finished";
     }
+private:
+    std::vector<std::string> messages_;
+    Configuration conf_;
 };
 
 const std::string TestModuleTwo::name = "test2";

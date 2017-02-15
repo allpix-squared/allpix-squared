@@ -10,6 +10,7 @@
 #include "../config/Configuration.hpp"
 #include "../AllPix.hpp"
 #include "../utils/exceptions.h"
+#include "../utils/log.h"
 
 using namespace allpix;
 
@@ -18,14 +19,27 @@ StaticModuleManager::StaticModuleManager(GeneratorFunction func): generator_func
 }
 
 void StaticModuleManager::load(AllPix *allpix){
-    allpix_ = allpix;
+    //get our copy to AllPix
+    apx_ = allpix;
+
+    //get configurations
+    std::vector<Configuration> configs = apx_->getConfigManager()->getConfigurations();
     
-    Configuration conf("test");
-    conf.set("name", "a_random_name");
+    //NOTE: could add all config parameters from the empty to all configs (if it does not yet exist)    
+    for(auto &conf : configs){
+        //ignore the empty config
+        if(conf.getName().empty()) continue;
+        
+        //instantiate an instance for each name
+        add_module(conf.getName(), conf);
+    }
     
-    // instantiate a module by name
+    //Configuration conf("test");
+    //conf.set("name", std::string("a_random_name"));
+    
+    /*// instantiate a module by name
     add_module("test1", conf);
-    add_module("test2", conf);
+    add_module("test2", conf);*/
 }
 
 void StaticModuleManager::addToRunQueue(Module *mod){
@@ -50,7 +64,9 @@ void StaticModuleManager::finalize(){
 }
 
 void StaticModuleManager::add_module(std::string name, const Configuration& conf){
-    std::unique_ptr<Module> mod = std::unique_ptr<Module>(generator_func_(name, allpix_));
+    LOG(DEBUG) << "adding module instance of name " << name;
+    
+    std::unique_ptr<Module> mod = std::unique_ptr<Module>(generator_func_(name, apx_));
     if(mod == nullptr){
         throw allpix::exception("Module cannot be instantiated");
     }

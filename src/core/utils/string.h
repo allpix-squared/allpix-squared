@@ -49,6 +49,20 @@ namespace allpix {
             throw std::invalid_argument("Remaining data at end of '" + str + "'");
         return ret;
     }
+    template <typename T> std::string to_string(T inp) {
+        return std::to_string(inp);
+    }
+    //NOTE: we have to provide all these specializations to prevent std::to_string from being called
+    //      there may be a better way to work with this
+    inline std::string to_string(std::string inp) {
+        return inp;
+    }
+    inline std::string to_string(const char *inp) {
+        return inp;
+    }
+    inline std::string to_string(char *inp) {
+        return inp;
+    }
     
     /** Splits string s into elements at delimiter "delim" and returns them as vector
      */

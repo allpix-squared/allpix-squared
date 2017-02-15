@@ -44,7 +44,7 @@ namespace allpix{
         
         GeneratorFunction generator_func_;
         
-        AllPix *allpix_;
+        AllPix *apx_;
     };
 }
 

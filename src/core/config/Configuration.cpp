@@ -13,6 +13,8 @@
 
 using namespace allpix;
 
+Configuration::Configuration(): name_("") {}
+
 Configuration::Configuration(std::string name): name_(name) {}
     
 bool Configuration::has(const std::string &key) const{
@@ -31,17 +33,4 @@ void Configuration::print(std::ostream &out) const {
 
 void Configuration::print() const { 
     print(std::cout); 
-}
-
-std::string Configuration::get_string(const std::string &key) const {
-    ConfigMap::const_iterator iter = config_.find(key);
-    if (iter != config_.end()) {
-        return iter->second;
-    }
-    throw allpix::exception("Configuration: key not found");
-}
-
-void Configuration::set_string(const std::string &key,
-                            const std::string &val) {
-    config_[key] = val;
 }
