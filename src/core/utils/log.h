@@ -179,9 +179,9 @@ namespace allpix {
             
 #define __FILE_NAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
     
-//#define IFLOG(level) 
-//    if (level > allpix::Log::ReportingLevel() || !allpix::SetLogOutput::Stream()) ; 
-//    else 
+#define IFLOG(level) \
+    if (level > allpix::Log::ReportingLevel() || !allpix::SetLogOutput::Stream()) ; \
+    else 
             
 #define LOG(level) \
     if (LogLevel::level > allpix::Log::getReportingLevel() || allpix::Log::getStreams().empty()) ; \
