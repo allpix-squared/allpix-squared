@@ -25,12 +25,15 @@ namespace allpix {
         // Has value
         bool has(const std::string &key) const;
         
-        // Get members
+        // Get members (FIXME: default constant?)
         template <typename T> T get(const std::string &key) const;
         template <typename T> T get(const std::string &key, T def) const;
         // FIXME: also specialize this for other container types (and use same structure as above)
         template <typename T> std::vector<T> getArray(const std::string &key) const;
         template <typename T> std::vector<T> getArray(const std::string &key, std::vector<T> def) const;
+        // FIXME: better name for not parsed
+        std::string getText(const std::string &key) const;
+        std::string getText(const std::string &key, const std::string def) const;
         
         // Set members
         // NOTE: see FIXME above

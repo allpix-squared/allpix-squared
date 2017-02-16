@@ -33,7 +33,7 @@ void StaticModuleManager::load(AllPix *allpix){
         //instantiate an instance for each name
         std::unique_ptr<ModuleFactory> factory = get_factory(conf.getName());
         factory->setAllPix(apx_);
-        //factory->setConfiguration(conf);
+        factory->setConfiguration(conf);
         std::vector<std::unique_ptr<Module> > mod_list = factory->create();
         
         for(auto &mod : mod_list){

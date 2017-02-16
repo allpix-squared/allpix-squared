@@ -109,9 +109,9 @@ void SimpleConfigManager::build_config(std::istream &stream) {
             // FIXME: handle lines like: blah = "foo said ""bar""; # ok." # not "baz"
             // FIXME: this will break for arrays like "foor bar" "baz" which should parse as ["foo bar", "baz"] of course
             std::string value = trim(std::string(line, equals_pos + 1));
-            if ((line[0] == '\'' && line[line.length() - 1] == '\'') ||
-                (line[0] == '\"' && line[line.length() - 1] == '\"')) {
-                line = std::string(line, 1, line.length() - 2);
+            if ((value[0] == '\'' && value[value.length() - 1] == '\'') ||
+                (value[0] == '\"' && value[value.length() - 1] == '\"')) {
+                value = std::string(value, 1, value.length() - 2);
             } else {
                 size_t i = value.find_first_of(";#");
                 if (i != std::string::npos)

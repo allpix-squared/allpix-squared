@@ -3,6 +3,7 @@
 #include "../core/utils/log.h"
 
 #include "../core/module/SingleModuleFactory.hpp"
+#include "../core/module/DetectorModuleFactory.hpp"
 
 using namespace allpix;
 
@@ -45,9 +46,9 @@ public:
     }
     
     void init(Configuration conf){
-        conf.setDefault("name", "standard_one_name");
+        //conf.setDefault("test", "standard_one_name");
         conf.setDefault("message", "standard_message");
-        LOG(DEBUG) << "(1) init and add to run queue for module " << conf.get<std::string>("name");
+        LOG(DEBUG) << "(1) init and add to run queue for module " << conf_.getText("name", "<none>");
         
         conf_ = conf;
         getModuleManager()->addToRunQueue(this);
@@ -78,8 +79,8 @@ public:
     
     void init(Configuration conf){
         conf_ = conf;
-        conf_.setDefault("name", "standard_two_name");
-        LOG(DEBUG) << "(2) init registering listeners for module " << conf_.get<std::string>("name");
+        conf_.setDefault("test", "standard_two_name");
+        LOG(DEBUG) << "(2) init registering listeners for module " << conf_.getText("name", "<none>");
         
         getMessenger()->registerListener(this, &TestModuleTwo::receive);
     }
@@ -116,7 +117,7 @@ private:
 const std::string TestModuleTwo::name = "test2";
 
 std::unique_ptr<ModuleFactory> generator(std::string str){
-    if(str == TestModuleOne::name) return std::make_unique<SingleModuleFactory<TestModuleOne>>();
+    if(str == TestModuleOne::name) return std::make_unique<DetectorModuleFactory<TestModuleOne>>();
     if(str == TestModuleTwo::name) return std::make_unique<SingleModuleFactory<TestModuleTwo>>();
     return nullptr;
 }

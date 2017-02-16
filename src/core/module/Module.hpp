@@ -10,6 +10,8 @@
 
 #include "../config/Configuration.hpp"
 
+#include "../geometry/Detector.hpp"
+
 namespace allpix{
 
     class AllPix;
@@ -39,6 +41,14 @@ namespace allpix{
         // Modules should have a unique name (for configuration)
         // TODO: depends on implementation how this should work with dynamic loading
         virtual std::string getName() = 0;
+        
+        // FIXME: handle by string or directly pass detectors?
+        virtual void setDetector(Detector det){
+            _detector = det;
+        }
+        virtual Detector getDetector(){
+            return _detector;
+        }
     
         // Get access to several services
         // FIXME: use smart pointers here
@@ -62,6 +72,9 @@ namespace allpix{
         
     private:
         AllPix *allpix_;
+        
+        // FIXME: see above
+        Detector _detector;
     };
 }
 

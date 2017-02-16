@@ -15,6 +15,7 @@ namespace allpix{
     class Detector{
     public:
         // Constructor and destructors
+        Detector () {} //FIXME: remove this constructor?
         Detector(std::string name, std::string type);
         ~Detector() {}
         
