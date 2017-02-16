@@ -31,7 +31,21 @@ void StaticModuleManager::load(AllPix *allpix){
         if(conf.getName().empty()) continue;
         
         //instantiate an instance for each name
-        add_module(conf.getName(), conf);
+        std::unique_ptr<ModuleFactory> factory = get_factory(conf.getName());
+        factory->setAllPix(apx_);
+        //factory->setConfiguration(conf);
+        std::vector<std::unique_ptr<Module> > mod_list = factory->create();
+        
+        for(auto &mod : mod_list){
+            mod->init(conf);
+        }
+        
+        //move the module pointers to the module list
+        std::move(mod_list.begin(), mod_list.end(), std::back_inserter(modules_));  // ##
+        mod_list.clear();
+        
+        //FIXME: config should be passed earlier
+        //modules_.back()->init(conf);
     }
     
     //Configuration conf("test");
@@ -63,7 +77,15 @@ void StaticModuleManager::finalize(){
     }
 }
 
-void StaticModuleManager::add_module(std::string name, const Configuration& conf){
+std::unique_ptr<ModuleFactory> StaticModuleManager::get_factory(std::string name){
+    std::unique_ptr<ModuleFactory> mod = generator_func_(name);
+    if(mod == nullptr){
+        throw allpix::exception("Module cannot be instantiated");
+    }
+    return mod;
+}
+
+/*void StaticModuleManager::add_module(std::string name, const Configuration& conf){
     LOG(DEBUG) << "adding module instance of name " << name;
     
     std::unique_ptr<Module> mod = std::unique_ptr<Module>(generator_func_(name, apx_));
@@ -72,4 +94,4 @@ void StaticModuleManager::add_module(std::string name, const Configuration& conf
     }
     mod->init(conf);
     modules_.push_back(std::move(mod));
-}
+}*/

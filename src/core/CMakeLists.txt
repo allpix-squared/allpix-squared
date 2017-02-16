@@ -14,6 +14,8 @@ ADD_LIBRARY(allpixcore SHARED
     utils/string.cpp
     module/Module.cpp
     module/StaticModuleManager.cpp
+    module/ModuleFactory.cpp
+    module/SingleModuleFactory.cpp
     messenger/Messenger.cpp
     config/Configuration.cpp
     config/SimpleConfigManager.cpp

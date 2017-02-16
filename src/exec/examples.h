@@ -2,6 +2,8 @@
 
 #include "../core/utils/log.h"
 
+#include "../core/module/SingleModuleFactory.hpp"
+
 using namespace allpix;
 
 class TestMessageOne : public Message{
@@ -113,8 +115,8 @@ private:
 
 const std::string TestModuleTwo::name = "test2";
 
-Module *generator(std::string str, AllPix *allpix){
-    if(str == TestModuleOne::name) return new TestModuleOne(allpix);
-    if(str == TestModuleTwo::name) return new TestModuleTwo(allpix);
+std::unique_ptr<ModuleFactory> generator(std::string str){
+    if(str == TestModuleOne::name) return std::make_unique<SingleModuleFactory<TestModuleOne>>();
+    if(str == TestModuleTwo::name) return std::make_unique<SingleModuleFactory<TestModuleTwo>>();
     return nullptr;
 }

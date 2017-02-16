@@ -12,6 +12,7 @@
 
 #include "Module.hpp"
 #include "ModuleManager.hpp"
+#include "ModuleFactory.hpp"
 
 namespace allpix{
 
@@ -19,7 +20,7 @@ namespace allpix{
     
     class StaticModuleManager : public ModuleManager{
     public:
-        using GeneratorFunction = std::function<Module*(std::string, AllPix*)>;
+        using GeneratorFunction = std::function<std::unique_ptr<ModuleFactory>(std::string)>;
         
         // Constructor and destructors
         StaticModuleManager(GeneratorFunction);
@@ -37,7 +38,7 @@ namespace allpix{
         // Finalize and check if every module did what it should do
         void finalize();
     private:
-        void add_module(std::string name, const Configuration&);
+        std::unique_ptr<ModuleFactory> get_factory(std::string name);
         
         std::vector<std::unique_ptr<Module>> modules_;
         std::queue<Module*> run_queue_;
