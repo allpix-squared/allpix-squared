@@ -27,13 +27,13 @@ namespace allpix {
         
         // Get members (FIXME: default constant?)
         template <typename T> T get(const std::string &key) const;
-        template <typename T> T get(const std::string &key, T def) const;
+        template <typename T> T get(const std::string &key, const T &def) const;
         // FIXME: also specialize this for other container types (and use same structure as above)
         template <typename T> std::vector<T> getArray(const std::string &key) const;
-        template <typename T> std::vector<T> getArray(const std::string &key, std::vector<T> def) const;
+        template <typename T> std::vector<T> getArray(const std::string &key, const std::vector<T> &def) const;
         // FIXME: better name for not parsed
         std::string getText(const std::string &key) const;
-        std::string getText(const std::string &key, const std::string def) const;
+        std::string getText(const std::string &key, const std::string &def) const;
         
         // Set members
         // NOTE: see FIXME above
@@ -65,7 +65,7 @@ namespace allpix {
     template <typename T> T Configuration::get(const std::string &key) const{
         return allpix::from_string<T>(config_.at(key));
     }
-    template <typename T> T Configuration::get(const std::string &key, T def) const {
+    template <typename T> T Configuration::get(const std::string &key, const T &def) const {
         if(has(key)) return get<T>(key);
         else return def;
     }
@@ -74,7 +74,7 @@ namespace allpix {
         std::string str = config_.at(key);
         return allpix::split<T>(str, " ,");
     }
-    template <typename T> std::vector<T> Configuration::getArray(const std::string &key, std::vector<T> def) const{
+    template <typename T> std::vector<T> Configuration::getArray(const std::string &key, const std::vector<T> &def) const{
         if(has(key)) return getArray<T>(key);
         else return def;
     }
