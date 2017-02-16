@@ -12,6 +12,9 @@
 
 #include "../core/config/SimpleConfigManager.hpp"
 
+#include "../core/geometry/Detector.hpp"
+#include "../core/geometry/DefaultGeometryManager.hpp"
+
 #include "../core/utils/exceptions.h"
 #include "../core/utils/log.h"
 
@@ -30,7 +33,7 @@ int main(int, const char **) {
         LOG(INFO) << "Set log level: " << Log::getStringFromLevel(log_level);
                 
         std::unique_ptr<Messenger> msg = std::make_unique<Messenger>();
-        std::unique_ptr<GeometryManager> geo = nullptr;
+        std::unique_ptr<DefaultGeometryManager> geo = std::make_unique<DefaultGeometryManager>();
         std::unique_ptr<StaticModuleManager> mod = std::make_unique<StaticModuleManager>(&generator);
         std::unique_ptr<SimpleConfigManager> conf = std::make_unique<SimpleConfigManager>(file_name);
         
@@ -40,6 +43,14 @@ int main(int, const char **) {
             config.print();
             std::cout << std::endl;
         }*/
+        
+        Detector det1("name1", "type1");
+        Detector det2("name2", "type1");
+        Detector det3("name3", "type2");
+        
+        geo->addDetector(det1);
+        geo->addDetector(det2);
+        geo->addDetector(det3);
         
         std::unique_ptr<AllPix> apx = std::make_unique<AllPix>(std::move(conf), std::move(mod), std::move(msg), std::move(geo));
         
