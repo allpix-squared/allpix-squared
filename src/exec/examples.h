@@ -52,6 +52,7 @@ public:
         
         conf_ = conf;
         getModuleManager()->addToRunQueue(this);
+        //getConfig().get()
     }
     
     void run(){
@@ -59,7 +60,7 @@ public:
         TestMessageTwo test;
         test.setText(conf_.get<std::string>("message"));
         
-        getMessenger()->dispatchMessage(test, "random_name");
+        getMessenger()->dispatchMessage(test, conf_.get<std::string>("input"));
     }
     
     void finalize(){

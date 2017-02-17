@@ -1,7 +1,7 @@
 SET(CMAKE_CXX_FLAGS "-g -Wall -Wextra -pedantic ${CMAKE_CXX_FLAGS}")
 
 ADD_EXECUTABLE(allpix allpix.cpp)
-TARGET_LINK_LIBRARIES(allpix allpixcore)
+TARGET_LINK_LIBRARIES(allpix AllpixCore)
 
 INSTALL(TARGETS allpix
   RUNTIME DESTINATION bin

@@ -61,7 +61,7 @@ int main(int, const char **) {
         LOG(INFO) << "Finishing AllPix";
         apx->finalize();
         
-    } catch(allpix::exception &e) { 
+    } catch(Exception &e) { 
         LOG(CRITICAL) << e.what(); 
     }
         

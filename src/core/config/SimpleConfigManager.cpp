@@ -16,7 +16,7 @@ void SimpleConfigManager::addFile(std::string file_name) {
     file_names_.push_back(file_name);
     std::ifstream file(file_name);
     if(!file){
-        throw allpix::exception("Config file cannot be read");
+        throw allpix::Exception("Config file cannot be read");
     }
     build_config(file);
 }
@@ -102,7 +102,7 @@ void SimpleConfigManager::build_config(std::istream &stream) {
                 conf = Configuration(section_name);
             } else {
                 // FIXME: should be a bit more helpful of course...
-                throw allpix::exception("Parse error: not a section header, comment or value");
+                throw allpix::Exception("Parse error: not a section header, comment or value");
             }
         } else {
             std::string key = trim(std::string(line, 0, equals_pos));
