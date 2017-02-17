@@ -9,7 +9,7 @@
 
 SET(CMAKE_CXX_FLAGS "-g -Wall -Wextra -pedantic ${CMAKE_CXX_FLAGS}")
 
-ADD_LIBRARY(allpixcore SHARED
+ADD_LIBRARY(AllpixCore SHARED
     utils/log.cpp
     utils/string.cpp
     module/Module.cpp
@@ -23,6 +23,6 @@ ADD_LIBRARY(allpixcore SHARED
     AllPix.cpp
 )
 
-INSTALL(TARGETS allpixcore
+INSTALL(TARGETS AllpixCore
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib)

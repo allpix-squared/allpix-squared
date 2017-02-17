@@ -1,3 +1,5 @@
+![](doc/logo_small.png)
+
 # allpix<sup>2</sup>
 
 Generic simulation for pixel detectors.

@@ -1,0 +1,9 @@
+SET(CMAKE_CXX_FLAGS "-g -Wall -Wextra -pedantic ${CMAKE_CXX_FLAGS}")
+
+ADD_LIBRARY(AllpixMessages SHARED
+  
+)
+
+INSTALL(TARGETS AllpixMessages
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib)
