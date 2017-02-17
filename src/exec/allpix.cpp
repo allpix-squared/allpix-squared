@@ -61,8 +61,22 @@ int main(int, const char **) {
         LOG(INFO) << "Finishing AllPix";
         apx->finalize();
         
-    } catch(Exception &e) { 
-        LOG(CRITICAL) << e.what(); 
+    } catch (ConfigurationError &e) {
+        LOG(CRITICAL) << "Error in the configuration file:";
+        LOG(CRITICAL) << "   " << e.what(); 
+        LOG(CRITICAL) << "The configuration file needs to be updated! Cannot continue...";
+    } catch (RuntimeError &e) {
+        LOG(CRITICAL) << "Error during execution of run:";
+        LOG(CRITICAL) << "   " << e.what(); 
+        LOG(CRITICAL) << "Please check your configuration and modules! Cannot continue...";
+    } catch (LogicError &e) {
+        LOG(CRITICAL) << "Error in the logic of module:";
+        LOG(CRITICAL) << "   " << e.what(); 
+        LOG(CRITICAL) << "Module has to be properly defined! Cannot continue...";
+    } catch(std::exception &e) { 
+        LOG(CRITICAL) << "Fatal internal error";
+        LOG(CRITICAL) << "   " << e.what(); 
+        LOG(CRITICAL) << "Cannot continue...";
     }
         
     return 0;

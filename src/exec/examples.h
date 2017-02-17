@@ -60,7 +60,7 @@ public:
         TestMessageTwo test;
         test.setText(conf_.get<std::string>("message"));
         
-        getMessenger()->dispatchMessage(test, conf_.get<std::string>("input"));
+        getMessenger()->dispatchMessage(test);
     }
     
     void finalize(){

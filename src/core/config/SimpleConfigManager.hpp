@@ -47,7 +47,7 @@ namespace allpix{
         std::map<std::string, std::vector<Configuration> > conf_map_;
         std::vector<std::string> file_names_;
         
-        void build_config(std::istream&);
+        void build_config(std::istream&, std::string file_name = "<none>");
     };
 }
 

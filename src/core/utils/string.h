@@ -8,7 +8,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
-
+#include <stdexcept>
 #include <iostream>
 
 namespace allpix {
@@ -37,7 +37,7 @@ namespace allpix {
     template <typename T> T from_string(std::string str) {
         str = trim(str);
         if (str == "")
-            throw std::invalid_argument("String is empty");
+            throw std::invalid_argument("string is empty");
         
         T ret;
         std::istringstream stream(str);
@@ -46,7 +46,7 @@ namespace allpix {
         std::string tmp;
         stream >> tmp;
         if (!tmp.empty())
-            throw std::invalid_argument("Remaining data at end of '" + str + "'");
+            throw std::invalid_argument("remaining data at end");
         return ret;
     }
     template <typename T> std::string to_string(T inp) {

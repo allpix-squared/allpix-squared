@@ -81,7 +81,7 @@ void StaticModuleManager::finalize(){
 std::unique_ptr<ModuleFactory> StaticModuleManager::get_factory(std::string name){
     std::unique_ptr<ModuleFactory> mod = generator_func_(name);
     if(mod == nullptr){
-        throw allpix::Exception("Module cannot be instantiated");
+        throw InstantiationError(name);
     }
     return mod;
 }

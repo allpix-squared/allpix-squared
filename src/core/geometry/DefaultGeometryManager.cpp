@@ -28,12 +28,14 @@ Detector DefaultGeometryManager::getDetector(std::string name) const{
     for(auto &detector : detectors_){
         if(detector.getName() == name) return detector;
     }
-    throw allpix::Exception("No detector with name " + name);
+    throw allpix::InvalidDetectorError("name", name);
 }
 std::vector<Detector> DefaultGeometryManager::getDetectorsByType(std::string type) const{
     std::vector<Detector> result;
     for(auto &detector : detectors_){
         if(detector.getType() == type) result.push_back(detector);
     }
+    if(result.empty()) throw allpix::InvalidDetectorError("type", type);
+
     return result;
 }

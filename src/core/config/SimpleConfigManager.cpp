@@ -16,9 +16,9 @@ void SimpleConfigManager::addFile(std::string file_name) {
     file_names_.push_back(file_name);
     std::ifstream file(file_name);
     if(!file){
-        throw allpix::Exception("Config file cannot be read");
+        throw allpix::ConfigFileUnavailableError(file_name);
     }
-    build_config(file);
+    build_config(file, file_name);
 }
 
 // remove all files and clear the config
@@ -73,15 +73,17 @@ std::vector<Configuration> SimpleConfigManager::getConfigurations() const {
 }
 
 // construct the config from an input stream
-void SimpleConfigManager::build_config(std::istream &stream) {
+void SimpleConfigManager::build_config(std::istream &stream, std::string file_name) {
     std::string section_name = "";
     Configuration conf(section_name);
     
+    int line_num = 0;
     while(true) {
         // process config line by line
         std::string line;
         if (stream.eof()) break;
         std::getline(stream, line);
+        ++line_num;
                 
         // find equal sign
         size_t equals_pos = line.find('=');
@@ -102,7 +104,7 @@ void SimpleConfigManager::build_config(std::istream &stream) {
                 conf = Configuration(section_name);
             } else {
                 // FIXME: should be a bit more helpful of course...
-                throw allpix::Exception("Parse error: not a section header, comment or value");
+                throw ConfigParseError(file_name, line_num);
             }
         } else {
             std::string key = trim(std::string(line, 0, equals_pos));

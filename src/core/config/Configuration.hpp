@@ -12,6 +12,7 @@
 #include <map>
 
 #include "../utils/string.h"
+#include "../utils/exceptions.h"
 
 namespace allpix {
     
@@ -63,7 +64,13 @@ namespace allpix {
     };
     
     template <typename T> T Configuration::get(const std::string &key) const{
-        return allpix::from_string<T>(config_.at(key));
+        try{
+            return allpix::from_string<T>(config_.at(key));
+        }catch(std::out_of_range &e){
+            throw MissingKeyError(key, getName());
+        }catch(std::invalid_argument &e){
+            throw InvalidKeyError(key, getName(), config_.at(key), typeid(T), e.what());
+        }
     }
     template <typename T> T Configuration::get(const std::string &key, const T &def) const {
         if(has(key)) return get<T>(key);
@@ -71,8 +78,14 @@ namespace allpix {
     }
     
     template <typename T> std::vector<T> Configuration::getArray(const std::string &key) const{
-        std::string str = config_.at(key);
-        return allpix::split<T>(str, " ,");
+        try{
+            std::string str = config_.at(key);
+            return allpix::split<T>(str, " ,");
+        }catch(std::out_of_range &e){
+            throw MissingKeyError(key, getName());
+        }catch(std::invalid_argument &e){
+            throw InvalidKeyError(key, getName(), config_.at(key), typeid(T), e.what());
+        }
     }
     template <typename T> std::vector<T> Configuration::getArray(const std::string &key, const std::vector<T> &def) const{
         if(has(key)) return getArray<T>(key);

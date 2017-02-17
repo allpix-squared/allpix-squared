@@ -10,88 +10,138 @@
 #include <exception>
 #include <string>
 #include <typeinfo>
+#include <iostream>
+
+//FIXME: move some exceptions to a more appropriate place
 
 namespace allpix {
+    //NOTE: assert are used inside the framework if an internal error should never occur
+    
+    /** 
+     * Base class for all exceptions thrown by the allpix framework.
+     */
+    class Exception : public std::exception {
+    public:
+        Exception(): error_message_("Unspecified error") {}
+        Exception(const std::string& what_arg) : std::exception(), error_message_(what_arg) {}
+        virtual const char* what() const throw(){
+            return error_message_.c_str();
+        };
+    protected:
+        std::string error_message_;
+    };
+    
+    
+    /* 
+     * Base class for all configuration related errors
+     */
+    class ConfigurationError : public Exception {};
 
-  /** 
-   * Base class for all exceptions thrown by the allpix framework.
-   */
-  class Exception : public std::exception {
-  public:
-      Exception(): error_message_("Unspecified error") {}
-      Exception(const std::string& what_arg) : std::exception(), error_message_(what_arg) {}
-      ~Exception() throw() {}
-      virtual const char* what() const throw(){
-          return error_message_.c_str();
-      };
-  private:
-      std::string error_message_;
-  };
-  
-  
-  /* 
-   * Base class for all configuration related errors
-   */
-  class ConfigurationError : public Exception {};
-  
-  class InvalidKeyError : public ConfigurationError {
-  public:
-      InvalidKeyError(const std::string&key, const std::string &value, const std::type_info &type): key_(key), value_(value), type_(type.name()) {};
-      ~InvalidKeyError() throw() {}
-      virtual const char* what() const throw(){
-          std::string msg = "Could not convert value '"+value_+"' of key '"+key_+"' to type "+type_;
-          return msg.c_str();
-      };
-  private:
-      std::string key_;
-      std::string value_;
-      std::string type_;
-  };
-  
-  class ConfigParseError : public ConfigurationError{
-  public:
-      ConfigParseError(std::string &line, int line_num);
-      ~ConfigParseError() throw() {}
-      /*virtual const char* what() const throw(){
-          return error_message_.c_str();
-      };*/
-  private:
-  };
-  
-  class MissingKeyError : public ConfigurationError{
-  public:
-      MissingKeyError(const std::string&key);
-      ~MissingKeyError() throw() {}
-      /*virtual const char* what() const throw(){
-          return error_message_.c_str();
-      };*/
-  private:
-  };
-  
-  // errors config users can trigger (should always come from our exceptions)
-  /**
-  
-  class ConfigurationError : public exception or runtime_error; // all config errors
-  class InvalidKeyError : ConfigurationError
-  class ConfigParseError : ConfigurationError
-  class MissingKeyError : ConfigurationError
-  
-  class InvalidConfigurationException : public ConfigurationException //out of range parameters , missing parameters , inconsistent configuration
-  
-  class InstantiationError: public runtime_error // errors with instantiation (NOTE: never thrown by the module itself, factory is allowed)
-  class UnexpectedFinalizeException  : public runtime_error //if a module should have run but it did not (WARNING: can both be a config or module error)
-  class UnexpectedMessageException : public runtime_error // if a module receives a message more times than expected (or a message is called that has no receivers but should)
-  
-  // errors the module developers (or we can trigger) mostly logic errors
-  // std::logic_error out_of_range etc if applicable internally if the user can call the method
-  class InvalidModuleStateException or UnexpectedModuleBehaviourException : public exception or logic_error // if we detect that messages are dispatched outside the run function
-  class InvalidModuleActionException : public exception or logic_error // if a module execute an action it should not (could be useful to declare beforehand which actions it should do or is this included in the previous one)
-  class InvalidModuleException ??? : // more general exception if module misbehaves
-  
-  // assert if only the internal runtime can trigger it and it should never happen (like dispatching the message linked to a typeid)
-  
-  **/
-  
+    /* 
+     * Error if a config file could not be read 
+     */
+    class ConfigFileUnavailableError : public ConfigurationError{
+    public:
+        ConfigFileUnavailableError(std::string &file) {
+            error_message_ = "Could not read file "+file+" (does it exists?)";
+        }
+    };
+    
+    // invalid key in the configuration
+    class InvalidKeyError : public ConfigurationError {
+    public:
+        InvalidKeyError(const std::string&key, const std::string &section, const std::string &value, const std::type_info &type, const std::string &reason) {
+            error_message_ = "Could not convert value '"+value+"' of key '"+key+"' in section '"+section+"' to type "+type.name();
+            if(!reason.empty()) error_message_ += ": "+reason;
+        }
+        InvalidKeyError(const std::string&key, const std::string &section, const std::string &value, const std::type_info &type): 
+            //key_(key), section_(section), value_(value), type_(type.name()) {};
+            InvalidKeyError(key, section, value, type, "") {}
+    };
+    
+    // missing key in the configuration
+    class MissingKeyError : public ConfigurationError{
+    public:
+        MissingKeyError(const std::string&key, const std::string &section) {
+            error_message_ = "Key '"+key+"' in section '"+section+"' does not exist";
+        }
+    };
+    
+    // parse error in the configuration
+    class ConfigParseError : public ConfigurationError{
+    public:
+        ConfigParseError(std::string &file, int line_num) {
+            error_message_ = "Could not parse line ";
+            error_message_ += std::to_string(line_num);
+            error_message_ += " in file '"+file+"'";
+            error_message_ += ": not a section header, key/value pair or comment";
+        }
+    };
+    
+    /* 
+     * Errors related to problems at runtime
+     */
+    class RuntimeError : public Exception {};
+    
+    /* 
+     * Errors related to instantiation of modules
+     * FIXME: possibly an inheritance level can be added here
+     * 
+     * NOTE: never thrown by the module itself, only by the core or the factories
+     */
+    class InstantiationError : public RuntimeError {
+    public:
+        InstantiationError(std::string &module) {
+            //FIXME: add detectory and input output instance here
+            error_message_ = "Could not instantiate a module of type "+module;
+        }
+    };
+    
+    /*
+     * Errors related to module unexpected finalization before a module has run
+     * WARNING: can both be a config or logic error
+     */
+    class UnexpectedFinalizeException: public RuntimeError {
+        UnexpectedFinalizeException(std::string &module) {
+            //FIXME: add detectory and input output instance here
+            error_message_ = "Module of type "+module+" reached finalization unexpectedly (are all required messages sent?)";
+        }
+    };
+    
+    /*
+     * Receive of a message that a module did not expect (only one message) or if a message is sent out without receivers (NOTE: not always a problem)
+     */
+    class UnexpectedMessageException: public RuntimeError {
+        UnexpectedMessageException(std::string &module, std::type_info &message) {
+            //FIXME: add detectory and input output instance here
+            error_message_ = "Unexpected receive of message ";
+            error_message_ += message.name();
+            error_message_ += " by module "+module+" (are multiple modules providing the same output?)";
+        }
+    };
+    
+    /*
+     * Errors related to detectors that do not exist
+     * 
+     * FIXME: specialize and generalize these errors?
+     */
+    class InvalidDetectorError : public RuntimeError {
+    public:
+        InvalidDetectorError(std::string category, std::string &detector) {
+            error_message_ = "Could not find a detector with "+category+" '"+detector+"'";
+        }
+    };
+    
+    /* 
+     * Errors related to incorrect setup of a module (against the rules)
+     */
+    class LogicError : public Exception {} ;
+    
+    // FIXME: implement this later (possibly both can be merged into one error)
+    
+    // detect if module is in a wrong state (for example dispatching a message outside the run method run by the module manager)
+    class InvalidModuleStateException : public LogicError {};
+    class InvalidModuleActionException : public LogicError {};
 } //namespace allpix
 
 #endif /* ALLPIX_EXCEPTIONS_H */
