@@ -18,12 +18,37 @@
 #include "../core/utils/exceptions.h"
 #include "../core/utils/log.h"
 
+#include "../tools/runge_kutta.h"
+
 #include "examples.h"
 
 using namespace allpix;
 
+Eigen::Vector3d function(double time, Eigen::Vector3d pos){
+    return time*pos; //Eigen::Vector3d::Zero();
+}
+
 int main(int, const char **) {
     std::string file_name = "etc/example.ini";
+    
+    /*constexpr double RK3[4][3] = {{0, 0, 0},
+        {1/2, 0, 0},
+        {-1, 2, 0},
+        {1/6, 2/3, 1/6}};*/
+    
+    //RungeKutta<double, 3, 3> runge_kutta(tableau::RK3, function, 1e-9, Eigen::Vector3d());
+    /*auto runge_kutta = make_runge_kutta(tableau::RK5, function, 1e-9, Eigen::Vector3d(1, 0, 0));
+    
+    for(int i=0; i<5; ++i){
+        auto step = runge_kutta.step(10000);
+        std::cout << step.value << std::endl;
+        std::cout << step.error << std::endl;
+        //runge_kutta.step();
+        std::cout << std::endl;
+    }
+    std::cout << runge_kutta.getResult() << std::endl;
+    
+    return 0;*/
     
     try {
         // Set global log level:

@@ -9,6 +9,10 @@
 
 SET(CMAKE_CXX_FLAGS "-g -Wall -Wextra -pedantic ${CMAKE_CXX_FLAGS}")
 
+find_package( PkgConfig )
+pkg_check_modules( EIGEN3 REQUIRED eigen3 )
+include_directories(SYSTEM ${EIGEN3_INCLUDE_DIRS} )
+
 ADD_LIBRARY(AllpixCore SHARED
     utils/log.cpp
     utils/string.cpp
