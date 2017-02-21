@@ -83,14 +83,12 @@ public:
         conf_.setDefault("test", "standard_two_name");
         LOG(DEBUG) << "(2) init registering listeners for module " << conf_.getText("name", "<none>");
         
-        getMessenger()->registerListener(this, &TestModuleTwo::receive);
+        //getMessenger()->registerListener(this, &TestModuleTwo::receive);
+        getMessenger()->bindMulti(this, &TestModuleTwo::messages_);
     }
     
     void receive(std::shared_ptr<TestMessageTwo> msg){
-        messages_.push_back(msg->getText());
         LOG(DEBUG) << "(2) received a message: " << msg->getText();
-        
-        // getModuleManager()->addToRunQueue(this);
     }
     
     std::string getName(){
@@ -98,9 +96,11 @@ public:
     }
     
     void run(){
-        IFLOG(DEBUG) {
+        // messages_.push_back(message_->getText());
+        
+        IFLOG(DEBUG) {            
             std::string str = "";
-            for(auto &msg : messages_) str += msg+", ";
+            for(auto &msg : messages_) str += msg->getText()+", ";
             if(!str.empty()) str = str.substr(0, str.size()-2);
             LOG(DEBUG) << " (2) running second module with message " << str;
         }
@@ -110,7 +110,9 @@ public:
         LOG(DEBUG) << "(2) finished";
     }
 private:
-    std::vector<std::string> messages_;
+    std::vector<std::shared_ptr<TestMessageTwo>> messages_;
+    
+    //std::vector<std::string> messages_;
     Configuration conf_;
 };
 

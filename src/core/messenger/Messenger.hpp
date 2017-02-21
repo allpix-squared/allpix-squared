@@ -25,9 +25,16 @@ namespace allpix {
         Messenger(const Messenger&) = delete;
         Messenger &operator=(const Messenger&) = delete;
         
+        // FIXME: unregister of listeners still need to be added...
+        
         // Register a listener
         // FIXME: is the empty string a proper catch-all or do we want to have a clearer separation?
         template <typename T, typename R> void registerListener(T *receiver, void (T::*)(std::shared_ptr<R>), std::string message_type = "");
+        
+        // Register a single bind
+        // FIXME: better names?
+        template <typename T, typename R> void bindSingle(T *receiver, std::shared_ptr<R> T::*, std::string message_type = "");
+        template <typename T, typename R> void bindMulti(T *receiver, std::vector<std::shared_ptr<R>> T::*, std::string message_type = "");
         
         // Dispatch message
         template <typename T> void dispatchMessage(const T &msg, std::string name = "");
@@ -49,11 +56,28 @@ namespace allpix {
     // register a listener for a message
     template <typename T, typename R> void Messenger::registerListener(T *receiver, void (T::*method)(std::shared_ptr<R>), std::string message_type) {
         static_assert(std::is_base_of<Module, T>::value, "Receiver should have Module as a base class");
-        static_assert(std::is_base_of<Message, R>::value, "Notifier method should take a message derived from the Message class as argument");
+        static_assert(std::is_base_of<Message, R>::value, "Notifier method should take a shared pointer to a message derived from the Message class as argument");
         
         BaseDelegate *delegate = new Delegate<T, R>(receiver, method);
         delegates_[std::type_index(typeid(R))][message_type].push_back(delegate);
     }
+    template <typename T, typename R> void Messenger::bindSingle(T *receiver, std::shared_ptr<R> T::*member, std::string message_type) {
+        static_assert(std::is_base_of<Module, T>::value, "Receiver should have Module as a base class");
+        static_assert(std::is_base_of<Message, R>::value, "Bound variable should be a shared pointer to a message derived from the Message class");
+        
+        BaseDelegate *delegate = new SingleBindDelegate<T, R>(receiver, member);
+        delegates_[std::type_index(typeid(R))][message_type].push_back(delegate);
+    }
+    
+    // FIXME: allow other class containers besides vector
+    template <typename T, typename R> void Messenger::bindMulti(T *receiver, std::vector<std::shared_ptr<R>> T::*member, std::string message_type) {
+        static_assert(std::is_base_of<Module, T>::value, "Receiver should have Module as a base class");
+        static_assert(std::is_base_of<Message, R>::value, "Bound variable should be a shared pointer to a message derived from the Message class");
+        
+        BaseDelegate *delegate = new VectorBindDelegate<T, R>(receiver, member);
+        delegates_[std::type_index(typeid(R))][message_type].push_back(delegate);
+    }
+    
 }
 
 #endif /* ALLPIX_MESSENGER_H */
