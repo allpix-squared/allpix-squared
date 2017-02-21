@@ -58,8 +58,9 @@ namespace allpix {
         GeometryManager *getGeometryManager();
         
         // Initialize the module and pass the configuration etc.
-        // FIXME: also depending on constraints possible to do this in the constructor
-        virtual void init(Configuration) = 0;
+        virtual void init(Configuration) {
+            // FIXME: do default stuff here
+        }
         
         // Execute the function of the module
         virtual void run() = 0;

@@ -21,11 +21,10 @@ namespace allpix {
         // create a module
         std::vector<std::unique_ptr<Module> > create() {
             std::vector<std::unique_ptr<Module> > mod_list;
-            mod_list.emplace_back(std::make_unique<T>(getAllPix()));
             
-            // mod_list.emplace_back(std::make_unique<T>(getAllPix()));
-            // FIXME: pass this to the constructor?
-            // mod_list.back()->init(getConfiguration());
+            // create a unique instance of the module
+            mod_list.emplace_back(std::make_unique<T>(getAllPix(), getConfiguration()));
+            
             return mod_list;
         }
     };

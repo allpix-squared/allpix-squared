@@ -39,20 +39,20 @@ class TestModuleOne : public Module{
 public:
     static const std::string name;
     
-    TestModuleOne(AllPix *apx): Module(apx) {}
+    TestModuleOne(AllPix *apx, Configuration config): Module(apx) {
+        //conf.setDefault("test", "standard_one_name");
+        conf_ = config;
+        
+        conf_.setDefault("message", "standard_message");
+        LOG(DEBUG) << "(1) init and add to run queue for module " << conf_.getText("name", "<none>");
+        
+        // getModuleManager()->addToRunQueue(this);
+        // getConfig().get()
+        
+    }
     
     std::string getName(){
         return TestModuleOne::name;
-    }
-    
-    void init(Configuration conf){
-        //conf.setDefault("test", "standard_one_name");
-        conf.setDefault("message", "standard_message");
-        LOG(DEBUG) << "(1) init and add to run queue for module " << conf_.getText("name", "<none>");
-        
-        conf_ = conf;
-        // getModuleManager()->addToRunQueue(this);
-        // getConfig().get()
     }
     
     void run(){
@@ -76,10 +76,8 @@ class TestModuleTwo : public Module{
 public:
     static const std::string name;
     
-    TestModuleTwo(AllPix *apx): Module(apx) {}
-    
-    void init(Configuration conf){
-        conf_ = conf;
+    TestModuleTwo(AllPix *apx, Configuration config): Module(apx) {
+        conf_ = config;
         conf_.setDefault("test", "standard_two_name");
         LOG(DEBUG) << "(2) init registering listeners for module " << conf_.getText("name", "<none>");
         
@@ -89,7 +87,6 @@ public:
     void receive(TestMessageTwo msg){
         messages_.push_back(msg.getText());
         LOG(DEBUG) << "(2) received a message: " << msg.getText();
-        LOG(DEBUG) << "    add to run queue ";
         
         // getModuleManager()->addToRunQueue(this);
     }
