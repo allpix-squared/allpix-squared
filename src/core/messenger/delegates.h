@@ -35,7 +35,7 @@ namespace allpix {
             assert(typeid(*msg) == typeid(R));
             
             // NOTE: this dynamic cast is not perfect, but otherwise dynamic linking will break
-            (obj_->*method_)(std::dynamic_pointer_cast<R>(msg));
+            (obj_->*method_)(std::static_pointer_cast<R>(msg));
         }
     private:
         T *obj_;
@@ -57,7 +57,7 @@ namespace allpix {
             // FIXME: check that this assignment does not remove earlier information
             
             // NOTE: this dynamic cast is not perfect, but otherwise dynamic linking will break
-            obj_->*member_ = std::dynamic_pointer_cast<R>(msg);
+            obj_->*member_ = std::static_pointer_cast<R>(msg);
         }
     private:
         T *obj_;
@@ -77,7 +77,7 @@ namespace allpix {
             assert(typeid(*msg) == typeid(R));
             
             // NOTE: this dynamic cast is not perfect, but otherwise dynamic linking will break
-            (obj_->*member_).push_back(std::dynamic_pointer_cast<R>(msg));
+            (obj_->*member_).push_back(std::static_pointer_cast<R>(msg));
         }
     private:
         T *obj_;
