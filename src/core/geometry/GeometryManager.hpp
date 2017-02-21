@@ -24,16 +24,19 @@ namespace allpix {
         
         // Get internal representation
         // FIXME: this is not very elegant, but it is probably the only option (possible use a in-between type?)
-        virtual void setInternalDescription(std::string, void *) = 0;
-        virtual void *getInternalDescription(std::string) = 0;
+        void setInternalDescription(std::string, void *);
+        void *getInternalDescription(std::string);
         
         // Add detector to the system
-        virtual void addDetector(Detector) = 0;
+        void addDetector(Detector);
         
         // Get detectors
-        virtual std::vector<Detector> getDetectors() const = 0;
-        virtual Detector getDetector(std::string) const = 0;
-        virtual std::vector<Detector>  getDetectorsByType(std::string) const = 0;
+        std::vector<Detector> getDetectors() const;
+        Detector getDetector(std::string) const;
+        std::vector<Detector>  getDetectorsByType(std::string) const;
+        
+    private:
+        std::vector<Detector> detectors_;
     };
 }
 

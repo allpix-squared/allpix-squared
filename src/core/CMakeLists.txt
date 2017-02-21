@@ -23,7 +23,7 @@ ADD_LIBRARY(AllpixCore SHARED
     config/Configuration.cpp
     config/SimpleConfigManager.cpp
     geometry/Detector.cpp
-    geometry/DefaultGeometryManager.cpp
+    geometry/GeometryManager.cpp
     AllPix.cpp
 )
 

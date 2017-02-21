@@ -15,7 +15,7 @@
 #include "../core/config/SimpleConfigManager.hpp"
 
 #include "../core/geometry/Detector.hpp"
-#include "../core/geometry/DefaultGeometryManager.hpp"
+#include "../core/geometry/GeometryManager.hpp"
 
 #include "../core/utils/exceptions.h"
 #include "../core/utils/log.h"
@@ -39,7 +39,7 @@ int main(int, const char **) {
         {1/6, 2/3, 1/6}};*/
     
     //RungeKutta<double, 3, 3> runge_kutta(tableau::RK3, function, 1e-9, Eigen::Vector3d());
-    auto runge_kutta = make_runge_kutta(tableau::RK5, function, 1e-9, Eigen::Vector3d(1, 0, 0));
+    /*auto runge_kutta = make_runge_kutta(tableau::RK5, function, 1e-9, Eigen::Vector3d(1, 0, 0));
     
     for (int i = 0; i < 5; ++i) {
         auto step = runge_kutta.step(10000);
@@ -50,7 +50,7 @@ int main(int, const char **) {
     }
     std::cout << runge_kutta.getResult() << std::endl;
     
-    return 0;
+    return 0;*/
     
     try {
         // Set global log level:
@@ -59,8 +59,7 @@ int main(int, const char **) {
         
         LOG(INFO) << "Set log level: " << Log::getStringFromLevel(log_level);
                 
-        std::unique_ptr<Messenger> msg = std::make_unique<Messenger>();
-        std::unique_ptr<DefaultGeometryManager> geo = std::make_unique<DefaultGeometryManager>();
+        std::unique_ptr<GeometryManager> geo = std::make_unique<GeometryManager>();
         std::unique_ptr<StaticModuleManager> mod = std::make_unique<StaticModuleManager>(&generator);
         std::unique_ptr<SimpleConfigManager> conf = std::make_unique<SimpleConfigManager>(file_name);
         
@@ -79,7 +78,7 @@ int main(int, const char **) {
         geo->addDetector(det2);
         geo->addDetector(det3);
         
-        std::unique_ptr<AllPix> apx = std::make_unique<AllPix>(std::move(conf), std::move(mod), std::move(msg), std::move(geo));
+        std::unique_ptr<AllPix> apx = std::make_unique<AllPix>(std::move(conf), std::move(mod), std::move(geo));
         
         LOG(INFO) << "Initializing AllPix";
         apx->init();

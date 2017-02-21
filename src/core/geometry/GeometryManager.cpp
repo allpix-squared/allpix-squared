@@ -7,30 +7,30 @@
 #include <vector>
 #include <string>
 
-#include "DefaultGeometryManager.hpp"
+#include "GeometryManager.hpp"
 
 #include "../utils/exceptions.h"
 
 using namespace allpix;
 
 // Add detector to the system
-void DefaultGeometryManager::addDetector(Detector det) {
+void GeometryManager::addDetector(Detector det) {
     detectors_.push_back(det);
 }
 
 // Get detectors
-std::vector<Detector> DefaultGeometryManager::getDetectors() const {
+std::vector<Detector> GeometryManager::getDetectors() const {
     return detectors_;
 }
 
 // FIXME: this is not a very nice way to do this
-Detector DefaultGeometryManager::getDetector(std::string name) const {    
+Detector GeometryManager::getDetector(std::string name) const {    
     for (auto &detector : detectors_) {
         if (detector.getName() == name) return detector;
     }
     throw allpix::InvalidDetectorError("name", name);
 }
-std::vector<Detector> DefaultGeometryManager::getDetectorsByType(std::string type) const {
+std::vector<Detector> GeometryManager::getDetectorsByType(std::string type) const {
     std::vector<Detector> result;
     for (auto &detector : detectors_) {
         if (detector.getType() == type) result.push_back(detector);

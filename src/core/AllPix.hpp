@@ -27,7 +27,7 @@ namespace allpix {
         
         // Constructor and destructor
         // NOTE: AllPix object responsible for deletion of managers
-        AllPix(std::unique_ptr<ConfigManager> conf_mgr, std::unique_ptr<ModuleManager> mod_mgr, std::unique_ptr<Messenger> msg, std::unique_ptr<GeometryManager> geo_mgr);
+        AllPix(std::unique_ptr<ConfigManager> conf_mgr, std::unique_ptr<ModuleManager> mod_mgr, std::unique_ptr<GeometryManager> geo_mgr);
         
         // Get managers
         // FIXME: pass pointer or references
