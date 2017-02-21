@@ -51,8 +51,8 @@ public:
         LOG(DEBUG) << "(1) init and add to run queue for module " << conf_.getText("name", "<none>");
         
         conf_ = conf;
-        getModuleManager()->addToRunQueue(this);
-        //getConfig().get()
+        // getModuleManager()->addToRunQueue(this);
+        // getConfig().get()
     }
     
     void run(){
@@ -91,7 +91,7 @@ public:
         LOG(DEBUG) << "(2) received a message: " << msg.getText();
         LOG(DEBUG) << "    add to run queue ";
         
-        getModuleManager()->addToRunQueue(this);
+        // getModuleManager()->addToRunQueue(this);
     }
     
     std::string getName(){
