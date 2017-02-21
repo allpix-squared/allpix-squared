@@ -41,6 +41,7 @@ void SimpleConfigManager::reload() {
 
 // clear the current config
 void SimpleConfigManager::clear() {
+    conf_array_.clear();
     conf_map_.clear();
 }
 
@@ -62,20 +63,18 @@ std::vector<Configuration> SimpleConfigManager::getConfigurations(std::string na
     if (!hasConfiguration(name)) {
         return std::vector<Configuration>();
     }
-    return conf_map_.at(name);
+    
+    // fetch the configurations
+    std::vector<Configuration> result;
+    for (auto &iter : conf_map_.at(name)) {
+        result.push_back(*iter);
+    }
+    return result;
 }
 
 // return all configurations
 std::vector<Configuration> SimpleConfigManager::getConfigurations() const {
-    std::vector<Configuration> result;
-    
-    for (auto &configs : conf_map_) {
-        for (auto &conf : configs.second) {
-            result.push_back(conf);
-        }
-    }
-    
-    return result;
+    return std::vector<Configuration>(conf_array_.begin(), conf_array_.end());;
 }
 
 // construct the config from an input stream
@@ -103,7 +102,8 @@ void SimpleConfigManager::build_config(std::istream &stream, std::string file_na
             // parse new section
             if (line[0] == '[' && line[line.length() - 1] == ']') {
                 // add previous section
-                conf_map_[section_name].push_back(conf);
+                conf_array_.push_back(conf);
+                conf_map_[section_name].push_back(--conf_array_.end());
                 
                 // begin new section
                 section_name = std::string(line, 1, line.length() - 2);
@@ -131,5 +131,6 @@ void SimpleConfigManager::build_config(std::istream &stream, std::string file_na
         }
     }
     // add last section
-    conf_map_[section_name].push_back(conf);
+    conf_array_.push_back(conf);
+    conf_map_[section_name].push_back(--conf_array_.end());
 }

@@ -34,6 +34,7 @@ namespace allpix {
         virtual std::vector<Configuration> getConfigurations(std::string name) const = 0;
         
         // Return all configurations with their name
+        // WARNING: this should give the configurations in the same order as defined in the config file!
         virtual std::vector<Configuration> getConfigurations() const = 0;
     };
 }

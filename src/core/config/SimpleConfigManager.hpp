@@ -6,6 +6,7 @@
 #define ALLPIX_SIMPLE_CONFIG_MANAGER_H
 
 #include <vector>
+#include <list>
 #include <string>
 #include <utility>
 #include <fstream>
@@ -44,7 +45,9 @@ namespace allpix {
         virtual std::vector<Configuration> getConfigurations() const;
         
     private:
-        std::map<std::string, std::vector<Configuration> > conf_map_;
+        std::map<std::string, std::vector<std::list<Configuration>::iterator > > conf_map_;
+        std::list<Configuration> conf_array_;
+        
         std::vector<std::string> file_names_;
         
         void build_config(std::istream&, std::string file_name = "<none>");
