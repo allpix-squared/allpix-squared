@@ -6,6 +6,7 @@
 #define ALLPIX_DELEGATE_H
 
 #include <typeinfo>
+#include <memory>
 #include <cassert>
 
 #include "Message.hpp"
@@ -17,24 +18,26 @@ namespace allpix {
         BaseDelegate() {}
         virtual ~BaseDelegate() {}
         
-        virtual void call(const Message &msg) const = 0;
+        virtual void call(std::shared_ptr<Message> msg) const = 0;
     };
 
     template<typename T, typename R> class Delegate : public BaseDelegate{
     public:
-        Delegate(T *obj, void (T::*method)(R)): obj_(obj), method_(method) {}
+        using ListenerFunction = void (T::*)(std::shared_ptr<R>);
+        
+        Delegate(T *obj, ListenerFunction method): obj_(obj), method_(method) {}
         ~Delegate() {}
         
-        void call(const Message &msg) const {
+        void call(std::shared_ptr<Message> msg) const {
             // the type names should have been correctly resolved earlier
-            assert(typeid(msg) == typeid(R));
+            assert(typeid(*msg) == typeid(R));
             
             // NOTE: this dynamic cast is not perfect, but otherwise dynamic linking will break
-            (obj_->*method_)(dynamic_cast<const R&>(msg));
+            (obj_->*method_)(std::dynamic_pointer_cast<R>(msg));
         }
     private:
         T *obj_;
-        void (T::*method_)(R);
+        ListenerFunction method_;
     };
 }
 

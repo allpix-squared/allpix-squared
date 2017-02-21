@@ -5,6 +5,8 @@
 #include "../core/module/UniqueModuleFactory.hpp"
 #include "../core/module/DetectorModuleFactory.hpp"
 
+#include <memory>
+
 using namespace allpix;
 
 class TestMessageOne : public Message{
@@ -84,9 +86,9 @@ public:
         getMessenger()->registerListener(this, &TestModuleTwo::receive);
     }
     
-    void receive(TestMessageTwo msg){
-        messages_.push_back(msg.getText());
-        LOG(DEBUG) << "(2) received a message: " << msg.getText();
+    void receive(std::shared_ptr<TestMessageTwo> msg){
+        messages_.push_back(msg->getText());
+        LOG(DEBUG) << "(2) received a message: " << msg->getText();
         
         // getModuleManager()->addToRunQueue(this);
     }
