@@ -12,18 +12,18 @@
 
 #include "../geometry/Detector.hpp"
 
-namespace allpix{
+namespace allpix {
 
     class AllPix;
     class Messenger;
     class ModuleManager;
     class GeometryManager;
     
-    class Module{
+    class Module {
     public:
         // AllPix running state
         enum State{
-            //Loaded,
+            // Loaded,
             Ready,
             Running,
             Finished
@@ -31,7 +31,7 @@ namespace allpix{
         
         // Constructor and destructors
         // FIXME: register and unregister the listeners in the constructor?
-        Module(AllPix *allpix);
+        explicit Module(AllPix *allpix);
         virtual ~Module() {}
         
         // FIXME: does it makes sense to copy a module
@@ -43,10 +43,10 @@ namespace allpix{
         virtual std::string getName() = 0;
         
         // FIXME: handle by string or directly pass detectors?
-        virtual void setDetector(Detector det){
+        virtual void setDetector(Detector det) {
             _detector = det;
         }
-        virtual Detector getDetector(){
+        virtual Detector getDetector() {
             return _detector;
         }
     
@@ -57,8 +57,8 @@ namespace allpix{
         ModuleManager *getModuleManager();
         GeometryManager *getGeometryManager();
         
-        //Initialize the module and pass the configuration etc.
-        //FIXME: also depending on constraints possible to do this in the constructor
+        // Initialize the module and pass the configuration etc.
+        // FIXME: also depending on constraints possible to do this in the constructor
         virtual void init(Configuration) = 0;
         
         // Execute the function of the module
@@ -67,8 +67,8 @@ namespace allpix{
         // Finalize module and check if it executed properly 
         // NOTE: useful to do before destruction to allow for exceptions
         virtual void finalize() {
-            //FIXME: do default stuff here
-        };
+            // FIXME: do default stuff here
+        }
         
     private:
         AllPix *allpix_;
@@ -78,4 +78,4 @@ namespace allpix{
     };
 }
 
-#endif // ALLPIX_MODULE_MANAGER_H
+#endif /* ALLPIX_MODULE_MANAGER_H */

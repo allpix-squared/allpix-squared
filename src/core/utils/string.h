@@ -15,7 +15,7 @@ namespace allpix {
     
     /** Trims the leading and trailing white space from a string
      */
-    inline std::string trim(const std::string &s, const std::string &delims = " \t\n\r\v"){
+    inline std::string trim(const std::string &s, const std::string &delims = " \t\n\r\v") {
         size_t b = s.find_first_not_of(delims);
         size_t e = s.find_last_not_of(delims);
         if (b == std::string::npos || e == std::string::npos) {
@@ -52,8 +52,8 @@ namespace allpix {
     template <typename T> std::string to_string(T inp) {
         return std::to_string(inp);
     }
-    //NOTE: we have to provide all these specializations to prevent std::to_string from being called
-    //      there may be a better way to work with this
+    // NOTE: we have to provide all these specializations to prevent std::to_string from being called
+    //       there may be a better way to work with this
     inline std::string to_string(std::string inp) {
         return inp;
     }
@@ -76,7 +76,7 @@ namespace allpix {
         std::vector<T> elems;
         
         std::size_t prev = 0, pos;
-        while ((pos = str.find_first_of(delims, prev)) != std::string::npos){
+        while ((pos = str.find_first_of(delims, prev)) != std::string::npos) {
             if (pos > prev)
                 elems.push_back(from_string<T>(str.substr(prev, pos-prev)));
             prev = pos+1;
@@ -89,4 +89,4 @@ namespace allpix {
     
 }
 
-#endif // ALLPIX_INCLUDED_Utils
+#endif /* ALLPIX_STRING_H */

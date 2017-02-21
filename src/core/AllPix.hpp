@@ -13,7 +13,7 @@
 #include "module/ModuleManager.hpp"
 #include "messenger/Messenger.hpp"
 
-namespace allpix{
+namespace allpix {
     
     class AllPix {
     public:
@@ -47,6 +47,7 @@ namespace allpix{
         
         // Finalize run, check if everything has finished
         void finalize();
+        
     private:
         std::unique_ptr<ConfigManager> conf_mgr_;
         std::unique_ptr<ModuleManager> mod_mgr_;
@@ -57,4 +58,4 @@ namespace allpix{
     };
 }
 
-#endif // ALLPIX_ALLPIX_H
+#endif /* ALLPIX_ALLPIX_H */

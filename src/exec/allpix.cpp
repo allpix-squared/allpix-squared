@@ -2,6 +2,8 @@
 #include <ostream>
 #include <vector>
 #include <memory>
+#include <utility>
+#include <string>
 
 #include "../core/AllPix.hpp"
 
@@ -24,8 +26,8 @@
 
 using namespace allpix;
 
-Eigen::Vector3d function(double time, Eigen::Vector3d pos){
-    return time*pos; //Eigen::Vector3d::Zero();
+Eigen::Vector3d function(double time, Eigen::Vector3d pos) {
+    return time*pos;  // Eigen::Vector3d::Zero();
 }
 
 int main(int, const char **) {
@@ -37,9 +39,9 @@ int main(int, const char **) {
         {1/6, 2/3, 1/6}};*/
     
     //RungeKutta<double, 3, 3> runge_kutta(tableau::RK3, function, 1e-9, Eigen::Vector3d());
-    /*auto runge_kutta = make_runge_kutta(tableau::RK5, function, 1e-9, Eigen::Vector3d(1, 0, 0));
+    auto runge_kutta = make_runge_kutta(tableau::RK5, function, 1e-9, Eigen::Vector3d(1, 0, 0));
     
-    for(int i=0; i<5; ++i){
+    for (int i = 0; i < 5; ++i) {
         auto step = runge_kutta.step(10000);
         std::cout << step.value << std::endl;
         std::cout << step.error << std::endl;
@@ -48,7 +50,7 @@ int main(int, const char **) {
     }
     std::cout << runge_kutta.getResult() << std::endl;
     
-    return 0;*/
+    return 0;
     
     try {
         // Set global log level:
@@ -85,7 +87,6 @@ int main(int, const char **) {
         apx->run();
         LOG(INFO) << "Finishing AllPix";
         apx->finalize();
-        
     } catch (ConfigurationError &e) {
         LOG(CRITICAL) << "Error in the configuration file:";
         LOG(CRITICAL) << "   " << e.what(); 

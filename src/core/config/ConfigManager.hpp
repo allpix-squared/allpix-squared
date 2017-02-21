@@ -11,9 +11,9 @@
 
 #include "Configuration.hpp"
 
-namespace allpix{
+namespace allpix {
 
-    class ConfigManager{
+    class ConfigManager {
     public:
         // Constructor and destructors
         ConfigManager() {}
@@ -28,7 +28,7 @@ namespace allpix{
         virtual int countConfigurations(std::string name) const = 0;
         
         // FIXME: do we want to have a special function for types where only a single instance make sense
-        //Configuration getConfiguration(std::string name) = 0;
+        // Configuration getConfiguration(std::string name) = 0;
         
         // Return configuration sections by name
         virtual std::vector<Configuration> getConfigurations(std::string name) const = 0;
@@ -38,4 +38,4 @@ namespace allpix{
     };
 }
 
-#endif // ALLPIX_CONFIG_MANAGER_H
+#endif /* ALLPIX_CONFIG_MANAGER_H */

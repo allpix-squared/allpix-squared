@@ -10,16 +10,16 @@
 
 #include "Detector.hpp"
 
-namespace allpix{
+namespace allpix {
 
-    class Detector{
+    class Detector {
     public:
         // Constructor and destructors
-        Detector () {} //FIXME: remove this constructor?
+        Detector() {}  // FIXME: remove this constructor?
         Detector(std::string name, std::string type);
         ~Detector() {}
         
-        //TODO: setters have to be added
+        // TODO: setters have to be added
         
         // Get description
         std::string getName() const;
@@ -31,16 +31,16 @@ namespace allpix{
         std::tuple<double, double, double> getOrientation() const;
         
         // get model description
-        //const DetectorModel &getModel();
+        // const DetectorModel &getModel();
     private:        
-        //FIXME: use a proper vector here
+        // FIXME: use a proper vector here
         std::tuple<double, double, double> location_;
         std::tuple<double, double, double> orientation_;
         
-        //DetectorModel model_;
+        // DetectorModel model_;
         std::string name_;
         std::string type_;
     };
 }
 
-#endif // ALLPIX_DETECTOR_H
+#endif /* ALLPIX_DETECTOR_H */

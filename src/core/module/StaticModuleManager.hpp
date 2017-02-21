@@ -9,12 +9,13 @@
 #include <queue>
 #include <memory>
 #include <functional>
+#include <string>
 
 #include "Module.hpp"
 #include "ModuleManager.hpp"
 #include "ModuleFactory.hpp"
 
-namespace allpix{
+namespace allpix {
 
     class AllPix;
     
@@ -23,7 +24,7 @@ namespace allpix{
         using GeneratorFunction = std::function<std::unique_ptr<ModuleFactory>(std::string)>;
         
         // Constructor and destructors
-        StaticModuleManager(GeneratorFunction);
+        explicit StaticModuleManager(GeneratorFunction);
         ~StaticModuleManager() {}
         
         // Load modules
@@ -37,6 +38,7 @@ namespace allpix{
         
         // Finalize and check if every module did what it should do
         void finalize();
+        
     private:
         std::unique_ptr<ModuleFactory> get_factory(std::string name);
         
@@ -49,4 +51,4 @@ namespace allpix{
     };
 }
 
-#endif // ALLPIX_STATIC_MODULE_MANAGER_H
+#endif /* ALLPIX_STATIC_MODULE_MANAGER_H */

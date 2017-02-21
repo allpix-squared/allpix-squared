@@ -19,7 +19,7 @@ std::string Detector::getType() const {
     return type_;
 }
 
-//FIXME: implement
+// FIXME: implement
 std::tuple<double, double, double> Detector::getPosition() const {
     return std::tuple<double, double, double>();
 }

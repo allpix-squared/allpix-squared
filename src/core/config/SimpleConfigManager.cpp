@@ -1,6 +1,8 @@
 #include "SimpleConfigManager.hpp"
 
 #include <fstream>
+#include <string>
+#include <vector>
 
 #include "../utils/exceptions.h"
 
@@ -15,7 +17,7 @@ SimpleConfigManager::SimpleConfigManager(std::string file_name) {
 void SimpleConfigManager::addFile(std::string file_name) {
     file_names_.push_back(file_name);
     std::ifstream file(file_name);
-    if(!file){
+    if (!file) {
         throw allpix::ConfigFileUnavailableError(file_name);
     }
     build_config(file, file_name);
@@ -31,7 +33,7 @@ void SimpleConfigManager::removeFiles() {
 void SimpleConfigManager::reload() {
     clear();
     
-    for(auto &file_name : file_names_){
+    for (auto &file_name : file_names_) {
         std::ifstream file(file_name);
         build_config(file);
     }
@@ -49,13 +51,17 @@ bool SimpleConfigManager::hasConfiguration(std::string name) const {
 
 // count the amount of configurations of a given name
 int SimpleConfigManager::countConfigurations(std::string name) const {
-    if(!hasConfiguration(name)) return 0;
-    else return conf_map_.at(name).size();
+    if (!hasConfiguration(name)) {
+        return 0;
+    }
+    return conf_map_.at(name).size();
 }
 
 // return configuration by name
 std::vector<Configuration> SimpleConfigManager::getConfigurations(std::string name) const {
-    if(!hasConfiguration(name)) return std::vector<Configuration>();
+    if (!hasConfiguration(name)) {
+        return std::vector<Configuration>();
+    }
     return conf_map_.at(name);
 }
 
@@ -63,8 +69,8 @@ std::vector<Configuration> SimpleConfigManager::getConfigurations(std::string na
 std::vector<Configuration> SimpleConfigManager::getConfigurations() const {
     std::vector<Configuration> result;
     
-    for(auto &configs : conf_map_) {
-        for(auto &conf : configs.second ) {
+    for (auto &configs : conf_map_) {
+        for (auto &conf : configs.second) {
             result.push_back(conf);
         }
     }
@@ -78,7 +84,7 @@ void SimpleConfigManager::build_config(std::istream &stream, std::string file_na
     Configuration conf(section_name);
     
     int line_num = 0;
-    while(true) {
+    while (true) {
         // process config line by line
         std::string line;
         if (stream.eof()) break;

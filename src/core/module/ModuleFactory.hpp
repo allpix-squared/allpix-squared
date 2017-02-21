@@ -11,11 +11,11 @@
 #include "Module.hpp"
 #include "../config/Configuration.hpp"
 
-namespace allpix{
+namespace allpix {
     
     class AllPix;
     
-    class ModuleFactory{
+    class ModuleFactory {
     public:
         // constructor and destructor
         ModuleFactory() {}
@@ -37,4 +37,4 @@ namespace allpix{
     };
 }
 
-#endif // ALLPIX_SINGLE_MODULE_FACTORY_H
+#endif /* ALLPIX_SINGLE_MODULE_FACTORY_H */

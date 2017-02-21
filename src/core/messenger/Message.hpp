@@ -5,8 +5,8 @@
 #ifndef ALLPIX_MESSAGE_H
 #define ALLPIX_MESSAGE_H
 
-namespace allpix{
-    class Message{
+namespace allpix {
+    class Message {
     public:
         // Constructor and destructors
         Message() {}
@@ -16,4 +16,4 @@ namespace allpix{
     };
 }
 
-#endif // ALLPIX_MESSAGE_H
+#endif /* ALLPIX_MESSAGE_H */

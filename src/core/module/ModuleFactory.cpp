@@ -6,18 +6,18 @@
 
 using namespace allpix;
 
-void ModuleFactory::setAllPix(AllPix *allpix){
+void ModuleFactory::setAllPix(AllPix *allpix) {
     apx_ = allpix;
 }
 
-AllPix *ModuleFactory::getAllPix(){
+AllPix *ModuleFactory::getAllPix() {
     return apx_;
 }
 
-void ModuleFactory::setConfiguration(Configuration conf){
+void ModuleFactory::setConfiguration(Configuration conf) {
     conf_ = conf;
 }
 
-Configuration &ModuleFactory::getConfiguration(){
+Configuration &ModuleFactory::getConfiguration() {
     return conf_;
 }

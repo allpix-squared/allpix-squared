@@ -11,11 +11,11 @@
 #include "Message.hpp"
 #include "../utils/exceptions.h"
 
-namespace allpix{
-    class BaseDelegate{
+namespace allpix {
+    class BaseDelegate {
     public:
-        BaseDelegate(){}
-        virtual ~BaseDelegate(){}
+        BaseDelegate() {}
+        virtual ~BaseDelegate() {}
         
         virtual void call(const Message &msg) const = 0;
     };
@@ -23,13 +23,13 @@ namespace allpix{
     template<typename T, typename R> class Delegate : public BaseDelegate{
     public:
         Delegate(T *obj, void (T::*method)(R)): obj_(obj), method_(method) {}
-        ~Delegate(){}
+        ~Delegate() {}
         
-        void call(const Message &msg) const{
-            //the type names should have been correctly resolved earlier
+        void call(const Message &msg) const {
+            // the type names should have been correctly resolved earlier
             assert(typeid(msg) == typeid(R));
             
-            //NOTE: this dynamic cast is not perfect, but otherwise dynamic linking will break
+            // NOTE: this dynamic cast is not perfect, but otherwise dynamic linking will break
             (obj_->*method_)(dynamic_cast<const R&>(msg));
         }
     private:
@@ -38,4 +38,4 @@ namespace allpix{
     };
 }
 
-#endif
+#endif /* ALLPIX_DELEGATE_H */

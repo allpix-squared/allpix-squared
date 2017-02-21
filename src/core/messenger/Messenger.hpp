@@ -13,9 +13,9 @@
 #include "../module/Module.hpp"
 #include "Message.hpp"
 
-namespace allpix{
+namespace allpix {
 
-    class Messenger{
+    class Messenger {
     public:
         // Constructor and destructors
         Messenger() {}
@@ -37,7 +37,7 @@ namespace allpix{
         DelegateMap delegates_;
     };
     
-    template <typename T, typename R> void Messenger::registerListener(T *receiver, void (T::*method)(R), std::string message_type){
+    template <typename T, typename R> void Messenger::registerListener(T *receiver, void (T::*method)(R), std::string message_type) {
         static_assert(std::is_base_of<Module, T>::value, "Receiver should be a module");
         static_assert(std::is_base_of<Message, R>::value, "Notifier method should take a message as argument");
         
@@ -46,4 +46,4 @@ namespace allpix{
     }
 }
 
-#endif // ALLPIX_MESSENGER_H
+#endif /* ALLPIX_MESSENGER_H */

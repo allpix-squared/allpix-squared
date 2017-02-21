@@ -2,7 +2,7 @@
 
 #include "../core/utils/log.h"
 
-#include "../core/module/SingleModuleFactory.hpp"
+#include "../core/module/UniqueModuleFactory.hpp"
 #include "../core/module/DetectorModuleFactory.hpp"
 
 using namespace allpix;
@@ -119,6 +119,6 @@ const std::string TestModuleTwo::name = "test2";
 
 std::unique_ptr<ModuleFactory> generator(std::string str){
     if(str == TestModuleOne::name) return std::make_unique<DetectorModuleFactory<TestModuleOne>>();
-    if(str == TestModuleTwo::name) return std::make_unique<SingleModuleFactory<TestModuleTwo>>();
+    if(str == TestModuleTwo::name) return std::make_unique<UniqueModuleFactory<TestModuleTwo>>();
     return nullptr;
 }

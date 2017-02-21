@@ -8,6 +8,7 @@
 #include <fstream>
 #include <iostream>
 #include <cstdlib>
+#include <string>
 
 #include "../utils/exceptions.h"
 
@@ -17,7 +18,7 @@ Configuration::Configuration(): name_("") {}
 
 Configuration::Configuration(std::string name): name_(name) {}
     
-bool Configuration::has(const std::string &key) const{
+bool Configuration::has(const std::string &key) const {
     return config_.find(key) != config_.cend();
 }
 
@@ -26,14 +27,14 @@ std::string Configuration::getName() const {
 }
 
 std::string Configuration::getText(const std::string &key) const {
-    try{
+    try {
         return config_.at(key);
-    }catch(std::out_of_range &e){
+    } catch(std::out_of_range &e) {
         throw MissingKeyError(getName(), key);
     }
 }
 std::string Configuration::getText(const std::string &key, const std::string &def) const {
-    if(!has(key)) return def;
+    if (!has(key)) return def;
     return config_.at(key);
 }
 

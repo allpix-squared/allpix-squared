@@ -8,11 +8,11 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-namespace allpix{
+namespace allpix {
     
-    template<typename T, int S, int D = 3> class RungeKutta{
+    template<typename T, int S, int D = 3> class RungeKutta {
     public:
-        struct Step{
+        struct Step {
             Eigen::Matrix<T, D, 1> value;
             Eigen::Matrix<T, D, 1> error;
         };
@@ -50,12 +50,12 @@ namespace allpix{
             
             // compute step
             Eigen::Matrix<T, S, D> k;
-            for(int i=0; i<S; ++i){
+            for (int i = 0; i < S; ++i) {
                 Eigen::Matrix<T, D, 1> yt = y_;
                 T tt = t_;
-                for(int j=0; j<i; ++j){
-                    yt += h_*tableau_(i,j)*k.row(j);
-                    tt += tableau_(i,j);
+                for (int j = 0; j < i; ++j) {
+                    yt += h_*tableau_(i, j)*k.row(j);
+                    tt += tableau_(i, j);
                 }
                 k.row(i) = function_(tt, yt);
                 
@@ -73,37 +73,38 @@ namespace allpix{
             return step;
         }
         
-        //FIXME: call this steps?
-        Step step(int amount){
+        // FIXME: call this steps?
+        Step step(int amount) {
             Step result;
             result.value.setZero();
             result.error.setZero();
-            for(int i=0; i<amount; ++i){
+            for (int i = 0; i < amount; ++i) {
                 Step single = step();
                 result.value += single.value;
                 result.error += single.error;
             }
             return result;
         }
+        
     private:
         const Eigen::Matrix<T, S+2, S> tableau_;
         StepFunction function_; 
-        T h_; // step size
+        T h_;  // step size
         
-        Eigen::Matrix<T, D, 1> y_;     // vector that changes
-        Eigen::Matrix<T, D, 1> error_; // error vector
-        T t_; // time
+        Eigen::Matrix<T, D, 1> y_;      // vector that changes
+        Eigen::Matrix<T, D, 1> error_;  // error vector
+        T t_;  // time
     };
     
-    namespace tableau{
-        //WARNING: no error function
+    namespace tableau {
+        // WARNING: no error function
         static const auto RK3((Eigen::Matrix<double, 5, 3>() <<
             0, 0, 0,
             1.0/2, 0, 0,
             -1, 2, 0,
             1.0/6, 2.0/3, 1.0/6,
             0, 0, 0).finished());
-        //WARNING: no error function
+        // WARNING: no error function
         static const auto RK4((Eigen::Matrix<double, 6, 4>() <<
             0, 0, 0, 0,
             1.0/2, 0, 0, 0,
@@ -122,10 +123,11 @@ namespace allpix{
             25.0/216, 0, 1408.0/2565, 2197.0/4104, -1.0/5, 0).finished());
     }
     
+    // FIXME: better name
     template<typename T, int S, int D = 3> RungeKutta<T, S, D> make_runge_kutta(Eigen::Matrix<T, S+2, S> tableau, typename RungeKutta<T, S, D>::StepFunction function, 
                                                                T step_size, Eigen::Matrix<T, D, 1> initial_y, T initial_t = 0) {
         return RungeKutta<T, S, D>(tableau, function, step_size, initial_y, initial_t);
     }
 }
 
-#endif // ALLPIX_RUNGE_KUTTA_H
+#endif /* ALLPIX_RUNGE_KUTTA_H */

@@ -15,7 +15,7 @@ include_directories(SYSTEM ${EIGEN3_INCLUDE_DIRS} )
 
 ADD_LIBRARY(AllpixCore SHARED
     utils/log.cpp
-    utils/string.cpp
+#    utils/string.cpp
     module/Module.cpp
     module/StaticModuleManager.cpp
     module/ModuleFactory.cpp

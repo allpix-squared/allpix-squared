@@ -4,6 +4,9 @@
 
 #include "AllPix.hpp"
 
+#include <utility>
+#include <memory>
+
 using namespace allpix;
 
 // Default constructor (FIXME: decide what to pass and what should be standard)
@@ -22,25 +25,25 @@ ConfigManager *AllPix::getConfigManager() {
 GeometryManager *AllPix::getGeometryManager() {
     return geo_mgr_.get();
 }
-ModuleManager *AllPix::getModuleManager(){
+ModuleManager *AllPix::getModuleManager() {
     return mod_mgr_.get();
 }
-Messenger *AllPix::getMessenger(){
+Messenger *AllPix::getMessenger() {
     return msg_.get();
 }
 
 // Initialize
 void AllPix::init() {
-    //TODO: implement
+    // TODO: implement
     mod_mgr_->load(this);
 }
 
 void AllPix::run() {
-    //TODO: implement
+    // TODO: implement
     mod_mgr_->run();
 }
 
 void AllPix::finalize() {
-    //TODO: implement
+    // TODO: implement
     mod_mgr_->finalize();
 }

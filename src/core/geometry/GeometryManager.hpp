@@ -6,12 +6,13 @@
 #define ALLPIX_GEOMETRY_MANAGER_H
 
 #include <vector>
+#include <string>
 
 #include "Detector.hpp"
 
-namespace allpix{
+namespace allpix {
 
-    class GeometryManager{
+    class GeometryManager {
     public:
         // Constructor and destructors
         GeometryManager() {}
@@ -36,4 +37,4 @@ namespace allpix{
     };
 }
 
-#endif // ALLPIX_GEOMETRY_MANAGER_H
+#endif /* ALLPIX_GEOMETRY_MANAGER_H */

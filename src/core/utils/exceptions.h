@@ -12,10 +12,10 @@
 #include <typeinfo>
 #include <iostream>
 
-//FIXME: move some exceptions to a more appropriate place
+// FIXME: move some exceptions to a more appropriate place
 
 namespace allpix {
-    //NOTE: assert are used inside the framework if an internal error should never occur
+    // NOTE: assert are used inside the framework if an internal error should never occur
     
     /** 
      * Base class for all exceptions thrown by the allpix framework.
@@ -23,10 +23,10 @@ namespace allpix {
     class Exception : public std::exception {
     public:
         Exception(): error_message_("Unspecified error") {}
-        Exception(const std::string& what_arg) : std::exception(), error_message_(what_arg) {}
-        virtual const char* what() const throw(){
+        explicit Exception(const std::string& what_arg) : std::exception(), error_message_(what_arg) {}
+        virtual const char* what() const throw() {
             return error_message_.c_str();
-        };
+        }
     protected:
         std::string error_message_;
     };
@@ -42,7 +42,7 @@ namespace allpix {
      */
     class ConfigFileUnavailableError : public ConfigurationError{
     public:
-        ConfigFileUnavailableError(std::string &file) {
+        explicit ConfigFileUnavailableError(const std::string &file) {
             error_message_ = "Could not read file "+file+" (does it exists?)";
         }
     };
@@ -52,10 +52,9 @@ namespace allpix {
     public:
         InvalidKeyError(const std::string&key, const std::string &section, const std::string &value, const std::type_info &type, const std::string &reason) {
             error_message_ = "Could not convert value '"+value+"' of key '"+key+"' in section '"+section+"' to type "+type.name();
-            if(!reason.empty()) error_message_ += ": "+reason;
+            if (!reason.empty()) error_message_ += ": "+reason;
         }
         InvalidKeyError(const std::string&key, const std::string &section, const std::string &value, const std::type_info &type): 
-            //key_(key), section_(section), value_(value), type_(type.name()) {};
             InvalidKeyError(key, section, value, type, "") {}
     };
     
@@ -70,7 +69,7 @@ namespace allpix {
     // parse error in the configuration
     class ConfigParseError : public ConfigurationError{
     public:
-        ConfigParseError(std::string &file, int line_num) {
+        ConfigParseError(const std::string &file, int line_num) {
             error_message_ = "Could not parse line ";
             error_message_ += std::to_string(line_num);
             error_message_ += " in file '"+file+"'";
@@ -91,8 +90,8 @@ namespace allpix {
      */
     class InstantiationError : public RuntimeError {
     public:
-        InstantiationError(std::string &module) {
-            //FIXME: add detectory and input output instance here
+        explicit InstantiationError(const std::string &module) {
+            // FIXME: add detectory and input output instance here
             error_message_ = "Could not instantiate a module of type "+module;
         }
     };
@@ -102,8 +101,9 @@ namespace allpix {
      * WARNING: can both be a config or logic error
      */
     class UnexpectedFinalizeException: public RuntimeError {
-        UnexpectedFinalizeException(std::string &module) {
-            //FIXME: add detectory and input output instance here
+    public:
+        explicit UnexpectedFinalizeException(const std::string &module) {
+            // FIXME: add detectory and input output instance here
             error_message_ = "Module of type "+module+" reached finalization unexpectedly (are all required messages sent?)";
         }
     };
@@ -112,8 +112,9 @@ namespace allpix {
      * Receive of a message that a module did not expect (only one message) or if a message is sent out without receivers (NOTE: not always a problem)
      */
     class UnexpectedMessageException: public RuntimeError {
-        UnexpectedMessageException(std::string &module, std::type_info &message) {
-            //FIXME: add detectory and input output instance here
+    public:
+        UnexpectedMessageException(const std::string &module, const std::type_info &message) {
+            // FIXME: add detectory and input output instance here
             error_message_ = "Unexpected receive of message ";
             error_message_ += message.name();
             error_message_ += " by module "+module+" (are multiple modules providing the same output?)";
@@ -127,7 +128,7 @@ namespace allpix {
      */
     class InvalidDetectorError : public RuntimeError {
     public:
-        InvalidDetectorError(std::string category, std::string &detector) {
+        InvalidDetectorError(const std::string category, const std::string &detector) {
             error_message_ = "Could not find a detector with "+category+" '"+detector+"'";
         }
     };
@@ -135,13 +136,13 @@ namespace allpix {
     /* 
      * Errors related to incorrect setup of a module (against the rules)
      */
-    class LogicError : public Exception {} ;
+    class LogicError : public Exception {};
     
     // FIXME: implement this later (possibly both can be merged into one error)
     
     // detect if module is in a wrong state (for example dispatching a message outside the run method run by the module manager)
     class InvalidModuleStateException : public LogicError {};
     class InvalidModuleActionException : public LogicError {};
-} //namespace allpix
+} 
 
 #endif /* ALLPIX_EXCEPTIONS_H */

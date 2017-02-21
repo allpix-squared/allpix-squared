@@ -13,18 +13,18 @@ using namespace allpix;
 
 Module::Module(AllPix *allpix): allpix_(allpix) {}
 
-AllPix *Module::getAllPix(){
+AllPix *Module::getAllPix() {
     return allpix_;
 }
 
-Messenger *Module::getMessenger(){
+Messenger *Module::getMessenger() {
     return allpix_->getMessenger();
 }
 
-ModuleManager *Module::getModuleManager(){
+ModuleManager *Module::getModuleManager() {
     return allpix_->getModuleManager();
 }
 
-GeometryManager *Module::getGeometryManager(){
+GeometryManager *Module::getGeometryManager() {
     return allpix_->getGeometryManager();
 }

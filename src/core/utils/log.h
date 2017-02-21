@@ -10,7 +10,7 @@
 
 #ifdef WIN32
 #define __func__ __FUNCTION__
-#endif // WIN32
+#endif
 
 #include <vector>
 #include <string>
@@ -61,8 +61,10 @@ namespace allpix {
         // convert log level to string
         static LogLevel getLevelFromString(const std::string &level);
         static std::string getStringFromLevel(LogLevel level);
+        
     protected:
         std::ostringstream os;
+        
     private:
         int exception_count_;
         
@@ -79,11 +81,11 @@ namespace allpix {
 #define IFLOG(level) \
     if (LogLevel::level > allpix::Log::getReportingLevel() || allpix::Log::getStreams().empty()) ; \
     else 
-            
+
 #define LOG(level) \
     if (LogLevel::level > allpix::Log::getReportingLevel() || allpix::Log::getStreams().empty()) ; \
-    else allpix::Log().getStream(LogLevel::level,__FILE_NAME__,__func__,__LINE__)
+    else allpix::Log().getStream(LogLevel::level, __FILE_NAME__, __func__, __LINE__)
                     
-} //namespace allpix
+} 
 
 #endif /* ALLPIX_LOG_H */

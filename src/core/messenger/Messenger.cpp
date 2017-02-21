@@ -13,11 +13,11 @@
 using namespace allpix;
 
 // Destructor
-Messenger::~Messenger(){
+Messenger::~Messenger() {
     // delete all delegates
-    for(auto &type_delegates : delegates_){
-        for(auto &name_delegates : type_delegates.second){
-            for(auto &delegate : name_delegates.second){
+    for (auto &type_delegates : delegates_) {
+        for (auto &name_delegates : type_delegates.second) {
+            for (auto &delegate : name_delegates.second) {
                 delete delegate;
             }
         }
@@ -25,24 +25,24 @@ Messenger::~Messenger(){
 }
 
 // Dispatch message
-void Messenger::dispatchMessage(const Message &msg, std::string name){
+void Messenger::dispatchMessage(const Message &msg, std::string name) {
     bool send = false;
     
     // NOTE: we are not sending messages with unspecified names to everyone listening
-    if(!name.empty()){
-        for(auto &delegate : delegates_[typeid(msg)][name]) {
+    if (!name.empty()) {
+        for (auto &delegate : delegates_[typeid(msg)][name]) {
             delegate->call(msg);
             send = true;
         }
     }
     
     // NOTE: we do send all messages also to general listeners
-    for(auto &delegate : delegates_[typeid(msg)][""]) {
+    for (auto &delegate : delegates_[typeid(msg)][""]) {
         delegate->call(msg);
         send = true;
     }
     
-    if(!send){
+    if (!send) {
         LOG(WARNING) << "Dispatched message has no receivers... this is probably not what you want!";
     }
 }

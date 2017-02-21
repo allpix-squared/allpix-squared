@@ -7,7 +7,7 @@
 
 #include "Module.hpp"
 
-namespace allpix{
+namespace allpix {
 
     class AllPix;
     
@@ -36,4 +36,4 @@ namespace allpix{
     };
 }
 
-#endif // ALLPIX_MODULE_MANAGER_H
+#endif /* ALLPIX_MODULE_MANAGER_H */
