@@ -58,7 +58,7 @@ void StaticModuleManager::load(AllPix *allpix) {
                     identifiers_.erase(iter);
                 }else{
                     if(iter->second.first.getPriority() == mod->getIdentifier().getPriority()){
-                        LOG(WARNING) << "Equal priority no idea what to do now...";
+                        throw AmbiguousInstantiationError(conf.getName());
                     }
                     // priority is lower just ignore
                     continue;

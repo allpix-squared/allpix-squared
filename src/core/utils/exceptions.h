@@ -95,6 +95,13 @@ namespace allpix {
             error_message_ = "Could not instantiate a module of type "+module;
         }
     };
+    class AmbiguousInstantiationError : public RuntimeError {
+    public:
+        explicit AmbiguousInstantiationError(const std::string &module) {
+            // FIXME: add detectory and input output instance here
+            error_message_ = "Two modules of type "+module+" instantiated with same unique identifier and priority, cannot choose correct one";
+        }
+    };
     
     /*
      * Errors related to module unexpected finalization before a module has run
