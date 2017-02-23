@@ -23,7 +23,8 @@ namespace allpix {
             std::vector<std::unique_ptr<Module> > mod_list;
             
             // create a unique instance of the module
-            mod_list.emplace_back(std::make_unique<T>(getAllPix(), getConfiguration()));
+            ModuleIdentifier identifier(T::name, 0);
+            mod_list.emplace_back(std::make_unique<T>(getAllPix(), identifier, getConfiguration()));
             
             return mod_list;
         }

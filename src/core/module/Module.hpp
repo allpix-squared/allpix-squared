@@ -8,6 +8,8 @@
 #include <vector>
 #include <string>
 
+#include "ModuleIdentifier.hpp"
+
 #include "../config/Configuration.hpp"
 
 #include "../geometry/Detector.hpp"
@@ -31,7 +33,7 @@ namespace allpix {
         
         // Constructor and destructors
         // FIXME: register and unregister the listeners in the constructor?
-        explicit Module(AllPix *allpix);
+        Module(AllPix *allpix, ModuleIdentifier identifier);
         virtual ~Module() {}
         
         // FIXME: does it makes sense to copy a module
@@ -40,16 +42,21 @@ namespace allpix {
         
         // Modules should have a unique name (for configuration)
         // TODO: depends on implementation how this should work with dynamic loading
-        virtual std::string getName() = 0;
+        //virtual std::string getName() = 0;
         
         // FIXME: handle by string or directly pass detectors?
-        virtual void setDetector(Detector det) {
+        void setDetector(Detector det) {
             _detector = det;
         }
-        virtual Detector getDetector() {
+        Detector getDetector() const {
             return _detector;
         }
     
+        //get the identifier
+        ModuleIdentifier getIdentifier() const{
+            return identifier_;
+        }
+        
         // Get access to several services
         // FIXME: use smart pointers here
         AllPix *getAllPix();
@@ -58,7 +65,7 @@ namespace allpix {
         GeometryManager *getGeometryManager();
         
         // Initialize the module and pass the configuration etc.
-        virtual void init(Configuration) {
+        virtual void init() {
             // FIXME: do default stuff here
         }
         
@@ -73,6 +80,7 @@ namespace allpix {
         
     private:
         AllPix *allpix_;
+        ModuleIdentifier identifier_;
         
         // FIXME: see above
         Detector _detector;

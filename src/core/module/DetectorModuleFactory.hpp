@@ -35,7 +35,8 @@ namespace allpix {
                     // only check now that the detector actually exists
                     auto det = getAllPix()->getGeometryManager()->getDetector(name);
                     
-                    mod_list.emplace_back(std::make_unique<T>(getAllPix(), conf));
+                    ModuleIdentifier identifier(T::name+det.getName(), 1);
+                    mod_list.emplace_back(std::make_unique<T>(getAllPix(), identifier, conf));
                     mod_list.back()->setDetector(det);
                     all_names.insert(name);
                 }
@@ -50,7 +51,8 @@ namespace allpix {
                         // skip all that were already added by name
                         if (all_names.find(det.getName()) != all_names.end()) continue;
                         
-                        mod_list.emplace_back(std::make_unique<T>(getAllPix(), conf));
+                        ModuleIdentifier identifier(T::name+det.getName(), 2);
+                        mod_list.emplace_back(std::make_unique<T>(getAllPix(), identifier, conf));
                         mod_list.back()->setDetector(det);
                     }                    
                 }

@@ -5,9 +5,11 @@
 #ifndef ALLPIX_MODULE_MANAGER_H
 #define ALLPIX_MODULE_MANAGER_H
 
-#include <vector>
+#include <list>
 #include <queue>
 #include <memory>
+#include <string>
+#include <map>
 
 #include "Module.hpp"
 
@@ -35,7 +37,12 @@ namespace allpix {
         virtual void finalize();
         
     protected:
-        std::vector<std::unique_ptr<Module>> modules_;
+        using ModuleList = std::list<std::unique_ptr<Module>>;
+        using ModuleIdentifierMap = std::map<std::string, std::pair<ModuleIdentifier, ModuleList::iterator> >;
+        ModuleList modules_;
+        ModuleIdentifierMap identifiers_;
+        
+        // FIXME: if we stick to the linear run we can also just run modules directly from list
         std::queue<Module*> run_queue_;
         
         // Add module to run queue

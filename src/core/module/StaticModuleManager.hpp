@@ -30,6 +30,8 @@ namespace allpix {
         void load(AllPix *);
         
     private:
+        std::map<std::string, int> _instantiations_map;
+        
         std::unique_ptr<ModuleFactory> get_factory(std::string name);
         
         GeneratorFunction generator_func_;

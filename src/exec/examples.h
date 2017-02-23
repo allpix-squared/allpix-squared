@@ -41,7 +41,7 @@ class TestModuleOne : public Module{
 public:
     static const std::string name;
     
-    TestModuleOne(AllPix *apx, Configuration config): Module(apx) {
+    TestModuleOne(AllPix *apx, ModuleIdentifier id, Configuration config): Module(apx, id) {
         //conf.setDefault("test", "standard_one_name");
         conf_ = config;
         
@@ -53,9 +53,9 @@ public:
         
     }
     
-    std::string getName(){
+    /*std::string getName(){
         return TestModuleOne::name;
-    }
+    }*/
     
     void run(){
         LOG(DEBUG) << "(1) running first module";
@@ -78,7 +78,7 @@ class TestModuleTwo : public Module{
 public:
     static const std::string name;
     
-    TestModuleTwo(AllPix *apx, Configuration config): Module(apx) {
+    TestModuleTwo(AllPix *apx, ModuleIdentifier id, Configuration config): Module(apx, id) {
         conf_ = config;
         conf_.setDefault("test", "standard_two_name");
         LOG(DEBUG) << "(2) init registering listeners for module " << conf_.getText("name", "<none>");
@@ -91,9 +91,9 @@ public:
         LOG(DEBUG) << "(2) received a message: " << msg->getText();
     }
     
-    std::string getName(){
+    /*std::string getName(){
         return TestModuleTwo::name;
-    }
+    }*/
     
     void run(){
         // messages_.push_back(message_->getText());

@@ -11,7 +11,7 @@
 
 using namespace allpix;
 
-Module::Module(AllPix *allpix): allpix_(allpix) {}
+Module::Module(AllPix *allpix, ModuleIdentifier identifier): allpix_(allpix), identifier_(identifier) {}
 
 AllPix *Module::getAllPix() {
     return allpix_;

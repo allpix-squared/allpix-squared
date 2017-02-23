@@ -31,6 +31,7 @@ IF(LATEX_COMPILER)
   ADD_LATEX_DOCUMENT(usermanual/allpix-manual.tex 
     INPUTS
     usermanual/symbols.tex
+    usermanual/design.tex
     usermanual/references.tex
     NO_DEFAULT
     )
