@@ -231,6 +231,17 @@ namespace allpix {
         void SetSensorExcessHLeft(double val){
             m_sensor_gr_excess_hleft = val;
         }
+        
+        // PCB
+        void SetPCBHX(double val){
+            m_pcb_hx = val;
+        }
+        void SetPCBHY(double val){
+            m_pcb_hy = val;
+        }
+        void SetPCBHZ(double val){
+            m_pcb_hz = val;
+        }
     private:
 
         int m_npix_x;

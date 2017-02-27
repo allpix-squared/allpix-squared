@@ -217,7 +217,7 @@ void ReadGeoDescription::ParseContext(TXMLNode *node)
                     float val = atof(tempContent.c_str());
                     m_detsGeo[m_currentType]->SetSensorPosZ(val*m_unitsMap[m_currentAtt]);
                     
-                }/*else if(m_currentNodeName == __pcb_hx_S){
+                }else if(m_currentNodeName == __pcb_hx_S){
                     
                     float val = atof(tempContent.c_str());
                     m_detsGeo[m_currentType]->SetPCBHX(val*m_unitsMap[m_currentAtt]);
@@ -232,8 +232,7 @@ void ReadGeoDescription::ParseContext(TXMLNode *node)
                     float val = atof(tempContent.c_str());
                     m_detsGeo[m_currentType]->SetPCBHZ(val*m_unitsMap[m_currentAtt]);
                     
-                }*/
-                else if(m_currentNodeName == __sensor_gr_excess_htop_S){
+                }else if(m_currentNodeName == __sensor_gr_excess_htop_S){
                     
                     float val = atof(tempContent.c_str());
                     m_detsGeo[m_currentType]->SetSensorExcessHTop(val*m_unitsMap[m_currentAtt]);

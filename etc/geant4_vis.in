@@ -1,0 +1,42 @@
+# vis
+/vis/scene/create
+/vis/scene/add/volume World -1 2
+/vis/viewer/set/style s
+
+/run/verbose 0
+/control/verbose 0
+/control/saveHistory
+/tracking/verbose 0
+
+/vis/open OGLIX 1024x768-100+100
+#/vis/open OGLIXm 1024x768-100+100
+#/vis/open RayTracer
+#/vis/open OGLIQt
+#/vis/open OGLSQt
+#/vis/open OIX
+#/vis/open OGLIX 1024x768-100+100
+#/vis/open OGLSXm
+#/vis/open DAWNFILE
+#/vis/open OGLSX
+#/vis/open OGL 600x600-0+0
+
+/vis/viewer/set/background 0.4 0.5 0.6
+/vis/viewer/set/viewpointThetaPhi 20 50
+#/vis/viewer/set/background 0 0 0
+/vis/viewer/zoom 2.0
+/vis/scene/add/axes 0. 0. 0. 30. mm
+/vis/viewer/flush
+
+# Draw trajectories at end of event, showing trajectory points as
+# markers of size 2 pixels
+/vis/scene/add/trajectories
+/vis/modeling/trajectories/create/drawByCharge
+/vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts true
+/vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 2
+/vis/scene/endOfEventAction accumulate
+
+########################################################################
+########################################################################
+
+/tracking/verbose 1
+

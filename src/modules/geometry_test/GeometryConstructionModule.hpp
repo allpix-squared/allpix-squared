@@ -12,6 +12,8 @@
 #include "../../core/module/Module.hpp"
 #include "../../core/config/Configuration.hpp"
 
+class G4RunManager;
+
 namespace allpix{
     // define the module to inherit from the module base class
     class GeometryConstructionModule : public Module{
@@ -20,9 +22,8 @@ namespace allpix{
         static const std::string name;
         
         // constructor should take a pointer to AllPix, a ModuleIdentifier and a Configuration as input
-        GeometryConstructionModule(AllPix *apx, ModuleIdentifier id, Configuration config): Module(apx, id) {
-            config_ = config;
-        }
+        GeometryConstructionModule(AllPix *apx, ModuleIdentifier id, Configuration config);
+        ~GeometryConstructionModule();
         
         // method that will be run where the module should do its computations and possibly dispatch their results as a message
         void run();
@@ -33,6 +34,9 @@ namespace allpix{
         
         // configuration for this module
         Configuration config_;
+        
+        // Geant 4 internal pointers
+        std::unique_ptr<G4RunManager> g4_run_manager_;
     };
 }
 
