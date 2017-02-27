@@ -22,9 +22,18 @@
 
 #include "../tools/runge_kutta.h"
 
-#include "examples.h"
+//#include "examples.h"
+
+#include "../core/module/UniqueModuleFactory.hpp"
+#include "../modules/geometry_test/GeometryConstructionModule.hpp"
 
 using namespace allpix;
+
+std::unique_ptr<ModuleFactory> generator(std::string str){
+    if(str == GeometryConstructionModule::name) return std::make_unique<UniqueModuleFactory<GeometryConstructionModule>>();
+    //if(str == TestModuleTwo::name) return std::make_unique<UniqueModuleFactory<TestModuleTwo>>();
+    return nullptr;
+}
 
 Eigen::Vector3d function(double time, Eigen::Vector3d pos) {
     return time*pos;  // Eigen::Vector3d::Zero();

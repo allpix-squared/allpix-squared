@@ -7,7 +7,7 @@
 #  modules
 #  ${GEANT4_INCLUDE_DIR})
 
-SET(CMAKE_CXX_FLAGS "-g -Wall -Wextra -pedantic ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-std=c++14 -O2 -Wall -Wextra -pedantic ${CMAKE_CXX_FLAGS}")
 
 find_package( PkgConfig )
 pkg_check_modules( EIGEN3 REQUIRED eigen3 )

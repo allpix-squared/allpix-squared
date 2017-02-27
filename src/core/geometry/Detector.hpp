@@ -17,13 +17,19 @@ namespace allpix {
         // Constructor and destructors
         Detector() {}  // FIXME: remove this constructor?
         Detector(std::string name, std::string type);
-        ~Detector() {}
+        virtual ~Detector() {}
         
         // TODO: setters have to be added
         
         // Get description
         std::string getName() const;
+        void setName(std::string name){
+            name_ = name;
+        }
         std::string getType() const;
+        void setType(std::string type){
+            type_ = type;
+        }
         
         // Get location in world
         // FIXME: use a proper vector here

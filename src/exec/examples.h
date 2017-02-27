@@ -117,9 +117,3 @@ private:
 };
 
 const std::string TestModuleTwo::name = "test2";
-
-std::unique_ptr<ModuleFactory> generator(std::string str){
-    if(str == TestModuleOne::name) return std::make_unique<DetectorModuleFactory<TestModuleOne>>();
-    if(str == TestModuleTwo::name) return std::make_unique<UniqueModuleFactory<TestModuleTwo>>();
-    return nullptr;
-}

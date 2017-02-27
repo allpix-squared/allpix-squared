@@ -150,6 +150,17 @@ namespace allpix {
     // detect if module is in a wrong state (for example dispatching a message outside the run method run by the module manager)
     class InvalidModuleStateException : public LogicError {};
     class InvalidModuleActionException : public LogicError {};
+    
+    /* 
+     * General exceptions for modules if something goes wrong
+     * FIXME: extend this and move to module
+     */
+    class ModuleException : public RuntimeError {
+    public:
+        ModuleException(const std::string& what_arg) {
+            error_message_ = what_arg;
+        }
+    };
 } 
 
 #endif /* ALLPIX_EXCEPTIONS_H */

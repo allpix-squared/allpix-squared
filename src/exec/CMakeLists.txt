@@ -5,8 +5,11 @@ find_package( PkgConfig )
 pkg_check_modules( EIGEN3 REQUIRED eigen3 )
 include_directories(SYSTEM ${EIGEN3_INCLUDE_DIRS} )
 
+INCLUDE_DIRECTORIES(SYSTEM ../core)
+
 ADD_EXECUTABLE(allpix allpix.cpp)
 TARGET_LINK_LIBRARIES(allpix AllpixCore)
+TARGET_LINK_LIBRARIES(allpix geometry_test)
 
 INSTALL(TARGETS allpix
   RUNTIME DESTINATION bin
