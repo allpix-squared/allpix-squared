@@ -49,6 +49,12 @@ namespace allpix {
             throw std::invalid_argument("remaining data at end");
         return ret;
     }
+    template <> inline std::string from_string<std::string> (std::string str){
+        if(!str.empty() && str[0] == '\"') str.erase(str.begin());
+        if(!str.empty() && str[str.size()-1] == '\"') str.erase(--str.end());
+        return str;
+    }
+    
     template <typename T> std::string to_string(T inp) {
         return std::to_string(inp);
     }
@@ -66,7 +72,7 @@ namespace allpix {
     
     /** Splits string s into elements at delimiter "delim" and returns them as vector
      */
-    template <typename T> std::vector<T> split(std::string str, const std::string &delims) {
+    template <typename T> std::vector<T> split(std::string str, std::string delims) {
         str = trim(str, delims);
         
         // if the input string is empty, simply return empty container
@@ -75,8 +81,22 @@ namespace allpix {
         // else we have data, clear the default elements and chop the string:
         std::vector<T> elems;
         
-        std::size_t prev = 0, pos;
-        while ((pos = str.find_first_of(delims, prev)) != std::string::npos) {
+        //add the string identifiers as special delims
+        delims += "\'\"";
+                
+        std::size_t prev = 0, sprev = 0, pos;
+        char ins = 0;
+        while ((pos = str.find_first_of(delims, sprev)) != std::string::npos) {
+            sprev = pos+1;
+                        
+            // FIXME: handle escape
+            if (str[pos] == '\'' || str[pos] == '\"') {
+                if(!ins) ins = str[pos];
+                else if(ins == str[pos]) ins = 0;
+                continue;
+            }
+            if(ins) continue;
+                        
             if (pos > prev)
                 elems.push_back(from_string<T>(str.substr(prev, pos-prev)));
             prev = pos+1;

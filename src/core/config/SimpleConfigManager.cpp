@@ -114,20 +114,22 @@ void SimpleConfigManager::build_config(std::istream &stream, std::string file_na
             }
         } else {
             std::string key = trim(std::string(line, 0, equals_pos));
-            // FIXME: handle lines like: blah = "foo said ""bar""; # ok." # not "baz"
-            // FIXME: this will break for arrays like "foor bar" "baz" which should parse as ["foo bar", "baz"] of course
+            
             std::string value = trim(std::string(line, equals_pos + 1));
-            if ((value[0] == '\'' && value[value.length() - 1] == '\'') ||
-                (value[0] == '\"' && value[value.length() - 1] == '\"')) {
-                value = std::string(value, 1, value.length() - 2);
-            } else {
-                size_t i = value.find_first_of(";#");
-                if (i != std::string::npos)
-                    value = trim(std::string(value, 0, i));
+            char ins = 0;
+            for(size_t i=0; i<value.size(); ++i){
+                if(value[i] == '\'' || value[i] == '\"'){
+                    if(!ins) ins = value[i];
+                    else if(ins == value[i]) ins = 0;
+                }
+                if(ins == 0 && (value[i] == ';' || value[i] == '#')){
+                    value = std::string(value, 0, i);
+                    break;
+                }
             }
-                        
+                                    
             // add the config key
-            conf.set(key, value);
+            conf.set(key, trim(value));
         }
     }
     // add last section
