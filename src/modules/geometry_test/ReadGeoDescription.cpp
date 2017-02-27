@@ -86,7 +86,7 @@ void ReadGeoDescription::ParseContext(TXMLNode *node)
                             }
                             
                             // create a new one
-                            m_detsGeo[m_currentType] = std::make_shared<PixelDetector>();
+                            m_detsGeo[m_currentType] = std::make_shared<PixelDetectorModel>();
                             m_detsGeo[m_currentType]->setType(m_currentType);
                             
                         }
@@ -375,7 +375,7 @@ void ReadGeoDescription::ParseContext(TXMLNode *node)
     }
 }
 
-std::map<std::string, std::shared_ptr<PixelDetector > > &ReadGeoDescription::GetDetectorsMap(){
+std::map<std::string, std::shared_ptr<PixelDetectorModel > > &ReadGeoDescription::GetDetectorsMap(){
     return m_detsGeo;
 }
 

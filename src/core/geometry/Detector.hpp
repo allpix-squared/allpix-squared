@@ -7,8 +7,10 @@
 
 #include <string>
 #include <tuple>
+#include <memory>
 
 #include "Detector.hpp"
+#include "DetectorModel.hpp"
 
 namespace allpix {
 
@@ -16,20 +18,17 @@ namespace allpix {
     public:
         // Constructor and destructors
         Detector() {}  // FIXME: remove this constructor?
-        Detector(std::string name, std::string type);
+        Detector(std::string name, std::shared_ptr<DetectorModel> model);
         virtual ~Detector() {}
         
         // TODO: setters have to be added
         
         // Get description
         std::string getName() const;
-        void setName(std::string name){
-            name_ = name;
-        }
+        void setName(std::string name);
+        
+        // Get the type of the detector model
         std::string getType() const;
-        void setType(std::string type){
-            type_ = type;
-        }
         
         // Get location in world
         // FIXME: use a proper vector here
@@ -37,15 +36,14 @@ namespace allpix {
         std::tuple<double, double, double> getOrientation() const;
         
         // get model description
-        // const DetectorModel &getModel();
+        const std::shared_ptr<DetectorModel> getModel() const;
     private:        
         // FIXME: use a proper vector here
         std::tuple<double, double, double> location_;
         std::tuple<double, double, double> orientation_;
-        
-        // DetectorModel model_;
-        std::string name_;
-        std::string type_;
+
+        std::string name_;        
+        std::shared_ptr<DetectorModel> model_;        
     };
 }
 

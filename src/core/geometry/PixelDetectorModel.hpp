@@ -8,7 +8,7 @@
 #include <string>
 #include <tuple>
 
-#include "Detector.hpp"
+#include "DetectorModel.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -17,18 +17,15 @@
 #include <map>
 #include <cmath>
 
-//#include "G4ThreeVector.hh"
-//#include "CLHEP/Units/SystemOfUnits.h"
-
 //FIXME: this needs a restructure...
 
 namespace allpix {
 
-    class PixelDetector : public Detector {
+    class PixelDetectorModel : public DetectorModel {
     public:        
         //Constructor and destructor
-        PixelDetector() {}
-        ~PixelDetector() {}
+        PixelDetectorModel() {}
+        ~PixelDetectorModel() {}
 
         //  Number of pixels
         inline int GetNPixelsX(){return m_npix_x;};

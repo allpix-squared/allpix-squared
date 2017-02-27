@@ -11,21 +11,21 @@
 #include <map>
 #include <memory>
 
-//ALERT: this reader is very buggy... so do not throw in wrong input
+//ALERT: this reader is very buggy... do not throw in wrong input
 //FIXME: we want to get rid of this later of course
 
-#include "../../core/geometry/PixelDetector.hpp"
+#include "../../core/geometry/PixelDetectorModel.hpp"
 
 class TXMLNode;
 
-namespace allpix{
+namespace allpix {
     
     class ReadGeoDescription {
     public:
         ReadGeoDescription(std::string);
-        ~ReadGeoDescription(){};
+        ~ReadGeoDescription() {};
 
-        std::map<std::string, std::shared_ptr<PixelDetector > > &GetDetectorsMap();
+        std::map<std::string, std::shared_ptr<PixelDetectorModel>> &GetDetectorsMap();
         bool StringIsRelevant(std::string);
     private:     
         void ParseContext(TXMLNode *);
@@ -33,7 +33,7 @@ namespace allpix{
         std::string m_currentNodeName;
         std::string m_currentAtt;
 
-        std::map<std::string, std::shared_ptr<PixelDetector>> m_detsGeo;        
+        std::map<std::string, std::shared_ptr<PixelDetectorModel>> m_detsGeo;        
         std::string m_currentType;
 
         std::map<std::string, double> m_unitsMap;

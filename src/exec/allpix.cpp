@@ -72,21 +72,6 @@ int main(int, const char **) {
         std::unique_ptr<StaticModuleManager> mod = std::make_unique<StaticModuleManager>(&generator);
         std::unique_ptr<SimpleConfigManager> conf = std::make_unique<SimpleConfigManager>(file_name);
         
-        /*auto configs = conf->getConfigurations();
-        for(auto &config : configs){
-            std::cout << "[" << config.getName() << "]" << std::endl;
-            config.print();
-            std::cout << std::endl;
-        }*/
-        
-        Detector det1("name1", "type1");
-        Detector det2("name2", "type1");
-        Detector det3("name3", "type2");
-        
-        geo->addDetector(det1);
-        geo->addDetector(det2);
-        geo->addDetector(det3);
-        
         std::unique_ptr<AllPix> apx = std::make_unique<AllPix>(std::move(conf), std::move(mod), std::move(geo));
         
         LOG(INFO) << "Initializing AllPix";
