@@ -29,55 +29,36 @@
 
 using namespace allpix;
 
+// FIXME: temporary generator function for as long we do not have dynamic loading
 std::unique_ptr<ModuleFactory> generator(std::string str){
     if(str == GeometryConstructionModule::name) return std::make_unique<UniqueModuleFactory<GeometryConstructionModule>>();
-    //if(str == TestModuleTwo::name) return std::make_unique<UniqueModuleFactory<TestModuleTwo>>();
-    return nullptr;
-}
 
-Eigen::Vector3d function(double time, Eigen::Vector3d pos) {
-    return time*pos;  // Eigen::Vector3d::Zero();
+    return nullptr;
 }
 
 int main(int, const char **) {
     std::string file_name = "etc/example.ini";
     
-    /*constexpr double RK3[4][3] = {{0, 0, 0},
-        {1/2, 0, 0},
-        {-1, 2, 0},
-        {1/6, 2/3, 1/6}};*/
-    
-    //RungeKutta<double, 3, 3> runge_kutta(tableau::RK3, function, 1e-9, Eigen::Vector3d());
-    /*auto runge_kutta = make_runge_kutta(tableau::RK5, function, 1e-9, Eigen::Vector3d(1, 0, 0));
-    
-    for (int i = 0; i < 5; ++i) {
-        auto step = runge_kutta.step(10000);
-        std::cout << step.value << std::endl;
-        std::cout << step.error << std::endl;
-        //runge_kutta.step();
-        std::cout << std::endl;
-    }
-    std::cout << runge_kutta.getResult() << std::endl;
-    
-    return 0;*/
-    
     try {
         // Set global log level:
         LogLevel log_level = Log::getLevelFromString("DEBUG");
         Log::setReportingLevel(log_level);
-        
         LOG(INFO) << "Set log level: " << Log::getStringFromLevel(log_level);
-                
+            
+        // Construct managers (FIXME: move some initialization to AllPix)
         std::unique_ptr<GeometryManager> geo = std::make_unique<GeometryManager>();
         std::unique_ptr<StaticModuleManager> mod = std::make_unique<StaticModuleManager>(&generator);
         std::unique_ptr<SimpleConfigManager> conf = std::make_unique<SimpleConfigManager>(file_name);
         
+        // Construct main AllPix object
         std::unique_ptr<AllPix> apx = std::make_unique<AllPix>(std::move(conf), std::move(mod), std::move(geo));
         
         LOG(INFO) << "Initializing AllPix";
         apx->init();
+        
         LOG(INFO) << "Running AllPix";
         apx->run();
+        
         LOG(INFO) << "Finishing AllPix";
         apx->finalize();
     } catch (ConfigurationError &e) {
