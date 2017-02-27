@@ -23,8 +23,7 @@ MACRO(option_build_module dir)
     TARGET_LINK_LIBRARIES(${dir} AllpixCore)
     
     # FIXME: determine per module the libraries to link
-    message(${ROOT_LIBRARIES})
-    TARGET_LINK_LIBRARIES(${dir} ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES})
+    TARGET_LINK_LIBRARIES(${dir} ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES} ${Geant4_LIBRARIES})
 
     INSTALL(TARGETS ${dir}
       RUNTIME DESTINATION bin
@@ -44,30 +43,24 @@ OPTION(BUILD_allmodules "Build all modules?" OFF)
 
 # ROOT is required for histogramming
 FIND_PACKAGE(ROOT REQUIRED COMPONENTS Geom XMLParser)
-IF(ROOT_FOUND)
-    # FIXME: determine this per project
-    ##LINK_LIBRARIES(${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES})
-    link_directories(${ROOT_LIBRARY_DIR})
-ELSE(ROOT_FOUND)
+IF(NOT ROOT_FOUND)
     MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
     "$ source YOUR_ROOT_DIR/bin/thisroot.sh")
-ENDIF(ROOT_FOUND)
+ENDIF(NOT ROOT_FOUND)
 
 # Geant4 is required for geometry description and charge deposition.
-# Check first, if CMake finds a "FindGeant4" module or warn the user otherwise
-CheckHasModule(Geant4)
-IF(HAS_MODULE_Geant4)
-    FIND_PACKAGE(Geant4 REQUIRED ui_all)
-ELSE(HAS_MODULE_Geant4)
+FIND_PACKAGE(Geant4 REQUIRED ui_all vis_all)
+IF(NOT Geant4_FOUND)
     MESSAGE(FATAL_ERROR "Could not find Geant4, make sure to source the Geant4 environment\n"
     "$ source YOUR_GEANT4_DIR/bin/geant4.sh")
-ENDIF(HAS_MODULE_Geant4)
+ENDIF(NOT Geant4_FOUND)
 
 ###################################
 # Build the required modules      #
 ###################################
 
-SET(CMAKE_CXX_FLAGS "-std=c++14 -O2 -Wall -Wextra -pedantic -Wfatal-errors ${CMAKE_CXX_FLAGS}")
+set (CMAKE_CXX_STANDARD 14)
+SET(CMAKE_CXX_FLAGS "-O2 -Wall -Wextra -pedantic -Wfatal-errors ${CMAKE_CXX_FLAGS}")
 
 # Example module implementation - check this directory as a starting point for your own module implementation
 option_build_module(geometry_test)

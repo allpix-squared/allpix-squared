@@ -34,7 +34,6 @@ namespace allpix {
         std::vector<Detector> getDetectors() const;
         Detector getDetector(std::string) const;
         std::vector<Detector>  getDetectorsByType(std::string) const;
-        
     private:
         std::vector<Detector> detectors_;
     };

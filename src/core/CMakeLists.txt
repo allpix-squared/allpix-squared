@@ -7,11 +7,11 @@
 #  modules
 #  ${GEANT4_INCLUDE_DIR})
 
-SET(CMAKE_CXX_FLAGS "-std=c++14 -O2 -Wall -Wextra -pedantic ${CMAKE_CXX_FLAGS}")
-
-find_package( PkgConfig )
+FIND_PACKAGE( PkgConfig )
 pkg_check_modules( EIGEN3 REQUIRED eigen3 )
-include_directories(SYSTEM ${EIGEN3_INCLUDE_DIRS} )
+INCLUDE_DIRECTORIES(SYSTEM ${EIGEN3_INCLUDE_DIRS} )
+
+SET (CMAKE_CXX_STANDARD 14)
 
 ADD_LIBRARY(AllpixCore SHARED
     utils/log.cpp

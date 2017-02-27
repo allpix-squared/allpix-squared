@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "../../core/geometry/PixelDetectorModel.hpp"
 #include "../../core/module/Module.hpp"
 #include "../../core/config/Configuration.hpp"
 
@@ -25,7 +26,12 @@ namespace allpix{
         
         // method that will be run where the module should do its computations and possibly dispatch their results as a message
         void run();
+        
     private:
+        // internal methods
+        void buildG4();
+        
+        // configuration for this module
         Configuration config_;
     };
 }

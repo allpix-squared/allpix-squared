@@ -7,20 +7,14 @@
 
 #include "../core/AllPix.hpp"
 
-#include "../core/module/Module.hpp"
 #include "../core/module/StaticModuleManager.hpp"
-
-#include "../core/messenger/Messenger.hpp"
-
 #include "../core/config/SimpleConfigManager.hpp"
-
-#include "../core/geometry/Detector.hpp"
 #include "../core/geometry/GeometryManager.hpp"
 
 #include "../core/utils/exceptions.h"
 #include "../core/utils/log.h"
 
-#include "../tools/runge_kutta.h"
+//#include "../tools/runge_kutta.h"
 
 //#include "examples.h"
 
