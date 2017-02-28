@@ -9,16 +9,12 @@
 
 #include "G4RunManager.hh"
 #include "G4PhysListFactory.hh"
-#include "G4UIsession.hh"
-#include "G4UIterminal.hh"
-#include "G4UImanager.hh"
-#include "G4VisExecutive.hh"
-#include "G4VisManager.hh"
 
 #include "ReadGeoDescription.hpp"
 #include "GeometryConstructionG4.hpp"
 #include "DetectorModelG4.hpp"
 
+#include "../../core/AllPix.hpp"
 #include "../../core/geometry/GeometryManager.hpp"
 #include "../../core/utils/log.h"
 
@@ -33,16 +29,15 @@ GeometryConstructionModule::GeometryConstructionModule(AllPix *apx, ModuleIdenti
 }
 GeometryConstructionModule::~GeometryConstructionModule() {}
 
+// run the geometry construction
 void GeometryConstructionModule::run(){
     LOG(INFO) << "START BUILD GEOMETRY";
+    
+    // FIXME: check that geometry is empty or clean it before continuing
     
     // read the geometry
     std::string file_name = config_.get<std::string>("file");
     auto geo_descriptions = ReadGeoDescription(file_name);
-    
-    /*for(auto &geo_desc : ){
-     *        std::cout << geo_desc.first << " " << geo_desc.second->GetHalfChipX() << std::endl;
-}*/
     
     // build the detectors_
     // FIXME: hardcoded for now
@@ -58,20 +53,7 @@ void GeometryConstructionModule::run(){
     // construct the G4 geometry
     buildG4();
     
-    // ALERT: TEMPORARY EXECUTE MACRO (AND HANG EVERYTHING)
-    if(config_.has("macro")){
-        G4VisManager* visManager = new G4VisExecutive;
-        visManager->Initialize();
-        
-        G4UIsession *session = new G4UIterminal();
-        G4UImanager *UI = G4UImanager::GetUIpointer();
-        UI->ApplyCommand("/control/execute "+config_.get<std::string>("macro"));
-        session->SessionStart();
-        delete session;
-    }
-    
-    auto ptr = getGeometryManager()->getDetector("name1")->getExternalModel<DetectorModelG4>();
-    
+    // finish
     LOG(INFO) << "END BUILD GEOMETRY";
 }
 
@@ -87,7 +69,8 @@ void GeometryConstructionModule::run(){
  * }*/
 
 void GeometryConstructionModule::buildG4() {
-    g4_run_manager_ = std::make_unique<G4RunManager>();
+    // create the G4 run manager
+    std::shared_ptr<G4RunManager> run_manager_g4 = std::make_shared<G4RunManager>();
     
     // UserInitialization classes - mandatory;
     // FIXME: allow direct parsing of vectors
@@ -97,17 +80,18 @@ void GeometryConstructionModule::buildG4() {
     
     // set the geometry constructor
     GeometryConstructionG4 *geometry_construction = new GeometryConstructionG4(getGeometryManager(), world_size);
-    g4_run_manager_->SetUserInitialization(geometry_construction);
+    run_manager_g4->SetUserInitialization(geometry_construction);
     
     // set the physics list
     // FIXME: set a good default physics list
     config_.setDefault("physics_list", "QGSP_BERT");
     G4PhysListFactory physListFactory;
     G4VUserPhysicsList *physicsList = physListFactory.GetReferencePhysList(config_.get<std::string>("physics_list"));
-    g4_run_manager_->SetUserInitialization(physicsList);
+    run_manager_g4->SetUserInitialization(physicsList);
     
     // run the construct function in GeometryConstructionG4
-    g4_run_manager_->Initialize();
-        
-    //return expHall_phys;
+    run_manager_g4->Initialize();
+    
+    // save the geant4 run manager in allpix to make it available to other modules
+    getAllPix()->setExternalManager(run_manager_g4);
 }

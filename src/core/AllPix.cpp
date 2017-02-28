@@ -36,16 +36,28 @@ Messenger *AllPix::getMessenger() {
 
 // Initialize
 void AllPix::init() {
+    state_ = AllPix::Initializing;
+    
     // TODO: implement
     mod_mgr_->load(this);
+    
+    state_ = AllPix::Initialized;
 }
 
 void AllPix::run() {
+    state_ = AllPix::Running;
+    
     // TODO: implement
     mod_mgr_->run();
+    
+    state_ = AllPix::Finished;
 }
 
 void AllPix::finalize() {
+    state_ = AllPix::Finalizing;
+    
     // TODO: implement
     mod_mgr_->finalize();
+    
+    state_ = AllPix::Finalized;
 }

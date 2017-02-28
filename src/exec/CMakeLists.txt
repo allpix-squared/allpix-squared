@@ -14,6 +14,7 @@ TARGET_LINK_LIBRARIES(allpix AllpixCore)
 # FIXME: should not be needed
 TARGET_LINK_LIBRARIES(allpix geometry_test)
 TARGET_LINK_LIBRARIES(allpix deposition_simple)
+TARGET_LINK_LIBRARIES(allpix visualization_test)
 
 INSTALL(TARGETS allpix
   RUNTIME DESTINATION bin

@@ -65,3 +65,4 @@ SET(CMAKE_CXX_FLAGS "-O2 -Wall -Wextra -pedantic -Wfatal-errors ${CMAKE_CXX_FLAG
 # Example module implementation - check this directory as a starting point for your own module implementation
 option_build_module(geometry_test)
 option_build_module(deposition_simple)
+option_build_module(visualization_test)
