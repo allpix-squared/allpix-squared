@@ -28,14 +28,14 @@ namespace allpix {
         void *getInternalDescription(std::string);
         
         // Add detector to the system
-        void addDetector(Detector);
+        void addDetector(std::shared_ptr<Detector>);
         
         // Get detectors
-        std::vector<Detector> getDetectors() const;
-        Detector getDetector(std::string) const;
-        std::vector<Detector>  getDetectorsByType(std::string) const;
+        std::vector<std::shared_ptr<Detector>> getDetectors() const;
+        std::shared_ptr<Detector> getDetector(std::string) const;
+        std::vector<std::shared_ptr<Detector>>  getDetectorsByType(std::string) const;
     private:
-        std::vector<Detector> detectors_;
+        std::vector<std::shared_ptr<Detector>> detectors_;
     };
 }
 

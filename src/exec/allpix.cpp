@@ -19,13 +19,18 @@
 //#include "examples.h"
 
 #include "../core/module/UniqueModuleFactory.hpp"
+
+//FIXME: should not be here
 #include "../modules/geometry_test/GeometryConstructionModule.hpp"
+#include "../modules/deposition_simple/SimpleDepositionModule.hpp"
+
 
 using namespace allpix;
 
 // FIXME: temporary generator function for as long we do not have dynamic loading
 std::unique_ptr<ModuleFactory> generator(std::string str){
     if(str == GeometryConstructionModule::name) return std::make_unique<UniqueModuleFactory<GeometryConstructionModule>>();
+    if(str == SimpleDepositionModule::name) return std::make_unique<UniqueModuleFactory<SimpleDepositionModule>>();
 
     return nullptr;
 }

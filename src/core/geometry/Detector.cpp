@@ -15,9 +15,9 @@ Detector::Detector(std::string name, std::shared_ptr<DetectorModel> model): name
 std::string Detector::getName() const {
     return name_;
 }
-void Detector::setName(std::string name) {
+/*void Detector::setName(std::string name) {
     name_ = name;
-}
+}*/
 
 // Get the type of the model
 std::string Detector::getType() const {

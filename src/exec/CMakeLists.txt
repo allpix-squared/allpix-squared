@@ -10,7 +10,10 @@ SET(CMAKE_CXX_FLAGS "-O2 -Wall -Wextra -pedantic ${CMAKE_CXX_FLAGS}")
 
 ADD_EXECUTABLE(allpix allpix.cpp)
 TARGET_LINK_LIBRARIES(allpix AllpixCore)
+
+# FIXME: should not be needed
 TARGET_LINK_LIBRARIES(allpix geometry_test)
+TARGET_LINK_LIBRARIES(allpix deposition_simple)
 
 INSTALL(TARGETS allpix
   RUNTIME DESTINATION bin

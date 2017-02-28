@@ -10,6 +10,8 @@ obj/
 *.png
 *.log
 *.dat
+*.macro
+*.ps
 
 # ignore backup files of any sort of editor:
 ~*

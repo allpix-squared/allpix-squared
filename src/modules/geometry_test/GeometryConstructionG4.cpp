@@ -171,7 +171,7 @@ void GeometryConstructionG4::BuildPixelDevices() {
     //vector<G4ThreeVector>::iterator posItr = pos.begin();
     //map<int, G4ThreeVector>::iterator posItr = m_posVector.begin();
 
-    std::vector<Detector> detectors = geo_manager_->getDetectors();
+    std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
 
     ///////////////////////////////////////////////////////////
     // The pixel detector !
@@ -203,22 +203,20 @@ void GeometryConstructionG4::BuildPixelDevices() {
 
     for( ; detItr != detectors.end() ; detItr++){
         // retrieve storage pointers
-        DetectorModelG4 *model_g4 = new DetectorModelG4;
-        std::shared_ptr<PixelDetectorModel> model = std::dynamic_pointer_cast<PixelDetectorModel>(detItr->getModel());
+        std::shared_ptr<DetectorModelG4> model_g4 = std::make_shared<DetectorModelG4>();
+        std::shared_ptr<PixelDetectorModel> model = std::dynamic_pointer_cast<PixelDetectorModel>((*detItr)->getModel());
         
-        // FIXME: store this as a smart pointer
         if(model == 0){
-            LOG(WARNING) << "cannot build a G4 model for any non-pixel detectors yet... ignoring detector named " << detItr->getName();
-            LOG(DEBUG) << reinterpret_cast<long long>(detItr->getModel().get());
+            LOG(WARNING) << "cannot build a G4 model for any non-pixel detectors yet... ignoring detector named " << (*detItr)->getName();
             continue;
         }
         
         // NOTE: create temporary internal integer
         // FIXME: this is not necessary unique! if this is necessary generate it internally!
         std::hash<std::string> hash_func;
-        size_t temp_g4_id = hash_func(detItr->getName());
+        size_t temp_g4_id = hash_func((*detItr)->getName());
         
-        LOG(DEBUG) << "start creating G4 detector " << detItr->getName() << " (" << temp_g4_id << ")";
+        LOG(DEBUG) << "start creating G4 detector " << (*detItr)->getName() << " (" << temp_g4_id << ")";
         
         /*------------------------------------ Solid definitions ----------------------------------------*/
         
@@ -256,7 +254,7 @@ void GeometryConstructionG4::BuildPixelDevices() {
         }
         
         // Build names
-        std::string name = detItr->getName();
+        std::string name = (*detItr)->getName();
         wrapperName.second = wrapperName.first + "_" + name;
         PCBName.second = PCBName.first + "_" + name;
         BoxName.second = BoxName.first + "_" + name;
@@ -333,9 +331,9 @@ void GeometryConstructionG4::BuildPixelDevices() {
         // medipix 1 --> with enhancement
         // medipix 2 --> no enhancement
         /* if ( m_vectorWrapperEnhancement.findtemp_g4_id != m_vectorWrapperEnhancement.end() ) {
-            wrapperHX += m_vectorWrapperEnhancement[*detItr].x()/2.; // half
-            wrapperHY += m_vectorWrapperEnhancement[*detItr].y()/2.;
-            wrapperHZ += m_vectorWrapperEnhancement[*detItr].z()/2.;
+            wrapperHX += m_vectorWrapperEnhancement[*(*detItr)].x()/2.; // half
+            wrapperHY += m_vectorWrapperEnhancement[*(*detItr)].y()/2.;
+            wrapperHZ += m_vectorWrapperEnhancement[*(*detItr)].z()/2.;
             // temp test
             //wrapperDZ += 10000*um;
         } */
@@ -368,7 +366,7 @@ void GeometryConstructionG4::BuildPixelDevices() {
         //G4double sensorOffsetY = model->GetSensorYOffset();
         
         // WARNING: get a proper geometry lib
-        std::tuple<double, double, double> pos_tup = detItr->getPosition();
+        std::tuple<double, double, double> pos_tup = (*detItr)->getPosition();
         G4ThreeVector posWrapper;
         posWrapper[0] = std::get<0>(pos_tup);
         posWrapper[1] = std::get<1>(pos_tup);
@@ -377,9 +375,9 @@ void GeometryConstructionG4::BuildPixelDevices() {
         // ALERT: DISABLED!
         // Apply position Offset for the wrapper due to the enhancement
         /*if ( m_vectorWrapperEnhancement.findtemp_g4_id != m_vectorWrapperEnhancement.end() ) {
-            posWrapper.setX(posWrapper.x() + m_vectorWrapperEnhancement[*detItr].x()/2.);
-            posWrapper.setY(posWrapper.y() + m_vectorWrapperEnhancement[*detItr].y()/2.);
-            posWrapper.setZ(posWrapper.z() + m_vectorWrapperEnhancement[*detItr].z()/2.);
+            posWrapper.setX(posWrapper.x() + m_vectorWrapperEnhancement[*(*detItr)].x()/2.);
+            posWrapper.setY(posWrapper.y() + m_vectorWrapperEnhancement[*(*detItr)].y()/2.);
+            posWrapper.setZ(posWrapper.z() + m_vectorWrapperEnhancement[*(*detItr)].z()/2.);
         } else {*/
             //posWrapper.setX(posWrapper.x() - sensorOffsetX );
             //posWrapper.setY(posWrapper.y() - sensorOffsetY );
@@ -392,7 +390,7 @@ void GeometryConstructionG4::BuildPixelDevices() {
         //G4Transform3D transform( *m_rotVector[temp_g4_id], posWrapper );
         
         // WARNING: get a proper geometry lib
-        std::tuple<double, double, double> rot_tup = detItr->getOrientation();
+        std::tuple<double, double, double> rot_tup = (*detItr)->getOrientation();
         G4RotationMatrix *rotWrapper = new G4RotationMatrix(std::get<0>(rot_tup), std::get<1>(rot_tup), std::get<2>(rot_tup));
         /*rotWrapper[0] = std::get<0>(rot_tup);
         rotWrapper[1] = std::get<1>(rot_tup);
@@ -492,15 +490,15 @@ void GeometryConstructionG4::BuildPixelDevices() {
         // ALERT: DISABLED
         /*if ( m_vectorWrapperEnhancement.findtemp_g4_id != m_vectorWrapperEnhancement.end() ) {
             
-            posDevice.setX(posDevice.x() - m_vectorWrapperEnhancement[*detItr].x()/2.);
-            posDevice.setY(posDevice.y() - m_vectorWrapperEnhancement[*detItr].y()/2.);
-            posDevice.setZ(posDevice.z() - m_vectorWrapperEnhancement[*detItr].z()/2.);
+            posDevice.setX(posDevice.x() - m_vectorWrapperEnhancement[*(*detItr)].x()/2.);
+            posDevice.setY(posDevice.y() - m_vectorWrapperEnhancement[*(*detItr)].y()/2.);
+            posDevice.setZ(posDevice.z() - m_vectorWrapperEnhancement[*(*detItr)].z()/2.);
             //wrapperHZ
             //- 2.*model->GetHalfCoverlayerZ()
             //- model->GetHalfSensorZ()
-            //- m_vectorWrapperEnhancement[*detItr].z()/2.
+            //- m_vectorWrapperEnhancement[*(*detItr)].z()/2.
             //);
-            //posDevice.z() - m_vectorWrapperEnhancement[*detItr].z()/2.);
+            //posDevice.z() - m_vectorWrapperEnhancement[*(*detItr)].z()/2.);
         } else {*/
             posDevice.setX(posDevice.x() );
             posDevice.setY(posDevice.y() );
@@ -779,7 +777,10 @@ void GeometryConstructionG4::BuildPixelDevices() {
         model->SetMagField(m_magField_cartesian);
         */
         
-        LOG(DEBUG) << "detector " << detItr->getName() << " ... done" ;
+        // add this geant4 model to the detector
+        (*detItr)->setExternalModel(model_g4);
+        
+        LOG(DEBUG) << "detector " << (*detItr)->getName() << " ... done" ;
         
         //model_g4->wrapper_phys->SetTranslation(posWrapper-posDevice);
         

@@ -17,6 +17,7 @@
 
 #include "ReadGeoDescription.hpp"
 #include "GeometryConstructionG4.hpp"
+#include "DetectorModelG4.hpp"
 
 #include "../../core/geometry/GeometryManager.hpp"
 #include "../../core/utils/log.h"
@@ -45,15 +46,15 @@ void GeometryConstructionModule::run(){
     
     // build the detectors_
     // FIXME: hardcoded for now
-    auto detector_model = geo_descriptions.GetDetectorsMap()["mimosa26"];  
+    auto detector_model = geo_descriptions.GetDetectorsMap()[config_.get<std::string>("detector_name", "test")];  
     assert(detector_model); // FIXME: temporary assert
     
-    Detector det1("name1", detector_model);
+    auto det1 = std::make_shared<Detector>("name1", detector_model);
     getGeometryManager()->addDetector(det1);
     
     //Detector det2("name2", detector_model);
     //getGeometryManager()->addDetector(det2);
-        
+    
     // construct the G4 geometry
     buildG4();
     
@@ -68,6 +69,8 @@ void GeometryConstructionModule::run(){
         session->SessionStart();
         delete session;
     }
+    
+    auto ptr = getGeometryManager()->getDetector("name1")->getExternalModel<DetectorModelG4>();
     
     LOG(INFO) << "END BUILD GEOMETRY";
 }
@@ -88,7 +91,7 @@ void GeometryConstructionModule::buildG4() {
     
     // UserInitialization classes - mandatory;
     // FIXME: allow direct parsing of vectors
-    config_.setDefault("world_size", "100 100 100");
+    config_.setDefault("world_size", "1000 1000 2000");
     std::vector<int> world_size_arr = config_.getArray<int>("world_size");
     G4ThreeVector world_size(world_size_arr[0], world_size_arr[1], world_size_arr[2]);
     

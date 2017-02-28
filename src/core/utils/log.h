@@ -79,12 +79,12 @@ namespace allpix {
 #define __FILE_NAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
     
 #define IFLOG(level) \
-    if (LogLevel::level > allpix::Log::getReportingLevel() || allpix::Log::getStreams().empty()) ; \
+    if (allpix::LogLevel::level > allpix::Log::getReportingLevel() || allpix::Log::getStreams().empty()) ; \
     else 
 
 #define LOG(level) \
-    if (LogLevel::level > allpix::Log::getReportingLevel() || allpix::Log::getStreams().empty()) ; \
-    else allpix::Log().getStream(LogLevel::level, __FILE_NAME__, __func__, __LINE__)
+    if (allpix::LogLevel::level > allpix::Log::getReportingLevel() || allpix::Log::getStreams().empty()) ; \
+    else allpix::Log().getStream(allpix::LogLevel::level, __FILE_NAME__, __func__, __LINE__)
                     
 } 
 
