@@ -1,4 +1,5 @@
+# color by charges
 /vis/modeling/trajectories/create/drawByCharge
 /vis/modeling/trajectories/drawByCharge-0/set 1 red
-
-/vis/viewer/flush
+/vis/modeling/trajectories/drawByCharge-0/set 0 blue
+/vis/modeling/trajectories/drawByCharge-0/set -1 green

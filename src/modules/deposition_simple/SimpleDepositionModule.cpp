@@ -41,17 +41,17 @@ void SimpleDepositionModule::run() {
     run_manager_g4->SetUserAction(generator);
     
     // loop through all detectors and set the sensitive detectors
-    G4SDManager *sd_man_g4 = G4SDManager::GetSDMpointer();
+    //G4SDManager *sd_man_g4 = G4SDManager::GetSDMpointer(); //FIXME: do we need this sensitive detector manager
     for(auto &detector : getGeometryManager()->getDetectors()){
         auto sensitive_detector_g4 = new SensitiveDetectorG4(detector);
         
-        sd_man_g4->AddNewDetector(sensitive_detector_g4);
+        //sd_man_g4->AddNewDetector(sensitive_detector_g4);
         detector->getExternalModel<DetectorModelG4>()->pixel_log->SetSensitiveDetector(sensitive_detector_g4);
     }
     
     // start the beam
     LOG(INFO) << "START THE BEAM";
-    run_manager_g4->BeamOn(1);
+    run_manager_g4->BeamOn(config_.get("amount", 1));
     
     LOG(INFO) << "END DEPOSIT MODULE";
 }

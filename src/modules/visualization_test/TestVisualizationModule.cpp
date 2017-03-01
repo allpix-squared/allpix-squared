@@ -46,8 +46,9 @@ void TestVisualizationModule::run() {
     if(config_.has("macro_run")){        
         G4UImanager *UI = G4UImanager::GetUIpointer();
         UI->ApplyCommand("/control/execute "+config_.get<std::string>("macro_run"));
-        //session_g4_->SessionStart();
     }
+    
+    vis_manager_g4_->GetCurrentViewer()->DrawView();
     
     LOG(INFO) << "END VISUALIZATION";
 }
