@@ -1,16 +1,7 @@
 # set verbosity low
 /vis/verbose 0
 
-# create the scene
-/vis/scene/create
-/vis/sceneHandler/create VRML2FILE
-/vis/sceneHandler/attach
-
-/vis/viewer/create
-
 # display trajectories later
-/vis/scene/add/trajectories
-
-# accumulate events
 /vis/scene/endOfEventAction accumulate
 /vis/scene/endOfRunAction accumulate
+/vis/scene/add/trajectories
