@@ -21,7 +21,7 @@
 
         <sensor_hx units="um">55</sensor_hx>
         <sensor_hy units="um">110</sensor_hy>
-        <sensor_hz units="um">10.0</sensor_hz>
+        <sensor_hz units="um">20.0</sensor_hz>
 
         <sensor_gr_excess_htop units="um">5.0</sensor_gr_excess_htop>
         <sensor_gr_excess_hbottom units="um">5.0</sensor_gr_excess_hbottom>

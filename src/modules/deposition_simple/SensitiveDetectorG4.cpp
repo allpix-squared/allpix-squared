@@ -144,7 +144,7 @@ G4bool SensitiveDetectorG4::ProcessHits(G4Step * step, G4TouchableHistory *)
     
     // FIXME: save the actual information about the hit hit somewhere
     steps_.push_back(step);
-    LOG(DEBUG) << "energy deposit of " << edep << " in detector " << detector_->getName();
+    LOG(DEBUG) << "energy deposit of " << edep << " between point " << preStepPoint->GetPosition()/um << " and " << postStepPoint->GetPosition()/um <<  " in detector " << detector_->getName();
     
     if ( m_totalEdep > m_kinEPrimary ) {
         LOG(WARNING) << "total energy deposit more than kinetic energy (m_totalEdep = " << m_totalEdep << ", m_kinEPrimary = " << m_kinEPrimary << ")";

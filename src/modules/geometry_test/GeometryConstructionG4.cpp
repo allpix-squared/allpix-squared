@@ -179,7 +179,7 @@ void GeometryConstructionG4::BuildPixelDevices() {
     pair<G4String, G4String> wrapperName = make_pair("wrapper", "");
     pair<G4String, G4String> PCBName = make_pair("PCB", "");
     pair<G4String, G4String> BoxName = make_pair("Box", "");
-    pair<G4String, G4String> CoverlayerName = make_pair("Coverlayer", "");
+    //pair<G4String, G4String> CoverlayerName = make_pair("Coverlayer", "");
     pair<G4String, G4String> SliceName = make_pair("Slice", "");
     pair<G4String, G4String> GuardRingsExtName = make_pair("GuardRingsExt", "");
     pair<G4String, G4String> GuardRingsName = make_pair("GuardRings", "");
@@ -258,7 +258,7 @@ void GeometryConstructionG4::BuildPixelDevices() {
         wrapperName.second = wrapperName.first + "_" + name;
         PCBName.second = PCBName.first + "_" + name;
         BoxName.second = BoxName.first + "_" + name;
-        CoverlayerName.second = CoverlayerName.first + "_" + name;
+        //CoverlayerName.second = CoverlayerName.first + "_" + name;
         GuardRingsExtName.second = GuardRingsExtName.first  + "_" + name;
         GuardRingsName.second = GuardRingsName.first  + "_" + name;
         SliceName.second = BoxName.first + "_" + name;
