@@ -48,7 +48,7 @@ void TestVisualizationModule::run() {
         UI->ApplyCommand("/control/execute "+config_.get<std::string>("macro_run"));
     }
     
-    vis_manager_g4_->GetCurrentViewer()->DrawView();
+    vis_manager_g4_->GetCurrentViewer()->ShowView();
     
     LOG(INFO) << "END VISUALIZATION";
 }
