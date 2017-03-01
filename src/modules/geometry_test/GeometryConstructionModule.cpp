@@ -10,6 +10,11 @@
 #include "G4RunManager.hh"
 #include "G4PhysListFactory.hh"
 
+#include "G4VisExecutive.hh"
+#include "G4VisManager.hh"
+#include "G4UImanager.hh"
+#include "G4UIterminal.hh"
+
 #include "ReadGeoDescription.hpp"
 #include "GeometryConstructionG4.hpp"
 #include "DetectorModelG4.hpp"
@@ -28,6 +33,15 @@ GeometryConstructionModule::GeometryConstructionModule(AllPix *apx, ModuleIdenti
     config_ = config;
 }
 GeometryConstructionModule::~GeometryConstructionModule() {}
+
+// create the run manager and make it available
+void GeometryConstructionModule::init(){
+    // create the G4 run manager
+    run_manager_g4_ = std::make_shared<G4RunManager>();
+    
+    // save the geant4 run manager in allpix to make it available to other modules
+    getAllPix()->setExternalManager(run_manager_g4_);    
+}
 
 // run the geometry construction
 void GeometryConstructionModule::run(){
@@ -69,9 +83,6 @@ void GeometryConstructionModule::run(){
  * }*/
 
 void GeometryConstructionModule::buildG4() {
-    // create the G4 run manager
-    std::shared_ptr<G4RunManager> run_manager_g4 = std::make_shared<G4RunManager>();
-    
     // UserInitialization classes - mandatory;
     // FIXME: allow direct parsing of vectors
     config_.setDefault("world_size", "1000 1000 2000");
@@ -80,18 +91,15 @@ void GeometryConstructionModule::buildG4() {
     
     // set the geometry constructor
     GeometryConstructionG4 *geometry_construction = new GeometryConstructionG4(getGeometryManager(), world_size);
-    run_manager_g4->SetUserInitialization(geometry_construction);
+    run_manager_g4_->SetUserInitialization(geometry_construction);
     
     // set the physics list
     // FIXME: set a good default physics list
     config_.setDefault("physics_list", "QGSP_BERT");
     G4PhysListFactory physListFactory;
     G4VUserPhysicsList *physicsList = physListFactory.GetReferencePhysList(config_.get<std::string>("physics_list"));
-    run_manager_g4->SetUserInitialization(physicsList);
+    run_manager_g4_->SetUserInitialization(physicsList);
     
     // run the construct function in GeometryConstructionG4
-    run_manager_g4->Initialize();
-    
-    // save the geant4 run manager in allpix to make it available to other modules
-    getAllPix()->setExternalManager(run_manager_g4);
+    run_manager_g4_->Initialize();
 }

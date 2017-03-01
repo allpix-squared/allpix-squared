@@ -23,24 +23,30 @@ TestVisualizationModule::TestVisualizationModule(AllPix *apx, ModuleIdentifier i
 }
 TestVisualizationModule::~TestVisualizationModule() {}
 
+void TestVisualizationModule::init() {
+    LOG(INFO) << "INITIALIZING VISUALIZATION";
+    
+    //initialize the session and the visualization manager
+    session_g4_ = std::make_shared<G4UIterminal>();
+    vis_manager_g4_ = std::make_shared<G4VisExecutive>();
+    vis_manager_g4_->Initialize();
+    
+    // execute initialization macro if provided
+    if(config_.has("macro_init")){
+        G4UImanager *UI = G4UImanager::GetUIpointer();
+        UI->ApplyCommand("/control/execute "+config_.get<std::string>("macro_init"));
+    }
+}
+
 // run the deposition
 void TestVisualizationModule::run() {
-    LOG(INFO) << "VISUALIZE THE RESULT";
+    LOG(INFO) << "VISUALIZING RESULT";
     
-    // load the G4 run manager from allpix
-    std::shared_ptr<G4RunManager> run_manager_g4 = getAllPix()->getExternalManager<G4RunManager>();
-    assert(run_manager_g4); // FIXME: temporary assert (throw a proper exception later if the manager is not defined)
-    
-    // ALERT: TEMPORARY EXECUTE MACRO (AND HANG EVERYTHING)
-    if(config_.has("macro")){
-        G4VisManager* visManager = new G4VisExecutive;
-        visManager->Initialize();
-        
-        G4UIsession *session = new G4UIterminal();
+    // execute run macro if provided
+    if(config_.has("macro_run")){        
         G4UImanager *UI = G4UImanager::GetUIpointer();
-        UI->ApplyCommand("/control/execute "+config_.get<std::string>("macro"));
-        session->SessionStart();
-        delete session;
+        UI->ApplyCommand("/control/execute "+config_.get<std::string>("macro_run"));
+        //session_g4_->SessionStart();
     }
     
     LOG(INFO) << "END VISUALIZATION";

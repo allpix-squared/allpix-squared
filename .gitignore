@@ -12,6 +12,8 @@ obj/
 *.dat
 *.macro
 *.ps
+*.wrl
+free_wrl/
 
 # ignore backup files of any sort of editor:
 ~*

@@ -34,10 +34,10 @@ GeneratorActionG4::GeneratorActionG4()
     // FIXME: these parameters should not be fixed of course...
     m_particleGun->SetParticleDefinition(particle);
     m_particleGun->SetParticleTime(0.0*ns);
-    m_particleGun->SetParticlePosition(G4ThreeVector(-55.*um, 22.5*um, 22.5*um));
+    m_particleGun->SetParticlePosition(G4ThreeVector(-25.*um, -25*um, 50*um));
     //m_particleGun->SetParticlePosition(G4ThreeVector(0.150*mm, 0.150*mm, 0.*mm));
     //m_particleGun->SetParticleMomentumDirection(G4ThreeVector(0.,0.,-1.));
-    m_particleGun->SetParticleMomentumDirection(G4ThreeVector(1.,0.,0.));
+    m_particleGun->SetParticleMomentumDirection(G4ThreeVector(0,0,-1));
     m_particleGun->SetParticleEnergy(500.0*keV);
     
     // store temporarily the position of incoming particles

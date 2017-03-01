@@ -15,7 +15,7 @@
 #include "../../core/geometry/GeometryManager.hpp"
 #include "../../core/utils/log.h"
 
-// FIXME: THIS IS BROKEN SHOULD --> NEVER BE NEEDED !!!
+// FIXME: THIS IS BROKEN ---> SHOULD NEVER BE NEEDED !!!
 #include "../geometry_test/DetectorModelG4.hpp"
 
 using namespace allpix;

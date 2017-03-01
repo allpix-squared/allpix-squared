@@ -33,11 +33,8 @@ G4int g_temp_pdgId = 0;
 
 // construct and destruct the sensitive detector
 SensitiveDetectorG4::SensitiveDetectorG4(std::shared_ptr<Detector> detector) 
-                                        : G4VSensitiveDetector("SensitiveDetector_"+detector->getName()) {
-    
-    m_firstStrikePrimary = false;
-    m_totalEdep = 0;
-}
+                                        : G4VSensitiveDetector("SensitiveDetector_"+detector->getName()), detector_(detector),
+                                          m_firstStrikePrimary(false), m_totalEdep(0) {}
 SensitiveDetectorG4::~SensitiveDetectorG4() {}
 
 // run once per event the initialization
@@ -54,7 +51,7 @@ G4bool SensitiveDetectorG4::ProcessHits(G4Step * step, G4TouchableHistory *)
     // check if this is the first interaction in the detector
     if ( aTrack->GetTrackID() == 1 && ! m_firstStrikePrimary ) {
         m_kinEPrimary = aTrack->GetKineticEnergy()/keV;
-        m_kinEPrimary -= (step->GetDeltaEnergy()/keV);
+        m_kinEPrimary -= (step->GetTotalEnergyDeposit()/keV);
         m_firstStrikePrimary = true;
     }
     

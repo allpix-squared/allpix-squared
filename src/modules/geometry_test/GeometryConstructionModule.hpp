@@ -26,6 +26,7 @@ namespace allpix{
         ~GeometryConstructionModule();
         
         // method that will be run where the module should do its computations and possibly dispatch their results as a message
+        void init();
         void run();
         
     private:
@@ -34,6 +35,9 @@ namespace allpix{
         
         // configuration for this module
         Configuration config_;
+        
+        // geant run manager 
+        std::shared_ptr<G4RunManager> run_manager_g4_;
     };
 }
 

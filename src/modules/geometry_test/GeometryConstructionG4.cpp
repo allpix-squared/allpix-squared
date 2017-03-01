@@ -45,7 +45,7 @@ G4VPhysicalVolume *GeometryConstructionG4::Construct(){
     G4Material *air = nistman->FindOrBuildMaterial("G4_AIR");
     
     // FIXME: stick to air as world material now
-    world_material_ = air;
+    world_material_ = vacuum;
     
     LOG(DEBUG) << "Material of world: " << world_material_->GetName();
     
