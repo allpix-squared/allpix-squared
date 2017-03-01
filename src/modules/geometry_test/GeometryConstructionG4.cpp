@@ -123,19 +123,19 @@ void GeometryConstructionG4::BuildPixelDevices() {
 
     ///////////////////////////////////////////////////////////////////////
     // vis attributes
-    G4VisAttributes * pixelVisAtt= new G4VisAttributes(G4Color::Blue());
+    /*G4VisAttributes * pixelVisAtt= new G4VisAttributes(G4Color::Blue());
     pixelVisAtt->SetLineWidth(1);
     pixelVisAtt->SetForceSolid(true);
-    //pixelVisAtt->SetForceWireframe(true);
+    //pixelVisAtt->SetForceWireframe(true);*/
 
     G4VisAttributes * BoxVisAtt= new G4VisAttributes(G4Color(0,1,1,1));
     BoxVisAtt->SetLineWidth(2);
     BoxVisAtt->SetForceSolid(true);
     //BoxVisAtt->SetVisibility(false);
 
-    G4VisAttributes * CoverlayerVisAtt= new G4VisAttributes(G4Color::White());
+    /*G4VisAttributes * CoverlayerVisAtt= new G4VisAttributes(G4Color::White());
     CoverlayerVisAtt->SetLineWidth(2);
-    CoverlayerVisAtt->SetForceSolid(true);
+    CoverlayerVisAtt->SetForceSolid(true);*/
 
     G4VisAttributes * ChipVisAtt= new G4VisAttributes(G4Color::Gray());
     ChipVisAtt->SetLineWidth(2);
@@ -565,7 +565,6 @@ void GeometryConstructionG4::BuildPixelDevices() {
             //model->GetChipZOffset() -
             //bump_height
             //);
-            
         } else {
             // Make sure no offset because of bumps for PCB is calculated if chip is not included
             bump_height = 0;
@@ -690,9 +689,9 @@ void GeometryConstructionG4::BuildPixelDevices() {
                                                      Silicon,
                                                      SliceName.second); // 0,0,0);
                                                      //model_g4->slice_log->SetUserLimits(ulim);
-                                                     model_g4->pixel_log = new G4LogicalVolume(Box_pixel,
-                                                                                                  Silicon,
-                                                                                                  PixelName.second); // 0,0,0);
+        model_g4->pixel_log = new G4LogicalVolume(Box_pixel,
+                                                    Silicon,
+                                                    PixelName.second); // 0,0,0);
                                                                                                   
         if (user_limits) model_g4->pixel_log->SetUserLimits(user_limits);
         
