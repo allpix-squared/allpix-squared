@@ -31,17 +31,6 @@ void TestVisualizationModule::init() {
     vis_manager_g4_ = std::make_shared<G4VisExecutive>();
     vis_manager_g4_->Initialize();
     
-    // execute initialization macro if provided
-    if(config_.has("macro_init")){
-        G4UImanager *UI = G4UImanager::GetUIpointer();
-        UI->ApplyCommand("/control/execute "+config_.get<std::string>("macro_init"));
-    }
-}
-
-// run the deposition
-void TestVisualizationModule::run() {
-    LOG(INFO) << "VISUALIZING RESULT";
-    
     // execute standard commands
     //FIXME: should execute this directly and not through the UI
     G4UImanager *UI = G4UImanager::GetUIpointer();
@@ -50,8 +39,19 @@ void TestVisualizationModule::run() {
     UI->ApplyCommand("/vis/sceneHandler/attach");
     
     UI->ApplyCommand("/vis/viewer/create");
+    
+    // execute initialization macro if provided
+    if(config_.has("macro_init")){
+        UI->ApplyCommand("/control/execute "+config_.get<std::string>("macro_init"));
+    }
+}
 
-    if(config_.has("macro_run")){        
+// run the deposition
+void TestVisualizationModule::run() {
+    LOG(INFO) << "VISUALIZING RESULT";
+
+    if(config_.has("macro_run")){    
+        G4UImanager *UI = G4UImanager::GetUIpointer();
         UI->ApplyCommand("/control/execute "+config_.get<std::string>("macro_run"));
     }
     
