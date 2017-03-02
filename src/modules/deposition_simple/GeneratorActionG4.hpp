@@ -11,23 +11,16 @@
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "G4VPrimaryGenerator.hh"
 #include "G4GeneralParticleSource.hh"
+#include "G4ParticleDefinition.hh"
 #include "G4ThreeVector.hh"
 
 class G4ParticleGun;
-class G4Event;
-class G4VPrimaryGenerator;
 
 namespace allpix{
-    /*enum SourceType {
-     *    _ParticleGun = 0,
-     *    _GeneralParticleSource,
-     *    _HEPEvtInterface
-    };*/
     
     class GeneratorActionG4 : public G4VUserPrimaryGeneratorAction {
     public:
-        GeneratorActionG4();
-        //AllPixPrimaryGeneratorAction(SourceType);
+        GeneratorActionG4(int n_particle, G4ParticleDefinition *particle, G4ThreeVector position, G4ThreeVector momentum, double energy);
         ~GeneratorActionG4();
         
         // generate the primary events
@@ -35,12 +28,7 @@ namespace allpix{
         
     private:
         // simple particule gun case
-        std::unique_ptr<G4ParticleGun> m_particleGun;
-        
-        // store temporarily particle positions
-        std::vector<G4ThreeVector> m_primaryParticlePos;
-        
-        //SourceType m_sType;
+        std::unique_ptr<G4ParticleGun> particleGun_;
     };
 }
 

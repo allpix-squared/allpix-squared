@@ -15,38 +15,25 @@
 #include "G4RunManager.hh"
 
 #include "CLHEP/Units/SystemOfUnits.h"
-using namespace CLHEP;
 
+using namespace CLHEP;
 using namespace allpix;
 
 // construct and destruct the generator
-GeneratorActionG4::GeneratorActionG4()
-{
-    
-    G4int n_particle = 1;
-    m_particleGun = std::make_unique<G4ParticleGun>(n_particle);
-    
-    //default kinematic
-    //
-    G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
-    G4ParticleDefinition* particle = particleTable->FindParticle("e+");
+GeneratorActionG4::GeneratorActionG4(int n_particle, G4ParticleDefinition *particle, G4ThreeVector position, G4ThreeVector momentum, double energy) {
+    particleGun_ = std::make_unique<G4ParticleGun>(n_particle);
     
     // FIXME: these parameters should not be fixed of course...
-    m_particleGun->SetParticleDefinition(particle);
-    m_particleGun->SetParticleTime(0.0*ns);
-    m_particleGun->SetParticlePosition(G4ThreeVector(-25.*um, -25*um, 50*um));
-    //m_particleGun->SetParticlePosition(G4ThreeVector(0.150*mm, 0.150*mm, 0.*mm));
-    //m_particleGun->SetParticleMomentumDirection(G4ThreeVector(0.,0.,-1.));
-    m_particleGun->SetParticleMomentumDirection(G4ThreeVector(0,0,-1));
-    m_particleGun->SetParticleEnergy(500.0*keV);
-    
-    // store temporarily the position of incoming particles
-    m_primaryParticlePos.clear();
+    particleGun_->SetParticleDefinition(particle);
+    particleGun_->SetParticleTime(0.0*ns); //FIXME: what is this time
+    particleGun_->SetParticlePosition(position);
+    particleGun_->SetParticleMomentumDirection(momentum);
+    particleGun_->SetParticleEnergy(energy);
     
 }
 GeneratorActionG4::~GeneratorActionG4() {}
 
 // generate the particles
 void GeneratorActionG4::GeneratePrimaries(G4Event* event) {
-    m_particleGun->GeneratePrimaryVertex(event);
+    particleGun_->GeneratePrimaryVertex(event);
 }

@@ -9,10 +9,12 @@
 #include "G4SDManager.hh"
 #include "G4UImanager.hh"
 #include "G4HadronicProcessStore.hh"
+#include "G4ParticleDefinition.hh"
 
 #include "GeneratorActionG4.hpp"
 #include "SensitiveDetectorG4.hpp"
 
+#include "../../tools/geant4.h"
 #include "../../core/AllPix.hpp"
 #include "../../core/geometry/GeometryManager.hpp"
 #include "../../core/utils/log.h"
@@ -38,8 +40,21 @@ void SimpleDepositionModule::run() {
     assert(run_manager_g4); // FIXME: temporary assert (throw a proper exception later if the manager is not defined)
     
     // add a generator
-    // FIXME: it makes more sense to have a different set of modules to generate the events maybe?
-    GeneratorActionG4 *generator = new GeneratorActionG4;
+    // NOTE: for more difficult modules a separate generator module makes more sense probably?
+    // FIXME: some random defaults
+    config_.setDefault("particle_type", "e-");
+    config_.setDefault("particle_amount", 1);
+    config_.setDefault("particle_position", G4ThreeVector(-25, -25, 50));
+    config_.setDefault("particle_momentum", G4ThreeVector(0,0,-1));
+    config_.setDefault("particle_energy", 500.0);
+    
+    G4ParticleDefinition *particle = G4ParticleTable::GetParticleTable()->FindParticle(config_.get<std::string>("particle_type"));
+    int part_amount = config_.get<int>("particle_amount");
+    G4ThreeVector part_position = config_.get<G4ThreeVector>("particle_position");
+    G4ThreeVector part_momentum = config_.get<G4ThreeVector>("particle_momentum");
+    double part_energy = config_.get<double>("particle_energy");
+    
+    GeneratorActionG4 *generator = new GeneratorActionG4(part_amount, particle, part_position*CLHEP::um, part_momentum*CLHEP::um, part_energy*CLHEP::keV);
     run_manager_g4->SetUserAction(generator);
     
     // loop through all detectors and set the sensitive detectors
@@ -58,6 +73,7 @@ void SimpleDepositionModule::run() {
     UI->ApplyCommand("/process/em/verbose 0");
     UI->ApplyCommand("/process/eLoss/verbose 0");
     G4HadronicProcessStore::Instance()->SetVerbose(0);
+    //run_manager_g4->RunInitialization();
     
     // start the beam
     LOG(INFO) << "START THE BEAM";
