@@ -72,7 +72,7 @@ namespace allpix {
     
     /** Splits string s into elements at delimiter "delim" and returns them as vector
      */
-    template <typename T> std::vector<T> split(std::string str, std::string delims) {
+    template <typename T> std::vector<T> split(std::string str, std::string delims = " ,") {
         str = trim(str, delims);
         
         // if the input string is empty, simply return empty container
