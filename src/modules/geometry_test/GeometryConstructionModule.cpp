@@ -19,6 +19,8 @@
 #include "GeometryConstructionG4.hpp"
 #include "DetectorModelG4.hpp"
 
+#include "../../tools/geant4.h"
+
 #include "../../core/AllPix.hpp"
 #include "../../core/geometry/GeometryManager.hpp"
 #include "../../core/utils/log.h"
@@ -79,26 +81,13 @@ void GeometryConstructionModule::run(){
     LOG(INFO) << "END BUILD GEOMETRY";
 }
 
-/*void GeometryConstructionModule::clean(){
- *    // Clean geometry manager 
- *    getGeometryManager()->clear();
- *    
- *    // Clean G4 old geometry
- *    G4GeometryManager::GetInstance()->OpenGeometry();
- *    G4PhysicalVolumeStore::GetInstance()->Clean();
- *    G4LogicalVolumeStore::GetInstance()->Clean();
- *    G4SolidStore::GetInstance()->Clean();
- * }*/
-
 void GeometryConstructionModule::buildG4() {
     // suppress all output for G4
     SUPPRESS_STREAM(G4cout);
     
-    // UserInitialization classes - mandatory;
-    // FIXME: allow direct parsing of vectors
-    config_.setDefault("world_size", "1000 1000 2000");
-    std::vector<int> world_size_arr = config_.getArray<int>("world_size");
-    G4ThreeVector world_size(world_size_arr[0], world_size_arr[1], world_size_arr[2]);
+    // get the world size
+    config_.setDefault("world_size", G4ThreeVector(1000, 1000, 2000));
+    G4ThreeVector world_size = config_.get<G4ThreeVector>("world_size");
     
     // set the geometry constructor
     GeometryConstructionG4 *geometry_construction = new GeometryConstructionG4(getGeometryManager(), world_size);
