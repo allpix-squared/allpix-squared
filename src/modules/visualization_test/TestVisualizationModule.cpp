@@ -26,10 +26,14 @@ TestVisualizationModule::~TestVisualizationModule() {}
 void TestVisualizationModule::init() {
     LOG(INFO) << "INITIALIZING VISUALIZATION";
     
+    //suppress all geant4 output
+    SUPPRESS_STREAM(G4cout);
+    
     //initialize the session and the visualization manager
-    session_g4_ = std::make_shared<G4UIterminal>();
-    vis_manager_g4_ = std::make_shared<G4VisExecutive>();
+    vis_manager_g4_ = std::make_shared<G4VisExecutive>("quiet");
     vis_manager_g4_->Initialize();
+    
+    //suppress all geant4 output
     
     // execute standard commands
     //FIXME: should execute this directly and not through the UI
@@ -39,6 +43,8 @@ void TestVisualizationModule::init() {
     UI->ApplyCommand("/vis/sceneHandler/attach");
     
     UI->ApplyCommand("/vis/viewer/create");
+    
+    RELEASE_STREAM(G4cout);
     
     // execute initialization macro if provided
     if(config_.has("macro_init")){
@@ -55,7 +61,10 @@ void TestVisualizationModule::run() {
         UI->ApplyCommand("/control/execute "+config_.get<std::string>("macro_run"));
     }
     
-    vis_manager_g4_->GetCurrentViewer()->ShowView();
+    if(config_.get("interactive", 0)){
+        std::unique_ptr<G4UIsession> session = std::make_unique<G4UIterminal>();
+        session->SessionStart();
+    }else vis_manager_g4_->GetCurrentViewer()->ShowView();
     
     LOG(INFO) << "END VISUALIZATION";
 }

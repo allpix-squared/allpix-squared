@@ -78,14 +78,26 @@ namespace allpix {
             
 #define __FILE_NAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
     
+// execute if the log level is high enough    
 #define IFLOG(level) \
     if (allpix::LogLevel::level > allpix::Log::getReportingLevel() || allpix::Log::getStreams().empty()) ; \
     else 
 
+// log to streams if level is high enough
 #define LOG(level) \
     if (allpix::LogLevel::level > allpix::Log::getReportingLevel() || allpix::Log::getStreams().empty()) ; \
     else allpix::Log().getStream(allpix::LogLevel::level, __FILE_NAME__, __func__, __LINE__)
-                    
-} 
+
+    // FIXME: this also be defined in a separate file
+    // suppress a (logging) stream
+    inline void SUPPRESS_STREAM(std::ostream &stream) {
+        stream.setstate(std::ios::failbit);
+    }
+
+    // release a suppressed stream
+    inline void RELEASE_STREAM(std::ostream &stream) {
+        stream.clear();
+    }
+}
 
 #endif /* ALLPIX_LOG_H */

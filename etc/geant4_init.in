@@ -1,6 +1,3 @@
-# set verbosity low
-/vis/verbose 0
-
 # display trajectories later
 /vis/scene/endOfEventAction accumulate
 /vis/scene/endOfRunAction accumulate

@@ -36,11 +36,19 @@ GeometryConstructionModule::~GeometryConstructionModule() {}
 
 // create the run manager and make it available
 void GeometryConstructionModule::init(){
+    // suppress all output (also cout due to a part in Geant4 where G4cout is not used)
+    SUPPRESS_STREAM(std::cout);
+    SUPPRESS_STREAM(G4cout);
+    
     // create the G4 run manager
     run_manager_g4_ = std::make_shared<G4RunManager>();
     
+    // release the output again
+    RELEASE_STREAM(std::cout);
+    RELEASE_STREAM(G4cout);
+    
     // save the geant4 run manager in allpix to make it available to other modules
-    getAllPix()->setExternalManager(run_manager_g4_);    
+    getAllPix()->setExternalManager(run_manager_g4_);  
 }
 
 // run the geometry construction
@@ -83,6 +91,9 @@ void GeometryConstructionModule::run(){
  * }*/
 
 void GeometryConstructionModule::buildG4() {
+    // suppress all output for G4
+    SUPPRESS_STREAM(G4cout);
+    
     // UserInitialization classes - mandatory;
     // FIXME: allow direct parsing of vectors
     config_.setDefault("world_size", "1000 1000 2000");
@@ -102,4 +113,7 @@ void GeometryConstructionModule::buildG4() {
     
     // run the construct function in GeometryConstructionG4
     run_manager_g4_->Initialize();
+    
+    // release output from G4
+    RELEASE_STREAM(G4cout);
 }

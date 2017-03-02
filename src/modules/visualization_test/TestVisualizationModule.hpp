@@ -25,17 +25,16 @@ namespace allpix{
         TestVisualizationModule(AllPix *apx, ModuleIdentifier id, Configuration config);
         ~TestVisualizationModule();
         
-        // method that will be run where the module should do its computations and possibly dispatch their results as a message
+        // initializes the visualization and set necessary settings to catch all the required data
         void init();
+        // displays the visualization
         void run();
         
     private:
         // configuration for this module
         Configuration config_;
         
-        // Shared pointer to the session
-        std::shared_ptr<G4UIsession> session_g4_;
-        
+        // pointer to the visualization manager        
         std::shared_ptr<G4VisManager> vis_manager_g4_;
     };
 }
