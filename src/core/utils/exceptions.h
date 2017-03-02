@@ -17,6 +17,8 @@
 namespace allpix {
     // NOTE: assert are used inside the framework if an internal error should never occur
     
+    //class Configuration;
+    
     /** 
      * Base class for all exceptions thrown by the allpix framework.
      */
@@ -43,11 +45,12 @@ namespace allpix {
     class ConfigFileUnavailableError : public ConfigurationError{
     public:
         explicit ConfigFileUnavailableError(const std::string &file) {
-            error_message_ = "Could not read file "+file+" (does it exists?)";
+            error_message_ = "Could not read configuration file "+file+" (does it exists?)";
         }
     };
     
     // invalid key in the configuration
+    // FIXME: this should probably be InvalidValueTypeError (see below)
     class InvalidKeyError : public ConfigurationError {
     public:
         InvalidKeyError(const std::string&key, const std::string &section, const std::string &value, const std::type_info &type, const std::string &reason) {
@@ -57,9 +60,20 @@ namespace allpix {
         InvalidKeyError(const std::string&key, const std::string &section, const std::string &value, const std::type_info &type): 
             InvalidKeyError(key, section, value, type, "") {}
     };
+    // value is not valid (type is correct but data not)
+    // FIXME: only configuration exception not thrown by the framework but by the user and the interface is not good
+    class InvalidValueError : public ConfigurationError {
+    public:
+        InvalidValueError(const std::string&key, const std::string &section, const std::string &value, const std::string &reason) {
+            error_message_ = "Value '"+value+"' of key '"+key+"' in section '"+section+"' is not valid";
+            if (!reason.empty()) error_message_ += ": "+reason;
+        }
+        InvalidValueError(const std::string&key, const std::string &section, const std::string &value): 
+            InvalidValueError(key, section, value, "") {}
+    };
     
     // missing key in the configuration
-    class MissingKeyError : public ConfigurationError{
+    class MissingKeyError : public ConfigurationError {
     public:
         MissingKeyError(const std::string&key, const std::string &section) {
             error_message_ = "Key '"+key+"' in section '"+section+"' does not exist";
@@ -67,7 +81,7 @@ namespace allpix {
     };
     
     // parse error in the configuration
-    class ConfigParseError : public ConfigurationError{
+    class ConfigParseError : public ConfigurationError {
     public:
         ConfigParseError(const std::string &file, int line_num) {
             error_message_ = "Could not parse line ";
@@ -76,7 +90,7 @@ namespace allpix {
             error_message_ += ": not a section header, key/value pair or comment";
         }
     };
-    
+        
     /* 
      * Errors related to problems at runtime
      */

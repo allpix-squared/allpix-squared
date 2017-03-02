@@ -49,6 +49,12 @@ void SimpleDepositionModule::run() {
     config_.setDefault("particle_energy", 500.0);
     
     G4ParticleDefinition *particle = G4ParticleTable::GetParticleTable()->FindParticle(config_.get<std::string>("particle_type"));
+    if(particle == nullptr){
+        // FIXME: better syntax for exceptions here
+        // FIXME: more information about available particle
+        throw InvalidValueError("particle_type", config_.getName(), config_.getText("particle_type"), "particle type does not exist");
+    }
+    
     int part_amount = config_.get<int>("particle_amount");
     G4ThreeVector part_position = config_.get<G4ThreeVector>("particle_position");
     G4ThreeVector part_momentum = config_.get<G4ThreeVector>("particle_momentum");

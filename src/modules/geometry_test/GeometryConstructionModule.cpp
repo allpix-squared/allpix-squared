@@ -24,6 +24,7 @@
 #include "../../core/AllPix.hpp"
 #include "../../core/geometry/GeometryManager.hpp"
 #include "../../core/utils/log.h"
+#include "../../core/utils/exceptions.h"
 
 using namespace allpix;
 
@@ -98,6 +99,11 @@ void GeometryConstructionModule::buildG4() {
     config_.setDefault("physics_list", "QGSP_BERT");
     G4PhysListFactory physListFactory;
     G4VUserPhysicsList *physicsList = physListFactory.GetReferencePhysList(config_.get<std::string>("physics_list"));
+    if(physicsList == nullptr){
+        // FIXME: better syntax for exceptions here
+        // FIXME: more information about available lists
+        throw InvalidValueError("physics_list", config_.getName(), config_.getText("physics_list"), "physics list is not defined");
+    }
     run_manager_g4_->SetUserInitialization(physicsList);
     
     // run the construct function in GeometryConstructionG4
