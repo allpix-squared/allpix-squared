@@ -49,6 +49,14 @@ void SimpleDepositionModule::run() {
         detector->getExternalModel<DetectorModelG4>()->pixel_log->SetSensitiveDetector(sensitive_detector_g4);
     }
     
+    // disable verbose processes
+    // FIXME: there should be a more general way to do it, but I have not found it yet
+    G4UImanager *UI = G4UImanager::GetUIpointer();
+    UI->ApplyCommand("/process/verbose 0");
+    UI->ApplyCommand("/process/em/verbose 0");
+    UI->ApplyCommand("/process/eLoss/verbose 0");
+    G4HadronicProcessStore::Instance()->SetVerbose(0);
+    
     // start the beam
     LOG(INFO) << "START THE BEAM";
     run_manager_g4->BeamOn(config_.get("amount", 1));

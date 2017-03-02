@@ -31,17 +31,9 @@ void TestVisualizationModule::init() {
     vis_manager_g4_ = std::make_shared<G4VisExecutive>();
     vis_manager_g4_->Initialize();
     
-    // execute standard commands
-    //FIXME: should execute this directly
-    G4UImanager *UI = G4UImanager::GetUIpointer();
-    UI->ApplyCommand("/vis/scene/create");
-    UI->ApplyCommand("/vis/sceneHandler/create "+config_.get<std::string>("driver"));
-    UI->ApplyCommand("/vis/sceneHandler/attach");
-    
-    UI->ApplyCommand("/vis/viewer/create");
-    
     // execute initialization macro if provided
     if(config_.has("macro_init")){
+        G4UImanager *UI = G4UImanager::GetUIpointer();
         UI->ApplyCommand("/control/execute "+config_.get<std::string>("macro_init"));
     }
 }
@@ -52,10 +44,10 @@ void TestVisualizationModule::run() {
     
     // execute run macro if provided
     G4UImanager *UI = G4UImanager::GetUIpointer();
+    
     if(config_.has("macro_run")){        
         UI->ApplyCommand("/control/execute "+config_.get<std::string>("macro_run"));
     }
-    UI->ApplyCommand("/vis/viewer/refresh");
     
     vis_manager_g4_->GetCurrentViewer()->ShowView();
     
