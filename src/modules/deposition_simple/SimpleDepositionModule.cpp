@@ -7,6 +7,8 @@
 
 #include "G4RunManager.hh"
 #include "G4SDManager.hh"
+#include "G4UImanager.hh"
+#include "G4HadronicProcessStore.hh"
 
 #include "GeneratorActionG4.hpp"
 #include "SensitiveDetectorG4.hpp"

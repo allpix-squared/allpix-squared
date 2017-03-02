@@ -42,9 +42,15 @@ void TestVisualizationModule::init() {
 void TestVisualizationModule::run() {
     LOG(INFO) << "VISUALIZING RESULT";
     
-    // execute run macro if provided
+    // execute standard commands
+    //FIXME: should execute this directly and not through the UI
     G4UImanager *UI = G4UImanager::GetUIpointer();
+    UI->ApplyCommand("/vis/scene/create");
+    UI->ApplyCommand("/vis/sceneHandler/create "+config_.get<std::string>("driver"));
+    UI->ApplyCommand("/vis/sceneHandler/attach");
     
+    UI->ApplyCommand("/vis/viewer/create");
+
     if(config_.has("macro_run")){        
         UI->ApplyCommand("/control/execute "+config_.get<std::string>("macro_run"));
     }
