@@ -2,6 +2,7 @@
  * AllPix exception classes
  * 
  * @author Simon Spannagel <simon.spannagel@cern.ch>
+ * @author Koen Wolters <koen.wolters@cern.ch>
  */
 
 #ifndef ALLPIX_EXCEPTIONS_H
@@ -11,6 +12,8 @@
 #include <string>
 #include <typeinfo>
 #include <iostream>
+
+#include "type.h"
 
 // FIXME: move some exceptions to a more appropriate place
 
@@ -54,7 +57,7 @@ namespace allpix {
     class InvalidKeyError : public ConfigurationError {
     public:
         InvalidKeyError(const std::string&key, const std::string &section, const std::string &value, const std::type_info &type, const std::string &reason) {
-            error_message_ = "Could not convert value '"+value+"' of key '"+key+"' in section '"+section+"' to type "+type.name();
+            error_message_ = "Could not convert value '"+value+"' of key '"+key+"' in section '"+section+"' to type "+allpix::demangle(type.name());
             if (!reason.empty()) error_message_ += ": "+reason;
         }
         InvalidKeyError(const std::string&key, const std::string &section, const std::string &value, const std::type_info &type): 
@@ -137,7 +140,7 @@ namespace allpix {
         UnexpectedMessageException(const std::string &module, const std::type_info &message) {
             // FIXME: add detectory and input output instance here
             error_message_ = "Unexpected receive of message ";
-            error_message_ += message.name();
+            error_message_ += allpix::demangle(message.name());
             error_message_ += " by module "+module+" (are multiple modules providing the same output?)";
         }
     };
