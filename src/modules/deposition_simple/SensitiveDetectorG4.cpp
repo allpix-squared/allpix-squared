@@ -88,6 +88,8 @@ void SensitiveDetectorG4::EndOfEvent(G4HCofThisEvent*)
 {    
     // send the message 
     messenger_->dispatchMessage(deposit_message_);
+    // create a new one
+    deposit_message_ = std::make_shared<DepositionMessage>();
     
     // clear the Set of pointers to hitCollection used for verification
     m_firstStrikePrimary = false;
