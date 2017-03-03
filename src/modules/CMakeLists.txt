@@ -21,6 +21,7 @@ MACRO(option_build_module dir)
     ADD_LIBRARY(${dir} SHARED ${LIB_SOURCE_FILES})
 
     TARGET_LINK_LIBRARIES(${dir} AllpixCore)
+    TARGET_LINK_LIBRARIES(${dir} AllpixMessages)
     
     # FIXME: determine per module the libraries to link
     TARGET_LINK_LIBRARIES(${dir} ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES} ${Geant4_LIBRARIES})
@@ -66,3 +67,4 @@ SET(CMAKE_CXX_FLAGS "-O2 -Wall -Wextra -pedantic -Wfatal-errors ${CMAKE_CXX_FLAG
 option_build_module(geometry_test)
 option_build_module(deposition_simple)
 option_build_module(visualization_test)
+option_build_module(deposit_reader_test)

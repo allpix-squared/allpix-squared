@@ -24,7 +24,7 @@
 #include "../modules/geometry_test/GeometryConstructionModule.hpp"
 #include "../modules/deposition_simple/SimpleDepositionModule.hpp"
 #include "../modules/visualization_test/TestVisualizationModule.hpp"
-
+#include "../modules/deposit_reader_test/TestDepositReaderModule.hpp"
 
 using namespace allpix;
 
@@ -33,6 +33,7 @@ std::unique_ptr<ModuleFactory> generator(std::string str){
     if(str == GeometryConstructionModule::name) return std::make_unique<UniqueModuleFactory<GeometryConstructionModule>>();
     if(str == SimpleDepositionModule::name) return std::make_unique<UniqueModuleFactory<SimpleDepositionModule>>();
     if(str == TestVisualizationModule::name) return std::make_unique<UniqueModuleFactory<TestVisualizationModule>>();
+    if(str == TestDepositReaderModule::name) return std::make_unique<UniqueModuleFactory<TestDepositReaderModule>>();
 
     return nullptr;
 }

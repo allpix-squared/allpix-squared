@@ -10,6 +10,7 @@
 #include <string>
 
 #include "G4ThreeVector.hh"
+#include <TVector3.h>
 
 #include "../core/utils/string.h"
 
@@ -27,6 +28,11 @@ namespace allpix{
             if(i != 2) res += " ";
         }
         return res;
+    }
+    
+    // convert G4 vector to ROOT vector
+    inline TVector3 toROOTVector(G4ThreeVector vector){
+        return TVector3(vector.x(), vector.y(), vector.z());
     }
 }
 

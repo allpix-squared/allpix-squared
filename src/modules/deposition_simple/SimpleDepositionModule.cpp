@@ -64,11 +64,11 @@ void SimpleDepositionModule::run() {
     run_manager_g4->SetUserAction(generator);
     
     // loop through all detectors and set the sensitive detectors
-    //G4SDManager *sd_man_g4 = G4SDManager::GetSDMpointer(); //FIXME: do we need this sensitive detector manager
+    G4SDManager *sd_man_g4 = G4SDManager::GetSDMpointer(); //FIXME: do we need this sensitive detector manager
     for(auto &detector : getGeometryManager()->getDetectors()){
-        auto sensitive_detector_g4 = new SensitiveDetectorG4(detector);
+        auto sensitive_detector_g4 = new SensitiveDetectorG4(detector, getMessenger());
         
-        //sd_man_g4->AddNewDetector(sensitive_detector_g4);
+        sd_man_g4->AddNewDetector(sensitive_detector_g4);
         detector->getExternalModel<DetectorModelG4>()->pixel_log->SetSensitiveDetector(sensitive_detector_g4);
     }
     

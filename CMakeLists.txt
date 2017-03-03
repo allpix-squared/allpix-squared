@@ -53,6 +53,9 @@ ENDIF("${isSystemDir}" STREQUAL "-1")
 # Always build main allpix library;
 ADD_SUBDIRECTORY(src/core)
 
+# Build messages
+add_subdirectory(src/messages)
+
 # Build required modules
 ADD_SUBDIRECTORY(src/modules)
 
