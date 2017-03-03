@@ -38,6 +38,7 @@ namespace allpix {
         
         // Dispatch message
         template <typename T> void dispatchMessage(const T &msg, std::string name = "");
+        template <typename T> void dispatchMessage(std::shared_ptr<T> msg, std::string name = "");
         void dispatchMessage(std::shared_ptr<Message> msg, std::string name = "");
     private:
         using DelegateMap = std::map<std::type_index, std::map<std::string, std::vector<BaseDelegate*>>>;
@@ -51,6 +52,10 @@ namespace allpix {
         static_assert(std::is_base_of<Message, T>::value, "Dispatched message should inherit from Message class");
         std::shared_ptr<Message> msg_ptr = std::make_shared<T>(msg);
         dispatchMessage(msg_ptr, name);
+    }
+    template <typename T> void Messenger::dispatchMessage(std::shared_ptr<T> msg, std::string name) {
+        static_assert(std::is_base_of<Message, T>::value, "Dispatched message should inherit from Message class");
+        dispatchMessage(std::static_pointer_cast<Message>(msg), name);
     }
     
     // register a listener for a message

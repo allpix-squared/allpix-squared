@@ -6,7 +6,9 @@
 
 #include <string>
 
+#include "../utils/type.h"
 #include "../utils/log.h"
+
 #include "../module/Module.hpp"
 #include "Message.hpp"
 
@@ -43,6 +45,6 @@ void Messenger::dispatchMessage(std::shared_ptr<Message> msg, std::string name) 
     }
     
     if (!send) {
-        LOG(WARNING) << "Dispatched message has no receivers... this is probably not what you want!";
+        LOG(WARNING) << "Dispatched message of type " << allpix::demangle(typeid(*msg).name()) << " has no receivers... this is probably not what you want!";
     }
 }
