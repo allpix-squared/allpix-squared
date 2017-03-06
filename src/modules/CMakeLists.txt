@@ -43,7 +43,7 @@ OPTION(BUILD_allmodules "Build all modules?" OFF)
 ###################################
 
 # ROOT is required for histogramming
-FIND_PACKAGE(ROOT REQUIRED COMPONENTS Geom)
+FIND_PACKAGE(ROOT REQUIRED COMPONENTS Geom XMLParser)
 IF(NOT ROOT_FOUND)
     MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
     "$ source YOUR_ROOT_DIR/bin/thisroot.sh")
@@ -59,9 +59,6 @@ ENDIF(NOT Geant4_FOUND)
 ###################################
 # Build the required modules      #
 ###################################
-
-set (CMAKE_CXX_STANDARD 14)
-SET(CMAKE_CXX_FLAGS "-O2 -Wall -Wextra -pedantic -Wshadow -Wformat-security -Wno-long-long -Wdeprecated -fdiagnostics-color=auto -Weffc++ ${CMAKE_CXX_FLAGS}")
 
 # Example module implementation - check this directory as a starting point for your own module implementation
 option_build_module(geometry_test)

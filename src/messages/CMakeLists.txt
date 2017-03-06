@@ -1,5 +1,3 @@
-SET(CMAKE_CXX_FLAGS "-g -Wall -Wextra -pedantic -Wshadow -Wformat-security -Wno-long-long -Wdeprecated -fdiagnostics-color=auto -Weffc++ ${CMAKE_CXX_FLAGS}")
-
 FIND_PACKAGE(ROOT REQUIRED)
 IF(NOT ROOT_FOUND)
     MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"

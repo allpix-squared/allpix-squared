@@ -1,6 +1,6 @@
 ########################################################
 # CMake file for the allpix2 framework
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.4.3 FATAL_ERROR)
 IF(COMMAND CMAKE_POLICY)
   CMAKE_POLICY(SET CMP0003 NEW)
 ENDIF(COMMAND CMAKE_POLICY)
@@ -50,11 +50,15 @@ ENDIF("${isSystemDir}" STREQUAL "-1")
 # Define build targets for allpix #
 ###################################
 
+# Set standard build flags
+SET(CMAKE_CXX_STANDARD 14)
+SET(CMAKE_CXX_FLAGS "-O2 -Wall -Wextra -pedantic -Wshadow -Wformat-security -Wno-long-long -Wdeprecated -fdiagnostics-color=auto -Weffc++ ${CMAKE_CXX_FLAGS}")
+
 # Always build main allpix library;
 ADD_SUBDIRECTORY(src/core)
 
 # Build messages
-add_subdirectory(src/messages)
+ADD_SUBDIRECTORY(src/messages)
 
 # Build required modules
 ADD_SUBDIRECTORY(src/modules)

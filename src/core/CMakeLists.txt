@@ -10,11 +10,8 @@
 FIND_PACKAGE(Eigen3 REQUIRED)
 INCLUDE_DIRECTORIES(SYSTEM ${EIGEN3_INCLUDE_DIR})
 
-SET (CMAKE_CXX_STANDARD 14)
-
 ADD_LIBRARY(AllpixCore SHARED
     utils/log.cpp
-#    utils/string.cpp
     module/Module.cpp
     module/ModuleManager.cpp
     module/StaticModuleManager.cpp
