@@ -43,7 +43,7 @@ OPTION(BUILD_allmodules "Build all modules?" OFF)
 ###################################
 
 # ROOT is required for histogramming
-FIND_PACKAGE(ROOT REQUIRED COMPONENTS Geom XMLParser)
+FIND_PACKAGE(ROOT REQUIRED COMPONENTS Geom)
 IF(NOT ROOT_FOUND)
     MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
     "$ source YOUR_ROOT_DIR/bin/thisroot.sh")
