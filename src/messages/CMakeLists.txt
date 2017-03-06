@@ -1,4 +1,4 @@
-SET(CMAKE_CXX_FLAGS "-g -Wall -Wextra -pedantic -Wshadow -Wformat-security -Wno-long-long -Wdeprecated -fdiagnostics-color=auto -Winconsistent-missing-override -Weffc++ ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-g -Wall -Wextra -pedantic -Wshadow -Wformat-security -Wno-long-long -Wdeprecated -fdiagnostics-color=auto -Weffc++ ${CMAKE_CXX_FLAGS}")
 
 FIND_PACKAGE(ROOT REQUIRED)
 IF(NOT ROOT_FOUND)
