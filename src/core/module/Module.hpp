@@ -45,10 +45,10 @@ namespace allpix {
         //virtual std::string getName() = 0;
         
         // FIXME: handle by string or directly pass detectors?
-        void setDetector(Detector det) {
+        void setDetector(std::shared_ptr<Detector> det) {
             _detector = det;
         }
-        Detector getDetector() const {
+        std::shared_ptr<Detector> getDetector() const {
             return _detector;
         }
     
@@ -83,7 +83,7 @@ namespace allpix {
         ModuleIdentifier identifier_;
         
         // FIXME: see above
-        Detector _detector;
+        std::shared_ptr<Detector> _detector;
     };
 }
 

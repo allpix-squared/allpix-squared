@@ -14,6 +14,9 @@
 
 using namespace allpix;
 
+// Constructor
+Messenger::Messenger(): delegates_() {}
+
 // Destructor
 Messenger::~Messenger() {
     // delete all delegates
@@ -26,7 +29,7 @@ Messenger::~Messenger() {
     }
 }
 
-// dispatch the message
+// Dispatch the message
 void Messenger::dispatchMessage(std::shared_ptr<Message> msg, std::string name) {
     bool send = false;
         

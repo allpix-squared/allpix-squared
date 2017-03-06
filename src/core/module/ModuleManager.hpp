@@ -20,8 +20,8 @@ namespace allpix {
     class ModuleManager{
     public:
         // Constructor and destructors
-        ModuleManager() {}
-        virtual ~ModuleManager() {}
+        ModuleManager();
+        virtual ~ModuleManager();
         
         // Disallow copy
         ModuleManager(const ModuleManager&) = delete;
@@ -39,14 +39,15 @@ namespace allpix {
     protected:
         using ModuleList = std::list<std::unique_ptr<Module>>;
         using ModuleIdentifierMap = std::map<std::string, std::pair<ModuleIdentifier, ModuleList::iterator> >;
+        
+        // Add module to run queue
+        void add_to_run_queue(Module *);
+        
         ModuleList modules_;
         ModuleIdentifierMap identifiers_;
         
         // FIXME: if we stick to the linear run we can also just run modules directly from list
         std::queue<Module*> run_queue_;
-        
-        // Add module to run queue
-        void add_to_run_queue(Module *);
     };
 }
 

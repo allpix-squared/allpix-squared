@@ -8,12 +8,14 @@
 
 using namespace allpix;
 
-// constructor to add file
-SimpleConfigManager::SimpleConfigManager(std::string file_name) {
+// Constructors and destructor
+SimpleConfigManager::SimpleConfigManager(): conf_map_(), conf_array_(), file_names_() {}
+SimpleConfigManager::SimpleConfigManager(std::string file_name): SimpleConfigManager() {
     addFile(file_name);
 }
+SimpleConfigManager::~SimpleConfigManager() {}
 
-// add a new settings file
+// Add a new settings file
 void SimpleConfigManager::addFile(std::string file_name) {
     file_names_.push_back(file_name);
     std::ifstream file(file_name);
@@ -23,13 +25,13 @@ void SimpleConfigManager::addFile(std::string file_name) {
     build_config(file, file_name);
 }
 
-// remove all files and clear the config
+// Remove all files and clear the config
 void SimpleConfigManager::removeFiles() {
     file_names_.clear();
     clear();
 }
 
-// reload all files
+// Reload all files
 void SimpleConfigManager::reload() {
     clear();
     
@@ -39,18 +41,18 @@ void SimpleConfigManager::reload() {
     }
 }
 
-// clear the current config
+// Clear the current config
 void SimpleConfigManager::clear() {
     conf_array_.clear();
     conf_map_.clear();
 }
 
-// check if configuration key exists at least once
+// Check if configuration key exists at least once
 bool SimpleConfigManager::hasConfiguration(std::string name) const {
     return conf_map_.find(name) != conf_map_.end();
 }
 
-// count the amount of configurations of a given name
+// Count the amount of configurations of a given name
 int SimpleConfigManager::countConfigurations(std::string name) const {
     if (!hasConfiguration(name)) {
         return 0;
@@ -58,7 +60,7 @@ int SimpleConfigManager::countConfigurations(std::string name) const {
     return conf_map_.at(name).size();
 }
 
-// return configuration by name
+// Return configuration by name
 std::vector<Configuration> SimpleConfigManager::getConfigurations(std::string name) const {
     if (!hasConfiguration(name)) {
         return std::vector<Configuration>();

@@ -6,6 +6,10 @@
 
 using namespace allpix;
 
+// Constructor and destructor
+ModuleFactory::ModuleFactory(): conf_(), apx_(nullptr) {}
+ModuleFactory::~ModuleFactory() {}
+
 void ModuleFactory::setAllPix(AllPix *allpix) {
     apx_ = allpix;
 }

@@ -18,7 +18,7 @@ namespace allpix {
     class Messenger {
     public:
         // Constructor and destructors
-        Messenger() {}
+        Messenger();
         virtual ~Messenger();
         
         // Disallow copy

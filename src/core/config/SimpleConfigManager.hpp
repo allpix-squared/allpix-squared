@@ -20,9 +20,9 @@ namespace allpix {
     class SimpleConfigManager : public ConfigManager{
     public:
         // Constructor and destructors
-        SimpleConfigManager() {}
+        SimpleConfigManager();
         explicit SimpleConfigManager(std::string file_name);
-        ~SimpleConfigManager() {}
+        ~SimpleConfigManager();
         
         // Add file
         void addFile(std::string file_name);

@@ -24,7 +24,20 @@ namespace allpix {
     class PixelDetectorModel : public DetectorModel {
     public:        
         //Constructor and destructor
-        PixelDetectorModel() {}
+        PixelDetectorModel(std::string type): DetectorModel(type),
+            m_npix_x(1), m_npix_y(1), m_npix_z(1),
+            m_pixsize_x(0.0), m_pixsize_y(0.0), m_pixsize_z(0.0),
+            m_sensor_hx(0.0), m_sensor_hy(0.0), m_sensor_hz(0.0),
+            m_sensor_posx(0.0), m_sensor_posy(0.0), m_sensor_posz(0.0),
+            m_sensor_gr_excess_htop(0.0), m_sensor_gr_excess_hbottom(0.0), 
+            m_sensor_gr_excess_hright(0.0), m_sensor_gr_excess_hleft(0.0),
+            m_chip_hx(0.0), m_chip_hy(0.0), m_chip_hz(0.0),
+            m_chip_offsetx(0.0), m_chip_offsety(0.0), m_chip_offsetz(0.0),
+            m_chip_posx(0.0), m_chip_posy(0.0), m_chip_posz(0.0),
+            m_pcb_hx(0.0), m_pcb_hy(0.0), m_pcb_hz(0.0),
+            m_bump_radius(0.0), m_bump_height(0.0), m_bump_offsetx(0.0),
+            m_bump_offsety(0.0), m_bump_dr(0.0),
+            m_resistivity(0.0) {}
         ~PixelDetectorModel() {}
 
         //  Number of pixels
@@ -61,13 +74,9 @@ namespace allpix {
         inline double GetHalfSensorY(){return m_sensor_hy;};
         inline double GetHalfSensorZ(){return m_sensor_hz;};
 
-        inline double GetHalfCoverlayerZ(){return m_coverlayer_hz;};
-
         inline double GetSensorX(){return 2.*GetHalfSensorX();};
         inline double GetSensorY(){return 2.*GetHalfSensorY();};
         inline double GetSensorZ(){return 2.*GetHalfSensorZ();};
-
-        inline double GetCoverlayerHZ(){return 2.*GetHalfCoverlayerZ();};
 
         inline double GetSensorXOffset(){return m_sensor_posx;};
         inline double GetSensorYOffset(){return m_sensor_posy;};
@@ -201,13 +210,6 @@ namespace allpix {
         void SetSensorHZ(double val){
             m_sensor_hz = val;
         }
-        /*void SetCoverlayerHZ(double val){
-            m_coverlayer_hz = val;
-            m_coverlayer_ON = true;
-        }*/
-        /*void SetCoverlayerMat(G4String mat){
-            m_coverlayer_mat = mat;
-        }*/
 
         void SetSensorPosX(double val){
             m_sensor_posx = val;
@@ -255,8 +257,6 @@ namespace allpix {
         double m_sensor_hx;
         double m_sensor_hy;
         double m_sensor_hz;
-
-        double m_coverlayer_hz;
 
         double m_sensor_posx;
         double m_sensor_posy;

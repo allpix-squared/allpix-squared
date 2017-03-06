@@ -15,8 +15,8 @@ namespace allpix {
     class GeometryManager {
     public:
         // Constructor and destructors
-        GeometryManager() {}
-        virtual ~GeometryManager() {}
+        GeometryManager();
+        virtual ~GeometryManager();
         
         // Disallow copy
         GeometryManager(const GeometryManager&) = delete;

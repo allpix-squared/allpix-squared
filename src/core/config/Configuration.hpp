@@ -58,10 +58,10 @@ namespace allpix {
         void print() const;
                                     
     private:
-        using ConfigMap = std::map<std::string, std::string>;
-        ConfigMap config_;
-        
         std::string name_;
+        
+        using ConfigMap = std::map<std::string, std::string>;
+        ConfigMap config_;        
     };
     
     template <typename T> T Configuration::get(const std::string &key) const {

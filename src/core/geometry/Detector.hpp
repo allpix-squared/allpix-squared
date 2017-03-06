@@ -19,7 +19,6 @@ namespace allpix {
     class Detector {
     public:
         // Constructor and destructors
-        Detector() {}  // FIXME: remove this constructor?
         Detector(std::string name, std::shared_ptr<DetectorModel> model);
         virtual ~Detector() {}
                 
@@ -45,12 +44,12 @@ namespace allpix {
         template<typename T> std::shared_ptr<T> getExternalModel();
         template<typename T> void setExternalModel(std::shared_ptr<T>);
     private:        
+        std::string name_;        
+        std::shared_ptr<DetectorModel> model_;    
+                
         // FIXME: use a proper vector here
         std::tuple<double, double, double> location_;
         std::tuple<double, double, double> orientation_;
-
-        std::string name_;        
-        std::shared_ptr<DetectorModel> model_;    
         
         std::map<std::type_index, std::shared_ptr<void>> external_models_;
     };

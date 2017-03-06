@@ -13,6 +13,10 @@
 
 using namespace allpix;
 
+// Constructor and destructor
+GeometryManager::GeometryManager(): detectors_() {}
+GeometryManager::~GeometryManager() {}
+
 // Add detector to the system
 void GeometryManager::addDetector(std::shared_ptr<Detector> det) {
     detectors_.push_back(det);

@@ -11,9 +11,8 @@ using namespace allpix;
 
 // Default constructor (FIXME: decide what to pass and what should be standard)
 AllPix::AllPix(std::unique_ptr<ConfigManager> conf_mgr, std::unique_ptr<ModuleManager> mod_mgr, std::unique_ptr<GeometryManager> geo_mgr):
-    conf_mgr_(std::move(conf_mgr)), mod_mgr_(std::move(mod_mgr)), geo_mgr_(std::move(geo_mgr)), state_(State::Unitialized) {
-        msg_ = std::make_unique<Messenger>();
-    }
+    conf_mgr_(std::move(conf_mgr)), mod_mgr_(std::move(mod_mgr)), geo_mgr_(std::move(geo_mgr)), 
+    msg_(std::make_unique<Messenger>()), state_(State::Unitialized), external_managers_() {}
 
 // Get state
 AllPix::State AllPix::getState() const {

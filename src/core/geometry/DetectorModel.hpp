@@ -9,7 +9,7 @@
 namespace allpix{
     class DetectorModel {
     public:
-        DetectorModel() {}
+        DetectorModel(std::string type): type_(type) {}
         virtual ~DetectorModel() {}
         
         std::string getType() const;

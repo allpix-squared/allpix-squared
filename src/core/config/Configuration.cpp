@@ -14,9 +14,9 @@
 
 using namespace allpix;
 
-Configuration::Configuration(): name_("") {}
+Configuration::Configuration(): Configuration("") {}
 
-Configuration::Configuration(std::string name): name_(name) {}
+Configuration::Configuration(std::string name): name_(name), config_() {}
     
 bool Configuration::has(const std::string &key) const {
     return config_.find(key) != config_.cend();

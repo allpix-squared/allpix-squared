@@ -3,9 +3,9 @@
 using namespace allpix;
 
 // NOTE: we have to check for exceptions before we do the actual logging (which may also throw exceptions)
-DefaultLogger::DefaultLogger() {
-    exception_count_ = get_uncaught_exceptions(true);
-}
+DefaultLogger::DefaultLogger() : 
+    os(), exception_count_(get_uncaught_exceptions(true)) {}
+    
 DefaultLogger::~DefaultLogger() {
     // check if it is potentially safe to throw 
     if (exception_count_ != get_uncaught_exceptions(false)) return;
@@ -60,7 +60,7 @@ void DefaultLogger::addStream(std::ostream &stream) {
 // convert string to log level and vice versa
 std::string DefaultLogger::getStringFromLevel(LogLevel level) {
     static const std::array<std::string, 6> type = {"QUIET", "CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"};
-    return type[static_cast<int>(level)];
+    return type[static_cast<decltype(type)::size_type>(level)];
 }
 
 LogLevel DefaultLogger::getLevelFromString(const std::string& level) {

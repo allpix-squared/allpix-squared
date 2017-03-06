@@ -86,8 +86,7 @@ void ReadGeoDescription::ParseContext(TXMLNode *node)
                             }
                             
                             // create a new one
-                            m_detsGeo[m_currentType] = std::make_shared<PixelDetectorModel>();
-                            m_detsGeo[m_currentType]->setType(m_currentType);
+                            m_detsGeo[m_currentType] = std::make_shared<PixelDetectorModel>(m_currentType);
                             
                         }
                     }else if(tempContent == __pixeldet_global_ATT_units_S){

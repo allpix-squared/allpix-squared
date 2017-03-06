@@ -41,8 +41,8 @@ G4VPhysicalVolume *GeometryConstructionG4::Construct(){
     G4Material *vacuum = new G4Material("Vacuum", z=1 , a=1.01*g/mole, density= 0.0001*g/cm3);
     
     // air
-    G4NistManager * nistman = G4NistManager::Instance();
-    G4Material *air = nistman->FindOrBuildMaterial("G4_AIR");
+    //G4NistManager * nistman = G4NistManager::Instance();
+    //G4Material *air = nistman->FindOrBuildMaterial("G4_AIR");
     
     // FIXME: stick to vacuum as world material now
     world_material_ = vacuum;
@@ -219,7 +219,7 @@ void GeometryConstructionG4::BuildPixelDevices() {
             posBumps.setZ( posDevice.z()
             //wrapperHZ
             - model->GetHalfSensorZ()
-            - 2.*model->GetHalfCoverlayerZ()
+            //- 2.*model->GetHalfCoverlayerZ()
             - (bump_height/2.)
             );
             
@@ -228,7 +228,7 @@ void GeometryConstructionG4::BuildPixelDevices() {
             posChip.setZ( posDevice.z()
             //wrapperHZ
             - model->GetHalfSensorZ()
-            - 2.*model->GetHalfCoverlayerZ()
+            //- 2.*model->GetHalfCoverlayerZ()
             - bump_height
             - model->GetHalfChipZ()
             + model->GetChipZOffset()
@@ -243,7 +243,7 @@ void GeometryConstructionG4::BuildPixelDevices() {
         posPCB.setZ(posDevice.z()
         //wrapperHZ
         - model->GetHalfSensorZ()
-        - 2.*model->GetHalfCoverlayerZ()
+        //- 2.*model->GetHalfCoverlayerZ()
         - bump_height
         - 2.*model->GetHalfChipZ()
         - model->GetHalfPCBZ()

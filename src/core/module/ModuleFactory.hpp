@@ -17,9 +17,13 @@ namespace allpix {
     
     class ModuleFactory {
     public:
-        // constructor and destructor
-        ModuleFactory() {}
-        virtual ~ModuleFactory() {}
+        // Constructor and destructor
+        ModuleFactory();
+        virtual ~ModuleFactory();
+        
+        // Disallow copy of a factory
+        ModuleFactory(const ModuleFactory&) = delete;
+        ModuleFactory &operator=(const ModuleFactory&) = delete;
         
         // set AllPix object
         void setAllPix(AllPix *);
