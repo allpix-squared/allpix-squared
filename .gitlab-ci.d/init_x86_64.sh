@@ -121,3 +121,9 @@ export LD_LIBRARY_PATH="${BOOST_ROOT}/lib:$LD_LIBRARY_PATH"
 export Ninja_HOME=${CLICREPO}/software/Ninja/1.7.1/${BUILD_FLAVOUR}
 export PATH="$Ninja_HOME:$PATH"
 
+#--------------------------------------------------------------------------------
+#     Eigen
+#--------------------------------------------------------------------------------
+
+export Eigen_HOME=${CLICREPO}/software/Eigen/3.3.0/${BUILD_FLAVOUR}
+
