@@ -61,7 +61,7 @@ ENDIF(NOT Geant4_FOUND)
 ###################################
 
 set (CMAKE_CXX_STANDARD 14)
-SET(CMAKE_CXX_FLAGS "-O2 -Wall -Wextra -pedantic -Wfatal-errors ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-O2 -Wall -Wextra -pedantic -Wshadow -Wformat-security -Wno-long-long -Wdeprecated -fdiagnostics-color=auto -Winconsistent-missing-override -Weffc++ ${CMAKE_CXX_FLAGS}")
 
 # Example module implementation - check this directory as a starting point for your own module implementation
 option_build_module(geometry_test)

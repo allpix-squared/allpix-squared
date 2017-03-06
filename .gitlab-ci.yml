@@ -7,7 +7,7 @@ slc6-gcc62:
     - source .gitlab-ci.d/init_x86_64.sh
     - mkdir build
     - cd build
-    - cmake -GNinja -DCMAKE_CXX_FLAGS="-Weffc++" -DGeant4_DIR=$G4INSTALL/lib64/Geant4-10.2.2 -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen_HOME/lib64/cmake/eigen3 ..
+    - cmake -GNinja -DGeant4_DIR=$G4INSTALL/lib64/Geant4-10.2.2 -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen_HOME/lib64/cmake/eigen3 ..
     - ninja
     - ninja install
     - ctest --output-on-failure -j4
@@ -22,7 +22,7 @@ slc6-llvm39:
     - source .gitlab-ci.d/init_x86_64.sh
     - mkdir build
     - cd build
-    - cmake -GNinja -DCMAKE_CXX_FLAGS="-Weffc++" -DGeant4_DIR=$G4INSTALL/lib64/Geant4-10.2.2 -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen_HOME/lib64/cmake/eigen3 ..
+    - cmake -GNinja -DGeant4_DIR=$G4INSTALL/lib64/Geant4-10.2.2 -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen_HOME/lib64/cmake/eigen3 ..
     - ninja
     - ninja install
     - ctest --output-on-failure -j4
@@ -37,7 +37,7 @@ centos7-gcc62:
     - source .gitlab-ci.d/init_x86_64.sh
     - mkdir build
     - cd build
-    - cmake -GNinja -DCMAKE_CXX_FLAGS="-Weffc++" -DGeant4_DIR=$G4INSTALL/lib64/Geant4-10.2.2 -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen_HOME/lib64/cmake/eigen3 ..
+    - cmake -GNinja -DGeant4_DIR=$G4INSTALL/lib64/Geant4-10.2.2 -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen_HOME/lib64/cmake/eigen3 ..
     - ninja
     - ninja install
     - ctest --output-on-failure -j4
@@ -52,7 +52,7 @@ centos7-llvm39:
     - source .gitlab-ci.d/init_x86_64.sh
     - mkdir build
     - cd build
-    - cmake -GNinja -DCMAKE_CXX_FLAGS="-Weffc++" -DGeant4_DIR=$G4INSTALL/lib64/Geant4-10.2.2 -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen_HOME/lib64/cmake/eigen3 ..
+    - cmake -GNinja -DGeant4_DIR=$G4INSTALL/lib64/Geant4-10.2.2 -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen_HOME/lib64/cmake/eigen3 ..
     - ninja
     - ninja install
     - ctest --output-on-failure -j4
@@ -65,7 +65,7 @@ mac1012-clang80:
     - source .gitlab-ci.d/init_x86_64.sh
     - mkdir build
     - cd build
-    - cmake -GNinja -DCMAKE_CXX_FLAGS="-Weffc++" -DGeant4_DIR=$G4INSTALL/lib64/Geant4-10.2.2 -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen_HOME/lib64/cmake/eigen3 ..
+    - cmake -GNinja -DGeant4_DIR=$G4INSTALL/lib64/Geant4-10.2.2 -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen_HOME/lib64/cmake/eigen3 ..
     - ninja
     - ninja install
     - ctest --output-on-failure -j4

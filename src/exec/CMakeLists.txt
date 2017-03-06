@@ -5,7 +5,7 @@ INCLUDE_DIRECTORIES(SYSTEM ${EIGEN3_INCLUDE_DIR})
 #INCLUDE_DIRECTORIES(SYSTEM ../core)
 
 SET(CMAKE_CXX_STANDARD 14)
-SET(CMAKE_CXX_FLAGS "-g -Wall -Wextra -pedantic ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-g -Wall -Wextra -pedantic -Wshadow -Wformat-security -Wno-long-long -Wdeprecated -fdiagnostics-color=auto -Winconsistent-missing-override -Weffc++ -Weffc++ ${CMAKE_CXX_FLAGS}")
 
 ADD_EXECUTABLE(allpix allpix.cpp)
 TARGET_LINK_LIBRARIES(allpix AllpixCore)
