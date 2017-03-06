@@ -36,8 +36,8 @@ namespace allpix {
             m_chip_posx(0.0), m_chip_posy(0.0), m_chip_posz(0.0),
             m_pcb_hx(0.0), m_pcb_hy(0.0), m_pcb_hz(0.0),
             m_bump_radius(0.0), m_bump_height(0.0), m_bump_offsetx(0.0),
-            m_bump_offsety(0.0), m_bump_dr(0.0),
-            m_resistivity(0.0) {}
+            m_bump_offsety(0.0), m_bump_dr(0.0)
+            /*m_resistivity(0.0)*/ {}
         ~PixelDetectorModel() {}
 
         //  Number of pixels
@@ -45,7 +45,7 @@ namespace allpix {
         inline int GetNPixelsY(){return m_npix_y;};
         inline int GetNPixelsZ(){return m_npix_z;};
         inline int GetNPixelsTotXY(){return GetNPixelsX()*GetNPixelsY();}; // Planar layout //
-        inline double GetResistivity(){return m_resistivity;};
+        //inline double GetResistivity(){return m_resistivity;};
 
         //inline int GetHalfNPixelsX(){return GetNPixelsX()/2;}; // half number of pixels //
         //inline int GetHalfNPixelsY(){return GetNPixelsY()/2;};
@@ -122,9 +122,9 @@ namespace allpix {
             return whdz;
         };
         
-        void SetResistivity(double val){
+        /*void SetResistivity(double val){
             m_resistivity = val;
-        }
+        }*/
         
         void SetNPixelsX(int val){
             m_npix_x = val;
@@ -289,7 +289,7 @@ namespace allpix {
         double m_bump_offsety;
         double m_bump_dr;
 
-        double m_resistivity;
+        //double m_resistivity;
     };
 
 }

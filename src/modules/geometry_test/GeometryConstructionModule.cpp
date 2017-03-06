@@ -66,7 +66,7 @@ void GeometryConstructionModule::run(){
     
     // build the detectors_
     // FIXME: hardcoded for now
-    auto detector_model = geo_descriptions.GetDetectorsMap()[config_.get<std::string>("detector_name", "test")];  
+    auto detector_model = geo_descriptions.getDetectorModel(config_.get<std::string>("detector_name", "test")); //geo_descriptions.GetDetectorsMap()[];  
     assert(detector_model); // FIXME: temporary assert
     
     auto det1 = std::make_shared<Detector>("name1", detector_model);
