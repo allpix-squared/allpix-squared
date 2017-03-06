@@ -1,0 +1,70 @@
+slc6-gcc62:
+  tags:
+    - docker
+  image: clicdp/slc6-base
+  script:
+    - export COMPILER_TYPE="gcc"
+    - source .gitlab-ci.d/init_x86_64.sh
+    - mkdir build
+    - cd build
+    - cmake -GNinja -DCMAKE_CXX_FLAGS="-Weffc++" ..
+    - ninja
+    - ninja install
+    - ctest --output-on-failure -j4
+
+slc6-llvm39:
+  tags:
+    - docker
+  image: clicdp/slc6-base
+  script:
+    - export COMPILER_TYPE="llvm"
+    - source .gitlab-ci.d/init_x86_64.sh
+    - mkdir build
+    - cd build
+    - cmake -GNinja ..
+    - ninja
+    - ninja install
+    - ctest --output-on-failure -j4
+
+centos7-gcc62:
+  tags:
+    - docker
+  image: clicdp/cc7-base
+  script:
+    - export COMPILER_TYPE="gcc"
+    - source .gitlab-ci.d/init_x86_64.sh
+    - mkdir build
+    - cd build
+    - cmake -GNinja -DCMAKE_CXX_FLAGS="-Weffc++" ..
+    - ninja
+    - ninja install
+    - ctest --output-on-failure -j4
+
+
+centos7-llvm39:
+  tags:
+    - docker
+  image: clicdp/slc6-base
+  script:
+    - export COMPILER_TYPE="llvm"
+    - source .gitlab-ci.d/init_x86_64.sh
+    - mkdir build
+    - cd build
+    - cmake -GNinja ..
+    - ninja
+    - ninja install
+    - ctest --output-on-failure -j4
+
+mac1012-clang80:
+  tags:
+    - mac
+  script:
+    - source .gitlab-ci.d/init_x86_64.sh
+    - mkdir build
+    - cd build
+    - cmake -GNinja ..
+    - ninja
+    - ninja install
+    - ctest --output-on-failure -j4
+
+
