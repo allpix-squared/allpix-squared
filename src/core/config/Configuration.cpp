@@ -5,9 +5,7 @@
 
 #include "Configuration.hpp"
 
-#include <fstream>
-#include <iostream>
-#include <cstdlib>
+#include <ostream>
 #include <string>
 
 #include "../utils/exceptions.h"
@@ -42,8 +40,4 @@ void Configuration::print(std::ostream &out) const {
     for (auto iter = config_.cbegin(); iter != config_.cend(); ++iter) {
         out << iter->first << " : " << iter->second << std::endl;
     }
-}
-
-void Configuration::print() const { 
-    print(std::cout); 
 }

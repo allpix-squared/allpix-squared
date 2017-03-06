@@ -55,7 +55,6 @@ namespace allpix {
         // Print debug functions
         // FIXME: not very useful now
         void print(std::ostream &out) const;
-        void print() const;
                                     
     private:
         std::string name_;

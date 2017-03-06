@@ -15,6 +15,8 @@
 #include "Configuration.hpp"
 #include "ConfigManager.hpp"
 
+#include "ConfigReader.hpp"
+
 namespace allpix {
 
     class SimpleConfigManager : public ConfigManager{
@@ -45,12 +47,9 @@ namespace allpix {
         virtual std::vector<Configuration> getConfigurations() const;
         
     private:
-        std::map<std::string, std::vector<std::list<Configuration>::iterator > > conf_map_;
-        std::list<Configuration> conf_array_;
+        ConfigReader reader_;
         
         std::vector<std::string> file_names_;
-        
-        void build_config(std::istream&, std::string file_name = "<none>");
     };
 }
 

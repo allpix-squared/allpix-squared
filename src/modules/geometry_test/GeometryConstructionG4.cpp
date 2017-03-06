@@ -248,7 +248,7 @@ void GeometryConstructionG4::BuildPixelDevices() {
         - 2.*model->GetHalfChipZ()
         - model->GetHalfPCBZ()
         );
-        
+                
         LOG(DEBUG) << "local relative positions of the elements";
         LOG(DEBUG) << "- Coverlayer position  : " << posCoverlayer ;
         LOG(DEBUG) << "- Sensor position      : " << posDevice ;
