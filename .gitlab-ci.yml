@@ -7,10 +7,11 @@ slc6-gcc62:
     - source .gitlab-ci.d/init_x86_64.sh
     - mkdir build
     - cd build
-    - cmake -GNinja -DCMAKE_CXX_FLAGS="-Weffc++" ..
+    - cmake -GNinja -DCMAKE_CXX_FLAGS="-Weffc++" -DGeant4_DIR=$G4INSTALL/lib64/Geant4-10.2.2 -DROOT_DIR=$ROOTSYS ..
     - ninja
     - ninja install
     - ctest --output-on-failure -j4
+
 
 slc6-llvm39:
   tags:
@@ -26,6 +27,7 @@ slc6-llvm39:
     - ninja install
     - ctest --output-on-failure -j4
 
+
 centos7-gcc62:
   tags:
     - docker
@@ -35,7 +37,7 @@ centos7-gcc62:
     - source .gitlab-ci.d/init_x86_64.sh
     - mkdir build
     - cd build
-    - cmake -GNinja -DCMAKE_CXX_FLAGS="-Weffc++" ..
+    - cmake -GNinja -DCMAKE_CXX_FLAGS="-Weffc++" -DGeant4_DIR=$G4INSTALL/lib64/Geant4-10.2.2 -DROOT_DIR=$ROOTSYS ..
     - ninja
     - ninja install
     - ctest --output-on-failure -j4
@@ -55,6 +57,7 @@ centos7-llvm39:
     - ninja install
     - ctest --output-on-failure -j4
 
+
 mac1012-clang80:
   tags:
     - mac
@@ -66,5 +69,3 @@ mac1012-clang80:
     - ninja
     - ninja install
     - ctest --output-on-failure -j4
-
-
