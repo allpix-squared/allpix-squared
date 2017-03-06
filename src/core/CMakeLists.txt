@@ -19,7 +19,7 @@ ADD_LIBRARY(AllpixCore SHARED
     messenger/Messenger.cpp
     config/Configuration.cpp
     config/ConfigReader.cpp
-    config/SimpleConfigManager.cpp
+    config/ConfigManager.cpp
     geometry/Detector.cpp
     geometry/DetectorModel.cpp
     geometry/GeometryManager.cpp

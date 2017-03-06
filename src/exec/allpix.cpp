@@ -8,7 +8,7 @@
 #include "../core/AllPix.hpp"
 
 #include "../core/module/StaticModuleManager.hpp"
-#include "../core/config/SimpleConfigManager.hpp"
+#include "../core/config/ConfigManager.hpp"
 #include "../core/geometry/GeometryManager.hpp"
 
 #include "../core/utils/exceptions.h"
@@ -51,7 +51,7 @@ int main(int, const char **) {
         // Construct managers (FIXME: move some initialization to AllPix)
         std::unique_ptr<GeometryManager> geo = std::make_unique<GeometryManager>();
         std::unique_ptr<StaticModuleManager> mod = std::make_unique<StaticModuleManager>(&generator);
-        std::unique_ptr<SimpleConfigManager> conf = std::make_unique<SimpleConfigManager>(file_name);
+        std::unique_ptr<ConfigManager> conf = std::make_unique<ConfigManager>(file_name);
         
         // Construct main AllPix object
         std::unique_ptr<AllPix> apx = std::make_unique<AllPix>(std::move(conf), std::move(mod), std::move(geo));

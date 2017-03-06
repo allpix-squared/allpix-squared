@@ -6,36 +6,53 @@
 #define ALLPIX_CONFIG_MANAGER_H
 
 #include <vector>
+#include <list>
 #include <string>
 #include <utility>
+#include <fstream>
+#include <map>
 
 #include "Configuration.hpp"
 
+#include "ConfigReader.hpp"
+
 namespace allpix {
 
-    class ConfigManager {
+    class ConfigManager{
     public:
         // Constructor and destructors
-        ConfigManager() {}
-        virtual ~ConfigManager() {}
+        ConfigManager();
+        explicit ConfigManager(std::string file_name);
+        ~ConfigManager();
         
         // Disallow copy
         ConfigManager(const ConfigManager&) = delete;
         ConfigManager &operator=(const ConfigManager&) = delete;
         
-        // Check if configuration section exist
-        virtual bool hasConfiguration(std::string name) const = 0;
-        virtual int countConfigurations(std::string name) const = 0;
+        // Add file
+        void addFile(std::string file_name);
+        void removeFiles();
         
-        // FIXME: do we want to have a special function for types where only a single instance make sense
-        // Configuration getConfiguration(std::string name) = 0;
+        // Reload all configs (clears and rereads)
+        void reload();
+        
+        // Clear all configuration
+        void clear();
+        
+        // Check if configuration section exist
+        bool hasConfiguration(std::string name) const;
+        int countConfigurations(std::string name) const;
         
         // Return configuration sections by name
-        virtual std::vector<Configuration> getConfigurations(std::string name) const = 0;
+        std::vector<Configuration> getConfigurations(std::string name) const;
         
         // Return all configurations with their name
-        // WARNING: this should give the configurations in the same order as defined in the config file!
-        virtual std::vector<Configuration> getConfigurations() const = 0;
+        std::vector<Configuration> getConfigurations() const;
+        
+    private:
+        ConfigReader reader_;
+        
+        std::vector<std::string> file_names_;
     };
 }
 
