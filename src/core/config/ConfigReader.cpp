@@ -91,7 +91,7 @@ bool ConfigReader::hasConfiguration(std::string name) const {
 }
 
 // Count the amount of configurations of a given name
-int ConfigReader::countConfigurations(std::string name) const {
+unsigned long ConfigReader::countConfigurations(std::string name) const {
     if (!hasConfiguration(name)) {
         return 0;
     }

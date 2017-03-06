@@ -36,7 +36,7 @@ namespace allpix {
         
         // Check if configuration section exist
         bool hasConfiguration(std::string name) const;
-        int countConfigurations(std::string name) const;
+        unsigned long countConfigurations(std::string name) const;
         
         // Return configuration sections by name
         std::vector<Configuration> getConfigurations(std::string name) const;
