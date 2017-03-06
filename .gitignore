@@ -12,6 +12,7 @@ obj/
 *.macro
 *.ps
 *.wrl
+*.png
 
 # ignore backup files of any sort of editor:
 ~*
