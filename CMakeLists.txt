@@ -67,12 +67,27 @@ FOREACH( FLAG ${COMPILER_FLAGS} )
     ENDIF()
 ENDFOREACH()
 
-message(${CMAKE_CXX_FLAGS})
-
 # Require a C++14 compiler without extensions
 SET(CMAKE_CXX_STANDARD 14)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
+
+# Find threading provider and enable it (NOTE: not used yet)
+FIND_PACKAGE(Threads REQUIRED)
+IF ( THREADS_HAVE_PTHREAD_ARG )
+    SET ( CMAKE_CXX_FLAGS           "${CMAKE_CXX_FLAGS} -pthread")
+    SET ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pthread")
+ELSEIF ( CMAKE_THREAD_LIBS_INIT )
+    SET ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${CMAKE_THREAD_LIBS_INIT}")
+ENDIF()
+
+# Set no undefined symbols flag for the linker if supported
+IF( ("${CMAKE_CXX_COMPILER_ID}" EQUAL "Clang") OR ("${CMAKE_CXX_COMPILER_ID}" EQUAL "GNU") )
+    SET ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-undefined")
+ENDIF()
+IF("${CMAKE_CXX_COMPILER_ID}" EQUAL "AppleClang")
+    SET ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-undefined,error")
+ENDIF()
 
 ###################################
 # Define build targets for allpix #
