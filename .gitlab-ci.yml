@@ -61,7 +61,7 @@ mac1012-clang80:
     tags:
         - mac
     script:
-        - source .dd4hep-ci.d/init_x86_64.sh
+        - source .gitlab-ci.d/init_x86_64.sh
         - mkdir build
         - cd build
         - cmake -GNinja -DGeant4_DIR=$G4INSTALL/lib64/Geant4-10.2.2 -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen_HOME/lib64/cmake/eigen3 ..
