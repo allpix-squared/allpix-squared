@@ -84,8 +84,9 @@ LogLevel DefaultLogger::getLevelFromString(const std::string& level) {
 }
 
 std::string DefaultLogger::get_current_date() {
-    auto now = std::chrono::high_resolution_clock::now();
-    auto in_time_t = std::chrono::high_resolution_clock::to_time_t(now);
+    //FIXME: revise this to get microseconds in a better way
+    auto now = std::chrono::system_clock::now();
+    auto in_time_t = std::chrono::system_clock::to_time_t(now);
     
     std::stringstream ss;
     ss << std::put_time(std::localtime(&in_time_t), "%X");
