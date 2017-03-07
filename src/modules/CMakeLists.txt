@@ -12,7 +12,7 @@ MACRO(option_build_module dir)
 
     INCLUDE_DIRECTORIES(${dir})
     FILE(GLOB_RECURSE LIB_SOURCE_FILES "${dir}/*.cpp")
-    MESSAGE( STATUS " -- sources: " ${LIB_SOURCE_FILES} )
+    MESSAGE( STATUS " -- sources: ${LIB_SOURCE_FILES}")
 
     # FIXME: determine per module if we want to include ROOT + G4
     INCLUDE_DIRECTORIES(SYSTEM ${ROOT_INCLUDE_DIRS})

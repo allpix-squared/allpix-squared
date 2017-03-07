@@ -36,6 +36,15 @@ GeometryConstructionModule::GeometryConstructionModule(AllPix *apx, ModuleIdenti
         Module(apx, id), config_(config), run_manager_g4_(nullptr) {}
 GeometryConstructionModule::~GeometryConstructionModule() {}
 
+// check geant4 environment variable
+inline void check_dataset_g4(std::string env_name) {
+    const char *file_name = std::getenv(env_name.c_str());
+    if(file_name == nullptr) throw ModuleException("Geant4 environment variable "+env_name+" is not set, make sure to source a Geant4 environment with all datasets");
+    std::ifstream file(file_name);
+    if(!file.good()) throw ModuleException("Geant4 environment variable "+env_name+" does not point to existing dataset, your Geant4 environment is not complete");
+    //FIXME: check if file does actually contain a correct dataset
+}
+
 // create the run manager and make it available
 void GeometryConstructionModule::init(){
     // suppress all output (also cout due to a part in Geant4 where G4cout is not used)
@@ -44,6 +53,18 @@ void GeometryConstructionModule::init(){
     
     // create the G4 run manager
     run_manager_g4_ = std::make_shared<G4RunManager>();
+    
+    // check if all the required geant4 datasets are defined
+    check_dataset_g4("G4LEVELGAMMADATA");
+    check_dataset_g4("G4RADIOACTIVEDATA");
+    check_dataset_g4("G4PIIDATA");
+    check_dataset_g4("G4SAIDXSDATA");
+    check_dataset_g4("G4ABLADATA");
+    check_dataset_g4("G4REALSURFACEDATA");
+    check_dataset_g4("G4NEUTRONHPDATA");
+    check_dataset_g4("G4NEUTRONXSDATA");
+    check_dataset_g4("G4ENSDFSTATEDATA");
+    check_dataset_g4("G4LEDATA");
     
     // release the output again
     RELEASE_STREAM(std::cout);

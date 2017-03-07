@@ -47,12 +47,36 @@ ENDIF("${isSystemDir}" STREQUAL "-1")
 
 
 ###################################
-# Define build targets for allpix #
+# Define build flags for allpix   #
 ###################################
 
 # Set standard build flags
+SET(COMPILER_FLAGS -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wconversion -Wzero-as-null-pointer-constant -Wuseless-cast -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Werror -Wshadow -Wformat-security -Wdeprecated -fdiagnostics-color=auto -Weffc++)
+
+# Check for supported flags and remove unsupported warnings
+INCLUDE(CheckCXXCompilerFlag)
+FOREACH( FLAG ${COMPILER_FLAGS} )
+    STRING(REPLACE "-" "_" FLAG_WORD ${FLAG} )
+    STRING(REPLACE "+" "P" FLAG_WORD ${FLAG_WORD} )
+
+    CHECK_CXX_COMPILER_FLAG( "${FLAG}" CXX_FLAG_WORKS_${FLAG_WORD} )
+    IF( ${CXX_FLAG_WORKS_${FLAG_WORD}} )
+      SET ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAG}")
+    ELSE()
+      MESSAGE ( STATUS "NOT adding ${FLAG} to CXX_FLAGS - unsupported flag" )
+    ENDIF()
+ENDFOREACH()
+
+message(${CMAKE_CXX_FLAGS})
+
+# Require a C++14 compiler without extensions
 SET(CMAKE_CXX_STANDARD 14)
-SET(CMAKE_CXX_FLAGS "-pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wconversion -Wzero-as-null-pointer-constant -Wuseless-cast -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Werror -Wshadow -Wformat-security -Wdeprecated -fdiagnostics-color=auto -Weffc++ ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_STANDARD_REQUIRED ON)
+SET(CMAKE_CXX_EXTENSIONS OFF)
+
+###################################
+# Define build targets for allpix #
+###################################
 
 # Always build main allpix library
 ADD_SUBDIRECTORY(src/core)

@@ -25,7 +25,7 @@ using namespace allpix;
 
 ReadGeoDescription::ReadGeoDescription(std::string file_name): models_() {
     std::ifstream file(file_name);
-    if(!file.good()) throw ModuleException("Geometry description file not found");
+    if(!file.good()) throw ModuleException("Geometry description file '"+file_name+"' not found");
     
     ConfigReader reader(file, file_name);
     
