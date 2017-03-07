@@ -1,8 +1,8 @@
 slc6-gcc62:
-  tags:
+tags:
     - docker
-  image: clicdp/slc6-base
-  script:
+image: clicdp/slc6-base
+script:
     - export COMPILER_TYPE="gcc"
     - source .gitlab-ci.d/init_x86_64.sh
     - mkdir build
@@ -14,10 +14,10 @@ slc6-gcc62:
 
 
 slc6-llvm39:
-  tags:
+tags:
     - docker
-  image: clicdp/slc6-base
-  script:
+image: clicdp/slc6-base
+script:
     - export COMPILER_TYPE="llvm"
     - source .gitlab-ci.d/init_x86_64.sh
     - mkdir build
@@ -29,10 +29,10 @@ slc6-llvm39:
 
 
 centos7-gcc62:
-  tags:
+tags:
     - docker
-  image: clicdp/cc7-base
-  script:
+image: clicdp/cc7-base
+script:
     - export COMPILER_TYPE="gcc"
     - source .gitlab-ci.d/init_x86_64.sh
     - mkdir build
@@ -44,12 +44,24 @@ centos7-gcc62:
 
 
 centos7-llvm39:
-  tags:
+tags:
     - docker
-  image: clicdp/slc6-base
-  script:
+image: clicdp/slc6-base
+script:
     - export COMPILER_TYPE="llvm"
     - source .gitlab-ci.d/init_x86_64.sh
+    - mkdir build
+    - cd build
+    - cmake -GNinja -DGeant4_DIR=$G4INSTALL/lib64/Geant4-10.2.2 -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen_HOME/lib64/cmake/eigen3 ..
+    - ninja
+    - ninja install
+    - ctest --output-on-failure -j4
+    
+mac1012-clang80:
+tags:
+    - mac
+script:
+    - source .dd4hep-ci.d/init_x86_64.sh
     - mkdir build
     - cd build
     - cmake -GNinja -DGeant4_DIR=$G4INSTALL/lib64/Geant4-10.2.2 -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen_HOME/lib64/cmake/eigen3 ..
