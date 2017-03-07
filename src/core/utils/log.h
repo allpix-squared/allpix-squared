@@ -18,11 +18,8 @@
 #include <iostream>
 #include <sstream>
 #include <cstring>
-#include <cstdint>
 #include <chrono>
-#include <ctime>
 #include <iomanip>
-#include <cstdio>
 
 namespace allpix {
     enum class LogLevel {
