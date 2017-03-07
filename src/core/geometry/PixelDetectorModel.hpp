@@ -103,9 +103,9 @@ namespace allpix {
         inline double GetHalfPCBX(){return m_pcb_hx;};
         inline double GetHalfPCBY(){return m_pcb_hy;};
         inline double GetHalfPCBZ(){return m_pcb_hz;};
-        inline double GetPCBX(){return 2.*GetPCBX();};
-        inline double GetPCBY(){return 2.*GetPCBX();};
-        inline double GetPCBZ(){return 2.*GetPCBX();};
+        inline double GetPCBX(){return 2.*GetHalfPCBX();};
+        inline double GetPCBY(){return 2.*GetHalfPCBY();};
+        inline double GetPCBZ(){return 2.*GetHalfPCBZ();};
 
         // Wrapper
         inline double GetHalfWrapperDX(){return GetHalfPCBX();};

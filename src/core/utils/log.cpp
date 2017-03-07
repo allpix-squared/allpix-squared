@@ -59,7 +59,7 @@ void DefaultLogger::addStream(std::ostream &stream) {
 
 // convert string to log level and vice versa
 std::string DefaultLogger::getStringFromLevel(LogLevel level) {
-    static const std::array<std::string, 6> type = {"QUIET", "CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"};
+    static const std::array<std::string, 6> type = {{"QUIET", "CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"}};
     return type[static_cast<decltype(type)::size_type>(level)];
 }
 

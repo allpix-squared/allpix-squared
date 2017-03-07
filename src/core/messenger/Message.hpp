@@ -12,6 +12,10 @@ namespace allpix {
         Message() {}
         virtual ~Message() {}
         
+        // Set default copy behaviour
+        Message(const Message&) = default;
+        Message &operator=(const Message&) = default;
+        
         // TODO: we might want to have a resolving function to get the content of a message by name for histogramming etc.
     };
 }

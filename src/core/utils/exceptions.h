@@ -29,7 +29,7 @@ namespace allpix {
     public:
         Exception(): error_message_("Unspecified error") {}
         explicit Exception(const std::string& what_arg) : std::exception(), error_message_(what_arg) {}
-        virtual const char* what() const throw() {
+        virtual const char* what() const noexcept {
             return error_message_.c_str();
         }
     protected:

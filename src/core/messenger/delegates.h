@@ -42,7 +42,8 @@ namespace allpix {
         
         void call(std::shared_ptr<Message> msg) const {
             // the type names should have been correctly resolved earlier
-            assert(typeid(*msg) == typeid(R));
+            const Message *inst = msg.get();
+            assert(typeid(*inst) == typeid(R));
             
             // NOTE: this dynamic cast is not perfect, but otherwise dynamic linking will break
             (obj_->*method_)(std::static_pointer_cast<R>(msg));
@@ -66,7 +67,8 @@ namespace allpix {
         
         void call(std::shared_ptr<Message> msg) const {
             // the type names should have been correctly resolved earlier
-            assert(typeid(*msg) == typeid(R));
+            const Message *inst = msg.get();
+            assert(typeid(*inst) == typeid(R));
             
             // FIXME: check that this assignment does not remove earlier information
             
@@ -92,7 +94,8 @@ namespace allpix {
         
         void call(std::shared_ptr<Message> msg) const {
             // the type names should have been correctly resolved earlier
-            assert(typeid(*msg) == typeid(R));
+            const Message *inst = msg.get();
+            assert(typeid(*inst) == typeid(R));
             
             // NOTE: this dynamic cast is not perfect, but otherwise dynamic linking will break
             (obj_->*member_).push_back(std::static_pointer_cast<R>(msg));

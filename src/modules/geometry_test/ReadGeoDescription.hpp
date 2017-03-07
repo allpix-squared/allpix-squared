@@ -18,9 +18,8 @@ namespace allpix {
     
     class ReadGeoDescription {
     public:
-        // Constructor and destructor
+        // Constructor
         ReadGeoDescription(std::string);
-        ~ReadGeoDescription() {};
 
         // Return the model (or return nullptr) if it does not exist
         std::shared_ptr<PixelDetectorModel> getDetectorModel(const std::string &name) const;
