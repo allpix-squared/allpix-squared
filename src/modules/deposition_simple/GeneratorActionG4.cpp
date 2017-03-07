@@ -20,10 +20,8 @@ using namespace CLHEP;
 using namespace allpix;
 
 // construct and destruct the generator
-GeneratorActionG4::GeneratorActionG4(int n_particle, G4ParticleDefinition *particle, G4ThreeVector position, G4ThreeVector momentum, double energy) {
-    particleGun_ = std::make_unique<G4ParticleGun>(n_particle);
-    
-    // FIXME: these parameters should not be fixed of course...
+GeneratorActionG4::GeneratorActionG4(int n_particle, G4ParticleDefinition *particle, G4ThreeVector position, G4ThreeVector momentum, double energy):
+         particleGun_(std::make_unique<G4ParticleGun>(n_particle)){
     particleGun_->SetParticleDefinition(particle);
     particleGun_->SetParticleTime(0.0*ns); //FIXME: what is this time
     particleGun_->SetParticlePosition(position);

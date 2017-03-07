@@ -26,9 +26,8 @@ using namespace allpix;
 
 const std::string SimpleDepositionModule::name = "deposition_simple";
 
-SimpleDepositionModule::SimpleDepositionModule(AllPix *apx, ModuleIdentifier id, Configuration config): Module(apx, id) {
-    config_ = config;
-}
+SimpleDepositionModule::SimpleDepositionModule(AllPix *apx, ModuleIdentifier id, Configuration config): 
+        Module(apx, id), config_(config) {}
 SimpleDepositionModule::~SimpleDepositionModule() {}
 
 // run the deposition

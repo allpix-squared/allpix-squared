@@ -23,6 +23,8 @@ namespace allpix {
         double posY(int id) const;
         
     private:
+        std::shared_ptr<PixelDetectorModel> model_;
+        
         G4double hsensorX;
         G4double hsensorY;
         G4double hpixelX;
@@ -30,8 +32,6 @@ namespace allpix {
         
         G4int npixelX;
         G4int npixelY;
-        
-        std::shared_ptr<PixelDetectorModel> model_;
     };
 }
 

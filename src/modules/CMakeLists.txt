@@ -18,6 +18,9 @@ MACRO(option_build_module dir)
     INCLUDE_DIRECTORIES(SYSTEM ${ROOT_INCLUDE_DIRS})
     INCLUDE(${Geant4_USE_FILE})
     
+    # WARNING: RESET THE CXX CMAKE_CXX_FLAGS WITH GEANT4 OPTIONS
+    SET(CMAKE_CXX_FLAGS "${SAVE_CXX_FLAGS} -DG4USE_STD11")
+        
     ADD_LIBRARY(${dir} SHARED ${LIB_SOURCE_FILES})
 
     TARGET_LINK_LIBRARIES(${dir} AllpixCore)
@@ -61,6 +64,8 @@ ENDIF(NOT Geant4_FOUND)
 ###################################
 
 # Example module implementation - check this directory as a starting point for your own module implementation
+SET(SAVE_CXX_FLAGS ${CMAKE_CXX_FLAGS}) 
+
 option_build_module(geometry_test)
 option_build_module(deposition_simple)
 option_build_module(visualization_test)

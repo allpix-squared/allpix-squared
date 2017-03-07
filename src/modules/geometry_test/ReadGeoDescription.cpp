@@ -23,7 +23,7 @@
 
 using namespace allpix;
 
-ReadGeoDescription::ReadGeoDescription(std::string file_name) {
+ReadGeoDescription::ReadGeoDescription(std::string file_name): models_() {
     std::ifstream file(file_name);
     if(!file.good()) throw ModuleException("Geometry description file not found");
     
@@ -41,9 +41,9 @@ std::shared_ptr<PixelDetectorModel> ReadGeoDescription::parseConfig(Configuratio
     // pixel amount 
     if(config.has("pixel_amount")){
         G4ThreeVector vec = config.get<G4ThreeVector>("pixel_amount");
-        model->SetNPixelsX(std::round(vec.x()));
-        model->SetNPixelsY(std::round(vec.y()));
-        model->SetNPixelsZ(std::round(vec.z())); //FIXME: useless
+        model->SetNPixelsX(static_cast<int>(std::round(vec.x())));
+        model->SetNPixelsY(static_cast<int>(std::round(vec.y())));
+        model->SetNPixelsZ(static_cast<int>(std::round(vec.z()))); //FIXME: useless
     }
     
     // size, positions and offsets

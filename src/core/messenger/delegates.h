@@ -16,9 +16,15 @@ namespace allpix {
     // base class for all delegates (template type erasure)
     class BaseDelegate {
     public:
+        // Constructor and destructor
         BaseDelegate() {}
         virtual ~BaseDelegate() {}
         
+        // Disallow copy
+        BaseDelegate(const BaseDelegate&) = delete;
+        BaseDelegate &operator=(const BaseDelegate&) = delete;
+        
+        // Execute the delegate
         virtual void call(std::shared_ptr<Message> msg) const = 0;
     };
 
@@ -29,6 +35,10 @@ namespace allpix {
         
         Delegate(T *obj, ListenerFunction method): obj_(obj), method_(method) {}
         ~Delegate() {}
+        
+        // Disallow copy
+        Delegate(const Delegate&) = delete;
+        Delegate &operator=(const Delegate&) = delete;
         
         void call(std::shared_ptr<Message> msg) const {
             // the type names should have been correctly resolved earlier
@@ -49,6 +59,10 @@ namespace allpix {
         
         SingleBindDelegate(T *obj, BindType member): obj_(obj), member_(member) {}
         ~SingleBindDelegate() {}
+        
+        // Disallow copy
+        SingleBindDelegate(const SingleBindDelegate&) = delete;
+        SingleBindDelegate &operator=(const SingleBindDelegate&) = delete;
         
         void call(std::shared_ptr<Message> msg) const {
             // the type names should have been correctly resolved earlier
@@ -71,6 +85,10 @@ namespace allpix {
         
         VectorBindDelegate(T *obj, BindType member): obj_(obj), member_(member) {}
         ~VectorBindDelegate() {}
+        
+        // Disallow copy
+        VectorBindDelegate(const VectorBindDelegate&) = delete;
+        VectorBindDelegate &operator=(const VectorBindDelegate&) = delete;
         
         void call(std::shared_ptr<Message> msg) const {
             // the type names should have been correctly resolved earlier

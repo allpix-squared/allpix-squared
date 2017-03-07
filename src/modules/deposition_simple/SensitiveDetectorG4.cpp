@@ -36,11 +36,9 @@ G4double g_temp_edep = 0.;
 G4int g_temp_pdgId = 0;
 
 // construct and destruct the sensitive detector
-SensitiveDetectorG4::SensitiveDetectorG4(std::shared_ptr<Detector> detector, Messenger *msg) 
-                                        : G4VSensitiveDetector("SensitiveDetector_"+detector->getName()), detector_(detector), messenger_(msg),
-                                          m_firstStrikePrimary(false), m_totalEdep(0) {
-    deposit_message_ = std::make_shared<DepositionMessage>();
-}
+SensitiveDetectorG4::SensitiveDetectorG4(std::shared_ptr<Detector> detector, Messenger *msg): 
+        G4VSensitiveDetector("SensitiveDetector_"+detector->getName()), deposit_message_(std::make_shared<DepositionMessage>()),
+        detector_(detector), messenger_(msg), m_firstStrikePrimary(false), m_kinEPrimary(0), m_totalEdep(0) {}
 SensitiveDetectorG4::~SensitiveDetectorG4() {}
 
 // run once per event the initialization

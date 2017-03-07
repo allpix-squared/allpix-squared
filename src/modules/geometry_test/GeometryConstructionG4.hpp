@@ -22,9 +22,17 @@ namespace allpix {
     
     class GeometryConstructionG4 : public G4VUserDetectorConstruction {
     public:
-        GeometryConstructionG4(GeometryManager *geo, G4ThreeVector world_size) : geo_manager_(geo), world_size_(world_size) {}
+        // Constructor and destructor
+        GeometryConstructionG4(GeometryManager *geo, G4ThreeVector world_size) : 
+            geo_manager_(geo), world_size_(world_size), world_material_(nullptr),
+            world_log_(nullptr), world_phys_(nullptr) {}
         ~GeometryConstructionG4() {};
         
+        // Disallow copy
+        GeometryConstructionG4(const GeometryConstructionG4&) = delete;
+        GeometryConstructionG4 &operator=(const GeometryConstructionG4&) = delete;
+        
+        // Construct the world
         G4VPhysicalVolume* Construct();
         
     private:

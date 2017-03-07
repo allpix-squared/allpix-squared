@@ -30,6 +30,7 @@ namespace allpix{
     // message carrying all the deposits
     class DepositionMessage : public Message {
     public:
+        DepositionMessage(): deposits() {}
         std::vector<ChargeDeposit> &getDeposits();
         
     private:

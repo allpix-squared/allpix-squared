@@ -24,9 +24,15 @@ namespace allpix{
     
     class SensitiveDetectorG4 : public G4VSensitiveDetector {
     public:
+        // Constructor and destructor
         SensitiveDetectorG4(std::shared_ptr<Detector>, Messenger *);
         ~SensitiveDetectorG4();
         
+        // Disallow copy
+        SensitiveDetectorG4(const SensitiveDetectorG4&) = delete;
+        SensitiveDetectorG4 &operator=(const SensitiveDetectorG4&) = delete;
+        
+        // Initialize events, process the hits and handle end of event
         void Initialize(G4HCofThisEvent*);
         G4bool ProcessHits(G4Step*, G4TouchableHistory*);
         void EndOfEvent(G4HCofThisEvent*);

@@ -6,15 +6,10 @@
 
 using namespace allpix;
 
-BumpsParameterizationG4::BumpsParameterizationG4(std::shared_ptr<PixelDetectorModel> model): model_(model) {
-    hsensorX=model_->GetHalfSensorX();
-    hsensorY=model_->GetHalfSensorY();
-    hpixelX=model_->GetHalfPixelX();
-    hpixelY=model_->GetHalfPixelY();
-    
-    npixelX = model_->GetNPixelsX();
-    npixelY = model_->GetNPixelsY();
-}
+BumpsParameterizationG4::BumpsParameterizationG4(std::shared_ptr<PixelDetectorModel> model): 
+    model_(model), hsensorX(model->GetHalfSensorX()), hsensorY(model_->GetHalfSensorY()),
+    hpixelX(model->GetHalfPixelX()), hpixelY(model->GetHalfPixelY()), 
+    npixelX(model->GetNPixelsX()), npixelY(model->GetNPixelsY()) {}
 
 
 
@@ -25,7 +20,7 @@ void BumpsParameterizationG4::ComputeTransformation(G4int copyId,
     G4double ZPos = 0;
     
     Bump->SetTranslation(G4ThreeVector(XPos,YPos,ZPos));
-    Bump->SetRotation(0);
+    Bump->SetRotation(nullptr);
     
 }
 

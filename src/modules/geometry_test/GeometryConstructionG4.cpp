@@ -56,7 +56,7 @@ G4VPhysicalVolume *GeometryConstructionG4::Construct(){
     world_log_= new G4LogicalVolume(world_box,
                           world_material_,
                           "World",
-                          0,0,0);
+                          nullptr,nullptr,nullptr);
     
     // set the world to invisible in the viewer
     // FIXME: this should strictly not be defined here, but simplifies things a lot
@@ -66,11 +66,11 @@ G4VPhysicalVolume *GeometryConstructionG4::Construct(){
     world_log_->SetVisAttributes ( invisibleVisAtt );
     
     // place the world at the center
-    world_phys_ = new G4PVPlacement(0,
+    world_phys_ = new G4PVPlacement(nullptr,
                         G4ThreeVector(0.,0.,0.),
                         world_log_,
                         "World",
-                        0x0,
+                        nullptr,
                         false,
                         0);
     
@@ -176,7 +176,7 @@ void GeometryConstructionG4::BuildPixelDevices() {
         std::shared_ptr<PixelDetectorModel> model = std::dynamic_pointer_cast<PixelDetectorModel>((*detItr)->getModel());
         
         // ignore all non-pixel detectors
-        if(model == 0){
+        if(model == nullptr){
             LOG(WARNING) << "cannot build a G4 model for any non-pixel detectors yet... ignoring detector named " << (*detItr)->getName();
             continue;
         }
@@ -184,7 +184,7 @@ void GeometryConstructionG4::BuildPixelDevices() {
         // NOTE: create temporary internal integer
         // FIXME: this is not necessary unique! if this is necessary generate it internally!
         std::hash<std::string> hash_func;
-        size_t temp_g4_id = hash_func((*detItr)->getName());
+        int temp_g4_id = static_cast<int>(hash_func((*detItr)->getName()));
         
         LOG(DEBUG) << "start creating G4 detector " << (*detItr)->getName() << " (" << temp_g4_id << ")";
         
@@ -362,7 +362,7 @@ void GeometryConstructionG4::BuildPixelDevices() {
         
         model_g4->box_log->SetVisAttributes(BoxVisAtt);
         
-        model_g4->box_phys = new G4PVPlacement( 0,
+        model_g4->box_phys = new G4PVPlacement( nullptr,
                                                 posDevice,
                                                 model_g4->box_log,
                                                 BoxName.second+"_phys",
@@ -436,7 +436,7 @@ void GeometryConstructionG4::BuildPixelDevices() {
             model_g4->bumps_log->SetVisAttributes(BumpBoxVisAtt);
             
             // place the general bumps volume
-            model_g4->bumps_phys = new G4PVPlacement(0,
+            model_g4->bumps_phys = new G4PVPlacement(nullptr,
                                                     posBumps,
                                                     model_g4->bumps_log,
                                                     BumpBoxName.second+"_phys",
@@ -544,7 +544,7 @@ void GeometryConstructionG4::BuildPixelDevices() {
         model_g4->guard_rings_log->SetVisAttributes(guardRingsVisAtt);
         
         // place the guard rings
-        model_g4->guard_rings_phys = new G4PVPlacement(0,
+        model_g4->guard_rings_phys = new G4PVPlacement(nullptr,
                                                         posDevice,
                                                         model_g4->guard_rings_log,
                                                         GuardRingsName.second+"_phys",
@@ -557,8 +557,8 @@ void GeometryConstructionG4::BuildPixelDevices() {
          * the chips connected to the PCBs
          */
         
-        model_g4->chip_log = 0;
-        model_g4->chip_phys = 0;
+        model_g4->chip_log = nullptr;
+        model_g4->chip_phys = nullptr;
         if ( model->GetHalfChipZ() != 0 ) {
             // create the chip box volume
             G4Box * Chip_box = new G4Box(ChipName.second,
@@ -575,7 +575,7 @@ void GeometryConstructionG4::BuildPixelDevices() {
             model_g4->chip_log->SetVisAttributes(ChipVisAtt);
             
             // place the chip
-            model_g4->chip_phys = new G4PVPlacement(0,
+            model_g4->chip_phys = new G4PVPlacement(nullptr,
                                                     posChip,
                                                     model_g4->chip_log,
                                                     ChipName.second+"_phys",
@@ -589,8 +589,8 @@ void GeometryConstructionG4::BuildPixelDevices() {
          * global pcb chip 
          */
         
-        model_g4->PCB_log = 0;
-        model_g4->PCB_phys = 0;
+        model_g4->PCB_log = nullptr;
+        model_g4->PCB_phys = nullptr;
         if ( model->GetHalfPCBZ() != 0 ) {
             // create the box containing the PCB
             G4Box * PCB_box = new G4Box(PCBName.second,
@@ -607,7 +607,7 @@ void GeometryConstructionG4::BuildPixelDevices() {
             model_g4->PCB_log->SetVisAttributes(pcbVisAtt);
             
             // place the PCB
-            model_g4->PCB_phys = new G4PVPlacement( 0,
+            model_g4->PCB_phys = new G4PVPlacement(nullptr,
                                                     posPCB,
                                                     model_g4->PCB_log,
                                                     PCBName.second+"_phys",

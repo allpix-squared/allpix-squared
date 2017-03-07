@@ -32,9 +32,8 @@ using namespace allpix;
 const std::string GeometryConstructionModule::name = "geometry_test";
 
 // constructor and destructor (defined here to allow for incomplete unique_ptr type)
-GeometryConstructionModule::GeometryConstructionModule(AllPix *apx, ModuleIdentifier id, Configuration config): Module(apx, id) {
-    config_ = config;
-}
+GeometryConstructionModule::GeometryConstructionModule(AllPix *apx, ModuleIdentifier id, Configuration config): 
+        Module(apx, id), config_(config), run_manager_g4_(nullptr) {}
 GeometryConstructionModule::~GeometryConstructionModule() {}
 
 // create the run manager and make it available
