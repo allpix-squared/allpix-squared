@@ -19,7 +19,6 @@ GetVersionString()
 
 OPTION(BUILD_spice  "Compile spice library interface?" OFF)
 
-
 ###############################
 # Setup the build environment #
 ###############################
@@ -34,7 +33,7 @@ SET(CMAKE_INSTALL_PREFIX "${INSTALL_PREFIX}" CACHE INTERNAL "Prefix prepended to
 # Set up the RPATH so executables find the libraries even when installed in non-default location
 SET(CMAKE_MACOSX_RPATH 1)
 SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
-SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 # Add the automatically determined parts of the RPATH which point to directories outside
 # the build tree to the install RPATH
@@ -44,7 +43,6 @@ LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib"
 IF("${isSystemDir}" STREQUAL "-1")
    SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 ENDIF("${isSystemDir}" STREQUAL "-1")
-
 
 ###################################
 # Define build flags for allpix   #
@@ -90,6 +88,16 @@ IF("${CMAKE_CXX_COMPILER_ID}" EQUAL "AppleClang")
 ENDIF()
 
 ###################################
+# Load cpp format and check tools #
+###################################
+
+FILE(GLOB_RECURSE
+     CHECK_CXX_SOURCE_FILES
+     src/*.[ch]pp
+     )
+INCLUDE("cmake/clang-cpp-checks.cmake")
+
+###################################
 # Define build targets for allpix #
 ###################################
 
@@ -109,5 +117,5 @@ ADD_SUBDIRECTORY(src/modules)
 # Add targets for Doxygen code reference and LaTeX User manual
 ADD_SUBDIRECTORY(doc)
 
-# BUILD EXECUTABLE 
+# BUILD EXECUTABLE
 ADD_SUBDIRECTORY(src/exec)
