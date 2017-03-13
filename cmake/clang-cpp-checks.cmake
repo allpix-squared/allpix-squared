@@ -20,11 +20,13 @@ IF(CLANG_FORMAT)
 
     ADD_CUSTOM_TARGET(
         check-format
-        COMMAND ! ${CLANG_FORMAT}
+        COMMAND ! 
+        ${CLANG_FORMAT}
         -style=file
         -output-replacements-xml
         ${CHECK_CXX_SOURCE_FILES}
-        | grep -c "replacement " > /dev/null
+        # WARNING: fix to stop with error if there are replacements
+        | tee /dev/tty | grep -c "replacement " > /dev/null
         COMMENT "Checking format compliance"
     )
 ENDIF()
@@ -51,11 +53,15 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         ADD_CUSTOM_TARGET(
             lint COMMAND
             ${RUN_CLANG_TIDY} -fix -format -header-filter=${CMAKE_SOURCE_DIR}
+            COMMENT "Auto fixing problems in all source files"
         )
 
         ADD_CUSTOM_TARGET(
-            check-lint COMMAND
+            check-lint COMMAND !
             ${RUN_CLANG_TIDY} -header-filter=${CMAKE_SOURCE_DIR}
+            # WARNING: fix to stop with error if there are problems
+            | tee /dev/tty | grep -c ": error: " > /dev/null
+            COMMENT "Checking for problems in source files"
         )
     ENDIF()
 ENDIF()
