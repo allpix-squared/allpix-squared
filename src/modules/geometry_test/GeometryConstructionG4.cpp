@@ -297,10 +297,8 @@ void GeometryConstructionG4::BuildPixelDevices() {
 
         LOG(DEBUG) << "Wrapper Dimensions [mm] : " << wrapperHX/mm << " " << wrapperHY/mm << " " << wrapperHZ/mm;
 
-        G4Box* wrapper_box = new G4Box(wrapperName.second,
-                                       2.*wrapperHX,
-                                       2.*wrapperHY,
-                                       2.*wrapperHZ);
+        auto *wrapper_box = new G4Box(wrapperName.second, 2. * wrapperHX,
+                                      2. * wrapperHY, 2. * wrapperHZ);
         model_g4->wrapper_log = new G4LogicalVolume(wrapper_box,
                                                        world_material_,
                                                        wrapperName.second+"_log");
@@ -340,7 +338,8 @@ void GeometryConstructionG4::BuildPixelDevices() {
 
         // WARNING: get a proper geometry lib
         std::tuple<double, double, double> rot_tup = (*detItr)->getOrientation();
-        G4RotationMatrix *rotWrapper = new G4RotationMatrix(std::get<0>(rot_tup), std::get<1>(rot_tup), std::get<2>(rot_tup));
+        auto *rotWrapper = new G4RotationMatrix(
+            std::get<0>(rot_tup), std::get<1>(rot_tup), std::get<2>(rot_tup));
 
         // starting at user position --> vector pos
         model_g4->wrapper_phys = new G4PVPlacement(rotWrapper,
@@ -357,10 +356,9 @@ void GeometryConstructionG4::BuildPixelDevices() {
          */
 
         // create the general box containing the sensor
-        G4Box * Box_box = new G4Box(BoxName.second,
-                                    model->GetHalfSensorX(),
-                                    model->GetHalfSensorY(),
-                                    model->GetHalfSensorZ());
+        auto *Box_box =
+            new G4Box(BoxName.second, model->GetHalfSensorX(),
+                      model->GetHalfSensorY(), model->GetHalfSensorZ());
 
         // create the box containing the slices and pixels
         // The Si wafer is placed respect to the wrapper.
@@ -382,18 +380,16 @@ void GeometryConstructionG4::BuildPixelDevices() {
 
 
         // create the slices and pixels (replicas)
-        G4Box * Box_slice = new G4Box(SliceName.first,
-                                      model->GetHalfPixelX(),
-                                      model->GetHalfSensorY(),
-                                      model->GetHalfSensorZ());
+        auto *Box_slice =
+            new G4Box(SliceName.first, model->GetHalfPixelX(),
+                      model->GetHalfSensorY(), model->GetHalfSensorZ());
         model_g4->slice_log = new G4LogicalVolume(Box_slice,
                                                      Silicon,
                                                      SliceName.second); // 0,0,0);
 
-        G4Box * Box_pixel = new G4Box(PixelName.first,
-        model->GetHalfPixelX(),
-        model->GetHalfPixelY(),
-        model->GetHalfPixelZ());
+        auto *Box_pixel =
+            new G4Box(PixelName.first, model->GetHalfPixelX(),
+                      model->GetHalfPixelY(), model->GetHalfPixelZ());
         model_g4->pixel_log = new G4LogicalVolume(Box_pixel,
                                                     Silicon,
                                                     PixelName.second); // 0,0,0);
@@ -430,13 +426,13 @@ void GeometryConstructionG4::BuildPixelDevices() {
             G4double bump_dr =  model->GetBumpDr();
             G4Sphere * aBump_Sphere = new G4Sphere(BumpName.first+"sphere",0,bump_radius,0,360*deg,0,360*deg);
             G4Tubs * aBump_Tube= new G4Tubs(BumpName.first+"Tube", 0., bump_radius-bump_dr, bump_height/2., 0., 360 *deg);
-            G4UnionSolid * aBump = new G4UnionSolid(BumpName.first,aBump_Sphere,aBump_Tube);
+            auto *aBump =
+                new G4UnionSolid(BumpName.first, aBump_Sphere, aBump_Tube);
 
             //create the volume containing the bumps
-            G4Box * Bump_Box = new G4Box(BumpBoxName.first,
-                                        model->GetHalfSensorX(),
-                                        model->GetHalfSensorY(),
-                                        bump_height/2.);
+            G4Box *Bump_Box =
+                new G4Box(BumpBoxName.first, model->GetHalfSensorX(),
+                          model->GetHalfSensorY(), bump_height / 2.);
 
             //create the logical volume
             model_g4->bumps_log = new G4LogicalVolume(Bump_Box,
@@ -536,11 +532,13 @@ void GeometryConstructionG4::BuildPixelDevices() {
          */
 
         // create the box volumes for the guard rings
-        G4Box * Box_GuardRings_Ext = new G4Box(
+        auto *Box_GuardRings_Ext = new G4Box(
             GuardRingsExtName.second,
-            model->GetHalfSensorX() + (model->GetSensorExcessHRight() + model->GetSensorExcessHLeft()),
-                                               model->GetHalfSensorY() + (model->GetSensorExcessHTop() + model->GetSensorExcessHBottom()),
-                                               model->GetHalfSensorZ()); // same depth as the sensor
+            model->GetHalfSensorX() + (model->GetSensorExcessHRight() +
+                                       model->GetSensorExcessHLeft()),
+            model->GetHalfSensorY() + (model->GetSensorExcessHTop() +
+                                       model->GetSensorExcessHBottom()),
+            model->GetHalfSensorZ()); // same depth as the sensor
 
         G4VSolid * Solid_GuardRings =  new G4SubtractionSolid(GuardRingsName.second,
                                                               Box_GuardRings_Ext,
@@ -570,10 +568,9 @@ void GeometryConstructionG4::BuildPixelDevices() {
         model_g4->chip_phys = nullptr;
         if ( model->GetHalfChipZ() != 0 ) {
             // create the chip box volume
-            G4Box * Chip_box = new G4Box(ChipName.second,
-                                 model->GetHalfChipX(),
-                                 model->GetHalfChipY(),
-                                 model->GetHalfChipZ());
+            auto *Chip_box =
+                new G4Box(ChipName.second, model->GetHalfChipX(),
+                          model->GetHalfChipY(), model->GetHalfChipZ());
 
             // create the logical volume
             // The Si wafer is placed respect to the wrapper.
@@ -602,10 +599,9 @@ void GeometryConstructionG4::BuildPixelDevices() {
         model_g4->PCB_phys = nullptr;
         if ( model->GetHalfPCBZ() != 0 ) {
             // create the box containing the PCB
-            G4Box * PCB_box = new G4Box(PCBName.second,
-                                        model->GetHalfPCBX(),
-                                        model->GetHalfPCBY(),
-                                        model->GetHalfPCBZ());
+            auto *PCB_box =
+                new G4Box(PCBName.second, model->GetHalfPCBX(),
+                          model->GetHalfPCBY(), model->GetHalfPCBZ());
 
             // create the logical volume for the PCB
             // The PCB is placed respect to the wrapper.
