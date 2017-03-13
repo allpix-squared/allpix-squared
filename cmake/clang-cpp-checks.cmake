@@ -1,7 +1,8 @@
 # Additional targets to perform clang-format/clang-tidy
-# Get all project files
+
+# Get all project files - FIXME: this should also use the list of generated targets
 IF(NOT CHECK_CXX_SOURCE_FILES)
-    MESSAGE(FATAL_ERROR "Variable CHECK_CXX_SOURCE_FILES not defined - set it to the list of files to lint and format")
+    MESSAGE(FATAL_ERROR "Variable CHECK_CXX_SOURCE_FILES not defined - set it to the list of files format")
     RETURN()
 ENDIF()
 
