@@ -50,16 +50,23 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     IF(RUN_CLANG_TIDY)
         # Set export commands on
         SET (CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
+        
+        # Get amount of processors to speed up linting
+        INCLUDE(ProcessorCount)
+        ProcessorCount(NPROC)
+        IF(NPROC EQUAL 0)
+            SET(NPROC 1)
+        ENDIF()
+        
         ADD_CUSTOM_TARGET(
             lint COMMAND
-            ${RUN_CLANG_TIDY} -fix -format -header-filter=${CMAKE_SOURCE_DIR}
+            ${RUN_CLANG_TIDY} -fix -format -header-filter=${CMAKE_SOURCE_DIR} -j${NPROC}
             COMMENT "Auto fixing problems in all source files"
         )
 
         ADD_CUSTOM_TARGET(
             check-lint COMMAND !
-            ${RUN_CLANG_TIDY} -header-filter=${CMAKE_SOURCE_DIR}
+            ${RUN_CLANG_TIDY} -header-filter=${CMAKE_SOURCE_DIR} -j${NPROC}
             # WARNING: fix to stop with error if there are problems
             | tee /dev/stdout | grep -c ": error: " > /dev/null
             COMMENT "Checking for problems in source files"
