@@ -23,7 +23,8 @@ slc6-llvm39:
         - mkdir build
         - cd build
         - cmake -GNinja -DGeant4_DIR=$G4INSTALL/lib64/Geant4-10.2.2 -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen_HOME/lib64/cmake/eigen3 ..
-        - ninja
+        - ninja 2>&1 | tee build-output
+        - ! grep -c ": error: " build-output # nasty fix to check for errors in the clang-tidy (it does not terminate due to a bug)
         - ninja install
         - ctest --output-on-failure -j4
 
