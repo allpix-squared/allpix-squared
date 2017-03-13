@@ -38,7 +38,8 @@ ENDIF()
 FIND_PROGRAM(CLANG_TIDY "clang-tidy")
 # enable clang tidy only if using a clang compiler
 IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    SET(CMAKE_CXX_CLANG_TIDY "clang-tidy;-config='';-header-filter=${CMAKE_SOURCE_DIR}")
+    SET(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY} "-header-filter='${CMAKE_SOURCE_DIR}'")
+    MESSAGE(${CMAKE_CXX_CLANG_TIDY})
 
     # enable checking and formatting through run-clang-tidy if available
     # FIXME: make finding this program more portable

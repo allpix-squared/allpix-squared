@@ -430,7 +430,7 @@ void GeometryConstructionG4::BuildPixelDevices() {
                 new G4UnionSolid(BumpName.first, aBump_Sphere, aBump_Tube);
 
             //create the volume containing the bumps
-            G4Box *Bump_Box =
+            G4Box * Bump_Box =
                 new G4Box(BumpBoxName.first, model->GetHalfSensorX(),
                           model->GetHalfSensorY(), bump_height / 2.);
 
