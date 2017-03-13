@@ -27,7 +27,7 @@ IF(CLANG_FORMAT)
         -output-replacements-xml
         ${CHECK_CXX_SOURCE_FILES}
         # WARNING: fix to stop with error if there are replacements
-         2>&1 | tee /dev/stdout | grep -c "replacement " > /dev/null
+        tee /dev/stdout | grep -c "replacement " > /dev/null
         COMMENT "Checking format compliance"
     )
 ENDIF()
@@ -61,7 +61,7 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             check-lint COMMAND !
             ${RUN_CLANG_TIDY} -header-filter=${CMAKE_SOURCE_DIR}
             # WARNING: fix to stop with error if there are problems
-            2>&1 | tee /dev/stdout | grep -c ": error: " > /dev/null
+            | tee /dev/stdout | grep -c ": error: " > /dev/null
             COMMENT "Checking for problems in source files"
         )
     ENDIF()
