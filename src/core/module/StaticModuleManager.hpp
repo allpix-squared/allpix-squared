@@ -18,22 +18,22 @@
 namespace allpix {
 
     class AllPix;
-    
+
     class StaticModuleManager : public ModuleManager{
     public:
         using GeneratorFunction = std::function<std::unique_ptr<ModuleFactory>(std::string)>;
-        
+
         // Constructor and destructors
         explicit StaticModuleManager(GeneratorFunction);
-        
+
         // Load modules
-        void load(AllPix *);
-        
+        void load(AllPix *) override;
+
     private:
-        std::unique_ptr<ModuleFactory> get_factory(std::string name);
-        
+        std::unique_ptr<ModuleFactory> get_factory(const std::string &name);
+
         std::map<std::string, int> _instantiations_map;
-                
+
         GeneratorFunction generator_func_;
     };
 }

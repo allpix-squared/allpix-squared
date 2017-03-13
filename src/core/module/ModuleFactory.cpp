@@ -8,7 +8,7 @@ using namespace allpix;
 
 // Constructor and destructor
 ModuleFactory::ModuleFactory(): conf_(), apx_(nullptr) {}
-ModuleFactory::~ModuleFactory() {}
+ModuleFactory::~ModuleFactory() = default;
 
 void ModuleFactory::setAllPix(AllPix *allpix) {
     apx_ = allpix;
@@ -19,7 +19,7 @@ AllPix *ModuleFactory::getAllPix() {
 }
 
 void ModuleFactory::setConfiguration(Configuration conf) {
-    conf_ = conf;
+    conf_ = std::move(conf);
 }
 
 Configuration &ModuleFactory::getConfiguration() {

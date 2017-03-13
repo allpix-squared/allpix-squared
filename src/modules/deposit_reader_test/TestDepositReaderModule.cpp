@@ -1,4 +1,4 @@
-/** 
+/**
  * @author Koen Wolters <koen.wolters@cern.ch>
  */
 
@@ -14,16 +14,16 @@ using namespace allpix;
 
 const std::string TestDepositReaderModule::name = "deposit_reader_test";
 
-TestDepositReaderModule::TestDepositReaderModule(AllPix *apx, ModuleIdentifier id, Configuration config): 
-        Module(apx, id), config_(config), deposit_messages_() {    
+TestDepositReaderModule::TestDepositReaderModule(AllPix *apx, ModuleIdentifier id, Configuration config):
+        Module(apx, id), config_(std::move(config)), deposit_messages_() {
     getMessenger()->bindMulti(this, &TestDepositReaderModule::deposit_messages_);
 }
-TestDepositReaderModule::~TestDepositReaderModule() {}
+TestDepositReaderModule::~TestDepositReaderModule() = default;
 
 // run the deposition
 void TestDepositReaderModule::run() {
     LOG(INFO) << "DEPOSIT READER RESULTS";
-    
+
     LOG(INFO) << "got " << deposit_messages_.size() << " deposits";
     // FIXME: detector logic is not good yet
     for(auto &message : deposit_messages_) {

@@ -23,24 +23,24 @@ namespace allpix {
     public:
         // Constructor and destructors
         ConfigReader();
-        ConfigReader(std::istream&);
+        explicit ConfigReader(std::istream&);
         ConfigReader(std::istream&, const std::string&);
         ~ConfigReader();
-        
+
         // Add stream
         void add(std::istream&);
         void add(std::istream&, const std::string &file_name);
-        
+
         // Clear whole config
         void clear();
-        
+
         // Check if configuration section exist
-        bool hasConfiguration(std::string name) const;
-        unsigned long countConfigurations(std::string name) const;
-        
+        bool hasConfiguration(const std::string &name) const;
+        unsigned int countConfigurations(const std::string &name) const;
+
         // Return configuration sections by name
-        std::vector<Configuration> getConfigurations(std::string name) const;
-        
+        std::vector<Configuration> getConfigurations(const std::string &name) const;
+
         // Return all configurations with their name
         std::vector<Configuration> getConfigurations() const;
     private:

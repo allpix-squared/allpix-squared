@@ -14,5 +14,5 @@ std::string DetectorModel::getType() const {
 }
 
 void DetectorModel::setType(std::string type) {
-    type_ = type;
+    type_ = std::move(type);
 }

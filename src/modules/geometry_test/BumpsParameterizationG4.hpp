@@ -16,20 +16,20 @@
 namespace allpix {
     class BumpsParameterizationG4 : public G4VPVParameterisation {
     public:
-        BumpsParameterizationG4(std::shared_ptr<PixelDetectorModel> model);
-        
-        void ComputeTransformation(G4int, G4VPhysicalVolume*) const;
+        explicit BumpsParameterizationG4(std::shared_ptr<PixelDetectorModel> model);
+
+        void ComputeTransformation(G4int, G4VPhysicalVolume*) const override;
         double posX(int id) const;
         double posY(int id) const;
-        
+
     private:
         std::shared_ptr<PixelDetectorModel> model_;
-        
+
         G4double hsensorX;
         G4double hsensorY;
         G4double hpixelX;
         G4double hpixelY;
-        
+
         G4int npixelX;
         G4int npixelY;
     };

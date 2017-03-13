@@ -26,26 +26,26 @@ using namespace allpix;
 ReadGeoDescription::ReadGeoDescription(std::string file_name): models_() {
     std::ifstream file(file_name);
     if(!file.good()) throw ModuleException("Geometry description file '"+file_name+"' not found");
-    
+
     ConfigReader reader(file, file_name);
-    
+
     for (auto &config : reader.getConfigurations()) {
         models_[config.getName()] = parseConfig(config);
     }
 }
 
-std::shared_ptr<PixelDetectorModel> ReadGeoDescription::parseConfig(Configuration &config) {
+std::shared_ptr<PixelDetectorModel> ReadGeoDescription::parseConfig(const Configuration &config) {
     std::string model_name = config.getName();
     std::shared_ptr<PixelDetectorModel> model = std::make_shared<PixelDetectorModel>(model_name);
-    
-    // pixel amount 
+
+    // pixel amount
     if(config.has("pixel_amount")){
         G4ThreeVector vec = config.get<G4ThreeVector>("pixel_amount");
         model->SetNPixelsX(static_cast<int>(std::round(vec.x())));
         model->SetNPixelsY(static_cast<int>(std::round(vec.y())));
         model->SetNPixelsZ(static_cast<int>(std::round(vec.z()))); //FIXME: useless
     }
-    
+
     // size, positions and offsets
     if(config.has("pixel_size")){
         G4ThreeVector vec = CLHEP::um*config.get<G4ThreeVector>("pixel_size");
@@ -81,7 +81,7 @@ std::shared_ptr<PixelDetectorModel> ReadGeoDescription::parseConfig(Configuratio
         G4ThreeVector vec = CLHEP::um*config.get<G4ThreeVector>("sensor_position");
         model->SetSensorPosX(vec.x());
         model->SetSensorPosY(vec.y());
-        model->SetSensorPosZ(vec.z()); 
+        model->SetSensorPosZ(vec.z());
     }
     if(config.has("pcb_size")){
         G4ThreeVector vec = CLHEP::um*config.get<G4ThreeVector>("pcb_size");
@@ -89,13 +89,13 @@ std::shared_ptr<PixelDetectorModel> ReadGeoDescription::parseConfig(Configuratio
         model->SetPCBHY(vec.y());
         model->SetPCBHZ(vec.z());
     }
-    
+
     // gr excess?
     if(config.has("sensor_gr_excess_htop")) model->SetSensorExcessHTop(CLHEP::um*config.get<double>("sensor_gr_excess_htop"));
     if(config.has("sensor_gr_excess_hbottom")) model->SetSensorExcessHBottom(CLHEP::um*config.get<double>("sensor_gr_excess_hbottom"));
     if(config.has("sensor_gr_excess_hleft")) model->SetSensorExcessHLeft(CLHEP::um*config.get<double>("sensor_gr_excess_hleft"));
     if(config.has("sensor_gr_excess_hright")) model->SetSensorExcessHRight(CLHEP::um*config.get<double>("sensor_gr_excess_hright"));
-    
+
     // bump parameters
     if(config.has("bump_radius")) model->SetBumpRadius(CLHEP::um*config.get<double>("bump_radius"));
     if(config.has("bump_height")) model->SetBumpHeight(CLHEP::um*config.get<double>("bump_height"));
@@ -104,14 +104,14 @@ std::shared_ptr<PixelDetectorModel> ReadGeoDescription::parseConfig(Configuratio
         G4ThreeVector vec = CLHEP::um*config.get<G4TwoVector>("bump_offset");
         model->SetBumpOffsetX(vec.x());
         model->SetBumpOffsetY(vec.y());
-    }   
-    
+    }
+
     return model;
 }
 
 // Return detector model
 // FIXME: should we throw an error if it does not exists
 std::shared_ptr<PixelDetectorModel > ReadGeoDescription::getDetectorModel(const std::string &name) const {
-    if(models_.find(name) == models_.end()) return nullptr; 
+    if(models_.find(name) == models_.end()) return nullptr;
     return models_.at(name);
 }

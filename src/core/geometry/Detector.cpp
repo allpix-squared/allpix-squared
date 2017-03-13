@@ -9,16 +9,13 @@
 
 using namespace allpix;
 
-Detector::Detector(std::string name, std::shared_ptr<DetectorModel> model): 
-    name_(name), model_(model), location_(), orientation_(), external_models_() {}
+Detector::Detector(std::string name, std::shared_ptr<DetectorModel> model):
+    name_(std::move(name)), model_(std::move(model)), location_(), orientation_(), external_models_() {}
 
 // Set and get name of detector
 std::string Detector::getName() const {
     return name_;
 }
-/*void Detector::setName(std::string name) {
-    name_ = name;
-}*/
 
 // Get the type of the model
 std::string Detector::getType() const {

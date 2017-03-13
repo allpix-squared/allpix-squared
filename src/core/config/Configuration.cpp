@@ -14,8 +14,8 @@ using namespace allpix;
 
 Configuration::Configuration(): Configuration("") {}
 
-Configuration::Configuration(std::string name): name_(name), config_() {}
-    
+Configuration::Configuration(std::string name): name_(std::move(name)), config_() {}
+
 bool Configuration::has(const std::string &key) const {
     return config_.find(key) != config_.cend();
 }
@@ -33,11 +33,11 @@ std::string Configuration::getText(const std::string &key) const {
 }
 std::string Configuration::getText(const std::string &key, const std::string &def) const {
     if (!has(key)) return def;
-    return config_.at(key);
+    return getText(key);
 }
 
 void Configuration::print(std::ostream &out) const {
-    for (auto iter = config_.cbegin(); iter != config_.cend(); ++iter) {
-        out << iter->first << " : " << iter->second << std::endl;
+    for (auto &element : config_) {
+        out << element.first << " : " << element.second << std::endl;
     }
 }

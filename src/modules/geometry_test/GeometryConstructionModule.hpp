@@ -20,23 +20,23 @@ namespace allpix{
     public:
         // provide a static const variable of type string (required!)
         static const std::string name;
-        
+
         // constructor should take a pointer to AllPix, a ModuleIdentifier and a Configuration as input
         GeometryConstructionModule(AllPix *apx, ModuleIdentifier id, Configuration config);
-        ~GeometryConstructionModule();
-        
+        ~GeometryConstructionModule() override;
+
         // method that will be run where the module should do its computations and possibly dispatch their results as a message
-        void init();
-        void run();
-        
+        void init() override;
+        void run() override;
+
     private:
         // internal methods
         void buildG4();
-        
+
         // configuration for this module
         Configuration config_;
-        
-        // geant run manager 
+
+        // geant run manager
         std::shared_ptr<G4RunManager> run_manager_g4_;
     };
 }

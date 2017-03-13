@@ -15,11 +15,11 @@ using namespace allpix;
 
 // Constructor and destructor
 GeometryManager::GeometryManager(): detectors_() {}
-GeometryManager::~GeometryManager() {}
+GeometryManager::~GeometryManager() = default;
 
 // Add detector to the system
 void GeometryManager::addDetector(std::shared_ptr<Detector> det) {
-    detectors_.push_back(det);
+    detectors_.push_back(std::move(det));
 }
 
 // Get detectors
@@ -28,13 +28,13 @@ std::vector<std::shared_ptr<Detector>> GeometryManager::getDetectors() const {
 }
 
 // FIXME: this is not a very nice way to do this
-std::shared_ptr<Detector> GeometryManager::getDetector(std::string name) const {    
+std::shared_ptr<Detector> GeometryManager::getDetector(const std::string &name) const {
     for (auto &detector : detectors_) {
         if (detector->getName() == name) return detector;
     }
     throw allpix::InvalidDetectorError("name", name);
 }
-std::vector<std::shared_ptr<Detector>> GeometryManager::getDetectorsByType(std::string type) const {
+std::vector<std::shared_ptr<Detector>> GeometryManager::getDetectorsByType(const std::string &type) const {
     std::vector<std::shared_ptr<Detector>> result;
     for (auto &detector : detectors_) {
         if (detector->getType() == type) result.push_back(detector);

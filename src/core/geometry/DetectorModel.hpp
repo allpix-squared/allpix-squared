@@ -9,12 +9,12 @@
 namespace allpix{
     class DetectorModel {
     public:
-        DetectorModel(std::string type): type_(type) {}
-        virtual ~DetectorModel() {}
-        
+        explicit DetectorModel(std::string type): type_(std::move(type)) {}
+        virtual ~DetectorModel() = default;
+
         std::string getType() const;
         void setType(std::string type);
-        
+
         //FIXME: what would be valid overlapping parameters here
     private:
         std::string type_;

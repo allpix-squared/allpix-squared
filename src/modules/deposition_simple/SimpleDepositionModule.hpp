@@ -17,14 +17,14 @@ namespace allpix{
     public:
         // provide a static const variable of type string (required!)
         static const std::string name;
-        
+
         // constructor should take a pointer to AllPix, a ModuleIdentifier and a Configuration as input
         SimpleDepositionModule(AllPix *apx, ModuleIdentifier id, Configuration config);
-        ~SimpleDepositionModule();
-        
+        ~SimpleDepositionModule() override;
+
         // method that will be run where the module should do its computations and possibly dispatch their results as a message
-        void run();
-        
+        void run() override;
+
     private:
         // configuration for this module
         Configuration config_;

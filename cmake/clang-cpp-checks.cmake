@@ -38,22 +38,24 @@ ENDIF()
 FIND_PROGRAM(CLANG_TIDY "clang-tidy")
 # enable clang tidy only if using a clang compiler
 IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    SET(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=*;-header-filter=$(realpath ..)")
+    SET(CMAKE_CXX_CLANG_TIDY "clang-tidy;-config='',-checks=*;-header-filter=${CMAKE_SOURCE_DIR}")
 
     # enable checking and formatting through run-clang-tidy if available
-    FIND_PROGRAM(RUN_CLANG_TIDY "run-clang-tidy.py" HINTS /usr/share/clang/)
+    # FIXME: make finding this program more portable
+    GET_FILENAME_COMPONENT(CLANG_DIR ${CLANG_TIDY} DIRECTORY)
+    FIND_PROGRAM(RUN_CLANG_TIDY "run-clang-tidy.py" HINTS /usr/share/clang/ ${CLANG_DIR}/../share/clang/)
     IF(RUN_CLANG_TIDY)
         # Set export commands on
         SET (CMAKE_EXPORT_COMPILE_COMMANDS ON)
-    
+
         ADD_CUSTOM_TARGET(
             lint COMMAND
-            ${RUN_CLANG_TIDY} -fix -format -checks=*
+            ${RUN_CLANG_TIDY} -fix -format -header-filter=${CMAKE_SOURCE_DIR}
         )
 
         ADD_CUSTOM_TARGET(
-            check-lint COMMAND 
-            ${RUN_CLANG_TIDY} -checks=*
+            check-lint COMMAND
+            ${RUN_CLANG_TIDY} -header-filter=${CMAKE_SOURCE_DIR}
         )
     ENDIF()
 ENDIF()

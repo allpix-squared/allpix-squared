@@ -13,25 +13,25 @@
 
 namespace allpix{
     class DepositionMessage;
-    
+
     // define the module to inherit from the module base class
     class TestDepositReaderModule : public Module{
     public:
         // provide a static const variable of type string (required!)
         static const std::string name;
-        
+
         // constructor should take a pointer to AllPix, a ModuleIdentifier and a Configuration as input
         TestDepositReaderModule(AllPix *apx, ModuleIdentifier id, Configuration config);
-        ~TestDepositReaderModule();
-        
+        ~TestDepositReaderModule() override;
+
         // show the deposition results
-        void run();
-        
+        void run() override;
+
     private:
         // configuration for this module
         Configuration config_;
-        
-        // pointer to the visualization manager        
+
+        // pointer to the visualization manager
         std::vector<std::shared_ptr<DepositionMessage>> deposit_messages_;
     };
 }

@@ -7,8 +7,8 @@
 using namespace allpix;
 
 // Constructor and destructor
-ModuleManager::ModuleManager(): modules_(), identifiers_(), run_queue_() {} 
-ModuleManager::~ModuleManager() {}
+ModuleManager::ModuleManager(): modules_(), identifiers_(), run_queue_() {}
+ModuleManager::~ModuleManager() = default;
 
 // Run all the modules in the queue
 void ModuleManager::run() {
@@ -16,7 +16,7 @@ void ModuleManager::run() {
     while (!run_queue_.empty()) {
         Module *mod = run_queue_.front();
         run_queue_.pop();
-        
+
         mod->run();
     }
 }

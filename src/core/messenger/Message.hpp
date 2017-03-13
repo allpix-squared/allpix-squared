@@ -9,13 +9,13 @@ namespace allpix {
     class Message {
     public:
         // Constructor and destructors
-        Message() {}
-        virtual ~Message() {}
-        
+        Message() = default;
+        virtual ~Message() = default;
+
         // Set default copy behaviour
         Message(const Message&) = default;
         Message &operator=(const Message&) = default;
-        
+
         // TODO: we might want to have a resolving function to get the content of a message by name for histogramming etc.
     };
 }

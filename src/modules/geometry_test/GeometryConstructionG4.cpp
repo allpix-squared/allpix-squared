@@ -399,7 +399,7 @@ void GeometryConstructionG4::BuildPixelDevices() {
                                                     PixelName.second); // 0,0,0);
 
         // set the user limit (FIXME: is this needed / this is currently fixed)
-        if (user_limits_) model_g4->pixel_log->SetUserLimits(user_limits_);
+        if (user_limits_ != nullptr) model_g4->pixel_log->SetUserLimits(user_limits_);
 
         // place the slices
         new G4PVDivision(SliceName.second,

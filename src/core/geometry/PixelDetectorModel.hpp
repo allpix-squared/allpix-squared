@@ -22,14 +22,14 @@
 namespace allpix {
 
     class PixelDetectorModel : public DetectorModel {
-    public:        
+    public:
         //Constructor and destructor
-        PixelDetectorModel(std::string type): DetectorModel(type),
+        explicit PixelDetectorModel(std::string type): DetectorModel(type),
             m_npix_x(1), m_npix_y(1), m_npix_z(1),
             m_pixsize_x(0.0), m_pixsize_y(0.0), m_pixsize_z(0.0),
             m_sensor_hx(0.0), m_sensor_hy(0.0), m_sensor_hz(0.0),
             m_sensor_posx(0.0), m_sensor_posy(0.0), m_sensor_posz(0.0),
-            m_sensor_gr_excess_htop(0.0), m_sensor_gr_excess_hbottom(0.0), 
+            m_sensor_gr_excess_htop(0.0), m_sensor_gr_excess_hbottom(0.0),
             m_sensor_gr_excess_hright(0.0), m_sensor_gr_excess_hleft(0.0),
             m_chip_hx(0.0), m_chip_hy(0.0), m_chip_hz(0.0),
             m_chip_offsetx(0.0), m_chip_offsety(0.0), m_chip_offsetz(0.0),
@@ -38,7 +38,7 @@ namespace allpix {
             m_bump_radius(0.0), m_bump_height(0.0), m_bump_offsetx(0.0),
             m_bump_offsety(0.0), m_bump_dr(0.0)
             /*m_resistivity(0.0)*/ {}
-        ~PixelDetectorModel() {}
+        ~PixelDetectorModel() override = default;
 
         //  Number of pixels
         inline int GetNPixelsX(){return m_npix_x;};
@@ -121,11 +121,11 @@ namespace allpix {
 
             return whdz;
         };
-        
+
         /*void SetResistivity(double val){
             m_resistivity = val;
         }*/
-        
+
         void SetNPixelsX(int val){
             m_npix_x = val;
         };
@@ -233,7 +233,7 @@ namespace allpix {
         void SetSensorExcessHLeft(double val){
             m_sensor_gr_excess_hleft = val;
         }
-        
+
         // PCB
         void SetPCBHX(double val){
             m_pcb_hx = val;
@@ -249,7 +249,7 @@ namespace allpix {
         int m_npix_x;
         int m_npix_y;
         int m_npix_z;
-        
+
         double m_pixsize_x;
         double m_pixsize_y;
         double m_pixsize_z;
@@ -282,7 +282,7 @@ namespace allpix {
         double m_pcb_hx;
         double m_pcb_hy;
         double m_pcb_hz;
-        
+
         double m_bump_radius;
         double m_bump_height;
         double m_bump_offsetx;

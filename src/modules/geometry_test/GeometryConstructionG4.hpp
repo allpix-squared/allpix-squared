@@ -26,14 +26,14 @@ namespace allpix {
     public:
         // Constructor and destructor
         GeometryConstructionG4(GeometryManager *geo, G4ThreeVector world_size);
-        ~GeometryConstructionG4();
+        ~GeometryConstructionG4() override;
 
         // Disallow copy
         GeometryConstructionG4(const GeometryConstructionG4&) = delete;
         GeometryConstructionG4 &operator=(const GeometryConstructionG4&) = delete;
 
         // Construct the world
-        G4VPhysicalVolume* Construct();
+        G4VPhysicalVolume* Construct() override;
 
     private:
         void BuildPixelDevices();

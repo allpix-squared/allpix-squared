@@ -5,34 +5,34 @@
 using namespace allpix;
 
 // NOTE: we have to check for exceptions before we do the actual logging (which may also throw exceptions)
-DefaultLogger::DefaultLogger() : 
+DefaultLogger::DefaultLogger() :
     os(), exception_count_(get_uncaught_exceptions(true)) {}
-    
+
 DefaultLogger::~DefaultLogger() {
-    // check if it is potentially safe to throw 
+    // check if it is potentially safe to throw
     if (exception_count_ != get_uncaught_exceptions(false)) return;
-    
+
     os << std::endl;
     for (auto stream : get_streams()) {
         (*stream) << os.str();
     }
 }
 
-std::ostringstream& DefaultLogger::getStream(LogLevel level, std::string file, std::string function, uint32_t line) {
+std::ostringstream& DefaultLogger::getStream(LogLevel level, const std::string &file, const std::string &function, uint32_t line) {
     os << "[" << get_current_date() << "] ";
     /*if (logName().size() > 0) {
         os << "<" << logName() << "> ";
     }*/
     os << std::setw(8) << getStringFromLevel(level) << ": ";
-    
+
     // For debug levels we want also function name and line number printed:
     if (level != LogLevel::INFO && level != LogLevel::QUIET && level != LogLevel::WARNING)
         os << "<" << file << "/" << function << ":L" << line << "> ";
-    
+
     return os;
 }
 
-// set reporting level 
+// set reporting level
 LogLevel &DefaultLogger::get_reporting_level() {
     static LogLevel reporting_level;
     return reporting_level;
@@ -62,7 +62,7 @@ void DefaultLogger::addStream(std::ostream &stream) {
 // convert string to log level and vice versa
 std::string DefaultLogger::getStringFromLevel(LogLevel level) {
     static const std::array<std::string, 6> type = {{"QUIET", "CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"}};
-    return type[static_cast<decltype(type)::size_type>(level)];
+    return type.at(static_cast<decltype(type)::size_type>(level));
 }
 
 LogLevel DefaultLogger::getLevelFromString(const std::string& level) {
@@ -78,7 +78,7 @@ LogLevel DefaultLogger::getLevelFromString(const std::string& level) {
         return LogLevel::CRITICAL;
     if (level == "QUIET")
         return LogLevel::QUIET;
-    
+
     DefaultLogger().getStream(LogLevel::WARNING) << "Unknown logging level '" << level << "'. Using WARNING level as default.";
     return LogLevel::WARNING;
 }
@@ -87,10 +87,10 @@ std::string DefaultLogger::get_current_date() {
     //FIXME: revise this to get microseconds in a better way
     auto now = std::chrono::system_clock::now();
     auto in_time_t = std::chrono::system_clock::to_time_t(now);
-    
+
     std::stringstream ss;
     ss << std::put_time(std::localtime(&in_time_t), "%X");
-    
+
     auto seconds_from_epoch = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch());
     auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch() - seconds_from_epoch).count();
     ss << "." << millis;
@@ -104,8 +104,7 @@ int DefaultLogger::get_uncaught_exceptions(bool cons = false) {
 #else
     if (cons) {
         return 0;
-    } else {
-        return std::uncaught_exception();
     }
+    return static_cast<int>(std::uncaught_exception());
 #endif
 }

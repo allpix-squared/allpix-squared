@@ -18,7 +18,7 @@
 using namespace allpix;
 
 StaticModuleManager::StaticModuleManager(GeneratorFunction func):
-    _instantiations_map(), generator_func_(func) {
+    _instantiations_map(), generator_func_(std::move(func)) {
     if (generator_func_ == nullptr) throw allpix::Exception("Generator function should not be zero");
 }
 
@@ -84,7 +84,7 @@ void StaticModuleManager::load(AllPix *allpix) {
 }
 
 // get the factory for instantiation the modules
-std::unique_ptr<ModuleFactory> StaticModuleManager::get_factory(std::string name) {
+std::unique_ptr<ModuleFactory> StaticModuleManager::get_factory(const std::string &name) {
     std::unique_ptr<ModuleFactory> mod = generator_func_(name);
     if (mod == nullptr) {
         throw InstantiationError(name);

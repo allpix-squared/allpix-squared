@@ -15,18 +15,18 @@
 #include "../../core/geometry/PixelDetectorModel.hpp"
 
 namespace allpix {
-    
+
     class ReadGeoDescription {
     public:
         // Constructor
-        ReadGeoDescription(std::string);
+        explicit ReadGeoDescription(std::string);
 
         // Return the model (or return nullptr) if it does not exist
         std::shared_ptr<PixelDetectorModel> getDetectorModel(const std::string &name) const;
-    private:     
-        std::shared_ptr<PixelDetectorModel> parseConfig(Configuration &);
-        
-        std::map<std::string, std::shared_ptr<PixelDetectorModel>> models_;      
+    private:
+        std::shared_ptr<PixelDetectorModel> parseConfig(const Configuration &);
+
+        std::map<std::string, std::shared_ptr<PixelDetectorModel>> models_;
     };
 }
 

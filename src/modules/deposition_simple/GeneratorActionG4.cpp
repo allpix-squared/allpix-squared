@@ -27,9 +27,9 @@ GeneratorActionG4::GeneratorActionG4(int n_particle, G4ParticleDefinition *parti
     particleGun_->SetParticlePosition(position);
     particleGun_->SetParticleMomentumDirection(momentum);
     particleGun_->SetParticleEnergy(energy);
-    
+
 }
-GeneratorActionG4::~GeneratorActionG4() {}
+GeneratorActionG4::~GeneratorActionG4() = default;
 
 // generate the particles
 void GeneratorActionG4::GeneratePrimaries(G4Event* event) {

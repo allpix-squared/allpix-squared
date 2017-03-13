@@ -20,21 +20,21 @@ namespace allpix{
     public:
         // provide a static const variable of type string (required!)
         static const std::string name;
-        
+
         // constructor should take a pointer to AllPix, a ModuleIdentifier and a Configuration as input
         TestVisualizationModule(AllPix *apx, ModuleIdentifier id, Configuration config);
-        ~TestVisualizationModule();
-        
+        ~TestVisualizationModule() override;
+
         // initializes the visualization and set necessary settings to catch all the required data
-        void init();
+        void init() override;
         // displays the visualization
-        void run();
-        
+        void run() override;
+
     private:
         // configuration for this module
         Configuration config_;
-        
-        // pointer to the visualization manager        
+
+        // pointer to the visualization manager
         std::shared_ptr<G4VisManager> vis_manager_g4_;
     };
 }
