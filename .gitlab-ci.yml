@@ -70,7 +70,5 @@ mac1012-clang80:
         - cd build
         - cmake -GNinja -DGeant4_DIR=$G4INSTALL/lib/Geant4-10.2.2 -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen_HOME/lib64/cmake/eigen3 ..
         - ninja
-        - ninja check-lint
-        # - ninja check-format
         - ninja install
         - ctest --output-on-failure -j4
