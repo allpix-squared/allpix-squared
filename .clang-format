@@ -3,10 +3,10 @@ Language: Cpp
 BasedOnStyle: LLVM
 AccessModifierOffset: -4
 AlignConsecutiveDeclarations: true
-AllowShortIfStatementsOnASingleLine: true
-AllowShortFunctionsOnASingleLine: Empty
-BinPackParameters: true
-BinPackArguments: true
+AllowShortIfStatementsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: All
+BinPackParameters: false
+BinPackArguments: false
 ColumnLimit: 125
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
 DerivePointerAlignment: false
@@ -22,7 +22,7 @@ IncludeIsMainRegex: '([-_](test|unittest))?$'
 IndentCaseLabels: false
 NamespaceIndentation: All
 PointerAlignment: Left
-SpaceBeforeParens: ControlStatements
+SpaceBeforeParens: Never
 Cpp11BracedListStyle: true
 Standard: Cpp11
 IndentWidth: 4
