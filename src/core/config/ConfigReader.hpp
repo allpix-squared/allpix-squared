@@ -5,16 +5,16 @@
 #ifndef ALLPIX_CONFIG_READER_H
 #define ALLPIX_CONFIG_READER_H
 
-#include <vector>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "Configuration.hpp"
 
-#include <list>
 #include <istream>
-#include <string>
+#include <list>
 #include <map>
+#include <string>
 #include <vector>
 
 namespace allpix {
@@ -29,22 +29,23 @@ namespace allpix {
 
         // Add stream
         void add(std::istream&);
-        void add(std::istream&, const std::string &file_name);
+        void add(std::istream&, const std::string& file_name);
 
         // Clear whole config
         void clear();
 
         // Check if configuration section exist
-        bool hasConfiguration(const std::string &name) const;
-        unsigned int countConfigurations(const std::string &name) const;
+        bool hasConfiguration(const std::string& name) const;
+        unsigned int countConfigurations(const std::string& name) const;
 
         // Return configuration sections by name
-        std::vector<Configuration> getConfigurations(const std::string &name) const;
+        std::vector<Configuration> getConfigurations(const std::string& name) const;
 
         // Return all configurations with their name
         std::vector<Configuration> getConfigurations() const;
+
     private:
-        std::map<std::string, std::vector<std::list<Configuration>::iterator > > conf_map_;
+        std::map<std::string, std::vector<std::list<Configuration>::iterator>> conf_map_;
         std::list<Configuration> conf_array_;
     };
 }

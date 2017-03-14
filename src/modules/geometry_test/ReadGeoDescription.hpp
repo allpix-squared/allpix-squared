@@ -6,10 +6,10 @@
 #ifndef ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_READ_GEO_H
 #define ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_READ_GEO_H
 
-#include <string>
-#include <vector>
 #include <map>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "../../core/config/Configuration.hpp"
 #include "../../core/geometry/PixelDetectorModel.hpp"
@@ -22,9 +22,10 @@ namespace allpix {
         explicit ReadGeoDescription(std::string);
 
         // Return the model (or return nullptr) if it does not exist
-        std::shared_ptr<PixelDetectorModel> getDetectorModel(const std::string &name) const;
+        std::shared_ptr<PixelDetectorModel> getDetectorModel(const std::string& name) const;
+
     private:
-        std::shared_ptr<PixelDetectorModel> parseConfig(const Configuration &);
+        std::shared_ptr<PixelDetectorModel> parseConfig(const Configuration&);
 
         std::map<std::string, std::shared_ptr<PixelDetectorModel>> models_;
     };

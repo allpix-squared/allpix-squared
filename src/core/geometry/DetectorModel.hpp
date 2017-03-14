@@ -6,16 +6,16 @@
 
 #include <string>
 
-namespace allpix{
+namespace allpix {
     class DetectorModel {
     public:
-        explicit DetectorModel(std::string type): type_(std::move(type)) {}
+        explicit DetectorModel(std::string type) : type_(std::move(type)) {}
         virtual ~DetectorModel() = default;
 
         std::string getType() const;
         void setType(std::string type);
 
-        //FIXME: what would be valid overlapping parameters here
+        // FIXME: what would be valid overlapping parameters here
     private:
         std::string type_;
     };

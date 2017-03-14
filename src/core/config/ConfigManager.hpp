@@ -5,12 +5,12 @@
 #ifndef ALLPIX_CONFIG_MANAGER_H
 #define ALLPIX_CONFIG_MANAGER_H
 
-#include <vector>
+#include <fstream>
 #include <list>
+#include <map>
 #include <string>
 #include <utility>
-#include <fstream>
-#include <map>
+#include <vector>
 
 #include "Configuration.hpp"
 
@@ -18,7 +18,7 @@
 
 namespace allpix {
 
-    class ConfigManager{
+    class ConfigManager {
     public:
         // Constructor and destructors
         ConfigManager();
@@ -27,10 +27,10 @@ namespace allpix {
 
         // Disallow copy
         ConfigManager(const ConfigManager&) = delete;
-        ConfigManager &operator=(const ConfigManager&) = delete;
+        ConfigManager& operator=(const ConfigManager&) = delete;
 
         // Add file
-        void addFile(const std::string &file_name);
+        void addFile(const std::string& file_name);
         void removeFiles();
 
         // Reload all configs (clears and rereads)
@@ -40,11 +40,11 @@ namespace allpix {
         void clear();
 
         // Check if configuration section exist
-        bool hasConfiguration(const std::string &name) const;
-        unsigned int countConfigurations(const std::string &name) const;
+        bool hasConfiguration(const std::string& name) const;
+        unsigned int countConfigurations(const std::string& name) const;
 
         // Return configuration sections by name
-        std::vector<Configuration> getConfigurations(const std::string &name) const;
+        std::vector<Configuration> getConfigurations(const std::string& name) const;
 
         // Return all configurations with their name
         std::vector<Configuration> getConfigurations() const;

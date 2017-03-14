@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "G4VPVParameterisation.hh"
 #include "G4ThreeVector.hh"
+#include "G4VPVParameterisation.hh"
 #include "G4VPhysicalVolume.hh"
 
 #include "../../core/geometry/PixelDetectorModel.hpp"
@@ -18,7 +18,7 @@ namespace allpix {
     public:
         explicit BumpsParameterizationG4(std::shared_ptr<PixelDetectorModel> model);
 
-        void ComputeTransformation(G4int, G4VPhysicalVolume*) const override;
+        void   ComputeTransformation(G4int, G4VPhysicalVolume*) const override;
         double posX(int id) const;
         double posY(int id) const;
 

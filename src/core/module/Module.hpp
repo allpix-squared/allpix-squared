@@ -5,8 +5,8 @@
 #ifndef ALLPIX_MODULE_H
 #define ALLPIX_MODULE_H
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "ModuleIdentifier.hpp"
 
@@ -24,7 +24,7 @@ namespace allpix {
     class Module {
     public:
         // AllPix running state
-        enum State{
+        enum State {
             // Loaded,
             Ready,
             Running,
@@ -33,36 +33,30 @@ namespace allpix {
 
         // Constructor and destructors
         // FIXME: register and unregister the listeners in the constructor?
-        Module(AllPix *allpix, ModuleIdentifier identifier);
+        Module(AllPix* allpix, ModuleIdentifier identifier);
         virtual ~Module() = default;
 
         // FIXME: does it makes sense to copy a module
         Module(const Module&) = delete;
-        Module &operator=(const Module&) = delete;
+        Module& operator=(const Module&) = delete;
 
         // Modules should have a unique name (for configuration)
         // TODO: depends on implementation how this should work with dynamic loading
-        //virtual std::string getName() = 0;
+        // virtual std::string getName() = 0;
 
         // Set and get (eventual) linked detector (FIXME: should this be linked here?)
-        void setDetector(std::shared_ptr<Detector> det) {
-            _detector = std::move(det);
-        }
-        std::shared_ptr<Detector> getDetector() const {
-            return _detector;
-        }
+        void setDetector(std::shared_ptr<Detector> det) { _detector = std::move(det); }
+        std::shared_ptr<Detector>                  getDetector() const { return _detector; }
 
-        //get the identifier
-        ModuleIdentifier getIdentifier() const{
-            return identifier_;
-        }
+        // get the identifier
+        ModuleIdentifier getIdentifier() const { return identifier_; }
 
         // Get access to several services
         // FIXME: use smart pointers here
-        AllPix *getAllPix();
-        Messenger *getMessenger();
-        ModuleManager *getModuleManager();
-        GeometryManager *getGeometryManager();
+        AllPix*          getAllPix();
+        Messenger*       getMessenger();
+        ModuleManager*   getModuleManager();
+        GeometryManager* getGeometryManager();
 
         // Initialize the module and pass the configuration etc.
         virtual void init() {
@@ -79,7 +73,7 @@ namespace allpix {
         }
 
     private:
-        AllPix *allpix_;
+        AllPix*          allpix_;
         ModuleIdentifier identifier_;
 
         // FIXME: see above

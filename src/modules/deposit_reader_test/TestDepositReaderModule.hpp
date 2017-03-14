@@ -8,20 +8,20 @@
 #include <memory>
 #include <string>
 
-#include "../../core/module/Module.hpp"
 #include "../../core/config/Configuration.hpp"
+#include "../../core/module/Module.hpp"
 
-namespace allpix{
+namespace allpix {
     class DepositionMessage;
 
     // define the module to inherit from the module base class
-    class TestDepositReaderModule : public Module{
+    class TestDepositReaderModule : public Module {
     public:
         // provide a static const variable of type string (required!)
         static const std::string name;
 
         // constructor should take a pointer to AllPix, a ModuleIdentifier and a Configuration as input
-        TestDepositReaderModule(AllPix *apx, ModuleIdentifier id, Configuration config);
+        TestDepositReaderModule(AllPix* apx, ModuleIdentifier id, Configuration config);
         ~TestDepositReaderModule() override;
 
         // show the deposition results

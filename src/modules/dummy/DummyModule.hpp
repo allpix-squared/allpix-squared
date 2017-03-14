@@ -5,25 +5,24 @@
 #include <iostream>
 
 // ROOT includes
+#include "TCanvas.h"
 #include "TH1F.h"
 #include "TH2F.h"
-#include "TCanvas.h"
 
 // Local includes
 #include "Algorithm.hpp"
 
 class TestAlgorithm : public Algorithm {
-  
+
 public:
-  // Constructors and destructors
-  TestAlgorithm(bool);
-  ~TestAlgorithm(){}
+    // Constructors and destructors
+    TestAlgorithm(bool);
+    ~TestAlgorithm() {}
 
-  // Functions
-  void initialise(Parameters*);
-  StatusCode run(Clipboard*);
-  void finalise();
-
+    // Functions
+    void       initialise(Parameters*);
+    StatusCode run(Clipboard*);
+    void       finalise();
 };
 
 #endif // TESTALGORITHM_H

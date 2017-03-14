@@ -1,6 +1,6 @@
 /**
- * Message for a deposited charge 
- * 
+ * Message for a deposited charge
+ *
  * @author Koen Wolters <koen.wolters@cern.ch>
  */
 
@@ -14,25 +14,26 @@
 
 #include "../core/messenger/Message.hpp"
 
-namespace allpix{
+namespace allpix {
     // type of the deposits
-    class ChargeDeposit{
+    class ChargeDeposit {
     public:
         ChargeDeposit(TVector3 position, double energy);
-        
+
         TVector3 getPosition();
-        double getEnergy();
+        double   getEnergy();
+
     private:
         TVector3 position_;
-        double energy_;
+        double   energy_;
     };
-    
+
     // message carrying all the deposits
     class DepositionMessage : public Message {
     public:
-        DepositionMessage(): deposits() {}
-        std::vector<ChargeDeposit> &getDeposits();
-        
+        DepositionMessage() : deposits() {}
+        std::vector<ChargeDeposit>& getDeposits();
+
     private:
         std::vector<ChargeDeposit> deposits;
     };

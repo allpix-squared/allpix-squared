@@ -5,22 +5,22 @@
 #ifndef ALLPIX_SINGLE_MODULE_FACTORY_H
 #define ALLPIX_SINGLE_MODULE_FACTORY_H
 
-#include <vector>
 #include <memory>
+#include <vector>
 
+#include "../config/Configuration.hpp"
 #include "Module.hpp"
 #include "ModuleFactory.hpp"
-#include "../config/Configuration.hpp"
 
 // FIXME: ensure proper dynamic deletion
 
 namespace allpix {
 
-    template<typename T> class UniqueModuleFactory : public ModuleFactory {
+    template <typename T> class UniqueModuleFactory : public ModuleFactory {
     public:
         // create a module
-        std::vector<std::unique_ptr<Module> > create() override {
-            std::vector<std::unique_ptr<Module> > mod_list;
+        std::vector<std::unique_ptr<Module>> create() override {
+            std::vector<std::unique_ptr<Module>> mod_list;
 
             // create a unique instance of the module
             ModuleIdentifier identifier(T::name, 0);

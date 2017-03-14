@@ -5,39 +5,40 @@
 #ifndef ALLPIX_MODULE_FACTORY_H
 #define ALLPIX_MODULE_FACTORY_H
 
-#include <vector>
 #include <memory>
+#include <vector>
 
-#include "Module.hpp"
 #include "../config/Configuration.hpp"
+#include "Module.hpp"
 
 namespace allpix {
-    
+
     class AllPix;
-    
+
     class ModuleFactory {
     public:
         // Constructor and destructor
         ModuleFactory();
         virtual ~ModuleFactory();
-        
+
         // Disallow copy of a factory
         ModuleFactory(const ModuleFactory&) = delete;
-        ModuleFactory &operator=(const ModuleFactory&) = delete;
-        
+        ModuleFactory& operator=(const ModuleFactory&) = delete;
+
         // set AllPix object
-        void setAllPix(AllPix *);
-        AllPix *getAllPix();
-        
+        void    setAllPix(AllPix*);
+        AllPix* getAllPix();
+
         // set configuration
         void setConfiguration(Configuration conf);
-        Configuration &getConfiguration();
-        
+        Configuration& getConfiguration();
+
         // create a module
-        virtual std::vector<std::unique_ptr<Module> > create() = 0;
+        virtual std::vector<std::unique_ptr<Module>> create() = 0;
+
     private:
         Configuration conf_;
-        AllPix *apx_;
+        AllPix*       apx_;
     };
 }
 

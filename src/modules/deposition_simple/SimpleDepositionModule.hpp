@@ -8,21 +8,22 @@
 #include <memory>
 #include <string>
 
-#include "../../core/module/Module.hpp"
 #include "../../core/config/Configuration.hpp"
+#include "../../core/module/Module.hpp"
 
-namespace allpix{
+namespace allpix {
     // define the module to inherit from the module base class
-    class SimpleDepositionModule : public Module{
+    class SimpleDepositionModule : public Module {
     public:
         // provide a static const variable of type string (required!)
         static const std::string name;
 
         // constructor should take a pointer to AllPix, a ModuleIdentifier and a Configuration as input
-        SimpleDepositionModule(AllPix *apx, ModuleIdentifier id, Configuration config);
+        SimpleDepositionModule(AllPix* apx, ModuleIdentifier id, Configuration config);
         ~SimpleDepositionModule() override;
 
-        // method that will be run where the module should do its computations and possibly dispatch their results as a message
+        // method that will be run where the module should do its computations and possibly dispatch their results as a
+        // message
         void run() override;
 
     private:
