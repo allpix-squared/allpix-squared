@@ -36,7 +36,7 @@ void SimpleDepositionModule::run() {
 
     // load the G4 run manager from allpix
     std::shared_ptr<G4RunManager> run_manager_g4 = getAllPix()->getExternalManager<G4RunManager>();
-    assert(run_manager_g4 == nullptr); // FIXME: temporary assert (throw a proper exception later if the manager is not defined)
+    assert(run_manager_g4 != nullptr); // FIXME: temporary assert (throw a proper exception later if the manager is not defined)
 
     // add a generator
     // NOTE: for more difficult modules a separate generator module makes more sense probably?

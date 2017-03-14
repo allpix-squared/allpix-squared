@@ -58,7 +58,7 @@ int main(int, const char **) {
 
         LOG(INFO) << "Initializing AllPix";
         apx->init();
-
+        
         LOG(INFO) << "Running AllPix";
         apx->run();
 
