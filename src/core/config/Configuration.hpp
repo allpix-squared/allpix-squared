@@ -110,12 +110,14 @@ namespace allpix {
     }
 
     template <typename T> void Configuration::setDefault(const std::string& key, const T& val) {
-        if(!has(key))
+        if(!has(key)) {
             set<T>(key, val);
+        }
     }
     template <typename T> void Configuration::setDefaultArray(const std::string& key, const std::vector<T>& val) {
-        if(!has(key))
+        if(!has(key)) {
             setArray<T>(key, val);
+        }
     }
 }
 

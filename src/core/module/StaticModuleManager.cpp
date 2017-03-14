@@ -18,8 +18,9 @@
 using namespace allpix;
 
 StaticModuleManager::StaticModuleManager(GeneratorFunction func) : _instantiations_map(), generator_func_(std::move(func)) {
-    if(generator_func_ == nullptr)
+    if(generator_func_ == nullptr) {
         throw allpix::Exception("Generator function should not be zero");
+    }
 }
 
 void StaticModuleManager::load(AllPix* allpix) {
@@ -29,8 +30,9 @@ void StaticModuleManager::load(AllPix* allpix) {
     // NOTE: could add all config parameters from the empty to all configs (if it does not yet exist)
     for(auto& conf : configs) {
         // ignore the empty config
-        if(conf.getName().empty())
+        if(conf.getName().empty()) {
             continue;
+        }
 
         // instantiate an instance for each name
         std::unique_ptr<ModuleFactory> factory = get_factory(conf.getName());

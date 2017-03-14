@@ -65,8 +65,9 @@ void TestVisualizationModule::run() {
     if(config_.get("interactive", false)) {
         std::unique_ptr<G4UIsession> session = std::make_unique<G4UIterminal>();
         session->SessionStart();
-    } else
+    } else {
         vis_manager_g4_->GetCurrentViewer()->ShowView();
+    }
 
     LOG(INFO) << "END VISUALIZATION";
 }

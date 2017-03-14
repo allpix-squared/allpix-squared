@@ -28,8 +28,9 @@ std::string Configuration::getText(const std::string& key) const {
     }
 }
 std::string Configuration::getText(const std::string& key, const std::string& def) const {
-    if(!has(key))
+    if(!has(key)) {
         return def;
+    }
     return getText(key);
 }
 

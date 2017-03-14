@@ -26,19 +26,22 @@ std::vector<std::shared_ptr<Detector>> GeometryManager::getDetectors() const { r
 // FIXME: this is not a very nice way to do this
 std::shared_ptr<Detector> GeometryManager::getDetector(const std::string& name) const {
     for(auto& detector : detectors_) {
-        if(detector->getName() == name)
+        if(detector->getName() == name) {
             return detector;
+        }
     }
     throw allpix::InvalidDetectorError("name", name);
 }
 std::vector<std::shared_ptr<Detector>> GeometryManager::getDetectorsByType(const std::string& type) const {
     std::vector<std::shared_ptr<Detector>> result;
     for(auto& detector : detectors_) {
-        if(detector->getType() == type)
+        if(detector->getType() == type) {
             result.push_back(detector);
+        }
     }
-    if(result.empty())
+    if(result.empty()) {
         throw allpix::InvalidDetectorError("type", type);
+    }
 
     return result;
 }

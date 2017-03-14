@@ -58,7 +58,9 @@ namespace allpix {
     public:
         InvalidKeyError(const std::string&key, const std::string &section, const std::string &value, const std::type_info &type, const std::string &reason) {
             error_message_ = "Could not convert value '"+value+"' of key '"+key+"' in section '"+section+"' to type "+allpix::demangle(type.name());
-            if (!reason.empty()) error_message_ += ": "+reason;
+            if (!reason.empty()) {
+              error_message_ += ": " + reason;
+            }
         }
         InvalidKeyError(const std::string&key, const std::string &section, const std::string &value, const std::type_info &type):
             InvalidKeyError(key, section, value, type, "") {}
@@ -69,7 +71,9 @@ namespace allpix {
     public:
         InvalidValueError(const std::string&key, const std::string &section, const std::string &value, const std::string &reason) {
             error_message_ = "Value '"+value+"' of key '"+key+"' in section '"+section+"' is not valid";
-            if (!reason.empty()) error_message_ += ": "+reason;
+            if (!reason.empty()) {
+              error_message_ += ": " + reason;
+            }
         }
         InvalidValueError(const std::string&key, const std::string &section, const std::string &value):
             InvalidValueError(key, section, value, "") {}

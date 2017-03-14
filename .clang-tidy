@@ -6,7 +6,7 @@ Checks : '-*,
           mpi-*,
           performance-*,
           google-*,-google-readability-todo,-google-build-using-namespace,-google-readability-braces-around-statements,-google-readability-namespace-comments,
-          readability-*,-readability-braces-around-statements,-readability-named-parameter,-readability-inconsistent-declaration-parameter-name,
+          readability-*,-readability-named-parameter,-readability-inconsistent-declaration-parameter-name,
           llvm-*,-llvm-include-order,-llvm-header-guard,-llvm-namespace-comment,
           modernize-*,-modernize-raw-string-literal,
           cppcoreguidelines-*,-cppcoreguidelines-pro-bounds-array-to-pointer-decay'

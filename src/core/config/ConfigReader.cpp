@@ -24,8 +24,9 @@ void ConfigReader::add(std::istream& stream, const std::string& file_name) {
     while(true) {
         // process config line by line
         std::string line;
-        if(stream.eof())
+        if(stream.eof()) {
             break;
+        }
         std::getline(stream, line);
         ++line_num;
 
@@ -35,8 +36,9 @@ void ConfigReader::add(std::istream& stream, const std::string& file_name) {
             line = allpix::trim(line);
 
             // ignore empty lines or comments
-            if(line == "" || line[0] == ';' || line[0] == '#')
+            if(line == "" || line[0] == ';' || line[0] == '#') {
                 continue;
+            }
 
             // parse new section
             if(line[0] == '[' && line[line.length() - 1] == ']') {
@@ -58,10 +60,11 @@ void ConfigReader::add(std::istream& stream, const std::string& file_name) {
             char        ins = 0;
             for(size_t i = 0; i < value.size(); ++i) {
                 if(value[i] == '\'' || value[i] == '\"') {
-                    if(ins != 0)
+                    if(ins != 0) {
                         ins = value[i];
-                    else if(ins == value[i])
+                    } else if(ins == value[i]) {
                         ins = 0;
+                    }
                 }
                 if(ins == 0 && (value[i] == ';' || value[i] == '#')) {
                     value = std::string(value, 0, i);

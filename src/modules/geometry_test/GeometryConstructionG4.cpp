@@ -365,8 +365,9 @@ void GeometryConstructionG4::BuildPixelDevices() {
         model_g4->pixel_log = new G4LogicalVolume(Box_pixel, Silicon, PixelName.second); // 0,0,0);
 
         // set the user limit (FIXME: is this needed / this is currently fixed)
-        if(user_limits_ != nullptr)
+        if(user_limits_ != nullptr) {
             model_g4->pixel_log->SetUserLimits(user_limits_);
+        }
 
         // place the slices
         new G4PVDivision(SliceName.second,

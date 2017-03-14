@@ -31,14 +31,18 @@ using namespace allpix;
 // FIXME: temporary generator function for as long we do not have dynamic loading
 std::unique_ptr<ModuleFactory> generator(const std::string& str);
 std::unique_ptr<ModuleFactory> generator(const std::string& str) {
-    if(str == GeometryConstructionModule::name)
+    if(str == GeometryConstructionModule::name) {
         return std::make_unique<UniqueModuleFactory<GeometryConstructionModule>>();
-    if(str == SimpleDepositionModule::name)
+    }
+    if(str == SimpleDepositionModule::name) {
         return std::make_unique<UniqueModuleFactory<SimpleDepositionModule>>();
-    if(str == TestVisualizationModule::name)
+    }
+    if(str == TestVisualizationModule::name) {
         return std::make_unique<UniqueModuleFactory<TestVisualizationModule>>();
-    if(str == TestDepositReaderModule::name)
+    }
+    if(str == TestDepositReaderModule::name) {
         return std::make_unique<UniqueModuleFactory<TestDepositReaderModule>>();
+    }
 
     return nullptr;
 }

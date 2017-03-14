@@ -25,8 +25,9 @@ using namespace allpix;
 
 ReadGeoDescription::ReadGeoDescription(std::string file_name) : models_() {
     std::ifstream file(file_name);
-    if(!file.good())
+    if(!file.good()) {
         throw ModuleException("Geometry description file '" + file_name + "' not found");
+    }
 
     ConfigReader reader(file, file_name);
 
@@ -92,22 +93,29 @@ std::shared_ptr<PixelDetectorModel> ReadGeoDescription::parseConfig(const Config
     }
 
     // gr excess?
-    if(config.has("sensor_gr_excess_htop"))
+    if(config.has("sensor_gr_excess_htop")) {
         model->SetSensorExcessHTop(CLHEP::um * config.get<double>("sensor_gr_excess_htop"));
-    if(config.has("sensor_gr_excess_hbottom"))
+    }
+    if(config.has("sensor_gr_excess_hbottom")) {
         model->SetSensorExcessHBottom(CLHEP::um * config.get<double>("sensor_gr_excess_hbottom"));
-    if(config.has("sensor_gr_excess_hleft"))
+    }
+    if(config.has("sensor_gr_excess_hleft")) {
         model->SetSensorExcessHLeft(CLHEP::um * config.get<double>("sensor_gr_excess_hleft"));
-    if(config.has("sensor_gr_excess_hright"))
+    }
+    if(config.has("sensor_gr_excess_hright")) {
         model->SetSensorExcessHRight(CLHEP::um * config.get<double>("sensor_gr_excess_hright"));
+    }
 
     // bump parameters
-    if(config.has("bump_radius"))
+    if(config.has("bump_radius")) {
         model->SetBumpRadius(CLHEP::um * config.get<double>("bump_radius"));
-    if(config.has("bump_height"))
+    }
+    if(config.has("bump_height")) {
         model->SetBumpHeight(CLHEP::um * config.get<double>("bump_height"));
-    if(config.has("bump_dr"))
+    }
+    if(config.has("bump_dr")) {
         model->SetBumpDr(CLHEP::um * config.get<double>("bump_dr"));
+    }
     if(config.has("bump_offset")) {
         G4ThreeVector vec = CLHEP::um * config.get<G4TwoVector>("bump_offset");
         model->SetBumpOffsetX(vec.x());
@@ -120,7 +128,8 @@ std::shared_ptr<PixelDetectorModel> ReadGeoDescription::parseConfig(const Config
 // Return detector model
 // FIXME: should we throw an error if it does not exists
 std::shared_ptr<PixelDetectorModel> ReadGeoDescription::getDetectorModel(const std::string& name) const {
-    if(models_.find(name) == models_.end())
+    if(models_.find(name) == models_.end()) {
         return nullptr;
+    }
     return models_.at(name);
 }

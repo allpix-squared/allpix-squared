@@ -36,8 +36,9 @@ namespace allpix {
     // FIXME: include exceptions better
     template <typename T> T from_string(std::string str) {
         str = trim(str);
-        if (str == "")
-            throw std::invalid_argument("string is empty");
+        if (str == "") {
+          throw std::invalid_argument("string is empty");
+        }
 
         T ret;
         std::istringstream stream(str);
@@ -45,14 +46,19 @@ namespace allpix {
 
         std::string tmp;
         stream >> tmp;
-        if (!tmp.empty())
-            throw std::invalid_argument("remaining data at end");
+        if (!tmp.empty()) {
+          throw std::invalid_argument("remaining data at end");
+        }
         return ret;
     }
     template <> inline std::string from_string<std::string> (std::string str){
-        if(!str.empty() && str[0] == '\"') str.erase(str.begin());
-        if(!str.empty() && str[str.size()-1] == '\"') str.erase(--str.end());
-        return str;
+      if (!str.empty() && str[0] == '\"') {
+        str.erase(str.begin());
+      }
+      if (!str.empty() && str[str.size() - 1] == '\"') {
+        str.erase(--str.end());
+      }
+      return str;
     }
 
     template <typename T> std::string to_string(T inp) {
@@ -76,7 +82,9 @@ namespace allpix {
         str = trim(str, delims);
 
         // if the input string is empty, simply return empty container
-        if (str.empty()) return std::vector<T>();
+        if (str.empty()) {
+          return std::vector<T>();
+        }
 
         // else we have data, clear the default elements and chop the string:
         std::vector<T> elems;
@@ -91,18 +99,25 @@ namespace allpix {
 
             // FIXME: handle escape
             if (str[pos] == '\'' || str[pos] == '\"') {
-                if(!ins) ins = str[pos];
-                else if(ins == str[pos]) ins = 0;
-                continue;
+              if (!ins) {
+                ins = str[pos];
+              } else if (ins == str[pos]) {
+                ins = 0;
+              }
+              continue;
             }
-            if(ins) continue;
+            if (ins) {
+              continue;
+            }
 
-            if (pos > prev)
-                elems.push_back(from_string<T>(str.substr(prev, pos-prev)));
+            if (pos > prev) {
+              elems.push_back(from_string<T>(str.substr(prev, pos - prev)));
+            }
             prev = pos+1;
         }
-        if (prev < str.length())
-            elems.push_back(from_string<T>(str.substr(prev, std::string::npos)));
+        if (prev < str.length()) {
+          elems.push_back(from_string<T>(str.substr(prev, std::string::npos)));
+        }
 
         return elems;
     }

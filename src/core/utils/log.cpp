@@ -9,8 +9,9 @@ DefaultLogger::DefaultLogger() : os(), exception_count_(get_uncaught_exceptions(
 
 DefaultLogger::~DefaultLogger() {
     // check if it is potentially safe to throw
-    if(exception_count_ != get_uncaught_exceptions(false))
+    if(exception_count_ != get_uncaught_exceptions(false)) {
         return;
+    }
 
     os << std::endl;
     for(auto stream : get_streams()) {
@@ -27,9 +28,9 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
     os << std::setw(8) << getStringFromLevel(level) << ": ";
 
     // For debug levels we want also function name and line number printed:
-    if(level != LogLevel::INFO && level != LogLevel::QUIET && level != LogLevel::WARNING)
+    if(level != LogLevel::INFO && level != LogLevel::QUIET && level != LogLevel::WARNING) {
         os << "<" << file << "/" << function << ":L" << line << "> ";
-
+    }
     return os;
 }
 
@@ -57,18 +58,24 @@ std::string DefaultLogger::getStringFromLevel(LogLevel level) {
 }
 
 LogLevel DefaultLogger::getLevelFromString(const std::string& level) {
-    if(level == "DEBUG")
+    if(level == "DEBUG") {
         return LogLevel::DEBUG;
-    if(level == "INFO")
+    }
+    if(level == "INFO") {
         return LogLevel::INFO;
-    if(level == "WARNING")
+    }
+    if(level == "WARNING") {
         return LogLevel::WARNING;
-    if(level == "ERROR")
+    }
+    if(level == "ERROR") {
         return LogLevel::ERROR;
-    if(level == "CRITICAL")
+    }
+    if(level == "CRITICAL") {
         return LogLevel::CRITICAL;
-    if(level == "QUIET")
+    }
+    if(level == "QUIET") {
         return LogLevel::QUIET;
+    }
 
     DefaultLogger().getStream(LogLevel::WARNING) << "Unknown logging level '" << level
                                                  << "'. Using WARNING level as default.";
