@@ -4,8 +4,6 @@
 
 #include "TestDepositReaderModule.hpp"
 
-#include <TVector3.h>
-
 #include "core/messenger/Messenger.hpp"
 #include "core/utils/log.h"
 #include "messages/DepositionMessage.hpp"
