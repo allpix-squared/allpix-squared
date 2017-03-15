@@ -87,6 +87,10 @@ IF(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
     SET ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-undefined,error")
 ENDIF()
 
+# ADD EIGEN EXTENSIONS
+# FIXME: EXPERIMENTAL AND SHOULD BE RESTRUCTURED TO THE RIGHT INCLUDE PLACE
+ADD_DEFINITIONS(-DEIGEN_MATRIXBASE_PLUGIN="tools/eigen_matrix_extend.h")
+
 ###################################
 # Load cpp format and check tools #
 ###################################

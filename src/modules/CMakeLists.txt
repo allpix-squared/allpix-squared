@@ -46,7 +46,7 @@ OPTION(BUILD_allmodules "Build all modules?" OFF)
 ###################################
 
 # ROOT is required for histogramming
-FIND_PACKAGE(ROOT REQUIRED COMPONENTS Geom)
+FIND_PACKAGE(ROOT REQUIRED COMPONENTS Geom GenVector)
 IF(NOT ROOT_FOUND)
     MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
     "$ source YOUR_ROOT_DIR/bin/thisroot.sh")
@@ -58,6 +58,9 @@ IF(NOT Geant4_FOUND)
     MESSAGE(FATAL_ERROR "Could not find Geant4, make sure to source the Geant4 environment\n"
     "$ source YOUR_GEANT4_DIR/bin/geant4.sh")
 ENDIF(NOT Geant4_FOUND)
+
+FIND_PACKAGE(Eigen3 REQUIRED)
+INCLUDE_DIRECTORIES(SYSTEM ${EIGEN3_INCLUDE_DIR})
 
 ###################################
 # Build the required modules      #
