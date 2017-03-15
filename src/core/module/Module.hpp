@@ -32,7 +32,7 @@ namespace allpix {
 
         // Constructor and destructors
         // FIXME: register and unregister the listeners in the constructor?
-        Module(AllPix* allpix);
+        explicit Module(AllPix* allpix);
         virtual ~Module() = default;
 
         // FIXME: does it makes sense to copy a module
