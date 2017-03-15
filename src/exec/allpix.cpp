@@ -43,8 +43,13 @@ std::unique_ptr<ModuleFactory> generator(const std::string& str) {
     return nullptr;
 }
 
-int main(int, const char**) {
+int main(int argc, const char* argv[]) {
     std::string file_name = "etc/example.ini";
+
+    // FIXME: temporary config pass until we have proper argument handling
+    if(argc == 2) {
+        file_name = argv[1];
+    }
 
     try {
         // Set global log level:
@@ -69,21 +74,19 @@ int main(int, const char**) {
         LOG(INFO) << "Finishing AllPix";
         apx->finalize();
     } catch(ConfigurationError& e) {
-        LOG(CRITICAL) << "Error in the configuration file:";
-        LOG(CRITICAL) << "   " << e.what();
-        LOG(CRITICAL) << "The configuration file needs to be updated! Cannot continue...";
+        LOG(CRITICAL) << "Error in the configuration file:" << std::endl
+                      << "   " << e.what() << std::endl
+                      << "The configuration file needs to be updated! Cannot continue...";
     } catch(RuntimeError& e) {
-        LOG(CRITICAL) << "Error during execution of run:";
-        LOG(CRITICAL) << "   " << e.what();
-        LOG(CRITICAL) << "Please check your configuration and modules! Cannot continue...";
+        LOG(CRITICAL) << "Error during execution of run:" << std::endl
+                      << "   " << e.what() << std::endl
+                      << "Please check your configuration and modules! Cannot continue...";
     } catch(LogicError& e) {
-        LOG(CRITICAL) << "Error in the logic of module:";
-        LOG(CRITICAL) << "   " << e.what();
-        LOG(CRITICAL) << "Module has to be properly defined! Cannot continue...";
+        LOG(CRITICAL) << "Error in the logic of module:" << std::endl
+                      << "   " << e.what() << std::endl
+                      << "Module has to be properly defined! Cannot continue...";
     } catch(std::exception& e) {
-        LOG(CRITICAL) << "Fatal internal error";
-        LOG(CRITICAL) << "   " << e.what();
-        LOG(CRITICAL) << "Cannot continue...";
+        LOG(CRITICAL) << "Fatal internal error" << std::endl << "   " << e.what() << std::endl << "Cannot continue...";
     }
 
     return 0;
