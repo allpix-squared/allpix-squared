@@ -5,12 +5,12 @@
 #ifndef ALLPIX_PIXEL_DETECTOR_H
 #define ALLPIX_PIXEL_DETECTOR_H
 
-#include <string>
-#include <tuple>
 #include <cmath>
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <string>
+#include <tuple>
 
 #include "DetectorModel.hpp"
 

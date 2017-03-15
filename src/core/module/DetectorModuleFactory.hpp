@@ -10,10 +10,10 @@
 #include <string>
 #include <vector>
 
-#include "core/config/Configuration.hpp"
-#include "core/utils/log.h"
 #include "Module.hpp"
 #include "ModuleFactory.hpp"
+#include "core/config/Configuration.hpp"
+#include "core/utils/log.h"
 
 // FIXME: ensure proper dynamic deletion
 

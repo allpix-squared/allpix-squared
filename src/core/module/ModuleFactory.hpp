@@ -8,8 +8,8 @@
 #include <memory>
 #include <vector>
 
-#include "core/config/Configuration.hpp"
 #include "Module.hpp"
+#include "core/config/Configuration.hpp"
 
 namespace allpix {
 

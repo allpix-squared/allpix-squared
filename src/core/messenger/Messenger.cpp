@@ -10,8 +10,8 @@
 #include "core/utils/log.h"
 #include "core/utils/type.h"
 
-#include "core/module/Module.hpp"
 #include "Message.hpp"
+#include "core/module/Module.hpp"
 
 using namespace allpix;
 

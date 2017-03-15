@@ -9,8 +9,8 @@
 #include <memory>
 #include <typeinfo>
 
-#include "core/utils/exceptions.h"
 #include "Message.hpp"
+#include "core/utils/exceptions.h"
 
 namespace allpix {
     // base class for all delegates (template type erasure)

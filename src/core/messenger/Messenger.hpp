@@ -9,8 +9,8 @@
 #include <typeindex>
 #include <vector>
 
-#include "core/module/Module.hpp"
 #include "Message.hpp"
+#include "core/module/Module.hpp"
 #include "delegates.h"
 
 namespace allpix {

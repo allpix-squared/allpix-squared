@@ -8,9 +8,9 @@
 #include <memory>
 #include <vector>
 
-#include "core/config/Configuration.hpp"
 #include "Module.hpp"
 #include "ModuleFactory.hpp"
+#include "core/config/Configuration.hpp"
 
 // FIXME: ensure proper dynamic deletion
 
