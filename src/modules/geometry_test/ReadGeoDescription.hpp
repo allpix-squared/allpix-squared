@@ -25,7 +25,7 @@ namespace allpix {
         std::shared_ptr<PixelDetectorModel> getDetectorModel(const std::string& name) const;
 
     private:
-        std::shared_ptr<PixelDetectorModel> parseConfig(const Configuration&);
+        std::shared_ptr<PixelDetectorModel> parse_config(const Configuration&);
 
         std::map<std::string, std::shared_ptr<PixelDetectorModel>> models_;
     };

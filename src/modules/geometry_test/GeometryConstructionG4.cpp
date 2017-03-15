@@ -70,7 +70,7 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     world_phys_ = new G4PVPlacement(nullptr, G4ThreeVector(0., 0., 0.), world_log_, "World", nullptr, false, 0);
 
     // build the pixel devices
-    BuildPixelDevices();
+    build_pixel_devices();
 
     // WARNING: some debug printing here about the placement of the detectors
 
@@ -79,7 +79,7 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
 
 // WARNING: A DEFINE HERE THAT SHOULD PROBABLY BE A PARAMETER
 // NOTE: MULTIPLE ALERT HERE TO IDENTIFY PARTS THAT ARE NOT COPIED FROM ALLPIX 1
-void GeometryConstructionG4::BuildPixelDevices() {
+void GeometryConstructionG4::build_pixel_devices() {
 
     /* MATERIALS
      * fetch and build the required materials

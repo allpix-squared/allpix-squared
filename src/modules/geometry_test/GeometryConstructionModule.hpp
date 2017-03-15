@@ -32,7 +32,7 @@ namespace allpix {
 
     private:
         // internal methods
-        void buildG4();
+        void build_g4();
 
         // configuration for this module
         Configuration config_;

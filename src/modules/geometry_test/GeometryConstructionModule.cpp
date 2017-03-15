@@ -103,13 +103,13 @@ void GeometryConstructionModule::run() {
     // getGeometryManager()->addDetector(det2);
 
     // construct the G4 geometry
-    buildG4();
+    build_g4();
 
     // finish
     LOG(INFO) << "END BUILD GEOMETRY";
 }
 
-void GeometryConstructionModule::buildG4() {
+void GeometryConstructionModule::build_g4() {
     // suppress all output for G4
     SUPPRESS_STREAM(G4cout);
 

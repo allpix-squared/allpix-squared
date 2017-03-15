@@ -36,7 +36,7 @@ namespace allpix {
         G4VPhysicalVolume* Construct() override;
 
     private:
-        void BuildPixelDevices();
+        void build_pixel_devices();
 
         // geometry manager
         GeometryManager* geo_manager_;

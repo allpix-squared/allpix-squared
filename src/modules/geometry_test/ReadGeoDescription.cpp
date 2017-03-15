@@ -32,11 +32,11 @@ ReadGeoDescription::ReadGeoDescription(std::string file_name) : models_() {
     ConfigReader reader(file, file_name);
 
     for(auto& config : reader.getConfigurations()) {
-        models_[config.getName()] = parseConfig(config);
+        models_[config.getName()] = parse_config(config);
     }
 }
 
-std::shared_ptr<PixelDetectorModel> ReadGeoDescription::parseConfig(const Configuration& config) {
+std::shared_ptr<PixelDetectorModel> ReadGeoDescription::parse_config(const Configuration& config) {
     std::string                         model_name = config.getName();
     std::shared_ptr<PixelDetectorModel> model = std::make_shared<PixelDetectorModel>(model_name);
 
