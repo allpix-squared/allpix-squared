@@ -59,7 +59,8 @@ namespace allpix {
         std::ostringstream os;
 
     private:
-        int exception_count_;
+        int          exception_count_;
+        unsigned int indent_count_;
 
         int                                get_uncaught_exceptions(bool);
         std::string                        get_current_date();
@@ -69,9 +70,7 @@ namespace allpix {
 
     using Log = DefaultLogger;
 
-#define __FILE_NAME__                                                                                                       \
-    (strrchr(__FILE__, '/') ? std::string(__FILE__).substr(std::string(__FILE__).find_last_of("/\\") + 1)                   \
-                            : std::string(__FILE__))
+#define __FILE_NAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 
 // execute if the log level is high enough
 #define IFLOG(level)                                                                                                        \

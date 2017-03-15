@@ -5,7 +5,7 @@
 using namespace allpix;
 
 // NOTE: we have to check for exceptions before we do the actual logging (which may also throw exceptions)
-DefaultLogger::DefaultLogger() : os(), exception_count_(get_uncaught_exceptions(true)) {}
+DefaultLogger::DefaultLogger() : os(), exception_count_(get_uncaught_exceptions(true)), indent_count_(0) {}
 
 DefaultLogger::~DefaultLogger() {
     // check if it is potentially safe to throw
@@ -13,9 +13,26 @@ DefaultLogger::~DefaultLogger() {
         return;
     }
 
-    os << std::endl;
+    // get output string
+    std::string out(os.str());
+
+    // replace every newline by indented code if necessary
+    auto start_pos = out.find('\n');
+    if(start_pos != std::string::npos) {
+        std::string spcs(indent_count_ + 1, ' ');
+        spcs[0] = '\n';
+        do {
+            out.replace(start_pos, 1, spcs);
+            start_pos += spcs.length();
+        } while((start_pos = out.find('\n', start_pos)) != std::string::npos);
+    }
+
+    // add final newline
+    out += '\n';
+
+    // print output to streams
     for(auto stream : get_streams()) {
-        (*stream) << os.str();
+        (*stream) << out;
     }
 }
 
@@ -31,6 +48,8 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
     if(level != LogLevel::INFO && level != LogLevel::QUIET && level != LogLevel::WARNING) {
         os << "<" << file << "/" << function << ":L" << line << "> ";
     }
+
+    indent_count_ = static_cast<unsigned int>(os.str().size());
     return os;
 }
 
@@ -40,7 +59,8 @@ LogLevel& DefaultLogger::get_reporting_level() {
     return reporting_level;
 }
 void DefaultLogger::setReportingLevel(LogLevel level) { get_reporting_level() = level; }
-LogLevel                                       DefaultLogger::getReportingLevel() { return get_reporting_level(); }
+
+LogLevel DefaultLogger::getReportingLevel() { return get_reporting_level(); }
 
 // change streams
 std::vector<std::ostream*>& DefaultLogger::get_streams() {
