@@ -7,10 +7,10 @@
 #include <memory>
 #include <string>
 
-#include "../utils/log.h"
-#include "../utils/type.h"
+#include "core/utils/log.h"
+#include "core/utils/type.h"
 
-#include "../module/Module.hpp"
+#include "core/module/Module.hpp"
 #include "Message.hpp"
 
 using namespace allpix;

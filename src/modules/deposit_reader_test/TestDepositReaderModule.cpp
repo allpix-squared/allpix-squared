@@ -6,9 +6,9 @@
 
 #include <TVector3.h>
 
-#include "../../core/messenger/Messenger.hpp"
-#include "../../core/utils/log.h"
-#include "../../messages/DepositionMessage.hpp"
+#include "core/messenger/Messenger.hpp"
+#include "core/utils/log.h"
+#include "messages/DepositionMessage.hpp"
 
 using namespace allpix;
 

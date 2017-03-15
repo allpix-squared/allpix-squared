@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "../config/Configuration.hpp"
+#include "core/config/Configuration.hpp"
 #include "Module.hpp"
 #include "ModuleFactory.hpp"
 

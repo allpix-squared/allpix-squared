@@ -9,7 +9,7 @@
 #include <typeindex>
 #include <vector>
 
-#include "../module/Module.hpp"
+#include "core/module/Module.hpp"
 #include "Message.hpp"
 #include "delegates.h"
 

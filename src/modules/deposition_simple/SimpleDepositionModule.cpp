@@ -14,10 +14,10 @@
 #include "GeneratorActionG4.hpp"
 #include "SensitiveDetectorG4.hpp"
 
-#include "../../core/AllPix.hpp"
-#include "../../core/geometry/GeometryManager.hpp"
-#include "../../core/utils/log.h"
-#include "../../tools/geant4.h"
+#include "core/AllPix.hpp"
+#include "core/geometry/GeometryManager.hpp"
+#include "core/utils/log.h"
+#include "tools/geant4.h"
 
 // FIXME: THIS IS BROKEN ---> SHOULD NEVER BE NEEDED !!!
 #include "../geometry_test/DetectorModelG4.hpp"

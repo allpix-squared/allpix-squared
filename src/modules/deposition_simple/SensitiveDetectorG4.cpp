@@ -22,12 +22,12 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 using namespace CLHEP;
 
-#include "../../core/geometry/PixelDetectorModel.hpp"
-#include "../../core/utils/log.h"
+#include "core/geometry/PixelDetectorModel.hpp"
+#include "core/utils/log.h"
 
-#include "../../tools/geant4.h"
+#include "tools/geant4.h"
 
-#include "../../messages/DepositionMessage.hpp"
+#include "messages/DepositionMessage.hpp"
 
 using namespace allpix;
 

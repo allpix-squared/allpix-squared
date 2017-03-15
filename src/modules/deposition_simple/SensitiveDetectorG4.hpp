@@ -10,10 +10,10 @@
 
 #include <set>
 
-#include "../../core/geometry/Detector.hpp"
-#include "../../core/messenger/Messenger.hpp"
+#include "core/geometry/Detector.hpp"
+#include "core/messenger/Messenger.hpp"
 
-#include "../../messages/DepositionMessage.hpp"
+#include "messages/DepositionMessage.hpp"
 
 class G4Step;
 class G4HCofThisEvent;

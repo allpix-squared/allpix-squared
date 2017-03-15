@@ -26,8 +26,8 @@
 #include "BumpsParameterizationG4.hpp"
 #include "DetectorModelG4.hpp"
 
-#include "../../core/geometry/PixelDetectorModel.hpp"
-#include "../../core/utils/log.h"
+#include "core/geometry/PixelDetectorModel.hpp"
+#include "core/utils/log.h"
 
 using namespace CLHEP;
 using namespace std;

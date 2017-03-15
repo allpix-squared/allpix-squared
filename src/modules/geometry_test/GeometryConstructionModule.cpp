@@ -19,12 +19,12 @@
 #include "GeometryConstructionG4.hpp"
 #include "ReadGeoDescription.hpp"
 
-#include "../../tools/geant4.h"
+#include "tools/geant4.h"
 
-#include "../../core/AllPix.hpp"
-#include "../../core/geometry/GeometryManager.hpp"
-#include "../../core/utils/exceptions.h"
-#include "../../core/utils/log.h"
+#include "core/AllPix.hpp"
+#include "core/geometry/GeometryManager.hpp"
+#include "core/utils/exceptions.h"
+#include "core/utils/log.h"
 
 using namespace allpix;
 

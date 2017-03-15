@@ -10,9 +10,8 @@
 
 #include "ModuleIdentifier.hpp"
 
-#include "../config/Configuration.hpp"
-
-#include "../geometry/Detector.hpp"
+#include "core/config/Configuration.hpp"
+#include "core/geometry/Detector.hpp"
 
 namespace allpix {
 

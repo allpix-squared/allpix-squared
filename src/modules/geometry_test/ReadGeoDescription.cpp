@@ -7,16 +7,16 @@
 
 #include <set>
 
-#include "../../core/utils/exceptions.h"
-#include "../../core/utils/log.h"
+#include "core/utils/exceptions.h"
+#include "core/utils/log.h"
 
-#include "../../core/config/ConfigReader.hpp"
-#include "../../core/geometry/PixelDetectorModel.hpp"
+#include "core/config/ConfigReader.hpp"
+#include "core/geometry/PixelDetectorModel.hpp"
 
 // FIXME: USE OUR OWN VECTOR HERE
-#include "../../tools/geant4.h"
 #include "G4ThreeVector.hh"
 #include "G4TwoVector.hh"
+#include "tools/geant4.h"
 
 // FIXME: agree on the units to use
 #include "CLHEP/Units/SystemOfUnits.h"

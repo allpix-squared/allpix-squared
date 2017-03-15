@@ -7,18 +7,14 @@
 
 #include <string>
 #include <tuple>
-
-#include "DetectorModel.hpp"
-
 #include <cmath>
 #include <fstream>
 #include <iostream>
 #include <map>
-#include <string>
-#include <tuple>
+
+#include "DetectorModel.hpp"
 
 // FIXME: this needs a restructure...
-
 namespace allpix {
 
     class PixelDetectorModel : public DetectorModel {

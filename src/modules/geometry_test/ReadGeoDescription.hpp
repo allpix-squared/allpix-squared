@@ -11,8 +11,8 @@
 #include <string>
 #include <vector>
 
-#include "../../core/config/Configuration.hpp"
-#include "../../core/geometry/PixelDetectorModel.hpp"
+#include "core/config/Configuration.hpp"
+#include "core/geometry/PixelDetectorModel.hpp"
 
 namespace allpix {
 

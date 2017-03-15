@@ -8,8 +8,8 @@
 #include <memory>
 #include <string>
 
-#include "../../core/config/Configuration.hpp"
-#include "../../core/module/Module.hpp"
+#include "core/config/Configuration.hpp"
+#include "core/module/Module.hpp"
 
 namespace allpix {
     class DepositionMessage;

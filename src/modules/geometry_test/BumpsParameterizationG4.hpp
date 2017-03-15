@@ -11,7 +11,7 @@
 #include "G4VPVParameterisation.hh"
 #include "G4VPhysicalVolume.hh"
 
-#include "../../core/geometry/PixelDetectorModel.hpp"
+#include "core/geometry/PixelDetectorModel.hpp"
 
 namespace allpix {
     class BumpsParameterizationG4 : public G4VPVParameterisation {

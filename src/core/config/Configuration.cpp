@@ -8,7 +8,7 @@
 #include <ostream>
 #include <string>
 
-#include "../utils/exceptions.h"
+#include "core/utils/exceptions.h"
 
 using namespace allpix;
 

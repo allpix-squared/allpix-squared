@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
-#include "../config/Configuration.hpp"
-#include "../utils/log.h"
+#include "core/config/Configuration.hpp"
+#include "core/utils/log.h"
 #include "Module.hpp"
 #include "ModuleFactory.hpp"
 

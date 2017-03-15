@@ -14,7 +14,7 @@
 #include "G4ThreeVector.hh"
 #include "G4VUserDetectorConstruction.hh"
 
-#include "../../core/geometry/GeometryManager.hpp"
+#include "core/geometry/GeometryManager.hpp"
 
 // FIXME: improve this later on
 

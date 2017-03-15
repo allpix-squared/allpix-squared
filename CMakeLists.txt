@@ -93,13 +93,16 @@ ENDIF()
 
 FILE(GLOB_RECURSE
      CHECK_CXX_SOURCE_FILES
-     src/*.[ch]pp
+     src/*.[ch]pp src/*.h
      )
 INCLUDE("cmake/clang-cpp-checks.cmake")
 
 ###################################
 # Define build targets for allpix #
 ###################################
+
+# Include source as top directory
+INCLUDE_DIRECTORIES(src)
 
 # Always build main allpix library
 ADD_SUBDIRECTORY(src/core)

@@ -9,11 +9,12 @@
 #include <utility>
 #include <vector>
 
-#include "../AllPix.hpp"
-#include "../config/Configuration.hpp"
-#include "../utils/exceptions.h"
-#include "../utils/log.h"
 #include "Module.hpp"
+
+#include "core/AllPix.hpp"
+#include "core/config/Configuration.hpp"
+#include "core/utils/exceptions.h"
+#include "core/utils/log.h"
 
 using namespace allpix;
 

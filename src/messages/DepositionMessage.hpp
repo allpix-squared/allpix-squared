@@ -12,7 +12,7 @@
 
 #include <TVector3.h>
 
-#include "../core/messenger/Message.hpp"
+#include "core/messenger/Message.hpp"
 
 namespace allpix {
     // type of the deposits

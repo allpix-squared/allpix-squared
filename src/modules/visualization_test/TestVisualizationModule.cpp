@@ -11,8 +11,8 @@
 #include "G4VisExecutive.hh"
 #include "G4VisManager.hh"
 
-#include "../../core/AllPix.hpp"
-#include "../../core/utils/log.h"
+#include "core/AllPix.hpp"
+#include "core/utils/log.h"
 
 using namespace allpix;
 

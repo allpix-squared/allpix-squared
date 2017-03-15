@@ -4,10 +4,10 @@
 
 #include "Module.hpp"
 
-#include "../AllPix.hpp"
-#include "../config/ConfigManager.hpp"
-#include "../geometry/GeometryManager.hpp"
-#include "../messenger/Messenger.hpp"
+#include "core/AllPix.hpp"
+#include "core/config/ConfigManager.hpp"
+#include "core/geometry/GeometryManager.hpp"
+#include "core/messenger/Messenger.hpp"
 
 using namespace allpix;
 
