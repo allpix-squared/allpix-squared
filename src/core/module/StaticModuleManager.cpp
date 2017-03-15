@@ -42,9 +42,9 @@ void StaticModuleManager::load(AllPix* allpix) {
         std::vector<std::pair<ModuleIdentifier, std::unique_ptr<Module>>> mod_list = factory->create();
 
         for(auto&& id_mod : mod_list) {
-            std::unique_ptr<Module> &mod = id_mod.second;
-            ModuleIdentifier identifier = id_mod.first;
-            
+            std::unique_ptr<Module>& mod = id_mod.second;
+            ModuleIdentifier         identifier = id_mod.first;
+
             // initialize the module
             // FIXME: should move to the constructor
 
@@ -53,7 +53,7 @@ void StaticModuleManager::load(AllPix* allpix) {
             // add the module to the run queue
             // add_to_run_queue(mod.get());
 
-            auto             iter = id_to_module_.find(identifier);
+            auto iter = id_to_module_.find(identifier);
             if(iter != id_to_module_.end()) {
                 // unique name already exists, check if its needs to be replaced
                 if(iter->first.getPriority() > identifier.getPriority()) {

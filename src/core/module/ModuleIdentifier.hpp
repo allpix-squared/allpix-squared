@@ -15,15 +15,15 @@ namespace allpix {
 
         // name and priority
         std::string getUniqueName() const { return identifier_; }
-        int getPriority() const { return prio_; }
-        
+        int         getPriority() const { return prio_; }
+
         // operator overloading (NOTE: identifiers are tested only one name - different priorities are equal!)
-        bool operator ==(const ModuleIdentifier& other) const { return identifier_ == other.identifier_; }
-        bool operator !=(const ModuleIdentifier& other) const { return identifier_ != other.identifier_; }
-        bool operator <(const ModuleIdentifier& other) const  { return identifier_ < other.identifier_; }
-        bool operator <=(const ModuleIdentifier& other) const { return identifier_ <= other.identifier_; }
-        bool operator >(const ModuleIdentifier& other) const { return identifier_ > other.identifier_; }
-        bool operator >=(const ModuleIdentifier& other) const { return identifier_ >= other.identifier_; }
+        bool operator==(const ModuleIdentifier& other) const { return identifier_ == other.identifier_; }
+        bool operator!=(const ModuleIdentifier& other) const { return identifier_ != other.identifier_; }
+        bool operator<(const ModuleIdentifier& other) const { return identifier_ < other.identifier_; }
+        bool operator<=(const ModuleIdentifier& other) const { return identifier_ <= other.identifier_; }
+        bool operator>(const ModuleIdentifier& other) const { return identifier_ > other.identifier_; }
+        bool operator>=(const ModuleIdentifier& other) const { return identifier_ >= other.identifier_; }
 
     private:
         std::string identifier_;

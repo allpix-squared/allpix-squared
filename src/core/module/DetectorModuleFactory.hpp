@@ -24,7 +24,7 @@ namespace allpix {
     public:
         // create a module
         std::vector<std::pair<ModuleIdentifier, std::unique_ptr<Module>>> create() override {
-            std::set<std::string>                all_names;
+            std::set<std::string> all_names;
             std::vector<std::pair<ModuleIdentifier, std::unique_ptr<Module>>> mod_list;
 
             // FIXME: handle name and type empty case

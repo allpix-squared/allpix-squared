@@ -69,7 +69,7 @@ namespace allpix {
         }
 
     private:
-        AllPix*          allpix_;
+        AllPix* allpix_;
 
         // FIXME: see above
         std::shared_ptr<Detector> _detector;
