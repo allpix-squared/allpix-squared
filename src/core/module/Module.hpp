@@ -32,7 +32,7 @@ namespace allpix {
 
         // Constructor and destructors
         // FIXME: register and unregister the listeners in the constructor?
-        Module(AllPix* allpix, ModuleIdentifier identifier);
+        Module(AllPix* allpix);
         virtual ~Module() = default;
 
         // FIXME: does it makes sense to copy a module
@@ -46,9 +46,6 @@ namespace allpix {
         // Set and get (eventual) linked detector (FIXME: should this be linked here?)
         void setDetector(std::shared_ptr<Detector> det) { _detector = std::move(det); }
         std::shared_ptr<Detector>                  getDetector() const { return _detector; }
-
-        // get the identifier
-        ModuleIdentifier getIdentifier() const { return identifier_; }
 
         // Get access to several services
         // FIXME: use smart pointers here
@@ -73,7 +70,6 @@ namespace allpix {
 
     private:
         AllPix*          allpix_;
-        ModuleIdentifier identifier_;
 
         // FIXME: see above
         std::shared_ptr<Detector> _detector;

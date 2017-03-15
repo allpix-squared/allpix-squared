@@ -21,7 +21,7 @@ namespace allpix {
         static const std::string name;
 
         // constructor should take a pointer to AllPix, a ModuleIdentifier and a Configuration as input
-        TestDepositReaderModule(AllPix* apx, ModuleIdentifier id, Configuration config);
+        TestDepositReaderModule(AllPix* apx, Configuration config);
         ~TestDepositReaderModule() override;
 
         // show the deposition results

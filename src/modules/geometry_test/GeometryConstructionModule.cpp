@@ -32,8 +32,8 @@ using namespace allpix;
 const std::string GeometryConstructionModule::name = "geometry_test";
 
 // constructor and destructor (defined here to allow for incomplete unique_ptr type)
-GeometryConstructionModule::GeometryConstructionModule(AllPix* apx, ModuleIdentifier id, Configuration config)
-    : Module(apx, id), config_(std::move(config)), run_manager_g4_(nullptr) {}
+GeometryConstructionModule::GeometryConstructionModule(AllPix* apx, Configuration config)
+    : Module(apx), config_(std::move(config)), run_manager_g4_(nullptr) {}
 GeometryConstructionModule::~GeometryConstructionModule() = default;
 
 // check geant4 environment variable

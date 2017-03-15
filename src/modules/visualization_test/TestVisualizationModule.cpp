@@ -18,8 +18,8 @@ using namespace allpix;
 
 const std::string TestVisualizationModule::name = "visualization_test";
 
-TestVisualizationModule::TestVisualizationModule(AllPix* apx, ModuleIdentifier id, Configuration config)
-    : Module(apx, id), config_(std::move(config)), vis_manager_g4_(nullptr) {}
+TestVisualizationModule::TestVisualizationModule(AllPix* apx, Configuration config)
+    : Module(apx), config_(std::move(config)), vis_manager_g4_(nullptr) {}
 TestVisualizationModule::~TestVisualizationModule() = default;
 
 void TestVisualizationModule::init() {

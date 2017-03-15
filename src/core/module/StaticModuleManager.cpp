@@ -39,9 +39,12 @@ void StaticModuleManager::load(AllPix* allpix) {
         std::unique_ptr<ModuleFactory> factory = get_factory(conf.getName());
         factory->setAllPix(allpix);
         factory->setConfiguration(conf);
-        std::vector<std::unique_ptr<Module>> mod_list = factory->create();
+        std::vector<std::pair<ModuleIdentifier, std::unique_ptr<Module>>> mod_list = factory->create();
 
-        for(auto&& mod : mod_list) {
+        for(auto&& id_mod : mod_list) {
+            std::unique_ptr<Module> &mod = id_mod.second;
+            ModuleIdentifier identifier = id_mod.first;
+            
             // initialize the module
             // FIXME: should move to the constructor
 
@@ -50,16 +53,16 @@ void StaticModuleManager::load(AllPix* allpix) {
             // add the module to the run queue
             // add_to_run_queue(mod.get());
 
-            ModuleIdentifier identifier = mod->getIdentifier();
-            auto             iter = identifiers_.find(identifier.getUniqueName());
-            if(iter != identifiers_.end()) {
+            auto             iter = id_to_module_.find(identifier);
+            if(iter != id_to_module_.end()) {
                 // unique name already exists, check if its needs to be replaced
-                if(iter->second.first.getPriority() > mod->getIdentifier().getPriority()) {
+                if(iter->first.getPriority() > identifier.getPriority()) {
                     // priority of new instance is higher, replace the instance
-                    modules_.erase(iter->second.second);
-                    iter = identifiers_.erase(iter);
+                    modules_.erase(iter->second);
+                    module_to_id_.erase(iter->second->get());
+                    id_to_module_.erase(iter->first);
                 } else {
-                    if(iter->second.first.getPriority() == mod->getIdentifier().getPriority()) {
+                    if(iter->first.getPriority() == identifier.getPriority()) {
                         throw AmbiguousInstantiationError(conf.getName());
                     }
                     // priority is lower just ignore
@@ -69,8 +72,8 @@ void StaticModuleManager::load(AllPix* allpix) {
 
             // insert the new module
             modules_.emplace_back(std::move(mod));
-            std::pair<ModuleIdentifier, ModuleList::iterator> pair = std::make_pair(identifier, --modules_.end());
-            identifiers_.emplace(identifier.getUniqueName(), pair);
+            id_to_module_[identifier] = --modules_.end();
+            module_to_id_.emplace(modules_.back().get(), identifier);
         }
         mod_list.clear();
 

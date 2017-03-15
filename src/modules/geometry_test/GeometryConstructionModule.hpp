@@ -22,7 +22,7 @@ namespace allpix {
         static const std::string name;
 
         // constructor should take a pointer to AllPix, a ModuleIdentifier and a Configuration as input
-        GeometryConstructionModule(AllPix* apx, ModuleIdentifier id, Configuration config);
+        GeometryConstructionModule(AllPix* apx, Configuration config);
         ~GeometryConstructionModule() override;
 
         // method that will be run where the module should do its computations and possibly dispatch their results as a

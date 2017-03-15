@@ -34,7 +34,7 @@ namespace allpix {
         Configuration& getConfiguration();
 
         // create a module
-        virtual std::vector<std::unique_ptr<Module>> create() = 0;
+        virtual std::vector<std::pair<ModuleIdentifier, std::unique_ptr<Module>>> create() = 0;
 
     private:
         Configuration conf_;

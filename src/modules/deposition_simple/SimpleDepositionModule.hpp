@@ -19,7 +19,7 @@ namespace allpix {
         static const std::string name;
 
         // constructor should take a pointer to AllPix, a ModuleIdentifier and a Configuration as input
-        SimpleDepositionModule(AllPix* apx, ModuleIdentifier id, Configuration config);
+        SimpleDepositionModule(AllPix* apx, Configuration config);
         ~SimpleDepositionModule() override;
 
         // method that will be run where the module should do its computations and possibly dispatch their results as a

@@ -38,13 +38,19 @@ namespace allpix {
 
     protected:
         using ModuleList = std::list<std::unique_ptr<Module>>;
-        using ModuleIdentifierMap = std::map<std::string, std::pair<ModuleIdentifier, ModuleList::iterator>>;
-
+        using IdentifierToModuleMap = std::map<ModuleIdentifier, ModuleList::iterator>;
+        using ModuleToIdentifierMap = std::map<Module*, ModuleIdentifier>;
+        
         // Add module to run queue
         void add_to_run_queue(Module*);
+        
+        // get module identifier
+        ModuleIdentifier get_identifier_from_module(Module*);
 
         ModuleList          modules_;
-        ModuleIdentifierMap identifiers_;
+        IdentifierToModuleMap id_to_module_;
+        ModuleToIdentifierMap module_to_id_;
+        
 
         // FIXME: if we stick to the linear run we can also just run modules directly from list
         std::queue<Module*> run_queue_;

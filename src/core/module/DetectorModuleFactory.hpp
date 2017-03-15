@@ -12,6 +12,7 @@
 
 #include "Module.hpp"
 #include "ModuleFactory.hpp"
+#include "ModuleIdentifier.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/utils/log.h"
 
@@ -22,9 +23,9 @@ namespace allpix {
     template <typename T> class DetectorModuleFactory : public ModuleFactory {
     public:
         // create a module
-        std::vector<std::unique_ptr<Module>> create() override {
+        std::vector<std::pair<ModuleIdentifier, std::unique_ptr<Module>>> create() override {
             std::set<std::string>                all_names;
-            std::vector<std::unique_ptr<Module>> mod_list;
+            std::vector<std::pair<ModuleIdentifier, std::unique_ptr<Module>>> mod_list;
 
             // FIXME: handle name and type empty case
 
@@ -36,7 +37,7 @@ namespace allpix {
                     auto det = getAllPix()->getGeometryManager()->getDetector(name);
 
                     ModuleIdentifier identifier(T::name + det.getName(), 1);
-                    mod_list.emplace_back(std::make_unique<T>(getAllPix(), identifier, conf));
+                    mod_list.emplace_back(identifier, std::make_unique<T>(getAllPix(), conf));
                     mod_list.back()->setDetector(det);
                     all_names.insert(name);
                 }
@@ -53,7 +54,7 @@ namespace allpix {
                             continue;
 
                         ModuleIdentifier identifier(T::name + det.getName(), 2);
-                        mod_list.emplace_back(std::make_unique<T>(getAllPix(), identifier, conf));
+                        mod_list.emplace_back(identifier, std::make_unique<T>(getAllPix(), conf));
                         mod_list.back()->setDetector(det);
                     }
                 }

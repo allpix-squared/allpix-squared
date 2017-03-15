@@ -14,8 +14,8 @@ using namespace allpix;
 
 const std::string TestDepositReaderModule::name = "deposit_reader_test";
 
-TestDepositReaderModule::TestDepositReaderModule(AllPix* apx, ModuleIdentifier id, Configuration config)
-    : Module(apx, id), config_(std::move(config)), deposit_messages_() {
+TestDepositReaderModule::TestDepositReaderModule(AllPix* apx, Configuration config)
+    : Module(apx), config_(std::move(config)), deposit_messages_() {
     getMessenger()->bindMulti(this, &TestDepositReaderModule::deposit_messages_);
 }
 TestDepositReaderModule::~TestDepositReaderModule() = default;

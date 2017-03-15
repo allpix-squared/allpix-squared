@@ -22,7 +22,7 @@ namespace allpix {
         static const std::string name;
 
         // constructor should take a pointer to AllPix, a ModuleIdentifier and a Configuration as input
-        TestVisualizationModule(AllPix* apx, ModuleIdentifier id, Configuration config);
+        TestVisualizationModule(AllPix* apx, Configuration config);
         ~TestVisualizationModule() override;
 
         // initializes the visualization and set necessary settings to catch all the required data
