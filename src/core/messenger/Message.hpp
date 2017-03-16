@@ -11,8 +11,8 @@ namespace allpix {
     class Message {
     public:
         // Constructor and destructors
-        Message() = default;
-        virtual ~Message() = default;
+        Message();
+        virtual ~Message();
 
         // Link message to a detector
         std::shared_ptr<Detector> getDetector() const;
