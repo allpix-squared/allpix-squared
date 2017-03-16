@@ -42,9 +42,12 @@ void ConfigReader::add(std::istream& stream, const std::string& file_name) {
 
             // parse new section
             if(line[0] == '[' && line[line.length() - 1] == ']') {
-                // add previous section
-                conf_array_.push_back(conf);
-                conf_map_[section_name].push_back(--conf_array_.end());
+                // ignore empty sections if they contain no configurations
+                if(!conf.getName().empty() || conf.countSettings() > 0) {
+                    // add previous section
+                    conf_array_.push_back(conf);
+                    conf_map_[section_name].push_back(--conf_array_.end());
+                }
 
                 // begin new section
                 section_name = std::string(line, 1, line.length() - 2);

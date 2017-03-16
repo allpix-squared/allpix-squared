@@ -49,6 +49,9 @@ namespace allpix {
 
         // FIXME: overload [] operator too
 
+        // Count amount of values
+        unsigned int countSettings() const;
+        
         // Configuration name
         std::string getName() const;
 

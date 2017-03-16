@@ -22,7 +22,7 @@ std::string Configuration::getName() const { return name_; }
 
 std::string Configuration::getText(const std::string& key) const {
     try {
-        return config_.at(key);
+        return allpix::from_string<std::string>(config_.at(key));
     } catch(std::out_of_range& e) {
         throw MissingKeyError(getName(), key);
     }
@@ -32,6 +32,10 @@ std::string Configuration::getText(const std::string& key, const std::string& de
         return def;
     }
     return getText(key);
+}
+
+unsigned int Configuration::countSettings() const {
+    return static_cast<unsigned int>(config_.size());
 }
 
 void Configuration::print(std::ostream& out) const {
