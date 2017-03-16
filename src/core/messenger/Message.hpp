@@ -5,6 +5,8 @@
 #ifndef ALLPIX_MESSAGE_H
 #define ALLPIX_MESSAGE_H
 
+#include "core/geometry/Detector.hpp"
+
 namespace allpix {
     class Message {
     public:
@@ -12,11 +14,18 @@ namespace allpix {
         Message() = default;
         virtual ~Message() = default;
 
+        // Link message to a detector
+        std::shared_ptr<Detector> getDetector() const;
+        void                      setDetector(std::shared_ptr<Detector>);
+
         // Set default copy behaviour
         Message(const Message&) = default;
         Message& operator=(const Message&) = default;
 
         // TODO: we might want to have a resolving function to get the content of a message by name for histogramming etc.
+
+    private:
+        std::shared_ptr<Detector> detector_;
     };
 }
 

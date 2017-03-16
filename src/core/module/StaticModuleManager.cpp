@@ -45,13 +45,12 @@ void StaticModuleManager::load(AllPix* allpix) {
             std::unique_ptr<Module>& mod = id_mod.second;
             ModuleIdentifier         identifier = id_mod.first;
 
-            // initialize the module
-            // FIXME: should move to the constructor
-
-            // mod->init(conf);
-
-            // add the module to the run queue
-            // add_to_run_queue(mod.get());
+            // ALERT : FIXME: THIS LOGIC SHOULD NOT BE HERE OF COURSE
+            if(conf.getName() == "geometry_test") {
+                mod->init();
+                mod->run();
+                continue;
+            }
 
             auto iter = id_to_module_.find(identifier);
             if(iter != id_to_module_.end()) {

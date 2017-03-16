@@ -27,18 +27,19 @@ namespace allpix {
             std::set<std::string> all_names;
             std::vector<std::pair<ModuleIdentifier, std::unique_ptr<Module>>> mod_list;
 
-            // FIXME: handle name and type empty case
-
             Configuration conf = getConfiguration();
+
+            // FIXME: lot of overlap here...!
+
             if(conf.has("name")) {
                 std::vector<std::string> names = conf.getArray<std::string>("name");
                 for(auto& name : names) {
-                    // only check now that the detector actually exists
                     auto det = getAllPix()->getGeometryManager()->getDetector(name);
 
-                    ModuleIdentifier identifier(T::name + det.getName(), 1);
+                    ModuleIdentifier identifier(T::name + det->getName(), 1);
                     mod_list.emplace_back(identifier, std::make_unique<T>(getAllPix(), conf));
-                    mod_list.back()->setDetector(det);
+                    // FIXME: later detector linking
+                    mod_list.back().second->setDetector(det);
                     all_names.insert(name);
                 }
             }
@@ -46,17 +47,29 @@ namespace allpix {
             if(conf.has("type")) {
                 std::vector<std::string> types = conf.getArray<std::string>("type");
                 for(auto& type : types) {
-                    std::vector<Detector> dets = getAllPix()->getGeometryManager()->getDetectorsByType(type);
+                    auto detectors = getAllPix()->getGeometryManager()->getDetectorsByType(type);
 
-                    for(auto& det : dets) {
+                    for(auto& det : detectors) {
                         // skip all that were already added by name
-                        if(all_names.find(det.getName()) != all_names.end())
+                        if(all_names.find(det->getName()) != all_names.end())
                             continue;
 
-                        ModuleIdentifier identifier(T::name + det.getName(), 2);
+                        ModuleIdentifier identifier(T::name + det->getName(), 2);
                         mod_list.emplace_back(identifier, std::make_unique<T>(getAllPix(), conf));
-                        mod_list.back()->setDetector(det);
+                        // FIXME: later detector linking
+                        mod_list.back().second->setDetector(det);
                     }
+                }
+            }
+
+            if(!conf.has("type") && !conf.has("name")) {
+                auto detectors = getAllPix()->getGeometryManager()->getDetectors();
+
+                for(auto& det : detectors) {
+                    ModuleIdentifier identifier(T::name + det->getName(), 0);
+                    mod_list.emplace_back(identifier, std::make_unique<T>(getAllPix(), conf));
+                    // FIXME: later detector linking
+                    mod_list.back().second->setDetector(det);
                 }
             }
             // mod_list.emplace_back(std::make_unique<T>(getAllPix()));
