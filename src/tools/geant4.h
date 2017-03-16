@@ -9,9 +9,9 @@
 
 #include <string>
 
+#include <G4ThreeVector.hh>
+#include <G4TwoVector.hh>
 #include <TVector3.h>
-#include "G4ThreeVector.hh"
-#include "G4TwoVector.hh"
 
 #include "core/utils/string.h"
 
@@ -57,6 +57,10 @@ namespace allpix {
 
     // convert G4 vector to ROOT vector
     inline TVector3 toROOTVector(const G4ThreeVector& vector) { return TVector3(vector.x(), vector.y(), vector.z()); }
+
+    template <typename T> G4ThreeVector toG4ThreeVector(const T& vector) {
+        return G4ThreeVector(vector.x(), vector.y(), vector.z());
+    }
 }
 
 #endif
