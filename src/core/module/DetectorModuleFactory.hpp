@@ -51,8 +51,9 @@ namespace allpix {
 
                     for(auto& det : detectors) {
                         // skip all that were already added by name
-                        if(all_names.find(det->getName()) != all_names.end())
+                        if(all_names.find(det->getName()) != all_names.end()) {
                             continue;
+                        }
 
                         ModuleIdentifier identifier(T::name + det->getName(), 2);
                         mod_list.emplace_back(identifier, std::make_unique<T>(getAllPix(), conf));

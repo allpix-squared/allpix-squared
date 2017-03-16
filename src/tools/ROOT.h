@@ -25,7 +25,7 @@ namespace allpix {
         }
         return ROOT::Math::XYZVector(vec_split[0], vec_split[1], vec_split[2]);
     }
-    template <> inline std::string to_string<ROOT::Math::XYZVector>(ROOT::Math::XYZVector vec) {
+    template <> inline std::string to_string<const ROOT::Math::XYZVector&>(const ROOT::Math::XYZVector& vec) {
         std::string res;
         res += std::to_string(vec.x());
         res += " ";
@@ -42,7 +42,7 @@ namespace allpix {
         }
         return ROOT::Math::EulerAngles(vec_split[0], vec_split[1], vec_split[2]);
     }
-    template <> inline std::string to_string<ROOT::Math::EulerAngles>(ROOT::Math::EulerAngles vec) {
+    template <> inline std::string to_string<const ROOT::Math::EulerAngles&>(const ROOT::Math::EulerAngles& vec) {
         std::string res;
         res += std::to_string(vec.Phi());
         res += " ";

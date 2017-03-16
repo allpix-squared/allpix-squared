@@ -32,14 +32,19 @@ namespace allpix {
 
     template <typename T> class ModuleDelegate : public BaseDelegate {
     public:
-        ModuleDelegate(T* obj) : obj_(obj) {}
+        explicit ModuleDelegate(T* obj) : obj_(obj) {}
         ~ModuleDelegate() override = default;
+
+        // Disallow copy
+        ModuleDelegate(const ModuleDelegate&) = delete;
+        ModuleDelegate& operator=(const ModuleDelegate&) = delete;
 
         void call(std::shared_ptr<Message> msg) const override {
             // do checks (FIXME: this is really hidden away now...)
             if(obj_->getDetector() != nullptr) {
-                if(msg->getDetector() != nullptr && obj_->getDetector()->getName() == msg->getDetector()->getName())
+                if(msg->getDetector() != nullptr && obj_->getDetector()->getName() == msg->getDetector()->getName()) {
                     execute(msg);
+                }
                 return;
             }
             execute(msg);
@@ -52,7 +57,7 @@ namespace allpix {
     };
 
     // delegate for receiver functions
-    template <typename T, typename R> class Delegate : public ModuleDelegate<int> {
+    template <typename T, typename R> class Delegate : public ModuleDelegate<T> {
     public:
         using ListenerFunction = void (T::*)(std::shared_ptr<R>);
 
