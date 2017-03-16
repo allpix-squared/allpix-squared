@@ -31,7 +31,7 @@ namespace allpix {
         // configuration for this module
         Configuration config_;
 
-        // pointer to the visualization manager
+        // list of the messages
         std::vector<std::shared_ptr<DepositionMessage>> deposit_messages_;
     };
 }

@@ -5,6 +5,7 @@
 #ifndef ALLPIX_GEOMETRY_MANAGER_H
 #define ALLPIX_GEOMETRY_MANAGER_H
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -37,6 +38,8 @@ namespace allpix {
 
     private:
         std::vector<std::shared_ptr<Detector>> detectors_;
+
+        std::set<std::string> detector_names_;
     };
 }
 

@@ -172,6 +172,12 @@ namespace allpix {
             error_message_ = "Could not find a detector with " + category + " '" + detector + "'";
         }
     };
+    class DetectorNameExistsError : public RuntimeError {
+    public:
+        explicit DetectorNameExistsError(const std::string& name) {
+            error_message_ = "Detector with name " + name + " is already registered, detector names should be unique";
+        }
+    };
 
     /*
      * Errors related to incorrect setup of a module (against the rules)

@@ -1,7 +1,6 @@
 Checks : '-*,
           boost-*,
           cert-*,
-          clang-analyzer-*,
           misc-*,
           mpi-*,
           performance-*,
@@ -9,7 +8,8 @@ Checks : '-*,
           readability-*,-readability-named-parameter,-readability-inconsistent-declaration-parameter-name,
           llvm-*,-llvm-include-order,-llvm-header-guard,-llvm-namespace-comment,
           modernize-*,-modernize-raw-string-literal,
-          cppcoreguidelines-*,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-cppcoreguidelines-pro-bounds-pointer-arithmetic'
+          cppcoreguidelines-*,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-cppcoreguidelines-pro-bounds-pointer-arithmetic,
+          clang-analyzer-*,-clang-analyzer-alpha'
 WarningsAsErrors: '*'
 HeaderFilterRegex: '*.h *.hpp'
 CheckOptions:

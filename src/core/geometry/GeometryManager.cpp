@@ -14,11 +14,18 @@
 using namespace allpix;
 
 // Constructor and destructor
-GeometryManager::GeometryManager() : detectors_() {}
+GeometryManager::GeometryManager() : detectors_(), detector_names_() {}
 GeometryManager::~GeometryManager() = default;
 
 // Add detector to the system
-void GeometryManager::addDetector(std::shared_ptr<Detector> det) { detectors_.push_back(std::move(det)); }
+void GeometryManager::addDetector(std::shared_ptr<Detector> det) {
+    if(detector_names_.find(det->getName()) != detector_names_.end()) {
+        throw DetectorNameExistsError(det->getName());
+    }
+
+    detector_names_.insert(det->getName());
+    detectors_.push_back(std::move(det));
+}
 
 // Get detectors
 std::vector<std::shared_ptr<Detector>> GeometryManager::getDetectors() const { return detectors_; }

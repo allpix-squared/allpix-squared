@@ -21,6 +21,9 @@ MACRO(option_build_module dir)
     # WARNING: RESET THE CXX CMAKE_CXX_FLAGS WITH GEANT4 OPTIONS
     SET(CMAKE_CXX_FLAGS "${SAVE_CXX_FLAGS} -DG4USE_STD11")
         
+    # ADD DEFINITIONS FOR EXPERIMENTAL EIGEN CONVERSIONS    
+    # ADD_DEFINITIONS(-DHAVE_ROOT -DHAVE_GEANT)    
+        
     ADD_LIBRARY(${dir} SHARED ${LIB_SOURCE_FILES})
 
     TARGET_LINK_LIBRARIES(${dir} AllpixCore)
@@ -39,28 +42,17 @@ ENDMACRO()
 # Option to build all modules
 OPTION(BUILD_allmodules "Build all modules?" OFF)
 
-# WARNING: THIS PREREQUISITE LOGIC SHOULD BE RESTRUCTURED
-
 ###################################
 # Prerequisistes for modules      #
 ###################################
 
-# ROOT is required for histogramming
-FIND_PACKAGE(ROOT REQUIRED COMPONENTS Geom GenVector)
-IF(NOT ROOT_FOUND)
-    MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
-    "$ source YOUR_ROOT_DIR/bin/thisroot.sh")
-ENDIF(NOT ROOT_FOUND)
-
+# WARNING: THIS PREREQUISITE LOGIC SHOULD BE RESTRUCTURED
 # Geant4 is required for geometry description and charge deposition.
 FIND_PACKAGE(Geant4 REQUIRED ui_all vis_all)
 IF(NOT Geant4_FOUND)
     MESSAGE(FATAL_ERROR "Could not find Geant4, make sure to source the Geant4 environment\n"
     "$ source YOUR_GEANT4_DIR/bin/geant4.sh")
 ENDIF(NOT Geant4_FOUND)
-
-FIND_PACKAGE(Eigen3 REQUIRED)
-INCLUDE_DIRECTORIES(SYSTEM ${EIGEN3_INCLUDE_DIR})
 
 ###################################
 # Build the required modules      #
@@ -73,3 +65,4 @@ option_build_module(geometry_test)
 option_build_module(deposition_simple)
 option_build_module(visualization_test)
 option_build_module(deposit_reader_test)
+option_build_module(detector_histogrammer_test)

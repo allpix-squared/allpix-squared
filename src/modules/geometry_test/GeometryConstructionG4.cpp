@@ -6,28 +6,29 @@
 #include "GeometryConstructionG4.hpp"
 
 //#include "G4SDManager.hh"
-#include "G4Box.hh"
-#include "G4LogicalVolume.hh"
-#include "G4NistManager.hh"
-#include "G4PVDivision.hh"
-#include "G4PVParameterised.hh"
-#include "G4PVPlacement.hh"
-#include "G4Sphere.hh"
-#include "G4SubtractionSolid.hh"
-#include "G4ThreeVector.hh"
-#include "G4Tubs.hh"
-#include "G4UnionSolid.hh"
-#include "G4UserLimits.hh"
-#include "G4VSolid.hh"
-#include "G4VisAttributes.hh"
+#include <G4Box.hh>
+#include <G4LogicalVolume.hh>
+#include <G4NistManager.hh>
+#include <G4PVDivision.hh>
+#include <G4PVParameterised.hh>
+#include <G4PVPlacement.hh>
+#include <G4Sphere.hh>
+#include <G4SubtractionSolid.hh>
+#include <G4ThreeVector.hh>
+#include <G4Tubs.hh>
+#include <G4UnionSolid.hh>
+#include <G4UserLimits.hh>
+#include <G4VSolid.hh>
+#include <G4VisAttributes.hh>
 
-#include "CLHEP/Units/SystemOfUnits.h"
+#include <CLHEP/Units/SystemOfUnits.h>
 
 #include "BumpsParameterizationG4.hpp"
 #include "DetectorModelG4.hpp"
 
 #include "core/geometry/PixelDetectorModel.hpp"
 #include "core/utils/log.h"
+#include "tools/geant4.h"
 
 using namespace CLHEP;
 using namespace std;
@@ -234,8 +235,8 @@ void GeometryConstructionG4::build_pixel_devices() {
             // make sure no offset because of bumps for PCB is calculated if chip is not included
             bump_height = 0;
         }
-        posPCB.setX(posDevice.x() - 1 * model->GetSensorXOffset());
-        posPCB.setY(posDevice.y() - 1 * model->GetSensorYOffset());
+        posPCB.setX(posDevice.x() - model->GetSensorXOffset());
+        posPCB.setY(posDevice.y() - model->GetSensorYOffset());
         posPCB.setZ(posDevice.z()
                     // wrapperHZ
                     -
@@ -288,11 +289,7 @@ void GeometryConstructionG4::build_pixel_devices() {
         model_g4->wrapper_log->SetVisAttributes(wrapperVisAtt);
 
         // WARNING: get a proper geometry lib
-        std::tuple<double, double, double> pos_tup = (*detItr)->getPosition();
-        G4ThreeVector posWrapper;
-        posWrapper[0] = std::get<0>(pos_tup);
-        posWrapper[1] = std::get<1>(pos_tup);
-        posWrapper[2] = std::get<2>(pos_tup);
+        G4ThreeVector posWrapper = toG4ThreeVector((*detItr)->getPosition()); //= (*detItr)->getPosition();
 
         // ALERT: NO WRAPPER ENHANCEMENTS
         // Apply the enhancement to the medipixes
@@ -314,14 +311,11 @@ void GeometryConstructionG4::build_pixel_devices() {
         } else {*/
         // posWrapper.setX(posWrapper.x() - sensorOffsetX );
         // posWrapper.setY(posWrapper.y() - sensorOffsetY );
-        posWrapper.setX(posWrapper.x());
-        posWrapper.setY(posWrapper.y());
-        posWrapper.setZ(posWrapper.z());
         //}
 
         // WARNING: get a proper geometry lib
-        std::tuple<double, double, double> rot_tup = (*detItr)->getOrientation();
-        auto* rotWrapper = new G4RotationMatrix(std::get<0>(rot_tup), std::get<1>(rot_tup), std::get<2>(rot_tup));
+        ROOT::Math::EulerAngles angles = (*detItr)->getOrientation();
+        auto*                   rotWrapper = new G4RotationMatrix(angles.Phi(), angles.Theta(), angles.Psi());
 
         // starting at user position --> vector pos
         model_g4->wrapper_phys = new G4PVPlacement(rotWrapper,

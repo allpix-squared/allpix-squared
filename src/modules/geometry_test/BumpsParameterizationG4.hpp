@@ -7,9 +7,9 @@
 
 #include <memory>
 
-#include "G4ThreeVector.hh"
-#include "G4VPVParameterisation.hh"
-#include "G4VPhysicalVolume.hh"
+#include <G4ThreeVector.hh>
+#include <G4VPVParameterisation.hh>
+#include <G4VPhysicalVolume.hh>
 
 #include "core/geometry/PixelDetectorModel.hpp"
 

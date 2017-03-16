@@ -51,7 +51,7 @@ namespace allpix {
 
         // Count amount of values
         unsigned int countSettings() const;
-        
+
         // Configuration name
         std::string getName() const;
 

@@ -7,26 +7,32 @@
 #include <utility>
 #include <vector>
 
-#include "G4PhysListFactory.hh"
-#include "G4RunManager.hh"
+#include <G4PhysListFactory.hh>
+#include <G4RunManager.hh>
 
-#include "G4UImanager.hh"
-#include "G4UIterminal.hh"
-#include "G4VisExecutive.hh"
-#include "G4VisManager.hh"
+#include <G4UImanager.hh>
+#include <G4UIterminal.hh>
+#include <G4VisExecutive.hh>
+#include <G4VisManager.hh>
+
+#include <Math/EulerAngles.h>
+#include <Math/Vector3D.h>
 
 #include "DetectorModelG4.hpp"
 #include "GeometryConstructionG4.hpp"
 #include "ReadGeoDescription.hpp"
 
+#include "tools/ROOT.h"
 #include "tools/geant4.h"
 
 #include "core/AllPix.hpp"
+#include "core/config/ConfigReader.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/utils/exceptions.h"
 #include "core/utils/log.h"
 
 using namespace allpix;
+using namespace ROOT;
 
 // name of the module
 const std::string GeometryConstructionModule::name = "geometry_test";
@@ -87,20 +93,34 @@ void GeometryConstructionModule::run() {
     // FIXME: check that geometry is empty or clean it before continuing
 
     // read the geometry
-    std::string file_name = config_.get<std::string>("file");
-    auto        geo_descriptions = ReadGeoDescription(file_name);
+    std::string model_file_name = config_.get<std::string>("models_file");
+    auto        geo_descriptions = ReadGeoDescription(model_file_name);
 
-    // build the detectors_
-    // FIXME: hardcoded for now
-    std::shared_ptr<DetectorModel> detector_model = geo_descriptions.getDetectorModel(
-        config_.get<std::string>("detector_name", "test")); // geo_descriptions.GetDetectorsMap()[];
-    assert(detector_model);                                 // FIXME: temporary assert
+    // construct the detectors from the config file
+    std::string   detector_file_name = config_.get<std::string>("detectors_file");
+    std::ifstream file(detector_file_name);
+    if(!file) {
+        throw allpix::ConfigFileUnavailableError(detector_file_name);
+    }
+    ConfigReader detector_config(file);
 
-    auto det1 = std::make_shared<Detector>("name1", detector_model);
-    getGeometryManager()->addDetector(det1);
+    for(auto& detector_section : detector_config.getConfigurations()) {
+        std::shared_ptr<DetectorModel> detector_model =
+            geo_descriptions.getDetectorModel(detector_section.get<std::string>("type"));
 
-    // Detector det2("name2", detector_model);
-    // getGeometryManager()->addDetector(det2);
+        if(detector_model == nullptr) {
+            throw InvalidValueError("type",
+                                    detector_section.getName(),
+                                    detector_section.getText("type"),
+                                    "detector type does not exist in registered models");
+        }
+
+        Math::XYZVector   position = detector_section.get<Math::XYZVector>("position", Math::XYZVector());
+        Math::EulerAngles orientation = detector_section.get<Math::EulerAngles>("orientation", Math::EulerAngles());
+
+        auto detector = std::make_shared<Detector>(detector_section.getName(), detector_model, position, orientation);
+        getGeometryManager()->addDetector(detector);
+    }
 
     // construct the G4 geometry
     build_g4();

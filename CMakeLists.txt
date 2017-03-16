@@ -87,6 +87,23 @@ IF(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
     SET ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-undefined,error")
 ENDIF()
 
+###################################
+# Prerequisistes for allpix       #
+###################################
+
+# WARNING: THIS PREREQUISITE LOGIC SHOULD BE RESTRUCTURED
+
+# ROOT is required for histogramming
+FIND_PACKAGE(ROOT REQUIRED COMPONENTS Geom GenVector)
+IF(NOT ROOT_FOUND)
+    MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
+    "$ source YOUR_ROOT_DIR/bin/thisroot.sh")
+ENDIF(NOT ROOT_FOUND)
+INCLUDE_DIRECTORIES(SYSTEM ${ROOT_INCLUDE_DIRS})
+
+FIND_PACKAGE(Eigen3 REQUIRED)
+INCLUDE_DIRECTORIES(SYSTEM ${EIGEN3_INCLUDE_DIR})
+
 # ADD EIGEN EXTENSIONS
 # FIXME: EXPERIMENTAL AND SHOULD BE RESTRUCTURED TO THE RIGHT INCLUDE PLACE
 ADD_DEFINITIONS(-DEIGEN_MATRIXBASE_PLUGIN="tools/eigen_matrix_extend.h")

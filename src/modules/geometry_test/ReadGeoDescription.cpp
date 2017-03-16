@@ -14,8 +14,8 @@
 #include "core/geometry/PixelDetectorModel.hpp"
 
 // FIXME: USE OUR OWN VECTOR HERE
-#include "G4ThreeVector.hh"
-#include "G4TwoVector.hh"
+#include <G4ThreeVector.hh>
+#include <G4TwoVector.hh>
 #include "tools/geant4.h"
 
 // FIXME: agree on the units to use

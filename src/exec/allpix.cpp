@@ -19,6 +19,7 @@
 // FIXME: should not be here
 #include "modules/deposit_reader_test/TestDepositReaderModule.hpp"
 #include "modules/deposition_simple/SimpleDepositionModule.hpp"
+#include "modules/detector_histogrammer_test/DetectorHistogrammerTestModule.hpp"
 #include "modules/geometry_test/GeometryConstructionModule.hpp"
 #include "modules/visualization_test/TestVisualizationModule.hpp"
 
@@ -38,6 +39,9 @@ std::unique_ptr<ModuleFactory> generator(const std::string& str) {
     }
     if(str == TestDepositReaderModule::name) {
         return std::make_unique<UniqueModuleFactory<TestDepositReaderModule>>();
+    }
+    if(str == DetectorHistogrammerModule::name) {
+        return std::make_unique<UniqueModuleFactory<DetectorHistogrammerModule>>();
     }
 
     return nullptr;

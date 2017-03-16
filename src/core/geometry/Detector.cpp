@@ -9,8 +9,14 @@
 
 using namespace allpix;
 
+Detector::Detector(std::string                    name,
+                   std::shared_ptr<DetectorModel> model,
+                   ROOT::Math::XYZVector          position,
+                   ROOT::Math::EulerAngles        orientation)
+    : name_(std::move(name)), model_(std::move(model)), position_(std::move(position)), orientation_(orientation),
+      external_models_() {}
 Detector::Detector(std::string name, std::shared_ptr<DetectorModel> model)
-    : name_(std::move(name)), model_(std::move(model)), location_(), orientation_(), external_models_() {}
+    : Detector(std::move(name), std::move(model), ROOT::Math::XYZVector(), ROOT::Math::EulerAngles()) {}
 
 // Set and get name of detector
 std::string Detector::getName() const { return name_; }
@@ -19,9 +25,9 @@ std::string Detector::getName() const { return name_; }
 std::string Detector::getType() const { return model_->getType(); }
 
 // FIXME: implement
-std::tuple<double, double, double> Detector::getPosition() const { return std::tuple<double, double, double>(); }
+ROOT::Math::XYZVector Detector::getPosition() const { return position_; }
 
-std::tuple<double, double, double> Detector::getOrientation() const { return std::tuple<double, double, double>(); }
+ROOT::Math::EulerAngles Detector::getOrientation() const { return orientation_; }
 
 // Return the model
 const std::shared_ptr<DetectorModel> Detector::getModel() const { return model_; }

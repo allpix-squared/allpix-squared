@@ -5,8 +5,8 @@
 #ifndef ALLPIX_SIMPLE_DEPOSITION_MODULE_SENSITIVE_DETECTOR_H
 #define ALLPIX_SIMPLE_DEPOSITION_MODULE_SENSITIVE_DETECTOR_H
 
-#include "G4VSensitiveDetector.hh"
-#include "G4WrapperProcess.hh"
+#include <G4VSensitiveDetector.hh>
+#include <G4WrapperProcess.hh>
 
 #include <set>
 

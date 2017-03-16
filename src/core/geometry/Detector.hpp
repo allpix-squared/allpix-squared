@@ -11,6 +11,9 @@
 #include <tuple>
 #include <typeindex>
 
+#include <Math/EulerAngles.h>
+#include <Math/Vector3D.h>
+
 #include "Detector.hpp"
 #include "DetectorModel.hpp"
 
@@ -19,6 +22,10 @@ namespace allpix {
     class Detector {
     public:
         // Constructor and destructors
+        Detector(std::string                    name,
+                 std::shared_ptr<DetectorModel> model,
+                 ROOT::Math::XYZVector          position,
+                 ROOT::Math::EulerAngles        orientation);
         Detector(std::string name, std::shared_ptr<DetectorModel> model);
         virtual ~Detector() = default;
 
@@ -31,9 +38,8 @@ namespace allpix {
         std::string getType() const;
 
         // Get location in world
-        // FIXME: use a proper vector here
-        std::tuple<double, double, double> getPosition() const;
-        std::tuple<double, double, double> getOrientation() const;
+        ROOT::Math::XYZVector   getPosition() const;
+        ROOT::Math::EulerAngles getOrientation() const;
 
         // get model description
         const std::shared_ptr<DetectorModel> getModel() const;
@@ -49,8 +55,8 @@ namespace allpix {
         std::shared_ptr<DetectorModel> model_;
 
         // FIXME: use a proper vector here
-        std::tuple<double, double, double> location_;
-        std::tuple<double, double, double> orientation_;
+        ROOT::Math::XYZVector   position_;
+        ROOT::Math::EulerAngles orientation_;
 
         std::map<std::type_index, std::shared_ptr<void>> external_models_;
     };
