@@ -84,8 +84,14 @@ G4bool SensitiveDetectorG4::ProcessHits(G4Step* step, G4TouchableHistory*) {
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void SensitiveDetectorG4::EndOfEvent(G4HCofThisEvent*) {
+    // specify detector for message
+    deposit_message_->setDetector(detector_);
+
     // send the message
-    messenger_->dispatchMessage(deposit_message_);
+    if(!deposit_message_->getDeposits().empty()) {
+        messenger_->dispatchMessage(deposit_message_);
+    }
+
     // create a new one
     deposit_message_ = std::make_shared<DepositionMessage>();
 

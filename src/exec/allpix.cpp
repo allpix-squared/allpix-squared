@@ -14,6 +14,7 @@
 #include "core/utils/exceptions.h"
 #include "core/utils/log.h"
 
+#include "core/module/DetectorModuleFactory.hpp"
 #include "core/module/UniqueModuleFactory.hpp"
 
 // FIXME: should not be here
@@ -41,7 +42,7 @@ std::unique_ptr<ModuleFactory> generator(const std::string& str) {
         return std::make_unique<UniqueModuleFactory<TestDepositReaderModule>>();
     }
     if(str == DetectorHistogrammerModule::name) {
-        return std::make_unique<UniqueModuleFactory<DetectorHistogrammerModule>>();
+        return std::make_unique<DetectorModuleFactory<DetectorHistogrammerModule>>();
     }
 
     return nullptr;
