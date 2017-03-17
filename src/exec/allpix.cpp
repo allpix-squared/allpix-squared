@@ -22,6 +22,7 @@
 #include "modules/deposition_simple/SimpleDepositionModule.hpp"
 #include "modules/detector_histogrammer_test/DetectorHistogrammerTestModule.hpp"
 #include "modules/geometry_test/GeometryConstructionModule.hpp"
+#include "modules/geometry_tgeo/TGeoBuilderModule.hpp"
 #include "modules/visualization_test/TestVisualizationModule.hpp"
 
 using namespace allpix;
@@ -31,6 +32,9 @@ std::unique_ptr<ModuleFactory> generator(const std::string& str);
 std::unique_ptr<ModuleFactory> generator(const std::string& str) {
     if(str == GeometryConstructionModule::name) {
         return std::make_unique<UniqueModuleFactory<GeometryConstructionModule>>();
+    }
+    if(str == TGeoBuilderModule::name) {
+        return std::make_unique<UniqueModuleFactory<TGeoBuilderModule>>();
     }
     if(str == SimpleDepositionModule::name) {
         return std::make_unique<UniqueModuleFactory<SimpleDepositionModule>>();

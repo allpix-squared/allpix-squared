@@ -114,6 +114,13 @@ namespace allpix {
             m_resistivity = val;
         }*/
 
+        // Coverlayer
+        // ALERT: UNSUPPORTED --> THIS DOES NOT DO ANYTHING
+        bool        IsCoverlayerON() { return false; }
+        double      GetHalfCoverlayerZ() { return 0.0; }
+        std::string GetCoverlayerMat() { return ""; }
+
+        // Pixels
         void SetNPixelsX(int val) { m_npix_x = val; };
         void SetNPixelsY(int val) { m_npix_y = val; };
         void SetNPixelsZ(int val) { m_npix_z = val; };
