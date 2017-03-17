@@ -20,6 +20,7 @@
 
 // AllPix2
 #include "core/geometry/PixelDetectorModel.hpp"
+#include "core/module/Module.hpp"
 
 /*** Names of detector parts
  * These are extremely important and should be placed in a visible way,
@@ -37,13 +38,18 @@ const TString GuardRingsName = "GuardRings";
 
 namespace allpix {
 
-    class DetectorConstruction {
+    class TGeoBuilderModule : public Module {
 
     public:
-        DetectorConstruction();
-        ~DetectorConstruction();
+        static const std::string name;
 
-        void run();
+        TGeoBuilderModule(AllPix* apx, Configuration config);
+        ~TGeoBuilderModule() override;
+
+        // Module run method
+        void run() override;
+
+        // Internal methods
         void Construct();
         void BuildPixelDevices();
         void BuildMaterialsAndMedia();
@@ -70,6 +76,8 @@ namespace allpix {
         std::map<int, TGeoTranslation> m_posVector;           // position of medipix(es), key is detector Id
         std::map<int, TGeoRotation>    m_rotVector;           // map<int, G4RotationMatrix *>
         std::map<int, TGeoTranslation> m_posVectorAppliances; //
+
+        Configuration m_config;
     };
 }
 

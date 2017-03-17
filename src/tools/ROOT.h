@@ -11,6 +11,7 @@
 
 #include <Math/EulerAngles.h>
 #include <Math/Vector3D.h>
+#include <TString.h>
 
 #include "core/utils/string.h"
 
@@ -51,6 +52,12 @@ namespace allpix {
         res += std::to_string(vec.Psi());
         return res;
     }
+
+    // FIXME: do we actually want this at all
+    template <> inline TString from_string<TString>(std::string str) {
+        return TString(allpix::from_string<std::string>(str).c_str());
+    }
+    template <> inline std::string to_string<const TString&>(const TString& str) { return std::string(str.Data()); }
 }
 
 #endif /* ALLPIX_ROOT_H */

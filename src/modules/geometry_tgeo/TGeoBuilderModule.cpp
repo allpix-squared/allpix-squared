@@ -1,14 +1,14 @@
-/// \file DetectorConstruction.cpp
-/// \brief Implementation of the DetectorConstruction class
+/// \file TGeoBuilderModule.cpp
+/// \brief Implementation of the TGeoBuilderModule class
 /// \author N. Gauvin
 
 /* Usage
-   DetectorConstruction* c = new DetectorConstruction()
+   TGeoBuilderModule* c = new TGeoBuilderModule()
 
    To be discussed :
    - Shall the algo stops if a geometry is already loaded ?
    - Do we want a CheckOverlaps option ? Or we use ROOT's tools offline on the TFile.
-   - DetectorConstruction also responsible for loading the geometry ?
+   - TGeoBuilderModule also responsible for loading the geometry ?
 
    Colors :
    kOrange+1 : experimental hall
@@ -21,7 +21,12 @@
 */
 
 // Local includes
-#include "DetectorConstruction.h"
+#include "TGeoBuilderModule.hpp"
+
+// AllPix includes
+#include "core/utils/log.h"
+#include "tools/ROOT.h"
+#include "tools/geant4.h"
 
 // Global includes
 #include <iostream>
@@ -39,17 +44,29 @@
 using namespace std;
 using namespace allpix;
 
-DetectorConstruction::DetectorConstruction()
-    : m_fillingWorldMaterial(nullptr), m_userDefinedWorldMaterial("Air"), m_userDefinedGeoOutputFile(""),
-      m_buildAppliancesFlag(false), m_Appliances_type(0), m_buildTestStructureFlag(false), m_vectorWrapperEnhancement(),
-      m_posVector(), m_rotVector(), m_posVectorAppliances() {
+/// Name of the module
+const std::string TGeoBuilderModule::name = "geometry_tgeo";
 
-    // Run the detector construction.
-    run();
+/// Constructor and destructor
+TGeoBuilderModule::TGeoBuilderModule(AllPix* apx, Configuration conf)
+    : Module(apx), m_fillingWorldMaterial(nullptr), m_userDefinedWorldMaterial("Air"), m_userDefinedGeoOutputFile(""),
+      m_buildAppliancesFlag(false), m_Appliances_type(0), m_buildTestStructureFlag(false), m_vectorWrapperEnhancement(),
+      m_posVector(), m_rotVector(), m_posVectorAppliances(), m_config(std::move(conf)) {
+    // read the configuration
+    // WARNING: these conversion go wrong without include tools/ROOT.h - prefer to use std::string
+    m_userDefinedWorldMaterial = m_config.get<TString>("world_material");
+    m_userDefinedGeoOutputFile = m_config.get<TString>("output_file", "");
+
+    m_buildAppliancesFlag = m_config.get<bool>("build_appliances", false);
+    if(m_buildAppliancesFlag) {
+        m_Appliances_type = m_config.get<int>("appliances_type");
+    }
+    m_buildTestStructureFlag = m_config.get<bool>("build_test_structures", false);
 }
+TGeoBuilderModule::~TGeoBuilderModule() = default;
 
 /// Run the detector construction.
-void DetectorConstruction::run() {
+void TGeoBuilderModule::run() {
 
     // Import and load external geometry
     // TGeoManager::Import("MyGeom.root");
@@ -58,8 +75,6 @@ void DetectorConstruction::run() {
     // Set class parameters according to users' specifications.
     // Koen...
     /* For development purpose only */
-    m_userDefinedWorldMaterial = "Air";
-    m_userDefinedGeoOutputFile = "GeoDebug";
 
     // Read detector description.
     // Koen...
@@ -93,7 +108,7 @@ void DetectorConstruction::run() {
             m_userDefinedGeoOutputFile += ".root";
         }
         gGeoManager->Export(m_userDefinedGeoOutputFile); // ("file.root","","update") ??
-        cout << "Geometry saved in " << m_userDefinedGeoOutputFile << endl;
+        LOG(DEBUG) << "Geometry saved in " << m_userDefinedGeoOutputFile;
     }
 
     // Export geometry as GDML.
@@ -103,12 +118,12 @@ void DetectorConstruction::run() {
 /*
  * The master function to construct the detector according to the user's wishes.
  */
-void DetectorConstruction::Construct() {
+void TGeoBuilderModule::Construct() {
 
     // Solids will be builds in mm, same units as AllPix1, even if ROOT assumes cm.
     // Beware when computing shape capacity or volume weight.
 
-    cout << "Starting construction of the detector geometry." << endl;
+    LOG(DEBUG) << "Starting construction of the detector geometry.";
 
     // Create the materials and media.
     BuildMaterialsAndMedia();
@@ -117,17 +132,19 @@ void DetectorConstruction::Construct() {
        The size of the world does not seem to have any effect. Even if smaller than
        the built detectors, ROOT does not complain.
     */
-    const double halfworld_dx = 100.; // mm
-    const double halfworld_dy = 100.; // mm
-    const double halfworld_dz = 100.; // mm
+    G4ThreeVector halfworld = m_config.get("half_world", G4ThreeVector(100, 100, 100));
+
+    const double halfworld_dx = halfworld.x(); // mm
+    const double halfworld_dy = halfworld.y(); // mm
+    const double halfworld_dz = halfworld.z(); // mm
 
     m_fillingWorldMaterial = gGeoManager->GetMedium(m_userDefinedWorldMaterial);
     // If null, throw an exception and stop the construction !
     if(m_fillingWorldMaterial == nullptr) {
-        cout << "Material " << m_userDefinedWorldMaterial
-             << " requested to fill the world volume does not exist ! Stopping..." << endl;
+        throw ModuleException("Material " + std::string(m_userDefinedWorldMaterial) +
+                              " requested to fill the world volume does not exist");
     } else {
-        cout << "Using " << m_userDefinedWorldMaterial << " to fill the world volume." << endl;
+        LOG(DEBUG) << "Using " << m_userDefinedWorldMaterial << " to fill the world volume.";
     }
 
     // World volume, ie the experimental hall.
@@ -151,23 +168,23 @@ void DetectorConstruction::Construct() {
         BuildTestStructure();
     }
 
-    cout << "Construction of the detector geometry successful." << endl;
+    LOG(DEBUG) << "Construction of the detector geometry successful.";
 }
 
-void DetectorConstruction::BuildPixelDevices() {
+void TGeoBuilderModule::BuildPixelDevices() {
 
-    cout << "Starting construction of the pixel detectors." << endl;
+    LOG(DEBUG) << "Starting construction of the pixel detectors.";
 
     int global_id_cnt = 0;
 
     // Big loop on pixel detectors.
-    cout << "Building " << m_geoMap.size() << " device(s) ..." << endl;
+    LOG(DEBUG) << "Building " << m_geoMap.size() << " device(s) ...";
     auto detItr = m_geoMap.begin();
     for(; detItr != m_geoMap.end(); detItr++) {
         std::shared_ptr<PixelDetectorModel> dsc = *detItr;
         int                                 id = global_id_cnt++;
         TString                             id_s = Form("_%i", id);
-        cout << "Start detector " << id << endl;
+        LOG(DEBUG) << "Start detector " << id;
 
         ///////////////////////////////////////////////////////////
         // wrapper
@@ -191,8 +208,8 @@ void DetectorConstruction::BuildPixelDevices() {
             wrapperEnhancementTransl.SetDy(m_vectorWrapperEnhancement[id].y() / 2.);
             wrapperEnhancementTransl.SetDz(m_vectorWrapperEnhancement[id].z() / 2.);
         }
-        cout << "Wrapper Dimensions [mm] : "
-             << TString::Format("hX=%3.3f hY=%3.3f hZ=%3.3f", wrapperHX, wrapperHY, wrapperHZ) << endl;
+        LOG(DEBUG) << "Wrapper Dimensions [mm] : "
+                   << TString::Format("hX=%3.3f hY=%3.3f hZ=%3.3f", wrapperHX, wrapperHY, wrapperHZ);
 
         // The wrapper logical volume
         TGeoVolume* wrapper_log =
@@ -245,7 +262,7 @@ void DetectorConstruction::BuildPixelDevices() {
         // Apply position Offset for the detector due to the enhancement
         posDevice->Add(&wrapperEnhancementTransl);
         wrapper_log->AddNode(Wafer_log, 1, posDevice);
-        // cout << "- Sensor position      : " << posDevice << endl;
+        // LOG(DEBUG) << "- Sensor position      : " << posDevice;
 
         ///////////////////////////////////////////////////////////
         // Bumps
@@ -345,7 +362,7 @@ void DetectorConstruction::BuildPixelDevices() {
                                         bump_height - dsc->GetHalfChipZ());
             posChip->Add(posDevice);
             wrapper_log->AddNode(Chip_log, 1, posChip);
-            // cout << "- Chip position        : " << posChip << endl;
+            // LOG(DEBUG) << "- Chip position        : " << posChip;
         }
 
         ///////////////////////////////////////////////////////////
@@ -370,7 +387,7 @@ void DetectorConstruction::BuildPixelDevices() {
                                                               bump_height - 2. * dsc->GetHalfChipZ() - dsc->GetHalfPCBZ());
             posPCB->Add(posDevice);
             wrapper_log->AddNode(PCB_log, 1, posPCB);
-            // cout << "- PCB position         : " << posPCB << endl;
+            // LOG(DEBUG) << "- PCB position         : " << posPCB;
 
         } // end if PCB
 
@@ -386,10 +403,10 @@ void DetectorConstruction::BuildPixelDevices() {
              */
             TGeoMedium* Cover_med = gGeoManager->GetMedium(dsc->GetCoverlayerMat().c_str());
             if(Cover_med == nullptr) {
-                cout << "Requested material for the coverlayer " << dsc->GetCoverlayerMat()
-                     << " was not found in the material database. " << endl
-                     << "Check the spelling or add it in BuildMaterialsAndMedia()." << endl
-                     << "Going on with aluminum." << endl;
+                LOG(WARNING) << "Requested material for the coverlayer " << dsc->GetCoverlayerMat()
+                             << " was not found in the material database. "
+                             << "Check the spelling or add it in BuildMaterialsAndMedia()."
+                             << "Going on with aluminum.";
                 Cover_med = gGeoManager->GetMedium("Al");
             }
 
@@ -432,10 +449,10 @@ void DetectorConstruction::BuildPixelDevices() {
 
     } // Big loop on detector descriptions
 
-    cout << "Construction of the pixel detector successful." << endl;
+    LOG(DEBUG) << "Construction of the pixel detector successful.";
 }
 
-void DetectorConstruction::BuildAppliances() {
+void TGeoBuilderModule::BuildAppliances() {
 
     // Through the comand
     // --> /allpix/extras/setAppliancePosition
@@ -449,21 +466,21 @@ void DetectorConstruction::BuildAppliances() {
     // you can enhance the size of the wrapper so daughter volumens of the wrappers
     // fit in.
 
-    cout << "Starting construction of the appliances " << m_Appliances_type << endl;
+    LOG(DEBUG) << "Starting construction of the appliances " << m_Appliances_type;
 
     // Check that appliance type is valid.
     if(m_Appliances_type < 0 || m_Appliances_type > 1) {
-        cout << "Unknown Appliance Type : " << m_Appliances_type << endl
-             << "Available types are 0,1. Set /allpix/extras/setApplianceType accordingly."
-             << "Quitting..." << endl;
+        LOG(DEBUG) << "Unknown Appliance Type : " << m_Appliances_type
+                   << "Available types are 0,1. Set /allpix/extras/setApplianceType accordingly."
+                   << "Quitting...";
         return;
     }
 
     // Check that we have some position vectors for the appliances.
     if(m_posVectorAppliances.empty()) {
-        cout << "You requested to build appliances, but no translation vector given." << endl
-             << "Please, set /allpix/extras/setAppliancePosition accordingly."
-             << "Abandonning..." << endl;
+        LOG(DEBUG) << "You requested to build appliances, but no translation vector given."
+                   << "Please, set /allpix/extras/setAppliancePosition accordingly."
+                   << "Abandonning...";
         return;
     }
 
@@ -617,22 +634,22 @@ void DetectorConstruction::BuildAppliances() {
       } // end case 1
     default:
       {
-        cout << "Unknown Appliance Type" << endl;
+        LOG(DEBUG) << "Unknown Appliance Type";
         break;
       }
 
     }
     */
 
-    cout << "Construction of the appliances successful." << endl;
+    LOG(DEBUG) << "Construction of the appliances successful.";
 }
 
-void DetectorConstruction::BuildTestStructure() {}
+void TGeoBuilderModule::BuildTestStructure() {}
 
 /*
   Create the materials and media.
  */
-void DetectorConstruction::BuildMaterialsAndMedia() {
+void TGeoBuilderModule::BuildMaterialsAndMedia() {
 
     /* Create the materials and mediums
        Important note :
@@ -728,7 +745,7 @@ void DetectorConstruction::BuildMaterialsAndMedia() {
 /*
   Dummy function that fills one GeoDsc class. For development purpose only.
  */
-void DetectorConstruction::ReadDetectorDescriptions() {
+void TGeoBuilderModule::ReadDetectorDescriptions() {
 
     // Create new GeoDsc
     auto dsc = std::make_shared<PixelDetectorModel>("tgeo_test");
