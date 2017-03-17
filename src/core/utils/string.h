@@ -40,7 +40,7 @@ namespace allpix {
             throw std::invalid_argument("string is empty");
         }
 
-        T                  ret;
+        T ret;
         std::istringstream stream(str);
         stream >> ret;
 
@@ -85,7 +85,7 @@ namespace allpix {
         delims += "\'\"";
 
         std::size_t prev = 0, sprev = 0, pos;
-        char        ins = 0;
+        char ins = 0;
         while((pos = str.find_first_of(delims, sprev)) != std::string::npos) {
             sprev = pos + 1;
 

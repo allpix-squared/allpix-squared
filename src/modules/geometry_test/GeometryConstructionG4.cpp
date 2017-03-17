@@ -39,13 +39,15 @@ using namespace allpix;
 GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo, G4ThreeVector world_size)
     : geo_manager_(geo), world_size_(world_size), world_material_(nullptr), world_log_(nullptr), world_phys_(nullptr),
       user_limits_(nullptr) {}
-GeometryConstructionG4::~GeometryConstructionG4() { delete user_limits_; }
+GeometryConstructionG4::~GeometryConstructionG4() {
+    delete user_limits_;
+}
 
 // Build geometry
 G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     // Materials
     // vacuum (FIXME: useless code, only here for later)
-    double      z, a, density;
+    double z, a, density;
     G4Material* vacuum = new G4Material("Vacuum", z = 1, a = 1.01 * g / mole, density = 0.0001 * g / cm3);
 
     // air
@@ -168,7 +170,7 @@ void GeometryConstructionG4::build_pixel_devices() {
     auto detItr = detectors.begin();
     for(; detItr != detectors.end(); detItr++) {
         // get pointers for the model of the detector
-        std::shared_ptr<DetectorModelG4>    model_g4 = std::make_shared<DetectorModelG4>();
+        std::shared_ptr<DetectorModelG4> model_g4 = std::make_shared<DetectorModelG4>();
         std::shared_ptr<PixelDetectorModel> model = std::dynamic_pointer_cast<PixelDetectorModel>((*detItr)->getModel());
 
         // ignore all non-pixel detectors
@@ -181,7 +183,7 @@ void GeometryConstructionG4::build_pixel_devices() {
         // NOTE: create temporary internal integer
         // FIXME: this is not necessary unique! if this is necessary generate it internally!
         std::hash<std::string> hash_func;
-        int                    temp_g4_id = static_cast<int>(hash_func((*detItr)->getName()));
+        int temp_g4_id = static_cast<int>(hash_func((*detItr)->getName()));
 
         LOG(DEBUG) << "start creating G4 detector " << (*detItr)->getName() << " (" << temp_g4_id << ")";
 
@@ -315,7 +317,7 @@ void GeometryConstructionG4::build_pixel_devices() {
 
         // WARNING: get a proper geometry lib
         ROOT::Math::EulerAngles angles = (*detItr)->getOrientation();
-        auto*                   rotWrapper = new G4RotationMatrix(angles.Phi(), angles.Theta(), angles.Psi());
+        auto* rotWrapper = new G4RotationMatrix(angles.Phi(), angles.Theta(), angles.Psi());
 
         // starting at user position --> vector pos
         model_g4->wrapper_phys = new G4PVPlacement(rotWrapper,
@@ -388,10 +390,10 @@ void GeometryConstructionG4::build_pixel_devices() {
         // construct the bumps only if necessary
         if(model->GetBumpHeight() != 0.0 and model->GetHalfChipZ() != 0) {
             // define types from parameters
-            G4double  bump_radius = model->GetBumpRadius();
-            G4double  bump_dr = model->GetBumpDr();
+            G4double bump_radius = model->GetBumpRadius();
+            G4double bump_dr = model->GetBumpDr();
             G4Sphere* aBump_Sphere = new G4Sphere(BumpName.first + "sphere", 0, bump_radius, 0, 360 * deg, 0, 360 * deg);
-            G4Tubs*   aBump_Tube =
+            G4Tubs* aBump_Tube =
                 new G4Tubs(BumpName.first + "Tube", 0., bump_radius - bump_dr, bump_height / 2., 0., 360 * deg);
             auto* aBump = new G4UnionSolid(BumpName.first, aBump_Sphere, aBump_Tube);
 

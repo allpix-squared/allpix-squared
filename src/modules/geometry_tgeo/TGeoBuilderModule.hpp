@@ -61,8 +61,8 @@ namespace allpix {
         void ReadDetectorDescriptions(); /// Debugging only !
 
         // Global variables
-        TGeoMedium*                                      m_fillingWorldMaterial; /// Medium to fill the World.
-        std::vector<std::shared_ptr<PixelDetectorModel>> m_geoMap;               /// the detector descriptions
+        TGeoMedium* m_fillingWorldMaterial;                        /// Medium to fill the World.
+        std::vector<std::shared_ptr<PixelDetectorModel>> m_geoMap; /// the detector descriptions
 
         // User defined parameters
         /*
@@ -73,12 +73,12 @@ namespace allpix {
 
         TString m_userDefinedWorldMaterial;
         TString m_userDefinedGeoOutputFile;
-        bool    m_buildAppliancesFlag;
-        int     m_Appliances_type;
-        bool    m_buildTestStructureFlag;
-        std::map<int, TVector3>        m_vectorWrapperEnhancement;
+        bool m_buildAppliancesFlag;
+        int m_Appliances_type;
+        bool m_buildTestStructureFlag;
+        std::map<int, TVector3> m_vectorWrapperEnhancement;
         std::map<int, TGeoTranslation> m_posVector;           // position of medipix(es), key is detector Id
-        std::map<int, TGeoRotation>    m_rotVector;           // map<int, G4RotationMatrix *>
+        std::map<int, TGeoRotation> m_rotVector;              // map<int, G4RotationMatrix *>
         std::map<int, TGeoTranslation> m_posVectorAppliances; //
 
         Configuration m_config;

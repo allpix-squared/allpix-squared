@@ -47,7 +47,7 @@ namespace allpix {
         // get module identifier
         ModuleIdentifier get_identifier_from_module(Module*);
 
-        ModuleList            modules_;
+        ModuleList modules_;
         IdentifierToModuleMap id_to_module_;
         ModuleToIdentifierMap module_to_id_;
 

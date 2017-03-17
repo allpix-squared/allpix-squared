@@ -2,9 +2,9 @@
 Language: Cpp
 BasedOnStyle: LLVM
 AccessModifierOffset: -4
-AlignConsecutiveDeclarations: true
+AlignConsecutiveDeclarations: false
 AllowShortIfStatementsOnASingleLine: false
-AllowShortFunctionsOnASingleLine: All
+AllowShortFunctionsOnASingleLine: Inline
 BinPackParameters: false
 BinPackArguments: false
 ColumnLimit: 125

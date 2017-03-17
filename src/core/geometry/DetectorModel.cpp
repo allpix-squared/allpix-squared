@@ -9,6 +9,10 @@
 
 using namespace allpix;
 
-std::string DetectorModel::getType() const { return type_; }
+std::string DetectorModel::getType() const {
+    return type_;
+}
 
-void DetectorModel::setType(std::string type) { type_ = std::move(type); }
+void DetectorModel::setType(std::string type) {
+    type_ = std::move(type);
+}

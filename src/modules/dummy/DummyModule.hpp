@@ -20,9 +20,9 @@ public:
     ~TestAlgorithm() {}
 
     // Functions
-    void       initialise(Parameters*);
+    void initialise(Parameters*);
     StatusCode run(Clipboard*);
-    void       finalise();
+    void finalise();
 };
 
 #endif // TESTALGORITHM_H

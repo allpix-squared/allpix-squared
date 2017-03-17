@@ -11,23 +11,23 @@ namespace allpix {
     // FIXME: we should either both make the detector model (PixelDetectorModel) classes or both structs
     struct DetectorModelG4 {
         // Wrapper for the whole detector in the world model (invisible)
-        G4LogicalVolume*   wrapper_log;
+        G4LogicalVolume* wrapper_log;
         G4VPhysicalVolume* wrapper_phys;
 
         // Volume containing the PCB for all sensors (green)
-        G4LogicalVolume*   PCB_log;
+        G4LogicalVolume* PCB_log;
         G4VPhysicalVolume* PCB_phys;
 
         // Volume containing the sensitive sensors (blue)
-        G4LogicalVolume*   box_log;
+        G4LogicalVolume* box_log;
         G4VPhysicalVolume* box_phys;
 
         // Volume containing the chips for each sensor (gray)
-        G4LogicalVolume*   chip_log;
+        G4LogicalVolume* chip_log;
         G4VPhysicalVolume* chip_phys;
 
         // Volume box containing the bumps between the sensor and the chip (yellow)
-        G4LogicalVolume*   bumps_log;
+        G4LogicalVolume* bumps_log;
         G4VPhysicalVolume* bumps_phys;
 
         // G4LogicalVolume*    bumps_slice_log;
@@ -35,7 +35,7 @@ namespace allpix {
         G4LogicalVolume* bumps_cell_log;
 
         // Volume containing the guard rings around the sensor (green)
-        G4LogicalVolume*   guard_rings_log;
+        G4LogicalVolume* guard_rings_log;
         G4VPhysicalVolume* guard_rings_phys;
 
         // G4LogicalVolume*    coverlayer_log;

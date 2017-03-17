@@ -57,10 +57,10 @@ void SimpleDepositionModule::run() {
             "particle_type", config_.getName(), config_.getText("particle_type"), "particle type does not exist");
     }
 
-    int           part_amount = config_.get<int>("particle_amount");
+    int part_amount = config_.get<int>("particle_amount");
     G4ThreeVector part_position = config_.get<G4ThreeVector>("particle_position");
     G4ThreeVector part_momentum = config_.get<G4ThreeVector>("particle_momentum");
-    double        part_energy = config_.get<double>("particle_energy");
+    double part_energy = config_.get<double>("particle_energy");
 
     GeneratorActionG4* generator = new GeneratorActionG4(
         part_amount, particle, part_position * CLHEP::um, part_momentum * CLHEP::um, part_energy * CLHEP::keV);

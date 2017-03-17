@@ -32,4 +32,6 @@ GeneratorActionG4::GeneratorActionG4(
 GeneratorActionG4::~GeneratorActionG4() = default;
 
 // generate the particles
-void GeneratorActionG4::GeneratePrimaries(G4Event* event) { particleGun_->GeneratePrimaryVertex(event); }
+void GeneratorActionG4::GeneratePrimaries(G4Event* event) {
+    particleGun_->GeneratePrimaryVertex(event);
+}

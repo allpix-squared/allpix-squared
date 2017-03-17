@@ -182,8 +182,8 @@ void TGeoBuilderModule::BuildPixelDevices() {
     auto detItr = m_geoMap.begin();
     for(; detItr != m_geoMap.end(); detItr++) {
         std::shared_ptr<PixelDetectorModel> dsc = *detItr;
-        int                                 id = global_id_cnt++;
-        TString                             id_s = Form("_%i", id);
+        int id = global_id_cnt++;
+        TString id_s = Form("_%i", id);
         LOG(DEBUG) << "Start detector " << id;
 
         ///////////////////////////////////////////////////////////
@@ -222,7 +222,7 @@ void TGeoBuilderModule::BuildPixelDevices() {
         // Apply wrapper enhancement
         posWrapper.Add(&wrapperEnhancementTransl);
         TGeoVolume* expHall_log = gGeoManager->GetTopVolume();
-        auto*       det_tr = new TGeoCombiTrans(posWrapper, m_rotVector[id]);
+        auto* det_tr = new TGeoCombiTrans(posWrapper, m_rotVector[id]);
         det_tr->SetName("DetPlacement" + id_s);
         expHall_log->AddNode(wrapper_log, 1, det_tr);
 
@@ -328,8 +328,8 @@ void TGeoBuilderModule::BuildPixelDevices() {
                 for(int iy = 0; iy < dsc->GetNPixelsY(); ++iy) {
 
                     // Positions
-                    double  XPos = (ix * 2 + 1) * dsc->GetHalfPixelX() - dsc->GetHalfSensorX() + dsc->GetBumpOffsetX();
-                    double  YPos = (iy * 2 + 1) * dsc->GetHalfPixelY() - dsc->GetHalfSensorY() + dsc->GetBumpOffsetY();
+                    double XPos = (ix * 2 + 1) * dsc->GetHalfPixelX() - dsc->GetHalfSensorX() + dsc->GetBumpOffsetX();
+                    double YPos = (iy * 2 + 1) * dsc->GetHalfPixelY() - dsc->GetHalfSensorY() + dsc->GetBumpOffsetY();
                     TString xy_s = Form("_%i_%i", ix, iy);
                     TGeoTranslation* posBump = new TGeoTranslation("LocalBumpTranslation" + id_s + xy_s, XPos, YPos, 0.);
 
@@ -488,7 +488,7 @@ void TGeoBuilderModule::BuildAppliances() {
     TGeoMedium* Al = gGeoManager->GetMedium("Al");
 
     // Build shapes and translations according to the requested type.
-    TString          comp;                 // The composition of shapes.
+    TString comp;                          // The composition of shapes.
     TGeoTranslation* ApplTransl = nullptr; // Type-depending Translation vector.
     if(m_Appliances_type == 0) {
 
@@ -533,7 +533,7 @@ void TGeoBuilderModule::BuildAppliances() {
     // Loop on the given position vectors and position the volumes.
     auto aplItr = m_posVectorAppliances.begin();
     for(; aplItr != m_posVectorAppliances.end(); aplItr++) {
-        int     detId = (*aplItr).first;
+        int detId = (*aplItr).first;
         TString id_s = "_" + std::to_string(detId);
 
         // Translation vectors, with respect to the wrapper.
@@ -664,10 +664,10 @@ void TGeoBuilderModule::BuildMaterialsAndMedia() {
 
     // Vacuum
     // G4Material("Vacuum", z=1 , a=1.01*g/mole, density= 0.0001*g/cm3);
-    int    z = 1;
+    int z = 1;
     double a = 1.01;         // g/mole
     double density = 0.0001; // g/cm3
-    auto*  vacuum_mat = new TGeoMaterial("Vacuum", a, z, density);
+    auto* vacuum_mat = new TGeoMaterial("Vacuum", a, z, density);
     new TGeoMedium("Vacuum", 1, vacuum_mat);
 
     // Air
@@ -712,15 +712,15 @@ void TGeoBuilderModule::BuildMaterialsAndMedia() {
        AllPix1 uses "G4_Si"
     */
     TGeoElementTable* table = gGeoManager->GetElementTable();
-    TGeoElement*      Si = table->FindElement("Si");
-    auto*             Si_mat = new TGeoMaterial("Si", Si, density = 2.330);
+    TGeoElement* Si = table->FindElement("Si");
+    auto* Si_mat = new TGeoMaterial("Si", Si, density = 2.330);
     new TGeoMedium("Si", ++numed, Si_mat);
 
     /* Epoxy
        AllPix1 uses G4_PLEXIGLASS
     */
     TGeoElement* H = table->FindElement("H");
-    auto*        plexiglass_mat = new TGeoMixture("Plexiglass", 3, density = 1.19);
+    auto* plexiglass_mat = new TGeoMixture("Plexiglass", 3, density = 1.19);
     plexiglass_mat->AddElement(C, 5);
     plexiglass_mat->AddElement(H, 8);
     plexiglass_mat->AddElement(O, 2);
@@ -738,7 +738,7 @@ void TGeoBuilderModule::BuildMaterialsAndMedia() {
        AllPix1 uses G4_Al
     */
     TGeoElement* Al = table->FindElement("Al");
-    auto*        Al_mat = new TGeoMaterial("Al", Al, density = 2.699);
+    auto* Al_mat = new TGeoMaterial("Al", Al, density = 2.699);
     new TGeoMedium("Al", ++numed, Al_mat);
 }
 

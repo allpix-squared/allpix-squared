@@ -29,7 +29,7 @@ namespace allpix {
     public:
         Exception() : error_message_("Unspecified error") {}
         explicit Exception(std::string what_arg) : std::exception(), error_message_(std::move(what_arg)) {}
-        const char*                    what() const noexcept override { return error_message_.c_str(); }
+        const char* what() const noexcept override { return error_message_.c_str(); }
 
     protected:
         std::string error_message_;
@@ -54,20 +54,20 @@ namespace allpix {
     // FIXME: this should probably be InvalidValueTypeError (see below)
     class InvalidKeyError : public ConfigurationError {
     public:
-        InvalidKeyError(const std::string&    key,
-                        const std::string&    section,
-                        const std::string&    value,
+        InvalidKeyError(const std::string& key,
+                        const std::string& section,
+                        const std::string& value,
                         const std::type_info& type,
-                        const std::string&    reason) {
+                        const std::string& reason) {
             error_message_ = "Could not convert value '" + value + "' of key '" + key + "' in section '" + section +
                              "' to type " + allpix::demangle(type.name());
             if(!reason.empty()) {
                 error_message_ += ": " + reason;
             }
         }
-        InvalidKeyError(const std::string&    key,
-                        const std::string&    section,
-                        const std::string&    value,
+        InvalidKeyError(const std::string& key,
+                        const std::string& section,
+                        const std::string& value,
                         const std::type_info& type)
             : InvalidKeyError(key, section, value, type, "") {}
     };

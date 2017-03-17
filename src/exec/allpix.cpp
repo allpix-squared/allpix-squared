@@ -67,9 +67,9 @@ int main(int argc, const char* argv[]) {
         LOG(INFO) << "Set log level: " << Log::getStringFromLevel(log_level);
 
         // Construct managers (FIXME: move some initialization to AllPix)
-        std::unique_ptr<GeometryManager>     geo = std::make_unique<GeometryManager>();
+        std::unique_ptr<GeometryManager> geo = std::make_unique<GeometryManager>();
         std::unique_ptr<StaticModuleManager> mod = std::make_unique<StaticModuleManager>(&generator);
-        std::unique_ptr<ConfigManager>       conf = std::make_unique<ConfigManager>(file_name);
+        std::unique_ptr<ConfigManager> conf = std::make_unique<ConfigManager>(file_name);
 
         // Construct main AllPix object
         std::unique_ptr<AllPix> apx = std::make_unique<AllPix>(std::move(conf), std::move(mod), std::move(geo));

@@ -30,4 +30,6 @@ void ModuleManager::finalize() {
 }
 
 // Add a module to the run queue (NOTE: this can just be inlined if it remains simple)
-void ModuleManager::add_to_run_queue(Module* mod) { run_queue_.push(mod); }
+void ModuleManager::add_to_run_queue(Module* mod) {
+    run_queue_.push(mod);
+}

@@ -16,9 +16,13 @@ Configuration::Configuration() : Configuration("") {}
 
 Configuration::Configuration(std::string name) : name_(std::move(name)), config_() {}
 
-bool Configuration::has(const std::string& key) const { return config_.find(key) != config_.cend(); }
+bool Configuration::has(const std::string& key) const {
+    return config_.find(key) != config_.cend();
+}
 
-std::string Configuration::getName() const { return name_; }
+std::string Configuration::getName() const {
+    return name_;
+}
 
 std::string Configuration::getText(const std::string& key) const {
     try {
@@ -34,7 +38,9 @@ std::string Configuration::getText(const std::string& key, const std::string& de
     return getText(key);
 }
 
-unsigned int Configuration::countSettings() const { return static_cast<unsigned int>(config_.size()); }
+unsigned int Configuration::countSettings() const {
+    return static_cast<unsigned int>(config_.size());
+}
 
 void Configuration::print(std::ostream& out) const {
     for(auto& element : config_) {

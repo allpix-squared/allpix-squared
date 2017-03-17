@@ -21,11 +21,11 @@ namespace allpix {
         ChargeDeposit(TVector3 position, double energy);
 
         TVector3 getPosition();
-        double   getEnergy();
+        double getEnergy();
 
     private:
         TVector3 position_;
-        double   energy_;
+        double energy_;
     };
 
     // message carrying all the deposits

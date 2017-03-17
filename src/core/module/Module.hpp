@@ -45,13 +45,13 @@ namespace allpix {
 
         // Set and get (eventual) linked detector (FIXME: should this be linked here?)
         void setDetector(std::shared_ptr<Detector> det) { _detector = std::move(det); }
-        std::shared_ptr<Detector>                  getDetector() const { return _detector; }
+        std::shared_ptr<Detector> getDetector() const { return _detector; }
 
         // Get access to several services
         // FIXME: use smart pointers here
-        AllPix*          getAllPix();
-        Messenger*       getMessenger();
-        ModuleManager*   getModuleManager();
+        AllPix* getAllPix();
+        Messenger* getMessenger();
+        ModuleManager* getModuleManager();
         GeometryManager* getGeometryManager();
 
         // Initialize the module and pass the configuration etc.

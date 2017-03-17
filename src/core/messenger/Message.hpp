@@ -16,7 +16,7 @@ namespace allpix {
 
         // Link message to a detector
         std::shared_ptr<Detector> getDetector() const;
-        void                      setDetector(std::shared_ptr<Detector>);
+        void setDetector(std::shared_ptr<Detector>);
 
         // Set default copy behaviour
         Message(const Message&) = default;

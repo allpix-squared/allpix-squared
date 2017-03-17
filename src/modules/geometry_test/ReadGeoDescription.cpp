@@ -37,7 +37,7 @@ ReadGeoDescription::ReadGeoDescription(std::string file_name) : models_() {
 }
 
 std::shared_ptr<PixelDetectorModel> ReadGeoDescription::parse_config(const Configuration& config) {
-    std::string                         model_name = config.getName();
+    std::string model_name = config.getName();
     std::shared_ptr<PixelDetectorModel> model = std::make_shared<PixelDetectorModel>(model_name);
 
     // pixel amount

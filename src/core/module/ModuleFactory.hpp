@@ -26,7 +26,7 @@ namespace allpix {
         ModuleFactory& operator=(const ModuleFactory&) = delete;
 
         // set AllPix object
-        void    setAllPix(AllPix*);
+        void setAllPix(AllPix*);
         AllPix* getAllPix();
 
         // set configuration
@@ -38,7 +38,7 @@ namespace allpix {
 
     private:
         Configuration conf_;
-        AllPix*       apx_;
+        AllPix* apx_;
     };
 }
 

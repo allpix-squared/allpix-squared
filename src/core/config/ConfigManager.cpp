@@ -10,7 +10,9 @@ using namespace allpix;
 
 // Constructors and destructor
 ConfigManager::ConfigManager() : reader_(), file_names_() {}
-ConfigManager::ConfigManager(std::string file_name) : ConfigManager() { addFile(file_name); }
+ConfigManager::ConfigManager(std::string file_name) : ConfigManager() {
+    addFile(file_name);
+}
 ConfigManager::~ConfigManager() = default;
 
 // Add a new settings file
@@ -40,13 +42,19 @@ void ConfigManager::reload() {
 }
 
 // Clear the current config
-void ConfigManager::clear() { reader_.clear(); }
+void ConfigManager::clear() {
+    reader_.clear();
+}
 
 // Check if configuration key exists at least once
-bool ConfigManager::hasConfiguration(const std::string& name) const { return reader_.hasConfiguration(name); }
+bool ConfigManager::hasConfiguration(const std::string& name) const {
+    return reader_.hasConfiguration(name);
+}
 
 // Count the amount of configurations of a given name
-unsigned int ConfigManager::countConfigurations(const std::string& name) const { return reader_.countConfigurations(name); }
+unsigned int ConfigManager::countConfigurations(const std::string& name) const {
+    return reader_.countConfigurations(name);
+}
 
 // Return configuration by name
 std::vector<Configuration> ConfigManager::getConfigurations(const std::string& name) const {
@@ -54,4 +62,6 @@ std::vector<Configuration> ConfigManager::getConfigurations(const std::string& n
 }
 
 // return all configurations
-std::vector<Configuration> ConfigManager::getConfigurations() const { return reader_.getConfigurations(); }
+std::vector<Configuration> ConfigManager::getConfigurations() const {
+    return reader_.getConfigurations();
+}

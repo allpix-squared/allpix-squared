@@ -35,7 +35,7 @@ void Messenger::dispatchMessage(const std::shared_ptr<Message>& msg, const std::
     bool send = false;
 
     // create type identifier from typeid
-    const Message*  inst = msg.get();
+    const Message* inst = msg.get();
     std::type_index type_idx = typeid(*inst);
 
     // NOTE: we are not sending messages with unspecified names to everyone listening

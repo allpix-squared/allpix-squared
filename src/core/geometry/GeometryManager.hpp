@@ -25,7 +25,7 @@ namespace allpix {
 
         // Get internal representation
         // FIXME: this is not very elegant, but it is probably the only option (possible use a in-between type?)
-        void  setInternalDescription(std::string, void*);
+        void setInternalDescription(std::string, void*);
         void* getInternalDescription(std::string);
 
         // Add detector to the system
@@ -33,7 +33,7 @@ namespace allpix {
 
         // Get detectors
         std::vector<std::shared_ptr<Detector>> getDetectors() const;
-        std::shared_ptr<Detector>              getDetector(const std::string&) const;
+        std::shared_ptr<Detector> getDetector(const std::string&) const;
         std::vector<std::shared_ptr<Detector>> getDetectorsByType(const std::string&) const;
 
     private:

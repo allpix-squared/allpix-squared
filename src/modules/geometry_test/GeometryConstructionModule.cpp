@@ -94,10 +94,10 @@ void GeometryConstructionModule::run() {
 
     // read the geometry
     std::string model_file_name = config_.get<std::string>("models_file");
-    auto        geo_descriptions = ReadGeoDescription(model_file_name);
+    auto geo_descriptions = ReadGeoDescription(model_file_name);
 
     // construct the detectors from the config file
-    std::string   detector_file_name = config_.get<std::string>("detectors_file");
+    std::string detector_file_name = config_.get<std::string>("detectors_file");
     std::ifstream file(detector_file_name);
     if(!file) {
         throw allpix::ConfigFileUnavailableError(detector_file_name);
@@ -115,7 +115,7 @@ void GeometryConstructionModule::run() {
                                     "detector type does not exist in registered models");
         }
 
-        Math::XYZVector   position = detector_section.get<Math::XYZVector>("position", Math::XYZVector());
+        Math::XYZVector position = detector_section.get<Math::XYZVector>("position", Math::XYZVector());
         Math::EulerAngles orientation = detector_section.get<Math::EulerAngles>("orientation", Math::EulerAngles());
 
         auto detector = std::make_shared<Detector>(detector_section.getName(), detector_model, position, orientation);
@@ -144,7 +144,7 @@ void GeometryConstructionModule::build_g4() {
     // set the physics list
     // FIXME: set a good default physics list
     config_.setDefault("physics_list", "QGSP_BERT");
-    G4PhysListFactory   physListFactory;
+    G4PhysListFactory physListFactory;
     G4VUserPhysicsList* physicsList = physListFactory.GetReferencePhysList(config_.get<std::string>("physics_list"));
     if(physicsList == nullptr) {
         // FIXME: better syntax for exceptions here

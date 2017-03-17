@@ -28,7 +28,9 @@ void GeometryManager::addDetector(std::shared_ptr<Detector> det) {
 }
 
 // Get detectors
-std::vector<std::shared_ptr<Detector>> GeometryManager::getDetectors() const { return detectors_; }
+std::vector<std::shared_ptr<Detector>> GeometryManager::getDetectors() const {
+    return detectors_;
+}
 
 // FIXME: this is not a very nice way to do this
 std::shared_ptr<Detector> GeometryManager::getDetector(const std::string& name) const {

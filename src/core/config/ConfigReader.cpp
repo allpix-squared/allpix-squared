@@ -11,13 +11,17 @@ using namespace allpix;
 // Constructors and destructor
 ConfigReader::ConfigReader() : conf_map_(), conf_array_() {}
 ConfigReader::ConfigReader(std::istream& stream) : ConfigReader(stream, "") {}
-ConfigReader::ConfigReader(std::istream& stream, const std::string& name) : ConfigReader() { add(stream, name); }
+ConfigReader::ConfigReader(std::istream& stream, const std::string& name) : ConfigReader() {
+    add(stream, name);
+}
 ConfigReader::~ConfigReader() = default;
 
 // Add stream and construct the config
-void ConfigReader::add(std::istream& stream) { add(stream, ""); }
+void ConfigReader::add(std::istream& stream) {
+    add(stream, "");
+}
 void ConfigReader::add(std::istream& stream, const std::string& file_name) {
-    std::string   section_name;
+    std::string section_name;
     Configuration conf(section_name);
 
     int line_num = 0;
@@ -60,7 +64,7 @@ void ConfigReader::add(std::istream& stream, const std::string& file_name) {
             std::string key = trim(std::string(line, 0, equals_pos));
 
             std::string value = trim(std::string(line, equals_pos + 1));
-            char        ins = 0;
+            char ins = 0;
             for(size_t i = 0; i < value.size(); ++i) {
                 if(value[i] == '\'' || value[i] == '\"') {
                     if(ins != 0) {
@@ -91,7 +95,9 @@ void ConfigReader::clear() {
 }
 
 // Check if configuration key exists at least once
-bool ConfigReader::hasConfiguration(const std::string& name) const { return conf_map_.find(name) != conf_map_.end(); }
+bool ConfigReader::hasConfiguration(const std::string& name) const {
+    return conf_map_.find(name) != conf_map_.end();
+}
 
 // Count the amount of configurations of a given name
 unsigned int ConfigReader::countConfigurations(const std::string& name) const {

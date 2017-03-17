@@ -116,8 +116,8 @@ namespace allpix {
 
         // Coverlayer
         // ALERT: UNSUPPORTED --> THIS DOES NOT DO ANYTHING
-        bool        IsCoverlayerON() { return false; }
-        double      GetHalfCoverlayerZ() { return 0.0; }
+        bool IsCoverlayerON() { return false; }
+        double GetHalfCoverlayerZ() { return 0.0; }
         std::string GetCoverlayerMat() { return ""; }
 
         // Pixels

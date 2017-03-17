@@ -10,10 +10,18 @@ using namespace allpix;
 ModuleFactory::ModuleFactory() : conf_(), apx_(nullptr) {}
 ModuleFactory::~ModuleFactory() = default;
 
-void ModuleFactory::setAllPix(AllPix* allpix) { apx_ = allpix; }
+void ModuleFactory::setAllPix(AllPix* allpix) {
+    apx_ = allpix;
+}
 
-AllPix* ModuleFactory::getAllPix() { return apx_; }
+AllPix* ModuleFactory::getAllPix() {
+    return apx_;
+}
 
-void ModuleFactory::setConfiguration(Configuration conf) { conf_ = std::move(conf); }
+void ModuleFactory::setConfiguration(Configuration conf) {
+    conf_ = std::move(conf);
+}
 
-Configuration& ModuleFactory::getConfiguration() { return conf_; }
+Configuration& ModuleFactory::getConfiguration() {
+    return conf_;
+}

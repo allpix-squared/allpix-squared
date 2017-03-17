@@ -5,7 +5,9 @@
 // Local includes
 #include "DummyModule.hpp"
 
-TestAlgorithm::TestAlgorithm(bool debugging) : Algorithm("TestAlgorithm") { m_debug = debugging; }
+TestAlgorithm::TestAlgorithm(bool debugging) : Algorithm("TestAlgorithm") {
+    m_debug = debugging;
+}
 
 void TestAlgorithm::initialise(Parameters* par) {
 

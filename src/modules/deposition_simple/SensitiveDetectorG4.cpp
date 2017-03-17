@@ -33,7 +33,7 @@ using namespace allpix;
 
 // temp
 G4double g_temp_edep = 0.;
-G4int    g_temp_pdgId = 0;
+G4int g_temp_pdgId = 0;
 
 // construct and destruct the sensitive detector
 SensitiveDetectorG4::SensitiveDetectorG4(std::shared_ptr<Detector> detector, Messenger* msg)

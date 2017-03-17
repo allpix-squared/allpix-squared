@@ -58,18 +58,28 @@ LogLevel& DefaultLogger::get_reporting_level() {
     static LogLevel reporting_level;
     return reporting_level;
 }
-void DefaultLogger::setReportingLevel(LogLevel level) { get_reporting_level() = level; }
+void DefaultLogger::setReportingLevel(LogLevel level) {
+    get_reporting_level() = level;
+}
 
-LogLevel DefaultLogger::getReportingLevel() { return get_reporting_level(); }
+LogLevel DefaultLogger::getReportingLevel() {
+    return get_reporting_level();
+}
 
 // change streams
 std::vector<std::ostream*>& DefaultLogger::get_streams() {
     static std::vector<std::ostream*> streams = {&std::cerr};
     return streams;
 }
-const std::vector<std::ostream*>& DefaultLogger::getStreams() { return get_streams(); }
-void                              DefaultLogger::clearStreams() { get_streams().clear(); }
-void DefaultLogger::addStream(std::ostream& stream) { get_streams().push_back(&stream); }
+const std::vector<std::ostream*>& DefaultLogger::getStreams() {
+    return get_streams();
+}
+void DefaultLogger::clearStreams() {
+    get_streams().clear();
+}
+void DefaultLogger::addStream(std::ostream& stream) {
+    get_streams().push_back(&stream);
+}
 
 // convert string to log level and vice versa
 std::string DefaultLogger::getStringFromLevel(LogLevel level) {

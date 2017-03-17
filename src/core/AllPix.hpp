@@ -22,21 +22,21 @@ namespace allpix {
 
         // Constructor and destructor
         // NOTE: AllPix object responsible for deletion of managers
-        AllPix(std::unique_ptr<ConfigManager>   conf_mgr,
-               std::unique_ptr<ModuleManager>   mod_mgr,
+        AllPix(std::unique_ptr<ConfigManager> conf_mgr,
+               std::unique_ptr<ModuleManager> mod_mgr,
                std::unique_ptr<GeometryManager> geo_mgr);
 
         // Get managers
         // FIXME: pass shared pointers here?
-        ConfigManager*   getConfigManager();
+        ConfigManager* getConfigManager();
         GeometryManager* getGeometryManager();
-        ModuleManager*   getModuleManager();
-        Messenger*       getMessenger();
+        ModuleManager* getModuleManager();
+        Messenger* getMessenger();
 
         // Get external managers
         // FIXME: is this a good place to implement this?
         template <typename T> std::shared_ptr<T> getExternalManager();
-        template <typename T> void               setExternalManager(std::shared_ptr<T>);
+        template <typename T> void setExternalManager(std::shared_ptr<T>);
 
         // Get state
         State getState() const;
@@ -51,10 +51,10 @@ namespace allpix {
         void finalize();
 
     private:
-        std::unique_ptr<ConfigManager>   conf_mgr_;
-        std::unique_ptr<ModuleManager>   mod_mgr_;
+        std::unique_ptr<ConfigManager> conf_mgr_;
+        std::unique_ptr<ModuleManager> mod_mgr_;
         std::unique_ptr<GeometryManager> geo_mgr_;
-        std::unique_ptr<Messenger>       msg_;
+        std::unique_ptr<Messenger> msg_;
 
         State state_;
 

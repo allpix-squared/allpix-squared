@@ -22,7 +22,7 @@ namespace allpix {
         // constructor
         RungeKutta(Eigen::Matrix<T, S + 2, S> tableau,
                    StepFunction function,
-                   T            step_size,
+                   T step_size,
                    Eigen::Matrix<T, D, 1> initial_y,
                    T initial_t = 0)
             : tableau_(tableau), function_(function), h_(step_size), y_(initial_y), t_(initial_t) {
@@ -31,7 +31,7 @@ namespace allpix {
 
         // change parameters
         void setTimeStep(T step_size) { h_ = step_size; }
-        T                  getTimeStep() { return h_; }
+        T getTimeStep() { return h_; }
 
         // get result
         Eigen::Matrix<T, D, 1> getResult() { return y_; }
@@ -86,7 +86,7 @@ namespace allpix {
     private:
         const Eigen::Matrix<T, S + 2, S> tableau_;
         StepFunction function_;
-        T            h_; // step size
+        T h_; // step size
 
         Eigen::Matrix<T, D, 1> y_;     // vector that changes
         Eigen::Matrix<T, D, 1> error_; // error vector

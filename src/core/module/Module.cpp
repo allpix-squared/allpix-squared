@@ -13,10 +13,18 @@ using namespace allpix;
 
 Module::Module(AllPix* allpix) : allpix_(allpix), _detector(nullptr) {}
 
-AllPix* Module::getAllPix() { return allpix_; }
+AllPix* Module::getAllPix() {
+    return allpix_;
+}
 
-Messenger* Module::getMessenger() { return allpix_->getMessenger(); }
+Messenger* Module::getMessenger() {
+    return allpix_->getMessenger();
+}
 
-ModuleManager* Module::getModuleManager() { return allpix_->getModuleManager(); }
+ModuleManager* Module::getModuleManager() {
+    return allpix_->getModuleManager();
+}
 
-GeometryManager* Module::getGeometryManager() { return allpix_->getGeometryManager(); }
+GeometryManager* Module::getGeometryManager() {
+    return allpix_->getGeometryManager();
+}

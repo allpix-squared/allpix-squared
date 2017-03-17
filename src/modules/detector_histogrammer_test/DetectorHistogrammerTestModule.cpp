@@ -38,12 +38,12 @@ void DetectorHistogrammerModule::run() {
 
     // create root file
     std::string file_name = config_.get<std::string>("file_prefix") + "_" + getDetector()->getName() + ".root";
-    auto        file = new TFile(file_name.c_str(), "RECREATE");
+    auto file = new TFile(file_name.c_str(), "RECREATE");
 
     // create histogram
     std::string plot_name = "plot_" + getDetector()->getName();
     std::string plot_title = "Histogram for " + getDetector()->getName();
-    auto        histogram = new TH2F(plot_name.c_str(),
+    auto histogram = new TH2F(plot_name.c_str(),
                               plot_title.c_str(),
                               model->GetNPixelsX(),
                               -model->GetHalfSensorX(),
@@ -55,7 +55,7 @@ void DetectorHistogrammerModule::run() {
     // FIXME: bind single when this works
     for(auto& message : deposit_messages_) {
         for(auto& deposit : message->getDeposits()) {
-            auto   vec = deposit.getPosition();
+            auto vec = deposit.getPosition();
             double energy = deposit.getEnergy();
 
             histogram->Fill(vec.x(), vec.y(), energy);

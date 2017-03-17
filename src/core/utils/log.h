@@ -35,20 +35,20 @@ namespace allpix {
         DefaultLogger& operator=(const DefaultLogger&) = delete;
 
         // get a stream for logging
-        std::ostringstream& getStream(LogLevel           level = LogLevel::INFO,
+        std::ostringstream& getStream(LogLevel level = LogLevel::INFO,
                                       const std::string& file = "",
                                       const std::string& function = "",
-                                      uint32_t           line = 0);
+                                      uint32_t line = 0);
 
         // set reporting options
         static LogLevel getReportingLevel();
-        static void     setReportingLevel(LogLevel);
+        static void setReportingLevel(LogLevel);
 
         // set streams (std::cerr is default)
         // NOTE: cannot remove a stream yet
         // WARNING: caller has to make sure that ostream exist while the logger is available
-        static void                              addStream(std::ostream&);
-        static void                              clearStreams();
+        static void addStream(std::ostream&);
+        static void clearStreams();
         static const std::vector<std::ostream*>& getStreams();
 
         // convert log level to string
@@ -59,12 +59,12 @@ namespace allpix {
         std::ostringstream os;
 
     private:
-        int          exception_count_;
+        int exception_count_;
         unsigned int indent_count_;
 
-        int                                get_uncaught_exceptions(bool);
-        std::string                        get_current_date();
-        static LogLevel&                   get_reporting_level();
+        int get_uncaught_exceptions(bool);
+        std::string get_current_date();
+        static LogLevel& get_reporting_level();
         static std::vector<std::ostream*>& get_streams();
     };
 

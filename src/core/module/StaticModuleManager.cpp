@@ -43,7 +43,7 @@ void StaticModuleManager::load(AllPix* allpix) {
 
         for(auto&& id_mod : mod_list) {
             std::unique_ptr<Module>& mod = id_mod.second;
-            ModuleIdentifier         identifier = id_mod.first;
+            ModuleIdentifier identifier = id_mod.first;
 
             // ALERT : FIXME: THIS LOGIC SHOULD NOT BE HERE OF COURSE
             if(conf.getName() == "geometry_test") {

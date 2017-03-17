@@ -22,10 +22,10 @@ namespace allpix {
     class Detector {
     public:
         // Constructor and destructors
-        Detector(std::string                    name,
+        Detector(std::string name,
                  std::shared_ptr<DetectorModel> model,
-                 ROOT::Math::XYZVector          position,
-                 ROOT::Math::EulerAngles        orientation);
+                 ROOT::Math::XYZVector position,
+                 ROOT::Math::EulerAngles orientation);
         Detector(std::string name, std::shared_ptr<DetectorModel> model);
         virtual ~Detector() = default;
 
@@ -38,7 +38,7 @@ namespace allpix {
         std::string getType() const;
 
         // Get location in world
-        ROOT::Math::XYZVector   getPosition() const;
+        ROOT::Math::XYZVector getPosition() const;
         ROOT::Math::EulerAngles getOrientation() const;
 
         // get model description
@@ -48,14 +48,14 @@ namespace allpix {
         // FIXME: is this a good way to approach this
         // FIXME: change name here?
         template <typename T> std::shared_ptr<T> getExternalModel();
-        template <typename T> void               setExternalModel(std::shared_ptr<T>);
+        template <typename T> void setExternalModel(std::shared_ptr<T>);
 
     private:
-        std::string                    name_;
+        std::string name_;
         std::shared_ptr<DetectorModel> model_;
 
         // FIXME: use a proper vector here
-        ROOT::Math::XYZVector   position_;
+        ROOT::Math::XYZVector position_;
         ROOT::Math::EulerAngles orientation_;
 
         std::map<std::type_index, std::shared_ptr<void>> external_models_;

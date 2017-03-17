@@ -34,7 +34,7 @@ namespace allpix {
 
         // Initialize events, process the hits and handle end of event
         G4bool ProcessHits(G4Step*, G4TouchableHistory*) override;
-        void   EndOfEvent(G4HCofThisEvent*) override;
+        void EndOfEvent(G4HCofThisEvent*) override;
 
     private:
         std::shared_ptr<DepositionMessage> deposit_message_;
@@ -45,7 +45,7 @@ namespace allpix {
         // link to the messenger
         Messenger* messenger_;
 
-        bool     m_firstStrikePrimary;
+        bool m_firstStrikePrimary;
         G4double m_kinEPrimary;
         G4double m_totalEdep;
     };
