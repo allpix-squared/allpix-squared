@@ -46,6 +46,9 @@ namespace allpix {
         TGeoBuilderModule(AllPix* apx, Configuration config);
         ~TGeoBuilderModule() override;
 
+        TGeoBuilderModule(const TGeoBuilderModule&) = delete;
+        TGeoBuilderModule& operator=(const TGeoBuilderModule&) = delete;
+
         // Module run method
         void run() override;
 
@@ -67,6 +70,7 @@ namespace allpix {
           - Air
           - Vacuum
         */
+
         TString m_userDefinedWorldMaterial;
         TString m_userDefinedGeoOutputFile;
         bool    m_buildAppliancesFlag;
