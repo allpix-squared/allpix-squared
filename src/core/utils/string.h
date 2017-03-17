@@ -67,7 +67,7 @@ namespace allpix {
     // NOTE: we have to provide all these specializations to prevent std::to_string from being called
     //       there may be a better way to work with this
     // WARNING: these to string methods should likely readd the "" flags to the config
-    inline std::string to_string(std::string inp) { return '"' + inp + '"'; }
+    inline std::string to_string(const std::string& inp) { return '"' + inp + '"'; }
     inline std::string to_string(const char inp[]) { return '"' + std::string(inp) + '"'; }
     inline std::string to_string(char inp[]) { return '"' + std::string(inp) + '"'; }
 
