@@ -26,7 +26,8 @@ std::string Configuration::getName() const {
 
 std::string Configuration::getText(const std::string& key) const {
     try {
-        return allpix::from_string<std::string>(config_.at(key));
+        // NOTE: returning literally including ""
+        return config_.at(key);
     } catch(std::out_of_range& e) {
         throw MissingKeyError(getName(), key);
     }
@@ -36,6 +37,9 @@ std::string Configuration::getText(const std::string& key, const std::string& de
         return def;
     }
     return getText(key);
+}
+void Configuration::setText(const std::string& key, const std::string& val) {
+    config_[key] = val;
 }
 
 unsigned int Configuration::countSettings() const {

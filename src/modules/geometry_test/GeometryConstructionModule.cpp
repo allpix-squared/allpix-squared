@@ -43,7 +43,7 @@ GeometryConstructionModule::GeometryConstructionModule(AllPix* apx, Configuratio
 GeometryConstructionModule::~GeometryConstructionModule() = default;
 
 // check geant4 environment variable
-inline void check_dataset_g4(const std::string& env_name) {
+inline static void check_dataset_g4(const std::string& env_name) {
     const char* file_name = std::getenv(env_name.c_str());
     if(file_name == nullptr) {
         throw ModuleException("Geant4 environment variable " + env_name + " is not set, make sure to source a Geant4 "

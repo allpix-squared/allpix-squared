@@ -34,7 +34,7 @@ namespace allpix {
      */
 
     // FIXME: include exceptions better
-    template <typename T> T from_string(std::string str) {
+    template <typename T> T static from_string_helper(std::string str) {
         str = trim(str);
         if(str == "") {
             throw std::invalid_argument("string is empty");
@@ -51,22 +51,25 @@ namespace allpix {
         }
         return ret;
     }
+    template <typename T> T from_string(std::string str) { return from_string_helper<T>(std::move(str)); }
     template <> inline std::string from_string<std::string>(std::string str) {
+        str = trim(str);
         if(!str.empty() && str[0] == '\"') {
-            str.erase(str.begin());
+            if(str.find('\"', 1) != str.size() - 1) {
+                throw std::invalid_argument("remaining data at end");
+            }
+            return str.substr(1, str.size() - 2);
         }
-        if(!str.empty() && str[str.size() - 1] == '\"') {
-            str.erase(--str.end());
-        }
-        return str;
+        return from_string_helper<std::string>(std::move(str));
     }
 
     template <typename T> std::string to_string(T inp) { return std::to_string(inp); }
     // NOTE: we have to provide all these specializations to prevent std::to_string from being called
     //       there may be a better way to work with this
-    inline std::string to_string(std::string inp) { return inp; }
-    inline std::string to_string(const char inp[]) { return inp; }
-    inline std::string to_string(char inp[]) { return inp; }
+    // WARNING: these to string methods should likely readd the "" flags to the config
+    inline std::string to_string(std::string inp) { return '"' + inp + '"'; }
+    inline std::string to_string(const char inp[]) { return '"' + std::string(inp) + '"'; }
+    inline std::string to_string(char inp[]) { return '"' + std::string(inp) + '"'; }
 
     /** Splits string s into elements at delimiter "delim" and returns them as vector
      */
