@@ -6,7 +6,7 @@ MACRO(option_build_module dir)
     #ELSE()
     #    OPTION(BUILD_${dir} "Build module in directory ${dir}?" OFF)
     #ENDIF()
-    
+
   IF(BUILD_${dir} OR BUILD_allmodules)
     MESSAGE( STATUS "Building module: " ${dir} )
 
@@ -17,18 +17,18 @@ MACRO(option_build_module dir)
     # FIXME: determine per module if we want to include ROOT + G4
     INCLUDE_DIRECTORIES(SYSTEM ${ROOT_INCLUDE_DIRS})
     INCLUDE(${Geant4_USE_FILE})
-    
+
     # WARNING: RESET THE CXX CMAKE_CXX_FLAGS WITH GEANT4 OPTIONS
     SET(CMAKE_CXX_FLAGS "${SAVE_CXX_FLAGS} -DG4USE_STD11")
-        
-    # ADD DEFINITIONS FOR EXPERIMENTAL EIGEN CONVERSIONS    
-    # ADD_DEFINITIONS(-DHAVE_ROOT -DHAVE_GEANT)    
-        
+
+    # ADD DEFINITIONS FOR EXPERIMENTAL EIGEN CONVERSIONS
+    # ADD_DEFINITIONS(-DHAVE_ROOT -DHAVE_GEANT)
+
     ADD_LIBRARY(${dir} SHARED ${LIB_SOURCE_FILES})
 
     TARGET_LINK_LIBRARIES(${dir} AllpixCore)
     TARGET_LINK_LIBRARIES(${dir} AllpixMessages)
-    
+
     # FIXME: determine per module the libraries to link
     TARGET_LINK_LIBRARIES(${dir} ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES} ${Geant4_LIBRARIES})
 
@@ -59,9 +59,10 @@ ENDIF(NOT Geant4_FOUND)
 ###################################
 
 # Example module implementation - check this directory as a starting point for your own module implementation
-SET(SAVE_CXX_FLAGS ${CMAKE_CXX_FLAGS}) 
+SET(SAVE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 
 option_build_module(geometry_test)
+option_build_module(geometry_tgeo)
 option_build_module(deposition_simple)
 option_build_module(visualization_test)
 option_build_module(deposit_reader_test)
