@@ -86,7 +86,7 @@ void SimpleDepositionModule::run() {
 
     // start the beam
     LOG(INFO) << "START THE BEAM";
-    run_manager_g4->BeamOn(config_.get("amount", 1));
+    run_manager_g4->BeamOn(1);
 
     LOG(INFO) << "END DEPOSIT MODULE";
 }
