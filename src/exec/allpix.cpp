@@ -21,10 +21,10 @@
 #include "modules/deposit_reader_test/TestDepositReaderModule.hpp"
 #include "modules/deposition_simple/SimpleDepositionModule.hpp"
 #include "modules/detector_histogrammer_test/DetectorHistogrammerTestModule.hpp"
+#include "modules/example/ExampleModule.hpp"
 #include "modules/geometry_test/GeometryConstructionModule.hpp"
 #include "modules/geometry_tgeo/TGeoBuilderModule.hpp"
 #include "modules/visualization_test/TestVisualizationModule.hpp"
-#include "modules/example/ExampleModule.hpp"
 
 using namespace allpix;
 
