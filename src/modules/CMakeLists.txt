@@ -54,16 +54,26 @@ IF(NOT Geant4_FOUND)
     "$ source YOUR_GEANT4_DIR/bin/geant4.sh")
 ENDIF(NOT Geant4_FOUND)
 
+# Save the CXX flags because Geant4 unfortunately changes those so we have to set it back later
+SET(SAVE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+
 ###################################
 # Build the required modules      #
 ###################################
 
-# Example module implementation - check this directory as a starting point for your own module implementation
-SET(SAVE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+# example module
+option_build_module(example)
 
+# geometry
 option_build_module(geometry_test)
 option_build_module(geometry_tgeo)
+
+# deposition
 option_build_module(deposition_simple)
-option_build_module(visualization_test)
+
+# output writers
 option_build_module(deposit_reader_test)
 option_build_module(detector_histogrammer_test)
+
+# visualization
+option_build_module(visualization_test)

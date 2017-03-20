@@ -1,36 +1,26 @@
-// Global includes
-#include <cstdlib>
-#include <stdlib.h>
-
-// Local includes
+// include module header
 #include "DummyModule.hpp"
 
-TestAlgorithm::TestAlgorithm(bool debugging) : Algorithm("TestAlgorithm") {
-    m_debug = debugging;
+// include STL headers
+#include <utility>
+
+// include allpix headers
+#include <core/utils/log.h>
+
+// use the allpix namespace within this file
+using namespace allpix;
+
+// set the name of the module
+const std::string DummyModule::name = "<your_module_name>";
+
+// constructor to load the module
+DummyModule::DummyModule(AllPix *apx, Configuration config): Module(apx), config_(std::move(config)) {
+    // ... implement ... (typically you want to bind some messages here)
+    LOG(DEBUG) << "initializing module " << DummyModule::name;
 }
 
-void TestAlgorithm::initialise(Parameters* par) {
-
-    // Pick up the run parameters
-    parameters = par;
+// run method that does the main computations for the module
+void DummyModule::run(){
+    // ... implement ... (typically you want to fetch some configuration here and in the end possibly output a message)
+    LOG(DEBUG) << "running module " << DummyModule::name;
 }
-
-StatusCode TestAlgorithm::run(Clipboard* clipboard) {
-
-    // Some output messages just to show that it runs
-    debug << "Testing algorithm run stage" << endl;
-    info << "Testing algorithm run stage" << endl;
-    warning << "Testing algorithm run stage" << endl;
-
-    // Get something from the storage element
-    AllpixObjects* chargeDeposits = (AllpixObjects*)clipboard->get("chargeDeposits");
-    if(chargeDeposits == NULL) {
-        error << "There are no charge deposits on the clipboard" << endl;
-        return Failure;
-    }
-
-    // Nothing went wrong in this event
-    return Success;
-}
-
-void TestAlgorithm::finalise() {}
