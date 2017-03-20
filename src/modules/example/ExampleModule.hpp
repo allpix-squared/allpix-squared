@@ -25,7 +25,7 @@ namespace allpix {
     };
     class OutputMessage : public Message {
     public:
-        OutputMessage(std::string msg) : msg_(msg) {}
+        explicit OutputMessage(std::string msg) : msg_(std::move(msg)) {}
 
         std::string get() { return msg_; }
 
@@ -41,7 +41,7 @@ namespace allpix {
         static const std::string name;
 
         // constructor should take a pointer to AllPix and a Configuration as input
-        ExampleModule(AllPix* apx, Configuration config) : Module(apx), message_(0) {
+        ExampleModule(AllPix* apx, Configuration config) : Module(apx), message_(nullptr) {
             // print a configuration parameter of type string to the logger
             LOG(DEBUG) << "my string parameter is " << config.get<std::string>("param", "<undefined>");
 
@@ -51,7 +51,7 @@ namespace allpix {
 
         // method that will be run where the module should do its computations and possibly dispatch their results as a
         // message
-        void run() {
+        void run() override {
             // check if received a message
             if(message_) {
                 // print the message
@@ -72,5 +72,6 @@ namespace allpix {
     };
 
     // set the name of the module
-    const std::string ExampleModule::name = "example";
+    // WARNING: this module name should not be set in the header
+    const std::string ExampleModule::name = "example"; // NOLINT
 }
