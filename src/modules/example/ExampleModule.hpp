@@ -8,16 +8,19 @@
  * param = "test"
  */
 
-#include <core/messenger/Messenger.hpp>
+// include the module base class and the configuration object
+#include <core/config/Configuration.hpp>
 #include <core/module/Module.hpp>
-#include <core/utils/log.h>
+
+// include the message base class
+#include <core/messenger/Message.hpp>
 
 #include <memory>
 #include <string>
 
 namespace allpix {
     // definitions of messages
-    // WARNING: definition of the messages should never be part of a module
+    // WARNING: definition of the messages should never be part of a module in real modules
     class InputMessage : public Message {
     public:
         // NOTE: in a real message the output is of course not fixed
@@ -34,44 +37,18 @@ namespace allpix {
     };
 
     // define the module inheriting from the module base class
-    // WARNING: the modules should implement their methods in the source file instead
     class ExampleModule : public Module {
     public:
         // provide a static const variable of type string (required!)
         static const std::string name;
 
         // constructor should take a pointer to AllPix and a Configuration as input
-        ExampleModule(AllPix* apx, Configuration config) : Module(apx), message_(nullptr) {
-            // print a configuration parameter of type string to the logger
-            LOG(DEBUG) << "my string parameter is " << config.get<std::string>("param", "<undefined>");
+        ExampleModule(AllPix* apx, Configuration config);
 
-            // bind a variable to a specific message type that is automatically assigned if it is dispatched
-            getMessenger()->bindSingle(this, &ExampleModule::message_);
-        }
-
-        // method that will be run where the module should do its computations and possibly dispatch their results as a
-        // message
-        void run() override {
-            // check if received a message
-            if(message_) {
-                // print the message
-                LOG(DEBUG) << "received a message: " << message_.get();
-            } else {
-                LOG(DEBUG) << "did not receive any message before run...";
-            }
-
-            // construct my own message
-            OutputMessage msg("my output message");
-
-            // dispatch my message
-            getMessenger()->dispatchMessage(msg);
-        }
+        // method that should do the necessary computations and possibly dispatch their results as a message
+        void run() override;
 
     private:
         std::shared_ptr<InputMessage> message_;
     };
-
-    // set the name of the module
-    // WARNING: this module name should not be set in the header
-    const std::string ExampleModule::name = "example"; // NOLINT
 }

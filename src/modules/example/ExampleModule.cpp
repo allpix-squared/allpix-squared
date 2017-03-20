@@ -1,3 +1,38 @@
+// module include
 #include "ExampleModule.hpp"
 
-// WARNING: this example module has everything defined in the header which is wrong
+// framework includes
+#include <core/messenger/Messenger.hpp>
+#include <core/utils/log.h>
+
+using namespace allpix;
+
+// set the name of the module
+const std::string ExampleModule::name = "example";
+
+// constructor to load the module
+ExampleModule::ExampleModule(AllPix* apx, Configuration config) : Module(apx), message_(nullptr) {
+    // print a configuration parameter of type string to the logger
+    LOG(DEBUG) << "my string parameter 'param' is equal to " << config.get<std::string>("param", "<undefined>");
+
+    // bind a variable to a specific message type that is automatically assigned if it is dispatched
+    getMessenger()->bindSingle(this, &ExampleModule::message_);
+}
+
+// run method fetching a message and outputting its own
+void ExampleModule::run() {
+    // check if received a message
+    if(message_) {
+        // print the message
+        LOG(DEBUG) << "received a message: " << message_.get();
+    } else {
+        // no message received
+        LOG(DEBUG) << "did not receive any message before run...";
+    }
+
+    // construct my own message
+    OutputMessage msg("my output message");
+
+    // dispatch my message
+    getMessenger()->dispatchMessage(msg);
+}

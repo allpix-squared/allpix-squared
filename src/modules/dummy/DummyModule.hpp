@@ -9,8 +9,10 @@
  * - (temporary) link the module by adding target_link_libraries(allpix <your_directory_name>) to src/exec/CMakeLists.txt
  */
 
+// include module base class
 #include <core/module/Module.hpp>
 
+// use the allpix namespace
 namespace allpix {
     // define the module inheriting from the module base class
     class DummyModule : public Module {
