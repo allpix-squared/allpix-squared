@@ -2,6 +2,7 @@
 
 # allpix<sup>2</sup>
 Generic simulation framework for pixel detectors based on [original AllPix](https://github.com/AllPix/allpix).
+
 **WARNING: Allpix<sup>2</sup> is currently in alpha state and any part of the interface is subject to change**
 
 ## Dependencies
@@ -40,7 +41,7 @@ Currently only a simple test model is provided in the *models/* directory as `mo
 
 The test visualization module can be uncommented to display the result in Geant4 using the provided [driver](http://geant4.cern.ch/G4UsersDocuments/UsersGuides/ForApplicationDeveloper/html/Visualization/visdrivers.html) (the 'VRML2FILE' driver that visualizes afterwards with a viewer like [freewrl](http://freewrl.sourceforge.net/) is recommended). The supplied init and run macros should normally not be changed and point directly to the ones provided in the *etc* folder.
 #### Running simulations
-The executable can be found in `bin/allpix` after installation (relative to parent of the build directory in a standard build). The AllPix libraries are found in the `lib/` directory. To run the simulation execute (replacing `<your_config_file>` with your own configuration or use `etc/example_config.ini` as a starting point)
+The executable can be found in `bin/allpix` after installation (relative to parent of the build directory in a standard build). The AllPix libraries are found in the `lib/` directory. To run the simulation simply execute the following (replacing `<your_config_file>` with your own configuration; take `etc/example_config.ini` as a starting point)
 ```
 $ bin/allpix <your_config_file>
 ```
