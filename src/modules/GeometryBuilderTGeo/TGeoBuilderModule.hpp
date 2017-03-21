@@ -1,10 +1,16 @@
-/// \file DetectorConstruction.h
-/// \brief Definition of the DetectorConstruction class.
+/// \file TGeoBuilderModule
+/// \brief Implementation of the Geometry builder module using TGeo.
 ///
 /// Builds the detector geometry according to user defined parameters.
 ///
-/// \date     Feb. 13 2017
-/// \version  0.9
+/// To do :
+///  - Integrate Configuration
+///  - Refer to the detector desc with their names instead of integers.
+///  - Change TVector3 with XYZVector
+///
+///
+/// \date     March 20 2017
+/// \version  0.10
 /// \author N. Gauvin; CERN
 
 #ifndef ALLPIX_DETECTOR_CONSTRUCTION_TGEO_H
@@ -16,7 +22,8 @@
 
 // ROOT
 #include <TGeoManager.h>
-#include <TVector3.h>
+#include <TVector3.h>   //### to be removed
+#include <Math/Vector3D.h>
 
 // AllPix2
 #include "core/config/Configuration.hpp"
@@ -44,7 +51,8 @@ namespace allpix {
     class TGeoBuilderModule : public Module {
 
     public:
-        static const std::string name;
+      // provide a static const variable of type string (required!)
+      static const std::string name;
 
         TGeoBuilderModule(Configuration config, Messenger*, GeometryManager*);
         ~TGeoBuilderModule() override;
@@ -55,13 +63,14 @@ namespace allpix {
         // Module run method
         void run() override;
 
+    private:      
         // Internal methods
         void Construct();
         void BuildPixelDevices();
         void BuildMaterialsAndMedia();
         void BuildAppliances();
         void BuildTestStructure();
-        void ReadDetectorDescriptions(); /// Debugging only !
+        void ReadDetectorDescriptions(); //### Debugging only !
 
         // Global variables
         TGeoMedium* m_fillingWorldMaterial;                        /// Medium to fill the World.
@@ -73,7 +82,6 @@ namespace allpix {
           - Air
           - Vacuum
         */
-
         TString m_userDefinedWorldMaterial;
         TString m_userDefinedGeoOutputFile;
         bool m_buildAppliancesFlag;
@@ -84,6 +92,7 @@ namespace allpix {
         std::map<int, TGeoRotation> m_rotVector;              // map<int, G4RotationMatrix *>
         std::map<int, TGeoTranslation> m_posVectorAppliances; //
 
+      // configuration for this module
         Configuration m_config;
     };
 }
