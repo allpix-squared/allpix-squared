@@ -1,0 +1,42 @@
+##########################################
+# Charge Deposition Module, using Geant4 #
+##########################################
+
+# Geant4 is required for geometry description and charge deposition.
+FIND_PACKAGE(Geant4 REQUIRED ui_all vis_all)
+IF(NOT Geant4_FOUND)
+    MESSAGE(FATAL_ERROR "Could not find Geant4, make sure to source the Geant4 environment\n"
+    "$ source YOUR_GEANT4_DIR/bin/geant4.sh")
+ENDIF(NOT Geant4_FOUND)
+
+# Save the CXX flags because Geant4 unfortunately changes those so we have to set it back later
+SET(SAVE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+
+
+# Set up module library and build target
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+FILE(GLOB_RECURSE LIB_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+
+# FIXME: determine per module if we want to include ROOT + G4
+INCLUDE_DIRECTORIES(SYSTEM ${ROOT_INCLUDE_DIRS})
+INCLUDE(${Geant4_USE_FILE})
+
+# WARNING: RESET THE CXX CMAKE_CXX_FLAGS WITH GEANT4 OPTIONS
+SET(CMAKE_CXX_FLAGS "${SAVE_CXX_FLAGS} -DG4USE_STD11")
+
+# ADD DEFINITIONS FOR EXPERIMENTAL EIGEN CONVERSIONS
+# ADD_DEFINITIONS(-DHAVE_ROOT -DHAVE_GEANT)
+
+GET_FILENAME_COMPONENT(MODULE_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+ADD_LIBRARY(${MODULE_NAME} SHARED ${LIB_SOURCE_FILES})
+
+TARGET_LINK_LIBRARIES(${MODULE_NAME} AllpixCore)
+TARGET_LINK_LIBRARIES(${MODULE_NAME} AllpixMessages)
+
+# FIXME: determine per module the libraries to link
+TARGET_LINK_LIBRARIES(${MODULE_NAME} ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES} ${Geant4_LIBRARIES})
+
+INSTALL(TARGETS ${dir}
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)
