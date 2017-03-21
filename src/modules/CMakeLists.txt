@@ -2,17 +2,6 @@
 # Allpix2 Modules #
 ###################
 
-# For every module, build a separate library to be loaded by allpix core
-
-MACRO(option_build_module dir)
-  OPTION(BUILD_${dir} "Build module in directory ${dir}?" ON)
-
-  IF(BUILD_${dir} OR BUILD_allmodules)
-    MESSAGE( STATUS "Building module: " ${dir} )
-    ADD_SUBDIRECTORY(${dir})
-  ENDIF()
-ENDMACRO()
-
 # Option to build all modules
 OPTION(BUILD_allmodules "Build all modules?" OFF)
 

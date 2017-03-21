@@ -1,3 +1,14 @@
+# For every module, build a separate library to be loaded by allpix core
+MACRO(option_build_module dir)
+  OPTION(BUILD_${dir} "Build module in directory ${dir}?" ON)
+
+  IF(BUILD_${dir} OR BUILD_allmodules)
+    MESSAGE( STATUS "Building module: " ${dir} )
+    ADD_SUBDIRECTORY(${dir})
+  ENDIF()
+ENDMACRO()
+
+# Retrieve the allpix version string from git describe
 FUNCTION(GetVersionString)
   # Check if this is a source tarball build
   IF(NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
