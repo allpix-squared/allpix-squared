@@ -2,9 +2,7 @@
 /// \brief Implementation of the TGeoBuilderModule class
 /// \author N. Gauvin
 
-/* Usage
-   TGeoBuilderModule* c = new TGeoBuilderModule()
-
+/* 
    To be discussed :
    - Shall the algo stops if a geometry is already loaded ?
    - Do we want a CheckOverlaps option ? Or we use ROOT's tools offline on the TFile.
@@ -22,11 +20,13 @@
 
 // Local includes
 #include "TGeoBuilderModule.hpp"
+#include "ReadGeoDescription.hpp"
 
 // AllPix includes
 #include "core/utils/log.h"
 #include "tools/ROOT.h"
-#include "tools/geant4.h"
+#include "core/config/ConfigReader.hpp"
+
 
 // Global includes
 #include <iostream>
@@ -43,16 +43,28 @@
 
 using namespace std;
 using namespace allpix;
+using namespace ROOT::Math;
 
 /// Name of the module
 const std::string TGeoBuilderModule::name = "geometry_tgeo";
 
 /// Constructor and destructor
 TGeoBuilderModule::TGeoBuilderModule(AllPix* apx, Configuration conf)
-    : Module(apx), m_fillingWorldMaterial(nullptr), m_geoMap(), m_userDefinedWorldMaterial("Air"),
-      m_userDefinedGeoOutputFile(""), m_buildAppliancesFlag(false), m_Appliances_type(0), m_buildTestStructureFlag(false),
-      m_vectorWrapperEnhancement(), m_posVector(), m_rotVector(), m_posVectorAppliances(), m_config(std::move(conf)) {
-    // read the configuration
+    : Module(apx),
+      m_fillingWorldMaterial(nullptr),
+      m_geoMap(),
+      m_userDefinedWorldMaterial("Air"),
+      m_userDefinedGeoOutputFile(""),
+      m_buildAppliancesFlag(false),
+      m_Appliances_type(0),
+      m_buildTestStructureFlag(false),
+      m_vectorWrapperEnhancement(),
+      m_posVector(),
+      m_rotVector(),
+      m_posVectorAppliances(),
+      m_config(std::move(conf)) {
+
+  // read the configuration
     // WARNING: these conversion go wrong without include tools/ROOT.h - prefer to use std::string
     m_userDefinedWorldMaterial = m_config.get<TString>("world_material");
     m_userDefinedGeoOutputFile = m_config.get<TString>("output_file", "");
@@ -72,13 +84,21 @@ void TGeoBuilderModule::run() {
     // TGeoManager::Import("MyGeom.root");
     // Return
 
-    // Set class parameters according to users' specifications.
-    // Koen...
-    /* For development purpose only */
+    // read the geometry descriptions
+  std::string model_file_name = m_config.get<std::string>("models_file");
+  auto geo_descriptions = ReadGeoDescription(model_file_name);  
 
-    // Read detector description.
-    // Koen...
-    ReadDetectorDescriptions();
+  // construct the detectors from the config file
+  std::string detector_file_name = m_config.get<std::string>("detectors_file");
+  std::ifstream file(detector_file_name);
+  if(!file) {
+    throw allpix::ConfigFileUnavailableError(detector_file_name);
+  }
+  ConfigReader detector_config(file);  
+  
+
+    // Read detector description. #### for dev only
+  //ReadDetectorDescriptions();
 
     /* Instantiate the TGeo geometry manager.
        It will remain persistant until gGeoManager is deleted.
@@ -132,11 +152,19 @@ void TGeoBuilderModule::Construct() {
        The size of the world does not seem to have any effect. Even if smaller than
        the built detectors, ROOT does not complain.
     */
-    G4ThreeVector halfworld = m_config.get("half_world", G4ThreeVector(100, 100, 100));
-
+    XYZVector halfworld = m_config.get("half_world", XYZVector(1000, 1000, 1000));
+    /*   #### FIXME
+    m_config.setDefault("half_world", TVector3(1000, 1000, 2000));
+    TVector3 halfworld = m_config.get<TVector3>("half_world");
+    */
     const double halfworld_dx = halfworld.x(); // mm
     const double halfworld_dy = halfworld.y(); // mm
     const double halfworld_dz = halfworld.z(); // mm
+    /*
+    const double halfworld_dx = 1000;
+    const double halfworld_dy = 1000;
+    const double halfworld_dz = 2000;
+    */
 
     m_fillingWorldMaterial = gGeoManager->GetMedium(m_userDefinedWorldMaterial);
     // If null, throw an exception and stop the construction !

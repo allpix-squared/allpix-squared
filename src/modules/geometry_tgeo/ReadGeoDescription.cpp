@@ -1,4 +1,5 @@
 /**
+ * @author Neal Gauvin <neal.gauvin@cern.ch>
  * @author John Idarraga <idarraga@cern.ch>
  * @author Koen Wolters <koen.wolters@cern.ch>
  */
@@ -13,15 +14,15 @@
 #include "core/config/ConfigReader.hpp"
 #include "core/geometry/PixelDetectorModel.hpp"
 
-// FIXME: USE OUR OWN VECTOR HERE
-#include <G4ThreeVector.hh>
-#include <G4TwoVector.hh>
-#include "tools/geant4.h"
+// ROOT
+#include <Math/Vector3D.h>
+#include <Math/Vector2D.h>
 
 // FIXME: agree on the units to use
 #include "CLHEP/Units/SystemOfUnits.h"
 
 using namespace allpix;
+using namespace ROOT::Math;
 
 ReadGeoDescription::ReadGeoDescription(std::string file_name) : models_() {
     std::ifstream file(file_name);
@@ -42,51 +43,50 @@ std::shared_ptr<PixelDetectorModel> ReadGeoDescription::parse_config(const Confi
 
     // pixel amount
     if(config.has("pixel_amount")) {
-        G4ThreeVector vec = config.get<G4ThreeVector>("pixel_amount");
+      XYVector vec = config.get<XYVector>("pixel_amount");
         model->SetNPixelsX(static_cast<int>(std::round(vec.x())));
         model->SetNPixelsY(static_cast<int>(std::round(vec.y())));
-        model->SetNPixelsZ(static_cast<int>(std::round(vec.z()))); // FIXME: useless
     }
 
     // size, positions and offsets
     if(config.has("pixel_size")) {
-        G4ThreeVector vec = CLHEP::um * config.get<G4ThreeVector>("pixel_size");
+        XYZVector vec = CLHEP::um * config.get<XYZVector>("pixel_size");
         model->SetPixSizeX(vec.x());
         model->SetPixSizeY(vec.y());
         model->SetPixSizeZ(vec.z()); // FIXME: useless
     }
     if(config.has("chip_size")) {
-        G4ThreeVector vec = CLHEP::um * config.get<G4ThreeVector>("chip_size");
+        XYZVector vec = CLHEP::um * config.get<XYZVector>("chip_size");
         model->SetChipHX(vec.x());
         model->SetChipHY(vec.y());
         model->SetChipHZ(vec.z());
     }
     if(config.has("chip_position")) {
-        G4ThreeVector vec = CLHEP::um * config.get<G4ThreeVector>("chip_position");
+        XYZVector vec = CLHEP::um * config.get<XYZVector>("chip_position");
         model->SetChipPosX(vec.x());
         model->SetChipPosY(vec.y());
         model->SetChipPosZ(vec.z());
     }
     if(config.has("chip_offset")) {
-        G4ThreeVector vec = CLHEP::um * config.get<G4ThreeVector>("chip_offset");
+        XYZVector vec = CLHEP::um * config.get<XYZVector>("chip_offset");
         model->SetChipOffsetX(vec.x());
         model->SetChipOffsetY(vec.y());
         model->SetChipOffsetZ(vec.z());
     }
     if(config.has("sensor_size")) {
-        G4ThreeVector vec = CLHEP::um * config.get<G4ThreeVector>("sensor_size");
+        XYZVector vec = CLHEP::um * config.get<XYZVector>("sensor_size");
         model->SetSensorHX(vec.x());
         model->SetSensorHY(vec.y());
         model->SetSensorHZ(vec.z());
     }
     if(config.has("sensor_position")) {
-        G4ThreeVector vec = CLHEP::um * config.get<G4ThreeVector>("sensor_position");
+        XYZVector vec = CLHEP::um * config.get<XYZVector>("sensor_position");
         model->SetSensorPosX(vec.x());
         model->SetSensorPosY(vec.y());
         model->SetSensorPosZ(vec.z());
     }
     if(config.has("pcb_size")) {
-        G4ThreeVector vec = CLHEP::um * config.get<G4ThreeVector>("pcb_size");
+        XYZVector vec = CLHEP::um * config.get<XYZVector>("pcb_size");
         model->SetPCBHX(vec.x());
         model->SetPCBHY(vec.y());
         model->SetPCBHZ(vec.z());
@@ -117,7 +117,7 @@ std::shared_ptr<PixelDetectorModel> ReadGeoDescription::parse_config(const Confi
         model->SetBumpDr(CLHEP::um * config.get<double>("bump_dr"));
     }
     if(config.has("bump_offset")) {
-        G4ThreeVector vec = CLHEP::um * config.get<G4TwoVector>("bump_offset");
+        XYVector vec = CLHEP::um * config.get<XYVector>("bump_offset");
         model->SetBumpOffsetX(vec.x());
         model->SetBumpOffsetY(vec.y());
     }

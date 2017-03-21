@@ -1,4 +1,5 @@
 /**
+ * @author Neal Gauvin <neal.gauvin@cern.ch>
  * @author John Idarraga <idarraga@cern.ch>
  * @author Koen Wolters <koen.wolters@cern.ch>
  */
