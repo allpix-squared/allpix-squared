@@ -89,16 +89,20 @@ int main(int argc, const char* argv[]) {
         LOG(CRITICAL) << "Error in the configuration file:" << std::endl
                       << "   " << e.what() << std::endl
                       << "The configuration file needs to be updated! Cannot continue...";
+        return 1;
     } catch(RuntimeError& e) {
         LOG(CRITICAL) << "Error during execution of run:" << std::endl
                       << "   " << e.what() << std::endl
                       << "Please check your configuration and modules! Cannot continue...";
+        return 1;
     } catch(LogicError& e) {
         LOG(CRITICAL) << "Error in the logic of module:" << std::endl
                       << "   " << e.what() << std::endl
                       << "Module has to be properly defined! Cannot continue...";
+        return 1;
     } catch(std::exception& e) {
         LOG(CRITICAL) << "Fatal internal error" << std::endl << "   " << e.what() << std::endl << "Cannot continue...";
+        return 127;
     }
 
     return 0;
