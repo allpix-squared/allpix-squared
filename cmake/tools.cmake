@@ -1,15 +1,5 @@
-# For every module, build a separate library to be loaded by allpix core
-MACRO(option_build_module dir)
-  OPTION(BUILD_${dir} "Build module in directory ${dir}?" ON)
-
-  IF(BUILD_${dir} OR BUILD_allmodules)
-    MESSAGE( STATUS "Building module: " ${dir} )
-    ADD_SUBDIRECTORY(${dir})
-  ENDIF()
-ENDMACRO()
-
 # Retrieve the allpix version string from git describe
-FUNCTION(GetVersionString)
+FUNCTION(PRINT_VERSION)
   # Check if this is a source tarball build
   IF(NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
     SET(SOURCE_PACKAGE 1)
@@ -25,9 +15,9 @@ FUNCTION(GetVersionString)
       STRING(REGEX REPLACE "([v0-9.]+)-([0-9]+)-([A-Za-z0-9]+)" "\\1+\\2~\\3" ALLPIX_LIB_VERSION ${ALLPIX_LIB_VERSION})
       EXEC_PROGRAM(git ARGS status --porcelain ${CMAKE_CURRENT_SOURCE_DIR}/core OUTPUT_VARIABLE ALLPIX_CORE_STATUS)
       IF(ALLPIX_CORE_STATUS STREQUAL "")
-    MESSAGE("-- Git: corelib directory is clean.")
+        MESSAGE("-- Git: corelib directory is clean.")
       ELSE(ALLPIX_CORE_STATUS STREQUAL "")
-    MESSAGE("-- Git: corelib directory is dirty:\n ${ALLPIX_CORE_STATUS}.")
+        MESSAGE("-- Git: corelib directory is dirty:\n ${ALLPIX_CORE_STATUS}.")
       ENDIF(ALLPIX_CORE_STATUS STREQUAL "")
     ELSE(GIT_FOUND)
       SET(ALLPIX_LIB_VERSION ${ALLPIX_VERSION})
@@ -42,5 +32,5 @@ FUNCTION(GetVersionString)
 
   CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake.h" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
   INCLUDE_DIRECTORIES("${CMAKE_CURRENT_BINARY_DIR}")
-ENDFUNCTION(GetVersionString)
+ENDFUNCTION(PRINT_VERSION)
 

@@ -2,7 +2,7 @@
 
 # Get all project files - FIXME: this should also use the list of generated targets
 IF(NOT CHECK_CXX_SOURCE_FILES)
-    MESSAGE(FATAL_ERROR "Variable CHECK_CXX_SOURCE_FILES not defined - set it to the list of files format")
+    MESSAGE(FATAL_ERROR "Variable CHECK_CXX_SOURCE_FILES not defined - set it to the list of files to auto-format")
     RETURN()
 ENDIF()
 
@@ -26,8 +26,8 @@ IF(CLANG_FORMAT)
         -style=file
         -output-replacements-xml
         ${CHECK_CXX_SOURCE_FILES} | tee ${CMAKE_BINARY_DIR}/check_format_file.txt
-        COMMAND ! grep -c "replacement " ${CMAKE_BINARY_DIR}/check_format_file.txt > /dev/null
         # WARNING: fix to stop with error if there are problems
+        COMMAND ! grep -c "replacement " ${CMAKE_BINARY_DIR}/check_format_file.txt > /dev/null
         COMMENT "Checking format compliance"
     )
 ENDIF()
