@@ -18,39 +18,41 @@
 #include "core/module/UniqueModuleFactory.hpp"
 
 // FIXME: should not be here
+#include "modules/GeometryBuilderTGeo/TGeoBuilderModule.hpp"
 #include "modules/deposit_reader_test/TestDepositReaderModule.hpp"
-#include "modules/deposition_simple/SimpleDepositionModule.hpp"
 #include "modules/detector_histogrammer_test/DetectorHistogrammerTestModule.hpp"
-#include "modules/example/ExampleModule.hpp"
-#include "modules/geometry_test/GeometryConstructionModule.hpp"
-#include "modules/geometry_tgeo/TGeoBuilderModule.hpp"
-#include "modules/visualization_test/TestVisualizationModule.hpp"
+
+#include "modules/DepositionGeant4/DepositionGeant4Module.hpp"
+#include "modules/Example/ExampleModule.hpp"
+#include "modules/GeometryBuilderGeant4/GeometryBuilderGeant4Module.hpp"
+#include "modules/VisualizationGeant4/VisualizationGeant4Module.hpp"
 
 using namespace allpix;
 
 // FIXME: temporary generator function for as long we do not have dynamic loading
 std::unique_ptr<ModuleFactory> generator(const std::string& str);
 std::unique_ptr<ModuleFactory> generator(const std::string& str) {
-    if(str == GeometryConstructionModule::name) {
-        return std::make_unique<UniqueModuleFactory<GeometryConstructionModule>>();
+    if(str == GeometryBuilderGeant4Module::name) {
+        return std::make_unique<UniqueModuleFactory<GeometryBuilderGeant4Module>>();
+    }
+    if(str == DepositionGeant4Module::name) {
+        return std::make_unique<UniqueModuleFactory<DepositionGeant4Module>>();
+    }
+    if(str == VisualizationGeant4Module::name) {
+        return std::make_unique<UniqueModuleFactory<VisualizationGeant4Module>>();
+    }
+    if(str == ExampleModule::name) {
+        return std::make_unique<UniqueModuleFactory<ExampleModule>>();
+    }
+
+    if(str == DetectorHistogrammerModule::name) {
+        return std::make_unique<DetectorModuleFactory<DetectorHistogrammerModule>>();
     }
     if(str == TGeoBuilderModule::name) {
         return std::make_unique<UniqueModuleFactory<TGeoBuilderModule>>();
     }
-    if(str == SimpleDepositionModule::name) {
-        return std::make_unique<UniqueModuleFactory<SimpleDepositionModule>>();
-    }
-    if(str == TestVisualizationModule::name) {
-        return std::make_unique<UniqueModuleFactory<TestVisualizationModule>>();
-    }
     if(str == TestDepositReaderModule::name) {
         return std::make_unique<UniqueModuleFactory<TestDepositReaderModule>>();
-    }
-    if(str == DetectorHistogrammerModule::name) {
-        return std::make_unique<DetectorModuleFactory<DetectorHistogrammerModule>>();
-    }
-    if(str == ExampleModule::name) {
-        return std::make_unique<UniqueModuleFactory<ExampleModule>>();
     }
 
     return nullptr;

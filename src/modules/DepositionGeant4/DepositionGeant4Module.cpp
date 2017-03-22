@@ -3,7 +3,7 @@
  * @author Mathieu Benoit <benoit@lal.in2p3.fr>
  */
 
-#include "SimpleDepositionModule.hpp"
+#include "DepositionGeant4Module.hpp"
 
 #include <G4HadronicProcessStore.hh>
 #include <G4ParticleDefinition.hh>
@@ -20,18 +20,18 @@
 #include "tools/geant4.h"
 
 // FIXME: THIS IS BROKEN ---> SHOULD NEVER BE NEEDED !!!
-#include "../geometry_test/DetectorModelG4.hpp"
+#include "../GeometryBuilderGeant4/DetectorModelG4.hpp"
 
 using namespace allpix;
 
-const std::string SimpleDepositionModule::name = "deposition_simple";
+const std::string DepositionGeant4Module::name = "deposition_simple";
 
-SimpleDepositionModule::SimpleDepositionModule(AllPix* apx, Configuration config)
+DepositionGeant4Module::DepositionGeant4Module(AllPix* apx, Configuration config)
     : Module(apx), config_(std::move(config)) {}
-SimpleDepositionModule::~SimpleDepositionModule() = default;
+DepositionGeant4Module::~DepositionGeant4Module() = default;
 
 // run the deposition
-void SimpleDepositionModule::run() {
+void DepositionGeant4Module::run() {
     LOG(INFO) << "INIT THE DEPOSITS";
 
     // load the G4 run manager from allpix

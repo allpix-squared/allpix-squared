@@ -26,7 +26,7 @@ INCLUDE_DIRECTORIES(SYSTEM ${Geant4_INCLUDE_DIRS})
 
 # Add library
 ALLPIX_MODULE_SOURCES(${MODULE_NAME} 
-    GeometryConstructionModule.cpp
+    GeometryBuilderGeant4Module.cpp
     BumpsParameterizationG4.cpp
     GeometryConstructionG4.cpp
     ReadGeoDescription.cpp

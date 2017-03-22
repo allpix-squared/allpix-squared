@@ -2,7 +2,7 @@
  * @author Koen Wolters <koen.wolters@cern.ch>
  */
 
-#include "TestVisualizationModule.hpp"
+#include "VisualizationGeant4Module.hpp"
 
 #include "G4RunManager.hh"
 #include "G4UImanager.hh"
@@ -16,13 +16,13 @@
 
 using namespace allpix;
 
-const std::string TestVisualizationModule::name = "visualization_test";
+const std::string VisualizationGeant4Module::name = "visualization_test";
 
-TestVisualizationModule::TestVisualizationModule(AllPix* apx, Configuration config)
+VisualizationGeant4Module::VisualizationGeant4Module(AllPix* apx, Configuration config)
     : Module(apx), config_(std::move(config)), vis_manager_g4_(nullptr) {}
-TestVisualizationModule::~TestVisualizationModule() = default;
+VisualizationGeant4Module::~VisualizationGeant4Module() = default;
 
-void TestVisualizationModule::init() {
+void VisualizationGeant4Module::init() {
     LOG(INFO) << "INITIALIZING VISUALIZATION";
 
     // suppress all geant4 output
@@ -52,7 +52,7 @@ void TestVisualizationModule::init() {
 }
 
 // run the deposition
-void TestVisualizationModule::run() {
+void VisualizationGeant4Module::run() {
     LOG(INFO) << "VISUALIZING RESULT";
 
     // execute the main macro

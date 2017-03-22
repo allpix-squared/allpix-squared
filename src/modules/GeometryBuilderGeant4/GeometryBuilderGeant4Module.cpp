@@ -1,4 +1,4 @@
-#include "GeometryConstructionModule.hpp"
+#include "GeometryBuilderGeant4Module.hpp"
 
 #include <cassert>
 #include <cstdio>
@@ -35,12 +35,12 @@ using namespace allpix;
 using namespace ROOT;
 
 // name of the module
-const std::string GeometryConstructionModule::name = "geometry_test";
+const std::string GeometryBuilderGeant4Module::name = "geometry_test";
 
 // constructor and destructor (defined here to allow for incomplete unique_ptr type)
-GeometryConstructionModule::GeometryConstructionModule(AllPix* apx, Configuration config)
+GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(AllPix* apx, Configuration config)
     : Module(apx), config_(std::move(config)), run_manager_g4_(nullptr) {}
-GeometryConstructionModule::~GeometryConstructionModule() = default;
+GeometryBuilderGeant4Module::~GeometryBuilderGeant4Module() = default;
 
 // check geant4 environment variable
 inline static void check_dataset_g4(const std::string& env_name) {
@@ -58,7 +58,7 @@ inline static void check_dataset_g4(const std::string& env_name) {
 }
 
 // create the run manager and make it available
-void GeometryConstructionModule::init() {
+void GeometryBuilderGeant4Module::init() {
     // suppress all output (also cout due to a part in Geant4 where G4cout is not used)
     SUPPRESS_STREAM(std::cout);
     SUPPRESS_STREAM(G4cout);
@@ -87,7 +87,7 @@ void GeometryConstructionModule::init() {
 }
 
 // run the geometry construction
-void GeometryConstructionModule::run() {
+void GeometryBuilderGeant4Module::run() {
     LOG(INFO) << "START BUILD GEOMETRY";
 
     // FIXME: check that geometry is empty or clean it before continuing
@@ -129,7 +129,7 @@ void GeometryConstructionModule::run() {
     LOG(INFO) << "END BUILD GEOMETRY";
 }
 
-void GeometryConstructionModule::build_g4() {
+void GeometryBuilderGeant4Module::build_g4() {
     // suppress all output for G4
     SUPPRESS_STREAM(G4cout);
 

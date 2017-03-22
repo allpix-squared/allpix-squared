@@ -1,8 +1,8 @@
-##########################################
-# Charge Deposition Module using Geant4  #
-##########################################
+########################
+# Visualization Module #
+########################
 
-# Define module
+# Define module and return the generated name as MODULE_NAME
 ALLPIX_MODULE(MODULE_NAME)
 
 # Geant4 is required for geometry description and charge deposition.
@@ -26,9 +26,7 @@ INCLUDE_DIRECTORIES(SYSTEM ${Geant4_INCLUDE_DIRS})
 
 # Add library
 ALLPIX_MODULE_SOURCES(${MODULE_NAME} 
-    SimpleDepositionModule.cpp
-    GeneratorActionG4.cpp
-    SensitiveDetectorG4.cpp
+    VisualizationGeant4Module.cpp
 )
 
 # Add Geant4 libraries
