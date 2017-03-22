@@ -2,7 +2,7 @@
 # Geometry Builder Module, TGeo Implementation #
 ################################################
 
-# Define module
+# Define module and return the generated name as MODULE_NAME
 ALLPIX_MODULE(MODULE_NAME)
 
 # Geant4 is required for geometry description and charge deposition.

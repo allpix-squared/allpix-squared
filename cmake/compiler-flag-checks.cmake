@@ -6,9 +6,9 @@ FOREACH( FLAG ${COMPILER_FLAGS} )
 
     CHECK_CXX_COMPILER_FLAG( "${FLAG}" CXX_FLAG_WORKS_${FLAG_WORD} )
     IF( ${CXX_FLAG_WORKS_${FLAG_WORD}} )
-      SET ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAG}")
+        SET ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAG}")
     ELSE()
-      MESSAGE ( STATUS "NOT adding ${FLAG} to CXX_FLAGS - unsupported flag" )
+        MESSAGE ( STATUS "NOT adding ${FLAG} to CXX_FLAGS - unsupported flag" )
     ENDIF()
 ENDFOREACH()
 

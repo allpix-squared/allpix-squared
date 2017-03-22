@@ -10,18 +10,18 @@ OPTION(BUILD_allmodules "Build all modules?" OFF)
 ##############################
 
 # example module
-allpix_build_module(example)
+ALLPIX_BUILD_MODULE(example)
 
 # geometry
-allpix_build_module(geometry_test)
-allpix_build_module(geometry_tgeo)
+ALLPIX_BUILD_MODULE(geometry_test)
+ALLPIX_BUILD_MODULE(geometry_tgeo)
 
 # deposition
-allpix_build_module(deposition_simple)
+ALLPIX_BUILD_MODULE(deposition_simple)
 
 # output writers
-allpix_build_module(deposit_reader_test)
-allpix_build_module(detector_histogrammer_test)
+ALLPIX_BUILD_MODULE(deposit_reader_test)
+ALLPIX_BUILD_MODULE(detector_histogrammer_test)
 
 # visualization
-allpix_build_module(visualization_test)
+ALLPIX_BUILD_MODULE(visualization_test)

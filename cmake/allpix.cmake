@@ -1,4 +1,4 @@
-# For every module, build a separate library to be loaded by allpix core
+# for every module, build a separate library to be loaded by allpix core
 MACRO(allpix_build_module dir)
     # FIXME: always build all modules by default for now
     OPTION(BUILD_${dir} "Build module in directory ${dir}?" ON)
@@ -8,8 +8,8 @@ MACRO(allpix_build_module dir)
     
     # only build if the build flag is defined
     IF(BUILD_${dir} OR BUILD_allmodules)
-    MESSAGE( STATUS "Building module: " ${dir} )
-    ADD_SUBDIRECTORY(${dir})
+        MESSAGE( STATUS "Building module: " ${dir} )
+        ADD_SUBDIRECTORY(${dir})
     ENDIF()
 ENDMACRO()
 
@@ -43,7 +43,7 @@ ENDMACRO()
 
 # provide default install target for the module
 MACRO(allpix_module_install name)
-    INSTALL(TARGETS ${ALLPIX_MODULE_NAME}
+    INSTALL(TARGETS ${name}
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)

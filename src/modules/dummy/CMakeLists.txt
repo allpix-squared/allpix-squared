@@ -2,7 +2,7 @@
 # Allpix2 Dummy Module #
 ########################
 
-# Define module
+# Define module and return the generated name as MODULE_NAME
 ALLPIX_MODULE(MODULE_NAME)
 
 # Add library
