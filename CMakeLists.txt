@@ -10,8 +10,8 @@ ENDIF(COMMAND CMAKE_POLICY)
 PROJECT(allpix)
 INCLUDE("cmake/tools.cmake")
 
-# Prepare version number
-GetVersionString()
+# Print the version information
+PRINT_VERSION()
 
 #########################
 # allpix2 build options #
@@ -51,16 +51,24 @@ ENDIF("${isSystemDir}" STREQUAL "-1")
 # Set standard build flags
 SET(COMPILER_FLAGS -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wconversion -Wzero-as-null-pointer-constant -Wuseless-cast -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Werror -Wshadow -Wformat-security -Wdeprecated -fdiagnostics-color=auto -Weffc++)
 
-INCLUDE("cmake/compiler-checks.cmake")
+# Require a C++14 compiler but do allow extensions
+SET(CMAKE_CXX_STANDARD 14)
+SET(CMAKE_CXX_STANDARD_REQUIRED ON)
+SET(CMAKE_CXX_EXTENSIONS OFF)
 
+# Include Threads (not used yet)
+# FIND_PACKAGE(Threads REQUIRED)
+
+INCLUDE("cmake/compiler-flag-checks.cmake")
 
 ###################################
 # Prerequisistes for allpix       #
 ###################################
 
-# WARNING: THIS PREREQUISITE LOGIC SHOULD BE RESTRUCTURED
+# Define the libraries
+SET(ALLPIX_LIBRARIES "")
 
-# ROOT is required for histogramming
+# ROOT is required for vector etc
 FIND_PACKAGE(ROOT REQUIRED COMPONENTS Geom GenVector)
 IF(NOT ROOT_FOUND)
     MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
@@ -68,20 +76,21 @@ IF(NOT ROOT_FOUND)
 ENDIF(NOT ROOT_FOUND)
 INCLUDE_DIRECTORIES(SYSTEM ${ROOT_INCLUDE_DIRS})
 
-FIND_PACKAGE(Eigen3 REQUIRED)
-INCLUDE_DIRECTORIES(SYSTEM ${EIGEN3_INCLUDE_DIR})
+# Set the dependencies
+SET(ALLPIX_DEPS_INCLUDE_DIR ${ROOT_INCLUDE_DIRS})
+SET(ALLPIX_DEPS_LIBRARIES ${ROOT_LIBRARIES} ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES})
 
-# ADD EIGEN EXTENSIONS
-# FIXME: EXPERIMENTAL AND SHOULD BE RESTRUCTURED TO THE RIGHT INCLUDE PLACE
-ADD_DEFINITIONS(-DEIGEN_MATRIXBASE_PLUGIN="tools/eigen_matrix_extend.h")
+# Include allpix cmake functions
+INCLUDE("cmake/allpix.cmake")
 
 ###################################
 # Load cpp format and check tools #
 ###################################
 
+# Set the source files to clang-format (FIXME: determine this better)
 FILE(GLOB_RECURSE
      CHECK_CXX_SOURCE_FILES
-     src/*.[ch]pp src/*.h
+        src/*.[ch]pp src/*.h
      )
 INCLUDE("cmake/clang-cpp-checks.cmake")
 
@@ -89,16 +98,19 @@ INCLUDE("cmake/clang-cpp-checks.cmake")
 # Define build targets for allpix #
 ###################################
 
-# Include source as top directory
+# Always include sources from top directory
 INCLUDE_DIRECTORIES(src)
 
 # Always build main allpix library
 ADD_SUBDIRECTORY(src/core)
+SET(ALLPIX_LIBRARIES ${ALLPIX_LIBRARIES} AllpixCore)
 
 # Build messages
 ADD_SUBDIRECTORY(src/messages)
+SET(ALLPIX_LIBRARIES ${ALLPIX_LIBRARIES} AllpixMessages)
 
 # Build required modules
+SET(ALLPIX_MODULE_LIBRARIES "" CACHE INTERNAL "ALLPIX_MODULE_LIBRARIES") # FIXME: temporary save the libraries to link
 ADD_SUBDIRECTORY(src/modules)
 
 # Add targets for Doxygen code reference and LaTeX User manual

@@ -1,17 +1,15 @@
-FIND_PACKAGE(ROOT REQUIRED)
-IF(NOT ROOT_FOUND)
-    MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
-    "$ source YOUR_ROOT_DIR/bin/thisroot.sh")
-ENDIF(NOT ROOT_FOUND)
+# include the standard dependencies
+INCLUDE_DIRECTORIES(SYSTEM ${ALLPIX_DEPS_INCLUDE_DIRS})
 
-INCLUDE_DIRECTORIES(SYSTEM ${ROOT_INCLUDE_DIRS})
-
+# define the library
 ADD_LIBRARY(AllpixMessages SHARED
     DepositionMessage.cpp
 )
 
-TARGET_LINK_LIBRARIES(AllpixMessages ${ROOT_LIBRARIES})
+# link the standard dependencies
+TARGET_LINK_LIBRARIES(AllpixMessages ${ALLPIX_DEPS_LIBRARIES})
 
+# specify install for the messages
 INSTALL(TARGETS AllpixMessages
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib)

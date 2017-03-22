@@ -1,6 +1,9 @@
 ##########################################
-# Charge Deposition Module, using Geant4 #
+# Charge Deposition Module using Geant4  #
 ##########################################
+
+# Define module
+ALLPIX_MODULE(MODULE_NAME)
 
 # Geant4 is required for geometry description and charge deposition.
 FIND_PACKAGE(Geant4 REQUIRED ui_all vis_all)
@@ -9,34 +12,27 @@ IF(NOT Geant4_FOUND)
     "$ source YOUR_GEANT4_DIR/bin/geant4.sh")
 ENDIF(NOT Geant4_FOUND)
 
-# Save the CXX flags because Geant4 unfortunately changes those so we have to set it back later
-SET(SAVE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+# Add Geant4 flags before our own flags 
+ADD_DEFINITIONS(${Geant4_DEFINITIONS})
+SET(${CMAKE_CXX_FLAGS} "${Geant4_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
+    SET(${CMAKE_CXX_FLAGS} "${Geant4_CXX_FLAGS_DEBUG} ${CMAKE_CXX_FLAGS}")
+ELSEIF(CMAKE_BUILD_TYPE MATCHES RELEASE)    
+    SET(${CMAKE_CXX_FLAGS} "${Geant4_CXX_FLAGS_RELEASE} ${CMAKE_CXX_FLAGS}")
+ENDIF()
 
+# Include Geant4 directories (WARNING: do not use the Geant4_USE_FILE!)
+INCLUDE_DIRECTORIES(SYSTEM ${Geant4_INCLUDE_DIRS})
 
-# Set up module library and build target
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
-FILE(GLOB_RECURSE LIB_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+# Add library
+ALLPIX_MODULE_SOURCES(${MODULE_NAME} 
+    SimpleDepositionModule.cpp
+    GeneratorActionG4.cpp
+    SensitiveDetectorG4.cpp
+)
 
-# FIXME: determine per module if we want to include ROOT + G4
-INCLUDE_DIRECTORIES(SYSTEM ${ROOT_INCLUDE_DIRS})
-INCLUDE(${Geant4_USE_FILE})
+# Add Geant4 libraries
+TARGET_LINK_LIBRARIES(${MODULE_NAME} ${Geant4_LIBRARIES})
 
-# WARNING: RESET THE CXX CMAKE_CXX_FLAGS WITH GEANT4 OPTIONS
-SET(CMAKE_CXX_FLAGS "${SAVE_CXX_FLAGS} -DG4USE_STD11")
-
-# ADD DEFINITIONS FOR EXPERIMENTAL EIGEN CONVERSIONS
-# ADD_DEFINITIONS(-DHAVE_ROOT -DHAVE_GEANT)
-
-GET_FILENAME_COMPONENT(MODULE_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
-ADD_LIBRARY(${MODULE_NAME} SHARED ${LIB_SOURCE_FILES})
-
-TARGET_LINK_LIBRARIES(${MODULE_NAME} AllpixCore)
-TARGET_LINK_LIBRARIES(${MODULE_NAME} AllpixMessages)
-
-# FIXME: determine per module the libraries to link
-TARGET_LINK_LIBRARIES(${MODULE_NAME} ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES} ${Geant4_LIBRARIES})
-
-INSTALL(TARGETS ${dir}
-  RUNTIME DESTINATION bin
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib)
+# Provide standard install target
+ALLPIX_MODULE_INSTALL(${MODULE_NAME})
