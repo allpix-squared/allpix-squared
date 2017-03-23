@@ -61,6 +61,13 @@ SET(CMAKE_CXX_EXTENSIONS OFF)
 
 INCLUDE("cmake/compiler-flag-checks.cmake")
 
+# Set some debug flags (FIXME: not using the flag checker now because it wrongly rejects a valid flag...)
+IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
+    MESSAGE(STATUS "Running debug build - Adding extra sanitizer flags")
+    SET(CMAKE_CXX_COMPILE_FLAGS "${CMAKE_CXX_COMPILE_FLAGS} -fsanitize=address -fsanitize=undefined")
+ENDIF()
+
+
 ###################################
 # Prerequisistes for allpix       #
 ###################################

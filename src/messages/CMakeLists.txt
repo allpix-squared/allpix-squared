@@ -7,7 +7,7 @@ ADD_LIBRARY(AllpixMessages SHARED
 )
 
 # link the standard dependencies
-TARGET_LINK_LIBRARIES(AllpixMessages ${ALLPIX_DEPS_LIBRARIES})
+TARGET_LINK_LIBRARIES(AllpixMessages ${ALLPIX_LIBRARIES} ${ALLPIX_DEPS_LIBRARIES})
 
 # specify install for the messages
 INSTALL(TARGETS AllpixMessages
