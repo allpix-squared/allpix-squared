@@ -28,9 +28,11 @@ void VisualizationGeant4Module::init() {
     // suppress all geant4 output
     SUPPRESS_STREAM(G4cout);
 
+    // check if we have a running G4 manager
     G4RunManager* run_manager_g4 = G4RunManager::GetRunManager();
-
-    assert(run_manager_g4 != nullptr);
+    if(run_manager_g4 == nullptr) {
+        throw ModuleException("Cannot visualize using Geant4 without an Geant4 geometry builder");
+    }
 
     // initialize the session and the visualization manager
     vis_manager_g4_ = std::make_shared<G4VisExecutive>("quiet");
