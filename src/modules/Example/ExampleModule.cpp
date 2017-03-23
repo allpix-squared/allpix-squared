@@ -8,7 +8,7 @@
 using namespace allpix;
 
 // set the name of the module
-const std::string ExampleModule::name = "example";
+const std::string ExampleModule::name = "Example";
 
 // constructor to load the module
 ExampleModule::ExampleModule(AllPix* apx, Configuration config) : Module(apx), message_(nullptr) {

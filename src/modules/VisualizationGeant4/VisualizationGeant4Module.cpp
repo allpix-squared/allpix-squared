@@ -16,7 +16,7 @@
 
 using namespace allpix;
 
-const std::string VisualizationGeant4Module::name = "visualization_test";
+const std::string VisualizationGeant4Module::name = "VisualizationGeant4";
 
 VisualizationGeant4Module::VisualizationGeant4Module(AllPix* apx, Configuration config)
     : Module(apx), config_(std::move(config)), vis_manager_g4_(nullptr) {}

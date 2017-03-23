@@ -24,7 +24,7 @@
 
 using namespace allpix;
 
-const std::string DepositionGeant4Module::name = "deposition_simple";
+const std::string DepositionGeant4Module::name = "DepositionGeant4";
 
 DepositionGeant4Module::DepositionGeant4Module(AllPix* apx, Configuration config)
     : Module(apx), config_(std::move(config)) {}

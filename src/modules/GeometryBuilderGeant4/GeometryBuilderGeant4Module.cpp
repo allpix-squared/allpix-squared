@@ -35,7 +35,7 @@ using namespace allpix;
 using namespace ROOT;
 
 // name of the module
-const std::string GeometryBuilderGeant4Module::name = "geometry_test";
+const std::string GeometryBuilderGeant4Module::name = "GeometryBuilderGeant4";
 
 // constructor and destructor (defined here to allow for incomplete unique_ptr type)
 GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(AllPix* apx, Configuration config)
