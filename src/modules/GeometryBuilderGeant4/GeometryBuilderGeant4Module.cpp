@@ -40,7 +40,7 @@ const std::string GeometryBuilderGeant4Module::name = "geometry_test";
 // constructor and destructor (defined here to allow for incomplete unique_ptr type)
 GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(AllPix* apx, Configuration config)
     : Module(apx), config_(std::move(config)), run_manager_g4_(nullptr) {}
-GeometryBuilderGeant4Module::~GeometryBuilderGeant4Module() {}
+GeometryBuilderGeant4Module::~GeometryBuilderGeant4Module() = default;
 
 // check geant4 environment variable
 inline static void check_dataset_g4(const std::string& env_name) {

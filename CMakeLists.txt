@@ -61,12 +61,14 @@ SET(CMAKE_CXX_EXTENSIONS OFF)
 
 INCLUDE("cmake/compiler-flag-checks.cmake")
 
-# Set some debug flags (FIXME: not using the flag checker now because it wrongly rejects a valid flag...)
-IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
+# Set some debug flags 
+# FIXME: not using the flag checker now because it wrongly rejects a sanitizer flag..
+IF(CMAKE_BUILD_TYPE MATCHES DEBUG AND ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")))
     MESSAGE(STATUS "Running debug build - Adding extra sanitizer flags")
-    SET(CMAKE_CXX_COMPILE_FLAGS "${CMAKE_CXX_COMPILE_FLAGS} -fsanitize=address -fsanitize=undefined")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined")
+    # FIXME: remove earlier shared linker flags, because they can break the sanitizer debug build
+    SET(CMAKE_SHARED_LINKER_FLAGS "-fsanitize=address -fsanitize=undefined")
 ENDIF()
-
 
 ###################################
 # Prerequisistes for allpix       #
