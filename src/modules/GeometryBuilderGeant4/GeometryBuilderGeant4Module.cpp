@@ -40,7 +40,7 @@ const std::string GeometryBuilderGeant4Module::name = "geometry_test";
 // constructor and destructor (defined here to allow for incomplete unique_ptr type)
 GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(AllPix* apx, Configuration config)
     : Module(apx), config_(std::move(config)), run_manager_g4_(nullptr) {}
-GeometryBuilderGeant4Module::~GeometryBuilderGeant4Module() = default;
+GeometryBuilderGeant4Module::~GeometryBuilderGeant4Module() {}
 
 // check geant4 environment variable
 inline static void check_dataset_g4(const std::string& env_name) {
@@ -64,7 +64,7 @@ void GeometryBuilderGeant4Module::init() {
     SUPPRESS_STREAM(G4cout);
 
     // create the G4 run manager
-    run_manager_g4_ = std::make_shared<G4RunManager>();
+    run_manager_g4_ = std::make_unique<G4RunManager>();
 
     // check if all the required geant4 datasets are defined
     check_dataset_g4("G4LEVELGAMMADATA");
@@ -82,17 +82,10 @@ void GeometryBuilderGeant4Module::init() {
     RELEASE_STREAM(std::cout);
     RELEASE_STREAM(G4cout);
 
-    // save the geant4 run manager in allpix to make it available to other modules
-    getAllPix()->setExternalManager(run_manager_g4_);
-}
+    // construct the geometry
+    // WARNING: we need to do this here to allow for proper instantiation later (FIXME: is this correct)
 
-// run the geometry construction
-void GeometryBuilderGeant4Module::run() {
-    LOG(INFO) << "START BUILD GEOMETRY";
-
-    // FIXME: check that geometry is empty or clean it before continuing
-
-    // read the geometry
+    // read the models
     std::string model_file_name = config_.get<std::string>("models_file");
     auto geo_descriptions = ReadGeoDescription(model_file_name);
 
@@ -104,6 +97,7 @@ void GeometryBuilderGeant4Module::run() {
     }
     ConfigReader detector_config(file);
 
+    // add the configurations to the detectors
     for(auto& detector_section : detector_config.getConfigurations()) {
         std::shared_ptr<DetectorModel> detector_model =
             geo_descriptions.getDetectorModel(detector_section.get<std::string>("type"));
@@ -121,6 +115,17 @@ void GeometryBuilderGeant4Module::run() {
         auto detector = std::make_shared<Detector>(detector_section.getName(), detector_model, position, orientation);
         getGeometryManager()->addDetector(detector);
     }
+
+    // save the geant4 run manager in allpix to make it available to other modules
+    // getAllPix()->setExternalManager(run_manager_g4_);
+}
+
+// run the geometry construction
+void GeometryBuilderGeant4Module::run() {
+    LOG(INFO) << "START BUILD GEOMETRY";
+
+    // FIXME: check that geometry is empty or clean it before continuing
+    assert(run_manager_g4_ != nullptr);
 
     // construct the G4 geometry
     build_g4();

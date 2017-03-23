@@ -35,7 +35,10 @@ void DepositionGeant4Module::run() {
     LOG(INFO) << "INIT THE DEPOSITS";
 
     // load the G4 run manager from allpix
-    std::shared_ptr<G4RunManager> run_manager_g4 = getAllPix()->getExternalManager<G4RunManager>();
+    // std::shared_ptr<G4RunManager> run_manager_g4 = getAllPix()->getExternalManager<G4RunManager>();
+
+    G4RunManager* run_manager_g4 = G4RunManager::GetRunManager();
+
     assert(run_manager_g4 !=
            nullptr); // FIXME: temporary assert (throw a proper exception later if the manager is not defined)
 

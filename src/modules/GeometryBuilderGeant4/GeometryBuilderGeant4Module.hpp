@@ -38,7 +38,8 @@ namespace allpix {
         Configuration config_;
 
         // geant run manager
-        std::shared_ptr<G4RunManager> run_manager_g4_;
+        // FIXME: is it right to let the geometry own this pointer
+        std::unique_ptr<G4RunManager> run_manager_g4_;
     };
 }
 
