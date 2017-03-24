@@ -3,7 +3,7 @@
  * @author Mathieu Benoit <benoit@lal.in2p3.fr>
  */
 
-#include "SimpleDepositionModule.hpp"
+#include "DepositionGeant4Module.hpp"
 
 #include <G4HadronicProcessStore.hh>
 #include <G4ParticleDefinition.hh>
@@ -20,22 +20,25 @@
 #include "tools/geant4.h"
 
 // FIXME: THIS IS BROKEN ---> SHOULD NEVER BE NEEDED !!!
-#include "../geometry_test/DetectorModelG4.hpp"
+#include "../GeometryBuilderGeant4/DetectorModelG4.hpp"
 
 using namespace allpix;
 
-const std::string SimpleDepositionModule::name = "deposition_simple";
+const std::string DepositionGeant4Module::name = "DepositionGeant4";
 
-SimpleDepositionModule::SimpleDepositionModule(AllPix* apx, Configuration config)
-    : Module(apx), config_(std::move(config)) {}
-SimpleDepositionModule::~SimpleDepositionModule() = default;
+DepositionGeant4Module::DepositionGeant4Module(Configuration config, Messenger* messenger, GeometryManager* geo_manager)
+    : config_(std::move(config)), messenger_(messenger), geo_manager_(geo_manager) {}
+DepositionGeant4Module::~DepositionGeant4Module() = default;
 
 // run the deposition
-void SimpleDepositionModule::run() {
+void DepositionGeant4Module::run() {
     LOG(INFO) << "INIT THE DEPOSITS";
 
     // load the G4 run manager from allpix
-    std::shared_ptr<G4RunManager> run_manager_g4 = getAllPix()->getExternalManager<G4RunManager>();
+    // std::shared_ptr<G4RunManager> run_manager_g4 = getAllPix()->getExternalManager<G4RunManager>();
+
+    G4RunManager* run_manager_g4 = G4RunManager::GetRunManager();
+
     assert(run_manager_g4 !=
            nullptr); // FIXME: temporary assert (throw a proper exception later if the manager is not defined)
 
@@ -68,8 +71,8 @@ void SimpleDepositionModule::run() {
 
     // loop through all detectors and set the sensitive detectors
     G4SDManager* sd_man_g4 = G4SDManager::GetSDMpointer(); // FIXME: do we need this sensitive detector manager
-    for(auto& detector : getGeometryManager()->getDetectors()) {
-        auto sensitive_detector_g4 = new SensitiveDetectorG4(detector, getMessenger());
+    for(auto& detector : geo_manager_->getDetectors()) {
+        auto sensitive_detector_g4 = new SensitiveDetectorG4(detector, messenger_);
 
         sd_man_g4->AddNewDetector(sensitive_detector_g4);
         detector->getExternalModel<DetectorModelG4>()->pixel_log->SetSensitiveDetector(sensitive_detector_g4);
@@ -86,7 +89,7 @@ void SimpleDepositionModule::run() {
 
     // start the beam
     LOG(INFO) << "START THE BEAM";
-    run_manager_g4->BeamOn(config_.get("amount", 1));
+    run_manager_g4->BeamOn(1);
 
     LOG(INFO) << "END DEPOSIT MODULE";
 }

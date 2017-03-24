@@ -15,20 +15,9 @@
 
 using namespace allpix;
 
-// Constructor
+// Constructor and destructor
 Messenger::Messenger() : delegates_() {}
-
-// Destructor
-Messenger::~Messenger() {
-    // delete all delegates
-    for(auto& type_delegates : delegates_) {
-        for(auto& name_delegates : type_delegates.second) {
-            for(auto& delegate : name_delegates.second) {
-                delete delegate;
-            }
-        }
-    }
-}
+Messenger::~Messenger() = default;
 
 // Dispatch the message
 void Messenger::dispatchMessage(const std::shared_ptr<Message>& msg, const std::string& name) {

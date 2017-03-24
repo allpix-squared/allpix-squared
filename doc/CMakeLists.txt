@@ -19,15 +19,13 @@ ENDIF(DOXYGEN_FOUND)
 
 # Information and the manual on the UseLATEX.cmake package can be found here
 # http://www.cmake.org/Wiki/CMakeUserUseLATEX
-# The code resides here:
-# https://github.com/kmorel/UseLATEX
 
 FIND_PACKAGE(LATEX)
 
 IF(LATEX_COMPILER)
   MESSAGE(STATUS "Found LaTeX compiler.")
   SET(LATEX_COMPILER_FLAGS "-shell-escape" "-interaction=nonstopmode" CACHE STRING "Flags passed to latex.")
-  INCLUDE(${CMAKE_SOURCE_DIR}/cmake/UseLATEX.cmake)
+  INCLUDE(${CMAKE_SOURCE_DIR}/cmake/LATEX.cmake)
   
   SET(LATEX_OUTPUT_PATH ${CMAKE_BINARY_DIR})
   ADD_LATEX_DOCUMENT(usermanual/allpix-manual.tex 
@@ -35,7 +33,6 @@ IF(LATEX_COMPILER)
     usermanual/symbols.tex
     usermanual/design.tex
     usermanual/references.tex
-    usermanual/ExampleModule.hpp
     NO_DEFAULT
     )
 ELSE(LATEX_COMPILER)

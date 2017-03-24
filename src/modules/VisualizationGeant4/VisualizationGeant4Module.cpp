@@ -2,7 +2,7 @@
  * @author Koen Wolters <koen.wolters@cern.ch>
  */
 
-#include "TestVisualizationModule.hpp"
+#include "VisualizationGeant4Module.hpp"
 
 #include "G4RunManager.hh"
 #include "G4UImanager.hh"
@@ -16,17 +16,23 @@
 
 using namespace allpix;
 
-const std::string TestVisualizationModule::name = "visualization_test";
+const std::string VisualizationGeant4Module::name = "VisualizationGeant4";
 
-TestVisualizationModule::TestVisualizationModule(AllPix* apx, Configuration config)
-    : Module(apx), config_(std::move(config)), vis_manager_g4_(nullptr) {}
-TestVisualizationModule::~TestVisualizationModule() = default;
+VisualizationGeant4Module::VisualizationGeant4Module(Configuration config, Messenger*, GeometryManager*)
+    : config_(std::move(config)), vis_manager_g4_(nullptr) {}
+VisualizationGeant4Module::~VisualizationGeant4Module() = default;
 
-void TestVisualizationModule::init() {
+void VisualizationGeant4Module::init() {
     LOG(INFO) << "INITIALIZING VISUALIZATION";
 
     // suppress all geant4 output
     SUPPRESS_STREAM(G4cout);
+
+    // check if we have a running G4 manager
+    G4RunManager* run_manager_g4 = G4RunManager::GetRunManager();
+    if(run_manager_g4 == nullptr) {
+        throw ModuleException("Cannot visualize using Geant4 without an Geant4 geometry builder");
+    }
 
     // initialize the session and the visualization manager
     vis_manager_g4_ = std::make_shared<G4VisExecutive>("quiet");
@@ -52,7 +58,7 @@ void TestVisualizationModule::init() {
 }
 
 // run the deposition
-void TestVisualizationModule::run() {
+void VisualizationGeant4Module::run() {
     LOG(INFO) << "VISUALIZING RESULT";
 
     // execute the main macro

@@ -10,7 +10,7 @@ BumpsParameterizationG4::BumpsParameterizationG4(std::shared_ptr<PixelDetectorMo
     : model_(model), hsensorX(model->GetHalfSensorX()), hsensorY(model_->GetHalfSensorY()), hpixelX(model->GetHalfPixelX()),
       hpixelY(model->GetHalfPixelY()), npixelX(model->GetNPixelsX()), npixelY(model->GetNPixelsY()) {}
 
-void BumpsParameterizationG4::ComputeTransformation(G4int copyId, G4VPhysicalVolume* Bump) const {
+void BumpsParameterizationG4::ComputeTransformation(const G4int copyId, G4VPhysicalVolume* Bump) const {
     G4double XPos = posX(copyId) + model_->GetBumpOffsetX();
     G4double YPos = posY(copyId) + model_->GetBumpOffsetY();
     G4double ZPos = 0;

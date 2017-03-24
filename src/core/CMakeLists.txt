@@ -1,15 +1,9 @@
-# Include directories
-#INCLUDE_DIRECTORIES(
-#  core/utils
-#  core/allpix
-#  core/objs
-#  core/detector
-#  modules
-#  ${GEANT4_INCLUDE_DIR})
+# build with Weffc++ only in the core
+IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weffc++")
+ENDIF()
 
-FIND_PACKAGE(Eigen3 REQUIRED)
-INCLUDE_DIRECTORIES(SYSTEM ${EIGEN3_INCLUDE_DIR})
-
+# create core library
 ADD_LIBRARY(AllpixCore SHARED
     utils/log.cpp
     module/Module.cpp

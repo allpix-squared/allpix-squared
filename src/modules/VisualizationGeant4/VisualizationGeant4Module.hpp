@@ -9,6 +9,8 @@
 #include <string>
 
 #include "core/config/Configuration.hpp"
+#include "core/geometry/GeometryManager.hpp"
+#include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 
 class G4UIsession;
@@ -16,14 +18,14 @@ class G4VisManager;
 
 namespace allpix {
     // define the module to inherit from the module base class
-    class TestVisualizationModule : public Module {
+    class VisualizationGeant4Module : public Module {
     public:
         // provide a static const variable of type string (required!)
         static const std::string name;
 
         // constructor should take a pointer to AllPix, a ModuleIdentifier and a Configuration as input
-        TestVisualizationModule(AllPix* apx, Configuration config);
-        ~TestVisualizationModule() override;
+        VisualizationGeant4Module(Configuration config, Messenger*, GeometryManager*);
+        ~VisualizationGeant4Module() override;
 
         // initializes the visualization and set necessary settings to catch all the required data
         void init() override;

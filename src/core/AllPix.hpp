@@ -33,11 +33,6 @@ namespace allpix {
         ModuleManager* getModuleManager();
         Messenger* getMessenger();
 
-        // Get external managers
-        // FIXME: is this a good place to implement this?
-        template <typename T> std::shared_ptr<T> getExternalManager();
-        template <typename T> void setExternalManager(std::shared_ptr<T>);
-
         // Get state
         State getState() const;
 
@@ -57,17 +52,7 @@ namespace allpix {
         std::unique_ptr<Messenger> msg_;
 
         State state_;
-
-        std::map<std::type_index, std::shared_ptr<void>> external_managers_;
     };
-
-    template <typename T> std::shared_ptr<T> AllPix::getExternalManager() {
-        // FIXME: crash here if the manager is not available ??
-        return std::static_pointer_cast<T>(external_managers_[typeid(T)]);
-    }
-    template <typename T> void AllPix::setExternalManager(std::shared_ptr<T> model) {
-        external_managers_[typeid(T)] = std::static_pointer_cast<void>(model);
-    }
 }
 
 #endif /* ALLPIX_ALLPIX_H */

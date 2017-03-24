@@ -4,27 +4,14 @@
 
 #include "Module.hpp"
 
-#include "core/AllPix.hpp"
-#include "core/config/ConfigManager.hpp"
-#include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
 
 using namespace allpix;
 
-Module::Module(AllPix* allpix) : allpix_(allpix), _detector(nullptr) {}
+Module::Module() : Module(nullptr) {}
+Module::Module(std::shared_ptr<Detector> detector) : detector_ptr__(std::move(detector)) {}
 
-AllPix* Module::getAllPix() {
-    return allpix_;
-}
-
-Messenger* Module::getMessenger() {
-    return allpix_->getMessenger();
-}
-
-ModuleManager* Module::getModuleManager() {
-    return allpix_->getModuleManager();
-}
-
-GeometryManager* Module::getGeometryManager() {
-    return allpix_->getGeometryManager();
+// Get the detector
+std::shared_ptr<Detector> Module::getDetector() {
+    return detector_ptr__;
 }

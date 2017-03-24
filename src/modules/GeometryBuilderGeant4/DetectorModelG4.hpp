@@ -10,6 +10,11 @@ namespace allpix {
 
     // FIXME: we should either both make the detector model (PixelDetectorModel) classes or both structs
     struct DetectorModelG4 {
+        ~DetectorModelG4() {
+            // FIXME: store this pointer somewhere else
+            delete parameterization_;
+        }
+
         // Wrapper for the whole detector in the world model (invisible)
         G4LogicalVolume* wrapper_log;
         G4VPhysicalVolume* wrapper_phys;

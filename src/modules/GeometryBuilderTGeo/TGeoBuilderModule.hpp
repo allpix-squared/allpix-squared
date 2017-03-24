@@ -26,7 +26,9 @@
 
 // AllPix2
 #include "core/config/Configuration.hpp"
+#include "core/geometry/GeometryManager.hpp"
 #include "core/geometry/PixelDetectorModel.hpp"
+#include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 
 /*** Names of detector parts
@@ -54,8 +56,7 @@ namespace allpix {
       // provide a static const variable of type string (required!)
       static const std::string name;
 
-        // constructor should take a pointer to AllPix, a ModuleIdentifier and a Configuration as input      
-        TGeoBuilderModule(AllPix* apx, Configuration config);
+        TGeoBuilderModule(Configuration config, Messenger*, GeometryManager*);
         ~TGeoBuilderModule() override;
 
         TGeoBuilderModule(const TGeoBuilderModule&) = delete;

@@ -70,9 +70,11 @@ namespace allpix {
 
     private:
         void execute(std::shared_ptr<Message> msg) const override {
+#ifndef NDEBUG
             // the type names should have been correctly resolved earlier
             const Message* inst = msg.get();
             assert(typeid(*inst) == typeid(R));
+#endif
 
             // NOTE: this dynamic cast is not perfect, but otherwise dynamic linking will break
             (this->obj_->*method_)(std::static_pointer_cast<R>(msg));
@@ -95,9 +97,11 @@ namespace allpix {
 
     private:
         void execute(std::shared_ptr<Message> msg) const override {
+#ifndef NDEBUG
             // the type names should have been correctly resolved earlier
             const Message* inst = msg.get();
             assert(typeid(*inst) == typeid(R));
+#endif
 
             // FIXME: check that this assignment does not remove earlier information
 
@@ -122,9 +126,11 @@ namespace allpix {
 
     private:
         void execute(std::shared_ptr<Message> msg) const override {
+#ifndef NDEBUG
             // the type names should have been correctly resolved earlier
             const Message* inst = msg.get();
             assert(typeid(*inst) == typeid(R));
+#endif
 
             // NOTE: this dynamic cast is not perfect, but otherwise dynamic linking will break
             (this->obj_->*member_).push_back(std::static_pointer_cast<R>(msg));

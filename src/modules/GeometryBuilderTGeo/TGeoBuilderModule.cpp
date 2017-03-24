@@ -59,19 +59,18 @@ TGeoTranslation ToTGeoTranslation( const XYZVector& pos ){
 const std::string TGeoBuilderModule::name = "geometry_tgeo";
 
 /// Constructor and destructor
-TGeoBuilderModule::TGeoBuilderModule(AllPix* apx, Configuration conf)
-    : Module(apx),
-      m_fillingWorldMaterial(nullptr),
-      m_userDefinedWorldMaterial("Air"),
-      m_userDefinedGeoOutputFile(""),
-      m_buildAppliancesFlag(false),
-      m_Appliances_type(0),
-      m_buildTestStructureFlag(false),
-      m_vectorWrapperEnhancement(),
-      m_posVectorAppliances(),
-      m_config(std::move(conf)) {
+TGeoBuilderModule::TGeoBuilderModule(Configuration config, Messenger*, GeometryManager*)
+  : m_fillingWorldMaterial(nullptr),
+    m_userDefinedWorldMaterial("Air"),
+    m_userDefinedGeoOutputFile(""),
+    m_buildAppliancesFlag(false),
+    m_Appliances_type(0),
+    m_buildTestStructureFlag(false),
+    m_vectorWrapperEnhancement(),
+    m_posVectorAppliances(),
+    m_config(std::move(config)) {
 
-  // read the configuration
+    // read the configuration
     // WARNING: these conversion go wrong without include tools/ROOT.h - prefer to use std::string
     m_userDefinedWorldMaterial = m_config.get<TString>("world_material");
     m_userDefinedGeoOutputFile = m_config.get<TString>("output_file", "");

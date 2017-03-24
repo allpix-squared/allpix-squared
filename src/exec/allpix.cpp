@@ -18,44 +18,49 @@
 #include "core/module/UniqueModuleFactory.hpp"
 
 // FIXME: should not be here
+#include "modules/GeometryBuilderTGeo/TGeoBuilderModule.hpp"
 #include "modules/deposit_reader_test/TestDepositReaderModule.hpp"
-#include "modules/deposition_simple/SimpleDepositionModule.hpp"
 #include "modules/detector_histogrammer_test/DetectorHistogrammerTestModule.hpp"
-#include "modules/geometry_test/GeometryConstructionModule.hpp"
-#include "modules/geometry_tgeo/TGeoBuilderModule.hpp"
-#include "modules/visualization_test/TestVisualizationModule.hpp"
+
+#include "modules/DepositionGeant4/DepositionGeant4Module.hpp"
+#include "modules/Example/ExampleModule.hpp"
+#include "modules/GeometryBuilderGeant4/GeometryBuilderGeant4Module.hpp"
+#include "modules/VisualizationGeant4/VisualizationGeant4Module.hpp"
 
 using namespace allpix;
 
 // FIXME: temporary generator function for as long we do not have dynamic loading
 std::unique_ptr<ModuleFactory> generator(const std::string& str);
 std::unique_ptr<ModuleFactory> generator(const std::string& str) {
-    if(str == GeometryConstructionModule::name) {
-        return std::make_unique<UniqueModuleFactory<GeometryConstructionModule>>();
+    if(str == GeometryBuilderGeant4Module::name) {
+        return std::make_unique<UniqueModuleFactory<GeometryBuilderGeant4Module>>();
+    }
+    if(str == DepositionGeant4Module::name) {
+        return std::make_unique<UniqueModuleFactory<DepositionGeant4Module>>();
+    }
+    if(str == VisualizationGeant4Module::name) {
+        return std::make_unique<UniqueModuleFactory<VisualizationGeant4Module>>();
+    }
+    if(str == ExampleModule::name) {
+        return std::make_unique<UniqueModuleFactory<ExampleModule>>();
+    }
+
+    if(str == DetectorHistogrammerModule::name) {
+        return std::make_unique<DetectorModuleFactory<DetectorHistogrammerModule>>();
     }
     if(str == TGeoBuilderModule::name) {
         return std::make_unique<UniqueModuleFactory<TGeoBuilderModule>>();
     }
-    if(str == SimpleDepositionModule::name) {
-        return std::make_unique<UniqueModuleFactory<SimpleDepositionModule>>();
-    }
-    if(str == TestVisualizationModule::name) {
-        return std::make_unique<UniqueModuleFactory<TestVisualizationModule>>();
-    }
     if(str == TestDepositReaderModule::name) {
         return std::make_unique<UniqueModuleFactory<TestDepositReaderModule>>();
-    }
-    if(str == DetectorHistogrammerModule::name) {
-        return std::make_unique<DetectorModuleFactory<DetectorHistogrammerModule>>();
     }
 
     return nullptr;
 }
 
 int main(int argc, const char* argv[]) {
-    std::string file_name = "etc/example.ini";
-
-    // FIXME: temporary config pass until we have proper argument handling
+    // FIXME: have standard config and pass replacement as single argument until we have proper argument handling
+    std::string file_name = "etc/example_config.ini";
     if(argc == 2) {
         file_name = argv[1];
     }
@@ -86,16 +91,20 @@ int main(int argc, const char* argv[]) {
         LOG(CRITICAL) << "Error in the configuration file:" << std::endl
                       << "   " << e.what() << std::endl
                       << "The configuration file needs to be updated! Cannot continue...";
+        return 1;
     } catch(RuntimeError& e) {
         LOG(CRITICAL) << "Error during execution of run:" << std::endl
                       << "   " << e.what() << std::endl
                       << "Please check your configuration and modules! Cannot continue...";
+        return 1;
     } catch(LogicError& e) {
         LOG(CRITICAL) << "Error in the logic of module:" << std::endl
                       << "   " << e.what() << std::endl
                       << "Module has to be properly defined! Cannot continue...";
+        return 1;
     } catch(std::exception& e) {
         LOG(CRITICAL) << "Fatal internal error" << std::endl << "   " << e.what() << std::endl << "Cannot continue...";
+        return 127;
     }
 
     return 0;

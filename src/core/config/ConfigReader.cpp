@@ -67,7 +67,7 @@ void ConfigReader::add(std::istream& stream, const std::string& file_name) {
             char ins = 0;
             for(size_t i = 0; i < value.size(); ++i) {
                 if(value[i] == '\'' || value[i] == '\"') {
-                    if(ins != 0) {
+                    if(ins == 0) {
                         ins = value[i];
                     } else if(ins == value[i]) {
                         ins = 0;
@@ -80,7 +80,7 @@ void ConfigReader::add(std::istream& stream, const std::string& file_name) {
             }
 
             // add the config key
-            conf.set(key, trim(value));
+            conf.setText(key, trim(value));
         }
     }
     // add last section

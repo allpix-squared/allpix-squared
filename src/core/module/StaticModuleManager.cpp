@@ -37,20 +37,14 @@ void StaticModuleManager::load(AllPix* allpix) {
 
         // instantiate an instance for each name
         std::unique_ptr<ModuleFactory> factory = get_factory(conf.getName());
-        factory->setAllPix(allpix);
+        factory->setMessenger(allpix->getMessenger());
+        factory->setGeometryManager(allpix->getGeometryManager());
         factory->setConfiguration(conf);
         std::vector<std::pair<ModuleIdentifier, std::unique_ptr<Module>>> mod_list = factory->create();
 
         for(auto&& id_mod : mod_list) {
             std::unique_ptr<Module>& mod = id_mod.second;
             ModuleIdentifier identifier = id_mod.first;
-
-            // ALERT : FIXME: THIS LOGIC SHOULD NOT BE HERE OF COURSE
-            if(conf.getName() == "geometry_test") {
-                mod->init();
-                mod->run();
-                continue;
-            }
 
             auto iter = id_to_module_.find(identifier);
             if(iter != id_to_module_.end()) {
@@ -69,22 +63,22 @@ void StaticModuleManager::load(AllPix* allpix) {
                 }
             }
 
+            // initialize the module
+            // NOTE: we do this directly after instantiation to allow modules to define stuff it
+            //       needs before the next module get instantiated (like geometry)
+            mod->init();
+
             // insert the new module
             modules_.emplace_back(std::move(mod));
             id_to_module_[identifier] = --modules_.end();
             module_to_id_.emplace(modules_.back().get(), identifier);
         }
         mod_list.clear();
-
-        // FIXME: config should be passed earlier
-        // modules_.back()->init(conf);
     }
 
     // initialize all all remaining modules and add them to the run queue
 
     for(auto& mod : modules_) {
-        mod->init();
-
         add_to_run_queue(mod.get());
     }
 }

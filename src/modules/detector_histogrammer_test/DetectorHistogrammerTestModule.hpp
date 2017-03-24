@@ -9,6 +9,8 @@
 #include <string>
 
 #include "core/config/Configuration.hpp"
+#include "core/geometry/GeometryManager.hpp"
+#include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 
 namespace allpix {
@@ -21,7 +23,7 @@ namespace allpix {
         static const std::string name;
 
         // constructor and destructor
-        DetectorHistogrammerModule(AllPix* apx, Configuration config);
+        DetectorHistogrammerModule(Configuration, Messenger*, std::shared_ptr<Detector>);
         ~DetectorHistogrammerModule() override;
 
         // create and plot the histograms
@@ -30,6 +32,9 @@ namespace allpix {
     private:
         // configuration for this module
         Configuration config_;
+
+        // attached detector
+        std::shared_ptr<Detector> detector_;
 
         // list of the messages
         std::vector<std::shared_ptr<DepositionMessage>> deposit_messages_;

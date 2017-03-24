@@ -14,7 +14,7 @@ AllPix::AllPix(std::unique_ptr<ConfigManager> conf_mgr,
                std::unique_ptr<ModuleManager> mod_mgr,
                std::unique_ptr<GeometryManager> geo_mgr)
     : conf_mgr_(std::move(conf_mgr)), mod_mgr_(std::move(mod_mgr)), geo_mgr_(std::move(geo_mgr)),
-      msg_(std::make_unique<Messenger>()), state_(State::Unitialized), external_managers_() {}
+      msg_(std::make_unique<Messenger>()), state_(State::Unitialized) {}
 
 // Get state
 AllPix::State AllPix::getState() const {

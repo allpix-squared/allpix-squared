@@ -10,8 +10,8 @@ ENDIF(COMMAND CMAKE_POLICY)
 PROJECT(allpix)
 INCLUDE("cmake/tools.cmake")
 
-# Prepare version number
-GetVersionString()
+# Print the version information
+PRINT_VERSION()
 
 #########################
 # allpix2 build options #
@@ -49,51 +49,35 @@ ENDIF("${isSystemDir}" STREQUAL "-1")
 ###################################
 
 # Set standard build flags
-SET(COMPILER_FLAGS -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wconversion -Wzero-as-null-pointer-constant -Wuseless-cast -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Werror -Wshadow -Wformat-security -Wdeprecated -fdiagnostics-color=auto -Weffc++)
+SET(COMPILER_FLAGS -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wconversion -Wzero-as-null-pointer-constant -Wuseless-cast -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Werror -Wshadow -Wformat-security -Wdeprecated -fdiagnostics-color=auto)
 
-# Check for supported flags and remove unsupported warnings
-INCLUDE(CheckCXXCompilerFlag)
-FOREACH( FLAG ${COMPILER_FLAGS} )
-    STRING(REPLACE "-" "_" FLAG_WORD ${FLAG} )
-    STRING(REPLACE "+" "P" FLAG_WORD ${FLAG_WORD} )
-
-    CHECK_CXX_COMPILER_FLAG( "${FLAG}" CXX_FLAG_WORKS_${FLAG_WORD} )
-    IF( ${CXX_FLAG_WORKS_${FLAG_WORD}} )
-      SET ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAG}")
-    ELSE()
-      MESSAGE ( STATUS "NOT adding ${FLAG} to CXX_FLAGS - unsupported flag" )
-    ENDIF()
-ENDFOREACH()
-
-# Require a C++14 compiler without extensions
+# Require a C++14 compiler but do allow extensions
 SET(CMAKE_CXX_STANDARD 14)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
 
-# Find threading provider and enable it (NOTE: not used yet)
-FIND_PACKAGE(Threads REQUIRED)
-IF( THREADS_HAVE_PTHREAD_ARG )
-    SET( CMAKE_CXX_FLAGS           "${CMAKE_CXX_FLAGS} -pthread")
-    SET( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pthread")
-ELSEIF( CMAKE_THREAD_LIBS_INIT )
-    SET( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${CMAKE_THREAD_LIBS_INIT}")
-ENDIF()
+# Include Threads (not used yet)
+# FIND_PACKAGE(Threads REQUIRED)
 
-# Set no undefined symbols flag for the linker if supported
-IF((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR (CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))
-    SET ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-undefined")
-ENDIF()
-IF(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-    SET ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-undefined,error")
+INCLUDE("cmake/compiler-flag-checks.cmake")
+
+# Set some debug flags 
+# FIXME: not using the flag checker now because it wrongly rejects a sanitizer flag..
+IF(CMAKE_BUILD_TYPE MATCHES DEBUG AND ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")))
+    MESSAGE(STATUS "Running debug build - Adding extra sanitizer flags")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined")
+    # FIXME: remove earlier shared linker flags, because they can break the sanitizer debug build
+    SET(CMAKE_SHARED_LINKER_FLAGS "-fsanitize=address -fsanitize=undefined")
 ENDIF()
 
 ###################################
 # Prerequisistes for allpix       #
 ###################################
 
-# WARNING: THIS PREREQUISITE LOGIC SHOULD BE RESTRUCTURED
+# Define the libraries
+SET(ALLPIX_LIBRARIES "")
 
-# ROOT is required for histogramming
+# ROOT is required for vector etc
 FIND_PACKAGE(ROOT REQUIRED COMPONENTS Geom GenVector)
 IF(NOT ROOT_FOUND)
     MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
@@ -101,20 +85,21 @@ IF(NOT ROOT_FOUND)
 ENDIF(NOT ROOT_FOUND)
 INCLUDE_DIRECTORIES(SYSTEM ${ROOT_INCLUDE_DIRS})
 
-FIND_PACKAGE(Eigen3 REQUIRED)
-INCLUDE_DIRECTORIES(SYSTEM ${EIGEN3_INCLUDE_DIR})
+# Set the dependencies
+SET(ALLPIX_DEPS_INCLUDE_DIR ${ROOT_INCLUDE_DIRS})
+SET(ALLPIX_DEPS_LIBRARIES ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES})
 
-# ADD EIGEN EXTENSIONS
-# FIXME: EXPERIMENTAL AND SHOULD BE RESTRUCTURED TO THE RIGHT INCLUDE PLACE
-ADD_DEFINITIONS(-DEIGEN_MATRIXBASE_PLUGIN="tools/eigen_matrix_extend.h")
+# Include allpix cmake functions
+INCLUDE("cmake/allpix.cmake")
 
 ###################################
 # Load cpp format and check tools #
 ###################################
 
+# Set the source files to clang-format (FIXME: determine this better)
 FILE(GLOB_RECURSE
      CHECK_CXX_SOURCE_FILES
-     src/*.[ch]pp src/*.h
+        src/*.[ch]pp src/*.h
      )
 INCLUDE("cmake/clang-cpp-checks.cmake")
 
@@ -122,21 +107,20 @@ INCLUDE("cmake/clang-cpp-checks.cmake")
 # Define build targets for allpix #
 ###################################
 
-# Include source as top directory
+# Always include sources from top directory
 INCLUDE_DIRECTORIES(src)
 
 # Always build main allpix library
 ADD_SUBDIRECTORY(src/core)
+SET(ALLPIX_LIBRARIES ${ALLPIX_LIBRARIES} AllpixCore)
 
 # Build messages
 ADD_SUBDIRECTORY(src/messages)
+SET(ALLPIX_LIBRARIES ${ALLPIX_LIBRARIES} AllpixMessages)
 
 # Build required modules
+SET(ALLPIX_MODULE_LIBRARIES "" CACHE INTERNAL "ALLPIX_MODULE_LIBRARIES") # FIXME: temporary save the libraries to link
 ADD_SUBDIRECTORY(src/modules)
-
-#IF(BUILD_spice)
-#  ADD_SUBDIRECTORY(interfaces/spice)
-#ENDIF(BUILD_spice)
 
 # Add targets for Doxygen code reference and LaTeX User manual
 ADD_SUBDIRECTORY(doc)

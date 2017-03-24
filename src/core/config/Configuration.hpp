@@ -33,7 +33,7 @@ namespace allpix {
         // FIXME: also specialize this for other container types (and use same structure as above)
         template <typename T> std::vector<T> getArray(const std::string& key) const;
         template <typename T> std::vector<T> getArray(const std::string& key, const std::vector<T>& def) const;
-        // FIXME: better name for not parsed
+        // Set literally
         std::string getText(const std::string& key) const;
         std::string getText(const std::string& key, const std::string& def) const;
 
@@ -46,6 +46,9 @@ namespace allpix {
         // NOTE: see FIXME above
         template <typename T> void setDefault(const std::string& key, const T& val);
         template <typename T> void setDefaultArray(const std::string& key, const std::vector<T>& val);
+
+        // Set literally
+        void setText(const std::string& key, const std::string& val);
 
         // FIXME: overload [] operator too
 

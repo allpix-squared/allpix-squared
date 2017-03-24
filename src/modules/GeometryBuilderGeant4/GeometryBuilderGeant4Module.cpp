@@ -1,4 +1,4 @@
-#include "GeometryConstructionModule.hpp"
+#include "GeometryBuilderGeant4Module.hpp"
 
 #include <cassert>
 #include <cstdio>
@@ -35,15 +35,15 @@ using namespace allpix;
 using namespace ROOT;
 
 // name of the module
-const std::string GeometryConstructionModule::name = "geometry_test";
+const std::string GeometryBuilderGeant4Module::name = "GeometryBuilderGeant4";
 
 // constructor and destructor (defined here to allow for incomplete unique_ptr type)
-GeometryConstructionModule::GeometryConstructionModule(AllPix* apx, Configuration config)
-    : Module(apx), config_(std::move(config)), run_manager_g4_(nullptr) {}
-GeometryConstructionModule::~GeometryConstructionModule() = default;
+GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration config, Messenger*, GeometryManager* geo_manager)
+    : config_(std::move(config)), geo_manager_(geo_manager), run_manager_g4_(nullptr) {}
+GeometryBuilderGeant4Module::~GeometryBuilderGeant4Module() = default;
 
 // check geant4 environment variable
-inline void check_dataset_g4(const std::string& env_name) {
+inline static void check_dataset_g4(const std::string& env_name) {
     const char* file_name = std::getenv(env_name.c_str());
     if(file_name == nullptr) {
         throw ModuleException("Geant4 environment variable " + env_name + " is not set, make sure to source a Geant4 "
@@ -58,13 +58,13 @@ inline void check_dataset_g4(const std::string& env_name) {
 }
 
 // create the run manager and make it available
-void GeometryConstructionModule::init() {
+void GeometryBuilderGeant4Module::init() {
     // suppress all output (also cout due to a part in Geant4 where G4cout is not used)
     SUPPRESS_STREAM(std::cout);
     SUPPRESS_STREAM(G4cout);
 
     // create the G4 run manager
-    run_manager_g4_ = std::make_shared<G4RunManager>();
+    run_manager_g4_ = std::make_unique<G4RunManager>();
 
     // check if all the required geant4 datasets are defined
     check_dataset_g4("G4LEVELGAMMADATA");
@@ -82,17 +82,10 @@ void GeometryConstructionModule::init() {
     RELEASE_STREAM(std::cout);
     RELEASE_STREAM(G4cout);
 
-    // save the geant4 run manager in allpix to make it available to other modules
-    getAllPix()->setExternalManager(run_manager_g4_);
-}
+    // construct the geometry
+    // WARNING: we need to do this here to allow for proper instantiation later (FIXME: is this correct)
 
-// run the geometry construction
-void GeometryConstructionModule::run() {
-    LOG(INFO) << "START BUILD GEOMETRY";
-
-    // FIXME: check that geometry is empty or clean it before continuing
-
-    // read the geometry
+    // read the models
     std::string model_file_name = config_.get<std::string>("models_file");
     auto geo_descriptions = ReadGeoDescription(model_file_name);
 
@@ -104,6 +97,7 @@ void GeometryConstructionModule::run() {
     }
     ConfigReader detector_config(file);
 
+    // add the configurations to the detectors
     for(auto& detector_section : detector_config.getConfigurations()) {
         std::shared_ptr<DetectorModel> detector_model =
             geo_descriptions.getDetectorModel(detector_section.get<std::string>("type"));
@@ -119,8 +113,19 @@ void GeometryConstructionModule::run() {
         Math::EulerAngles orientation = detector_section.get<Math::EulerAngles>("orientation", Math::EulerAngles());
 
         auto detector = std::make_shared<Detector>(detector_section.getName(), detector_model, position, orientation);
-        getGeometryManager()->addDetector(detector);
+        geo_manager_->addDetector(detector);
     }
+
+    // save the geant4 run manager in allpix to make it available to other modules
+    // getAllPix()->setExternalManager(run_manager_g4_);
+}
+
+// run the geometry construction
+void GeometryBuilderGeant4Module::run() {
+    LOG(INFO) << "START BUILD GEOMETRY";
+
+    // FIXME: check that geometry is empty or clean it before continuing
+    assert(run_manager_g4_ != nullptr);
 
     // construct the G4 geometry
     build_g4();
@@ -129,7 +134,7 @@ void GeometryConstructionModule::run() {
     LOG(INFO) << "END BUILD GEOMETRY";
 }
 
-void GeometryConstructionModule::build_g4() {
+void GeometryBuilderGeant4Module::build_g4() {
     // suppress all output for G4
     SUPPRESS_STREAM(G4cout);
 
@@ -138,7 +143,7 @@ void GeometryConstructionModule::build_g4() {
     G4ThreeVector world_size = config_.get<G4ThreeVector>("world_size");
 
     // set the geometry constructor
-    GeometryConstructionG4* geometry_construction = new GeometryConstructionG4(getGeometryManager(), world_size);
+    GeometryConstructionG4* geometry_construction = new GeometryConstructionG4(geo_manager_, world_size);
     run_manager_g4_->SetUserInitialization(geometry_construction);
 
     // set the physics list
