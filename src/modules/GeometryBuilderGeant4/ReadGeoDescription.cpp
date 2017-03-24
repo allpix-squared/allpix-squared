@@ -42,10 +42,10 @@ std::shared_ptr<PixelDetectorModel> ReadGeoDescription::parse_config(const Confi
 
     // pixel amount
     if(config.has("pixel_amount")) {
-        G4ThreeVector vec = config.get<G4ThreeVector>("pixel_amount");
+        G4TwoVector vec = config.get<G4TwoVector>("pixel_amount");
         model->SetNPixelsX(static_cast<int>(std::round(vec.x())));
         model->SetNPixelsY(static_cast<int>(std::round(vec.y())));
-        model->SetNPixelsZ(static_cast<int>(std::round(vec.z()))); // FIXME: useless
+        model->SetNPixelsZ(0); // FIXME: useless
     }
 
     // size, positions and offsets

@@ -2,7 +2,7 @@
 /// \brief Implementation of the TGeoBuilderModule class
 /// \author N. Gauvin
 
-/* 
+/*
    To be discussed :
    - Shall the algo stops if a geometry is already loaded ?
    - Do we want a CheckOverlaps option ? Or we use ROOT's tools offline on the TFile.
@@ -23,10 +23,10 @@
 #include "ReadGeoDescription.hpp"
 
 // AllPix includes
-#include "core/utils/log.h"
-#include "tools/ROOT.h"
 #include "core/config/ConfigReader.hpp"
 #include "core/geometry/GeometryManager.hpp"
+#include "core/utils/log.h"
+#include "tools/ROOT.h"
 
 // Global includes
 #include <iostream>
@@ -44,25 +44,23 @@
 #include <Math/EulerAngles.h>
 #include <Math/Vector3D.h>
 
-
 using namespace std;
 using namespace allpix;
 using namespace ROOT::Math;
 
 /* Create a TGeoTranslation from a ROOT::Math::XYZVector */
-TGeoTranslation ToTGeoTranslation( const XYZVector& pos ){
-  return TGeoTranslation( pos.x(), pos.y(), pos.z() );
+TGeoTranslation ToTGeoTranslation(const XYZVector& pos) {
+    return TGeoTranslation(pos.x(), pos.y(), pos.z());
 }
 
-
 /// Name of the module
-const std::string TGeoBuilderModule::name = "geometry_tgeo";
+const std::string TGeoBuilderModule::name = "GeometryBuilderTGeo";
 
 /// Constructor and destructor
-TGeoBuilderModule::TGeoBuilderModule(Configuration config, Messenger*, GeometryManager *geo_manager)
-    : m_config(std::move(config)), m_geoDscMng(geo_manager), m_fillingWorldMaterial(nullptr), m_userDefinedWorldMaterial("Air"), m_userDefinedGeoOutputFile(""),
-      m_buildAppliancesFlag(false), m_Appliances_type(0), m_buildTestStructureFlag(false), m_vectorWrapperEnhancement(),
-      m_posVectorAppliances() {
+TGeoBuilderModule::TGeoBuilderModule(Configuration config, Messenger*, GeometryManager* geo_manager)
+    : m_config(std::move(config)), m_geoDscMng(geo_manager), m_fillingWorldMaterial(nullptr),
+      m_userDefinedWorldMaterial("Air"), m_userDefinedGeoOutputFile(""), m_buildAppliancesFlag(false), m_Appliances_type(0),
+      m_buildTestStructureFlag(false), m_vectorWrapperEnhancement(), m_posVectorAppliances() {
     // read the configuration
     // WARNING: these conversion go wrong without include tools/ROOT.h - prefer to use std::string
     m_userDefinedWorldMaterial = m_config.get<TString>("world_material");
@@ -81,41 +79,41 @@ void TGeoBuilderModule::run() {
     // Import and load external geometry
     // TGeoManager::Import("MyGeom.root");
     // Return
-  
+
     // Read the geometry descriptions from the models
-  std::string model_file_name = m_config.get<std::string>("models_file");
-  auto geo_descriptions = ReadGeoDescription(model_file_name);  
-  
-  // construct the detectors from the config file
-  std::string detector_file_name = m_config.get<std::string>("detectors_file");
-  std::ifstream file(detector_file_name);
-  if(!file) {
-    throw allpix::ConfigFileUnavailableError(detector_file_name);
-  }
-  ConfigReader detector_config(file);  
+    std::string model_file_name = m_config.get<std::string>("models_file");
+    auto geo_descriptions = ReadGeoDescription(model_file_name);
 
-  // Loop on the detector configuration.
-  for(auto& detector_section : detector_config.getConfigurations()) {
-    std::shared_ptr<DetectorModel> detector_model =
-      geo_descriptions.getDetectorModel(detector_section.get<std::string>("type"));
-
-    // Check that detector types exists.
-    if(detector_model == nullptr) {
-      throw InvalidValueError("type",
-			      detector_section.getName(),
-			      detector_section.getText("type"),
-			      "detector type does not exist in registered models");
+    // construct the detectors from the config file
+    std::string detector_file_name = m_config.get<std::string>("detectors_file");
+    std::ifstream file(detector_file_name);
+    if(!file) {
+        throw allpix::ConfigFileUnavailableError(detector_file_name);
     }
-    
-    XYZVector position = detector_section.get<XYZVector>("position", XYZVector());
-    EulerAngles orientation = detector_section.get<EulerAngles>("orientation", EulerAngles());
-    //XYZVector wrapperEnhancement = detector_section.get<XYZVector>("wrapper enhancement", XYZVector());
+    ConfigReader detector_config(file);
 
-    auto detector = std::make_shared<Detector>(detector_section.getName(), detector_model, position, orientation );
-    // Can I add something else ?
-    m_geoDscMng->addDetector(detector);
-  }
-  
+    // Loop on the detector configuration.
+    for(auto& detector_section : detector_config.getConfigurations()) {
+        std::shared_ptr<DetectorModel> detector_model =
+            geo_descriptions.getDetectorModel(detector_section.get<std::string>("type"));
+
+        // Check that detector types exists.
+        if(detector_model == nullptr) {
+            throw InvalidValueError("type",
+                                    detector_section.getName(),
+                                    detector_section.getText("type"),
+                                    "detector type does not exist in registered models");
+        }
+
+        XYZVector position = detector_section.get<XYZVector>("position", XYZVector());
+        EulerAngles orientation = detector_section.get<EulerAngles>("orientation", EulerAngles());
+        // XYZVector wrapperEnhancement = detector_section.get<XYZVector>("wrapper enhancement", XYZVector());
+
+        auto detector = std::make_shared<Detector>(detector_section.getName(), detector_model, position, orientation);
+        // Can I add something else ?
+        m_geoDscMng->addDetector(detector);
+    }
+
     /* Instantiate the TGeo geometry manager.
        It will remain persistant until gGeoManager is deleted.
      */
@@ -134,8 +132,8 @@ void TGeoBuilderModule::run() {
     gGeoManager->SetVisLevel(3);
     // gGeoManager->SetVisOption(0); // To see the intermediate containers.
     // gGeoManager->GetVolume("name");
-    //TGeoVolume* top = gGeoManager->GetTopVolume();
-    //top->Draw();
+    // TGeoVolume* top = gGeoManager->GetTopVolume();
+    // top->Draw();
     // gGeoManager->CheckOverlaps(0.1);
 
     // Save geometry in ROOT file.
@@ -181,8 +179,7 @@ void TGeoBuilderModule::Construct() {
 
     // World volume, ie the experimental hall.
     TGeoVolume* expHall_log =
-      gGeoManager->MakeBox("ExpHall", m_fillingWorldMaterial, halfworld.x(),
-			   halfworld.y(), halfworld.z());
+        gGeoManager->MakeBox("ExpHall", m_fillingWorldMaterial, halfworld.x(), halfworld.y(), halfworld.z());
     // expHall_log->SetTransparency(100);
     // G4Color(1.0, 0.65, 0.0, 0.1)->kOrange+1, SetVisibility(false), SetForceSolid(false)
     expHall_log->SetLineColor(kOrange + 1);
@@ -212,17 +209,18 @@ void TGeoBuilderModule::BuildPixelDevices() {
 
     vector<shared_ptr<Detector>> detectors = m_geoDscMng->getDetectors();
     LOG(DEBUG) << "Building " << detectors.size() << " device(s) ...";
-    
+
     // Big loop on pixel detectors.
     auto detItr = detectors.begin();
     for(; detItr != detectors.end(); detItr++) {
 
-      shared_ptr<PixelDetectorModel> dsc = dynamic_pointer_cast<PixelDetectorModel>((*detItr)->getModel());
+        shared_ptr<PixelDetectorModel> dsc = dynamic_pointer_cast<PixelDetectorModel>((*detItr)->getModel());
         int id = global_id_cnt++;
-	string detname = (*detItr)->getName();
-        //TString id_s = Form("_%i", id);
-	TString id_s = "_"; id_s += detname;
-	LOG(DEBUG) << "Start detector " << detname;
+        string detname = (*detItr)->getName();
+        // TString id_s = Form("_%i", id);
+        TString id_s = "_";
+        id_s += detname;
+        LOG(DEBUG) << "Start detector " << detname;
 
         ///////////////////////////////////////////////////////////
         // wrapper
@@ -256,21 +254,19 @@ void TGeoBuilderModule::BuildPixelDevices() {
         wrapper_log->SetLineColor(kRed);
 
         // Placement ! Retrieve position given by the user.
-	TGeoTranslation posWrapper = ToTGeoTranslation( (*detItr)->getPosition() );
+        TGeoTranslation posWrapper = ToTGeoTranslation((*detItr)->getPosition());
         // Apply wrapper enhancement
         posWrapper.Add(&wrapperEnhancementTransl);
-	// Retrieve orientation given by the user.
-	EulerAngles angles = (*detItr)->getOrientation();
-	TGeoRotation orWrapper = TGeoRotation( "DetPlacement" + id_s, angles.Phi(), angles.Theta(),
-					       angles.Psi() );
-	// And create a transformation.
+        // Retrieve orientation given by the user.
+        EulerAngles angles = (*detItr)->getOrientation();
+        TGeoRotation orWrapper = TGeoRotation("DetPlacement" + id_s, angles.Phi(), angles.Theta(), angles.Psi());
+        // And create a transformation.
         auto* det_tr = new TGeoCombiTrans(posWrapper, orWrapper);
         det_tr->SetName("DetPlacement" + id_s);
-	
+
         TGeoVolume* expHall_log = gGeoManager->GetTopVolume();
         expHall_log->AddNode(wrapper_log, 1, det_tr);
 
-	
         ///////////////////////////////////////////////////////////
         // Device
         // The Si wafer is placed respect to the wrapper.
@@ -594,7 +590,6 @@ void TGeoBuilderModule::BuildAppliances() {
 
     } // end loop positions
 
-
     LOG(DEBUG) << "Construction of the appliances successful.";
 }
 
@@ -695,7 +690,6 @@ void TGeoBuilderModule::BuildMaterialsAndMedia() {
     auto* Al_mat = new TGeoMaterial("Al", Al, density = 2.699);
     new TGeoMedium("Al", ++numed, Al_mat);
 }
-   
 
 /******************* OLD STUFF ****************************/
 
