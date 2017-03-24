@@ -6,7 +6,7 @@
 /// To do :
 ///  - Integrate Configuration
 ///  - Refer to the detector desc with their names instead of integers.
-///  - 
+///  -
 ///
 ///
 /// \date     March 20 2017
@@ -21,8 +21,8 @@
 #include <vector>
 
 // ROOT
-#include <TGeoManager.h>
 #include <Math/Vector3D.h>
+#include <TGeoManager.h>
 
 // AllPix2
 #include "core/config/Configuration.hpp"
@@ -46,15 +46,15 @@ const TString BumpName = "Bump";
 const TString GuardRingsName = "GuardRings";
 
 // ### to be placed in a more adequate place
-TGeoTranslation ToTGeoTranslation( const ROOT::Math::XYZVector& pos );
+TGeoTranslation ToTGeoTranslation(const ROOT::Math::XYZVector& pos);
 
 namespace allpix {
 
     class TGeoBuilderModule : public Module {
 
     public:
-      // provide a static const variable of type string (required!)
-      static const std::string name;
+        // provide a static const variable of type string (required!)
+        static const std::string name;
 
         TGeoBuilderModule(Configuration config, Messenger*, GeometryManager*);
         ~TGeoBuilderModule() override;
@@ -65,7 +65,7 @@ namespace allpix {
         // Module run method
         void run() override;
 
-    private:      
+    private:
         // Internal methods
         void Construct();
         void BuildPixelDevices();
@@ -75,10 +75,10 @@ namespace allpix {
 
         // configuration for this module
         Configuration m_config;
-        
+
         // Global variables
         GeometryManager* m_geoDscMng;
-        TGeoMedium* m_fillingWorldMaterial;                        /// Medium to fill the World.
+        TGeoMedium* m_fillingWorldMaterial; /// Medium to fill the World.
 
         // User defined parameters
         /*
@@ -91,8 +91,8 @@ namespace allpix {
         bool m_buildAppliancesFlag;
         int m_Appliances_type;
         bool m_buildTestStructureFlag;
-      std::map<int, ROOT::Math::XYZVector> m_vectorWrapperEnhancement;
-      std::map<int, TGeoTranslation> m_posVectorAppliances; //
+        std::map<int, ROOT::Math::XYZVector> m_vectorWrapperEnhancement;
+        std::map<int, TGeoTranslation> m_posVectorAppliances; //
     };
 }
 
