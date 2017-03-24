@@ -17,8 +17,6 @@
 
 namespace allpix {
 
-    class AllPix;
-
     class StaticModuleManager : public ModuleManager {
     public:
         using GeneratorFunction = std::function<std::unique_ptr<ModuleFactory>(std::string)>;
@@ -27,7 +25,7 @@ namespace allpix {
         explicit StaticModuleManager(GeneratorFunction);
 
         // Load modules
-        void load(AllPix*) override;
+        void load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager) override;
 
     private:
         std::unique_ptr<ModuleFactory> get_factory(const std::string& name);

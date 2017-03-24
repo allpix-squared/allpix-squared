@@ -15,7 +15,9 @@
 
 namespace allpix {
 
-    class AllPix;
+    class ConfigManager;
+    class Messenger;
+    class GeometryManager;
 
     class ModuleManager {
     public:
@@ -28,7 +30,7 @@ namespace allpix {
         ModuleManager& operator=(const ModuleManager&) = delete;
 
         // Load modules
-        virtual void load(AllPix*) = 0;
+        virtual void load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager) = 0;
 
         // Run modules (until no other module available)
         virtual void run();

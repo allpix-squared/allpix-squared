@@ -17,24 +17,8 @@ namespace allpix {
 
     class AllPix {
     public:
-        // Allpix running state
-        enum State { Unitialized = 0, Initializing, Initialized, Running, Finished, Finalizing, Finalized };
-
         // Constructor and destructor
-        // NOTE: AllPix object responsible for deletion of managers
-        AllPix(std::unique_ptr<ConfigManager> conf_mgr,
-               std::unique_ptr<ModuleManager> mod_mgr,
-               std::unique_ptr<GeometryManager> geo_mgr);
-
-        // Get managers
-        // FIXME: pass shared pointers here?
-        ConfigManager* getConfigManager();
-        GeometryManager* getGeometryManager();
-        ModuleManager* getModuleManager();
-        Messenger* getMessenger();
-
-        // Get state
-        State getState() const;
+        AllPix(std::string name, std::unique_ptr<ModuleManager> mod_mgr);
 
         // Initialize to valid state
         void init();
@@ -50,8 +34,6 @@ namespace allpix {
         std::unique_ptr<ModuleManager> mod_mgr_;
         std::unique_ptr<GeometryManager> geo_mgr_;
         std::unique_ptr<Messenger> msg_;
-
-        State state_;
     };
 }
 

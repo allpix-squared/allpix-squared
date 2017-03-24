@@ -60,9 +60,9 @@ std::unique_ptr<ModuleFactory> generator(const std::string& str) {
 
 int main(int argc, const char* argv[]) {
     // FIXME: have standard config and pass replacement as single argument until we have proper argument handling
-    std::string file_name = "etc/example_config.ini";
+    std::string config_file_name = "etc/example_config.ini";
     if(argc == 2) {
-        file_name = argv[1];
+        config_file_name = argv[1];
     }
 
     try {
@@ -71,13 +71,12 @@ int main(int argc, const char* argv[]) {
         Log::setReportingLevel(log_level);
         LOG(INFO) << "Set log level: " << Log::getStringFromLevel(log_level);
 
-        // Construct managers (FIXME: move some initialization to AllPix)
-        std::unique_ptr<GeometryManager> geo = std::make_unique<GeometryManager>();
+        // Construct managers
+        // FIXME: move module manager initialization to AllPix as soon we have dynamic loading
         std::unique_ptr<StaticModuleManager> mod = std::make_unique<StaticModuleManager>(&generator);
-        std::unique_ptr<ConfigManager> conf = std::make_unique<ConfigManager>(file_name);
 
         // Construct main AllPix object
-        std::unique_ptr<AllPix> apx = std::make_unique<AllPix>(std::move(conf), std::move(mod), std::move(geo));
+        std::unique_ptr<AllPix> apx = std::make_unique<AllPix>(config_file_name, std::move(mod));
 
         LOG(INFO) << "Initializing AllPix";
         apx->init();
