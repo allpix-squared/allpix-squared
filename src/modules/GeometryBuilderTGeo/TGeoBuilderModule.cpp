@@ -109,8 +109,9 @@ void TGeoBuilderModule::run() {
     
     XYZVector position = detector_section.get<XYZVector>("position", XYZVector());
     EulerAngles orientation = detector_section.get<EulerAngles>("orientation", EulerAngles());
+    //XYZVector wrapperEnhancement = detector_section.get<XYZVector>("wrapper enhancement", XYZVector());
 
-    auto detector = std::make_shared<Detector>(detector_section.getName(), detector_model, position, orientation);
+    auto detector = std::make_shared<Detector>(detector_section.getName(), detector_model, position, orientation );
     // Can I add something else ?
     m_geoDscMng->addDetector(detector);
   }
