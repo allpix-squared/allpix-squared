@@ -9,7 +9,9 @@
 #include <string>
 
 #include "core/config/Configuration.hpp"
+#include "core/geometry/GeometryManager.hpp"
 #include "core/geometry/PixelDetectorModel.hpp"
+#include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 
 class G4RunManager;
@@ -22,7 +24,7 @@ namespace allpix {
         static const std::string name;
 
         // constructor should take a pointer to AllPix, a ModuleIdentifier and a Configuration as input
-        GeometryBuilderGeant4Module(AllPix* apx, Configuration config);
+        GeometryBuilderGeant4Module(Configuration config, Messenger*, GeometryManager*);
         ~GeometryBuilderGeant4Module() override;
 
         // method that will be run where the module should do its computations and possibly dispatch their results as a
@@ -36,6 +38,9 @@ namespace allpix {
 
         // configuration for this module
         Configuration config_;
+
+        // link to geometry manager
+        GeometryManager* geo_manager_;
 
         // geant run manager
         // FIXME: is it right to let the geometry own this pointer

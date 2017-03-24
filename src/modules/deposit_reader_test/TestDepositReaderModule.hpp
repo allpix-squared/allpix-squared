@@ -9,6 +9,8 @@
 #include <string>
 
 #include "core/config/Configuration.hpp"
+#include "core/geometry/GeometryManager.hpp"
+#include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 
 namespace allpix {
@@ -21,7 +23,7 @@ namespace allpix {
         static const std::string name;
 
         // constructor should take a pointer to AllPix, a ModuleIdentifier and a Configuration as input
-        TestDepositReaderModule(AllPix* apx, Configuration config);
+        TestDepositReaderModule(Configuration, Messenger*, GeometryManager*);
         ~TestDepositReaderModule() override;
 
         // show the deposition results

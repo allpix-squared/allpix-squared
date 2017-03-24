@@ -8,12 +8,13 @@
  * param = "test"
  */
 
-// include the module base class and the configuration object
-#include <core/config/Configuration.hpp>
-#include <core/module/Module.hpp>
+// include the dependent objects
+#include "core/config/Configuration.hpp"
+#include "core/geometry/GeometryManager.hpp"
+#include "core/messenger/Messenger.hpp"
 
-// include the message base class
-#include <core/messenger/Message.hpp>
+// include the module base class
+#include <core/module/Module.hpp>
 
 #include <memory>
 #include <string>
@@ -43,12 +44,16 @@ namespace allpix {
         static const std::string name;
 
         // constructor should take a pointer to AllPix and a Configuration as input
-        ExampleModule(AllPix* apx, Configuration config);
+        ExampleModule(Configuration config, Messenger*, GeometryManager*);
 
         // method that should do the necessary computations and possibly dispatch their results as a message
         void run() override;
 
     private:
+        // messenger to emit test message
+        Messenger* messenger_;
+
+        // message to receive
         std::shared_ptr<InputMessage> message_;
     };
 }

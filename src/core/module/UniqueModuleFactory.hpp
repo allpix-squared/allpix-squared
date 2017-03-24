@@ -25,7 +25,7 @@ namespace allpix {
 
             // create a unique instance of the module
             ModuleIdentifier identifier(T::name, 0);
-            mod_list.emplace_back(identifier, std::make_unique<T>(getAllPix(), getConfiguration()));
+            mod_list.emplace_back(identifier, std::make_unique<T>(getConfiguration(), getMessenger(), getGeometryManager()));
 
             return mod_list;
         }

@@ -7,21 +7,26 @@
 using namespace allpix;
 
 // Constructor and destructor
-ModuleFactory::ModuleFactory() : conf_(), apx_(nullptr) {}
+ModuleFactory::ModuleFactory() : config_(), messenger_(), geometry_manager_() {}
 ModuleFactory::~ModuleFactory() = default;
 
-void ModuleFactory::setAllPix(AllPix* allpix) {
-    apx_ = allpix;
-}
-
-AllPix* ModuleFactory::getAllPix() {
-    return apx_;
-}
-
 void ModuleFactory::setConfiguration(Configuration conf) {
-    conf_ = std::move(conf);
+    config_ = std::move(conf);
+}
+Configuration& ModuleFactory::getConfiguration() {
+    return config_;
 }
 
-Configuration& ModuleFactory::getConfiguration() {
-    return conf_;
+void ModuleFactory::setMessenger(Messenger* messenger) {
+    messenger_ = messenger;
+}
+Messenger* ModuleFactory::getMessenger() {
+    return messenger_;
+}
+
+void ModuleFactory::setGeometryManager(GeometryManager* geo_manager) {
+    geometry_manager_ = geo_manager;
+}
+GeometryManager* ModuleFactory::getGeometryManager() {
+    return geometry_manager_;
 }

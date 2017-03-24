@@ -37,7 +37,8 @@ void StaticModuleManager::load(AllPix* allpix) {
 
         // instantiate an instance for each name
         std::unique_ptr<ModuleFactory> factory = get_factory(conf.getName());
-        factory->setAllPix(allpix);
+        factory->setMessenger(allpix->getMessenger());
+        factory->setGeometryManager(allpix->getGeometryManager());
         factory->setConfiguration(conf);
         std::vector<std::pair<ModuleIdentifier, std::unique_ptr<Module>>> mod_list = factory->create();
 

@@ -14,7 +14,7 @@ using namespace allpix;
 const std::string DummyModule::name = "<your_module_name>";
 
 // constructor to load the module
-DummyModule::DummyModule(AllPix* apx, Configuration config) : Module(apx), config_(std::move(config)) {
+DummyModule::DummyModule(Configuration config, Messenger*, GeometryManager*) : config_(std::move(config)) {
     // ... implement ... (typically you want to bind some messages here)
     LOG(DEBUG) << "initializing module " << DummyModule::name;
 }

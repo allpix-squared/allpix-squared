@@ -19,9 +19,11 @@ using namespace allpix;
 
 const std::string DetectorHistogrammerModule::name = "detector_histogrammer_test";
 
-DetectorHistogrammerModule::DetectorHistogrammerModule(AllPix* apx, Configuration config)
-    : Module(apx), config_(std::move(config)), deposit_messages_() {
-    getMessenger()->bindMulti(this, &DetectorHistogrammerModule::deposit_messages_);
+DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration config,
+                                                       Messenger* messenger,
+                                                       std::shared_ptr<Detector> detector)
+    : Module(detector), config_(std::move(config)), deposit_messages_() {
+    messenger->bindMulti(this, &DetectorHistogrammerModule::deposit_messages_);
 }
 DetectorHistogrammerModule::~DetectorHistogrammerModule() = default;
 

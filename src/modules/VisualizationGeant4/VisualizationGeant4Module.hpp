@@ -9,6 +9,8 @@
 #include <string>
 
 #include "core/config/Configuration.hpp"
+#include "core/geometry/GeometryManager.hpp"
+#include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 
 class G4UIsession;
@@ -22,7 +24,7 @@ namespace allpix {
         static const std::string name;
 
         // constructor should take a pointer to AllPix, a ModuleIdentifier and a Configuration as input
-        VisualizationGeant4Module(AllPix* apx, Configuration config);
+        VisualizationGeant4Module(Configuration config, Messenger*, GeometryManager*);
         ~VisualizationGeant4Module() override;
 
         // initializes the visualization and set necessary settings to catch all the required data

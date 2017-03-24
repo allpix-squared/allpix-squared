@@ -19,7 +19,10 @@
 #include <TVector3.h>
 
 // AllPix2
+#include "core/config/Configuration.hpp"
+#include "core/geometry/GeometryManager.hpp"
 #include "core/geometry/PixelDetectorModel.hpp"
+#include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 
 /*** Names of detector parts
@@ -43,7 +46,7 @@ namespace allpix {
     public:
         static const std::string name;
 
-        TGeoBuilderModule(AllPix* apx, Configuration config);
+        TGeoBuilderModule(Configuration config, Messenger*, GeometryManager*);
         ~TGeoBuilderModule() override;
 
         TGeoBuilderModule(const TGeoBuilderModule&) = delete;

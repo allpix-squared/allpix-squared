@@ -10,6 +10,8 @@
 
 #include "Module.hpp"
 #include "core/config/Configuration.hpp"
+#include "core/geometry/GeometryManager.hpp"
+#include "core/messenger/Messenger.hpp"
 
 namespace allpix {
 
@@ -25,20 +27,26 @@ namespace allpix {
         ModuleFactory(const ModuleFactory&) = delete;
         ModuleFactory& operator=(const ModuleFactory&) = delete;
 
-        // set AllPix object
-        void setAllPix(AllPix*);
-        AllPix* getAllPix();
-
         // set configuration
         void setConfiguration(Configuration conf);
         Configuration& getConfiguration();
+
+        // set messenger
+        void setMessenger(Messenger*);
+        Messenger* getMessenger();
+
+        // set geometry manager
+        void setGeometryManager(GeometryManager*);
+        GeometryManager* getGeometryManager();
 
         // create a module
         virtual std::vector<std::pair<ModuleIdentifier, std::unique_ptr<Module>>> create() = 0;
 
     private:
-        Configuration conf_;
-        AllPix* apx_;
+        Configuration config_;
+
+        Messenger* messenger_;
+        GeometryManager* geometry_manager_;
     };
 }
 

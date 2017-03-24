@@ -26,8 +26,8 @@ using namespace allpix;
 
 const std::string DepositionGeant4Module::name = "DepositionGeant4";
 
-DepositionGeant4Module::DepositionGeant4Module(AllPix* apx, Configuration config)
-    : Module(apx), config_(std::move(config)) {}
+DepositionGeant4Module::DepositionGeant4Module(Configuration config, Messenger* messenger, GeometryManager* geo_manager)
+    : config_(std::move(config)), messenger_(messenger), geo_manager_(geo_manager) {}
 DepositionGeant4Module::~DepositionGeant4Module() = default;
 
 // run the deposition
@@ -71,8 +71,8 @@ void DepositionGeant4Module::run() {
 
     // loop through all detectors and set the sensitive detectors
     G4SDManager* sd_man_g4 = G4SDManager::GetSDMpointer(); // FIXME: do we need this sensitive detector manager
-    for(auto& detector : getGeometryManager()->getDetectors()) {
-        auto sensitive_detector_g4 = new SensitiveDetectorG4(detector, getMessenger());
+    for(auto& detector : geo_manager_->getDetectors()) {
+        auto sensitive_detector_g4 = new SensitiveDetectorG4(detector, messenger_);
 
         sd_man_g4->AddNewDetector(sensitive_detector_g4);
         detector->getExternalModel<DetectorModelG4>()->pixel_log->SetSensitiveDetector(sensitive_detector_g4);

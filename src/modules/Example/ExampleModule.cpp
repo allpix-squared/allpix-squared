@@ -11,12 +11,13 @@ using namespace allpix;
 const std::string ExampleModule::name = "Example";
 
 // constructor to load the module
-ExampleModule::ExampleModule(AllPix* apx, Configuration config) : Module(apx), message_(nullptr) {
+ExampleModule::ExampleModule(Configuration config, Messenger* messenger, GeometryManager*)
+    : messenger_(messenger), message_(nullptr) {
     // print a configuration parameter of type string to the logger
     LOG(DEBUG) << "my string parameter 'param' is equal to " << config.get<std::string>("param", "<undefined>");
 
     // bind a variable to a specific message type that is automatically assigned if it is dispatched
-    getMessenger()->bindSingle(this, &ExampleModule::message_);
+    messenger->bindSingle(this, &ExampleModule::message_);
 }
 
 // run method fetching a message and outputting its own
@@ -34,5 +35,5 @@ void ExampleModule::run() {
     OutputMessage msg("my output message");
 
     // dispatch my message
-    getMessenger()->dispatchMessage(msg);
+    messenger_->dispatchMessage(msg);
 }

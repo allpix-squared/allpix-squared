@@ -38,8 +38,8 @@ using namespace ROOT;
 const std::string GeometryBuilderGeant4Module::name = "GeometryBuilderGeant4";
 
 // constructor and destructor (defined here to allow for incomplete unique_ptr type)
-GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(AllPix* apx, Configuration config)
-    : Module(apx), config_(std::move(config)), run_manager_g4_(nullptr) {}
+GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration config, Messenger*, GeometryManager* geo_manager)
+    : config_(std::move(config)), geo_manager_(geo_manager), run_manager_g4_(nullptr) {}
 GeometryBuilderGeant4Module::~GeometryBuilderGeant4Module() = default;
 
 // check geant4 environment variable
@@ -113,7 +113,7 @@ void GeometryBuilderGeant4Module::init() {
         Math::EulerAngles orientation = detector_section.get<Math::EulerAngles>("orientation", Math::EulerAngles());
 
         auto detector = std::make_shared<Detector>(detector_section.getName(), detector_model, position, orientation);
-        getGeometryManager()->addDetector(detector);
+        geo_manager_->addDetector(detector);
     }
 
     // save the geant4 run manager in allpix to make it available to other modules
@@ -143,7 +143,7 @@ void GeometryBuilderGeant4Module::build_g4() {
     G4ThreeVector world_size = config_.get<G4ThreeVector>("world_size");
 
     // set the geometry constructor
-    GeometryConstructionG4* geometry_construction = new GeometryConstructionG4(getGeometryManager(), world_size);
+    GeometryConstructionG4* geometry_construction = new GeometryConstructionG4(geo_manager_, world_size);
     run_manager_g4_->SetUserInitialization(geometry_construction);
 
     // set the physics list
