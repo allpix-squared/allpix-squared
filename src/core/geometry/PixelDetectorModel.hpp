@@ -27,7 +27,8 @@ namespace allpix {
               m_sensor_gr_excess_hright(0.0), m_sensor_gr_excess_hleft(0.0), m_chip_hx(0.0), m_chip_hy(0.0), m_chip_hz(0.0),
               m_chip_offsetx(0.0), m_chip_offsety(0.0), m_chip_offsetz(0.0), m_chip_posx(0.0), m_chip_posy(0.0),
               m_chip_posz(0.0), m_pcb_hx(0.0), m_pcb_hy(0.0), m_pcb_hz(0.0), m_bump_radius(0.0), m_bump_height(0.0),
-              m_bump_offsetx(0.0), m_bump_offsety(0.0), m_bump_dr(0.0)
+              m_bump_offsetx(0.0), m_bump_offsety(0.0), m_bump_dr(0.0), m_coverlayer_hz(0.0),
+	      m_coverlayer_mat("Al"), m_coverlayer_ON(false)
         /*m_resistivity(0.0)*/ {}
         ~PixelDetectorModel() override = default;
 
@@ -105,7 +106,7 @@ namespace allpix {
 
             double whdz = GetHalfPCBZ() + GetHalfChipZ() + GetBumpHalfHeight() + GetHalfSensorZ();
 
-            // if ( m_coverlayer_ON ) whdz += GetHalfCoverlayerZ();
+            if ( m_coverlayer_ON ) whdz += GetHalfCoverlayerZ();
 
             return whdz;
         };
@@ -115,10 +116,9 @@ namespace allpix {
         }*/
 
         // Coverlayer
-        // ALERT: UNSUPPORTED --> THIS DOES NOT DO ANYTHING
-        bool IsCoverlayerON() { return false; }
-        double GetHalfCoverlayerZ() { return 0.0; }
-        std::string GetCoverlayerMat() { return ""; }
+        bool IsCoverlayerON() { return m_coverlayer_ON; }
+        double GetHalfCoverlayerZ() { return m_coverlayer_hz; }
+        std::string GetCoverlayerMat() { return m_coverlayer_mat; }
 
         // Pixels
         void SetNPixelsX(int val) { m_npix_x = val; };
@@ -173,6 +173,13 @@ namespace allpix {
         void SetPCBHY(double val) { m_pcb_hy = val; }
         void SetPCBHZ(double val) { m_pcb_hz = val; }
 
+      // Coverlayer
+      void SetCoverlayerHZ(double val){
+	m_coverlayer_hz = val;
+	m_coverlayer_ON = true;
+      }
+      void SetCoverlayerMat(std::string mat){ m_coverlayer_mat = mat; }
+      
     private:
         int m_npix_x;
         int m_npix_y;
@@ -217,6 +224,10 @@ namespace allpix {
         double m_bump_offsety;
         double m_bump_dr;
 
+        double m_coverlayer_hz;
+        std::string m_coverlayer_mat;
+        bool m_coverlayer_ON;
+      
         // double m_resistivity;
     };
 }
