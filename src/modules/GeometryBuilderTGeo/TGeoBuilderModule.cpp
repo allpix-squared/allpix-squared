@@ -59,22 +59,22 @@ TGeoTranslation ToTGeoTranslation( const XYZVector& pos ){
 const std::string TGeoBuilderModule::name = "geometry_tgeo";
 
 /// Constructor and destructor
-TGeoBuilderModule::TGeoBuilderModule(Configuration config, Messenger*, GeometryManager*)
-  : m_fillingWorldMaterial(nullptr),
+TGeoBuilderModule::TGeoBuilderModule(Configuration config, Messenger*, GeometryManager* geo_dsc_manager)
+  : m_geoDscMng(geo_dsc_manager),
+    m_config(std::move(config)),
+    m_fillingWorldMaterial(nullptr),
     m_userDefinedWorldMaterial("Air"),
     m_userDefinedGeoOutputFile(""),
     m_buildAppliancesFlag(false),
     m_Appliances_type(0),
     m_buildTestStructureFlag(false),
     m_vectorWrapperEnhancement(),
-    m_posVectorAppliances(),
-    m_config(std::move(config)) {
+    m_posVectorAppliances() {
 
     // read the configuration
     // WARNING: these conversion go wrong without include tools/ROOT.h - prefer to use std::string
     m_userDefinedWorldMaterial = m_config.get<TString>("world_material");
     m_userDefinedGeoOutputFile = m_config.get<TString>("output_file", "");
-
     m_buildAppliancesFlag = m_config.get<bool>("build_appliances", false);
     if(m_buildAppliancesFlag) {
         m_Appliances_type = m_config.get<int>("appliances_type");
@@ -120,7 +120,7 @@ void TGeoBuilderModule::run() {
 
     auto detector = std::make_shared<Detector>(detector_section.getName(), detector_model, position, orientation);
     // Can I add something else ?
-    getGeometryManager()->addDetector(detector);
+    m_geoDscMng->addDetector(detector);
   }
   
     /* Instantiate the TGeo geometry manager.
@@ -217,8 +217,7 @@ void TGeoBuilderModule::BuildPixelDevices() {
 
     int global_id_cnt = 0;
 
-    GeometryManager* geoDscMng = getGeometryManager();
-    vector<shared_ptr<Detector>> detectors = geoDscMng->getDetectors();
+    vector<shared_ptr<Detector>> detectors = m_geoDscMng->getDetectors();
     LOG(DEBUG) << "Building " << detectors.size() << " device(s) ...";
     
     // Big loop on pixel detectors.

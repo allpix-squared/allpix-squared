@@ -50,49 +50,50 @@ TGeoTranslation ToTGeoTranslation( const ROOT::Math::XYZVector& pos );
 
 namespace allpix {
 
-    class TGeoBuilderModule : public Module {
+  class TGeoBuilderModule : public Module {
 
-    public:
-      // provide a static const variable of type string (required!)
-      static const std::string name;
+  public:
+    // provide a static const variable of type string (required!)
+    static const std::string name;
 
-        TGeoBuilderModule(Configuration config, Messenger*, GeometryManager*);
-        ~TGeoBuilderModule() override;
+    TGeoBuilderModule(Configuration config, Messenger*, GeometryManager*);
+    ~TGeoBuilderModule() override;
 
-        TGeoBuilderModule(const TGeoBuilderModule&) = delete;
-        TGeoBuilderModule& operator=(const TGeoBuilderModule&) = delete;
+    TGeoBuilderModule(const TGeoBuilderModule&) = delete;
+    TGeoBuilderModule& operator=(const TGeoBuilderModule&) = delete;
 
-        // Module run method
-        void run() override;
+    // Module run method
+    void run() override;
 
-    private:      
-        // Internal methods
-        void Construct();
-        void BuildPixelDevices();
-        void BuildMaterialsAndMedia();
-        void BuildAppliances();
-        void BuildTestStructure();
+  private:      
+    // Internal methods
+    void Construct();
+    void BuildPixelDevices();
+    void BuildMaterialsAndMedia();
+    void BuildAppliances();
+    void BuildTestStructure();
 
-        // Global variables
-        TGeoMedium* m_fillingWorldMaterial;                        /// Medium to fill the World.
+    // Global variables
+    GeometryManager* m_geoDscMng;
+    // configuration for this module
+    Configuration m_config;
+    TGeoMedium* m_fillingWorldMaterial;                        /// Medium to fill the World.
 
-        // User defined parameters
-        /*
-          Medium to fill the World. Available media :
-          - Air
-          - Vacuum
-        */
-        TString m_userDefinedWorldMaterial;
-        TString m_userDefinedGeoOutputFile;
-        bool m_buildAppliancesFlag;
-        int m_Appliances_type;
-        bool m_buildTestStructureFlag;
-      std::map<int, ROOT::Math::XYZVector> m_vectorWrapperEnhancement;
-      std::map<int, TGeoTranslation> m_posVectorAppliances; //
+    // User defined parameters
+    /*
+      Medium to fill the World. Available media :
+      - Air
+      - Vacuum
+    */
+    TString m_userDefinedWorldMaterial;
+    TString m_userDefinedGeoOutputFile;
+    bool m_buildAppliancesFlag;
+    int m_Appliances_type;
+    bool m_buildTestStructureFlag;
+    std::map<int, ROOT::Math::XYZVector> m_vectorWrapperEnhancement;
+    std::map<int, TGeoTranslation> m_posVectorAppliances; //
 
-      // configuration for this module
-        Configuration m_config;
-    };
+  };
 }
 
 #endif /* ALLPIX_DETECTOR_CONSTRUCTION_TGEO_H */
