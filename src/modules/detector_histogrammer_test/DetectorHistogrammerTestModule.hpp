@@ -33,6 +33,9 @@ namespace allpix {
         // configuration for this module
         Configuration config_;
 
+        // attached detector
+        std::shared_ptr<Detector> detector_;
+
         // list of the messages
         std::vector<std::shared_ptr<DepositionMessage>> deposit_messages_;
     };

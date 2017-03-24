@@ -22,7 +22,7 @@ const std::string DetectorHistogrammerModule::name = "detector_histogrammer_test
 DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
-    : Module(detector), config_(std::move(config)), deposit_messages_() {
+    : Module(detector), config_(std::move(config)), detector_(detector), deposit_messages_() {
     messenger->bindMulti(this, &DetectorHistogrammerModule::deposit_messages_);
 }
 DetectorHistogrammerModule::~DetectorHistogrammerModule() = default;
@@ -30,21 +30,21 @@ DetectorHistogrammerModule::~DetectorHistogrammerModule() = default;
 // run the deposition
 void DetectorHistogrammerModule::run() {
     // get detector model
-    auto model = std::dynamic_pointer_cast<PixelDetectorModel>(getDetector()->getModel());
+    auto model = std::dynamic_pointer_cast<PixelDetectorModel>(detector_->getModel());
     if(model == nullptr) {
         // FIXME: exception can be more appropriate here
-        LOG(CRITICAL) << "Detector '" << getDetector()->getName()
+        LOG(CRITICAL) << "Detector '" << detector_->getName()
                       << "' is not a PixelDetectorModel: ignored as other types are currently unsupported!";
         return;
     }
 
     // create root file
-    std::string file_name = config_.get<std::string>("file_prefix") + "_" + getDetector()->getName() + ".root";
+    std::string file_name = config_.get<std::string>("file_prefix") + "_" + detector_->getName() + ".root";
     auto file = new TFile(file_name.c_str(), "RECREATE");
 
     // create histogram
-    std::string plot_name = "plot_" + getDetector()->getName();
-    std::string plot_title = "Histogram for " + getDetector()->getName();
+    std::string plot_name = "plot_" + detector_->getName();
+    std::string plot_title = "Histogram for " + detector_->getName();
     auto histogram = new TH2F(plot_name.c_str(),
                               plot_title.c_str(),
                               model->GetNPixelsX(),

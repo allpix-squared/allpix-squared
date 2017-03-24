@@ -9,9 +9,9 @@
 using namespace allpix;
 
 Module::Module() : Module(nullptr) {}
-Module::Module(std::shared_ptr<Detector> detector) : detector_(std::move(detector)) {}
+Module::Module(std::shared_ptr<Detector> detector) : detector_ptr__(std::move(detector)) {}
 
 // Get the detector
 std::shared_ptr<Detector> Module::getDetector() {
-    return detector_;
+    return detector_ptr__;
 }

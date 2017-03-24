@@ -49,7 +49,7 @@ namespace allpix {
         }
 
     private:
-        std::shared_ptr<Detector> detector_;
+        std::shared_ptr<Detector> detector_ptr__;
     };
 }
 
