@@ -106,8 +106,9 @@ namespace allpix {
 
             double whdz = GetHalfPCBZ() + GetHalfChipZ() + GetBumpHalfHeight() + GetHalfSensorZ();
 
-            if(m_coverlayer_ON)
+            if(m_coverlayer_ON) {
                 whdz += GetHalfCoverlayerZ();
+            }
 
             return whdz;
         };
@@ -179,7 +180,7 @@ namespace allpix {
             m_coverlayer_hz = val;
             m_coverlayer_ON = true;
         }
-        void SetCoverlayerMat(std::string mat) { m_coverlayer_mat = mat; }
+        void SetCoverlayerMat(std::string mat) { m_coverlayer_mat = std::move(mat); }
 
     private:
         int m_npix_x;

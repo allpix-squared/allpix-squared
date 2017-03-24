@@ -54,8 +54,9 @@ namespace allpix {
         std::string unit;
         size_t i = str.size() - 1;
         for(; i > 0; --i) {
-            if(!isalpha(str[i]))
+            if(!isalpha(str[i])) {
                 break;
+            }
             unit = str[i] + unit;
         }
 
@@ -67,9 +68,10 @@ namespace allpix {
             throw std::invalid_argument("conversion not possible");
         }
 
-        // apply the actual unit
-        if(unit.empty())
+        // apply the actual unit if it exists
+        if(unit.empty()) {
             return ret_value;
+        }
         return ret_value * static_cast<T>(allpix::Units::get(unit));
     }
     // overload for string
