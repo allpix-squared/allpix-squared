@@ -73,7 +73,11 @@ namespace allpix {
         void BuildAppliances();
         void BuildTestStructure();
 
+        // configuration for this module
+        Configuration m_config;
+        
         // Global variables
+        GeometryManager* m_geoDscMng;
         TGeoMedium* m_fillingWorldMaterial;                        /// Medium to fill the World.
 
         // User defined parameters
@@ -89,10 +93,6 @@ namespace allpix {
         bool m_buildTestStructureFlag;
       std::map<int, ROOT::Math::XYZVector> m_vectorWrapperEnhancement;
       std::map<int, TGeoTranslation> m_posVectorAppliances; //
-
-      // configuration for this module
-        Configuration m_config;
-        GeometryManager* m_geo_manager;
     };
 }
 

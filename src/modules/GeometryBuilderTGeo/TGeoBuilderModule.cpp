@@ -60,14 +60,13 @@ const std::string TGeoBuilderModule::name = "geometry_tgeo";
 
 /// Constructor and destructor
 TGeoBuilderModule::TGeoBuilderModule(Configuration config, Messenger*, GeometryManager *geo_manager)
-    : m_fillingWorldMaterial(nullptr), m_userDefinedWorldMaterial("Air"), m_userDefinedGeoOutputFile(""),
+    : m_config(std::move(config)), m_geoDscMng(geo_manager), m_fillingWorldMaterial(nullptr), m_userDefinedWorldMaterial("Air"), m_userDefinedGeoOutputFile(""),
       m_buildAppliancesFlag(false), m_Appliances_type(0), m_buildTestStructureFlag(false), m_vectorWrapperEnhancement(),
-      m_posVectorAppliances(), m_config(std::move(config)), m_geo_manager(geo_manager) {
+      m_posVectorAppliances() {
     // read the configuration
     // WARNING: these conversion go wrong without include tools/ROOT.h - prefer to use std::string
     m_userDefinedWorldMaterial = m_config.get<TString>("world_material");
     m_userDefinedGeoOutputFile = m_config.get<TString>("output_file", "");
-
     m_buildAppliancesFlag = m_config.get<bool>("build_appliances", false);
     if(m_buildAppliancesFlag) {
         m_Appliances_type = m_config.get<int>("appliances_type");
@@ -113,7 +112,7 @@ void TGeoBuilderModule::run() {
 
     auto detector = std::make_shared<Detector>(detector_section.getName(), detector_model, position, orientation);
     // Can I add something else ?
-    m_geo_manager->addDetector(detector);
+    m_geoDscMng->addDetector(detector);
   }
   
     /* Instantiate the TGeo geometry manager.
@@ -210,7 +209,7 @@ void TGeoBuilderModule::BuildPixelDevices() {
 
     int global_id_cnt = 0;
 
-    vector<shared_ptr<Detector>> detectors = m_geo_manager->getDetectors();
+    vector<shared_ptr<Detector>> detectors = m_geoDscMng->getDetectors();
     LOG(DEBUG) << "Building " << detectors.size() << " device(s) ...";
     
     // Big loop on pixel detectors.
