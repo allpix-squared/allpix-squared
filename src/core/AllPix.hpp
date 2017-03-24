@@ -30,6 +30,10 @@ namespace allpix {
         void finalize();
 
     private:
+        // Set the default unit conventions in AllPix
+        void add_units();
+
+        // Managers
         std::unique_ptr<ConfigManager> conf_mgr_;
         std::unique_ptr<ModuleManager> mod_mgr_;
         std::unique_ptr<GeometryManager> geo_mgr_;
