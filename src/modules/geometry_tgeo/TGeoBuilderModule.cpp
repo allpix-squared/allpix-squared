@@ -26,7 +26,7 @@
 #include "core/utils/log.h"
 #include "tools/ROOT.h"
 #include "core/config/ConfigReader.hpp"
-
+#include "core/geometry/GeometryManager.hpp"
 
 // Global includes
 #include <iostream>
@@ -41,9 +41,19 @@
 #include <TGeoTube.h>
 #include <TROOT.h>
 
+#include <Math/EulerAngles.h>
+#include <Math/Vector3D.h>
+
+
 using namespace std;
 using namespace allpix;
 using namespace ROOT::Math;
+
+/* Create a TGeoTranslation from a ROOT::Math::XYZVector */
+TGeoTranslation ToTGeoTranslation( const XYZVector& pos ){
+  return TGeoTranslation( pos.x(), pos.y(), pos.z() );
+}
+
 
 /// Name of the module
 const std::string TGeoBuilderModule::name = "geometry_tgeo";
@@ -52,15 +62,12 @@ const std::string TGeoBuilderModule::name = "geometry_tgeo";
 TGeoBuilderModule::TGeoBuilderModule(AllPix* apx, Configuration conf)
     : Module(apx),
       m_fillingWorldMaterial(nullptr),
-      m_geoMap(),
       m_userDefinedWorldMaterial("Air"),
       m_userDefinedGeoOutputFile(""),
       m_buildAppliancesFlag(false),
       m_Appliances_type(0),
       m_buildTestStructureFlag(false),
       m_vectorWrapperEnhancement(),
-      m_posVector(),
-      m_rotVector(),
       m_posVectorAppliances(),
       m_config(std::move(conf)) {
 
@@ -83,11 +90,11 @@ void TGeoBuilderModule::run() {
     // Import and load external geometry
     // TGeoManager::Import("MyGeom.root");
     // Return
-
-    // read the geometry descriptions
+  
+    // Read the geometry descriptions from the models
   std::string model_file_name = m_config.get<std::string>("models_file");
   auto geo_descriptions = ReadGeoDescription(model_file_name);  
-
+  
   // construct the detectors from the config file
   std::string detector_file_name = m_config.get<std::string>("detectors_file");
   std::ifstream file(detector_file_name);
@@ -95,11 +102,28 @@ void TGeoBuilderModule::run() {
     throw allpix::ConfigFileUnavailableError(detector_file_name);
   }
   ConfigReader detector_config(file);  
+
+  // Loop on the detector configuration.
+  for(auto& detector_section : detector_config.getConfigurations()) {
+    std::shared_ptr<DetectorModel> detector_model =
+      geo_descriptions.getDetectorModel(detector_section.get<std::string>("type"));
+
+    // Check that detector types exists.
+    if(detector_model == nullptr) {
+      throw InvalidValueError("type",
+			      detector_section.getName(),
+			      detector_section.getText("type"),
+			      "detector type does not exist in registered models");
+    }
+    
+    XYZVector position = detector_section.get<XYZVector>("position", XYZVector());
+    EulerAngles orientation = detector_section.get<EulerAngles>("orientation", EulerAngles());
+
+    auto detector = std::make_shared<Detector>(detector_section.getName(), detector_model, position, orientation);
+    // Can I add something else ?
+    getGeometryManager()->addDetector(detector);
+  }
   
-
-    // Read detector description. #### for dev only
-  //ReadDetectorDescriptions();
-
     /* Instantiate the TGeo geometry manager.
        It will remain persistant until gGeoManager is deleted.
      */
@@ -114,12 +138,12 @@ void TGeoBuilderModule::run() {
     gGeoManager->CloseGeometry();
 
     //### Visualisation Development only
-    TGeoVolume* top = gGeoManager->GetTopVolume();
     // gGeoManager->SetTopVisible(); // the TOP is invisible by default
     gGeoManager->SetVisLevel(3);
     // gGeoManager->SetVisOption(0); // To see the intermediate containers.
     // gGeoManager->GetVolume("name");
-    top->Draw();
+    //TGeoVolume* top = gGeoManager->GetTopVolume();
+    //top->Draw();
     // gGeoManager->CheckOverlaps(0.1);
 
     // Save geometry in ROOT file.
@@ -152,19 +176,7 @@ void TGeoBuilderModule::Construct() {
        The size of the world does not seem to have any effect. Even if smaller than
        the built detectors, ROOT does not complain.
     */
-    XYZVector halfworld = m_config.get("half_world", XYZVector(1000, 1000, 1000));
-    /*   #### FIXME
-    m_config.setDefault("half_world", TVector3(1000, 1000, 2000));
-    TVector3 halfworld = m_config.get<TVector3>("half_world");
-    */
-    const double halfworld_dx = halfworld.x(); // mm
-    const double halfworld_dy = halfworld.y(); // mm
-    const double halfworld_dz = halfworld.z(); // mm
-    /*
-    const double halfworld_dx = 1000;
-    const double halfworld_dy = 1000;
-    const double halfworld_dz = 2000;
-    */
+    const XYZVector halfworld = m_config.get("half_world", XYZVector(1000, 1000, 1000));
 
     m_fillingWorldMaterial = gGeoManager->GetMedium(m_userDefinedWorldMaterial);
     // If null, throw an exception and stop the construction !
@@ -177,7 +189,8 @@ void TGeoBuilderModule::Construct() {
 
     // World volume, ie the experimental hall.
     TGeoVolume* expHall_log =
-        gGeoManager->MakeBox("ExpHall", m_fillingWorldMaterial, halfworld_dx, halfworld_dy, halfworld_dz);
+      gGeoManager->MakeBox("ExpHall", m_fillingWorldMaterial, halfworld.x(),
+			   halfworld.y(), halfworld.z());
     // expHall_log->SetTransparency(100);
     // G4Color(1.0, 0.65, 0.0, 0.1)->kOrange+1, SetVisibility(false), SetForceSolid(false)
     expHall_log->SetLineColor(kOrange + 1);
@@ -205,14 +218,20 @@ void TGeoBuilderModule::BuildPixelDevices() {
 
     int global_id_cnt = 0;
 
+    GeometryManager* geoDscMng = getGeometryManager();
+    vector<shared_ptr<Detector>> detectors = geoDscMng->getDetectors();
+    LOG(DEBUG) << "Building " << detectors.size() << " device(s) ...";
+    
     // Big loop on pixel detectors.
-    LOG(DEBUG) << "Building " << m_geoMap.size() << " device(s) ...";
-    auto detItr = m_geoMap.begin();
-    for(; detItr != m_geoMap.end(); detItr++) {
-        std::shared_ptr<PixelDetectorModel> dsc = *detItr;
+    auto detItr = detectors.begin();
+    for(; detItr != detectors.end(); detItr++) {
+
+      shared_ptr<PixelDetectorModel> dsc = dynamic_pointer_cast<PixelDetectorModel>((*detItr)->getModel());
         int id = global_id_cnt++;
-        TString id_s = Form("_%i", id);
-        LOG(DEBUG) << "Start detector " << id;
+	string detname = (*detItr)->getName();
+        //TString id_s = Form("_%i", id);
+	TString id_s = "_"; id_s += detname;
+	LOG(DEBUG) << "Start detector " << detname;
 
         ///////////////////////////////////////////////////////////
         // wrapper
@@ -245,15 +264,22 @@ void TGeoBuilderModule::BuildPixelDevices() {
         // G4Color(1,0,0,0.9)->kRed, SetLineWidth(1), SetForceSolid(false), SetVisibility(false)
         wrapper_log->SetLineColor(kRed);
 
-        // Placement ! Starting at user position --> vector pos
-        TGeoTranslation posWrapper = m_posVector[id];
+        // Placement ! Retrieve position given by the user.
+	TGeoTranslation posWrapper = ToTGeoTranslation( (*detItr)->getPosition() );
         // Apply wrapper enhancement
         posWrapper.Add(&wrapperEnhancementTransl);
-        TGeoVolume* expHall_log = gGeoManager->GetTopVolume();
-        auto* det_tr = new TGeoCombiTrans(posWrapper, m_rotVector[id]);
+	// Retrieve orientation given by the user.
+	EulerAngles angles = (*detItr)->getOrientation();
+	TGeoRotation orWrapper = TGeoRotation( "DetPlacement" + id_s, angles.Phi(), angles.Theta(),
+					       angles.Psi() );
+	// And create a transformation.
+        auto* det_tr = new TGeoCombiTrans(posWrapper, orWrapper);
         det_tr->SetName("DetPlacement" + id_s);
+	
+        TGeoVolume* expHall_log = gGeoManager->GetTopVolume();
         expHall_log->AddNode(wrapper_log, 1, det_tr);
 
+	
         ///////////////////////////////////////////////////////////
         // Device
         // The Si wafer is placed respect to the wrapper.
@@ -577,97 +603,6 @@ void TGeoBuilderModule::BuildAppliances() {
 
     } // end loop positions
 
-    /*
-
-    switch(m_Appliances_type){
-    case 0:
-      {
-
-        // Create the composite shape. mm !
-        TGeoBBox* BoxSup = new TGeoBBox("AppBoxSup",87./2, 79./2, 5);
-        TGeoBBox* BoxSupN = new TGeoBBox("AppBoxSupN", 72./2, 54./2, 8.);
-        TGeoBBox* BoxSupN2 = new TGeoBBox("AppBoxSupN2", 52./2, 54./2, 5.);
-
-        TGeoTranslation* BoxSupN2Transl =
-      new TGeoTranslation("AppBoxSupN2Translation", 0., 44.5, 4. );
-        TString comp = "(AppBoxSup-AppBoxSupN)-AppBoxSupN2:AppBoxSupN2Translation";
-        TGeoCompositeShape* Support = new TGeoCompositeShape("SupportBox",comp);
-
-        // Create logical volume
-        TGeoVolume* Support_log = new TGeoVolume("Appliance",Support,Al);
-        //G4Color(0,0,0,0.6)=kBlack,SetLineWidth(2),SetForceSolid(true),SetVisibility(true)
-        Support_log->SetLineWidth(2);
-        Support_log->SetLineColor(kBlack);
-
-        // Loop on the given position vectors and position the volumes.
-        map<int,TGeoTranslation>::iterator aplItr = m_posVectorAppliances.begin();
-        for( ; aplItr != m_posVectorAppliances.end() ; aplItr++) {
-      int detId = (*aplItr).first;
-      TString id_s = Form("_%i",detId);
-
-      // Translation vectors, with respect to the wrapper.
-      TGeoTranslation* ApplTransl =
-        new TGeoTranslation("ApplianceTransl"+id_s,0.,10.25,0.);
-      ApplTransl->Add(&m_posVectorAppliances[detId]);
-
-      // Creation of the node.
-      // The mother volume is the wrapper. It will rotate with the wrapper.
-      TGeoVolume* Wrapper_log = gGeoManager->GetVolume(WrapperName+id_s);
-      Wrapper_log->AddNode(Support_log,detId,ApplTransl);
-
-        } // end loop positions
-
-
-      }
-    case 1:
-      {
-        // Empty Aluminium box with a window.
-
-        // Create the composite shape. mm !
-        TGeoBBox* BoxOut = new TGeoBBox("AppBoxOut", 54./2, 94.25/2, 12./2 );
-        TGeoBBox* BoxIn = new TGeoBBox("AppBoxIn", 52.5/2, 92.5/2, 12./2 );
-        TGeoBBox* Window = new TGeoBBox("AppWindow", 10., 10., 1.5 );
-
-        TGeoTranslation* BoxInTransl =
-      new TGeoTranslation("AppBoxInTranslation", 0., 0., -1.5 );
-        TGeoTranslation* WindowTransl =
-      new TGeoTranslation("AppWindowTranslation", 0., -22.25, 6. );
-
-        TString comp = "(AppBoxOut-AppBoxIn:BoxInTransl)-AppWindow:AppWindowTranslation";
-        TGeoCompositeShape* Support = new TGeoCompositeShape("SupportBox",comp);
-
-        // Create logical volume
-        TGeoVolume* Support_log = new TGeoVolume("Appliance",Support,Al);
-        //G4Color(255,0,0,0.7)=kRed,SetLineWidth(2),SetForceSolid(true),SetVisibility(true)
-        Support_log->SetLineWidth(2);
-        Support_log->SetLineColor(kRed);
-
-        // Loop on the given position vectors and position the volumes.
-        map<int,TGeoTranslation>::iterator aplItr = m_posVectorAppliances.begin();
-        for( ; aplItr != m_posVectorAppliances.end() ; aplItr++) {
-      int detId = (*aplItr).first;
-      TString id_s = Form("_%i",detId);
-
-      // Translation vectors, with respect to the wrapper.
-      TGeoTranslation* ApplTransl =
-        new TGeoTranslation("ApplianceTransl"+id_s,0.,0.,11.2);
-      ApplTransl->Add(&m_posVectorAppliances[detId]);
-
-      // Creation of the node.
-      // The mother volume is the wrapper. It will rotate with the wrapper.
-      TGeoVolume* Wrapper_log = gGeoManager->GetVolume(WrapperName+id_s);
-      Wrapper_log->AddNode(Support_log,detId,ApplTransl);
-
-        } // end loop positions
-      } // end case 1
-    default:
-      {
-        LOG(DEBUG) << "Unknown Appliance Type";
-        break;
-      }
-
-    }
-    */
 
     LOG(DEBUG) << "Construction of the appliances successful.";
 }
@@ -769,84 +704,7 @@ void TGeoBuilderModule::BuildMaterialsAndMedia() {
     auto* Al_mat = new TGeoMaterial("Al", Al, density = 2.699);
     new TGeoMedium("Al", ++numed, Al_mat);
 }
-
-/*
-  Dummy function that fills one GeoDsc class. For development purpose only.
- */
-void TGeoBuilderModule::ReadDetectorDescriptions() {
-
-    // Create new GeoDsc
-    auto dsc = std::make_shared<PixelDetectorModel>("tgeo_test");
-
-    // Fill it with data from macros/OneFEI4_vis.in
-    /*
-  Dump geo description for object with Id : 200
-   Digitizer         : FEI3Standard
-     npix_x            = 80
-     npix_y            = 336
-     npix_z            = 0
-     pixsize_x         = 0.125 [mm]
-     pixsize_y         = 0.025
-     pixsize_z         = 0.125
-     sensor_hx         = 10, posx -4.3
-     sensor_hy         = 8.4, posy 28.2
-     sensor_hz         = 0.125, posz 0
-     coverlayer_hz     = 0
-     coverlayer_mat    = G4Al
-     chip_hx           = 10, posx 0
-     chip_hy           = 8.4, posy 0
-     chip_hz           = 0.195, posz 0
-     pcb_hx            = 26.5
-     pcb_hy            = 47
-     pcb_hz            = 0.8
-    */
-    // dsc->SetSensorDigitizer("FEI3Standard");
-    // dsc->SetID(200);
-    dsc->SetNPixelsX(80);
-    dsc->SetNPixelsY(336);
-    dsc->SetNPixelsZ(0);
-    dsc->SetPixSizeX(0.125);
-    dsc->SetPixSizeY(0.025);
-    dsc->SetPixSizeZ(0.125);
-    dsc->SetSensorHX(10);
-    dsc->SetSensorHY(8.4);
-    dsc->SetSensorHZ(0.125);
-    dsc->SetSensorPosX(-4.3);
-    dsc->SetSensorPosY(28.2);
-    dsc->SetSensorPosZ(0);
-    // SetCoverlayerHZ(0);
-    // SetCoverlayerMat("Al");
-    dsc->SetChipHX(10);
-    dsc->SetChipHY(8.4);
-    dsc->SetChipHZ(0.195);
-    dsc->SetChipPosX(0);
-    dsc->SetChipPosY(0);
-    dsc->SetChipPosZ(0);
-    dsc->SetPCBHX(26.5);
-    dsc->SetPCBHY(47);
-    dsc->SetPCBHZ(0.8);
-
-    m_geoMap.push_back(dsc);
-
-    /*
-      /allpix/det/setPosition   0.0 0.0  0.0  mm
-      /allpix/det/setRotation   0.0 0.0  0.0 deg
-      Position/Rotation of the detector with respect to the world coordinates
-    */
-    m_posVector[200] = TGeoTranslation(0.0, 0.0, 0.0);
-    // m_posVector[200] = TGeoTranslation(10., 10., 10.);
-    m_posVector[200].SetName("DetTranslation_200"); // For ROOT's records
-    m_rotVector[200] = TGeoRotation();              // Identity
-    m_rotVector[200].SetName("DetRotation_200");    // For ROOT's records
-    // G4 style :
-    // m_rotVector[200] = TGeoRotation(-0.0 180.0 180.0);//deg
-    // m_vectorWrapperEnhancement[200] = TVector3(5.0, 5.0, 5.0);
-
-    // Test appliances
-    m_Appliances_type = 0;
-    m_buildAppliancesFlag = false;
-    m_posVectorAppliances[200] = TGeoTranslation(0.0, 0.0, 0.0);
-}
+   
 
 /******************* OLD STUFF ****************************/
 

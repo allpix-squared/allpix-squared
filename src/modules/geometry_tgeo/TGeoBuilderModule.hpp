@@ -6,11 +6,11 @@
 /// To do :
 ///  - Integrate Configuration
 ///  - Refer to the detector desc with their names instead of integers.
-///  - Change TVector3 with XYZVector
+///  - 
 ///
 ///
 /// \date     March 20 2017
-/// \version  0.10
+/// \version  0.11
 /// \author N. Gauvin; CERN
 
 #ifndef ALLPIX_DETECTOR_CONSTRUCTION_TGEO_H
@@ -22,7 +22,6 @@
 
 // ROOT
 #include <TGeoManager.h>
-#include <TVector3.h>   //### to be removed
 #include <Math/Vector3D.h>
 
 // AllPix2
@@ -43,6 +42,9 @@ const TString PixelName = "Pixel";
 const TString ChipName = "Chip";
 const TString BumpName = "Bump";
 const TString GuardRingsName = "GuardRings";
+
+// ### to be placed in a more adequate place
+TGeoTranslation ToTGeoTranslation( const ROOT::Math::XYZVector& pos );
 
 namespace allpix {
 
@@ -69,11 +71,9 @@ namespace allpix {
         void BuildMaterialsAndMedia();
         void BuildAppliances();
         void BuildTestStructure();
-        void ReadDetectorDescriptions(); //### Debugging only !
 
         // Global variables
         TGeoMedium* m_fillingWorldMaterial;                        /// Medium to fill the World.
-        std::vector<std::shared_ptr<PixelDetectorModel>> m_geoMap; /// the detector descriptions
 
         // User defined parameters
         /*
@@ -86,10 +86,8 @@ namespace allpix {
         bool m_buildAppliancesFlag;
         int m_Appliances_type;
         bool m_buildTestStructureFlag;
-        std::map<int, TVector3> m_vectorWrapperEnhancement;
-        std::map<int, TGeoTranslation> m_posVector;           // position of medipix(es), key is detector Id
-        std::map<int, TGeoRotation> m_rotVector;              // map<int, G4RotationMatrix *>
-        std::map<int, TGeoTranslation> m_posVectorAppliances; //
+      std::map<int, ROOT::Math::XYZVector> m_vectorWrapperEnhancement;
+      std::map<int, TGeoTranslation> m_posVectorAppliances; //
 
       // configuration for this module
         Configuration m_config;
