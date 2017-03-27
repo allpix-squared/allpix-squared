@@ -7,13 +7,13 @@ slc6-gcc62:
         - source .gitlab-ci.d/init_x86_64.sh
         - mkdir build
         - cd build
-        - cmake -GNinja -DGeant4_DIR=$G4INSTALL/lib64/Geant4-10.2.2 -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen_HOME/lib64/cmake/eigen3 ..
+        - cmake -GNinja -DCMAKE_BUILD_TYPE=DEBUG -DGeant4_DIR=$G4INSTALL/lib64/Geant4-10.2.2 -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen_HOME/lib64/cmake/eigen3 ..
         - ninja
         - ninja install
         - ctest --output-on-failure -j4
         - cd ..
         - source $G4ENV_INIT
-        - bin/allpix etc/example_config.ini 
+        - bin/allpix etc/example_config.ini
 
 
 slc6-llvm39:
@@ -25,7 +25,7 @@ slc6-llvm39:
         - source .gitlab-ci.d/init_x86_64.sh
         - mkdir build
         - cd build
-        - cmake -GNinja -DGeant4_DIR=$G4INSTALL/lib64/Geant4-10.2.2 -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen_HOME/lib64/cmake/eigen3 ..
+        - cmake -GNinja -DCMAKE_BUILD_TYPE=DEBUG -DGeant4_DIR=$G4INSTALL/lib64/Geant4-10.2.2 -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen_HOME/lib64/cmake/eigen3 ..
         - ninja
         - ninja check-format
         - ninja check-lint
@@ -33,7 +33,7 @@ slc6-llvm39:
         - ctest --output-on-failure -j4
         - cd ..
         - source $G4ENV_INIT
-        - bin/allpix etc/example_config.ini 
+        - bin/allpix etc/example_config.ini
 
 centos7-gcc62:
     tags:
@@ -44,13 +44,13 @@ centos7-gcc62:
         - source .gitlab-ci.d/init_x86_64.sh
         - mkdir build
         - cd build
-        - cmake -GNinja -DGeant4_DIR=$G4INSTALL/lib64/Geant4-10.2.2 -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen_HOME/lib64/cmake/eigen3 ..
+        - cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4INSTALL/lib64/Geant4-10.2.2 -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen_HOME/lib64/cmake/eigen3 ..
         - ninja
         - ninja install
         - ctest --output-on-failure -j4
         - cd ..
         - source $G4ENV_INIT
-        - bin/allpix etc/example_config.ini 
+        - bin/allpix etc/example_config.ini
 
 centos7-llvm39:
     tags:
@@ -61,7 +61,7 @@ centos7-llvm39:
         - source .gitlab-ci.d/init_x86_64.sh
         - mkdir build
         - cd build
-        - cmake -GNinja -DGeant4_DIR=$G4INSTALL/lib64/Geant4-10.2.2 -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen_HOME/lib64/cmake/eigen3 ..
+        - cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4INSTALL/lib64/Geant4-10.2.2 -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen_HOME/lib64/cmake/eigen3 ..
         - ninja
         - ninja check-format
         - ninja check-lint
@@ -69,8 +69,8 @@ centos7-llvm39:
         - ctest --output-on-failure -j4
         - cd ..
         - source $G4ENV_INIT
-        - bin/allpix etc/example_config.ini 
-    
+        - bin/allpix etc/example_config.ini
+
 mac1012-clang80:
     tags:
         - mac
@@ -78,10 +78,10 @@ mac1012-clang80:
         - source .gitlab-ci.d/init_x86_64.sh
         - mkdir build
         - cd build
-        - cmake -GNinja -DGeant4_DIR=$G4INSTALL/lib/Geant4-10.2.2 -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen_HOME/lib64/cmake/eigen3 ..
+        - cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4INSTALL/lib/Geant4-10.2.2 -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen_HOME/lib64/cmake/eigen3 ..
         - ninja
         - ninja install
         - ctest --output-on-failure -j4
         - cd ..
         - source $G4ENV_INIT
-        - bin/allpix etc/example_config.ini 
+        - bin/allpix etc/example_config.ini

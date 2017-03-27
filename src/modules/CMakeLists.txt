@@ -6,6 +6,14 @@
 OPTION(BUILD_allmodules "Build all modules?" OFF)
 
 ##############################
+# Build the common logic     #
+##############################
+
+# FIXME: THIS IS TEMPORARY AND SHOULD LATER BE FIXED IN A BETTER WAY
+add_subdirectory(common)
+set(ALLPIX_DEPS_LIBRARIES ${ALLPIX_DEPS_LIBRARIES} AllPixModulesCommon)
+
+##############################
 # Build the required modules #
 ##############################
 

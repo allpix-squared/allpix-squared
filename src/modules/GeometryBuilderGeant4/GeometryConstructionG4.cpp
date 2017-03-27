@@ -5,7 +5,6 @@
 
 #include "GeometryConstructionG4.hpp"
 
-//#include "G4SDManager.hh"
 #include <G4Box.hh>
 #include <G4LogicalVolume.hh>
 #include <G4NistManager.hh>
@@ -21,18 +20,19 @@
 #include <G4VSolid.hh>
 #include <G4VisAttributes.hh>
 
-#include <CLHEP/Units/SystemOfUnits.h>
-
-#include "BumpsParameterizationG4.hpp"
-#include "DetectorModelG4.hpp"
-
 #include "core/geometry/PixelDetectorModel.hpp"
 #include "core/utils/log.h"
 #include "tools/geant4.h"
 
+// temporary common includes
+#include "modules/common/BumpsParameterizationG4.hpp"
+#include "modules/common/DetectorModelG4.hpp"
+
+// FIXME: should get rid of CLHEP units
+#include <CLHEP/Units/SystemOfUnits.h>
+
 using namespace CLHEP;
 using namespace std;
-
 using namespace allpix;
 
 // Constructor and destructor

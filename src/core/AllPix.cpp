@@ -38,12 +38,11 @@ void AllPix::finalize() {
 // add all units
 void AllPix::add_units() {
     // LENGTH
-    Units::add("pm", 1e-6);
-    Units::add("nm", 1e-3);
+    Units::add("nm", 1e-6);
+    Units::add("um", 1e-3);
     Units::add("mm", 1);
-    Units::add("um", 1e3);
-    Units::add("m", 1e6);
-    Units::add("km", 1e9);
+    Units::add("m", 1e3);
+    Units::add("km", 1e6);
 
     // TIME
     Units::add("ps", 1e-3);

@@ -19,8 +19,8 @@
 #include "core/utils/log.h"
 #include "tools/geant4.h"
 
-// FIXME: THIS IS BROKEN ---> SHOULD NEVER BE NEEDED !!!
-#include "../GeometryBuilderGeant4/DetectorModelG4.hpp"
+// FIXME: broken common includes
+#include "modules/common/DetectorModelG4.hpp"
 
 using namespace allpix;
 
@@ -65,8 +65,7 @@ void DepositionGeant4Module::run() {
     G4ThreeVector part_momentum = config_.get<G4ThreeVector>("particle_momentum");
     double part_energy = config_.get<double>("particle_energy");
 
-    GeneratorActionG4* generator = new GeneratorActionG4(
-        part_amount, particle, part_position * CLHEP::um, part_momentum * CLHEP::um, part_energy * CLHEP::keV);
+    GeneratorActionG4* generator = new GeneratorActionG4(part_amount, particle, part_position, part_momentum, part_energy);
     run_manager_g4->SetUserAction(generator);
 
     // loop through all detectors and set the sensitive detectors

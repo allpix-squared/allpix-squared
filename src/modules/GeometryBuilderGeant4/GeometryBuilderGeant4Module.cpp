@@ -18,9 +18,7 @@
 #include <Math/EulerAngles.h>
 #include <Math/Vector3D.h>
 
-#include "DetectorModelG4.hpp"
 #include "GeometryConstructionG4.hpp"
-#include "ReadGeoDescription.hpp"
 
 #include "tools/ROOT.h"
 #include "tools/geant4.h"
@@ -30,6 +28,10 @@
 #include "core/geometry/GeometryManager.hpp"
 #include "core/utils/exceptions.h"
 #include "core/utils/log.h"
+
+// temporary common includes
+#include "modules/common/DetectorModelG4.hpp"
+#include "modules/common/ReadGeoDescription.hpp"
 
 using namespace allpix;
 using namespace ROOT;
