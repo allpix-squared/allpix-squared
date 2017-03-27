@@ -35,7 +35,7 @@ namespace allpix {
         //  Number of pixels
         inline int GetNPixelsX() { return m_npix_x; };
         inline int GetNPixelsY() { return m_npix_y; };
-        inline int GetNPixelsZ() { return m_npix_z; };
+        // inline int GetNPixelsZ() { return m_npix_z; };
         inline int GetNPixelsTotXY() { return GetNPixelsX() * GetNPixelsY(); }; // Planar layout //
         // inline double GetResistivity(){return m_resistivity;};
 
@@ -55,11 +55,11 @@ namespace allpix {
         //  Pixel dimensions
         inline double GetPixelX() { return 2. * GetHalfPixelX(); };
         inline double GetPixelY() { return 2. * GetHalfPixelY(); };
-        inline double GetPixelZ() { return 2. * GetHalfPixelZ(); };
+        inline double GetPixelZ() { return 2. * GetHalfPixelZ(); }; // FIXME: REMOVE
 
         inline double GetHalfPixelX() { return m_pixsize_x; }; // half pixel size //
         inline double GetHalfPixelY() { return m_pixsize_y; };
-        inline double GetHalfPixelZ() { return m_pixsize_z; };
+        inline double GetHalfPixelZ() { return m_pixsize_z; }; // FIXME: REMOVE
 
         // Sensor --> It will be positioned with respect to the wrapper !! //
         inline double GetHalfSensorX() { return m_sensor_hx; };

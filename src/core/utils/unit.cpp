@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <string>
 
-#include "string.h"
+#include "core/utils/string.h"
 
 using namespace allpix;
 
@@ -21,8 +21,9 @@ void Units::add(std::string str, allpix::Units::UnitType value) {
 
 // get a new unit
 allpix::Units::UnitType Units::get(std::string str) {
-    if(allpix::trim(str).empty())
+    if(allpix::trim(str).empty()) {
         throw std::invalid_argument("empty unit is not defined");
+    }
     std::transform(str.begin(), str.end(), str.begin(), ::tolower);
 
     auto iter = unit_map_.find(str);

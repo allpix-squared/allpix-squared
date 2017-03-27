@@ -70,16 +70,17 @@ namespace allpix {
         // apply all the units if they exists
         if(!units.empty()) {
             std::string unit;
-            for(size_t i = 0; i < units.size(); ++i) {
-                if(units[i] == '*') {
+            for(char ch : units) {
+                if(ch == '*') {
                     ret_value = ret_value * static_cast<T>(allpix::Units::get(unit));
                     unit.clear();
-                } else if(units[i] == '/') {
+                } else if(ch == '/') {
                     ret_value =
                         ret_value * static_cast<T>(static_cast<allpix::Units::UnitType>(1.0l) / allpix::Units::get(unit));
                     unit.clear();
-                } else
-                    unit += units[i];
+                } else {
+                    unit += ch;
+                }
             }
             ret_value = ret_value * static_cast<T>(allpix::Units::get(unit));
             ;
