@@ -19,11 +19,11 @@ namespace allpix {
         G4LogicalVolume* wrapper_log;
         G4VPhysicalVolume* wrapper_phys;
 
-        // Volume containing the PCB for all sensors (green)
+        // Volume containing the PCB for all pixels (green)
         G4LogicalVolume* PCB_log;
         G4VPhysicalVolume* PCB_phys;
 
-        // Volume containing the sensitive sensors (blue)
+        // Volume containing the sensitive pixels (blue)
         G4LogicalVolume* box_log;
         G4VPhysicalVolume* box_phys;
 
@@ -31,7 +31,7 @@ namespace allpix {
         G4LogicalVolume* chip_log;
         G4VPhysicalVolume* chip_phys;
 
-        // Volume box containing the bumps between the sensor and the chip (yellow)
+        // Volume box containing the bumps between the pixel and the chip (yellow)
         G4LogicalVolume* bumps_log;
         G4VPhysicalVolume* bumps_phys;
 
