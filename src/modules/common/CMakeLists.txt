@@ -34,3 +34,8 @@ TARGET_LINK_LIBRARIES(AllPixModulesCommon ${ALLPIX_LIBRARIES} ${ALLPIX_DEPS_LIBR
 
 # add Geant4 libraries
 TARGET_LINK_LIBRARIES(AllPixModulesCommon ${Geant4_LIBRARIES})
+
+# add installation target
+INSTALL(TARGETS AllPixModulesCommon
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib)
