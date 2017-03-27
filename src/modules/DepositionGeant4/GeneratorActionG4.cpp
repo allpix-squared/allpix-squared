@@ -18,12 +18,12 @@ using namespace allpix;
 
 // construct and destruct the generator
 GeneratorActionG4::GeneratorActionG4(
-    int n_particle, G4ParticleDefinition* particle, G4ThreeVector position, G4ThreeVector momentum, double energy)
+    int n_particle, G4ParticleDefinition* particle, G4ThreeVector position, G4ThreeVector direction, double energy)
     : particleGun_(std::make_unique<G4ParticleGun>(n_particle)) {
     particleGun_->SetParticleDefinition(particle);
     particleGun_->SetParticleTime(0.0); // FIXME: what is this time
     particleGun_->SetParticlePosition(position);
-    particleGun_->SetParticleMomentumDirection(momentum);
+    particleGun_->SetParticleMomentumDirection(direction);
     particleGun_->SetParticleEnergy(energy);
 }
 GeneratorActionG4::~GeneratorActionG4() = default;

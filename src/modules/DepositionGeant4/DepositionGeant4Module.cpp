@@ -62,10 +62,10 @@ void DepositionGeant4Module::run() {
 
     int part_amount = config_.get<int>("particle_amount");
     G4ThreeVector part_position = config_.get<G4ThreeVector>("particle_position");
-    G4ThreeVector part_momentum = config_.get<G4ThreeVector>("particle_momentum");
+    G4ThreeVector part_direction = config_.get<G4ThreeVector>("particle_direction");
     double part_energy = config_.get<double>("particle_energy");
 
-    GeneratorActionG4* generator = new GeneratorActionG4(part_amount, particle, part_position, part_momentum, part_energy);
+    GeneratorActionG4* generator = new GeneratorActionG4(part_amount, particle, part_position, part_direction, part_energy);
     run_manager_g4->SetUserAction(generator);
 
     // loop through all detectors and set the sensitive detectors
