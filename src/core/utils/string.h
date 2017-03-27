@@ -51,28 +51,40 @@ namespace allpix {
         str = _from_string_helper(str);
 
         // find an optional unit
-        std::string unit;
-        size_t i = str.size() - 1;
-        for(; i > 0; --i) {
-            if(!isalpha(str[i])) {
+        auto unit_idx = str.size() - 1;
+        for(; unit_idx > 0; --unit_idx) {
+            if(!isalpha(str[unit_idx]) && str[unit_idx] != '*' && str[unit_idx] != '/') {
                 break;
             }
-            unit = str[i] + unit;
         }
+        std::string units = str.substr(unit_idx + 1);
 
         // get the actual value
-        std::istringstream sstream(str.substr(0, i + 1));
+        std::istringstream sstream(str.substr(0, unit_idx + 1));
         T ret_value;
         sstream >> ret_value;
         if(!sstream.eof()) {
             throw std::invalid_argument("conversion not possible");
         }
 
-        // apply the actual unit if it exists
-        if(unit.empty()) {
-            return ret_value;
+        // apply all the units if they exists
+        if(!units.empty()) {
+            std::string unit;
+            for(size_t i = 0; i < units.size(); ++i) {
+                if(units[i] == '*') {
+                    ret_value = ret_value * static_cast<T>(allpix::Units::get(unit));
+                    unit.clear();
+                } else if(units[i] == '/') {
+                    ret_value =
+                        ret_value * static_cast<T>(static_cast<allpix::Units::UnitType>(1.0l) / allpix::Units::get(unit));
+                    unit.clear();
+                } else
+                    unit += units[i];
+            }
+            ret_value = ret_value * static_cast<T>(allpix::Units::get(unit));
+            ;
         }
-        return ret_value * static_cast<T>(allpix::Units::get(unit));
+        return ret_value;
     }
     // overload for string
     template <> inline std::string from_string<std::string>(std::string str) {
