@@ -11,7 +11,7 @@ FIND_PROGRAM(CLANG_FORMAT "clang-format")
 IF(CLANG_FORMAT)
     ADD_CUSTOM_TARGET(
         format
-        COMMAND 
+        COMMAND
         ${CLANG_FORMAT}
         -i
         -style=file
@@ -21,7 +21,7 @@ IF(CLANG_FORMAT)
 
     ADD_CUSTOM_TARGET(
         check-format
-        COMMAND 
+        COMMAND
         ${CLANG_FORMAT}
         -style=file
         -output-replacements-xml
@@ -41,7 +41,10 @@ ENDIF()
 FIND_PROGRAM(CLANG_TIDY "clang-tidy")
 # enable clang tidy only if using a clang compiler
 IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    SET(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY} "-header-filter='${CMAKE_SOURCE_DIR}'")
+    # if debug build enabled do automatic clang tidy
+    IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
+        SET(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY} "-header-filter='${CMAKE_SOURCE_DIR}'")
+    ENDIF()
 
     # enable checking and formatting through run-clang-tidy if available
     # FIXME: make finding this program more portable
@@ -50,14 +53,14 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     IF(RUN_CLANG_TIDY)
         # Set export commands on
         SET (CMAKE_EXPORT_COMPILE_COMMANDS ON)
-        
+
         # Get amount of processors to speed up linting
         INCLUDE(ProcessorCount)
         ProcessorCount(NPROC)
         IF(NPROC EQUAL 0)
             SET(NPROC 1)
         ENDIF()
-        
+
         ADD_CUSTOM_TARGET(
             lint COMMAND
             ${RUN_CLANG_TIDY} -fix -format -header-filter=${CMAKE_SOURCE_DIR} -j${NPROC}
@@ -65,7 +68,7 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         )
 
         ADD_CUSTOM_TARGET(
-            check-lint COMMAND 
+            check-lint COMMAND
             ${RUN_CLANG_TIDY} -header-filter=${CMAKE_SOURCE_DIR} -j${NPROC}
             | tee ${CMAKE_BINARY_DIR}/check_lint_file.txt
             # WARNING: fix to stop with error if there are problems
