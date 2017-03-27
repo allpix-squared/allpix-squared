@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "core/utils/exceptions.h"
+#include "exceptions.h"
 
 using namespace allpix;
 

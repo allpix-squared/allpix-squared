@@ -9,7 +9,7 @@
 
 #include "GeometryManager.hpp"
 
-#include "core/utils/exceptions.h"
+#include "exceptions.h"
 
 using namespace allpix;
 

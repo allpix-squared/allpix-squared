@@ -23,10 +23,10 @@
 #include "tools/ROOT.h"
 #include "tools/geant4.h"
 
-#include "core/AllPix.hpp"
 #include "core/config/ConfigReader.hpp"
+#include "core/config/InvalidValueError.hpp"
 #include "core/geometry/GeometryManager.hpp"
-#include "core/utils/exceptions.h"
+#include "core/module/ModuleError.hpp"
 #include "core/utils/log.h"
 
 // temporary common includes
@@ -48,13 +48,13 @@ GeometryBuilderGeant4Module::~GeometryBuilderGeant4Module() = default;
 inline static void check_dataset_g4(const std::string& env_name) {
     const char* file_name = std::getenv(env_name.c_str());
     if(file_name == nullptr) {
-        throw ModuleException("Geant4 environment variable " + env_name + " is not set, make sure to source a Geant4 "
-                                                                          "environment with all datasets");
+        throw ModuleError("Geant4 environment variable " + env_name + " is not set, make sure to source a Geant4 "
+                                                                      "environment with all datasets");
     }
     std::ifstream file(file_name);
     if(!file.good()) {
-        throw ModuleException("Geant4 environment variable " + env_name + " does not point to existing dataset, your Geant4 "
-                                                                          "environment is not complete");
+        throw ModuleError("Geant4 environment variable " + env_name + " does not point to existing dataset, your Geant4 "
+                                                                      "environment is not complete");
     }
     // FIXME: check if file does actually contain a correct dataset
 }
@@ -104,22 +104,19 @@ void GeometryBuilderGeant4Module::init() {
         std::shared_ptr<DetectorModel> detector_model =
             geo_descriptions.getDetectorModel(detector_section.get<std::string>("type"));
 
+        // check if detector model is defined
         if(detector_model == nullptr) {
-            throw InvalidValueError("type",
-                                    detector_section.getName(),
-                                    detector_section.getText("type"),
-                                    "detector type does not exist in registered models");
+            throw InvalidValueError(detector_section, "type", "detector type does not exist in registered models");
         }
 
+        // get the position and orientation
         Math::XYZVector position = detector_section.get<Math::XYZVector>("position", Math::XYZVector());
         Math::EulerAngles orientation = detector_section.get<Math::EulerAngles>("orientation", Math::EulerAngles());
 
+        // create the detector and add it
         auto detector = std::make_shared<Detector>(detector_section.getName(), detector_model, position, orientation);
         geo_manager_->addDetector(detector);
     }
-
-    // save the geant4 run manager in allpix to make it available to other modules
-    // getAllPix()->setExternalManager(run_manager_g4_);
 }
 
 // run the geometry construction
@@ -156,8 +153,7 @@ void GeometryBuilderGeant4Module::build_g4() {
     if(physicsList == nullptr) {
         // FIXME: better syntax for exceptions here
         // FIXME: more information about available lists
-        throw InvalidValueError(
-            "physics_list", config_.getName(), config_.getText("physics_list"), "physics list is not defined");
+        throw InvalidValueError(config_, "physics_list", "specified physics list does not exists");
     }
     run_manager_g4_->SetUserInitialization(physicsList);
 

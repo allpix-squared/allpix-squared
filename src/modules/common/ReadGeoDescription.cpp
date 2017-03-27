@@ -8,7 +8,7 @@
 
 #include <set>
 
-#include "core/utils/exceptions.h"
+#include "core/module/ModuleError.hpp"
 #include "core/utils/log.h"
 
 #include "core/config/ConfigReader.hpp"
@@ -26,7 +26,7 @@ using namespace ROOT::Math;
 ReadGeoDescription::ReadGeoDescription(std::string file_name) : models_() {
     std::ifstream file(file_name);
     if(!file.good()) {
-        throw ModuleException("Geometry description file '" + file_name + "' not found");
+        throw ModuleError("Geometry description file '" + file_name + "' not found");
     }
 
     ConfigReader reader(file, file_name);

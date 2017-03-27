@@ -15,6 +15,7 @@
 #include "SensitiveDetectorG4.hpp"
 
 #include "core/AllPix.hpp"
+#include "core/config/InvalidValueError.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/utils/log.h"
 #include "tools/geant4.h"
@@ -56,8 +57,7 @@ void DepositionGeant4Module::run() {
     if(particle == nullptr) {
         // FIXME: better syntax for exceptions here
         // FIXME: more information about available particle
-        throw InvalidValueError(
-            "particle_type", config_.getName(), config_.getText("particle_type"), "particle type does not exist");
+        throw InvalidValueError(config_, "particle_type", "particle type does not exist");
     }
 
     int part_amount = config_.get<int>("particle_amount");

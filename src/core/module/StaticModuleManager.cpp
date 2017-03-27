@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "Module.hpp"
+#include "exceptions.h"
 
 #include "core/AllPix.hpp"
 #include "core/config/Configuration.hpp"
-#include "core/utils/exceptions.h"
 #include "core/utils/log.h"
 
 using namespace allpix;

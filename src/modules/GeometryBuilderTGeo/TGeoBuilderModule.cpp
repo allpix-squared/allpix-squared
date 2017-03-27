@@ -26,7 +26,9 @@
 
 // AllPix includes
 #include "core/config/ConfigReader.hpp"
+#include "core/config/InvalidValueError.hpp"
 #include "core/geometry/GeometryManager.hpp"
+#include "core/module/ModuleError.hpp"
 #include "core/utils/log.h"
 #include "tools/ROOT.h"
 
@@ -101,10 +103,7 @@ void TGeoBuilderModule::run() {
 
         // Check that detector types exists.
         if(detector_model == nullptr) {
-            throw InvalidValueError("type",
-                                    detector_section.getName(),
-                                    detector_section.getText("type"),
-                                    "detector type does not exist in registered models");
+            throw InvalidValueError(detector_section, "type", "detector type does not exist in registered models");
         }
 
         XYZVector position = detector_section.get<XYZVector>("position", XYZVector());
@@ -173,8 +172,8 @@ void TGeoBuilderModule::Construct() {
     m_fillingWorldMaterial = gGeoManager->GetMedium(m_userDefinedWorldMaterial);
     // If null, throw an exception and stop the construction !
     if(m_fillingWorldMaterial == nullptr) {
-        throw ModuleException("Material " + std::string(m_userDefinedWorldMaterial) +
-                              " requested to fill the world volume does not exist");
+        throw ModuleError("Material " + std::string(m_userDefinedWorldMaterial) +
+                          " requested to fill the world volume does not exist");
     } else {
         LOG(DEBUG) << "Using " << m_userDefinedWorldMaterial << " to fill the world volume.";
     }

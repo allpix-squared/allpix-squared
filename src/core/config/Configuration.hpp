@@ -12,7 +12,8 @@
 #include <string>
 #include <vector>
 
-#include "core/utils/exceptions.h"
+#include "exceptions.h"
+
 #include "core/utils/string.h"
 
 namespace allpix {
