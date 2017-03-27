@@ -6,7 +6,7 @@
 /// To do :
 ///  - Integrate Configuration
 ///  - Refer to the detector desc with their names instead of integers.
-///  - 
+///  -
 ///
 ///
 /// \date     March 20 2017
@@ -21,8 +21,8 @@
 #include <vector>
 
 // ROOT
-#include <TGeoManager.h>
 #include <Math/Vector3D.h>
+#include <TGeoManager.h>
 
 // AllPix2
 #include "core/config/Configuration.hpp"
@@ -46,54 +46,55 @@ const TString BumpName = "Bump";
 const TString GuardRingsName = "GuardRings";
 
 // ### to be placed in a more adequate place
-TGeoTranslation ToTGeoTranslation( const ROOT::Math::XYZVector& pos );
+TGeoTranslation ToTGeoTranslation(const ROOT::Math::XYZVector& pos);
 
 namespace allpix {
 
-  class TGeoBuilderModule : public Module {
+    class TGeoBuilderModule : public Module {
 
-  public:
-    // provide a static const variable of type string (required!)
-    static const std::string name;
+    public:
+        // provide a static const variable of type string (required!)
+        static const std::string name;
 
-    TGeoBuilderModule(Configuration config, Messenger*, GeometryManager*);
-    ~TGeoBuilderModule() override;
+        TGeoBuilderModule(Configuration config, Messenger*, GeometryManager*);
+        ~TGeoBuilderModule() override;
 
-    TGeoBuilderModule(const TGeoBuilderModule&) = delete;
-    TGeoBuilderModule& operator=(const TGeoBuilderModule&) = delete;
+        TGeoBuilderModule(const TGeoBuilderModule&) = delete;
+        TGeoBuilderModule& operator=(const TGeoBuilderModule&) = delete;
 
-    // Module run method
-    void run() override;
+        // Module run method
+        void run() override;
 
-  private:      
-    // Internal methods
-    void Construct();
-    void BuildPixelDevices();
-    void BuildMaterialsAndMedia();
-    void BuildAppliances();
-    void BuildTestStructure();
+    private:
+        // Internal methods
+        void Construct();
+        void BuildPixelDevices();
+        void BuildMaterialsAndMedia();
+        void BuildAppliances();
+        void BuildTestStructure();
 
-    // Global variables
-    GeometryManager* m_geoDscMng;
-    // configuration for this module
-    Configuration m_config;
-    TGeoMedium* m_fillingWorldMaterial;                        /// Medium to fill the World.
+        // configuration for this module
+        Configuration m_config;
 
-    // User defined parameters
-    /*
-      Medium to fill the World. Available media :
-      - Air
-      - Vacuum
-    */
-    TString m_userDefinedWorldMaterial;
-    TString m_userDefinedGeoOutputFile;
-    bool m_buildAppliancesFlag;
-    int m_Appliances_type;
-    bool m_buildTestStructureFlag;
-    std::map<int, ROOT::Math::XYZVector> m_vectorWrapperEnhancement;
-    std::map<int, TGeoTranslation> m_posVectorAppliances; //
+        // Global variables
+        GeometryManager* m_geoDscMng;
+        TGeoMedium* m_fillingWorldMaterial; /// Medium to fill the World.
 
-  };
+        // User defined parameters
+        /*
+          Medium to fill the World. Available media :
+          - Air
+          - Vacuum
+        */
+        TString m_userDefinedWorldMaterial;
+        TString m_userDefinedGeoOutputFile;
+        bool m_buildAppliancesFlag;
+        int m_Appliances_type;
+        bool m_buildTestStructureFlag;
+        std::map<int, ROOT::Math::XYZVector> m_vectorWrapperEnhancement;
+        std::map<int, TGeoTranslation> m_posVectorAppliances; //
+    };
+
 }
 
 #endif /* ALLPIX_DETECTOR_CONSTRUCTION_TGEO_H */

@@ -13,10 +13,11 @@
 
 #include "core/config/ConfigReader.hpp"
 #include "core/geometry/PixelDetectorModel.hpp"
+#include "tools/ROOT.h"
 
 // ROOT
-#include <Math/Vector3D.h>
 #include <Math/Vector2D.h>
+#include <Math/Vector3D.h>
 
 // FIXME: agree on the units to use
 #include "CLHEP/Units/SystemOfUnits.h"
@@ -43,7 +44,7 @@ std::shared_ptr<PixelDetectorModel> ReadGeoDescription::parse_config(const Confi
 
     // pixel amount
     if(config.has("pixel_amount")) {
-      XYVector vec = config.get<XYVector>("pixel_amount");
+        XYVector vec = config.get<XYVector>("pixel_amount");
         model->SetNPixelsX(static_cast<int>(std::round(vec.x())));
         model->SetNPixelsY(static_cast<int>(std::round(vec.y())));
     }

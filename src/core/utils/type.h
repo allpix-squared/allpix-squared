@@ -1,6 +1,5 @@
 /*
  * Layer for type demangling
- *
  */
 
 #ifndef ALLPIX_TYPE_H

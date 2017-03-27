@@ -7,58 +7,61 @@
 #include <memory>
 #include <utility>
 
+#include "core/utils/unit.h"
+
 using namespace allpix;
 
-// Default constructor (FIXME: decide what to pass and what should be standard)
-AllPix::AllPix(std::unique_ptr<ConfigManager> conf_mgr,
-               std::unique_ptr<ModuleManager> mod_mgr,
-               std::unique_ptr<GeometryManager> geo_mgr)
-    : conf_mgr_(std::move(conf_mgr)), mod_mgr_(std::move(mod_mgr)), geo_mgr_(std::move(geo_mgr)),
-      msg_(std::make_unique<Messenger>()), state_(State::Unitialized) {}
+// FIXME: implement the multi run and general config logic
 
-// Get state
-AllPix::State AllPix::getState() const {
-    return state_;
-}
+// default constructor (FIXME: pass the module manager until we have dynamic loading)
+AllPix::AllPix(std::string file_name, std::unique_ptr<ModuleManager> mod_mgr)
+    : conf_mgr_(std::make_unique<ConfigManager>(std::move(file_name))), mod_mgr_(std::move(mod_mgr)),
+      geo_mgr_(std::make_unique<GeometryManager>()), msg_(std::make_unique<Messenger>()) {}
 
-// Get managers
-ConfigManager* AllPix::getConfigManager() {
-    return conf_mgr_.get();
-}
-GeometryManager* AllPix::getGeometryManager() {
-    return geo_mgr_.get();
-}
-ModuleManager* AllPix::getModuleManager() {
-    return mod_mgr_.get();
-}
-Messenger* AllPix::getMessenger() {
-    return msg_.get();
-}
-
-// Initialize
+// control methods
 void AllPix::init() {
-    state_ = AllPix::Initializing;
+    // set the default units
+    add_units();
 
-    // TODO: implement
-    mod_mgr_->load(this);
-
-    state_ = AllPix::Initialized;
+    // load the modules
+    mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get());
 }
-
 void AllPix::run() {
-    state_ = AllPix::Running;
-
-    // TODO: implement
+    // run the modules
     mod_mgr_->run();
-
-    state_ = AllPix::Finished;
+}
+void AllPix::finalize() {
+    // finalize the modules
+    mod_mgr_->finalize();
 }
 
-void AllPix::finalize() {
-    state_ = AllPix::Finalizing;
+// add all units
+void AllPix::add_units() {
+    // LENGTH
+    Units::add("pm", 1e-6);
+    Units::add("nm", 1e-3);
+    Units::add("mm", 1);
+    Units::add("um", 1e3);
+    Units::add("m", 1e6);
+    Units::add("km", 1e9);
 
-    // TODO: implement
-    mod_mgr_->finalize();
+    // TIME
+    Units::add("ps", 1e-3);
+    Units::add("ns", 1);
+    Units::add("ms", 1e3);
+    Units::add("us", 1e6);
+    Units::add("s", 1e9);
 
-    state_ = AllPix::Finalized;
+    // TEMPERATURE
+    // FIXME: not really needed as it is standard
+    Units::add("K", 1);
+
+    // ENERGY
+    Units::add("eV", 1e-6);
+    Units::add("KeV", 1e-3);
+    Units::add("MeV", 1);
+    Units::add("GeV", 1e3);
+
+    // CHARGE
+    Units::add("C", 1.6021766208e-19);
 }

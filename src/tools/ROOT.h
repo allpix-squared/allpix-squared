@@ -10,6 +10,7 @@
 #include <string>
 
 #include <Math/EulerAngles.h>
+#include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
 #include <TString.h>
 
@@ -33,6 +34,21 @@ namespace allpix {
         res += std::to_string(vec.y());
         res += " ";
         res += std::to_string(vec.z());
+        return res;
+    }
+
+    template <> inline ROOT::Math::XYVector from_string<ROOT::Math::XYVector>(std::string str) {
+        std::vector<double> vec_split = allpix::split<double>(std::move(str));
+        if(vec_split.size() != 2) {
+            throw std::invalid_argument("array should contain exactly two elements");
+        }
+        return ROOT::Math::XYVector(vec_split[0], vec_split[1]);
+    }
+    template <> inline std::string to_string<const ROOT::Math::XYVector&>(const ROOT::Math::XYVector& vec) {
+        std::string res;
+        res += std::to_string(vec.x());
+        res += " ";
+        res += std::to_string(vec.y());
         return res;
     }
 

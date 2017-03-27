@@ -1,0 +1,33 @@
+/*
+ * Support for units
+ */
+
+#ifndef ALLPIX_UNIT_H
+#define ALLPIX_UNIT_H
+
+#include <map>
+#include <stdexcept>
+#include <string>
+
+namespace allpix {
+
+    // FIXME: a lowercase namespace instead?
+    class Units {
+    public:
+        using UnitType = long double;
+
+        // allow only static access : delete constructor
+        Units() = delete;
+
+        // add a new unit
+        static void add(std::string str, UnitType value);
+
+        // get a new unit
+        static UnitType get(std::string str);
+
+    private:
+        static std::map<std::string, UnitType> unit_map_;
+    };
+}
+
+#endif /* ALLPIX_UNIT_H */

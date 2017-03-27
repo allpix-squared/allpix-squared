@@ -6,6 +6,7 @@ ENDIF()
 # create core library
 ADD_LIBRARY(AllpixCore SHARED
     utils/log.cpp
+    utils/unit.cpp
     module/Module.cpp
     module/ModuleManager.cpp
     module/StaticModuleManager.cpp

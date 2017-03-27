@@ -25,8 +25,8 @@ namespace allpix {
         // provide a static const variable of type string to hold the name of the module (required!)
         static const std::string name;
 
-        // constructor should take a pointer to AllPix and a Configuration as input
-        DummyModule(AllPix* apx, Configuration config);
+        // constructor should take a pointer to the Configuration, the Messenger and the Geometry Manager
+        DummyModule(Configuration config, Messenger*, GeometryManager*);
 
         // method that will do the computations
         void run();

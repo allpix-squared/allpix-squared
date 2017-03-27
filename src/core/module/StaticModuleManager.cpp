@@ -24,9 +24,9 @@ StaticModuleManager::StaticModuleManager(GeneratorFunction func) : _instantiatio
     }
 }
 
-void StaticModuleManager::load(AllPix* allpix) {
+void StaticModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager) {
     // get configurations
-    std::vector<Configuration> configs = allpix->getConfigManager()->getConfigurations();
+    std::vector<Configuration> configs = conf_manager->getConfigurations();
 
     // NOTE: could add all config parameters from the empty to all configs (if it does not yet exist)
     for(auto& conf : configs) {
@@ -37,8 +37,8 @@ void StaticModuleManager::load(AllPix* allpix) {
 
         // instantiate an instance for each name
         std::unique_ptr<ModuleFactory> factory = get_factory(conf.getName());
-        factory->setMessenger(allpix->getMessenger());
-        factory->setGeometryManager(allpix->getGeometryManager());
+        factory->setMessenger(messenger);
+        factory->setGeometryManager(geo_manager);
         factory->setConfiguration(conf);
         std::vector<std::pair<ModuleIdentifier, std::unique_ptr<Module>>> mod_list = factory->create();
 
