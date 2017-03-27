@@ -47,6 +47,7 @@ const TString GuardRingsName = "GuardRings";
 
 // ### to be placed in a more adequate place
 TGeoTranslation ToTGeoTranslation(const ROOT::Math::XYZVector& pos);
+TString Print( TGeoTranslation* trl );
 
 namespace allpix {
 
