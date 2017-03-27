@@ -49,23 +49,23 @@ std::shared_ptr<PixelDetectorModel> ReadGeoDescription::parse_config(const Confi
 
     // size, positions and offsets
     if(config.has("pixel_size")) {
-        XYZVector vec = config.get<XYZVector>("pixel_size");
+        XYZVector vec = 2 * config.get<XYZVector>("pixel_size");
         model->SetPixSizeX(vec.x());
         model->SetPixSizeY(vec.y());
         model->SetPixSizeZ(vec.z()); // FIXME: useless
     }
     if(config.has("chip_size")) {
-        XYZVector vec = config.get<XYZVector>("chip_size");
+        XYZVector vec = 2 * config.get<XYZVector>("chip_size");
         model->SetChipHX(vec.x());
         model->SetChipHY(vec.y());
         model->SetChipHZ(vec.z());
     }
-    if(config.has("chip_position")) {
+    /*if(config.has("chip_position")) {
         XYZVector vec = config.get<XYZVector>("chip_position");
         model->SetChipPosX(vec.x());
         model->SetChipPosY(vec.y());
         model->SetChipPosZ(vec.z());
-    }
+    }*/
     if(config.has("chip_offset")) {
         XYZVector vec = config.get<XYZVector>("chip_offset");
         model->SetChipOffsetX(vec.x());
@@ -73,7 +73,7 @@ std::shared_ptr<PixelDetectorModel> ReadGeoDescription::parse_config(const Confi
         model->SetChipOffsetZ(vec.z());
     }
     if(config.has("sensor_size")) {
-        XYZVector vec = config.get<XYZVector>("sensor_size");
+        XYZVector vec = 2 * config.get<XYZVector>("sensor_size");
         model->SetSensorHX(vec.x());
         model->SetSensorHY(vec.y());
         model->SetSensorHZ(vec.z());
@@ -85,7 +85,7 @@ std::shared_ptr<PixelDetectorModel> ReadGeoDescription::parse_config(const Confi
         model->SetSensorPosZ(vec.z());
     }
     if(config.has("pcb_size")) {
-        XYZVector vec = config.get<XYZVector>("pcb_size");
+        XYZVector vec = 2 * config.get<XYZVector>("pcb_size");
         model->SetPCBHX(vec.x());
         model->SetPCBHY(vec.y());
         model->SetPCBHZ(vec.z());
