@@ -14,11 +14,9 @@ using namespace allpix;
 // FIXME: implement the multi run and general config logic
 
 // default constructor (FIXME: pass the module manager until we have dynamic loading)
-AllPix::AllPix(std::string file_name, std::unique_ptr<ModuleManager> mod_mgr) : mod_mgr_(std::move(mod_mgr)) {
-    conf_mgr_ = std::make_unique<ConfigManager>(std::move(file_name));
-    msg_ = std::make_unique<Messenger>();
-    geo_mgr_ = std::make_unique<GeometryManager>();
-}
+AllPix::AllPix(std::string file_name, std::unique_ptr<ModuleManager> mod_mgr)
+    : conf_mgr_(std::make_unique<ConfigManager>(std::move(file_name))), mod_mgr_(std::move(mod_mgr)),
+      geo_mgr_(std::make_unique<GeometryManager>()), msg_(std::make_unique<Messenger>()) {}
 
 // control methods
 void AllPix::init() {

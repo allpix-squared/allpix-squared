@@ -9,7 +9,7 @@ Checks : '-*,
           llvm-*,-llvm-include-order,-llvm-header-guard,-llvm-namespace-comment,
           modernize-*,-modernize-raw-string-literal,
           cppcoreguidelines-*,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-pro-type-vararg,
-          clang-analyzer-*,-clang-analyzer-alpha'
+          clang-analyzer-*,-clang-analyzer-alpha*'
 WarningsAsErrors: '*'
 HeaderFilterRegex: '*.h *.hpp'
 CheckOptions:
