@@ -20,7 +20,9 @@
 
 // Local includes
 #include "TGeoBuilderModule.hpp"
-#include "ReadGeoDescription.hpp"
+
+// Common includes
+#include "modules/common/ReadGeoDescription.hpp"
 
 // AllPix includes
 #include "core/config/ConfigReader.hpp"

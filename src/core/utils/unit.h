@@ -5,9 +5,11 @@
 #ifndef ALLPIX_UNIT_H
 #define ALLPIX_UNIT_H
 
+#include <algorithm>
 #include <map>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 
 namespace allpix {
 
@@ -24,6 +26,9 @@ namespace allpix {
 
         // get a new unit
         static UnitType get(std::string str);
+
+        // convert to another unit
+        static UnitType convert(std::string str, UnitType inp);
 
     private:
         static std::map<std::string, UnitType> unit_map_;

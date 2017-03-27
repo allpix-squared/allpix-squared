@@ -19,15 +19,17 @@
 #include "TMath.h"
 #include "TString.h"
 
-#include "CLHEP/Units/SystemOfUnits.h"
-using namespace CLHEP;
-
 #include "core/geometry/PixelDetectorModel.hpp"
 #include "core/utils/log.h"
 
 #include "tools/geant4.h"
 
 #include "messages/DepositionMessage.hpp"
+
+// FIXME: should get rid of CLHEP units
+#include <CLHEP/Units/SystemOfUnits.h>
+
+using namespace CLHEP;
 
 using namespace allpix;
 
