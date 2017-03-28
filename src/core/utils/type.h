@@ -1,5 +1,5 @@
 /*
- * Layer for type demangling
+ * Layer for generic type functions and run time type identification (demangling)
  */
 
 #ifndef ALLPIX_TYPE_H
@@ -10,6 +10,10 @@
 #include <cxxabi.h>
 
 namespace allpix {
+    // general allpix type tag for dispatching
+    // NOTE: cannot directly use the type due to namespacing ADL lookup
+    template <typename T> struct type_tag {};
+
 #ifdef __GNUG__
     inline std::string demangle(const char* name, bool keep_allpix = false) {
         // some arbitrary value to eliminate the compiler warning
@@ -29,7 +33,6 @@ namespace allpix {
     }
 
 #else
-
     // does nothing if not g++
     inline std::string demangle(const char* name, bool keep_allpix = false) { return name; }
 #endif

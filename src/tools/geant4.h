@@ -11,15 +11,15 @@
 
 #include <G4ThreeVector.hh>
 #include <G4TwoVector.hh>
-#include <TVector3.h>
+#include <Math/Vector3D.h>
 
 #include "core/utils/string.h"
 
 namespace allpix {
-    // FIXME: improve this
+    /** Extend to string and from string methods for Geant4 */
 
-    // extend to and from string methods for Geant4
-    template <> inline G4ThreeVector from_string<G4ThreeVector>(std::string str) {
+    // 3D vector
+    inline G4ThreeVector from_string_impl(std::string str, type_tag<G4ThreeVector>) {
         std::vector<double> vec_split = allpix::split<double>(std::move(str));
         if(vec_split.size() != 3) {
             throw std::invalid_argument("array should contain exactly three elements");
@@ -37,7 +37,8 @@ namespace allpix {
         return res;
     }
 
-    template <> inline G4TwoVector from_string<G4TwoVector>(std::string str) {
+    // 2D vector
+    inline G4TwoVector from_string_impl(std::string str, type_tag<G4TwoVector>) {
         std::vector<double> vec_split = allpix::split<double>(std::move(str));
         if(vec_split.size() != 2) {
             throw std::invalid_argument("array should contain exactly two elements");
@@ -55,11 +56,14 @@ namespace allpix {
         return res;
     }
 
+    // FIXME: do we want this at all
     // convert G4 vector to ROOT vector
-    inline TVector3 toROOTVector(const G4ThreeVector& vector) { return TVector3(vector.x(), vector.y(), vector.z()); }
-
-    template <typename T> G4ThreeVector toG4ThreeVector(const T& vector) {
+    template <typename T> G4ThreeVector toG4Vector(const ROOT::Math::DisplacementVector3D<T>& vector) {
         return G4ThreeVector(vector.x(), vector.y(), vector.z());
+    }
+    // convert G4 vector to ROOT vector
+    inline ROOT::Math::XYZVector toROOTVector(const G4ThreeVector& vector) {
+        return ROOT::Math::XYZVector(vector.x(), vector.y(), vector.z());
     }
 }
 

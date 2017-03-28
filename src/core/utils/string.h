@@ -12,6 +12,7 @@
 #include <type_traits>
 #include <vector>
 
+#include "type.h"
 #include "unit.h"
 
 namespace allpix {
@@ -29,6 +30,11 @@ namespace allpix {
 
     /** Converts a string to any type
      */
+    template <typename T> T from_string(std::string str) {
+        // use tag dispatch to select the correct implementation
+        return from_string_impl(str, type_tag<T>());
+    }
+
     // FIXME: include exceptions better
     // helper functions to do cleaning and checks for string reading
     static std::string _from_string_helper(std::string str) {
@@ -43,11 +49,17 @@ namespace allpix {
         }
         return str;
     }
-    // general overload but only meant for arithmetic types
-    template <typename T> T from_string(std::string str) {
+
+    // fetch for all types that have not a supported conversion
+    template <typename T, typename = std::enable_if_t<!std::is_arithmetic<T>::value>, typename = void>
+    T from_string_impl(std::string, type_tag<T>) {
         // check if correct conversion
-        static_assert(std::is_arithmetic<T>::value,
-                      "Conversion is not implemented: an specialization should be added to support this conversion");
+        static_assert(std::is_same<T, void>::value,
+                      "Conversion to this type is not implemented: an overload should be added to support this conversion");
+    }
+    // overload for arithmetic types
+    template <typename T, typename = std::enable_if_t<std::is_arithmetic<T>::value>>
+    T from_string_impl(std::string str, type_tag<T>) {
         str = _from_string_helper(str);
 
         // find an optional unit
@@ -83,12 +95,11 @@ namespace allpix {
                 }
             }
             ret_value = ret_value * static_cast<T>(allpix::Units::get(unit));
-            ;
         }
         return ret_value;
     }
     // overload for string
-    template <> inline std::string from_string<std::string>(std::string str) {
+    inline std::string from_string_impl(std::string str, type_tag<std::string>) {
         str = trim(str);
         // if there are "" then we should take the whole string (FIXME: '' should also be supported)
         if(!str.empty() && str[0] == '\"') {

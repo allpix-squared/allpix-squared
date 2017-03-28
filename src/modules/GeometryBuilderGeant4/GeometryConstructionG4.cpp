@@ -291,7 +291,7 @@ void GeometryConstructionG4::build_pixel_devices() {
         model_g4->wrapper_log->SetVisAttributes(wrapperVisAtt);
 
         // WARNING: get a proper geometry lib
-        G4ThreeVector posWrapper = toG4ThreeVector((*detItr)->getPosition()); //= (*detItr)->getPosition();
+        G4ThreeVector posWrapper = toG4Vector((*detItr)->getPosition()); //= (*detItr)->getPosition();
 
         // ALERT: NO WRAPPER ENHANCEMENTS
         // Apply the enhancement to the medipixes

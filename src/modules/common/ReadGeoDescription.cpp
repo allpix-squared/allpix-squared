@@ -42,9 +42,7 @@ std::shared_ptr<PixelDetectorModel> ReadGeoDescription::parse_config(const Confi
 
     // pixel amount
     if(config.has("pixel_amount")) {
-        XYVector vec = config.get<XYVector>("pixel_amount");
-        model->SetNPixelsX(static_cast<int>(std::round(vec.x())));
-        model->SetNPixelsY(static_cast<int>(std::round(vec.y())));
+        model->setNPixels(config.get<ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>>("pixel_amount"));
     }
     // size, positions and offsets
     if(config.has("pixel_size")) {
