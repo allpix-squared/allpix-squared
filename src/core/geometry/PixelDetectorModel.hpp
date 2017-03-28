@@ -28,7 +28,8 @@ namespace allpix {
         explicit PixelDetectorModel(std::string type)
             : DetectorModel(type), number_of_pixels_(1, 1), pixel_size_(), sensor_size_(), sensor_offset_(), chip_size_(),
               chip_offset_(), pcb_size_(), bump_sphere_radius_(0.0), bump_height_(0.0), bump_offset_(),
-              bump_cylinder_radius_(0.0), m_coverlayer_hz(0.0), m_coverlayer_mat("Al"), m_coverlayer_ON(false) {}
+              bump_cylinder_radius_(0.0), sensor_gr_excess_top_(), sensor_gr_excess_bottom_(), sensor_gr_excess_right_(),
+              sensor_gr_excess_left_(), m_coverlayer_hz(0.0), m_coverlayer_mat("Al"), m_coverlayer_ON(false) {}
         ~PixelDetectorModel() override = default;
 
         /* Number of pixels */
@@ -139,15 +140,15 @@ namespace allpix {
         void SetBumpDr(double val) { bump_cylinder_radius_ = val; }
 
         /* Guard rings */
-        inline double GetSensorExcessHTop() { return m_sensor_gr_excess_htop; }
-        inline double GetSensorExcessHBottom() { return m_sensor_gr_excess_hbottom; }
-        inline double GetSensorExcessHRight() { return m_sensor_gr_excess_hright; }
-        inline double GetSensorExcessHLeft() { return m_sensor_gr_excess_hleft; }
+        inline double GetSensorExcessHTop() { return sensor_gr_excess_top_; }
+        inline double GetSensorExcessHBottom() { return sensor_gr_excess_bottom_; }
+        inline double GetSensorExcessHRight() { return sensor_gr_excess_right_; }
+        inline double GetSensorExcessHLeft() { return sensor_gr_excess_left_; }
 
-        void SetSensorExcessHTop(double val) { m_sensor_gr_excess_htop = val; }
-        void SetSensorExcessHBottom(double val) { m_sensor_gr_excess_hbottom = val; }
-        void SetSensorExcessHRight(double val) { m_sensor_gr_excess_hright = val; }
-        void SetSensorExcessHLeft(double val) { m_sensor_gr_excess_hleft = val; }
+        void SetSensorExcessHTop(double val) { sensor_gr_excess_top_ = val; }
+        void SetSensorExcessHBottom(double val) { sensor_gr_excess_bottom_ = val; }
+        void SetSensorExcessHRight(double val) { sensor_gr_excess_right_ = val; }
+        void SetSensorExcessHLeft(double val) { sensor_gr_excess_left_ = val; }
 
         /* Wrapper calculations (FIXME: this is broken) */
         inline double GetHalfWrapperDX() { return GetHalfPCBX(); }
@@ -193,10 +194,10 @@ namespace allpix {
         double bump_cylinder_radius_;
 
         // FIXME: use a 4D vector here?
-        double m_sensor_gr_excess_htop;
-        double m_sensor_gr_excess_hbottom;
-        double m_sensor_gr_excess_hright;
-        double m_sensor_gr_excess_hleft;
+        double sensor_gr_excess_top_;
+        double sensor_gr_excess_bottom_;
+        double sensor_gr_excess_right_;
+        double sensor_gr_excess_left_;
 
         double m_coverlayer_hz;
         std::string m_coverlayer_mat;

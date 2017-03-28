@@ -14,6 +14,7 @@
 #include <Math/Vector3D.h>
 
 #include "core/utils/string.h"
+#include "core/utils/type.h"
 
 namespace allpix {
     /** Extend to string and from string methods for Geant4 */
@@ -26,7 +27,7 @@ namespace allpix {
         }
         return G4ThreeVector(vec_split[0], vec_split[1], vec_split[2]);
     }
-    template <> inline std::string to_string<G4ThreeVector>(G4ThreeVector vec) {
+    inline std::string to_string_impl(const G4ThreeVector& vec, empty_tag) {
         std::string res;
         for(int i = 0; i < 3; ++i) {
             res += std::to_string(vec[i]);
@@ -45,7 +46,7 @@ namespace allpix {
         }
         return G4TwoVector(vec_split[0], vec_split[1]);
     }
-    template <> inline std::string to_string<G4TwoVector>(G4TwoVector vec) {
+    inline std::string to_string_impl(const G4TwoVector& vec, empty_tag) {
         std::string res;
         for(int i = 0; i < 2; ++i) {
             res += std::to_string(vec[i]);

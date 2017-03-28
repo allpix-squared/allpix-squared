@@ -52,7 +52,7 @@ namespace allpix {
 
     // fetch for all types that have not a supported conversion
     template <typename T, typename = std::enable_if_t<!std::is_arithmetic<T>::value>, typename = void>
-    T from_string_impl(std::string, type_tag<T>) {
+    T from_string_impl(const std::string&, type_tag<T>) {
         // check if correct conversion
         static_assert(std::is_same<T, void>::value,
                       "Conversion to this type is not implemented: an overload should be added to support this conversion");
@@ -114,12 +114,27 @@ namespace allpix {
 
     /** Converts supported type to a string
      */
-    template <typename T> std::string to_string(T inp) { return std::to_string(inp); }
+    template <typename T> std::string to_string(T inp) {
+        // use tag dispatch to select the correct implementation
+        return to_string_impl(inp, empty_tag());
+    }
+
+    // catch all overload for not implemented conversion
+    template <typename T, typename = std::enable_if_t<!std::is_arithmetic<T>::value>, typename = void>
+    std::string to_string_impl(T, empty_tag) {
+        static_assert(std::is_same<T, void>::value,
+                      "Conversion to this type is not implemented: an overload should be added to support this conversion");
+    }
+    // overload for arithmetic types
+    template <typename T, typename = std::enable_if_t<std::is_arithmetic<T>::value>>
+    std::string to_string_impl(T inp, empty_tag) {
+        return std::to_string(inp);
+    }
     // NOTE: we have to provide all these specializations to prevent std::to_string from being called
     //       there may be a better way to work with this
-    inline std::string to_string(const std::string& inp) { return '"' + inp + '"'; }
-    inline std::string to_string(const char inp[]) { return '"' + std::string(inp) + '"'; }
-    inline std::string to_string(char inp[]) { return '"' + std::string(inp) + '"'; }
+    inline std::string to_string_impl(const std::string& inp, empty_tag) { return '"' + inp + '"'; }
+    inline std::string to_string_impl(const char* inp, empty_tag) { return '"' + std::string(inp) + '"'; }
+    inline std::string to_string_impl(char* inp, empty_tag) { return '"' + std::string(inp) + '"'; }
 
     /** Splits string s into elements at delimiter "delim" and returns them as vector
      */

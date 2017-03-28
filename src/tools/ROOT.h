@@ -15,6 +15,7 @@
 #include <TString.h>
 
 #include "core/utils/string.h"
+#include "core/utils/type.h"
 
 namespace allpix {
     /** Extend to string and from string methods for ROOT */
@@ -29,7 +30,7 @@ namespace allpix {
         }
         return ROOT::Math::DisplacementVector3D<T>(vec_split[0], vec_split[1], vec_split[2]);
     }
-    template <> inline std::string to_string<const ROOT::Math::XYZVector&>(const ROOT::Math::XYZVector& vec) {
+    template <typename T> inline std::string to_string_impl(const ROOT::Math::DisplacementVector3D<T>& vec, empty_tag) {
         std::string res;
         res += std::to_string(vec.x());
         res += " ";
@@ -49,7 +50,7 @@ namespace allpix {
         }
         return ROOT::Math::DisplacementVector2D<T>(vec_split[0], vec_split[1]);
     }
-    template <> inline std::string to_string<const ROOT::Math::XYVector&>(const ROOT::Math::XYVector& vec) {
+    template <typename T> inline std::string to_string_impl(const ROOT::Math::DisplacementVector2D<T>& vec, empty_tag) {
         std::string res;
         res += std::to_string(vec.x());
         res += " ";
@@ -65,7 +66,7 @@ namespace allpix {
         }
         return ROOT::Math::EulerAngles(vec_split[0], vec_split[1], vec_split[2]);
     }
-    template <> inline std::string to_string<const ROOT::Math::EulerAngles&>(const ROOT::Math::EulerAngles& vec) {
+    inline std::string to_string_impl(const ROOT::Math::EulerAngles& vec, empty_tag) {
         std::string res;
         res += std::to_string(vec.Phi());
         res += " ";
@@ -80,7 +81,7 @@ namespace allpix {
     inline TString from_string_impl(std::string str, type_tag<TString>) {
         return TString(allpix::from_string<std::string>(std::move(str)).c_str());
     }
-    template <> inline std::string to_string<const TString&>(const TString& str) { return std::string(str.Data()); }
+    inline std::string to_string_impl(const TString& str, empty_tag) { return std::string(str.Data()); }
 }
 
 #endif /* ALLPIX_ROOT_H */

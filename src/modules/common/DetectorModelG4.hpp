@@ -9,7 +9,8 @@
 namespace allpix {
 
     // FIXME: we should either both make the detector model (PixelDetectorModel) classes or both structs
-    struct DetectorModelG4 {
+    class DetectorModelG4 {
+    public:
         ~DetectorModelG4() {
             // FIXME: store this pointer somewhere else
             delete parameterization_;

@@ -10,9 +10,10 @@
 #include <cxxabi.h>
 
 namespace allpix {
-    // general allpix type tag for dispatching
+    // general allpix tags for dispatching
     // NOTE: cannot directly use the type due to namespacing ADL lookup
     template <typename T> struct type_tag {};
+    struct empty_tag {};
 
 #ifdef __GNUG__
     inline std::string demangle(const char* name, bool keep_allpix = false) {

@@ -4,7 +4,7 @@
 
 #include "TestDepositReaderModule.hpp"
 
-#include <TVector3.h>
+#include "tools/ROOT.h"
 
 #include "core/messenger/Messenger.hpp"
 #include "core/utils/log.h"
@@ -23,6 +23,8 @@ TestDepositReaderModule::~TestDepositReaderModule() = default;
 // run the deposition
 void TestDepositReaderModule::run() {
     LOG(INFO) << "DEPOSIT READER RESULTS";
+
+    config_.set("test", ROOT::Math::XYZVector());
 
     LOG(INFO) << "got " << deposit_messages_.size() << " deposits";
     // FIXME: detector logic is not good yet
