@@ -6,7 +6,8 @@
 
 using namespace allpix;
 
-ChargeDeposit::ChargeDeposit(ROOT::Math::XYZVector position, double energy) : position_(position), energy_(energy) {}
+ChargeDeposit::ChargeDeposit(ROOT::Math::XYZVector position, double energy)
+    : position_(std::move(position)), energy_(energy) {}
 
 ROOT::Math::XYZVector ChargeDeposit::getPosition() {
     return position_;
