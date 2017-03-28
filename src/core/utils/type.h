@@ -6,8 +6,8 @@
 #define ALLPIX_TYPE_H
 
 #include <cstdlib>
-#include <memory>
 #include <cxxabi.h>
+#include <memory>
 
 namespace allpix {
     // general allpix tags for dispatching
