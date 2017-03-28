@@ -5,7 +5,6 @@
 #ifndef ALLPIX_SIMPLE_DEPOSITION_MODULE_H
 #define ALLPIX_SIMPLE_DEPOSITION_MODULE_H
 
-#include <memory>
 #include <string>
 
 #include "core/config/Configuration.hpp"

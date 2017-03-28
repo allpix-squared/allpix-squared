@@ -18,7 +18,6 @@
 
 #include <map>
 #include <memory>
-#include <vector>
 
 // ROOT
 #include <Math/Vector3D.h>

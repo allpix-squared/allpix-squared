@@ -6,6 +6,7 @@
 #define ALLPIX_MODULE_FACTORY_H
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "Module.hpp"

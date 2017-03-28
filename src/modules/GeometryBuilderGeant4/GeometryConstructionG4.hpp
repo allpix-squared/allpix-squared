@@ -5,11 +5,6 @@
 #ifndef ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_DETECTOR_CONSTRUCTION_H
 #define ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_DETECTOR_CONSTRUCTION_H
 
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "G4Material.hh"
 #include "G4ThreeVector.hh"
 #include "G4VUserDetectorConstruction.hh"

@@ -4,10 +4,11 @@
 
 #include "TestDepositReaderModule.hpp"
 
-#include "tools/ROOT.h"
-
 #include "core/messenger/Messenger.hpp"
 #include "core/utils/log.h"
+
+#include "tools/ROOT.h"
+
 #include "messages/DepositionMessage.hpp"
 
 using namespace allpix;

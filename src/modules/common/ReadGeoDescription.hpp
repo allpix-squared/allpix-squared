@@ -10,7 +10,6 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/PixelDetectorModel.hpp"

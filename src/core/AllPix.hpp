@@ -5,8 +5,8 @@
 #ifndef ALLPIX_ALLPIX_H
 #define ALLPIX_ALLPIX_H
 
-#include <map>
-#include <vector>
+#include <memory>
+#include <string>
 
 #include "config/ConfigManager.hpp"
 #include "geometry/GeometryManager.hpp"

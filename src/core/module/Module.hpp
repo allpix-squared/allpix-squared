@@ -5,6 +5,7 @@
 #ifndef ALLPIX_MODULE_H
 #define ALLPIX_MODULE_H
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -53,4 +54,4 @@ namespace allpix {
     };
 }
 
-#endif /* ALLPIX_MODULE_MANAGER_H */
+#endif /* ALLPIX_MODULE_H */

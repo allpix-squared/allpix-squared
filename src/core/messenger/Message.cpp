@@ -4,6 +4,9 @@
 
 #include "Message.hpp"
 
+#include <memory>
+#include <utility>
+
 using namespace allpix;
 
 // constructor and destructor

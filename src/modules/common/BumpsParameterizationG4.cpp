@@ -4,6 +4,8 @@
 
 #include "BumpsParameterizationG4.hpp"
 
+#include <memory>
+
 using namespace allpix;
 
 BumpsParameterizationG4::BumpsParameterizationG4(std::shared_ptr<PixelDetectorModel> model)

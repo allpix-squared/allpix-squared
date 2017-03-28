@@ -8,6 +8,11 @@
  * param = "test"
  */
 
+// stl includes
+#include <memory>
+#include <string>
+#include <utility>
+
 // include the dependent objects
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"

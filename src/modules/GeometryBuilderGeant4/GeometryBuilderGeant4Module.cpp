@@ -1,11 +1,9 @@
 #include "GeometryBuilderGeant4Module.hpp"
 
 #include <cassert>
-#include <cstdio>
-#include <map>
+#include <memory>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include <G4PhysListFactory.hh>
 #include <G4RunManager.hh>

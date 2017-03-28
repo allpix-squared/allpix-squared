@@ -5,6 +5,9 @@
 
 #include "DepositionGeant4Module.hpp"
 
+#include <string>
+#include <utility>
+
 #include <G4HadronicProcessStore.hh>
 #include <G4ParticleDefinition.hh>
 #include <G4RunManager.hh>

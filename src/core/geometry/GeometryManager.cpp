@@ -2,13 +2,12 @@
  *  @author Koen Wolters <koen.wolters@cern.ch>
  */
 
-// FIXME: this can be merged with the geometry manager I think (but keep separated for now just like the others)
-
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "GeometryManager.hpp"
-
 #include "exceptions.h"
 
 using namespace allpix;

@@ -5,13 +5,14 @@
 
 #include "GeneratorActionG4.hpp"
 
+#include <memory>
+
 #include "G4Event.hh"
 #include "G4GeneralParticleSource.hh"
 #include "G4HEPEvtInterface.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4ParticleGun.hh"
 #include "G4ParticleTable.hh"
-
 #include "G4RunManager.hh"
 
 using namespace allpix;

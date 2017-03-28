@@ -9,9 +9,7 @@
 #define ALLPIX_EXCEPTIONS_H
 
 #include <exception>
-#include <iostream>
 #include <string>
-#include <typeinfo>
 
 #include "type.h"
 

@@ -6,6 +6,7 @@
 #define ALLPIX_MODULE_IDENTIFIER_H
 
 #include <string>
+#include <utility>
 
 namespace allpix {
 

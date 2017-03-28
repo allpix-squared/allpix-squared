@@ -7,7 +7,9 @@
 #ifndef ALLPIX_GEANT4_H
 #define ALLPIX_GEANT4_H
 
+#include <stdexcept>
 #include <string>
+#include <utility>
 
 #include <G4ThreeVector.hh>
 #include <G4TwoVector.hh>

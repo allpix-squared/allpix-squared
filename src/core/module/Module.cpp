@@ -4,6 +4,9 @@
 
 #include "Module.hpp"
 
+#include <memory>
+#include <utility>
+
 #include "core/messenger/Messenger.hpp"
 
 using namespace allpix;

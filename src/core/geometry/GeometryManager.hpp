@@ -5,6 +5,7 @@
 #ifndef ALLPIX_GEOMETRY_MANAGER_H
 #define ALLPIX_GEOMETRY_MANAGER_H
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>

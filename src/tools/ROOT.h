@@ -7,7 +7,9 @@
 #ifndef ALLPIX_ROOT_H
 #define ALLPIX_ROOT_H
 
+#include <stdexcept>
 #include <string>
+#include <utility>
 
 #include <Math/EulerAngles.h>
 #include <Math/Vector2D.h>

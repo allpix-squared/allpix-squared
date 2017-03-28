@@ -5,12 +5,8 @@
 #ifndef ALLPIX_PIXEL_DETECTOR_H
 #define ALLPIX_PIXEL_DETECTOR_H
 
-#include <cmath>
-#include <fstream>
-#include <iostream>
-#include <map>
 #include <string>
-#include <tuple>
+#include <utility>
 
 #include <Math/Cartesian2D.h>
 #include <Math/DisplacementVector2D.h>

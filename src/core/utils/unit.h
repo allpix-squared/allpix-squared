@@ -5,11 +5,8 @@
 #ifndef ALLPIX_UNIT_H
 #define ALLPIX_UNIT_H
 
-#include <algorithm>
 #include <map>
-#include <stdexcept>
 #include <string>
-#include <type_traits>
 
 namespace allpix {
 

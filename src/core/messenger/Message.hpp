@@ -5,6 +5,8 @@
 #ifndef ALLPIX_MESSAGE_H
 #define ALLPIX_MESSAGE_H
 
+#include <memory>
+
 #include "core/geometry/Detector.hpp"
 
 namespace allpix {

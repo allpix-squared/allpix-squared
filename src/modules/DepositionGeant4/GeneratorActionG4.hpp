@@ -6,7 +6,7 @@
 #ifndef ALLPIX_SIMPLE_DEPOSITION_MODULE_GENERATOR_ACTION_H
 #define ALLPIX_SIMPLE_DEPOSITION_MODULE_GENERATOR_ACTION_H
 
-#include <vector>
+#include <memory>
 
 #include "G4GeneralParticleSource.hh"
 #include "G4ParticleDefinition.hh"

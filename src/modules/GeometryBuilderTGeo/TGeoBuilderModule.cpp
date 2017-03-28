@@ -21,22 +21,16 @@
 // Local includes
 #include "TGeoBuilderModule.hpp"
 
-// Common includes
-#include "modules/common/ReadGeoDescription.hpp"
-
-// AllPix includes
-#include "core/config/ConfigReader.hpp"
-#include "core/config/InvalidValueError.hpp"
-#include "core/geometry/GeometryManager.hpp"
-#include "core/module/ModuleError.hpp"
-#include "core/utils/log.h"
-#include "tools/ROOT.h"
-
 // Global includes
+#include <fstream>
 #include <iostream>
 #include <memory>
+#include <string>
+#include <utility>
 
 // ROOT
+#include <Math/EulerAngles.h>
+#include <Math/Vector3D.h>
 #include <TColor.h>
 #include <TFile.h>
 #include <TGeoBBox.h>
@@ -45,8 +39,18 @@
 #include <TGeoTube.h>
 #include <TROOT.h>
 
-#include <Math/EulerAngles.h>
-#include <Math/Vector3D.h>
+// AllPix includes
+#include "core/config/ConfigReader.hpp"
+#include "core/config/InvalidValueError.hpp"
+#include "core/geometry/GeometryManager.hpp"
+#include "core/module/ModuleError.hpp"
+#include "core/utils/log.h"
+
+// Tools
+#include "tools/ROOT.h"
+
+// Common includes
+#include "modules/common/ReadGeoDescription.hpp"
 
 using namespace std;
 using namespace allpix;

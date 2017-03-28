@@ -6,19 +6,19 @@
 
 #include "ReadGeoDescription.hpp"
 
-#include <set>
+#include <fstream>
+#include <memory>
+#include <string>
 
-#include "core/module/ModuleError.hpp"
-#include "core/utils/log.h"
+#include <Math/Vector2D.h>
+#include <Math/Vector3D.h>
 
 #include "core/config/ConfigReader.hpp"
 #include "core/geometry/PixelDetectorModel.hpp"
+#include "core/module/ModuleError.hpp"
+#include "core/utils/log.h"
 
 #include "tools/ROOT.h"
-
-// ROOT
-#include <Math/Vector2D.h>
-#include <Math/Vector3D.h>
 
 using namespace allpix;
 using namespace ROOT::Math;

@@ -5,16 +5,11 @@
 #ifndef ALLPIX_CONFIG_MANAGER_H
 #define ALLPIX_CONFIG_MANAGER_H
 
-#include <fstream>
-#include <list>
-#include <map>
 #include <string>
-#include <utility>
 #include <vector>
 
-#include "Configuration.hpp"
-
 #include "ConfigReader.hpp"
+#include "Configuration.hpp"
 
 namespace allpix {
 

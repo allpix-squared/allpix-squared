@@ -8,6 +8,8 @@
 #ifndef ALLPIX_MODULE_EXCEPTIONS_H
 #define ALLPIX_MODULE_EXCEPTIONS_H
 
+#include <string>
+
 #include "core/utils/exceptions.h"
 #include "core/utils/type.h"
 

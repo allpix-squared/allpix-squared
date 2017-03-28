@@ -4,6 +4,10 @@
 
 #include "VisualizationGeant4Module.hpp"
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "G4RunManager.hh"
 #include "G4UImanager.hh"
 #include "G4UIsession.hh"

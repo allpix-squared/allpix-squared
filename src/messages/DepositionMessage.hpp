@@ -7,8 +7,6 @@
 #ifndef ALLPIX_MESSAGE_DEPOSITION_H
 #define ALLPIX_MESSAGE_DEPOSITION_H
 
-#include <memory>
-#include <string>
 #include <vector>
 
 #include <Math/Vector3D.h>

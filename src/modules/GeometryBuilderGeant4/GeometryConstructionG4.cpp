@@ -5,6 +5,10 @@
 
 #include "GeometryConstructionG4.hpp"
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include <G4Box.hh>
 #include <G4LogicalVolume.hh>
 #include <G4NistManager.hh>

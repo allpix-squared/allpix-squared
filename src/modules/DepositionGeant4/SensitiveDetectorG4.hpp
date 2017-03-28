@@ -5,10 +5,10 @@
 #ifndef ALLPIX_SIMPLE_DEPOSITION_MODULE_SENSITIVE_DETECTOR_H
 #define ALLPIX_SIMPLE_DEPOSITION_MODULE_SENSITIVE_DETECTOR_H
 
+#include <memory>
+
 #include <G4VSensitiveDetector.hh>
 #include <G4WrapperProcess.hh>
-
-#include <set>
 
 #include "core/geometry/Detector.hpp"
 #include "core/messenger/Messenger.hpp"

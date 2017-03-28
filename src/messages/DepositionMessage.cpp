@@ -4,6 +4,9 @@
 
 #include "DepositionMessage.hpp"
 
+#include <utility>
+#include <vector>
+
 using namespace allpix;
 
 ChargeDeposit::ChargeDeposit(ROOT::Math::XYZVector position, double energy)

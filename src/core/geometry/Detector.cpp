@@ -2,8 +2,9 @@
  *  @author Koen Wolters <koen.wolters@cern.ch>
  */
 
+#include <memory>
 #include <string>
-#include <tuple>
+#include <utility>
 
 #include "Detector.hpp"
 

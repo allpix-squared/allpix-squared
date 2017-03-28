@@ -6,15 +6,13 @@
 #ifndef ALLPIX_CONFIGURATION_H
 #define ALLPIX_CONFIGURATION_H
 
-#include <iomanip>
 #include <map>
-#include <set>
 #include <string>
 #include <vector>
 
-#include "exceptions.h"
-
 #include "core/utils/string.h"
+
+#include "exceptions.h"
 
 namespace allpix {
 

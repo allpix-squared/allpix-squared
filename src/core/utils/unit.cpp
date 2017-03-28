@@ -1,6 +1,7 @@
 #include "unit.h"
 
 #include <algorithm>
+#include <stdexcept>
 #include <string>
 
 #include "core/utils/string.h"
