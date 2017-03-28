@@ -121,7 +121,7 @@ namespace allpix {
 
     // catch all overload for not implemented conversion
     template <typename T, typename = std::enable_if_t<!std::is_arithmetic<T>::value>, typename = void>
-    std::string to_string_impl(T, empty_tag) {
+    void to_string_impl(T, empty_tag) {
         static_assert(std::is_same<T, void>::value,
                       "Conversion to this type is not implemented: an overload should be added to support this conversion");
     }
