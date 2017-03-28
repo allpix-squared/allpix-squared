@@ -357,7 +357,8 @@ void GeometryConstructionG4::build_pixel_devices() {
             new G4Box(SliceName.first, model->GetHalfPixelX(), model->GetHalfSensorY(), model->GetHalfSensorZ());
         model_g4->slice_log = new G4LogicalVolume(Box_slice, Silicon, SliceName.second); // 0,0,0);
 
-        auto* Box_pixel = new G4Box(PixelName.first, model->GetHalfPixelX(), model->GetHalfPixelY(), model->GetHalfPixelZ());
+        auto* Box_pixel =
+            new G4Box(PixelName.first, model->GetHalfPixelX(), model->GetHalfPixelY(), model->GetHalfSensorZ());
         model_g4->pixel_log = new G4LogicalVolume(Box_pixel, Silicon, PixelName.second); // 0,0,0);
 
         // set the user limit (FIXME: is this needed / this is currently fixed)

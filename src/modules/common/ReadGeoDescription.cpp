@@ -46,52 +46,31 @@ std::shared_ptr<PixelDetectorModel> ReadGeoDescription::parse_config(const Confi
         model->SetNPixelsX(static_cast<int>(std::round(vec.x())));
         model->SetNPixelsY(static_cast<int>(std::round(vec.y())));
     }
-
     // size, positions and offsets
     if(config.has("pixel_size")) {
-        XYZVector vec = 2 * config.get<XYZVector>("pixel_size");
-        model->SetPixSizeX(vec.x());
-        model->SetPixSizeY(vec.y());
-        model->SetPixSizeZ(vec.z()); // FIXME: useless
+        // FIXME: multiply by two to simulate old behaviour
+        model->setPixelSize(2 * config.get<XYVector>("pixel_size"));
     }
     if(config.has("chip_size")) {
-        XYZVector vec = 2 * config.get<XYZVector>("chip_size");
-        model->SetChipHX(vec.x());
-        model->SetChipHY(vec.y());
-        model->SetChipHZ(vec.z());
+        // FIXME: multiply by two to simulate old behaviour
+        model->setChipSize(2 * config.get<XYZVector>("chip_size"));
     }
-    /*if(config.has("chip_position")) {
-        XYZVector vec = config.get<XYZVector>("chip_position");
-        model->SetChipPosX(vec.x());
-        model->SetChipPosY(vec.y());
-        model->SetChipPosZ(vec.z());
-    }*/
     if(config.has("chip_offset")) {
-        XYZVector vec = config.get<XYZVector>("chip_offset");
-        model->SetChipOffsetX(vec.x());
-        model->SetChipOffsetY(vec.y());
-        model->SetChipOffsetZ(vec.z());
+        model->setChipOffset(config.get<XYZVector>("chip_offset"));
     }
     if(config.has("sensor_size")) {
-        XYZVector vec = 2 * config.get<XYZVector>("sensor_size");
-        model->SetSensorHX(vec.x());
-        model->SetSensorHY(vec.y());
-        model->SetSensorHZ(vec.z());
+        // FIXME: multiply by two to simulate old behaviour
+        model->setSensorSize(2 * config.get<XYZVector>("sensor_size"));
     }
-    if(config.has("sensor_position")) {
-        XYZVector vec = config.get<XYZVector>("sensor_position");
-        model->SetSensorPosX(vec.x());
-        model->SetSensorPosY(vec.y());
-        model->SetSensorPosZ(vec.z());
+    if(config.has("sensor_offset")) {
+        model->setSensorOffset(config.get<XYVector>("sensor_offset"));
     }
     if(config.has("pcb_size")) {
-        XYZVector vec = 2 * config.get<XYZVector>("pcb_size");
-        model->SetPCBHX(vec.x());
-        model->SetPCBHY(vec.y());
-        model->SetPCBHZ(vec.z());
+        // FIXME: multiply by two to simulate old behaviour
+        model->setPCBSize(2 * config.get<XYZVector>("pcb_size"));
     }
 
-    // gr excess?
+    // excess for the guard rings
     if(config.has("sensor_gr_excess_htop")) {
         model->SetSensorExcessHTop(config.get<double>("sensor_gr_excess_htop"));
     }
@@ -106,14 +85,14 @@ std::shared_ptr<PixelDetectorModel> ReadGeoDescription::parse_config(const Confi
     }
 
     // bump parameters
-    if(config.has("bump_radius")) {
-        model->SetBumpRadius(config.get<double>("bump_radius"));
+    if(config.has("bump_sphere_radius")) {
+        model->SetBumpRadius(config.get<double>("bump_sphere_radius"));
     }
     if(config.has("bump_height")) {
         model->SetBumpHeight(config.get<double>("bump_height"));
     }
-    if(config.has("bump_dr")) {
-        model->SetBumpDr(config.get<double>("bump_dr"));
+    if(config.has("bump_cylinder_radius")) {
+        model->SetBumpDr(config.get<double>("bump_cylinder_radius"));
     }
     if(config.has("bump_offset")) {
         XYVector vec = config.get<XYVector>("bump_offset");
