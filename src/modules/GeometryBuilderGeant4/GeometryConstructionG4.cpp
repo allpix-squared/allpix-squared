@@ -190,7 +190,7 @@ void GeometryConstructionG4::build_pixel_devices() {
         /* POSITIONS
          * calculate the positions of all the elements
          */
-        G4double bump_height = model->GetBumpHeight();
+        G4double bump_height = model->getBumpHeight();
 
         // positions of all the elements
         G4ThreeVector posCoverlayer(0, 0, 0);
@@ -212,40 +212,40 @@ void GeometryConstructionG4::build_pixel_devices() {
         //}
 
         // calculation of position of the different physical volumes
-        if(model->GetHalfChipZ() != 0) {
+        if(model->getHalfChipSizeZ() != 0) {
             posBumps.setX(posDevice.x());
             posBumps.setY(posDevice.y());
             posBumps.setZ(posDevice.z()
                           // wrapperHZ
                           -
-                          model->GetHalfSensorZ()
+                          model->getHalfSensorZ()
                           //- 2.*model->GetHalfCoverlayerZ()
                           -
                           (bump_height / 2.));
 
-            posChip.setX(posDevice.x() + model->GetChipXOffset());
-            posChip.setY(posDevice.y() + model->GetChipYOffset());
+            posChip.setX(posDevice.x() + model->getChipOffsetX());
+            posChip.setY(posDevice.y() + model->getChipOffsetY());
             posChip.setZ(posDevice.z()
                          // wrapperHZ
                          -
-                         model->GetHalfSensorZ()
+                         model->getHalfSensorZ()
                          //- 2.*model->GetHalfCoverlayerZ()
                          -
-                         bump_height - model->GetHalfChipZ() + model->GetChipZOffset());
+                         bump_height - model->getHalfChipSizeZ() + model->getChipOffsetZ());
 
         } else {
             // make sure no offset because of bumps for PCB is calculated if chip is not included
             bump_height = 0;
         }
-        posPCB.setX(posDevice.x() - model->GetSensorXOffset());
-        posPCB.setY(posDevice.y() - model->GetSensorYOffset());
+        posPCB.setX(posDevice.x() - model->getSensorOffsetX());
+        posPCB.setY(posDevice.y() - model->getSensorOffsetY());
         posPCB.setZ(posDevice.z()
                     // wrapperHZ
                     -
-                    model->GetHalfSensorZ()
+                    model->getHalfSensorZ()
                     //- 2.*model->GetHalfCoverlayerZ()
                     -
-                    bump_height - 2. * model->GetHalfChipZ() - model->GetHalfPCBZ());
+                    bump_height - 2. * model->getHalfChipSizeZ() - model->getHalfPCBSizeZ());
 
         LOG(DEBUG) << "local relative positions of the elements";
         LOG(DEBUG) << "- Coverlayer position  : " << posCoverlayer;
@@ -280,9 +280,9 @@ void GeometryConstructionG4::build_pixel_devices() {
 
         // The wrapper might be enhanced when the user set up
         //  Appliances to the detector (extra layers, etc).
-        G4double wrapperHX = model->GetHalfWrapperDX();
-        G4double wrapperHY = model->GetHalfWrapperDY();
-        G4double wrapperHZ = model->GetHalfWrapperDZ();
+        G4double wrapperHX = model->getHalfWrapperDX();
+        G4double wrapperHY = model->getHalfWrapperDY();
+        G4double wrapperHZ = model->getHalfWrapperDZ();
 
         LOG(DEBUG) << "Wrapper Dimensions [mm] : " << wrapperHX / mm << " " << wrapperHY / mm << " " << wrapperHZ / mm;
 
@@ -334,7 +334,8 @@ void GeometryConstructionG4::build_pixel_devices() {
          */
 
         // create the general box containing the sensor
-        auto* Box_box = new G4Box(BoxName.second, model->GetHalfSensorX(), model->GetHalfSensorY(), model->GetHalfSensorZ());
+        auto* Box_box =
+            new G4Box(BoxName.second, model->getHalfSensorSizeX(), model->getHalfSensorSizeY(), model->getHalfSensorZ());
 
         // create the box containing the slices and pixels
         // The Si wafer is placed respect to the wrapper.
@@ -354,11 +355,11 @@ void GeometryConstructionG4::build_pixel_devices() {
 
         // create the slices and pixels (replicas)
         auto* Box_slice =
-            new G4Box(SliceName.first, model->GetHalfPixelX(), model->GetHalfSensorY(), model->GetHalfSensorZ());
+            new G4Box(SliceName.first, model->getHalfPixelSizeX(), model->getHalfSensorSizeY(), model->getHalfSensorZ());
         model_g4->slice_log = new G4LogicalVolume(Box_slice, Silicon, SliceName.second); // 0,0,0);
 
         auto* Box_pixel =
-            new G4Box(PixelName.first, model->GetHalfPixelX(), model->GetHalfPixelY(), model->GetHalfSensorZ());
+            new G4Box(PixelName.first, model->getHalfPixelSizeX(), model->getHalfPixelSizeY(), model->getHalfSensorZ());
         model_g4->pixel_log = new G4LogicalVolume(Box_pixel, Silicon, PixelName.second); // 0,0,0);
 
         // set the user limit (FIXME: is this needed / this is currently fixed)
@@ -372,7 +373,7 @@ void GeometryConstructionG4::build_pixel_devices() {
                          model_g4->box_log,
                          kXAxis,
                          // model->GetPixelX(),
-                         model->GetNPixelsX(),
+                         model->getNPixelsX(),
                          0); // offset
 
         // place the pixels
@@ -381,7 +382,7 @@ void GeometryConstructionG4::build_pixel_devices() {
                          model_g4->slice_log,
                          kYAxis,
                          // model->GetPixelY(),
-                         model->GetNPixelsY(),
+                         model->getNPixelsY(),
                          0); // offset
 
         /* BUMPS
@@ -389,10 +390,10 @@ void GeometryConstructionG4::build_pixel_devices() {
          */
 
         // construct the bumps only if necessary
-        if(model->GetBumpHeight() != 0.0 and model->GetHalfChipZ() != 0) {
+        if(model->getBumpHeight() != 0.0 and model->getHalfChipSizeZ() != 0) {
             // define types from parameters
-            G4double bump_radius = model->GetBumpRadius();
-            G4double bump_dr = model->GetBumpDr();
+            G4double bump_radius = model->getBumpSphereRadius();
+            G4double bump_dr = model->getBumpCylinderRadius();
             G4Sphere* aBump_Sphere = new G4Sphere(BumpName.first + "sphere", 0, bump_radius, 0, 360 * deg, 0, 360 * deg);
             G4Tubs* aBump_Tube =
                 new G4Tubs(BumpName.first + "Tube", 0., bump_radius - bump_dr, bump_height / 2., 0., 360 * deg);
@@ -400,7 +401,7 @@ void GeometryConstructionG4::build_pixel_devices() {
 
             // create the volume containing the bumps
             auto* Bump_Box =
-                new G4Box(BumpBoxName.first, model->GetHalfSensorX(), model->GetHalfSensorY(), bump_height / 2.);
+                new G4Box(BumpBoxName.first, model->getHalfSensorSizeX(), model->getHalfSensorSizeY(), bump_height / 2.);
 
             // create the logical volume
             model_g4->bumps_log = new G4LogicalVolume(Bump_Box, Air, BumpBoxName.second + "_log");
@@ -421,7 +422,7 @@ void GeometryConstructionG4::build_pixel_devices() {
             model_g4->bumps_cell_log->SetVisAttributes(BumpVisAtt);
 
             model_g4->parameterization_ = new BumpsParameterizationG4(model);
-            G4int NPixTot = model->GetNPixelsX() * model->GetNPixelsY();
+            G4int NPixTot = model->getNPixelsX() * model->getNPixelsY();
             new G4PVParameterised(BumpName.second + "phys",
                                   model_g4->bumps_cell_log,     // logical volume
                                   model_g4->bumps_log,          // mother volume
@@ -498,9 +499,9 @@ void GeometryConstructionG4::build_pixel_devices() {
         // create the box volumes for the guard rings
         auto* Box_GuardRings_Ext =
             new G4Box(GuardRingsExtName.second,
-                      model->GetHalfSensorX() + (model->GetSensorExcessHRight() + model->GetSensorExcessHLeft()),
-                      model->GetHalfSensorY() + (model->GetSensorExcessHTop() + model->GetSensorExcessHBottom()),
-                      model->GetHalfSensorZ()); // same depth as the sensor
+                      model->getHalfSensorSizeX() + (model->getGuardRingExcessRight() + model->getGuardRingExcessLeft()),
+                      model->getHalfSensorSizeY() + (model->getGuardRingExcessTop() + model->getGuardRingExcessBottom()),
+                      model->getHalfSensorZ()); // same depth as the sensor
 
         G4VSolid* Solid_GuardRings = new G4SubtractionSolid(GuardRingsName.second, Box_GuardRings_Ext, Box_box);
 
@@ -524,9 +525,10 @@ void GeometryConstructionG4::build_pixel_devices() {
 
         model_g4->chip_log = nullptr;
         model_g4->chip_phys = nullptr;
-        if(model->GetHalfChipZ() != 0) {
+        if(model->getHalfChipSizeZ() != 0) {
             // create the chip box volume
-            auto* Chip_box = new G4Box(ChipName.second, model->GetHalfChipX(), model->GetHalfChipY(), model->GetHalfChipZ());
+            auto* Chip_box =
+                new G4Box(ChipName.second, model->getHalfChipSizeX(), model->getHalfChipSizeY(), model->getHalfChipSizeZ());
 
             // create the logical volume
             // The Si wafer is placed respect to the wrapper.
@@ -551,9 +553,10 @@ void GeometryConstructionG4::build_pixel_devices() {
 
         model_g4->PCB_log = nullptr;
         model_g4->PCB_phys = nullptr;
-        if(model->GetHalfPCBZ() != 0) {
+        if(model->getHalfPCBSizeZ() != 0) {
             // create the box containing the PCB
-            auto* PCB_box = new G4Box(PCBName.second, model->GetHalfPCBX(), model->GetHalfPCBY(), model->GetHalfPCBZ());
+            auto* PCB_box =
+                new G4Box(PCBName.second, model->getHalfPCBSizeX(), model->getHalfPCBSizeY(), model->getHalfPCBSizeZ());
 
             // create the logical volume for the PCB
             // The PCB is placed respect to the wrapper.

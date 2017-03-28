@@ -70,32 +70,31 @@ std::shared_ptr<PixelDetectorModel> ReadGeoDescription::parse_config(const Confi
 
     // excess for the guard rings
     if(config.has("sensor_gr_excess_htop")) {
-        model->SetSensorExcessHTop(config.get<double>("sensor_gr_excess_htop"));
+        model->setGuardRingExcessTop(config.get<double>("sensor_gr_excess_htop"));
     }
     if(config.has("sensor_gr_excess_hbottom")) {
-        model->SetSensorExcessHBottom(config.get<double>("sensor_gr_excess_hbottom"));
+        model->setGuardRingExcessBottom(config.get<double>("sensor_gr_excess_hbottom"));
     }
     if(config.has("sensor_gr_excess_hleft")) {
-        model->SetSensorExcessHLeft(config.get<double>("sensor_gr_excess_hleft"));
+        model->getGuardRingExcessLeft(config.get<double>("sensor_gr_excess_hleft"));
     }
     if(config.has("sensor_gr_excess_hright")) {
-        model->SetSensorExcessHRight(config.get<double>("sensor_gr_excess_hright"));
+        model->setGuardRingExcessHRight(config.get<double>("sensor_gr_excess_hright"));
     }
 
     // bump parameters
     if(config.has("bump_sphere_radius")) {
-        model->SetBumpRadius(config.get<double>("bump_sphere_radius"));
+        model->setBumpSphereRadius(config.get<double>("bump_sphere_radius"));
     }
     if(config.has("bump_height")) {
-        model->SetBumpHeight(config.get<double>("bump_height"));
+        model->setBumpHeight(config.get<double>("bump_height"));
     }
     if(config.has("bump_cylinder_radius")) {
-        model->SetBumpDr(config.get<double>("bump_cylinder_radius"));
+        // FIXME: inverse the radius to simulate old behaviour
+        model->setBumpCylinderRadius(model->getBumpSphereRadius() - config.get<double>("bump_cylinder_radius"));
     }
     if(config.has("bump_offset")) {
-        XYVector vec = config.get<XYVector>("bump_offset");
-        model->SetBumpOffsetX(vec.x());
-        model->SetBumpOffsetY(vec.y());
+        model->setBumpOffset(config.get<XYVector>("bump_offset"));
     }
 
     return model;
