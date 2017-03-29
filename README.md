@@ -6,7 +6,7 @@ Generic simulation framework for pixel detectors based on [original AllPix](http
 **WARNING: Allpix<sup>2</sup> is currently in alpha state and any part of the interface is subject to change**
 
 [![build status](https://gitlab.cern.ch/simonspa/allpix-squared/badges/master/build.svg)](https://gitlab.cern.ch/simonspa/allpix-squared/commits/master)
-
+[![coverity status](https://scan.coverity.com/projects/11975/badge.svg)](https://scan.coverity.com/projects/koensw-allpix-squared)
 
 ## Dependencies
 * [ROOT](https://root.cern.ch/building-root) with GenVector
