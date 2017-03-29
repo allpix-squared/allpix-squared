@@ -9,8 +9,7 @@
 #include "core/utils/exceptions.h"
 #include "core/utils/log.h"
 
-#include "core/module/DetectorModuleFactory.hpp"
-#include "core/module/UniqueModuleFactory.hpp"
+#include "core/module/ModuleFactory.hpp"
 
 // FIXME: should not be here
 #include "modules/GeometryBuilderTGeo/TGeoBuilderModule.hpp"
