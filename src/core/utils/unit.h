@@ -40,7 +40,7 @@ namespace allpix {
         UnitType out = static_cast<UnitType>(inp) * get(std::move(str));
         if(out > static_cast<UnitType>(std::numeric_limits<T>::max()) ||
            out < static_cast<UnitType>(std::numeric_limits<T>::lowest())) {
-            throw std::overflow_error("unit conversion overflows the provided type");
+            throw std::overflow_error("unit conversion overflows the type");
         }
         return static_cast<T>(out);
     }
@@ -50,7 +50,7 @@ namespace allpix {
         UnitType out = static_cast<UnitType>(inp) / get(std::move(str));
         if(out > static_cast<UnitType>(std::numeric_limits<T>::max()) ||
            out < static_cast<UnitType>(std::numeric_limits<T>::lowest())) {
-            throw std::overflow_error("unit conversion overflows the provided type");
+            throw std::overflow_error("unit conversion overflows the type");
         }
         return static_cast<T>(out);
     }
