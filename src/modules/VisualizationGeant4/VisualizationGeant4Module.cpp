@@ -15,7 +15,6 @@
 #include "G4VisExecutive.hh"
 #include "G4VisManager.hh"
 
-#include "core/module/ModuleError.hpp"
 #include "core/utils/log.h"
 
 using namespace allpix;

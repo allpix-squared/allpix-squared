@@ -15,7 +15,7 @@
 
 #include "core/config/ConfigReader.hpp"
 #include "core/geometry/PixelDetectorModel.hpp"
-#include "core/module/ModuleError.hpp"
+#include "core/module/exceptions.h"
 #include "core/utils/log.h"
 
 #include "tools/ROOT.h"

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "exceptions.h"
 #include "core/geometry/Detector.hpp"
 
 namespace allpix {
