@@ -46,26 +46,22 @@ std::shared_ptr<PixelDetectorModel> ReadGeoDescription::parse_config(const Confi
     }
     // size, positions and offsets
     if(config.has("pixel_size")) {
-        // FIXME: multiply by two to simulate old behaviour
-        model->setPixelSize(2 * config.get<XYVector>("pixel_size"));
+        model->setPixelSize(config.get<XYVector>("pixel_size"));
     }
     if(config.has("chip_size")) {
-        // FIXME: multiply by two to simulate old behaviour
-        model->setChipSize(2 * config.get<XYZVector>("chip_size"));
+        model->setChipSize(config.get<XYZVector>("chip_size"));
     }
     if(config.has("chip_offset")) {
         model->setChipOffset(config.get<XYZVector>("chip_offset"));
     }
     if(config.has("sensor_size")) {
-        // FIXME: multiply by two to simulate old behaviour
-        model->setSensorSize(2 * config.get<XYZVector>("sensor_size"));
+        model->setSensorSize(config.get<XYZVector>("sensor_size"));
     }
     if(config.has("sensor_offset")) {
         model->setSensorOffset(config.get<XYVector>("sensor_offset"));
     }
     if(config.has("pcb_size")) {
-        // FIXME: multiply by two to simulate old behaviour
-        model->setPCBSize(2 * config.get<XYZVector>("pcb_size"));
+        model->setPCBSize(config.get<XYZVector>("pcb_size"));
     }
 
     // excess for the guard rings
@@ -90,8 +86,7 @@ std::shared_ptr<PixelDetectorModel> ReadGeoDescription::parse_config(const Confi
         model->setBumpHeight(config.get<double>("bump_height"));
     }
     if(config.has("bump_cylinder_radius")) {
-        // FIXME: inverse the radius to simulate old behaviour
-        model->setBumpCylinderRadius(model->getBumpSphereRadius() - config.get<double>("bump_cylinder_radius"));
+        model->setBumpCylinderRadius(config.get<double>("bump_cylinder_radius"));
     }
     if(config.has("bump_offset")) {
         model->setBumpOffset(config.get<XYVector>("bump_offset"));
