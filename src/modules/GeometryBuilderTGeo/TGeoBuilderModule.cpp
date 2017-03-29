@@ -15,7 +15,7 @@
   kCyan     : Wafer, pixels
   kGreen    : PCB, bumps container volumes
   kYellow   : Bump logical volume
-  kGray     : Chip
+  kGray     : Chip, GuardRings (+2)
   kBlack    : Appliances
 */
 
@@ -137,7 +137,7 @@ void TGeoBuilderModule::run() {
 
   //### Visualisation Development only
   // gGeoManager->SetTopVisible(); // the TOP is invisible by default
-  gGeoManager->SetVisLevel(3);
+  gGeoManager->SetVisLevel(4);
   // gGeoManager->SetVisOption(0); // To see the intermediate containers.
   // gGeoManager->GetVolume("name");
   // TGeoVolume* top = gGeoManager->GetTopVolume();
