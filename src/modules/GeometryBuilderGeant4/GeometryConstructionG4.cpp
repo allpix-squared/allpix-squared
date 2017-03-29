@@ -396,11 +396,12 @@ void GeometryConstructionG4::build_pixel_devices() {
         // construct the bumps only if necessary
         if(model->getBumpHeight() != 0.0 and model->getHalfChipSizeZ() != 0) {
             // define types from parameters
-            G4double bump_radius = model->getBumpSphereRadius();
-            G4double bump_dr = model->getBumpCylinderRadius();
-            G4Sphere* aBump_Sphere = new G4Sphere(BumpName.first + "sphere", 0, bump_radius, 0, 360 * deg, 0, 360 * deg);
+            G4double bump_sphere_radius = model->getBumpSphereRadius();
+            G4double bump_cylinder_radius = model->getBumpCylinderRadius();
+            G4Sphere* aBump_Sphere =
+                new G4Sphere(BumpName.first + "sphere", 0, bump_sphere_radius, 0, 360 * deg, 0, 360 * deg);
             G4Tubs* aBump_Tube =
-                new G4Tubs(BumpName.first + "Tube", 0., bump_radius - bump_dr, bump_height / 2., 0., 360 * deg);
+                new G4Tubs(BumpName.first + "Tube", 0., bump_cylinder_radius, bump_height / 2., 0., 360 * deg);
             auto* aBump = new G4UnionSolid(BumpName.first, aBump_Sphere, aBump_Tube);
 
             // create the volume containing the bumps
