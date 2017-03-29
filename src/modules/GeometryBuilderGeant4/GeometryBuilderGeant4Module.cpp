@@ -24,6 +24,7 @@
 #include "core/config/ConfigReader.hpp"
 #include "core/config/InvalidValueError.hpp"
 #include "core/geometry/GeometryManager.hpp"
+#include "core/module/ModuleError.hpp"
 #include "core/utils/log.h"
 
 // temporary common includes

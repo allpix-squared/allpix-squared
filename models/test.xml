@@ -1,0 +1,45 @@
+
+<detectors>
+    <detector type="test">
+        <digitizer>Timepix</digitizer>
+
+        <npix_x>2</npix_x>
+        <npix_y>2</npix_y>
+        <npix_z>0</npix_z>
+
+        <pixsize_x units="um">27.5</pixsize_x>
+        <pixsize_y units="um">55</pixsize_y>
+        <pixsize_z units="um">10.</pixsize_z>
+
+        <chip_hx units="um">55</chip_hx>
+        <chip_hy units="um">125</chip_hy>
+        <chip_hz units="um">10</chip_hz>
+
+        <chip_offsetx units="um">0.</chip_offsetx>
+        <chip_offsety units="um">-15.</chip_offsety>
+        <chip_offsetz units="um">0.</chip_offsetz>
+
+        <sensor_hx units="um">55</sensor_hx>
+        <sensor_hy units="um">110</sensor_hy>
+        <sensor_hz units="um">20.0</sensor_hz>
+
+        <sensor_gr_excess_htop units="um">5.0</sensor_gr_excess_htop>
+        <sensor_gr_excess_hbottom units="um">5.0</sensor_gr_excess_hbottom>
+        <sensor_gr_excess_hright units="um">5.0</sensor_gr_excess_hright>
+        <sensor_gr_excess_hleft units="um">5.0</sensor_gr_excess_hleft>
+
+        <sensor_posx units="mm">0</sensor_posx>
+        <sensor_posy units="mm">0</sensor_posy>
+        <sensor_posz units="mm">0.</sensor_posz>
+
+        <bump_radius units="um">9.0</bump_radius>
+        <bump_height units="um">20</bump_height>
+        <bump_offset_x units="um">0.0</bump_offset_x>
+        <bump_offset_y units="um">-15.0</bump_offset_y>
+        <bump_dr units="um">2.0</bump_dr>
+
+        <pcb_hx units="mm">0.2</pcb_hx>
+        <pcb_hy units="mm">0.2</pcb_hy>
+        <pcb_hz units="mm">0.0088</pcb_hz>
+    </detector>
+</detectors>

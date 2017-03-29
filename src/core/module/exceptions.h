@@ -54,14 +54,6 @@ namespace allpix {
     };
     // FIXME: this exception can likely be merged with previous one
     class InvalidModuleActionException : public LogicError {};
-  
-  /*
-   * General exceptions for modules if something goes wrong (called by modules)
-   */
-  class ModuleError : public RuntimeError {
-  public:
-    explicit ModuleError(std::string reason) { error_message_ = std::move(reason); }
-  };
 }
 
 #endif /* ALLPIX_MODULE_EXCEPTIONS_H */
