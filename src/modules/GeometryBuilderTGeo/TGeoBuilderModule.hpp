@@ -47,7 +47,7 @@ const TString GuardRingsName = "GuardRings";
 
 // ### to be placed in a more adequate place
 TGeoTranslation ToTGeoTranslation(const ROOT::Math::XYZVector& pos);
-TString Print( TGeoTranslation* trl );
+TString Print(TGeoTranslation* trl);
 
 namespace allpix {
 
@@ -95,7 +95,6 @@ namespace allpix {
         std::map<int, ROOT::Math::XYZVector> m_vectorWrapperEnhancement;
         std::map<int, TGeoTranslation> m_posVectorAppliances; //
     };
-
 }
 
 #endif /* ALLPIX_DETECTOR_CONSTRUCTION_TGEO_H */
