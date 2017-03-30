@@ -40,9 +40,9 @@ using namespace std;
 using namespace allpix;
 
 // Constructor and destructor
-GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo, G4ThreeVector world_size)
-    : geo_manager_(geo), world_size_(world_size), world_material_(nullptr), world_log_(nullptr), world_phys_(nullptr),
-      user_limits_(nullptr) {}
+GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo, G4ThreeVector world_size, bool simple_view)
+    : geo_manager_(geo), world_size_(world_size), simple_view_(simple_view), world_material_(nullptr), world_log_(nullptr),
+      world_phys_(nullptr), user_limits_(nullptr) {}
 GeometryConstructionG4::~GeometryConstructionG4() {
     delete user_limits_;
 }
@@ -360,11 +360,16 @@ void GeometryConstructionG4::build_pixel_devices() {
         // create the slices and pixels (replicas)
         auto* Box_slice =
             new G4Box(SliceName.first, model->getHalfPixelSizeX(), model->getHalfSensorSizeY(), model->getHalfSensorZ());
+
         model_g4->slice_log = new G4LogicalVolume(Box_slice, Silicon, SliceName.second); // 0,0,0);
+        if(simple_view_)
+            model_g4->slice_log->SetVisAttributes(G4VisAttributes::GetInvisible());
 
         auto* Box_pixel =
             new G4Box(PixelName.first, model->getHalfPixelSizeX(), model->getHalfPixelSizeY(), model->getHalfSensorZ());
         model_g4->pixel_log = new G4LogicalVolume(Box_pixel, Silicon, PixelName.second); // 0,0,0);
+        if(simple_view_)
+            model_g4->pixel_log->SetVisAttributes(G4VisAttributes::GetInvisible());
 
         // set the user limit (FIXME: is this needed / this is currently fixed)
         if(user_limits_ != nullptr) {
@@ -424,7 +429,10 @@ void GeometryConstructionG4::build_pixel_devices() {
 
             // create the individual bumps through a parameterization
             model_g4->bumps_cell_log = new G4LogicalVolume(aBump, Solder, BumpBoxName.second + "_log");
-            model_g4->bumps_cell_log->SetVisAttributes(BumpVisAtt);
+            if(simple_view_)
+                model_g4->bumps_cell_log->SetVisAttributes(G4VisAttributes::GetInvisible());
+            else
+                model_g4->bumps_cell_log->SetVisAttributes(BumpVisAtt);
 
             model_g4->parameterization_ = new BumpsParameterizationG4(model);
             G4int NPixTot = model->getNPixelsX() * model->getNPixelsY();
@@ -555,7 +563,6 @@ void GeometryConstructionG4::build_pixel_devices() {
         /* PCB
          * global pcb chip
          */
-
         model_g4->PCB_log = nullptr;
         model_g4->PCB_phys = nullptr;
         if(model->getHalfPCBSizeZ() != 0) {
