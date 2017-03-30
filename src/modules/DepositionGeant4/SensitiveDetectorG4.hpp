@@ -49,6 +49,6 @@ namespace allpix {
         G4double m_kinEPrimary;
         G4double m_totalEdep;
     };
-}
+} // namespace allpix
 
 #endif /* ALLPIX_SIMPLE_DEPOSITION_MODULE_SENSITIVE_DETECTOR_H */

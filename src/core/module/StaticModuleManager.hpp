@@ -33,6 +33,6 @@ namespace allpix {
 
         GeneratorFunction generator_func_;
     };
-}
+} // namespace allpix
 
 #endif /* ALLPIX_STATIC_MODULE_MANAGER_H */

@@ -199,6 +199,6 @@ namespace allpix {
         std::string coverlayer_material_;
         bool has_coverlayer_;
     };
-}
+} // namespace allpix
 
 #endif /* ALLPIX_PIXEL_DETECTOR_H */

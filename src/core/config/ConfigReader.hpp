@@ -44,6 +44,6 @@ namespace allpix {
         std::map<std::string, std::vector<std::list<Configuration>::iterator>> conf_map_;
         std::list<Configuration> conf_array_;
     };
-}
+} // namespace allpix
 
 #endif /* ALLPIX_CONFIG_MANAGER_H */

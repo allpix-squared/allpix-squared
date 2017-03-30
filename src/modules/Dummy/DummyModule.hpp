@@ -37,4 +37,4 @@ namespace allpix {
     private:
         Configuration config_;
     };
-}
+} // namespace allpix

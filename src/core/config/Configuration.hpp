@@ -129,6 +129,6 @@ namespace allpix {
             setArray<T>(key, val);
         }
     }
-}
+} // namespace allpix
 
 #endif /* ALLPIX_CONFIGURATION_H */

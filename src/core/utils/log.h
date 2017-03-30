@@ -89,6 +89,6 @@ namespace allpix {
 
     // release a suppressed stream
     inline void RELEASE_STREAM(std::ostream& stream) { stream.clear(); }
-}
+} // namespace allpix
 
 #endif /* ALLPIX_LOG_H */

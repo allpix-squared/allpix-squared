@@ -95,6 +95,6 @@ namespace allpix {
         auto delegate = std::make_unique<VectorBindDelegate<T, R>>(receiver, member);
         delegates_[std::type_index(typeid(R))][message_type].push_back(std::move(delegate));
     }
-}
+} // namespace allpix
 
 #endif /* ALLPIX_MESSENGER_H */

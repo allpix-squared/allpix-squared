@@ -98,8 +98,8 @@ namespace allpix {
     namespace tableau {
         // WARNING: no error function
         static const auto
-        RK3((Eigen::Matrix<double, 5, 3>() << 0, 0, 0, 1.0 / 2, 0, 0, -1, 2, 0, 1.0 / 6, 2.0 / 3, 1.0 / 6, 0, 0, 0)
-                .finished());
+            RK3((Eigen::Matrix<double, 5, 3>() << 0, 0, 0, 1.0 / 2, 0, 0, -1, 2, 0, 1.0 / 6, 2.0 / 3, 1.0 / 6, 0, 0, 0)
+                    .finished());
         // WARNING: no error function
         static const auto RK4((Eigen::Matrix<double, 6, 4>() << 0,
                                0,
@@ -124,7 +124,8 @@ namespace allpix {
                                0,
                                0,
                                0,
-                               0).finished());
+                               0)
+                                  .finished());
         static const auto RK5((Eigen::Matrix<double, 8, 6>() << 0,
                                0,
                                0,
@@ -172,8 +173,9 @@ namespace allpix {
                                1408.0 / 2565,
                                2197.0 / 4104,
                                -1.0 / 5,
-                               0).finished());
-    }
+                               0)
+                                  .finished());
+    } // namespace tableau
 
     // FIXME: better name
     template <typename T, int S, int D = 3>
@@ -184,6 +186,6 @@ namespace allpix {
                                          T initial_t = 0) {
         return RungeKutta<T, S, D>(tableau, function, step_size, initial_y, initial_t);
     }
-}
+} // namespace allpix
 
 #endif /* ALLPIX_RUNGE_KUTTA_H */

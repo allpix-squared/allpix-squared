@@ -31,6 +31,6 @@ namespace allpix {
         // simple particule gun case
         std::unique_ptr<G4ParticleGun> particleGun_;
     };
-}
+} // namespace allpix
 
 #endif /*AllPixPrimaryGeneratorAction_h*/

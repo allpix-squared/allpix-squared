@@ -69,6 +69,6 @@ namespace allpix {
             error_message_ += ": not a section header, key/value pair or comment";
         }
     };
-}
+} // namespace allpix
 
 #endif /* ALLPIX_CONFIG_EXCEPTIONS_H */

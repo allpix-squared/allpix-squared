@@ -68,6 +68,6 @@ namespace allpix {
     inline ROOT::Math::XYZVector toROOTVector(const G4ThreeVector& vector) {
         return ROOT::Math::XYZVector(vector.x(), vector.y(), vector.z());
     }
-}
+} // namespace allpix
 
 #endif

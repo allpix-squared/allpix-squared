@@ -31,6 +31,6 @@ namespace allpix {
             error_message_ = "Detector with name " + name + " is already registered, detector names should be unique";
         }
     };
-}
+} // namespace allpix
 
 #endif /* ALLPIX_GEOMETRY_EXCEPTIONS_H */

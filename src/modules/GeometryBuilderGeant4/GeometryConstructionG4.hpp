@@ -47,6 +47,6 @@ namespace allpix {
         // internal G4 pointer that we should manage ourselves
         G4UserLimits* user_limits_;
     };
-}
+} // namespace allpix
 
 #endif /* ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_DETECTOR_CONSTRUCTION_H */

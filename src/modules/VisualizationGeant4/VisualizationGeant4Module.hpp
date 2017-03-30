@@ -39,6 +39,6 @@ namespace allpix {
         // pointer to the visualization manager
         std::shared_ptr<G4VisManager> vis_manager_g4_;
     };
-}
+} // namespace allpix
 
 #endif /* ALLPIX_TEST_VISUALIZATION_MODULE_H */

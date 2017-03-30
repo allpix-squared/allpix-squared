@@ -36,6 +36,6 @@ namespace allpix {
     private:
         std::vector<ChargeDeposit> deposits;
     };
-}
+} // namespace allpix
 
 #endif /* ALLPIX_MESSAGE_DEPOSITION_H */

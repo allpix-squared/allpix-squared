@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "exceptions.h"
 #include "core/geometry/Detector.hpp"
+#include "exceptions.h"
 
 namespace allpix {
 
@@ -51,36 +51,35 @@ namespace allpix {
     private:
         std::shared_ptr<Detector> detector_ptr__;
     };
-  
-  class ModuleIdentifier {
-  public:
-    ModuleIdentifier(std::string module_name, std::string identifier, int prio)
-    : name_(std::move(module_name)), identifier_(std::move(identifier)), prio_(prio) {}
-    
-    // get the name of the module
-    std::string getName() const { return name_; }
-    // get the unique identifier for this module
-    std::string getIdentifier() const { return identifier_; }
-    // return the unique name (combination of module and identifier)
-    std::string getUniqueName() const { return name_ + identifier_; }
-    // get the priority of this unique name
-    int getPriority() const { return prio_; }
-    
-    // operator overloading (NOTE: identifiers are tested only one name - different priorities are equal!)
-    bool operator==(const ModuleIdentifier& other) const { return getUniqueName() == other.getUniqueName(); }
-    bool operator!=(const ModuleIdentifier& other) const { return getUniqueName() != other.getUniqueName(); }
-    bool operator<(const ModuleIdentifier& other) const { return getUniqueName() < other.getUniqueName(); }
-    bool operator<=(const ModuleIdentifier& other) const { return getUniqueName() <= other.getUniqueName(); }
-    bool operator>(const ModuleIdentifier& other) const { return getUniqueName() > other.getUniqueName(); }
-    bool operator>=(const ModuleIdentifier& other) const { return getUniqueName() >= other.getUniqueName(); }
-    
-  private:
-    std::string name_;
-    std::string identifier_;
-    int prio_;
-  };
-  
-  
-}
+
+    class ModuleIdentifier {
+    public:
+        ModuleIdentifier(std::string module_name, std::string identifier, int prio)
+            : name_(std::move(module_name)), identifier_(std::move(identifier)), prio_(prio) {}
+
+        // get the name of the module
+        std::string getName() const { return name_; }
+        // get the unique identifier for this module
+        std::string getIdentifier() const { return identifier_; }
+        // return the unique name (combination of module and identifier)
+        std::string getUniqueName() const { return name_ + identifier_; }
+        // get the priority of this unique name
+        int getPriority() const { return prio_; }
+
+        // operator overloading (NOTE: identifiers are tested only one name - different priorities are equal!)
+        bool operator==(const ModuleIdentifier& other) const { return getUniqueName() == other.getUniqueName(); }
+        bool operator!=(const ModuleIdentifier& other) const { return getUniqueName() != other.getUniqueName(); }
+        bool operator<(const ModuleIdentifier& other) const { return getUniqueName() < other.getUniqueName(); }
+        bool operator<=(const ModuleIdentifier& other) const { return getUniqueName() <= other.getUniqueName(); }
+        bool operator>(const ModuleIdentifier& other) const { return getUniqueName() > other.getUniqueName(); }
+        bool operator>=(const ModuleIdentifier& other) const { return getUniqueName() >= other.getUniqueName(); }
+
+    private:
+        std::string name_;
+        std::string identifier_;
+        int prio_;
+    };
+
+} // namespace allpix
 
 #endif /* ALLPIX_MODULE_H */

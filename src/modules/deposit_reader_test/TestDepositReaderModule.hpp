@@ -36,6 +36,6 @@ namespace allpix {
         // list of the messages
         std::vector<std::shared_ptr<DepositionMessage>> deposit_messages_;
     };
-}
+} // namespace allpix
 
 #endif /* ALLPIX_TEST_DEPOSIT_READER_MODULE_H */

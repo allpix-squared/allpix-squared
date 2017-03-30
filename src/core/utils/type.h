@@ -37,6 +37,6 @@ namespace allpix {
     // does nothing if not g++
     inline std::string demangle(const char* name, bool keep_allpix = false) { return name; }
 #endif
-}
+} // namespace allpix
 
 #endif /* ALLPIX_TYPE_H */
