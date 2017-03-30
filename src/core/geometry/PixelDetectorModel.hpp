@@ -106,7 +106,6 @@ namespace allpix {
 
             double whdz = GetHalfPCBZ() + GetHalfChipZ() + GetBumpHalfHeight() + GetHalfSensorZ();
 
-
             if(m_coverlayer_ON) {
                 whdz += GetHalfCoverlayerZ();
             }
