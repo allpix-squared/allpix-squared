@@ -1,3 +1,6 @@
+// stl include
+#include <string>
+
 // module include
 #include "ExampleModule.hpp"
 

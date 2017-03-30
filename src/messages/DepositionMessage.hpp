@@ -7,10 +7,9 @@
 #ifndef ALLPIX_MESSAGE_DEPOSITION_H
 #define ALLPIX_MESSAGE_DEPOSITION_H
 
-#include <memory>
-#include <string>
+#include <vector>
 
-#include <TVector3.h>
+#include <Math/Vector3D.h>
 
 #include "core/messenger/Message.hpp"
 
@@ -18,13 +17,13 @@ namespace allpix {
     // type of the deposits
     class ChargeDeposit {
     public:
-        ChargeDeposit(TVector3 position, double energy);
+        ChargeDeposit(ROOT::Math::XYZVector position, double energy);
 
-        TVector3 getPosition();
+        ROOT::Math::XYZVector getPosition();
         double getEnergy();
 
     private:
-        TVector3 position_;
+        ROOT::Math::XYZVector position_;
         double energy_;
     };
 

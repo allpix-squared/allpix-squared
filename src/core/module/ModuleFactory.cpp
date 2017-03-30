@@ -4,6 +4,8 @@
 
 #include "ModuleFactory.hpp"
 
+#include <utility>
+
 using namespace allpix;
 
 // Constructor and destructor

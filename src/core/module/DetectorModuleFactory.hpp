@@ -13,6 +13,8 @@
 #include "Module.hpp"
 #include "ModuleFactory.hpp"
 #include "ModuleIdentifier.hpp"
+#include "exceptions.h"
+
 #include "core/config/Configuration.hpp"
 #include "core/utils/log.h"
 
@@ -88,7 +90,6 @@ namespace allpix {
     private:
         inline void check_module_detector(const std::string& module_name, Module* module, const Detector* detector) {
             if(module->getDetector().get() != detector) {
-                // FIXME: specify the name of the module here...
                 throw InvalidModuleStateException(
                     "Module " + module_name +
                     " does not call the correct base Module constructor: the provided detector should be forwarded");

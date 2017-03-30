@@ -5,6 +5,8 @@
 #ifndef ALLPIX_RUNGE_KUTTA_H
 #define ALLPIX_RUNGE_KUTTA_H
 
+#include <functional>
+
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 

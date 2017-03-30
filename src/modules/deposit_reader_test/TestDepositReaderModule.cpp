@@ -6,6 +6,9 @@
 
 #include "core/messenger/Messenger.hpp"
 #include "core/utils/log.h"
+
+#include "tools/ROOT.h"
+
 #include "messages/DepositionMessage.hpp"
 
 using namespace allpix;
@@ -22,12 +25,14 @@ TestDepositReaderModule::~TestDepositReaderModule() = default;
 void TestDepositReaderModule::run() {
     LOG(INFO) << "DEPOSIT READER RESULTS";
 
+    config_.set("test", ROOT::Math::XYZVector());
+
     LOG(INFO) << "got " << deposit_messages_.size() << " deposits";
     // FIXME: detector logic is not good yet
     for(auto& message : deposit_messages_) {
         LOG(DEBUG) << " list of deposits";
         for(auto& deposit : message->getDeposits()) {
-            TVector3 pos = deposit.getPosition();
+            auto pos = deposit.getPosition();
             LOG(DEBUG) << "  energy " << deposit.getEnergy() << " at point (" << pos.x() << "," << pos.y() << "," << pos.z()
                        << ")"; //<< " in detector " << getDetector().getName();
         }

@@ -6,14 +6,14 @@
 #ifndef ALLPIX_CONFIGURATION_H
 #define ALLPIX_CONFIGURATION_H
 
-#include <iomanip>
 #include <map>
-#include <set>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
-#include "core/utils/exceptions.h"
 #include "core/utils/string.h"
+
+#include "exceptions.h"
 
 namespace allpix {
 
@@ -76,6 +76,8 @@ namespace allpix {
             throw MissingKeyError(key, getName());
         } catch(std::invalid_argument& e) {
             throw InvalidKeyError(key, getName(), config_.at(key), typeid(T), e.what());
+        } catch(std::overflow_error& e) {
+            throw InvalidKeyError(key, getName(), config_.at(key), typeid(T), e.what());
         }
     }
     template <typename T> T Configuration::get(const std::string& key, const T& def) const {
@@ -92,6 +94,8 @@ namespace allpix {
         } catch(std::out_of_range& e) {
             throw MissingKeyError(key, getName());
         } catch(std::invalid_argument& e) {
+            throw InvalidKeyError(key, getName(), config_.at(key), typeid(T), e.what());
+        } catch(std::overflow_error& e) {
             throw InvalidKeyError(key, getName(), config_.at(key), typeid(T), e.what());
         }
     }

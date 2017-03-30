@@ -4,7 +4,7 @@ Checks : '-*,
           misc-*,
           mpi-*,
           performance-*,
-          google-*,-google-readability-todo,-google-build-using-namespace,-google-readability-braces-around-statements,-google-readability-namespace-comments,
+          google-*,-google-readability-todo,-google-build-using-namespace,-google-readability-namespace-comments,
           readability-*,-readability-named-parameter,-readability-inconsistent-declaration-parameter-name,-readability-avoid-const-params-in-decls,
           llvm-*,-llvm-include-order,-llvm-header-guard,-llvm-namespace-comment,
           modernize-*,-modernize-raw-string-literal,
@@ -15,8 +15,5 @@ HeaderFilterRegex: '*.h *.hpp'
 CheckOptions:
   - { key: readability-identifier-naming.NamespaceCase,       value: lower_case }
   - { key: readability-identifier-naming.ClassCase,           value: CamelCase  }
-  - { key: readability-identifier-naming.StructCase,          value: CamelCase  }
-#  - { key: readability-identifier-naming.PrivateMemberSuffix, value: _          }
-#  - { key: readability-identifier-naming.MethodCase,          value: camelBack  }
-#  - { key: readability-identifier-naming.PrivateMethodCase,   value: lower_case }
-#  - { key: readability-identifier-naming.ProtectedMethodCase, value: lower_case }
+  - { key: readability-identifier-naming.StructCase,          value: lower_case  }
+  - { key: readability-identifier-naming.PublicMethodCase,    value: camelBack  }

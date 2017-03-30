@@ -5,6 +5,8 @@
 
 #include "SensitiveDetectorG4.hpp"
 
+#include <memory>
+
 #include "G4DecayTable.hh"
 #include "G4HCofThisEvent.hh"
 #include "G4LogicalVolume.hh"

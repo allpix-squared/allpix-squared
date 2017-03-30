@@ -9,7 +9,6 @@
 #include <map>
 #include <memory>
 #include <queue>
-#include <string>
 
 #include "Module.hpp"
 

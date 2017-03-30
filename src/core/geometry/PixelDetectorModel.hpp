@@ -5,232 +5,200 @@
 #ifndef ALLPIX_PIXEL_DETECTOR_H
 #define ALLPIX_PIXEL_DETECTOR_H
 
-#include <cmath>
-#include <fstream>
-#include <iostream>
-#include <map>
 #include <string>
-#include <tuple>
+#include <utility>
+
+#include <Math/Cartesian2D.h>
+#include <Math/DisplacementVector2D.h>
+#include <Math/Vector2D.h>
+#include <Math/Vector3D.h>
 
 #include "DetectorModel.hpp"
 
-// FIXME: this needs a restructure...
 namespace allpix {
 
     class PixelDetectorModel : public DetectorModel {
     public:
         // Constructor and destructor
         explicit PixelDetectorModel(std::string type)
-            : DetectorModel(type), m_npix_x(1), m_npix_y(1), m_npix_z(1), m_pixsize_x(0.0), m_pixsize_y(0.0),
-              m_pixsize_z(0.0), m_sensor_hx(0.0), m_sensor_hy(0.0), m_sensor_hz(0.0), m_sensor_posx(0.0), m_sensor_posy(0.0),
-              m_sensor_posz(0.0), m_sensor_gr_excess_htop(0.0), m_sensor_gr_excess_hbottom(0.0),
-              m_sensor_gr_excess_hright(0.0), m_sensor_gr_excess_hleft(0.0), m_chip_hx(0.0), m_chip_hy(0.0), m_chip_hz(0.0),
-              m_chip_offsetx(0.0), m_chip_offsety(0.0), m_chip_offsetz(0.0), m_chip_posx(0.0), m_chip_posy(0.0),
-              m_chip_posz(0.0), m_pcb_hx(0.0), m_pcb_hy(0.0), m_pcb_hz(0.0), m_bump_radius(0.0), m_bump_height(0.0),
-              m_bump_offsetx(0.0), m_bump_offsety(0.0), m_bump_dr(0.0), m_coverlayer_hz(0.0), m_coverlayer_mat("Al"),
-              m_coverlayer_ON(false)
-        /*m_resistivity(0.0)*/ {}
+            : DetectorModel(type), number_of_pixels_(1, 1), pixel_size_(), sensor_size_(), sensor_offset_(), chip_size_(),
+              chip_offset_(), pcb_size_(), bump_sphere_radius_(0.0), bump_height_(0.0), bump_offset_(),
+              bump_cylinder_radius_(0.0), guard_ring_excess_top_(), guard_ring_excess_bottom_(), guard_ring_excess_right_(),
+              guard_ring_excess_left_(), coverlayer_height_(0.0), coverlayer_material_("Al"), has_coverlayer_(false) {}
         ~PixelDetectorModel() override = default;
 
-        //  Number of pixels
-        inline int GetNPixelsX() { return m_npix_x; };
-        inline int GetNPixelsY() { return m_npix_y; };
-        inline int GetNPixelsZ() { return m_npix_z; };
-        inline int GetNPixelsTotXY() { return GetNPixelsX() * GetNPixelsY(); }; // Planar layout //
-        // inline double GetResistivity(){return m_resistivity;};
+        /* Number of pixels */
+        // FIXME: do we want a better name for this (NumberPixels?)
+        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> getNPixels() { return number_of_pixels_; }
+        inline int getNPixelsX() { return number_of_pixels_.x(); };
+        inline int getNPixelsY() { return number_of_pixels_.y(); };
 
-        // inline int GetHalfNPixelsX(){return GetNPixelsX()/2;}; // half number of pixels //
-        // inline int GetHalfNPixelsY(){return GetNPixelsY()/2;};
-        // inline int GetHalfNPixelsZ(){return GetNPixelsZ()/2;};
+        void setNPixels(ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> val) {
+            number_of_pixels_ = std::move(val);
+        }
+        void setNPixelsX(int val) { number_of_pixels_.SetX(val); };
+        void setNPixelsY(int val) { number_of_pixels_.SetY(val); };
 
-        //  Chip dimensions
-        inline double GetChipX() { return 2. * GetHalfChipX(); };
-        inline double GetChipY() { return 2. * GetHalfChipY(); };
-        inline double GetChipZ() { return 2. * GetHalfChipZ(); };
+        /* Pixel dimensions */
+        inline ROOT::Math::XYVector getPixelSize() { return pixel_size_; }
+        inline double getPixelSizeX() { return pixel_size_.x(); };
+        inline double getPixelSizeY() { return pixel_size_.y(); };
 
-        inline double GetHalfChipX() { return m_chip_hx; }; // half Chip size //
-        inline double GetHalfChipY() { return m_chip_hy; };
-        inline double GetHalfChipZ() { return m_chip_hz; };
+        inline double getHalfPixelSizeX() { return pixel_size_.x() / 2.0; };
+        inline double getHalfPixelSizeY() { return pixel_size_.y() / 2.0; };
 
-        //  Pixel dimensions
-        inline double GetPixelX() { return 2. * GetHalfPixelX(); };
-        inline double GetPixelY() { return 2. * GetHalfPixelY(); };
-        inline double GetPixelZ() { return 2. * GetHalfPixelZ(); };
+        void setPixelSize(ROOT::Math::XYVector val) { pixel_size_ = std::move(val); }
+        void setPixelSizeX(double val) { pixel_size_.SetX(val); }
+        void setPixelSizeY(double val) { pixel_size_.SetY(val); }
 
-        inline double GetHalfPixelX() { return m_pixsize_x; }; // half pixel size //
-        inline double GetHalfPixelY() { return m_pixsize_y; };
-        inline double GetHalfPixelZ() { return m_pixsize_z; };
+        /* Sensor dimensions */
+        inline ROOT::Math::XYZVector getSensorSize() { return sensor_size_; }
+        inline double getSensorSizeX() { return sensor_size_.x(); };
+        inline double getSensorSizeY() { return sensor_size_.y(); };
+        inline double getSensorSizeZ() { return sensor_size_.z(); };
 
-        // Sensor --> It will be positioned with respect to the wrapper !! //
-        inline double GetHalfSensorX() { return m_sensor_hx; };
-        inline double GetHalfSensorY() { return m_sensor_hy; };
-        inline double GetHalfSensorZ() { return m_sensor_hz; };
+        inline double getHalfSensorSizeX() { return sensor_size_.x() / 2.0; };
+        inline double getHalfSensorSizeY() { return sensor_size_.y() / 2.0; };
+        inline double getHalfSensorZ() { return sensor_size_.z() / 2.0; };
 
-        inline double GetSensorX() { return 2. * GetHalfSensorX(); };
-        inline double GetSensorY() { return 2. * GetHalfSensorY(); };
-        inline double GetSensorZ() { return 2. * GetHalfSensorZ(); };
+        void setSensorSize(ROOT::Math::XYZVector val) { sensor_size_ = std::move(val); }
+        void setSensorSizeX(double val) { sensor_size_.SetX(val); }
+        void setSensorSizeY(double val) { sensor_size_.SetY(val); }
+        void setSensorSizeZ(double val) { sensor_size_.SetZ(val); }
 
-        inline double GetSensorXOffset() { return m_sensor_posx; };
-        inline double GetSensorYOffset() { return m_sensor_posy; };
-        inline double GetSensorZOffset() { return GetHalfPCBZ(); }; // See relation with GetHalfWrapperDZ()
+        /* Sensor offset */
+        inline ROOT::Math::XYVector getSensorOffset() { return sensor_offset_; }
+        inline double getSensorOffsetX() { return sensor_offset_.x(); };
+        inline double getSensorOffsetY() { return sensor_offset_.y(); };
+        inline double getSensorOffsetZ() { return getHalfPCBSizeZ(); }; // FIXME: see relation with GetHalfWrapperDZ()
 
-        inline double GetChipXOffset() { return m_chip_offsetx; };
-        inline double GetChipYOffset() { return m_chip_offsety; };
-        inline double GetChipZOffset() { return m_chip_offsetz; }; // See relation with GetHalfWrapperDZ()
+        void setSensorOffset(ROOT::Math::XYVector val) { sensor_offset_ = std::move(val); }
+        void setSensorOffsetX(double val) { sensor_offset_.SetX(val); }
+        void setSensorOffsetY(double val) { sensor_offset_.SetY(val); }
 
-        inline double GetBumpRadius() { return m_bump_radius; };
-        inline double GetBumpHeight() { return m_bump_height; };
-        inline double GetBumpHalfHeight() { return m_bump_height / 2.0; };
+        /* Chip dimensions */
+        inline ROOT::Math::XYZVector getChipSize() { return chip_size_; }
+        inline double getChipSizeX() { return chip_size_.x(); };
+        inline double getChipSizeY() { return chip_size_.y(); };
+        inline double getChipSizeZ() { return chip_size_.z(); };
 
-        inline double GetBumpOffsetX() { return m_bump_offsetx; };
-        inline double GetBumpOffsetY() { return m_bump_offsety; };
-        inline double GetBumpDr() { return m_bump_dr; };
+        inline double getHalfChipSizeX() { return chip_size_.x() / 2.0; };
+        inline double getHalfChipSizeY() { return chip_size_.y() / 2.0; };
+        inline double getHalfChipSizeZ() { return chip_size_.z() / 2.0; };
 
-        inline double GetSensorExcessHTop() { return m_sensor_gr_excess_htop; };
-        inline double GetSensorExcessHBottom() { return m_sensor_gr_excess_hbottom; };
-        inline double GetSensorExcessHRight() { return m_sensor_gr_excess_hright; };
-        inline double GetSensorExcessHLeft() { return m_sensor_gr_excess_hleft; };
+        void setChipSize(ROOT::Math::XYZVector val) { chip_size_ = std::move(val); }
+        void setChipSizeX(double val) { chip_size_.SetX(val); }
+        void setChipSizeY(double val) { chip_size_.SetY(val); }
+        void setChipSizeZ(double val) { chip_size_.SetZ(val); }
 
-        // PCB --> It will be positioned with respect to the wrapper !!
-        inline double GetHalfPCBX() { return m_pcb_hx; };
-        inline double GetHalfPCBY() { return m_pcb_hy; };
-        inline double GetHalfPCBZ() { return m_pcb_hz; };
-        inline double GetPCBX() { return 2. * GetHalfPCBX(); };
-        inline double GetPCBY() { return 2. * GetHalfPCBY(); };
-        inline double GetPCBZ() { return 2. * GetHalfPCBZ(); };
+        /* Chip offset */
+        inline ROOT::Math::XYZVector getChipOffset() { return chip_offset_; }
+        inline double getChipOffsetX() { return chip_offset_.x(); };
+        inline double getChipOffsetY() { return chip_offset_.y(); };
+        inline double getChipOffsetZ() { return chip_offset_.z(); };
 
-        // Wrapper
-        inline double GetHalfWrapperDX() { return GetHalfPCBX(); };
-        inline double GetHalfWrapperDY() { return GetHalfPCBY(); };
-        inline double GetHalfWrapperDZ() {
+        void setChipOffset(ROOT::Math::XYZVector val) { chip_offset_ = std::move(val); }
+        void setChipOffsetX(double val) { chip_offset_.SetX(val); }
+        void setChipOffsetY(double val) { chip_offset_.SetY(val); }
+        void setChipOffsetZ(double val) { chip_offset_.SetZ(val); }
 
-            double whdz = GetHalfPCBZ() + GetHalfChipZ() + GetBumpHalfHeight() + GetHalfSensorZ();
+        /* PCB dimensions */
+        inline ROOT::Math::XYZVector getPCBSize() { return pcb_size_; }
+        inline double getPCBSizeX() { return pcb_size_.x(); }
+        inline double getPCBSizeY() { return pcb_size_.y(); }
+        inline double getPCBSizeZ() { return pcb_size_.z(); }
 
-            if(m_coverlayer_ON) {
-                whdz += GetHalfCoverlayerZ();
+        inline double getHalfPCBSizeX() { return pcb_size_.x() / 2.0; };
+        inline double getHalfPCBSizeY() { return pcb_size_.y() / 2.0; };
+        inline double getHalfPCBSizeZ() { return pcb_size_.z() / 2.0; };
+
+        void setPCBSize(ROOT::Math::XYZVector val) { pcb_size_ = std::move(val); }
+        void setPCBSizeX(double val) { pcb_size_.SetX(val); }
+        void setPCBSizeY(double val) { pcb_size_.SetY(val); }
+        void setPCBSizeZ(double val) { pcb_size_.SetZ(val); }
+
+        /* Bump bonds */
+        inline double getBumpSphereRadius() { return bump_sphere_radius_; }
+        inline void setBumpSphereRadius(double val) { bump_sphere_radius_ = val; }
+
+        inline double getBumpHeight() { return bump_height_; }
+        void setBumpHeight(double val) { bump_height_ = val; }
+
+        void getBumpOffset(ROOT::Math::XYVector val) { bump_offset_ = std::move(val); }
+        inline double getBumpOffsetX() { return bump_offset_.x(); }
+        inline double getBumpOffsetY() { return bump_offset_.y(); }
+
+        void setBumpOffset(ROOT::Math::XYVector val) { bump_offset_ = std::move(val); }
+        void setBumpOffsetX(double val) { bump_offset_.SetX(val); }
+        void setBumpOffsetY(double val) { bump_offset_.SetY(val); }
+
+        inline double getBumpCylinderRadius() { return bump_cylinder_radius_; }
+        void setBumpCylinderRadius(double val) { bump_cylinder_radius_ = val; }
+
+        /* Guard rings */
+        inline double getGuardRingExcessTop() { return guard_ring_excess_top_; }
+        inline double getGuardRingExcessBottom() { return guard_ring_excess_bottom_; }
+        inline double getGuardRingExcessRight() { return guard_ring_excess_right_; }
+        inline double getGuardRingExcessLeft() { return guard_ring_excess_left_; }
+
+        void setGuardRingExcessTop(double val) { guard_ring_excess_top_ = val; }
+        void setGuardRingExcessBottom(double val) { guard_ring_excess_bottom_ = val; }
+        void setGuardRingExcessHRight(double val) { guard_ring_excess_right_ = val; }
+        void getGuardRingExcessLeft(double val) { guard_ring_excess_left_ = val; }
+
+        /* Wrapper calculations (FIXME: this has to be reworked...) */
+        inline double getHalfWrapperDX() { return getHalfPCBSizeX(); }
+        inline double getHalfWrapperDY() { return getHalfPCBSizeY(); }
+        inline double getHalfWrapperDZ() {
+
+            double whdz = getHalfPCBSizeZ() + getHalfChipSizeZ() + getBumpHeight() / 2.0 + getHalfSensorZ();
+
+            if(has_coverlayer_) {
+                whdz += getHalfCoverlayerHeight();
             }
 
             return whdz;
-        };
-
-        /*void SetResistivity(double val){
-            m_resistivity = val;
-        }*/
-
-        // Coverlayer
-        bool IsCoverlayerON() { return m_coverlayer_ON; }
-        double GetHalfCoverlayerZ() { return m_coverlayer_hz; }
-        std::string GetCoverlayerMat() { return m_coverlayer_mat; }
-
-        // Pixels
-        void SetNPixelsX(int val) { m_npix_x = val; };
-        void SetNPixelsY(int val) { m_npix_y = val; };
-        void SetNPixelsZ(int val) { m_npix_z = val; };
-        void SetPixSizeX(double val) { m_pixsize_x = val; }
-        void SetPixSizeY(double val) { m_pixsize_y = val; }
-        void SetPixSizeZ(double val) { m_pixsize_z = val; }
-
-        ///////////////////////////////////////////////////
-        // Chip
-        void SetChipHX(double val) { m_chip_hx = val; };
-        void SetChipHY(double val) { m_chip_hy = val; }
-        void SetChipHZ(double val) { m_chip_hz = val; };
-        void SetChipPosX(double val) { m_chip_posx = val; };
-        void SetChipPosY(double val) { m_chip_posy = val; }
-        void SetChipPosZ(double val) { m_chip_posz = val; };
-        void SetChipOffsetX(double val) { m_chip_offsetx = val; };
-        void SetChipOffsetY(double val) { m_chip_offsety = val; }
-        void SetChipOffsetZ(double val) { m_chip_offsetz = val; };
-
-        ///////////////////////////////////////////////////
-        // Bumps
-
-        void SetBumpRadius(double val) { m_bump_radius = val; };
-
-        void SetBumpHeight(double val) { m_bump_height = val; };
-
-        void SetBumpOffsetX(double val) { m_bump_offsetx = val; };
-
-        void SetBumpOffsetY(double val) { m_bump_offsety = val; };
-
-        void SetBumpDr(double val) { m_bump_dr = val; };
-
-        ///////////////////////////////////////////////////
-        // Sensor
-        void SetSensorHX(double val) { m_sensor_hx = val; }
-        void SetSensorHY(double val) { m_sensor_hy = val; }
-        void SetSensorHZ(double val) { m_sensor_hz = val; }
-
-        void SetSensorPosX(double val) { m_sensor_posx = val; }
-        void SetSensorPosY(double val) { m_sensor_posy = val; }
-        void SetSensorPosZ(double val) { m_sensor_posz = val; }
-
-        void SetSensorExcessHTop(double val) { m_sensor_gr_excess_htop = val; }
-        void SetSensorExcessHBottom(double val) { m_sensor_gr_excess_hbottom = val; }
-        void SetSensorExcessHRight(double val) { m_sensor_gr_excess_hright = val; }
-        void SetSensorExcessHLeft(double val) { m_sensor_gr_excess_hleft = val; }
-
-        // PCB
-        void SetPCBHX(double val) { m_pcb_hx = val; }
-        void SetPCBHY(double val) { m_pcb_hy = val; }
-        void SetPCBHZ(double val) { m_pcb_hz = val; }
-
-        // Coverlayer
-        void SetCoverlayerHZ(double val) {
-            m_coverlayer_hz = val;
-            m_coverlayer_ON = true;
         }
-        void SetCoverlayerMat(std::string mat) { m_coverlayer_mat = std::move(mat); }
+
+        /* Coverlayer */
+        bool hasCoverlayer() { return has_coverlayer_; }
+        double getCoverlayerHeight() { return coverlayer_height_; }
+        double getHalfCoverlayerHeight() { return coverlayer_height_ / 2.0; }
+        void setCoverlayerHeight(double val) {
+            coverlayer_height_ = val;
+            has_coverlayer_ = true;
+        }
+
+        std::string getCoverlayerMaterial() { return coverlayer_material_; }
+        void setCoverlayerMaterial(std::string mat) { coverlayer_material_ = std::move(mat); }
 
     private:
-        int m_npix_x;
-        int m_npix_y;
-        int m_npix_z;
+        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> number_of_pixels_;
 
-        double m_pixsize_x;
-        double m_pixsize_y;
-        double m_pixsize_z;
+        ROOT::Math::XYVector pixel_size_;
 
-        double m_sensor_hx;
-        double m_sensor_hy;
-        double m_sensor_hz;
+        ROOT::Math::XYZVector sensor_size_;
+        ROOT::Math::XYVector sensor_offset_;
 
-        double m_sensor_posx;
-        double m_sensor_posy;
-        double m_sensor_posz;
+        ROOT::Math::XYZVector chip_size_;
+        ROOT::Math::XYZVector chip_offset_;
 
-        double m_sensor_gr_excess_htop;
-        double m_sensor_gr_excess_hbottom;
-        double m_sensor_gr_excess_hright;
-        double m_sensor_gr_excess_hleft;
+        ROOT::Math::XYZVector pcb_size_;
 
-        double m_chip_hx;
-        double m_chip_hy;
-        double m_chip_hz;
+        double bump_sphere_radius_;
+        double bump_height_;
+        ROOT::Math::XYVector bump_offset_;
+        double bump_cylinder_radius_;
 
-        double m_chip_offsetx;
-        double m_chip_offsety;
-        double m_chip_offsetz;
+        // FIXME: use a 4D vector here?
+        double guard_ring_excess_top_;
+        double guard_ring_excess_bottom_;
+        double guard_ring_excess_right_;
+        double guard_ring_excess_left_;
 
-        double m_chip_posx;
-        double m_chip_posy;
-        double m_chip_posz;
-
-        double m_pcb_hx;
-        double m_pcb_hy;
-        double m_pcb_hz;
-
-        double m_bump_radius;
-        double m_bump_height;
-        double m_bump_offsetx;
-        double m_bump_offsety;
-        double m_bump_dr;
-
-        double m_coverlayer_hz;
-        std::string m_coverlayer_mat;
-        bool m_coverlayer_ON;
-
-        // double m_resistivity;
+        double coverlayer_height_;
+        std::string coverlayer_material_;
+        bool has_coverlayer_;
     };
 }
 

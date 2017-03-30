@@ -9,6 +9,9 @@
  * - (temporary) link the module by adding target_link_libraries(allpix <your_directory_name>) to src/exec/CMakeLists.txt
  */
 
+// include stl
+#include <string>
+
 // include dependencies
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"

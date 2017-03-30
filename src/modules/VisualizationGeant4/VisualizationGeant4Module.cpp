@@ -4,6 +4,10 @@
 
 #include "VisualizationGeant4Module.hpp"
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "G4RunManager.hh"
 #include "G4UImanager.hh"
 #include "G4UIsession.hh"
@@ -11,7 +15,7 @@
 #include "G4VisExecutive.hh"
 #include "G4VisManager.hh"
 
-#include "core/AllPix.hpp"
+#include "core/module/ModuleError.hpp"
 #include "core/utils/log.h"
 
 using namespace allpix;
@@ -31,7 +35,7 @@ void VisualizationGeant4Module::init() {
     // check if we have a running G4 manager
     G4RunManager* run_manager_g4 = G4RunManager::GetRunManager();
     if(run_manager_g4 == nullptr) {
-        throw ModuleException("Cannot visualize using Geant4 without an Geant4 geometry builder");
+        throw ModuleError("Cannot visualize using Geant4 without a Geant4 geometry builder");
     }
 
     // initialize the session and the visualization manager

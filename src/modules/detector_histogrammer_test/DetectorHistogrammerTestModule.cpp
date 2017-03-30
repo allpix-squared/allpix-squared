@@ -4,16 +4,20 @@
 
 #include "DetectorHistogrammerTestModule.hpp"
 
+#include <memory>
+#include <string>
+#include <utility>
+
+#include <TApplication.h>
+#include <TFile.h>
+#include <TH2D.h>
+
 #include "core/geometry/PixelDetectorModel.hpp"
 
 #include "core/messenger/Messenger.hpp"
 #include "core/utils/log.h"
 
 #include "messages/DepositionMessage.hpp"
-
-#include <TApplication.h>
-#include <TFile.h>
-#include <TH2D.h>
 
 using namespace allpix;
 
@@ -47,12 +51,12 @@ void DetectorHistogrammerModule::run() {
     std::string plot_title = "Histogram for " + detector_->getName();
     auto histogram = new TH2F(plot_name.c_str(),
                               plot_title.c_str(),
-                              model->GetNPixelsX(),
-                              -model->GetHalfSensorX(),
-                              model->GetHalfSensorX(),
-                              model->GetNPixelsY(),
-                              -model->GetHalfSensorY(),
-                              model->GetHalfSensorY());
+                              model->getNPixelsX(),
+                              -model->getHalfSensorSizeX(),
+                              model->getHalfSensorSizeX(),
+                              model->getNPixelsY(),
+                              -model->getHalfSensorSizeY(),
+                              model->getHalfSensorSizeY());
 
     // FIXME: bind single when this works
     for(auto& message : deposit_messages_) {

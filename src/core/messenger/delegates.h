@@ -10,7 +10,7 @@
 #include <typeinfo>
 
 #include "Message.hpp"
-#include "core/utils/exceptions.h"
+#include "exceptions.h"
 
 // FIXME: RESTRUCTURE THIS A BIT TO BE MORE USABLE AND CONCEPTUALLY BETTER
 

@@ -7,7 +7,9 @@
 #ifndef ALLPIX_ROOT_H
 #define ALLPIX_ROOT_H
 
+#include <stdexcept>
 #include <string>
+#include <utility>
 
 #include <Math/EulerAngles.h>
 #include <Math/Vector2D.h>
@@ -15,19 +17,22 @@
 #include <TString.h>
 
 #include "core/utils/string.h"
+#include "core/utils/type.h"
 
 namespace allpix {
-    // FIXME: improve this
+    /** Extend to string and from string methods for ROOT */
 
-    // extend to and from string methods for ROOT
-    template <> inline ROOT::Math::XYZVector from_string<ROOT::Math::XYZVector>(std::string str) {
-        std::vector<double> vec_split = allpix::split<double>(std::move(str));
+    // 3D displacement vectors
+    template <typename T>
+    inline ROOT::Math::DisplacementVector3D<T> from_string_impl(std::string str,
+                                                                type_tag<ROOT::Math::DisplacementVector3D<T>>) {
+        std::vector<typename T::Scalar> vec_split = allpix::split<typename T::Scalar>(std::move(str));
         if(vec_split.size() != 3) {
             throw std::invalid_argument("array should contain exactly three elements");
         }
-        return ROOT::Math::XYZVector(vec_split[0], vec_split[1], vec_split[2]);
+        return ROOT::Math::DisplacementVector3D<T>(vec_split[0], vec_split[1], vec_split[2]);
     }
-    template <> inline std::string to_string<const ROOT::Math::XYZVector&>(const ROOT::Math::XYZVector& vec) {
+    template <typename T> inline std::string to_string_impl(const ROOT::Math::DisplacementVector3D<T>& vec, empty_tag) {
         std::string res;
         res += std::to_string(vec.x());
         res += " ";
@@ -37,14 +42,17 @@ namespace allpix {
         return res;
     }
 
-    template <> inline ROOT::Math::XYVector from_string<ROOT::Math::XYVector>(std::string str) {
-        std::vector<double> vec_split = allpix::split<double>(std::move(str));
+    // 2D displacement vectors
+    template <typename T>
+    inline ROOT::Math::DisplacementVector2D<T> from_string_impl(std::string str,
+                                                                type_tag<ROOT::Math::DisplacementVector2D<T>>) {
+        std::vector<typename T::Scalar> vec_split = allpix::split<typename T::Scalar>(std::move(str));
         if(vec_split.size() != 2) {
             throw std::invalid_argument("array should contain exactly two elements");
         }
-        return ROOT::Math::XYVector(vec_split[0], vec_split[1]);
+        return ROOT::Math::DisplacementVector2D<T>(vec_split[0], vec_split[1]);
     }
-    template <> inline std::string to_string<const ROOT::Math::XYVector&>(const ROOT::Math::XYVector& vec) {
+    template <typename T> inline std::string to_string_impl(const ROOT::Math::DisplacementVector2D<T>& vec, empty_tag) {
         std::string res;
         res += std::to_string(vec.x());
         res += " ";
@@ -52,14 +60,15 @@ namespace allpix {
         return res;
     }
 
-    template <> inline ROOT::Math::EulerAngles from_string<ROOT::Math::EulerAngles>(std::string str) {
+    // Euler angles
+    inline ROOT::Math::EulerAngles from_string_impl(std::string str, type_tag<ROOT::Math::EulerAngles>) {
         std::vector<double> vec_split = allpix::split<double>(std::move(str));
         if(vec_split.size() != 3) {
             throw std::invalid_argument("array should contain exactly three elements");
         }
         return ROOT::Math::EulerAngles(vec_split[0], vec_split[1], vec_split[2]);
     }
-    template <> inline std::string to_string<const ROOT::Math::EulerAngles&>(const ROOT::Math::EulerAngles& vec) {
+    inline std::string to_string_impl(const ROOT::Math::EulerAngles& vec, empty_tag) {
         std::string res;
         res += std::to_string(vec.Phi());
         res += " ";
@@ -69,11 +78,12 @@ namespace allpix {
         return res;
     }
 
-    // FIXME: do we actually want this at all
-    template <> inline TString from_string<TString>(std::string str) {
+    // TString
+    // FIXME: do we want this at all
+    inline TString from_string_impl(std::string str, type_tag<TString>) {
         return TString(allpix::from_string<std::string>(std::move(str)).c_str());
     }
-    template <> inline std::string to_string<const TString&>(const TString& str) { return std::string(str.Data()); }
+    inline std::string to_string_impl(const TString& str, empty_tag) { return std::string(str.Data()); }
 }
 
 #endif /* ALLPIX_ROOT_H */

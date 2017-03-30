@@ -6,7 +6,9 @@
 #define ALLPIX_MESSENGER_H
 
 #include <map>
+#include <memory>
 #include <typeindex>
+#include <utility>
 #include <vector>
 
 #include "Message.hpp"

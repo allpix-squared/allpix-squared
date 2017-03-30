@@ -5,6 +5,7 @@
 #define ALLPIX_GEOMETRY_DETECTOR_MODEL_H
 
 #include <string>
+#include <utility>
 
 namespace allpix {
     class DetectorModel {

@@ -6,26 +6,25 @@
 
 #include "ReadGeoDescription.hpp"
 
-#include <set>
+#include <fstream>
+#include <memory>
+#include <string>
 
-#include "core/utils/exceptions.h"
-#include "core/utils/log.h"
-
-#include "core/config/ConfigReader.hpp"
-#include "core/geometry/PixelDetectorModel.hpp"
-#include "tools/ROOT.h"
-
-// ROOT
 #include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
 
-using namespace allpix;
+#include "core/config/ConfigReader.hpp"
+#include "core/geometry/PixelDetectorModel.hpp"
+#include "core/module/ModuleError.hpp"
+#include "core/utils/log.h"
+
+#include "tools/ROOT.h" using namespace allpix;
 using namespace ROOT::Math;
 
 ReadGeoDescription::ReadGeoDescription(std::string file_name) : models_() {
     std::ifstream file(file_name);
     if(!file.good()) {
-        throw ModuleException("Geometry description file '" + file_name + "' not found");
+        throw ModuleError("Geometry description file '" + file_name + "' not found");
     }
 
     ConfigReader reader(file, file_name);
@@ -41,83 +40,59 @@ std::shared_ptr<PixelDetectorModel> ReadGeoDescription::parse_config(const Confi
 
     // pixel amount
     if(config.has("pixel_amount")) {
-        XYVector vec = config.get<XYVector>("pixel_amount");
-        model->SetNPixelsX(static_cast<int>(std::round(vec.x())));
-        model->SetNPixelsY(static_cast<int>(std::round(vec.y())));
+        model->setNPixels(config.get<ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>>("pixel_amount"));
     }
-
     // size, positions and offsets
     if(config.has("pixel_size")) {
-        XYZVector vec = config.get<XYZVector>("pixel_size");
-        model->SetPixSizeX(vec.x());
-        model->SetPixSizeY(vec.y());
-        model->SetPixSizeZ(vec.z()); // FIXME: useless
+        // FIXME: multiply by two to simulate old behaviour
+        model->setPixelSize(2 * config.get<XYVector>("pixel_size"));
     }
     if(config.has("chip_size")) {
-        XYZVector vec = config.get<XYZVector>("chip_size");
-        model->SetChipHX(vec.x());
-        model->SetChipHY(vec.y());
-        model->SetChipHZ(vec.z());
-    }
-    if(config.has("chip_position")) {
-        XYZVector vec = config.get<XYZVector>("chip_position");
-        model->SetChipPosX(vec.x());
-        model->SetChipPosY(vec.y());
-        model->SetChipPosZ(vec.z());
+        // FIXME: multiply by two to simulate old behaviour
+        model->setChipSize(2 * config.get<XYZVector>("chip_size"));
     }
     if(config.has("chip_offset")) {
-        XYZVector vec = config.get<XYZVector>("chip_offset");
-        model->SetChipOffsetX(vec.x());
-        model->SetChipOffsetY(vec.y());
-        model->SetChipOffsetZ(vec.z());
+        model->setChipOffset(config.get<XYZVector>("chip_offset"));
     }
     if(config.has("sensor_size")) {
-        XYZVector vec = config.get<XYZVector>("sensor_size");
-        model->SetSensorHX(vec.x());
-        model->SetSensorHY(vec.y());
-        model->SetSensorHZ(vec.z());
+        // FIXME: multiply by two to simulate old behaviour
+        model->setSensorSize(2 * config.get<XYZVector>("sensor_size"));
     }
-    if(config.has("sensor_position")) {
-        XYZVector vec = config.get<XYZVector>("sensor_position");
-        model->SetSensorPosX(vec.x());
-        model->SetSensorPosY(vec.y());
-        model->SetSensorPosZ(vec.z());
+    if(config.has("sensor_offset")) {
+        model->setSensorOffset(config.get<XYVector>("sensor_offset"));
     }
     if(config.has("pcb_size")) {
-        XYZVector vec = config.get<XYZVector>("pcb_size");
-        model->SetPCBHX(vec.x());
-        model->SetPCBHY(vec.y());
-        model->SetPCBHZ(vec.z());
+        // FIXME: multiply by two to simulate old behaviour
+        model->setPCBSize(2 * config.get<XYZVector>("pcb_size"));
     }
 
-    // gr excess?
+    // excess for the guard rings
     if(config.has("sensor_gr_excess_htop")) {
-        model->SetSensorExcessHTop(config.get<double>("sensor_gr_excess_htop"));
+        model->setGuardRingExcessTop(config.get<double>("sensor_gr_excess_htop"));
     }
     if(config.has("sensor_gr_excess_hbottom")) {
-        model->SetSensorExcessHBottom(config.get<double>("sensor_gr_excess_hbottom"));
+        model->setGuardRingExcessBottom(config.get<double>("sensor_gr_excess_hbottom"));
     }
     if(config.has("sensor_gr_excess_hleft")) {
-        model->SetSensorExcessHLeft(config.get<double>("sensor_gr_excess_hleft"));
+        model->getGuardRingExcessLeft(config.get<double>("sensor_gr_excess_hleft"));
     }
     if(config.has("sensor_gr_excess_hright")) {
-        model->SetSensorExcessHRight(config.get<double>("sensor_gr_excess_hright"));
+        model->setGuardRingExcessHRight(config.get<double>("sensor_gr_excess_hright"));
     }
 
     // bump parameters
-    if(config.has("bump_radius")) {
-        model->SetBumpRadius(config.get<double>("bump_radius"));
+    if(config.has("bump_sphere_radius")) {
+        model->setBumpSphereRadius(config.get<double>("bump_sphere_radius"));
     }
     if(config.has("bump_height")) {
-        model->SetBumpHeight(config.get<double>("bump_height"));
+        model->setBumpHeight(config.get<double>("bump_height"));
     }
-    if(config.has("bump_dr")) {
-        model->SetBumpDr(config.get<double>("bump_dr"));
+    if(config.has("bump_cylinder_radius")) {
+        // FIXME: inverse the radius to simulate old behaviour
+        model->setBumpCylinderRadius(model->getBumpSphereRadius() - config.get<double>("bump_cylinder_radius"));
     }
     if(config.has("bump_offset")) {
-        XYVector vec = config.get<XYVector>("bump_offset");
-        model->SetBumpOffsetX(vec.x());
-        model->SetBumpOffsetY(vec.y());
+        model->setBumpOffset(config.get<XYVector>("bump_offset"));
     }
 
     return model;

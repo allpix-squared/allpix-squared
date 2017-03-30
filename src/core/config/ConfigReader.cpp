@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "core/utils/exceptions.h"
+#include "exceptions.h"
 
 using namespace allpix;
 
@@ -124,5 +124,4 @@ std::vector<Configuration> ConfigReader::getConfigurations(const std::string& na
 // Return all configurations
 std::vector<Configuration> ConfigReader::getConfigurations() const {
     return std::vector<Configuration>(conf_array_.begin(), conf_array_.end());
-    ;
 }

@@ -2,6 +2,7 @@
 #include "DummyModule.hpp"
 
 // include STL headers
+#include <string>
 #include <utility>
 
 // include allpix headers

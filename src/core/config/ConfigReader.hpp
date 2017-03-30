@@ -5,17 +5,13 @@
 #ifndef ALLPIX_CONFIG_READER_H
 #define ALLPIX_CONFIG_READER_H
 
-#include <string>
-#include <utility>
-#include <vector>
-
-#include "Configuration.hpp"
-
 #include <istream>
 #include <list>
 #include <map>
 #include <string>
 #include <vector>
+
+#include "Configuration.hpp"
 
 namespace allpix {
 

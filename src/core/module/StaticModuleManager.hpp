@@ -6,10 +6,9 @@
 #define ALLPIX_STATIC_MODULE_MANAGER_H
 
 #include <functional>
+#include <map>
 #include <memory>
-#include <queue>
 #include <string>
-#include <vector>
 
 #include "Module.hpp"
 #include "ModuleFactory.hpp"

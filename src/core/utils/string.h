@@ -7,11 +7,11 @@
 
 #include <cctype>
 #include <sstream>
-#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <vector>
 
+#include "type.h"
 #include "unit.h"
 
 namespace allpix {
@@ -29,6 +29,11 @@ namespace allpix {
 
     /** Converts a string to any type
      */
+    template <typename T> T from_string(std::string str) {
+        // use tag dispatch to select the correct implementation
+        return from_string_impl(str, type_tag<T>());
+    }
+
     // FIXME: include exceptions better
     // helper functions to do cleaning and checks for string reading
     static std::string _from_string_helper(std::string str) {
@@ -43,39 +48,66 @@ namespace allpix {
         }
         return str;
     }
-    // general overload but only meant for arithmetic types
-    template <typename T> T from_string(std::string str) {
+
+    // fetch for all types that have not a supported conversion
+    template <typename T, typename = std::enable_if_t<!std::is_arithmetic<T>::value>, typename = void>
+    T from_string_impl(const std::string&, type_tag<T>) {
         // check if correct conversion
-        static_assert(std::is_arithmetic<T>::value,
-                      "Conversion is not implemented: an specialization should be added to support this conversion");
+        static_assert(std::is_same<T, void>::value,
+                      "Conversion to this type is not implemented: an overload should be added to support this conversion");
+    }
+    // overload for arithmetic types
+    template <typename T, typename = std::enable_if_t<std::is_arithmetic<T>::value>>
+    T from_string_impl(std::string str, type_tag<T>) {
         str = _from_string_helper(str);
 
         // find an optional unit
-        std::string unit;
-        size_t i = str.size() - 1;
-        for(; i > 0; --i) {
-            if(!isalpha(str[i])) {
+        auto unit_idx = str.size() - 1;
+        for(; unit_idx > 0; --unit_idx) {
+            if(!isalpha(str[unit_idx]) && str[unit_idx] != '*' && str[unit_idx] != '/') {
                 break;
             }
-            unit = str[i] + unit;
         }
+        std::string units = str.substr(unit_idx + 1);
 
         // get the actual value
-        std::istringstream sstream(str.substr(0, i + 1));
-        T ret_value;
+        std::istringstream sstream(str.substr(0, unit_idx + 1));
+        T ret_value = 0;
         sstream >> ret_value;
-        if(!sstream.eof()) {
+        if(sstream.fail() || !sstream.eof()) {
             throw std::invalid_argument("conversion not possible");
         }
 
-        // apply the actual unit if it exists
-        if(unit.empty()) {
-            return ret_value;
+        // apply all the units if they exists
+        char lst = '*';
+        if(!units.empty()) {
+            std::string unit;
+            // find all units
+            for(char ch : units) {
+                if(ch == '*' || ch == '/') {
+                    if(lst == '*') {
+                        ret_value = allpix::Units::get(unit, ret_value);
+                        unit.clear();
+                    } else if(lst == '/') {
+                        ret_value = allpix::Units::getInverse(unit, ret_value);
+                        unit.clear();
+                    }
+                    lst = ch;
+                } else {
+                    unit += ch;
+                }
+            }
+            // apply last unit
+            if(lst == '*') {
+                ret_value = allpix::Units::get(unit, ret_value);
+            } else if(lst == '/') {
+                ret_value = allpix::Units::getInverse(unit, ret_value);
+            }
         }
-        return ret_value * static_cast<T>(allpix::Units::get(unit));
+        return ret_value;
     }
     // overload for string
-    template <> inline std::string from_string<std::string>(std::string str) {
+    inline std::string from_string_impl(std::string str, type_tag<std::string>) {
         str = trim(str);
         // if there are "" then we should take the whole string (FIXME: '' should also be supported)
         if(!str.empty() && str[0] == '\"') {
@@ -90,12 +122,27 @@ namespace allpix {
 
     /** Converts supported type to a string
      */
-    template <typename T> std::string to_string(T inp) { return std::to_string(inp); }
+    template <typename T> std::string to_string(T inp) {
+        // use tag dispatch to select the correct implementation
+        return to_string_impl(inp, empty_tag());
+    }
+
+    // catch all overload for not implemented conversion
+    template <typename T, typename = std::enable_if_t<!std::is_arithmetic<T>::value>, typename = void>
+    void to_string_impl(T, empty_tag) {
+        static_assert(std::is_same<T, void>::value,
+                      "Conversion to this type is not implemented: an overload should be added to support this conversion");
+    }
+    // overload for arithmetic types
+    template <typename T, typename = std::enable_if_t<std::is_arithmetic<T>::value>>
+    std::string to_string_impl(T inp, empty_tag) {
+        return std::to_string(inp);
+    }
     // NOTE: we have to provide all these specializations to prevent std::to_string from being called
     //       there may be a better way to work with this
-    inline std::string to_string(const std::string& inp) { return '"' + inp + '"'; }
-    inline std::string to_string(const char inp[]) { return '"' + std::string(inp) + '"'; }
-    inline std::string to_string(char inp[]) { return '"' + std::string(inp) + '"'; }
+    inline std::string to_string_impl(const std::string& inp, empty_tag) { return '"' + inp + '"'; }
+    inline std::string to_string_impl(const char* inp, empty_tag) { return '"' + std::string(inp) + '"'; }
+    inline std::string to_string_impl(char* inp, empty_tag) { return '"' + std::string(inp) + '"'; }
 
     /** Splits string s into elements at delimiter "delim" and returns them as vector
      */
