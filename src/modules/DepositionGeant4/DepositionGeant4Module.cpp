@@ -14,14 +14,14 @@
 #include <G4SDManager.hh>
 #include <G4UImanager.hh>
 
-#include "GeneratorActionG4.hpp"
-#include "SensitiveDetectorG4.hpp"
-
-#include "core/AllPix.hpp"
 #include "core/config/InvalidValueError.hpp"
 #include "core/geometry/GeometryManager.hpp"
+#include "core/module/ModuleError.hpp"
 #include "core/utils/log.h"
 #include "tools/geant4.h"
+
+#include "GeneratorActionG4.hpp"
+#include "SensitiveDetectorActionG4.hpp"
 
 // FIXME: broken common includes
 #include "modules/common/DetectorModelG4.hpp"
@@ -38,23 +38,14 @@ DepositionGeant4Module::~DepositionGeant4Module() = default;
 void DepositionGeant4Module::run() {
     LOG(INFO) << "INIT THE DEPOSITS";
 
-    // load the G4 run manager from allpix
-    // std::shared_ptr<G4RunManager> run_manager_g4 = getAllPix()->getExternalManager<G4RunManager>();
-
+    // load the G4 run manager (which is currently owned by the geometry builder...)
     G4RunManager* run_manager_g4 = G4RunManager::GetRunManager();
-
-    assert(run_manager_g4 !=
-           nullptr); // FIXME: temporary assert (throw a proper exception later if the manager is not defined)
+    if(run_manager_g4 == nullptr) {
+        throw ModuleError("Cannot deposit charges using Geant4 without a Geant4 geometry builder");
+    }
 
     // add a generator
     // NOTE: for more difficult modules a separate generator module makes more sense probably?
-    // FIXME: some random defaults
-    config_.setDefault("particle_type", "e-");
-    config_.setDefault("particle_amount", 1);
-    config_.setDefault("particle_position", G4ThreeVector(-25, -25, 50));
-    config_.setDefault("particle_momentum", G4ThreeVector(0, 0, -1));
-    config_.setDefault("particle_energy", 500.0);
-
     G4ParticleDefinition* particle =
         G4ParticleTable::GetParticleTable()->FindParticle(config_.get<std::string>("particle_type"));
     if(particle == nullptr) {
@@ -71,13 +62,13 @@ void DepositionGeant4Module::run() {
     GeneratorActionG4* generator = new GeneratorActionG4(part_amount, particle, part_position, part_direction, part_energy);
     run_manager_g4->SetUserAction(generator);
 
-    // loop through all detectors and set the sensitive detectors
-    G4SDManager* sd_man_g4 = G4SDManager::GetSDMpointer(); // FIXME: do we need this sensitive detector manager
+    // loop through all detectors and set the sensitive detector (call it action because that is what it is currently doing)
+    G4SDManager* sd_man_g4 = G4SDManager::GetSDMpointer();
     for(auto& detector : geo_manager_->getDetectors()) {
-        auto sensitive_detector_g4 = new SensitiveDetectorG4(detector, messenger_);
+        auto sensitive_detector_action = new SensitiveDetectorActionG4(detector, messenger_);
 
-        sd_man_g4->AddNewDetector(sensitive_detector_g4);
-        detector->getExternalModel<DetectorModelG4>()->pixel_log->SetSensitiveDetector(sensitive_detector_g4);
+        sd_man_g4->AddNewDetector(sensitive_detector_action);
+        detector->getExternalModel<DetectorModelG4>()->pixel_log->SetSensitiveDetector(sensitive_detector_action);
     }
 
     // disable verbose processes

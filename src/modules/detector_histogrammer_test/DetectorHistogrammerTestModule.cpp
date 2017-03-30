@@ -24,19 +24,24 @@ const std::string DetectorHistogrammerModule::name = "detector_histogrammer_test
 DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
-    : Module(detector), config_(std::move(config)), detector_(std::move(detector)), deposit_messages_() {
-    messenger->bindMulti(this, &DetectorHistogrammerModule::deposit_messages_);
+    : Module(detector), config_(std::move(config)), detector_(std::move(detector)), deposit_message_(nullptr) {
+    messenger->bindSingle(this, &DetectorHistogrammerModule::deposit_message_);
 }
 DetectorHistogrammerModule::~DetectorHistogrammerModule() = default;
 
 // run the deposition
 void DetectorHistogrammerModule::run() {
+    // check if we got any deposits
+    if(deposit_message_ == nullptr) {
+        LOG(WARNING) << "Detector " << detector_->getName() << " did not get any deposits";
+    }
+
     // get detector model
     auto model = std::dynamic_pointer_cast<PixelDetectorModel>(detector_->getModel());
     if(model == nullptr) {
         // FIXME: exception can be more appropriate here
-        LOG(CRITICAL) << "Detector '" << detector_->getName()
-                      << "' is not a PixelDetectorModel: ignored as other types are currently unsupported!";
+        LOG(CRITICAL) << "Detector " << detector_->getName()
+                      << " is not a PixelDetectorModel: ignored as other types are currently unsupported!";
         return;
     }
 
@@ -56,14 +61,11 @@ void DetectorHistogrammerModule::run() {
                               -model->getHalfSensorSizeY(),
                               model->getHalfSensorSizeY());
 
-    // FIXME: bind single when this works
-    for(auto& message : deposit_messages_) {
-        for(auto& deposit : message->getData()) {
-            auto vec = deposit.getPosition();
-            double energy = deposit.getEnergy();
+    for(auto& deposit : deposit_message_->getData()) {
+        auto vec = deposit.getPosition();
+        double energy = deposit.getEnergy();
 
-            histogram->Fill(vec.x(), vec.y(), energy);
-        }
+        histogram->Fill(vec.x(), vec.y(), energy);
     }
 
     histogram->Write();

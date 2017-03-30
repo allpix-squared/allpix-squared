@@ -39,7 +39,7 @@ namespace allpix {
         std::shared_ptr<Detector> detector_;
 
         // list of the messages
-        std::vector<std::shared_ptr<ChargeDepositMessage>> deposit_messages_;
+        std::shared_ptr<ChargeDepositMessage> deposit_message_;
     };
 }
 

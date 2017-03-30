@@ -21,18 +21,16 @@ TestDepositReaderModule::~TestDepositReaderModule() = default;
 
 // run the deposition
 void TestDepositReaderModule::run() {
-    LOG(INFO) << "DEPOSIT READER RESULTS";
-
-    config_.set("test", ROOT::Math::XYZVector());
+    LOG(INFO) << "READ DEPOSITS";
 
     LOG(INFO) << "got " << deposit_messages_.size() << " deposits";
-    // FIXME: detector logic is not good yet
     for(auto& message : deposit_messages_) {
         LOG(DEBUG) << " list of deposits";
         for(auto& deposit : message->getData()) {
             auto pos = deposit.getPosition();
             LOG(DEBUG) << "  energy " << deposit.getEnergy() << " at point (" << pos.x() << "," << pos.y() << "," << pos.z()
-                       << ")"; //<< " in detector " << getDetector().getName();
+                       << ")"
+                       << " in detector " << message->getDetector()->getName();
         }
     }
 }

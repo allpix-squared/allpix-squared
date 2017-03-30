@@ -1,9 +1,9 @@
 /**
- *  Author John Idarraga <idarraga@cern.ch>
+ *  @author John Idarraga <idarraga@cern.ch>
  */
 
-#ifndef ALLPIX_SIMPLE_DEPOSITION_MODULE_SENSITIVE_DETECTOR_H
-#define ALLPIX_SIMPLE_DEPOSITION_MODULE_SENSITIVE_DETECTOR_H
+#ifndef ALLPIX_SIMPLE_DEPOSITION_MODULE_SENSITIVE_DETECTOR_ACTION_H
+#define ALLPIX_SIMPLE_DEPOSITION_MODULE_SENSITIVE_DETECTOR_ACTION_H
 
 #include <memory>
 
@@ -22,15 +22,15 @@ class G4Event;
 namespace allpix {
     class PixelDetectorModel;
 
-    class SensitiveDetectorG4 : public G4VSensitiveDetector {
+    class SensitiveDetectorActionG4 : public G4VSensitiveDetector {
     public:
         // Constructor and destructor
-        SensitiveDetectorG4(std::shared_ptr<Detector>, Messenger*);
-        ~SensitiveDetectorG4() override;
+        SensitiveDetectorActionG4(std::shared_ptr<Detector>, Messenger*);
+        ~SensitiveDetectorActionG4() override;
 
         // Disallow copy
-        SensitiveDetectorG4(const SensitiveDetectorG4&) = delete;
-        SensitiveDetectorG4& operator=(const SensitiveDetectorG4&) = delete;
+        SensitiveDetectorActionG4(const SensitiveDetectorActionG4&) = delete;
+        SensitiveDetectorActionG4& operator=(const SensitiveDetectorActionG4&) = delete;
 
         // Initialize events, process the hits and handle end of event
         G4bool ProcessHits(G4Step*, G4TouchableHistory*) override;
@@ -44,11 +44,7 @@ namespace allpix {
 
         // link to the messenger
         Messenger* messenger_;
-
-        bool m_firstStrikePrimary;
-        G4double m_kinEPrimary;
-        G4double m_totalEdep;
     };
 }
 
-#endif /* ALLPIX_SIMPLE_DEPOSITION_MODULE_SENSITIVE_DETECTOR_H */
+#endif /* ALLPIX_SIMPLE_DEPOSITION_MODULE_SENSITIVE_DETECTOR_ACTION_H */

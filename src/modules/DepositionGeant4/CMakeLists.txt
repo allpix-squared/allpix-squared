@@ -28,7 +28,7 @@ INCLUDE_DIRECTORIES(SYSTEM ${Geant4_INCLUDE_DIRS})
 ALLPIX_MODULE_SOURCES(${MODULE_NAME} 
     DepositionGeant4Module.cpp
     GeneratorActionG4.cpp
-    SensitiveDetectorG4.cpp
+    SensitiveDetectorActionG4.cpp
 )
 
 # Add Geant4 libraries
