@@ -5,30 +5,33 @@
 #ifndef ALLPIX_MESSAGE_H
 #define ALLPIX_MESSAGE_H
 
-#include <memory>
+#include <vector>
 
+#include "BaseMessage.hpp"
 #include "core/geometry/Detector.hpp"
 
 namespace allpix {
-    class Message {
+    template <typename T> class Message : public BaseMessage {
     public:
-        // Constructor and destructors
-        Message();
-        virtual ~Message();
+        // Constructor to pass the data
+        Message(std::vector<T> data);
+        Message(std::vector<T> data, std::shared_ptr<Detector> detector);
 
-        // Link message to a detector
-        std::shared_ptr<Detector> getDetector() const;
-        void setDetector(std::shared_ptr<Detector>);
-
-        // Set default copy behaviour
-        Message(const Message&) = default;
-        Message& operator=(const Message&) = default;
-
-        // TODO: we might want to have a resolving function to get the content of a message by name for histogramming etc.
+        // Get the data
+        const std::vector<T>& getData() const;
 
     private:
-        std::shared_ptr<Detector> detector_;
+        std::vector<T> data_;
     };
+
+    // Constructor to pass the data
+    template <typename T> Message<T>::Message(std::vector<T> data) : BaseMessage(), data_(std::move(data)) {}
+    template <typename T>
+    Message<T>::Message(std::vector<T> data, std::shared_ptr<Detector> detector)
+        : BaseMessage(detector), data_(std::move(data)) {}
+
+    // Get the data
+    template <typename T> const std::vector<T>& Message<T>::getData() const { return data_; }
 }
 
 #endif /* ALLPIX_MESSAGE_H */

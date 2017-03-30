@@ -12,7 +12,7 @@ ADD_LIBRARY(AllpixCore SHARED
     module/StaticModuleManager.cpp
     module/ModuleFactory.cpp
     messenger/Messenger.cpp
-    messenger/Message.cpp
+    messenger/BaseMessage.cpp
     config/Configuration.cpp
     config/ConfigReader.cpp
     config/ConfigManager.cpp

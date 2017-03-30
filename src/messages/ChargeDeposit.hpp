@@ -4,10 +4,8 @@
  * @author Koen Wolters <koen.wolters@cern.ch>
  */
 
-#ifndef ALLPIX_MESSAGE_DEPOSITION_H
-#define ALLPIX_MESSAGE_DEPOSITION_H
-
-#include <vector>
+#ifndef ALLPIX_CHARGE_DEPOSIT_H
+#define ALLPIX_CHARGE_DEPOSIT_H
 
 #include <Math/Vector3D.h>
 
@@ -27,15 +25,8 @@ namespace allpix {
         double energy_;
     };
 
-    // message carrying all the deposits
-    class DepositionMessage : public Message {
-    public:
-        DepositionMessage() : deposits() {}
-        std::vector<ChargeDeposit>& getDeposits();
-
-    private:
-        std::vector<ChargeDeposit> deposits;
-    };
+    // name for the carrying message
+    using ChargeDepositMessage = Message<ChargeDeposit>;
 }
 
-#endif /* ALLPIX_MESSAGE_DEPOSITION_H */
+#endif /* ALLPIX_CHARGE_DEPOSIT_H */

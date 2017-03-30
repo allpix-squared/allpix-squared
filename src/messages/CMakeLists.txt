@@ -3,7 +3,7 @@ INCLUDE_DIRECTORIES(SYSTEM ${ALLPIX_DEPS_INCLUDE_DIRS})
 
 # define the library
 ADD_LIBRARY(AllpixMessages SHARED
-    DepositionMessage.cpp
+    ChargeDeposit.cpp
 )
 
 # link the standard dependencies

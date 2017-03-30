@@ -13,7 +13,7 @@
 #include "core/geometry/Detector.hpp"
 #include "core/messenger/Messenger.hpp"
 
-#include "messages/DepositionMessage.hpp"
+#include "messages/ChargeDeposit.hpp"
 
 class G4Step;
 class G4HCofThisEvent;
@@ -37,7 +37,7 @@ namespace allpix {
         void EndOfEvent(G4HCofThisEvent*) override;
 
     private:
-        std::shared_ptr<DepositionMessage> deposit_message_;
+        std::vector<ChargeDeposit> deposits_;
 
         // the linked detector
         std::shared_ptr<Detector> detector_;

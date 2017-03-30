@@ -17,8 +17,6 @@
 #include "core/messenger/Messenger.hpp"
 #include "core/utils/log.h"
 
-#include "messages/DepositionMessage.hpp"
-
 using namespace allpix;
 
 const std::string DetectorHistogrammerModule::name = "detector_histogrammer_test";
@@ -26,7 +24,7 @@ const std::string DetectorHistogrammerModule::name = "detector_histogrammer_test
 DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
-    : Module(detector), config_(std::move(config)), detector_(detector), deposit_messages_() {
+    : Module(detector), config_(std::move(config)), detector_(std::move(detector)), deposit_messages_() {
     messenger->bindMulti(this, &DetectorHistogrammerModule::deposit_messages_);
 }
 DetectorHistogrammerModule::~DetectorHistogrammerModule() = default;
@@ -60,7 +58,7 @@ void DetectorHistogrammerModule::run() {
 
     // FIXME: bind single when this works
     for(auto& message : deposit_messages_) {
-        for(auto& deposit : message->getDeposits()) {
+        for(auto deposit : message->getData()) {
             auto vec = deposit.getPosition();
             double energy = deposit.getEnergy();
 

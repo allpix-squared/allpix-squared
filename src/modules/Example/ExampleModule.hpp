@@ -16,6 +16,7 @@
 // include the dependent objects
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
+#include "core/messenger/BaseMessage.hpp"
 #include "core/messenger/Messenger.hpp"
 
 // include the module base class
@@ -26,13 +27,14 @@
 
 namespace allpix {
     // definitions of messages
-    // WARNING: definition of the messages should never be part of a module in real modules
-    class InputMessage : public Message {
+    // WARNING: definition of the messages should never be part of a module in real modules (and template Message should be
+    // preferred)
+    class InputMessage : public BaseMessage {
     public:
         // NOTE: in a real message the output is of course not fixed
         std::string get() { return "an input message"; }
     };
-    class OutputMessage : public Message {
+    class OutputMessage : public BaseMessage {
     public:
         explicit OutputMessage(std::string msg) : msg_(std::move(msg)) {}
 

@@ -9,7 +9,7 @@
 #include <memory>
 #include <typeinfo>
 
-#include "Message.hpp"
+#include "BaseMessage.hpp"
 #include "exceptions.h"
 
 // FIXME: RESTRUCTURE THIS A BIT TO BE MORE USABLE AND CONCEPTUALLY BETTER
@@ -27,7 +27,7 @@ namespace allpix {
         BaseDelegate& operator=(const BaseDelegate&) = delete;
 
         // Execute the delegate
-        virtual void call(std::shared_ptr<Message> msg) const = 0;
+        virtual void call(std::shared_ptr<BaseMessage> msg) const = 0;
     };
 
     template <typename T> class ModuleDelegate : public BaseDelegate {
@@ -39,7 +39,7 @@ namespace allpix {
         ModuleDelegate(const ModuleDelegate&) = delete;
         ModuleDelegate& operator=(const ModuleDelegate&) = delete;
 
-        void call(std::shared_ptr<Message> msg) const override {
+        void call(std::shared_ptr<BaseMessage> msg) const override {
             // do checks (FIXME: this is really hidden away now...)
             if(obj_->getDetector() != nullptr) {
                 if(msg->getDetector() != nullptr && obj_->getDetector()->getName() == msg->getDetector()->getName()) {
@@ -51,7 +51,7 @@ namespace allpix {
         }
 
     protected:
-        virtual void execute(std::shared_ptr<Message> msg) const = 0;
+        virtual void execute(std::shared_ptr<BaseMessage> msg) const = 0;
 
         T* obj_;
     };
@@ -69,10 +69,10 @@ namespace allpix {
         Delegate& operator=(const Delegate&) = delete;
 
     private:
-        void execute(std::shared_ptr<Message> msg) const override {
+        void execute(std::shared_ptr<BaseMessage> msg) const override {
 #ifndef NDEBUG
             // the type names should have been correctly resolved earlier
-            const Message* inst = msg.get();
+            const BaseMessage* inst = msg.get();
             assert(typeid(*inst) == typeid(R));
 #endif
 
@@ -96,10 +96,10 @@ namespace allpix {
         SingleBindDelegate& operator=(const SingleBindDelegate&) = delete;
 
     private:
-        void execute(std::shared_ptr<Message> msg) const override {
+        void execute(std::shared_ptr<BaseMessage> msg) const override {
 #ifndef NDEBUG
             // the type names should have been correctly resolved earlier
-            const Message* inst = msg.get();
+            const BaseMessage* inst = msg.get();
             assert(typeid(*inst) == typeid(R));
 #endif
 
@@ -125,10 +125,10 @@ namespace allpix {
         VectorBindDelegate& operator=(const VectorBindDelegate&) = delete;
 
     private:
-        void execute(std::shared_ptr<Message> msg) const override {
+        void execute(std::shared_ptr<BaseMessage> msg) const override {
 #ifndef NDEBUG
             // the type names should have been correctly resolved earlier
-            const Message* inst = msg.get();
+            const BaseMessage* inst = msg.get();
             assert(typeid(*inst) == typeid(R));
 #endif
 

@@ -26,8 +26,6 @@
 
 #include "tools/geant4.h"
 
-#include "messages/DepositionMessage.hpp"
-
 // FIXME: should get rid of CLHEP units
 #include <CLHEP/Units/SystemOfUnits.h>
 
@@ -41,8 +39,7 @@ G4int g_temp_pdgId = 0;
 
 // construct and destruct the sensitive detector
 SensitiveDetectorG4::SensitiveDetectorG4(std::shared_ptr<Detector> detector, Messenger* msg)
-    : G4VSensitiveDetector("SensitiveDetector_" + detector->getName()),
-      deposit_message_(std::make_shared<DepositionMessage>()), detector_(detector), messenger_(msg),
+    : G4VSensitiveDetector("SensitiveDetector_" + detector->getName()), deposits_(), detector_(detector), messenger_(msg),
       m_firstStrikePrimary(false), m_kinEPrimary(0), m_totalEdep(0) {}
 SensitiveDetectorG4::~SensitiveDetectorG4() = default;
 
@@ -72,7 +69,7 @@ G4bool SensitiveDetectorG4::ProcessHits(G4Step* step, G4TouchableHistory*) {
     // create a new charge deposit to add to the message
     G4ThreeVector mid_pos = (preStepPoint->GetPosition() + postStepPoint->GetPosition()) / 2;
     ChargeDeposit deposit(allpix::toROOTVector(mid_pos), edep);
-    deposit_message_->getDeposits().push_back(deposit);
+    deposits_.push_back(deposit);
 
     LOG(DEBUG) << "energy deposit of " << edep << " between point " << preStepPoint->GetPosition() / um << " and "
                << postStepPoint->GetPosition() / um << " in detector " << detector_->getName();
@@ -88,16 +85,17 @@ G4bool SensitiveDetectorG4::ProcessHits(G4Step* step, G4TouchableHistory*) {
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void SensitiveDetectorG4::EndOfEvent(G4HCofThisEvent*) {
-    // specify detector for message
-    deposit_message_->setDetector(detector_);
+    // send a new message if we have any deposits
+    if(!deposits_.empty()) {
+        // create a new charge deposit message
+        ChargeDepositMessage deposit_message(std::move(deposits_), detector_);
 
-    // send the message
-    if(!deposit_message_->getDeposits().empty()) {
-        messenger_->dispatchMessage(deposit_message_);
+        // dispatch the message
+        messenger_->dispatchMessage(deposit_message);
+
+        // make a new empty vector of deposits
+        deposits_ = std::vector<ChargeDeposit>();
     }
-
-    // create a new one
-    deposit_message_ = std::make_shared<DepositionMessage>();
 
     // clear the Set of pointers to hitCollection used for verification
     m_firstStrikePrimary = false;

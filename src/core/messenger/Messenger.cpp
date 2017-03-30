@@ -8,11 +8,10 @@
 #include <string>
 #include <typeindex>
 
+#include "BaseMessage.hpp"
 #include "core/module/Module.hpp"
 #include "core/utils/log.h"
 #include "core/utils/type.h"
-
-#include "Message.hpp"
 
 using namespace allpix;
 
@@ -21,11 +20,11 @@ Messenger::Messenger() : delegates_() {}
 Messenger::~Messenger() = default;
 
 // Dispatch the message
-void Messenger::dispatchMessage(const std::shared_ptr<Message>& msg, const std::string& name) {
+void Messenger::dispatchMessage(const std::shared_ptr<BaseMessage>& msg, const std::string& name) {
     bool send = false;
 
     // create type identifier from typeid
-    const Message* inst = msg.get();
+    const BaseMessage* inst = msg.get();
     std::type_index type_idx = typeid(*inst);
 
     // NOTE: we are not sending messages with unspecified names to everyone listening

@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "ModuleIdentifier.hpp"
-
 #include "core/geometry/Detector.hpp"
 
 namespace allpix {

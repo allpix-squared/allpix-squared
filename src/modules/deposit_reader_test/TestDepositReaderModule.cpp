@@ -9,8 +9,6 @@
 
 #include "tools/ROOT.h"
 
-#include "messages/DepositionMessage.hpp"
-
 using namespace allpix;
 
 const std::string TestDepositReaderModule::name = "deposit_reader_test";
@@ -31,7 +29,7 @@ void TestDepositReaderModule::run() {
     // FIXME: detector logic is not good yet
     for(auto& message : deposit_messages_) {
         LOG(DEBUG) << " list of deposits";
-        for(auto& deposit : message->getDeposits()) {
+        for(auto deposit : message->getData()) {
             auto pos = deposit.getPosition();
             LOG(DEBUG) << "  energy " << deposit.getEnergy() << " at point (" << pos.x() << "," << pos.y() << "," << pos.z()
                        << ")"; //<< " in detector " << getDetector().getName();
