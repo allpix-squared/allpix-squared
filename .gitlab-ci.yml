@@ -81,8 +81,6 @@ mac1012-clang80:
         - cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4INSTALL/lib/Geant4-10.2.2 -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen_HOME/lib64/cmake/eigen3 ..
         - ninja
         - ninja install
-        - ninja check-format
-        - ninja check-lint
         - ctest --output-on-failure -j4
         - cd ..
         - source $G4ENV_INIT
