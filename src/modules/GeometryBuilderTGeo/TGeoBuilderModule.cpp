@@ -220,8 +220,6 @@ void TGeoBuilderModule::BuildPixelDevices() {
 
     LOG(DEBUG) << "Starting construction of the pixel detectors.";
 
-    int global_id_cnt = 0;
-
     vector<shared_ptr<Detector>> detectors = m_geoDscMng->getDetectors();
     LOG(DEBUG) << "Building " << detectors.size() << " device(s) ...";
 
@@ -230,7 +228,6 @@ void TGeoBuilderModule::BuildPixelDevices() {
     for(; detItr != detectors.end(); detItr++) {
 
         shared_ptr<PixelDetectorModel> dsc = dynamic_pointer_cast<PixelDetectorModel>((*detItr)->getModel());
-        int id = global_id_cnt++;
         string detname = (*detItr)->getName();
         // TString id_s = Form("_%i", id);
         TString id_s = "_";
@@ -251,13 +248,13 @@ void TGeoBuilderModule::BuildPixelDevices() {
         // medipix 1 --> with enhancement
         // medipix 2 --> no enhancement
         TGeoTranslation wrapperEnhancementTransl = TGeoTranslation("WrapperEnhancementTransl", 0., 0., 0.);
-        if(m_vectorWrapperEnhancement.find(id) != m_vectorWrapperEnhancement.end()) {
-            wrapperHX += m_vectorWrapperEnhancement[id].x() / 2.; // half
-            wrapperHY += m_vectorWrapperEnhancement[id].y() / 2.;
-            wrapperHZ += m_vectorWrapperEnhancement[id].z() / 2.;
-            wrapperEnhancementTransl.SetDx(m_vectorWrapperEnhancement[id].x() / 2.);
-            wrapperEnhancementTransl.SetDy(m_vectorWrapperEnhancement[id].y() / 2.);
-            wrapperEnhancementTransl.SetDz(m_vectorWrapperEnhancement[id].z() / 2.);
+        if(m_vectorWrapperEnhancement.find(detname) != m_vectorWrapperEnhancement.end()) {
+            wrapperHX += m_vectorWrapperEnhancement[detname].x() / 2.; // half
+            wrapperHY += m_vectorWrapperEnhancement[detname].y() / 2.;
+            wrapperHZ += m_vectorWrapperEnhancement[detname].z() / 2.;
+            wrapperEnhancementTransl.SetDx(m_vectorWrapperEnhancement[detname].x() / 2.);
+            wrapperEnhancementTransl.SetDy(m_vectorWrapperEnhancement[detname].y() / 2.);
+            wrapperEnhancementTransl.SetDz(m_vectorWrapperEnhancement[detname].z() / 2.);
         }
 
         // The wrapper logical volume
@@ -606,20 +603,21 @@ void TGeoBuilderModule::BuildAppliances() {
 
     // Loop on the given position vectors and position the volumes.
     auto aplItr = m_posVectorAppliances.begin();
+    int id = 0;
     for(; aplItr != m_posVectorAppliances.end(); aplItr++) {
-        int detId = (*aplItr).first;
-        TString id_s = "_" + std::to_string(detId);
+        string detname = (*aplItr).first;
+        TString id_s = "_" + detname;
 
         // Translation vectors, with respect to the wrapper.
         // equals type-depending translation plus user given translation.
         TGeoTranslation* ApplTranslItr = new TGeoTranslation("ApplianceTransl" + id_s, 0., 0., 0.);
-        ApplTranslItr->Add(&m_posVectorAppliances[detId]);
+        ApplTranslItr->Add(&m_posVectorAppliances[detname]);
         ApplTranslItr->Add(ApplTransl);
 
         // Creation of the node.
         // The mother volume is the wrapper. It will rotate with the wrapper.
         TGeoVolume* Wrapper_log = gGeoManager->GetVolume(WrapperName + id_s);
-        Wrapper_log->AddNode(Support_log, detId, ApplTranslItr);
+        Wrapper_log->AddNode(Support_log, ++id, ApplTranslItr);
 
     } // end loop positions
 
