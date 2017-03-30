@@ -13,7 +13,7 @@
 #include "core/geometry/Detector.hpp"
 #include "core/messenger/Messenger.hpp"
 
-#include "messages/ChargeDeposit.hpp"
+#include "objects/ChargeDeposit.hpp"
 
 class G4Step;
 class G4HCofThisEvent;

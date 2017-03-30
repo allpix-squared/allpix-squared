@@ -58,7 +58,7 @@ void DetectorHistogrammerModule::run() {
 
     // FIXME: bind single when this works
     for(auto& message : deposit_messages_) {
-        for(auto deposit : message->getData()) {
+        for(auto& deposit : message->getData()) {
             auto vec = deposit.getPosition();
             double energy = deposit.getEnergy();
 

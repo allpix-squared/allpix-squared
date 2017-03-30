@@ -17,8 +17,8 @@ namespace allpix {
     public:
         ChargeDeposit(ROOT::Math::XYZVector position, double energy);
 
-        ROOT::Math::XYZVector getPosition();
-        double getEnergy();
+        ROOT::Math::XYZVector getPosition() const;
+        double getEnergy() const;
 
     private:
         ROOT::Math::XYZVector position_;

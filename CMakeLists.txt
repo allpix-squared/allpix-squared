@@ -114,9 +114,9 @@ INCLUDE_DIRECTORIES(src)
 ADD_SUBDIRECTORY(src/core)
 SET(ALLPIX_LIBRARIES ${ALLPIX_LIBRARIES} AllpixCore)
 
-# Build messages
-ADD_SUBDIRECTORY(src/messages)
-SET(ALLPIX_LIBRARIES ${ALLPIX_LIBRARIES} AllpixMessages)
+# Build objects
+ADD_SUBDIRECTORY(src/objects)
+SET(ALLPIX_LIBRARIES ${ALLPIX_LIBRARIES} AllpixObjects)
 
 # Build required modules
 SET(ALLPIX_MODULE_LIBRARIES "" CACHE INTERNAL "ALLPIX_MODULE_LIBRARIES") # FIXME: temporary save the libraries to link

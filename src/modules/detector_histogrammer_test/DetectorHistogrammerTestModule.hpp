@@ -13,7 +13,7 @@
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 
-#include "messages/ChargeDeposit.hpp"
+#include "objects/ChargeDeposit.hpp"
 
 namespace allpix {
     class DepositionMessage;
