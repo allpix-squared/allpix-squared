@@ -28,9 +28,8 @@ void TestDepositReaderModule::run() {
         LOG(DEBUG) << " list of deposits";
         for(auto& deposit : message->getData()) {
             auto pos = deposit.getPosition();
-            LOG(DEBUG) << "  energy " << deposit.getEnergy() << " at point (" << pos.x() << "," << pos.y() << "," << pos.z()
-                       << ")"
-                       << " in detector " << message->getDetector()->getName();
+            LOG(DEBUG) << "  energy " << deposit.getEnergy() << " at point " << pos.x() << "," << pos.y() << "," << pos.z()
+                       << ") in detector " << message->getDetector()->getName();
         }
     }
 }
