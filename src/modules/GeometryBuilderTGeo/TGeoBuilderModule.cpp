@@ -38,6 +38,7 @@
 #include <TGeoCompositeShape.h>
 #include <TGeoSphere.h>
 #include <TGeoTube.h>
+#include <TMath.h>
 #include <TROOT.h>
 
 // AllPix includes
@@ -56,6 +57,7 @@
 using namespace std;
 using namespace allpix;
 using namespace ROOT::Math;
+using namespace TMath;
 
 /* Create a TGeoTranslation from a ROOT::Math::XYZVector */
 TGeoTranslation ToTGeoTranslation(const XYZVector& pos) {
@@ -233,7 +235,7 @@ void TGeoBuilderModule::BuildPixelDevices() {
         // TString id_s = Form("_%i", id);
         TString id_s = "_";
         id_s += detname;
-        LOG(DEBUG) << "Start detector " << detname;
+        LOG(DEBUG) << "Start building detector " << detname;
 
         ///////////////////////////////////////////////////////////
         // wrapper
@@ -257,8 +259,6 @@ void TGeoBuilderModule::BuildPixelDevices() {
             wrapperEnhancementTransl.SetDy(m_vectorWrapperEnhancement[id].y() / 2.);
             wrapperEnhancementTransl.SetDz(m_vectorWrapperEnhancement[id].z() / 2.);
         }
-        LOG(DEBUG) << "Wrapper Dimensions [mm] : "
-                   << TString::Format("hX=%3.3f hY=%3.3f hZ=%3.3f", wrapperHX, wrapperHY, wrapperHZ);
 
         // The wrapper logical volume
         TGeoVolume* wrapper_log =
@@ -272,11 +272,19 @@ void TGeoBuilderModule::BuildPixelDevices() {
         posWrapper.Add(&wrapperEnhancementTransl);
         // Retrieve orientation given by the user.
         EulerAngles angles = (*detItr)->getOrientation();
-        TGeoRotation orWrapper = TGeoRotation("DetPlacement" + id_s, angles.Phi(), angles.Theta(), angles.Psi());
-        // cout << "phi " << angles.Phi() << " theta " << angles.Theta() << " psi " << angles.Psi() << endl;
+        const double phi = angles.Phi() * RadToDeg();
+        const double theta = angles.Theta() * RadToDeg();
+        const double psi = angles.Psi() * RadToDeg();
+        TGeoRotation orWrapper = TGeoRotation("DetPlacement" + id_s, phi, theta, psi);
         // And create a transformation.
         auto* det_tr = new TGeoCombiTrans(posWrapper, orWrapper);
         det_tr->SetName("DetPlacement" + id_s);
+
+        // Print out ! The wrapper will just be called "detector".
+        LOG(DEBUG) << "Detector placement relative to the World : ";
+        LOG(DEBUG) << "- Position             : " << Print(&posWrapper);
+        LOG(DEBUG) << "- Orientation          : " << TString::Format("%3.1f %3.1f %3.1f", phi, theta, psi);
+        LOG(DEBUG) << "- Wrapper Dimensions   : " << TString::Format("%3.3f %3.3f %3.3f", wrapperHX, wrapperHY, wrapperHZ);
 
         TGeoVolume* expHall_log = gGeoManager->GetTopVolume();
         expHall_log->AddNode(wrapper_log, 1, det_tr);
@@ -317,7 +325,7 @@ void TGeoBuilderModule::BuildPixelDevices() {
         // Apply position Offset for the detector due to the enhancement
         posDevice->Add(&wrapperEnhancementTransl);
         wrapper_log->AddNode(Wafer_log, 1, posDevice);
-        LOG(DEBUG) << "local relative positions of the elements";
+        LOG(DEBUG) << "Relative positions of the elements to the detector :";
         LOG(DEBUG) << "- Sensor position      : " << Print(posDevice);
 
         ///////////////////////////////////////////////////////////
@@ -511,7 +519,7 @@ void TGeoBuilderModule::BuildPixelDevices() {
         // Placement ! Same as device
         wrapper_log->AddNode(GuardRings_log, 1, posDevice);
 
-        LOG(DEBUG) << "detector " << detname << " ... done";
+        LOG(DEBUG) << "Building detector " << detname << " ... done.";
 
     } // Big loop on detector descriptions
 
