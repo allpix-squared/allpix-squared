@@ -18,7 +18,9 @@
 #include "core/module/ModuleError.hpp"
 #include "core/utils/log.h"
 
-#include "tools/ROOT.h" using namespace allpix;
+#include "tools/ROOT.h"
+
+using namespace allpix;
 using namespace ROOT::Math;
 
 ReadGeoDescription::ReadGeoDescription(std::string file_name) : models_() {
