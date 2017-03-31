@@ -113,8 +113,8 @@ LogLevel DefaultLogger::getLevelFromString(const std::string& level) {
         return LogLevel::QUIET;
     }
 
-    DefaultLogger().getStream(LogLevel::WARNING)
-        << "Unknown logging level '" << level << "'. Using WARNING level as default.";
+    DefaultLogger().getStream(LogLevel::WARNING) << "Unknown logging level '" << level
+                                                 << "'. Using WARNING level as default.";
     return LogLevel::WARNING;
 }
 
