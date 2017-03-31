@@ -45,6 +45,6 @@ namespace allpix {
         // link to the messenger
         Messenger* messenger_;
     };
-}
+} // namespace allpix
 
 #endif /* ALLPIX_SIMPLE_DEPOSITION_MODULE_SENSITIVE_DETECTOR_ACTION_H */
