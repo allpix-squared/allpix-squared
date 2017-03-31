@@ -73,7 +73,6 @@ void ModuleManager::finalize() {
 // its own library, which is first loaded before being passed to the module factory
 void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager) {
 
-    LOG(INFO) << "Loading modules" << std::endl;
     // Get configurations
     std::vector<Configuration> configs = conf_manager->getConfigurations();
 
