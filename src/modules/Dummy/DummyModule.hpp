@@ -37,4 +37,9 @@ namespace allpix {
     private:
         Configuration config_;
     };
+    // External function, to allow loading from dynamic library without knowing module type.
+    // Should be overloaded in all module implementations
+    extern "C" {
+    Module* generator(Configuration, Messenger*, GeometryManager*);
+    }
 } // namespace allpix

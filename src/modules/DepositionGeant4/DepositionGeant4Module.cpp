@@ -108,3 +108,10 @@ void DepositionGeant4Module::run() {
     LOG(INFO) << "Enabling beam";
     run_manager_g4_->BeamOn(1);
 }
+
+// External function, to allow loading from dynamic library without knowing module type.
+// Should be overloaded in all module implementations, added here to prevent crashes
+Module* allpix::generator(Configuration config, Messenger* messenger, GeometryManager* geometry) {
+    DepositionGeant4Module* module = new DepositionGeant4Module(config, messenger, geometry);
+    return dynamic_cast<Module*>(module);
+}

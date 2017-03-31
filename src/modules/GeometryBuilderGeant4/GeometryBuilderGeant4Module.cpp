@@ -79,13 +79,15 @@ GeometryBuilderGeant4Module::~GeometryBuilderGeant4Module() = default;
 inline static void check_dataset_g4(const std::string& env_name) {
     const char* file_name = std::getenv(env_name.c_str());
     if(file_name == nullptr) {
-        throw ModuleError("Geant4 environment variable " + env_name + " is not set, make sure to source a Geant4 "
-                                                                      "environment with all datasets");
+        throw ModuleError("Geant4 environment variable " + env_name +
+                          " is not set, make sure to source a Geant4 "
+                          "environment with all datasets");
     }
     std::ifstream file(file_name);
     if(!file.good()) {
-        throw ModuleError("Geant4 environment variable " + env_name + " does not point to existing dataset, your Geant4 "
-                                                                      "environment is not complete");
+        throw ModuleError("Geant4 environment variable " + env_name +
+                          " does not point to existing dataset, your Geant4 "
+                          "environment is not complete");
     }
     // FIXME: check if file does actually contain a correct dataset
 }
@@ -130,4 +132,11 @@ void GeometryBuilderGeant4Module::init() {
 
     // release output from G4
     RELEASE_STREAM(G4cout);
+}
+
+// External function, to allow loading from dynamic library without knowing module type.
+// Should be overloaded in all module implementations, added here to prevent crashes
+Module* allpix::generator(Configuration config, Messenger* messenger, GeometryManager* geometry) {
+    GeometryBuilderGeant4Module* module = new GeometryBuilderGeant4Module(config, messenger, geometry);
+    return dynamic_cast<Module*>(module);
 }

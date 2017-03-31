@@ -43,6 +43,11 @@ namespace allpix {
         // pointer to the visualization manager
         std::shared_ptr<G4VisManager> vis_manager_g4_;
     };
+    // External function, to allow loading from dynamic library without knowing module type.
+    // Should be overloaded in all module implementations
+    extern "C" {
+    Module* generator(Configuration, Messenger*, GeometryManager*);
+    }
 } // namespace allpix
 
 #endif /* ALLPIX_TEST_VISUALIZATION_MODULE_H */

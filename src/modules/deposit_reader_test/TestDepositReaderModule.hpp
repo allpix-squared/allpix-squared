@@ -38,6 +38,11 @@ namespace allpix {
         // list of the messages
         std::vector<std::shared_ptr<DepositedChargeMessage>> deposit_messages_;
     };
+    // External function, to allow loading from dynamic library without knowing module type.
+    // Should be overloaded in all module implementations
+    extern "C" {
+    Module* generator(Configuration, Messenger*, GeometryManager*);
+    }
 } // namespace allpix
 
 #endif /* ALLPIX_TEST_DEPOSIT_READER_MODULE_H */

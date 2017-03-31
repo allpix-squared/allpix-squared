@@ -41,6 +41,11 @@ namespace allpix {
         // FIXME: is it right to let the geometry own this pointer
         std::unique_ptr<G4RunManager> run_manager_g4_;
     };
+    // External function, to allow loading from dynamic library without knowing module type.
+    // Should be overloaded in all module implementations
+    extern "C" {
+    Module* generator(Configuration, Messenger*, GeometryManager*);
+    }
 } // namespace allpix
 
 #endif /* ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_H */

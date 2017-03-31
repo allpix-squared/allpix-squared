@@ -42,3 +42,10 @@ void TestDepositReaderModule::run() {
     }
     deposit_messages_.clear();
 }
+
+// External function, to allow loading from dynamic library without knowing module type.
+// Should be overloaded in all module implementations, added here to prevent crashes
+Module* allpix::generator(Configuration config, Messenger* messenger, GeometryManager* geometry) {
+    TestDepositReaderModule* module = new TestDepositReaderModule(config, messenger, geometry);
+    return dynamic_cast<Module*>(module);
+}

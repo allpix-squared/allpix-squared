@@ -98,3 +98,10 @@ void DetectorHistogrammerModule::finalize() {
     // close the file
     file.Close();
 }
+
+// External function, to allow loading from dynamic library without knowing module type.
+// Should be overloaded in all module implementations, added here to prevent crashes
+// Module* allpix::generator(Configuration config, Messenger* messenger, GeometryManager* geometry) {
+//    DetectorHistogrammerModule* module = new DetectorHistogrammerModule(config, messenger, geometry);
+//    return dynamic_cast<Module*>(module);
+//}
