@@ -63,4 +63,4 @@ namespace allpix {
         // message to receive
         std::shared_ptr<InputMessage> message_;
     };
-}
+} // namespace allpix

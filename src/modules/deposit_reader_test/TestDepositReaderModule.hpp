@@ -38,6 +38,6 @@ namespace allpix {
         // list of the messages
         std::vector<std::shared_ptr<ChargeDepositMessage>> deposit_messages_;
     };
-}
+} // namespace allpix
 
 #endif /* ALLPIX_TEST_DEPOSIT_READER_MODULE_H */

@@ -38,6 +38,6 @@ namespace allpix {
      * Errors related to incorrect setup of a module (against the rules)
      */
     class LogicError : public Exception {};
-}
+} // namespace allpix
 
 #endif /* ALLPIX_EXCEPTIONS_H */

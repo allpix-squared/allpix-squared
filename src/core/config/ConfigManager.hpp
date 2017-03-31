@@ -49,6 +49,6 @@ namespace allpix {
 
         std::vector<std::string> file_names_;
     };
-}
+} // namespace allpix
 
 #endif /* ALLPIX_CONFIG_MANAGER_H */

@@ -33,6 +33,6 @@ namespace allpix {
         G4int npixelX;
         G4int npixelY;
     };
-}
+} // namespace allpix
 
 #endif /* ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_BUMP_PARAMETERIZATION_HH_ */

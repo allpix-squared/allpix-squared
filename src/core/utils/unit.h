@@ -54,6 +54,6 @@ namespace allpix {
         }
         return static_cast<T>(out);
     }
-}
+} // namespace allpix
 
 #endif /* ALLPIX_UNIT_H */

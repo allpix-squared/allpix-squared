@@ -41,6 +41,6 @@ namespace allpix {
         // list of the messages
         std::shared_ptr<ChargeDepositMessage> deposit_message_;
     };
-}
+} // namespace allpix
 
 #endif /* ALLPIX_MODULE_DETECTOR_HISTOGRAMMER_H */

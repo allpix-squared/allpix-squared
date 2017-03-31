@@ -55,6 +55,6 @@ namespace allpix {
         // FIXME: do we want to save this one?
         BumpsParameterizationG4* parameterization_;
     };
-}
+} // namespace allpix
 
 #endif

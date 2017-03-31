@@ -24,7 +24,6 @@
 #include "core/config/ConfigReader.hpp"
 #include "core/config/InvalidValueError.hpp"
 #include "core/geometry/GeometryManager.hpp"
-#include "core/module/ModuleError.hpp"
 #include "core/utils/log.h"
 
 // temporary common includes
@@ -46,13 +45,15 @@ GeometryBuilderGeant4Module::~GeometryBuilderGeant4Module() = default;
 inline static void check_dataset_g4(const std::string& env_name) {
     const char* file_name = std::getenv(env_name.c_str());
     if(file_name == nullptr) {
-        throw ModuleError("Geant4 environment variable " + env_name + " is not set, make sure to source a Geant4 "
-                                                                      "environment with all datasets");
+        throw ModuleError("Geant4 environment variable " + env_name +
+                          " is not set, make sure to source a Geant4 "
+                          "environment with all datasets");
     }
     std::ifstream file(file_name);
     if(!file.good()) {
-        throw ModuleError("Geant4 environment variable " + env_name + " does not point to existing dataset, your Geant4 "
-                                                                      "environment is not complete");
+        throw ModuleError("Geant4 environment variable " + env_name +
+                          " does not point to existing dataset, your Geant4 "
+                          "environment is not complete");
     }
     // FIXME: check if file does actually contain a correct dataset
 }

@@ -189,6 +189,6 @@ namespace allpix {
 
         return elems;
     }
-}
+} // namespace allpix
 
 #endif /* ALLPIX_STRING_H */

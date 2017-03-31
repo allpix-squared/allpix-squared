@@ -28,10 +28,9 @@ namespace allpix {
         ~PixelDetectorModel() override = default;
 
         /* Number of pixels */
-        // FIXME: do we want a better name for this (NumberPixels?)
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> getNPixels() { return number_of_pixels_; }
-        inline int getNPixelsX() { return number_of_pixels_.x(); };
-        inline int getNPixelsY() { return number_of_pixels_.y(); };
+        int getNPixelsX() { return number_of_pixels_.x(); };
+        int getNPixelsY() { return number_of_pixels_.y(); };
 
         void setNPixels(ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> val) {
             number_of_pixels_ = std::move(val);
@@ -40,26 +39,26 @@ namespace allpix {
         void setNPixelsY(int val) { number_of_pixels_.SetY(val); };
 
         /* Pixel dimensions */
-        inline ROOT::Math::XYVector getPixelSize() { return pixel_size_; }
-        inline double getPixelSizeX() { return pixel_size_.x(); };
-        inline double getPixelSizeY() { return pixel_size_.y(); };
+        ROOT::Math::XYVector getPixelSize() { return pixel_size_; }
+        double getPixelSizeX() { return pixel_size_.x(); };
+        double getPixelSizeY() { return pixel_size_.y(); };
 
-        inline double getHalfPixelSizeX() { return pixel_size_.x() / 2.0; };
-        inline double getHalfPixelSizeY() { return pixel_size_.y() / 2.0; };
+        double getHalfPixelSizeX() { return pixel_size_.x() / 2.0; };
+        double getHalfPixelSizeY() { return pixel_size_.y() / 2.0; };
 
         void setPixelSize(ROOT::Math::XYVector val) { pixel_size_ = std::move(val); }
         void setPixelSizeX(double val) { pixel_size_.SetX(val); }
         void setPixelSizeY(double val) { pixel_size_.SetY(val); }
 
         /* Sensor dimensions */
-        inline ROOT::Math::XYZVector getSensorSize() { return sensor_size_; }
-        inline double getSensorSizeX() { return sensor_size_.x(); };
-        inline double getSensorSizeY() { return sensor_size_.y(); };
-        inline double getSensorSizeZ() { return sensor_size_.z(); };
+        ROOT::Math::XYZVector getSensorSize() { return sensor_size_; }
+        double getSensorSizeX() { return sensor_size_.x(); };
+        double getSensorSizeY() { return sensor_size_.y(); };
+        double getSensorSizeZ() { return sensor_size_.z(); };
 
-        inline double getHalfSensorSizeX() { return sensor_size_.x() / 2.0; };
-        inline double getHalfSensorSizeY() { return sensor_size_.y() / 2.0; };
-        inline double getHalfSensorZ() { return sensor_size_.z() / 2.0; };
+        double getHalfSensorSizeX() { return sensor_size_.x() / 2.0; };
+        double getHalfSensorSizeY() { return sensor_size_.y() / 2.0; };
+        double getHalfSensorZ() { return sensor_size_.z() / 2.0; };
 
         void setSensorSize(ROOT::Math::XYZVector val) { sensor_size_ = std::move(val); }
         void setSensorSizeX(double val) { sensor_size_.SetX(val); }
@@ -67,24 +66,24 @@ namespace allpix {
         void setSensorSizeZ(double val) { sensor_size_.SetZ(val); }
 
         /* Sensor offset */
-        inline ROOT::Math::XYVector getSensorOffset() { return sensor_offset_; }
-        inline double getSensorOffsetX() { return sensor_offset_.x(); };
-        inline double getSensorOffsetY() { return sensor_offset_.y(); };
-        inline double getSensorOffsetZ() { return getHalfPCBSizeZ(); }; // FIXME: see relation with GetHalfWrapperDZ()
+        ROOT::Math::XYVector getSensorOffset() { return sensor_offset_; }
+        double getSensorOffsetX() { return sensor_offset_.x(); };
+        double getSensorOffsetY() { return sensor_offset_.y(); };
+        double getSensorOffsetZ() { return getHalfPCBSizeZ(); }; // FIXME: see relation with GetHalfWrapperDZ()
 
         void setSensorOffset(ROOT::Math::XYVector val) { sensor_offset_ = std::move(val); }
         void setSensorOffsetX(double val) { sensor_offset_.SetX(val); }
         void setSensorOffsetY(double val) { sensor_offset_.SetY(val); }
 
         /* Chip dimensions */
-        inline ROOT::Math::XYZVector getChipSize() { return chip_size_; }
-        inline double getChipSizeX() { return chip_size_.x(); };
-        inline double getChipSizeY() { return chip_size_.y(); };
-        inline double getChipSizeZ() { return chip_size_.z(); };
+        ROOT::Math::XYZVector getChipSize() { return chip_size_; }
+        double getChipSizeX() { return chip_size_.x(); };
+        double getChipSizeY() { return chip_size_.y(); };
+        double getChipSizeZ() { return chip_size_.z(); };
 
-        inline double getHalfChipSizeX() { return chip_size_.x() / 2.0; };
-        inline double getHalfChipSizeY() { return chip_size_.y() / 2.0; };
-        inline double getHalfChipSizeZ() { return chip_size_.z() / 2.0; };
+        double getHalfChipSizeX() { return chip_size_.x() / 2.0; };
+        double getHalfChipSizeY() { return chip_size_.y() / 2.0; };
+        double getHalfChipSizeZ() { return chip_size_.z() / 2.0; };
 
         void setChipSize(ROOT::Math::XYZVector val) { chip_size_ = std::move(val); }
         void setChipSizeX(double val) { chip_size_.SetX(val); }
@@ -92,10 +91,10 @@ namespace allpix {
         void setChipSizeZ(double val) { chip_size_.SetZ(val); }
 
         /* Chip offset */
-        inline ROOT::Math::XYZVector getChipOffset() { return chip_offset_; }
-        inline double getChipOffsetX() { return chip_offset_.x(); };
-        inline double getChipOffsetY() { return chip_offset_.y(); };
-        inline double getChipOffsetZ() { return chip_offset_.z(); };
+        ROOT::Math::XYZVector getChipOffset() { return chip_offset_; }
+        double getChipOffsetX() { return chip_offset_.x(); };
+        double getChipOffsetY() { return chip_offset_.y(); };
+        double getChipOffsetZ() { return chip_offset_.z(); };
 
         void setChipOffset(ROOT::Math::XYZVector val) { chip_offset_ = std::move(val); }
         void setChipOffsetX(double val) { chip_offset_.SetX(val); }
@@ -103,14 +102,14 @@ namespace allpix {
         void setChipOffsetZ(double val) { chip_offset_.SetZ(val); }
 
         /* PCB dimensions */
-        inline ROOT::Math::XYZVector getPCBSize() { return pcb_size_; }
-        inline double getPCBSizeX() { return pcb_size_.x(); }
-        inline double getPCBSizeY() { return pcb_size_.y(); }
-        inline double getPCBSizeZ() { return pcb_size_.z(); }
+        ROOT::Math::XYZVector getPCBSize() { return pcb_size_; }
+        double getPCBSizeX() { return pcb_size_.x(); }
+        double getPCBSizeY() { return pcb_size_.y(); }
+        double getPCBSizeZ() { return pcb_size_.z(); }
 
-        inline double getHalfPCBSizeX() { return pcb_size_.x() / 2.0; };
-        inline double getHalfPCBSizeY() { return pcb_size_.y() / 2.0; };
-        inline double getHalfPCBSizeZ() { return pcb_size_.z() / 2.0; };
+        double getHalfPCBSizeX() { return pcb_size_.x() / 2.0; };
+        double getHalfPCBSizeY() { return pcb_size_.y() / 2.0; };
+        double getHalfPCBSizeZ() { return pcb_size_.z() / 2.0; };
 
         void setPCBSize(ROOT::Math::XYZVector val) { pcb_size_ = std::move(val); }
         void setPCBSizeX(double val) { pcb_size_.SetX(val); }
@@ -118,28 +117,28 @@ namespace allpix {
         void setPCBSizeZ(double val) { pcb_size_.SetZ(val); }
 
         /* Bump bonds */
-        inline double getBumpSphereRadius() { return bump_sphere_radius_; }
-        inline void setBumpSphereRadius(double val) { bump_sphere_radius_ = val; }
+        double getBumpSphereRadius() { return bump_sphere_radius_; }
+        void setBumpSphereRadius(double val) { bump_sphere_radius_ = val; }
 
-        inline double getBumpHeight() { return bump_height_; }
+        double getBumpHeight() { return bump_height_; }
         void setBumpHeight(double val) { bump_height_ = val; }
 
         void getBumpOffset(ROOT::Math::XYVector val) { bump_offset_ = std::move(val); }
-        inline double getBumpOffsetX() { return bump_offset_.x(); }
-        inline double getBumpOffsetY() { return bump_offset_.y(); }
+        double getBumpOffsetX() { return bump_offset_.x(); }
+        double getBumpOffsetY() { return bump_offset_.y(); }
 
         void setBumpOffset(ROOT::Math::XYVector val) { bump_offset_ = std::move(val); }
         void setBumpOffsetX(double val) { bump_offset_.SetX(val); }
         void setBumpOffsetY(double val) { bump_offset_.SetY(val); }
 
-        inline double getBumpCylinderRadius() { return bump_cylinder_radius_; }
+        double getBumpCylinderRadius() { return bump_cylinder_radius_; }
         void setBumpCylinderRadius(double val) { bump_cylinder_radius_ = val; }
 
         /* Guard rings */
-        inline double getGuardRingExcessTop() { return guard_ring_excess_top_; }
-        inline double getGuardRingExcessBottom() { return guard_ring_excess_bottom_; }
-        inline double getGuardRingExcessRight() { return guard_ring_excess_right_; }
-        inline double getGuardRingExcessLeft() { return guard_ring_excess_left_; }
+        double getGuardRingExcessTop() { return guard_ring_excess_top_; }
+        double getGuardRingExcessBottom() { return guard_ring_excess_bottom_; }
+        double getGuardRingExcessRight() { return guard_ring_excess_right_; }
+        double getGuardRingExcessLeft() { return guard_ring_excess_left_; }
 
         void setGuardRingExcessTop(double val) { guard_ring_excess_top_ = val; }
         void setGuardRingExcessBottom(double val) { guard_ring_excess_bottom_ = val; }
@@ -147,9 +146,9 @@ namespace allpix {
         void getGuardRingExcessLeft(double val) { guard_ring_excess_left_ = val; }
 
         /* Wrapper calculations (FIXME: this has to be reworked...) */
-        inline double getHalfWrapperDX() { return getHalfPCBSizeX(); }
-        inline double getHalfWrapperDY() { return getHalfPCBSizeY(); }
-        inline double getHalfWrapperDZ() {
+        double getHalfWrapperDX() { return getHalfPCBSizeX(); }
+        double getHalfWrapperDY() { return getHalfPCBSizeY(); }
+        double getHalfWrapperDZ() {
 
             double whdz = getHalfPCBSizeZ() + getHalfChipSizeZ() + getBumpHeight() / 2.0 + getHalfSensorZ();
 
@@ -200,6 +199,6 @@ namespace allpix {
         std::string coverlayer_material_;
         bool has_coverlayer_;
     };
-}
+} // namespace allpix
 
 #endif /* ALLPIX_PIXEL_DETECTOR_H */

@@ -21,6 +21,6 @@ namespace allpix {
         }
         InvalidValueError(Configuration config, const std::string& key) : InvalidValueError(config, key, "") {}
     };
-}
+} // namespace allpix
 
 #endif /* ALLPIX_INVALID_VALUE_ERROR_H */

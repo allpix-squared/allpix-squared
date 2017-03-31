@@ -133,6 +133,6 @@ namespace allpix {
                                          T initial_t = 0) {
         return RungeKutta<T, S, D>(tableau, function, step_size, initial_y, initial_t);
     }
-}
+} // namespace allpix
 
 #endif /* ALLPIX_RUNGE_KUTTA_H */

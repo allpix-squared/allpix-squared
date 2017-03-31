@@ -93,6 +93,6 @@ namespace allpix {
         std::map<int, ROOT::Math::XYZVector> m_vectorWrapperEnhancement;
         std::map<int, TGeoTranslation> m_posVectorAppliances; //
     };
-}
+} // namespace allpix
 
 #endif /* ALLPIX_DETECTOR_CONSTRUCTION_TGEO_H */

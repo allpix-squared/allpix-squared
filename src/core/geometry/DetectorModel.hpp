@@ -20,6 +20,6 @@ namespace allpix {
     private:
         std::string type_;
     };
-}
+} // namespace allpix
 
 #endif // ALLPIX_GEOMETRY_MANAGER_H

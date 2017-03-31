@@ -84,6 +84,6 @@ namespace allpix {
         return TString(allpix::from_string<std::string>(std::move(str)).c_str());
     }
     inline std::string to_string_impl(const TString& str, empty_tag) { return std::string(str.Data()); }
-}
+} // namespace allpix
 
 #endif /* ALLPIX_ROOT_H */

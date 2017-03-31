@@ -55,6 +55,6 @@ namespace allpix {
         // FIXME: if we stick to the linear run we can also just run modules directly from list
         std::queue<Module*> run_queue_;
     };
-}
+} // namespace allpix
 
 #endif /* ALLPIX_MODULE_MANAGER_H */

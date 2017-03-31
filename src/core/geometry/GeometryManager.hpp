@@ -42,6 +42,6 @@ namespace allpix {
 
         std::set<std::string> detector_names_;
     };
-}
+} // namespace allpix
 
 #endif /* ALLPIX_GEOMETRY_MANAGER_H */

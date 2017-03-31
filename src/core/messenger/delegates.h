@@ -138,6 +138,6 @@ namespace allpix {
 
         BindType member_;
     };
-}
+} // namespace allpix
 
 #endif /* ALLPIX_DELEGATE_H */

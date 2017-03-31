@@ -27,6 +27,6 @@ namespace allpix {
             error_message_ += " by module " + module + " (are multiple modules producing the same message?)";
         }
     };
-}
+} // namespace allpix
 
 #endif /* ALLPIX_MESSENGER_EXCEPTIONS_H */

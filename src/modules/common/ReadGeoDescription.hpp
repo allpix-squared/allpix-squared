@@ -29,6 +29,6 @@ namespace allpix {
 
         std::map<std::string, std::shared_ptr<PixelDetectorModel>> models_;
     };
-}
+} // namespace allpix
 
 #endif /* ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_READ_GEO_H */

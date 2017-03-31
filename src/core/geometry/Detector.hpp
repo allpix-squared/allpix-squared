@@ -67,6 +67,6 @@ namespace allpix {
     template <typename T> void Detector::setExternalModel(std::shared_ptr<T> model) {
         external_models_[typeid(T)] = std::static_pointer_cast<void>(model);
     }
-}
+} // namespace allpix
 
 #endif /* ALLPIX_DETECTOR_H */

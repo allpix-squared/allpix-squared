@@ -39,6 +39,6 @@ namespace allpix {
         std::unique_ptr<GeometryManager> geo_mgr_;
         std::unique_ptr<Messenger> msg_;
     };
-}
+} // namespace allpix
 
 #endif /* ALLPIX_ALLPIX_H */

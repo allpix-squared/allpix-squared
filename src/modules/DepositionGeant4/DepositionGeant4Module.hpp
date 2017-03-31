@@ -37,6 +37,6 @@ namespace allpix {
         // global geometry manager
         GeometryManager* geo_manager_;
     };
-}
+} // namespace allpix
 
 #endif /* ALLPIX_SIMPLE_DEPOSITION_MODULE_H */
