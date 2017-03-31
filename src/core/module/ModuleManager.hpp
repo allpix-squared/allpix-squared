@@ -1,5 +1,6 @@
 /**
  *  @author Koen Wolters <koen.wolters@cern.ch>
+ *  @author Daniel Hynds <daniel.hynds@cern.ch>
  */
 
 #ifndef ALLPIX_MODULE_MANAGER_H
@@ -30,7 +31,7 @@ namespace allpix {
         ModuleManager& operator=(const ModuleManager&) = delete;
 
         // Load modules
-        virtual void load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager) = 0;
+        virtual void load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager);
 
         // Initialize modules (pre-run)
         virtual void init();
@@ -53,6 +54,9 @@ namespace allpix {
 
         // global allpix configuration
         Configuration global_config_;
+        
+        // list of loaded libraries
+        std::map<std::string, void*> loadedLibraries_;
     };
 } // namespace allpix
 

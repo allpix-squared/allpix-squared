@@ -21,7 +21,7 @@ std::shared_ptr<Detector> Module::getDetector() {
 
 // External function, to allow loading from dynamic library without knowing module type.
 // Should be overloaded in all module implementations, added here to prevent crashes
-std::unique_ptr<Module> Module::generator() {
-    std::unique_ptr<Module> module = std::make_unique<Module>;
-    return dynamic_pointer_cast<Module>(module);
-}
+// Module* allpix::generator() {
+//    Module* module = new Module(nullptr);
+//    return dynamic_cast<Module*>(module);
+//}

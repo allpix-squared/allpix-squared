@@ -12,7 +12,6 @@ ADD_LIBRARY(AllpixCore SHARED
     utils/unit.cpp
     module/Module.cpp
     module/ModuleManager.cpp
-    module/StaticModuleManager.cpp
     module/ModuleFactory.cpp
     messenger/Messenger.cpp
     messenger/BaseMessage.cpp

@@ -26,7 +26,7 @@
 using namespace allpix;
 
 // FIXME: temporary generator function for as long we do not have dynamic loading
-std::unique_ptr<ModuleFactory> generator(const std::string& str);
+/*std::unique_ptr<ModuleFactory> generator(const std::string& str);
 std::unique_ptr<ModuleFactory> generator(const std::string& str) {
     if(str == GeometryBuilderGeant4Module::name) {
         return std::make_unique<UniqueModuleFactory<GeometryBuilderGeant4Module>>();
@@ -62,7 +62,7 @@ std::unique_ptr<ModuleFactory> generator(const std::string& str) {
 
     return nullptr;
 }
-
+*/
 int main(int argc, const char* argv[]) {
     // FIXME: have standard config and pass replacement as single argument until we have proper argument handling
     std::string config_file_name = "etc/example_config.ini";
@@ -73,7 +73,7 @@ int main(int argc, const char* argv[]) {
     try {
         // Construct managers
         // FIXME: move module manager initialization to AllPix as soon we have dynamic loading
-        std::unique_ptr<StaticModuleManager> mod = std::make_unique<StaticModuleManager>(&generator);
+        std::unique_ptr<ModuleManager> mod = std::make_unique<ModuleManager>();
 
         // Construct main AllPix object
         std::unique_ptr<AllPix> apx = std::make_unique<AllPix>(config_file_name, std::move(mod));
