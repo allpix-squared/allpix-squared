@@ -45,16 +45,19 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleFactory::createModules(s
     ModuleIdentifier identifier(name, "", 0);
     Module* module = NULL;
 
+    // Get the generator function for this module
     void* generator = dlsym(library, "generator");
-    char* err;
-    if((err = dlerror()) != NULL) {
-        // handle error, the symbol wasn't found
+    char* err = dlerror();
+    // If the generator function was not found, throw an error
+    if(err != NULL) {
         throw allpix::DynamicLibraryError(name);
     } else {
+        // Otherwise initialise the module
         module = reinterpret_cast<Module* (*)(Configuration, Messenger*, GeometryManager*)>(generator)(
             getConfiguration(), getMessenger(), getGeometryManager());
     }
 
+    // Store the module and return it to the Module Manager
     moduleList.emplace_back(identifier, module);
     return moduleList;
 }
