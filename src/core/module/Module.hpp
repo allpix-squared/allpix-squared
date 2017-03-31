@@ -43,6 +43,12 @@ namespace allpix {
         // Finalize module after run
         // NOTE: useful to do before destruction to allow for exceptions
         virtual void finalize() {}
+        
+        // External function, to allow loading from dynamic library without knowing module type.
+        // Should be overloaded in all module implementations, added here to prevent crashes
+        extern "C" {
+            std::unique_ptr<Module> generator();
+        }
 
     private:
         std::shared_ptr<Detector> detector_ptr__;
