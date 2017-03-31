@@ -27,6 +27,6 @@ namespace allpix {
 
     // name for the carrying message
     using ChargeDepositMessage = Message<ChargeDeposit>;
-}
+} // namespace allpix
 
 #endif /* ALLPIX_CHARGE_DEPOSIT_H */

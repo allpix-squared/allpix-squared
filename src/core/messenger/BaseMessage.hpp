@@ -27,6 +27,6 @@ namespace allpix {
     private:
         std::shared_ptr<Detector> detector_;
     };
-}
+} // namespace allpix
 
 #endif /* ALLPIX_BASE_MESSAGE_H */
