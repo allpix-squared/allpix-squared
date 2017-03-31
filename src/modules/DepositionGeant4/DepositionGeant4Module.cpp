@@ -16,7 +16,7 @@
 
 #include "core/config/InvalidValueError.hpp"
 #include "core/geometry/GeometryManager.hpp"
-#include "core/module/ModuleError.hpp"
+#include "core/module/exceptions.h"
 #include "core/utils/log.h"
 #include "tools/geant4.h"
 
