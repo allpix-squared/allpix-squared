@@ -5,7 +5,6 @@
 #include "core/AllPix.hpp"
 #include "core/config/ConfigManager.hpp"
 #include "core/geometry/GeometryManager.hpp"
-#include "core/module/StaticModuleManager.hpp"
 #include "core/utils/exceptions.h"
 #include "core/utils/log.h"
 
