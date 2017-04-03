@@ -362,14 +362,16 @@ void GeometryConstructionG4::build_pixel_devices() {
             new G4Box(SliceName.first, model->getHalfPixelSizeX(), model->getHalfSensorSizeY(), model->getHalfSensorZ());
 
         model_g4->slice_log = new G4LogicalVolume(Box_slice, Silicon, SliceName.second); // 0,0,0);
-        if(simple_view_)
+        if(simple_view_) {
             model_g4->slice_log->SetVisAttributes(G4VisAttributes::GetInvisible());
+        }
 
         auto* Box_pixel =
             new G4Box(PixelName.first, model->getHalfPixelSizeX(), model->getHalfPixelSizeY(), model->getHalfSensorZ());
         model_g4->pixel_log = new G4LogicalVolume(Box_pixel, Silicon, PixelName.second); // 0,0,0);
-        if(simple_view_)
+        if(simple_view_) {
             model_g4->pixel_log->SetVisAttributes(G4VisAttributes::GetInvisible());
+        }
 
         // set the user limit (FIXME: is this needed / this is currently fixed)
         if(user_limits_ != nullptr) {
@@ -429,10 +431,11 @@ void GeometryConstructionG4::build_pixel_devices() {
 
             // create the individual bumps through a parameterization
             model_g4->bumps_cell_log = new G4LogicalVolume(aBump, Solder, BumpBoxName.second + "_log");
-            if(simple_view_)
+            if(simple_view_) {
                 model_g4->bumps_cell_log->SetVisAttributes(G4VisAttributes::GetInvisible());
-            else
+            } else {
                 model_g4->bumps_cell_log->SetVisAttributes(BumpVisAtt);
+            }
 
             model_g4->parameterization_ = new BumpsParameterizationG4(model);
             G4int NPixTot = model->getNPixelsX() * model->getNPixelsY();

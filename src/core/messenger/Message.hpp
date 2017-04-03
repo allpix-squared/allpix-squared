@@ -14,7 +14,7 @@ namespace allpix {
     template <typename T> class Message : public BaseMessage {
     public:
         // Constructor to pass the data
-        Message(std::vector<T> data);
+        explicit Message(std::vector<T> data);
         Message(std::vector<T> data, std::shared_ptr<Detector> detector);
 
         // Get the data

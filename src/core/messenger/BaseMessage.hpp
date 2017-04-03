@@ -14,7 +14,7 @@ namespace allpix {
     public:
         // Constructor and destructors
         BaseMessage();
-        BaseMessage(std::shared_ptr<Detector> detector);
+        explicit BaseMessage(std::shared_ptr<Detector> detector);
         virtual ~BaseMessage();
 
         // Get linked detector
