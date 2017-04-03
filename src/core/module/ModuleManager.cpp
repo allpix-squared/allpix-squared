@@ -84,7 +84,7 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
             continue;
         }
 
-//         Load library for each module. Libraries are named (by convention + CMAKE) libModuleName.suffix
+        // Load library for each module. Libraries are named (by convention + CMAKE) libAllpixModule Name.suffix
         std::string libName = std::string("libAllpixModule").append(conf.getName()).append(SHARED_LIBRARY_SUFFIX);
         LOG(INFO) << "Loading library " << libName << std::endl;
         std::string libPath = std::string(std::getenv("ALLPIX_DIR")) + "/lib/";
