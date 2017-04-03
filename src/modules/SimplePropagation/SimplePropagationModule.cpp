@@ -48,8 +48,7 @@ SimplePropagationModule::SimplePropagationModule(Configuration config,
 SimplePropagationModule::~SimplePropagationModule() = default;
 
 // temporary globals
-XYZVector efield_from_map;
-
+XYZVector efield_from_map; // NOLINT
 double Temperature;
 double Electron_Mobility;
 double Electron_Beta;
@@ -118,12 +117,12 @@ double MobilityElectron(double efield_mag) {
     // G4cout << "Mobility: " << mobility << G4endl;
     return mobility;
 }
-Eigen::Vector3d ElectronSpeed(Eigen::Vector3d efield) {
+Eigen::Vector3d ElectronSpeed(const Eigen::Vector3d& efield) {
     double mobility = MobilityElectron(efield.norm());
 
     return mobility * (-efield);
 }
-Eigen::Vector3d DiffusionStep(std::mt19937_64& random_generator, const double timestep, const Eigen::Vector3d) {
+Eigen::Vector3d DiffusionStep(std::mt19937_64& random_generator, double timestep, const Eigen::Vector3d&) {
 
     XYZVector electricField = 100. * efield_from_map;
     double D = Boltzmann_kT * MobilityElectron(TMath::Sqrt(electricField.Mag2()));
@@ -161,7 +160,7 @@ void SimplePropagationModule::init_variables() {
     efield_from_map = XYZVector(0, 0, 10000);
 }
 
-XYZVector SimplePropagationModule::propagation(XYZVector root_pos) {
+XYZVector SimplePropagationModule::propagation(const XYZVector& root_pos) {
     // create a runge kutta solver using the electric field as step function
     Eigen::Vector3d position(root_pos.x(), root_pos.y(), root_pos.z());
     auto runge_kutta =
@@ -192,7 +191,6 @@ XYZVector SimplePropagationModule::propagation(XYZVector root_pos) {
         double uncertainty = step.error.norm();
 
         // adapt step size
-        double dt_before = dt;
         if(model_->getSensorSizeZ() - position.z() < step.value.z() * 1.2) {
             dt = dt * 0.7;
         } else {

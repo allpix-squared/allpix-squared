@@ -33,7 +33,7 @@ namespace allpix {
     private:
         // private functions
         void init_variables();
-        ROOT::Math::XYZVector propagation(ROOT::Math::XYZVector pos);
+        ROOT::Math::XYZVector propagation(const ROOT::Math::XYZVector& pos);
 
         // random generator for this module
         std::mt19937_64 random_generator_;

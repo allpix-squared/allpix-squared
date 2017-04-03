@@ -14,7 +14,9 @@ namespace allpix {
 
     template <typename T, int S, int D = 3> class RungeKutta {
     public:
-        struct Step {
+        // FIXME: is this a good return type...
+        class Step {
+        public:
             Eigen::Matrix<T, D, 1> value;
             Eigen::Matrix<T, D, 1> error;
         };
@@ -27,7 +29,8 @@ namespace allpix {
                    T step_size,
                    Eigen::Matrix<T, D, 1> initial_y,
                    T initial_t = 0)
-            : tableau_(tableau), function_(function), h_(step_size), y_(initial_y), t_(initial_t) {
+            : tableau_(std::move(tableau)), function_(std::move(function)), h_(step_size), y_(std::move(initial_y)),
+              t_(std::move(initial_t)) {
             error_.setZero();
         }
 
