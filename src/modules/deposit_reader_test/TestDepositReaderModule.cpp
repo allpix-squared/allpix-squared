@@ -2,6 +2,8 @@
  * @author Koen Wolters <koen.wolters@cern.ch>
  */
 
+#include <iomanip>
+
 #include "TestDepositReaderModule.hpp"
 
 #include "core/messenger/Messenger.hpp"
@@ -34,8 +36,8 @@ void TestDepositReaderModule::run() {
             auto y = Units::convert("um", pos.y());
             auto z = Units::convert("um", pos.z());
 
-            LOG(DEBUG) << "  energy " << deposit.getEnergy() << " at point (" << x << "um," << y << "um," << z
-                       << "um) in detector " << message->getDetector()->getName();
+            LOG(DEBUG) << "  energy " << deposit.getEnergy() << std::fixed << std::setprecision(5) << " at point (" << x
+                       << "um," << y << "um," << z << "um) in detector " << message->getDetector()->getName();
         }
     }
 }
