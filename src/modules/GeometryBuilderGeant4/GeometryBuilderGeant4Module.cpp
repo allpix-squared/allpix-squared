@@ -5,9 +5,7 @@
 #include <string>
 #include <utility>
 
-#include <G4PhysListFactory.hh>
 #include <G4RunManager.hh>
-
 #include <G4UImanager.hh>
 #include <G4UIterminal.hh>
 #include <G4VisExecutive.hh>
@@ -65,6 +63,10 @@ void GeometryBuilderGeant4Module::init() {
     // create the G4 run manager
     run_manager_g4_ = std::make_unique<G4RunManager>();
 
+    // release the output again
+    RELEASE_STREAM(std::cout);
+    RELEASE_STREAM(G4cout);
+
     // check if all the required geant4 datasets are defined
     check_dataset_g4("G4LEVELGAMMADATA");
     check_dataset_g4("G4RADIOACTIVEDATA");
@@ -76,10 +78,6 @@ void GeometryBuilderGeant4Module::init() {
     check_dataset_g4("G4NEUTRONXSDATA");
     check_dataset_g4("G4ENSDFSTATEDATA");
     check_dataset_g4("G4LEDATA");
-
-    // release the output again
-    RELEASE_STREAM(std::cout);
-    RELEASE_STREAM(G4cout);
 
     // construct the geometry
     // WARNING: we need to do this here to allow for proper instantiation later (FIXME: is this correct)
@@ -143,20 +141,8 @@ void GeometryBuilderGeant4Module::build_g4() {
     GeometryConstructionG4* geometry_construction = new GeometryConstructionG4(geo_manager_, world_size, simple_view);
     run_manager_g4_->SetUserInitialization(geometry_construction);
 
-    // set the physics list
-    // FIXME: set a good default physics list
-    config_.setDefault("physics_list", "QGSP_BERT");
-    G4PhysListFactory physListFactory;
-    G4VUserPhysicsList* physicsList = physListFactory.GetReferencePhysList(config_.get<std::string>("physics_list"));
-    if(physicsList == nullptr) {
-        // FIXME: better syntax for exceptions here
-        // FIXME: more information about available lists
-        throw InvalidValueError(config_, "physics_list", "specified physics list does not exists");
-    }
-    run_manager_g4_->SetUserInitialization(physicsList);
-
-    // run the construct function in GeometryConstructionG4
-    run_manager_g4_->Initialize();
+    // run the geometry construct function in GeometryConstructionG4
+    run_manager_g4_->InitializeGeometry();
 
     // release output from G4
     RELEASE_STREAM(G4cout);

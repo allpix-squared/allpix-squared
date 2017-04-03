@@ -7,6 +7,7 @@
 #include "core/messenger/Messenger.hpp"
 #include "core/utils/log.h"
 
+#include "core/utils/unit.h"
 #include "tools/ROOT.h"
 
 using namespace allpix;
@@ -28,8 +29,13 @@ void TestDepositReaderModule::run() {
         LOG(DEBUG) << " list of deposits";
         for(auto& deposit : message->getData()) {
             auto pos = deposit.getPosition();
-            LOG(DEBUG) << "  energy " << deposit.getEnergy() << " at point " << pos.x() << "," << pos.y() << "," << pos.z()
-                       << ") in detector " << message->getDetector()->getName();
+
+            auto x = Units::convert("um", pos.x());
+            auto y = Units::convert("um", pos.y());
+            auto z = Units::convert("um", pos.z());
+
+            LOG(DEBUG) << "  energy " << deposit.getEnergy() << " at point (" << x << "um," << y << "um," << z
+                       << "um) in detector " << message->getDetector()->getName();
         }
     }
 }

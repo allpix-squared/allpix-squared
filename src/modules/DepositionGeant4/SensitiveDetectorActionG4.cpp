@@ -26,11 +26,6 @@
 
 #include "tools/geant4.h"
 
-// FIXME: should get rid of CLHEP units
-#include <CLHEP/Units/SystemOfUnits.h>
-
-using namespace CLHEP;
-
 using namespace allpix;
 
 // construct and destruct the sensitive detector
@@ -67,7 +62,7 @@ void SensitiveDetectorActionG4::EndOfEvent(G4HCofThisEvent*) {
         ChargeDepositMessage deposit_message(std::move(deposits_), detector_);
 
         // dispatch the message
-        messenger_->dispatchMessage(deposit_message);
+        messenger_->dispatchMessage(deposit_message, "sensor");
 
         // make a new empty vector of deposits
         deposits_ = std::vector<ChargeDeposit>();

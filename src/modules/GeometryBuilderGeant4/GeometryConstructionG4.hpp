@@ -45,9 +45,6 @@ namespace allpix {
         G4Material* world_material_;
         G4LogicalVolume* world_log_;
         G4VPhysicalVolume* world_phys_;
-
-        // internal G4 pointer that we should manage ourselves
-        G4UserLimits* user_limits_;
     };
 } // namespace allpix
 

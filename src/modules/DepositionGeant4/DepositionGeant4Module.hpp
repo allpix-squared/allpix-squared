@@ -5,12 +5,15 @@
 #ifndef ALLPIX_SIMPLE_DEPOSITION_MODULE_H
 #define ALLPIX_SIMPLE_DEPOSITION_MODULE_H
 
+#include <memory>
 #include <string>
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
+
+class G4UserLimits;
 
 namespace allpix {
     // define the module to inherit from the module base class
@@ -36,6 +39,9 @@ namespace allpix {
 
         // global geometry manager
         GeometryManager* geo_manager_;
+
+        // G4 user step limits we should manage
+        std::unique_ptr<G4UserLimits> user_limits_;
     };
 } // namespace allpix
 

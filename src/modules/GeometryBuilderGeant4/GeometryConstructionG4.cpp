@@ -23,6 +23,7 @@
 #include <G4UserLimits.hh>
 #include <G4VSolid.hh>
 #include <G4VisAttributes.hh>
+#include "G4StepLimiterPhysics.hh"
 
 #include "core/geometry/PixelDetectorModel.hpp"
 #include "core/utils/log.h"
@@ -42,10 +43,8 @@ using namespace allpix;
 // Constructor and destructor
 GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo, G4ThreeVector world_size, bool simple_view)
     : geo_manager_(geo), world_size_(world_size), simple_view_(simple_view), world_material_(nullptr), world_log_(nullptr),
-      world_phys_(nullptr), user_limits_(nullptr) {}
-GeometryConstructionG4::~GeometryConstructionG4() {
-    delete user_limits_;
-}
+      world_phys_(nullptr) {}
+GeometryConstructionG4::~GeometryConstructionG4() = default;
 
 // Build geometry
 G4VPhysicalVolume* GeometryConstructionG4::Construct() {
@@ -158,11 +157,6 @@ void GeometryConstructionG4::build_pixel_devices() {
     pair<G4String, G4String> SDName = make_pair("BoxSD", "");
     pair<G4String, G4String> BumpName = make_pair("Bump", "");
     pair<G4String, G4String> BumpBoxName = make_pair("BumpBox", "");
-
-// WARNING: THIS SHOULD PROBABLY BE REMOVED
-// User limits applied only to Si wafers.  Setting step.
-#define PARAM_MAX_STEP_LENGTH DBL_MAX
-    user_limits_ = new G4UserLimits(PARAM_MAX_STEP_LENGTH);
 
     /* CONSTRUCTION
      * construct the detectors part by part
@@ -371,11 +365,6 @@ void GeometryConstructionG4::build_pixel_devices() {
         model_g4->pixel_log = new G4LogicalVolume(Box_pixel, Silicon, PixelName.second); // 0,0,0);
         if(simple_view_) {
             model_g4->pixel_log->SetVisAttributes(G4VisAttributes::GetInvisible());
-        }
-
-        // set the user limit (FIXME: is this needed / this is currently fixed)
-        if(user_limits_ != nullptr) {
-            model_g4->pixel_log->SetUserLimits(user_limits_);
         }
 
         // place the slices
