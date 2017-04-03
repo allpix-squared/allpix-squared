@@ -33,7 +33,8 @@ DetectorHistogrammerModule::~DetectorHistogrammerModule() = default;
 void DetectorHistogrammerModule::run() {
     // check if we got any deposits
     if(deposit_message_ == nullptr) {
-        LOG(WARNING) << "Detector " << detector_->getName() << " did not get any deposits";
+        LOG(WARNING) << "Detector " << detector_->getName() << " did not get any deposits... skipping!";
+        return;
     }
 
     // get detector model
