@@ -25,11 +25,12 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
     : Module(detector), config_(std::move(config)), detector_(std::move(detector)), deposits_message_(nullptr) {
+    // fetch deposit for single module
     messenger->bindSingle(this, &DetectorHistogrammerModule::deposits_message_);
 }
 DetectorHistogrammerModule::~DetectorHistogrammerModule() = default;
 
-// run the deposition
+// histogram the deposits
 void DetectorHistogrammerModule::run() {
     // check if we got any deposits
     if(deposits_message_ == nullptr) {
@@ -64,9 +65,9 @@ void DetectorHistogrammerModule::run() {
 
     for(auto& deposit : deposits_message_->getData()) {
         auto vec = deposit.getPosition();
-        double energy = deposit.getEnergy();
+        auto charge = deposit.getCharge();
 
-        histogram->Fill(vec.x(), vec.y(), energy);
+        histogram->Fill(vec.x(), vec.y(), charge);
     }
 
     histogram->Write();

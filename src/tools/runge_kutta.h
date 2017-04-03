@@ -32,12 +32,16 @@ namespace allpix {
         }
 
         // change parameters
-        void setTimeStep(T step_size) { h_ = step_size; }
+        void setTimeStep(T step_size) { h_ = std::move(step_size); }
         T getTimeStep() { return h_; }
 
+        // set value (if some extra operations are done)
+        void setValue(Eigen::Matrix<T, D, 1> y) { y_ = std::move(y); }
+
         // get result
-        Eigen::Matrix<T, D, 1> getResult() { return y_; }
+        Eigen::Matrix<T, D, 1> getValue() { return y_; }
         Eigen::Matrix<T, D, 1> getError() { return error_; }
+        T getTime() { return t_; }
 
         // execute runge kutta step
         Step step() {

@@ -18,11 +18,12 @@ const std::string TestDepositReaderModule::name = "deposit_reader_test";
 
 TestDepositReaderModule::TestDepositReaderModule(Configuration config, Messenger* messenger, GeometryManager*)
     : config_(std::move(config)), deposit_messages_() {
+    // fetch deposits
     messenger->bindMulti(this, &TestDepositReaderModule::deposit_messages_);
 }
 TestDepositReaderModule::~TestDepositReaderModule() = default;
 
-// run the deposition
+// print the deposits
 void TestDepositReaderModule::run() {
     LOG(INFO) << "READ DEPOSITS";
 
@@ -36,8 +37,9 @@ void TestDepositReaderModule::run() {
             auto y = Units::convert("um", pos.y());
             auto z = Units::convert("um", pos.z());
 
-            LOG(DEBUG) << "  energy " << deposit.getEnergy() << std::fixed << std::setprecision(5) << " at point (" << x
-                       << "um," << y << "um," << z << "um) in detector " << message->getDetector()->getName();
+            LOG(DEBUG) << std::fixed << std::setprecision(5) << deposit.getCharge()
+                       << " units of charge deposited at point (" << x << "um," << y << "um," << z << "um) in detector "
+                       << message->getDetector()->getName();
         }
     }
 }

@@ -29,8 +29,11 @@
 using namespace allpix;
 
 // construct and destruct the sensitive detector
-SensitiveDetectorActionG4::SensitiveDetectorActionG4(std::shared_ptr<Detector> detector, Messenger* msg)
-    : G4VSensitiveDetector("SensitiveDetector_" + detector->getName()), deposits_(), detector_(detector), messenger_(msg) {}
+SensitiveDetectorActionG4::SensitiveDetectorActionG4(std::shared_ptr<Detector> detector,
+                                                     Messenger* msg,
+                                                     double charge_creation_energy)
+    : G4VSensitiveDetector("SensitiveDetector_" + detector->getName()), charge_creation_energy_(charge_creation_energy),
+      deposits_(), detector_(detector), messenger_(msg) {}
 SensitiveDetectorActionG4::~SensitiveDetectorActionG4() = default;
 
 // process a Geant4 hit interaction
@@ -45,7 +48,8 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
 
     // create a new charge deposit to add to the message
     G4ThreeVector mid_pos = (preStepPoint->GetPosition() + postStepPoint->GetPosition()) / 2;
-    ChargeDeposit deposit(allpix::toROOTVector(mid_pos), edep);
+    // deposit at a position with a certain charge
+    ChargeDeposit deposit(allpix::toROOTVector(mid_pos), static_cast<unsigned int>(edep / charge_creation_energy_));
     deposits_.push_back(deposit);
 
     // LOG(DEBUG) << "energy deposit of " << edep << " between point " << preStepPoint->GetPosition() / um << " and "

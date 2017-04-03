@@ -83,7 +83,7 @@ void DepositionGeant4Module::run() {
         throw InvalidValueError(config_, "particle_type", "particle type does not exist");
     }
 
-    // get parameters
+    // get parameter for generator
     int part_amount = config_.get<int>("particle_amount");
     G4ThreeVector part_position = config_.get<G4ThreeVector>("particle_position");
     G4ThreeVector part_direction = config_.get<G4ThreeVector>("particle_direction");
@@ -92,6 +92,10 @@ void DepositionGeant4Module::run() {
     // build generator
     GeneratorActionG4* generator = new GeneratorActionG4(part_amount, particle, part_position, part_direction, part_energy);
     run_manager_g4->SetUserAction(generator);
+
+    // get the creation energy for charge (default is silicon electron hole pair energy)
+    // FIXME: is this a good name...
+    double charge_creation_energy = config_.get<double>("charge_creation_energy", 3.64e-6);
 
     // loop through all detectors and set the sensitive detector (call it action because that is what it is currently doing)
     G4SDManager* sd_man_g4 = G4SDManager::GetSDMpointer();
@@ -102,7 +106,7 @@ void DepositionGeant4Module::run() {
         model_g4->pixel_log->SetUserLimits(user_limits_.get());
 
         // add the sensitive detector action
-        auto sensitive_detector_action = new SensitiveDetectorActionG4(detector, messenger_);
+        auto sensitive_detector_action = new SensitiveDetectorActionG4(detector, messenger_, charge_creation_energy);
         sd_man_g4->AddNewDetector(sensitive_detector_action);
         model_g4->pixel_log->SetSensitiveDetector(sensitive_detector_action);
     }
