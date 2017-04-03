@@ -137,7 +137,7 @@ void GeometryBuilderGeant4Module::build_g4() {
     // get the world size
     config_.setDefault("world_size", G4ThreeVector(1000, 1000, 2000));
     G4ThreeVector world_size = config_.get<G4ThreeVector>("world_size");
-    bool simple_view = config_.get<bool>("simple_view");
+    bool simple_view = config_.get<bool>("simple_view", false);
 
     // set the geometry constructor
     GeometryConstructionG4* geometry_construction = new GeometryConstructionG4(geo_manager_, world_size, simple_view);
