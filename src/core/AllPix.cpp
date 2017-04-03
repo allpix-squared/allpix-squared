@@ -63,4 +63,8 @@ void AllPix::add_units() {
 
     // CHARGE
     Units::add("C", 1.6021766208e-19);
+
+    // ANGLES
+    // NOTE: degree is a fake unit
+    Units::add("deg", 0.01745329252);
 }
