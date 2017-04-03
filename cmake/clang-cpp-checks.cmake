@@ -76,7 +76,7 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             ${RUN_CLANG_TIDY} -header-filter=${CMAKE_SOURCE_DIR} -j${NPROC}
             | tee ${CMAKE_BINARY_DIR}/check_lint_file.txt
             # WARNING: fix to stop with error if there are problems
-            COMMAND ! grep -c ": error: " ${CMAKE_BINARY_DIR}/check_lint_file.txt > dev/null
+            COMMAND ! grep -c ": error: " ${CMAKE_BINARY_DIR}/check_lint_file.txt > /dev/null
             COMMENT "Checking for problems in source files"
         )
     ENDIF()
