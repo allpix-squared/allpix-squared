@@ -110,6 +110,10 @@ void SimplePropagationModule::run() {
 }
 
 /* FIXME: temporary methods */
+double MobilityElectron(double efield_mag);
+Eigen::Vector3d ElectronSpeed(const Eigen::Vector3d& efield);
+Eigen::Vector3d DiffusionStep(std::mt19937_64& random_generator, double timestep, const Eigen::Vector3d&);
+
 double MobilityElectron(double efield_mag) {
     // calculate mobility in m2/V/s
     double mobility =
