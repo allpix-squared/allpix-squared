@@ -27,6 +27,9 @@ ADD_LIBRARY(AllpixCore SHARED
 # link the dependencies
 TARGET_LINK_LIBRARIES(AllpixCore ${ALLPIX_DEPS_LIBRARIES})
 
+# Define compile-time library extension
+TARGET_COMPILE_DEFINITIONS(AllpixCore PRIVATE SHARED_LIBRARY_SUFFIX="${CMAKE_SHARED_LIBRARY_SUFFIX}")
+
 # creat standard install target
 INSTALL(TARGETS AllpixCore
   RUNTIME DESTINATION bin
