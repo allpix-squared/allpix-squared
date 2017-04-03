@@ -3,19 +3,20 @@
 /// \author N. Gauvin
 
 /*
-   To be discussed :
-   - Shall the algo stops if a geometry is already loaded ?
-   - Do we want a CheckOverlaps option ? Or we use ROOT's tools offline on the TFile.
-   - TGeoBuilderModule also responsible for loading the geometry ?
+  To be discussed :
+  - Shall the algo stops if a geometry is already loaded ?
+  - Do we want a CheckOverlaps option ? Or we use ROOT's tools offline on the TFile.
+    Stop in case of overlap ?
+  - TGeoBuilderModule also responsible for loading the geometry ?
 
-   Colors :
-   kOrange+1 : experimental hall
-   kRed      : wrapper
-   kCyan     : Wafer, pixels
-   kGreen    : PCB, bumps container volumes
-   kYellow   : Bump logical volume
-   kGray     : Chip
-   kBlack    : Appliances
+  Colors :
+  kOrange+1 : experimental hall
+  kRed      : wrapper
+  kCyan     : Wafer, pixels
+  kGreen    : PCB, bumps container volumes
+  kYellow   : Bump logical volume
+  kGray     : Chip, GuardRings (+2)
+  kBlack    : Appliances
 */
 
 // Local includes
@@ -37,6 +38,7 @@
 #include <TGeoCompositeShape.h>
 #include <TGeoSphere.h>
 #include <TGeoTube.h>
+#include <TMath.h>
 #include <TROOT.h>
 
 // AllPix includes
@@ -54,10 +56,16 @@
 using namespace std;
 using namespace allpix;
 using namespace ROOT::Math;
+using namespace TMath;
 
 /* Create a TGeoTranslation from a ROOT::Math::XYZVector */
 TGeoTranslation ToTGeoTranslation(const XYZVector& pos) {
     return TGeoTranslation(pos.x(), pos.y(), pos.z());
+}
+/* Print out a TGeoTranslation as done in allpix for easy comparison. */
+TString Print(TGeoTranslation* trl) {
+    const Double_t* par = trl->GetTranslation();
+    return Form("(%f,%f,%f)", par[0], par[1], par[2]);
 }
 
 /// Name of the module
@@ -120,10 +128,12 @@ void TGeoBuilderModule::run() {
 
     /* Instantiate the TGeo geometry manager.
        It will remain persistant until gGeoManager is deleted.
-     */
+    */
     gGeoManager = new TGeoManager("AllPix2", "Detector geometry");
-    // Set Verbosity according to the framework. 0=Mute, 1=verbose
-    gGeoManager->SetVerboseLevel(1);
+    /* Set Verbosity according to the framework. Verbose only in debug mode.
+       ROOT : 0=mute, 1=verbose
+       LogLevel { QUIET = 0, CRITICAL, ERROR, WARNING, INFO, DEBUG }; */
+    gGeoManager->SetVerboseLevel(int(Log::getReportingLevel()) < 5 ? 0 : 1);
 
     // Build detectors.
     Construct();
@@ -133,7 +143,7 @@ void TGeoBuilderModule::run() {
 
     //### Visualisation Development only
     // gGeoManager->SetTopVisible(); // the TOP is invisible by default
-    gGeoManager->SetVisLevel(3);
+    gGeoManager->SetVisLevel(4);
     // gGeoManager->SetVisOption(0); // To see the intermediate containers.
     // gGeoManager->GetVolume("name");
     // TGeoVolume* top = gGeoManager->GetTopVolume();
@@ -209,8 +219,6 @@ void TGeoBuilderModule::BuildPixelDevices() {
 
     LOG(DEBUG) << "Starting construction of the pixel detectors.";
 
-    int global_id_cnt = 0;
-
     vector<shared_ptr<Detector>> detectors = m_geoDscMng->getDetectors();
     LOG(DEBUG) << "Building " << detectors.size() << " device(s) ...";
 
@@ -219,12 +227,11 @@ void TGeoBuilderModule::BuildPixelDevices() {
     for(; detItr != detectors.end(); detItr++) {
 
         shared_ptr<PixelDetectorModel> dsc = dynamic_pointer_cast<PixelDetectorModel>((*detItr)->getModel());
-        int id = global_id_cnt++;
         string detname = (*detItr)->getName();
         // TString id_s = Form("_%i", id);
         TString id_s = "_";
         id_s += detname;
-        LOG(DEBUG) << "Start detector " << detname;
+        LOG(DEBUG) << "Start building detector " << detname;
 
         ///////////////////////////////////////////////////////////
         // wrapper
@@ -240,16 +247,14 @@ void TGeoBuilderModule::BuildPixelDevices() {
         // medipix 1 --> with enhancement
         // medipix 2 --> no enhancement
         TGeoTranslation wrapperEnhancementTransl = TGeoTranslation("WrapperEnhancementTransl", 0., 0., 0.);
-        if(m_vectorWrapperEnhancement.find(id) != m_vectorWrapperEnhancement.end()) {
-            wrapperHX += m_vectorWrapperEnhancement[id].x() / 2.; // half
-            wrapperHY += m_vectorWrapperEnhancement[id].y() / 2.;
-            wrapperHZ += m_vectorWrapperEnhancement[id].z() / 2.;
-            wrapperEnhancementTransl.SetDx(m_vectorWrapperEnhancement[id].x() / 2.);
-            wrapperEnhancementTransl.SetDy(m_vectorWrapperEnhancement[id].y() / 2.);
-            wrapperEnhancementTransl.SetDz(m_vectorWrapperEnhancement[id].z() / 2.);
+        if(m_vectorWrapperEnhancement.find(detname) != m_vectorWrapperEnhancement.end()) {
+            wrapperHX += m_vectorWrapperEnhancement[detname].x() / 2.; // half
+            wrapperHY += m_vectorWrapperEnhancement[detname].y() / 2.;
+            wrapperHZ += m_vectorWrapperEnhancement[detname].z() / 2.;
+            wrapperEnhancementTransl.SetDx(m_vectorWrapperEnhancement[detname].x() / 2.);
+            wrapperEnhancementTransl.SetDy(m_vectorWrapperEnhancement[detname].y() / 2.);
+            wrapperEnhancementTransl.SetDz(m_vectorWrapperEnhancement[detname].z() / 2.);
         }
-        LOG(DEBUG) << "Wrapper Dimensions [mm] : "
-                   << TString::Format("hX=%3.3f hY=%3.3f hZ=%3.3f", wrapperHX, wrapperHY, wrapperHZ);
 
         // The wrapper logical volume
         TGeoVolume* wrapper_log =
@@ -263,10 +268,19 @@ void TGeoBuilderModule::BuildPixelDevices() {
         posWrapper.Add(&wrapperEnhancementTransl);
         // Retrieve orientation given by the user.
         EulerAngles angles = (*detItr)->getOrientation();
-        TGeoRotation orWrapper = TGeoRotation("DetPlacement" + id_s, angles.Phi(), angles.Theta(), angles.Psi());
+        const double phi = angles.Phi() * RadToDeg();
+        const double theta = angles.Theta() * RadToDeg();
+        const double psi = angles.Psi() * RadToDeg();
+        TGeoRotation orWrapper = TGeoRotation("DetPlacement" + id_s, phi, theta, psi);
         // And create a transformation.
         auto* det_tr = new TGeoCombiTrans(posWrapper, orWrapper);
         det_tr->SetName("DetPlacement" + id_s);
+
+        // Print out ! The wrapper will just be called "detector".
+        LOG(DEBUG) << "Detector placement relative to the World : ";
+        LOG(DEBUG) << "- Position             : " << Print(&posWrapper);
+        LOG(DEBUG) << "- Orientation          : " << TString::Format("%3.1f %3.1f %3.1f", phi, theta, psi);
+        LOG(DEBUG) << "- Wrapper Dimensions   : " << TString::Format("%3.3f %3.3f %3.3f", wrapperHX, wrapperHY, wrapperHZ);
 
         TGeoVolume* expHall_log = gGeoManager->GetTopVolume();
         expHall_log->AddNode(wrapper_log, 1, det_tr);
@@ -298,8 +312,8 @@ void TGeoBuilderModule::BuildPixelDevices() {
         Pixel_log->SetLineColor(kCyan);
         // Pixel_log->SetVisibility(false);
         /*
-      The path to the corresponding nodes will be
-      Wafer_id_1\Slice_id_[1,NPixelsX]\Pixel_id_[1,NPixelsY]
+          The path to the corresponding nodes will be
+          Wafer_id_1\Slice_id_[1,NPixelsX]\Pixel_id_[1,NPixelsY]
         */
 
         // Placement of the Device (Wafer), containing the pixels
@@ -307,7 +321,8 @@ void TGeoBuilderModule::BuildPixelDevices() {
         // Apply position Offset for the detector due to the enhancement
         posDevice->Add(&wrapperEnhancementTransl);
         wrapper_log->AddNode(Wafer_log, 1, posDevice);
-        // LOG(DEBUG) << "- Sensor position      : " << posDevice;
+        LOG(DEBUG) << "Relative positions of the elements to the detector :";
+        LOG(DEBUG) << "- Sensor position      : " << Print(posDevice);
 
         ///////////////////////////////////////////////////////////
         // Bumps
@@ -356,6 +371,7 @@ void TGeoBuilderModule::BuildPixelDevices() {
                                     0.,
                                     -dsc->getHalfSensorZ() - 2 * dsc->getHalfCoverlayerHeight() - (bump_height / 2));
             posBumps->Add(posDevice);
+            LOG(DEBUG) << "- Bumps position       : " << Print(posBumps);
             wrapper_log->AddNode(Bumps_log, 1, posBumps);
 
             // A bump logical volume
@@ -408,8 +424,8 @@ void TGeoBuilderModule::BuildPixelDevices() {
                                     dsc->getChipOffsetZ() - dsc->getHalfSensorZ() - 2. * dsc->getHalfCoverlayerHeight() -
                                         bump_height - dsc->getHalfChipSizeZ());
             posChip->Add(posDevice);
+            LOG(DEBUG) << "- Chip position        : " << Print(posChip);
             wrapper_log->AddNode(Chip_log, 1, posChip);
-            // LOG(DEBUG) << "- Chip position        : " << posChip;
         }
 
         ///////////////////////////////////////////////////////////
@@ -434,8 +450,8 @@ void TGeoBuilderModule::BuildPixelDevices() {
                                     -dsc->getHalfSensorZ() - 2. * dsc->getHalfCoverlayerHeight() - bump_height -
                                         2. * dsc->getHalfChipSizeZ() - dsc->getHalfPCBSizeZ());
             posPCB->Add(posDevice);
+            LOG(DEBUG) << "- PCB position         : " << Print(posPCB);
             wrapper_log->AddNode(PCB_log, 1, posPCB);
-            // LOG(DEBUG) << "- PCB position         : " << posPCB;
 
         } // end if PCB
 
@@ -472,6 +488,7 @@ void TGeoBuilderModule::BuildPixelDevices() {
             TGeoTranslation* posCover = new TGeoTranslation(
                 "LocalCoverlayerTranslation" + id_s, 0., 0., -dsc->getHalfSensorZ() - dsc->getHalfCoverlayerHeight());
             posCover->Add(posDevice);
+            LOG(DEBUG) << "- Coverlayer position  : " << Print(posCover);
             wrapper_log->AddNode(Cover_log, 1, posCover);
 
         } // end if Coverlayer
@@ -498,9 +515,11 @@ void TGeoBuilderModule::BuildPixelDevices() {
         // Placement ! Same as device
         wrapper_log->AddNode(GuardRings_log, 1, posDevice);
 
+        LOG(DEBUG) << "Building detector " << detname << " ... done.";
+
     } // Big loop on detector descriptions
 
-    LOG(DEBUG) << "Construction of the pixel detector successful.";
+    LOG(DEBUG) << "Construction of the pixel detectors successful.";
 }
 
 void TGeoBuilderModule::BuildAppliances() {
@@ -583,20 +602,21 @@ void TGeoBuilderModule::BuildAppliances() {
 
     // Loop on the given position vectors and position the volumes.
     auto aplItr = m_posVectorAppliances.begin();
+    int id = 0;
     for(; aplItr != m_posVectorAppliances.end(); aplItr++) {
-        int detId = (*aplItr).first;
-        TString id_s = "_" + std::to_string(detId);
+        string detname = (*aplItr).first;
+        TString id_s = "_" + detname;
 
         // Translation vectors, with respect to the wrapper.
         // equals type-depending translation plus user given translation.
         TGeoTranslation* ApplTranslItr = new TGeoTranslation("ApplianceTransl" + id_s, 0., 0., 0.);
-        ApplTranslItr->Add(&m_posVectorAppliances[detId]);
+        ApplTranslItr->Add(&m_posVectorAppliances[detname]);
         ApplTranslItr->Add(ApplTransl);
 
         // Creation of the node.
         // The mother volume is the wrapper. It will rotate with the wrapper.
         TGeoVolume* Wrapper_log = gGeoManager->GetVolume(WrapperName + id_s);
-        Wrapper_log->AddNode(Support_log, detId, ApplTranslItr);
+        Wrapper_log->AddNode(Support_log, ++id, ApplTranslItr);
 
     } // end loop positions
 
@@ -607,7 +627,7 @@ void TGeoBuilderModule::BuildTestStructure() {}
 
 /*
   Create the materials and media.
- */
+*/
 void TGeoBuilderModule::BuildMaterialsAndMedia() {
 
     /* Create the materials and mediums
@@ -631,30 +651,30 @@ void TGeoBuilderModule::BuildMaterialsAndMedia() {
 
     // Air
     /* AllPix1 uses "G4_AIR"
-  Material:   G4_AIR    density:  1.205 mg/cm3  RadL: 303.921 m    Nucl.Int.Length: 710.095 m
-                         Imean:  85.700 eV   temperature: 293.15 K  pressure:   1.00 atm
+       Material:   G4_AIR    density:  1.205 mg/cm3  RadL: 303.921 m    Nucl.Int.Length: 710.095 m
+       Imean:  85.700 eV   temperature: 293.15 K  pressure:   1.00 atm
 
-     --->  Element: C (C)   Z =  6.0   N =    12   A = 12.011 g/mole
-           --->  Isotope:   C12   Z =  6   N =  12   A =  12.00 g/mole   abundance: 98.930 %
-           --->  Isotope:   C13   Z =  6   N =  13   A =  13.00 g/mole   abundance:  1.070 %
-            ElmMassFraction:   0.01 %  ElmAbundance   0.02 %
+       --->  Element: C (C)   Z =  6.0   N =    12   A = 12.011 g/mole
+       --->  Isotope:   C12   Z =  6   N =  12   A =  12.00 g/mole   abundance: 98.930 %
+       --->  Isotope:   C13   Z =  6   N =  13   A =  13.00 g/mole   abundance:  1.070 %
+       ElmMassFraction:   0.01 %  ElmAbundance   0.02 %
 
-     --->  Element: N (N)   Z =  7.0   N =    14   A = 14.007 g/mole
-           --->  Isotope:   N14   Z =  7   N =  14   A =  14.00 g/mole   abundance: 99.632 %
-           --->  Isotope:   N15   Z =  7   N =  15   A =  15.00 g/mole   abundance:  0.368 %
-            ElmMassFraction:  75.53 %  ElmAbundance  78.44 %
+       --->  Element: N (N)   Z =  7.0   N =    14   A = 14.007 g/mole
+       --->  Isotope:   N14   Z =  7   N =  14   A =  14.00 g/mole   abundance: 99.632 %
+       --->  Isotope:   N15   Z =  7   N =  15   A =  15.00 g/mole   abundance:  0.368 %
+       ElmMassFraction:  75.53 %  ElmAbundance  78.44 %
 
-     --->  Element: O (O)   Z =  8.0   N =    16   A = 15.999 g/mole
-           --->  Isotope:   O16   Z =  8   N =  16   A =  15.99 g/mole   abundance: 99.757 %
-           --->  Isotope:   O17   Z =  8   N =  17   A =  17.00 g/mole   abundance:  0.038 %
-           --->  Isotope:   O18   Z =  8   N =  18   A =  18.00 g/mole   abundance:  0.205 %
-            ElmMassFraction:  23.18 %  ElmAbundance  21.07 %
+       --->  Element: O (O)   Z =  8.0   N =    16   A = 15.999 g/mole
+       --->  Isotope:   O16   Z =  8   N =  16   A =  15.99 g/mole   abundance: 99.757 %
+       --->  Isotope:   O17   Z =  8   N =  17   A =  17.00 g/mole   abundance:  0.038 %
+       --->  Isotope:   O18   Z =  8   N =  18   A =  18.00 g/mole   abundance:  0.205 %
+       ElmMassFraction:  23.18 %  ElmAbundance  21.07 %
 
-     --->  Element: Ar (Ar)   Z = 18.0   N =    40   A = 39.948 g/mole
-           --->  Isotope:  Ar36   Z = 18   N =  36   A =  35.97 g/mole   abundance:  0.337 %
-           --->  Isotope:  Ar38   Z = 18   N =  38   A =  37.96 g/mole   abundance:  0.063 %
-           --->  Isotope:  Ar40   Z = 18   N =  40   A =  39.96 g/mole   abundance: 99.600 %
-            ElmMassFraction:   1.28 %  ElmAbundance   0.47 %
+       --->  Element: Ar (Ar)   Z = 18.0   N =    40   A = 39.948 g/mole
+       --->  Isotope:  Ar36   Z = 18   N =  36   A =  35.97 g/mole   abundance:  0.337 %
+       --->  Isotope:  Ar38   Z = 18   N =  38   A =  37.96 g/mole   abundance:  0.063 %
+       --->  Isotope:  Ar40   Z = 18   N =  40   A =  39.96 g/mole   abundance: 99.600 %
+       ElmMassFraction:   1.28 %  ElmAbundance   0.47 %
     */
     auto* N = new TGeoElement("Nitrogen", "N", z = 7, a = 14.007);
     auto* O = new TGeoElement("Oxygen", "O", z = 8, a = 15.999);
@@ -704,50 +724,50 @@ void TGeoBuilderModule::BuildMaterialsAndMedia() {
 /******************* OLD STUFF ****************************/
 
 /*
-    ///////////////////////////////////////////////////////////////////////
-    // vis attributes
-    G4VisAttributes * pixelVisAtt= new G4VisAttributes(G4Color::Blue());
-    pixelVisAtt->SetLineWidth(1);
-    pixelVisAtt->SetForceSolid(true);
-    //pixelVisAtt->SetForceWireframe(true);
+///////////////////////////////////////////////////////////////////////
+// vis attributes
+G4VisAttributes * pixelVisAtt= new G4VisAttributes(G4Color::Blue());
+pixelVisAtt->SetLineWidth(1);
+pixelVisAtt->SetForceSolid(true);
+//pixelVisAtt->SetForceWireframe(true);
 
-    G4VisAttributes * BoxVisAtt= new G4VisAttributes(G4Color(0,1,1,1));//kCyan
-    BoxVisAtt->SetLineWidth(2);
-    BoxVisAtt->SetForceSolid(true);
-    //BoxVisAtt->SetVisibility(false);
+G4VisAttributes * BoxVisAtt= new G4VisAttributes(G4Color(0,1,1,1));//kCyan
+BoxVisAtt->SetLineWidth(2);
+BoxVisAtt->SetForceSolid(true);
+//BoxVisAtt->SetVisibility(false);
 
-    G4VisAttributes * CoverlayerVisAtt= new G4VisAttributes(G4Color::White());
-    CoverlayerVisAtt->SetLineWidth(2);
-    CoverlayerVisAtt->SetForceSolid(true);
+G4VisAttributes * CoverlayerVisAtt= new G4VisAttributes(G4Color::White());
+CoverlayerVisAtt->SetLineWidth(2);
+CoverlayerVisAtt->SetForceSolid(true);
 
-    G4VisAttributes * ChipVisAtt= new G4VisAttributes(G4Color::Gray());
-    ChipVisAtt->SetLineWidth(2);
-    ChipVisAtt->SetForceSolid(true);
-    //BoxVisAtt->SetVisibility(false);
+G4VisAttributes * ChipVisAtt= new G4VisAttributes(G4Color::Gray());
+ChipVisAtt->SetLineWidth(2);
+ChipVisAtt->SetForceSolid(true);
+//BoxVisAtt->SetVisibility(false);
 
-    G4VisAttributes * BumpBoxVisAtt = new G4VisAttributes(G4Color(0,1,0,1.0));//kGreen
-    BumpBoxVisAtt->SetLineWidth(1);
-    BumpBoxVisAtt->SetForceSolid(false);
-    BumpBoxVisAtt->SetVisibility(true);
+G4VisAttributes * BumpBoxVisAtt = new G4VisAttributes(G4Color(0,1,0,1.0));//kGreen
+BumpBoxVisAtt->SetLineWidth(1);
+BumpBoxVisAtt->SetForceSolid(false);
+BumpBoxVisAtt->SetVisibility(true);
 
-    G4VisAttributes * BumpVisAtt = new G4VisAttributes(G4Color::Yellow());
-    BumpVisAtt->SetLineWidth(2);
-    BumpVisAtt->SetForceSolid(true);
-    //BumpVisAtt->SetVisibility(true);
-    //BumpVisAtt->SetForceAuxEdgeVisible(true);
+G4VisAttributes * BumpVisAtt = new G4VisAttributes(G4Color::Yellow());
+BumpVisAtt->SetLineWidth(2);
+BumpVisAtt->SetForceSolid(true);
+//BumpVisAtt->SetVisibility(true);
+//BumpVisAtt->SetForceAuxEdgeVisible(true);
 
-    G4VisAttributes * pcbVisAtt = new G4VisAttributes(G4Color::Green());
-    pcbVisAtt->SetLineWidth(1);
-    pcbVisAtt->SetForceSolid(true);
+G4VisAttributes * pcbVisAtt = new G4VisAttributes(G4Color::Green());
+pcbVisAtt->SetLineWidth(1);
+pcbVisAtt->SetForceSolid(true);
 
-    G4VisAttributes * guardRingsVisAtt = new G4VisAttributes(G4Color(0.5,0.5,0.5,1));
-    guardRingsVisAtt->SetLineWidth(1);
-    guardRingsVisAtt->SetForceSolid(true);
+G4VisAttributes * guardRingsVisAtt = new G4VisAttributes(G4Color(0.5,0.5,0.5,1));
+guardRingsVisAtt->SetLineWidth(1);
+guardRingsVisAtt->SetForceSolid(true);
 
-    G4VisAttributes * wrapperVisAtt = new G4VisAttributes(G4Color(1,0,0,0.9));
-    wrapperVisAtt->SetLineWidth(1);
-    wrapperVisAtt->SetForceSolid(false);
-    wrapperVisAtt->SetVisibility(false);
+G4VisAttributes * wrapperVisAtt = new G4VisAttributes(G4Color(1,0,0,0.9));
+wrapperVisAtt->SetLineWidth(1);
+wrapperVisAtt->SetForceSolid(false);
+wrapperVisAtt->SetVisibility(false);
 
 RGBA (red, green, blue, and alpha), alpha=opacity (d=1, opaque!)
 2 drawing styles :
@@ -761,21 +781,21 @@ myVolume->SetLineWith(2);
 myVolumeContainer->SetVisibility(kFALSE);
 There is the possibility to set the transparency or Alpha for every object. Check TColor.
 
-     Rotation/translation with respect to its mother volume
-     m_rotVector[id], posWrapper
-     G4VPhysicalVolume* trackerPhys  = new G4PVPlacement(0,  // no rotation
-     G4ThreeVector(pos_x, pos_y,pos_z), // translation position
-     trackerLog,  // its logical volume
-     "Tracker",   // its name
-     worldLog,    // its mother (logical) volume
-     false,       // no boolean operations
-     0);          // its copy number
-     /// ROOT ??
-     TGeoVolume::AddNode(TGeoVolume *daughter,Int_t copy_No,TGeoMatrix *matr);
-     Placement with respect to its mother volume
-     TGeoTranslation *tr1 = new TGeoTranslation(20., 0, 0.);
-     TGeoRotation   *rot1 = new TGeoRotation("rot1", 90., 0., 90., 270., 0., 0.);
-     TGeoCombiTrans *combi1 = new TGeoCombiTrans(transl, rot1);
+Rotation/translation with respect to its mother volume
+m_rotVector[id], posWrapper
+G4VPhysicalVolume* trackerPhys  = new G4PVPlacement(0,  // no rotation
+G4ThreeVector(pos_x, pos_y,pos_z), // translation position
+trackerLog,  // its logical volume
+"Tracker",   // its name
+worldLog,    // its mother (logical) volume
+false,       // no boolean operations
+0);          // its copy number
+/// ROOT ??
+TGeoVolume::AddNode(TGeoVolume *daughter,Int_t copy_No,TGeoMatrix *matr);
+Placement with respect to its mother volume
+TGeoTranslation *tr1 = new TGeoTranslation(20., 0, 0.);
+TGeoRotation   *rot1 = new TGeoRotation("rot1", 90., 0., 90., 270., 0., 0.);
+TGeoCombiTrans *combi1 = new TGeoCombiTrans(transl, rot1);
 
 // Rotation
 G4RotationMatrix -> TRotation
@@ -784,5 +804,5 @@ RotateX(),RotateY() and RotateZ()   // get radians
 a.Inverse();// b is inverse of a, a is unchanged
 b = a.Invert();// invert a and set b = a
 
-    ///////////////////////////////////////////////////////////////////////
-    */
+///////////////////////////////////////////////////////////////////////
+*/

@@ -9,8 +9,8 @@
 ///  -
 ///
 ///
-/// \date     March 20 2017
-/// \version  0.11
+/// \date     March 30 2017
+/// \version  0.12
 /// \author N. Gauvin; CERN
 
 #ifndef ALLPIX_DETECTOR_CONSTRUCTION_TGEO_H
@@ -46,6 +46,7 @@ const TString GuardRingsName = "GuardRings";
 
 // ### to be placed in a more adequate place
 TGeoTranslation ToTGeoTranslation(const ROOT::Math::XYZVector& pos);
+TString Print(TGeoTranslation* trl);
 
 namespace allpix {
 
@@ -90,8 +91,8 @@ namespace allpix {
         bool m_buildAppliancesFlag;
         int m_Appliances_type;
         bool m_buildTestStructureFlag;
-        std::map<int, ROOT::Math::XYZVector> m_vectorWrapperEnhancement;
-        std::map<int, TGeoTranslation> m_posVectorAppliances; //
+        std::map<std::string, ROOT::Math::XYZVector> m_vectorWrapperEnhancement;
+        std::map<std::string, TGeoTranslation> m_posVectorAppliances; //
     };
 } // namespace allpix
 
