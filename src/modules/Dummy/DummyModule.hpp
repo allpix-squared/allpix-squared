@@ -18,7 +18,7 @@
 #include "core/messenger/Messenger.hpp"
 
 // include module base class
-#include <core/module/Module.hpp>
+#include "core/module/Module.hpp"
 
 // use the allpix namespace
 namespace allpix {
@@ -32,7 +32,7 @@ namespace allpix {
         DummyModule(Configuration config, Messenger*, GeometryManager*);
 
         // method that will do the computations
-        void run();
+        void run() override;
 
     private:
         Configuration config_;

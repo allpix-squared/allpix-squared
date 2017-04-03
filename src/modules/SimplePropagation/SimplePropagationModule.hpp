@@ -1,34 +1,30 @@
-/*
- * Histogram hits in a very simplified way
+/**
+ * @author Paul Schuetze <paul.schuetze@desy.de>
+ * @author Koen Wolters <koen.wolters@cern.ch>
  */
-
-#ifndef ALLPIX_MODULE_DETECTOR_HISTOGRAMMER_H
-#define ALLPIX_MODULE_DETECTOR_HISTOGRAMMER_H
 
 #include <memory>
 #include <string>
 
 #include "core/config/Configuration.hpp"
-#include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
+
 #include "core/module/Module.hpp"
 
 #include "objects/ChargeDeposit.hpp"
 
 namespace allpix {
-    class DepositionMessage;
-
     // define the module to inherit from the module base class
-    class DetectorHistogrammerModule : public Module {
+    class SimplePropagationModule : public Module {
     public:
         // name of the module
         static const std::string name;
 
         // constructor and destructor
-        DetectorHistogrammerModule(Configuration, Messenger*, std::shared_ptr<Detector>);
-        ~DetectorHistogrammerModule() override;
+        SimplePropagationModule(Configuration, Messenger*, std::shared_ptr<Detector>);
+        ~SimplePropagationModule() override;
 
-        // create and plot the histograms
+        // do the propagation of the charge deposits
         void run() override;
 
     private:
@@ -41,6 +37,5 @@ namespace allpix {
         // deposits for a specific detector
         std::shared_ptr<ChargeDepositMessage> deposits_message_;
     };
-} // namespace allpix
 
-#endif /* ALLPIX_MODULE_DETECTOR_HISTOGRAMMER_H */
+} // namespace allpix

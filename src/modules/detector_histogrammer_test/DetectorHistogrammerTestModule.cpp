@@ -24,15 +24,15 @@ const std::string DetectorHistogrammerModule::name = "detector_histogrammer_test
 DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
-    : Module(detector), config_(std::move(config)), detector_(std::move(detector)), deposit_message_(nullptr) {
-    messenger->bindSingle(this, &DetectorHistogrammerModule::deposit_message_);
+    : Module(detector), config_(std::move(config)), detector_(std::move(detector)), deposits_message_(nullptr) {
+    messenger->bindSingle(this, &DetectorHistogrammerModule::deposits_message_);
 }
 DetectorHistogrammerModule::~DetectorHistogrammerModule() = default;
 
 // run the deposition
 void DetectorHistogrammerModule::run() {
     // check if we got any deposits
-    if(deposit_message_ == nullptr) {
+    if(deposits_message_ == nullptr) {
         LOG(WARNING) << "Detector " << detector_->getName() << " did not get any deposits... skipping!";
         return;
     }
@@ -62,7 +62,7 @@ void DetectorHistogrammerModule::run() {
                               -model->getHalfSensorSizeY(),
                               model->getHalfSensorSizeY());
 
-    for(auto& deposit : deposit_message_->getData()) {
+    for(auto& deposit : deposits_message_->getData()) {
         auto vec = deposit.getPosition();
         double energy = deposit.getEnergy();
 

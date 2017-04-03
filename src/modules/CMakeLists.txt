@@ -27,6 +27,9 @@ ALLPIX_BUILD_MODULE(GeometryBuilderGeant4)
 # deposition
 ALLPIX_BUILD_MODULE(DepositionGeant4)
 
+# propagation
+ALLPIX_BUILD_MODULE(SimplePropagation)
+
 # visualization
 ALLPIX_BUILD_MODULE(VisualizationGeant4)
 

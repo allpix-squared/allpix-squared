@@ -12,14 +12,14 @@
 #include "core/module/ModuleFactory.hpp"
 
 // FIXME: should not be here
-#include "modules/GeometryBuilderTGeo/TGeoBuilderModule.hpp"
-#include "modules/deposit_reader_test/TestDepositReaderModule.hpp"
-#include "modules/detector_histogrammer_test/DetectorHistogrammerTestModule.hpp"
-
 #include "modules/DepositionGeant4/DepositionGeant4Module.hpp"
 #include "modules/Example/ExampleModule.hpp"
 #include "modules/GeometryBuilderGeant4/GeometryBuilderGeant4Module.hpp"
+#include "modules/GeometryBuilderTGeo/TGeoBuilderModule.hpp"
+#include "modules/SimplePropagation/SimplePropagationModule.hpp"
 #include "modules/VisualizationGeant4/VisualizationGeant4Module.hpp"
+#include "modules/deposit_reader_test/TestDepositReaderModule.hpp"
+#include "modules/detector_histogrammer_test/DetectorHistogrammerTestModule.hpp"
 
 using namespace allpix;
 
@@ -37,6 +37,9 @@ std::unique_ptr<ModuleFactory> generator(const std::string& str) {
     }
     if(str == ExampleModule::name) {
         return std::make_unique<UniqueModuleFactory<ExampleModule>>();
+    }
+    if(str == SimplePropagationModule::name) {
+        return std::make_unique<DetectorModuleFactory<SimplePropagationModule>>();
     }
 
     if(str == DetectorHistogrammerModule::name) {
