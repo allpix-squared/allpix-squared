@@ -52,7 +52,7 @@ void AllPix::add_units() {
     Units::add("s", 1e9);
 
     // TEMPERATURE
-    // FIXME: not really needed as it is standard
+    // FIXME: not really needed as it is the only real option
     Units::add("K", 1);
 
     // ENERGY
@@ -65,6 +65,7 @@ void AllPix::add_units() {
     Units::add("C", 1.6021766208e-19);
 
     // ANGLES
-    // NOTE: degree is a fake unit
+    // NOTE: these are fake units
     Units::add("deg", 0.01745329252);
+    Units::add("rad", 1);
 }
