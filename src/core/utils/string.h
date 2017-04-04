@@ -136,7 +136,9 @@ namespace allpix {
     // overload for arithmetic types
     template <typename T, typename = std::enable_if_t<std::is_arithmetic<T>::value>>
     std::string to_string_impl(T inp, empty_tag) {
-        return std::to_string(inp);
+        std::ostringstream out;
+        out << inp;
+        return out.str();
     }
     // NOTE: we have to provide all these specializations to prevent std::to_string from being called
     //       there may be a better way to work with this
