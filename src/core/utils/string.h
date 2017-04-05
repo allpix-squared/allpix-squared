@@ -79,8 +79,9 @@ namespace allpix {
         }
 
         // apply all the units if they exists
-        if(!units.empty())
+        if(!units.empty()) {
             ret_value = allpix::Units::get(ret_value, units);
+        }
         return ret_value;
     }
     // overload for string
