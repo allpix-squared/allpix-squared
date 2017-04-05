@@ -79,31 +79,8 @@ namespace allpix {
         }
 
         // apply all the units if they exists
-        char lst = '*';
-        if(!units.empty()) {
-            std::string unit;
-            // find all units
-            for(char ch : units) {
-                if(ch == '*' || ch == '/') {
-                    if(lst == '*') {
-                        ret_value = allpix::Units::get(unit, ret_value);
-                        unit.clear();
-                    } else if(lst == '/') {
-                        ret_value = allpix::Units::getInverse(unit, ret_value);
-                        unit.clear();
-                    }
-                    lst = ch;
-                } else {
-                    unit += ch;
-                }
-            }
-            // apply last unit
-            if(lst == '*') {
-                ret_value = allpix::Units::get(unit, ret_value);
-            } else if(lst == '/') {
-                ret_value = allpix::Units::getInverse(unit, ret_value);
-            }
-        }
+        if(!units.empty())
+            ret_value = allpix::Units::get(ret_value, units);
         return ret_value;
     }
     // overload for string

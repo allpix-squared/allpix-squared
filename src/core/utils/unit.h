@@ -23,20 +23,45 @@ namespace allpix {
         // add a new unit
         static void add(std::string str, UnitType value);
 
-        // get a new unit
+        // get a single unit
+        static UnitType getSingle(std::string str);
+        template <typename T> static T getSingle(T inp, std::string str);
+        template <typename T> static T getSingleInverse(T inp, std::string str);
+
+        // get a unit sequence
         static UnitType get(std::string str);
-        template <typename T> static T get(std::string str, T inp);
-        template <typename T> static T getInverse(std::string str, T inp);
+        template <typename T> static T get(T inp, std::string str);
+        template <typename T> static T getInverse(T inp, std::string str);
 
         // convert to another unit from the base unit (FIXME: confusing?)
-        static UnitType convert(std::string str, UnitType inp);
+        static UnitType convert(UnitType inp, std::string str);
 
     private:
         static std::map<std::string, UnitType> unit_map_;
     };
 
+    // get single input in the given unit
+    template <typename T> T Units::getSingle(T inp, std::string str) {
+        UnitType out = static_cast<UnitType>(inp) * getSingle(std::move(str));
+        if(out > static_cast<UnitType>(std::numeric_limits<T>::max()) ||
+           out < static_cast<UnitType>(std::numeric_limits<T>::lowest())) {
+            throw std::overflow_error("unit conversion overflows the type");
+        }
+        return static_cast<T>(out);
+    }
+
+    // get single input in the inverse of the given unit
+    template <typename T> T Units::getSingleInverse(T inp, std::string str) {
+        UnitType out = static_cast<UnitType>(inp) / getSingle(std::move(str));
+        if(out > static_cast<UnitType>(std::numeric_limits<T>::max()) ||
+           out < static_cast<UnitType>(std::numeric_limits<T>::lowest())) {
+            throw std::overflow_error("unit conversion overflows the type");
+        }
+        return static_cast<T>(out);
+    }
+
     // get input in the given unit
-    template <typename T> T Units::get(std::string str, T inp) {
+    template <typename T> T Units::get(T inp, std::string str) {
         UnitType out = static_cast<UnitType>(inp) * get(std::move(str));
         if(out > static_cast<UnitType>(std::numeric_limits<T>::max()) ||
            out < static_cast<UnitType>(std::numeric_limits<T>::lowest())) {
@@ -46,7 +71,7 @@ namespace allpix {
     }
 
     // get input in the inverse of the given unit
-    template <typename T> T Units::getInverse(std::string str, T inp) {
+    template <typename T> T Units::getInverse(T inp, std::string str) {
         UnitType out = static_cast<UnitType>(inp) / get(std::move(str));
         if(out > static_cast<UnitType>(std::numeric_limits<T>::max()) ||
            out < static_cast<UnitType>(std::numeric_limits<T>::lowest())) {
@@ -54,6 +79,7 @@ namespace allpix {
         }
         return static_cast<T>(out);
     }
+
 } // namespace allpix
 
 #endif /* ALLPIX_UNIT_H */

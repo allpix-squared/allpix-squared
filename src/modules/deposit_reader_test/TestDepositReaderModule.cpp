@@ -33,9 +33,9 @@ void TestDepositReaderModule::run() {
         for(auto& deposit : message->getData()) {
             auto pos = deposit.getPosition();
 
-            auto x = Units::convert("um", pos.x());
-            auto y = Units::convert("um", pos.y());
-            auto z = Units::convert("um", pos.z());
+            auto x = Units::convert(pos.x(), "um");
+            auto y = Units::convert(pos.y(), "um");
+            auto z = Units::convert(pos.z(), "um");
 
             LOG(DEBUG) << std::fixed << std::setprecision(5) << deposit.getCharge()
                        << " units of charge deposited at point (" << x << "um," << y << "um," << z << "um) in detector "
