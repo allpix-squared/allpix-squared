@@ -46,13 +46,13 @@ SimplePropagationModule::SimplePropagationModule(Configuration config,
     random_generator_.seed(std::random_device()());
 
     // set defaults for config variables
-    config_.setDefault<double>("spatial_precision", 1e-10);
-    config_.setDefault<double>("timestep_min", 0.005e-9);
-    config_.setDefault<double>("timestep_max", 0.1e-9);
+    config_.setDefault<double>("spatial_precision", Units::get(0.1, "nm"));
+    config_.setDefault<double>("timestep_min", Units::get(0.0005, "ns"));
+    config_.setDefault<double>("timestep_max", Units::get(0.1, "ns"));
     config_.setDefault<unsigned int>("charge_per_step", 10);
 
     // FIXME: set fake linear electric field
-    efield_from_map = XYZVector(0, 0, 100000);
+    efield_from_map = XYZVector(0, 0, Units::get(250.0 / 300.0, "V/um"));
 }
 SimplePropagationModule::~SimplePropagationModule() = default;
 
@@ -71,6 +71,8 @@ void SimplePropagationModule::run() {
         // loop over all charges
         unsigned int electrons_remaining = deposit.getCharge();
 
+        LOG(DEBUG) << "set of charges on " << deposit.getPosition();
+
         auto charge_per_step = config_.get<unsigned int>("charge_per_step");
         while(electrons_remaining > 0) {
             // define number of charges to be propagated and remove electrons of this step from the total
@@ -88,7 +90,7 @@ void SimplePropagationModule::run() {
             // propagate a single charge deposit
             position = propagate(position);
 
-            LOG(DEBUG) << "charge propagated to " << position;
+            LOG(DEBUG) << " " << charge_per_step << " charges propagated to " << position;
         }
     }
 }
@@ -99,28 +101,29 @@ XYZVector SimplePropagationModule::propagate(const XYZVector& root_pos) {
 
     // define a function to compute the electron mobility
     auto electron_mobility = [&](double efield_mag) {
+        /* Reference: https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2) */
         // variables for charge mobility
-        auto Temperature = config_.get<double>("temperature");
-        double Electron_Mobility =
-            1.53e9 * TMath::Power(Temperature, -0.87) / (1.01 * TMath::Power(Temperature, 1.55)) * 1e-4;
-        double Electron_Beta = 0.0257 * TMath::Power(Temperature, 0.66);
-        double Electron_ec = 100 * 1.01 * TMath::Power(Temperature, 1.55);
+        auto temperature = config_.get<double>("temperature");
+        double electron_Vm = Units::get(1.53e9 * TMath::Power(temperature, -0.87), "cm/s");
+        double electron_Ec = Units::get(1.01 * TMath::Power(temperature, 1.55), "V/cm");
+        double electron_Beta = 2.57e-2 * TMath::Power(temperature, 0.66);
 
-        // calculate mobility in m2/V/s
-        return Electron_Mobility *
-               TMath::Power((1. + TMath::Power(efield_mag / Electron_ec, Electron_Beta)), -1.0 / Electron_Beta);
+        // compute electron mobility
+        double numerator = electron_Vm / electron_Ec;
+        double denominator = TMath::Power(1. + TMath::Power(efield_mag / electron_Ec, electron_Beta), 1.0 / electron_Beta);
+        return numerator / denominator;
     };
 
-    // build the runge kutta solver
+    // build the runge kutta solver with an RKF5 tableau
     auto runge_kutta =
         make_runge_kutta(tableau::RK5,
                          [&](double, Eigen::Vector3d) -> Eigen::Vector3d {
-                             // get the electric field and apply a drift velocity
-                             auto efield =
-                                 100. * Eigen::Vector3d(efield_from_map.x(), efield_from_map.y(), efield_from_map.z());
+                             // get the electric field
+                             auto efield = Eigen::Vector3d(efield_from_map.x(), efield_from_map.y(), efield_from_map.z());
+                             // compute the drift velocity
                              return -electron_mobility(efield.norm()) * (efield);
                          },
-                         0.01 * 1e-9,
+                         Units::get(0.01, "ns"),
                          position);
 
     // continue until past the sensor
@@ -134,8 +137,8 @@ XYZVector SimplePropagationModule::propagate(const XYZVector& root_pos) {
         position = runge_kutta.getValue();
 
         // apply an extra diffusion step
-        auto boltzmann_kT = 8.6173e-5 * config_.get<double>("temperature");
-        XYZVector electric_field = 100. * efield_from_map;
+        auto boltzmann_kT = Units::get(8.6173e-5, "eV/K") * config_.get<double>("temperature");
+        XYZVector electric_field = efield_from_map;
         double D = boltzmann_kT * electron_mobility(TMath::Sqrt(electric_field.Mag2()));
         double Dwidth = TMath::Sqrt(2. * D * timestep);
 
@@ -163,10 +166,10 @@ XYZVector SimplePropagationModule::propagate(const XYZVector& root_pos) {
         } else if(timestep < config_.get<double>("timestep_min")) {
             timestep = config_.get<double>("timestep_min");
         }
+
+        // LOG(DEBUG) << position.transpose() << " - " << timestep << " - " << efield_from_map.z() << std::endl;
         runge_kutta.setTimeStep(timestep);
     }
-
-    LOG(DEBUG) << "time : " << runge_kutta.getTime();
 
     position = runge_kutta.getValue();
     return XYZVector(position.x(), position.y(), position.z());
