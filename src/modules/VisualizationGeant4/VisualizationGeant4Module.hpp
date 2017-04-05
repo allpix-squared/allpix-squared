@@ -36,6 +36,9 @@ namespace allpix {
         // configuration for this module
         Configuration config_;
 
+        // variable to check if we did run succesfullly
+        bool has_run_;
+
         // pointer to the visualization manager
         std::shared_ptr<G4VisManager> vis_manager_g4_;
     };

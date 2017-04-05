@@ -4,6 +4,7 @@
 
 #include "VisualizationGeant4Module.hpp"
 
+#include <cstdlib>
 #include <memory>
 #include <string>
 #include <utility>
@@ -22,8 +23,20 @@ using namespace allpix;
 const std::string VisualizationGeant4Module::name = "VisualizationGeant4";
 
 VisualizationGeant4Module::VisualizationGeant4Module(Configuration config, Messenger*, GeometryManager*)
-    : config_(std::move(config)), vis_manager_g4_(nullptr) {}
-VisualizationGeant4Module::~VisualizationGeant4Module() = default;
+    : config_(std::move(config)), has_run_(false), vis_manager_g4_(nullptr) {}
+VisualizationGeant4Module::~VisualizationGeant4Module() {
+    if(!has_run_ && vis_manager_g4_ != nullptr) {
+        // FIXME: workaround to skip VRML visualization in case we stopped before reaching the run method
+        auto str = getenv("G4VRMLFILE_VIEWER");
+        if(str != nullptr) {
+            setenv("G4VRMLFILE_VIEWER", "NONE", 1);
+        }
+        vis_manager_g4_->GetCurrentViewer()->ShowView();
+        if(str != nullptr) {
+            setenv("G4VRMLFILE_VIEWER", str, 1);
+        }
+    }
+}
 
 void VisualizationGeant4Module::init() {
     LOG(INFO) << "INITIALIZING VISUALIZATION";
@@ -60,7 +73,7 @@ void VisualizationGeant4Module::init() {
     }
 }
 
-// run the deposition
+// display the visualization
 void VisualizationGeant4Module::run() {
     LOG(INFO) << "VISUALIZING RESULT";
 
@@ -77,6 +90,9 @@ void VisualizationGeant4Module::run() {
     } else {
         vis_manager_g4_->GetCurrentViewer()->ShowView();
     }
+
+    // set that we did succesfully visualize
+    has_run_ = true;
 
     LOG(INFO) << "END VISUALIZATION";
 }
