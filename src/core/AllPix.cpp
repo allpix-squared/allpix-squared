@@ -41,28 +41,35 @@ void AllPix::add_units() {
     Units::add("nm", 1e-6);
     Units::add("um", 1e-3);
     Units::add("mm", 1);
+    Units::add("cm", 1e1);
+    Units::add("dm", 1e2);
     Units::add("m", 1e3);
     Units::add("km", 1e6);
 
     // TIME
     Units::add("ps", 1e-3);
     Units::add("ns", 1);
-    Units::add("ms", 1e3);
-    Units::add("us", 1e6);
+    Units::add("us", 1e3);
+    Units::add("ms", 1e6);
     Units::add("s", 1e9);
 
     // TEMPERATURE
-    // FIXME: not really needed as it is the only real option
     Units::add("K", 1);
 
     // ENERGY
     Units::add("eV", 1e-6);
-    Units::add("KeV", 1e-3);
+    Units::add("keV", 1e-3);
     Units::add("MeV", 1);
     Units::add("GeV", 1e3);
 
     // CHARGE
+    Units::add("e", 1);
     Units::add("C", 1.6021766208e-19);
+
+    // VOLTAGE
+    // NOTE: fixed by above
+    Units::add("V", 1e-6);
+    Units::add("kV", 1e-3);
 
     // ANGLES
     // NOTE: these are fake units
