@@ -24,6 +24,9 @@ ALLPIX_BUILD_MODULE(Example)
 ALLPIX_BUILD_MODULE(GeometryBuilderTGeo)
 ALLPIX_BUILD_MODULE(GeometryBuilderGeant4)
 
+# input readers
+ALLPIX_BUILD_MODULE(ElectricFieldReaderInit)
+
 # deposition
 ALLPIX_BUILD_MODULE(DepositionGeant4)
 

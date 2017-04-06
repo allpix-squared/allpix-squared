@@ -56,9 +56,12 @@ ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZVector& po
         return ROOT::Math::XYZVector();
     }
     // compute indices
-    int x_ind = static_cast<int>(electric_field_sizes_[0] * (pos.x() - model_->getSensorMinX()) / model_->getSensorSizeX());
-    int y_ind = static_cast<int>(electric_field_sizes_[1] * (pos.y() - model_->getSensorMinY()) / model_->getSensorSizeY());
-    int z_ind = static_cast<int>(electric_field_sizes_[2] * (pos.y() - model_->getSensorMinZ()) / model_->getSensorSizeZ());
+    int x_ind = static_cast<int>(static_cast<int>(electric_field_sizes_[0]) * (pos.x() - model_->getSensorMinX()) /
+                                 model_->getSensorSizeX());
+    int y_ind = static_cast<int>(static_cast<int>(electric_field_sizes_[1]) * (pos.y() - model_->getSensorMinY()) /
+                                 model_->getSensorSizeY());
+    int z_ind = static_cast<int>(static_cast<int>(electric_field_sizes_[2]) * (pos.y() - model_->getSensorMinZ()) /
+                                 model_->getSensorSizeZ());
 
     // check for indices within the sensor
     if(x_ind < 0 || x_ind >= static_cast<int>(electric_field_sizes_[0]) || y_ind < 0 ||

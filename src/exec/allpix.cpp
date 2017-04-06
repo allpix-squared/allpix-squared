@@ -13,6 +13,7 @@
 
 // FIXME: should not be here
 #include "modules/DepositionGeant4/DepositionGeant4Module.hpp"
+#include "modules/ElectricFieldReaderInit/ElectricFieldReaderInitModule.hpp"
 #include "modules/Example/ExampleModule.hpp"
 #include "modules/GeometryBuilderGeant4/GeometryBuilderGeant4Module.hpp"
 #include "modules/GeometryBuilderTGeo/TGeoBuilderModule.hpp"
@@ -40,6 +41,9 @@ std::unique_ptr<ModuleFactory> generator(const std::string& str) {
     }
     if(str == SimplePropagationModule::name) {
         return std::make_unique<DetectorModuleFactory<SimplePropagationModule>>();
+    }
+    if(str == ElectricFieldReaderInitModule::name) {
+        return std::make_unique<DetectorModuleFactory<ElectricFieldReaderInitModule>>();
     }
 
     if(str == DetectorHistogrammerModule::name) {
