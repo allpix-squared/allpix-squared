@@ -66,9 +66,9 @@ namespace allpix {
          * NOTE: center is at the middle of the first pixel at half z
          */
         // FIXME: is this a good way to implement this
-        double getSensorMinX() { return -getHalfPixelSizeX(); }
-        double getSensorMinY() { return -getHalfPixelSizeX(); }
-        double getSensorMinZ() { return -getHalfSensorZ(); }
+        double getSensorMinX() override { return -getHalfPixelSizeX(); }
+        double getSensorMinY() override { return -getHalfPixelSizeX(); }
+        double getSensorMinZ() override { return -getHalfSensorZ(); }
 
         /* Chip dimensions */
         ROOT::Math::XYZVector getChipSize() { return chip_size_; }

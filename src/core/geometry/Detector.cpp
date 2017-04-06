@@ -16,8 +16,8 @@ Detector::Detector(std::string name,
                    ROOT::Math::XYZVector position,
                    ROOT::Math::EulerAngles orientation)
     : name_(std::move(name)), model_(std::move(model)), position_(std::move(position)), orientation_(orientation),
-      electric_field_sizes_({0, 0, 0}), electric_field_(nullptr), external_models_() {
-    if(model == nullptr) {
+      electric_field_sizes_{{0, 0, 0}}, electric_field_(nullptr), external_models_() {
+    if(model_ == nullptr) {
         throw std::invalid_argument("detector model cannot be null");
     }
 }
@@ -68,16 +68,15 @@ ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZVector& po
         return ROOT::Math::XYZVector(0, 0, 0);
     }
 
-    unsigned int tot_ind = static_cast<unsigned int>(x_ind) * electric_field_sizes_[1] * electric_field_sizes_[2] * 3 +
-                           static_cast<unsigned int>(y_ind) * electric_field_sizes_[2] * 3 +
-                           static_cast<unsigned int>(z_ind) * 3;
+    size_t tot_ind = static_cast<size_t>(x_ind) * electric_field_sizes_[1] * electric_field_sizes_[2] * 3 +
+                     static_cast<size_t>(y_ind) * electric_field_sizes_[2] * 3 + static_cast<size_t>(z_ind) * 3;
     return ROOT::Math::XYZVector(
         (*electric_field_)[tot_ind], (*electric_field_)[tot_ind + 1], (*electric_field_)[tot_ind + 2]);
 }
 // FIXME: is that a good way to provide an electric field
-void Detector::setElectricField(std::shared_ptr<std::vector<double>> field, std::array<unsigned int, 3> sizes) {
+void Detector::setElectricField(std::shared_ptr<std::vector<double>> field, std::array<size_t, 3> sizes) {
     if(sizes[0] * sizes[1] * sizes[2] * 3 != field->size()) {
         throw std::invalid_argument("electric field does not match the given sizes");
     }
-    electric_field_ = field;
+    electric_field_ = std::move(field);
 }

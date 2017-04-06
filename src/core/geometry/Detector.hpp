@@ -44,7 +44,7 @@ namespace allpix {
         // Get fields in detector
         ROOT::Math::XYZVector getElectricField(const ROOT::Math::XYZVector&);
         // FIXME: is that a good way to provide an electric field
-        void setElectricField(std::shared_ptr<std::vector<double>> field, std::array<unsigned int, 3> sizes);
+        void setElectricField(std::shared_ptr<std::vector<double>> field, std::array<size_t, 3> sizes);
 
         // get model description
         const std::shared_ptr<DetectorModel> getModel() const;
@@ -65,7 +65,7 @@ namespace allpix {
         ROOT::Math::EulerAngles orientation_;
 
         // fields
-        std::array<unsigned int, 3> electric_field_sizes_;
+        std::array<size_t, 3> electric_field_sizes_;
         std::shared_ptr<std::vector<double>> electric_field_;
 
         // external models (FIXME: we probably want to drop this feature...)
