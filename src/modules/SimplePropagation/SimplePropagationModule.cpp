@@ -5,6 +5,7 @@
 
 #include "SimplePropagationModule.hpp"
 
+#include <cmath>
 #include <map>
 #include <memory>
 #include <random>
@@ -14,7 +15,6 @@
 #include <Eigen/Core>
 
 #include <Math/Vector3D.h>
-#include <TMath.h>
 
 #include "core/config/Configuration.hpp"
 #include "core/messenger/Messenger.hpp"
@@ -47,6 +47,7 @@ SimplePropagationModule::SimplePropagationModule(Configuration config,
 
     // set defaults for config variables
     config_.setDefault<double>("spatial_precision", Units::get(0.1, "nm"));
+    config_.setDefault<double>("timestep_start", Units::get(0.01, "ns"));
     config_.setDefault<double>("timestep_min", Units::get(0.0005, "ns"));
     config_.setDefault<double>("timestep_max", Units::get(0.1, "ns"));
     config_.setDefault<unsigned int>("charge_per_step", 10);
@@ -104,27 +105,41 @@ XYZVector SimplePropagationModule::propagate(const XYZVector& root_pos) {
         /* Reference: https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2) */
         // variables for charge mobility
         auto temperature = config_.get<double>("temperature");
-        double electron_Vm = Units::get(1.53e9 * TMath::Power(temperature, -0.87), "cm/s");
-        double electron_Ec = Units::get(1.01 * TMath::Power(temperature, 1.55), "V/cm");
-        double electron_Beta = 2.57e-2 * TMath::Power(temperature, 0.66);
+        double electron_Vm = Units::get(1.53e9 * std::pow(temperature, -0.87), "cm/s");
+        double electron_Ec = Units::get(1.01 * std::pow(temperature, 1.55), "V/cm");
+        double electron_Beta = 2.57e-2 * std::pow(temperature, 0.66);
 
         // compute electron mobility
         double numerator = electron_Vm / electron_Ec;
-        double denominator = TMath::Power(1. + TMath::Power(efield_mag / electron_Ec, electron_Beta), 1.0 / electron_Beta);
+        double denominator = std::pow(1. + std::pow(efield_mag / electron_Ec, electron_Beta), 1.0 / electron_Beta);
         return numerator / denominator;
     };
 
+    // define a function to compute the diffusion
+    auto boltzmann_kT = Units::get(8.6173e-5, "eV/K") * config_.get<double>("temperature");
+    auto timestep = config_.get<double>("timestep_start");
+    auto electron_diffusion = [&](double efield_mag) -> Eigen::Vector3d {
+        double diffusion_constant = boltzmann_kT * electron_mobility(efield_mag);
+        double diffusion_std_dev = std::sqrt(2. * diffusion_constant * timestep);
+
+        std::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
+        Eigen::Vector3d diffusion;
+        for(int i = 0; i < 3; ++i) {
+            diffusion[i] = gauss_distribution(random_generator_);
+        }
+        return diffusion;
+    };
+
+    // define a function to compute the electron velocity
+    auto electron_velocity = [&](double, Eigen::Vector3d) -> Eigen::Vector3d {
+        // get the electric field
+        auto efield = Eigen::Vector3d(efield_from_map.x(), efield_from_map.y(), efield_from_map.z());
+        // compute the drift velocity
+        return (-electron_mobility(efield.norm()) * (efield));
+    };
+
     // build the runge kutta solver with an RKF5 tableau
-    auto runge_kutta =
-        make_runge_kutta(tableau::RK5,
-                         [&](double, Eigen::Vector3d) -> Eigen::Vector3d {
-                             // get the electric field
-                             auto efield = Eigen::Vector3d(efield_from_map.x(), efield_from_map.y(), efield_from_map.z());
-                             // compute the drift velocity
-                             return -electron_mobility(efield.norm()) * (efield);
-                         },
-                         Units::get(0.01, "ns"),
-                         position);
+    auto runge_kutta = make_runge_kutta(tableau::RK5, electron_velocity, timestep, position);
 
     // continue until past the sensor
     // FIXME: we need to determine what would be a good time to stop
@@ -133,20 +148,11 @@ XYZVector SimplePropagationModule::propagate(const XYZVector& root_pos) {
         auto step = runge_kutta.step();
 
         // get the current result and timestep
-        double timestep = runge_kutta.getTimeStep();
+        timestep = runge_kutta.getTimeStep();
         position = runge_kutta.getValue();
 
         // apply an extra diffusion step
-        auto boltzmann_kT = Units::get(8.6173e-5, "eV/K") * config_.get<double>("temperature");
-        XYZVector electric_field = efield_from_map;
-        double D = boltzmann_kT * electron_mobility(TMath::Sqrt(electric_field.Mag2()));
-        double Dwidth = TMath::Sqrt(2. * D * timestep);
-
-        std::normal_distribution<double> gauss_distribution(0, Dwidth);
-        Eigen::Vector3d diffusion;
-        for(int i = 0; i < 3; ++i) {
-            diffusion[i] = gauss_distribution(random_generator_);
-        }
+        auto diffusion = electron_diffusion(efield_from_map.Mag2());
         runge_kutta.setValue(position + diffusion);
 
         // adapt step size to precision
@@ -167,7 +173,6 @@ XYZVector SimplePropagationModule::propagate(const XYZVector& root_pos) {
             timestep = config_.get<double>("timestep_min");
         }
 
-        // LOG(DEBUG) << position.transpose() << " - " << timestep << " - " << efield_from_map.z() << std::endl;
         runge_kutta.setTimeStep(timestep);
     }
 

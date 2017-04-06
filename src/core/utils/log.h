@@ -81,7 +81,7 @@ namespace allpix {
         ;                                                                                                                   \
     else                                                                                                                    \
         allpix::Log().getStream(                                                                                            \
-            allpix::LogLevel::level, __FILE_NAME__, std::string(std::move(static_cast<const char*>(__func__))), __LINE__)
+            allpix::LogLevel::level, __FILE_NAME__, std::string(static_cast<const char*>(__func__)), __LINE__)
 
     // FIXME: this also be defined in a separate file
     // suppress a (logging) stream
