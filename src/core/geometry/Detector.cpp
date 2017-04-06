@@ -55,12 +55,13 @@ ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZVector& po
         // FIXME: determine what we should do if we have no external electric field...
         return ROOT::Math::XYZVector();
     }
+
     // compute indices
-    int x_ind = static_cast<int>(static_cast<int>(electric_field_sizes_[0]) * (pos.x() - model_->getSensorMinX()) /
+    int x_ind = static_cast<int>(static_cast<double>(electric_field_sizes_[0]) * (pos.x() - model_->getSensorMinX()) /
                                  model_->getSensorSizeX());
-    int y_ind = static_cast<int>(static_cast<int>(electric_field_sizes_[1]) * (pos.y() - model_->getSensorMinY()) /
+    int y_ind = static_cast<int>(static_cast<double>(electric_field_sizes_[1]) * (pos.y() - model_->getSensorMinY()) /
                                  model_->getSensorSizeY());
-    int z_ind = static_cast<int>(static_cast<int>(electric_field_sizes_[2]) * (pos.y() - model_->getSensorMinZ()) /
+    int z_ind = static_cast<int>(static_cast<double>(electric_field_sizes_[2]) * (pos.z() - model_->getSensorMinZ()) /
                                  model_->getSensorSizeZ());
 
     // check for indices within the sensor
@@ -82,4 +83,5 @@ void Detector::setElectricField(std::shared_ptr<std::vector<double>> field, std:
         throw std::invalid_argument("electric field does not match the given sizes");
     }
     electric_field_ = std::move(field);
+    electric_field_sizes_ = sizes;
 }

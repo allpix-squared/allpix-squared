@@ -3,6 +3,7 @@
 #include <fstream>
 #include <limits>
 #include <memory>
+#include <new>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -10,6 +11,7 @@
 #include "core/config/InvalidValueError.hpp"
 #include "core/geometry/PixelDetectorModel.hpp"
 #include "core/utils/log.h"
+#include "core/utils/unit.h"
 
 // use the allpix namespace within this file
 using namespace allpix;
@@ -26,10 +28,17 @@ ElectricFieldReaderInitModule::ElectricFieldReaderInitModule(Configuration confi
 // run method that does the main computations for the module
 void ElectricFieldReaderInitModule::run() {
     try {
-        std::shared_ptr<std::vector<double>> field =
-            get_by_file_name(config_.get<std::string>("file_name"), *detector_.get());
-    } catch(std::invalid_argument&) {
-        throw InvalidValueError(config_, "file_name", "specified file does not exist");
+        // get field
+        auto field_data = get_by_file_name(config_.get<std::string>("file_name"), *detector_.get());
+
+        // set detector field
+        detector_->setElectricField(field_data.first, field_data.second);
+    } catch(std::invalid_argument& e) {
+        throw InvalidValueError(config_, "file_name", e.what());
+    } catch(std::runtime_error& e) {
+        throw InvalidValueError(config_, "file_name", e.what());
+    } catch(std::bad_alloc& e) {
+        throw InvalidValueError(config_, "file_name", "file too large");
     }
 }
 
@@ -39,19 +48,26 @@ inline static void check_detector_match(Detector& detector, double thickness, in
     // do a few simple checks for pixel detector models
     if(model != nullptr) {
         if(std::fabs(thickness - model->getSensorSizeZ()) > std::numeric_limits<double>::epsilon()) {
-            LOG(WARNING) << "thickness of sensor is not equal to the value given in the model of " << detector.getName();
+            LOG(WARNING) << "thickness of sensor in file is " << thickness << " but in the model of " << detector.getName()
+                         << " it is " << model->getSensorSizeZ();
         }
         if(npixx != model->getNPixelsX() || npixy != model->getNPixelsY()) {
-            LOG(WARNING) << "amount of pixels of sensor is not equal to the value given in the model of "
-                         << detector.getName();
+            LOG(WARNING) << "number of pixels is (" << npixx << "," << npixy << ") but in the model of "
+                         << detector.getName() << " it is (" << model->getNPixelsX() << "," << model->getNPixelsY() << ")";
         }
     }
 }
 
 // get the electric field from file name (reusing the same if catched earlier)
-std::map<std::string, std::shared_ptr<std::vector<double>>> ElectricFieldReaderInitModule::field_map_;
-std::shared_ptr<std::vector<double>> ElectricFieldReaderInitModule::get_by_file_name(std::string name, Detector& detector) {
-    std::string fullpath = realpath(name.c_str(), nullptr);
+std::map<std::string, ElectricFieldReaderInitModule::FieldData> ElectricFieldReaderInitModule::field_map_;
+ElectricFieldReaderInitModule::FieldData ElectricFieldReaderInitModule::get_by_file_name(const std::string& file_name,
+                                                                                         Detector& detector) {
+    char* path_ptr = realpath(file_name.c_str(), nullptr);
+    if(path_ptr == nullptr) {
+        throw std::invalid_argument("file not found");
+    }
+    std::string fullpath(path_ptr);
+    free(static_cast<void*>(path_ptr));
 
     // search in cache
     auto iter = field_map_.find(fullpath);
@@ -62,62 +78,54 @@ std::shared_ptr<std::vector<double>> ElectricFieldReaderInitModule::get_by_file_
 
     // check if file is correct
     std::ifstream file(fullpath);
-    if(!file.good()) {
-        throw std::invalid_argument("file not found");
-    }
 
     std::string header;
-    std::getline(std::cin, header);
+    std::getline(file, header);
 
-    LOG(DEBUG) << "header of file " << name << " is " << header;
+    LOG(DEBUG) << "header of file " << file_name << " is " << header;
 
-    double tmp;
-    std::cin >> tmp >> tmp;        // ignore the init seed and cluster length
-    std::cin >> tmp >> tmp >> tmp; // ignore the incident pion direction
-    std::cin >> tmp >> tmp >> tmp; // ignore the magnetic field (specify separately)
+    std::string tmp;
+    file >> tmp >> tmp;        // ignore the init seed and cluster length
+    file >> tmp >> tmp >> tmp; // ignore the incident pion direction
+    file >> tmp >> tmp >> tmp; // ignore the magnetic field (specify separately)
     double thickness, npixx, npixy;
-    std::cin >> thickness >> npixx >> npixy;
-    std::cin >> tmp >> tmp >> tmp >> tmp; // ignore temperature, flux, rhe (?) and new_drde (?)
-    int xsize, ysize, zsize;
-    std::cin >> xsize >> ysize >> zsize;
-    std::cin >> tmp;
+    file >> thickness >> npixx >> npixy;
+    thickness = Units::get(thickness, "um");
+    file >> tmp >> tmp >> tmp >> tmp; // ignore temperature, flux, rhe (?) and new_drde (?)
+    size_t xsize, ysize, zsize;
+    file >> xsize >> ysize >> zsize;
+    file >> tmp;
 
     check_detector_match(detector, thickness, static_cast<int>(std::round(npixx)), static_cast<int>(std::round(npixy)));
 
-    LOG(DEBUG) << " size is " << xsize << " " << ysize << " " << zsize << std::endl;
+    if(file.fail()) {
+        throw std::runtime_error("invalid data or unexpected end of file");
+    }
+    auto field = std::make_shared<std::vector<double>>();
+    field->resize(xsize * ysize * zsize * 3);
 
-    /*
-        fscanf( ifp,"%d %d", initseed, runsize );
+    for(size_t i = 0; i < xsize * ysize * zsize; ++i) {
+        if(file.eof()) {
+            throw std::runtime_error("unexpected end of file");
+        }
 
-        printf( "default random number seed %d, events/run %d\n",
-          *initseed, *runsize );
+        size_t xind, yind, zind;
+        file >> xind >> yind >> zind;
 
-        // incident pion direction:
+        if(file.fail() || xind > xsize || yind > ysize || zind > zsize) {
+            throw std::runtime_error("invalid data");
+        }
+        xind--;
+        yind--;
+        zind--;
 
-        fscanf( ifp,"%f %f %f", &pidir[0], &pidir[1], &pidir[2] );
+        for(size_t j = 0; j < 3; ++j) {
+            double input;
+            file >> input;
 
-        printf( "turn, tilt, 1 = %f, %f, %f\n", pidir[0], pidir[1], pidir[2] );
+            (*field)[xind * ysize * zsize * 3 + yind * zsize * 3 + zind * 3 + j] = Units::get(input, "V/cm");
+        }
+    }
 
-        // magnetic field:
-
-        fscanf( ifp,"%f %f %f", &bfield.f[0], &bfield.f[1], &bfield.f[2] );
-        bfield.f[3] = 0.;
-
-        printf( "Bfield = %f, %f, %f, %f\n", bfield.f[0], bfield.f[1], bfield.f[2], bfield.f[3] );
-
-        // parameters:
-
-        fscanf( ifp,"%f %f %f %f %f %f %d %d %d %d %d",
-          thick, xsize, ysize, temp, flux, rhe, new_drde, &npixx, &npixy, &npixz, fullgrid );
-
-        // AB: If this fails need to make efield array bigger!
-        assert(npixx <= 150 && npixy <= 100 && npixz <= 300);
-
-        printf( "thickness = %f, x/y sizes = %f/%f, temp = %f, fluence = %f, rhe = %f, new_drde = %d, fullgrid = %d \n",
-          *thick, *xsize, *ysize, *temp, *flux, *rhe, *new_drde, *fullgrid );
-
-        printf( "x/y/z field array dimensions = %d/%d/%d\n", npixx, npixy, npixz );
-  */
-
-    return nullptr;
+    return std::make_pair(field, std::array<size_t, 3>{{xsize, ysize, zsize}});
 }

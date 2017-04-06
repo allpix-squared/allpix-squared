@@ -54,6 +54,8 @@ SimplePropagationModule::SimplePropagationModule(Configuration config,
 
     // FIXME: set fake linear electric field
     efield_from_map = XYZVector(0, 0, Units::get(250.0 / 300.0, "V/um"));
+
+    std::cout << efield_from_map << std::endl;
 }
 SimplePropagationModule::~SimplePropagationModule() = default;
 
@@ -91,7 +93,7 @@ void SimplePropagationModule::run() {
             // propagate a single charge deposit
             position = propagate(position);
 
-            LOG(DEBUG) << " " << charge_per_step << " charges propagated to " << position;
+            // LOG(DEBUG) << " " << charge_per_step << " charges propagated to " << position;
         }
     }
 }

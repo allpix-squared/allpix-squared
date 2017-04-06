@@ -32,9 +32,11 @@ namespace allpix {
         void run() override;
 
     private:
+        using FieldData = std::pair<std::shared_ptr<std::vector<double>>, std::array<size_t, 3>>;
+
         // get the electric field from a file name
-        static std::shared_ptr<std::vector<double>> get_by_file_name(std::string name, Detector&);
-        static std::map<std::string, std::shared_ptr<std::vector<double>>> field_map_;
+        static FieldData get_by_file_name(const std::string& name, Detector&);
+        static std::map<std::string, FieldData> field_map_;
 
         // configuration for this reader
         Configuration config_;
