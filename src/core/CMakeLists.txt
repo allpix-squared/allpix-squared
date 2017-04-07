@@ -3,7 +3,10 @@ IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weffc++")
 ENDIF()
 
-# create core library
+# include the dependencies
+INCLUDE_DIRECTORIES(SYSTEM ${ALLPIX_DEPS_INCLUDE_DIRS})
+
+# create core library 
 ADD_LIBRARY(AllpixCore SHARED
     utils/log.cpp
     utils/unit.cpp
@@ -22,6 +25,10 @@ ADD_LIBRARY(AllpixCore SHARED
     AllPix.cpp
 )
 
+# link the dependencies
+TARGET_LINK_LIBRARIES(AllpixCore ${ALLPIX_DEPS_LIBRARIES})
+
+# creat standard install target
 INSTALL(TARGETS AllpixCore
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib)

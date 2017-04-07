@@ -7,7 +7,7 @@ ADD_LIBRARY(AllpixObjects SHARED
 )
 
 # link the standard dependencies
-TARGET_LINK_LIBRARIES(AllpixObjects ${ALLPIX_LIBRARIES} ${ALLPIX_DEPS_LIBRARIES})
+TARGET_LINK_LIBRARIES(AllpixObjects ${ALLPIX_DEPS_LIBRARIES})
 
 # specify install for the messages
 INSTALL(TARGETS AllpixObjects

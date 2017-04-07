@@ -1,3 +1,6 @@
+# include dependencies
+INCLUDE_DIRECTORIES(SYSTEM ${ALLPIX_DEPS_INCLUDE_DIRS})
+
 # create executable and link the libs
 ADD_EXECUTABLE(allpix allpix.cpp)
 TARGET_LINK_LIBRARIES(allpix ${ALLPIX_LIBRARIES})
