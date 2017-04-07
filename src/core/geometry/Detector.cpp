@@ -77,32 +77,38 @@ ROOT::Math::XYZPoint Detector::getGlobalPosition(const ROOT::Math::XYZPoint& loc
 
 // Get fields in detector
 ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZPoint& pos) const {
-    if(electric_field_ == nullptr) {
+    double* field = get_electric_field_raw(pos.x(), pos.y(), pos.z());
+
+    if(field == nullptr) {
         // FIXME: determine what we should do if we have no external electric field...
-        return ROOT::Math::XYZVector();
+        return ROOT::Math::XYZVector(0, 0, 0);
     }
 
+    return ROOT::Math::XYZVector(*(field), *(field + 1), *(field + 2));
+}
+// Get fields in detector
+double* Detector::get_electric_field_raw(double x, double y, double z) const {
     // compute indices
-    int x_ind = static_cast<int>(static_cast<double>(electric_field_sizes_[0]) * (pos.x() - model_->getSensorMinX()) /
+    // FIXME: can we calculate this faster using vector calculations
+    int x_ind = static_cast<int>(static_cast<double>(electric_field_sizes_[0]) * (x - model_->getSensorMinX()) /
                                  model_->getSensorSizeX());
-    int y_ind = static_cast<int>(static_cast<double>(electric_field_sizes_[1]) * (pos.y() - model_->getSensorMinY()) /
+    int y_ind = static_cast<int>(static_cast<double>(electric_field_sizes_[1]) * (y - model_->getSensorMinY()) /
                                  model_->getSensorSizeY());
-    int z_ind = static_cast<int>(static_cast<double>(electric_field_sizes_[2]) * (pos.z() - model_->getSensorMinZ()) /
+    int z_ind = static_cast<int>(static_cast<double>(electric_field_sizes_[2]) * (z - model_->getSensorMinZ()) /
                                  model_->getSensorSizeZ());
 
     // check for indices within the sensor
     if(x_ind < 0 || x_ind >= static_cast<int>(electric_field_sizes_[0]) || y_ind < 0 ||
        y_ind >= static_cast<int>(electric_field_sizes_[1]) || z_ind < 0 ||
        z_ind >= static_cast<int>(electric_field_sizes_[2])) {
-        // FIXME: determine what to do here, throw an exception our return zero
-        return ROOT::Math::XYZVector(0, 0, 0);
+        return nullptr;
     }
 
     size_t tot_ind = static_cast<size_t>(x_ind) * electric_field_sizes_[1] * electric_field_sizes_[2] * 3 +
                      static_cast<size_t>(y_ind) * electric_field_sizes_[2] * 3 + static_cast<size_t>(z_ind) * 3;
-    return ROOT::Math::XYZVector(
-        (*electric_field_)[tot_ind], (*electric_field_)[tot_ind + 1], (*electric_field_)[tot_ind + 2]);
+    return &(*electric_field_)[tot_ind];
 }
+
 // FIXME: is that a good way to provide an electric field
 void Detector::setElectricField(std::shared_ptr<std::vector<double>> field, std::array<size_t, 3> sizes) {
     if(sizes[0] * sizes[1] * sizes[2] * 3 != field->size()) {

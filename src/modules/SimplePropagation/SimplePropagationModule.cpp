@@ -131,10 +131,15 @@ XYZPoint SimplePropagationModule::propagate(const XYZPoint& root_pos) {
     // define a function to compute the electron velocity
     auto electron_velocity = [&](double, Eigen::Vector3d pos) -> Eigen::Vector3d {
         // get the electric field
-        auto efield_root = detector_->getElectricField(XYZPoint(pos.x(), pos.y(), pos.z()));
-        auto efield = Eigen::Vector3d(efield_root.x(), efield_root.y(), efield_root.z());
-        // compute the drift velocity
-        return (electron_mobility(efield.norm()) * (efield));
+        /*auto efield_root = detector_->getElectricField(XYZPoint(pos.x(), pos.y(), pos.z()));
+        auto efield = Eigen::Vector3d(efield_root.x(), efield_root.y(), efield_root.z());*/
+        double* raw_field = detector_->getElectricFieldRaw(pos);
+        if(raw_field != nullptr) {
+            // compute the drift velocity
+            auto efield = static_cast<Eigen::Map<Eigen::Vector3d>>(raw_field);
+            return (electron_mobility(efield.norm()) * (efield));
+        } else
+            return Eigen::Vector3d(0, 0, 0);
     };
 
     // build the runge kutta solver with an RKF5 tableau
@@ -150,14 +155,15 @@ XYZPoint SimplePropagationModule::propagate(const XYZPoint& root_pos) {
         timestep = runge_kutta.getTimeStep();
         position = runge_kutta.getValue();
 
-        // get electric field at current position and stop if field is zero (out of sensor)
-        auto efield = detector_->getElectricField(XYZPoint(position.x(), position.y(), position.z()));
-        if(efield.Mag2() < std::numeric_limits<double>::epsilon()) {
+        // get electric field at current position and stop if field does not exist (outside sensor)
+        double* raw_field = detector_->getElectricFieldRaw(position);
+        if(raw_field == nullptr) {
             break;
         }
 
         // apply diffusion step
-        auto diffusion = electron_diffusion(efield.Mag2());
+        auto efield = static_cast<Eigen::Map<Eigen::Vector3d>>(raw_field);
+        auto diffusion = electron_diffusion(efield.norm());
         runge_kutta.setValue(position + diffusion);
 
         // adapt step size to precision

@@ -51,7 +51,10 @@ namespace allpix {
         // bool isInSensor(const ROOT::Math::XYZVector&) const;
 
         // Get fields in detector
+        // NOTE: provide raw templated versions to use with other vector types
         ROOT::Math::XYZVector getElectricField(const ROOT::Math::XYZPoint&) const;
+        template <typename T> double* getElectricFieldRaw(T) const;
+
         // FIXME: is that a good way to provide an electric field
         void setElectricField(std::shared_ptr<std::vector<double>> field, std::array<size_t, 3> sizes);
 
@@ -65,6 +68,9 @@ namespace allpix {
         template <typename T> void setExternalModel(std::shared_ptr<T>);
 
     private:
+        // get raw electric field
+        double* get_electric_field_raw(double x, double y, double z) const;
+
         // name and model
         std::string name_;
         std::shared_ptr<DetectorModel> model_;
@@ -84,6 +90,12 @@ namespace allpix {
         std::map<std::type_index, std::shared_ptr<void>> external_models_;
     };
 
+    // get raw electric field
+    template <typename T> double* Detector::getElectricFieldRaw(T pos) const {
+        return get_electric_field_raw(pos.x(), pos.y(), pos.z());
+    }
+
+    // support external models
     template <typename T> std::shared_ptr<T> Detector::getExternalModel() {
         return std::static_pointer_cast<T>(external_models_[typeid(T)]);
     }
