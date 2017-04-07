@@ -87,7 +87,7 @@ void SimplePropagationModule::run() {
             position = propagate(position);
 
             // create a new propagated charge and add it to the list
-            PropagatedCharge propagated_charge(static_cast<ROOT::Math::XYZPoint>(position), charge_per_step);
+            PropagatedCharge propagated_charge(position, charge_per_step);
             propagated_charges.push_back(propagated_charge);
         }
     }
@@ -192,5 +192,5 @@ XYZPoint SimplePropagationModule::propagate(const XYZPoint& root_pos) {
     }
 
     position = runge_kutta.getValue();
-    return XYZPoint(position.x(), position.y(), position.z());
+    return XYZPoint(position);
 }
