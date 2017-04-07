@@ -6,7 +6,7 @@
 
 using namespace allpix;
 
-SensorCharge::SensorCharge(ROOT::Math::XYZVector position, unsigned int charge) : position_(position), charge_(charge) {}
+SensorCharge::SensorCharge(ROOT::Math::XYZPoint position, unsigned int charge) : position_(position), charge_(charge) {}
 SensorCharge::~SensorCharge() = default;
 
 SensorCharge::SensorCharge(const SensorCharge&) = default;

@@ -19,7 +19,7 @@ namespace allpix {
     class SensorCharge {
     public:
         // constructor and destructor
-        SensorCharge(ROOT::Math::XYZVector position, unsigned int charge);
+        SensorCharge(ROOT::Math::XYZPoint position, unsigned int charge);
         virtual ~SensorCharge();
 
         // copy behaviour

@@ -76,7 +76,7 @@ void SimplePropagationModule::run() {
             electrons_remaining -= charge_per_step;
 
             // get position and propagate through sensor
-            auto position = detector_->getLocalPosition(deposit.getPosition());
+            auto position = deposit.getPosition(); // NOTE: this is already a local position
 
             // propagate a single charge deposit
             position = propagate(position);

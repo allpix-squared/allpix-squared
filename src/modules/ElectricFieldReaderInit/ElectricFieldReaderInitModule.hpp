@@ -16,7 +16,6 @@
 
 #include "core/module/Module.hpp"
 
-// use the allpix namespace
 namespace allpix {
     // define the module inheriting from the module base class
     class ElectricFieldReaderInitModule : public Module {

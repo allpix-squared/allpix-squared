@@ -13,7 +13,7 @@ namespace allpix {
     // object definition
     class PropagatedCharge : public SensorCharge {
     public:
-        PropagatedCharge(ROOT::Math::XYZVector position, unsigned int charge) : SensorCharge(position, charge) {}
+        PropagatedCharge(ROOT::Math::XYZPoint position, unsigned int charge) : SensorCharge(position, charge) {}
     };
 
     // link to the carrying message

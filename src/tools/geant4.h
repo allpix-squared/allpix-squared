@@ -68,10 +68,6 @@ namespace allpix {
     template <typename T> G4ThreeVector toG4Vector(const ROOT::Math::PositionVector3D<T>& vector) {
         return G4ThreeVector(vector.x(), vector.y(), vector.z());
     }
-    // convert G4 vector to ROOT vector
-    inline ROOT::Math::XYZVector toROOTVector(const G4ThreeVector& vector) {
-        return ROOT::Math::XYZVector(vector.x(), vector.y(), vector.z());
-    }
 } // namespace allpix
 
 #endif
