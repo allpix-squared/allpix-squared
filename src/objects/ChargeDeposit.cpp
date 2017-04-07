@@ -8,8 +8,7 @@
 
 using namespace allpix;
 
-ChargeDeposit::ChargeDeposit(ROOT::Math::XYZVector position, unsigned int charge)
-    : position_(std::move(position)), charge_(charge) {}
+ChargeDeposit::ChargeDeposit(ROOT::Math::XYZVector position, unsigned int charge) : position_(position), charge_(charge) {}
 
 ROOT::Math::XYZPoint ChargeDeposit::getPosition() const {
     return position_;

@@ -56,8 +56,9 @@ SimplePropagationModule::~SimplePropagationModule() = default;
 // run the propagation
 void SimplePropagationModule::run() {
     // skip if this detector did not get any deposits
-    if(deposits_message_ == nullptr)
+    if(deposits_message_ == nullptr) {
         return;
+    }
 
     // check model (NOTE: we need to check this constantly without an exception...)
     if(model_ == nullptr) {
@@ -151,8 +152,9 @@ XYZPoint SimplePropagationModule::propagate(const XYZPoint& root_pos) {
 
         // get electric field at current position and stop if field is zero (out of sensor)
         auto efield = detector_->getElectricField(XYZPoint(position.x(), position.y(), position.z()));
-        if(efield.Mag2() < std::numeric_limits<double>::epsilon())
+        if(efield.Mag2() < std::numeric_limits<double>::epsilon()) {
             break;
+        }
 
         // apply diffusion step
         auto diffusion = electron_diffusion(efield.Mag2());
