@@ -33,6 +33,9 @@ ALLPIX_BUILD_MODULE(DepositionGeant4)
 # propagation
 ALLPIX_BUILD_MODULE(SimplePropagation)
 
+# transfer
+ALLPIX_BUILD_MODULE(SimpleTransfer)
+
 # visualization
 ALLPIX_BUILD_MODULE(VisualizationGeant4)
 

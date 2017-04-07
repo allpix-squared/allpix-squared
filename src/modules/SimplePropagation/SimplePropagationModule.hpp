@@ -43,7 +43,7 @@ namespace allpix {
         // pointer to the messenger
         Messenger* messenger_;
 
-        // attached detector and pixel detector model
+        // attached detector and detector model
         std::shared_ptr<Detector> detector_;
         std::shared_ptr<DetectorModel> model_;
 

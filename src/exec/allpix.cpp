@@ -18,6 +18,7 @@
 #include "modules/GeometryBuilderGeant4/GeometryBuilderGeant4Module.hpp"
 #include "modules/GeometryBuilderTGeo/TGeoBuilderModule.hpp"
 #include "modules/SimplePropagation/SimplePropagationModule.hpp"
+#include "modules/SimpleTransfer/SimpleTransferModule.hpp"
 #include "modules/VisualizationGeant4/VisualizationGeant4Module.hpp"
 #include "modules/deposit_reader_test/TestDepositReaderModule.hpp"
 #include "modules/detector_histogrammer_test/DetectorHistogrammerTestModule.hpp"
@@ -44,6 +45,9 @@ std::unique_ptr<ModuleFactory> generator(const std::string& str) {
     }
     if(str == ElectricFieldReaderInitModule::name) {
         return std::make_unique<DetectorModuleFactory<ElectricFieldReaderInitModule>>();
+    }
+    if(str == SimpleTransferModule::name) {
+        return std::make_unique<DetectorModuleFactory<SimpleTransferModule>>();
     }
 
     if(str == DetectorHistogrammerModule::name) {

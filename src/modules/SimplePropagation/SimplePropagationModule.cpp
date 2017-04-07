@@ -34,9 +34,9 @@ const std::string SimplePropagationModule::name = "SimplePropagation";
 SimplePropagationModule::SimplePropagationModule(Configuration config,
                                                  Messenger* messenger,
                                                  std::shared_ptr<Detector> detector)
-    : Module(detector), random_generator_(), config_(std::move(config)), messenger_(std::move(messenger)),
+    : Module(detector), random_generator_(), config_(std::move(config)), messenger_(messenger),
       detector_(std::move(detector)), model_(), deposits_message_(nullptr) {
-    // get pixel detector model
+    // get detector model
     model_ = detector_->getModel();
 
     // fetch deposits for single detector
