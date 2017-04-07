@@ -123,15 +123,14 @@ XYZPoint SimplePropagationModule::propagate(const XYZPoint& root_pos) {
     // define a function to compute the electron velocity
     auto electron_velocity = [&](double, Eigen::Vector3d pos) -> Eigen::Vector3d {
         // get the electric field
-        /*auto efield_root = detector_->getElectricField(XYZPoint(pos.x(), pos.y(), pos.z()));
-        auto efield = Eigen::Vector3d(efield_root.x(), efield_root.y(), efield_root.z());*/
         double* raw_field = detector_->getElectricFieldRaw(pos);
-        if(raw_field != nullptr) {
-            // compute the drift velocity
-            auto efield = static_cast<Eigen::Map<Eigen::Vector3d>>(raw_field);
-            return (electron_mobility(efield.norm()) * (efield));
-        } else
+        if(raw_field == nullptr) {
+            // return a zero electric field outside of the sensor
             return Eigen::Vector3d(0, 0, 0);
+        }
+        // compute the drift velocity
+        auto efield = static_cast<Eigen::Map<Eigen::Vector3d>>(raw_field);
+        return (electron_mobility(efield.norm()) * (efield));
     };
 
     // build the runge kutta solver with an RKF5 tableau

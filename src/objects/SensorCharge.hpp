@@ -18,8 +18,13 @@ namespace allpix {
     // FIXME: better name here?
     class SensorCharge {
     public:
+        // constructor and destructor
         SensorCharge(ROOT::Math::XYZVector position, unsigned int charge);
         virtual ~SensorCharge();
+
+        // copy behaviour
+        SensorCharge(const SensorCharge&);
+        SensorCharge& operator=(const SensorCharge&);
 
         // FIXME: should position be in local coordinates or global coordinates?
         ROOT::Math::XYZPoint getPosition() const;

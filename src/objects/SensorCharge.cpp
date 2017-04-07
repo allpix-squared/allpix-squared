@@ -4,12 +4,13 @@
 
 #include "SensorCharge.hpp"
 
-#include <utility>
-
 using namespace allpix;
 
 SensorCharge::SensorCharge(ROOT::Math::XYZVector position, unsigned int charge) : position_(position), charge_(charge) {}
 SensorCharge::~SensorCharge() = default;
+
+SensorCharge::SensorCharge(const SensorCharge&) = default;
+SensorCharge& SensorCharge::operator=(const SensorCharge&) = default;
 
 ROOT::Math::XYZPoint SensorCharge::getPosition() const {
     return position_;

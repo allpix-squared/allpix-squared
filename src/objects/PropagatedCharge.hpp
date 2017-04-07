@@ -7,6 +7,8 @@
 #ifndef ALLPIX_PROPAGATED_CHARGE_H
 #define ALLPIX_PROPAGATED_CHARGE_H
 
+#include "SensorCharge.hpp"
+
 namespace allpix {
     // object definition
     class PropagatedCharge : public SensorCharge {

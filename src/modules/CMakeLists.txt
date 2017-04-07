@@ -10,8 +10,8 @@ OPTION(BUILD_allmodules "Build all modules?" OFF)
 ##############################
 
 # FIXME: THIS IS TEMPORARY AND SHOULD LATER BE FIXED IN A BETTER WAY
-add_subdirectory(common)
-set(ALLPIX_DEPS_LIBRARIES ${ALLPIX_DEPS_LIBRARIES} AllPixModulesCommon)
+ADD_SUBDIRECTORY(common)
+SET(ALLPIX_DEPS_LIBRARIES ${ALLPIX_DEPS_LIBRARIES} AllPixModulesCommon)
 
 ##############################
 # Build the required modules #
