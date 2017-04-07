@@ -13,7 +13,7 @@
 #include "core/geometry/Detector.hpp"
 #include "core/messenger/Messenger.hpp"
 
-#include "objects/ChargeDeposit.hpp"
+#include "objects/DepositedCharge.hpp"
 
 class G4Step;
 class G4HCofThisEvent;
@@ -41,7 +41,7 @@ namespace allpix {
         double charge_creation_energy_;
 
         // list of deposits in sensitive device
-        std::vector<ChargeDeposit> deposits_;
+        std::vector<DepositedCharge> deposits_;
 
         // the linked detector
         std::shared_ptr<Detector> detector_;

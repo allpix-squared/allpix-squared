@@ -14,7 +14,7 @@
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 
-#include "objects/ChargeDeposit.hpp"
+#include "objects/DepositedCharge.hpp"
 
 namespace allpix {
     // define the module to inherit from the module base class
@@ -45,7 +45,7 @@ namespace allpix {
         std::shared_ptr<DetectorModel> model_;
 
         // deposits for a specific detector
-        std::shared_ptr<ChargeDepositMessage> deposits_message_;
+        std::shared_ptr<DepositedChargeMessage> deposits_message_;
     };
 
 } // namespace allpix

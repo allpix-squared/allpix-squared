@@ -1,11 +1,13 @@
 /**
- * Message for a deposited charge
+ * Message for a charge in a sensor
+ *
+ * NOTE: should not be directly used?
  *
  * @author Koen Wolters <koen.wolters@cern.ch>
  */
 
-#ifndef ALLPIX_CHARGE_DEPOSIT_H
-#define ALLPIX_CHARGE_DEPOSIT_H
+#ifndef ALLPIX_SENSOR_CHARGE_H
+#define ALLPIX_SENSOR_CHARGE_H
 
 #include <Math/Point3D.h>
 
@@ -13,9 +15,11 @@
 
 namespace allpix {
     // type of the deposits
-    class ChargeDeposit {
+    // FIXME: better name here?
+    class SensorCharge {
     public:
-        ChargeDeposit(ROOT::Math::XYZVector position, unsigned int charge);
+        SensorCharge(ROOT::Math::XYZVector position, unsigned int charge);
+        virtual ~SensorCharge();
 
         // FIXME: should position be in local coordinates or global coordinates?
         ROOT::Math::XYZPoint getPosition() const;
@@ -25,9 +29,6 @@ namespace allpix {
         ROOT::Math::XYZPoint position_;
         unsigned int charge_;
     };
-
-    // name for the carrying message
-    using ChargeDepositMessage = Message<ChargeDeposit>;
 } // namespace allpix
 
-#endif /* ALLPIX_CHARGE_DEPOSIT_H */
+#endif /* ALLPIX_SENSOR_CHARGE_H */
