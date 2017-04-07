@@ -10,7 +10,7 @@
 #include <Math/Vector3D.h>
 
 #include "core/config/Configuration.hpp"
-#include "core/geometry/PixelDetectorModel.hpp"
+#include "core/geometry/DetectorModel.hpp"
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 
@@ -42,7 +42,7 @@ namespace allpix {
 
         // attached detector and pixel detector model
         std::shared_ptr<Detector> detector_;
-        std::shared_ptr<PixelDetectorModel> model_;
+        std::shared_ptr<DetectorModel> model_;
 
         // deposits for a specific detector
         std::shared_ptr<ChargeDepositMessage> deposits_message_;

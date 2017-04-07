@@ -35,7 +35,7 @@ SimplePropagationModule::SimplePropagationModule(Configuration config,
     : Module(detector), random_generator_(), config_(std::move(config)), detector_(std::move(detector)), model_(),
       deposits_message_(nullptr) {
     // get pixel detector model
-    model_ = std::dynamic_pointer_cast<PixelDetectorModel>(detector_->getModel());
+    model_ = detector_->getModel();
 
     // fetch deposits for single detector
     messenger->bindSingle(this, &SimplePropagationModule::deposits_message_);
@@ -57,14 +57,6 @@ SimplePropagationModule::~SimplePropagationModule() = default;
 void SimplePropagationModule::run() {
     // skip if this detector did not get any deposits
     if(deposits_message_ == nullptr) {
-        return;
-    }
-
-    // check model (NOTE: we need to check this constantly without an exception...)
-    if(model_ == nullptr) {
-        // FIXME: exception is more appropriate here
-        LOG(CRITICAL) << "Detector " << detector_->getName()
-                      << " is not a PixelDetectorModel: ignored as other types are currently unsupported!";
         return;
     }
 
