@@ -27,9 +27,6 @@ using namespace ROOT::Math;
 
 const std::string SimplePropagationModule::name = "SimplePropagation";
 
-// temporary globals
-XYZVector efield_from_map; // NOLINT
-
 SimplePropagationModule::SimplePropagationModule(Configuration config,
                                                  Messenger* messenger,
                                                  std::shared_ptr<Detector> detector)
@@ -51,11 +48,6 @@ SimplePropagationModule::SimplePropagationModule(Configuration config,
     config_.setDefault<double>("timestep_min", Units::get(0.0005, "ns"));
     config_.setDefault<double>("timestep_max", Units::get(0.1, "ns"));
     config_.setDefault<unsigned int>("charge_per_step", 10);
-
-    // FIXME: set fake linear electric field
-    efield_from_map = XYZVector(0, 0, Units::get(250.0 / 300.0, "V/um"));
-
-    std::cout << efield_from_map << std::endl;
 }
 SimplePropagationModule::~SimplePropagationModule() = default;
 
@@ -75,6 +67,9 @@ void SimplePropagationModule::run() {
         unsigned int electrons_remaining = deposit.getCharge();
 
         LOG(DEBUG) << "set of charges on " << deposit.getPosition();
+
+        XYZVector test_pos(1, 0, 0);
+        std::cout << " local: " << test_pos << " - global: " << detector_->getLocalPosition(test_pos) << std::endl;
 
         auto charge_per_step = config_.get<unsigned int>("charge_per_step");
         while(electrons_remaining > 0) {
@@ -133,11 +128,12 @@ XYZVector SimplePropagationModule::propagate(const XYZVector& root_pos) {
     };
 
     // define a function to compute the electron velocity
-    auto electron_velocity = [&](double, Eigen::Vector3d) -> Eigen::Vector3d {
+    auto electron_velocity = [&](double, Eigen::Vector3d pos) -> Eigen::Vector3d {
         // get the electric field
-        auto efield = Eigen::Vector3d(efield_from_map.x(), efield_from_map.y(), efield_from_map.z());
+        auto efield_root = detector_->getElectricField(XYZVector(pos.x(), pos.y(), pos.z()));
+        auto efield = Eigen::Vector3d(efield_root.x(), efield_root.y(), efield_root.z());
         // compute the drift velocity
-        return (-electron_mobility(efield.norm()) * (efield));
+        return (electron_mobility(efield.norm()) * (efield));
     };
 
     // build the runge kutta solver with an RKF5 tableau
@@ -154,7 +150,9 @@ XYZVector SimplePropagationModule::propagate(const XYZVector& root_pos) {
         position = runge_kutta.getValue();
 
         // apply an extra diffusion step
-        auto diffusion = electron_diffusion(efield_from_map.Mag2());
+        auto efield = detector_->getElectricField(XYZVector(position.x(), position.y(), position.z()));
+
+        auto diffusion = electron_diffusion(efield.Mag2());
         runge_kutta.setValue(position + diffusion);
 
         // adapt step size to precision

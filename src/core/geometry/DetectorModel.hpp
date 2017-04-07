@@ -36,6 +36,10 @@ namespace allpix {
         virtual double getSensorMinY() = 0;
         virtual double getSensorMinZ() = 0;
 
+        // coordinates of the rotation center in local frame
+        // FIXME: it is a bit counter intuitive that this is not (0, 0, 0)
+        virtual ROOT::Math::XYZVector getCenter() = 0;
+
     private:
         std::string type_;
 

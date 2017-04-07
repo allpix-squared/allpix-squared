@@ -14,6 +14,7 @@
 #include <vector>
 
 #include <Math/EulerAngles.h>
+#include <Math/Transform3D.h>
 #include <Math/Vector3D.h>
 
 #include "Detector.hpp"
@@ -41,8 +42,16 @@ namespace allpix {
         ROOT::Math::XYZVector getPosition() const;
         ROOT::Math::EulerAngles getOrientation() const;
 
+        // conversion
+        // FIXME: determine names
+        ROOT::Math::XYZVector getLocalPosition(const ROOT::Math::XYZVector& global_pos) const;
+        ROOT::Math::XYZVector getGlobalPosition(const ROOT::Math::XYZVector&) const;
+
+        // checks
+        // bool isInSensor(const ROOT::Math::XYZVector&) const;
+
         // Get fields in detector
-        ROOT::Math::XYZVector getElectricField(const ROOT::Math::XYZVector&);
+        ROOT::Math::XYZVector getElectricField(const ROOT::Math::XYZVector&) const;
         // FIXME: is that a good way to provide an electric field
         void setElectricField(std::shared_ptr<std::vector<double>> field, std::array<size_t, 3> sizes);
 
@@ -63,6 +72,9 @@ namespace allpix {
         // position and orientation
         ROOT::Math::XYZVector position_;
         ROOT::Math::EulerAngles orientation_;
+
+        // transform
+        ROOT::Math::Transform3D transform_;
 
         // fields
         std::array<size_t, 3> electric_field_sizes_;

@@ -27,6 +27,18 @@ namespace allpix {
               coverlayer_height_(0.0), coverlayer_material_("Al"), has_coverlayer_(false) {}
         ~PixelDetectorModel() override = default;
 
+        /* Coordinate definitions
+         * NOTE: center is at the middle of the first pixel at half z
+         */
+        // sensor coordinates relative to center of local frame
+        double getSensorMinX() override { return -getHalfPixelSizeX(); }
+        double getSensorMinY() override { return -getHalfPixelSizeX(); }
+        double getSensorMinZ() override { return -getHalfSensorZ(); }
+        ROOT::Math::XYZVector getCenter() override {
+            return ROOT::Math::XYZVector(
+                getHalfSensorSizeX() + getHalfPixelSizeX(), getHalfSensorSizeY() + getHalfPixelSizeY(), 0);
+        }
+
         /* Number of pixels */
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> getNPixels() { return number_of_pixels_; }
         int getNPixelsX() { return number_of_pixels_.x(); };
@@ -61,14 +73,6 @@ namespace allpix {
         double getSensorOffsetZ() { return getHalfPCBSizeZ(); }; // FIXME: see relation with GetHalfWrapperDZ()
 
         void setSensorOffset(ROOT::Math::XYVector val) { sensor_offset_ = std::move(val); }
-
-        /* Sensor coordinates relative to center of local frame
-         * NOTE: center is at the middle of the first pixel at half z
-         */
-        // FIXME: is this a good way to implement this
-        double getSensorMinX() override { return -getHalfPixelSizeX(); }
-        double getSensorMinY() override { return -getHalfPixelSizeX(); }
-        double getSensorMinZ() override { return -getHalfSensorZ(); }
 
         /* Chip dimensions */
         ROOT::Math::XYZVector getChipSize() { return chip_size_; }

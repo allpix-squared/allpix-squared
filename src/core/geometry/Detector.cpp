@@ -7,6 +7,9 @@
 #include <string>
 #include <utility>
 
+#include <Math/Rotation3D.h>
+#include <Math/Translation3D.h>
+
 #include "Detector.hpp"
 
 using namespace allpix;
@@ -16,10 +19,25 @@ Detector::Detector(std::string name,
                    ROOT::Math::XYZVector position,
                    ROOT::Math::EulerAngles orientation)
     : name_(std::move(name)), model_(std::move(model)), position_(std::move(position)), orientation_(orientation),
-      electric_field_sizes_{{0, 0, 0}}, electric_field_(nullptr), external_models_() {
+      transform_(), electric_field_sizes_{{0, 0, 0}}, electric_field_(nullptr), external_models_() {
+    // check model
     if(model_ == nullptr) {
         throw std::invalid_argument("detector model cannot be null");
     }
+
+    // build transforms
+    // sensor midpoint transform
+    ROOT::Math::Translation3D translation_center(position_);
+    ROOT::Math::Rotation3D rotation_center(orientation_);
+    ROOT::Math::Transform3D transform_center(rotation_center, translation_center);
+
+    // sensor pixel transform
+    std::cout << model_->getCenter() << std::endl;
+    ROOT::Math::Translation3D translation_local(model_->getCenter());
+    ROOT::Math::Transform3D transform_local(translation_local);
+
+    // set total transform
+    transform_ = transform_center * transform_local;
 }
 Detector::Detector(std::string name, std::shared_ptr<DetectorModel> model)
     : Detector(std::move(name), std::move(model), ROOT::Math::XYZVector(), ROOT::Math::EulerAngles()) {}
@@ -49,8 +67,17 @@ ROOT::Math::EulerAngles Detector::getOrientation() const {
     return orientation_;
 }
 
+// Convert between coordinates
+// WARNING: (0, 0, 0) local coordinates is not the same as global position!
+ROOT::Math::XYZVector Detector::getLocalPosition(const ROOT::Math::XYZVector& global_pos) const {
+    return transform_(global_pos);
+}
+ROOT::Math::XYZVector Detector::getGlobalPosition(const ROOT::Math::XYZVector& local_pos) const {
+    return transform_.Inverse()(local_pos);
+}
+
 // Get fields in detector
-ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZVector& pos) {
+ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZVector& pos) const {
     if(electric_field_ == nullptr) {
         // FIXME: determine what we should do if we have no external electric field...
         return ROOT::Math::XYZVector();
