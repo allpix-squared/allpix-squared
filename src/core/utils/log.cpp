@@ -128,7 +128,9 @@ std::string DefaultLogger::get_current_date() {
 
     auto seconds_from_epoch = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch());
     auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch() - seconds_from_epoch).count();
-    ss << "." << millis;
+    ss << ".";
+    ss << std::setfill('0') << std::setw(3);
+    ss << millis;
     return ss.str();
 }
 
