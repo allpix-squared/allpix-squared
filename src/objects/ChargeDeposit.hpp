@@ -7,7 +7,7 @@
 #ifndef ALLPIX_CHARGE_DEPOSIT_H
 #define ALLPIX_CHARGE_DEPOSIT_H
 
-#include <Math/Vector3D.h>
+#include <Math/Point3D.h>
 
 #include "core/messenger/Message.hpp"
 
@@ -17,11 +17,12 @@ namespace allpix {
     public:
         ChargeDeposit(ROOT::Math::XYZVector position, unsigned int charge);
 
-        ROOT::Math::XYZVector getPosition() const;
+        // FIXME: should position be in local coordinates or global coordinates?
+        ROOT::Math::XYZPoint getPosition() const;
         unsigned int getCharge() const;
 
     private:
-        ROOT::Math::XYZVector position_;
+        ROOT::Math::XYZPoint position_;
         unsigned int charge_;
     };
 

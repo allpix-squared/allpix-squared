@@ -33,4 +33,4 @@ namespace allpix {
     };
 } // namespace allpix
 
-#endif /*AllPixPrimaryGeneratorAction_h*/
+#endif /* ALLPIX_SIMPLE_DEPOSITION_MODULE_GENERATOR_ACTION_H */

@@ -6,6 +6,7 @@
 #include "SimplePropagationModule.hpp"
 
 #include <cmath>
+#include <limits>
 #include <map>
 #include <memory>
 #include <random>
@@ -14,6 +15,7 @@
 
 #include <Eigen/Core>
 
+#include <Math/Point3D.h>
 #include <Math/Vector3D.h>
 
 #include "core/config/Configuration.hpp"
@@ -53,6 +55,10 @@ SimplePropagationModule::~SimplePropagationModule() = default;
 
 // run the propagation
 void SimplePropagationModule::run() {
+    // skip if this detector did not get any deposits
+    if(deposits_message_ == nullptr)
+        return;
+
     // check model (NOTE: we need to check this constantly without an exception...)
     if(model_ == nullptr) {
         // FIXME: exception is more appropriate here
@@ -68,9 +74,6 @@ void SimplePropagationModule::run() {
 
         LOG(DEBUG) << "set of charges on " << deposit.getPosition();
 
-        XYZVector test_pos(1, 0, 0);
-        std::cout << " local: " << test_pos << " - global: " << detector_->getLocalPosition(test_pos) << std::endl;
-
         auto charge_per_step = config_.get<unsigned int>("charge_per_step");
         while(electrons_remaining > 0) {
             // define number of charges to be propagated and remove electrons of this step from the total
@@ -80,20 +83,17 @@ void SimplePropagationModule::run() {
             electrons_remaining -= charge_per_step;
 
             // get position and propagate through sensor
-            XYZVector position = deposit.getPosition(); // This is in a global frame!!!!!!!!!!!!
-
-            // position = (*hitsCollection)[itr]->GetPosInLocalReferenceFrame();
-            position.SetZ(position.z() + model_->getSensorSizeZ() / 2.);
+            auto position = detector_->getLocalPosition(deposit.getPosition());
 
             // propagate a single charge deposit
             position = propagate(position);
 
-            // LOG(DEBUG) << " " << charge_per_step << " charges propagated to " << position;
+            LOG(DEBUG) << " " << charge_per_step << " charges propagated to " << position;
         }
     }
 }
 
-XYZVector SimplePropagationModule::propagate(const XYZVector& root_pos) {
+XYZPoint SimplePropagationModule::propagate(const XYZPoint& root_pos) {
     // create a runge kutta solver using the electric field as step function
     Eigen::Vector3d position(root_pos.x(), root_pos.y(), root_pos.z());
 
@@ -130,7 +130,7 @@ XYZVector SimplePropagationModule::propagate(const XYZVector& root_pos) {
     // define a function to compute the electron velocity
     auto electron_velocity = [&](double, Eigen::Vector3d pos) -> Eigen::Vector3d {
         // get the electric field
-        auto efield_root = detector_->getElectricField(XYZVector(pos.x(), pos.y(), pos.z()));
+        auto efield_root = detector_->getElectricField(XYZPoint(pos.x(), pos.y(), pos.z()));
         auto efield = Eigen::Vector3d(efield_root.x(), efield_root.y(), efield_root.z());
         // compute the drift velocity
         return (electron_mobility(efield.norm()) * (efield));
@@ -139,9 +139,9 @@ XYZVector SimplePropagationModule::propagate(const XYZVector& root_pos) {
     // build the runge kutta solver with an RKF5 tableau
     auto runge_kutta = make_runge_kutta(tableau::RK5, electron_velocity, timestep, position);
 
-    // continue until past the sensor
+    // continue until outside the sensor (no electric field)
     // FIXME: we need to determine what would be a good time to stop
-    while(position.z() > 0) {
+    while(true) {
         // do a runge kutta step
         auto step = runge_kutta.step();
 
@@ -149,9 +149,12 @@ XYZVector SimplePropagationModule::propagate(const XYZVector& root_pos) {
         timestep = runge_kutta.getTimeStep();
         position = runge_kutta.getValue();
 
-        // apply an extra diffusion step
-        auto efield = detector_->getElectricField(XYZVector(position.x(), position.y(), position.z()));
+        // get electric field at current position and stop if field is zero (out of sensor)
+        auto efield = detector_->getElectricField(XYZPoint(position.x(), position.y(), position.z()));
+        if(efield.Mag2() < std::numeric_limits<double>::epsilon())
+            break;
 
+        // apply diffusion step
         auto diffusion = electron_diffusion(efield.Mag2());
         runge_kutta.setValue(position + diffusion);
 
@@ -177,5 +180,5 @@ XYZVector SimplePropagationModule::propagate(const XYZVector& root_pos) {
     }
 
     position = runge_kutta.getValue();
-    return XYZVector(position.x(), position.y(), position.z());
+    return XYZPoint(position.x(), position.y(), position.z());
 }

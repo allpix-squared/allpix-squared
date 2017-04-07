@@ -59,7 +59,7 @@ using namespace ROOT::Math;
 using namespace TMath;
 
 /* Create a TGeoTranslation from a ROOT::Math::XYZVector */
-TGeoTranslation ToTGeoTranslation(const XYZVector& pos) {
+TGeoTranslation ToTGeoTranslation(const XYZPoint& pos) {
     return TGeoTranslation(pos.x(), pos.y(), pos.z());
 }
 /* Print out a TGeoTranslation as done in allpix for easy comparison. */
@@ -117,8 +117,8 @@ void TGeoBuilderModule::run() {
             throw InvalidValueError(detector_section, "type", "detector type does not exist in registered models");
         }
 
-        XYZVector position = detector_section.get<XYZVector>("position", XYZVector());
-        EulerAngles orientation = detector_section.get<EulerAngles>("orientation", EulerAngles());
+        auto position = detector_section.get<XYZPoint>("position", XYZPoint());
+        auto orientation = detector_section.get<EulerAngles>("orientation", EulerAngles());
         // XYZVector wrapperEnhancement = detector_section.get<XYZVector>("wrapper enhancement", XYZVector());
 
         auto detector = std::make_shared<Detector>(detector_section.getName(), detector_model, position, orientation);

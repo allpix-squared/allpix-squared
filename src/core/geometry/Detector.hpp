@@ -14,8 +14,8 @@
 #include <vector>
 
 #include <Math/EulerAngles.h>
+#include <Math/Point3D.h>
 #include <Math/Transform3D.h>
-#include <Math/Vector3D.h>
 
 #include "Detector.hpp"
 #include "DetectorModel.hpp"
@@ -27,7 +27,7 @@ namespace allpix {
         // Constructor and destructors
         Detector(std::string name,
                  std::shared_ptr<DetectorModel> model,
-                 ROOT::Math::XYZVector position,
+                 ROOT::Math::XYZPoint position,
                  ROOT::Math::EulerAngles orientation);
         Detector(std::string name, std::shared_ptr<DetectorModel> model);
         virtual ~Detector() = default;
@@ -39,19 +39,19 @@ namespace allpix {
         std::string getType() const;
 
         // Get location in world
-        ROOT::Math::XYZVector getPosition() const;
+        ROOT::Math::XYZPoint getPosition() const;
         ROOT::Math::EulerAngles getOrientation() const;
 
         // conversion
         // FIXME: determine names
-        ROOT::Math::XYZVector getLocalPosition(const ROOT::Math::XYZVector& global_pos) const;
-        ROOT::Math::XYZVector getGlobalPosition(const ROOT::Math::XYZVector&) const;
+        ROOT::Math::XYZPoint getLocalPosition(const ROOT::Math::XYZPoint& global_pos) const;
+        ROOT::Math::XYZPoint getGlobalPosition(const ROOT::Math::XYZPoint&) const;
 
         // checks
         // bool isInSensor(const ROOT::Math::XYZVector&) const;
 
         // Get fields in detector
-        ROOT::Math::XYZVector getElectricField(const ROOT::Math::XYZVector&) const;
+        ROOT::Math::XYZVector getElectricField(const ROOT::Math::XYZPoint&) const;
         // FIXME: is that a good way to provide an electric field
         void setElectricField(std::shared_ptr<std::vector<double>> field, std::array<size_t, 3> sizes);
 
@@ -70,7 +70,7 @@ namespace allpix {
         std::shared_ptr<DetectorModel> model_;
 
         // position and orientation
-        ROOT::Math::XYZVector position_;
+        ROOT::Math::XYZPoint position_;
         ROOT::Math::EulerAngles orientation_;
 
         // transform

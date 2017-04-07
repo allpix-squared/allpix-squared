@@ -45,7 +45,7 @@ const TString BumpName = "Bump";
 const TString GuardRingsName = "GuardRings";
 
 // ### to be placed in a more adequate place
-TGeoTranslation ToTGeoTranslation(const ROOT::Math::XYZVector& pos);
+TGeoTranslation ToTGeoTranslation(const ROOT::Math::XYZPoint& pos);
 TString Print(TGeoTranslation* trl);
 
 namespace allpix {

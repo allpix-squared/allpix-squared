@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include <Math/Point3D.h>
 #include <Math/Vector3D.h>
 
 namespace allpix {
@@ -38,7 +39,7 @@ namespace allpix {
 
         // coordinates of the rotation center in local frame
         // FIXME: it is a bit counter intuitive that this is not (0, 0, 0)
-        virtual ROOT::Math::XYZVector getCenter() = 0;
+        virtual ROOT::Math::XYZPoint getCenter() = 0;
 
     private:
         std::string type_;

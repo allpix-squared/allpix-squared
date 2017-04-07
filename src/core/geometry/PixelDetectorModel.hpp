@@ -10,6 +10,7 @@
 
 #include <Math/Cartesian2D.h>
 #include <Math/DisplacementVector2D.h>
+#include <Math/Point3D.h>
 #include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
 
@@ -34,8 +35,8 @@ namespace allpix {
         double getSensorMinX() override { return -getHalfPixelSizeX(); }
         double getSensorMinY() override { return -getHalfPixelSizeX(); }
         double getSensorMinZ() override { return -getHalfSensorZ(); }
-        ROOT::Math::XYZVector getCenter() override {
-            return ROOT::Math::XYZVector(
+        ROOT::Math::XYZPoint getCenter() override {
+            return ROOT::Math::XYZPoint(
                 getHalfSensorSizeX() + getHalfPixelSizeX(), getHalfSensorSizeY() + getHalfPixelSizeY(), 0);
         }
 

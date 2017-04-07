@@ -13,7 +13,8 @@
 
 #include <G4ThreeVector.hh>
 #include <G4TwoVector.hh>
-#include <Math/Vector3D.h>
+#include <Math/DisplacementVector3D.h>
+#include <Math/PositionVector3D.h>
 
 #include "core/utils/string.h"
 #include "core/utils/type.h"
@@ -62,6 +63,9 @@ namespace allpix {
     // FIXME: do we want this at all
     // convert G4 vector to ROOT vector
     template <typename T> G4ThreeVector toG4Vector(const ROOT::Math::DisplacementVector3D<T>& vector) {
+        return G4ThreeVector(vector.x(), vector.y(), vector.z());
+    }
+    template <typename T> G4ThreeVector toG4Vector(const ROOT::Math::PositionVector3D<T>& vector) {
         return G4ThreeVector(vector.x(), vector.y(), vector.z());
     }
     // convert G4 vector to ROOT vector

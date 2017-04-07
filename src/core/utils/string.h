@@ -55,6 +55,7 @@ namespace allpix {
         // check if correct conversion
         static_assert(std::is_same<T, void>::value,
                       "Conversion to this type is not implemented: an overload should be added to support this conversion");
+        return T();
     }
     // overload for arithmetic types
     template <typename T, typename = std::enable_if_t<std::is_arithmetic<T>::value>>

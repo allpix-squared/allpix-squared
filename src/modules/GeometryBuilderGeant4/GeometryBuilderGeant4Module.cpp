@@ -105,8 +105,8 @@ void GeometryBuilderGeant4Module::init() {
         }
 
         // get the position and orientation
-        Math::XYZVector position = detector_section.get<Math::XYZVector>("position", Math::XYZVector());
-        Math::EulerAngles orientation = detector_section.get<Math::EulerAngles>("orientation", Math::EulerAngles());
+        auto position = detector_section.get<Math::XYZPoint>("position", Math::XYZPoint());
+        auto orientation = detector_section.get<Math::EulerAngles>("orientation", Math::EulerAngles());
 
         // create the detector and add it
         auto detector = std::make_shared<Detector>(detector_section.getName(), detector_model, position, orientation);

@@ -16,7 +16,7 @@ using namespace allpix;
 
 Detector::Detector(std::string name,
                    std::shared_ptr<DetectorModel> model,
-                   ROOT::Math::XYZVector position,
+                   ROOT::Math::XYZPoint position,
                    ROOT::Math::EulerAngles orientation)
     : name_(std::move(name)), model_(std::move(model)), position_(std::move(position)), orientation_(orientation),
       transform_(), electric_field_sizes_{{0, 0, 0}}, electric_field_(nullptr), external_models_() {
@@ -27,20 +27,19 @@ Detector::Detector(std::string name,
 
     // build transforms
     // sensor midpoint transform
-    ROOT::Math::Translation3D translation_center(position_);
+    ROOT::Math::Translation3D translation_center(static_cast<ROOT::Math::XYZVector>(position_));
     ROOT::Math::Rotation3D rotation_center(orientation_);
     ROOT::Math::Transform3D transform_center(rotation_center, translation_center);
 
     // sensor pixel transform
-    std::cout << model_->getCenter() << std::endl;
-    ROOT::Math::Translation3D translation_local(model_->getCenter());
+    ROOT::Math::Translation3D translation_local(static_cast<ROOT::Math::XYZVector>(model_->getCenter()));
     ROOT::Math::Transform3D transform_local(translation_local);
 
     // set total transform
-    transform_ = transform_center * transform_local;
+    transform_ = transform_center * transform_local.Inverse();
 }
 Detector::Detector(std::string name, std::shared_ptr<DetectorModel> model)
-    : Detector(std::move(name), std::move(model), ROOT::Math::XYZVector(), ROOT::Math::EulerAngles()) {}
+    : Detector(std::move(name), std::move(model), ROOT::Math::XYZPoint(), ROOT::Math::EulerAngles()) {}
 
 // Set and get name of detector
 std::string Detector::getName() const {
@@ -58,7 +57,7 @@ const std::shared_ptr<DetectorModel> Detector::getModel() const {
 }
 
 // Get position of detector
-ROOT::Math::XYZVector Detector::getPosition() const {
+ROOT::Math::XYZPoint Detector::getPosition() const {
     return position_;
 }
 
@@ -69,15 +68,15 @@ ROOT::Math::EulerAngles Detector::getOrientation() const {
 
 // Convert between coordinates
 // WARNING: (0, 0, 0) local coordinates is not the same as global position!
-ROOT::Math::XYZVector Detector::getLocalPosition(const ROOT::Math::XYZVector& global_pos) const {
-    return transform_(global_pos);
+ROOT::Math::XYZPoint Detector::getLocalPosition(const ROOT::Math::XYZPoint& global_pos) const {
+    return transform_.Inverse()(global_pos);
 }
-ROOT::Math::XYZVector Detector::getGlobalPosition(const ROOT::Math::XYZVector& local_pos) const {
-    return transform_.Inverse()(local_pos);
+ROOT::Math::XYZPoint Detector::getGlobalPosition(const ROOT::Math::XYZPoint& local_pos) const {
+    return transform_(local_pos);
 }
 
 // Get fields in detector
-ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZVector& pos) const {
+ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZPoint& pos) const {
     if(electric_field_ == nullptr) {
         // FIXME: determine what we should do if we have no external electric field...
         return ROOT::Math::XYZVector();
