@@ -24,6 +24,8 @@
 #include "core/utils/unit.h"
 #include "tools/runge_kutta.h"
 
+#include "objects/PropagatedCharge.hpp"
+
 using namespace allpix;
 using namespace ROOT::Math;
 
@@ -32,13 +34,13 @@ const std::string SimplePropagationModule::name = "SimplePropagation";
 SimplePropagationModule::SimplePropagationModule(Configuration config,
                                                  Messenger* messenger,
                                                  std::shared_ptr<Detector> detector)
-    : Module(detector), random_generator_(), config_(std::move(config)), detector_(std::move(detector)), model_(),
-      deposits_message_(nullptr) {
+    : Module(detector), random_generator_(), config_(std::move(config)), messenger_(std::move(messenger)),
+      detector_(std::move(detector)), model_(), deposits_message_(nullptr) {
     // get pixel detector model
     model_ = detector_->getModel();
 
     // fetch deposits for single detector
-    messenger->bindSingle(this, &SimplePropagationModule::deposits_message_);
+    messenger_->bindSingle(this, &SimplePropagationModule::deposits_message_);
 
     // seed the random generator
     // FIXME: modules should share random device?
@@ -59,6 +61,9 @@ void SimplePropagationModule::run() {
     if(deposits_message_ == nullptr) {
         return;
     }
+
+    // create vector of propagated charges
+    std::vector<PropagatedCharge> propagated_charges;
 
     // propagate all deposits
     for(auto& deposit : deposits_message_->getData()) {
@@ -81,9 +86,17 @@ void SimplePropagationModule::run() {
             // propagate a single charge deposit
             position = propagate(position);
 
-            LOG(DEBUG) << " " << charge_per_step << " charges propagated to " << position;
+            // create a new propagated charge and add it to the list
+            PropagatedCharge propagated_charge(static_cast<ROOT::Math::XYZPoint>(position), charge_per_step);
+            propagated_charges.push_back(propagated_charge);
         }
     }
+
+    // create a new message with propagated charges
+    PropagatedChargeMessage propagated_charge_message(std::move(propagated_charges), detector_);
+
+    // dispatch the message
+    messenger_->dispatchMessage(propagated_charge_message, "implant");
 }
 
 XYZPoint SimplePropagationModule::propagate(const XYZPoint& root_pos) {
