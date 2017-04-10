@@ -31,8 +31,9 @@ SimpleTransferModule::SimpleTransferModule(Configuration config, Messenger* mess
 // compare two pixels for the pixel map
 struct pixel_cmp {
     bool operator()(const PixelCharge::Pixel& p1, const PixelCharge::Pixel& p2) const {
-        if(p1.x() == p2.x())
+        if(p1.x() == p2.x()) {
             return p1.y() < p2.y();
+        }
         return p1.x() < p2.x();
     }
 };
