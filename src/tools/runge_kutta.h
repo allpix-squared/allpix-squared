@@ -29,8 +29,8 @@ namespace allpix {
                    T step_size,
                    Eigen::Matrix<T, D, 1> initial_y,
                    T initial_t = 0)
-            : tableau_(std::move(tableau)), function_(std::move(function)), h_(step_size), y_(std::move(initial_y)),
-              t_(std::move(initial_t)) {
+            : tableau_(std::move(tableau)), function_(std::move(function)), h_(std::move(step_size)),
+              y_(std::move(initial_y)), t_(std::move(initial_t)) {
             error_.setZero();
         }
 
@@ -138,7 +138,8 @@ namespace allpix {
                                          T step_size,
                                          Eigen::Matrix<T, D, 1> initial_y,
                                          T initial_t = 0) {
-        return RungeKutta<T, S, D>(tableau, function, step_size, initial_y, initial_t);
+        return RungeKutta<T, S, D>(
+            std::move(tableau), std::move(function), std::move(step_size), std::move(initial_y), std::move(initial_t));
     }
 } // namespace allpix
 
