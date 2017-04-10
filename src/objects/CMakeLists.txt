@@ -4,6 +4,7 @@ INCLUDE_DIRECTORIES(SYSTEM ${ALLPIX_DEPS_INCLUDE_DIRS})
 # define the library
 ADD_LIBRARY(AllpixObjects SHARED
     SensorCharge.cpp
+    PixelCharge.cpp
 )
 
 # link the standard dependencies

@@ -35,6 +35,9 @@ namespace allpix {
         // configuration for this reader
         Configuration config_;
 
+        // pointer to the messenger
+        Messenger* messenger_;
+
         // linked detector for this instantiation
         std::shared_ptr<Detector> detector_;
 

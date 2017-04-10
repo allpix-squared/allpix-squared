@@ -18,6 +18,6 @@ namespace allpix {
 
     // link to the carrying message
     using DepositedChargeMessage = Message<DepositedCharge>;
-}
+} // namespace allpix
 
 #endif

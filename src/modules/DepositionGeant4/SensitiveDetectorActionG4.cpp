@@ -39,24 +39,21 @@ SensitiveDetectorActionG4::~SensitiveDetectorActionG4() = default;
 // process a Geant4 hit interaction
 G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*) {
     // get the step parameters
-    G4double edep = step->GetTotalEnergyDeposit();
-    if(edep < 1e-8) {
-        return false;
-    }
+    auto edep = step->GetTotalEnergyDeposit();
     G4StepPoint* preStepPoint = step->GetPreStepPoint();
     G4StepPoint* postStepPoint = step->GetPostStepPoint();
 
-    // create a new charge deposit to add to the message
+    // put the charge deposit in the middle of the step
     G4ThreeVector mid_pos = (preStepPoint->GetPosition() + postStepPoint->GetPosition()) / 2;
 
-    // deposit at a local position with a certain charge
+    // create the charge deposit at a local position
     auto depositPosition = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(mid_pos));
     auto charge = static_cast<unsigned int>(edep / charge_creation_energy_);
+    if(charge == 0) {
+        return false;
+    }
     DepositedCharge deposit(depositPosition, charge);
     deposits_.push_back(deposit);
-
-    // LOG(DEBUG) << "energy deposit of " << edep << " between point " << preStepPoint->GetPosition() / um << " and "
-    //           << postStepPoint->GetPosition() / um << " in detector " << detector_->getName();
 
     return true;
 }

@@ -13,7 +13,8 @@
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 
-// use the allpix namespace within this file
+#include "objects/PixelCharge.hpp"
+
 using namespace allpix;
 
 // set the name of the module
@@ -21,10 +22,20 @@ const std::string SimpleTransferModule::name = "SimpleTransfer";
 
 // constructor to load the module
 SimpleTransferModule::SimpleTransferModule(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector)
-    : Module(detector), config_(std::move(config)), detector_(std::move(detector)), propagated_message_() {
+    : Module(detector), config_(std::move(config)), messenger_(messenger), detector_(std::move(detector)),
+      propagated_message_() {
     // fetch propagated deposits for single detector
     messenger->bindSingle(this, &SimpleTransferModule::propagated_message_);
 }
+
+// compare two pixels for the pixel map
+struct pixel_cmp {
+    bool operator()(const PixelCharge::Pixel& p1, const PixelCharge::Pixel& p2) const {
+        if(p1.x() == p2.x())
+            return p1.y() < p2.y();
+        return p1.x() < p2.x();
+    }
+};
 
 // run method that does the main computations for the module
 void SimpleTransferModule::run() {
@@ -42,14 +53,33 @@ void SimpleTransferModule::run() {
         return;
     }
 
-    // propagate all deposits
-    for(auto& deposit : propagated_message_->getData()) {
-
-        auto position = deposit.getPosition();
+    // find pixels for all propagated charges
+    std::map<PixelCharge::Pixel, std::vector<PropagatedCharge>, pixel_cmp> pixel_map;
+    for(auto& propagated_charge : propagated_message_->getData()) {
+        auto position = propagated_charge.getPosition();
+        // find the nearest pixel
+        // NOTE: z position is ignored here
         int xpixel = static_cast<int>(std::round(position.x() / model->getPixelSizeX()));
         int ypixel = static_cast<int>(std::round(position.y() / model->getPixelSizeY()));
-        // NOTE: z position is ignored here
-        LOG(DEBUG) << "set of " << deposit.getCharge() << " propagated charges at " << deposit.getPosition() << std::endl
-                   << "location is on pixel (" << xpixel << "," << ypixel << ")";
+        PixelCharge::Pixel pixel(xpixel, ypixel);
+
+        pixel_map[pixel].push_back(propagated_charge);
+        LOG(DEBUG) << "set of " << propagated_charge.getCharge() << " propagated charges at "
+                   << propagated_charge.getPosition() << std::endl
+                   << "location is on pixel (" << pixel.x() << "," << pixel.y() << ")";
     }
+
+    // create pixel charges
+    std::vector<PixelCharge> pixel_charges;
+    for(auto& pixel : pixel_map) {
+        unsigned int charge = 0;
+        for(auto& propagated_charge : pixel.second) {
+            charge += propagated_charge.getCharge();
+        }
+        pixel_charges.emplace_back(pixel.first, charge);
+    }
+
+    // dispatch message
+    PixelChargeMessage pixel_message(pixel_charges, detector_);
+    messenger_->dispatchMessage(pixel_message, "pixel");
 }

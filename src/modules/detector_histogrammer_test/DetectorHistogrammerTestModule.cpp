@@ -24,16 +24,16 @@ const std::string DetectorHistogrammerModule::name = "detector_histogrammer_test
 DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
-    : Module(detector), config_(std::move(config)), detector_(std::move(detector)), deposits_message_(nullptr) {
+    : Module(detector), config_(std::move(config)), detector_(std::move(detector)), pixels_message_(nullptr) {
     // fetch deposit for single module
-    messenger->bindSingle(this, &DetectorHistogrammerModule::deposits_message_);
+    messenger->bindSingle(this, &DetectorHistogrammerModule::pixels_message_);
 }
 DetectorHistogrammerModule::~DetectorHistogrammerModule() = default;
 
 // histogram the deposits
 void DetectorHistogrammerModule::run() {
     // check if we got any deposits
-    if(deposits_message_ == nullptr) {
+    if(pixels_message_ == nullptr) {
         LOG(WARNING) << "Detector " << detector_->getName() << " did not get any deposits... skipping!";
         return;
     }
@@ -57,17 +57,19 @@ void DetectorHistogrammerModule::run() {
     auto histogram = new TH2F(plot_name.c_str(),
                               plot_title.c_str(),
                               model->getNPixelsX(),
-                              -model->getHalfSensorSizeX(),
-                              model->getHalfSensorSizeX(),
+                              0,
+                              model->getNPixelsX(),
                               model->getNPixelsY(),
-                              -model->getHalfSensorSizeY(),
-                              model->getHalfSensorSizeY());
+                              0,
+                              model->getNPixelsY());
 
-    for(auto& deposit : deposits_message_->getData()) {
-        auto vec = deposit.getPosition();
-        auto charge = deposit.getCharge();
+    for(auto& pixel_charge : pixels_message_->getData()) {
+        auto pixel = pixel_charge.getPixel();
+        auto charge = pixel_charge.getCharge();
 
-        histogram->Fill(vec.x(), vec.y(), charge);
+        LOG(DEBUG) << "got " << charge << " charges on pixel (" << pixel.x() << "," << pixel.y() << ")";
+
+        histogram->Fill(pixel.x(), pixel.y(), charge);
     }
 
     histogram->Write();

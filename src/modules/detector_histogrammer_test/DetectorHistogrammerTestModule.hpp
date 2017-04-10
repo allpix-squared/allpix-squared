@@ -13,7 +13,7 @@
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 
-#include "objects/DepositedCharge.hpp"
+#include "objects/PixelCharge.hpp"
 
 namespace allpix {
     class DepositionMessage;
@@ -39,7 +39,7 @@ namespace allpix {
         std::shared_ptr<Detector> detector_;
 
         // deposits for a specific detector
-        std::shared_ptr<DepositedChargeMessage> deposits_message_;
+        std::shared_ptr<PixelChargeMessage> pixels_message_;
     };
 } // namespace allpix
 
