@@ -67,6 +67,7 @@ void DepositionGeant4Module::run() {
     // use a step limiter in a later stage
     physicsList->RegisterPhysics(new G4StepLimiterPhysics());
     // initialize the physics list
+    LOG(INFO) << "Initializing physics processes";
     run_manager_g4->SetUserInitialization(physicsList);
     run_manager_g4->InitializePhysics();
 
@@ -90,6 +91,7 @@ void DepositionGeant4Module::run() {
     double part_energy = config_.get<double>("particle_energy");
 
     // build generator
+    LOG(INFO) << "Constructing particle generator";
     GeneratorActionG4* generator = new GeneratorActionG4(part_amount, particle, part_position, part_direction, part_energy);
     run_manager_g4->SetUserAction(generator);
 
@@ -123,9 +125,6 @@ void DepositionGeant4Module::run() {
     RELEASE_STREAM(G4cout);
 
     // start the beam
-    LOG(INFO) << "START THE BEAM";
+    LOG(INFO) << "Enabling beam";
     run_manager_g4->BeamOn(1);
-
-    // end depositing
-    LOG(INFO) << "END DEPOSIT MODULE";
 }

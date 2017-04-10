@@ -29,6 +29,7 @@ ElectricFieldReaderInitModule::ElectricFieldReaderInitModule(Configuration confi
 void ElectricFieldReaderInitModule::run() {
     try {
         // get field
+        LOG(INFO) << "Reading electric field file";
         auto field_data = get_by_file_name(config_.get<std::string>("file_name"), *detector_.get());
 
         // set detector field

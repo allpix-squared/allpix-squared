@@ -47,13 +47,15 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     G4ThreeVector mid_pos = (preStepPoint->GetPosition() + postStepPoint->GetPosition()) / 2;
 
     // create the charge deposit at a local position
-    auto depositPosition = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(mid_pos));
+    auto deposit_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(mid_pos));
     auto charge = static_cast<unsigned int>(edep / charge_creation_energy_);
     if(charge == 0) {
         return false;
     }
-    DepositedCharge deposit(depositPosition, charge);
+    DepositedCharge deposit(deposit_position, charge);
     deposits_.push_back(deposit);
+
+    LOG(DEBUG) << "created deposit of " << charge << " charges at " << deposit_position;
 
     return true;
 }

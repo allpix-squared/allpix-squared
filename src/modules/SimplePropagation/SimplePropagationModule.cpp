@@ -66,6 +66,7 @@ void SimplePropagationModule::run() {
     std::vector<PropagatedCharge> propagated_charges;
 
     // propagate all deposits
+    LOG(INFO) << "Propagating charges in sensor";
     for(auto& deposit : deposits_message_->getData()) {
         // loop over all charges
         unsigned int electrons_remaining = deposit.getCharge();
@@ -85,6 +86,8 @@ void SimplePropagationModule::run() {
 
             // propagate a single charge deposit
             position = propagate(position);
+
+            LOG(DEBUG) << " propagated " << charge_per_step << " to " << position;
 
             // create a new propagated charge and add it to the list
             PropagatedCharge propagated_charge(position, charge_per_step);

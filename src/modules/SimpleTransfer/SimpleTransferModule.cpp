@@ -49,12 +49,13 @@ void SimpleTransferModule::run() {
     auto model = std::dynamic_pointer_cast<PixelDetectorModel>(detector_->getModel());
     if(model == nullptr) {
         // FIXME: exception can be more appropriate here
-        LOG(CRITICAL) << "Detector " << detector_->getName()
-                      << " is not a PixelDetectorModel: ignored as other types are currently unsupported!";
+        LOG(ERROR) << "Detector " << detector_->getName()
+                   << " is not a PixelDetectorModel: ignored as other types are currently unsupported!";
         return;
     }
 
     // find pixels for all propagated charges
+    LOG(INFO) << "Transferring charges to pixels";
     std::map<PixelCharge::Pixel, std::vector<PropagatedCharge>, pixel_cmp> pixel_map;
     for(auto& propagated_charge : propagated_message_->getData()) {
         auto position = propagated_charge.getPosition();
@@ -62,15 +63,17 @@ void SimpleTransferModule::run() {
         // NOTE: z position is ignored here
         int xpixel = static_cast<int>(std::round(position.x() / model->getPixelSizeX()));
         int ypixel = static_cast<int>(std::round(position.y() / model->getPixelSizeY()));
-        PixelCharge::Pixel pixel(xpixel, ypixel);
 
+        // add the pixel the list of hit pixels
+        PixelCharge::Pixel pixel(xpixel, ypixel);
         pixel_map[pixel].push_back(propagated_charge);
+
         LOG(DEBUG) << "set of " << propagated_charge.getCharge() << " propagated charges at "
-                   << propagated_charge.getPosition() << std::endl
-                   << "location is on pixel (" << pixel.x() << "," << pixel.y() << ")";
+                   << propagated_charge.getPosition() << " brought to pixel (" << pixel.x() << "," << pixel.y() << ")";
     }
 
     // create pixel charges
+    LOG(INFO) << "Combining charges at same pixel";
     std::vector<PixelCharge> pixel_charges;
     for(auto& pixel : pixel_map) {
         unsigned int charge = 0;
@@ -78,6 +81,8 @@ void SimpleTransferModule::run() {
             charge += propagated_charge.getCharge();
         }
         pixel_charges.emplace_back(pixel.first, charge);
+
+        LOG(DEBUG) << "set of " << charge << " charges at (" << pixel.first.x() << "," << pixel.first.y() << ")";
     }
 
     // dispatch message

@@ -53,6 +53,7 @@ void DetectorHistogrammerModule::run() {
     auto file = new TFile(file_name.c_str(), "RECREATE");
 
     // create histogram
+    LOG(INFO) << "Creating plots";
     std::string histogram_name = "histogram_" + detector_->getName();
     std::string histogram_title = "Histogram for " + detector_->getName();
     auto histogram = new TH2I(histogram_name.c_str(),

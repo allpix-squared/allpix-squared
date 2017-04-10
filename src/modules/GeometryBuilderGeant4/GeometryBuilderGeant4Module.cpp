@@ -63,6 +63,8 @@ void GeometryBuilderGeant4Module::init() {
     // create the G4 run manager
     run_manager_g4_ = std::make_unique<G4RunManager>();
 
+    LOG(DEBUG) << "checking Geant4 datasets";
+
     // release the output again
     RELEASE_STREAM(std::cout);
     RELEASE_STREAM(G4cout);
@@ -82,6 +84,7 @@ void GeometryBuilderGeant4Module::init() {
     // construct the geometry
     // WARNING: we need to do this here to allow for proper instantiation later (FIXME: is this correct)
 
+    LOG(INFO) << "Constructing internal geometry";
     // read the models
     std::string model_file_name = config_.get<std::string>("models_file");
     auto geo_descriptions = ReadGeoDescription(model_file_name);
@@ -116,16 +119,11 @@ void GeometryBuilderGeant4Module::init() {
 
 // run the geometry construction
 void GeometryBuilderGeant4Module::run() {
-    LOG(INFO) << "START BUILD GEOMETRY";
-
     // FIXME: check that geometry is empty or clean it before continuing
     assert(run_manager_g4_ != nullptr);
 
     // construct the G4 geometry
     build_g4();
-
-    // finish
-    LOG(INFO) << "END BUILD GEOMETRY";
 }
 
 void GeometryBuilderGeant4Module::build_g4() {
@@ -142,6 +140,7 @@ void GeometryBuilderGeant4Module::build_g4() {
     run_manager_g4_->SetUserInitialization(geometry_construction);
 
     // run the geometry construct function in GeometryConstructionG4
+    LOG(INFO) << "Building Geant4 geometry";
     run_manager_g4_->InitializeGeometry();
 
     // release output from G4

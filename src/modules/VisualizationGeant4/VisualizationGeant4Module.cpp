@@ -26,6 +26,8 @@ VisualizationGeant4Module::VisualizationGeant4Module(Configuration config, Messe
     : config_(std::move(config)), has_run_(false), vis_manager_g4_(nullptr) {}
 VisualizationGeant4Module::~VisualizationGeant4Module() {
     if(!has_run_ && vis_manager_g4_ != nullptr) {
+        LOG(DEBUG) << "Invoking VRML workaround to prevent visualization under error conditions";
+
         // FIXME: workaround to skip VRML visualization in case we stopped before reaching the run method
         auto str = getenv("G4VRMLFILE_VIEWER");
         if(str != nullptr) {
@@ -39,8 +41,6 @@ VisualizationGeant4Module::~VisualizationGeant4Module() {
 }
 
 void VisualizationGeant4Module::init() {
-    LOG(INFO) << "INITIALIZING VISUALIZATION";
-
     // suppress all geant4 output
     SUPPRESS_STREAM(G4cout);
 
@@ -75,8 +75,6 @@ void VisualizationGeant4Module::init() {
 
 // display the visualization
 void VisualizationGeant4Module::run() {
-    LOG(INFO) << "VISUALIZING RESULT";
-
     // execute the main macro
     if(config_.has("macro_run")) {
         G4UImanager* UI = G4UImanager::GetUIpointer();
@@ -88,11 +86,10 @@ void VisualizationGeant4Module::run() {
         std::unique_ptr<G4UIsession> session = std::make_unique<G4UIterminal>();
         session->SessionStart();
     } else {
+        LOG(INFO) << "Starting visualization viewer...";
         vis_manager_g4_->GetCurrentViewer()->ShowView();
     }
 
     // set that we did succesfully visualize
     has_run_ = true;
-
-    LOG(INFO) << "END VISUALIZATION";
 }
