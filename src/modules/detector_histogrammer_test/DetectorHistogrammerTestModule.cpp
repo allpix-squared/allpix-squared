@@ -10,7 +10,8 @@
 
 #include <TApplication.h>
 #include <TFile.h>
-#include <TH2D.h>
+#include <TH1I.h>
+#include <TH2I.h>
 
 #include "core/geometry/PixelDetectorModel.hpp"
 
@@ -52,10 +53,10 @@ void DetectorHistogrammerModule::run() {
     auto file = new TFile(file_name.c_str(), "RECREATE");
 
     // create histogram
-    std::string plot_name = "plot_" + detector_->getName();
-    std::string plot_title = "Histogram for " + detector_->getName();
-    auto histogram = new TH2F(plot_name.c_str(),
-                              plot_title.c_str(),
+    std::string histogram_name = "histogram_" + detector_->getName();
+    std::string histogram_title = "Histogram for " + detector_->getName();
+    auto histogram = new TH2I(histogram_name.c_str(),
+                              histogram_title.c_str(),
                               model->getNPixelsX(),
                               0,
                               model->getNPixelsX(),
@@ -63,6 +64,7 @@ void DetectorHistogrammerModule::run() {
                               0,
                               model->getNPixelsY());
 
+    // fill histogram
     for(auto& pixel_charge : pixels_message_->getData()) {
         auto pixel = pixel_charge.getPixel();
         auto charge = pixel_charge.getCharge();
@@ -71,8 +73,19 @@ void DetectorHistogrammerModule::run() {
 
         histogram->Fill(pixel.x(), pixel.y(), charge);
     }
-
     histogram->Write();
 
+    // create cluster size plot
+    std::string cluster_size_name = "cluster_" + detector_->getName();
+    std::string cluster_size_title = "Cluster size for " + detector_->getName();
+    auto cluster_size = new TH1I(cluster_size_name.c_str(),
+                                 cluster_size_title.c_str(),
+                                 model->getNPixelsX() * model->getNPixelsY(),
+                                 0,
+                                 model->getNPixelsX() * model->getNPixelsY());
+    cluster_size->Fill(static_cast<double>(pixels_message_->getData().size()));
+    cluster_size->Write();
+
+    // close the file
     file->Close();
 }
