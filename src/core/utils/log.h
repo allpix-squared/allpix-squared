@@ -49,7 +49,7 @@ namespace allpix {
         static const std::vector<std::ostream*>& getStreams();
 
         // convert log level to string
-        static LogLevel getLevelFromString(const std::string& level);
+        static LogLevel getLevelFromString(std::string level);
         static std::string getStringFromLevel(LogLevel level);
 
     protected:

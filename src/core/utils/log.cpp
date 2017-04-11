@@ -1,5 +1,6 @@
 #include "log.h"
 
+#include <algorithm>
 #include <array>
 #include <chrono>
 #include <exception>
@@ -93,7 +94,9 @@ std::string DefaultLogger::getStringFromLevel(LogLevel level) {
     return type.at(static_cast<decltype(type)::size_type>(level));
 }
 
-LogLevel DefaultLogger::getLevelFromString(const std::string& level) {
+LogLevel DefaultLogger::getLevelFromString(std::string level) {
+    std::transform(level.begin(), level.end(), level.begin(), ::toupper);
+
     if(level == "DEBUG") {
         return LogLevel::DEBUG;
     }
@@ -113,9 +116,7 @@ LogLevel DefaultLogger::getLevelFromString(const std::string& level) {
         return LogLevel::QUIET;
     }
 
-    DefaultLogger().getStream(LogLevel::WARNING) << "Unknown logging level '" << level
-                                                 << "'. Using WARNING level as default.";
-    return LogLevel::WARNING;
+    throw std::invalid_argument("unknown logging level");
 }
 
 std::string DefaultLogger::get_current_date() {

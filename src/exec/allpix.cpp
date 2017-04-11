@@ -71,11 +71,6 @@ int main(int argc, const char* argv[]) {
     }
 
     try {
-        // Set global log level:
-        LogLevel log_level = Log::getLevelFromString("DEBUG");
-        Log::setReportingLevel(log_level);
-        LOG(INFO) << "Set log level: " << Log::getStringFromLevel(log_level);
-
         // Construct managers
         // FIXME: move module manager initialization to AllPix as soon we have dynamic loading
         std::unique_ptr<StaticModuleManager> mod = std::make_unique<StaticModuleManager>(&generator);
@@ -83,13 +78,16 @@ int main(int argc, const char* argv[]) {
         // Construct main AllPix object
         std::unique_ptr<AllPix> apx = std::make_unique<AllPix>(config_file_name, std::move(mod));
 
-        LOG(INFO) << "Initializing AllPix";
+        // Load modules
+        apx->load();
+
+        // Initialize modules (pre-run)
         apx->init();
 
-        LOG(INFO) << "Running AllPix";
+        // Run modules and event-loop
         apx->run();
 
-        LOG(INFO) << "Finishing AllPix";
+        // Finalize modules (post-run)
         apx->finalize();
     } catch(ConfigurationError& e) {
         LOG(CRITICAL) << "Error in the configuration file:" << std::endl
