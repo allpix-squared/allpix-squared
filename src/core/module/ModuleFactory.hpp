@@ -48,8 +48,8 @@ namespace allpix {
         inline void check_module_detector(const std::string& module_name, Module* module, const Detector* detector) {
             if(module->getDetector().get() != detector) {
                 throw InvalidModuleStateException(
-                                                  "Module " + module_name +
-                                                  " does not call the correct base Module constructor: the provided detector should be forwarded");
+                    "Module " + module_name +
+                    " does not call the correct base Module constructor: the provided detector should be forwarded");
             }
         }
 
