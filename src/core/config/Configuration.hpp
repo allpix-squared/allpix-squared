@@ -47,7 +47,7 @@ namespace allpix {
         template <typename T> void setDefault(const std::string& key, const T& val);
         template <typename T> void setDefaultArray(const std::string& key, const std::vector<T>& val);
 
-        // Set literally
+        // Set literal text
         void setText(const std::string& key, const std::string& val);
 
         // FIXME: overload [] operator too
@@ -57,6 +57,9 @@ namespace allpix {
 
         // Configuration name
         std::string getName() const;
+
+        // Merge other configuration
+        void merge(const Configuration& other);
 
         // Print debug functions
         // FIXME: not very useful now

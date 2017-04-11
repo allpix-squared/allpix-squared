@@ -5,6 +5,7 @@
 #ifndef ALLPIX_CONFIG_MANAGER_H
 #define ALLPIX_CONFIG_MANAGER_H
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -34,6 +35,11 @@ namespace allpix {
         // Clear all configuration
         void clear();
 
+        // Define special sections
+        void addGlobalHeaderName(std::string);
+        Configuration getGlobalConfiguration();
+        void addIgnoreHeaderName(std::string);
+
         // Check if configuration section exist
         bool hasConfiguration(const std::string& name) const;
         unsigned int countConfigurations(const std::string& name) const;
@@ -45,8 +51,14 @@ namespace allpix {
         std::vector<Configuration> getConfigurations() const;
 
     private:
+        // Reader for the config files
         ConfigReader reader_;
 
+        // List of names which indicate global sections or sections to ignore
+        std::set<std::string> global_names_;
+        std::set<std::string> ignore_names_;
+
+        // File names of the added config files
         std::vector<std::string> file_names_;
     };
 } // namespace allpix

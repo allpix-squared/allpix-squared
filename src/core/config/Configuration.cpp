@@ -46,6 +46,15 @@ unsigned int Configuration::countSettings() const {
     return static_cast<unsigned int>(config_.size());
 }
 
+void Configuration::merge(const Configuration& other) {
+    for(auto config_pair : other.config_) {
+        // only merge values that do not yet exist
+        if(!has(config_pair.first)) {
+            setText(config_pair.first, config_pair.second);
+        }
+    }
+}
+
 void Configuration::print(std::ostream& out) const {
     for(auto& element : config_) {
         out << element.first << " : " << element.second << std::endl;

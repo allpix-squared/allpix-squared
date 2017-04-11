@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "Configuration.hpp"
 #include "exceptions.h"
 
 using namespace allpix;
@@ -46,6 +47,29 @@ void ConfigManager::clear() {
     reader_.clear();
 }
 
+// Add a section name for a global header
+void ConfigManager::addGlobalHeaderName(std::string name) {
+    global_names_.emplace(std::move(name));
+}
+
+// Get the configuration that is global
+Configuration ConfigManager::getGlobalConfiguration() {
+    Configuration global_config;
+    for(auto& global_name : global_names_) {
+        // add all global configurations that do exists
+        auto configs = getConfigurations(global_name);
+        for(auto& config : configs) {
+            global_config.merge(config);
+        }
+    }
+    return global_config;
+}
+
+// Add a section name which should be ignored
+void ConfigManager::addIgnoreHeaderName(std::string name) {
+    ignore_names_.emplace(std::move(name));
+}
+
 // Check if configuration key exists at least once
 bool ConfigManager::hasConfiguration(const std::string& name) const {
     return reader_.hasConfiguration(name);
@@ -63,5 +87,15 @@ std::vector<Configuration> ConfigManager::getConfigurations(const std::string& n
 
 // return all configurations
 std::vector<Configuration> ConfigManager::getConfigurations() const {
-    return reader_.getConfigurations();
+    std::vector<Configuration> result;
+    for(auto& config : reader_.getConfigurations()) {
+        // ignore all global and ignores names
+        if(global_names_.find(config.getName()) != global_names_.end() ||
+           ignore_names_.find(config.getName()) != ignore_names_.end()) {
+            continue;
+        }
+        result.push_back(config);
+    }
+
+    return result;
 }

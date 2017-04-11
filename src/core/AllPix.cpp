@@ -7,6 +7,8 @@
 #include <memory>
 #include <utility>
 
+#include "core/config/InvalidValueError.hpp"
+#include "core/utils/log.h"
 #include "core/utils/unit.h"
 
 using namespace allpix;
@@ -18,21 +20,51 @@ AllPix::AllPix(std::string file_name, std::unique_ptr<ModuleManager> mod_mgr)
     : conf_mgr_(std::make_unique<ConfigManager>(std::move(file_name))), mod_mgr_(std::move(mod_mgr)),
       geo_mgr_(std::make_unique<GeometryManager>()), msg_(std::make_unique<Messenger>()) {}
 
-// control methods
-void AllPix::init() {
-    // set the default units
+// load all modules and the allpix default configuration
+void AllPix::load() {
+    // add the standard special sections
+    conf_mgr_->addGlobalHeaderName("");
+    conf_mgr_->addGlobalHeaderName("AllPix");
+    conf_mgr_->addIgnoreHeaderName("Ignore");
+
+    // set the log level from config
+    Configuration global_config = conf_mgr_->getGlobalConfiguration();
+    std::string log_level_string = global_config.get<std::string>("log_level", "INFO");
+    try {
+        LogLevel log_level = Log::getLevelFromString(log_level_string);
+        Log::setReportingLevel(log_level);
+    } catch(std::invalid_argument& e) {
+        throw InvalidValueError(global_config, "log_level", e.what());
+    }
+    LOG(DEBUG) << "Setting log level to " << log_level_string;
+
+    // set the default units to use
     add_units();
 
     // load the modules
+    LOG(DEBUG) << "Loading modules";
     mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get());
+    LOG(DEBUG) << "Modules succesfully loaded"; // FIXME: add some more info
+}
+
+// init / run / finalize control methods
+void AllPix::init() {
+    LOG(DEBUG) << "Initializing modules";
+    // initialize all modules
+    mod_mgr_->init();
+    LOG(DEBUG) << "Finished initialization";
 }
 void AllPix::run() {
+    LOG(DEBUG) << "Running modules";
     // run the modules
     mod_mgr_->run();
+    LOG(DEBUG) << "Finished run";
 }
 void AllPix::finalize() {
+    LOG(DEBUG) << "Finalizing modules";
     // finalize the modules
     mod_mgr_->finalize();
+    LOG(DEBUG) << "Finalization completed";
 }
 
 // add all units

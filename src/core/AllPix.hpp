@@ -20,13 +20,16 @@ namespace allpix {
         // Constructor and destructor
         AllPix(std::string name, std::unique_ptr<ModuleManager> mod_mgr);
 
-        // Initialize to valid state
+        // Apply default configuration and load all modules
+        void load();
+
+        // Initialize all modules (pre-run)
         void init();
 
-        // Start a single run of every module
+        // Run all modules for the amount of events (event)
         void run();
 
-        // Finalize run, check if everything has finished
+        // Finalize all modules (post-run)
         void finalize();
 
     private:
