@@ -36,6 +36,7 @@ namespace allpix {
         void clear();
 
         // Define special sections
+        void setGlobalHeaderName(std::string);
         void addGlobalHeaderName(std::string);
         Configuration getGlobalConfiguration();
         void addIgnoreHeaderName(std::string);
@@ -55,6 +56,7 @@ namespace allpix {
         ConfigReader reader_;
 
         // List of names which indicate global sections or sections to ignore
+        std::string global_default_name_;
         std::set<std::string> global_names_;
         std::set<std::string> ignore_names_;
 

@@ -43,8 +43,8 @@ void DetectorHistogrammerModule::run() {
     auto model = std::dynamic_pointer_cast<PixelDetectorModel>(detector_->getModel());
     if(model == nullptr) {
         // FIXME: exception can be more appropriate here
-        LOG(CRITICAL) << "Detector " << detector_->getName()
-                      << " is not a PixelDetectorModel: ignored as other types are currently unsupported!";
+        LOG(ERROR) << "Detector " << detector_->getName()
+                   << " is not a PixelDetectorModel: ignored as other types are currently unsupported!";
         return;
     }
 

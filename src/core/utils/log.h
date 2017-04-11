@@ -19,7 +19,8 @@
 #include <vector>
 
 namespace allpix {
-    enum class LogLevel { QUIET = 0, CRITICAL, ERROR, WARNING, INFO, DEBUG };
+    enum class LogLevel { QUIET = 0, FATAL, ERROR, WARNING, INFO, DEBUG };
+    enum class LogFormat { SHORT = 0, DEFAULT, DEBUG };
 
     class DefaultLogger {
     public:
@@ -41,6 +42,18 @@ namespace allpix {
         static LogLevel getReportingLevel();
         static void setReportingLevel(LogLevel);
 
+        // convert log level from/to string
+        static LogLevel getLevelFromString(std::string level);
+        static std::string getStringFromLevel(LogLevel level);
+
+        // set format
+        static LogFormat getFormat();
+        static void setFormat(LogFormat);
+
+        // convert log format from/to string
+        static LogFormat getFormatFromString(std::string format);
+        static std::string getStringFromFormat(LogFormat format);
+
         // set streams (std::cerr is default)
         // NOTE: cannot remove a stream yet
         // WARNING: caller has to make sure that ostream exist while the logger is available
@@ -48,20 +61,27 @@ namespace allpix {
         static void clearStreams();
         static const std::vector<std::ostream*>& getStreams();
 
-        // convert log level to string
-        static LogLevel getLevelFromString(std::string level);
-        static std::string getStringFromLevel(LogLevel level);
-
-    protected:
-        std::ostringstream os;
+        // set section names
+        static void setSection(std::string);
+        static std::string getSection();
 
     private:
+        // output stream
+        std::ostringstream os;
+
+        // amount of exceptions to prevent abort
         int exception_count_;
+        // saved value of the indented header
         unsigned int indent_count_;
 
+        // internal methods
         int get_uncaught_exceptions(bool);
         std::string get_current_date();
+
+        // static save methods
+        static std::string& get_section();
         static LogLevel& get_reporting_level();
+        static LogFormat& get_format();
         static std::vector<std::ostream*>& get_streams();
     };
 

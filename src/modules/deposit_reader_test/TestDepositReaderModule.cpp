@@ -27,7 +27,7 @@ TestDepositReaderModule::~TestDepositReaderModule() = default;
 void TestDepositReaderModule::run() {
     LOG(INFO) << "Got " << deposit_messages_.size() << " deposits";
     for(auto& message : deposit_messages_) {
-        LOG(DEBUG) << " list of deposits";
+        LOG(DEBUG) << "list of deposits";
         for(auto& deposit : message->getData()) {
             auto pos = deposit.getPosition();
 
@@ -35,8 +35,8 @@ void TestDepositReaderModule::run() {
             auto y = Units::convert(pos.y(), "um");
             auto z = Units::convert(pos.z(), "um");
 
-            LOG(DEBUG) << std::fixed << std::setprecision(5) << deposit.getCharge() << " charges deposited at position ("
-                       << x << "um," << y << "um," << z << "um)";
+            LOG(DEBUG) << " " << std::fixed << std::setprecision(5) << deposit.getCharge()
+                       << " charges deposited at position (" << x << "um," << y << "um," << z << "um)";
         }
     }
 }

@@ -45,52 +45,49 @@ DefaultLogger::~DefaultLogger() {
 
 std::ostringstream&
 DefaultLogger::getStream(LogLevel level, const std::string& file, const std::string& function, uint32_t line) {
-    os << "[" << get_current_date() << "] ";
-    /*if (logName().size() > 0) {
-        os << "<" << logName() << "> ";
-    }*/
-    os << std::setw(8) << getStringFromLevel(level) << ": ";
+    // add date in all except short format
+    if(get_format() != LogFormat::SHORT) {
+        os << "|" << get_current_date() << "| ";
+    }
 
-    // For debug levels we want also function name and line number printed:
-    if(level != LogLevel::INFO && level != LogLevel::QUIET && level != LogLevel::WARNING) {
+    // add log level (shortly in the short format)
+    if(get_format() != LogFormat::SHORT) {
+        std::string level_str = "(";
+        level_str += getStringFromLevel(level);
+        level_str += ")";
+        os << std::setw(9) << level_str << " ";
+    } else
+        os << "(" << getStringFromLevel(level).substr(0, 1) << ") ";
+
+    // add section if available
+    if(!get_section().empty()) {
+        os << "[" << get_section() << "] ";
+    }
+
+    // print function name and line number information in debug format
+    if(get_format() == LogFormat::DEBUG) {
         os << "<" << file << "/" << function << ":L" << line << "> ";
     }
 
+    // save the indent count to fix with newlines
     indent_count_ = static_cast<unsigned int>(os.str().size());
     return os;
 }
 
-// set reporting level
+// reporting level
 LogLevel& DefaultLogger::get_reporting_level() {
-    static LogLevel reporting_level;
+    static LogLevel reporting_level = LogLevel::INFO;
     return reporting_level;
 }
 void DefaultLogger::setReportingLevel(LogLevel level) {
     get_reporting_level() = level;
 }
-
 LogLevel DefaultLogger::getReportingLevel() {
     return get_reporting_level();
 }
-
-// change streams
-std::vector<std::ostream*>& DefaultLogger::get_streams() {
-    static std::vector<std::ostream*> streams = {&std::cerr};
-    return streams;
-}
-const std::vector<std::ostream*>& DefaultLogger::getStreams() {
-    return get_streams();
-}
-void DefaultLogger::clearStreams() {
-    get_streams().clear();
-}
-void DefaultLogger::addStream(std::ostream& stream) {
-    get_streams().push_back(&stream);
-}
-
 // convert string to log level and vice versa
 std::string DefaultLogger::getStringFromLevel(LogLevel level) {
-    static const std::array<std::string, 6> type = {{"QUIET", "CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"}};
+    static const std::array<std::string, 6> type = {{"QUIET", "FATAL", "ERROR", "WARNING", "INFO", "DEBUG"}};
     return type.at(static_cast<decltype(type)::size_type>(level));
 }
 
@@ -109,14 +106,73 @@ LogLevel DefaultLogger::getLevelFromString(std::string level) {
     if(level == "ERROR") {
         return LogLevel::ERROR;
     }
-    if(level == "CRITICAL") {
-        return LogLevel::CRITICAL;
+    if(level == "FATAL") {
+        return LogLevel::FATAL;
     }
     if(level == "QUIET") {
         return LogLevel::QUIET;
     }
 
-    throw std::invalid_argument("unknown logging level");
+    throw std::invalid_argument("unknown log level");
+}
+
+// log format
+LogFormat& DefaultLogger::get_format() {
+    static LogFormat reporting_level = LogFormat::DEFAULT;
+    return reporting_level;
+}
+void DefaultLogger::setFormat(LogFormat level) {
+    get_format() = level;
+}
+LogFormat DefaultLogger::getFormat() {
+    return get_format();
+}
+// convert string to log level and vice versa
+std::string DefaultLogger::getStringFromFormat(LogFormat format) {
+    static const std::array<std::string, 3> type = {{"SHORT", "DEFAULT", "DEBUG"}};
+    return type.at(static_cast<decltype(type)::size_type>(format));
+}
+
+LogFormat DefaultLogger::getFormatFromString(std::string format) {
+    std::transform(format.begin(), format.end(), format.begin(), ::toupper);
+    if(format == "SHORT") {
+        return LogFormat::SHORT;
+    }
+    if(format == "DEFAULT") {
+        return LogFormat::DEFAULT;
+    }
+    if(format == "DEBUG") {
+        return LogFormat::DEBUG;
+    }
+
+    throw std::invalid_argument("unknown log format");
+}
+
+// change streams
+std::vector<std::ostream*>& DefaultLogger::get_streams() {
+    static std::vector<std::ostream*> streams = {&std::cerr};
+    return streams;
+}
+const std::vector<std::ostream*>& DefaultLogger::getStreams() {
+    return get_streams();
+}
+void DefaultLogger::clearStreams() {
+    get_streams().clear();
+}
+void DefaultLogger::addStream(std::ostream& stream) {
+    get_streams().push_back(&stream);
+}
+
+// section names
+std::string& DefaultLogger::get_section() {
+    static std::string section;
+    return section;
+}
+void DefaultLogger::setSection(std::string section) {
+    get_section() = section;
+}
+std::string DefaultLogger::getSection() {
+    return get_section();
 }
 
 std::string DefaultLogger::get_current_date() {

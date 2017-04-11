@@ -10,7 +10,7 @@
 using namespace allpix;
 
 // Constructors and destructor
-ConfigManager::ConfigManager() : reader_(), file_names_() {}
+ConfigManager::ConfigManager() : reader_(), global_default_name_(), global_names_(), ignore_names_(), file_names_() {}
 ConfigManager::ConfigManager(std::string file_name) : ConfigManager() {
     addFile(file_name);
 }
@@ -47,6 +47,12 @@ void ConfigManager::clear() {
     reader_.clear();
 }
 
+// Add a section name for a global header and set it to be the default name
+void ConfigManager::setGlobalHeaderName(std::string name) {
+    global_names_.emplace(name);
+    global_default_name_ = std::move(name);
+}
+
 // Add a section name for a global header
 void ConfigManager::addGlobalHeaderName(std::string name) {
     global_names_.emplace(std::move(name));
@@ -54,7 +60,7 @@ void ConfigManager::addGlobalHeaderName(std::string name) {
 
 // Get the configuration that is global
 Configuration ConfigManager::getGlobalConfiguration() {
-    Configuration global_config;
+    Configuration global_config(global_default_name_);
     for(auto& global_name : global_names_) {
         // add all global configurations that do exists
         auto configs = getConfigurations(global_name);

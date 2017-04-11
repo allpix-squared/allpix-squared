@@ -44,8 +44,6 @@ DepositionGeant4Module::~DepositionGeant4Module() = default;
 
 // run the deposition
 void DepositionGeant4Module::run() {
-    LOG(INFO) << "INIT THE DEPOSITS";
-
     // load the G4 run manager (which is currently owned by the geometry builder...)
     G4RunManager* run_manager_g4 = G4RunManager::GetRunManager();
     if(run_manager_g4 == nullptr) {

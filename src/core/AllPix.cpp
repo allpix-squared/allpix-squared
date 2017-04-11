@@ -23,8 +23,8 @@ AllPix::AllPix(std::string file_name, std::unique_ptr<ModuleManager> mod_mgr)
 // load all modules and the allpix default configuration
 void AllPix::load() {
     // add the standard special sections
+    conf_mgr_->setGlobalHeaderName("AllPix");
     conf_mgr_->addGlobalHeaderName("");
-    conf_mgr_->addGlobalHeaderName("AllPix");
     conf_mgr_->addIgnoreHeaderName("Ignore");
 
     // set the log level from config
@@ -36,7 +36,19 @@ void AllPix::load() {
     } catch(std::invalid_argument& e) {
         throw InvalidValueError(global_config, "log_level", e.what());
     }
-    LOG(DEBUG) << "Setting log level to " << log_level_string;
+
+    // set the log format from config
+    std::string log_format_string = global_config.get<std::string>("log_format", "DEFAULT");
+    try {
+        LogFormat log_format = Log::getFormatFromString(log_format_string);
+        Log::setFormat(log_format);
+    } catch(std::invalid_argument& e) {
+        throw InvalidValueError(global_config, "log_format", e.what());
+    }
+
+    // wait for the debug messages until level and format are set
+    LOG(DEBUG) << "Global log level is set to " << log_level_string;
+    LOG(DEBUG) << "Global log format is set to " << log_format_string;
 
     // set the default units to use
     add_units();
