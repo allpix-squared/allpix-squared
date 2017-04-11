@@ -27,8 +27,7 @@ namespace allpix {
         ElectricFieldReaderInitModule(Configuration config, Messenger*, std::shared_ptr<Detector>);
 
         // read the electric field and set it for the detectors
-        // FIXME: this should not run again for every event
-        void run() override;
+        void init() override;
 
     private:
         using FieldData = std::pair<std::shared_ptr<std::vector<double>>, std::array<size_t, 3>>;

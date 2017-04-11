@@ -51,6 +51,7 @@ void VisualizationGeant4Module::init() {
     }
 
     // initialize the session and the visualization manager
+    LOG(INFO) << "Initializing visualization";
     vis_manager_g4_ = std::make_shared<G4VisExecutive>("quiet");
     vis_manager_g4_->Initialize();
 
@@ -73,8 +74,8 @@ void VisualizationGeant4Module::init() {
     }
 }
 
-// display the visualization
-void VisualizationGeant4Module::run() {
+// display the visualization after all events have passed
+void VisualizationGeant4Module::finalize() {
     // execute the main macro
     if(config_.has("macro_run")) {
         G4UImanager* UI = G4UImanager::GetUIpointer();
@@ -86,7 +87,7 @@ void VisualizationGeant4Module::run() {
         std::unique_ptr<G4UIsession> session = std::make_unique<G4UIterminal>();
         session->SessionStart();
     } else {
-        LOG(INFO) << "Starting visualization viewer...";
+        LOG(INFO) << "Starting visualization viewer";
         vis_manager_g4_->GetCurrentViewer()->ShowView();
     }
 

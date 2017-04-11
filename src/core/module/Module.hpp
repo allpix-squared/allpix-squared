@@ -34,19 +34,15 @@ namespace allpix {
         // Get (possibly) linked detector
         std::shared_ptr<Detector> getDetector();
 
-        // Initialize the module and pass the configuration etc.
-        virtual void init() {
-            // FIXME: do default stuff here
-        }
+        // Initialize the module before run
+        virtual void init() {}
 
-        // Execute the function of the module
-        virtual void run() = 0;
+        // Execute the function of the module for every event
+        virtual void run() {}
 
-        // Finalize module and check if it executed properly
+        // Finalize module after run
         // NOTE: useful to do before destruction to allow for exceptions
-        virtual void finalize() {
-            // FIXME: do default stuff here
-        }
+        virtual void finalize() {}
 
     private:
         std::shared_ptr<Detector> detector_ptr__;

@@ -14,20 +14,23 @@
 #include "core/module/Module.hpp"
 
 class G4UserLimits;
+class G4RunManager;
 
 namespace allpix {
     // define the module to inherit from the module base class
     class DepositionGeant4Module : public Module {
     public:
-        // provide a static const variable of type string (required!)
+        // name of the module
         static const std::string name;
 
         // constructor should take a pointer to the Configuration, the Messenger and the Geometry Manager
         DepositionGeant4Module(Configuration, Messenger*, GeometryManager*);
         ~DepositionGeant4Module() override;
 
-        // method that will be run where the module should do its computations and possibly dispatch their results as a
-        // message
+        // initialize the physics list and the generators
+        void init() override;
+
+        // run a single deposition
         void run() override;
 
     private:
@@ -42,6 +45,8 @@ namespace allpix {
 
         // G4 user step limits we should manage
         std::unique_ptr<G4UserLimits> user_limits_;
+        // pointer to the Geant4 run manager (owned by other module...)
+        G4RunManager* run_manager_g4_;
     };
 } // namespace allpix
 

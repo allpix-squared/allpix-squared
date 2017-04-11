@@ -62,8 +62,8 @@ namespace allpix {
         TGeoBuilderModule(const TGeoBuilderModule&) = delete;
         TGeoBuilderModule& operator=(const TGeoBuilderModule&) = delete;
 
-        // Module run method
-        void run() override;
+        // Init method is used to construct the geometry
+        void init() override;
 
     private:
         // Internal methods

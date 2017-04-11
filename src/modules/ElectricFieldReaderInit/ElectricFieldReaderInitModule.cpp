@@ -25,8 +25,8 @@ ElectricFieldReaderInitModule::ElectricFieldReaderInitModule(Configuration confi
                                                              std::shared_ptr<Detector> detector)
     : Module(detector), config_(std::move(config)), detector_(std::move(detector)) {}
 
-// run method that does the main computations for the module
-void ElectricFieldReaderInitModule::run() {
+// init method that reads the electric field from the file
+void ElectricFieldReaderInitModule::init() {
     try {
         // get field
         LOG(INFO) << "Reading electric field file";

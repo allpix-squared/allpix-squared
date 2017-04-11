@@ -29,8 +29,9 @@ namespace allpix {
 
         // initializes the visualization and set necessary settings to catch all the required data
         void init() override;
+
         // displays the visualization
-        void run() override;
+        void finalize() override;
 
     private:
         // configuration for this module

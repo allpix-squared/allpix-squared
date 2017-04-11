@@ -34,55 +34,12 @@ using namespace ROOT;
 // name of the module
 const std::string GeometryBuilderGeant4Module::name = "GeometryBuilderGeant4";
 
-// constructor and destructor (defined here to allow for incomplete unique_ptr type)
+// constructor and destructor
 GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration config, Messenger*, GeometryManager* geo_manager)
-    : config_(std::move(config)), geo_manager_(geo_manager), run_manager_g4_(nullptr) {}
-GeometryBuilderGeant4Module::~GeometryBuilderGeant4Module() = default;
-
-// check geant4 environment variable
-inline static void check_dataset_g4(const std::string& env_name) {
-    const char* file_name = std::getenv(env_name.c_str());
-    if(file_name == nullptr) {
-        throw ModuleError("Geant4 environment variable " + env_name + " is not set, make sure to source a Geant4 "
-                                                                      "environment with all datasets");
-    }
-    std::ifstream file(file_name);
-    if(!file.good()) {
-        throw ModuleError("Geant4 environment variable " + env_name + " does not point to existing dataset, your Geant4 "
-                                                                      "environment is not complete");
-    }
-    // FIXME: check if file does actually contain a correct dataset
-}
-
-// create the run manager and make it available
-void GeometryBuilderGeant4Module::init() {
-    // suppress all output (also cout due to a part in Geant4 where G4cout is not used)
-    SUPPRESS_STREAM(std::cout);
-    SUPPRESS_STREAM(G4cout);
-
-    // create the G4 run manager
-    run_manager_g4_ = std::make_unique<G4RunManager>();
-
-    LOG(DEBUG) << "checking Geant4 datasets";
-
-    // release the output again
-    RELEASE_STREAM(std::cout);
-    RELEASE_STREAM(G4cout);
-
-    // check if all the required geant4 datasets are defined
-    check_dataset_g4("G4LEVELGAMMADATA");
-    check_dataset_g4("G4RADIOACTIVEDATA");
-    check_dataset_g4("G4PIIDATA");
-    check_dataset_g4("G4SAIDXSDATA");
-    check_dataset_g4("G4ABLADATA");
-    check_dataset_g4("G4REALSURFACEDATA");
-    check_dataset_g4("G4NEUTRONHPDATA");
-    check_dataset_g4("G4NEUTRONXSDATA");
-    check_dataset_g4("G4ENSDFSTATEDATA");
-    check_dataset_g4("G4LEDATA");
-
-    // construct the geometry
-    // WARNING: we need to do this here to allow for proper instantiation later (FIXME: is this correct)
+    : config_(std::move(config)), geo_manager_(geo_manager), run_manager_g4_(nullptr) {
+    // construct the internal geometry
+    // WARNING: we need to do this here to allow for proper instantiation (initialization is only run after loading)
+    // FIXME: move this to a separate module or the core?
 
     LOG(INFO) << "Constructing internal geometry";
     // read the models
@@ -116,19 +73,47 @@ void GeometryBuilderGeant4Module::init() {
         geo_manager_->addDetector(detector);
     }
 }
+GeometryBuilderGeant4Module::~GeometryBuilderGeant4Module() = default;
 
-// run the geometry construction
-void GeometryBuilderGeant4Module::run() {
-    // FIXME: check that geometry is empty or clean it before continuing
-    assert(run_manager_g4_ != nullptr);
-
-    // construct the G4 geometry
-    build_g4();
+// check geant4 environment variable
+inline static void check_dataset_g4(const std::string& env_name) {
+    const char* file_name = std::getenv(env_name.c_str());
+    if(file_name == nullptr) {
+        throw ModuleError("Geant4 environment variable " + env_name + " is not set, make sure to source a Geant4 "
+                                                                      "environment with all datasets");
+    }
+    std::ifstream file(file_name);
+    if(!file.good()) {
+        throw ModuleError("Geant4 environment variable " + env_name + " does not point to existing dataset, your Geant4 "
+                                                                      "environment is not complete");
+    }
+    // FIXME: check if file does actually contain a correct dataset
 }
 
-void GeometryBuilderGeant4Module::build_g4() {
-    // suppress all output for G4
+// create the run manager, check Geant4 state and construct the Geant4 geometry
+void GeometryBuilderGeant4Module::init() {
+    // suppress all output (also cout due to a part in Geant4 where G4cout is not used)
+    SUPPRESS_STREAM(std::cout);
     SUPPRESS_STREAM(G4cout);
+
+    // create the G4 run manager
+    run_manager_g4_ = std::make_unique<G4RunManager>();
+
+    // release stdout again
+    RELEASE_STREAM(std::cout);
+
+    // check if all the required geant4 datasets are defined
+    LOG(DEBUG) << "checking Geant4 datasets";
+    check_dataset_g4("G4LEVELGAMMADATA");
+    check_dataset_g4("G4RADIOACTIVEDATA");
+    check_dataset_g4("G4PIIDATA");
+    check_dataset_g4("G4SAIDXSDATA");
+    check_dataset_g4("G4ABLADATA");
+    check_dataset_g4("G4REALSURFACEDATA");
+    check_dataset_g4("G4NEUTRONHPDATA");
+    check_dataset_g4("G4NEUTRONXSDATA");
+    check_dataset_g4("G4ENSDFSTATEDATA");
+    check_dataset_g4("G4LEDATA");
 
     // get the world size
     config_.setDefault("world_size", G4ThreeVector(1000, 1000, 2000));

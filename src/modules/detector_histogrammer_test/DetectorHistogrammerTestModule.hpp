@@ -1,5 +1,5 @@
 /*
- * Histogram hits in a very simplified way
+ * Temporary producer of histogram hits
  */
 
 #ifndef ALLPIX_MODULE_DETECTOR_HISTOGRAMMER_H
@@ -7,6 +7,9 @@
 
 #include <memory>
 #include <string>
+
+#include <TH1I.h>
+#include <TH2I.h>
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
@@ -28,18 +31,28 @@ namespace allpix {
         DetectorHistogrammerModule(Configuration, Messenger*, std::shared_ptr<Detector>);
         ~DetectorHistogrammerModule() override;
 
-        // create and plot the histograms
+        // create the histograms
+        void init() override;
+
+        // fill the histograms
         void run() override;
+
+        // write the histograms
+        void finalize() override;
 
     private:
         // configuration for this module
         Configuration config_;
 
-        // attached detector
+        // attached detector and model
         std::shared_ptr<Detector> detector_;
 
         // deposits for a specific detector
         std::shared_ptr<PixelChargeMessage> pixels_message_;
+
+        // histograms
+        TH2I* histogram; // FIXME: bad name
+        TH1I* cluster_size;
     };
 } // namespace allpix
 

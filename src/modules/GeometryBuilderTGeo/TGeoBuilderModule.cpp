@@ -77,7 +77,7 @@ TGeoBuilderModule::TGeoBuilderModule(Configuration config, Messenger*, GeometryM
       m_userDefinedWorldMaterial("Air"), m_userDefinedGeoOutputFile(""), m_buildAppliancesFlag(false), m_Appliances_type(0),
       m_buildTestStructureFlag(false), m_vectorWrapperEnhancement(), m_posVectorAppliances() {
     // read the configuration
-    // WARNING: these conversion go wrong without include tools/ROOT.h - prefer to use std::string
+    // FIXME: prefer to use std::string
     m_userDefinedWorldMaterial = m_config.get<TString>("world_material");
     m_userDefinedGeoOutputFile = m_config.get<TString>("output_file", "");
     m_buildAppliancesFlag = m_config.get<bool>("build_appliances", false);
@@ -85,15 +85,6 @@ TGeoBuilderModule::TGeoBuilderModule(Configuration config, Messenger*, GeometryM
         m_Appliances_type = m_config.get<int>("appliances_type");
     }
     m_buildTestStructureFlag = m_config.get<bool>("build_test_structures", false);
-}
-TGeoBuilderModule::~TGeoBuilderModule() = default;
-
-/// Run the detector construction.
-void TGeoBuilderModule::run() {
-
-    // Import and load external geometry
-    // TGeoManager::Import("MyGeom.root");
-    // Return
 
     // Read the geometry descriptions from the models
     std::string model_file_name = m_config.get<std::string>("models_file");
@@ -125,6 +116,14 @@ void TGeoBuilderModule::run() {
         // Can I add something else ?
         m_geoDscMng->addDetector(detector);
     }
+}
+TGeoBuilderModule::~TGeoBuilderModule() = default;
+
+/// Run the detector construction.
+void TGeoBuilderModule::init() {
+    // Import and load external geometry
+    // TGeoManager::Import("MyGeom.root");
+    // Return
 
     /* Instantiate the TGeo geometry manager.
        It will remain persistant until gGeoManager is deleted.

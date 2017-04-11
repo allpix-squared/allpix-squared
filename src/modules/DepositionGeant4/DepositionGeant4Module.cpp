@@ -42,11 +42,10 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration config, Messenger* 
 }
 DepositionGeant4Module::~DepositionGeant4Module() = default;
 
-// run the deposition
-void DepositionGeant4Module::run() {
+void DepositionGeant4Module::init() {
     // load the G4 run manager (which is currently owned by the geometry builder...)
-    G4RunManager* run_manager_g4 = G4RunManager::GetRunManager();
-    if(run_manager_g4 == nullptr) {
+    run_manager_g4_ = G4RunManager::GetRunManager();
+    if(run_manager_g4_ == nullptr) {
         throw ModuleError("Cannot deposit charges using Geant4 without a Geant4 geometry builder");
     }
 
@@ -66,11 +65,11 @@ void DepositionGeant4Module::run() {
     physicsList->RegisterPhysics(new G4StepLimiterPhysics());
     // initialize the physics list
     LOG(INFO) << "Initializing physics processes";
-    run_manager_g4->SetUserInitialization(physicsList);
-    run_manager_g4->InitializePhysics();
+    run_manager_g4_->SetUserInitialization(physicsList);
+    run_manager_g4_->InitializePhysics();
 
     // initialize the full run manager to ensure correct state flags
-    run_manager_g4->Initialize();
+    run_manager_g4_->Initialize();
 
     // add a generator
     // NOTE: for more difficult modules a separate generator module makes more sense probably?
@@ -91,14 +90,13 @@ void DepositionGeant4Module::run() {
     // build generator
     LOG(INFO) << "Constructing particle generator";
     GeneratorActionG4* generator = new GeneratorActionG4(part_amount, particle, part_position, part_direction, part_energy);
-    run_manager_g4->SetUserAction(generator);
+    run_manager_g4_->SetUserAction(generator);
 
     // get the creation energy for charge (default is silicon electron hole pair energy)
     // FIXME: is this a good name...
     double charge_creation_energy = config_.get<double>("charge_creation_energy", 3.64e-6);
 
     // loop through all detectors and set the sensitive detector (call it action because that is what it is currently doing)
-    G4SDManager* sd_man_g4 = G4SDManager::GetSDMpointer();
     for(auto& detector : geo_manager_->getDetectors()) {
         auto model_g4 = detector->getExternalModel<DetectorModelG4>();
 
@@ -107,7 +105,6 @@ void DepositionGeant4Module::run() {
 
         // add the sensitive detector action
         auto sensitive_detector_action = new SensitiveDetectorActionG4(detector, messenger_, charge_creation_energy);
-        sd_man_g4->AddNewDetector(sensitive_detector_action);
         model_g4->pixel_log->SetSensitiveDetector(sensitive_detector_action);
     }
 
@@ -121,8 +118,11 @@ void DepositionGeant4Module::run() {
 
     // release output from G4
     RELEASE_STREAM(G4cout);
+}
 
+// run the deposition
+void DepositionGeant4Module::run() {
     // start the beam
     LOG(INFO) << "Enabling beam";
-    run_manager_g4->BeamOn(1);
+    run_manager_g4_->BeamOn(1);
 }

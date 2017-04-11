@@ -10,11 +10,8 @@
 
 #include <TApplication.h>
 #include <TFile.h>
-#include <TH1I.h>
-#include <TH2I.h>
 
 #include "core/geometry/PixelDetectorModel.hpp"
-
 #include "core/messenger/Messenger.hpp"
 #include "core/utils/log.h"
 
@@ -31,14 +28,8 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration config,
 }
 DetectorHistogrammerModule::~DetectorHistogrammerModule() = default;
 
-// histogram the deposits
-void DetectorHistogrammerModule::run() {
-    // check if we got any deposits
-    if(pixels_message_ == nullptr) {
-        LOG(WARNING) << "Detector " << detector_->getName() << " did not get any deposits... skipping!";
-        return;
-    }
-
+// create histograms
+void DetectorHistogrammerModule::init() {
     // get detector model
     auto model = std::dynamic_pointer_cast<PixelDetectorModel>(detector_->getModel());
     if(model == nullptr) {
@@ -48,24 +39,38 @@ void DetectorHistogrammerModule::run() {
         return;
     }
 
-    // create root file
-    std::string file_name = config_.get<std::string>("file_prefix") + "_" + detector_->getName() + ".root";
-    auto file = new TFile(file_name.c_str(), "RECREATE");
-
     // create histogram
-    LOG(INFO) << "Creating plots";
+    LOG(INFO) << "Creating histograms";
     std::string histogram_name = "histogram_" + detector_->getName();
     std::string histogram_title = "Histogram for " + detector_->getName();
-    auto histogram = new TH2I(histogram_name.c_str(),
-                              histogram_title.c_str(),
-                              model->getNPixelsX(),
-                              0,
-                              model->getNPixelsX(),
-                              model->getNPixelsY(),
-                              0,
-                              model->getNPixelsY());
+    histogram = new TH2I(histogram_name.c_str(),
+                         histogram_title.c_str(),
+                         model->getNPixelsX(),
+                         0,
+                         model->getNPixelsX(),
+                         model->getNPixelsY(),
+                         0,
+                         model->getNPixelsY());
 
-    // fill histogram
+    // create cluster size plot
+    std::string cluster_size_name = "cluster_" + detector_->getName();
+    std::string cluster_size_title = "Cluster size for " + detector_->getName();
+    cluster_size = new TH1I(cluster_size_name.c_str(),
+                            cluster_size_title.c_str(),
+                            model->getNPixelsX() * model->getNPixelsY(),
+                            0,
+                            model->getNPixelsX() * model->getNPixelsY());
+}
+
+// fill the histograms
+void DetectorHistogrammerModule::run() {
+    // check if we got any deposits
+    if(pixels_message_ == nullptr) {
+        LOG(WARNING) << "Detector " << detector_->getName() << " did not get any deposits... skipping!";
+        return;
+    }
+
+    // fill 2d histogram
     for(auto& pixel_charge : pixels_message_->getData()) {
         auto pixel = pixel_charge.getPixel();
         auto charge = pixel_charge.getCharge();
@@ -74,19 +79,21 @@ void DetectorHistogrammerModule::run() {
 
         histogram->Fill(pixel.x(), pixel.y(), charge);
     }
-    histogram->Write();
 
-    // create cluster size plot
-    std::string cluster_size_name = "cluster_" + detector_->getName();
-    std::string cluster_size_title = "Cluster size for " + detector_->getName();
-    auto cluster_size = new TH1I(cluster_size_name.c_str(),
-                                 cluster_size_title.c_str(),
-                                 model->getNPixelsX() * model->getNPixelsY(),
-                                 0,
-                                 model->getNPixelsX() * model->getNPixelsY());
+    // fill cluster histogram
     cluster_size->Fill(static_cast<double>(pixels_message_->getData().size()));
+}
+
+// create file and write the histograms to it
+void DetectorHistogrammerModule::finalize() {
+    // create root file
+    std::string file_name = config_.get<std::string>("file_prefix") + "_" + detector_->getName() + ".root";
+    TFile file(file_name.c_str(), "RECREATE");
+
+    // write histograms
+    histogram->Write();
     cluster_size->Write();
 
     // close the file
-    file->Close();
+    file.Close();
 }

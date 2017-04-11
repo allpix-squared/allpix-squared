@@ -27,15 +27,10 @@ namespace allpix {
         GeometryBuilderGeant4Module(Configuration config, Messenger*, GeometryManager*);
         ~GeometryBuilderGeant4Module() override;
 
-        // method that will be run where the module should do its computations and possibly dispatch their results as a
-        // message
+        // build the Geant4 geometry before a run
         void init() override;
-        void run() override;
 
     private:
-        // internal methods
-        void build_g4();
-
         // configuration for this module
         Configuration config_;
 
