@@ -10,6 +10,11 @@ using namespace allpix;
 ModuleManager::ModuleManager() : modules_(), id_to_module_(), module_to_id_(), run_queue_() {}
 ModuleManager::~ModuleManager() = default;
 
+// Initialize all modules
+void ModuleManager::init() {
+    // FIXME
+}
+
 // Run all the modules in the queue
 void ModuleManager::run() {
     // go through the run queue as long it is not empty

@@ -31,10 +31,13 @@ namespace allpix {
         // Load modules
         virtual void load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager) = 0;
 
-        // Run modules (until no other module available)
+        // Initialize modules (pre-run)
+        virtual void init();
+
+        // Run modules
         virtual void run();
 
-        // Finalize and check if every module did what it should do
+        // Finalize modules (post-run)
         virtual void finalize();
 
     protected:
