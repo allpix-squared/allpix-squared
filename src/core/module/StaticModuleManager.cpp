@@ -51,8 +51,8 @@ void StaticModuleManager::load(Messenger* messenger, ConfigManager* conf_manager
                 // unique name already exists, check if its needs to be replaced
                 if(iter->first.getPriority() > identifier.getPriority()) {
                     // priority of new instance is higher, replace the instance
-                    modules_.erase(iter->second);
                     module_to_id_.erase(iter->second->get());
+                    modules_.erase(iter->second);
                     id_to_module_.erase(iter->first);
                 } else {
                     if(iter->first.getPriority() == identifier.getPriority()) {
