@@ -18,6 +18,7 @@
 
 using namespace allpix;
 
+// constructor
 StaticModuleManager::StaticModuleManager(GeneratorFunction func) : _instantiations_map(), generator_func_(std::move(func)) {
     if(generator_func_ == nullptr) {
         throw allpix::Exception("Generator function should not be zero");
@@ -25,6 +26,9 @@ StaticModuleManager::StaticModuleManager(GeneratorFunction func) : _instantiatio
 }
 
 void StaticModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager) {
+    // save global config
+    global_config_ = conf_manager->getGlobalConfiguration();
+
     // get configurations
     std::vector<Configuration> configs = conf_manager->getConfigurations();
 
@@ -63,23 +67,12 @@ void StaticModuleManager::load(Messenger* messenger, ConfigManager* conf_manager
                 }
             }
 
-            // initialize the module
-            // NOTE: we do this directly after instantiation to allow modules to define stuff it
-            //       needs before the next module get instantiated (like geometry)
-            mod->init();
-
             // insert the new module
             modules_.emplace_back(std::move(mod));
             id_to_module_[identifier] = --modules_.end();
             module_to_id_.emplace(modules_.back().get(), identifier);
         }
         mod_list.clear();
-    }
-
-    // initialize all all remaining modules and add them to the run queue
-
-    for(auto& mod : modules_) {
-        add_to_run_queue(mod.get());
     }
 }
 

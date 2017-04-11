@@ -3,26 +3,32 @@
  */
 
 #include "ModuleManager.hpp"
+#include "core/utils/log.h"
 
 using namespace allpix;
 
 // Constructor and destructor
-ModuleManager::ModuleManager() : modules_(), id_to_module_(), module_to_id_(), run_queue_() {}
+ModuleManager::ModuleManager() : modules_(), id_to_module_(), module_to_id_(), global_config_() {}
 ModuleManager::~ModuleManager() = default;
 
 // Initialize all modules
 void ModuleManager::init() {
-    // FIXME
+    // initialize all modules
+    for(auto& mod : modules_) {
+        mod->init();
+    }
 }
 
 // Run all the modules in the queue
 void ModuleManager::run() {
-    // go through the run queue as long it is not empty
-    while(!run_queue_.empty()) {
-        Module* mod = run_queue_.front();
-        run_queue_.pop();
-
-        mod->run();
+    // loop over the number of events
+    auto number_of_events = global_config_.get<unsigned int>("number_of_events", 1u);
+    for(unsigned int i = 0; i < number_of_events; ++i) {
+        LOG(DEBUG) << "Running event " << (i + 1) << " of " << number_of_events;
+        // go through each module run method every event
+        for(auto& mod : modules_) {
+            mod->run();
+        }
     }
 }
 
@@ -32,9 +38,4 @@ void ModuleManager::finalize() {
     for(auto& mod : modules_) {
         mod->finalize();
     }
-}
-
-// Add a module to the run queue (NOTE: this can just be inlined if it remains simple)
-void ModuleManager::add_to_run_queue(Module* mod) {
-    run_queue_.push(mod);
 }

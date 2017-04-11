@@ -10,6 +10,7 @@
 #include <memory>
 #include <queue>
 
+#include "../config/Configuration.hpp"
 #include "Module.hpp"
 
 namespace allpix {
@@ -45,18 +46,16 @@ namespace allpix {
         using IdentifierToModuleMap = std::map<ModuleIdentifier, ModuleList::iterator>;
         using ModuleToIdentifierMap = std::map<Module*, ModuleIdentifier>;
 
-        // Add module to run queue
-        void add_to_run_queue(Module*);
-
         // get module identifier
         ModuleIdentifier get_identifier_from_module(Module*);
 
+        // modules and identifiers converters
         ModuleList modules_;
         IdentifierToModuleMap id_to_module_;
         ModuleToIdentifierMap module_to_id_;
 
-        // FIXME: if we stick to the linear run we can also just run modules directly from list
-        std::queue<Module*> run_queue_;
+        // global allpix configuration
+        Configuration global_config_;
     };
 } // namespace allpix
 

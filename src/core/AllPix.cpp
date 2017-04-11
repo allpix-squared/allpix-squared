@@ -67,7 +67,9 @@ void AllPix::init() {
     LOG(DEBUG) << "Finished initialization";
 }
 void AllPix::run() {
-    LOG(DEBUG) << "Running modules";
+    Configuration global_config = conf_mgr_->getGlobalConfiguration();
+    auto number_of_events = global_config.get<unsigned int>("number_of_events", 1u);
+    LOG(DEBUG) << "Running modules for " << number_of_events << " events";
     // run the modules
     mod_mgr_->run();
     LOG(DEBUG) << "Finished run";

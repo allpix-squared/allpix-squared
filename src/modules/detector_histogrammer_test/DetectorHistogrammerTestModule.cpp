@@ -75,8 +75,6 @@ void DetectorHistogrammerModule::run() {
         auto pixel = pixel_charge.getPixel();
         auto charge = pixel_charge.getCharge();
 
-        LOG(DEBUG) << "got " << charge << " charges on pixel (" << pixel.x() << "," << pixel.y() << ")";
-
         histogram->Fill(pixel.x(), pixel.y(), charge);
     }
 
@@ -91,6 +89,7 @@ void DetectorHistogrammerModule::finalize() {
     TFile file(file_name.c_str(), "RECREATE");
 
     // write histograms
+    LOG(INFO) << "Writing histograms to file";
     histogram->Write();
     cluster_size->Write();
 
