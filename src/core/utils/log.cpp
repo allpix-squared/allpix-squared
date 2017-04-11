@@ -56,8 +56,9 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
         level_str += getStringFromLevel(level);
         level_str += ")";
         os << std::setw(9) << level_str << " ";
-    } else
+    } else {
         os << "(" << getStringFromLevel(level).substr(0, 1) << ") ";
+    }
 
     // add section if available
     if(!get_section().empty()) {
@@ -169,7 +170,7 @@ std::string& DefaultLogger::get_section() {
     return section;
 }
 void DefaultLogger::setSection(std::string section) {
-    get_section() = section;
+    get_section() = std::move(section);
 }
 std::string DefaultLogger::getSection() {
     return get_section();
