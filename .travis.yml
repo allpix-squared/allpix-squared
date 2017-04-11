@@ -31,7 +31,7 @@ install:
   - mv !(Package) Package
   - shopt -u dotglob
   - export PKGDIR=${PWD}/Package
-  - export DESCRIPTION=`date`
+  - export DESCRIPTION="$(date)"
   - export COVERITY_REPO=`echo ${TRAVIS_REPO_SLUG} | sed 's/\//\%2F/g'`
   - wget https://scan.coverity.com/download/linux64 --post-data "token=${COVERITY_SCAN_TOKEN}&project=${COVERITY_REPO}" -O Package/coverity_tool.tgz; cd Package; mkdir cov-analysis-linux64; tar -xf coverity_tool.tgz -C cov-analysis-linux64 --strip-components=2;
 
@@ -39,7 +39,7 @@ install:
 script:
   - docker run -it --name CI_container -v $PKGDIR:/Package -e COMPILER=$COMPILER -v /cvmfs/clicdp.cern.ch:/cvmfs/clicdp.cern.ch -d clicdp/slc6-build /bin/bash
   - docker exec -it CI_container /bin/bash -c "./Package/.travis-ci.d/coverity_scan.sh";
-  - curl --form token=${COVERITY_SCAN_TOKEN} --form email=noreply@cern.ch --form file=@${PKGDIR}/build/myproject.tgz --form version=${TRAVIS_COMMIT} --form description="${DESCRIPTION}" https://scan.coverity.com/builds?project=${COVERITY_REPO} ;
+  - curl --form token=${COVERITY_SCAN_TOKEN} --form email=noreply@cern.ch --form file=@${PKGDIR}/build/myproject.tgz --form version="${TRAVIS_COMMIT}" --form description="${DESCRIPTION}" https://scan.coverity.com/builds?project=${COVERITY_REPO} ;
 
 # Don't send e-mail notifications
 notifications:
