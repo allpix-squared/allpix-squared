@@ -5,8 +5,13 @@
 
 #include <dlfcn.h>
 
-#include "ModuleFactory.hpp"
+#include <set>
+#include <string>
+
 #include "ModuleManager.hpp"
+#include "core/config/ConfigManager.hpp"
+#include "core/geometry/GeometryManager.hpp"
+#include "core/messenger/Messenger.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/utils/log.h"
 
@@ -70,7 +75,7 @@ void ModuleManager::finalize() {
 }
 
 // Function that loads the modules specified in the configuration file. Each module is contained within
-// its own library, which is first loaded before being passed to the module factory
+// its own library, which is first loaded before being used to create the modules
 void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager) {
 
     // Save managers for use in library loading
@@ -82,7 +87,6 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
     std::vector<Configuration> configs = conf_manager->getConfigurations();
 
     // NOTE: could add all config parameters from the empty to all configs (if it does not yet exist)
-    std::unique_ptr<ModuleFactory> factory = std::make_unique<ModuleFactory>();
     for(auto& conf : configs) {
         // ignore the empty config
         if(conf.getName().empty()) {
@@ -194,7 +198,6 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::createModules(C
 // Function to create modules per detector from the dynamic library passed from the Module Manager
 std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::createModulesPerDetector(Configuration conf,
                                                                                           void* library) {
-
     // Make the vector to return
     std::string moduleName = conf.getName();
     std::set<std::string> moduleNames;
