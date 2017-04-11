@@ -73,6 +73,11 @@ void ModuleManager::finalize() {
 // its own library, which is first loaded before being passed to the module factory
 void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager) {
 
+    // Save managers for use in library loading
+    messenger_ = messenger;
+    conf_manager_ = conf_manager;
+    geo_manager_ = geo_manager;
+
     // Get configurations
     std::vector<Configuration> configs = conf_manager->getConfigurations();
 
@@ -107,12 +112,24 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
             loadedLibraries_[libName] = lib;
         }
 
-        // Pass the library to the module factory
-        factory->setMessenger(messenger);
-        factory->setGeometryManager(geo_manager);
-        factory->setConfiguration(conf);
-        std::vector<std::pair<ModuleIdentifier, Module*>> mod_list =
-            factory->createModules(conf.getName(), loadedLibraries_[libName]);
+        // Check if this module is produced once, or once per detector
+        bool unique = true;
+        void* uniqueFunction = dlsym(loadedLibraries_[libName], "unique");
+        char* err = dlerror();
+        // If the unique function was not found, throw an error
+        if(err != NULL) {
+            throw allpix::DynamicLibraryError(conf.getName());
+        } else {
+            unique = reinterpret_cast<bool (*)()>(uniqueFunction)();
+        }
+
+        // Create the modules from the library
+        std::vector<std::pair<ModuleIdentifier, Module*>> mod_list;
+        if(unique) {
+            mod_list = createModules(conf, loadedLibraries_[libName]);
+        } else {
+            mod_list = createModulesPerDetector(conf, loadedLibraries_[libName]);
+        }
 
         // Decide which order to place modules in
         for(auto& id_mod : mod_list) {
@@ -143,5 +160,124 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
             module_to_id_.emplace(modules_.back().get(), identifier);
         }
         mod_list.clear();
+    }
+}
+
+// Function to create modules from the dynamic library passed from the Module Manager
+std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::createModules(Configuration conf, void* library) {
+
+    // Make the vector to return
+    std::string moduleName = conf.getName();
+    std::vector<std::pair<ModuleIdentifier, Module*>> moduleList;
+
+    // Load an instance of the module from the library
+    ModuleIdentifier identifier(moduleName, "", 0);
+    Module* module = NULL;
+
+    // Get the generator function for this module
+    void* generator = dlsym(library, "generator");
+    char* err = dlerror();
+    // If the generator function was not found, throw an error
+    if(err != NULL) {
+        throw allpix::DynamicLibraryError(moduleName);
+    } else {
+        // Otherwise initialise the module
+        module = reinterpret_cast<Module* (*)(Configuration, Messenger*, GeometryManager*)>(generator)(
+            conf, messenger_, geo_manager_);
+    }
+
+    // Store the module and return it to the Module Manager
+    moduleList.emplace_back(identifier, module);
+    return moduleList;
+}
+
+// Function to create modules per detector from the dynamic library passed from the Module Manager
+std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::createModulesPerDetector(Configuration conf,
+                                                                                          void* library) {
+
+    // Make the vector to return
+    std::string moduleName = conf.getName();
+    std::set<std::string> moduleNames;
+    std::vector<std::pair<ModuleIdentifier, Module*>> moduleList;
+
+    // Open the library and get the module generator function
+    void* generator = dlsym(library, "generator");
+    char* err = dlerror();
+    // If the generator function was not found, throw an error
+    if(err != NULL) {
+        throw allpix::DynamicLibraryError(moduleName);
+    }
+
+    // FIXME: lot of overlap here...!
+    // FIXME: check empty config arrays
+
+    // instantiate all names first with highest priority
+    if(conf.has("name")) {
+        std::vector<std::string> names = conf.getArray<std::string>("name");
+        for(auto& name : names) {
+            auto det = geo_manager_->getDetector(name);
+
+            // create with detector name and priority
+            ModuleIdentifier identifier(moduleName, det->getName(), 1);
+            Module* module = reinterpret_cast<Module* (*)(Configuration, Messenger*, std::shared_ptr<Detector>)>(generator)(
+                conf, messenger_, det);
+            moduleList.emplace_back(identifier, module);
+
+            // check if the module called the correct base class constructor
+            check_module_detector(identifier.getName(), moduleList.back().second, det.get());
+            // save the name (to not override it later)
+            moduleNames.insert(name);
+        }
+    }
+
+    // then instantiate all types that are not yet name instantiated
+    if(conf.has("type")) {
+        std::vector<std::string> types = conf.getArray<std::string>("type");
+        for(auto& type : types) {
+            auto detectors = geo_manager_->getDetectorsByType(type);
+
+            for(auto& det : detectors) {
+                // skip all that were already added by name
+                if(moduleNames.find(det->getName()) != moduleNames.end()) {
+                    continue;
+                }
+
+                // create with detector name and priority
+                ModuleIdentifier identifier(moduleName, det->getName(), 2);
+                Module* module = reinterpret_cast<Module* (*)(Configuration, Messenger*, std::shared_ptr<Detector>)>(
+                    generator)(conf, messenger_, det);
+                moduleList.emplace_back(identifier, module);
+
+                // check if the module called the correct base class constructor
+                check_module_detector(identifier.getName(), moduleList.back().second, det.get());
+            }
+        }
+    }
+
+    // instantiate for all detectors if no name / type provided
+    if(!conf.has("type") && !conf.has("name")) {
+        auto detectors = geo_manager_->getDetectors();
+
+        for(auto& det : detectors) {
+
+            // create with detector name and priority
+            ModuleIdentifier identifier(moduleName, det->getName(), 0);
+            Module* module = reinterpret_cast<Module* (*)(Configuration, Messenger*, std::shared_ptr<Detector>)>(generator)(
+                conf, messenger_, det);
+            moduleList.emplace_back(identifier, module);
+
+            // check if the module called the correct base class constructor
+            check_module_detector(identifier.getName(), moduleList.back().second, det.get());
+        }
+    }
+
+    return moduleList;
+}
+
+void ModuleManager::check_module_detector(const std::string& module_name, Module* module, const Detector* detector) {
+    if(module->getDetector().get() != detector) {
+        throw InvalidModuleStateException(
+            "Module " + module_name +
+            " does not call the correct base Module constructor: the provided detector should be forwarded");
     }
 }

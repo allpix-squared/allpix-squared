@@ -47,10 +47,24 @@ namespace allpix {
         using IdentifierToModuleMap = std::map<ModuleIdentifier, ModuleList::iterator>;
         using ModuleToIdentifierMap = std::map<Module*, ModuleIdentifier>;
 
-        // modules and identifiers converters
+        // Add module to run queue
+        void add_to_run_queue(Module*);
+
+        // get module identifier
+        ModuleIdentifier get_identifier_from_module(Module*);
+
+        // Create modules from the loaded library
+        std::vector<std::pair<ModuleIdentifier, Module*>> createModules(Configuration, void*);
+        std::vector<std::pair<ModuleIdentifier, Module*>> createModulesPerDetector(Configuration, void*);
+        void check_module_detector(const std::string&, Module*, const Detector*);
+
+        // Modules and identifiers converters
         ModuleList modules_;
         IdentifierToModuleMap id_to_module_;
         ModuleToIdentifierMap module_to_id_;
+        Messenger* messenger_;
+        ConfigManager* conf_manager_;
+        GeometryManager* geo_manager_;
 
         // global allpix configuration
         Configuration global_config_;
