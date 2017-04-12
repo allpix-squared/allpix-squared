@@ -2,7 +2,7 @@
  * @author Koen Wolters <koen.wolters@cern.ch>
  */
 
-#include "DetectorHistogrammerTestModule.hpp"
+#include "DetectorHistogrammerModule.hpp"
 
 #include <memory>
 #include <string>

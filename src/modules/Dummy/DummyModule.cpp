@@ -25,10 +25,3 @@ void DummyModule::run() {
     // ... implement ... (typically you want to fetch some configuration here and in the end possibly output a message)
     LOG(DEBUG) << "running module " << DummyModule::name;
 }
-
-// External function, to allow loading from dynamic library without knowing module type.
-// Should be overloaded in all module implementations, added here to prevent crashes
-Module* allpix::generator(Configuration config, Messenger* messenger, GeometryManager* geometry) {
-    DummyModule* module = new DummyModule(config, messenger, geometry);
-    return dynamic_cast<Module*>(module);
-}

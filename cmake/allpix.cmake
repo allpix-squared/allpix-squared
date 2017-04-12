@@ -13,16 +13,59 @@ MACRO(allpix_build_module dir)
     ENDIF()
 ENDMACRO()
 
-# put this at the start of every module to initialize the name
-MACRO(allpix_module name)
+# common module definitions
+MACRO(_allpix_module_define_common name)
     # get the name of the module
-    GET_FILENAME_COMPONENT(${name} ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+    GET_FILENAME_COMPONENT(_allpix_module_dir ${CMAKE_CURRENT_SOURCE_DIR} NAME)
     
-    # prepend with the allpix module prefix
-    SET(${name} "AllpixModule${${name}}")
+    # prepend with the allpix module prefix to create the name of the module
+    SET(${name} "AllpixModule${_allpix_module_dir}")
+    
+    # set default module class name
+    SET(_allpix_module_class "${_allpix_module_dir}Module")
+    
+    # find if alternative module class name is passed or we can use the default
+    SET (extra_macro_args ${ARGN})
+    LIST(LENGTH extra_macro_args num_extra_args)
+    IF (${num_extra_args} GREATER 0)
+        MESSAGE (AUTHOR_WARNING "Provided non-standard module class name! Naming it ${_allpix_module_class} is recommended")
+        LIST(GET extra_macro_args 0 _allpix_module_class)
+    ENDIF ()
+    
+    # check if main header file is defined
+    IF(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_allpix_module_class}.hpp")
+        MESSAGE(FATAL_ERROR "Header file ${_allpix_module_class}.hpp does not exist, cannot build module! \
+Create the header or provide the alternative class name as first argument")
+    ENDIF()
+    
+    # define the library
+    ADD_LIBRARY(${${name}} SHARED "")
     
     # add the current directory as include directory
-    INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+    TARGET_INCLUDE_DIRECTORIES(${${name}} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    
+    # set the special header flags and add the special dynamic implementation file
+    TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE ALLPIX_MODULE_NAME=${_allpix_module_class})
+    # WARNING: this only works if modules follow the convention by putting Module at the end
+    # FIXME: find a better way to force users to do this and inform them with a more useful message
+    TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE ALLPIX_MODULE_HEADER="${_allpix_module_class}.hpp")
+    TARGET_SOURCES(${${name}} PRIVATE "${PROJECT_SOURCE_DIR}/src/core/module/dynamic_module_impl.cpp")
+ENDMACRO()
+
+# put this at the start of every unique module
+MACRO(allpix_unique_module name)
+    _allpix_module_define_common(${name} ${ARGN})
+    
+    # set the unique flag to true
+    TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE ALLPIX_MODULE_UNIQUE=1)
+ENDMACRO()
+
+# put this at the start of every detector module
+MACRO(allpix_detector_module name)
+    _allpix_module_define_common(${name} ${ARGN})
+    
+    # set the unique flag to false
+    TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE ALLPIX_MODULE_UNIQUE=0)
 ENDMACRO()
 
 # add sources to the module
@@ -35,7 +78,7 @@ MACRO(allpix_module_sources name)
     INCLUDE_DIRECTORIES(SYSTEM ${ALLPIX_DEPS_INCLUDE_DIRS})
     
     # add the library
-    ADD_LIBRARY(${name} SHARED ${_list_var})
+    TARGET_SOURCES(${name} PRIVATE ${_list_var})
     
     # link the standard allpix libraries
     TARGET_LINK_LIBRARIES(${name} ${ALLPIX_LIBRARIES} ${ALLPIX_DEPS_LIBRARIES})

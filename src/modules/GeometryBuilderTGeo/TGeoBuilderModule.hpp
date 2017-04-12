@@ -94,11 +94,6 @@ namespace allpix {
         std::map<std::string, ROOT::Math::XYZVector> m_vectorWrapperEnhancement;
         std::map<std::string, TGeoTranslation> m_posVectorAppliances; //
     };
-    // External function, to allow loading from dynamic library without knowing module type.
-    // Should be overloaded in all module implementations
-    extern "C" {
-    Module* generator(Configuration, Messenger*, GeometryManager*);
-    }
 } // namespace allpix
 
 #endif /* ALLPIX_DETECTOR_CONSTRUCTION_TGEO_H */

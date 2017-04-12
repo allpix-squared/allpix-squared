@@ -131,10 +131,3 @@ void GeometryBuilderGeant4Module::init() {
     // release output from G4
     RELEASE_STREAM(G4cout);
 }
-
-// External function, to allow loading from dynamic library without knowing module type.
-// Should be overloaded in all module implementations, added here to prevent crashes
-Module* allpix::generator(Configuration config, Messenger* messenger, GeometryManager* geometry) {
-    GeometryBuilderGeant4Module* module = new GeometryBuilderGeant4Module(std::move(config), messenger, geometry);
-    return dynamic_cast<Module*>(module);
-}

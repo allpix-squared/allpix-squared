@@ -54,11 +54,6 @@ namespace allpix {
         TH2I* histogram; // FIXME: bad name
         TH1I* cluster_size;
     };
-    // External function, to allow loading from dynamic library without knowing module type.
-    // Should be overloaded in all module implementations
-    //    extern "C" {
-    //        Module* generator(Configuration, Messenger*, GeometryManager*);
-    //    }
 } // namespace allpix
 
 #endif /* ALLPIX_MODULE_DETECTOR_HISTOGRAMMER_H */

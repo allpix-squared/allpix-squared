@@ -3,7 +3,7 @@
 ########################
 
 # Define module and return the generated name as MODULE_NAME
-ALLPIX_MODULE(MODULE_NAME)
+ALLPIX_UNIQUE_MODULE(MODULE_NAME)
 
 # Geant4 is required for geometry description and charge deposition.
 FIND_PACKAGE(Geant4 REQUIRED ui_all vis_all)

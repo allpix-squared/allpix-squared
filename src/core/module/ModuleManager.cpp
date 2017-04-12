@@ -15,6 +15,11 @@
 #include "core/messenger/Messenger.hpp"
 #include "core/utils/log.h"
 
+// NOTE: should be the same as in dynamic_module_impl.cpp
+#define ALLPIX_MODULE_PREFIX "libAllpixModule"
+#define ALLPIX_GENERATOR_FUNCTION "allpix_module_generator"
+#define ALLPIX_UNIQUE_FUNCTION "allpix_module_is_unique"
+
 using namespace allpix;
 
 // Constructor and destructor
@@ -35,7 +40,7 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
         }
 
         // Load library for each module. Libraries are named (by convention + CMAKE) libAllpixModule Name.suffix
-        std::string libName = std::string("libAllpixModule").append(conf.getName()).append(SHARED_LIBRARY_SUFFIX);
+        std::string libName = std::string(ALLPIX_MODULE_PREFIX).append(conf.getName()).append(SHARED_LIBRARY_SUFFIX);
         LOG(INFO) << "Loading library " << libName;
 
         // FIXME: if allpix directory not specificied default to current directory
@@ -65,12 +70,12 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
 
         // Check if this module is produced once, or once per detector
         bool unique = true;
-        void* uniqueFunction = dlsym(loaded_libraries_[libName], "unique");
-        char* err = dlerror();
+        void* uniqueFunction = dlsym(loaded_libraries_[libName], ALLPIX_UNIQUE_FUNCTION);
+
         // If the unique function was not found, throw an error
-        if(err != nullptr) {
-            // FIXME: default to unique module if no unique function now
-            // throw allpix::DynamicLibraryError(conf.getName());
+        if(uniqueFunction == nullptr) {
+            LOG(ERROR) << "Module library is invalid or outdated: required interface function not found!";
+            throw allpix::DynamicLibraryError(conf.getName());
         } else {
             unique = reinterpret_cast<bool (*)()>(uniqueFunction)(); // NOLINT
         }
@@ -177,19 +182,20 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_unique_m
     std::string moduleName = conf.getName();
     std::vector<std::pair<ModuleIdentifier, Module*>> moduleList;
 
+    LOG(DEBUG) << "Creating instantions for unique module " << moduleName;
+
     // Load an instance of the module from the library
     ModuleIdentifier identifier(moduleName, "", 0);
     Module* module = nullptr;
 
     // Get the generator function for this module
-    void* generator = dlsym(library, "generator");
-    char* err = dlerror();
+    void* generator = dlsym(library, ALLPIX_GENERATOR_FUNCTION);
     // If the generator function was not found, throw an error
-    if(err != nullptr) {
+    if(generator == nullptr) {
+        LOG(ERROR) << "Module library is invalid or outdated: required interface function not found!";
         throw allpix::DynamicLibraryError(moduleName);
     } else {
         // Otherwise initialise the module
-        // NOLINT
         auto module_generator =
             reinterpret_cast<Module* (*)(Configuration, Messenger*, GeometryManager*)>(generator); // NOLINT
         module = module_generator(conf, messenger, geo_manager);
@@ -210,11 +216,13 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
     std::set<std::string> moduleNames;
     std::vector<std::pair<ModuleIdentifier, Module*>> moduleList;
 
+    LOG(DEBUG) << "Creating instantions for detector module " << moduleName;
+
     // Open the library and get the module generator function
-    void* generator = dlsym(library, "generator");
-    char* err = dlerror();
+    void* generator = dlsym(library, ALLPIX_GENERATOR_FUNCTION);
     // If the generator function was not found, throw an error
-    if(err != nullptr) {
+    if(generator == nullptr) {
+        LOG(ERROR) << "Module library is invalid or outdated: required interface function not found!";
         throw allpix::DynamicLibraryError(moduleName);
     }
     auto module_generator =
