@@ -8,20 +8,20 @@
 
 #include <memory>
 
-#include "G4GeneralParticleSource.hh"
-#include "G4ParticleDefinition.hh"
-#include "G4ThreeVector.hh"
-#include "G4VPrimaryGenerator.hh"
-#include "G4VUserPrimaryGeneratorAction.hh"
+#include <G4GeneralParticleSource.hh>
+#include <G4ParticleDefinition.hh>
+#include <G4ParticleDefinition.hh>
+#include <G4SDManager.hh>
+#include <G4ThreeVector.hh>
+#include <G4VUserPrimaryGeneratorAction.hh>
 
-class G4ParticleGun;
+#include "core/config/Configuration.hpp"
 
 namespace allpix {
 
     class GeneratorActionG4 : public G4VUserPrimaryGeneratorAction {
     public:
-        GeneratorActionG4(
-            int n_particle, G4ParticleDefinition* particle, G4ThreeVector position, G4ThreeVector momentum, double energy);
+        explicit GeneratorActionG4(Configuration config);
         ~GeneratorActionG4() override;
 
         // generate the primary events
@@ -29,7 +29,7 @@ namespace allpix {
 
     private:
         // simple particule gun case
-        std::unique_ptr<G4ParticleGun> particleGun_;
+        std::unique_ptr<G4GeneralParticleSource> particle_source_;
     };
 } // namespace allpix
 

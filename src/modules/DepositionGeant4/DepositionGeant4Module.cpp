@@ -10,10 +10,8 @@
 #include <utility>
 
 #include <G4HadronicProcessStore.hh>
-#include <G4ParticleDefinition.hh>
 #include <G4PhysListFactory.hh>
 #include <G4RunManager.hh>
-#include <G4SDManager.hh>
 #include <G4StepLimiterPhysics.hh>
 #include <G4UImanager.hh>
 #include <G4UserLimits.hh>
@@ -71,25 +69,9 @@ void DepositionGeant4Module::init() {
     // initialize the full run manager to ensure correct state flags
     run_manager_g4_->Initialize();
 
-    // add a generator
-    // NOTE: for more difficult modules a separate generator module makes more sense probably?
-    G4ParticleDefinition* particle =
-        G4ParticleTable::GetParticleTable()->FindParticle(config_.get<std::string>("particle_type"));
-    if(particle == nullptr) {
-        // FIXME: better syntax for exceptions here
-        // FIXME: more information about available particle
-        throw InvalidValueError(config_, "particle_type", "particle type does not exist");
-    }
-
-    // get parameter for generator
-    int part_amount = config_.get<int>("particle_amount");
-    G4ThreeVector part_position = config_.get<G4ThreeVector>("particle_position");
-    G4ThreeVector part_direction = config_.get<G4ThreeVector>("particle_direction");
-    double part_energy = config_.get<double>("particle_energy");
-
     // build generator
-    LOG(INFO) << "Constructing particle generator";
-    GeneratorActionG4* generator = new GeneratorActionG4(part_amount, particle, part_position, part_direction, part_energy);
+    LOG(INFO) << "Constructing particle source";
+    GeneratorActionG4* generator = new GeneratorActionG4(config_);
     run_manager_g4_->SetUserAction(generator);
 
     // get the creation energy for charge (default is silicon electron hole pair energy)

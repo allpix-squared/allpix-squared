@@ -25,9 +25,10 @@ TestDepositReaderModule::~TestDepositReaderModule() = default;
 
 // print the deposits
 void TestDepositReaderModule::run() {
-    LOG(INFO) << "Got " << deposit_messages_.size() << " deposits";
+    LOG(INFO) << "Got deposits in " << deposit_messages_.size() << " detectors";
     for(auto& message : deposit_messages_) {
-        LOG(DEBUG) << "list of deposits";
+        LOG(DEBUG) << "set of " << message->getData().size() << " deposits in detector "
+                   << message->getDetector()->getName();
         for(auto& deposit : message->getData()) {
             auto pos = deposit.getPosition();
 
@@ -39,4 +40,5 @@ void TestDepositReaderModule::run() {
                        << " charges deposited at position (" << x << "um," << y << "um," << z << "um)";
         }
     }
+    deposit_messages_.clear();
 }

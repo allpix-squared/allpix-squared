@@ -70,6 +70,8 @@ void DetectorHistogrammerModule::run() {
         return;
     }
 
+    LOG(DEBUG) << "got charges in " << pixels_message_->getData().size() << " pixels";
+
     // fill 2d histogram
     for(auto& pixel_charge : pixels_message_->getData()) {
         auto pixel = pixel_charge.getPixel();
