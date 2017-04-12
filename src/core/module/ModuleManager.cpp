@@ -100,7 +100,7 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
         std::string fullLibPath = libPath + libName;
 
         // If library is not loaded then load it
-        if(loadedLibraries_.count(libName) == 0) {
+        if(loaded_libraries_.count(libName) == 0) {
             void* lib = nullptr;
             lib = dlopen(fullLibPath.c_str(), RTLD_NOW);
             // If library did not load then throw exception
@@ -113,12 +113,12 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
                 throw allpix::DynamicLibraryError(conf.getName());
             }
             // Remember that this library was loaded
-            loadedLibraries_[libName] = lib;
+            loaded_libraries_[libName] = lib;
         }
 
         // Check if this module is produced once, or once per detector
         bool unique = true;
-        void* uniqueFunction = dlsym(loadedLibraries_[libName], "unique");
+        void* uniqueFunction = dlsym(loaded_libraries_[libName], "unique");
         char* err = dlerror();
         // If the unique function was not found, throw an error
         if(err != NULL) {
@@ -130,9 +130,9 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
         // Create the modules from the library
         std::vector<std::pair<ModuleIdentifier, Module*>> mod_list;
         if(unique) {
-            mod_list = createModules(conf, loadedLibraries_[libName]);
+            mod_list = createModules(conf, loaded_libraries_[libName]);
         } else {
-            mod_list = createModulesPerDetector(conf, loadedLibraries_[libName]);
+            mod_list = createModulesPerDetector(conf, loaded_libraries_[libName]);
         }
 
         // Decide which order to place modules in

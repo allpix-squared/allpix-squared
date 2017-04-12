@@ -63,8 +63,8 @@ namespace allpix {
         Configuration global_config_;
         
         // list of loaded libraries
-        std::map<std::string, void*> loadedLibraries_;
-
+        std::map<std::string, void*> loaded_libraries_;
+        
     private:
         // Create modules from the loaded library
         std::vector<std::pair<ModuleIdentifier, Module*>> createModules(Configuration, void*);
