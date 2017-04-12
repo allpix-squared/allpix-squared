@@ -44,6 +44,6 @@ void ExampleModule::run() {
 // External function, to allow loading from dynamic library without knowing module type.
 // Should be overloaded in all module implementations, added here to prevent crashes
 Module* allpix::generator(Configuration config, Messenger* messenger, GeometryManager* geometry) {
-    ExampleModule* module = new ExampleModule(config, messenger, geometry);
+    ExampleModule* module = new ExampleModule(std::move(config), messenger, geometry);
     return dynamic_cast<Module*>(module);
 }

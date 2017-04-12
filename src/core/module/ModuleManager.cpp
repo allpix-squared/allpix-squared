@@ -10,15 +10,15 @@
 
 #include "ModuleManager.hpp"
 #include "core/config/ConfigManager.hpp"
+#include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
-#include "core/config/Configuration.hpp"
 #include "core/utils/log.h"
 
 using namespace allpix;
 
 // Constructor and destructor
-ModuleManager::ModuleManager() : modules_(), id_to_module_(), module_to_id_(), global_config_() {}
+ModuleManager::ModuleManager() : modules_(), id_to_module_(), module_to_id_(), global_config_(), loaded_libraries_() {}
 ModuleManager::~ModuleManager() = default;
 
 // Initialize all modules
@@ -77,12 +77,6 @@ void ModuleManager::finalize() {
 // Function that loads the modules specified in the configuration file. Each module is contained within
 // its own library, which is first loaded before being used to create the modules
 void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager) {
-
-    // Save managers for use in library loading
-    messenger_ = messenger;
-    conf_manager_ = conf_manager;
-    geo_manager_ = geo_manager;
-
     // Get configurations
     std::vector<Configuration> configs = conf_manager->getConfigurations();
 
@@ -95,21 +89,27 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
 
         // Load library for each module. Libraries are named (by convention + CMAKE) libAllpixModule Name.suffix
         std::string libName = std::string("libAllpixModule").append(conf.getName()).append(SHARED_LIBRARY_SUFFIX);
-        LOG(INFO) << "Loading library " << libName << std::endl;
-        std::string libPath = std::string(std::getenv("ALLPIX_DIR")) + "/lib/";
+        LOG(INFO) << "Loading library " << libName;
+
+        // FIXME: if allpix directory not specificied default to current directory
+        const char* allpix_dir = std::getenv("ALLPIX_DIR");
+        if(allpix_dir == nullptr) {
+            allpix_dir = static_cast<const char*>(".");
+        }
+
+        std::string libPath = std::string(allpix_dir) + "/lib/";
         std::string fullLibPath = libPath + libName;
 
         // If library is not loaded then load it
         if(loaded_libraries_.count(libName) == 0) {
-            void* lib = nullptr;
-            lib = dlopen(fullLibPath.c_str(), RTLD_NOW);
+            void* lib = dlopen(fullLibPath.c_str(), RTLD_NOW);
             // If library did not load then throw exception
-            if(!lib) {
-                LOG(ERROR) << "Library " << libName << " not loaded" << std::endl;
-                LOG(ERROR) << " - Did you set the ALLPIX_DIR environmental variable? Library search location: " << libPath
-                           << std::endl;
-                LOG(ERROR) << " - Did you compile the library? " << std::endl;
-                LOG(ERROR) << " - Did you spell the library name correctly? " << std::endl;
+            if(lib == nullptr) {
+                LOG(ERROR) << "Library " << libName << " not loaded" << std::endl
+                           << " - Did you set the ALLPIX_DIR environmental variable? Library search location: " << libPath
+                           << std::endl
+                           << " - Did you compile the library? " << std::endl
+                           << " - Did you spell the library name correctly? ";
                 throw allpix::DynamicLibraryError(conf.getName());
             }
             // Remember that this library was loaded
@@ -121,18 +121,19 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
         void* uniqueFunction = dlsym(loaded_libraries_[libName], "unique");
         char* err = dlerror();
         // If the unique function was not found, throw an error
-        if(err != NULL) {
-            throw allpix::DynamicLibraryError(conf.getName());
+        if(err != nullptr) {
+            // FIXME: default to unique module if no unique function now
+            // throw allpix::DynamicLibraryError(conf.getName());
         } else {
-            unique = reinterpret_cast<bool (*)()>(uniqueFunction)();
+            unique = reinterpret_cast<bool (*)()>(uniqueFunction)(); // NOLINT
         }
 
         // Create the modules from the library
         std::vector<std::pair<ModuleIdentifier, Module*>> mod_list;
         if(unique) {
-            mod_list = createModules(conf, loaded_libraries_[libName]);
+            mod_list = create_unique_modules(loaded_libraries_[libName], conf, messenger, geo_manager);
         } else {
-            mod_list = createModulesPerDetector(conf, loaded_libraries_[libName]);
+            mod_list = create_detector_modules(loaded_libraries_[libName], conf, messenger, geo_manager);
         }
 
         // Decide which order to place modules in
@@ -159,7 +160,7 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
             }
 
             // insert the new module
-            modules_.emplace_back(std::move(mod));
+            modules_.emplace_back(mod);
             id_to_module_[identifier] = --modules_.end();
             module_to_id_.emplace(modules_.back().get(), identifier);
         }
@@ -168,26 +169,30 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
 }
 
 // Function to create modules from the dynamic library passed from the Module Manager
-std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::createModules(Configuration conf, void* library) {
-
+std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_unique_modules(void* library,
+                                                                                       const Configuration& conf,
+                                                                                       Messenger* messenger,
+                                                                                       GeometryManager* geo_manager) {
     // Make the vector to return
     std::string moduleName = conf.getName();
     std::vector<std::pair<ModuleIdentifier, Module*>> moduleList;
 
     // Load an instance of the module from the library
     ModuleIdentifier identifier(moduleName, "", 0);
-    Module* module = NULL;
+    Module* module = nullptr;
 
     // Get the generator function for this module
     void* generator = dlsym(library, "generator");
     char* err = dlerror();
     // If the generator function was not found, throw an error
-    if(err != NULL) {
+    if(err != nullptr) {
         throw allpix::DynamicLibraryError(moduleName);
     } else {
         // Otherwise initialise the module
-        module = reinterpret_cast<Module* (*)(Configuration, Messenger*, GeometryManager*)>(generator)(
-            conf, messenger_, geo_manager_);
+        // NOLINT
+        auto module_generator =
+            reinterpret_cast<Module* (*)(Configuration, Messenger*, GeometryManager*)>(generator); // NOLINT
+        module = module_generator(conf, messenger, geo_manager);
     }
 
     // Store the module and return it to the Module Manager
@@ -196,8 +201,10 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::createModules(C
 }
 
 // Function to create modules per detector from the dynamic library passed from the Module Manager
-std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::createModulesPerDetector(Configuration conf,
-                                                                                          void* library) {
+std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector_modules(void* library,
+                                                                                         const Configuration& conf,
+                                                                                         Messenger* messenger,
+                                                                                         GeometryManager* geo_manager) {
     // Make the vector to return
     std::string moduleName = conf.getName();
     std::set<std::string> moduleNames;
@@ -207,9 +214,11 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::createModulesPe
     void* generator = dlsym(library, "generator");
     char* err = dlerror();
     // If the generator function was not found, throw an error
-    if(err != NULL) {
+    if(err != nullptr) {
         throw allpix::DynamicLibraryError(moduleName);
     }
+    auto module_generator =
+        reinterpret_cast<Module* (*)(Configuration, Messenger*, std::shared_ptr<Detector>)>(generator); // NOLINT
 
     // FIXME: lot of overlap here...!
     // FIXME: check empty config arrays
@@ -218,12 +227,11 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::createModulesPe
     if(conf.has("name")) {
         std::vector<std::string> names = conf.getArray<std::string>("name");
         for(auto& name : names) {
-            auto det = geo_manager_->getDetector(name);
+            auto det = geo_manager->getDetector(name);
 
             // create with detector name and priority
             ModuleIdentifier identifier(moduleName, det->getName(), 1);
-            Module* module = reinterpret_cast<Module* (*)(Configuration, Messenger*, std::shared_ptr<Detector>)>(generator)(
-                conf, messenger_, det);
+            Module* module = module_generator(conf, messenger, det);
             moduleList.emplace_back(identifier, module);
 
             // check if the module called the correct base class constructor
@@ -237,7 +245,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::createModulesPe
     if(conf.has("type")) {
         std::vector<std::string> types = conf.getArray<std::string>("type");
         for(auto& type : types) {
-            auto detectors = geo_manager_->getDetectorsByType(type);
+            auto detectors = geo_manager->getDetectorsByType(type);
 
             for(auto& det : detectors) {
                 // skip all that were already added by name
@@ -247,8 +255,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::createModulesPe
 
                 // create with detector name and priority
                 ModuleIdentifier identifier(moduleName, det->getName(), 2);
-                Module* module = reinterpret_cast<Module* (*)(Configuration, Messenger*, std::shared_ptr<Detector>)>(
-                    generator)(conf, messenger_, det);
+                Module* module = module_generator(conf, messenger, det);
                 moduleList.emplace_back(identifier, module);
 
                 // check if the module called the correct base class constructor
@@ -259,14 +266,13 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::createModulesPe
 
     // instantiate for all detectors if no name / type provided
     if(!conf.has("type") && !conf.has("name")) {
-        auto detectors = geo_manager_->getDetectors();
+        auto detectors = geo_manager->getDetectors();
 
         for(auto& det : detectors) {
 
             // create with detector name and priority
             ModuleIdentifier identifier(moduleName, det->getName(), 0);
-            Module* module = reinterpret_cast<Module* (*)(Configuration, Messenger*, std::shared_ptr<Detector>)>(generator)(
-                conf, messenger_, det);
+            Module* module = module_generator(conf, messenger, det);
             moduleList.emplace_back(identifier, module);
 
             // check if the module called the correct base class constructor

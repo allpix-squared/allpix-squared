@@ -46,6 +46,6 @@ void TestDepositReaderModule::run() {
 // External function, to allow loading from dynamic library without knowing module type.
 // Should be overloaded in all module implementations, added here to prevent crashes
 Module* allpix::generator(Configuration config, Messenger* messenger, GeometryManager* geometry) {
-    TestDepositReaderModule* module = new TestDepositReaderModule(config, messenger, geometry);
+    TestDepositReaderModule* module = new TestDepositReaderModule(std::move(config), messenger, geometry);
     return dynamic_cast<Module*>(module);
 }

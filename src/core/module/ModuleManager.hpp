@@ -55,9 +55,6 @@ namespace allpix {
         ModuleList modules_;
         IdentifierToModuleMap id_to_module_;
         ModuleToIdentifierMap module_to_id_;
-        Messenger* messenger_;
-        ConfigManager* conf_manager_;
-        GeometryManager* geo_manager_;
 
         // global allpix configuration
         Configuration global_config_;
@@ -67,8 +64,10 @@ namespace allpix {
         
     private:
         // Create modules from the loaded library
-        std::vector<std::pair<ModuleIdentifier, Module*>> createModules(Configuration, void*);
-        std::vector<std::pair<ModuleIdentifier, Module*>> createModulesPerDetector(Configuration, void*);
+        std::vector<std::pair<ModuleIdentifier, Module*>>
+        create_unique_modules(void*, const Configuration&, Messenger*, GeometryManager*);
+        std::vector<std::pair<ModuleIdentifier, Module*>>
+        create_detector_modules(void*, const Configuration&, Messenger*, GeometryManager*);
         void check_module_detector(const std::string&, Module*, const Detector*);
     };
 } // namespace allpix
