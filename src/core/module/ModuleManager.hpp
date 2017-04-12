@@ -64,13 +64,12 @@ namespace allpix {
         
         // list of loaded libraries
         std::map<std::string, void*> loadedLibraries_;
-        
+
     private:
         // Create modules from the loaded library
         std::vector<std::pair<ModuleIdentifier, Module*>> createModules(Configuration, void*);
         std::vector<std::pair<ModuleIdentifier, Module*>> createModulesPerDetector(Configuration, void*);
         void check_module_detector(const std::string&, Module*, const Detector*);
-
     };
 } // namespace allpix
 
