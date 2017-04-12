@@ -48,16 +48,8 @@ namespace allpix {
         using IdentifierToModuleMap = std::map<ModuleIdentifier, ModuleList::iterator>;
         using ModuleToIdentifierMap = std::map<Module*, ModuleIdentifier>;
 
-        // Add module to run queue
-        void add_to_run_queue(Module*);
-
         // get module identifier
         ModuleIdentifier get_identifier_from_module(Module*);
-
-        // Create modules from the loaded library
-        std::vector<std::pair<ModuleIdentifier, Module*>> createModules(Configuration, void*);
-        std::vector<std::pair<ModuleIdentifier, Module*>> createModulesPerDetector(Configuration, void*);
-        void check_module_detector(const std::string&, Module*, const Detector*);
 
         // Modules and identifiers converters
         ModuleList modules_;
@@ -72,6 +64,13 @@ namespace allpix {
         
         // list of loaded libraries
         std::map<std::string, void*> loadedLibraries_;
+        
+    private:
+        // Create modules from the loaded library
+        std::vector<std::pair<ModuleIdentifier, Module*>> createModules(Configuration, void*);
+        std::vector<std::pair<ModuleIdentifier, Module*>> createModulesPerDetector(Configuration, void*);
+        void check_module_detector(const std::string&, Module*, const Detector*);
+
     };
 } // namespace allpix
 
