@@ -77,12 +77,6 @@ namespace allpix {
         int prio_;
     };
 
-    // External function, to allow loading from dynamic library without knowing module type.
-    // Should be overloaded in all module implementations, added here to prevent crashes
-    //    extern "C" {
-    //        Module* generator();
-    //    }
-
 } // namespace allpix
 
 #endif /* ALLPIX_MODULE_H */
