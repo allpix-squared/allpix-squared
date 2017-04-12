@@ -21,7 +21,7 @@ namespace allpix {
     class DynamicLibraryError : public RuntimeError {
     public:
         explicit DynamicLibraryError(const std::string& module) {
-            error_message_ = "Dynamic library loading failed for module" + module;
+            error_message_ = "Dynamic library loading failed for module " + module;
         }
     };
 
