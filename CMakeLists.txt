@@ -119,7 +119,6 @@ ADD_SUBDIRECTORY(src/objects)
 SET(ALLPIX_LIBRARIES ${ALLPIX_LIBRARIES} AllpixObjects)
 
 # Build required modules
-SET(ALLPIX_MODULE_LIBRARIES "" CACHE INTERNAL "ALLPIX_MODULE_LIBRARIES") # FIXME: temporary save the libraries to link
 ADD_SUBDIRECTORY(src/modules)
 
 # Add targets for Doxygen code reference and LaTeX User manual

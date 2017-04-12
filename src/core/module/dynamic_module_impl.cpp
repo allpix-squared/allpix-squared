@@ -31,6 +31,8 @@ namespace allpix {
     class GeometryManager;
 
     extern "C" {
+    bool allpix_module_is_unique();
+
 #if ALLPIX_MODULE_UNIQUE
     // Function that dynamically instantiates an unique module
     Module* allpix_module_generator(Configuration config, Messenger* messenger, GeometryManager* geometry);

@@ -62,6 +62,7 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
                            << std::endl
                            << " - Did you compile the library? " << std::endl
                            << " - Did you spell the library name correctly? ";
+
                 throw allpix::DynamicLibraryError(conf.getName());
             }
             // Remember that this library was loaded
