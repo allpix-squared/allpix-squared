@@ -2,9 +2,6 @@
 MACRO(allpix_build_module dir)
     # FIXME: always build all modules by default for now
     OPTION(BUILD_${dir} "Build module in directory ${dir}?" ON)
-
-    # FIXME: temporarily save all module libraries until we have dynamic loading
-    SET(ALLPIX_MODULE_LIBRARIES ${ALLPIX_MODULE_LIBRARIES} "AllpixModule${dir}" CACHE INTERNAL "ALLPIX_MODULE_LIBRARIES")
     
     # only build if the build flag is defined
     IF(BUILD_${dir} OR BUILD_allmodules)
