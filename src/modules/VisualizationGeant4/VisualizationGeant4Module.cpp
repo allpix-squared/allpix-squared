@@ -70,7 +70,7 @@ void VisualizationGeant4Module::init() {
 
     // execute initialization macro if provided
     if(config_.has("macro_init")) {
-        UI->ApplyCommand("/control/execute " + config_.get<std::string>("macro_init"));
+        UI->ApplyCommand("/control/execute " + config_.getPath("macro_init"));
     }
 }
 
@@ -79,7 +79,7 @@ void VisualizationGeant4Module::finalize() {
     // execute the main macro
     if(config_.has("macro_run")) {
         G4UImanager* UI = G4UImanager::GetUIpointer();
-        UI->ApplyCommand("/control/execute " + config_.get<std::string>("macro_run"));
+        UI->ApplyCommand("/control/execute " + config_.getPath("macro_run"));
     }
 
     // flush the view or open an interactive session depending on settings
