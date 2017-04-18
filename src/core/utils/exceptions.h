@@ -1,5 +1,5 @@
 /**
- * AllPix exception classes
+ * AllPix main exception classes
  *
  * @author Simon Spannagel <simon.spannagel@cern.ch>
  * @author Koen Wolters <koen.wolters@cern.ch>

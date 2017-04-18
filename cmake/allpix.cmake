@@ -6,6 +6,8 @@ MACRO(allpix_build_module dir)
     # only build if the build flag is defined
     IF(BUILD_${dir} OR BUILD_allmodules)
         MESSAGE( STATUS "Building module: " ${dir} )
+    
+        # build the module
         ADD_SUBDIRECTORY(${dir})
     ENDIF()
 ENDMACRO()
@@ -18,9 +20,12 @@ MACRO(_allpix_module_define_common name)
     # prepend with the allpix module prefix to create the name of the module
     SET(${name} "AllpixModule${_allpix_module_dir}")
     
+    # save the module library for prelinking in the executable (NOTE: see exec folder)
+    SET(ALLPIX_MODULE_LIBRARIES ${ALLPIX_MODULE_LIBRARIES} ${${name}} CACHE INTERNAL "Module libraries")
+    
     # set default module class name
     SET(_allpix_module_class "${_allpix_module_dir}Module")
-    
+        
     # find if alternative module class name is passed or we can use the default
     SET (extra_macro_args ${ARGN})
     LIST(LENGTH extra_macro_args num_extra_args)
@@ -37,7 +42,7 @@ Create the header or provide the alternative class name as first argument")
     
     # define the library
     ADD_LIBRARY(${${name}} SHARED "")
-    
+        
     # add the current directory as include directory
     TARGET_INCLUDE_DIRECTORIES(${${name}} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     
