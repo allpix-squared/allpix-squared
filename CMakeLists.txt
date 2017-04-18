@@ -17,7 +17,7 @@ PRINT_VERSION()
 # allpix2 build options #
 #########################
 
-OPTION(BUILD_spice  "Compile spice library interface?" OFF)
+# OPTION(BUILD_spice  "Compile spice library interface?" OFF)
 
 ###############################
 # Setup the build environment #
@@ -26,23 +26,23 @@ OPTION(BUILD_spice  "Compile spice library interface?" OFF)
 # Additional packages to be searched for by cmake
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
-# Configure the installation prefix to allow system-wide installation
+# Configure the installation prefix to allow both local as system-wide installation
 SET(INSTALL_PREFIX "${PROJECT_SOURCE_DIR}" CACHE PATH "Prefix prepended to install directories")
 SET(CMAKE_INSTALL_PREFIX "${INSTALL_PREFIX}" CACHE INTERNAL "Prefix prepended to install directories" FORCE)
 
 # Set up the RPATH so executables find the libraries even when installed in non-default location
-SET(CMAKE_MACOSX_RPATH 1)
-SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
+SET(CMAKE_MACOSX_RPATH TRUE)
+SET(CMAKE_SKIP_BUILD_RPATH FALSE)
 SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-# Add the automatically determined parts of the RPATH which point to directories outside
-# the build tree to the install RPATH
+
+# Add the automatically determined parts of the RPATH which point to directories outside the build tree to the install RPATH
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-# the RPATH to be used when installing, but only if it's not a system directory
-LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
-IF("${isSystemDir}" STREQUAL "-1")
+
+# The RPATH to be used when installing, but only if it's not a system directory
+LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" IsSystemDir)
+IF("${IsSystemDir}" STREQUAL "-1")
    SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-ENDIF("${isSystemDir}" STREQUAL "-1")
+ENDIF("${IsSystemDir}" STREQUAL "-1")
 
 ###################################
 # Define build flags for allpix   #
@@ -57,7 +57,7 @@ SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
 
 # Include Threads (not used yet)
-# FIND_PACKAGE(Threads REQUIRED)
+FIND_PACKAGE(Threads REQUIRED)
 
 INCLUDE("cmake/compiler-flag-checks.cmake")
 
@@ -119,11 +119,10 @@ ADD_SUBDIRECTORY(src/objects)
 SET(ALLPIX_LIBRARIES ${ALLPIX_LIBRARIES} AllpixObjects)
 
 # Build required modules
-SET(ALLPIX_MODULE_LIBRARIES "" CACHE INTERNAL "ALLPIX_MODULE_LIBRARIES") # FIXME: temporary save the libraries to link
 ADD_SUBDIRECTORY(src/modules)
+
+# Build the executable 
+ADD_SUBDIRECTORY(src/exec)
 
 # Add targets for Doxygen code reference and LaTeX User manual
 ADD_SUBDIRECTORY(doc)
-
-# BUILD EXECUTABLE
-ADD_SUBDIRECTORY(src/exec)

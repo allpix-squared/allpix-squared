@@ -5,46 +5,33 @@
 #include <vector>
 
 #include "Configuration.hpp"
+#include "core/utils/file.h"
 #include "exceptions.h"
 
 using namespace allpix;
 
 // Constructors and destructor
-ConfigManager::ConfigManager() : reader_(), global_default_name_(), global_names_(), ignore_names_(), file_names_() {}
-ConfigManager::ConfigManager(std::string file_name) : ConfigManager() {
-    addFile(file_name);
-}
-ConfigManager::~ConfigManager() = default;
-
-// Add a new settings file
-void ConfigManager::addFile(const std::string& file_name) {
-    file_names_.push_back(file_name);
-    std::ifstream file(file_name);
+ConfigManager::ConfigManager(std::string file_name)
+    : file_name_(std::move(file_name)), reader_(), global_default_name_(), global_names_(), ignore_names_() {
+    // check if the file exists
+    std::ifstream file(file_name_);
     if(!file) {
-        throw allpix::ConfigFileUnavailableError(file_name);
+        throw allpix::ConfigFileUnavailableError(file_name_);
     }
-    reader_.add(file, file_name);
+
+    // convert main file to absolute path
+    file_name_ = get_absolute_path(file_name_);
+
+    // read the file
+    reader_.add(file, file_name_);
 }
 
-// Remove all files and clear the config
-void ConfigManager::removeFiles() {
-    file_names_.clear();
-    clear();
-}
-
-// Reload all files
+// Reload whole config
 void ConfigManager::reload() {
-    clear();
-
-    for(auto& file_name : file_names_) {
-        std::ifstream file(file_name);
-        reader_.add(file);
-    }
-}
-
-// Clear the current config
-void ConfigManager::clear() {
     reader_.clear();
+
+    std::ifstream file(file_name_);
+    reader_.add(file);
 }
 
 // Add a section name for a global header and set it to be the default name
@@ -60,7 +47,7 @@ void ConfigManager::addGlobalHeaderName(std::string name) {
 
 // Get the configuration that is global
 Configuration ConfigManager::getGlobalConfiguration() {
-    Configuration global_config(global_default_name_);
+    Configuration global_config(global_default_name_, file_name_);
     for(auto& global_name : global_names_) {
         // add all global configurations that do exists
         auto configs = getConfigurations(global_name);

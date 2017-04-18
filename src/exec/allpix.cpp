@@ -5,63 +5,10 @@
 #include "core/AllPix.hpp"
 #include "core/config/ConfigManager.hpp"
 #include "core/geometry/GeometryManager.hpp"
-#include "core/module/StaticModuleManager.hpp"
 #include "core/utils/exceptions.h"
 #include "core/utils/log.h"
 
-#include "core/module/ModuleFactory.hpp"
-
-// FIXME: should not be here
-#include "modules/DepositionGeant4/DepositionGeant4Module.hpp"
-#include "modules/ElectricFieldReaderInit/ElectricFieldReaderInitModule.hpp"
-#include "modules/Example/ExampleModule.hpp"
-#include "modules/GeometryBuilderGeant4/GeometryBuilderGeant4Module.hpp"
-#include "modules/GeometryBuilderTGeo/TGeoBuilderModule.hpp"
-#include "modules/SimplePropagation/SimplePropagationModule.hpp"
-#include "modules/SimpleTransfer/SimpleTransferModule.hpp"
-#include "modules/VisualizationGeant4/VisualizationGeant4Module.hpp"
-#include "modules/deposit_reader_test/TestDepositReaderModule.hpp"
-#include "modules/detector_histogrammer_test/DetectorHistogrammerTestModule.hpp"
-
 using namespace allpix;
-
-// FIXME: temporary generator function for as long we do not have dynamic loading
-std::unique_ptr<ModuleFactory> generator(const std::string& str);
-std::unique_ptr<ModuleFactory> generator(const std::string& str) {
-    if(str == GeometryBuilderGeant4Module::name) {
-        return std::make_unique<UniqueModuleFactory<GeometryBuilderGeant4Module>>();
-    }
-    if(str == DepositionGeant4Module::name) {
-        return std::make_unique<UniqueModuleFactory<DepositionGeant4Module>>();
-    }
-    if(str == VisualizationGeant4Module::name) {
-        return std::make_unique<UniqueModuleFactory<VisualizationGeant4Module>>();
-    }
-    if(str == ExampleModule::name) {
-        return std::make_unique<UniqueModuleFactory<ExampleModule>>();
-    }
-    if(str == SimplePropagationModule::name) {
-        return std::make_unique<DetectorModuleFactory<SimplePropagationModule>>();
-    }
-    if(str == ElectricFieldReaderInitModule::name) {
-        return std::make_unique<DetectorModuleFactory<ElectricFieldReaderInitModule>>();
-    }
-    if(str == SimpleTransferModule::name) {
-        return std::make_unique<DetectorModuleFactory<SimpleTransferModule>>();
-    }
-
-    if(str == DetectorHistogrammerModule::name) {
-        return std::make_unique<DetectorModuleFactory<DetectorHistogrammerModule>>();
-    }
-    if(str == TGeoBuilderModule::name) {
-        return std::make_unique<UniqueModuleFactory<TGeoBuilderModule>>();
-    }
-    if(str == TestDepositReaderModule::name) {
-        return std::make_unique<UniqueModuleFactory<TestDepositReaderModule>>();
-    }
-
-    return nullptr;
-}
 
 int main(int argc, const char* argv[]) {
     // FIXME: have standard config and pass replacement as single argument until we have proper argument handling
@@ -73,7 +20,7 @@ int main(int argc, const char* argv[]) {
     try {
         // Construct managers
         // FIXME: move module manager initialization to AllPix as soon we have dynamic loading
-        std::unique_ptr<StaticModuleManager> mod = std::make_unique<StaticModuleManager>(&generator);
+        std::unique_ptr<ModuleManager> mod = std::make_unique<ModuleManager>();
 
         // Construct main AllPix object
         std::unique_ptr<AllPix> apx = std::make_unique<AllPix>(config_file_name, std::move(mod));

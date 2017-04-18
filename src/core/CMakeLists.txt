@@ -12,8 +12,6 @@ ADD_LIBRARY(AllpixCore SHARED
     utils/unit.cpp
     module/Module.cpp
     module/ModuleManager.cpp
-    module/StaticModuleManager.cpp
-    module/ModuleFactory.cpp
     messenger/Messenger.cpp
     messenger/BaseMessage.cpp
     config/Configuration.cpp
@@ -27,6 +25,11 @@ ADD_LIBRARY(AllpixCore SHARED
 
 # link the dependencies
 TARGET_LINK_LIBRARIES(AllpixCore ${ALLPIX_DEPS_LIBRARIES})
+
+# Define compile-time library extension
+TARGET_COMPILE_DEFINITIONS(AllpixCore PRIVATE SHARED_LIBRARY_SUFFIX="${CMAKE_SHARED_LIBRARY_SUFFIX}")
+# Link the DL libraries
+TARGET_LINK_LIBRARIES(AllpixCore ${CMAKE_DL_LIBS})
 
 # creat standard install target
 INSTALL(TARGETS AllpixCore

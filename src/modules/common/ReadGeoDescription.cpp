@@ -25,10 +25,6 @@ using namespace ROOT::Math;
 
 ReadGeoDescription::ReadGeoDescription(std::string file_name) : models_() {
     std::ifstream file(file_name);
-    if(!file.good()) {
-        throw ModuleError("Geometry description file '" + file_name + "' not found");
-    }
-
     ConfigReader reader(file, file_name);
 
     for(auto& config : reader.getConfigurations()) {

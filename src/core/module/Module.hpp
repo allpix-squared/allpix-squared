@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "core/config/ConfigManager.hpp"
 #include "core/geometry/Detector.hpp"
 #include "exceptions.h"
 
@@ -26,10 +27,6 @@ namespace allpix {
         // Disallow copy of a module
         Module(const Module&) = delete;
         Module& operator=(const Module&) = delete;
-
-        // Modules should have a unique name (for configuration)
-        // TODO: depends on implementation how this should work with dynamic loading
-        // virtual std::string getName() = 0;
 
         // Get (possibly) linked detector
         std::shared_ptr<Detector> getDetector();

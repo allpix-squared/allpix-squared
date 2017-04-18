@@ -1,8 +1,9 @@
 /**
- * AllPix config exception classes
+ *  AllPix module exception classes
  *
- * @author Simon Spannagel <simon.spannagel@cern.ch>
- * @author Koen Wolters <koen.wolters@cern.ch>
+ *  @author Simon Spannagel <simon.spannagel@cern.ch>
+ *  @author Koen Wolters <koen.wolters@cern.ch>
+ *  @author Daniel Hynds <daniel.hynds@cern.ch>
  */
 
 #ifndef ALLPIX_MODULE_EXCEPTIONS_H
@@ -17,6 +18,13 @@ namespace allpix {
     /*
      * Errors related to instantiation of modules
      */
+    class DynamicLibraryError : public RuntimeError {
+    public:
+        explicit DynamicLibraryError(const std::string& module) {
+            error_message_ = "Dynamic library loading failed for module " + module;
+        }
+    };
+
     class InstantiationError : public RuntimeError {
     public:
         explicit InstantiationError(const std::string& module) {

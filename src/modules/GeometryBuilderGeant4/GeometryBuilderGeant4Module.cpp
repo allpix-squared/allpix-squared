@@ -43,16 +43,13 @@ GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration config, M
 
     LOG(INFO) << "Constructing internal geometry";
     // read the models
-    std::string model_file_name = config_.get<std::string>("models_file");
+    std::string model_file_name = config_.getPath("models_file", true);
     auto geo_descriptions = ReadGeoDescription(model_file_name);
 
     // construct the detectors from the config file
-    std::string detector_file_name = config_.get<std::string>("detectors_file");
+    std::string detector_file_name = config_.getPath("detectors_file", true);
     std::ifstream file(detector_file_name);
-    if(!file) {
-        throw allpix::ConfigFileUnavailableError(detector_file_name);
-    }
-    ConfigReader detector_config(file);
+    ConfigReader detector_config(file, detector_file_name);
 
     // add the configurations to the detectors
     for(auto& detector_section : detector_config.getConfigurations()) {

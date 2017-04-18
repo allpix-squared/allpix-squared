@@ -30,7 +30,7 @@ void ElectricFieldReaderInitModule::init() {
     try {
         // get field
         LOG(INFO) << "Reading electric field file";
-        auto field_data = get_by_file_name(config_.get<std::string>("file_name"), *detector_.get());
+        auto field_data = get_by_file_name(config_.getPath("file_name", true), *detector_.get());
 
         // set detector field
         detector_->setElectricField(field_data.first, field_data.second);
@@ -63,22 +63,15 @@ inline static void check_detector_match(Detector& detector, double thickness, in
 std::map<std::string, ElectricFieldReaderInitModule::FieldData> ElectricFieldReaderInitModule::field_map_;
 ElectricFieldReaderInitModule::FieldData ElectricFieldReaderInitModule::get_by_file_name(const std::string& file_name,
                                                                                          Detector& detector) {
-    char* path_ptr = realpath(file_name.c_str(), nullptr);
-    if(path_ptr == nullptr) {
-        throw std::invalid_argument("file not found");
-    }
-    std::string fullpath(path_ptr);
-    free(static_cast<void*>(path_ptr));
-
-    // search in cache
-    auto iter = field_map_.find(fullpath);
+    // search in cache (NOTE: the path reached here is always a canonical name)
+    auto iter = field_map_.find(file_name);
     if(iter != field_map_.end()) {
         // FIXME: check detector match here as well
         return iter->second;
     }
 
-    // check if file is correct
-    std::ifstream file(fullpath);
+    // load file
+    std::ifstream file(file_name);
 
     std::string header;
     std::getline(file, header);
