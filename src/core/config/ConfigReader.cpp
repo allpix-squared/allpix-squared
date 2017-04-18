@@ -1,9 +1,11 @@
 #include "ConfigReader.hpp"
 
+#include <cstdlib>
 #include <fstream>
 #include <string>
 #include <vector>
 
+#include "core/utils/file.h"
 #include "exceptions.h"
 
 using namespace allpix;
@@ -11,18 +13,23 @@ using namespace allpix;
 // Constructors and destructor
 ConfigReader::ConfigReader() : conf_map_(), conf_array_() {}
 ConfigReader::ConfigReader(std::istream& stream) : ConfigReader(stream, "") {}
-ConfigReader::ConfigReader(std::istream& stream, const std::string& name) : ConfigReader() {
-    add(stream, name);
+ConfigReader::ConfigReader(std::istream& stream, std::string file_name) : ConfigReader() {
+    add(stream, std::move(file_name));
 }
-ConfigReader::~ConfigReader() = default;
 
 // Add stream and construct the config
 void ConfigReader::add(std::istream& stream) {
     add(stream, "");
 }
-void ConfigReader::add(std::istream& stream, const std::string& file_name) {
+void ConfigReader::add(std::istream& stream, std::string file_name) {
+    // convert file name to absolute path (if given)
+    if(!file_name.empty()) {
+        file_name = get_absolute_path(file_name);
+    }
+
+    // build first empty configuration
     std::string section_name;
-    Configuration conf(section_name);
+    Configuration conf(section_name, file_name);
 
     int line_num = 0;
     while(true) {
@@ -55,9 +62,9 @@ void ConfigReader::add(std::istream& stream, const std::string& file_name) {
 
                 // begin new section
                 section_name = std::string(line, 1, line.length() - 2);
-                conf = Configuration(section_name);
+                conf = Configuration(section_name, file_name);
             } else {
-                // FIXME: should be a bit more helpful of course...
+                // FIXME: should be a bit more helpful...
                 throw ConfigParseError(file_name, line_num);
             }
         } else {

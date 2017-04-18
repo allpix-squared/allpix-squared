@@ -20,12 +20,11 @@ namespace allpix {
         // Constructor and destructors
         ConfigReader();
         explicit ConfigReader(std::istream&);
-        ConfigReader(std::istream&, const std::string&);
-        ~ConfigReader();
+        ConfigReader(std::istream&, std::string);
 
         // Add stream
         void add(std::istream&);
-        void add(std::istream&, const std::string& file_name);
+        void add(std::istream&, std::string file_name);
 
         // Clear whole config
         void clear();

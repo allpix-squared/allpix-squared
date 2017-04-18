@@ -19,25 +19,30 @@ namespace allpix {
 
     class Configuration {
     public:
-        // Constructor
-        // FIXME: we need a default constructor for temporary configuration objects, do we want this...
+        // Constructors
         Configuration();
         explicit Configuration(std::string name);
+        explicit Configuration(std::string name, std::string path);
 
         // Has value
         bool has(const std::string& key) const;
 
-        // Get members (FIXME: default constant?)
+        // Get members
         template <typename T> T get(const std::string& key) const;
         template <typename T> T get(const std::string& key, const T& def) const;
+
         // FIXME: also specialize this for other container types (and use same structure as above)
         template <typename T> std::vector<T> getArray(const std::string& key) const;
-        template <typename T> std::vector<T> getArray(const std::string& key, const std::vector<T>& def) const;
-        // Set literally
+
+        // Get as literal text (without conversion)
         std::string getText(const std::string& key) const;
         std::string getText(const std::string& key, const std::string& def) const;
 
-        // Set members
+        // Get paths with relative converted to absolutes
+        std::string getPath(const std::string& key, bool check_exists = false) const;
+        std::vector<std::string> getPathArray(const std::string& key, bool check_exists = false) const;
+
+        // Set members (NOTE: not literally)
         // NOTE: see FIXME above
         template <typename T> void set(const std::string& key, const T& val);
         template <typename T> void setArray(const std::string& key, const std::vector<T>& val);
@@ -66,12 +71,20 @@ namespace allpix {
         void print(std::ostream& out) const;
 
     private:
-        std::string name_;
+        // convert path to absolute path if necessary
+        std::string path_to_absolute(std::string path, bool normalize_path) const;
 
+        // name of the section
+        std::string name_;
+        // path where this section resides
+        std::string path_;
+
+        // actual configuration storage
         using ConfigMap = std::map<std::string, std::string>;
         ConfigMap config_;
     };
 
+    // Get parameter
     template <typename T> T Configuration::get(const std::string& key) const {
         try {
             return allpix::from_string<T>(config_.at(key));
@@ -83,6 +96,7 @@ namespace allpix {
             throw InvalidKeyError(key, getName(), config_.at(key), typeid(T), e.what());
         }
     }
+    // Get parameter with default
     template <typename T> T Configuration::get(const std::string& key, const T& def) const {
         if(has(key)) {
             return get<T>(key);
@@ -90,6 +104,7 @@ namespace allpix {
         return def;
     }
 
+    // Get array of parameter types
     template <typename T> std::vector<T> Configuration::getArray(const std::string& key) const {
         try {
             std::string str = config_.at(key);
@@ -102,31 +117,31 @@ namespace allpix {
             throw InvalidKeyError(key, getName(), config_.at(key), typeid(T), e.what());
         }
     }
-    template <typename T> std::vector<T> Configuration::getArray(const std::string& key, const std::vector<T>& def) const {
-        if(has(key)) {
-            return getArray<T>(key);
-        }
-        return def;
-    }
 
+    // Set converted value
     template <typename T> void Configuration::set(const std::string& key, const T& val) {
         config_[key] = allpix::to_string(val);
     }
+
+    // Set array of values
     template <typename T> void Configuration::setArray(const std::string& key, const std::vector<T>& val) {
         // NOTE: not the most elegant way to support arrays
         std::string str;
         for(auto& el : val) {
             str += " ";
-            str += val;
+            str += allpix::to_string(val);
         }
         set(key, str);
     }
 
+    // Set default values (sets if the key does not exists)
     template <typename T> void Configuration::setDefault(const std::string& key, const T& val) {
         if(!has(key)) {
             set<T>(key, val);
         }
     }
+
+    // Set default array values (sets if the key does not exists)
     template <typename T> void Configuration::setDefaultArray(const std::string& key, const std::vector<T>& val) {
         if(!has(key)) {
             setArray<T>(key, val);

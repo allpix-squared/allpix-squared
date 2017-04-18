@@ -17,23 +17,14 @@ namespace allpix {
     class ConfigManager {
     public:
         // Constructor and destructors
-        ConfigManager();
         explicit ConfigManager(std::string file_name);
-        ~ConfigManager();
 
         // Disallow copy
         ConfigManager(const ConfigManager&) = delete;
         ConfigManager& operator=(const ConfigManager&) = delete;
 
-        // Add file
-        void addFile(const std::string& file_name);
-        void removeFiles();
-
-        // Reload all configs (clears and rereads)
+        // Reload whole configs (clears and rereads)
         void reload();
-
-        // Clear all configuration
-        void clear();
 
         // Define special sections
         void setGlobalHeaderName(std::string);
@@ -52,6 +43,9 @@ namespace allpix {
         std::vector<Configuration> getConfigurations() const;
 
     private:
+        // Path to main config file
+        std::string file_name_;
+
         // Reader for the config files
         ConfigReader reader_;
 
@@ -59,9 +53,6 @@ namespace allpix {
         std::string global_default_name_;
         std::set<std::string> global_names_;
         std::set<std::string> ignore_names_;
-
-        // File names of the added config files
-        std::vector<std::string> file_names_;
     };
 } // namespace allpix
 
