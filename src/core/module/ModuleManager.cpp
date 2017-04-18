@@ -5,6 +5,8 @@
 
 #include <dlfcn.h>
 
+#include <cstring>
+#include <fstream>
 #include <set>
 #include <string>
 
@@ -31,6 +33,7 @@ ModuleManager::~ModuleManager() = default;
 void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager) {
     // Get configurations
     std::vector<Configuration> configs = conf_manager->getConfigurations();
+    Configuration global_config = conf_manager->getGlobalConfiguration();
 
     // NOTE: could add all config parameters from the empty to all configs (if it does not yet exist)
     for(auto& conf : configs) {
@@ -40,38 +43,88 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
         }
 
         // Load library for each module. Libraries are named (by convention + CMAKE) libAllpixModule Name.suffix
-        std::string libName = std::string(ALLPIX_MODULE_PREFIX).append(conf.getName()).append(SHARED_LIBRARY_SUFFIX);
-        LOG(INFO) << "Loading library " << libName;
+        std::string lib_name = std::string(ALLPIX_MODULE_PREFIX).append(conf.getName()).append(SHARED_LIBRARY_SUFFIX);
+        LOG(INFO) << "Loading library " << lib_name;
 
-        // FIXME: if allpix directory not specificied default to current directory
-        const char* allpix_dir = std::getenv("ALLPIX_DIR");
-        if(allpix_dir == nullptr) {
-            allpix_dir = static_cast<const char*>(".");
+        // If library is not loaded then try to load it
+        void* lib = nullptr;
+        dlerror(); // reset error stream
+        bool load_error = false;
+        if(loaded_libraries_.count(lib_name) == 0) {
+            // Go through the config file directories
+            if(global_config.has("library_directories")) {
+                std::vector<std::string> lib_paths = global_config.getPathArray("library_directories", true);
+                for(auto& lib_path : lib_paths) {
+                    std::string full_lib_path = lib_path + "/" + lib_name;
+
+                    // check if file exists and try to load if it exists
+                    std::ifstream check_file(full_lib_path);
+                    if(check_file.good()) {
+                        lib = dlopen(full_lib_path.c_str(), RTLD_NOW);
+                        if(lib != nullptr) {
+                            LOG(DEBUG) << "Found library in config specified directory at " << full_lib_path;
+                        } else {
+                            load_error = true;
+                        }
+                        break;
+                    }
+                }
+            }
+
+            // Otherwise try to load from the standard paths if not found already
+            if(!load_error && lib == nullptr) {
+                lib = dlopen(lib_name.c_str(), RTLD_NOW);
+
+                if(lib != nullptr) {
+                    Dl_info dl_info;
+                    dl_info.dli_fname = "";
+
+                    // workaround to get the location of the library
+                    int ret = dladdr(dlsym(lib, ALLPIX_UNIQUE_FUNCTION), &dl_info);
+                    if(ret != 0) {
+                        LOG(DEBUG) << "Found library during global search in runtime paths at " << dl_info.dli_fname;
+                    } else {
+                        LOG(WARNING)
+                            << "Found library during global search but could not deduce location, likely broken library";
+                    }
+                } else {
+                    load_error = true;
+                }
+            }
+        } else {
+            // Otherwise just fetch it from the cache
+            lib = loaded_libraries_[lib_name];
         }
 
-        std::string libPath = std::string(allpix_dir) + "/lib/";
-        std::string fullLibPath = libPath + libName;
+        // If library did not load then throw exception
+        if(load_error) {
+            const char* lib_error = dlerror();
+            if(lib_error != nullptr && std::strstr(lib_error, "cannot allocate memory in static TLS block") != nullptr) {
+                std::string error(lib_error);
+                std::string problem_lib = error.substr(0, error.find(':'));
 
-        // If library is not loaded then load it
-        if(loaded_libraries_.count(libName) == 0) {
-            void* lib = dlopen(fullLibPath.c_str(), RTLD_NOW);
-            // If library did not load then throw exception
-            if(lib == nullptr) {
-                LOG(ERROR) << "Library " << libName << " not loaded" << std::endl
-                           << " - Did you set the ALLPIX_DIR environmental variable? Library search location: " << libPath
+                LOG(ERROR) << "Library could not be loaded: not enough thread local storage available" << std::endl
+                           << "Try one of below workarounds:" << std::endl
+                           << "- Rerun library with the environmental variable LD_PRELOAD='" << problem_lib << "'"
                            << std::endl
+                           << "- Recompile the library " << problem_lib << " with tls-model=global-dynamic";
+            } else {
+                LOG(ERROR) << "Library could not be loaded" << std::endl
                            << " - Did you compile the library? " << std::endl
                            << " - Did you spell the library name correctly? ";
-
-                throw allpix::DynamicLibraryError(conf.getName());
+                if(lib_error != nullptr) {
+                    LOG(DEBUG) << "Detailed error: " << lib_error;
+                }
             }
-            // Remember that this library was loaded
-            loaded_libraries_[libName] = lib;
+
+            throw allpix::DynamicLibraryError(conf.getName());
         }
+        // Remember that this library was loaded
+        loaded_libraries_[lib_name] = lib;
 
         // Check if this module is produced once, or once per detector
         bool unique = true;
-        void* uniqueFunction = dlsym(loaded_libraries_[libName], ALLPIX_UNIQUE_FUNCTION);
+        void* uniqueFunction = dlsym(loaded_libraries_[lib_name], ALLPIX_UNIQUE_FUNCTION);
 
         // If the unique function was not found, throw an error
         if(uniqueFunction == nullptr) {
@@ -84,9 +137,9 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
         // Create the modules from the library
         std::vector<std::pair<ModuleIdentifier, Module*>> mod_list;
         if(unique) {
-            mod_list = create_unique_modules(loaded_libraries_[libName], conf, messenger, geo_manager);
+            mod_list = create_unique_modules(loaded_libraries_[lib_name], conf, messenger, geo_manager);
         } else {
-            mod_list = create_detector_modules(loaded_libraries_[libName], conf, messenger, geo_manager);
+            mod_list = create_detector_modules(loaded_libraries_[lib_name], conf, messenger, geo_manager);
         }
 
         // Decide which order to place modules in
