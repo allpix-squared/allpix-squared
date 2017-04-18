@@ -16,7 +16,7 @@
 namespace allpix {
 
     // Get absolute path from relative path (only works if exists)
-    inline std::string get_absolute_path(std::string path) {
+    inline std::string get_absolute_path(const std::string& path) {
         // convert file name to absolute path
         char* path_ptr = realpath(path.c_str(), nullptr);
         if(path_ptr == nullptr) {
