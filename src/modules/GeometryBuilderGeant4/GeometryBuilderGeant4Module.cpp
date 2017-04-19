@@ -43,7 +43,10 @@ GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration config, M
 
     LOG(INFO) << "Constructing internal geometry";
     // read the models
-    std::vector<std::string> model_paths = config_.getPathArray("models_path", true);
+    std::vector<std::string> model_paths;
+    if(config_.has("model_paths")) {
+        model_paths = config_.getPathArray("model_paths", true);
+    }
     auto geo_descriptions = ReadGeoDescription(model_paths);
 
     // construct the detectors from the config file
