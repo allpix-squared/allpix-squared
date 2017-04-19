@@ -35,8 +35,6 @@ std::string Configuration::getName() const {
 }
 // Get path of configuration
 std::string Configuration::getFilePath() const {
-    if(path_.empty())
-        return "(none)";
     return path_;
 }
 

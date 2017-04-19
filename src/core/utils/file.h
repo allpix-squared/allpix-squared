@@ -36,33 +36,34 @@ namespace allpix {
     // Check if path is a existing directory
     inline bool path_is_directory(const std::string& path) {
         struct stat path_stat;
-        stat(path.c_str(), &path_stat);
+        if(stat(path.c_str(), &path_stat) == -1) {
+            return false;
+        }
         return S_ISDIR(path_stat.st_mode);
     }
 
     // Check if path is a existing file
     inline bool path_is_file(const std::string& path) {
         struct stat path_stat;
-        stat(path.c_str(), &path_stat);
+        if(stat(path.c_str(), &path_stat) == -1) {
+            return false;
+        }
         return S_ISREG(path_stat.st_mode);
     }
 
     // Get all files in directory
     inline std::vector<std::string> get_files_in_directory(const std::string& path) {
-        // define output
         std::vector<std::string> files;
-
-        // required structs
-        DIR* dir;
-        struct dirent* ent;
+        struct dirent* ent = nullptr;
         struct stat st;
 
-        dir = opendir(path.c_str());
-        while((ent = readdir(dir)) != NULL) {
+        // loop through all files
+        DIR* dir = opendir(path.c_str());
+        while((ent = readdir(dir)) != nullptr) {
             const std::string file_name = ent->d_name;
             const std::string full_file_name = path + "/" + file_name;
 
-            // ignore useless paths
+            // ignore useless or wrong paths
             if(!file_name.empty() && file_name[0] == '.')
                 continue;
             if(stat(full_file_name.c_str(), &st) == -1)

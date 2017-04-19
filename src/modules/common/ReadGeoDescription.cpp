@@ -32,16 +32,18 @@ ReadGeoDescription::ReadGeoDescription(std::vector<std::string> paths) : models_
     ConfigReader reader;
 
     // add standard paths
-    paths.push_back(ALLPIX_MODEL_DIRECTORY);
+    paths.emplace_back(ALLPIX_MODEL_DIRECTORY);
     const char* data_dirs_env = std::getenv("XDG_DATA_DIRS");
-    if(data_dirs_env == nullptr || strlen(data_dirs_env) == 0)
+    if(data_dirs_env == nullptr || strlen(data_dirs_env) == 0) {
         data_dirs_env = "/usr/local/share/:/usr/share/:";
+    }
     std::vector<std::string> data_dirs = split<std::string>(data_dirs_env, ":");
     for(auto data_dir : data_dirs) {
-        if(data_dir.back() != '/')
+        if(data_dir.back() != '/') {
             data_dir += "/";
+        }
 
-        paths.push_back(data_dir + ALLPIX_PROJECT_NAME);
+        paths.emplace_back(data_dir + ALLPIX_PROJECT_NAME);
     }
 
     LOG(INFO) << "Reading model files";
@@ -76,7 +78,7 @@ ReadGeoDescription::ReadGeoDescription(std::vector<std::string> paths) : models_
     for(auto& config : reader.getConfigurations()) {
         if(models_.find(config.getName()) != models_.end()) {
             // skip models that we already loaded earlier higher in the chain
-            LOG(DEBUG) << "Skipping overwritten model " << config.getName() << " in path " << config.getFilePath();
+            LOG(DEBUG) << "Skipping overwritten model " + config.getName() << " in path " << config.getFilePath();
             continue;
         }
 
