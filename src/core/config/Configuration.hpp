@@ -60,8 +60,9 @@ namespace allpix {
         // Count amount of values
         unsigned int countSettings() const;
 
-        // Configuration name
+        // Configuration name and path
         std::string getName() const;
+        std::string getFilePath() const; // FIXME: name clash with getPath
 
         // Merge other configuration
         void merge(const Configuration& other);

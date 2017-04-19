@@ -33,6 +33,12 @@ bool Configuration::has(const std::string& key) const {
 std::string Configuration::getName() const {
     return name_;
 }
+// Get path of configuration
+std::string Configuration::getFilePath() const {
+    if(path_.empty())
+        return "(none)";
+    return path_;
+}
 
 // Get as text
 std::string Configuration::getText(const std::string& key) const {
