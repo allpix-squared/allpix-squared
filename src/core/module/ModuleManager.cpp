@@ -147,17 +147,17 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
             Module* mod = id_mod.second;
             ModuleIdentifier identifier = id_mod.first;
 
-            // Need to add delete statements here since move from unique pointer?
+            // FIXME: need to add delete statements here since move from unique pointer?
             auto iter = id_to_module_.find(identifier);
             if(iter != id_to_module_.end()) {
                 // unique name already exists, check if its needs to be replaced
-                if(iter->first.getPriority() > identifier.getPriority()) {
+                if(identifier.getPriority() < iter->first.getPriority()) {
                     // priority of new instance is higher, replace the instance
                     module_to_id_.erase(iter->second->get());
                     modules_.erase(iter->second);
                     id_to_module_.erase(iter->first);
                 } else {
-                    if(iter->first.getPriority() == identifier.getPriority()) {
+                    if(identifier.getPriority() == iter->first.getPriority()) {
                         throw AmbiguousInstantiationError(conf.getName());
                     }
                     // priority is lower just ignore
@@ -181,7 +181,7 @@ void ModuleManager::init() {
         // set init module section header
         std::string old_section_name = Log::getSection();
         std::string section_name = "I:";
-        section_name += module_to_id_.at(mod.get()).getName();
+        section_name += module_to_id_.at(mod.get()).getUniqueName();
         Log::setSection(section_name);
         // init module
         mod->init();
@@ -201,7 +201,7 @@ void ModuleManager::run() {
             // set run module section header
             std::string old_section_name = Log::getSection();
             std::string section_name = "R:";
-            section_name += module_to_id_.at(mod.get()).getName();
+            section_name += module_to_id_.at(mod.get()).getUniqueName();
             Log::setSection(section_name);
             // run module
             mod->run();
@@ -218,7 +218,7 @@ void ModuleManager::finalize() {
         // set finalize module section header
         std::string old_section_name = Log::getSection();
         std::string section_name = "F:";
-        section_name += module_to_id_.at(mod.get()).getName();
+        section_name += module_to_id_.at(mod.get()).getUniqueName();
         Log::setSection(section_name);
         // finalize module
         mod->finalize();
@@ -249,10 +249,19 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_unique_m
         LOG(ERROR) << "Module library is invalid or outdated: required interface function not found!";
         throw allpix::DynamicLibraryError(moduleName);
     } else {
-        // Otherwise initialise the module
+        // Convert to correct generator function
         auto module_generator =
             reinterpret_cast<Module* (*)(Configuration, Messenger*, GeometryManager*)>(generator); // NOLINT
+
+        // Set the log section header
+        std::string old_section_name = Log::getSection();
+        std::string section_name = "C:";
+        section_name += conf.getName();
+        Log::setSection(section_name);
+        // Build module
         module = module_generator(conf, messenger, geo_manager);
+        // Reset log section header
+        Log::setSection(old_section_name);
     }
 
     // Store the module and return it to the Module Manager
@@ -265,45 +274,38 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
                                                                                          const Configuration& conf,
                                                                                          Messenger* messenger,
                                                                                          GeometryManager* geo_manager) {
-    // Make the vector to return
-    std::string moduleName = conf.getName();
-    std::set<std::string> moduleNames;
-    std::vector<std::pair<ModuleIdentifier, Module*>> moduleList;
-
-    LOG(DEBUG) << "Creating instantions for detector module " << moduleName;
+    std::string module_name = conf.getName();
+    LOG(DEBUG) << "Creating instantions for detector module " << module_name;
 
     // Open the library and get the module generator function
     void* generator = dlsym(library, ALLPIX_GENERATOR_FUNCTION);
     // If the generator function was not found, throw an error
     if(generator == nullptr) {
         LOG(ERROR) << "Module library is invalid or outdated: required interface function not found!";
-        throw allpix::DynamicLibraryError(moduleName);
+        throw allpix::DynamicLibraryError(module_name);
     }
+    // Convert to correct generator function
     auto module_generator =
         reinterpret_cast<Module* (*)(Configuration, Messenger*, std::shared_ptr<Detector>)>(generator); // NOLINT
 
-    // FIXME: lot of overlap here...!
     // FIXME: check empty config arrays
+    std::vector<std::pair<std::shared_ptr<Detector>, ModuleIdentifier>> instantiations;
 
-    // instantiate all names first with highest priority
+    // create all names first with highest priority
+    std::set<std::string> module_names;
     if(conf.has("name")) {
         std::vector<std::string> names = conf.getArray<std::string>("name");
         for(auto& name : names) {
+            // get detectors by name
             auto det = geo_manager->getDetector(name);
+            instantiations.emplace_back(det, ModuleIdentifier(module_name, det->getName(), 0));
 
-            // create with detector name and priority
-            ModuleIdentifier identifier(moduleName, det->getName(), 1);
-            Module* module = module_generator(conf, messenger, det);
-            moduleList.emplace_back(identifier, module);
-
-            // check if the module called the correct base class constructor
-            check_module_detector(identifier.getName(), moduleList.back().second, det.get());
             // save the name (to not override it later)
-            moduleNames.insert(name);
+            module_names.insert(name);
         }
     }
 
-    // then instantiate all types that are not yet name instantiated
+    // then create all types that are not yet name instantiated
     if(conf.has("type")) {
         std::vector<std::string> types = conf.getArray<std::string>("type");
         for(auto& type : types) {
@@ -311,38 +313,48 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
 
             for(auto& det : detectors) {
                 // skip all that were already added by name
-                if(moduleNames.find(det->getName()) != moduleNames.end()) {
+                if(module_names.find(det->getName()) != module_names.end()) {
                     continue;
                 }
 
-                // create with detector name and priority
-                ModuleIdentifier identifier(moduleName, det->getName(), 2);
-                Module* module = module_generator(conf, messenger, det);
-                moduleList.emplace_back(identifier, module);
-
-                // check if the module called the correct base class constructor
-                check_module_detector(identifier.getName(), moduleList.back().second, det.get());
+                instantiations.emplace_back(det, ModuleIdentifier(module_name, det->getName(), 1));
             }
         }
     }
 
-    // instantiate for all detectors if no name / type provided
+    // create for all detectors if no name / type provided
     if(!conf.has("type") && !conf.has("name")) {
         auto detectors = geo_manager->getDetectors();
 
         for(auto& det : detectors) {
-
-            // create with detector name and priority
-            ModuleIdentifier identifier(moduleName, det->getName(), 0);
-            Module* module = module_generator(conf, messenger, det);
-            moduleList.emplace_back(identifier, module);
-
-            // check if the module called the correct base class constructor
-            check_module_detector(identifier.getName(), moduleList.back().second, det.get());
+            instantiations.emplace_back(det, ModuleIdentifier(module_name, det->getName(), 2));
         }
     }
 
-    return moduleList;
+    // instantiate the list of requested instantiations
+    std::vector<std::pair<ModuleIdentifier, Module*>> module_list;
+    for(auto& instance : instantiations) {
+        // call the generator function and add to list of modules
+        Module* module = module_generator(conf, messenger, instance.first);
+        module_list.emplace_back(instance.second, module);
+
+        // Set the log section header
+        std::string old_section_name = Log::getSection();
+        std::string section_name = "C:";
+        section_name += conf.getName();
+        section_name += ":";
+        section_name += instance.first->getName();
+        Log::setSection(section_name);
+        // Build module
+        module = module_generator(conf, messenger, instance.first);
+        // Reset log section header
+        Log::setSection(old_section_name);
+
+        // check if the module called the correct base class constructor
+        check_module_detector(module_name, module_list.back().second, instance.first.get());
+    }
+
+    return module_list;
 }
 
 // Check if a detector module correctly passes the detector to the base constructor

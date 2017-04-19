@@ -18,7 +18,7 @@ namespace allpix {
     class AllPix {
     public:
         // Constructor and destructor
-        AllPix(std::string name, std::unique_ptr<ModuleManager> mod_mgr);
+        AllPix(std::string name);
 
         // Apply default configuration and load all modules
         void load();

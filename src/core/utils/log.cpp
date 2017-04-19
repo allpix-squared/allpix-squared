@@ -93,8 +93,6 @@ std::string DefaultLogger::getStringFromLevel(LogLevel level) {
 }
 
 LogLevel DefaultLogger::getLevelFromString(std::string level) {
-    std::transform(level.begin(), level.end(), level.begin(), ::toupper);
-
     if(level == "DEBUG") {
         return LogLevel::DEBUG;
     }
@@ -135,7 +133,6 @@ std::string DefaultLogger::getStringFromFormat(LogFormat format) {
 }
 
 LogFormat DefaultLogger::getFormatFromString(std::string format) {
-    std::transform(format.begin(), format.end(), format.begin(), ::toupper);
     if(format == "SHORT") {
         return LogFormat::SHORT;
     }

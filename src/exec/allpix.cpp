@@ -21,12 +21,8 @@ int main(int argc, const char* argv[]) {
     }
 
     try {
-        // Construct managers
-        // FIXME: move module manager initialization to AllPix as soon we have dynamic loading
-        std::unique_ptr<ModuleManager> mod = std::make_unique<ModuleManager>();
-
         // Construct main AllPix object
-        std::unique_ptr<AllPix> apx = std::make_unique<AllPix>(config_file_name, std::move(mod));
+        std::unique_ptr<AllPix> apx = std::make_unique<AllPix>(config_file_name);
 
         // Load modules
         apx->load();

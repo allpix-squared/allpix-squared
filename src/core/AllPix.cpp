@@ -16,8 +16,8 @@ using namespace allpix;
 // FIXME: implement the multi run and general config logic
 
 // default constructor (FIXME: pass the module manager until we have dynamic loading)
-AllPix::AllPix(std::string file_name, std::unique_ptr<ModuleManager> mod_mgr)
-    : conf_mgr_(std::make_unique<ConfigManager>(std::move(file_name))), mod_mgr_(std::move(mod_mgr)),
+AllPix::AllPix(std::string file_name)
+    : conf_mgr_(std::make_unique<ConfigManager>(std::move(file_name))), mod_mgr_(std::make_unique<ModuleManager>()),
       geo_mgr_(std::make_unique<GeometryManager>()), msg_(std::make_unique<Messenger>()) {}
 
 // load all modules and the allpix default configuration
@@ -30,6 +30,7 @@ void AllPix::load() {
     // set the log level from config
     Configuration global_config = conf_mgr_->getGlobalConfiguration();
     std::string log_level_string = global_config.get<std::string>("log_level", "INFO");
+    std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
     try {
         LogLevel log_level = Log::getLevelFromString(log_level_string);
         Log::setReportingLevel(log_level);
@@ -39,6 +40,7 @@ void AllPix::load() {
 
     // set the log format from config
     std::string log_format_string = global_config.get<std::string>("log_format", "DEFAULT");
+    std::transform(log_format_string.begin(), log_format_string.end(), log_format_string.begin(), ::toupper);
     try {
         LogFormat log_format = Log::getFormatFromString(log_format_string);
         Log::setFormat(log_format);

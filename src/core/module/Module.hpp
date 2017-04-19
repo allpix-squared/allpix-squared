@@ -55,7 +55,12 @@ namespace allpix {
         // get the unique identifier for this module
         std::string getIdentifier() const { return identifier_; }
         // return the unique name (combination of module and identifier)
-        std::string getUniqueName() const { return name_ + identifier_; }
+        std::string getUniqueName() const {
+            std::string unique_name = name_;
+            if(!identifier_.empty())
+                unique_name += ":" + identifier_;
+            return unique_name;
+        }
         // get the priority of this unique name
         int getPriority() const { return prio_; }
 
