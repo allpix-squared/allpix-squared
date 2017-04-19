@@ -34,7 +34,7 @@ ModuleManager::~ModuleManager() = default;
 void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager) {
     // Get configurations
     std::vector<Configuration> configs = conf_manager->getConfigurations();
-    Configuration global_config = conf_manager->getGlobalConfiguration();
+    global_config_ = conf_manager->getGlobalConfiguration();
 
     // NOTE: could add all config parameters from the empty to all configs (if it does not yet exist)
     for(auto& conf : configs) {
@@ -53,8 +53,8 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
         bool load_error = false;
         if(loaded_libraries_.count(lib_name) == 0) {
             // Go through the config file directories
-            if(global_config.has("library_directories")) {
-                std::vector<std::string> lib_paths = global_config.getPathArray("library_directories", true);
+            if(global_config_.has("library_directories")) {
+                std::vector<std::string> lib_paths = global_config_.getPathArray("library_directories", true);
                 for(auto& lib_path : lib_paths) {
                     std::string full_lib_path = lib_path + "/" + lib_name;
 
@@ -254,7 +254,7 @@ void ModuleManager::run() {
     auto number_of_events = global_config_.get<unsigned int>("number_of_events", 1u);
     for(unsigned int i = 0; i < number_of_events; ++i) {
         // go through each module run method every event
-        LOG(DEBUG) << "Running event " << (i + 1) << " of " << number_of_events;
+        LOG(INFO) << "Running event " << (i + 1) << " of " << number_of_events;
         for(auto& mod : modules_) {
             // set run module section header
             std::string old_section_name = Log::getSection();
