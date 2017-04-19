@@ -11,10 +11,13 @@
 using namespace allpix;
 
 int main(int argc, const char* argv[]) {
-    // FIXME: have standard config and pass replacement as single argument until we have proper argument handling
-    std::string config_file_name = "etc/example_config.ini";
+    // FIXME: implement proper argument handling
+    std::string config_file_name;
     if(argc == 2) {
         config_file_name = argv[1];
+    } else {
+        LOG(FATAL) << "No configuration file provided! Rerun with configuration file as first argument.";
+        return 1;
     }
 
     try {
