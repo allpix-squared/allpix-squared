@@ -9,7 +9,7 @@
 #include <memory>
 #include <typeinfo>
 
-#include "BaseMessage.hpp"
+#include "Message.hpp"
 #include "exceptions.h"
 
 // FIXME: RESTRUCTURE THIS A BIT TO BE MORE USABLE AND CONCEPTUALLY BETTER

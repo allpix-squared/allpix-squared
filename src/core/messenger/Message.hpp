@@ -7,10 +7,29 @@
 
 #include <vector>
 
-#include "BaseMessage.hpp"
 #include "core/geometry/Detector.hpp"
 
 namespace allpix {
+    // non-templated base for all message types
+    class BaseMessage {
+    public:
+        // Constructor and destructors
+        BaseMessage();
+        explicit BaseMessage(std::shared_ptr<Detector> detector);
+        virtual ~BaseMessage();
+
+        // Get linked detector
+        std::shared_ptr<Detector> getDetector() const;
+
+        // Set default copy behaviour
+        BaseMessage(const BaseMessage&) = default;
+        BaseMessage& operator=(const BaseMessage&) = default;
+
+    private:
+        std::shared_ptr<Detector> detector_;
+    };
+
+    // templated version for general messages
     template <typename T> class Message : public BaseMessage {
     public:
         // Constructor to pass the data

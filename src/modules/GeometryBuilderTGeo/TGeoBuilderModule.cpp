@@ -43,7 +43,7 @@
 
 // AllPix includes
 #include "core/config/ConfigReader.hpp"
-#include "core/config/InvalidValueError.hpp"
+#include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/utils/log.h"
 

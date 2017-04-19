@@ -69,6 +69,15 @@ namespace allpix {
             error_message_ += ": not a section header, key/value pair or comment";
         }
     };
+
+    // Value is not valid data for the module (but type is correct so this can only detected by modules)
+    // NOTE: only error that should be called directly by modules
+    class Configuration;
+    class InvalidValueError : public ConfigurationError {
+    public:
+        InvalidValueError(Configuration config, const std::string& key, const std::string& reason);
+        InvalidValueError(Configuration config, const std::string& key);
+    };
 } // namespace allpix
 
 #endif /* ALLPIX_CONFIG_EXCEPTIONS_H */

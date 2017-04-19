@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-#include "core/config/InvalidValueError.hpp"
+#include "core/config/exceptions.h"
 #include "core/geometry/PixelDetectorModel.hpp"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"

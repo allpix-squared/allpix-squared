@@ -16,14 +16,11 @@
 // include the dependent objects
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
-#include "core/messenger/BaseMessage.hpp"
+#include "core/messenger/Message.hpp"
 #include "core/messenger/Messenger.hpp"
 
 // include the module base class
-#include <core/module/Module.hpp>
-
-#include <memory>
-#include <string>
+#include "core/module/Module.hpp"
 
 namespace allpix {
     // definitions of messages

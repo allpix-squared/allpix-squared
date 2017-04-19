@@ -16,7 +16,7 @@
 #include <G4UImanager.hh>
 #include <G4UserLimits.hh>
 
-#include "core/config/InvalidValueError.hpp"
+#include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/module/exceptions.h"
 #include "core/utils/log.h"

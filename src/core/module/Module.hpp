@@ -9,13 +9,11 @@
 #include <string>
 #include <vector>
 
-#include "core/config/ConfigManager.hpp"
+#include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
 #include "exceptions.h"
 
 namespace allpix {
-
-    class Messenger;
 
     class Module {
         friend class ModuleManager;

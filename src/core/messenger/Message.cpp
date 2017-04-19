@@ -2,7 +2,7 @@
  *  @author Koen Wolters <koen.wolters@cern.ch>
  */
 
-#include "BaseMessage.hpp"
+#include "Message.hpp"
 
 #include <memory>
 #include <utility>

@@ -13,7 +13,7 @@
 #include "ModuleManager.hpp"
 #include "core/config/ConfigManager.hpp"
 #include "core/config/Configuration.hpp"
-#include "core/config/InvalidValueError.hpp"
+#include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
 #include "core/utils/log.h"

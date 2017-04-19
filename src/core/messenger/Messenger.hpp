@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-#include "BaseMessage.hpp"
+#include "Message.hpp"
 #include "core/module/Module.hpp"
 #include "delegates.h"
 

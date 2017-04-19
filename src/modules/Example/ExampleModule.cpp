@@ -5,8 +5,8 @@
 #include "ExampleModule.hpp"
 
 // framework includes
-#include <core/messenger/Messenger.hpp>
-#include <core/utils/log.h>
+#include "core/messenger/Messenger.hpp"
+#include "core/utils/log.h"
 
 using namespace allpix;
 

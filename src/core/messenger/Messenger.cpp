@@ -8,7 +8,7 @@
 #include <string>
 #include <typeindex>
 
-#include "BaseMessage.hpp"
+#include "Message.hpp"
 #include "core/module/Module.hpp"
 #include "core/utils/log.h"
 #include "core/utils/type.h"

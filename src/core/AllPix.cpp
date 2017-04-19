@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "core/config/InvalidValueError.hpp"
+#include "core/config/exceptions.h"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 

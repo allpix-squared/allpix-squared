@@ -13,7 +13,7 @@
 #include <G4ParticleDefinition.hh>
 #include <G4ParticleTable.hh>
 
-#include "core/config/InvalidValueError.hpp"
+#include "core/config/exceptions.h"
 #include "core/utils/log.h"
 #include "tools/geant4.h"
 
