@@ -87,11 +87,13 @@ TGeoBuilderModule::TGeoBuilderModule(Configuration config, Messenger*, GeometryM
     m_buildTestStructureFlag = m_config.get<bool>("build_test_structures", false);
 
     // Read the geometry descriptions from the models
-    std::string model_file_name = m_config.get<std::string>("models_file");
-    auto geo_descriptions = ReadGeoDescription(model_file_name);
+    std::string model_file_name = m_config.getPath("models_file", true);
+    std::vector<std::string> model_paths;
+    model_paths.push_back(model_file_name);
+    auto geo_descriptions = ReadGeoDescription(model_paths);
 
     // construct the detectors from the config file
-    std::string detector_file_name = m_config.get<std::string>("detectors_file");
+    std::string detector_file_name = m_config.getPath("detectors_file", true);
     std::ifstream file(detector_file_name);
     if(!file) {
         throw allpix::ConfigFileUnavailableError(detector_file_name);

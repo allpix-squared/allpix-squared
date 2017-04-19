@@ -5,6 +5,12 @@
 # Option to build all modules
 OPTION(BUILD_allmodules "Build all modules?" OFF)
 
+# set the models path
+ADD_DEFINITIONS(-DALLPIX_MODEL_DIRECTORY="${ALLPIX_MODEL_DIRECTORY}" -DALLPIX_MODEL_SUFFIX="${ALLPIX_MODEL_SUFFIX}")
+
+# reset the saved libraries
+SET(ALLPIX_MODULE_LIBRARIES "" CACHE INTERNAL "Module libraries")
+
 ##############################
 # Build the common logic     #
 ##############################
@@ -16,9 +22,6 @@ SET(ALLPIX_DEPS_LIBRARIES ${ALLPIX_DEPS_LIBRARIES} AllPixModulesCommon)
 ##############################
 # Build the required modules #
 ##############################
-
-# reset the directories
-SET(ALLPIX_MODULE_LIBRARIES "" CACHE INTERNAL "Module libraries")
 
 # example module
 ALLPIX_BUILD_MODULE(Example)

@@ -16,18 +16,71 @@
 #include "core/config/ConfigReader.hpp"
 #include "core/geometry/PixelDetectorModel.hpp"
 #include "core/module/exceptions.h"
+#include "core/utils/file.h"
 #include "core/utils/log.h"
+#include "core/utils/string.h"
 
 #include "tools/ROOT.h"
 
 using namespace allpix;
 using namespace ROOT::Math;
 
-ReadGeoDescription::ReadGeoDescription(std::string file_name) : models_() {
-    std::ifstream file(file_name);
-    ConfigReader reader(file, file_name);
+// Constructors
+ReadGeoDescription::ReadGeoDescription() : ReadGeoDescription(std::vector<std::string>()) {}
+ReadGeoDescription::ReadGeoDescription(std::vector<std::string> paths) : models_() {
+    // construct reader
+    ConfigReader reader;
 
+    // add standard paths
+    paths.push_back(ALLPIX_MODEL_DIRECTORY);
+    const char* data_dirs_env = std::getenv("XDG_DATA_DIRS");
+    if(data_dirs_env == nullptr || strlen(data_dirs_env) == 0)
+        data_dirs_env = "/usr/local/share/:/usr/share/:";
+    std::vector<std::string> data_dirs = split<std::string>(data_dirs_env, ":");
+    for(auto data_dir : data_dirs) {
+        if(data_dir.back() != '/')
+            data_dir += "/";
+
+        paths.push_back(data_dir + ALLPIX_PROJECT_NAME);
+    }
+
+    LOG(INFO) << "Reading model files";
+    // add all the paths to the reader
+    for(auto& path : paths) {
+        // check if file or directory
+        // NOTE: silently ignore all others
+        if(path_is_directory(path)) {
+            std::vector<std::string> sub_paths = get_files_in_directory(path);
+            for(auto& sub_path : sub_paths) {
+                // accept only with correct model suffix
+                std::string suffix(ALLPIX_MODEL_SUFFIX);
+                if(sub_path.size() < suffix.size() || sub_path.substr(sub_path.size() - suffix.size()) != suffix) {
+                    continue;
+                }
+
+                // add the sub directory path to the reader
+                LOG(DEBUG) << "Reading model " << sub_path;
+                std::fstream file(sub_path);
+                reader.add(file, sub_path);
+            }
+        } else if(path_is_file(path)) {
+            // add the path to the reader
+            LOG(DEBUG) << "Reading model " << path;
+            std::fstream file(path);
+            reader.add(file, path);
+        }
+    }
+
+    // loop through all configurations and parse them
+    LOG(INFO) << "Parsing models";
     for(auto& config : reader.getConfigurations()) {
+        if(models_.find(config.getName()) != models_.end()) {
+            // skip models that we already loaded earlier higher in the chain
+            LOG(DEBUG) << "Skipping overwritten model " << config.getName() << " in path " << config.getFilePath();
+            continue;
+        }
+
+        // FIXME: only parse configs that are actually used
         models_[config.getName()] = parse_config(config);
     }
 }

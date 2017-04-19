@@ -10,6 +10,9 @@ ENDIF(COMMAND CMAKE_POLICY)
 PROJECT(allpix)
 INCLUDE("cmake/tools.cmake")
 
+# Access the project name (for install locations) in the source
+ADD_DEFINITIONS(-DALLPIX_PROJECT_NAME="${CMAKE_PROJECT_NAME}")
+
 # Print the version information
 PRINT_VERSION()
 
@@ -83,7 +86,6 @@ IF(NOT ROOT_FOUND)
     MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
     "$ source YOUR_ROOT_DIR/bin/thisroot.sh")
 ENDIF(NOT ROOT_FOUND)
-# INCLUDE_DIRECTORIES(SYSTEM ${ROOT_INCLUDE_DIRS})
 
 # Set the dependencies
 SET(ALLPIX_DEPS_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS})
@@ -110,11 +112,14 @@ INCLUDE("cmake/clang-cpp-checks.cmake")
 # Always include sources from top directory
 INCLUDE_DIRECTORIES(src)
 
-# Always build main allpix library
+# Set the models directory and provide install if necessary
+ADD_SUBDIRECTORY(models)
+
+# Build core allpix library
 ADD_SUBDIRECTORY(src/core)
 SET(ALLPIX_LIBRARIES ${ALLPIX_LIBRARIES} AllpixCore)
 
-# Build objects
+# Build objects library
 ADD_SUBDIRECTORY(src/objects)
 SET(ALLPIX_LIBRARIES ${ALLPIX_LIBRARIES} AllpixObjects)
 
