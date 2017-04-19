@@ -18,6 +18,8 @@ namespace allpix {
     class Messenger;
 
     class Module {
+        friend class ModuleManager;
+
     public:
         // Constructor and destructors
         explicit Module();
@@ -42,7 +44,12 @@ namespace allpix {
         virtual void finalize() {}
 
     private:
-        std::shared_ptr<Detector> detector_ptr__;
+        // Save configuration objects for later internal use
+        void set_configuration(Configuration);
+        Configuration get_configuration();
+        Configuration config_;
+
+        std::shared_ptr<Detector> detector_;
     };
 
     class ModuleIdentifier {

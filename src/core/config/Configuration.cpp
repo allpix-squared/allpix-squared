@@ -44,7 +44,7 @@ std::string Configuration::getText(const std::string& key) const {
         // NOTE: returning literally including ""
         return config_.at(key);
     } catch(std::out_of_range& e) {
-        throw MissingKeyError(getName(), key);
+        throw MissingKeyError(key, getName());
     }
 }
 // Get text with default
