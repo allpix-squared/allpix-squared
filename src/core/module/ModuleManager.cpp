@@ -157,8 +157,8 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
                 if(identifier.getPriority() < iter->first.getPriority()) {
                     // priority of new instance is higher, replace the instance
                     module_to_id_.erase(iter->second->get());
-                    modules_.erase(iter->second);
-                    id_to_module_.erase(iter->first);
+                    iter->second = modules_.erase(iter->second);
+                    iter = id_to_module_.erase(iter);
                 } else {
                     if(identifier.getPriority() == iter->first.getPriority()) {
                         throw AmbiguousInstantiationError(conf.getName());
