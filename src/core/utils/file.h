@@ -13,6 +13,11 @@
 #include <stdexcept>
 #include <string>
 
+#include <dirent.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 namespace allpix {
 
     // Get absolute path from relative path (only works if exists)
@@ -26,6 +31,53 @@ namespace allpix {
         std::string abs_path(path_ptr);
         free(static_cast<void*>(path_ptr));
         return abs_path;
+    }
+
+    // Check if path is a existing directory
+    inline bool path_is_directory(const std::string& path) {
+        struct stat path_stat;
+        stat(path.c_str(), &path_stat);
+        return S_ISDIR(path_stat.st_mode);
+    }
+
+    // Check if path is a existing file
+    inline bool path_is_file(const std::string& path) {
+        struct stat path_stat;
+        stat(path.c_str(), &path_stat);
+        return S_ISREG(path_stat.st_mode);
+    }
+
+    // Get all files in directory
+    inline std::vector<std::string> get_files_in_directory(const std::string& path) {
+        // define output
+        std::vector<std::string> files;
+
+        // required structs
+        DIR* dir;
+        struct dirent* ent;
+        struct stat st;
+
+        dir = opendir(path.c_str());
+        while((ent = readdir(dir)) != NULL) {
+            const std::string file_name = ent->d_name;
+            const std::string full_file_name = path + "/" + file_name;
+
+            // ignore useless paths
+            if(!file_name.empty() && file_name[0] == '.')
+                continue;
+            if(stat(full_file_name.c_str(), &st) == -1)
+                continue;
+
+            // ignore subdirectories
+            const bool is_directory = (st.st_mode & S_IFDIR) != 0;
+            if(is_directory)
+                continue;
+
+            // add full file paths
+            files.push_back(full_file_name);
+        }
+        closedir(dir);
+        return files;
     }
 }
 
