@@ -20,9 +20,6 @@ namespace allpix {
     // define the module inheriting from the module base class
     class ElectricFieldReaderInitModule : public Module {
     public:
-        // name of the module
-        static const std::string name;
-
         // constructor of the module
         ElectricFieldReaderInitModule(Configuration config, Messenger*, std::shared_ptr<Detector>);
 

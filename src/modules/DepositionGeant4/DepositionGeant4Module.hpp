@@ -20,9 +20,6 @@ namespace allpix {
     // define the module to inherit from the module base class
     class DepositionGeant4Module : public Module {
     public:
-        // name of the module
-        static const std::string name;
-
         // constructor should take a pointer to the Configuration, the Messenger and the Geometry Manager
         DepositionGeant4Module(Configuration, Messenger*, GeometryManager*);
         ~DepositionGeant4Module() override;

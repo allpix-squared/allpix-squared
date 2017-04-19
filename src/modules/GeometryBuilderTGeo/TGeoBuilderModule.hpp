@@ -53,9 +53,6 @@ namespace allpix {
     class TGeoBuilderModule : public Module {
 
     public:
-        // provide a static const variable of type string (required!)
-        static const std::string name;
-
         TGeoBuilderModule(Configuration config, Messenger*, GeometryManager*);
         ~TGeoBuilderModule() override;
 

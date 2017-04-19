@@ -27,8 +27,8 @@
 
 namespace allpix {
     // definitions of messages
-    // WARNING: definition of the messages should never be part of a module in real modules (and template Message should be
-    // preferred)
+    // WARNING: definition of the messages should never be part of a module in real modules
+    //          (and template Message should be preferred)
     class InputMessage : public BaseMessage {
     public:
         // NOTE: in a real message the output is of course not fixed
@@ -47,9 +47,6 @@ namespace allpix {
     // define the module inheriting from the module base class
     class ExampleModule : public Module {
     public:
-        // provide a static const variable of type string (required!)
-        static const std::string name;
-
         // constructor should take a pointer to the Configuration, the Messenger and the Geometry Manager
         ExampleModule(Configuration config, Messenger*, GeometryManager*);
 

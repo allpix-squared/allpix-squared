@@ -16,9 +16,6 @@
 // use the allpix namespace within this file
 using namespace allpix;
 
-// set the name of the module
-const std::string ElectricFieldReaderInitModule::name = "ElectricFieldReaderInit";
-
 // constructor to load the module
 ElectricFieldReaderInitModule::ElectricFieldReaderInitModule(Configuration config,
                                                              Messenger*,

@@ -64,7 +64,7 @@ namespace allpix {
 
     private:
         // Create modules from the loaded library
-        std::vector<std::pair<ModuleIdentifier, Module*>>
+        std::pair<ModuleIdentifier, Module*>
         create_unique_modules(void*, const Configuration&, Messenger*, GeometryManager*);
         std::vector<std::pair<ModuleIdentifier, Module*>>
         create_detector_modules(void*, const Configuration&, Messenger*, GeometryManager*);

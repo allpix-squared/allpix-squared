@@ -17,9 +17,6 @@
 
 using namespace allpix;
 
-// set the name of the module
-const std::string SimpleTransferModule::name = "SimpleTransfer";
-
 // constructor to load the module
 SimpleTransferModule::SimpleTransferModule(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector)
     : Module(detector), config_(std::move(config)), messenger_(messenger), detector_(std::move(detector)),

@@ -14,8 +14,6 @@
 
 using namespace allpix;
 
-const std::string TestDepositReaderModule::name = "deposit_reader_test";
-
 TestDepositReaderModule::TestDepositReaderModule(Configuration config, Messenger* messenger, GeometryManager*)
     : config_(std::move(config)), deposit_messages_() {
     // fetch deposits

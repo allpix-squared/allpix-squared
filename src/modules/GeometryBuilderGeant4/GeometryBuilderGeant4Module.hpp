@@ -20,9 +20,6 @@ namespace allpix {
     // define the module to inherit from the module base class
     class GeometryBuilderGeant4Module : public Module {
     public:
-        // provide a static const variable of type string (required!)
-        static const std::string name;
-
         // constructor should take a pointer to the Configuration, the Messenger and the Geometry Manager
         GeometryBuilderGeant4Module(Configuration config, Messenger*, GeometryManager*);
         ~GeometryBuilderGeant4Module() override;

@@ -21,9 +21,6 @@ namespace allpix {
     // define the module inheriting from the module base class
     class SimpleTransferModule : public Module {
     public:
-        // name of the module
-        static const std::string name;
-
         // constructor of the module
         SimpleTransferModule(Configuration config, Messenger*, std::shared_ptr<Detector>);
 

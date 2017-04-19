@@ -29,8 +29,6 @@
 using namespace allpix;
 using namespace ROOT::Math;
 
-const std::string SimplePropagationModule::name = "SimplePropagation";
-
 SimplePropagationModule::SimplePropagationModule(Configuration config,
                                                  Messenger* messenger,
                                                  std::shared_ptr<Detector> detector)

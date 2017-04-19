@@ -68,9 +68,6 @@ TString Print(TGeoTranslation* trl) {
     return Form("(%f,%f,%f)", par[0], par[1], par[2]);
 }
 
-/// Name of the module
-const std::string TGeoBuilderModule::name = "GeometryBuilderTGeo";
-
 /// Constructor and destructor
 TGeoBuilderModule::TGeoBuilderModule(Configuration config, Messenger*, GeometryManager* geo_manager)
     : m_config(std::move(config)), m_geoDscMng(geo_manager), m_fillingWorldMaterial(nullptr),

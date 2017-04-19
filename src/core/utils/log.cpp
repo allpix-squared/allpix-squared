@@ -92,7 +92,7 @@ std::string DefaultLogger::getStringFromLevel(LogLevel level) {
     return type.at(static_cast<decltype(type)::size_type>(level));
 }
 
-LogLevel DefaultLogger::getLevelFromString(std::string level) {
+LogLevel DefaultLogger::getLevelFromString(const std::string& level) {
     if(level == "DEBUG") {
         return LogLevel::DEBUG;
     }
@@ -132,7 +132,7 @@ std::string DefaultLogger::getStringFromFormat(LogFormat format) {
     return type.at(static_cast<decltype(type)::size_type>(format));
 }
 
-LogFormat DefaultLogger::getFormatFromString(std::string format) {
+LogFormat DefaultLogger::getFormatFromString(const std::string& format) {
     if(format == "SHORT") {
         return LogFormat::SHORT;
     }

@@ -17,8 +17,6 @@
 
 using namespace allpix;
 
-const std::string DetectorHistogrammerModule::name = "detector_histogrammer_test";
-
 DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)

@@ -31,9 +31,6 @@
 using namespace allpix;
 using namespace ROOT;
 
-// name of the module
-const std::string GeometryBuilderGeant4Module::name = "GeometryBuilderGeant4";
-
 // constructor and destructor
 GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration config, Messenger*, GeometryManager* geo_manager)
     : config_(std::move(config)), geo_manager_(geo_manager), run_manager_g4_(nullptr) {

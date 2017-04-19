@@ -24,9 +24,6 @@ namespace allpix {
     // define the module to inherit from the module base class
     class DetectorHistogrammerModule : public Module {
     public:
-        // name of the module
-        static const std::string name;
-
         // constructor and destructor
         DetectorHistogrammerModule(Configuration, Messenger*, std::shared_ptr<Detector>);
         ~DetectorHistogrammerModule() override;

@@ -10,9 +10,6 @@
 
 using namespace allpix;
 
-// set the name of the module
-const std::string ExampleModule::name = "Example";
-
 // constructor to load the module
 ExampleModule::ExampleModule(Configuration config, Messenger* messenger, GeometryManager*)
     : messenger_(messenger), message_(nullptr) {

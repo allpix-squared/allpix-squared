@@ -43,7 +43,7 @@ namespace allpix {
         static void setReportingLevel(LogLevel);
 
         // convert log level from/to string
-        static LogLevel getLevelFromString(std::string level);
+        static LogLevel getLevelFromString(const std::string& level);
         static std::string getStringFromLevel(LogLevel level);
 
         // set format
@@ -51,7 +51,7 @@ namespace allpix {
         static void setFormat(LogFormat);
 
         // convert log format from/to string
-        static LogFormat getFormatFromString(std::string format);
+        static LogFormat getFormatFromString(const std::string& format);
         static std::string getStringFromFormat(LogFormat format);
 
         // set streams (std::cerr is default)

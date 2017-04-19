@@ -137,7 +137,7 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
         // Create the modules from the library
         std::vector<std::pair<ModuleIdentifier, Module*>> mod_list;
         if(unique) {
-            mod_list = create_unique_modules(loaded_libraries_[lib_name], conf, messenger, geo_manager);
+            mod_list.emplace_back(create_unique_modules(loaded_libraries_[lib_name], conf, messenger, geo_manager));
         } else {
             mod_list = create_detector_modules(loaded_libraries_[lib_name], conf, messenger, geo_manager);
         }
@@ -228,45 +228,40 @@ void ModuleManager::finalize() {
 }
 
 // Function to create modules from the dynamic library passed from the Module Manager
-std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_unique_modules(void* library,
-                                                                                       const Configuration& conf,
-                                                                                       Messenger* messenger,
-                                                                                       GeometryManager* geo_manager) {
+std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* library,
+                                                                          const Configuration& conf,
+                                                                          Messenger* messenger,
+                                                                          GeometryManager* geo_manager) {
     // Make the vector to return
-    std::string moduleName = conf.getName();
-    std::vector<std::pair<ModuleIdentifier, Module*>> moduleList;
+    std::string module_name = conf.getName();
 
-    LOG(DEBUG) << "Creating instantions for unique module " << moduleName;
+    LOG(DEBUG) << "Creating instantions for unique module " << module_name;
 
     // Load an instance of the module from the library
-    ModuleIdentifier identifier(moduleName, "", 0);
-    Module* module = nullptr;
+    ModuleIdentifier identifier(module_name, "", 0);
 
     // Get the generator function for this module
     void* generator = dlsym(library, ALLPIX_GENERATOR_FUNCTION);
     // If the generator function was not found, throw an error
     if(generator == nullptr) {
         LOG(ERROR) << "Module library is invalid or outdated: required interface function not found!";
-        throw allpix::DynamicLibraryError(moduleName);
-    } else {
-        // Convert to correct generator function
-        auto module_generator =
-            reinterpret_cast<Module* (*)(Configuration, Messenger*, GeometryManager*)>(generator); // NOLINT
-
-        // Set the log section header
-        std::string old_section_name = Log::getSection();
-        std::string section_name = "C:";
-        section_name += conf.getName();
-        Log::setSection(section_name);
-        // Build module
-        module = module_generator(conf, messenger, geo_manager);
-        // Reset log section header
-        Log::setSection(old_section_name);
+        throw allpix::DynamicLibraryError(module_name);
     }
+    // Convert to correct generator function
+    auto module_generator = reinterpret_cast<Module* (*)(Configuration, Messenger*, GeometryManager*)>(generator); // NOLINT
+
+    // Set the log section header
+    std::string old_section_name = Log::getSection();
+    std::string section_name = "C:";
+    section_name += module_name;
+    Log::setSection(section_name);
+    // Build module
+    Module* module = module_generator(conf, messenger, geo_manager);
+    // Reset log section header
+    Log::setSection(old_section_name);
 
     // Store the module and return it to the Module Manager
-    moduleList.emplace_back(identifier, module);
-    return moduleList;
+    return std::make_pair(identifier, module);
 }
 
 // Function to create modules per detector from the dynamic library passed from the Module Manager
@@ -334,24 +329,23 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
     // instantiate the list of requested instantiations
     std::vector<std::pair<ModuleIdentifier, Module*>> module_list;
     for(auto& instance : instantiations) {
-        // call the generator function and add to list of modules
-        Module* module = module_generator(conf, messenger, instance.first);
-        module_list.emplace_back(instance.second, module);
-
         // Set the log section header
         std::string old_section_name = Log::getSection();
         std::string section_name = "C:";
-        section_name += conf.getName();
+        section_name += module_name;
         section_name += ":";
         section_name += instance.first->getName();
         Log::setSection(section_name);
         // Build module
-        module = module_generator(conf, messenger, instance.first);
+        Module* module = module_generator(conf, messenger, instance.first);
         // Reset log section header
         Log::setSection(old_section_name);
 
         // check if the module called the correct base class constructor
-        check_module_detector(module_name, module_list.back().second, instance.first.get());
+        check_module_detector(module_name, module, instance.first.get());
+
+        // store the module
+        module_list.emplace_back(instance.second, module);
     }
 
     return module_list;

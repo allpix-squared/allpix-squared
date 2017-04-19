@@ -20,8 +20,6 @@
 
 using namespace allpix;
 
-const std::string VisualizationGeant4Module::name = "VisualizationGeant4";
-
 VisualizationGeant4Module::VisualizationGeant4Module(Configuration config, Messenger*, GeometryManager*)
     : config_(std::move(config)), has_run_(false), vis_manager_g4_(nullptr) {}
 VisualizationGeant4Module::~VisualizationGeant4Module() {

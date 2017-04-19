@@ -18,7 +18,7 @@ namespace allpix {
     class AllPix {
     public:
         // Constructor and destructor
-        AllPix(std::string name);
+        explicit AllPix(std::string name);
 
         // Apply default configuration and load all modules
         void load();

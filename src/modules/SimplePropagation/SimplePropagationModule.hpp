@@ -20,9 +20,6 @@ namespace allpix {
     // define the module to inherit from the module base class
     class SimplePropagationModule : public Module {
     public:
-        // name of the module
-        static const std::string name;
-
         // constructor and destructor
         SimplePropagationModule(Configuration, Messenger*, std::shared_ptr<Detector>);
         ~SimplePropagationModule() override;
