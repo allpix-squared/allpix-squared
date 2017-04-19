@@ -36,12 +36,14 @@ GeneratorActionG4::GeneratorActionG4(Configuration config) : particle_source_(st
     }
 
     // set global parameters
+    // FIXME: keep number of particles always at zero?
     single_source->SetNumberOfParticles(static_cast<int>(config.get<unsigned int>("particle_amount")));
     single_source->SetParticleDefinition(particle);
     single_source->SetParticleTime(0.0); // FIXME: what is this time
 
     // set position parameters
-    single_source->GetPosDist()->SetPosDisType("Point");
+    single_source->GetPosDist()->SetPosDisType("Beam");
+    single_source->GetPosDist()->SetBeamSigmaInR(config.get<double>("particle_radius_sigma", 0));
     single_source->GetPosDist()->SetCentreCoords(config.get<G4ThreeVector>("particle_position"));
 
     // set distribution parameters

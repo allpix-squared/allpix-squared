@@ -72,14 +72,16 @@ void VisualizationGeant4Module::init() {
     }
 }
 
-// display the visualization after all events have passed
-void VisualizationGeant4Module::finalize() {
-    // execute the main macro
+void VisualizationGeant4Module::run() {
+    // execute the run macro
     if(config_.has("macro_run")) {
         G4UImanager* UI = G4UImanager::GetUIpointer();
         UI->ApplyCommand("/control/execute " + config_.getPath("macro_run"));
     }
+}
 
+// display the visualization after all events have passed
+void VisualizationGeant4Module::finalize() {
     // flush the view or open an interactive session depending on settings
     if(config_.get("interactive", false)) {
         std::unique_ptr<G4UIsession> session = std::make_unique<G4UIterminal>();

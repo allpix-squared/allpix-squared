@@ -27,6 +27,9 @@ namespace allpix {
         // initializes the visualization and set necessary settings to catch all the required data
         void init() override;
 
+        // sets the display settings for the current event
+        void run() override;
+
         // displays the visualization
         void finalize() override;
 

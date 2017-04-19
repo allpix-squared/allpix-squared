@@ -1,4 +1,5 @@
 # display trajectories later
 /vis/scene/endOfEventAction accumulate
 /vis/scene/endOfRunAction accumulate
+/tracking/storeTrajectory 1
 /vis/scene/add/trajectories
