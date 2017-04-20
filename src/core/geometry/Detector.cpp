@@ -29,7 +29,7 @@ Detector::Detector(std::string name,
     // sensor midpoint transform
     ROOT::Math::Translation3D translation_center(static_cast<ROOT::Math::XYZVector>(position_));
     ROOT::Math::Rotation3D rotation_center(orientation_);
-    ROOT::Math::Transform3D transform_center(rotation_center, translation_center);
+    ROOT::Math::Transform3D transform_center(rotation_center.Inverse(), translation_center);
 
     // sensor pixel transform
     ROOT::Math::Translation3D translation_local(static_cast<ROOT::Math::XYZVector>(model_->getCenter()));

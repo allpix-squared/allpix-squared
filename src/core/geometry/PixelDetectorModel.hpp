@@ -37,7 +37,7 @@ namespace allpix {
         double getSensorMinZ() override { return -getHalfSensorZ(); }
         ROOT::Math::XYZPoint getCenter() override {
             return ROOT::Math::XYZPoint(
-                getHalfSensorSizeX() + getHalfPixelSizeX(), getHalfSensorSizeY() + getHalfPixelSizeY(), 0);
+                getHalfSensorSizeX() - getHalfPixelSizeX(), getHalfSensorSizeY() - getHalfPixelSizeY(), 0);
         }
 
         /* Number of pixels */
