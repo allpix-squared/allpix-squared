@@ -44,11 +44,11 @@ void DetectorHistogrammerModule::init() {
     histogram = new TH2I(histogram_name.c_str(),
                          histogram_title.c_str(),
                          model->getNPixelsX(),
-                         0,
-                         model->getNPixelsX(),
+                         -0.5,
+                         model->getNPixelsX() - 0.5,
                          model->getNPixelsY(),
-                         0,
-                         model->getNPixelsY());
+                         -0.5,
+                         model->getNPixelsY() - 0.5);
 
     // create cluster size plot
     std::string cluster_size_name = "cluster_" + detector_->getName();
@@ -56,8 +56,8 @@ void DetectorHistogrammerModule::init() {
     cluster_size = new TH1I(cluster_size_name.c_str(),
                             cluster_size_title.c_str(),
                             model->getNPixelsX() * model->getNPixelsY(),
-                            0,
-                            model->getNPixelsX() * model->getNPixelsY());
+                            0.5,
+                            model->getNPixelsX() * model->getNPixelsY() + 0.5);
 }
 
 // fill the histograms
@@ -85,11 +85,22 @@ void DetectorHistogrammerModule::run() {
 // create file and write the histograms to it
 void DetectorHistogrammerModule::finalize() {
     // set more useful spacing maximum for cluster size histogram
-    int xmax = static_cast<int>(std::ceil(cluster_size->GetBinCenter(cluster_size->FindLastBinAbove()) + 1));
-    cluster_size->GetXaxis()->SetRange(0, xmax);
+    auto xmax = std::ceil(cluster_size->GetBinCenter(cluster_size->FindLastBinAbove()) + 1);
+    cluster_size->GetXaxis()->SetRangeUser(0, xmax);
+    // set cluster size axis spacing (FIXME: worth to do?)
+    if(static_cast<int>(xmax) < 10) {
+        cluster_size->GetXaxis()->SetNdivisions(static_cast<int>(xmax) + 1, 0, 0, true);
+    }
 
     // set default drawing option histogram
     histogram->SetOption("colz");
+    // set histogram axis spacing (FIXME: worth to do?)
+    if(static_cast<int>(histogram->GetXaxis()->GetXmax()) < 10) {
+        histogram->GetXaxis()->SetNdivisions(static_cast<int>(histogram->GetXaxis()->GetXmax()) + 1, 0, 0, true);
+    }
+    if(static_cast<int>(histogram->GetYaxis()->GetXmax()) < 10) {
+        histogram->GetYaxis()->SetNdivisions(static_cast<int>(histogram->GetYaxis()->GetXmax()) + 1, 0, 0, true);
+    }
 
     // create root file
     std::string file_name = config_.get<std::string>("file_prefix") + "_" + detector_->getName() + ".root";
