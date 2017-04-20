@@ -148,7 +148,7 @@ LogFormat DefaultLogger::getFormatFromString(const std::string& format) {
 
 // change streams
 std::vector<std::ostream*>& DefaultLogger::get_streams() {
-    static std::vector<std::ostream*> streams = {&std::cerr};
+    static std::vector<std::ostream*> streams = {&std::cout};
     return streams;
 }
 const std::vector<std::ostream*>& DefaultLogger::getStreams() {
