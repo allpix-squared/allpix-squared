@@ -56,13 +56,28 @@ void SimpleTransferModule::run() {
     std::map<PixelCharge::Pixel, std::vector<PropagatedCharge>, pixel_cmp> pixel_map;
     for(auto& propagated_charge : propagated_message_->getData()) {
         auto position = propagated_charge.getPosition();
+        // ignore if outside z range of implant
+        // FIXME: this logic should be extended
+        if(std::fabs(position.z() - model->getSensorMinZ()) > config_.get<double>("max_depth_distance")) {
+            LOG(DEBUG) << "skipping set of " << propagated_charge.getCharge() << " propagated charges at "
+                       << propagated_charge.getPosition() << " because their local position is not in implant range";
+            continue;
+        }
+
         // find the nearest pixel
-        // NOTE: z position is ignored here
         int xpixel = static_cast<int>(std::round(position.x() / model->getPixelSizeX()));
         int ypixel = static_cast<int>(std::round(position.y() / model->getPixelSizeY()));
+        PixelCharge::Pixel pixel(xpixel, ypixel);
+
+        // ignore if out of pixel grid
+        if(xpixel < 0 || xpixel >= model->getNPixelsX() || ypixel < 0 || ypixel >= model->getNPixelsY()) {
+            LOG(DEBUG) << "skipping set of " << propagated_charge.getCharge() << " propagated charges at "
+                       << propagated_charge.getPosition() << " because their nearest pixel (" << pixel.x() << ","
+                       << pixel.y() << ") is outside the grid";
+            continue;
+        }
 
         // add the pixel the list of hit pixels
-        PixelCharge::Pixel pixel(xpixel, ypixel);
         pixel_map[pixel].push_back(propagated_charge);
 
         LOG(DEBUG) << "set of " << propagated_charge.getCharge() << " propagated charges at "
