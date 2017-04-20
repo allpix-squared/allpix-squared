@@ -84,6 +84,13 @@ void DetectorHistogrammerModule::run() {
 
 // create file and write the histograms to it
 void DetectorHistogrammerModule::finalize() {
+    // set more useful spacing maximum for cluster size histogram
+    int xmax = static_cast<int>(std::ceil(cluster_size->GetBinCenter(cluster_size->FindLastBinAbove()) + 1));
+    cluster_size->GetXaxis()->SetRange(0, xmax);
+
+    // set default drawing option histogram
+    histogram->SetOption("colz");
+
     // create root file
     std::string file_name = config_.get<std::string>("file_prefix") + "_" + detector_->getName() + ".root";
     TFile file(file_name.c_str(), "RECREATE");
