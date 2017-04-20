@@ -86,7 +86,7 @@ void SimplePropagationModule::run() {
             auto prop_pair = propagate(position);
             position = prop_pair.first;
 
-            LOG(DEBUG) << " propagated " << charge_per_step << " to " << position << "um in " << prop_pair.second << "ns";
+            LOG(DEBUG) << " propagated " << charge_per_step << " to " << position << " in " << prop_pair.second << " time";
 
             // create a new propagated charge and add it to the list
             PropagatedCharge propagated_charge(position, charge_per_step);
@@ -136,7 +136,6 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const XYZPoint& r
     };
 
     // define a function to compute the electron velocity
-    auto voltage_scaling = config_.get<double>("voltage") / Units::get(1.0, "V"); // NOTE: not a real voltage
     auto electron_velocity = [&](double, Eigen::Vector3d pos) -> Eigen::Vector3d {
         // get the electric field
         double* raw_field = detector_->getElectricFieldRaw(pos);
@@ -146,7 +145,7 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const XYZPoint& r
         }
         // compute the drift velocity
         auto efield = static_cast<Eigen::Map<Eigen::Vector3d>>(raw_field);
-        return voltage_scaling * (electron_mobility(efield.norm()) * (efield));
+        return electron_mobility(efield.norm()) * (efield);
     };
 
     // build the runge kutta solver with an RKF5 tableau
