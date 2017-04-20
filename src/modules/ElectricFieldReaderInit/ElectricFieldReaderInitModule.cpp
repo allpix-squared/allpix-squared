@@ -75,6 +75,7 @@ ElectricFieldReaderInitModule::FieldData ElectricFieldReaderInitModule::get_by_f
 
     LOG(DEBUG) << "header of file " << file_name << " is " << header;
 
+    // read the header
     std::string tmp;
     file >> tmp >> tmp;        // ignore the init seed and cluster length
     file >> tmp >> tmp >> tmp; // ignore the incident pion direction
@@ -87,6 +88,7 @@ ElectricFieldReaderInitModule::FieldData ElectricFieldReaderInitModule::get_by_f
     file >> xsize >> ysize >> zsize;
     file >> tmp;
 
+    // check if electric field matches chip
     check_detector_match(detector, thickness, static_cast<int>(std::round(npixx)), static_cast<int>(std::round(npixy)));
 
     if(file.fail()) {
@@ -95,11 +97,13 @@ ElectricFieldReaderInitModule::FieldData ElectricFieldReaderInitModule::get_by_f
     auto field = std::make_shared<std::vector<double>>();
     field->resize(xsize * ysize * zsize * 3);
 
+    // loop through all the field data
     for(size_t i = 0; i < xsize * ysize * zsize; ++i) {
         if(file.eof()) {
             throw std::runtime_error("unexpected end of file");
         }
 
+        // get index of electric field
         size_t xind, yind, zind;
         file >> xind >> yind >> zind;
 
@@ -110,10 +114,12 @@ ElectricFieldReaderInitModule::FieldData ElectricFieldReaderInitModule::get_by_f
         yind--;
         zind--;
 
+        // loop through components of electric field
         for(size_t j = 0; j < 3; ++j) {
             double input;
             file >> input;
 
+            // set the electric field at a position
             (*field)[xind * ysize * zsize * 3 + yind * zsize * 3 + zind * 3 + j] = Units::get(input, "V/cm");
         }
     }
