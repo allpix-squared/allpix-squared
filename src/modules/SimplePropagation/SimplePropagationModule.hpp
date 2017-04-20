@@ -29,7 +29,7 @@ namespace allpix {
 
     private:
         // propagate a single charge
-        ROOT::Math::XYZPoint propagate(const ROOT::Math::XYZPoint& pos);
+        std::pair<ROOT::Math::XYZPoint, double> propagate(const ROOT::Math::XYZPoint& pos);
 
         // random generator for this module
         std::mt19937_64 random_generator_;

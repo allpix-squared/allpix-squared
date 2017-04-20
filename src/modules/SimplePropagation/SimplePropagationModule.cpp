@@ -83,9 +83,10 @@ void SimplePropagationModule::run() {
             auto position = deposit.getPosition(); // NOTE: this is already a local position
 
             // propagate a single charge deposit
-            position = propagate(position);
+            auto prop_pair = propagate(position);
+            position = prop_pair.first;
 
-            LOG(DEBUG) << " propagated " << charge_per_step << " to " << position;
+            LOG(DEBUG) << " propagated " << charge_per_step << " to " << position << "um in " << prop_pair.second << "ns";
 
             // create a new propagated charge and add it to the list
             PropagatedCharge propagated_charge(position, charge_per_step);
@@ -100,7 +101,7 @@ void SimplePropagationModule::run() {
     messenger_->dispatchMessage(propagated_charge_message, "implant");
 }
 
-XYZPoint SimplePropagationModule::propagate(const XYZPoint& root_pos) {
+std::pair<XYZPoint, double> SimplePropagationModule::propagate(const XYZPoint& root_pos) {
     // create a runge kutta solver using the electric field as step function
     Eigen::Vector3d position(root_pos.x(), root_pos.y(), root_pos.z());
 
@@ -135,6 +136,7 @@ XYZPoint SimplePropagationModule::propagate(const XYZPoint& root_pos) {
     };
 
     // define a function to compute the electron velocity
+    auto voltage_scaling = config_.get<double>("voltage") / Units::get(1.0, "V"); // NOTE: not a real voltage
     auto electron_velocity = [&](double, Eigen::Vector3d pos) -> Eigen::Vector3d {
         // get the electric field
         double* raw_field = detector_->getElectricFieldRaw(pos);
@@ -144,7 +146,7 @@ XYZPoint SimplePropagationModule::propagate(const XYZPoint& root_pos) {
         }
         // compute the drift velocity
         auto efield = static_cast<Eigen::Map<Eigen::Vector3d>>(raw_field);
-        return (electron_mobility(efield.norm()) * (efield));
+        return voltage_scaling * (electron_mobility(efield.norm()) * (efield));
     };
 
     // build the runge kutta solver with an RKF5 tableau
@@ -193,5 +195,5 @@ XYZPoint SimplePropagationModule::propagate(const XYZPoint& root_pos) {
     }
 
     position = runge_kutta.getValue();
-    return XYZPoint(position);
+    return std::make_pair(static_cast<XYZPoint>(position), runge_kutta.getTime());
 }
