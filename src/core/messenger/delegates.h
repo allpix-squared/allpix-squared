@@ -16,7 +16,7 @@
 // FIXME: RESTRUCTURE THIS A BIT TO BE MORE USABLE AND CONCEPTUALLY BETTER
 
 namespace allpix {
-    // base class for all delegates (template type erasure)
+    // Base class for all delegates (template type erasure)
     class BaseDelegate {
     public:
         // Constructor and destructor
@@ -31,9 +31,13 @@ namespace allpix {
         virtual std::shared_ptr<Detector> getDetector() const = 0;
 
         // Process the delegate
-        virtual void process(std::shared_ptr<BaseMessage> msg) const = 0;
+        virtual void process(std::shared_ptr<BaseMessage> msg) = 0;
+
+        // Reset the delegate
+        virtual void reset() = 0;
     };
 
+    // All delegates that need a Module
     template <typename T> class ModuleDelegate : public BaseDelegate {
     public:
         explicit ModuleDelegate(T* obj) : obj_(obj) {}
@@ -50,34 +54,38 @@ namespace allpix {
         T* obj_;
     };
 
-    // delegate for receiver functions
-    template <typename T, typename R> class Delegate : public ModuleDelegate<T> {
+    // Delegate for receiver functions
+    template <typename T, typename R> class FunctionDelegate : public ModuleDelegate<T> {
     public:
         using ListenerFunction = void (T::*)(std::shared_ptr<R>);
 
-        Delegate(T* obj, ListenerFunction method) : ModuleDelegate<T>(obj), method_(method) {}
-        ~Delegate() override = default;
+        FunctionDelegate(T* obj, ListenerFunction method) : ModuleDelegate<T>(obj), method_(method) {}
+        ~FunctionDelegate() override = default;
 
         // Disallow copy
-        Delegate(const Delegate&) = delete;
-        Delegate& operator=(const Delegate&) = delete;
+        FunctionDelegate(const FunctionDelegate&) = delete;
+        FunctionDelegate& operator=(const FunctionDelegate&) = delete;
 
-        void process(std::shared_ptr<BaseMessage> msg) const override {
+        // Send the message to the function
+        void process(std::shared_ptr<BaseMessage> msg) override {
 #ifndef NDEBUG
             // the type names should have been correctly resolved earlier
             const BaseMessage* inst = msg.get();
             assert(typeid(*inst) == typeid(R));
 #endif
 
-            // NOTE: this dynamic cast is not perfect, but otherwise dynamic linking will break
+            // Pass the message
             (this->obj_->*method_)(std::static_pointer_cast<R>(msg));
         }
+
+        // Reset is not needed
+        void reset() override {}
 
     private:
         ListenerFunction method_;
     };
 
-    // delegate for single bound shared pointer
+    // Delegate for single bound shared pointer
     template <typename T, typename R> class SingleBindDelegate : public ModuleDelegate<T> {
     public:
         using BindType = std::shared_ptr<R> T::*;
@@ -89,7 +97,8 @@ namespace allpix {
         SingleBindDelegate(const SingleBindDelegate&) = delete;
         SingleBindDelegate& operator=(const SingleBindDelegate&) = delete;
 
-        void process(std::shared_ptr<BaseMessage> msg) const override {
+        // Set the member to the supplied message
+        void process(std::shared_ptr<BaseMessage> msg) override {
 #ifndef NDEBUG
             // the type names should have been correctly resolved earlier
             const BaseMessage* inst = msg.get();
@@ -98,15 +107,18 @@ namespace allpix {
 
             // FIXME: check that this assignment does not remove earlier information
 
-            // NOTE: this dynamic cast is not perfect, but otherwise dynamic linking will break
+            // Set the message
             this->obj_->*member_ = std::static_pointer_cast<R>(msg);
         }
+
+        // Set the obj back to nullptr
+        void reset() override { this->obj_->*member_ = nullptr; }
 
     private:
         BindType member_;
     };
 
-    // delegate for a vector of messages that can be received
+    // Delegate for a vector of messages that can be received
     template <typename T, typename R> class VectorBindDelegate : public ModuleDelegate<T> {
     public:
         using BindType = std::vector<std::shared_ptr<R>> T::*;
@@ -118,16 +130,18 @@ namespace allpix {
         VectorBindDelegate(const VectorBindDelegate&) = delete;
         VectorBindDelegate& operator=(const VectorBindDelegate&) = delete;
 
-        void process(std::shared_ptr<BaseMessage> msg) const override {
+        void process(std::shared_ptr<BaseMessage> msg) override {
 #ifndef NDEBUG
             // the type names should have been correctly resolved earlier
             const BaseMessage* inst = msg.get();
             assert(typeid(*inst) == typeid(R));
 #endif
-
-            // NOTE: this dynamic cast is not perfect, but otherwise dynamic linking will break
+            // Add the message
             (this->obj_->*member_).push_back(std::static_pointer_cast<R>(msg));
         }
+
+        // Clear the vector of received messages
+        void reset() override { (this->obj_->*member_).clear(); }
 
     private:
         BindType member_;

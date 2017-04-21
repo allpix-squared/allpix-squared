@@ -72,7 +72,7 @@ namespace allpix {
             std::is_base_of<BaseMessage, R>::value,
             "Notifier method should take a shared pointer to a message derived from the Message class as argument");
 
-        auto delegate = std::make_unique<Delegate<T, R>>(receiver, method);
+        auto delegate = std::make_unique<FunctionDelegate<T, R>>(receiver, method);
         delegates_[std::type_index(typeid(R))][message_type].push_back(std::move(delegate));
     }
     template <typename T, typename R>
