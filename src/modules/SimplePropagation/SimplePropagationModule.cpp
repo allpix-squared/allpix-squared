@@ -38,8 +38,8 @@ SimplePropagationModule::SimplePropagationModule(Configuration config,
     // get detector model
     model_ = detector_->getModel();
 
-    // fetch deposits for single detector
-    messenger_->bindSingle(this, &SimplePropagationModule::deposits_message_);
+    // require deposits message for single detector
+    messenger_->bindSingle(this, &SimplePropagationModule::deposits_message_, MsgFlags::REQUIRED);
 
     // seed the random generator
     random_generator_.seed(get_random_seed());
@@ -55,11 +55,6 @@ SimplePropagationModule::~SimplePropagationModule() = default;
 
 // run the propagation
 void SimplePropagationModule::run() {
-    // skip if this detector did not get any deposits
-    if(deposits_message_ == nullptr) {
-        return;
-    }
-
     // create vector of propagated charges
     std::vector<PropagatedCharge> propagated_charges;
 

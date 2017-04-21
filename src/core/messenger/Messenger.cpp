@@ -61,3 +61,11 @@ void Messenger::dispatchMessage(const std::shared_ptr<BaseMessage>& msg, const s
                      << " has no receivers... this is probably not what you want!";
     }
 }
+
+// Add a delegate (common register logic)
+void Messenger::add_delegate(const std::type_info& message_type,
+                             const std::string& message_name,
+                             std::unique_ptr<BaseDelegate> delegate) {
+    // add the delegate to the map
+    delegates_[std::type_index(message_type)][message_name].push_back(std::move(delegate));
+}

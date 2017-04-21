@@ -14,16 +14,38 @@
 #include "exceptions.h"
 
 namespace allpix {
+    // Flags to pass to a receiver
+    // FIXME: not the most logical location
+    enum class MsgFlags : uint32_t { NONE = 0, REQUIRED = (1 << 0), NO_RESET = (1 << 1), ALLOW_OVERWRITE = (1 << 2) };
+    inline MsgFlags operator|(MsgFlags f1, MsgFlags f2) {
+        return static_cast<MsgFlags>(static_cast<uint32_t>(f1) | static_cast<uint32_t>(f2));
+    }
+    inline MsgFlags operator&(MsgFlags f1, MsgFlags f2) {
+        return static_cast<MsgFlags>(static_cast<uint32_t>(f1) & static_cast<uint32_t>(f2));
+    }
+
     // Base class for all delegates (template type erasure)
     class BaseDelegate {
     public:
         // Constructor and destructor
-        BaseDelegate() = default;
+        BaseDelegate(MsgFlags flags) : processed_(false), flags_(flags) {}
         virtual ~BaseDelegate() = default;
 
         // Disallow copy
         BaseDelegate(const BaseDelegate&) = delete;
         BaseDelegate& operator=(const BaseDelegate&) = delete;
+
+        // Check if delegate is satisfied (has been processed if required)
+        bool isSatisfied() const {
+            // always satisfied if not required
+            if((getFlags() & MsgFlags::REQUIRED) == MsgFlags::NONE) {
+                return true;
+            }
+            return processed_;
+        }
+
+        // Get the flags
+        MsgFlags getFlags() const { return flags_; }
 
         // Get linked detector
         virtual std::shared_ptr<Detector> getDetector() const = 0;
@@ -32,13 +54,22 @@ namespace allpix {
         virtual void process(std::shared_ptr<BaseMessage> msg) = 0;
 
         // Reset the delegate
-        virtual void reset() = 0;
+        virtual void reset() {
+            // Set processed to false again
+            processed_ = false;
+        }
+
+    protected:
+        void set_processed() { processed_ = true; }
+        bool processed_;
+
+        MsgFlags flags_;
     };
 
     // All delegates that need a Module
     template <typename T> class ModuleDelegate : public BaseDelegate {
     public:
-        explicit ModuleDelegate(T* obj) : obj_(obj) {}
+        explicit ModuleDelegate(MsgFlags flags, T* obj) : BaseDelegate(flags), obj_(obj) {}
         ~ModuleDelegate() override = default;
 
         // Disallow copy
@@ -57,7 +88,7 @@ namespace allpix {
     public:
         using ListenerFunction = void (T::*)(std::shared_ptr<R>);
 
-        FunctionDelegate(T* obj, ListenerFunction method) : ModuleDelegate<T>(obj), method_(method) {}
+        FunctionDelegate(MsgFlags flags, T* obj, ListenerFunction method) : ModuleDelegate<T>(flags, obj), method_(method) {}
         ~FunctionDelegate() override = default;
 
         // Disallow copy
@@ -72,12 +103,10 @@ namespace allpix {
             assert(typeid(*inst) == typeid(R));
 #endif
 
-            // Pass the message
+            // Pass the message and mark as processed
             (this->obj_->*method_)(std::static_pointer_cast<R>(msg));
+            this->set_processed();
         }
-
-        // Reset is not needed
-        void reset() override {}
 
     private:
         ListenerFunction method_;
@@ -88,7 +117,7 @@ namespace allpix {
     public:
         using BindType = std::shared_ptr<R> T::*;
 
-        SingleBindDelegate(T* obj, BindType member) : ModuleDelegate<T>(obj), member_(member) {}
+        SingleBindDelegate(MsgFlags flags, T* obj, BindType member) : ModuleDelegate<T>(flags, obj), member_(member) {}
         ~SingleBindDelegate() override = default;
 
         // Disallow copy
@@ -102,15 +131,26 @@ namespace allpix {
             const BaseMessage* inst = msg.get();
             assert(typeid(*inst) == typeid(R));
 #endif
+            // Raise an error if the message is overwritten (unless it is allowed)
+            if(this->obj_->*member_ != nullptr && (this->getFlags() & MsgFlags::ALLOW_OVERWRITE) == MsgFlags::NONE) {
+                throw UnexpectedMessageException("module name", typeid(R));
+            }
 
-            // FIXME: check that this assignment does not remove earlier information
-
-            // Set the message
+            // Set the message and mark as processed
             this->obj_->*member_ = std::static_pointer_cast<R>(msg);
+            this->set_processed();
         }
 
         // Set the obj back to nullptr
-        void reset() override { this->obj_->*member_ = nullptr; }
+        void reset() override {
+            // Always do base reset
+            BaseDelegate::reset();
+
+            // Clear if needed
+            if((this->getFlags() & MsgFlags::NO_RESET) == MsgFlags::NONE) {
+                this->obj_->*member_ = nullptr;
+            };
+        }
 
     private:
         BindType member_;
@@ -121,7 +161,7 @@ namespace allpix {
     public:
         using BindType = std::vector<std::shared_ptr<R>> T::*;
 
-        VectorBindDelegate(T* obj, BindType member) : ModuleDelegate<T>(obj), member_(member) {}
+        VectorBindDelegate(MsgFlags flags, T* obj, BindType member) : ModuleDelegate<T>(flags, obj), member_(member) {}
         ~VectorBindDelegate() override = default;
 
         // Disallow copy
@@ -136,10 +176,19 @@ namespace allpix {
 #endif
             // Add the message
             (this->obj_->*member_).push_back(std::static_pointer_cast<R>(msg));
+            this->set_processed(); // FIXME: always mark as processed because it is an array?
         }
 
         // Clear the vector of received messages
-        void reset() override { (this->obj_->*member_).clear(); }
+        void reset() override {
+            // Always do base reset
+            BaseDelegate::reset();
+
+            // Clear if needed
+            if((this->getFlags() & MsgFlags::NO_RESET) == MsgFlags::NONE) {
+                (this->obj_->*member_).clear();
+            }
+        }
 
     private:
         BindType member_;

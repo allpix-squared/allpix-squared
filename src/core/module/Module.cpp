@@ -46,3 +46,13 @@ void Module::reset_delegates() {
         delegate->reset();
     }
 }
+// Check if all delegates are satisfied
+bool Module::check_delegates() {
+    for(auto& delegate : delegates_) {
+        // Return if any delegate is not satisfied
+        if(!delegate->isSatisfied()) {
+            return false;
+        }
+    }
+    return true;
+}

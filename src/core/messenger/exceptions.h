@@ -15,16 +15,15 @@
 
 namespace allpix {
     /*
-     * Receive of a message that a module did not expect (only one message) or if a message is sent out without receivers
-     * (NOTE: not always a problem)
+     * Receive of a message that a module did not expect (only one message)
      */
     class UnexpectedMessageException : public RuntimeError {
     public:
         UnexpectedMessageException(const std::string& module, const std::type_info& message) {
             // FIXME: add detectory and input output instance here
-            error_message_ = "Unexpected receive of message ";
+            error_message_ = "Unexpected message ";
             error_message_ += allpix::demangle(message.name());
-            error_message_ += " by module " + module + " (are multiple modules producing the same message?)";
+            error_message_ += " received by module " + module + " (only a single one expected per event)";
         }
     };
 } // namespace allpix

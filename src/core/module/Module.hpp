@@ -93,6 +93,7 @@ namespace allpix {
         // Link all module delegates for internal use
         void add_delegate(BaseDelegate*);
         void reset_delegates();
+        bool check_delegates();
         std::vector<BaseDelegate*> delegates_;
 
         // Save the detector

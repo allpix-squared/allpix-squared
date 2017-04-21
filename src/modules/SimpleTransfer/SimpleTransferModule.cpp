@@ -21,8 +21,8 @@ using namespace allpix;
 SimpleTransferModule::SimpleTransferModule(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector)
     : Module(detector), config_(std::move(config)), messenger_(messenger), detector_(std::move(detector)),
       propagated_message_() {
-    // fetch propagated deposits for single detector
-    messenger->bindSingle(this, &SimpleTransferModule::propagated_message_);
+    // require propagated deposits for single detector
+    messenger->bindSingle(this, &SimpleTransferModule::propagated_message_, MsgFlags::REQUIRED);
 }
 
 // compare two pixels for the pixel map
@@ -37,15 +37,9 @@ struct pixel_cmp {
 
 // run method that does the main computations for the module
 void SimpleTransferModule::run() {
-    // skip if this detector did not get any deposits
-    if(propagated_message_ == nullptr) {
-        return;
-    }
-
     // get detector model
     auto model = std::dynamic_pointer_cast<PixelDetectorModel>(detector_->getModel());
     if(model == nullptr) {
-        // FIXME: exception can be more appropriate here
         LOG(ERROR) << "Detector " << detector_->getName()
                    << " is not a PixelDetectorModel: ignored as other types are currently unsupported!";
         return;

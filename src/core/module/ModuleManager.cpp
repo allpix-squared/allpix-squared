@@ -260,6 +260,13 @@ void ModuleManager::run() {
         // go through each module run method every event
         LOG(INFO) << "Running event " << (i + 1) << " of " << number_of_events;
         for(auto& mod : modules_) {
+            // check if module is clear to run
+            if(!mod->check_delegates()) {
+                LOG(DEBUG) << "Not all required messages are received for " << mod->get_identifier().getUniqueName()
+                           << "... skipping!";
+                continue;
+            }
+
             // set run module section header
             std::string old_section_name = Log::getSection();
             std::string section_name = "R:";

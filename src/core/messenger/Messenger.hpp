@@ -17,6 +17,7 @@
 
 namespace allpix {
 
+    // Communication messenger between modules
     class Messenger {
     public:
         // Constructor and destructors
@@ -32,14 +33,27 @@ namespace allpix {
         // Register a listener
         // FIXME: is the empty string a proper catch-all or do we want to have a clearer separation?
         template <typename T, typename R>
-        void registerListener(T* receiver, void (T::*)(std::shared_ptr<R>), const std::string& message_type = "");
+        void registerListener(T* receiver, void (T::*)(std::shared_ptr<R>), MsgFlags flags);
+        template <typename T, typename R>
+        void registerListener(T* receiver,
+                              void (T::*)(std::shared_ptr<R>),
+                              const std::string& message_name = "",
+                              MsgFlags flags = MsgFlags::NONE);
 
         // Register a single bind
         // FIXME: better names?
+        template <typename T, typename R> void bindSingle(T* receiver, std::shared_ptr<R> T::*, MsgFlags flags);
         template <typename T, typename R>
-        void bindSingle(T* receiver, std::shared_ptr<R> T::*, const std::string& message_type = "");
+        void bindSingle(T* receiver,
+                        std::shared_ptr<R> T::*,
+                        const std::string& message_name = "",
+                        MsgFlags flags = MsgFlags::NONE);
+        template <typename T, typename R> void bindMulti(T* receiver, std::vector<std::shared_ptr<R>> T::*, MsgFlags flags);
         template <typename T, typename R>
-        void bindMulti(T* receiver, std::vector<std::shared_ptr<R>> T::*, const std::string& message_type = "");
+        void bindMulti(T* receiver,
+                       std::vector<std::shared_ptr<R>> T::*,
+                       const std::string& message_name = "",
+                       MsgFlags flags = MsgFlags::NONE);
 
         // Dispatch message
         template <typename T> void dispatchMessage(const T& msg, const std::string& name = "");
@@ -47,6 +61,10 @@ namespace allpix {
         void dispatchMessage(const std::shared_ptr<BaseMessage>& msg, const std::string& name = "");
 
     private:
+        void add_delegate(const std::type_info& message_type,
+                          const std::string& message_name,
+                          std::unique_ptr<BaseDelegate> delegate);
+
         using DelegateMap = std::map<std::type_index, std::map<std::string, std::vector<std::unique_ptr<BaseDelegate>>>>;
 
         DelegateMap delegates_;
@@ -66,37 +84,57 @@ namespace allpix {
 
     // register a listener for a message
     template <typename T, typename R>
-    void Messenger::registerListener(T* receiver, void (T::*method)(std::shared_ptr<R>), const std::string& message_type) {
+    void Messenger::registerListener(T* receiver, void (T::*method)(std::shared_ptr<R>), MsgFlags flags) {
+        registerListener(receiver, method, "", flags);
+    }
+    template <typename T, typename R>
+    void Messenger::registerListener(T* receiver,
+                                     void (T::*method)(std::shared_ptr<R>),
+                                     const std::string& message_name,
+                                     MsgFlags flags) {
         static_assert(std::is_base_of<Module, T>::value, "Receiver should have Module as a base class");
         static_assert(
             std::is_base_of<BaseMessage, R>::value,
             "Notifier method should take a shared pointer to a message derived from the Message class as argument");
 
-        auto delegate = std::make_unique<FunctionDelegate<T, R>>(receiver, method);
+        auto delegate = std::make_unique<FunctionDelegate<T, R>>(flags, receiver, method);
         receiver->add_delegate(delegate.get());
-        delegates_[std::type_index(typeid(R))][message_type].push_back(std::move(delegate));
+        add_delegate(typeid(R), message_name, std::move(delegate));
+    }
+
+    // bind a message to pointer
+    template <typename T, typename R>
+    void Messenger::bindSingle(T* receiver, std::shared_ptr<R> T::*member, MsgFlags flags) {
+        bindSingle(receiver, member, "", flags);
     }
     template <typename T, typename R>
-    void Messenger::bindSingle(T* receiver, std::shared_ptr<R> T::*member, const std::string& message_type) {
+    void Messenger::bindSingle(T* receiver, std::shared_ptr<R> T::*member, const std::string& message_name, MsgFlags flags) {
         static_assert(std::is_base_of<Module, T>::value, "Receiver should have Module as a base class");
         static_assert(std::is_base_of<BaseMessage, R>::value,
                       "Bound variable should be a shared pointer to a message derived from the Message class");
 
-        auto delegate = std::make_unique<SingleBindDelegate<T, R>>(receiver, member);
+        auto delegate = std::make_unique<SingleBindDelegate<T, R>>(flags, receiver, member);
         receiver->add_delegate(delegate.get());
-        delegates_[std::type_index(typeid(R))][message_type].push_back(std::move(delegate));
+        add_delegate(typeid(R), message_name, std::move(delegate));
     }
 
     // FIXME: allow other class containers besides vector
     template <typename T, typename R>
-    void Messenger::bindMulti(T* receiver, std::vector<std::shared_ptr<R>> T::*member, const std::string& message_type) {
+    void Messenger::bindMulti(T* receiver, std::vector<std::shared_ptr<R>> T::*member, MsgFlags flags) {
+        bindMulti(receiver, member, "", flags);
+    }
+    template <typename T, typename R>
+    void Messenger::bindMulti(T* receiver,
+                              std::vector<std::shared_ptr<R>> T::*member,
+                              const std::string& message_name,
+                              MsgFlags flags) {
         static_assert(std::is_base_of<Module, T>::value, "Receiver should have Module as a base class");
         static_assert(std::is_base_of<BaseMessage, R>::value,
                       "Bound variable should be a shared pointer to a message derived from the Message class");
 
-        auto delegate = std::make_unique<VectorBindDelegate<T, R>>(receiver, member);
+        auto delegate = std::make_unique<VectorBindDelegate<T, R>>(flags, receiver, member);
         receiver->add_delegate(delegate.get());
-        delegates_[std::type_index(typeid(R))][message_type].push_back(std::move(delegate));
+        add_delegate(typeid(R), message_name, std::move(delegate));
     }
 } // namespace allpix
 
