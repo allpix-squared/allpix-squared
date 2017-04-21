@@ -10,16 +10,19 @@
 #include <utility>
 
 #include <G4HadronicProcessStore.hh>
+#include <G4MTHepRandom.hh>
 #include <G4PhysListFactory.hh>
 #include <G4RunManager.hh>
 #include <G4StepLimiterPhysics.hh>
 #include <G4UImanager.hh>
 #include <G4UserLimits.hh>
+#include <Randomize.hh> //G4Random
 
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/module/exceptions.h"
 #include "core/utils/log.h"
+#include "core/utils/random.h"
 #include "tools/geant4.h"
 
 #include "GeneratorActionG4.hpp"
@@ -58,7 +61,7 @@ void DepositionGeant4Module::init() {
         // FIXME: more information about available lists
         throw InvalidValueError(config_, "physics_list", "specified physics list does not exists");
     }
-    // use a step limiter in a later stage
+    // register a step limiter
     physicsList->RegisterPhysics(new G4StepLimiterPhysics());
     // initialize the physics list
     LOG(INFO) << "Initializing physics processes";
@@ -96,6 +99,13 @@ void DepositionGeant4Module::init() {
     UI->ApplyCommand("/process/em/verbose 0");
     UI->ApplyCommand("/process/eLoss/verbose 0");
     G4HadronicProcessStore::Instance()->SetVerbose(0);
+
+    // set the seed
+    std::string seed_command = "/random/setSeeds ";
+    seed_command += std::to_string(static_cast<uint32_t>(get_random_seed()));
+    seed_command += " ";
+    seed_command += std::to_string(static_cast<uint32_t>(get_random_seed()));
+    UI->ApplyCommand(seed_command);
 
     // release output from G4
     RELEASE_STREAM(G4cout);
