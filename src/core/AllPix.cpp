@@ -4,11 +4,13 @@
 
 #include "AllPix.hpp"
 
+#include <climits>
 #include <memory>
 #include <utility>
 
 #include "core/config/exceptions.h"
 #include "core/utils/log.h"
+#include "core/utils/random.h"
 #include "core/utils/unit.h"
 
 using namespace allpix;
@@ -51,6 +53,16 @@ void AllPix::load() {
     // wait for the debug messages until level and format are set
     LOG(DEBUG) << "Global log level is set to " << log_level_string;
     LOG(DEBUG) << "Global log format is set to " << log_format_string;
+
+    // initialize the random seeder
+    if(global_config.has("random_seed")) {
+        // use given random seed
+        random_init(global_config.get<uint64_t>("random_seed"));
+    } else {
+        // use custom random sources
+        random_init();
+    }
+    LOG(DEBUG) << "Initialized random seeder (first seed is " << get_random_seed() << ")";
 
     // set the default units to use
     add_units();

@@ -21,6 +21,7 @@
 #include "core/config/Configuration.hpp"
 #include "core/messenger/Messenger.hpp"
 #include "core/utils/log.h"
+#include "core/utils/random.h"
 #include "core/utils/unit.h"
 #include "tools/runge_kutta.h"
 
@@ -41,8 +42,7 @@ SimplePropagationModule::SimplePropagationModule(Configuration config,
     messenger_->bindSingle(this, &SimplePropagationModule::deposits_message_);
 
     // seed the random generator
-    // FIXME: modules should share random device?
-    random_generator_.seed(std::random_device()());
+    random_generator_.seed(get_random_seed());
 
     // set defaults for config variables
     config_.setDefault<double>("spatial_precision", Units::get(0.1, "nm"));
