@@ -41,7 +41,7 @@ namespace allpix {
             // use the clock
             auto clock_seed = static_cast<uint64_t>(std::chrono::high_resolution_clock::now().time_since_epoch().count());
             // use memory location local variable
-            auto mem_seed = reinterpret_cast<uint64_t>(&init_seed);
+            auto mem_seed = reinterpret_cast<uint64_t>(&init_seed); // NOLINT
             // use thread id
             std::hash<std::thread::id> thrd_hasher;
             auto thread_seed = thrd_hasher(std::this_thread::get_id());
