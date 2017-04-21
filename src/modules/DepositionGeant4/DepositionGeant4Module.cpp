@@ -10,13 +10,11 @@
 #include <utility>
 
 #include <G4HadronicProcessStore.hh>
-#include <G4MTHepRandom.hh>
 #include <G4PhysListFactory.hh>
 #include <G4RunManager.hh>
 #include <G4StepLimiterPhysics.hh>
 #include <G4UImanager.hh>
 #include <G4UserLimits.hh>
-#include <Randomize.hh> //G4Random
 
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"

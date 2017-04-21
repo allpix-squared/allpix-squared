@@ -44,7 +44,7 @@ namespace allpix {
             auto mem_seed = reinterpret_cast<uint64_t>(&init_seed);
             // use thread id
             std::hash<std::thread::id> thrd_hasher;
-            auto thread_seed = static_cast<uint64_t>(thrd_hasher(std::this_thread::get_id()));
+            auto thread_seed = thrd_hasher(std::this_thread::get_id());
             get_random_seeder({clock_seed, mem_seed, thread_seed});
         } else {
             get_random_seeder({init_seed});
