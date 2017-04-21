@@ -10,6 +10,7 @@
 #include <typeinfo>
 
 #include "Message.hpp"
+#include "core/geometry/Detector.hpp"
 #include "exceptions.h"
 
 // FIXME: RESTRUCTURE THIS A BIT TO BE MORE USABLE AND CONCEPTUALLY BETTER
@@ -26,8 +27,11 @@ namespace allpix {
         BaseDelegate(const BaseDelegate&) = delete;
         BaseDelegate& operator=(const BaseDelegate&) = delete;
 
-        // Execute the delegate
-        virtual void call(std::shared_ptr<BaseMessage> msg) const = 0;
+        // Get linked detector
+        virtual std::shared_ptr<Detector> getDetector() const = 0;
+
+        // Process the delegate
+        virtual void process(std::shared_ptr<BaseMessage> msg) const = 0;
     };
 
     template <typename T> class ModuleDelegate : public BaseDelegate {
@@ -39,20 +43,10 @@ namespace allpix {
         ModuleDelegate(const ModuleDelegate&) = delete;
         ModuleDelegate& operator=(const ModuleDelegate&) = delete;
 
-        void call(std::shared_ptr<BaseMessage> msg) const override {
-            // do checks (FIXME: this is really hidden away now...)
-            if(obj_->getDetector() != nullptr) {
-                if(msg->getDetector() != nullptr && obj_->getDetector()->getName() == msg->getDetector()->getName()) {
-                    execute(msg);
-                }
-                return;
-            }
-            execute(msg);
-        }
+        // Attached detector
+        std::shared_ptr<Detector> getDetector() const override { return obj_->getDetector(); }
 
     protected:
-        virtual void execute(std::shared_ptr<BaseMessage> msg) const = 0;
-
         T* obj_;
     };
 
@@ -68,8 +62,7 @@ namespace allpix {
         Delegate(const Delegate&) = delete;
         Delegate& operator=(const Delegate&) = delete;
 
-    private:
-        void execute(std::shared_ptr<BaseMessage> msg) const override {
+        void process(std::shared_ptr<BaseMessage> msg) const override {
 #ifndef NDEBUG
             // the type names should have been correctly resolved earlier
             const BaseMessage* inst = msg.get();
@@ -80,6 +73,7 @@ namespace allpix {
             (this->obj_->*method_)(std::static_pointer_cast<R>(msg));
         }
 
+    private:
         ListenerFunction method_;
     };
 
@@ -95,8 +89,7 @@ namespace allpix {
         SingleBindDelegate(const SingleBindDelegate&) = delete;
         SingleBindDelegate& operator=(const SingleBindDelegate&) = delete;
 
-    private:
-        void execute(std::shared_ptr<BaseMessage> msg) const override {
+        void process(std::shared_ptr<BaseMessage> msg) const override {
 #ifndef NDEBUG
             // the type names should have been correctly resolved earlier
             const BaseMessage* inst = msg.get();
@@ -109,6 +102,7 @@ namespace allpix {
             this->obj_->*member_ = std::static_pointer_cast<R>(msg);
         }
 
+    private:
         BindType member_;
     };
 
@@ -124,8 +118,7 @@ namespace allpix {
         VectorBindDelegate(const VectorBindDelegate&) = delete;
         VectorBindDelegate& operator=(const VectorBindDelegate&) = delete;
 
-    private:
-        void execute(std::shared_ptr<BaseMessage> msg) const override {
+        void process(std::shared_ptr<BaseMessage> msg) const override {
 #ifndef NDEBUG
             // the type names should have been correctly resolved earlier
             const BaseMessage* inst = msg.get();
@@ -136,6 +129,7 @@ namespace allpix {
             (this->obj_->*member_).push_back(std::static_pointer_cast<R>(msg));
         }
 
+    private:
         BindType member_;
     };
 } // namespace allpix

@@ -12,12 +12,25 @@
 #include "core/module/Module.hpp"
 #include "core/utils/log.h"
 #include "core/utils/type.h"
+#include "delegates.h"
 
 using namespace allpix;
 
 // Constructor and destructor
 Messenger::Messenger() : delegates_() {}
 Messenger::~Messenger() = default;
+
+// Check if we can send the message to this delegate
+static bool check_send(BaseMessage* message, BaseDelegate* delegate) {
+    // do checks (FIXME: this is really hidden away now...)
+    if(delegate->getDetector() != nullptr) {
+        if(message->getDetector() != nullptr && delegate->getDetector()->getName() == message->getDetector()->getName()) {
+            return true;
+        }
+        return false;
+    }
+    return true;
+}
 
 // Dispatch the message
 void Messenger::dispatchMessage(const std::shared_ptr<BaseMessage>& msg, const std::string& name) {
@@ -27,18 +40,22 @@ void Messenger::dispatchMessage(const std::shared_ptr<BaseMessage>& msg, const s
     const BaseMessage* inst = msg.get();
     std::type_index type_idx = typeid(*inst);
 
-    // NOTE: we are not sending messages with unspecified names to everyone listening
+    // send named messages only to their specific listeners
     if(!name.empty()) {
         for(auto& delegate : delegates_[type_idx][name]) {
-            delegate->call(msg);
-            send = true;
+            if(check_send(msg.get(), delegate.get())) {
+                delegate->process(msg);
+                send = true;
+            }
         }
     }
 
-    // NOTE: we do send all messages also to general listeners
+    // send all messages also to general listeners
     for(auto& delegate : delegates_[type_idx][""]) {
-        delegate->call(msg);
-        send = true;
+        if(check_send(msg.get(), delegate.get())) {
+            delegate->process(msg);
+            send = true;
+        }
     }
 
     if(!send) {
