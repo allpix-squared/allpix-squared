@@ -33,7 +33,7 @@ namespace allpix {
     class BaseDelegate {
     public:
         // Constructor and destructor
-        BaseDelegate(MsgFlags flags) : processed_(false), flags_(flags) {}
+        explicit BaseDelegate(MsgFlags flags) : processed_(false), flags_(flags) {}
         virtual ~BaseDelegate() = default;
 
         // Disallow copy
