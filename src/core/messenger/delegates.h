@@ -13,8 +13,6 @@
 #include "core/geometry/Detector.hpp"
 #include "exceptions.h"
 
-// FIXME: RESTRUCTURE THIS A BIT TO BE MORE USABLE AND CONCEPTUALLY BETTER
-
 namespace allpix {
     // Base class for all delegates (template type erasure)
     class BaseDelegate {
@@ -69,7 +67,7 @@ namespace allpix {
         // Send the message to the function
         void process(std::shared_ptr<BaseMessage> msg) override {
 #ifndef NDEBUG
-            // the type names should have been correctly resolved earlier
+            // The type names should have been correctly resolved earlier
             const BaseMessage* inst = msg.get();
             assert(typeid(*inst) == typeid(R));
 #endif
@@ -100,7 +98,7 @@ namespace allpix {
         // Set the member to the supplied message
         void process(std::shared_ptr<BaseMessage> msg) override {
 #ifndef NDEBUG
-            // the type names should have been correctly resolved earlier
+            // The type names should have been correctly resolved earlier
             const BaseMessage* inst = msg.get();
             assert(typeid(*inst) == typeid(R));
 #endif
@@ -132,7 +130,7 @@ namespace allpix {
 
         void process(std::shared_ptr<BaseMessage> msg) override {
 #ifndef NDEBUG
-            // the type names should have been correctly resolved earlier
+            // The type names should have been correctly resolved earlier
             const BaseMessage* inst = msg.get();
             assert(typeid(*inst) == typeid(R));
 #endif

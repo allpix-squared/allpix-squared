@@ -11,12 +11,14 @@
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
+#include "core/messenger/delegates.h"
 #include "exceptions.h"
 
 namespace allpix {
 
     class Module {
         friend class ModuleManager;
+        friend class Messenger;
 
     public:
         // Constructor and destructors
@@ -47,6 +49,12 @@ namespace allpix {
         Configuration get_configuration();
         Configuration config_;
 
+        // Link all module delegates for internal use
+        void add_delegate(BaseDelegate*);
+        void reset_delegates();
+        std::vector<BaseDelegate*> delegates_;
+
+        // Save the detector
         std::shared_ptr<Detector> detector_;
     };
 

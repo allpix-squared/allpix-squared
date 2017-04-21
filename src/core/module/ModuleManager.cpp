@@ -242,6 +242,9 @@ void ModuleManager::init() {
         auto old_settings = set_module_log(mod->get_configuration());
         // init module
         mod->init();
+        // resetting bound messages
+        LOG(DEBUG) << "Clearing bound messages";
+        mod->reset_delegates();
         // reset log
         Log::setSection(old_section_name);
         reset_module_log(old_settings);
@@ -265,6 +268,9 @@ void ModuleManager::run() {
             auto old_settings = set_module_log(mod->get_configuration());
             // run module
             mod->run();
+            // resetting bound messages
+            LOG(DEBUG) << "Resetting bound messages";
+            mod->reset_delegates();
             // reset log
             Log::setSection(old_section_name);
             reset_module_log(old_settings);

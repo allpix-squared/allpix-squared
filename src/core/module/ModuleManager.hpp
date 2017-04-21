@@ -48,9 +48,6 @@ namespace allpix {
         using IdentifierToModuleMap = std::map<ModuleIdentifier, ModuleList::iterator>;
         using ModuleToIdentifierMap = std::map<Module*, ModuleIdentifier>;
 
-        // get module identifier
-        ModuleIdentifier get_identifier_from_module(Module*);
-
         // Modules and identifiers converters
         ModuleList modules_;
         IdentifierToModuleMap id_to_module_;

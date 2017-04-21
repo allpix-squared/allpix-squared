@@ -26,3 +26,14 @@ void Module::set_configuration(Configuration config) {
 Configuration Module::get_configuration() {
     return config_;
 }
+
+// Add delegate
+void Module::add_delegate(BaseDelegate* delegate) {
+    delegates_.emplace_back(delegate);
+}
+// Reset all delegates
+void Module::reset_delegates() {
+    for(auto& delegate : delegates_) {
+        delegate->reset();
+    }
+}
