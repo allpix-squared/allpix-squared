@@ -12,7 +12,8 @@
 using namespace allpix;
 
 Module::Module() : Module(nullptr) {}
-Module::Module(std::shared_ptr<Detector> detector) : config_(), delegates_(), detector_(std::move(detector)) {}
+Module::Module(std::shared_ptr<Detector> detector)
+    : identifier_(), config_(), delegates_(), detector_(std::move(detector)) {}
 
 // Get the detector
 std::shared_ptr<Detector> Module::getDetector() {
@@ -25,6 +26,14 @@ void Module::set_configuration(Configuration config) {
 }
 Configuration Module::get_configuration() {
     return config_;
+}
+
+// Set internal identifier
+void Module::set_identifier(ModuleIdentifier identifier) {
+    identifier_ = std::move(identifier);
+}
+ModuleIdentifier Module::get_identifier() {
+    return identifier_;
 }
 
 // Add delegate

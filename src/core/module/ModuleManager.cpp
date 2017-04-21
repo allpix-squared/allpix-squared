@@ -26,7 +26,7 @@
 using namespace allpix;
 
 // Constructor and destructor
-ModuleManager::ModuleManager() : modules_(), id_to_module_(), module_to_id_(), global_config_(), loaded_libraries_() {}
+ModuleManager::ModuleManager() : modules_(), id_to_module_(), global_config_(), loaded_libraries_() {}
 ModuleManager::~ModuleManager() = default;
 
 // Function that loads the modules specified in the configuration file. Each module is contained within
@@ -156,7 +156,6 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
                 // unique name already exists, check if its needs to be replaced
                 if(identifier.getPriority() < iter->first.getPriority()) {
                     // priority of new instance is higher, replace the instance
-                    module_to_id_.erase(iter->second->get());
                     iter->second = modules_.erase(iter->second);
                     iter = id_to_module_.erase(iter);
                 } else {
@@ -174,7 +173,9 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
             // insert the new module
             modules_.emplace_back(std::move(mod));
             id_to_module_[identifier] = --modules_.end();
-            module_to_id_.emplace(modules_.back().get(), identifier);
+
+            // save the identifier in the module
+            modules_.back()->set_identifier(identifier);
         }
         mod_list.clear();
     }
@@ -236,7 +237,7 @@ void ModuleManager::init() {
         // set init module section header
         std::string old_section_name = Log::getSection();
         std::string section_name = "I:";
-        section_name += module_to_id_.at(mod.get()).getUniqueName();
+        section_name += mod->get_identifier().getUniqueName();
         Log::setSection(section_name);
         // set module specific log settings
         auto old_settings = set_module_log(mod->get_configuration());
@@ -262,7 +263,7 @@ void ModuleManager::run() {
             // set run module section header
             std::string old_section_name = Log::getSection();
             std::string section_name = "R:";
-            section_name += module_to_id_.at(mod.get()).getUniqueName();
+            section_name += mod->get_identifier().getUniqueName();
             Log::setSection(section_name);
             // set module specific log settings
             auto old_settings = set_module_log(mod->get_configuration());
@@ -285,7 +286,7 @@ void ModuleManager::finalize() {
         // set finalize module section header
         std::string old_section_name = Log::getSection();
         std::string section_name = "F:";
-        section_name += module_to_id_.at(mod.get()).getUniqueName();
+        section_name += mod->get_identifier().getUniqueName();
         Log::setSection(section_name);
         // set module specific log settings
         auto old_settings = set_module_log(mod->get_configuration());

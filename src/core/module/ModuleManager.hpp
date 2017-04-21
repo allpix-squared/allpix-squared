@@ -46,12 +46,12 @@ namespace allpix {
     protected:
         using ModuleList = std::list<std::unique_ptr<Module>>;
         using IdentifierToModuleMap = std::map<ModuleIdentifier, ModuleList::iterator>;
-        using ModuleToIdentifierMap = std::map<Module*, ModuleIdentifier>;
+        // using ModuleToIdentifierMap = std::map<Module*, ModuleIdentifier>;
 
         // Modules and identifiers converters
         ModuleList modules_;
         IdentifierToModuleMap id_to_module_;
-        ModuleToIdentifierMap module_to_id_;
+        // ModuleToIdentifierMap module_to_id_;
 
         // global allpix configuration
         Configuration global_config_;
