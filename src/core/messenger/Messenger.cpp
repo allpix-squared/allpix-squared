@@ -23,10 +23,8 @@ Messenger::~Messenger() = default;
 // Check if we can send the message to this delegate
 static bool check_send(BaseMessage* message, BaseDelegate* delegate) {
     // do checks (FIXME: this is really hidden away now...)
-    if(delegate->getDetector() != nullptr) {
-        if(message->getDetector() != nullptr && delegate->getDetector()->getName() == message->getDetector()->getName()) {
-            return true;
-        }
+    if(delegate->getDetector() != nullptr &&
+       (message->getDetector() == nullptr || delegate->getDetector()->getName() != message->getDetector()->getName())) {
         return false;
     }
     return true;
