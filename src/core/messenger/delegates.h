@@ -16,7 +16,12 @@
 namespace allpix {
     // Flags to pass to a receiver
     // FIXME: not the most logical location
-    enum class MsgFlags : uint32_t { NONE = 0, REQUIRED = (1 << 0), NO_RESET = (1 << 1), ALLOW_OVERWRITE = (1 << 2) };
+    enum class MsgFlags : uint32_t {
+        NONE = 0,                  // no enabled flags
+        REQUIRED = (1 << 0),       // require a message before running a module
+        NO_RESET = (1 << 1),       // do not reset a message after run
+        ALLOW_OVERWRITE = (1 << 2) // allow overwriting a previous message
+    };
     inline MsgFlags operator|(MsgFlags f1, MsgFlags f2) {
         return static_cast<MsgFlags>(static_cast<uint32_t>(f1) | static_cast<uint32_t>(f2));
     }

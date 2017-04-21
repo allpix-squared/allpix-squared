@@ -173,8 +173,8 @@ void GeometryConstructionG4::build_pixel_devices() {
 
         // ignore all non-pixel detectors
         if(model == nullptr) {
-            LOG(WARNING) << "cannot build a G4 model for any non-pixel detectors yet... ignoring detector named "
-                         << (*detItr)->getName();
+            LOG(ERROR) << "Cannot build a G4 model for any non-pixel detectors yet... ignoring detector "
+                       << (*detItr)->getName();
             continue;
         }
 

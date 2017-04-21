@@ -31,10 +31,8 @@ void DetectorHistogrammerModule::init() {
     // get detector model
     auto model = std::dynamic_pointer_cast<PixelDetectorModel>(detector_->getModel());
     if(model == nullptr) {
-        // FIXME: exception can be more appropriate here
-        LOG(ERROR) << "Detector " << detector_->getName()
-                   << " is not a PixelDetectorModel: ignored as other types are currently unsupported!";
-        return;
+        throw ModuleError("Detector model of " + detector_->getName() +
+                          " is not a PixelDetectorModel: other models are not supported by this module!");
     }
 
     // create histogram
