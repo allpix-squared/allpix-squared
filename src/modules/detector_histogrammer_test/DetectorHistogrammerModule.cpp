@@ -101,7 +101,7 @@ void DetectorHistogrammerModule::finalize() {
     }
 
     // create root file
-    std::string file_name = config_.get<std::string>("file_prefix") + "_" + detector_->getName() + ".root";
+    std::string file_name = getOutputPath(config_.get<std::string>("file_name", "histogram") + ".root");
     TFile file(file_name.c_str(), "RECREATE");
 
     // write histograms

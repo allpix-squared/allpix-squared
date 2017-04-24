@@ -24,7 +24,7 @@ void ConfigReader::add(std::istream& stream) {
 void ConfigReader::add(std::istream& stream, std::string file_name) {
     // convert file name to absolute path (if given)
     if(!file_name.empty()) {
-        file_name = get_absolute_path(file_name);
+        file_name = allpix::get_absolute_path(file_name);
     }
 
     // build first empty configuration

@@ -51,8 +51,8 @@ ReadGeoDescription::ReadGeoDescription(std::vector<std::string> paths) : models_
     for(auto& path : paths) {
         // check if file or directory
         // NOTE: silently ignore all others
-        if(path_is_directory(path)) {
-            std::vector<std::string> sub_paths = get_files_in_directory(path);
+        if(allpix::path_is_directory(path)) {
+            std::vector<std::string> sub_paths = allpix::get_files_in_directory(path);
             for(auto& sub_path : sub_paths) {
                 // accept only with correct model suffix
                 std::string suffix(ALLPIX_MODEL_SUFFIX);
@@ -65,7 +65,7 @@ ReadGeoDescription::ReadGeoDescription(std::vector<std::string> paths) : models_
                 std::fstream file(sub_path);
                 reader.add(file, sub_path);
             }
-        } else if(path_is_file(path)) {
+        } else if(allpix::path_is_file(path)) {
             // add the path to the reader
             LOG(DEBUG) << "Reading model " << path;
             std::fstream file(path);

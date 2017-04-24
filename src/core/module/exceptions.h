@@ -60,8 +60,10 @@ namespace allpix {
     public:
         explicit InvalidModuleStateException(std::string message) { error_message_ = std::move(message); }
     };
-    // FIXME: this exception can likely be merged with previous one
-    class InvalidModuleActionException : public LogicError {};
+    class InvalidModuleActionException : public LogicError {
+    public:
+        explicit InvalidModuleActionException(std::string message) { error_message_ = std::move(message); }
+    };
 
     /*
      * General exceptions for modules if something goes wrong (called by modules)

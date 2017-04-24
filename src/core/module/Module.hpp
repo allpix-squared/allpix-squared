@@ -69,6 +69,9 @@ namespace allpix {
         // Get (possibly) linked detector
         std::shared_ptr<Detector> getDetector();
 
+        // Get absolute path for this modules storage
+        std::string getOutputPath(const std::string& path, bool global = false);
+
         // Initialize the module before run
         virtual void init() {}
 
@@ -80,6 +83,12 @@ namespace allpix {
         virtual void finalize() {}
 
     private:
+        // Output directory for this module
+        void set_output_directory(std::string);
+        std::string output_directory_;
+        void set_global_directory(std::string);
+        std::string global_directory_;
+
         // Set and get module identifier for a module for internal use
         void set_identifier(ModuleIdentifier);
         ModuleIdentifier get_identifier();

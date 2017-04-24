@@ -6,9 +6,14 @@
 
 #include <climits>
 #include <memory>
+#include <stdexcept>
 #include <utility>
 
+#include <TDirectory.h>
+#include <TSystem.h>
+
 #include "core/config/exceptions.h"
+#include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "core/utils/random.h"
 #include "core/utils/unit.h"
@@ -63,6 +68,25 @@ void AllPix::load() {
         random_init();
     }
     LOG(DEBUG) << "Initialized random seeder (first seed is " << get_random_seed() << ")";
+
+    // get output directory
+    std::string directory = gSystem->pwd();
+    directory += "/output";
+    if(global_config.has("output_directory")) {
+        // use config if specified
+        directory = global_config.getPath("output_directory");
+    }
+    // set output directory (create if not exists)
+    if(!gSystem->ChangeDirectory(directory.c_str())) {
+        LOG(DEBUG) << "Creating output directory because it does not exists";
+        try {
+            allpix::create_directories(directory);
+            gSystem->ChangeDirectory(directory.c_str());
+        } catch(std::invalid_argument& e) {
+            LOG(ERROR) << "Cannot create output directory " << directory << ": " << e.what()
+                       << ". Using current directory instead!" << std::endl;
+        }
+    }
 
     // set the default units to use
     add_units();

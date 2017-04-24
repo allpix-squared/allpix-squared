@@ -91,7 +91,7 @@ std::string Configuration::path_to_absolute(std::string path, bool normalize_pat
         // normalize path only if we have to check if it exists
         // NOTE: this throws an error if the path does not exist
         if(normalize_path) {
-            path = get_absolute_path(path);
+            path = allpix::get_absolute_path(path);
         }
     }
     return path;

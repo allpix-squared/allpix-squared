@@ -11,9 +11,9 @@
 #include <memory>
 #include <queue>
 
-#include "../config/Configuration.hpp"
 #include "Module.hpp"
 #include "core/config/Configuration.hpp"
+#include "core/utils/log.h"
 
 namespace allpix {
 
@@ -43,15 +43,17 @@ namespace allpix {
         // Finalize modules (post-run)
         virtual void finalize();
 
-    protected:
+    private:
+        // internal methods to set common module logic before init/run/finalize
+        std::tuple<LogLevel, LogFormat> set_module_before(const std::string& mod_name, const Configuration& config);
+        void set_module_after(std::tuple<LogLevel, LogFormat> prev);
+
         using ModuleList = std::list<std::unique_ptr<Module>>;
         using IdentifierToModuleMap = std::map<ModuleIdentifier, ModuleList::iterator>;
-        // using ModuleToIdentifierMap = std::map<Module*, ModuleIdentifier>;
 
         // Modules and identifiers converters
         ModuleList modules_;
         IdentifierToModuleMap id_to_module_;
-        // ModuleToIdentifierMap module_to_id_;
 
         // global allpix configuration
         Configuration global_config_;

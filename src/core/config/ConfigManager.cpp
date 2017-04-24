@@ -20,7 +20,7 @@ ConfigManager::ConfigManager(std::string file_name)
     }
 
     // convert main file to absolute path
-    file_name_ = get_absolute_path(file_name_);
+    file_name_ = allpix::get_absolute_path(file_name_);
 
     // read the file
     reader_.add(file, file_name_);

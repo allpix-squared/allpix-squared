@@ -4,10 +4,13 @@
  */
 
 #include <dlfcn.h>
+#include <unistd.h>
 
+#include <algorithm>
 #include <cstring>
 #include <fstream>
 #include <set>
+#include <stdexcept>
 #include <string>
 
 #include "ModuleManager.hpp"
@@ -16,7 +19,10 @@
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
+#include "core/utils/file.h"
 #include "core/utils/log.h"
+
+#include <TSystem.h>
 
 // NOTE: should be the same as in dynamic_module_impl.cpp
 #define ALLPIX_MODULE_PREFIX "libAllpixModule"
@@ -172,6 +178,18 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
             // set the configuration for this module for later use
             mod->set_configuration(conf);
 
+            // switch directory relative to current path
+            std::string global_dir = gSystem->pwd();
+            mod->set_global_directory(global_dir);
+
+            std::string output_dir;
+            output_dir = global_dir;
+            output_dir += "/";
+            std::string path_mod_name = identifier.getUniqueName();
+            std::replace(path_mod_name.begin(), path_mod_name.end(), ':', '_');
+            output_dir += path_mod_name;
+            mod->set_output_directory(output_dir);
+
             // insert the new module
             modules_.emplace_back(std::move(mod));
             id_to_module_[identifier] = --modules_.end();
@@ -184,7 +202,7 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
 }
 
 // Helper functions to set the module specific log settings if necessary
-static std::pair<LogLevel, LogFormat> set_module_log(const Configuration& config) {
+std::tuple<LogLevel, LogFormat> ModuleManager::set_module_before(const std::string&, const Configuration& config) {
     // set new level if necessary
     LogLevel prev_level = Log::getReportingLevel();
     if(config.has("log_level")) {
@@ -216,19 +234,23 @@ static std::pair<LogLevel, LogFormat> set_module_log(const Configuration& config
             throw InvalidValueError(config, "log_format", e.what());
         }
     }
-    return std::make_pair(prev_level, prev_format);
+    return std::make_tuple(prev_level, prev_format);
 }
-static void reset_module_log(std::pair<LogLevel, LogFormat> prev) {
+void ModuleManager::set_module_after(std::tuple<LogLevel, LogFormat> prev) {
+    // reset the log level
     LogLevel cur_level = Log::getReportingLevel();
-    if(cur_level != prev.first) {
-        Log::setReportingLevel(prev.first);
-        LOG(DEBUG) << "Reset log level to global level of " << Log::getStringFromLevel(prev.first);
+    LogLevel old_level = std::get<0>(prev);
+    if(cur_level != old_level) {
+        Log::setReportingLevel(old_level);
+        LOG(DEBUG) << "Reset log level to global level of " << Log::getStringFromLevel(old_level);
     }
 
+    // reset the log format
     LogFormat cur_format = Log::getFormat();
-    if(cur_format != prev.second) {
-        Log::setFormat(prev.second);
-        LOG(DEBUG) << "Reset log format to global level of " << Log::getStringFromFormat(prev.second);
+    LogFormat old_format = std::get<1>(prev);
+    if(cur_format != old_format) {
+        Log::setFormat(old_format);
+        LOG(DEBUG) << "Reset log format to global level of " << Log::getStringFromFormat(old_format);
     }
 }
 
@@ -241,16 +263,16 @@ void ModuleManager::init() {
         std::string section_name = "I:";
         section_name += mod->get_identifier().getUniqueName();
         Log::setSection(section_name);
-        // set module specific log settings
-        auto old_settings = set_module_log(mod->get_configuration());
+        // set module specific settings
+        auto old_settings = set_module_before(mod->get_identifier().getUniqueName(), mod->get_configuration());
         // init module
         mod->init();
         // resetting bound messages
         LOG(DEBUG) << "Clearing bound messages";
         mod->reset_delegates();
-        // reset log
+        // reset
         Log::setSection(old_section_name);
-        reset_module_log(old_settings);
+        set_module_after(old_settings);
     }
 }
 
@@ -274,16 +296,16 @@ void ModuleManager::run() {
             std::string section_name = "R:";
             section_name += mod->get_identifier().getUniqueName();
             Log::setSection(section_name);
-            // set module specific log settings
-            auto old_settings = set_module_log(mod->get_configuration());
+            // set module specific settings
+            auto old_settings = set_module_before(mod->get_identifier().getUniqueName(), mod->get_configuration());
             // run module
             mod->run();
             // resetting bound messages
             LOG(DEBUG) << "Resetting bound messages";
             mod->reset_delegates();
-            // reset log
+            // reset
             Log::setSection(old_section_name);
-            reset_module_log(old_settings);
+            set_module_after(old_settings);
         }
     }
 }
@@ -297,13 +319,13 @@ void ModuleManager::finalize() {
         std::string section_name = "F:";
         section_name += mod->get_identifier().getUniqueName();
         Log::setSection(section_name);
-        // set module specific log settings
-        auto old_settings = set_module_log(mod->get_configuration());
+        // set module specific settings
+        auto old_settings = set_module_before(mod->get_identifier().getUniqueName(), mod->get_configuration());
         // finalize module
         mod->finalize();
-        // reset log
+        // reset
         Log::setSection(old_section_name);
-        reset_module_log(old_settings);
+        set_module_after(old_settings);
     }
 }
 
@@ -333,15 +355,15 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
     // Set the log section header
     std::string old_section_name = Log::getSection();
     std::string section_name = "C:";
-    section_name += module_name;
+    section_name += identifier.getUniqueName();
     Log::setSection(section_name);
     // set module specific log settings
-    auto old_settings = set_module_log(conf);
+    auto old_settings = set_module_before(identifier.getUniqueName(), conf);
     // Build module
     Module* module = module_generator(conf, messenger, geo_manager);
     // Reset log
     Log::setSection(old_section_name);
-    reset_module_log(old_settings);
+    set_module_after(old_settings);
 
     // Store the module and return it to the Module Manager
     return std::make_pair(identifier, module);
@@ -415,17 +437,15 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         // Set the log section header
         std::string old_section_name = Log::getSection();
         std::string section_name = "C:";
-        section_name += module_name;
-        section_name += ":";
-        section_name += instance.first->getName();
+        section_name += instance.second.getUniqueName();
         Log::setSection(section_name);
         // set module specific log settings
-        auto old_settings = set_module_log(conf);
+        auto old_settings = set_module_before(instance.second.getUniqueName(), conf);
         // Build module
         Module* module = module_generator(conf, messenger, instance.first);
         // Reset log
         Log::setSection(old_section_name);
-        reset_module_log(old_settings);
+        set_module_after(old_settings);
 
         // check if the module called the correct base class constructor
         check_module_detector(module_name, module, instance.first.get());

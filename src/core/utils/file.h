@@ -10,6 +10,7 @@
 #define ALLPIX_FILE_H
 
 #include <cstdlib>
+#include <cstring>
 #include <stdexcept>
 #include <string>
 
@@ -79,6 +80,28 @@ namespace allpix {
         }
         closedir(dir);
         return files;
+    }
+
+    // Create directories recursively
+    inline void create_directories(std::string path, mode_t mode = 0777) {
+        struct stat st;
+
+        path += "/";
+        size_t pos = 1;
+        while((pos = path.find('/', pos)) != std::string::npos) {
+            if(stat(path.c_str(), &st) != 0) {
+                if(mkdir(path.c_str(), mode) != 0 && errno != EEXIST) {
+                    std::invalid_argument("cannot create folder: " + std::string(strerror(errno)));
+                    return;
+                }
+            } else if(!S_ISDIR(st.st_mode)) {
+                errno = ENOTDIR;
+                std::invalid_argument("part of path already exists as a file");
+                return;
+            }
+
+            pos++;
+        }
     }
 }
 

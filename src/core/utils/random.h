@@ -8,8 +8,8 @@
  * @author Koen Wolters <koen.wolters@cern.ch>
  */
 
-#ifndef ALLPIX_FILE_H
-#define ALLPIX_FILE_H
+#ifndef ALLPIX_RANDOM_H
+#define ALLPIX_RANDOM_H
 
 #include <chrono>
 #include <climits>
