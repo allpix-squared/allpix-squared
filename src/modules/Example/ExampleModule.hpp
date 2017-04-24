@@ -45,7 +45,7 @@ namespace allpix {
     class ExampleModule : public Module {
     public:
         // constructor should take a pointer to the Configuration, the Messenger and the Geometry Manager
-        ExampleModule(Configuration config, Messenger*, GeometryManager*);
+        ExampleModule(const Configuration& config, Messenger*, GeometryManager*);
 
         // method that should do the necessary computations and possibly dispatch their results as a message
         void run() override;

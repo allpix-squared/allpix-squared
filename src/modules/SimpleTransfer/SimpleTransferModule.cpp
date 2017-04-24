@@ -58,8 +58,8 @@ void SimpleTransferModule::run() {
         }
 
         // find the nearest pixel
-        int xpixel = static_cast<int>(std::round(position.x() / model->getPixelSizeX()));
-        int ypixel = static_cast<int>(std::round(position.y() / model->getPixelSizeY()));
+        auto xpixel = static_cast<int>(std::round(position.x() / model->getPixelSizeX()));
+        auto ypixel = static_cast<int>(std::round(position.y() / model->getPixelSizeY()));
         PixelCharge::Pixel pixel(xpixel, ypixel);
 
         // ignore if out of pixel grid

@@ -8,7 +8,7 @@
 
 using namespace allpix;
 
-BumpsParameterizationG4::BumpsParameterizationG4(std::shared_ptr<PixelDetectorModel> model)
+BumpsParameterizationG4::BumpsParameterizationG4(const std::shared_ptr<PixelDetectorModel>& model)
     : model_(model), hsensorX(model->getHalfSensorSizeX()), hsensorY(model_->getHalfSensorSizeY()),
       hpixelX(model->getHalfPixelSizeX()), hpixelY(model->getHalfPixelSizeY()), npixelX(model->getNPixelsX()),
       npixelY(model->getNPixelsY()) {}

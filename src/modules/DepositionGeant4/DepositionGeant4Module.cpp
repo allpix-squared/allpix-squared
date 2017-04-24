@@ -71,12 +71,12 @@ void DepositionGeant4Module::init() {
 
     // build generator
     LOG(INFO) << "Constructing particle source";
-    GeneratorActionG4* generator = new GeneratorActionG4(config_);
+    auto generator = new GeneratorActionG4(config_);
     run_manager_g4_->SetUserAction(generator);
 
     // get the creation energy for charge (default is silicon electron hole pair energy)
     // FIXME: is this a good name...
-    double charge_creation_energy = config_.get<double>("charge_creation_energy", 3.64e-6);
+    auto charge_creation_energy = config_.get<double>("charge_creation_energy", 3.64e-6);
 
     // loop through all detectors and set the sensitive detector (call it action because that is what it is currently doing)
     for(auto& detector : geo_manager_->getDetectors()) {

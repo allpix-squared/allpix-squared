@@ -9,11 +9,12 @@
 
 using namespace allpix;
 
-InvalidValueError::InvalidValueError(Configuration config, const std::string& key, const std::string& reason) {
+InvalidValueError::InvalidValueError(const Configuration& config, const std::string& key, const std::string& reason) {
     error_message_ =
         "Value " + config.getText(key) + " of key '" + key + "' in section '" + config.getName() + "' is not valid";
     if(!reason.empty()) {
         error_message_ += ": " + reason;
     }
 }
-InvalidValueError::InvalidValueError(Configuration config, const std::string& key) : InvalidValueError(config, key, "") {}
+InvalidValueError::InvalidValueError(const Configuration& config, const std::string& key)
+    : InvalidValueError(config, key, "") {}

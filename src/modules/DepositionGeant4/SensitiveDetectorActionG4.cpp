@@ -29,7 +29,7 @@
 using namespace allpix;
 
 // construct and destruct the sensitive detector
-SensitiveDetectorActionG4::SensitiveDetectorActionG4(std::shared_ptr<Detector> detector,
+SensitiveDetectorActionG4::SensitiveDetectorActionG4(const std::shared_ptr<Detector>& detector,
                                                      Messenger* msg,
                                                      double charge_creation_energy)
     : G4VSensitiveDetector("SensitiveDetector_" + detector->getName()), charge_creation_energy_(charge_creation_energy),

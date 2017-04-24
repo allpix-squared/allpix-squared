@@ -11,7 +11,7 @@
 using namespace allpix;
 
 // constructor to load the module
-ExampleModule::ExampleModule(Configuration config, Messenger* messenger, GeometryManager*)
+ExampleModule::ExampleModule(const Configuration& config, Messenger* messenger, GeometryManager*)
     : messenger_(messenger), message_(nullptr) {
     // print a configuration parameter of type string to the logger
     LOG(DEBUG) << "my string parameter 'param' is equal to " << config.get<std::string>("param", "<undefined>");

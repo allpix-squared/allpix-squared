@@ -56,7 +56,9 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
             if(global_config_.has("library_directories")) {
                 std::vector<std::string> lib_paths = global_config_.getPathArray("library_directories", true);
                 for(auto& lib_path : lib_paths) {
-                    std::string full_lib_path = lib_path + "/" + lib_name;
+                    std::string full_lib_path = lib_path;
+                    full_lib_path += "/";
+                    full_lib_path += lib_name;
 
                     // check if file exists and try to load if it exists
                     std::ifstream check_file(full_lib_path);

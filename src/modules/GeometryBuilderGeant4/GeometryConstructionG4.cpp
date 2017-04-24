@@ -41,7 +41,7 @@ using namespace std;
 using namespace allpix;
 
 // Constructor and destructor
-GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo, G4ThreeVector world_size, bool simple_view)
+GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo, const G4ThreeVector& world_size, bool simple_view)
     : geo_manager_(geo), world_size_(world_size), simple_view_(simple_view), world_material_(nullptr), world_log_(nullptr),
       world_phys_(nullptr) {}
 GeometryConstructionG4::~GeometryConstructionG4() = default;

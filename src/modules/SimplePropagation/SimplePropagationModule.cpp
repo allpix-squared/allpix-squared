@@ -169,7 +169,7 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const XYZPoint& r
 
         // adapt step size to precision
         double uncertainty = step.error.norm();
-        double target_spatial_precision = config_.get<double>("spatial_precision");
+        auto target_spatial_precision = config_.get<double>("spatial_precision");
         if(model_->getSensorSizeZ() - position.z() < step.value.z() * 1.2) {
             timestep *= 0.7;
         } else {

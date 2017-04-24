@@ -75,8 +75,8 @@ namespace allpix {
     class Configuration;
     class InvalidValueError : public ConfigurationError {
     public:
-        InvalidValueError(Configuration config, const std::string& key, const std::string& reason);
-        InvalidValueError(Configuration config, const std::string& key);
+        InvalidValueError(const Configuration& config, const std::string& key, const std::string& reason);
+        InvalidValueError(const Configuration& config, const std::string& key);
     };
 } // namespace allpix
 

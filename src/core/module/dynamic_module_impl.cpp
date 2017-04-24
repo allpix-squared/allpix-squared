@@ -37,7 +37,7 @@ namespace allpix {
     // Function that dynamically instantiates an unique module
     Module* allpix_module_generator(Configuration config, Messenger* messenger, GeometryManager* geometry);
     Module* allpix_module_generator(Configuration config, Messenger* messenger, GeometryManager* geometry) {
-        ALLPIX_MODULE_NAME* module = new ALLPIX_MODULE_NAME(std::move(config), messenger, geometry);
+        auto module = new ALLPIX_MODULE_NAME(std::move(config), messenger, geometry); // NOLINT
         return static_cast<Module*>(module);
     }
 
@@ -48,7 +48,7 @@ namespace allpix {
     // Function that dynamically instantiates a detector module
     Module* allpix_module_generator(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector);
     Module* allpix_module_generator(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector) {
-        ALLPIX_MODULE_NAME* module = new ALLPIX_MODULE_NAME(std::move(config), messenger, std::move(detector));
+        auto module = new ALLPIX_MODULE_NAME(std::move(config), messenger, std::move(detector)); // NOLINT
         return static_cast<Module*>(module);
     }
 

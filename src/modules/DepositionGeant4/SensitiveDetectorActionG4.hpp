@@ -25,7 +25,7 @@ namespace allpix {
     class SensitiveDetectorActionG4 : public G4VSensitiveDetector {
     public:
         // Constructor and destructor
-        SensitiveDetectorActionG4(std::shared_ptr<Detector>, Messenger*, double charge_creation_energy);
+        SensitiveDetectorActionG4(const std::shared_ptr<Detector>&, Messenger*, double charge_creation_energy);
         ~SensitiveDetectorActionG4() override;
 
         // Disallow copy

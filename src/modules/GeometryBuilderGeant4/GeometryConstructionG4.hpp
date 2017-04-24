@@ -20,7 +20,7 @@ namespace allpix {
     class GeometryConstructionG4 : public G4VUserDetectorConstruction {
     public:
         // Constructor and destructor
-        GeometryConstructionG4(GeometryManager* geo, G4ThreeVector world_size, bool simple_view);
+        GeometryConstructionG4(GeometryManager* geo, const G4ThreeVector& world_size, bool simple_view);
         ~GeometryConstructionG4() override;
 
         // Disallow copy

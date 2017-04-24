@@ -90,12 +90,12 @@ ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZPoint& pos
 double* Detector::get_electric_field_raw(double x, double y, double z) const {
     // compute indices
     // FIXME: can we calculate this faster using vector calculations
-    int x_ind = static_cast<int>(static_cast<double>(electric_field_sizes_[0]) * (x - model_->getSensorMinX()) /
-                                 model_->getSensorSizeX());
-    int y_ind = static_cast<int>(static_cast<double>(electric_field_sizes_[1]) * (y - model_->getSensorMinY()) /
-                                 model_->getSensorSizeY());
-    int z_ind = static_cast<int>(static_cast<double>(electric_field_sizes_[2]) * (z - model_->getSensorMinZ()) /
-                                 model_->getSensorSizeZ());
+    auto x_ind = static_cast<int>(static_cast<double>(electric_field_sizes_[0]) * (x - model_->getSensorMinX()) /
+                                  model_->getSensorSizeX());
+    auto y_ind = static_cast<int>(static_cast<double>(electric_field_sizes_[1]) * (y - model_->getSensorMinY()) /
+                                  model_->getSensorSizeY());
+    auto z_ind = static_cast<int>(static_cast<double>(electric_field_sizes_[2]) * (z - model_->getSensorMinZ()) /
+                                  model_->getSensorSizeZ());
 
     // check for indices within the sensor
     if(x_ind < 0 || x_ind >= static_cast<int>(electric_field_sizes_[0]) || y_ind < 0 ||

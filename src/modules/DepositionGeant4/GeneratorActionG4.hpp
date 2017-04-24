@@ -10,7 +10,6 @@
 
 #include <G4GeneralParticleSource.hh>
 #include <G4ParticleDefinition.hh>
-#include <G4ParticleDefinition.hh>
 #include <G4SDManager.hh>
 #include <G4ThreeVector.hh>
 #include <G4VUserPrimaryGeneratorAction.hh>
@@ -21,7 +20,7 @@ namespace allpix {
 
     class GeneratorActionG4 : public G4VUserPrimaryGeneratorAction {
     public:
-        explicit GeneratorActionG4(Configuration config);
+        explicit GeneratorActionG4(const Configuration& config);
         ~GeneratorActionG4() override;
 
         // generate the primary events

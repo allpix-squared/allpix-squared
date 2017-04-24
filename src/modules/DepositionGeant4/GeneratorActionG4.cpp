@@ -20,7 +20,8 @@
 using namespace allpix;
 
 // construct and destruct the generator
-GeneratorActionG4::GeneratorActionG4(Configuration config) : particle_source_(std::make_unique<G4GeneralParticleSource>()) {
+GeneratorActionG4::GeneratorActionG4(const Configuration& config)
+    : particle_source_(std::make_unique<G4GeneralParticleSource>()) {
     // set verbosity to zero
     particle_source_->SetVerbosity(0);
 
