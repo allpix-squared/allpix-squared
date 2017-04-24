@@ -8,6 +8,10 @@
 #include <string>
 #include <utility>
 
+#include <Math/Vector3D.h>
+#include <TFile.h>
+#include <TH2D.h>
+
 #include "core/config/exceptions.h"
 #include "core/geometry/PixelDetectorModel.hpp"
 #include "core/utils/log.h"
@@ -31,6 +35,44 @@ void ElectricFieldReaderInitModule::init() {
 
         // set detector field
         detector_->setElectricField(field_data.first, field_data.second);
+
+        // produce debug histograms if needed
+        if(config_.get<bool>("debug_histograms", false)) {
+            std::string histogram_name = "histogram_" + detector_->getName();
+            std::string histogram_title = "Histogram for " + detector_->getName();
+
+            auto steps = config_.get<size_t>("debug_histogram_steps", 500);
+
+            auto model = detector_->getModel();
+            auto histogram = new TH2D(histogram_name.c_str(),
+                                      histogram_title.c_str(),
+                                      static_cast<int>(steps),
+                                      model->getSensorMinY(),
+                                      model->getSensorMinY() + model->getSensorSizeY(),
+                                      static_cast<int>(steps),
+                                      model->getSensorMinZ(),
+                                      model->getSensorMinZ() + model->getSensorSizeZ());
+
+            double x =
+                model->getSensorMinX() + config_.get<double>("debug_histogram_x_percentage", 0.5) * model->getSensorSizeX();
+            for(size_t j = 0; j < steps; ++j) {
+                double y = model->getSensorMinY() + ((j + 0.5) / steps) * model->getSensorSizeY();
+                for(size_t k = 0; k < steps; ++k) {
+                    double z = model->getSensorMinZ() + ((k + 0.5) / steps) * model->getSensorSizeZ();
+                    auto field_strength = std::sqrt(detector_->getElectricField(ROOT::Math::XYZPoint(x, y, z)).Mag2());
+                    histogram->Fill(y, z, field_strength);
+                }
+            }
+            // open output file
+            std::string file_name = getOutputPath(config_.get<std::string>("debug_histogram_name", "histogram") + ".root");
+            TFile file(file_name.c_str(), "RECREATE");
+
+            // write histogram
+            histogram->Write();
+
+            // close file
+            file.Close();
+        }
     } catch(std::invalid_argument& e) {
         throw InvalidValueError(config_, "file_name", e.what());
     } catch(std::runtime_error& e) {
