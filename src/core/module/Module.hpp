@@ -66,10 +66,15 @@ namespace allpix {
         Module(const Module&) = delete;
         Module& operator=(const Module&) = delete;
 
+        // Get unique name for the current module
+        // NOTE: cannot be called in constructor
+        std::string getUniqueName();
+
         // Get (possibly) linked detector
         std::shared_ptr<Detector> getDetector();
 
         // Get absolute path for this modules storage
+        // NOTE: cannot be called in constructor
         std::string getOutputPath(const std::string& path, bool global = false);
 
         // Initialize the module before run

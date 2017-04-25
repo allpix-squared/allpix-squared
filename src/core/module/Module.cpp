@@ -21,6 +21,15 @@ Module::Module() : Module(nullptr) {}
 Module::Module(std::shared_ptr<Detector> detector)
     : output_directory_(), global_directory_(), identifier_(), config_(), delegates_(), detector_(std::move(detector)) {}
 
+// Get unique name
+std::string Module::getUniqueName() {
+    std::string unique_name = identifier_.getUniqueName();
+    if(unique_name.empty()) {
+        throw InvalidModuleActionException("Unique name cannot be retrieved from within the constructor");
+    }
+    return unique_name;
+}
+
 // Get the detector
 std::shared_ptr<Detector> Module::getDetector() {
     return detector_;
@@ -35,11 +44,11 @@ std::string Module::getOutputPath(const std::string& path, bool global) {
         file = output_directory_;
     }
 
-    try {
-        if(file.empty()) {
-            throw InvalidModuleActionException("Output path cannot be retrieved from within the constructor");
-        }
+    if(file.empty()) {
+        throw InvalidModuleActionException("Output path cannot be retrieved from within the constructor");
+    }
 
+    try {
         // create the directories if needed
         create_directories(file);
 
@@ -61,6 +70,8 @@ std::string Module::getOutputPath(const std::string& path, bool global) {
 
     return file;
 }
+
+// set internal directories
 void Module::set_output_directory(std::string output_dir) {
     output_directory_ = std::move(output_dir);
 }

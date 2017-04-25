@@ -8,6 +8,7 @@
 #include <utility>
 
 #include <Math/Point3D.h>
+#include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
 
 namespace allpix {
@@ -25,21 +26,29 @@ namespace allpix {
         // sensor size of the model
 
         // sensor sizes
-        ROOT::Math::XYZVector getSensorSize() { return sensor_size_; }
-        double getSensorSizeX() { return sensor_size_.x(); };
-        double getSensorSizeY() { return sensor_size_.y(); };
-        double getSensorSizeZ() { return sensor_size_.z(); };
+        ROOT::Math::XYZVector getSensorSize() const { return sensor_size_; }
+        double getSensorSizeX() const { return sensor_size_.x(); };
+        double getSensorSizeY() const { return sensor_size_.y(); };
+        double getSensorSizeZ() const { return sensor_size_.z(); };
         void setSensorSize(ROOT::Math::XYZVector val) { sensor_size_ = std::move(val); }
+
+        // number of pixels (in general sense only copied units) in this detector
+        // NOTE: default to 1, no copied units
+        virtual ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> getNPixels() const {
+            return ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>(1, 1);
+        }
+        virtual int getNPixelsX() const { return 1; };
+        virtual int getNPixelsY() const { return 1; };
 
         // minimum and maximum coordinates of sensor in local frame
         // FIXME: is this a good way to implement this
-        virtual double getSensorMinX() = 0;
-        virtual double getSensorMinY() = 0;
-        virtual double getSensorMinZ() = 0;
+        virtual double getSensorMinX() const = 0;
+        virtual double getSensorMinY() const = 0;
+        virtual double getSensorMinZ() const = 0;
 
         // coordinates of the rotation center in local frame
         // FIXME: it is a bit counter intuitive that this is not (0, 0, 0)
-        virtual ROOT::Math::XYZPoint getCenter() = 0;
+        virtual ROOT::Math::XYZPoint getCenter() const = 0;
 
     private:
         std::string type_;

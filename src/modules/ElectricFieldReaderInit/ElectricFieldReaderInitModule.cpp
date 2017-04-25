@@ -38,7 +38,7 @@ void ElectricFieldReaderInitModule::init() {
 
         // produce debug histograms if needed
         if(config_.get<bool>("debug_histogram", false)) {
-            std::string histogram_name = "histogram_" + detector_->getName();
+            std::string histogram_name = getUniqueName();
             std::string histogram_title = "Histogram for " + detector_->getName();
 
             auto steps = config_.get<size_t>("debug_histogram_steps", 500);
@@ -78,7 +78,7 @@ void ElectricFieldReaderInitModule::init() {
                                       min2,
                                       max2);
 
-            double x, y, z;
+            double x = 0, y = 0, z = 0;
             if(project == 'x') {
                 x = model->getSensorMinX() +
                     config_.get<double>("debug_histogram_projection_percentage", 0.5) * model->getSensorSizeX();
