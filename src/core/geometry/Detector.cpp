@@ -12,6 +12,8 @@
 
 #include "Detector.hpp"
 
+#include <iostream>
+
 using namespace allpix;
 
 Detector::Detector(std::string name,
@@ -88,12 +90,29 @@ ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZPoint& pos
 }
 // Get fields in detector
 double* Detector::get_electric_field_raw(double x, double y, double z) const {
+    // FIXME: we need to revisit this to be faster and not too specific
+
+    // compute corresponding pixel indices
+    auto pixel_x = static_cast<int>(std::round(x / model_->getPixelSizeX()));
+    auto pixel_y = static_cast<int>(std::round(y / model_->getPixelSizeY()));
+
+    // convert to the pixel frame
+    x -= pixel_x * model_->getPixelSizeX();
+    y -= pixel_y * model_->getPixelSizeY();
+
+    // do flipping if necessary
+    if((pixel_x % 2) == 1) {
+        x *= -1;
+    }
+    if((pixel_y % 2) == 1) {
+        y *= -1;
+    }
+
     // compute indices
-    // FIXME: can we calculate this faster using vector calculations
-    auto x_ind = static_cast<int>(static_cast<double>(electric_field_sizes_[0]) * (x - model_->getSensorMinX()) /
-                                  model_->getSensorSizeX());
-    auto y_ind = static_cast<int>(static_cast<double>(electric_field_sizes_[1]) * (y - model_->getSensorMinY()) /
-                                  model_->getSensorSizeY());
+    auto x_ind = static_cast<int>(static_cast<double>(electric_field_sizes_[0]) * (x + model_->getPixelSizeX() / 2.0) /
+                                  model_->getPixelSizeX());
+    auto y_ind = static_cast<int>(static_cast<double>(electric_field_sizes_[1]) * (y + model_->getPixelSizeY() / 2.0) /
+                                  model_->getPixelSizeY());
     auto z_ind = static_cast<int>(static_cast<double>(electric_field_sizes_[2]) * (z - model_->getSensorMinZ()) /
                                   model_->getSensorSizeZ());
 

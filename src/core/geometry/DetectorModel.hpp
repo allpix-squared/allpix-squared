@@ -40,6 +40,14 @@ namespace allpix {
         virtual int getNPixelsX() const { return 1; };
         virtual int getNPixelsY() const { return 1; };
 
+        // size of a single pixel
+        // default to the sensor size divided the amount of pixels
+        virtual ROOT::Math::XYVector getPixelSize() const {
+            return ROOT::Math::XYVector(getSensorSizeX() / getNPixelsX(), getSensorSizeY() / getNPixelsY());
+        }
+        virtual double getPixelSizeX() const { return getPixelSize().x(); };
+        virtual double getPixelSizeY() const { return getPixelSize().y(); };
+
         // minimum and maximum coordinates of sensor in local frame
         // FIXME: is this a good way to implement this
         virtual double getSensorMinX() const = 0;

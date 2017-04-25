@@ -146,17 +146,18 @@ void ElectricFieldReaderInitModule::init() {
 }
 
 // check if the detector matches the file
-inline static void check_detector_match(Detector& detector, double thickness, int npixx, int npixy) {
+inline static void check_detector_match(Detector& detector, double thickness, double xpixsz, double ypixsz) {
     auto model = std::dynamic_pointer_cast<PixelDetectorModel>(detector.getModel());
     // do a few simple checks for pixel detector models
     if(model != nullptr) {
         if(std::fabs(thickness - model->getSensorSizeZ()) > std::numeric_limits<double>::epsilon()) {
-            LOG(WARNING) << "thickness of sensor in file is " << thickness << " but in the model of " << detector.getName()
-                         << " it is " << model->getSensorSizeZ();
+            LOG(WARNING) << "thickness of sensor in file is " << thickness << " but in the model it is "
+                         << model->getSensorSizeZ();
         }
-        if(npixx != model->getNPixelsX() || npixy != model->getNPixelsY()) {
-            LOG(WARNING) << "number of pixels is (" << npixx << "," << npixy << ") but in the model of "
-                         << detector.getName() << " it is (" << model->getNPixelsX() << "," << model->getNPixelsY() << ")";
+        if(std::fabs(xpixsz - model->getPixelSizeX()) > std::numeric_limits<double>::epsilon() ||
+           std::fabs(ypixsz - model->getPixelSizeY()) > std::numeric_limits<double>::epsilon()) {
+            LOG(WARNING) << "pixel size is (" << xpixsz << "," << ypixsz << ") but in the model it is ("
+                         << model->getPixelSizeX() << "," << model->getPixelSizeY() << ")";
         }
     }
 }
@@ -185,16 +186,18 @@ ElectricFieldReaderInitModule::FieldData ElectricFieldReaderInitModule::get_by_f
     file >> tmp >> tmp;        // ignore the init seed and cluster length
     file >> tmp >> tmp >> tmp; // ignore the incident pion direction
     file >> tmp >> tmp >> tmp; // ignore the magnetic field (specify separately)
-    double thickness, npixx, npixy;
-    file >> thickness >> npixx >> npixy;
+    double thickness, xpixsz, ypixsz;
+    file >> thickness >> xpixsz >> ypixsz;
     thickness = Units::get(thickness, "um");
+    xpixsz = Units::get(xpixsz, "um");
+    ypixsz = Units::get(ypixsz, "um");
     file >> tmp >> tmp >> tmp >> tmp; // ignore temperature, flux, rhe (?) and new_drde (?)
     size_t xsize, ysize, zsize;
     file >> xsize >> ysize >> zsize;
     file >> tmp;
 
     // check if electric field matches chip
-    check_detector_match(detector, thickness, static_cast<int>(std::round(npixx)), static_cast<int>(std::round(npixy)));
+    check_detector_match(detector, thickness, xpixsz, ypixsz);
 
     if(file.fail()) {
         throw std::runtime_error("invalid data or unexpected end of file");

@@ -54,9 +54,9 @@ namespace allpix {
         void setNPixelsY(int val) { number_of_pixels_.SetY(val); };
 
         /* Pixel dimensions */
-        ROOT::Math::XYVector getPixelSize() const { return pixel_size_; }
-        double getPixelSizeX() const { return pixel_size_.x(); };
-        double getPixelSizeY() const { return pixel_size_.y(); };
+        ROOT::Math::XYVector getPixelSize() const override { return pixel_size_; }
+        double getPixelSizeX() const override { return pixel_size_.x(); };
+        double getPixelSizeY() const override { return pixel_size_.y(); };
 
         double getHalfPixelSizeX() const { return pixel_size_.x() / 2.0; };
         double getHalfPixelSizeY() const { return pixel_size_.y() / 2.0; };
