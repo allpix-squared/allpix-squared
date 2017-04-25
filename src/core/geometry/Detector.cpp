@@ -12,8 +12,6 @@
 
 #include "Detector.hpp"
 
-#include <iostream>
-
 using namespace allpix;
 
 Detector::Detector(std::string name,
