@@ -37,32 +37,95 @@ void ElectricFieldReaderInitModule::init() {
         detector_->setElectricField(field_data.first, field_data.second);
 
         // produce debug histograms if needed
-        if(config_.get<bool>("debug_histograms", false)) {
+        if(config_.get<bool>("debug_histogram", false)) {
             std::string histogram_name = "histogram_" + detector_->getName();
             std::string histogram_title = "Histogram for " + detector_->getName();
 
             auto steps = config_.get<size_t>("debug_histogram_steps", 500);
+            auto project = config_.get<char>("debug_histogram_project", 'x');
+
+            if(project != 'x' && project != 'y' && project != 'z') {
+                throw InvalidValueError(config_, "debug_histogram_project", "can only project on x, y or z axis");
+            }
 
             auto model = detector_->getModel();
+
+            double min1, max1;
+            double min2, max2;
+            if(project == 'x') {
+                min1 = model->getSensorMinY();
+                max1 = model->getSensorMinY() + model->getSensorSizeY();
+                min2 = model->getSensorMinZ();
+                max2 = model->getSensorMinZ() + model->getSensorSizeZ();
+            } else if(project == 'y') {
+                min1 = model->getSensorMinX();
+                max1 = model->getSensorMinX() + model->getSensorSizeX();
+                min2 = model->getSensorMinZ();
+                max2 = model->getSensorMinZ() + model->getSensorSizeZ();
+            } else {
+                min1 = model->getSensorMinX();
+                max1 = model->getSensorMinX() + model->getSensorSizeX();
+                min2 = model->getSensorMinY();
+                max2 = model->getSensorMinY() + model->getSensorSizeY();
+            }
+
             auto histogram = new TH2D(histogram_name.c_str(),
                                       histogram_title.c_str(),
                                       static_cast<int>(steps),
-                                      model->getSensorMinY(),
-                                      model->getSensorMinY() + model->getSensorSizeY(),
+                                      min1,
+                                      max1,
                                       static_cast<int>(steps),
-                                      model->getSensorMinZ(),
-                                      model->getSensorMinZ() + model->getSensorSizeZ());
+                                      min2,
+                                      max2);
 
-            double x =
-                model->getSensorMinX() + config_.get<double>("debug_histogram_x_percentage", 0.5) * model->getSensorSizeX();
+            double x, y, z;
+            if(project == 'x') {
+                x = model->getSensorMinX() +
+                    config_.get<double>("debug_histogram_projection_percentage", 0.5) * model->getSensorSizeX();
+            } else if(project == 'y') {
+                y = model->getSensorMinY() +
+                    config_.get<double>("debug_histogram_projection_percentage", 0.5) * model->getSensorSizeY();
+            } else {
+                z = model->getSensorMinZ() +
+                    config_.get<double>("debug_histogram_projection_percentage", 0.5) * model->getSensorSizeZ();
+            }
             for(size_t j = 0; j < steps; ++j) {
-                double y = model->getSensorMinY() + ((j + 0.5) / steps) * model->getSensorSizeY();
+                if(project == 'x') {
+                    y = model->getSensorMinY() +
+                        ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * model->getSensorSizeY();
+                } else if(project == 'y') {
+                    x = model->getSensorMinX() +
+                        ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * model->getSensorSizeX();
+                } else {
+                    x = model->getSensorMinX() +
+                        ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * model->getSensorSizeX();
+                }
                 for(size_t k = 0; k < steps; ++k) {
-                    double z = model->getSensorMinZ() + ((k + 0.5) / steps) * model->getSensorSizeZ();
+                    if(project == 'x') {
+                        z = model->getSensorMinZ() +
+                            ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * model->getSensorSizeZ();
+                    } else if(project == 'y') {
+                        z = model->getSensorMinZ() +
+                            ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * model->getSensorSizeZ();
+                    } else {
+                        y = model->getSensorMinY() +
+                            ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * model->getSensorSizeY();
+                    }
+
+                    // get field strength and fill histogram
                     auto field_strength = std::sqrt(detector_->getElectricField(ROOT::Math::XYZPoint(x, y, z)).Mag2());
-                    histogram->Fill(y, z, field_strength);
+
+                    // fill histogram
+                    if(project == 'x') {
+                        histogram->Fill(y, z, field_strength);
+                    } else if(project == 'y') {
+                        histogram->Fill(x, z, field_strength);
+                    } else {
+                        histogram->Fill(x, y, field_strength);
+                    }
                 }
             }
+
             // open output file
             std::string file_name = getOutputPath(config_.get<std::string>("debug_histogram_name", "histogram") + ".root");
             TFile file(file_name.c_str(), "RECREATE");

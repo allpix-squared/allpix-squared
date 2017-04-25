@@ -75,7 +75,10 @@ namespace allpix {
         std::istringstream sstream(str.substr(0, unit_idx + 1));
         T ret_value = 0;
         sstream >> ret_value;
-        if(sstream.fail() || !sstream.eof()) {
+
+        // std::cout << (sstream.peek() == EOF) << " " << sstream.str() << " " << ret_value << " " <<  sstream.fail() << " "
+        // << sstream.eof() << " " << std::endl;
+        if(sstream.fail() || sstream.peek() != EOF) {
             throw std::invalid_argument("conversion not possible");
         }
 

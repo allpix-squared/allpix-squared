@@ -17,8 +17,6 @@
 #include <random>
 #include <thread>
 
-#include <iostream>
-
 namespace allpix {
     // get the seed_seq object
     inline std::mt19937_64& get_random_seeder(std::initializer_list<uint64_t> list = std::initializer_list<uint64_t>()) {
@@ -40,6 +38,7 @@ namespace allpix {
         if(init_seed == UINT64_MAX) {
             // use the clock
             auto clock_seed = static_cast<uint64_t>(std::chrono::high_resolution_clock::now().time_since_epoch().count());
+            std::cout << clock_seed << std::endl;
             // use memory location local variable
             auto mem_seed = reinterpret_cast<uint64_t>(&init_seed); // NOLINT
             // use thread id
