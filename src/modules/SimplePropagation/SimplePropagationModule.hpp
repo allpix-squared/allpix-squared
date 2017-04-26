@@ -8,6 +8,7 @@
 #include <string>
 
 #include <Math/Vector3D.h>
+#include <TGraph2D.h>
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/DetectorModel.hpp"
@@ -46,6 +47,9 @@ namespace allpix {
 
         // deposits for a specific detector
         std::shared_ptr<DepositedChargeMessage> deposits_message_;
+
+        // debug list of points to plot
+        std::vector<TGraph2D> debug_plot_points_;
     };
 
 } // namespace allpix

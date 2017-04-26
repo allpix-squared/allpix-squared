@@ -37,7 +37,7 @@ void DetectorHistogrammerModule::init() {
 
     // create histogram
     LOG(INFO) << "Creating histograms";
-    std::string histogram_name = getUniqueName();
+    std::string histogram_name = "histogram_" + getUniqueName();
     std::string histogram_title = "Histogram for " + detector_->getName();
     histogram = new TH2I(histogram_name.c_str(),
                          histogram_title.c_str(),

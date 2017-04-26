@@ -17,6 +17,11 @@
 
 #include <Math/Point3D.h>
 #include <Math/Vector3D.h>
+#include <TApplication.h>
+#include <TCanvas.h>
+#include <TFile.h>
+#include <TH2D.h>
+#include <TPad.h>
 
 #include "core/config/Configuration.hpp"
 #include "core/messenger/Messenger.hpp"
@@ -34,7 +39,7 @@ SimplePropagationModule::SimplePropagationModule(Configuration config,
                                                  Messenger* messenger,
                                                  std::shared_ptr<Detector> detector)
     : Module(detector), random_generator_(), config_(std::move(config)), messenger_(messenger),
-      detector_(std::move(detector)), model_(), deposits_message_(nullptr) {
+      detector_(std::move(detector)), model_(), deposits_message_(nullptr), debug_plot_points_() {
     // get detector model
     model_ = detector_->getModel();
 
@@ -50,6 +55,7 @@ SimplePropagationModule::SimplePropagationModule(Configuration config,
     config_.setDefault<double>("timestep_min", Units::get(0.0005, "ns"));
     config_.setDefault<double>("timestep_max", Units::get(0.1, "ns"));
     config_.setDefault<unsigned int>("charge_per_step", 10);
+    config_.setDefault<bool>("debug_plots", false);
 }
 SimplePropagationModule::~SimplePropagationModule() = default;
 
@@ -87,6 +93,49 @@ void SimplePropagationModule::run() {
             PropagatedCharge propagated_charge(position, charge_per_step);
             propagated_charges.push_back(propagated_charge);
         }
+    }
+
+    // write debug plots if required
+    if(config_.get<bool>("debug_plots")) {
+        std::string file_name = getOutputPath(config_.get<std::string>("debug_plots_file_name", "debug_plots") + ".root");
+        TFile file(file_name.c_str(), "RECREATE");
+
+        // loop over all steps
+        for(size_t idx = 0; idx < debug_plot_points_.size(); ++idx) {
+            // auto steps = config_.get<size_t>("debug_histogram_steps", 500);
+
+            auto* canvas =
+                new TCanvas(("temp" + std::to_string(config_.get<double>("debug_plots_step") * idx)).c_str(), "t");
+
+            /*std::string histogram_title = "Debug plot of propagated charges";
+            auto histogram = new TH2D(("temp_"+getUniqueName()+std::to_string(idx)).c_str(),
+                                      histogram_title.c_str(),
+                                      static_cast<int>(steps),
+                                      model_->getSensorMinX(),
+                                      model_->getSensorMinX() + model_->getSensorSizeX(),
+                                      static_cast<int>(steps),
+                                      model_->getSensorMinY(),
+                                      model_->getSensorMinY() + model_->getSensorSizeY());
+            // write points
+            debug_plot_points_[idx].SetHistogram(histogram);*/
+            debug_plot_points_[idx].GetXaxis()->SetLimits(model_->getSensorMinX(),
+                                                          model_->getSensorMinX() + model_->getSensorSizeX());
+            debug_plot_points_[idx].GetHistogram()->GetXaxis()->SetRangeUser(
+                model_->getSensorMinX(), model_->getSensorMinX() + model_->getSensorSizeX());
+            // debug_plot_points_[idx].Write(("point_" + std::to_string(config_.get<double>("debug_plots_step") *
+            // idx)).c_str());
+
+            // debug_plot_points_[idx].GetHistogram()->SetBins(
+
+            debug_plot_points_[idx].Draw("p");
+
+            canvas->Draw();
+            canvas->Write();
+            // histogram->Write();
+        }
+
+        // close the file
+        file.Close();
     }
 
     // create a new message with propagated charges
@@ -148,7 +197,22 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const XYZPoint& r
 
     // continue until outside the sensor (no electric field)
     // FIXME: we need to determine what would be a good time to stop
+    double last_time = std::numeric_limits<double>::lowest();
+    size_t step_idx = 0;
     while(true) {
+        // update debug plots if necessary
+        if(config_.get<bool>("debug_plots") && runge_kutta.getTime() - last_time > config_.get<double>("debug_plots_step")) {
+            position = runge_kutta.getValue();
+            if(step_idx == debug_plot_points_.size()) {
+                debug_plot_points_.emplace_back();
+            }
+            debug_plot_points_[step_idx].SetPoint(
+                debug_plot_points_[step_idx].GetN(), position.x(), position.y(), position.z());
+
+            last_time = runge_kutta.getTime();
+            ++step_idx;
+        }
+
         // do a runge kutta step
         auto step = runge_kutta.step();
 
@@ -184,7 +248,6 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const XYZPoint& r
         } else if(timestep < config_.get<double>("timestep_min")) {
             timestep = config_.get<double>("timestep_min");
         }
-
         runge_kutta.setTimeStep(timestep);
     }
 
