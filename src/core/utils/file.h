@@ -65,15 +65,18 @@ namespace allpix {
             const std::string full_file_name = path + "/" + file_name;
 
             // ignore useless or wrong paths
-            if(!file_name.empty() && file_name[0] == '.')
+            if(!file_name.empty() && file_name[0] == '.') {
                 continue;
-            if(stat(full_file_name.c_str(), &st) == -1)
+            }
+            if(stat(full_file_name.c_str(), &st) == -1) {
                 continue;
+            }
 
             // ignore subdirectories
             const bool is_directory = (st.st_mode & S_IFDIR) != 0;
-            if(is_directory)
+            if(is_directory) {
                 continue;
+            }
 
             // add full file paths
             files.push_back(full_file_name);
@@ -89,11 +92,9 @@ namespace allpix {
         path += "/";
         size_t pos = 1;
         while((pos = path.find('/', pos)) != std::string::npos) {
-            if(stat(path.c_str(), &st) != 0) {
-                if(mkdir(path.c_str(), mode) != 0 && errno != EEXIST) {
-                    std::invalid_argument("cannot create folder: " + std::string(strerror(errno)));
-                    return;
-                }
+            if(mkdir(path.c_str(), mode) != 0 && errno != EEXIST) {
+                std::invalid_argument("cannot create folder: " + std::string(strerror(errno)));
+                return;
             } else if(!S_ISDIR(st.st_mode)) {
                 errno = ENOTDIR;
                 std::invalid_argument("part of path already exists as a file");
