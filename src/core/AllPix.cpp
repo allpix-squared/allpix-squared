@@ -9,7 +9,7 @@
 #include <stdexcept>
 #include <utility>
 
-#include <TDirectory.h>
+#include <TRandom.h>
 #include <TSystem.h>
 
 #include "core/config/exceptions.h"
@@ -68,6 +68,8 @@ void AllPix::load() {
         random_init();
     }
     LOG(DEBUG) << "Initialized random seeder (first seed is " << get_random_seed() << ")";
+    // initialize root random generator
+    gRandom->SetSeed(get_random_seed());
 
     // get output directory
     std::string directory = gSystem->pwd();
