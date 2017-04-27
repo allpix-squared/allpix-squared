@@ -47,7 +47,7 @@ void ConfigReader::add(std::istream& stream, std::string file_name) {
             line = allpix::trim(line);
 
             // ignore empty lines or comments
-            if(line == "" || line[0] == ';' || line[0] == '#') {
+            if(line == "" || line[0] == '#') {
                 continue;
             }
 
@@ -80,7 +80,7 @@ void ConfigReader::add(std::istream& stream, std::string file_name) {
                         ins = 0;
                     }
                 }
-                if(ins == 0 && (value[i] == ';' || value[i] == '#')) {
+                if(ins == 0 && value[i] == '#') {
                     value = std::string(value, 0, i);
                     break;
                 }
