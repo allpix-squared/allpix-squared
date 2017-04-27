@@ -299,7 +299,7 @@ void ModuleManager::run() {
             // set module specific settings
             auto old_settings = set_module_before(mod->get_identifier().getUniqueName(), mod->get_configuration());
             // run module
-            mod->run();
+            mod->run(i + 1);
             // resetting bound messages
             LOG(DEBUG) << "Resetting bound messages";
             mod->reset_delegates();

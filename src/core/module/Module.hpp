@@ -81,6 +81,10 @@ namespace allpix {
         virtual void init() {}
 
         // Execute the function of the module for every event
+        virtual void run(unsigned int /* event_num */) {
+            // Run without event number if no overload with event number is provided
+            run();
+        }
         virtual void run() {}
 
         // Finalize module after run
