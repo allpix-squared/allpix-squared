@@ -92,16 +92,22 @@ namespace allpix {
         path += "/";
         size_t pos = 1;
         while((pos = path.find('/', pos)) != std::string::npos) {
-            if(mkdir(path.c_str(), mode) == -1) {
-                if(errno == ENOTDIR) {
-                    std::invalid_argument("part of path already exists as a file");
-                    return;
-                } else if(errno != EEXIST) {
-                    std::invalid_argument("cannot create folder: " + std::string(strerror(errno)));
-                    return;
-                }
+            // sub path
+            std::string sub_path = path.substr(0, pos);
+
+            // create directory
+            if(mkdir(sub_path.c_str(), mode) != 0 && errno != EEXIST) {
+                throw std::invalid_argument("cannot create folder (" + std::string(strerror(errno)) + ")");
+            }
+            // check access
+            if(stat(sub_path.c_str(), &st) != 0) {
+                throw std::invalid_argument("cannot access path (" + std::string(strerror(errno)) + ")");
+            } else if(!S_ISDIR(st.st_mode)) {
+                errno = ENOTDIR;
+                throw std::invalid_argument("part of path already exists as a file");
             }
 
+            // goto next position
             pos++;
         }
     }
