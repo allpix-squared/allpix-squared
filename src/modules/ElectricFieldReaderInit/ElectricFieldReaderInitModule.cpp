@@ -129,6 +129,7 @@ void ElectricFieldReaderInitModule::init() {
             // open output file
             std::string file_name = getOutputPath(config_.get<std::string>("debug_histogram_name", "histogram") + ".root");
             TFile file(file_name.c_str(), "RECREATE");
+            file.cd();
 
             // write histogram
             histogram->Write();

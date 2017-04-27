@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include <TFile.h>
 #include <TH1I.h>
 #include <TH2I.h>
 
@@ -50,6 +51,9 @@ namespace allpix {
         // histograms
         TH2I* histogram; // FIXME: bad name
         TH1I* cluster_size;
+
+        // output file
+        TFile* output_file_;
     };
 } // namespace allpix
 

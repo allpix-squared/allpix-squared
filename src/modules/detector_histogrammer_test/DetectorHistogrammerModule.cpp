@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include <TApplication.h>
 #include <TFile.h>
 
 #include "core/geometry/PixelDetectorModel.hpp"
@@ -20,7 +19,8 @@ using namespace allpix;
 DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
-    : Module(detector), config_(std::move(config)), detector_(std::move(detector)), pixels_message_(nullptr) {
+    : Module(detector), config_(std::move(config)), detector_(std::move(detector)), pixels_message_(nullptr),
+      output_file_(nullptr) {
     // fetch deposit for single module
     messenger->bindSingle(this, &DetectorHistogrammerModule::pixels_message_);
 }
@@ -34,6 +34,11 @@ void DetectorHistogrammerModule::init() {
         throw ModuleError("Detector model of " + detector_->getName() +
                           " is not a PixelDetectorModel: other models are not supported by this module!");
     }
+
+    // create root file
+    std::string file_name = getOutputPath(config_.get<std::string>("file_name", "histogram") + ".root");
+    output_file_ = new TFile(file_name.c_str(), "RECREATE");
+    output_file_->cd();
 
     // create histogram
     LOG(INFO) << "Creating histograms";
@@ -82,6 +87,9 @@ void DetectorHistogrammerModule::run() {
 
 // create file and write the histograms to it
 void DetectorHistogrammerModule::finalize() {
+    // go to output file
+    output_file_->cd();
+
     // set more useful spacing maximum for cluster size histogram
     auto xmax = std::ceil(cluster_size->GetBinCenter(cluster_size->FindLastBinAbove()) + 1);
     cluster_size->GetXaxis()->SetRangeUser(0, xmax);
@@ -100,15 +108,12 @@ void DetectorHistogrammerModule::finalize() {
         histogram->GetYaxis()->SetNdivisions(static_cast<int>(histogram->GetYaxis()->GetXmax()) + 1, 0, 0, true);
     }
 
-    // create root file
-    std::string file_name = getOutputPath(config_.get<std::string>("file_name", "histogram") + ".root");
-    TFile file(file_name.c_str(), "RECREATE");
-
     // write histograms
     LOG(INFO) << "Writing histograms to file";
     histogram->Write();
     cluster_size->Write();
 
     // close the file
-    file.Close();
+    output_file_->Close();
+    delete output_file_;
 }
