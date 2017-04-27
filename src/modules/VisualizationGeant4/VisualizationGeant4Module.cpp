@@ -72,7 +72,7 @@ void VisualizationGeant4Module::init() {
     }
 }
 
-void VisualizationGeant4Module::run() {
+void VisualizationGeant4Module::run(unsigned int) {
     // execute the run macro
     if(config_.has("macro_run")) {
         G4UImanager* UI = G4UImanager::GetUIpointer();

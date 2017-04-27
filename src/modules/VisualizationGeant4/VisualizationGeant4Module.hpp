@@ -28,7 +28,7 @@ namespace allpix {
         void init() override;
 
         // sets the display settings for the current event
-        void run() override;
+        void run(unsigned int) override;
 
         // displays the visualization
         void finalize() override;

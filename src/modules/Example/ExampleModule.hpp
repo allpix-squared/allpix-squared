@@ -48,7 +48,7 @@ namespace allpix {
         ExampleModule(const Configuration& config, Messenger*, GeometryManager*);
 
         // method that should do the necessary computations and possibly dispatch their results as a message
-        void run() override;
+        void run(unsigned int) override;
 
     private:
         // messenger to emit test message

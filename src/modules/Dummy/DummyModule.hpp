@@ -27,7 +27,7 @@ namespace allpix {
         DummyModule(Configuration config, Messenger*, GeometryManager*);
 
         // method that will do the computations
-        void run() override;
+        void run(unsigned int) override;
 
     private:
         Configuration config_;

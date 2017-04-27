@@ -18,7 +18,7 @@ DummyModule::DummyModule(Configuration config, Messenger*, GeometryManager*) : c
 }
 
 // run method that does the main computations for the module
-void DummyModule::run() {
+void DummyModule::run(unsigned int) {
     // ... implement ... (typically you want to fetch some configuration here and in the end possibly output a message)
     LOG(DEBUG) << "running module " << DummyModule::name;
 }

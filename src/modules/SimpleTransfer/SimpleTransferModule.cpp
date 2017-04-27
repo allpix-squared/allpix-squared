@@ -36,7 +36,7 @@ struct pixel_cmp {
 };
 
 // run method that does the main computations for the module
-void SimpleTransferModule::run() {
+void SimpleTransferModule::run(unsigned int) {
     // get detector model
     auto model = std::dynamic_pointer_cast<PixelDetectorModel>(detector_->getModel());
     if(model == nullptr) {

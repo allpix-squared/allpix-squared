@@ -33,7 +33,7 @@ namespace allpix {
         void init() override;
 
         // fill the histograms
-        void run() override;
+        void run(unsigned int) override;
 
         // write the histograms
         void finalize() override;

@@ -26,7 +26,7 @@ namespace allpix {
         ~TestDepositReaderModule() override;
 
         // show the deposition results
-        void run() override;
+        void run(unsigned int) override;
 
     private:
         // configuration for this module

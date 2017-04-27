@@ -22,7 +22,7 @@ TestDepositReaderModule::TestDepositReaderModule(Configuration config, Messenger
 TestDepositReaderModule::~TestDepositReaderModule() = default;
 
 // print the deposits
-void TestDepositReaderModule::run() {
+void TestDepositReaderModule::run(unsigned int) {
     LOG(INFO) << "Got deposits in " << deposit_messages_.size() << " detectors";
     for(auto& message : deposit_messages_) {
         LOG(INFO) << "set of " << message->getData().size() << " deposits in detector " << message->getDetector()->getName();

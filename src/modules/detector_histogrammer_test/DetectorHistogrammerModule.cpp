@@ -64,7 +64,7 @@ void DetectorHistogrammerModule::init() {
 }
 
 // fill the histograms
-void DetectorHistogrammerModule::run() {
+void DetectorHistogrammerModule::run(unsigned int) {
     // check if we got any deposits
     if(pixels_message_ == nullptr) {
         LOG(WARNING) << "Detector " << detector_->getName() << " did not get any deposits... skipping!";

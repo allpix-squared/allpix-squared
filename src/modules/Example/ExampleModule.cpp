@@ -21,11 +21,11 @@ ExampleModule::ExampleModule(const Configuration& config, Messenger* messenger, 
 }
 
 // run method fetching a message and outputting its own
-void ExampleModule::run() {
+void ExampleModule::run(unsigned int event_num) {
     // check if received a message
     if(message_) {
         // print the message
-        LOG(DEBUG) << "received a message: " << message_.get();
+        LOG(DEBUG) << "received a message: " << message_.get() << " during event " << event_num;
     } else {
         // no message received
         LOG(DEBUG) << "did not receive any message before run...";

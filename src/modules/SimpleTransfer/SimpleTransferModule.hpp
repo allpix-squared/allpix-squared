@@ -25,8 +25,7 @@ namespace allpix {
         SimpleTransferModule(Configuration config, Messenger*, std::shared_ptr<Detector>);
 
         // read the electric field and set it for the detectors
-        // FIXME: this should not run again for every event
-        void run() override;
+        void run(unsigned int) override;
 
     private:
         // configuration for this reader

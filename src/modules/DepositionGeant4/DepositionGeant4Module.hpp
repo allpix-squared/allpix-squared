@@ -28,7 +28,7 @@ namespace allpix {
         void init() override;
 
         // run a single deposition
-        void run() override;
+        void run(unsigned int) override;
 
     private:
         // configuration for this module

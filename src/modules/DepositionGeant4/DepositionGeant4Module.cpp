@@ -110,7 +110,7 @@ void DepositionGeant4Module::init() {
 }
 
 // run the deposition
-void DepositionGeant4Module::run() {
+void DepositionGeant4Module::run(unsigned int) {
     // start the beam
     LOG(INFO) << "Enabling beam";
     run_manager_g4_->BeamOn(1);
