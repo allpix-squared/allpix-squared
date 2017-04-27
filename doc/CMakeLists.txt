@@ -30,8 +30,10 @@ IF(LATEX_COMPILER)
     SET(LATEX_OUTPUT_PATH ${CMAKE_BINARY_DIR})
     ADD_LATEX_DOCUMENT(
         usermanual/allpix-manual.tex 
+        BIBFILES 
+        usermanual/references.bib
+        USE_BIBLATEX
         INPUTS
-        usermanual/references.tex
         usermanual/chapters/introduction.tex
         usermanual/chapters/installation.tex
         usermanual/chapters/framework.tex
@@ -42,7 +44,6 @@ IF(LATEX_COMPILER)
         usermanual/chapters/summary.tex
         usermanual/chapters/acknowledgements.tex
         usermanual/appendices/design_notes.tex
-        NO_DEFAULT
         )
 ELSE(LATEX_COMPILER)
     MESSAGE(STATUS "No LaTeX found, cannot compile user manual.")
