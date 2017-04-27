@@ -6,9 +6,10 @@
 #include <memory>
 #include <random>
 #include <string>
+#include <vector>
 
-#include <Math/Vector3D.h>
-#include <TGraph2D.h>
+#include <Math/Point3D.h>
+#include <TFile.h>
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/DetectorModel.hpp"
@@ -25,8 +26,14 @@ namespace allpix {
         SimplePropagationModule(Configuration, Messenger*, std::shared_ptr<Detector>);
         ~SimplePropagationModule() override;
 
+        // init debug plots
+        void init() override;
+
         // do the propagation of the charge deposits
-        void run() override;
+        void run(unsigned int event_num) override;
+
+        // finalize debug plots
+        void finalize() override;
 
     private:
         // propagate a single charge
@@ -49,7 +56,8 @@ namespace allpix {
         std::shared_ptr<DepositedChargeMessage> deposits_message_;
 
         // debug list of points to plot
-        std::vector<TGraph2D> debug_plot_points_;
+        std::vector<std::vector<ROOT::Math::XYZPoint>> debug_plot_points_;
+        TFile* debug_file_;
     };
 
 } // namespace allpix

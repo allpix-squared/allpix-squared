@@ -17,11 +17,12 @@
 
 #include <Math/Point3D.h>
 #include <Math/Vector3D.h>
-#include <TApplication.h>
 #include <TCanvas.h>
 #include <TFile.h>
-#include <TH2D.h>
-#include <TPad.h>
+#include <TH3F.h>
+#include <TPolyLine3D.h>
+
+#include <iostream>
 
 #include "core/config/Configuration.hpp"
 #include "core/messenger/Messenger.hpp"
@@ -39,7 +40,7 @@ SimplePropagationModule::SimplePropagationModule(Configuration config,
                                                  Messenger* messenger,
                                                  std::shared_ptr<Detector> detector)
     : Module(detector), random_generator_(), config_(std::move(config)), messenger_(messenger),
-      detector_(std::move(detector)), model_(), deposits_message_(nullptr), debug_plot_points_() {
+      detector_(std::move(detector)), model_(), deposits_message_(nullptr), debug_plot_points_(), debug_file_(nullptr) {
     // get detector model
     model_ = detector_->getModel();
 
@@ -59,8 +60,16 @@ SimplePropagationModule::SimplePropagationModule(Configuration config,
 }
 SimplePropagationModule::~SimplePropagationModule() = default;
 
+// init debug plots
+void SimplePropagationModule::init() {
+    if(config_.get<bool>("debug_plots")) {
+        std::string file_name = getOutputPath(config_.get<std::string>("debug_plots_file_name", "debug_plots") + ".root");
+        debug_file_ = new TFile(file_name.c_str(), "RECREATE");
+    }
+}
+
 // run the propagation
-void SimplePropagationModule::run() {
+void SimplePropagationModule::run(unsigned int event_num) {
     // create vector of propagated charges
     std::vector<PropagatedCharge> propagated_charges;
 
@@ -97,45 +106,71 @@ void SimplePropagationModule::run() {
 
     // write debug plots if required
     if(config_.get<bool>("debug_plots")) {
-        std::string file_name = getOutputPath(config_.get<std::string>("debug_plots_file_name", "debug_plots") + ".root");
-        TFile file(file_name.c_str(), "RECREATE");
+        LOG(DEBUG) << "Writing debug plots";
 
-        // loop over all steps
-        for(size_t idx = 0; idx < debug_plot_points_.size(); ++idx) {
-            // auto steps = config_.get<size_t>("debug_histogram_steps", 500);
+        // goto the file
+        debug_file_->cd();
 
-            auto* canvas =
-                new TCanvas(("temp" + std::to_string(config_.get<double>("debug_plots_step") * idx)).c_str(), "t");
+        // create the main canvas
+        auto* canvas = new TCanvas(("plot_" + std::to_string(event_num)).c_str(),
+                                   ("Propagation of charge for event " + std::to_string(event_num)).c_str());
+        canvas->cd();
 
-            /*std::string histogram_title = "Debug plot of propagated charges";
-            auto histogram = new TH2D(("temp_"+getUniqueName()+std::to_string(idx)).c_str(),
-                                      histogram_title.c_str(),
-                                      static_cast<int>(steps),
-                                      model_->getSensorMinX(),
-                                      model_->getSensorMinX() + model_->getSensorSizeX(),
-                                      static_cast<int>(steps),
-                                      model_->getSensorMinY(),
-                                      model_->getSensorMinY() + model_->getSensorSizeY());
-            // write points
-            debug_plot_points_[idx].SetHistogram(histogram);*/
-            debug_plot_points_[idx].GetXaxis()->SetLimits(model_->getSensorMinX(),
-                                                          model_->getSensorMinX() + model_->getSensorSizeX());
-            debug_plot_points_[idx].GetHistogram()->GetXaxis()->SetRangeUser(
-                model_->getSensorMinX(), model_->getSensorMinX() + model_->getSensorSizeX());
-            // debug_plot_points_[idx].Write(("point_" + std::to_string(config_.get<double>("debug_plots_step") *
-            // idx)).c_str());
+        // calculate the axis limits
+        double minX = FLT_MAX, maxX = FLT_MIN;
+        double minY = FLT_MAX, maxY = FLT_MIN;
+        for(auto& points : debug_plot_points_) {
+            for(auto& point : points) {
+                minX = std::min(minX, point.x());
+                maxX = std::max(maxX, point.x());
 
-            // debug_plot_points_[idx].GetHistogram()->SetBins(
-
-            debug_plot_points_[idx].Draw("p");
-
-            canvas->Draw();
-            canvas->Write();
-            // histogram->Write();
+                minY = std::min(minY, point.y());
+                maxY = std::max(maxY, point.y());
+            }
         }
 
-        // close the file
-        file.Close();
+        // add a frame for proper axis alignment
+        TH3F* histogram_frame = new TH3F(("frame_" + std::to_string(event_num)).c_str(),
+                                         "",
+                                         10,
+                                         minX,
+                                         maxX,
+                                         10,
+                                         minY,
+                                         maxY,
+                                         10,
+                                         model_->getSensorMinZ(),
+                                         model_->getSensorMinZ() + model_->getSensorSizeZ());
+        histogram_frame->Draw();
+        histogram_frame->SetStats(false);
+
+        // loop over all point sets
+        std::vector<TPolyLine3D*> lines;
+        short color = 0;
+        for(auto& points : debug_plot_points_) {
+            auto line = new TPolyLine3D;
+            for(auto& point : points) {
+                line->SetNextPoint(point.x(), point.y(), point.z());
+            }
+            // plot all lines with at least three points with different color
+            if(line->GetN() >= 3) {
+                line->SetLineColor(color);
+                line->Draw("same");
+                color = (color + 10) % 101;
+            }
+            lines.push_back(line);
+        }
+
+        // draw and write canvas to file
+        canvas->Draw();
+        canvas->Write();
+
+        // delete and clear variables
+        for(auto& line : lines) {
+            delete line;
+        }
+        delete canvas;
+        debug_plot_points_.clear();
     }
 
     // create a new message with propagated charges
@@ -198,19 +233,12 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const XYZPoint& r
     // continue until outside the sensor (no electric field)
     // FIXME: we need to determine what would be a good time to stop
     double last_time = std::numeric_limits<double>::lowest();
-    size_t step_idx = 0;
+    debug_plot_points_.emplace_back();
     while(true) {
         // update debug plots if necessary
         if(config_.get<bool>("debug_plots") && runge_kutta.getTime() - last_time > config_.get<double>("debug_plots_step")) {
-            position = runge_kutta.getValue();
-            if(step_idx == debug_plot_points_.size()) {
-                debug_plot_points_.emplace_back();
-            }
-            debug_plot_points_[step_idx].SetPoint(
-                debug_plot_points_[step_idx].GetN(), position.x(), position.y(), position.z());
-
+            debug_plot_points_.back().push_back(static_cast<XYZPoint>(runge_kutta.getValue()));
             last_time = runge_kutta.getTime();
-            ++step_idx;
         }
 
         // do a runge kutta step
@@ -253,4 +281,12 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const XYZPoint& r
 
     position = runge_kutta.getValue();
     return std::make_pair(static_cast<XYZPoint>(position), runge_kutta.getTime());
+}
+
+// write debug plots
+void SimplePropagationModule::finalize() {
+    if(config_.get<bool>("debug_plots")) {
+        debug_file_->Close();
+        delete debug_file_;
+    }
 }
