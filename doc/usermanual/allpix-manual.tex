@@ -25,10 +25,10 @@
 
 \input{usermanual/symbols.tex}
 
-\title{allpix\textsuperscript{2} User Manual} % Title
+\title{\apsq User Manual} % Title
 
-\author{
-    Koen Wolters (\href{mailto:koen.wolters@cern.ch}{koen.wolters@cern.ch})
+\author{Koen Wolters (\href{mailto:koen.wolters@cern.ch}{koen.wolters@cern.ch}),
+  Simon Spannagel (\href{mailto:simon.spannagel@cern.ch}{simon.spannagel@cern.ch})
 } % Author names
 
 \date{\today} % Date for the report
@@ -41,11 +41,65 @@
 \begin{abstract}
 \end{abstract}
 
-\newpage
+\clearpage
 % Table Of Contents
 \tableofcontents
 
-\newpage
+\clearpage
+
+\section{Introduction}
+
+\section{Installation}
+\subsection{Prerequisites}
+\subsection{Downloading the source code}
+\subsection{Configuration via CMake}
+\subsection{Compilation}
+
+\section{The allpix-squared Framework}
+\subsection{Architecture of the Framework}
+\subsection{Detector Models and Geometry}
+\subsection{Modules and the Module Manager}
+\subsection{Messaging: Passing Objects}
+\paragraph{Object Types}
+\subsection{Error Reporting and Exceptions}
+
+\section{allpix Modules}
+...
+
+\section{Module & Detector Development}
+\subsection{Implementing a New \apsq Module}
+\subsection{Implementing a New Detector Model}
+
+\section{Configuration and Usage}
+\subsection{Configuration Files}
+\subsection{Framework Parameters}
+\subsection{Setting up the Simulation Chain}
+\paragraph{Add Additional Modules}
+\paragraph{Redirect Module Inputs and Outputs}
+\paragraph{Using TCAd Electric Field Simulations}
+\paragraph{Choosing the Propagation Modules}
+normal, irrad with trapping simulation etc
+\subsection{Logging and Verbosity Levels}
+\subsection{Storing Output Data}
+
+\section{Frequently Asked Questions}
+How do I run a module only for one detector?
+How do I run a module only for a specific detector type?
+...
+
+\section{Additional Tools \& Resources}
+\subsection{TCAD Electroic Field Converter}
+\subsection{Simple Usage Examples}
+
+\section{Summary}
+
+\section{Acknowledgments}
+We would like to acknowledge the contribution of
+
+
+\section{Appendix}
+
+\clearpage
 
 \input{usermanual/design.tex}
 
