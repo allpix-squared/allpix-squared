@@ -156,7 +156,7 @@ void SimplePropagationModule::run(unsigned int event_num) {
             if(line->GetN() >= 3) {
                 line->SetLineColor(color);
                 line->Draw("same");
-                color = (color + 10) % 101;
+                color = static_cast<short>((static_cast<int>(color) + 10) % 101);
             }
             lines.push_back(line);
         }
