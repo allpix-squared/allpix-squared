@@ -4,9 +4,13 @@
 
 \documentclass{scrartcl}
 
+\usepackage[backend=biber,
+            autocite=superscript,
+            sorting=none,
+            url=false
+            ]{biblatex}
 \usepackage{siunitx} % Provides the \SI{}{} command for typesetting SI units
 \usepackage{booktabs}
-
 \usepackage{hyperref}
 \usepackage{xspace}
 \usepackage{color}
@@ -16,14 +20,22 @@
 \usepackage{listings}
 \setlength\parindent{0pt} % Removes all indentation from paragraphs
 
+% Additional commands 
 \renewcommand{\labelenumi}{\alph{enumi}.} % Make numbering in the enumerate environment by letter rather than number (e.g. section 6)
 \newcommand{\apsq}{\texorpdfstring{\ensuremath{\mathrm{allpix}^2}}{allpix\textasciicircum 2}\xspace}
+
+% Set paths
+\makeatletter
+\def\input@path{{usermanual/}}
+\makeatother
+\graphicspath{{images/}}
+
+% Set bibliography
+\addbibresource{references.bib}
 
 %----------------------------------------------------------------------------------------
 %   DOCUMENT INFORMATION
 %----------------------------------------------------------------------------------------
-
-\input{usermanual/symbols.tex}
 
 \title{\apsq User Manual} % Title
 
@@ -37,7 +49,6 @@
 
 \maketitle % Insert the title, author and date
 
-
 \begin{abstract}
 \end{abstract}
 
@@ -47,65 +58,52 @@
 
 \clearpage
 
-\section{Introduction}
+% intro
+\input{chapters/introduction}
+\clearpage
 
-\section{Installation}
-\subsection{Prerequisites}
-\subsection{Downloading the source code}
-\subsection{Configuration via CMake}
-\subsection{Compilation}
+% installation
+\input{chapters/installation}
+\clearpage
 
-\section{The \apsq Framework}
-\subsection{Architecture of the Framework}
-\subsection{Modules and the Module Manager}
-\subsection{Configuration and Parameters}
-\subsection{Detector Models and Geometry}
-\subsection{Passing Objects using Messages}
-\paragraph{Object Types}
-\subsection{Error Reporting and Exceptions}
-\subsection{Logging and other Utilities}
+% core framework 
+\input{chapters/framework}
+\clearpage
 
-\section{Configuration and Usage}
-\subsection{Configuration Files}
-\subsection{Framework Parameters}
-\subsection{Setting up the Simulation Chain}
-\paragraph{Add Additional Modules}
-\paragraph{Redirect Module Inputs and Outputs}
-\paragraph{Using TCAd Electric Field Simulations}
-\paragraph{Choosing the Propagation Modules}
-normal, irrad with trapping simulation etc
-\subsection{Logging and Verbosity Levels}
-\subsection{Storing Output Data}
+% configuration and usage
+\input{chapters/usage}
+\clearpage
 
-\section{Module \& Detector Development}
-\subsection{Implementing a New Module}
-\subsection{Adding a New Detector Model}
+% development of new modules and detectors models
+\input{chapters/development}
+\clearpage
 
-\section{Frequently Asked Questions}
-How do I run a module only for one detector?
-How do I run a module only for a specific detector type?
-...
+% frequently asked question
+\input{chapters/faq}
+\clearpage
 
-\section{Additional Tools \& Resources}
-\subsection{TCAD Electric Field Converter}
-\subsection{Simple Usage Examples}
+% addiotional tools and resources
+\input{chapters/additional}
+\clearpage
 
-\section{Summary}
+% summary (short introduction)
+% FIXME: do we want this and should it maybe be placed earlier
+\input{chapters/summary}
+\clearpage
 
-\section{Acknowledgments}
-We would like to acknowledge the contribution of
+% acknowledgements to all contributors etc
+\input{chapters/acknowledgements}
+\clearpage
 
 \appendix
 \clearpage
-\input{usermanual/design.tex}
+\input{appendices/design_notes}
+\clearpage
 % probably some chapter with more advanced notes
 
 \clearpage
 \phantomsection
 \addcontentsline{toc}{section}{References}
-\begin{thebibliography}{99}
-  \input{usermanual/references.tex}
-\end{thebibliography}
-
+\printbibliography
 
 \end{document}
