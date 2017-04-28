@@ -16,6 +16,7 @@ $ bin/allpix etc/example_config.ini
 
 In case something went wrong during the build, you want to use a non-standard installation or if you want more detailed installation instructions, please read on.
 \subsection{Prerequisites}
+\label{sec:prerequisites}.
 \apsq should be able to run without problems on Mac as well as any recent Linux distribution. Windows is not supported and will likely never be. It could be theoretically possible to install \apsq using MinGW or Cygwin, but this not tested.
 
 The core framework is split from the individual modules and \apsq has therefore only one required dependency: ROOT 6 (versions below 6 are not supported!). Please refer to the ROOT documentation at \url{https://root.cern.ch/} about details how to install ROOT. ROOT has several extra components and the GenVector package is required to run \apsq. This package is included by default in the standard build.
@@ -35,11 +36,9 @@ $ git clone https://gitlab.cern.ch/simonspa/allpix-squared
 $ cd allpix-squared
 \end{verbatim}
 
-At the start of all instructions in the next section it is expected that you execute them in the downloaded source folder (\textit{allpix-squared} if instructions above are followed).
-
 \subsection{Configuration via CMake}
 \label{sec:cmake_config}.
-An out-of-source build is recommended for \apsq. This means that you should not run CMake in the source folder. Instead create a \textit{build} folder inside the source folder and execute cmake from there. For a standard output without any flags this implies running:
+\apsq uses the CMake build system to build and install the core framework and the modules. An out-of-source build is recommended: this means that you should not run CMake in the source folder. Instead create a \textit{build} folder inside the source folder and execute cmake from there. For a standard output without any flags this implies running:
 
 \begin{verbatim}
 $ mkdir build
@@ -49,8 +48,33 @@ $ cmake ..
 
 CMake can be run with several extra arguments to change the type of installation. These options can be set with -D\textit{option} (see the end of this section as an example). Currently the following options are supported:
 \begin{itemize}
-\item \textit{CMAKE_INSTALL_PREFIX}: The directory to use as a prefix for installing the binaries, libraries and data. Defaults to the source directory (where the folders bin/ and lib/ are then created). 
-\item \textit{CMAKE_BUILD_TYPE}: Type of build to install, default to RELEASE. Other possible options are DEBUG (for compiling without optimizations, but with debug symbols), DEBUG_ASAN (for compiling without optimizations, with debug symbol and with the Clang Address Sanitizer library). 
+\item \textbf{CMAKE\_INSTALL\_PREFIX}: The directory to use as a prefix for installing the binaries, libraries and data. Defaults to the source directory (where the folders bin/ and lib/ are then created). 
+\item \textbf{CMAKE\_BUILD\_TYPE}: Type of build to install, defaults to RELEASE (compiles with full optimizations but without debug symbols). Other possible options are DEBUG (for compiling without optimizations, but with debug symbols), DEBUG\_ASAN (for compiling without optimizations, with debug symbol and with the Clang Address Sanitizer library). 
+\item \textbf{MODEL\_DIRECTORY}: Directory to install the internal models to. Defaults to not installing if the CMAKE\_INSTALL\_PREFIX is set to the source directory (the default). Otherwise defaults to CMAKE\_INSTALL\_PREFIX\textit{/share/allpix/}. The supplied install directory is hardcoded into the modules to use in the search path for model directories.
+\item \textbf{BUILD\_ALL\_MODULES}: Build all included modules, defaulting to OFF. This ignores any selection using the parameter described below.
+\item \textbf{BUILD\_\textit{module\_name}}: If the specific \textit{module\_name} should be installed or not. Defaults to ON, thus all modules are installed by default. This set of parameters have to be set appropriately if you want a build without one of the extra dependencies specified in \ref{sec:prerequisites}.
+% FIXME: parameter to only include modules that can actually be build is still missing
 \end{itemize}
 
-\subsection{Compilation}
+For example if one wants to do a debug build to a special install directory without the GeometryBuilderGeant4 module you need to execute the following commands.
+\begin{verbatim}
+$ mkdir build
+$ cd build
+$ cmake -DCMAKE_INSTALL_PREFIX=../install/ \
+        -DCMAKE_BUILD_TYPE=DEBUG \
+        -DBUILD_GeometryBuilderGeant4=OFF ..
+\end{verbatim}
+
+\subsection{Compilation and installation}
+Compiling the framework is now a single make command in the build folder created above:
+\begin{verbatim}
+$ make
+\end{verbatim}
+If you do not want to install but use the local build version you can access it through \textit{src/exec/allpix} in the build folder. This is not recommended for normal users, but can be useful for developers.
+
+To install the library to the selected install location (defaults to the source directory) you need a single install command:
+\begin{verbatim}
+$ make install
+\end{verbatim}
+
+The binary is now available at \textit{bin/allpix} in your installation directory. The example configuration files are not installed as they should only be used as a starting point for your own configuration. They can however be used to test if everything has been installed correctly. Running the allpix binary with the example config as first argument (like \textit{etc/example\_config.ini}) should run without problems with a default install (of course it can give problems if some modules are not installed).
