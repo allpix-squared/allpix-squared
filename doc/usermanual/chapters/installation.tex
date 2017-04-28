@@ -37,7 +37,13 @@ $ cd allpix-squared
 \end{verbatim}
 
 \subsection{Configuration via CMake}
-\label{sec:cmake_config}.
+\label{sec:cmake_config}
+Before continuuing with running the build the necessary setup scripts for ROOT and Geant4 (unless a build without Geant4 modules is run) should be run. This generally implies running the following two commands from the respective installation directories (replacing \textit{\textless root\_install\_dir\textgreater} with your ROOT installation directory and similar for Geant):
+\begin{verbatim}
+$ <root_install_dir>/bin/thisroot.sh
+$ <geant4_install_dir>/bin/geant4.sh
+\end{verbatim}
+
 \apsq uses the CMake build system to build and install the core framework and the modules. An out-of-source build is recommended: this means that you should not run CMake in the source folder. Instead create a \textit{build} folder inside the source folder and execute cmake from there. For a standard output without any flags this implies running:
 
 \begin{verbatim}
