@@ -30,8 +30,9 @@ PRINT_VERSION()
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # Configure the installation prefix to allow both local as system-wide installation
-SET(INSTALL_PREFIX "${PROJECT_SOURCE_DIR}" CACHE PATH "Prefix prepended to install directories")
-SET(CMAKE_INSTALL_PREFIX "${INSTALL_PREFIX}" CACHE INTERNAL "Prefix prepended to install directories" FORCE)
+IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    SET(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}" CACHE "Prefix prepended to install directories")
+ENDIF()
 
 # Set up the RPATH so executables find the libraries even when installed in non-default location
 SET(CMAKE_MACOSX_RPATH TRUE)

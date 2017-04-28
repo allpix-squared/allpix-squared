@@ -14,7 +14,7 @@ Generic simulation framework for pixel detectors based on [original AllPix](http
 * [Eigen3](http://eigen.tuxfamily.org/index.php?title=Main_Page) (optional in a later stage)
 
 ## Compilation/Installation
-The standard CMake build system is used. The install directory can be specified by adding -DINSTALL_PREFIX=<prefix> as argument to the cmake command below. More configuration options will be added later. Make sure to load your ROOT and Geant4 setups for the build to succeed. To compile and install run the following commands:
+The standard CMake build system is used. The install directory can be specified by adding -DCMAKE_INSTALL_PREFIX=<prefix> as argument to the cmake command below. More configuration options will be added later. Make sure to load your ROOT and Geant4 setups for the build to succeed. To compile and install run the following commands:
 
 ```
 $ mkdir build && cd build/
