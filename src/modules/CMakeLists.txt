@@ -3,7 +3,7 @@
 ###################
 
 # Option to build all modules
-OPTION(BUILD_allmodules "Build all modules?" OFF)
+OPTION(BUILD_ALL_MODULES "Build all modules?" OFF)
 
 # set the models path
 ADD_DEFINITIONS(-DALLPIX_MODEL_DIRECTORY="${ALLPIX_MODEL_DIRECTORY}" -DALLPIX_MODEL_SUFFIX="${ALLPIX_MODEL_SUFFIX}")

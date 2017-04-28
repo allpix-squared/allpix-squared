@@ -4,7 +4,7 @@ MACRO(allpix_build_module dir)
     OPTION(BUILD_${dir} "Build module in directory ${dir}?" ON)
     
     # only build if the build flag is defined
-    IF(BUILD_${dir} OR BUILD_allmodules)
+    IF(BUILD_${dir} OR BUILD_ALL_MODULES)
         MESSAGE( STATUS "Building module: " ${dir} )
     
         # build the module

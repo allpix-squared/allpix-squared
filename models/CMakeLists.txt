@@ -20,7 +20,8 @@ ENDIF()
 
 # install the files to the models directory
 # NOTE: with default install path this does not change anything
-INSTALL(FILES
+INSTALL(
+    FILES
     test.ini
     timepix.ini
-DESTINATION ${ALLPIX_MODEL_DIRECTORY})
+    DESTINATION ${ALLPIX_MODEL_DIRECTORY})
