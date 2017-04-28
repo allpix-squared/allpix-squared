@@ -1,5 +1,56 @@
 \section{Installation}
+Full installation instructions are found in the next paragraphs. Users who want to quickly setup a working version can execute the following commands:
+\begin{verbatim}
+$ git clone https://gitlab.cern.ch/simonspa/allpix-squared
+$ cd allpix-squared
+$ mkdir build && cd build/
+$ cmake ..
+$ make
+$ make install
+$ cd ..
+\end{verbatim}
+The binary can then be executed with the example configuration file as follows:
+\begin{verbatim}
+$ bin/allpix etc/example_config.ini
+\end{verbatim}
+
+In case something went wrong during the build, you want to use a non-standard installation or if you want more detailed installation instructions, please read on.
 \subsection{Prerequisites}
+\apsq should be able to run without problems on Mac as well as any recent Linux distribution. Windows is not supported and will likely never be. It could be theoretically possible to install \apsq using MinGW or Cygwin, but this not tested.
+
+The core framework is split from the individual modules and \apsq has therefore only one required dependency: ROOT 6 (versions below 6 are not supported!). Please refer to the ROOT documentation at \url{https://root.cern.ch/} about details how to install ROOT. ROOT has several extra components and the GenVector package is required to run \apsq. This package is included by default in the standard build.
+
+For various modules extra dependencies are necessary. For details about the dependencies and their installation visit the module documentation later on in this document. In general the following dependencies are needed to compile the standard installation:
+\begin{itemize}
+\item Geant4: Used to simulate the geometry and deposit charges in the detector. See the instructions at \url{http://geant4.cern.ch/} about details how to install the software. Geant4 datasets should be included to use it in the modules.
+\item Eigen3: Used vector package to do Runge-Kutta integration in the generic charge propagation module. Eigen is available in almost all Linux distributions through their package manager. See the installation instruction at \url{http://eigen.tuxfamily.org/index.php?title=Main_Page} for more information about Eigen3.
+\end{itemize}
+Extra flags needs to be set if you want to compile an \apsq installation without these dependencies. These configuration options are explained in section \ref{sec:cmake_config}.
+
 \subsection{Downloading the source code}
+The source code is available at different places but only in Git repositories. Separate source code releases are not yet provided at this stage. The recommended download location is from GitLab at \url{https://gitlab.cern.ch/simonspa/allpix-squared}. A plain clone should fetch the source code succesfully (!!! currently not true as the repository is blocked outside cern !!!):
+
+\begin{verbatim}
+$ git clone https://gitlab.cern.ch/simonspa/allpix-squared
+$ cd allpix-squared
+\end{verbatim}
+
+At the start of all instructions in the next section it is expected that you execute them in the downloaded source folder (\textit{allpix-squared} if instructions above are followed).
+
 \subsection{Configuration via CMake}
+\label{sec:cmake_config}.
+An out-of-source build is recommended for \apsq. This means that you should not run CMake in the source folder. Instead create a \textit{build} folder inside the source folder and execute cmake from there. For a standard output without any flags this implies running:
+
+\begin{verbatim}
+$ mkdir build
+$ cd build
+$ cmake ..
+\end{verbatim}
+
+CMake can be run with several extra arguments to change the type of installation. These options can be set with -D\textit{option} (see the end of this section as an example). Currently the following options are supported:
+\begin{itemize}
+\item \textit{CMAKE_INSTALL_PREFIX}: The directory to use as a prefix for installing the binaries, libraries and data. Defaults to the source directory (where the folders bin/ and lib/ are then created). 
+\item \textit{CMAKE_BUILD_TYPE}: Type of build to install, default to RELEASE. Other possible options are DEBUG (for compiling without optimizations, but with debug symbols), DEBUG_ASAN (for compiling without optimizations, with debug symbol and with the Clang Address Sanitizer library). 
+\end{itemize}
+
 \subsection{Compilation}

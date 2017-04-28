@@ -2,7 +2,7 @@
 %   PACKAGES AND DOCUMENT CONFIGURATIONS
 %----------------------------------------------------------------------------------------
 
-\documentclass{scrartcl}
+\documentclass[fontsize=12pt]{scrartcl}
 
 \usepackage[backend=biber,
             autocite=superscript,
@@ -15,14 +15,17 @@
 \usepackage{xspace}
 \usepackage{color}
 \usepackage{minted}
+\usepackage{a4wide}
 
 \usepackage{graphicx} % Required for the inclusion of images
 \usepackage{listings}
-\setlength\parindent{0pt} % Removes all indentation from paragraphs
+\usepackage{parskip}
 
 % Additional commands 
 \renewcommand{\labelenumi}{\alph{enumi}.} % Make numbering in the enumerate environment by letter rather than number (e.g. section 6)
 \newcommand{\apsq}{\texorpdfstring{\ensuremath{\mathrm{allpix}^2}}{allpix\textasciicircum 2}\xspace}
+
+\newcommand{\needcite}{[?]}
 
 % Set paths
 \makeatletter
