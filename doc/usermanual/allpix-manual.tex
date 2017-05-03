@@ -2,13 +2,14 @@
 %   PACKAGES AND DOCUMENT CONFIGURATIONS
 %----------------------------------------------------------------------------------------
 
-\documentclass[fontsize=12pt]{scrartcl}
+\documentclass[fontsize=12pt, parskip=full]{scrartcl}
 
 \usepackage[backend=biber,
             autocite=superscript,
             sorting=none,
             url=false
             ]{biblatex}
+\usepackage[T1]{fontenc}
 \usepackage{siunitx} % Provides the \SI{}{} command for typesetting SI units
 \usepackage{booktabs}
 \usepackage{hyperref}
@@ -19,15 +20,16 @@
 
 \usepackage{graphicx} % Required for the inclusion of images
 \usepackage{listings}
-\usepackage{parskip}
+\usepackage{seqsplit}
 
 % Additional commands 
-\renewcommand{\labelenumi}{\alph{enumi}.} % Make numbering in the enumerate environment by letter rather than number (e.g. section 6)
+% \renewcommand{\labelenumi}{\alph{enumi}.} % Make numbering in the enumerate environment by letter rather than number (e.g. section 6)
 \newcommand{\apsq}{\texorpdfstring{\ensuremath{\mathrm{AllPix}^2}}{AllPix\textasciicircum 2}\xspace}
 
 % Temporary commands
 \newcommand{\needcite}{[CITE?]}
 \newcommand{\needref}{[REF?]}
+\newcommand{\todo}{[TODO!]}
 
 % Set paths
 \makeatletter

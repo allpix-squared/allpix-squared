@@ -17,12 +17,102 @@ The core is constructed as a light-weight framework that provides various subsys
 \item \textbf{Configuration}: Provides a general configuration object from which data can be stored and retrieved, together with a TOML-like\needref file parser to instantiate the configurations. Also provides a general \apsq configuration manager giving access to the main configuration file and section. It is used by module manager system to find the required instantiations and access the global configuration. More information is given in \ref{sec:config_parameters}.
 \item \textbf{Geometry}: Supplies helpers for the simulation geometry. The manager contains all the registered detectors. A detector has a certain position and orientation linked to an instantiation of a particular detector model. The detector model contains all the parameters that describe the geometry of the detector. Most modules only need a subset of these parameters, but they are all together used to construct the Geant4 geometry. More details about the geometry and detector models is provided in section \ref{sec:models_geometry}.
 \end{enumerate}
+
 \subsection{Modules and the Module Manager}
-\ref{sec:module_manager}
+\label{sec:module_manager}
+\apsq is a modular framework, the core idea is to separate functionality in various independent modules. The various modules should be defined in a directory in \textit{src/modules/}. The name of the directory is the unique name of the module. The suggested naming scheme is CamelCase, thus an example module would be \textit{GenericPropagation}. There are two different kind of modules which can be defined:
+\begin{itemize}
+\item \textbf{Detector}: Modules that are specific to a single detector. They are replicated for all required detectors.
+\item \textbf{Unique}: Modules of which only one instance is allowed to exist per run of the framework.
+\end{itemize}
+The type of module determines the kind of constructor used, the internal unique name and the supported configuration parameters. More details about the instantiation logic for the different kind of modules can be found in \needref.
+
+\subsubsection{Files for a module}
+\label{sec:module_files}
+Every module directory should at the minimum contain the following documents (with \textit{module\_name} replaced by the name of the module):
+\begin{itemize}
+\item \textbf{CMakeLists.txt}: The build script to load the dependencies and set the source files
+\item \textbf{README.md}: The short documentation of the module
+\item \textbf{\textit{module\_name}.tex}: The documentation of the module
+\item \textbf{\textit{module\_name}Module.hpp}: The header file of the module (note that another name can be used for this source file, but that is deprecated)
+\item \textbf{\textit{module\_name}Module.cpp}: The implementation file of the module
+\end{itemize}
+The files are discussed in more detail below. Before the module can be used it should also be linked to the main CMakeLists.txt in \textit{src/modules/} by adding \\ ALLPIX\_BUILD\_MODULE(\textit{module\_name}) with the \textit{module\_name} being the directory of the module. 
+
+More information about constructing your own module can be found in section \ref{sec:building_new_module}.
+
+\paragraph{CMakeLists.txt}
+Contains the build description of the module with the following components:
+\begin{enumerate}
+\item On the first line either ALLPIX\_DETECTOR\_MODULE(MODULE\_NAME) \textbf{or} \\ ALLPIX\_UNIQUE\_MODULE(MODULE\_NAME) dependent on the type of the module defined. The internal name of the module is saved to the \$\{MODULE\_NAME\} variable which should be used as argument to the other functions. Another name can be used as well, but below we exclusively use \$\{MODULE\_NAME\}
+\item The next lines to load the required dependencies. Only ROOT is automatically added to the include headers and linked in the module.
+\item A line with ALLPIX\_MODULE\_SOURCES(\$\{MODULE\_NAME\} \textless sources \textgreater) with sources replaced by all the source files of this module
+\item Several lines to include the directories and load the libraries
+\item A line containing ALLPIX\_MODULE\_INSTALL(\$\{MODULE\_NAME\} to setup the required target for the module to be installed to.
+\end{enumerate}
+
+An example of a simple CMakeLists.txt of a module named \textbf{Test} is the following
+\vspace{5pt}
+
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{cmake}
+# Define module and save name to MODULE_NAME
+ALLPIX_UNIQUE_MODULE(MODULE_NAME) # Replace by ALLPIX_DETECTOR_MODULE(MODULE_NAME) to define a detector module
+
+# Load required dependencies...
+
+# Add sources
+ALLPIX_MODULE_SOURCES(${MODULE_NAME} 
+    TestModule.cpp
+)
+
+# Include directories and link the libraries...
+
+# Provide standard install target
+ALLPIX_MODULE_INSTALL(${MODULE_NAME})
+\end{minted}
+
+\paragraph{README.md}
+\todo
+
+\paragraph{\textit{module\_name}.tex}
+\todo
+
+\paragraph{\textit{module\_name}.hpp and \textit{module\_name}.cpp}
+All the modules should inherit from the Module base class which can be found in \textit{src/core/module/Module.hpp}. The module base class provide two base constructors, a few convenient methods and several methods to override. Every module should provide a fixed constructor which is always called during construction by the module instantiation logic. The arguments for the constructor differs for unique and detector modules. For unique modules the empty constructor for a \textbf{Test} module should be:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+TestModule(Configuration config, Messenger* messenger, GeometryManager* geo_manager) {}
+\end{minted}
+
+For unique modules the first two arguments are the same, but the last argument is a shared\_ptr to the linked detector instead. It should also always forward this provided detector to the base class. Thus an empty constructor of a detector module should be:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+TestModule(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector): Module(detector) {}
+\end{minted}
+
+All the module are thus passed the Configuration object holding the config parameters for that specific object which can be accessed as explained in \needref. Furthermore a pointer to the Messenger is passed which can be used to both bind variables to receive and dispatch messages as explained in \needref. Finally either a pointer to the GeometryManager is passed, which can be used to fetch all the detectors, or a instance of the specific linked detector. The constructor should normally be used to bind the required messages and set configuration defaults. Besides the constructor, every module can override the following methods:
+\begin{itemize}
+\item init(): Called after loading and constructing all modules and before initializing the run. In case of failure an exception can be thrown from the constructor.
+\item run(unsigned int event\_id): Called for every event in the simulation run with the number of the event supplied (starting from one). An exception should be thrown for every serious error, otherwise an warning should be logged.
+\item finalize(): Called after running all events in the run, before destructing the module. Any exceptions should be called from here instead of the destructor.
+\end{itemize}
+
+\subsubsection{Module instantiation}
+The modules are dynamically loaded and instantiated by the Module Manager. Modules are constructed, initialized, runned and finalized in the linear order they are defined in the configuration file. Thus the configuration file should follow the order of the real process. For every section in the main configuration file discussed in \needref a corresponding library is found which should contain the module. A module library should have the name libAllPixModule\textit{module\_name} with \textit{module\_name} replaced with the actual name of the module from the configuration section header. The module search path is as follows:
+\begin{enumerate}
+\item The modules already loaded before from an earlier section header
+\item All directories in the global configuration parameter \textit{library\_directories} in the provided order if this parameter exists
+\item The rpath of the executable, that should automatically point to the libraries that are build and installed together with the executable.
+\end{enumerate}
+
+If the module definition is succesfull it is determined if the module is an unique or a detector module. Depending on the type, the instantiation logic continues as follows:
+\begin{itemize}
+\item \textbf{Unique}: The name of the module is searched in the list of already registered modules. If the module already exists an exception is raised, otherwise the module is added to the run list.
+\item \textbf{Detector}: In this case the modules are instantiated by priority, replacing earlier instantiations with lower priority. Module section that are matched for a specific detector name using the configuration parameter \textit{name} have the highest priority, followed by module sections matched with their model type using \textit{type}. Modules without either the \textit{name}, \textit{type} or both, produce instantiations for all registered modules and have the lowest priority. An exception is raised if a instantiation is requested of the same priority as an earlier one.
+\end{itemize}
+
 \subsection{Configuration and Parameters}
-\ref{sec:config_parameters}
+\label{sec:config_parameters}
 \subsection{Detector Models and Geometry}
-\ref{sec:models_geometry}.
+\label{sec:models_geometry}.
 \subsection{Passing Objects using Messages}
 \label{sec:objects_messages}
 \paragraph{Object Types}
