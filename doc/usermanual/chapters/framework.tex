@@ -3,8 +3,8 @@ The application is split up in the following four main components that together 
 \begin{enumerate}
 \item \textbf{Core}: Sometimes referred as the framework itself, with the rest of the components separate. The core, object and tools are also known as the core framework. The core contains the internal logic to initiate the modules, provide the geometry, facilitate module communication and run the event sequence. The core should keep its dependencies to a minimum and remain separated from the other components as far as posibble. This is the main component discussed in this section.
 \item \textbf{Modules}: A set of methods that execute a (optional) subset of the simulation chain. These are build as separate libraries, loaded dynamically by the core. The set of available modules are discussed in more detail in \needref.
-\item \textbf{Objects}: Objects are sets of data that are passed around between modules. They are contained into a single library and are transferred using the message framework provided by the core. Modules can listen and bind to messages they wish to receive. Messages are passed around by the object type they are carrying, but they can also be named to allow the use of more advanced modules and sophicates simulations setups. Messages are meant to be read-only and a copy of the data should be made if a module wishes to change the data. More information about the messaging system and the currently supported set of objects are found in section \ref{objects_messages}.
-\item \textbf{Tools}: \apsq provides a set of header-only 'tools' that can be used by modules and provide access to common logic to interface various library that could be of use for different modules. An example is a Eigen runge-kutta solver and a set of template specializations for ROOT and Geant4 configuration. More information about these can be found in \needref. This set of tools is different from the set of core utilities the framework provides by itself, which are part of the core and explained in \ref{sec:logging_utilities}
+\item \textbf{Objects}: Objects are sets of data that are passed around between modules. They are contained into a single library and are transferred using the message framework provided by the core. Modules can listen and bind to messages they wish to receive. Messages are passed around by the object type they are carrying, but they can also be named to allow the use of more advanced modules and sophicates simulations setups. Messages are meant to be read-only and a copy of the data should be made if a module wishes to change the data. More information about the messaging system and the currently supported set of objects are found in section \ref{sec:objects_messages}.
+\item \textbf{Tools}: \apsq provides a set of header-only 'tools' that can be used by modules and provide access to common logic to interface various library that could be of use for different modules. An example is a Eigen Runge-Kutta solver and a set of template specializations for ROOT and Geant4 configuration. More information about these can be found in \needref. This set of tools is different from the set of core utilities the framework provides by itself, which are part of the core and explained in \ref{sec:logging_utilities}
 \end{enumerate}
 Finally \apsq provides an executable which instantiates the core, passes the configuration and runs the simulation chain.
 
@@ -16,7 +16,56 @@ The core is constructed as a light-weight framework that provides various subsys
 \item \textbf{Module}: Contain the base class of all the \apsq modules and the unique manager responsible for loading and running the modules (using the configuration system below). This component is discussed in more detail in section \ref{sec:module_manager}. 
 \item \textbf{Configuration}: Provides a general configuration object from which data can be stored and retrieved, together with a TOML-like\needref file parser to instantiate the configurations. Also provides a general \apsq configuration manager giving access to the main configuration file and section. It is used by module manager system to find the required instantiations and access the global configuration. More information is given in \ref{sec:config_parameters}.
 \item \textbf{Geometry}: Supplies helpers for the simulation geometry. The manager contains all the registered detectors. A detector has a certain position and orientation linked to an instantiation of a particular detector model. The detector model contains all the parameters that describe the geometry of the detector. Most modules only need a subset of these parameters, but they are all together used to construct the Geant4 geometry. More details about the geometry and detector models is provided in section \ref{sec:models_geometry}.
+\item \textbf{Messenger}: The messenger is responsible for sending objects from one module to another. The messenger object is passed to every module and can be used to bind to messages to listen for. Messages with objects can also be dispatched through the messenger to send data further in the simulation chain.
+\item \textbf{Utilities}: The framework provides a set of simple utilities for logging, file and directory access, random number seeding and unit conversion. A set of base exceptions is also provided.
 \end{enumerate}
+
+\subsection{Configuration and Parameters}
+\label{sec:config_parameters}
+The modules and the framework can be configured through configuration files. An explanation how to use the various configuration files is given in \needref. All configuration files follow the same format, but the framework has a few exceptional rules for accessing the main configuration file.
+
+\subsubsection{File format}
+Throughout the framework a standard format is used for the configuration files, this format is a simplified version of TOML\needref (which is again inspired by JSON and Windows INI files). The rules for this format are as follows:
+\begin{enumerate}
+\item All whitespace at the beginning or end of a line should be stripped by the parser. Empty lines should be ignored.
+\item Every non-empty line should start with either a \texttt{\#}, a \texttt{[} or a alphanumeric character. Every other character should lead to an immediate parse error.
+\item If the line starts with a \texttt{\#}, the line is handled as comment and all other content on the same line is ignored
+\item If the line starts with a \texttt{[}, the line indicates a section header (also known as configuration header). The line should contain an alphanumeric string indicating the header name followed by an \texttt{]} to end the header (a missing \texttt{]} should raise an exception). Multiple section header with the same name are allowed. All key-value pairs following this section header are part of this section until a new section header is started. After a optional number of ignored whitespace characters there may eventually only be \texttt{\#} character. If that is the case the rest of the line is handled as specified in point 3.
+\item If the line starts with an alphanumeric character, the line should indicate a key-value pair. The beginning of the line should contain an alphanumeric string indicating the 'key'. After a optional number of ignored whitespace the key should be followed by an \texttt{\=}. Any text between the \texttt{\=} and the first \texttt{\#} character not enclosed within a pair of \texttt{"} characters is known as the non-stripped 'value'. Any character from the \texttt{"} is handled as specified in point 3. If the line does not contain any non-enclosed \texttt{\#} character the value ends at the end of the line instead. The 'value' of the key-value pair is the non-stripped 'value' with all whitespace in front and the end stripped.
+\item The value can either be accessed as a single value or an array. If the value is accessed as an array the string is splitted on every whitespace or \texttt{,} character that is not enclosed in a pair of \texttt{"} characters. All empty entities coming out of the split are ignored. All other entities are threated as single values in the array.
+\item All single values are stored as a string containing at least one character. The conversion to the actual type happens on accessing the value.
+\item All key-value pairs defined before the first section header are part of the zero-length empty section header
+\end{enumerate}
+
+\subsubsection{Accessing parameters}
+All values are accessed from the configuration object. If the key is a string called \textbf{key}, the object is named \textbf{config} and the type \textbf{TYPE} is a valid C++ type that the value should represent, the values should be accessed and defaulted by the following methods:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+// returns true if the key exists and false otherwise
+config.has("key") 
+// returns the key as the given type, throws an exception if not existing
+config.get<TYPE>("key") 
+// return the key in the given type or the provided default value if it does not exist
+config.getDefault<TYPE>("key", default_value) 
+// returns an array of single values of the given type; throws if the key does not exist
+config.getArray<TYPE>("key")
+// returns the key as literal string
+config.getText("key") 
+// set the value of key to the default value if the key is not defined
+config.setDefault("key", default_value) 
+// set the value of the key to the defaults array if key is not defined
+config.setDefaultArray<TYPE>("key", vector_of_default_values)
+\end{minted}
+
+The conversions to the type are using the from\_string and to\_string methods provided by the string utility library described in section \needref. This largely follows the standard C++ parsing, with one important exception. If (and only if) the value is retrieved as any C/C++ string type and the string is fully enclosed by a pair of \texttt{"} characters they are stripped before returning the value. 
+
+\subsubsection{Special rules for the main configuration}
+The main configuration file is provided during construction of the framework. The configuration file contains a set of sections as defined above. There are however a few section names that are ignored if they are not specifically accessed by name (but by the general return-all-configurations method instead). These are the following:
+\begin{itemize}
+\item The \textbf{global} header sections: These are (by default) all the zero-length section headers (including the one at the start) and all with the header \textbf{AllPix}. These are combined and accessed together as the so-called global configuration, which contain all the parameters of the general framework (see section \ref{sec:framework_parameters} for details). All key-value pairs defined in this section are also merged with all individual configurations as long the key is not already defined in the specific configuration.
+\item The \textbf{ignore} header sections: The section with name Ignore is (by default) fully ignored. All key-value pairs as well as the section itself are threated as if they were never defined. These sections are useful for quickly enabling and disabling certain sections.
+\end{itemize}
+
+The rest of the normal sections are used to instantiate all the modules as explained in section \ref{sec:module_instantiation}.
 
 \subsection{Modules and the Module Manager}
 \label{sec:module_manager}
@@ -96,7 +145,8 @@ All the module are thus passed the Configuration object holding the config param
 \end{itemize}
 
 \subsubsection{Module instantiation}
-The modules are dynamically loaded and instantiated by the Module Manager. Modules are constructed, initialized, runned and finalized in the linear order they are defined in the configuration file. Thus the configuration file should follow the order of the real process. For every section in the main configuration file discussed in \needref a corresponding library is found which should contain the module. A module library should have the name libAllPixModule\textit{module\_name} with \textit{module\_name} replaced with the actual name of the module from the configuration section header. The module search path is as follows:
+\label{sec:module_instantiation}
+The modules are dynamically loaded and instantiated by the Module Manager. Modules are constructed, initialized, runned and finalized in the linear order they are defined in the configuration file. Thus the configuration file should follow the order of the real process. For every non-special section in the main configuration file (see \ref{sec:config_parameters} for more details) a corresponding library is searched which should contain the module. A module library should have the name libAllPixModule\textit{module\_name} with \textit{module\_name} replaced with the actual name of the module from the configuration section header. The module search path is as follows:
 \begin{enumerate}
 \item The modules already loaded before from an earlier section header
 \item All directories in the global configuration parameter \textit{library\_directories} in the provided order if this parameter exists
@@ -109,8 +159,6 @@ If the module definition is succesfull it is determined if the module is an uniq
 \item \textbf{Detector}: In this case the modules are instantiated by priority, replacing earlier instantiations with lower priority. Module section that are matched for a specific detector name using the configuration parameter \textit{name} have the highest priority, followed by module sections matched with their model type using \textit{type}. Modules without either the \textit{name}, \textit{type} or both, produce instantiations for all registered modules and have the lowest priority. An exception is raised if a instantiation is requested of the same priority as an earlier one.
 \end{itemize}
 
-\subsection{Configuration and Parameters}
-\label{sec:config_parameters}
 \subsection{Detector Models and Geometry}
 \label{sec:models_geometry}.
 \subsection{Passing Objects using Messages}
