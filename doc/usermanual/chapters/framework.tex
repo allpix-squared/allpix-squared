@@ -1,9 +1,31 @@
 \section{The \apsq Framework}
-\subsection{Architecture of the Framework}
+The application is split up in the following four main components that together form \apsq:
+\begin{enumerate}
+\item \textbf{Core}: Sometimes referred as the framework itself, with the rest of the components separate. The core, object and tools are also known as the core framework. The core contains the internal logic to initiate the modules, provide the geometry, facilitate module communication and run the event sequence. The core should keep its dependencies to a minimum and remain separated from the other components as far as posibble. This is the main component discussed in this section.
+\item \textbf{Modules}: A set of methods that execute a (optional) subset of the simulation chain. These are build as separate libraries, loaded dynamically by the core. The set of available modules are discussed in more detail in \needref.
+\item \textbf{Objects}: Objects are sets of data that are passed around between modules. They are contained into a single library and are transferred using the message framework provided by the core. Modules can listen and bind to messages they wish to receive. Messages are passed around by the object type they are carrying, but they can also be named to allow the use of more advanced modules and sophicates simulations setups. Messages are meant to be read-only and a copy of the data should be made if a module wishes to change the data. More information about the messaging system and the currently supported set of objects are found in section \ref{objects_messages}.
+\item \textbf{Tools}: \apsq provides a set of header-only 'tools' that can be used by modules and provide access to common logic to interface various library that could be of use for different modules. An example is a Eigen runge-kutta solver and a set of template specializations for ROOT and Geant4 configuration. More information about these can be found in \needref. This set of tools is different from the set of core utilities the framework provides by itself, which are part of the core and explained in \ref{sec:logging_utilities}
+\end{enumerate}
+Finally \apsq provides an executable which instantiates the core, passes the configuration and runs the simulation chain.
+
+In this section first an overview is given about the architectural setup of the core and how it interacts with the total \apsq framework. Afterwards the separate subcomponents are discussed and explained in more detail. Some code will be shown throughout the paragraphs, but users not interested in technical details can skip these.
+
+\subsection{Architecture of the Core}
+The core is constructed as a light-weight framework that provides various subsystems to the modules. It also contains the part responsible for instantiating and running the modules from the supplied configuration file. The core is structured around five subsystems of which four are centered around managers and the fifth contain a set of simple general utilities. The systems provided are given below:
+\begin{enumerate}
+\item \textbf{Module}: Contain the base class of all the \apsq modules and the unique manager responsible for loading and running the modules (using the configuration system below). This component is discussed in more detail in section \ref{sec:module_manager}. 
+\item \textbf{Configuration}: Provides a general configuration object from which data can be stored and retrieved, together with a TOML-like\needref file parser to instantiate the configurations. Also provides a general \apsq configuration manager giving access to the main configuration file and section. It is used by module manager system to find the required instantiations and access the global configuration. More information is given in \ref{sec:config_parameters}.
+\item \textbf{Geometry}: Supplies helpers for the simulation geometry. The manager contains all the registered detectors. A detector has a certain position and orientation linked to an instantiation of a particular detector model. The detector model contains all the parameters that describe the geometry of the detector. Most modules only need a subset of these parameters, but they are all together used to construct the Geant4 geometry. More details about the geometry and detector models is provided in section \ref{sec:models_geometry}.
+\end{enumerate}
 \subsection{Modules and the Module Manager}
+\ref{sec:module_manager}
 \subsection{Configuration and Parameters}
+\ref{sec:config_parameters}
 \subsection{Detector Models and Geometry}
+\ref{sec:models_geometry}.
 \subsection{Passing Objects using Messages}
+\label{sec:objects_messages}
 \paragraph{Object Types}
 \subsection{Error Reporting and Exceptions}
 \subsection{Logging and other Utilities}
+\label{sec:logging_utilities}
