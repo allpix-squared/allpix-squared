@@ -13,12 +13,14 @@ In this section first an overview is given about the architectural setup of the 
 \subsection{Architecture of the Core}
 The core is constructed as a light-weight framework that provides various subsystems to the modules. It also contains the part responsible for instantiating and running the modules from the supplied configuration file. The core is structured around five subsystems of which four are centered around managers and the fifth contain a set of simple general utilities. The systems provided are given below:
 \begin{enumerate}
-\item \textbf{Module}: Contain the base class of all the \apsq modules and the unique manager responsible for loading and running the modules (using the configuration system below). This component is discussed in more detail in section \ref{sec:module_manager}. 
 \item \textbf{Configuration}: Provides a general configuration object from which data can be stored and retrieved, together with a TOML-like\needref file parser to instantiate the configurations. Also provides a general \apsq configuration manager giving access to the main configuration file and section. It is used by module manager system to find the required instantiations and access the global configuration. More information is given in \ref{sec:config_parameters}.
+\item \textbf{Module}: Contain the base class of all the \apsq modules and the manager responsible for loading and running the modules (using the configuration system above). This component is discussed in more detail in section \ref{sec:module_manager}.
 \item \textbf{Geometry}: Supplies helpers for the simulation geometry. The manager contains all the registered detectors. A detector has a certain position and orientation linked to an instantiation of a particular detector model. The detector model contains all the parameters that describe the geometry of the detector. Most modules only need a subset of these parameters, but they are all together used to construct the Geant4 geometry. More details about the geometry and detector models is provided in section \ref{sec:models_geometry}.
-\item \textbf{Messenger}: The messenger is responsible for sending objects from one module to another. The messenger object is passed to every module and can be used to bind to messages to listen for. Messages with objects can also be dispatched through the messenger to send data further in the simulation chain.
-\item \textbf{Utilities}: The framework provides a set of simple utilities for logging, file and directory access, random number seeding and unit conversion. A set of base exceptions is also provided.
+\item \textbf{Messenger}: The messenger is responsible for sending objects from one module to another. The messenger object is passed to every module and can be used to bind to messages to listen for. Messages with objects can also be dispatched through the messenger to send data further in the simulation chain. Refer to section \ref{sec:objects_messages} for more details.
+\item \textbf{Utilities}: The framework provides a set of simple utilities for logging, file and directory access, random number seeding and unit conversion. An explanation how to use of these utils can be found in section \ref{sec:logging_utilities}. 
 \end{enumerate}
+
+A set of base exceptions is also provided in the utilities, which are inherited and extended in the other components. Proper use of exceptions together with logging warnings and reporting errors can make the framework much easier to use and debug. A few notes about the use and the structure of exceptions are given in section \ref{sec:error_reporting_exceptions}.
 
 \subsection{Configuration and Parameters}
 \label{sec:config_parameters}
@@ -203,6 +205,7 @@ Most of the standard detector models are shipped with the framework in the confi
 \subsection{Passing Objects using Messages}
 \label{sec:objects_messages}
 \paragraph{Object Types}
-\subsection{Error Reporting and Exceptions}
 \subsection{Logging and other Utilities}
 \label{sec:logging_utilities}
+\subsection{Error Reporting and Exceptions}
+\label{sec:error_reporting_exceptions}
