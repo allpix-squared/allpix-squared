@@ -41,7 +41,7 @@ Throughout the framework a standard format is used for the configuration files, 
 \end{enumerate}
 
 \subsubsection{Accessing parameters}
-All values are accessed from the configuration object. The parameters can be converted to various types and support the specification of units through the set of \apqs string utilities defined in section \ref{sec:string_utilities}. If the key is a string called \textbf{key}, the object is named \textbf{config} and the type \textbf{TYPE} is a valid C++ type that the value should represent, the values should be accessed and defaulted by the following methods:
+All values are accessed from the configuration object. The parameters can be converted to various types and support the specification of units through the set of \apsq string utilities defined in section \ref{sec:string_utilities}. If the key is a string called \textbf{key}, the object is named \textbf{config} and the type \textbf{TYPE} is a valid C++ type that the value should represent, the values should be accessed and defaulted by the following methods:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 // returns true if the key exists and false otherwise
 config.has("key") 
