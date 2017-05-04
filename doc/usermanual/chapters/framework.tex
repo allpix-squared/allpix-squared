@@ -199,13 +199,47 @@ Most of the standard detector models are shipped with the framework in the confi
 \begin{enumerate}
 \item If defined, the paths in the \textit{models\_path} parameter provided to the reader module (overridden by the global configuration \textit{models\_path}) in the given order
 \item The location where the models are installed to (see the MODEL\_DIRECTORY variable in section \ref{sec:cmake_config}). 
-\item The standard data paths on the system as given by the environmental variable \$XDG\_DATA\_DIRS with the allpix (\todo get this directory from the build variable \todo) directory appended. The \$XDG\_DATA\_DIRS variable defaults to \textit{/usr/local/share/} (thus effectively /usr/local/share/allpix/) followed by \textit{/usr/share/}.
+\item The standard data paths on the system as given by the environmental variable \$XDG\_DATA\_DIRS with the allpix (\todo get this directory from the build variable \todo) directory appended. The \$XDG\_DATA\_DIRS variable defaults to \textit{/usr/local/share/} (thus effectively /usr/local/share/allpix/) followed by \textit{/usr/share/} (effectively /usr/share/allpix/).
 \end{enumerate}
 
 \subsection{Passing Objects using Messages}
 \label{sec:objects_messages}
-\paragraph{Object Types}
-\subsection{Logging and other Utilities}
+Communication between modules happens almost solely through messages (only some information is shared through the internally used dependencies like Geant4). Most messages are templated instantiations of the Message class carrying a vector of objects. A typedef is typically added by the object to provide an alternative name for the message directly linking to the object it is carrying. The message system has a dispatching part and a receiver part. The dispatching module can specify an optional name for the message and the receiver can also optionally specify a name to listen to. The following rules are used to dispatch the message to their receivers:
+\begin{enumerate}
+\item If the message type (thus usually the object type) of the receiving module does not match the type of the sending module, the message will NEVER be dispatched to this receiving module.
+\item If the module is a detector module and the dispatched message has a detector attached, the message will NEVER be dispatched to this module if the detector does NOT match the detector linked to the detector module.
+\item If the name of the dispatched message is unspecified (or empty) the message will be dispatched to all modules (not excluded by earlier rules).
+\item If the dispatched message has a specific name the message will only be dispatched to modules listening to exactly that name AND also to general listening modules that did not specify the name to receive (or set it to empty).
+\end{enumerate}
+
+\subsubsection{Methods to process messages}
+The message system has multiple methods to process received messages. The first of these two are the most common methods and the third one should only rarely be used. The options are:
+\begin{enumerate}
+\item Bind a \textbf{single message} to a variable. This should usually be the preferred method as most modules only expect one message to arrive per event (as a module should typically send only one message containing the list of all the objects it should send).
+\item Bind a \textbf{set of messages} to an array variable. This method should be used it the module can (and expects to) receive the same message multiple times (possibly because it wants to receive the same type of message for all detectors). 
+\item Listen to a particular message type and execute a \textbf{listening function} as soon as an object is received. Should be used for more advanced strategies for fetching messages. The listening module should NEVER do any heavy work in the listening function as this is supposed to take place in the run() method instead.
+\end{enumerate}
+
+\subsubsection{Messenger flags}
+Various flags can be added to the bind function and listening functions. The flags enable a particular behaviour of the framework (if the particular type of method supports the flag).
+\begin{itemize}
+\item \textbf{REQUIRED}: Specify that this message is required to be received. If the particular type of message is not received before it is time to execute the run function, the run is automatically skipped by the framework. This can be used to ignore actions that would be useless without received messages, like propagating charges without any deposits.
+\item \textbf{NO\_RESET}: Messages are by default automatically resetted after the run function executes to prevent older messages from previous runs to appear again. This behaviour can be disabled by setting this flag (this does not have any effect for listening functions). Setting this flag for single bound messages (without ALLOW\_OVERWRITE) would causes an exception to be raised if the message is overwritten in a later event.
+\item \textbf{ALLOW\_OVERWRITE}: By default an exception is automatically raised if a single bound message is overwritten (thus set multiple times instead of once). This flag prevents this behaviour, it is only useful for single bound variables. 
+\end{itemize}
+
+\subsubsection{Object types}
+All supported objects that can be transferred between modules are shipped with the framework in the Objects library. This list of objects currently consists of the following:
+\begin{itemize}
+\item \textbf{DepositedCharge}: Set of charges at a specific position in the sensor of a detector.
+\item \textbf{PropagatedCharge}: Charge at a specific position after propagation \todo THIS OBJECT WILL BE REMOVED? \todo.
+\item \textbf{PixelCharge}: Set of charges at a particular pixel in the pixel grid.
+\end{itemize}
+
+\todo This should be a separate section \todo
+
+\subsection{Logging, Units and other Utilities}
 \label{sec:logging_utilities}
+
 \subsection{Error Reporting and Exceptions}
 \label{sec:error_reporting_exceptions}
