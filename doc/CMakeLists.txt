@@ -48,6 +48,7 @@ IF(LATEX_COMPILER)
         usermanual/config.tex
         CONFIGURE
         usermanual/config.tex
+        EXCLUDE_FROM_ALL
         )
 ELSE(LATEX_COMPILER)
     MESSAGE(STATUS "No LaTeX found, cannot compile user manual.")
