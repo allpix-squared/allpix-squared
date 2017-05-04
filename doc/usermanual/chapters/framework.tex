@@ -238,8 +238,70 @@ All supported objects that can be transferred between modules are shipped with t
 
 \todo This should be a separate section \todo
 
-\subsection{Logging, Units and other Utilities}
+\subsection{Logging and other Utilities}
 \label{sec:logging_utilities}
+The \apsq framework provides a set of utilities that can be split up in two type of utilies:
+\begin{itemize}
+\item A few utilities to extend the Standard Template Library (STL) \needref. These are provided either to simplify access to the STL (like the random seed generator utility) or to provide functionality the C++14 standard lacks (like filesystem support). The referred utilities are used internally in the framework and only shortly discussed. The utilities falling in this category are the random seed generator (see section \ref{sec:random_generator}), the filesystem functions (see section \ref{sec:filesystem}) and the string utilies (see section \ref{sec:string_utilities}).
+\item Two utilities to improve the usability of the framework. One of these is a flexible and easy-to-use logging system, introduced below in section \ref{sec:logger} and revisited in section \ref{sec:error_reporting_exceptions}. The other is an easy-to-use framework for units that supports converting arbitrary combinations of units to an independent number which can  be used transparently through the framework. It will be discussed in more detail in section \ref{sec:unit_system}.
+\end{itemize}
+
+\subsubsection{Logger}
+\label{sec:logger}
+The logger is build to handle input/output in the same way as std::cin and std::cout do. This system is both very flexible and easy to read. It is globally configured, thus there exists only one logger and there no ocal loggers in for example a module. To send a message to the logger at a level of \textbf{LEVEL}, the following can be used:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+LOG(LEVEL) << "this is an example message with data " << 1 << 2.0;
+\end{minted}
+Note that a newline is added at the end of every log message. Multi-line log messages can also be used: the logger will automatically align the new lines under the message itself and will leave the header space empty on the new lines.
+
+The various logging options for \textbf{LEVEL} are as follows:
+\begin{itemize}
+\item \textbf{FATAL}: Indicates a fatal error that will lead to direct termination of the application. Typically only used by the exception catchers in the main executable as exceptions should be the only way to request the framework to terminate.
+\item \textbf{ERROR}: Severe error that should never happen during a normal well-behaving simulation run. Frequently leads to a fatal error and can be used to provide extra information not associated to the exception.
+\item \textbf{WARNING}: Indicate conditions that should not happen normally and can lead to unexpected output results. The framework can however typically continue without problems after a warning.
+\item \textbf{INFO}: Informatic messages about the process of the simulation
+\item \textbf{DEBUG}: In-depth details about what the framework or a particular module is doing. Can be used to get more detailed information about the modules behaviour or to debug modules.
+\end{itemize}
+\todo More logging levels should be added here and the framework should be improved to better adhere to these levels. \todo
+
+The logger can display the log messages in several formats. Currently the following formats are supported:
+\begin{itemize}
+\item \textbf{SHORT}: Displays the data in a short form. Includes only the first character of the log level followed by the section header and the message.
+\item \textbf{DEFAULT}: The default format. Displays the date, log level, section header and the message itself. 
+\item \textbf{DEBUG}: Detailed logging level. Besides the information above, it also shows the file and line where the log message came from. This can help in debugging the modules.
+\end{itemize}
+
+\subsubsection{Unit system}
+\label{sec:unit_system}
+In physics (and therefore HEP as well) units are used a lot. Having a separate C++ type for all different kind of units would be too cumbersome for a lot of operations. Therefore the units are stored in standard C++ types in a pre-defined unit and all code in the framework uses the same unit. In various configuration files it is however very useful to give quantities in another unit. For logging it is also useful to display data in another unit.
+
+The unit system allows adding, getting and converting units. It is a global system, thus all units should be equal through the whole framework. Examples of using the unit system are the given below:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+// define the standard length unit and an auxiliary unit
+Units::add("mm", 1); 
+Units::add("m", 1e3); 
+// define the standard time unit
+Units::add("ns", 1); 
+// get the units given in m/ns in the defined framework unit mm/ns
+Units::get(1, "m/ns"); 
+// get the framework unit of mm/ns in m/ns for logging etc
+Units::convert(1, "m/ns");
+\end{minted}
+
+More details about the unit system used within AllPix can be found in section \needref.
+
+\subsubsection{Internal utilities}
+\paragraph{Filesystem}
+\label{sec:filesystem}
+Provide functions to convert relative to absolute canonical paths, to go through all files in a directory and to create new directories. These functions should be replaced by the C++17 filesystem API\needcite as soon as the framework minimum standard is updated to C++17.
+
+\paragraph{String utilies}
+\label{sec:string_utilities}
+The STL only provides string conversions for standard types using stringstream and std::to\_string. It does not allow to parse strings encapsulated in pairs of \texttt{"} characters. Furthermore it does not provide wide flexibility to add custom conversions for other external types in both ways. The \apsq to\_string and from\_string provide the flexibility to do these conversions: it it extensively used in the configuration system. The tools contain extensions to allow automatic conversions for ROOT and Geant4 types. Also utilities to trim and split strings are included as they are not yet part of the STL.
+
+\paragraph{Random seed generator}
+\label{sec:random_generator}
+Generating random number with a high-level of entropy is very important for running all Monte-Carlo processes in high-energy physics. Good random generators are already included in both the standard library and various external libraries. Seeding those random generators with enough entropy or seeding them with a predefined seed instead (to allow rerunning a certain simulation) should however be a framework task. This small utility library provides the required method to return a correct seed to all random generators.
 
 \subsection{Error Reporting and Exceptions}
 \label{sec:error_reporting_exceptions}
