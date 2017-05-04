@@ -1,28 +1,30 @@
-########################################################
 # CMake file for the allpix2 framework
 CMAKE_MINIMUM_REQUIRED(VERSION 3.4.3 FATAL_ERROR)
 IF(COMMAND CMAKE_POLICY)
-  CMAKE_POLICY(SET CMP0003 NEW)
+  CMAKE_POLICY(SET CMP0003 NEW) # change linker path search behaviour
+  CMAKE_POLICY(SET CMP0048 NEW) # set project version
 ENDIF(COMMAND CMAKE_POLICY)
-########################################################
 
-# Project name
-PROJECT(allpix)
+# Set default version
+SET(ALLPIX_VERSION "v0.1")
+
+# Overwrite with the version from git if found
 INCLUDE("cmake/tools.cmake")
+GET_VERSION(ALLPIX_VERSION)
+
+# Print version
+MESSAGE(STATUS "Building AllPix version ${ALLPIX_VERSION}.")
+
+# Define the project with the simple version
+STRING(REGEX MATCH "([0-9.]+)+" SIMPLE_VERSION "${ALLPIX_VERSION}")
+PROJECT(allpix VERSION ${SIMPLE_VERSION})
 
 # Access the project name (for install locations) in the source
 ADD_DEFINITIONS(-DALLPIX_PROJECT_NAME="${CMAKE_PROJECT_NAME}")
 
-# Get the version from git (falling back to a default if not found)
-SET(ALLPIX_VERSION "v0.1")
-GET_VERSION(ALLPIX_VERSION)
-MESSAGE(STATUS "Building AllPix version ${ALLPIX_VERSION}.")
-
 # Include a generated configuration file
 # FIXME: this should be combined with the ADD_DEFINITIONS
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake.h" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
-
-#INCLUDE_DIRECTORIES("${CMAKE_CURRENT_BINARY_DIR}")
 
 #########################
 # allpix2 build options #
