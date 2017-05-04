@@ -41,7 +41,7 @@ Throughout the framework a standard format is used for the configuration files, 
 \end{enumerate}
 
 \subsubsection{Accessing parameters}
-All values are accessed from the configuration object. If the key is a string called \textbf{key}, the object is named \textbf{config} and the type \textbf{TYPE} is a valid C++ type that the value should represent, the values should be accessed and defaulted by the following methods:
+All values are accessed from the configuration object. The parameters can be converted to various types and support the specification of units through the set of \apqs string utilities defined in section \ref{sec:string_utilities}. If the key is a string called \textbf{key}, the object is named \textbf{config} and the type \textbf{TYPE} is a valid C++ type that the value should represent, the values should be accessed and defaulted by the following methods:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 // returns true if the key exists and false otherwise
 config.has("key") 
@@ -61,7 +61,7 @@ config.setDefaultArray<TYPE>("key", vector_of_default_values)
 
 The conversions to the type are using the from\_string and to\_string methods provided by the string utility library described in section \needref. This largely follows the standard C++ parsing, with one important exception. If (and only if) the value is retrieved as any C/C++ string type and the string is fully enclosed by a pair of \texttt{"} characters they are stripped before returning the value. 
 
-\subsubsection{Special rules for the main configuration}
+\subsubsection{Special handling of the main configuration}
 The main configuration file is provided during construction of the framework. The configuration file contains a set of sections as defined above. There are however a few section names that are ignored if they are not specifically accessed by name (but by the general return-all-configurations method instead). These are the following:
 \begin{itemize}
 \item The \textbf{global} header sections: These are (by default) all the zero-length section headers (including the one at the start) and all with the header \textbf{AllPix}. These are combined and accessed together as the so-called global configuration, which contain all the parameters of the general framework (see section \ref{sec:framework_parameters} for details). All key-value pairs defined in this section are also merged with all individual configurations as long the key is not already defined in the specific configuration.
@@ -243,7 +243,7 @@ All supported objects that can be transferred between modules are shipped with t
 The \apsq framework provides a set of utilities that can be split up in two type of utilies:
 \begin{itemize}
 \item A few utilities to extend the Standard Template Library (STL) \needref. These are provided either to simplify access to the STL (like the random seed generator utility) or to provide functionality the C++14 standard lacks (like filesystem support). The referred utilities are used internally in the framework and only shortly discussed. The utilities falling in this category are the random seed generator (see section \ref{sec:random_generator}), the filesystem functions (see section \ref{sec:filesystem}) and the string utilies (see section \ref{sec:string_utilities}).
-\item Two utilities to improve the usability of the framework. One of these is a flexible and easy-to-use logging system, introduced below in section \ref{sec:logger} and revisited in section \ref{sec:error_reporting_exceptions}. The other is an easy-to-use framework for units that supports converting arbitrary combinations of units to an independent number which can  be used transparently through the framework. It will be discussed in more detail in section \ref{sec:unit_system}.
+\item Two utilities to improve the usability of the framework. One of these is a flexible and easy-to-use logging system, introduced below in section \ref{sec:logger}. The other is an easy-to-use framework for units that supports converting arbitrary combinations of units to an independent number which can  be used transparently through the framework. It will be discussed in more detail in section \ref{sec:unit_system}.
 \end{itemize}
 
 \subsubsection{Logger}
@@ -256,7 +256,7 @@ Note that a newline is added at the end of every log message. Multi-line log mes
 
 The various logging options for \textbf{LEVEL} are as follows:
 \begin{itemize}
-\item \textbf{FATAL}: Indicates a fatal error that will lead to direct termination of the application. Typically only used by the exception catchers in the main executable as exceptions should be the only way to request the framework to terminate.
+\item \textbf{FATAL}: Indicates a fatal error that will lead to direct termination of the application. Typically only used by the exception catchers in the main executable as exceptions should be the only way to request the framework to terminate as discussed in section \ref{sec:error_reporting_exceptions}.
 \item \textbf{ERROR}: Severe error that should never happen during a normal well-behaving simulation run. Frequently leads to a fatal error and can be used to provide extra information not associated to the exception.
 \item \textbf{WARNING}: Indicate conditions that should not happen normally and can lead to unexpected output results. The framework can however typically continue without problems after a warning.
 \item \textbf{INFO}: Informatic messages about the process of the simulation
@@ -297,7 +297,7 @@ Provide functions to convert relative to absolute canonical paths, to go through
 
 \paragraph{String utilies}
 \label{sec:string_utilities}
-The STL only provides string conversions for standard types using stringstream and std::to\_string. It does not allow to parse strings encapsulated in pairs of \texttt{"} characters. Furthermore it does not provide wide flexibility to add custom conversions for other external types in both ways. The \apsq to\_string and from\_string provide the flexibility to do these conversions: it it extensively used in the configuration system. The tools contain extensions to allow automatic conversions for ROOT and Geant4 types. Also utilities to trim and split strings are included as they are not yet part of the STL.
+The STL only provides string conversions for standard types using stringstream and std::to\_string. It does not allow to parse strings encapsulated in pairs of \texttt{"} characters and neither does it allow to integrate different units. Furthermore it does not provide wide flexibility to add custom conversions for other external types in both ways. The \apsq to\_string and from\_string do allow for these flexible conversions and it it extensively used in the configuration system. Conversions of numeric types with a unit attached are automatically resolved using the unit system discussed in section \ref{sec:unit_system}. The \apsq tools system contain extensions to allow automatic conversions for ROOT and Geant4 types. The string utilities also include trim and split strings functions as they are not yet part of the STL.
 
 \paragraph{Random seed generator}
 \label{sec:random_generator}
@@ -305,3 +305,13 @@ Generating random number with a high-level of entropy is very important for runn
 
 \subsection{Error Reporting and Exceptions}
 \label{sec:error_reporting_exceptions}
+Feedback to users during the simulation is very important. The logger should be used extensively to report informational messages. Besides that reporting errors is very important. \apsq follows the principle to throw exceptions in all cases where something is wrong, it should never try to circumvent problems. Also error codes are not supposed to be used, only exceptions should be used to report fatal errors. Exceptions are also thrown for errors in the user configuration. Following this rule may lead to more frequent exceptions, but in a simulation it is typically not a problem to stop with a severe error. The asset of this method is that configuration and code is more likely to do what they are supposed to do.
+
+The base exceptions in AllPix are defined in the utility section. The most important exception base classes are the following:
+\begin{itemize}
+\item \textbf{ConfigurationError}: All errors related to incorrect user configuration. Could be for example a non-existing configuration file, a missing key or an invalid parameter value.
+\item \textbf{RuntimeError}: All other errrors coming up at run-time. Could be related to incorrect configuration if messages are not correctly passed or non-existing detectors are specified. Could also be raised if errors come up while loading the library or running the modules.
+\item \textbf{LogicError}: Problems related to incorrectly coded modules, for example if a detector module fails to pass the detector to the constructor. These methods should never be raised for a correctly coded module and should therefore not be triggerable by users. Reporting these type of errors can help developers during their development of new modules.
+\end{itemize}
+
+\todo add more info about error reporting style? \todo
