@@ -44,6 +44,9 @@ IF(LATEX_COMPILER)
         usermanual/chapters/summary.tex
         usermanual/chapters/acknowledgements.tex
         usermanual/appendices/design_notes.tex
+        usermanual/config.tex
+        CONFIGURE
+        usermanual/config.tex
         )
 ELSE(LATEX_COMPILER)
     MESSAGE(STATUS "No LaTeX found, cannot compile user manual.")

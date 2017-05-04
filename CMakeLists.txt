@@ -13,8 +13,16 @@ INCLUDE("cmake/tools.cmake")
 # Access the project name (for install locations) in the source
 ADD_DEFINITIONS(-DALLPIX_PROJECT_NAME="${CMAKE_PROJECT_NAME}")
 
-# Print the version information
-PRINT_VERSION()
+# Get the version from git (falling back to a default if not found)
+SET(ALLPIX_VERSION "v0.1")
+GET_VERSION(ALLPIX_VERSION)
+MESSAGE(STATUS "Building AllPix version ${ALLPIX_VERSION}.")
+
+# Include a generated configuration file
+# FIXME: this should be combined with the ADD_DEFINITIONS
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake.h" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
+
+#INCLUDE_DIRECTORIES("${CMAKE_CURRENT_BINARY_DIR}")
 
 #########################
 # allpix2 build options #

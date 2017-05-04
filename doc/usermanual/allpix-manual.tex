@@ -10,15 +10,15 @@
             url=false
             ]{biblatex}
 \usepackage[T1]{fontenc}
-\usepackage{siunitx} % Provides the \SI{}{} command for typesetting SI units
+\usepackage{siunitx}
 \usepackage{booktabs}
 \usepackage{hyperref}
 \usepackage{xspace}
 \usepackage{color}
 \usepackage{minted}
 \usepackage{a4wide}
-
-\usepackage{graphicx} % Required for the inclusion of images
+\usepackage{listings}
+\usepackage{graphicx}
 \usepackage{listings}
 \usepackage{seqsplit}
 
@@ -37,8 +37,8 @@
 \makeatother
 \graphicspath{{images/}}
 
-% Set bibliography
-\addbibresource{usermanual/references.bib}
+% Load configuration
+\input{config}
 
 %----------------------------------------------------------------------------------------
 %   DOCUMENT INFORMATION
@@ -50,7 +50,7 @@
   Simon Spannagel (\href{mailto:simon.spannagel@cern.ch}{simon.spannagel@cern.ch})
 } % Author names
 
-\date{\today} % Date for the report
+\date{\today\\ \vspace{10pt} Version \version} % Date for the report
 
 \begin{document}
 
