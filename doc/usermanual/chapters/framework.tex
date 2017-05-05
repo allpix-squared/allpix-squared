@@ -1,4 +1,5 @@
 \section{The \apsq Framework}
+\label{sec:framework}
 The application is split up in the following four main components that together form \apsq:
 \begin{enumerate}
 \item \textbf{Core}: Sometimes referred as the framework itself, with the rest of the components separate. The core, object and tools are also known as the core framework. The core contains the internal logic to initiate the modules, provide the geometry, facilitate module communication and run the event sequence. The core should keep its dependencies to a minimum and remain separated from the other components as far as posibble. This is the main component discussed in this section.
@@ -60,15 +61,6 @@ config.setDefaultArray<TYPE>("key", vector_of_default_values)
 \end{minted}
 
 The conversions to the type are using the from\_string and to\_string methods provided by the string utility library described in section \needref. This largely follows the standard C++ parsing, with one important exception. If (and only if) the value is retrieved as any C/C++ string type and the string is fully enclosed by a pair of \texttt{"} characters they are stripped before returning the value. 
-
-\subsubsection{Special handling of the main configuration}
-The main configuration file is provided during construction of the framework. The configuration file contains a set of sections as defined above. There are however a few section names that are ignored if they are not specifically accessed by name (but by the general return-all-configurations method instead). These are the following:
-\begin{itemize}
-\item The \textbf{global} header sections: These are (by default) all the zero-length section headers (including the one at the start) and all with the header \textbf{AllPix}. These are combined and accessed together as the so-called global configuration, which contain all the parameters of the general framework (see section \ref{sec:framework_parameters} for details). All key-value pairs defined in this section are also merged with all individual configurations as long the key is not already defined in the specific configuration.
-\item The \textbf{ignore} header sections: The section with name Ignore is (by default) fully ignored. All key-value pairs as well as the section itself are threated as if they were never defined. These sections are useful for quickly enabling and disabling certain sections.
-\end{itemize}
-
-The rest of the normal sections are used to instantiate all the modules as explained in section \ref{sec:module_instantiation}.
 
 \subsection{Modules and the Module Manager}
 \label{sec:module_manager}
@@ -165,6 +157,8 @@ If the module definition is succesfull it is determined if the module is an uniq
 \item \textbf{Detector}: In this case the modules are instantiated by priority, replacing earlier instantiations with lower priority. Module section that are matched for a specific detector name using the configuration parameter \textit{name} have the highest priority, followed by module sections matched with their model type using \textit{type}. Modules without either the \textit{name}, \textit{type} or both, produce instantiations for all registered modules and have the lowest priority. An exception is raised if a instantiation is requested of the same priority as an earlier one.
 \end{itemize}
 
+\todo This is also mentioned in the other section. Shall we keep this or add more details here? The part about specifying input / output parameters is still missing \todo
+
 \subsection{Geometry and Detectors}
 \label{sec:models_geometry}
 Simulations are frequently run on a set of different detectors (also known as as a telescope). The set of these individual detectors is what AllPix defines as the geometry (note that internal modules are allowed to extend that definition of geometry, but for the framework itself the world only consists of set of independent detectors). Every detector has a set of properties attached to it:
@@ -184,6 +178,7 @@ The global frame has an arbitrary origin as there is nothing fixed in the world 
 The positive z-axis should point from the side of the sensor where the collection takes place upwards (normal to the bottom plane) to the top of the sensitive device. The x-axis should point in one of the arbitrary two directions in the plane where the pixel grid is defined. The y-axis should then be normal to both the x and the z-axis in such a way that a righ-handed coordinate system is constructed. 
 
 \subsubsection{Detector models}
+\label{sec:detector_models}
 Different types of detector models can be used inside the framework. All models should extend from the DetectorModel base class which defines the minimum detector model defined in the framework:
 \begin{itemize}
 \item The coordinate of the rotation center (thus the specified position of the point in global frame) in the local frame.

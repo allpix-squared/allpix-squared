@@ -1,6 +1,81 @@
-\section{Configuration and Usage}
+\section{Getting Started}
+This section serves as a general introduction to \apsq for users. It is constructed to focus on the basics to get everything up\&running as quickly as possible. More details about the framework and other implementation details are available in section \ref{sec:framework}.
+
+In this section it is assumed that the installation of \apsq as described in section \ref{sec:installation} has been succesfull. When the \textit{allpix} binary is called, the executable installed in \text{bin/allpix} in your installation path is meant. Remember that before running any \apsq simulation, ROOT and likely Geant4 should be initialized. Refer to section \ref{sec:initialize_dependencies} on instructions how to include those libraries.
+
 \subsection{Configuration Files}
 \label{sec:configuration_files}
+The framework can be configured with configuration files. The configuration format is described in detail in section \ref{sec:config_file_format}, but the format in principle is very simple. The configuration consists of several section headers specified within $[$ and $]$ brackets (and the default empty section at the start). Every section contain a set of key/value pairs separated by the \texttt{=} character. The \texttt{\#} is used to indicate comments.
+
+The framework has three required configuration layers which are the following:
+\begin{itemize}
+\item The \textbf{main} configuration: The most important configuration file and the file that is passed directly to the binary. Contains both the global framework configuration and the list of modules to instantiate together with their configuration. More details and an example are found in section \ref{sec:main_config}.
+\item The \textbf{detector} configuration passed to the geometry builders \todo Should be passed to initial geometry reader instead? \todo. Describes the detector setup usually referred as the telescope. Contains the position, orientation and model type of all detectors. Introduced in section \ref{sec:detector_config}.
+\item The detector \textbf{models} configuration. Contain the parameters describing a particular type of detector. These are shipped by the framework and one should typically not need to change these or add new models. If this is however needed, please refer to \ref{sec:adding_detector_model} for more details about adding new models.
+\end{itemize}
+
+\subsubsection{Configuration values and units}
+\label{sec:config_values}
+\todo
+
+\subsubsection{Detector configuration}
+\label{sec:detector_config}
+The detector configuration consist of a set of section headers describing the detectors in the setup. The section header describes the name of the detector. All names should be unique, thus using the same name multiple times is not allowed. Every detector should contain all of the following parameters:
+\begin{itemize}
+\item A string referring to the \textbf{model} of the detector. The model should exist in the search path described in section \ref{sec:detector_models}.
+\item The 3D \textbf{position} in the world frame. See section \ref{sec:models_geometry} for details.
+\item The \textbf{orientation} specified as Z-X-Z Euler angle. See section \ref{sec:models_geometry} for details.
+\end{itemize}
+
+An example detector configuration file for two test detectors and one timepix is given below. 
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+[test1]
+type = "test"
+position = 0 0 0
+orientation = 0 0 0
+
+[test2]
+type = "test"
+position = 0 0 -0.5mm
+orientation = 45deg 0 0
+
+[tpx]
+type = "timepix"
+position = 10um 10um -0.25mm
+orientation = 45deg 0 0
+\end{minted}
+This configuration file is used in the rest of this chapter for explaining concepts. 
+
+\subsubsection{Main configuration}
+\label{sec:main_config}
+The main configuration consists of a set of section header which correspond with all modules that should be used. Modules can be specified multiple times in the configuration files, but it depends on their type and configuration if that is allowed or not, as explained later on. There are a few section names that have a special meaning in the main configuration, which are the following:
+\begin{itemize}
+\item The \textbf{global} header sections: These are all the zero-length section headers (including the one at the start) and all with the header \textbf{AllPix}. These are combined and accessed together as the global configuration, which contain all the parameters of the general framework (see section \ref{sec:framework_parameters} for details). All key-value pairs defined in this section are also inherited in all individual configurations as long the key is not defined in the specific configuration.
+\item The \textbf{ignore} header sections: All the section with name Ignore are fully ignored. All key-value pairs as well as the section itself are threated as if they were never defined. These sections are useful for quickly enabling and disabling certain sections.
+\end{itemize}
+
+The rest of all the section headers are used to instantiate all the modules. Modules should normally be loaded automatically (as long as they are installed correctly). If problems arise please check the loading rules in section \ref{sec:module_instantiation}. The type of the module determines how the module is instantiated:
+\begin{itemize}
+\item If the module is \textbf{unique} it is unique and run only a single time. These kind of modules should only appear once in the whole configuration file.
+\item If the module is \textbf{detector}-specific it is run on every specified detector it is specified to run on. By default an instantiation is created for all detectors defined in the detector configuration file (see section \ref{sec:detector_config}) unless one or both of the following parameters are specified.
+\begin{itemize}
+\item \textbf{name}: An array of detector names where the module should run on. Replaces all global and type specific modules of the same kind.
+\item \textbf{type}: An array of detector type where the module should run on. Instantiated after considering all detector specified by the name parameter above. Replaces all global modules of the same kind. 
+\end{itemize}
+\end{itemize}
+
+An simple main configuration using the detector configuration above is given below:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+[AllPix]
+log_level = "DEBUG"
+log_format = "DEFAULT"
+number_of_events = 1
+
+[GeometryBuilderGeant4]
+detectors_file = "example_detector_config.ini"
+world_size = 1000um 1000um 2000um
+\end{minted}
+
 \subsection{Framework Parameters}
 \label{sec:framework_parameters}
 \subsection{Setting up the Simulation Chain}
