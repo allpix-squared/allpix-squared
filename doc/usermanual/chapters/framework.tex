@@ -125,6 +125,9 @@ ALLPIX_MODULE_INSTALL(${MODULE_NAME})
 \todo
 
 \paragraph{\textit{module\_name}Module.hpp and \textit{module\_name}Module.cpp}
+All modules should have both a header file and a source file. In the header file the module is defined and its goal is documented. Moreover brief documentation is added to explain what every method does. The source file should provide the implementation of every method and also its more detailed documentation. Not a single method should be defined in the header to keep the interface clean.
+
+\subsubsection{Module structure}
 All the modules should inherit from the Module base class which can be found in \textit{src/core/module/Module.hpp}. The module base class provide two base constructors, a few convenient methods and several methods to override. Every module should provide a fixed constructor which is always called during construction by the module instantiation logic. The arguments for the constructor differs for unique and detector modules. For unique modules the empty constructor for a \textbf{Test} module should be:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 TestModule(Configuration config, Messenger* messenger, GeometryManager* geo_manager) {}
