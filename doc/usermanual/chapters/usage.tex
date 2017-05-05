@@ -5,7 +5,7 @@ In this section it is assumed that the installation of \apsq as described in sec
 
 \subsection{Configuration Files}
 \label{sec:configuration_files}
-The framework can be configured with configuration files. The configuration format is described in detail in section \ref{sec:config_file_format}, but the format in principle is very simple. The configuration consists of several section headers specified within $[$ and $]$ brackets (and the default empty section at the start). Every section contain a set of key/value pairs separated by the \texttt{=} character. The \texttt{\#} is used to indicate comments.
+The framework can be configured with configuration files. The configuration format is described in detail in section \ref{sec:config_file_format}, but the format should be straightforward to use. The configuration consists of several section headers specified within $[$ and $]$ brackets (and the default empty section at the start). Every section contain a set of key/value pairs separated by the \texttt{=} character. The \texttt{\#} is used to indicate comments.
 
 The framework has three required configuration layers which are the following:
 \begin{itemize}
@@ -14,43 +14,114 @@ The framework has three required configuration layers which are the following:
 \item The detector \textbf{models} configuration. Contain the parameters describing a particular type of detector. These are shipped by the framework and one should typically not need to change these or add new models. If this is however needed, please refer to \ref{sec:adding_detector_model} for more details about adding new models.
 \end{itemize}
 
-\subsubsection{Configuration values and units}
+Before going into depth on defining the required configuration files, first more detailed information about specifying the configuration values is provided.
+
+\subsubsection{Supported types and units}
 \label{sec:config_values}
-\todo
+The \apsq framework supports the use of a variety of types for all configuration values. The module specifies how the value type should be interpreted. An error will be raised if either the key is not specified in the config file, the conversion to the desired type is not possible or if the value is non-sense for that particular key for any other reason. Please refer to the module documentation at \needref for the list of module parameters and their types. Parsing the value roughly follows common-sense (more details can be found in section \ref{sec:accessing_parameters}). There do apply a few special rules:
+\begin{itemize}
+\item If the value is a \textbf{string} it may be enclosed by a single pair of double quotation marks (\texttt{"}), which are stripped before passing the value to the modules. If the string is not enclosed by the quotation marks all whitespace before and after the value is erased. If the value is an array of strings, the value is split at every whitespace or comma (\texttt{'}) that is not enclosed in quotation marks.
+\item If the value is a \textbf{relative path} that path will be made absolute by adding the absolute path of the directory that contains the configuration file where the key defined.
+\item If the value is an \textbf{arithmetic} type that arithmetic value may have a suffix indicating the unit. The list of base units is shown in Table \ref{tab:units}. 
+\end{itemize}
+
+\begin{table}[h]
+\centering
+\caption{List of units supported by \apsq}
+\label{tab:units}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Quantity}                 & \textbf{Default unit}                   & \textbf{Auxiliary units} \\ \hline
+\multirow{6}{*}{\textit{Length}}  & \multirow{6}{*}{mm (millimeter)}        & nm (nanometer)           \\ \cline{3-3} 
+                                  &                                         & um (micrometer)          \\ \cline{3-3} 
+                                  &                                         & cm (centimeter)          \\ \cline{3-3} 
+                                  &                                         & dm (decimeter)           \\ \cline{3-3} 
+                                  &                                         & m (meter)                \\ \cline{3-3} 
+                                  &                                         & km (kilometer)           \\ \hline
+\multirow{4}{*}{\textit{Time}}    & \multirow{4}{*}{ns (nanosecond)}        & ps (picosecond)          \\ \cline{3-3} 
+                                  &                                         & us (microsecond)         \\ \cline{3-3} 
+                                  &                                         & ms (millisecond)         \\ \cline{3-3} 
+                                  &                                         & s (second)               \\ \hline
+\multirow{4}{*}{\textit{Energy}}  & \multirow{4}{*}{MeV (megaelectronvolt)} & eV (electronvolt)        \\ \cline{3-3} 
+                                  &                                         & keV (kiloelectronvolt)   \\ \cline{3-3} 
+                                  &                                         & GeV (gigaelectronvolt)   \\ \hline
+\textit{Temperature}              & K (kelvin)                              &                          \\ \hline
+\textit{Charge}                   & e (elementary charge)                   & C (coulomb)              \\ \hline
+\multirow{2}{*}{\textit{Voltage}} & \multirow{2}{*}{MV (megavolt)}          & V (volt)                 \\ \cline{3-3} 
+                                  &                                         & kV (kilovolt)            \\ \hline
+\textit{Angle}                    & rad (radian)                            & deg (degree)             \\ \hline
+\end{tabular}
+\end{table}
+
+Combinations of base units can be specified by using the multiplication sign (\texttt(*)) and the division sign (\texttt{/}) that are parsed in linear order (thus $\frac{V m}{s^2}$ should be specified as $V*m/s/s$). The framework assumes the default units (as given in Table \ref{tab:units}) if the unit is not explicitly specified. It is recommended to always specify the unit explicitly for all parameters that are not dimensionless (and also for angles which are special units). 
+
+Examples of specifying key/values pairs of various types are given below
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+# all white at the front and back is removed
+first_string = string_without_quotation
+# all whitespace within the quotation marks is kept
+second_string = "  string with quotation marks  "
+# keys are splitted on whitespace and commas
+string_array = "first element" "second element","third element"
+# integer and floats can be given in standard formats
+int_value = 42
+float_value = 123.456e9
+# units can be passed to arithmetic type
+energy_value = 1.23MeV
+time_value = 42ns
+# units are combined in linear order
+acceleration_value = 1.0m/s/s
+# thus the quantity below is the same as deg*kV*K/m/s
+random_quantity = deg*kV/m/s*K 
+# relative paths are expanded to absolute 
+# path below will be /home/user/test if the config file is /home/user
+output_path = "test" 
+\end{minted}
 
 \subsubsection{Detector configuration}
 \label{sec:detector_config}
 The detector configuration consist of a set of section headers describing the detectors in the setup. The section header describes the name of the detector. All names should be unique, thus using the same name multiple times is not allowed. Every detector should contain all of the following parameters:
 \begin{itemize}
-\item A string referring to the \textbf{model} of the detector. The model should exist in the search path described in section \ref{sec:detector_models}.
-\item The 3D \textbf{position} in the world frame. See section \ref{sec:models_geometry} for details.
-\item The \textbf{orientation} specified as Z-X-Z Euler angle. See section \ref{sec:models_geometry} for details.
+\item A string referring to the \textbf{type} of the detector model. The model should exist in the search path described in section \ref{sec:detector_models}.
+\item The 3D \textbf{position} in the world frame in the order x, y, z. See section \ref{sec:models_geometry} for details.
+\item The \textbf{orientation} specified as Z-X-Z Euler angle relative to the world axis. See section \ref{sec:models_geometry} for details.
 \end{itemize}
 
-An example detector configuration file for two test detectors and one timepix is given below. 
+An example configuration file for two test detectors and one timepix is given below. 
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+# name the first detector test1
 [test1]
+# set the type to test
 type = "test"
+# place it at the origin of the world frame
 position = 0 0 0
 orientation = 0 0 0
 
+# name the second detector test2
 [test2]
+# set the type again to test
 type = "test"
+# place it 0.5 mm down on the z-axis from the origin
 position = 0 0 -0.5mm
-orientation = 45deg 0 0
+# use the default orientation
+orientation = 0 0 0
 
+# name the third detector tpx
 [tpx]
+# set the type to timepix
 type = "timepix"
+# set the position in the world frame
 position = 10um 10um -0.25mm
+# rotate 45 degrees around the world z-axis
 orientation = 45deg 0 0
 \end{minted}
 This configuration file is used in the rest of this chapter for explaining concepts. 
 
 \subsubsection{Main configuration}
 \label{sec:main_config}
-The main configuration consists of a set of section header which correspond with all modules that should be used. Modules can be specified multiple times in the configuration files, but it depends on their type and configuration if that is allowed or not, as explained later on. There are a few section names that have a special meaning in the main configuration, which are the following:
+The main configuration consists of a set of section header that specify the modules used. All modules are executed in the \underline{linear} order in which they are defined. Modules can be specified multiple times in the configuration files, but it depends on their type and configuration if that is allowed or not, as explained later on. There are a few section names that have a special meaning in the main configuration, which are the following:
 \begin{itemize}
-\item The \textbf{global} header sections: These are all the zero-length section headers (including the one at the start) and all with the header \textbf{AllPix}. These are combined and accessed together as the global configuration, which contain all the parameters of the general framework (see section \ref{sec:framework_parameters} for details). All key-value pairs defined in this section are also inherited in all individual configurations as long the key is not defined in the specific configuration.
+\item The \textbf{global} (framework) header sections: These are all the zero-length section headers (including the one at the start) and all with the header \textbf{AllPix} (case-sensitive). These are combined and accessed together as the global configuration, which contain all the parameters of the framework (see section \ref{sec:framework_parameters} for details). All key-value pairs defined in this section are also inherited in all individual configurations as long the key is not defined in the specific configuration.
 \item The \textbf{ignore} header sections: All the section with name Ignore are fully ignored. All key-value pairs as well as the section itself are threated as if they were never defined. These sections are useful for quickly enabling and disabling certain sections.
 \end{itemize}
 
@@ -64,20 +135,53 @@ The rest of all the section headers are used to instantiate all the modules. Mod
 \end{itemize}
 \end{itemize}
 
-An simple main configuration using the detector configuration above is given below:
+A valid example configuration using the detector configuration above could be:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+# key is part of the empty section and therefore the global sections
+string_value = "example1"
+
+# the AllPix section is a special global section and merged with above
 [AllPix]
-log_level = "DEBUG"
-log_format = "DEFAULT"
-number_of_events = 1
+another_random_string = "example2"
 
-[GeometryBuilderGeant4]
-detectors_file = "example_detector_config.ini"
-world_size = 1000um 1000um 2000um
+# first run a unique module
+[MyUniqueModule]
+# this module takes no parameters
+
+# [MyUniqueModule] cannot be instantiated another time
+
+# then run some detector modules on different detectors 
+# first run a module on the two detector with name test
+[MyDetectorModule]
+type = "test"
+int_value = 1
+
+# replace the module above for test1 with a specialized version 
+[MyDetectorModule]
+name = "test1"
+int_value = 2
+
+# runs the module on the remaining unspecified detector tpx
+[MyDetectorModule]
+# int_value is not specified, so it uses the default value
 \end{minted}
+This configuration can however not be run in practice because MyUniqueModule and MyDetectorModule do not actually exist. Let us therefore continue to look at some actual parameters and start constructing a useful configuration file. In the next section the global framework parameters are introduced first.
 
-\subsection{Framework Parameters}
+\subsection{Framework parameters}
 \label{sec:framework_parameters}
+The framework has a variety of global parameters that allow to configure \apsq to your own needs. The current list of global parameters (roughly sorted from most important to least important for typical simulations):
+\begin{itemize}
+\item \textbf{number\_of\_events}: Determines the amount of events the framework should simulate. Equivalent to the amount of times the modules are run. Defaults to one (simulating a single event).
+\item \textbf{log\_level}: Specifies the minimum log level to write to the screen. Possible values include QUIET, FATAL, ERROR, WARNING, INFO and DEBUG, all options are case-insensitive. Defaults to the INFO level. More details and information about changing the log level for a particular module can be found in section \ref{sec:logging_verbosity}.
+\item \textbf{log\_format}: Determines the format to display. Possible options include SHORT, DEFAULT and DEBUG. More information again in section \ref{sec:logging_verbosity}.
+\item \textbf{output\_directory}: Top directory to write all output files into. Extra directories are created for all the module instantiations. Defaults to the current working directory with the subdirectory \textit{output/} attached.
+\item \textbf{random\_seed}: Seed to use for the random seed generator (see section \ref{sec:random_generator}). A random seed will be used from multiple entropy sources if the parameter is not specified. Can be used to redo an earlier simulation run.
+\item \textbf{library\_directories}: Additional directories to search for libraries. See section \ref{sec:module_instantiation} for details.
+\item \textbf{model\_path}: Additional detector models to read. Refer to section \ref{sec:detector_models} for more information. \todo not strictly a framework parameter now, but inherited in the readers \todo
+\end{itemize}
+
+With this information in mind it is time to setup a real simulation. All the module parameters are shortly introduced when they are first used. For more details about these parameters the module documentation in section \needref should be checked.
+
 \subsection{Setting up the Simulation Chain}
 \paragraph{Add Additional Modules}
 \paragraph{Redirect Module Inputs and Outputs}
@@ -85,4 +189,5 @@ world_size = 1000um 1000um 2000um
 \paragraph{Choosing the Propagation Modules}
 normal, irrad with trapping simulation etc
 \subsection{Logging and Verbosity Levels}
+\label{sec:logging_verbosity}
 \subsection{Storing Output Data}

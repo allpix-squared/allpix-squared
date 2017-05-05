@@ -42,6 +42,7 @@ Throughout the framework a standard format is used for the configuration files, 
 \end{enumerate}
 
 \subsubsection{Accessing parameters}
+\label{sec:accessing_parameters}
 All values are accessed from the configuration object. The parameters can be converted to various types and support the specification of units through the set of \apsq string utilities defined in section \ref{sec:string_utilities}. If the key is a string called \textbf{key}, the object is named \textbf{config} and the type \textbf{TYPE} is a valid C++ type that the value should represent, the values should be accessed and defaulted by the following methods:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 // returns true if the key exists and false otherwise
@@ -60,7 +61,9 @@ config.setDefault("key", default_value)
 config.setDefaultArray<TYPE>("key", vector_of_default_values)
 \end{minted}
 
-The conversions to the type are using the from\_string and to\_string methods provided by the string utility library described in section \needref. This largely follows the standard C++ parsing, with one important exception. If (and only if) the value is retrieved as any C/C++ string type and the string is fully enclosed by a pair of \texttt{"} characters they are stripped before returning the value. 
+The conversions to the type are using the from\_string and to\_string methods provided by the string utility library described in section \needref. This largely follows the standard C++ parsing, with one important exception. If (and only if) the value is retrieved as any C/C++ string type and the string is fully enclosed by a pair of \texttt{"} characters they are stripped before returning the value.
+
+\todo specify some more information about the parsing types and the integration of units \todo
 
 \subsection{Modules and the Module Manager}
 \label{sec:module_manager}
@@ -192,7 +195,7 @@ This standard detector model can be extended to provide a more extended geometry
 
 Most of the standard detector models are shipped with the framework in the configuration format introduced in section \ref{sec:config_file_format}. Other models can however be used additionally. The conversion of these configuration files to detector models happens in the geometry construction module (\todo is this where it should be \todo). The models should be searched for in the directories given in the following order:
 \begin{enumerate}
-\item If defined, the paths in the \textit{models\_path} parameter provided to the reader module (overridden by the global configuration \textit{models\_path}) in the given order
+\item If defined, the paths in the \textit{models\_path} parameter provided to the reader module (overridden by the global configuration \textit{models\_path}) in the given order. Files are added directly. If the path is a directory, all files in the directory are added (not recursing into subdirectories).
 \item The location where the models are installed to (see the MODEL\_DIRECTORY variable in section \ref{sec:cmake_config}). 
 \item The standard data paths on the system as given by the environmental variable \$XDG\_DATA\_DIRS with the \project-directory appended. The \$XDG\_DATA\_DIRS variable defaults to \textit{/usr/local/share/} (thus effectively /usr/local/share/\project) followed by \textit{/usr/share/} (effectively /usr/share/\project).
 \end{enumerate}
