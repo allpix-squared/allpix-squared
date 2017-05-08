@@ -9,7 +9,7 @@ The application is split up in the following four main components that together 
 \end{enumerate}
 Finally \apsq provides an executable which instantiates the core, passes the configuration and runs the simulation chain.
 
-In this section first an overview is given about the architectural setup of the core and how it interacts with the total \apsq framework. Afterwards the separate subcomponents are discussed and explained in more detail. Some code will be shown throughout the paragraphs, but users not interested in technical details can skip these.
+In this section first an overview is given about the architectural setup of the core and how it interacts with the total \apsq framework. Afterwards the separate subcomponents are discussed and explained in more detail. Some C++ code will be provided in the text, but users not interested can skip those technical details.
 
 \subsection{Architecture of the Core}
 The core is constructed as a light-weight framework that provides various subsystems to the modules. It also contains the part responsible for instantiating and running the modules from the supplied configuration file. The core is structured around five subsystems of which four are centered around managers and the fifth contain a set of simple general utilities. The systems provided are given below:
@@ -98,7 +98,7 @@ Contains the build description of the module with the following components:
 \item A line containing ALLPIX\_MODULE\_INSTALL(\$\{MODULE\_NAME\} to setup the required target for the module to be installed to.
 \end{enumerate}
 
-An example of a simple CMakeLists.txt of a module named \textbf{Test} is the following
+An example of a simple CMakeLists.txt of a module named Test is the following
 \vspace{5pt}
 
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{cmake}
@@ -129,24 +129,24 @@ All modules should have both a header file and a source file. In the header file
 
 \subsubsection{Module structure}
 \label{sec:module_structure}
-All the modules should inherit from the Module base class which can be found in \textit{src/core/module/Module.hpp}. The module base class provide two base constructors, a few convenient methods and several methods to override. Every module should provide a fixed constructor which is always called during construction by the module instantiation logic. The arguments for the constructor differs for unique and detector modules. For unique modules the empty constructor for a \textbf{Test} module should be:
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+All the modules should inherit from the Module base class which can be found in \textit{src/core/module/Module.hpp}. The module base class provide two base constructors, a few convenient methods and several methods to override. Every module should provide a fixed constructor which is always called during construction by the module instantiation logic. The arguments for the constructor differs for unique and detector modules. For unique modules the empty constructor for a TestModule should be:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
 TestModule(Configuration config, Messenger* messenger, GeometryManager* geo_manager) {}
 \end{minted}
 
 For unique modules the first two arguments are the same, but the last argument is a shared\_ptr to the linked detector instead. It should also always forward this provided detector to the base class. Thus an empty constructor of a detector module should be:
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
 TestModule(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector): Module(detector) {}
 \end{minted}
 
 All the module are thus passed the Configuration object holding the config parameters for that specific object which can be accessed as explained in section \ref{sec:accessing_parameters}. Furthermore a pointer to the Messenger is passed which can be used to both bind variables to receive and dispatch messages as explained in \ref{sec:objects_messages}. Finally either a pointer to the GeometryManager is passed, which can be used to fetch all the detectors, or a instance of the specific linked detector. The constructor should normally be used to bind the required messages and set configuration defaults. Besides the constructor, every module can override the following methods:
 \begin{itemize}
-\item init(): Called after loading and constructing all modules and before initializing the run. In case of failure an exception can be thrown from the constructor.
-\item run(unsigned int event\_id): Called for every event in the simulation run with the number of the event supplied (starting from one). An exception should be thrown for every serious error, otherwise an warning should be logged.
-\item finalize(): Called after running all events in the run, before destructing the module. Any exceptions should be called from here instead of the destructor.
+\item \texttt{init()}: Called after loading and constructing all modules and before initializing the run. In case of failure an exception can be thrown from the constructor.
+\item \texttt{run(unsigned int event\_id)}: Called for every event in the simulation run with the number of the event supplied (starting from one). An exception should be thrown for every serious error, otherwise an warning should be logged.
+\item \texttt{finalize()}: Called after running all events in the run, before destructing the module. Any exceptions should be called from here instead of the destructor.
 \end{itemize}
 
-\todo more information about provided module functions \todo
+\todo more information about provided module functions? \todo
 
 \subsubsection{Module instantiation}
 \label{sec:module_instantiation}
@@ -164,7 +164,7 @@ If the module definition is succesfull it is determined if the module is an uniq
 \item \textbf{Detector}: In this case the modules are instantiated by priority, replacing earlier instantiations with lower priority. Module section that are matched for a specific detector name using the configuration parameter \textit{name} have the highest priority, followed by module sections matched with their model type using \textit{type}. Modules without either the \textit{name}, \textit{type} or both, produce instantiations for all registered modules and have the lowest priority. An exception is raised if a instantiation is requested of the same priority as an earlier one.
 \end{itemize}
 
-\todo This is also mentioned in the other section. Shall we keep this or add more details here? The part about specifying input / output parameters is still missing \todo
+\todo This is also mentioned in other section. Shall we keep this or add more details here? The part about specifying input / output parameters is still missing \todo
 
 \subsection{Geometry and Detectors}
 \label{sec:models_geometry}
@@ -176,8 +176,15 @@ Simulations are frequently run on a set of different detectors (also known as as
 \item A \textbf{model} identified by a string named \text{type}. The model defines the geometry and parameters of the detector. Multiple detectors can share the same model (and this is in fact very common). Most required models are directly shipped with the framework.
 \item An optional \textbf{electric field} in the sensitive device. Outside the sensitive device (and inside the sensitive device if no electric field is defined) the electric field is zero by definition.
 \end{itemize}
+The detector configuration is provided in the special detector configuration which is explained in section \ref{sec:detector_config}.
 
-The detector configuration is provided in the special detector configuration. \todo where should we explain the format of this configuration: in the core or in the module part \todo
+The detectors can be accessed by name through the GeometryManager. If the module is a detector-specific module its related Detector can be accessed through the \texttt{getDetector()} method (returns a null pointer for unique modules) as follows:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
+void run(unsigned int event_id) {
+    // returns the linked detector
+    std::shared_ptr<Detector> detector = this->getDetector();
+}
+\end{minted}
 
 \subsubsection{Coordinate frames}
 The global frame has an arbitrary origin as there is nothing fixed in the world frame except the detectors which are defined relative to this arbitrary origin. Every detector also has a local coordinate system attached to it. The origin of this local coordinate system should NOT necessarily correspond with the geometric center of the sensitive device (and therefore the position and rotation center of the detector in the global frame). The origin of the local coordinate system is instead fixed to the center of the bottom-left collecting element (now referred as a pixel). 
@@ -195,7 +202,15 @@ Different types of detector models can be used inside the framework. All models 
 \item The size of an individual pixel. The multiplication of the pixel size and the number of pixels should not exceed the sensor.
 \end{itemize}
 
-This standard detector model can be extended to provide a more extended geometry if required by certain (more advanced) modules. Currently the only supported option is the PixelDetectorModel (\todo should we change this name? \todo), which apart from the sensor can also include guards rings, bump bonds, a chip, a PCB and a cover layer. For more details about the different types of supported models and how to add your own new model one should look at section \ref{sec:adding_detector_model}.
+This standard detector model can be extended to provide a more extended geometry if required by certain (more advanced) modules. Currently the only supported option is the PixelDetectorModel (\todo should we change this name? \todo), which apart from the sensor can also include guards rings, bump bonds, a chip, a PCB and a cover layer. To fetch the detector model as PixelDetectorModel, the base class should be downcasted as follows (the downcast return a null pointer if it is not a PixelDetectorModel).
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
+// detector is a pointer to a Detector object
+std::shared_ptr<PixelDetectorModel> model = std::dynamic_pointer_cast<PixelDetectorModel>(detector->getModel());
+if(model != nullptr) {
+    // the model of this Detector is a PixelDetectorModel
+}
+\end{minted}
+For more details about the different types of supported models and how to add your own new model one should look at section \ref{sec:adding_detector_model}.
 
 Most of the standard detector models are shipped with the framework in the configuration format introduced in section \ref{sec:config_file_format}. Other models can however be used additionally. The conversion of these configuration files to detector models happens in the geometry construction module (\todo is this where it should be \todo). The models should be searched for in the directories given in the following order:
 \begin{enumerate}
@@ -214,12 +229,64 @@ Communication between modules happens almost solely through messages (only some 
 \item If the dispatched message has a specific name the message will only be dispatched to modules listening to exactly that name \underline{and} also to general listening modules that did not specify the name to receive (or set it to empty).
 \end{enumerate}
 
+An example how to dispatch a message containing an array of \textbf{Object} types, bound to a particular detector named \texttt{detector}, in the \texttt{run()} function of a certain module is provided here:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
+void run(unsigned int event_id) {
+    std::vector<Object> data;
+    // .. fill the data vector with objects ...
+    
+    // the last argument should be ommitted if not bound to detector
+    std::shared_ptr<Message<Object>> message = std::make_shared<Message<Object>>(data, "detector");
+    
+    // the messenger object is a pointer to the Messenger class
+    messenger->dispatchMessage(message, "" /* unnamed message */);
+}
+\end{minted}
+
 \subsubsection{Methods to process messages}
 The message system has multiple methods to process received messages. The first of these two are the most common methods and the third one should only rarely be used. The options are:
 \begin{enumerate}
-\item Bind a \textbf{single message} to a variable. This should usually be the preferred method as most modules only expect one message to arrive per event (as a module should typically send only one message containing the list of all the objects it should send).
-\item Bind a \textbf{set of messages} to an array variable. This method should be used it the module can (and expects to) receive the same message multiple times (possibly because it wants to receive the same type of message for all detectors). 
-\item Listen to a particular message type and execute a \textbf{listening function} as soon as an object is received. Should be used for more advanced strategies for fetching messages. The listening module should NEVER do any heavy work in the listening function as this is supposed to take place in the run() method instead.
+\item Bind a \textbf{single message} to a variable. This should usually be the preferred method as most modules only expect one message to arrive per event (as a module should typically send only one message containing the list of all the objects it should send). An example of how to bind a message containing an array of \textbf{Object} types in the constructor of a unique TestModule would be:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
+TestModule(Configuration, Messenger* messenger, GeometryManager*) {
+    messenger->bindSingle(this, 
+                          /* pointer to the message pointer */
+                          &TestModule::message,
+                          /* listen to every name */
+                          "",
+                          /* no message flags */
+                          MsgFlags::NONE);
+}
+std::shared_ptr<Message<Object>> message;
+\end{minted}
+\item Bind a \textbf{set of messages} to an array variable. This method should be used it the module can (and expects to) receive the same message multiple times (possibly because it wants to receive the same type of message for all detectors). An example to bind multiple messages containing an array of \textbf{Object} types in the constructor of a unique TestModule would be:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
+TestModule(Configuration, Messenger* messenger, GeometryManager*) {
+    messenger->bindMulti(this,
+                          /* pointer to the message pointer */
+                          &TestModule::messages,
+                          /* listen to every name */
+                          "",
+                          /* no message flags */
+                          MsgFlags::NONE);
+}
+std::vector<std::shared_ptr<Message<Object>>> messages;
+\end{minted}
+\item Listen to a particular message type and execute a \textbf{listening function} as soon as an object is received. Should be used for more advanced strategies for fetching messages. The listening module should NEVER do any heavy work in the listening function as this is supposed to take place in the run() method instead. An example of using this to listen to a message containing an array of \textbf{Object} types in a unique TestModule would be:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
+TestModule(Configuration, Messenger* messenger, GeometryManager*) {
+    messenger->registerListener(this,
+                                /* pointer to the message pointer */
+                                &TestModule::listener,
+                                /* listen to every name */
+                                "",
+                                /* no message flags */
+                                MsgFlags::NONE);
+}
+void listener(std::shared_ptr<Message<Object>> message) {
+    // do something with received message ...
+}
+\end{minted}
 \end{enumerate}
 
 \subsubsection{Messenger flags}
