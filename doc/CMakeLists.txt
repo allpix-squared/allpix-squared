@@ -25,7 +25,7 @@ FIND_PACKAGE(LATEX)
 
 IF(LATEX_COMPILER)
     MESSAGE(STATUS "Found LaTeX compiler.")
-    SET(LATEX_COMPILER_FLAGS "-shell-escape" "-interaction=nonstopmode" CACHE STRING "Flags passed to latex.")
+    SET(LATEX_COMPILER_FLAGS "-shell-escape" "-interaction=batchmode" "-file-line-error" CACHE STRING "Flags passed to latex.")
     INCLUDE(${CMAKE_SOURCE_DIR}/cmake/LATEX.cmake)
 
     SET(LATEX_OUTPUT_PATH ${CMAKE_BINARY_DIR}/usermanual)
