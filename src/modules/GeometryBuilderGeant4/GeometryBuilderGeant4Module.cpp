@@ -28,6 +28,9 @@
 #include "modules/common/DetectorModelG4.hpp"
 #include "modules/common/ReadGeoDescription.hpp"
 
+// GDML
+#include "G4GDMLParser.hh"
+
 using namespace allpix;
 using namespace ROOT;
 
@@ -124,6 +127,33 @@ void GeometryBuilderGeant4Module::init() {
     // run the geometry construct function in GeometryConstructionG4
     LOG(INFO) << "Building Geant4 geometry";
     run_manager_g4_->InitializeGeometry();
+
+    // export geometry in GDML.
+    if(true) {
+        G4GDMLParser parser;
+        /*
+      G4GDMLAuxStructType mysubaux = {"mysubtype", "mysubvalue", "mysubunit", 0};
+      G4GDMLAuxListType* myauxlist = new G4GDMLAuxListType();
+      myauxlist->push_back(mysubaux);
+
+      G4GDMLAuxStructType myaux = {"mytype", "myvalue", "myunit", myauxlist};
+      parser.AddAuxiliary(myaux);
+
+      // example of setting auxiliary info for world volume (can be set for any volume)
+
+      G4GDMLAuxStructType mylocalaux = {"sometype", "somevalue", "someunit", 0};
+
+      parser.AddVolumeAuxiliary(mylocalaux, G4TransportationManager::GetTransportationManager()
+      ->GetNavigatorForTracking()->GetWorldVolume()->GetLogicalVolume());
+        */
+        std::string GDML_export_file = "Geometry.gdml";
+        parser.SetRegionExport(true);
+        parser.Write(GDML_export_file,
+                     G4TransportationManager::GetTransportationManager()
+                         ->GetNavigatorForTracking()
+                         ->GetWorldVolume()
+                         ->GetLogicalVolume());
+    }
 
     // release output from G4
     RELEASE_STREAM(G4cout);
