@@ -1,7 +1,7 @@
 \section{Getting Started}
 This section serves as a general introduction to \apsq for users. It is constructed to focus on the basics to get everything up\&running as quickly as possible. More details about the framework and other implementation details are available in section \ref{sec:framework}.
 
-In this section it is assumed that the installation of \apsq as described in section \ref{sec:installation} has been succesfull. When the \textit{allpix} binary is called, the executable installed in \text{bin/allpix} in your installation path is meant. Remember that before running any \apsq simulation, ROOT and likely Geant4 should be initialized. Refer to section \ref{sec:initialize_dependencies} on instructions how to include those libraries.
+In this section it is assumed that the installation of \apsq as described in section \ref{sec:installation} has been succesfull. Also this getting started guide is written with a default installation in mind, this means that some parts of it may not work if you decided to do a custom installation. When the \textit{allpix} binary is called, the executable installed in \text{bin/allpix} in your installation path is meant. Remember that before running any \apsq simulation, ROOT and likely Geant4 should be initialized. Refer to section \ref{sec:initialize_dependencies} on instructions how to include those libraries.
 
 \subsection{Configuration Files}
 \label{sec:configuration_files}
@@ -183,11 +183,209 @@ The framework has a variety of global parameters that allow to configure \apsq t
 With this information in mind it is time to setup a real simulation. All the module parameters are shortly introduced when they are first used. For more details about these parameters the module documentation in section \needref should be checked.
 
 \subsection{Setting up the Simulation Chain}
-\paragraph{Add Additional Modules}
+Let us directly start with a full, but simple, simulation. A typical simulation in \apsq contains at least the following components.
+\begin{itemize}
+\item \todo An extra geometry reader should be added here to create the \apsq geometry \todo
+\item The \textbf{geometry builder}, responsible for creating the global internal geometry (Geant4).
+\item The \textbf{deposition} module that deposits the charges in the detectors using the provided physics list and the global geometry created above.
+\item A \textbf{propagation} module that propagates the charges in to the sensor implant and transfers it to a pixel.
+\item A \textbf{digitizer} module which converts the charges in the pixel to a detector hit
+\item An \textbf{output} module, saving the data of the simulation to the requested format.
+\end{itemize}
+In the example we are going to deposit charges in all of the three sensors from the detector configuration file in \ref{sec:detector_config}. Only the charges in the timepix module are going to be propagated and digitized. The final results of hits in the timepix will be written to a ROOT histogram. The documented version of this main configuration file (with all the required parameters) is as follows:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+# initialize the global configuration
+[AllPix]
+# run a total of 10 events
+number_of_events = 10
+# use the short logging format
+log_format = "SHORT"
+
+# read and instantiate the detectors and construct the Geant4 geometry
+[GeometryBuilderGeant4]
+# location of the detector configuration
+detectors_file = "detector_config.ini"
+# size of the world 
+# TODO: this will be optional
+world_size = 1000um 1000um 2000um
+
+# initialize physics list, setup the particle source and deposit the charges
+[DepositionGeant4]
+# use one of the standard Geant4 physics lists
+physics_list = QGSP_BERT
+# use a charged pion as particle
+particle_type = "pi+"
+# use a single particle in a single 'event'
+particle_amount = 1 
+# set the energy of the particle 
+particle_energy = 120GeV
+# the position of the point source
+particle_position = 0 0 0.2mm
+# the shooting direction of the source (negative z-axis)
+particle_direction = 0 0 -1
+
+# read an electric field
+# TODO: this should be excluded in this basic example
+[ElectricFieldReaderInit]
+file_name = "example_electric_field.init"
+
+# propagate the charges in the sensor 
+[SimplePropagation]
+# only propagate the timepix
+type = "timepix"
+# set the temperature of the sensor
+temperature = 293K
+# propagate multiple charges together in one step to speed up
+charge_per_step = 250
+
+# transfer the propagated charges to the pixels
+# TODO: this module is going to be deleted
+[SimpleTransfer]
+# maximum distance from the bottom to become mapped
+max_depth_distance = 10um 
+
+# save histogram for the timepix to an output file
+[detector_histogrammer_test]
+# alternative way to specify to run this only for the timepix
+name = "tpx"
+\end{minted}
+
+The configuration above can be saved to \textit{config.ini} \todo which suffix to use \todo. The detector configuration file in \ref{sec:detector_config} should then be saved as \textit{detector\_config.ini} in the same directory. Hereafter the total simulation can be executed by passing the configuration to the allpix binary as follows:
+
+\begin{verbatim}
+$ allpix config.ini
+\end{verbatim}
+
+The simulation should then start. It should return similar output to the one below.
+\begin{lstlisting}[breaklines]
+(I) Loading library libAllpixModuleGeometryBuilderGeant4.so
+(I) [C:GeometryBuilderGeant4] Constructing internal geometry
+(I) [C:GeometryBuilderGeant4] Reading model files
+(I) [C:GeometryBuilderGeant4] Parsing models
+(I) Loading library libAllpixModuleDepositionGeant4.so
+(I) Loading library libAllpixModuleElectricFieldReaderInit.so
+(I) Loading library libAllpixModuleSimplePropagation.so
+(I) Loading library libAllpixModuleSimpleTransfer.so
+(I) Loading library libAllpixModuledetector_histogrammer_test.so
+(I) [I:GeometryBuilderGeant4] Building Geant4 geometry
+(I) [I:DepositionGeant4] Initializing physics processes
+(I) [I:DepositionGeant4] Constructing particle source
+(I) [I:ElectricFieldReaderInit:test1] Reading electric field file
+(W) [I:ElectricFieldReaderInit:test1] thickness of sensor in file is 0.285 but in the model it is 0.04
+(W) [I:ElectricFieldReaderInit:test1] pixel size is (0.15,0.1) but in the model it is (0.022,0.044)
+(I) [I:ElectricFieldReaderInit:test2] Reading electric field file
+(W) [I:ElectricFieldReaderInit:test2] thickness of sensor in file is 0.285 but in the model it is 0.04
+(W) [I:ElectricFieldReaderInit:test2] pixel size is (0.15,0.1) but in the model it is (0.022,0.044)
+(I) [I:ElectricFieldReaderInit:tpx] Reading electric field file
+(W) [I:ElectricFieldReaderInit:tpx] thickness of sensor in file is 0.285 but in the model it is 0.3
+(W) [I:ElectricFieldReaderInit:tpx] pixel size is (0.15,0.1) but in the model it is (0.055,0.055)
+(I) [I:detector_histogrammer_test:tpx] Creating histograms
+(I) Running event 1 of 10
+(I) [R:DepositionGeant4] Enabling beam
+(I) [R:SimplePropagation:tpx] Propagating charges in sensor
+(I) [R:SimpleTransfer:tpx] Transferring charges to pixels
+(I) [R:SimpleTransfer:tpx] Combining charges at same pixel
+(I) Running event 2 of 10
+(I) [R:DepositionGeant4] Enabling beam
+(I) [R:SimplePropagation:tpx] Propagating charges in sensor
+(I) [R:SimpleTransfer:tpx] Transferring charges to pixels
+(I) [R:SimpleTransfer:tpx] Combining charges at same pixel
+(I) Running event 3 of 10
+(I) [R:DepositionGeant4] Enabling beam
+(I) [R:SimplePropagation:tpx] Propagating charges in sensor
+(I) [R:SimpleTransfer:tpx] Transferring charges to pixels
+(I) [R:SimpleTransfer:tpx] Combining charges at same pixel
+(I) Running event 4 of 10
+(I) [R:DepositionGeant4] Enabling beam
+(I) [R:SimplePropagation:tpx] Propagating charges in sensor
+(I) [R:SimpleTransfer:tpx] Transferring charges to pixels
+(I) [R:SimpleTransfer:tpx] Combining charges at same pixel
+(I) Running event 5 of 10
+(I) [R:DepositionGeant4] Enabling beam
+(I) [R:SimplePropagation:tpx] Propagating charges in sensor
+(I) [R:SimpleTransfer:tpx] Transferring charges to pixels
+(I) [R:SimpleTransfer:tpx] Combining charges at same pixel
+(I) Running event 6 of 10
+(I) [R:DepositionGeant4] Enabling beam
+(I) [R:SimplePropagation:tpx] Propagating charges in sensor
+(I) [R:SimpleTransfer:tpx] Transferring charges to pixels
+(I) [R:SimpleTransfer:tpx] Combining charges at same pixel
+(I) Running event 7 of 10
+(I) [R:DepositionGeant4] Enabling beam
+(I) [R:SimplePropagation:tpx] Propagating charges in sensor
+(I) [R:SimpleTransfer:tpx] Transferring charges to pixels
+(I) [R:SimpleTransfer:tpx] Combining charges at same pixel
+(I) Running event 8 of 10
+(I) [R:DepositionGeant4] Enabling beam
+(I) [R:SimplePropagation:tpx] Propagating charges in sensor
+(I) [R:SimpleTransfer:tpx] Transferring charges to pixels
+(I) [R:SimpleTransfer:tpx] Combining charges at same pixel
+(I) Running event 9 of 10
+(I) [R:DepositionGeant4] Enabling beam
+(I) [R:SimplePropagation:tpx] Propagating charges in sensor
+(I) [R:SimpleTransfer:tpx] Transferring charges to pixels
+(I) [R:SimpleTransfer:tpx] Combining charges at same pixel
+(I) Running event 10 of 10
+(I) [R:DepositionGeant4] Enabling beam
+(I) [R:SimplePropagation:tpx] Propagating charges in sensor
+(I) [R:SimpleTransfer:tpx] Transferring charges to pixels
+(I) [R:SimpleTransfer:tpx] Combining charges at same pixel
+(I) [F:detector_histogrammer_test:tpx] Writing histograms to file
+\end{lstlisting}
+The final histogram output should be availabe in \\ \textit{output/detector\_histogrammer\_test\_tpx/histogram.root} \todo Both the directory and the name of this module should be reworked \todo.
+
+If problems occur, please make sure you have an up-to-date and properly installed version of \apsq (see the installation instructions in section \ref{sec:installation}). If modules and models fail to load, more information about loading problems can be found in the detailed framework section \ref{sec:framework}.
+
+\subsubsection{Adding new modules}
+Before going to more advanced configurations, a few modules are discussed which a user might want to add.
+
+\paragraph{VisualizationGeant4}
+Displaying the geometry and the particle tracks helps a lot in both checking and interpreting the results. Visualization options are currently limited, but a simple visualization module is provided through Geant4. It supports all the visualization options provided by Geant4 (see their manual \needcite), but the VRML viewer is recommended (until better solutions are available). 
+
+To start using the VRML viewer, follow the steps below:
+\begin{itemize}
+\item First the \texttt{simple\_view = 1} parameter should be added to the \textbf{GeometryBuilderGeant4} section. This simplifies the visualization output and makes it several order of magnitude faster. 
+\item Then the viewer should be installed on your operating system. Options include FreeWRL (available on \url{http://freewrl.sourceforge.net/}) and OpenVRML (available on \url{http://openvrml.org/}).
+\item Subsequently two environmental parameters should be exported to inform Geant4 of the configuration. These include \texttt{G4VRMLFILE\_VIEWER} which should point to the location of the viewer and \texttt{G4VRMLFILE\_MAX\_FILE\_NUM} which should typically be set to 1 to prevent too many files from being created.
+\item Finally the example section below should be added at the end of the configuration file before running the simulation again:
+\end{itemize}
+
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+[VisualizationGeant4]
+# use the VRML driver
+driver = "VRML2FILE" 
+# point those macro files to the etc/ directory in the allpix source folder
+# TODO: these macros should be optional
+macro_init = "geant4_init.in"
+macro_run = "geant4_run.in"
+\end{minted}
+
+\paragraph{ElectricFieldReaderInit}
+An electric field in the detectors can be specified using the .init format by using the ElectricFieldReaderInit module. The init format is a temporary format, taken from the PixelAV software \needcite. (\todo adding a more detailed description is useless as this will be removed anyway? \todo) These fields can be attached to specific detectors using the standard syntax for detector binding. An example would be:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+[ElectricFieldReaderInit]
+# bind the electric field to the timepix sensor
+name = "tpx"
+# name of the file containing the electric field
+file_name = "example_electric_field.init"
+\end{minted}
+An example electric field (which the name used above) can be found in the \textit{etc} directory of the \apsq source folder.
+
+\subsubsection{Advanced configuration}
 \paragraph{Redirect Module Inputs and Outputs}
+\todo This is not fully implemented yet \todo
+
 \paragraph{Using TCAd Electric Field Simulations}
+\todo This is not implemented yet \todo
+
 \paragraph{Choosing the Propagation Modules}
-normal, irrad with trapping simulation etc
+\todo At the moment only a generic propagation module is available \todo
+
 \subsection{Logging and Verbosity Levels}
 \label{sec:logging_verbosity}
+One of the main design goals of \apsq is it being easy-to-use. One of the most important elements determining the user-friendlyness is the amount of feedback provided during the simulation. \apsq is designed to catch mistakes and implementation errors as early as possible and tries to give the user a clear indication about the problem. More details about the logger and the internal structure for reporting errors can be found in section \ref{sec:logger} and \ref{sec:error_reporting_exceptions}. This section will instead provide a quick introduction to the logging and information how to set the verbosity levels to get the details you require.
+
+\todo The logger should be restructured before this section can be finished \todo
+
 \subsection{Storing Output Data}
+\todo This should currently be reworked \todo
