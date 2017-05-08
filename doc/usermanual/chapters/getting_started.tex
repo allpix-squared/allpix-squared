@@ -18,7 +18,7 @@ Before going into depth on defining the required configuration files, first more
 
 \subsubsection{Supported types and units}
 \label{sec:config_values}
-The \apsq framework supports the use of a variety of types for all configuration values. The module specifies how the value type should be interpreted. An error will be raised if either the key is not specified in the config file, the conversion to the desired type is not possible or if the value is non-sense for that particular key for any other reason. Please refer to the module documentation at \needref for the list of module parameters and their types. Parsing the value roughly follows common-sense (more details can be found in section \ref{sec:accessing_parameters}). There do apply a few special rules:
+The \apsq framework supports the use of a variety of types for all configuration values. The module specifies how the value type should be interpreted. An error will be raised if either the key is not specified in the config file, the conversion to the desired type is not possible or if the value is non-sense for that particular key for any other reason. Please refer to the module documentation in section \ref{sec:modules} for the list of module parameters and their types. Parsing the value roughly follows common-sense (more details can be found in section \ref{sec:accessing_parameters}). There do apply a few special rules:
 \begin{itemize}
 \item If the value is a \textbf{string} it may be enclosed by a single pair of double quotation marks (\texttt{"}), which are stripped before passing the value to the modules. If the string is not enclosed by the quotation marks all whitespace before and after the value is erased. If the value is an array of strings, the value is split at every whitespace or comma (\texttt{'}) that is not enclosed in quotation marks.
 \item If the value is a \textbf{relative path} that path will be made absolute by adding the absolute path of the directory that contains the configuration file where the key defined.
@@ -53,7 +53,7 @@ The \apsq framework supports the use of a variety of types for all configuration
 \end{tabular}
 \end{table}
 
-Combinations of base units can be specified by using the multiplication sign (\texttt(*)) and the division sign (\texttt{/}) that are parsed in linear order (thus $\frac{V m}{s^2}$ should be specified as $V*m/s/s$). The framework assumes the default units (as given in Table \ref{tab:units}) if the unit is not explicitly specified. It is recommended to always specify the unit explicitly for all parameters that are not dimensionless (and also for angles which are special units). 
+Combinations of base units can be specified by using the multiplication sign \texttt{*} and the division sign \texttt{/} that are parsed in linear order (thus $\frac{V m}{s^2}$ should be specified as $V*m/s/s$). The framework assumes the default units (as given in Table \ref{tab:units}) if the unit is not explicitly specified. It is recommended to always specify the unit explicitly for all parameters that are not dimensionless (and also for angles which are special units). 
 
 Examples of specifying key/values pairs of various types are given below
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
@@ -121,13 +121,13 @@ This configuration file is used in the rest of this chapter for explaining conce
 \label{sec:main_config}
 The main configuration consists of a set of section header that specify the modules used. All modules are executed in the \underline{linear} order in which they are defined. Modules can be specified multiple times in the configuration files, but it depends on their type and configuration if that is allowed or not, as explained later on. There are a few section names that have a special meaning in the main configuration, which are the following:
 \begin{itemize}
-\item The \textbf{global} (framework) header sections: These are all the zero-length section headers (including the one at the start) and all with the header \textbf{AllPix} (case-sensitive). These are combined and accessed together as the global configuration, which contain all the parameters of the framework (see section \ref{sec:framework_parameters} for details). All key-value pairs defined in this section are also inherited in all individual configurations as long the key is not defined in the specific configuration.
-\item The \textbf{ignore} header sections: All the section with name Ignore are fully ignored. All key-value pairs as well as the section itself are threated as if they were never defined. These sections are useful for quickly enabling and disabling certain sections.
+\item The \textbf{global} (framework) header sections: These are all the zero-length section headers (including the one at the start) and all with the header \texttt{AllPix} (case-sensitive). These are combined and accessed together as the global configuration, which contain all the parameters of the framework (see section \ref{sec:framework_parameters} for details). All key-value pairs defined in this section are also inherited in all individual configurations as long the key is not defined in the specific configuration.
+\item The \textbf{ignore} header sections: All the section with name \texttt{Ignore} are fully ignored. All key-value pairs as well as the section itself are threated as if they were never defined. These sections are useful for quickly enabling and disabling certain sections.
 \end{itemize}
 
 The rest of all the section headers are used to instantiate all the modules. Modules should normally be loaded automatically (as long as they are installed correctly). If problems arise please check the loading rules in section \ref{sec:module_instantiation}. The type of the module determines how the module is instantiated:
 \begin{itemize}
-\item If the module is \textbf{unique} it is unique and run only a single time. These kind of modules should only appear once in the whole configuration file.
+\item If the module is \textbf{unique} it runs only a single time. These kind of modules should only appear once in the whole configuration file.
 \item If the module is \textbf{detector}-specific it is run on every specified detector it is specified to run on. By default an instantiation is created for all detectors defined in the detector configuration file (see section \ref{sec:detector_config}) unless one or both of the following parameters are specified.
 \begin{itemize}
 \item \textbf{name}: An array of detector names where the module should run on. Replaces all global and type specific modules of the same kind.
@@ -180,7 +180,7 @@ The framework has a variety of global parameters that allow to configure \apsq t
 \item \textbf{model\_path}: Additional detector models to read. Refer to section \ref{sec:detector_models} for more information. \todo not strictly a framework parameter now, but inherited in the readers \todo
 \end{itemize}
 
-With this information in mind it is time to setup a real simulation. All the module parameters are shortly introduced when they are first used. For more details about these parameters the module documentation in section \needref should be checked.
+With this information in mind it is time to setup a real simulation. All the module parameters are shortly introduced when they are first used. For more details about these parameters the module documentation in section \ref{sec:modules} should be checked.
 
 \subsection{Setting up the Simulation Chain}
 Let us directly start with a full, but simple, simulation. A typical simulation in \apsq contains at least the following components.
@@ -340,7 +340,7 @@ If problems occur, please make sure you have an up-to-date and properly installe
 Before going to more advanced configurations, a few modules are discussed which a user might want to add.
 
 \paragraph{VisualizationGeant4}
-Displaying the geometry and the particle tracks helps a lot in both checking and interpreting the results. Visualization options are currently limited, but a simple visualization module is provided through Geant4. It supports all the visualization options provided by Geant4 (see their manual \needcite), but the VRML viewer is recommended (until better solutions are available). 
+Displaying the geometry and the particle tracks helps a lot in both checking and interpreting the results. Visualization options are currently limited, but a simple visualization module is provided through Geant4. It supports all the visualization options provided by Geant4 as provided in their manual at \url{https://geant4.web.cern.ch/geant4/UserDocumentation/UsersGuides/ForApplicationDeveloper/html/ch08.html}. The the VRML viewer is however the recommended option (until better solutions are available). 
 
 To start using the VRML viewer, follow the steps below:
 \begin{itemize}
@@ -361,7 +361,7 @@ macro_run = "geant4_run.in"
 \end{minted}
 
 \paragraph{ElectricFieldReaderInit}
-An electric field in the detectors can be specified using the .init format by using the ElectricFieldReaderInit module. The init format is a temporary format, taken from the PixelAV software \needcite. (\todo adding a more detailed description is useless as this will be removed anyway? \todo) These fields can be attached to specific detectors using the standard syntax for detector binding. An example would be:
+An electric field in the detectors can be specified using the .init format by using the ElectricFieldReaderInit module. The init format is a temporary format, taken from the PixelAV software\cite{pixelavgit}. (\todo adding a more detailed description is useless as this will be removed anyway? \todo) These fields can be attached to specific detectors using the standard syntax for detector binding. An example would be:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 [ElectricFieldReaderInit]
 # bind the electric field to the timepix sensor

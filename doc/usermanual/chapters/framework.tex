@@ -3,7 +3,7 @@
 The application is split up in the following four main components that together form \apsq:
 \begin{enumerate}
 \item \textbf{Core}: Sometimes referred as the framework itself, with the rest of the components separate. The core, object and tools are also known as the core framework. The core contains the internal logic to initiate the modules, provide the geometry, facilitate module communication and run the event sequence. The core should keep its dependencies to a minimum and remain separated from the other components as far as posibble. This is the main component discussed in this section.
-\item \textbf{Modules}: A set of methods that execute a (optional) subset of the simulation chain. These are build as separate libraries, loaded dynamically by the core. The set of available modules are discussed in more detail in \needref.
+\item \textbf{Modules}: A set of methods that execute a (optional) subset of the simulation chain. These are build as separate libraries, loaded dynamically by the core. The set of available modules are discussed in more detail in \ref{sec:modules}.
 \item \textbf{Objects}: Objects are sets of data that are passed around between modules. They are contained into a single library and are transferred using the message framework provided by the core. Modules can listen and bind to messages they wish to receive. Messages are passed around by the object type they are carrying, but they can also be named to allow the use of more advanced modules and sophicates simulations setups. Messages are meant to be read-only and a copy of the data should be made if a module wishes to change the data. More information about the messaging system and the currently supported set of objects are found in section \ref{sec:objects_messages}.
 \item \textbf{Tools}: \apsq provides a set of header-only 'tools' that can be used by modules and provide access to common logic to interface various library that could be of use for different modules. An example is a Eigen Runge-Kutta solver and a set of template specializations for ROOT and Geant4 configuration. More information about these can be found in \needref. This set of tools is different from the set of core utilities the framework provides by itself, which are part of the core and explained in \ref{sec:logging_utilities}
 \end{enumerate}
@@ -14,7 +14,7 @@ In this section first an overview is given about the architectural setup of the 
 \subsection{Architecture of the Core}
 The core is constructed as a light-weight framework that provides various subsystems to the modules. It also contains the part responsible for instantiating and running the modules from the supplied configuration file. The core is structured around five subsystems of which four are centered around managers and the fifth contain a set of simple general utilities. The systems provided are given below:
 \begin{enumerate}
-\item \textbf{Configuration}: Provides a general configuration object from which data can be stored and retrieved, together with a TOML-like\needref file parser to instantiate the configurations. Also provides a general \apsq configuration manager giving access to the main configuration file and section. It is used by module manager system to find the required instantiations and access the global configuration. More information is given in \ref{sec:config_parameters}.
+\item \textbf{Configuration}: Provides a general configuration object from which data can be stored and retrieved, together with a TOML-like\cite{tomlgit} file parser to instantiate the configurations. Also provides a general \apsq configuration manager giving access to the main configuration file and section. It is used by module manager system to find the required instantiations and access the global configuration. More information is given in \ref{sec:config_parameters}.
 \item \textbf{Module}: Contain the base class of all the \apsq modules and the manager responsible for loading and running the modules (using the configuration system above). This component is discussed in more detail in section \ref{sec:module_manager}.
 \item \textbf{Geometry}: Supplies helpers for the simulation geometry. The manager contains all the registered detectors. A detector has a certain position and orientation linked to an instantiation of a particular detector model. The detector model contains all the parameters that describe the geometry of the detector. Most modules only need a subset of these parameters, but they are all together used to construct the Geant4 geometry. More details about the geometry and detector models is provided in section \ref{sec:models_geometry}.
 \item \textbf{Messenger}: The messenger is responsible for sending objects from one module to another. The messenger object is passed to every module and can be used to bind to messages to listen for. Messages with objects can also be dispatched through the messenger to send data further in the simulation chain. Refer to section \ref{sec:objects_messages} for more details.
@@ -25,11 +25,11 @@ A set of base exceptions is also provided in the utilities, which are inherited 
 
 \subsection{Configuration and Parameters}
 \label{sec:config_parameters}
-The modules and the framework can be configured through configuration files. An explanation how to use the various configuration files is given in \needref. All configuration files follow the same format, but the framework has a few exceptional rules for accessing the main configuration file.
+The modules and the framework can be configured through configuration files. An explanation how to use the various configuration files together with several examples are provided in section \ref{sec:configuration_files}. All configuration files follow the same format, but the way their input is interpreted differs per configuration file.
 
 \subsubsection{File format}
 \label{sec:config_file_format}
-Throughout the framework a standard format is used for the configuration files, this format is a simplified version of TOML\needref (which is again inspired by JSON and Windows INI files). The rules for this format are as follows:
+Throughout the framework a standard format is used for the configuration files, this format is a simplified version of TOML\cite{tomlgit} (which is again inspired by JSON and Windows INI files). The rules for this format are as follows:
 \begin{enumerate}
 \item All whitespace at the beginning or end of a line should be stripped by the parser. Empty lines should be ignored.
 \item Every non-empty line should start with either a \texttt{\#}, a \texttt{[} or a alphanumeric character. Every other character should lead to an immediate parse error.
@@ -61,7 +61,7 @@ config.setDefault("key", default_value)
 config.setDefaultArray<TYPE>("key", vector_of_default_values)
 \end{minted}
 
-The conversions to the type are using the from\_string and to\_string methods provided by the string utility library described in section \needref. This largely follows the standard C++ parsing, with one important exception. If (and only if) the value is retrieved as any C/C++ string type and the string is fully enclosed by a pair of \texttt{"} characters they are stripped before returning the value.
+The conversions to the type are using the from\_string and to\_string methods provided by the string utility library described in section \ref{sec:string_utilities}. This largely follows the standard C++ parsing, with one important exception. If (and only if) the value is retrieved as any C/C++ string type and the string is fully enclosed by a pair of \texttt{"} characters they are stripped before returning the value.
 
 \todo specify some more information about the parsing types and the integration of units \todo
 
@@ -72,7 +72,7 @@ The conversions to the type are using the from\_string and to\_string methods pr
 \item \textbf{Detector}: Modules that are specific to a single detector. They are replicated for all required detectors.
 \item \textbf{Unique}: Modules of which only one instance is allowed to exist per run of the framework.
 \end{itemize}
-The type of module determines the kind of constructor used, the internal unique name and the supported configuration parameters. More details about the instantiation logic for the different kind of modules can be found in \needref.
+The type of module determines the kind of constructor used, the internal unique name and the supported configuration parameters. More details about the instantiation logic for the different kind of modules can be found in \ref{sec:module_instantiation}.
 
 \subsubsection{Files for a module}
 \label{sec:module_files}
@@ -128,6 +128,7 @@ ALLPIX_MODULE_INSTALL(${MODULE_NAME})
 All modules should have both a header file and a source file. In the header file the module is defined and its goal is documented. Moreover brief documentation is added to explain what every method does. The source file should provide the implementation of every method and also its more detailed documentation. Not a single method should be defined in the header to keep the interface clean.
 
 \subsubsection{Module structure}
+\label{sec:module_structure}
 All the modules should inherit from the Module base class which can be found in \textit{src/core/module/Module.hpp}. The module base class provide two base constructors, a few convenient methods and several methods to override. Every module should provide a fixed constructor which is always called during construction by the module instantiation logic. The arguments for the constructor differs for unique and detector modules. For unique modules the empty constructor for a \textbf{Test} module should be:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 TestModule(Configuration config, Messenger* messenger, GeometryManager* geo_manager) {}
@@ -138,7 +139,7 @@ For unique modules the first two arguments are the same, but the last argument i
 TestModule(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector): Module(detector) {}
 \end{minted}
 
-All the module are thus passed the Configuration object holding the config parameters for that specific object which can be accessed as explained in \needref. Furthermore a pointer to the Messenger is passed which can be used to both bind variables to receive and dispatch messages as explained in \needref. Finally either a pointer to the GeometryManager is passed, which can be used to fetch all the detectors, or a instance of the specific linked detector. The constructor should normally be used to bind the required messages and set configuration defaults. Besides the constructor, every module can override the following methods:
+All the module are thus passed the Configuration object holding the config parameters for that specific object which can be accessed as explained in section \ref{sec:accessing_parameters}. Furthermore a pointer to the Messenger is passed which can be used to both bind variables to receive and dispatch messages as explained in \ref{sec:objects_messages}. Finally either a pointer to the GeometryManager is passed, which can be used to fetch all the detectors, or a instance of the specific linked detector. The constructor should normally be used to bind the required messages and set configuration defaults. Besides the constructor, every module can override the following methods:
 \begin{itemize}
 \item init(): Called after loading and constructing all modules and before initializing the run. In case of failure an exception can be thrown from the constructor.
 \item run(unsigned int event\_id): Called for every event in the simulation run with the number of the event supplied (starting from one). An exception should be thrown for every serious error, otherwise an warning should be logged.
@@ -154,7 +155,7 @@ The modules are dynamically loaded and instantiated by the Module Manager. Modul
 \item The modules already loaded before from an earlier section header
 \item All directories in the global configuration parameter \textit{library\_directories} in the provided order if this parameter exists
 \item The rpath of the executable, that should automatically point to the libraries that are build and installed together with the executable.
-\item The other standard locations (after the rpath) as specified in the POSIX standard \needcite.
+\item The other standard locations to search for libraries depending on the operating system, see \url{http://man7.org/linux/man-pages/man8/ld.so.8.html} for details about the procedure Linux follows.
 \end{enumerate}
 
 If the module definition is succesfull it is determined if the module is an unique or a detector module. Depending on the type, the instantiation logic continues as follows:
@@ -171,7 +172,7 @@ Simulations are frequently run on a set of different detectors (also known as as
 \begin{itemize}
 \item A unique \textbf{name} to refer to the detector in the configuration.
 \item The \textbf{position} in the world frame. This is the position of the geometric center of the sensitive device (sensor) given in world coordinates as X, Y and Z (note that any additional components like the chip or the PCB are not including for determining the geometric center).
-\item The \textbf{orientation} given as Euler angles using the extrinsic Z-X-Z convention relative to the world frame (also known as the 1-3-1 or the "x-convention" and the most widely used definition of Euler angles \needcite). 
+\item The \textbf{orientation} given as Euler angles using the extrinsic Z-X-Z convention relative to the world frame (also known as the 1-3-1 or the "x-convention" and the most widely used definition of Euler angles\cite{eulerangles}). 
 \item A \textbf{model} identified by a string named \text{type}. The model defines the geometry and parameters of the detector. Multiple detectors can share the same model (and this is in fact very common). Most required models are directly shipped with the framework.
 \item An optional \textbf{electric field} in the sensitive device. Outside the sensitive device (and inside the sensitive device if no electric field is defined) the electric field is zero by definition.
 \end{itemize}
@@ -207,10 +208,10 @@ Most of the standard detector models are shipped with the framework in the confi
 \label{sec:objects_messages}
 Communication between modules happens almost solely through messages (only some information is shared through the internally used dependencies like Geant4). Most messages are templated instantiations of the Message class carrying a vector of objects. A typedef is typically added by the object to provide an alternative name for the message directly linking to the object it is carrying. The message system has a dispatching part and a receiver part. The dispatching module can specify an optional name for the message and the receiver can also optionally specify a name to listen to. The following rules are used to dispatch the message to their receivers:
 \begin{enumerate}
-\item If the message type (thus usually the object type) of the receiving module does not match the type of the sending module, the message will NEVER be dispatched to this receiving module.
-\item If the module is a detector module and the dispatched message has a detector attached, the message will NEVER be dispatched to this module if the detector does NOT match the detector linked to the detector module.
+\item If the message type (thus usually the object type) of the receiving module does not match the type of the sending module, the message will \underline{never} be dispatched to this receiving module.
+\item If the module is a detector module and the dispatched message has a detector attached, the message will \underline{never} be dispatched to this module if the detector does \underline{not} match the detector linked to the detector module.
 \item If the name of the dispatched message is unspecified (or empty) the message will be dispatched to all modules (not excluded by earlier rules).
-\item If the dispatched message has a specific name the message will only be dispatched to modules listening to exactly that name AND also to general listening modules that did not specify the name to receive (or set it to empty).
+\item If the dispatched message has a specific name the message will only be dispatched to modules listening to exactly that name \underline{and} also to general listening modules that did not specify the name to receive (or set it to empty).
 \end{enumerate}
 
 \subsubsection{Methods to process messages}
@@ -243,7 +244,7 @@ All supported objects that can be transferred between modules are shipped with t
 \label{sec:logging_utilities}
 The \apsq framework provides a set of utilities that can be split up in two type of utilies:
 \begin{itemize}
-\item A few utilities to extend the Standard Template Library (STL) \needref. These are provided either to simplify access to the STL (like the random seed generator utility) or to provide functionality the C++14 standard lacks (like filesystem support). The referred utilities are used internally in the framework and only shortly discussed. The utilities falling in this category are the random seed generator (see section \ref{sec:random_generator}), the filesystem functions (see section \ref{sec:filesystem}) and the string utilies (see section \ref{sec:string_utilities}).
+\item A few utilities to extend the functionality provided by the C++ Standard Template Library (STL). These are provided either to simplify access to the STL (like the random seed generator utility) or to provide functionality the C++14 standard lacks (like filesystem support). The referred utilities are used internally in the framework and only shortly discussed. The utilities falling in this category are the random seed generator (see section \ref{sec:random_generator}), the filesystem functions (see section \ref{sec:filesystem}) and the string utilies (see section \ref{sec:string_utilities}).
 \item Two utilities to improve the usability of the framework. One of these is a flexible and easy-to-use logging system, introduced below in section \ref{sec:logger}. The other is an easy-to-use framework for units that supports converting arbitrary combinations of units to an independent number which can  be used transparently through the framework. It will be discussed in more detail in section \ref{sec:unit_system}.
 \end{itemize}
 
@@ -289,12 +290,12 @@ Units::get(1, "m/ns");
 Units::convert(1, "m/ns");
 \end{minted}
 
-More details about the unit system used within AllPix can be found in section \needref.
+More details about how the unit system is used within AllPix can be found in section \ref{sec:config_values}.
 
 \subsubsection{Internal utilities}
 \paragraph{Filesystem}
 \label{sec:filesystem}
-Provide functions to convert relative to absolute canonical paths, to go through all files in a directory and to create new directories. These functions should be replaced by the C++17 filesystem API\needcite as soon as the framework minimum standard is updated to C++17.
+Provide functions to convert relative to absolute canonical paths, to go through all files in a directory and to create new directories. These functions should be replaced by the C++17 filesystem API\cite{cppfilesystem} as soon as the framework minimum standard is updated to C++17.
 
 \paragraph{String utilies}
 \label{sec:string_utilities}
