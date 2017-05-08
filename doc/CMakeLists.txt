@@ -36,13 +36,13 @@ IF(LATEX_COMPILER)
         USE_BIBLATEX
         INPUTS
         usermanual/chapters/introduction.tex
+        usermanual/chapters/quick_start.tex
         usermanual/chapters/installation.tex
         usermanual/chapters/framework.tex
-        usermanual/chapters/usage.tex
+        usermanual/chapters/getting_started.tex
         usermanual/chapters/development.tex
         usermanual/chapters/faq.tex
         usermanual/chapters/additional.tex
-        usermanual/chapters/summary.tex
         usermanual/chapters/acknowledgements.tex
         usermanual/appendices/design_notes.tex
         usermanual/config.tex
