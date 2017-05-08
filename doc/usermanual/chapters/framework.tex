@@ -53,6 +53,10 @@ config.get<TYPE>("key")
 config.getDefault<TYPE>("key", default_value) 
 // returns an array of single values of the given type; throws if the key does not exist
 config.getArray<TYPE>("key")
+// returns an absolute (canonical if it should exist) path to a file
+config.getPath("key", true /* check if path exists */)
+// return an array of absolute paths
+config.getPathArray("key", false /* check if paths exists */)
 // returns the key as literal string
 config.getText("key") 
 // set the value of key to the default value if the key is not defined
@@ -95,7 +99,7 @@ Contains the build description of the module with the following components:
 \item The next lines to load the required dependencies. Only ROOT is automatically added to the include headers and linked in the module.
 \item A line with ALLPIX\_MODULE\_SOURCES(\$\{MODULE\_NAME\} \textless sources \textgreater) with sources replaced by all the source files of this module
 \item Several lines to include the directories and load the libraries
-\item A line containing ALLPIX\_MODULE\_INSTALL(\$\{MODULE\_NAME\} to setup the required target for the module to be installed to.
+\item A line containing ALLPIX\_MODULE\_INSTALL(\$\{MODULE\_NAME\}) to setup the required target for the module to be installed to.
 \end{enumerate}
 
 An example of a simple CMakeLists.txt of a module named Test is the following
@@ -216,7 +220,7 @@ Most of the standard detector models are shipped with the framework in the confi
 \begin{enumerate}
 \item If defined, the paths in the \textit{models\_path} parameter provided to the reader module (overridden by the global configuration \textit{models\_path}) in the given order. Files are added directly. If the path is a directory, all files in the directory are added (not recursing into subdirectories).
 \item The location where the models are installed to (see the MODEL\_DIRECTORY variable in section \ref{sec:cmake_config}). 
-\item The standard data paths on the system as given by the environmental variable \$XDG\_DATA\_DIRS with the \project-directory appended. The \$XDG\_DATA\_DIRS variable defaults to \textit{/usr/local/share/} (thus effectively /usr/local/share/\project) followed by \textit{/usr/share/} (effectively /usr/share/\project).
+\item The standard data paths on the system as given by the environmental variable \$XDG\_DATA\_DIRS with the \project-directory appended. The \$XDG\_DATA\_DIRS variable defaults to \textit{/usr/local/share/} (thus effectively \textit{/usr/local/share/\project}) followed by \textit{/usr/share/} (effectively \textit{/usr/share/\project}).
 \end{enumerate}
 
 \subsection{Passing Objects using Messages}
