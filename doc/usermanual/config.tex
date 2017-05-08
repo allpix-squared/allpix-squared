@@ -1,6 +1,18 @@
+% Add command to display allpix squared
+\newcommand{\apsq}{\texorpdfstring{\ensuremath{\mathrm{AllPix}^2}}{AllPix\textasciicircum 2}\xspace}
+
+% Temporary TODO commands
+\newcommand{\needcite}{[CITE?] }
+\newcommand{\needref}{[REF?] }
+\newcommand{\todo}{[TODO!] }
+
+
 % Set bibliography
 \addbibresource{usermanual/references.bib}
 
 % Set allpix version
 \newcommand{\version}{\lstinline|@ALLPIX_VERSION@|}
 \newcommand{\project}{@CMAKE_PROJECT_NAME@}
+
+% Use new lines in FAQ 
+\setlist[description]{style=nextline}
