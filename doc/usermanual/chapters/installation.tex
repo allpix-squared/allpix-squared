@@ -1,23 +1,8 @@
 \section{Installation}
 \label{sec:installation}
-Full installation instructions are found in the next paragraphs. Users who want to quickly setup a working version can execute the following commands:
-\begin{verbatim}
-$ git clone https://gitlab.cern.ch/simonspa/allpix-squared
-$ cd allpix-squared
-$ mkdir build && cd build/
-$ cmake ..
-$ make
-$ make install
-$ cd ..
-\end{verbatim}
-The binary can then be executed with the example configuration file as follows:
-\begin{verbatim}
-$ bin/allpix etc/example_config.ini
-\end{verbatim}
-
-In case something went wrong during the build, you want to use a non-standard installation or if you want more detailed installation instructions, please read on.
+Full instructions to setup a working installation of \apsq are found in the next paragraphs. It will provide detailed information about the installation process and various options. This section is especially useful if there went someting wrong during the standard build you tried before, if you want to use a non-standard installation or if you want more precise installation instructions in general.
 \subsection{Prerequisites}
-\label{sec:prerequisites}.
+\label{sec:prerequisites}
 \apsq should be able to run without problems on Mac as well as any recent Linux distribution. Windows is not supported and will likely never be. It could be theoretically possible to install \apsq using MinGW or Cygwin, but this not tested.
 
 The core framework is split from the individual modules and \apsq has therefore only one required dependency: ROOT 6 (versions below 6 are not supported!). Please refer to the ROOT documentation at \url{https://root.cern.ch/} about details how to install ROOT. ROOT has several extra components and the GenVector package is required to run \apsq. This package is included by default in the standard build.

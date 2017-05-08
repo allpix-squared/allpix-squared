@@ -1,4 +1,5 @@
 \section{Introduction}
+\label{sec:introduction}
 \apsq is a generic simulation framework for tracker and vertex detectors written in modern C++. It is the successor of a previously developed simulation framework called AllPix\cite{ap1wiki}\cite{ap1git}. The goal of the \apsq framework is provide a complete easy-to-use package to simulate the performance of detectors from a general source of particles until the digitization of hits in the detector chip. 
 
 Other frameworks are used within \apsq to perform specialized tasks in the simulation chain, most notably Geant4\cite{geant4} for the deposition of particles in the sensor and ROOT\cite{root} for producing histograms and generating the output data. The cores of the framework focuses on the simulation of charge transport in semiconductor detectors and the digitization to hits in the integrated circuits. The framework does not perform reconstruction of the generated hits, other specific packages (like ??) should be used for that.

@@ -1,1 +1,23 @@
 \section{Quick Start}
+This section serves as a very quick introduction to \apsq for users who prefer to start quickly and learn the details while simulating. The typical user should skip this section and continue to the next section \ref{sec:introduction} instead. 
+
+\apsq is a generic simulation framework for tracker and vertex detectors. It provided a flexible and user-friendly framework for the simulation of independent detectors. The framework uses other more specialized frameworks to execute some more detailed steps in the simulation process.
+
+The minimal, default installation can be done by executing the commands below. More detailed installation instructions are found in section \ref{sec:installation}.
+\begin{verbatim}
+$ git clone https://gitlab.cern.ch/simonspa/allpix-squared
+$ cd allpix-squared
+$ mkdir build && cd build/
+$ cmake ..
+$ make
+$ make install
+$ cd ..
+\end{verbatim}
+The binary can then be executed with the example configuration file as follows:
+\begin{verbatim}
+$ bin/allpix etc/example_config.ini
+\end{verbatim}
+
+Hereafter the example configuration can be copied and adjusted to your own needs. The example configuration contains a simple setup which simulates two test detectors. It simulates the whole process from powering on the particle beam, the deposition of charges in the detectors, the propagation of those charges and the conversion of the collected charges to digitized pixel hits which are stored in a histogram.
+
+After this quick start it is very much recommended to read the other sections in more detail as well. For fixing some quick issues the Frequently Asked Questions in section \ref{sec:faq} may be particularly useful.
