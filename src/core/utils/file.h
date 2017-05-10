@@ -1,6 +1,7 @@
 /**
  * @file
  * @brief Collection of simple file system utilities
+ * @copyright MIT License
  */
 
 #ifndef ALLPIX_FILE_H

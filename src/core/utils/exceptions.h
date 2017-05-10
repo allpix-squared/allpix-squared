@@ -1,8 +1,12 @@
 /**
  * @file
  * @brief Overall list of base exceptions used in the framework
- *
+ * @copyright MIT License
+ */
+
+/**
  * @defgroup Exceptions Exception classes
+ * @brief Collection of all the exceptions used in the framework
  */
 
 #ifndef ALLPIX_EXCEPTIONS_H

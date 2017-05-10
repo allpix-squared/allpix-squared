@@ -1,6 +1,6 @@
 /**
  * @file
- * Collection of all module exceptions
+ * @brief Collection of all module exceptions
  *
  * @copyright MIT License
  */
@@ -23,7 +23,7 @@ namespace allpix {
     class DynamicLibraryError : public RuntimeError {
     public:
         /**
-         * @brief Constructs error for provided module
+         * @brief Constructs loading error for given module
          * @param module Name of the module that cannot be loaded
          */
         explicit DynamicLibraryError(const std::string& module) {
@@ -59,6 +59,11 @@ namespace allpix {
      */
     class InvalidModuleStateException : public LogicError {
     public:
+        /**
+         * @brief Constructs error with a description
+         * @param message Text explaining the problem
+         */
+        // TODO [doc] the module itself is missing
         explicit InvalidModuleStateException(std::string message) { error_message_ = std::move(message); }
     };
 
@@ -71,6 +76,11 @@ namespace allpix {
      */
     class InvalidModuleActionException : public LogicError {
     public:
+        /**
+         * @brief Constructs error with a description
+         * @param message Text explaining the problem
+         */
+        // TODO [doc] the module itself is missing
         explicit InvalidModuleActionException(std::string message) { error_message_ = std::move(message); }
     };
 
@@ -82,6 +92,11 @@ namespace allpix {
      */
     class ModuleError : public RuntimeError {
     public:
+        /**
+         * @brief Constructs error with a description
+         * @param reason Text explaining the reason of the error
+         */
+        // TODO [doc] the module itself is missing
         explicit ModuleError(std::string reason) { error_message_ = std::move(reason); }
     };
 } // namespace allpix

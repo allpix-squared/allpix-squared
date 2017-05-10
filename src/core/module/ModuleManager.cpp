@@ -1,7 +1,4 @@
-/**
- *  @author Koen Wolters <koen.wolters@cern.ch>
- *  @author Daniel Hynds <daniel.hynds@cern.ch>
- */
+#include "ModuleManager.hpp"
 
 #include <dlfcn.h>
 #include <unistd.h>
@@ -13,7 +10,8 @@
 #include <stdexcept>
 #include <string>
 
-#include "ModuleManager.hpp"
+#include <TSystem.h>
+
 #include "core/config/ConfigManager.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/config/exceptions.h"
@@ -22,43 +20,37 @@
 #include "core/utils/file.h"
 #include "core/utils/log.h"
 
-#include <TSystem.h>
-
-// NOTE: should be the same as in dynamic_module_impl.cpp
+// Common prefix for all modules
+// TODO [doc] Should be provided by the build system
 #define ALLPIX_MODULE_PREFIX "libAllpixModule"
+
+// These should point to the function defined in dynamic_module_impl.cpp
 #define ALLPIX_GENERATOR_FUNCTION "allpix_module_generator"
 #define ALLPIX_UNIQUE_FUNCTION "allpix_module_is_unique"
 
 using namespace allpix;
 
-// Constructor and destructor
 ModuleManager::ModuleManager() : modules_(), id_to_module_(), global_config_(), loaded_libraries_() {}
-ModuleManager::~ModuleManager() = default;
 
-// Function that loads the modules specified in the configuration file. Each module is contained within
-// its own library, which is first loaded before being used to create the modules
+/**
+ * Loads the modules specified in the configuration file. Each module is contained within its own library which is loaded
+ * automatically. After that the required modules are created from the configuration.
+ */
 void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager) {
-    // Get configurations
     std::vector<Configuration> configs = conf_manager->getConfigurations();
     global_config_ = conf_manager->getGlobalConfiguration();
 
-    // NOTE: could add all config parameters from the empty to all configs (if it does not yet exist)
-    for(auto& conf : configs) {
-        // ignore the empty config
-        if(conf.getName().empty()) {
-            continue;
-        }
-
+    // Loop through all non-global configurations
+    for(auto& config : configs) {
         // Load library for each module. Libraries are named (by convention + CMAKE) libAllpixModule Name.suffix
-        std::string lib_name = std::string(ALLPIX_MODULE_PREFIX).append(conf.getName()).append(SHARED_LIBRARY_SUFFIX);
+        std::string lib_name = std::string(ALLPIX_MODULE_PREFIX).append(config.getName()).append(SHARED_LIBRARY_SUFFIX);
         LOG(INFO) << "Loading library " << lib_name;
 
-        // If library is not loaded then try to load it
         void* lib = nullptr;
-        dlerror(); // reset error stream
         bool load_error = false;
+        dlerror();
         if(loaded_libraries_.count(lib_name) == 0) {
-            // Go through the config file directories
+            // If library is not loaded then try to load it first from the config directories
             if(global_config_.has("library_directories")) {
                 std::vector<std::string> lib_paths = global_config_.getPathArray("library_directories", true);
                 for(auto& lib_path : lib_paths) {
@@ -66,7 +58,7 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
                     full_lib_path += "/";
                     full_lib_path += lib_name;
 
-                    // check if file exists and try to load if it exists
+                    // Check if the absolute file exists and try to load if it exists
                     std::ifstream check_file(full_lib_path);
                     if(check_file.good()) {
                         lib = dlopen(full_lib_path.c_str(), RTLD_NOW);
@@ -126,7 +118,7 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
                 }
             }
 
-            throw allpix::DynamicLibraryError(conf.getName());
+            throw allpix::DynamicLibraryError(config.getName());
         }
         // Remember that this library was loaded
         loaded_libraries_[lib_name] = lib;
@@ -138,50 +130,54 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
         // If the unique function was not found, throw an error
         if(uniqueFunction == nullptr) {
             LOG(ERROR) << "Module library is invalid or outdated: required interface function not found!";
-            throw allpix::DynamicLibraryError(conf.getName());
+            throw allpix::DynamicLibraryError(config.getName());
         } else {
             unique = reinterpret_cast<bool (*)()>(uniqueFunction)(); // NOLINT
         }
 
-        // Create the modules from the library
+        // Create the modules from the library depending on the module type
         std::vector<std::pair<ModuleIdentifier, Module*>> mod_list;
         if(unique) {
-            mod_list.emplace_back(create_unique_modules(loaded_libraries_[lib_name], conf, messenger, geo_manager));
+            mod_list.emplace_back(create_unique_modules(loaded_libraries_[lib_name], config, messenger, geo_manager));
         } else {
-            mod_list = create_detector_modules(loaded_libraries_[lib_name], conf, messenger, geo_manager);
+            mod_list = create_detector_modules(loaded_libraries_[lib_name], config, messenger, geo_manager);
         }
 
-        // Decide which order to place modules in
+        // Loop through all created instantiations
         for(auto& id_mod : mod_list) {
-            // NOTE: this convert the module to an unique pointer
-            // FIXME: check that this always works and we can better do this earlier
+            // FIXME: This convert the module to an unique pointer. Check that this always works and we can do this earlier
             std::unique_ptr<Module> mod(id_mod.second);
             ModuleIdentifier identifier = id_mod.first;
 
-            // FIXME: need to add delete statements here since move from unique pointer?
+            // Check if the unique instantiation already exists
             auto iter = id_to_module_.find(identifier);
             if(iter != id_to_module_.end()) {
-                // unique name already exists, check if its needs to be replaced
+                // Unique name exists, check if its needs to be replaced
                 if(identifier.getPriority() < iter->first.getPriority()) {
-                    // priority of new instance is higher, replace the instance
+                    // Priority of new instance is higher, replace the instance
                     iter->second = modules_.erase(iter->second);
                     iter = id_to_module_.erase(iter);
                 } else {
+                    // Priority is equal, raise an error
                     if(identifier.getPriority() == iter->first.getPriority()) {
-                        throw AmbiguousInstantiationError(conf.getName());
+                        throw AmbiguousInstantiationError(config.getName());
                     }
-                    // priority is lower just ignore
+                    // Priority is lower, do not add this module to the run list
                     continue;
                 }
             }
 
-            // set the configuration for this module for later use
-            mod->set_configuration(conf);
+            // Set the configuration for this module for later use
+            mod->set_configuration(config);
 
-            // switch directory relative to current path
+            // Save the identifier in the module
+            mod->set_identifier(identifier);
+
+            // Set global output directory
             std::string global_dir = gSystem->pwd();
             mod->set_global_directory(global_dir);
 
+            // Set local module output directory
             std::string output_dir;
             output_dir = global_dir;
             output_dir += "/";
@@ -190,20 +186,16 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
             output_dir += path_mod_name;
             mod->set_output_directory(output_dir);
 
-            // insert the new module
+            // Add the new module to the run list
             modules_.emplace_back(std::move(mod));
             id_to_module_[identifier] = --modules_.end();
-
-            // save the identifier in the module
-            modules_.back()->set_identifier(identifier);
         }
-        mod_list.clear();
     }
 }
 
 // Helper functions to set the module specific log settings if necessary
 std::tuple<LogLevel, LogFormat> ModuleManager::set_module_before(const std::string&, const Configuration& config) {
-    // set new level if necessary
+    // Set new log level if necessary
     LogLevel prev_level = Log::getReportingLevel();
     if(config.has("log_level")) {
         std::string log_level_string = config.get<std::string>("log_level");
@@ -219,7 +211,7 @@ std::tuple<LogLevel, LogFormat> ModuleManager::set_module_before(const std::stri
         }
     }
 
-    // set new format if necessary
+    // Set new log format if necessary
     LogFormat prev_format = Log::getFormat();
     if(config.has("log_format")) {
         std::string log_format_string = config.get<std::string>("log_format");
@@ -237,7 +229,7 @@ std::tuple<LogLevel, LogFormat> ModuleManager::set_module_before(const std::stri
     return std::make_tuple(prev_level, prev_format);
 }
 void ModuleManager::set_module_after(std::tuple<LogLevel, LogFormat> prev) {
-    // reset the log level
+    // Reset the previous log level
     LogLevel cur_level = Log::getReportingLevel();
     LogLevel old_level = std::get<0>(prev);
     if(cur_level != old_level) {
@@ -245,7 +237,7 @@ void ModuleManager::set_module_after(std::tuple<LogLevel, LogFormat> prev) {
         LOG(DEBUG) << "Reset log level to global level of " << Log::getStringFromLevel(old_level);
     }
 
-    // reset the log format
+    // Reset the previous log format
     LogFormat cur_format = Log::getFormat();
     LogFormat old_format = std::get<1>(prev);
     if(cur_format != old_format) {
@@ -254,88 +246,97 @@ void ModuleManager::set_module_after(std::tuple<LogLevel, LogFormat> prev) {
     }
 }
 
-// Initialize all modules
+/**
+ * Sets the section header and logging settings before executing the  \ref Module::init() function. \ref
+ * Module::reset_delegates() "Resets" the delegates and the logging after initialization.
+ */
 void ModuleManager::init() {
-    // initialize all modules
     for(auto& mod : modules_) {
-        // set init module section header
+        // Set init module section header
         std::string old_section_name = Log::getSection();
         std::string section_name = "I:";
         section_name += mod->get_identifier().getUniqueName();
         Log::setSection(section_name);
-        // set module specific settings
+        // Set module specific settings
         auto old_settings = set_module_before(mod->get_identifier().getUniqueName(), mod->get_configuration());
-        // init module
+        // Init module
         mod->init();
-        // resetting bound messages
-        LOG(DEBUG) << "Clearing bound messages";
+        // Reset delegates
+        LOG(DEBUG) << "Resetting delegates";
         mod->reset_delegates();
-        // reset
+        // Reset logging
         Log::setSection(old_section_name);
         set_module_after(old_settings);
     }
 }
 
-// Run all the modules in the queue
+/**
+ * The run for a module is skipped if its delegates are not \ref Module::check_delegates() "satisfied". Sets the section
+ * header and logging settings before executing the \ref Module::run() function. \ref Module::reset_delegates() "Resets" the
+ * delegates and the logging after initialization
+ */
 void ModuleManager::run() {
-    // loop over the number of events
+    // Loop over the number of events
     auto number_of_events = global_config_.get<unsigned int>("number_of_events", 1u);
     for(unsigned int i = 0; i < number_of_events; ++i) {
-        // go through each module run method every event
         LOG(INFO) << "Running event " << (i + 1) << " of " << number_of_events;
         for(auto& mod : modules_) {
-            // check if module is clear to run
+            // Check if module is satisfied to run
             if(!mod->check_delegates()) {
                 LOG(DEBUG) << "Not all required messages are received for " << mod->get_identifier().getUniqueName()
                            << "... skipping!";
                 continue;
             }
 
-            // set run module section header
+            // Set run module section header
             std::string old_section_name = Log::getSection();
             std::string section_name = "R:";
             section_name += mod->get_identifier().getUniqueName();
             Log::setSection(section_name);
-            // set module specific settings
+            // Set module specific settings
             auto old_settings = set_module_before(mod->get_identifier().getUniqueName(), mod->get_configuration());
-            // run module
+            // Run module
             mod->run(i + 1);
-            // resetting bound messages
-            LOG(DEBUG) << "Resetting bound messages";
+            // Resetting delegates
+            LOG(DEBUG) << "Resetting delegates";
             mod->reset_delegates();
-            // reset
+            // Reset logging
             Log::setSection(old_section_name);
             set_module_after(old_settings);
         }
     }
 }
 
-// Finalize the modules
+/**
+ * Sets the section header and logging settings before executing the  \ref Module::finalize() function. Reset the logging
+ * after finalization. No method will be called after finalizing the module (except the destructor).
+ */
 void ModuleManager::finalize() {
-    // finalize the modules
     for(auto& mod : modules_) {
-        // set finalize module section header
+        // Set finalize module section header
         std::string old_section_name = Log::getSection();
         std::string section_name = "F:";
         section_name += mod->get_identifier().getUniqueName();
         Log::setSection(section_name);
-        // set module specific settings
+        // Set module specific settings
         auto old_settings = set_module_before(mod->get_identifier().getUniqueName(), mod->get_configuration());
-        // finalize module
+        // Finalize module
         mod->finalize();
-        // reset
+        // Reset logging
         Log::setSection(old_section_name);
         set_module_after(old_settings);
     }
 }
 
-// Function to create modules from the dynamic library passed from the Module Manager
+/**
+ * For unique modules a single instance is created per section
+ */
 std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* library,
-                                                                          const Configuration& conf,
+                                                                          const Configuration& config,
                                                                           Messenger* messenger,
                                                                           GeometryManager* geo_manager) {
     // Make the vector to return
-    std::string module_name = conf.getName();
+    std::string module_name = config.getName();
 
     LOG(DEBUG) << "Creating instantions for unique module " << module_name;
 
@@ -358,9 +359,9 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
     section_name += identifier.getUniqueName();
     Log::setSection(section_name);
     // set module specific log settings
-    auto old_settings = set_module_before(identifier.getUniqueName(), conf);
+    auto old_settings = set_module_before(identifier.getUniqueName(), config);
     // Build module
-    Module* module = module_generator(conf, messenger, geo_manager);
+    Module* module = module_generator(config, messenger, geo_manager);
     // Reset log
     Log::setSection(old_section_name);
     set_module_after(old_settings);
@@ -369,12 +370,17 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
     return std::make_pair(identifier, module);
 }
 
-// Function to create modules per detector from the dynamic library passed from the Module Manager
+/**
+ * @throws InvalidModuleStateException If the module fails to forward the detector to the base class
+ *
+ * For detector modules multiple instantiations may be created per section. An instantiation is created for every detector if
+ * no selection parameters are provided. Otherwise instantiations are created for every linked detector name and type.
+ */
 std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector_modules(void* library,
-                                                                                         const Configuration& conf,
+                                                                                         const Configuration& config,
                                                                                          Messenger* messenger,
                                                                                          GeometryManager* geo_manager) {
-    std::string module_name = conf.getName();
+    std::string module_name = config.getName();
     LOG(DEBUG) << "Creating instantions for detector module " << module_name;
 
     // Open the library and get the module generator function
@@ -388,31 +394,30 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
     auto module_generator =
         reinterpret_cast<Module* (*)(Configuration, Messenger*, std::shared_ptr<Detector>)>(generator); // NOLINT
 
-    // FIXME: check empty config arrays
+    // FIXME: Handle empty type and name arrays (or disallow them)
     std::vector<std::pair<std::shared_ptr<Detector>, ModuleIdentifier>> instantiations;
 
-    // create all names first with highest priority
+    // Create all names first with highest priority
     std::set<std::string> module_names;
-    if(conf.has("name")) {
-        std::vector<std::string> names = conf.getArray<std::string>("name");
+    if(config.has("name")) {
+        std::vector<std::string> names = config.getArray<std::string>("name");
         for(auto& name : names) {
-            // get detectors by name
             auto det = geo_manager->getDetector(name);
             instantiations.emplace_back(det, ModuleIdentifier(module_name, det->getName(), 0));
 
-            // save the name (to not override it later)
+            // Save the name (to not instantiate it again later)
             module_names.insert(name);
         }
     }
 
-    // then create all types that are not yet name instantiated
-    if(conf.has("type")) {
-        std::vector<std::string> types = conf.getArray<std::string>("type");
+    // Then create all types that are not yet name instantiated
+    if(config.has("type")) {
+        std::vector<std::string> types = config.getArray<std::string>("type");
         for(auto& type : types) {
             auto detectors = geo_manager->getDetectorsByType(type);
 
             for(auto& det : detectors) {
-                // skip all that were already added by name
+                // Skip all that were already added by name
                 if(module_names.find(det->getName()) != module_names.end()) {
                     continue;
                 }
@@ -422,8 +427,8 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         }
     }
 
-    // create for all detectors if no name / type provided
-    if(!conf.has("type") && !conf.has("name")) {
+    // Create for all detectors if no name / type provided
+    if(!config.has("type") && !config.has("name")) {
         auto detectors = geo_manager->getDetectors();
 
         for(auto& det : detectors) {
@@ -431,7 +436,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         }
     }
 
-    // instantiate the list of requested instantiations
+    // Construct instantiations from the list of requests
     std::vector<std::pair<ModuleIdentifier, Module*>> module_list;
     for(auto& instance : instantiations) {
         // Set the log section header
@@ -439,29 +444,24 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         std::string section_name = "C:";
         section_name += instance.second.getUniqueName();
         Log::setSection(section_name);
-        // set module specific log settings
-        auto old_settings = set_module_before(instance.second.getUniqueName(), conf);
+        // Set module specific log settings
+        auto old_settings = set_module_before(instance.second.getUniqueName(), config);
         // Build module
-        Module* module = module_generator(conf, messenger, instance.first);
-        // Reset log
+        Module* module = module_generator(config, messenger, instance.first);
+        // Reset logging
         Log::setSection(old_section_name);
         set_module_after(old_settings);
 
-        // check if the module called the correct base class constructor
-        check_module_detector(module_name, module, instance.first.get());
+        // Check if the module called the correct base class constructor
+        if(module->getDetector().get() != instance.first.get()) {
+            throw InvalidModuleStateException(
+                "Module " + module_name +
+                " does not call the correct base Module constructor: the provided detector should be forwarded");
+        }
 
-        // store the module
+        // Store the module
         module_list.emplace_back(instance.second, module);
     }
 
     return module_list;
-}
-
-// Check if a detector module correctly passes the detector to the base constructor
-void ModuleManager::check_module_detector(const std::string& module_name, Module* module, const Detector* detector) {
-    if(module->getDetector().get() != detector) {
-        throw InvalidModuleStateException(
-            "Module " + module_name +
-            " does not call the correct base Module constructor: the provided detector should be forwarded");
-    }
 }

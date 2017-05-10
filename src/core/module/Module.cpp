@@ -21,7 +21,11 @@ Module::Module() : Module(nullptr) {}
 Module::Module(std::shared_ptr<Detector> detector)
     : output_directory_(), global_directory_(), identifier_(), config_(), delegates_(), detector_(std::move(detector)) {}
 
-// Get unique name
+/**
+ * @throws InvalidModuleActionException If this method is called from the constructor
+ *
+ * This name is guaranteed to be unique for every single instantiation of all modules
+ */
 std::string Module::getUniqueName() {
     std::string unique_name = identifier_.getUniqueName();
     if(unique_name.empty()) {
@@ -30,12 +34,20 @@ std::string Module::getUniqueName() {
     return unique_name;
 }
 
-// Get the detector
+/**
+ * Detector modules always have a linked detector and unique modules are guaranteed not to have one
+ */
 std::shared_ptr<Detector> Module::getDetector() {
     return detector_;
 }
 
-// Get output path
+/**
+ * @throw InvalidModuleActionException If this method is called from the constructor
+ * @throw ModuleError If the file cannot be accessed (or created if it did not yet exist)
+ *
+ * The output path is automatically created if it does not exists. The path is always accessible if this functions returns.
+ */
+// TODO [DOC] This function does not support subdirectories
 std::string Module::getOutputPath(const std::string& path, bool global) {
     std::string file;
     if(global) {
@@ -43,26 +55,25 @@ std::string Module::getOutputPath(const std::string& path, bool global) {
     } else {
         file = output_directory_;
     }
-
     if(file.empty()) {
         throw InvalidModuleActionException("Output path cannot be retrieved from within the constructor");
     }
 
     try {
-        // create the directories if needed
+        // Create all the required main directories
         create_directories(file);
 
-        // add the file itself
+        // Add the file itself
         file += "/";
         file += path;
 
-        // open the file to check if you can read it
+        // Open the file to check if it can be accessed
         std::fstream file_stream(file, std::ios_base::out | std::ios_base::app);
         if(!file_stream.good()) {
             throw std::invalid_argument("file not accessible");
         }
 
-        // convert the file to an absolute path
+        // Convert the file to an absolute path
         file = get_absolute_path(file);
     } catch(std::invalid_argument& e) {
         throw ModuleError("Path " + file + " cannot be accessed (or created if it did not yet exist)");
@@ -71,7 +82,7 @@ std::string Module::getOutputPath(const std::string& path, bool global) {
     return file;
 }
 
-// set internal directories
+// Set internal directories
 void Module::set_output_directory(std::string output_dir) {
     output_directory_ = std::move(output_dir);
 }
@@ -79,7 +90,7 @@ void Module::set_global_directory(std::string output_dir) {
     global_directory_ = std::move(output_dir);
 }
 
-// Set internal config
+// Getters and setters for internal configuration
 void Module::set_configuration(Configuration config) {
     config_ = std::move(config);
 }
@@ -87,7 +98,7 @@ Configuration Module::get_configuration() {
     return config_;
 }
 
-// Set internal identifier
+// Getters and setters for internal identifier
 void Module::set_identifier(ModuleIdentifier identifier) {
     identifier_ = std::move(identifier);
 }
@@ -95,7 +106,7 @@ ModuleIdentifier Module::get_identifier() {
     return identifier_;
 }
 
-// Add delegate
+// Add messenger delegate
 void Module::add_delegate(BaseDelegate* delegate) {
     delegates_.emplace_back(delegate);
 }
@@ -108,7 +119,7 @@ void Module::reset_delegates() {
 // Check if all delegates are satisfied
 bool Module::check_delegates() {
     for(auto& delegate : delegates_) {
-        // Return if any delegate is not satisfied
+        // Return false if any delegate is not satisfied
         if(!delegate->isSatisfied()) {
             return false;
         }

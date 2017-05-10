@@ -1,6 +1,6 @@
 /**
  * @file
- * Special file automatically included in the modules for the dynamic loading
+ * @brief Special file automatically included in the modules for the dynamic loading
  *
  * Needs the following names to be defined by the build system
  * - ALLPIX_MODULE_NAME: name of the module
@@ -37,13 +37,18 @@ namespace allpix {
 
 #if ALLPIX_MODULE_UNIQUE || defined(DOXYGEN)
     /**
-     * @brief Instantiates a unique module
+     * @brief Instantiates an unique module
+     * @param config Configuration for this module
+     * @param messenger Pointer to the Messenger (guarenteed to be valid until the module is destructed)
+     * @param geo_manager Pointer to the global GeometryManager (guarenteed to be valid until the module is destructed)
+     * @return Instantiation of the module
      *
-     * Forwards the supplied arguments to the constructor and returns an instantiation
+     * Internal method for the dynamic loading in the ModuleManager. Forwards the supplied arguments to the constructor and
+     * returns an instantiation.
      */
-    Module* allpix_module_generator(Configuration config, Messenger* messenger, GeometryManager* geometry);
-    Module* allpix_module_generator(Configuration config, Messenger* messenger, GeometryManager* geometry) {
-        auto module = new ALLPIX_MODULE_NAME(std::move(config), messenger, geometry); // NOLINT
+    Module* allpix_module_generator(Configuration config, Messenger* messenger, GeometryManager* geo_manager);
+    Module* allpix_module_generator(Configuration config, Messenger* messenger, GeometryManager* geo_manager) {
+        auto module = new ALLPIX_MODULE_NAME(std::move(config), messenger, geo_manager); // NOLINT
         return static_cast<Module*>(module);
     }
 
@@ -54,8 +59,13 @@ namespace allpix {
 #if !ALLPIX_MODULE_UNIQUE || defined(DOXYGEN)
     /**
      * @brief Instantiates a detector module
+     * @param config Configuration for this module
+     * @param messenger Pointer to the Messenger (guarenteed to be valid until the module is destructed)
+     * @param detector Pointer to the Detector object this module is bound to
+     * @return Instantiation of the module
      *
-     * Forwards the supplied arguments to the constructor and returns an instantiation
+     * Internal method for the dynamic loading in the ModuleManager. Forwards the supplied arguments to the constructor and
+     * returns an instantiation
      */
     Module* allpix_module_generator(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector);
     Module* allpix_module_generator(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector) {
