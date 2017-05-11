@@ -1,8 +1,7 @@
 /**
  * @file
- * @brief Dynamic loading of all modules
+ * @brief Loading and execution of all modules
  * @copyright MIT License
- *
  */
 
 #ifndef ALLPIX_MODULE_MANAGER_H

@@ -42,8 +42,8 @@ std::shared_ptr<Detector> Module::getDetector() {
 }
 
 /**
- * @throw InvalidModuleActionException If this method is called from the constructor
- * @throw ModuleError If the file cannot be accessed (or created if it did not yet exist)
+ * @throws InvalidModuleActionException If this method is called from the constructor
+ * @throws ModuleError If the file cannot be accessed (or created if it did not yet exist)
  *
  * The output path is automatically created if it does not exists. The path is always accessible if this functions returns.
  */

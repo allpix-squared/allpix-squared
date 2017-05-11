@@ -1,5 +1,8 @@
 /**
- *  @author Koen Wolters <koen.wolters@cern.ch>
+ * @file
+ * @brief Parameters of a pixel detector model
+ *
+ * @copyright MIT License
  */
 
 #ifndef ALLPIX_PIXEL_DETECTOR_H
@@ -16,8 +19,15 @@
 
 #include "DetectorModel.hpp"
 
+// TODO [doc] This class is fully documented later when it is cleaned up further
+
 namespace allpix {
 
+    /**
+     * @ingroup DetectorModels
+     * @brief Model of a pixel detector (a detector that contains pixels)
+     */
+    // TODO [doc] This class will be renamed
     class PixelDetectorModel : public DetectorModel {
     public:
         // Constructor and destructor

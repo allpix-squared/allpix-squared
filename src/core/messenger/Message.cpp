@@ -1,7 +1,3 @@
-/**
- *  @author Koen Wolters <koen.wolters@cern.ch>
- */
-
 #include "Message.hpp"
 
 #include <memory>

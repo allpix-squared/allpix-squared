@@ -1,7 +1,3 @@
-/**
- *  @author Koen Wolters <koen.wolters@cern.ch>
- */
-
 #include "Messenger.hpp"
 
 #include <memory>
@@ -16,13 +12,10 @@
 
 using namespace allpix;
 
-// Constructor and destructor
 Messenger::Messenger() : delegates_() {}
-Messenger::~Messenger() = default;
 
-// Check if we can send the message to this delegate
+// Check if the detectors match for the message and the delegate
 static bool check_send(BaseMessage* message, BaseDelegate* delegate) {
-    // do checks (FIXME: this is really hidden away now...)
     if(delegate->getDetector() != nullptr &&
        (message->getDetector() == nullptr || delegate->getDetector()->getName() != message->getDetector()->getName())) {
         return false;
@@ -30,15 +23,19 @@ static bool check_send(BaseMessage* message, BaseDelegate* delegate) {
     return true;
 }
 
-// Dispatch the message
-void Messenger::dispatchMessage(const std::shared_ptr<BaseMessage>& msg, const std::string& name) {
+/**
+ * Messages are only dispatched to delegates listening to the exact same type. If the dispatched message
+ * has no name it only sends to all general listeners (not listening to a specific name). If the dispatched
+ * message has a name it is also distributed to its specific listeners (besides the general listeners).
+ */
+void Messenger::dispatch_message(const std::shared_ptr<BaseMessage>& msg, const std::string& name) {
     bool send = false;
 
-    // create type identifier from typeid
+    // Create type identifier from the typeid
     const BaseMessage* inst = msg.get();
     std::type_index type_idx = typeid(*inst);
 
-    // send named messages only to their specific listeners
+    // Send named messages only to their specific listeners
     if(!name.empty()) {
         for(auto& delegate : delegates_[type_idx][name]) {
             if(check_send(msg.get(), delegate.get())) {
@@ -48,7 +45,7 @@ void Messenger::dispatchMessage(const std::shared_ptr<BaseMessage>& msg, const s
         }
     }
 
-    // send all messages also to general listeners
+    // Send all messages also to general listeners
     for(auto& delegate : delegates_[type_idx][""]) {
         if(check_send(msg.get(), delegate.get())) {
             delegate->process(msg);
@@ -56,6 +53,8 @@ void Messenger::dispatchMessage(const std::shared_ptr<BaseMessage>& msg, const s
         }
     }
 
+    // Display a warning if the message is send to no receiver
+    // FIXME: better message about source (and check if this really a problem)
     if(!send) {
         LOG(WARNING) << "Dispatched message of type " << allpix::demangle(type_idx.name())
                      << " has no receivers... this is probably not what you want!";
@@ -66,6 +65,5 @@ void Messenger::dispatchMessage(const std::shared_ptr<BaseMessage>& msg, const s
 void Messenger::add_delegate(const std::type_info& message_type,
                              const std::string& message_name,
                              std::unique_ptr<BaseDelegate> delegate) {
-    // add the delegate to the map
     delegates_[std::type_index(message_type)][message_name].push_back(std::move(delegate));
 }

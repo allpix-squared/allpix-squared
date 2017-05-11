@@ -1,5 +1,7 @@
 /**
- *  @author Koen Wolters <koen.wolters@cern.ch>
+ * @file
+ * @brief Base for the message implementation
+ * @copyright MIT License
  */
 
 #ifndef ALLPIX_MESSAGE_H
@@ -10,46 +12,83 @@
 #include "core/geometry/Detector.hpp"
 
 namespace allpix {
-    // non-templated base for all message types
+    /**
+     * @brief Type-erased base class for all messages
+     *
+     * This class can (and should) not be instantiated directly. Deriving from this class is allowed, but in almost all cases
+     * instantiating a version of the Message class should be preferred.
+     */
     class BaseMessage {
     public:
-        // Constructor and destructors
-        BaseMessage();
-        explicit BaseMessage(std::shared_ptr<Detector> detector);
-        virtual ~BaseMessage();
+        /**
+         * @brief Essential virtual destructor
+         */
+        ~BaseMessage();
 
-        // Get linked detector
+        /**
+         * @brief Get detector bound to this message
+         * @return Linked detector
+         */
         std::shared_ptr<Detector> getDetector() const;
 
-        // Set default copy behaviour
+        /// @{
+        /**
+         * @brief Use default copy behaviour for messages
+         */
         BaseMessage(const BaseMessage&) = default;
         BaseMessage& operator=(const BaseMessage&) = default;
+        /// @}
+
+    protected:
+        /**
+         * @brief Construct a general message not linked to a detector
+         */
+        BaseMessage();
+        /**
+         * @brief Construct a general message bound to a detector
+         * @param detector Linked detector
+         */
+        explicit BaseMessage(std::shared_ptr<Detector> detector);
 
     private:
         std::shared_ptr<Detector> detector_;
     };
 
-    // templated version for general messages
+    /**
+     * @brief Generic class for all messages
+     *
+     * An instantiation of this class should the preferred way to send objects
+     */
     template <typename T> class Message : public BaseMessage {
     public:
-        // Constructor to pass the data
+        /**
+         * @brief Constructs a message containing the supplied data
+         * @param data List of data objects
+         */
         explicit Message(std::vector<T> data);
+        /**
+         * @brief Constructs a message bound to a detector containing the supplied data
+         * @param data List of data objects
+         * @param detector Linked detector
+         */
         Message(std::vector<T> data, std::shared_ptr<Detector> detector);
 
-        // Get the data
+        /**
+         * @brief Get a reference to the data in this message
+         */
         const std::vector<T>& getData() const;
 
     private:
         std::vector<T> data_;
     };
 
-    // Constructor to pass the data
+    // TODO [doc] Should move to an implementation file
+
     template <typename T> Message<T>::Message(std::vector<T> data) : BaseMessage(), data_(std::move(data)) {}
     template <typename T>
     Message<T>::Message(std::vector<T> data, std::shared_ptr<Detector> detector)
         : BaseMessage(detector), data_(std::move(data)) {}
 
-    // Get the data
     template <typename T> const std::vector<T>& Message<T>::getData() const { return data_; }
 } // namespace allpix
 

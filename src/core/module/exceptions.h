@@ -87,8 +87,9 @@ namespace allpix {
     /**
      * @ingroup Exceptions
      * @brief General exception for modules if something goes wrong
+     * @note Only runtime error that should be raised directly by modules
      *
-     * This error can be raised by modules, if a problem comes up that cannot be foreseen by the framework itself.
+     * This error can be raised by modules if a problem comes up that cannot be foreseen by the framework itself.
      */
     class ModuleError : public RuntimeError {
     public:

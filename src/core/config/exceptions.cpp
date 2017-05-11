@@ -1,9 +1,3 @@
-/**
- * AllPix config exception classes
- *
- * @author Koen Wolters <koen.wolters@cern.ch>
- */
-
 #include "exceptions.h"
 #include "Configuration.hpp"
 
@@ -16,5 +10,3 @@ InvalidValueError::InvalidValueError(const Configuration& config, const std::str
         error_message_ += ": " + reason;
     }
 }
-InvalidValueError::InvalidValueError(const Configuration& config, const std::string& key)
-    : InvalidValueError(config, key, "") {}

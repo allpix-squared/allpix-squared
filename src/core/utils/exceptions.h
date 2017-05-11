@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Overall list of base exceptions used in the framework
+ * @brief Base exceptions used in the framework
  * @copyright MIT License
  */
 
