@@ -6,7 +6,7 @@
 ALLPIX_UNIQUE_MODULE(MODULE_NAME)
 
 # Geant4 is required for geometry description and charge deposition.
-FIND_PACKAGE(Geant4 REQUIRED ui_all vis_all)
+FIND_PACKAGE(Geant4 REQUIRED vis_all ui_all)
 IF(NOT Geant4_FOUND)
     MESSAGE(FATAL_ERROR "Could not find Geant4, make sure to source the Geant4 environment\n"
     "$ source YOUR_GEANT4_DIR/bin/geant4.sh")
