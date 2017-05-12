@@ -112,7 +112,7 @@ INCLUDE("cmake/allpix.cmake")
 # Set the source files to clang-format (FIXME: determine this better)
 FILE(GLOB_RECURSE
      CHECK_CXX_SOURCE_FILES
-        src/*.[ch]pp src/*.h
+        src/*.[tch]pp src/*.h
      )
 INCLUDE("cmake/clang-cpp-checks.cmake")
 

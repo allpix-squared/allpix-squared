@@ -105,7 +105,7 @@ namespace allpix {
         static std::map<std::string, UnitType> unit_map_;
     };
 
-    // TODO [doc] Move these to a separate template implementation file
+    // TODO [doc] Move these to a separate template implementation file?
 
     /**
      * @throws std::overflow_error If the converted unit overflows the requested type

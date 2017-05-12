@@ -163,7 +163,6 @@ namespace allpix {
          *
          * Does nothing if not overloaded.
          */
-        // TODO [doc] Move this to the implementation file
         virtual void init() {}
 
         /**
@@ -173,7 +172,6 @@ namespace allpix {
          * Does nothing if not overloaded.
          */
         // TODO [doc] Start the sequence at 0 instead of 1?
-        // TODO [doc] Move this to the implementation file
         virtual void run(unsigned int /* event_num */) {}
 
         //
@@ -183,7 +181,6 @@ namespace allpix {
          *
          * Does nothing if not overloaded.
          */
-        // TODO [doc] Move this to the implementation file
         virtual void finalize() {}
 
     private:
