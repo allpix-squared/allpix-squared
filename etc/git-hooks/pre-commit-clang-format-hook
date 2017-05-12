@@ -24,7 +24,7 @@ matches_extension() {
     local extension=".${filename##*.}"
     local ext
 
-    for ext in $FILE_EXTS; do [[ "$ext" == "$extension" ]] && return 0; done
+    for ext in $FILE_EXTS; do [ "$ext" = "$extension" ] && return 0; done
 
     return 1
 }
