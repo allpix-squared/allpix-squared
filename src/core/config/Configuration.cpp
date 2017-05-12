@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @brief Implementation of configuration
+ * @copyright MIT License
+ */
+
 #include "Configuration.hpp"
 
 #include <cassert>

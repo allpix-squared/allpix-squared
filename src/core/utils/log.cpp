@@ -1,3 +1,10 @@
+/**
+ * @file
+ * @brief Implementation of logger
+ *
+ * @copyright MIT License
+ */
+
 #include "log.h"
 
 #include <algorithm>

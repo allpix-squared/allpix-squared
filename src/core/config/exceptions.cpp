@@ -1,3 +1,10 @@
+/**
+ * @file
+ * @brief Implementation of configuration exceptions
+ *
+ * @copyright MIT License
+ */
+
 #include "exceptions.h"
 #include "Configuration.hpp"
 

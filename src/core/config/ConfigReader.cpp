@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @brief Implementation of config reader
+ * @copyright MIT License
+ */
+
 #include "ConfigReader.hpp"
 
 #include <cstdlib>

@@ -1,5 +1,8 @@
 /**
- *  @author Koen Wolters <koen.wolters@cern.ch>
+ * @file
+ * @brief Implementation of module
+ *
+ * @copyright MIT License
  */
 
 #include "Module.hpp"

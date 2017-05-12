@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @brief Template implementation of configuration
+ * @copyright MIT License
+ */
+
 namespace allpix {
     /**
      * @throws MissingKeyError If the requested key is not defined

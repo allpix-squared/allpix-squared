@@ -1,5 +1,5 @@
 /** @file
- *  @brief Interface class to the core framework
+ *  @brief Interface to the core framework
  *  @copyright MIT License
  */
 

@@ -1,3 +1,10 @@
+/**
+ * @file
+ * @brief Implementation of unit system
+ *
+ * @copyright MIT License
+ */
+
 #include "unit.h"
 
 #include <algorithm>

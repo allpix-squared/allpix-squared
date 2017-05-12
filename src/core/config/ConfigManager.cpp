@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @brief Implementation of config manager
+ * @copyright MIT License
+ */
+
 #include "ConfigManager.hpp"
 
 #include <fstream>

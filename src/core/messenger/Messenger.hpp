@@ -67,7 +67,7 @@ namespace allpix {
         // TODO [doc] Remove this method (as message name is determined by messenger)
         template <typename T, typename R>
         void registerListener(T* receiver,
-                              void (T::*)(std::shared_ptr<R>),
+                              void (T::*method)(std::shared_ptr<R>),
                               const std::string& message_name = "",
                               MsgFlags flags = MsgFlags::NONE);
         /// @}
@@ -81,7 +81,7 @@ namespace allpix {
          * @warning This allows to only receive a single message of the type per run unless the
          *           \ref MsgFlags::ALLOW_OVERWRITE "ALLOW_OVERWRITE" flag is passed
          */
-        template <typename T, typename R> void bindSingle(T* receiver, std::shared_ptr<R> T::*, MsgFlags flags);
+        template <typename T, typename R> void bindSingle(T* receiver, std::shared_ptr<R> T::*member, MsgFlags flags);
         /**
          * @brief Binds a pointer to a single message
          * @param receiver Receiving module
@@ -94,7 +94,7 @@ namespace allpix {
         // TODO [doc] Remove this method (as message name is determined by messenger)
         template <typename T, typename R>
         void bindSingle(T* receiver,
-                        std::shared_ptr<R> T::*,
+                        std::shared_ptr<R> T::*member,
                         const std::string& message_name = "",
                         MsgFlags flags = MsgFlags::NONE);
         /// @}
@@ -107,7 +107,8 @@ namespace allpix {
          * @param flags Message configuration flags
          */
         // TODO [doc] Better name?
-        template <typename T, typename R> void bindMulti(T* receiver, std::vector<std::shared_ptr<R>> T::*, MsgFlags flags);
+        template <typename T, typename R>
+        void bindMulti(T* receiver, std::vector<std::shared_ptr<R>> T::*member, MsgFlags flags);
         /**
          * @brief Binds a pointer to a list of messages
          * @param receiver Receiving module
@@ -118,7 +119,7 @@ namespace allpix {
         // TODO [doc] Remove this method (as message name is determined by messenger)
         template <typename T, typename R>
         void bindMulti(T* receiver,
-                       std::vector<std::shared_ptr<R>> T::*,
+                       std::vector<std::shared_ptr<R>> T::*member,
                        const std::string& message_name = "",
                        MsgFlags flags = MsgFlags::NONE);
         /// @}

@@ -1,3 +1,10 @@
+/**
+ * @file
+ * @brief Implementation of detector
+ *
+ * @copyright MIT License
+ */
+
 #include <memory>
 #include <stdexcept>
 #include <string>

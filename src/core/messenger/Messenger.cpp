@@ -1,3 +1,10 @@
+/**
+ * @file
+ * @brief Implementation of messenger
+ *
+ * @copyright MIT License
+ */
+
 #include "Messenger.hpp"
 
 #include <memory>

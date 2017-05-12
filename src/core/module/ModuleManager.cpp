@@ -1,3 +1,10 @@
+/**
+ * @file
+ * @brief Implementation of module manager
+ *
+ * @copyright MIT License
+ */
+
 #include "ModuleManager.hpp"
 
 #include <dlfcn.h>

@@ -1,3 +1,8 @@
+/** @file
+ *  @brief Implementation of interface to the core framework
+ *  @copyright MIT License
+ */
+
 #include "AllPix.hpp"
 
 #include <climits>

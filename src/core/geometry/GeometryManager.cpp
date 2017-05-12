@@ -1,3 +1,10 @@
+/**
+ * @file
+ * @brief Implementation of geometry manager
+ *
+ * @copyright MIT License
+ */
+
 #include <memory>
 #include <string>
 #include <utility>
