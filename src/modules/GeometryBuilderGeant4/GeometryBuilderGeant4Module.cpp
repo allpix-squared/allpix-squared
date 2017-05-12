@@ -129,26 +129,11 @@ void GeometryBuilderGeant4Module::init() {
     run_manager_g4_->InitializeGeometry();
 
     // export geometry in GDML.
-    if(true) {
+    if(config_.has("GDML_output_file")) {
+        std::string GDML_output_file = config_.getPath("GDML_output_file", true);
         G4GDMLParser parser;
-        /*
-      G4GDMLAuxStructType mysubaux = {"mysubtype", "mysubvalue", "mysubunit", 0};
-      G4GDMLAuxListType* myauxlist = new G4GDMLAuxListType();
-      myauxlist->push_back(mysubaux);
-
-      G4GDMLAuxStructType myaux = {"mytype", "myvalue", "myunit", myauxlist};
-      parser.AddAuxiliary(myaux);
-
-      // example of setting auxiliary info for world volume (can be set for any volume)
-
-      G4GDMLAuxStructType mylocalaux = {"sometype", "somevalue", "someunit", 0};
-
-      parser.AddVolumeAuxiliary(mylocalaux, G4TransportationManager::GetTransportationManager()
-      ->GetNavigatorForTracking()->GetWorldVolume()->GetLogicalVolume());
-        */
-        std::string GDML_export_file = "Geometry.gdml";
         parser.SetRegionExport(true);
-        parser.Write(GDML_export_file,
+        parser.Write(GDML_output_file,
                      G4TransportationManager::GetTransportationManager()
                          ->GetNavigatorForTracking()
                          ->GetWorldVolume()
