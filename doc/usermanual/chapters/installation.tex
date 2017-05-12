@@ -47,8 +47,8 @@ CMake can be run with several extra arguments to change the type of installation
 \item \textbf{MODEL\_DIRECTORY}: Directory to install the internal models to. Defaults to not installing if the CMAKE\_INSTALL\_PREFIX is set to the source directory (the default). Otherwise defaults to CMAKE\_INSTALL\_PREFIX\textit{/share/allpix/}. The supplied install directory is hardcoded into the modules to use in the search path for model directories.
 \item \textbf{BUILD\_ALL\_MODULES}: Build all included modules, defaulting to OFF. This ignores any selection using the parameter described below.
 \item \textbf{BUILD\_\textit{module\_name}}: If the specific \textit{module\_name} should be installed or not. Defaults to ON, thus all modules are installed by default. This set of parameters have to be set appropriately if you want a build without one of the extra dependencies specified in \ref{sec:prerequisites}.
-\item \todo do we need a parameter to automatically exclude packages which cannot be build (instead of throwing an error) ? \todo
 \end{itemize}
+\todo{do we need a parameter to automatically exclude packages which cannot be build (instead of throwing an error) ?}
 
 For example if one wants to do a debug build to a special install directory without the GeometryBuilderGeant4 module you need to execute the following commands.
 \begin{verbatim}

@@ -67,7 +67,7 @@ config.setDefaultArray<TYPE>("key", vector_of_default_values)
 
 The conversions to the type are using the from\_string and to\_string methods provided by the string utility library described in section \ref{sec:string_utilities}. This largely follows the standard C++ parsing, with one important exception. If (and only if) the value is retrieved as any C/C++ string type and the string is fully enclosed by a pair of \texttt{"} characters they are stripped before returning the value.
 
-\todo specify some more information about the parsing types and the integration of units \todo
+\todo{specify some more information about the parsing types and the integration of units}
 
 \subsection{Modules and the Module Manager}
 \label{sec:module_manager}
@@ -123,10 +123,10 @@ ALLPIX_MODULE_INSTALL(${MODULE_NAME})
 \end{minted}
 
 \paragraph{README.md}
-\todo
+\wip
 
 \paragraph{\textit{module\_name}.tex}
-\todo
+\wip
 
 \paragraph{\textit{module\_name}Module.hpp and \textit{module\_name}Module.cpp}
 All modules should have both a header file and a source file. In the header file the module is defined and its goal is documented. Moreover brief documentation is added to explain what every method does. The source file should provide the implementation of every method and also its more detailed documentation. Not a single method should be defined in the header to keep the interface clean.
@@ -150,7 +150,7 @@ All the module are thus passed the Configuration object holding the config param
 \item \texttt{finalize()}: Called after running all events in the run, before destructing the module. Any exceptions should be called from here instead of the destructor.
 \end{itemize}
 
-\todo more information about provided module functions? \todo
+\todo{more information about provided module functions?}
 
 \subsubsection{Module instantiation}
 \label{sec:module_instantiation}
@@ -168,7 +168,7 @@ If the module definition is succesfull it is determined if the module is an uniq
 \item \textbf{Detector}: In this case the modules are instantiated by priority, replacing earlier instantiations with lower priority. Module section that are matched for a specific detector name using the configuration parameter \textit{name} have the highest priority, followed by module sections matched with their model type using \textit{type}. Modules without either the \textit{name}, \textit{type} or both, produce instantiations for all registered modules and have the lowest priority. An exception is raised if a instantiation is requested of the same priority as an earlier one.
 \end{itemize}
 
-\todo This is also mentioned in other section. Shall we keep this or add more details here? The part about specifying input / output parameters is still missing \todo
+\todo{This is also mentioned in other section. Shall we keep this or add more details here? The part about specifying input / output parameters is still missing}
 
 \subsection{Geometry and Detectors}
 \label{sec:models_geometry}
@@ -206,7 +206,7 @@ Different types of detector models can be used inside the framework. All models 
 \item The size of an individual pixel. The multiplication of the pixel size and the number of pixels should not exceed the sensor.
 \end{itemize}
 
-This standard detector model can be extended to provide a more extended geometry if required by certain (more advanced) modules. Currently the only supported option is the PixelDetectorModel (\todo should we change this name? \todo), which apart from the sensor can also include guards rings, bump bonds, a chip, a PCB and a cover layer. To fetch the detector model as PixelDetectorModel, the base class should be downcasted as follows (the downcast return a null pointer if it is not a PixelDetectorModel).
+This standard detector model can be extended to provide a more extended geometry if required by certain (more advanced) modules. Currently the only supported option is the PixelDetectorModel \todo{should we change this name?}, which apart from the sensor can also include guards rings, bump bonds, a chip, a PCB and a cover layer. To fetch the detector model as PixelDetectorModel, the base class should be downcasted as follows (the downcast return a null pointer if it is not a PixelDetectorModel).
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
 // detector is a pointer to a Detector object
 std::shared_ptr<PixelDetectorModel> model = std::dynamic_pointer_cast<PixelDetectorModel>(detector->getModel());
@@ -216,7 +216,7 @@ if(model != nullptr) {
 \end{minted}
 For more details about the different types of supported models and how to add your own new model one should look at section \ref{sec:adding_detector_model}.
 
-Most of the standard detector models are shipped with the framework in the configuration format introduced in section \ref{sec:config_file_format}. Other models can however be used additionally. The conversion of these configuration files to detector models happens in the geometry construction module (\todo is this where it should be \todo). The models should be searched for in the directories given in the following order:
+Most of the standard detector models are shipped with the framework in the configuration format introduced in section \ref{sec:config_file_format}. Other models can however be used additionally. The conversion of these configuration files to detector models happens in the geometry construction module \todo{is this where it should be}. The models should be searched for in the directories given in the following order:
 \begin{enumerate}
 \item If defined, the paths in the \textit{models\_path} parameter provided to the reader module (overridden by the global configuration \textit{models\_path}) in the given order. Files are added directly. If the path is a directory, all files in the directory are added (not recursing into subdirectories).
 \item The location where the models are installed to (see the MODEL\_DIRECTORY variable in section \ref{sec:cmake_config}). 
@@ -305,11 +305,11 @@ Various flags can be added to the bind function and listening functions. The fla
 All supported objects that can be transferred between modules are shipped with the framework in the Objects library. This list of objects currently consists of the following:
 \begin{itemize}
 \item \textbf{DepositedCharge}: Set of charges at a specific position in the sensor of a detector.
-\item \textbf{PropagatedCharge}: Charge at a specific position after propagation \todo THIS OBJECT WILL BE REMOVED? \todo.
+\item \textbf{PropagatedCharge}: Charge at a specific position after propagation \todo{THIS OBJECT WILL BE REMOVED?}.
 \item \textbf{PixelCharge}: Set of charges at a particular pixel in the pixel grid.
 \end{itemize}
 
-\todo This should be a separate section \todo
+\todo{this should be a separate section}
 
 \subsection{Logging and other Utilities}
 \label{sec:logging_utilities}
@@ -335,7 +335,7 @@ The various logging options for \textbf{LEVEL} are as follows:
 \item \textbf{INFO}: Informatic messages about the process of the simulation
 \item \textbf{DEBUG}: In-depth details about what the framework or a particular module is doing. Can be used to get more detailed information about the modules behaviour or to debug modules.
 \end{itemize}
-\todo More logging levels should be added here and the framework should be improved to better adhere to these levels. \todo
+\todo{More logging levels should be added here and the framework should be improved to better adhere to these levels.}
 
 The logger can display the log messages in several formats. Currently the following formats are supported:
 \begin{itemize}
@@ -387,4 +387,4 @@ The base exceptions in AllPix are defined in the utility section. The most impor
 \item \textbf{LogicError}: Problems related to incorrectly coded modules, for example if a detector module fails to pass the detector to the constructor. These methods should never be raised for a correctly coded module and should therefore not be triggerable by users. Reporting these type of errors can help developers during their development of new modules.
 \end{itemize}
 
-\todo add more info about error reporting style? \todo
+\todo{add more info about error reporting style?}

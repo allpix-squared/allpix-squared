@@ -11,13 +11,13 @@ Before starting to implement your own module it is highly recommended to go thro
 \item Fill the constructor, \texttt{init}, texttt{run} and/or \texttt{finalize} method depending on what your module should do.
 \item Add your module to the build process by adding option\_build\_module(\texttt{ModuleName}) at the appropriate location in \textit{src/modules/CMakeLists.txt}
 \end{enumerate}
-\todo Part of the process above can be automized in a script \todo
+\todo{Part of the process above can be automized in a script}
 
 After this, it is up to the developer to make a module as advanced as necessary (do however consider that at some point it may be beneficial to split up modules to keep the modular design intact). Sources which may be primarily useful during the development of the module include:
 \begin{itemize}
 \item The framework documentation in section \ref{sec:framework} for a gentle introduction to the different parts in the framework.
 \item The module documentation in section \ref{sec:modules} for a description of functionality other modules already provide and to look for similar modules which can help during development.
-\item The Doxygen (core) reference documentation included in the framework (\todo how to build this / where to find this ? \todo).
+\item The Doxygen (core) reference documentation included in the framework \todo{how to build this / where to find this ?}.
 \item The latest version of the source code of all the modules (and the core itself). Freely available to copy and modify under the MIT license at \url{https://gitlab.cern.ch/simonspa/allpix-squared/tree/master}.
 \end{itemize}
 
@@ -25,4 +25,5 @@ In case you think a module may be useful for other people, feel free to send a m
 
 \subsection{Adding a New Detector Model}
 \label{sec:adding_detector_model}
-\todo The format for the detector models should be discussed and approved before this section can be finished \todo
+\wip
+\todo{The format for the detector models should be discussed and approved before this section can be finished}

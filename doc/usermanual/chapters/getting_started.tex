@@ -10,7 +10,7 @@ The framework can be configured with configuration files. The configuration form
 The framework has three required configuration layers which are the following:
 \begin{itemize}
 \item The \textbf{main} configuration: The most important configuration file and the file that is passed directly to the binary. Contains both the global framework configuration and the list of modules to instantiate together with their configuration. More details and an example are found in section \ref{sec:main_config}.
-\item The \textbf{detector} configuration passed to the geometry builders \todo Should be passed to initial geometry reader instead? \todo. Describes the detector setup usually referred as the telescope. Contains the position, orientation and model type of all detectors. Introduced in section \ref{sec:detector_config}.
+\item The \textbf{detector} configuration passed to the geometry builders \todo{Should be passed to initial geometry reader instead?}. Describes the detector setup usually referred as the telescope. Contains the position, orientation and model type of all detectors. Introduced in section \ref{sec:detector_config}.
 \item The detector \textbf{models} configuration. Contain the parameters describing a particular type of detector. These are shipped by the framework and one should typically not need to change these or add new models. If this is however needed, please refer to \ref{sec:adding_detector_model} for more details about adding new models.
 \end{itemize}
 
@@ -177,7 +177,7 @@ The framework has a variety of global parameters that allow to configure \apsq t
 \item \textbf{output\_directory}: Top directory to write all output files into. Extra directories are created for all the module instantiations. Defaults to the current working directory with the subdirectory \textit{output/} attached.
 \item \textbf{random\_seed}: Seed to use for the random seed generator (see section \ref{sec:random_generator}). A random seed will be used from multiple entropy sources if the parameter is not specified. Can be used to redo an earlier simulation run.
 \item \textbf{library\_directories}: Additional directories to search for libraries. See section \ref{sec:module_instantiation} for details.
-\item \textbf{model\_path}: Additional detector models to read. Refer to section \ref{sec:detector_models} for more information. \todo not strictly a framework parameter now, but inherited in the readers \todo
+\item \textbf{model\_path}: Additional detector models to read. Refer to section \ref{sec:detector_models} for more information \todo{not strictly a framework parameter now, but inherited in the readers}.
 \end{itemize}
 
 With this information in mind it is time to setup a real simulation. All the module parameters are shortly introduced when they are first used. For more details about these parameters the module documentation in section \ref{sec:modules} should be checked.
@@ -185,13 +185,14 @@ With this information in mind it is time to setup a real simulation. All the mod
 \subsection{Setting up the Simulation Chain}
 Let us directly start with a full, but simple, simulation. A typical simulation in \apsq contains at least the following components.
 \begin{itemize}
-\item \todo An extra geometry reader should be added here to create the \apsq geometry \todo
 \item The \textbf{geometry builder}, responsible for creating the global internal geometry (Geant4).
 \item The \textbf{deposition} module that deposits the charges in the detectors using the provided physics list and the global geometry created above.
 \item A \textbf{propagation} module that propagates the charges in to the sensor implant and transfers it to a pixel.
 \item A \textbf{digitizer} module which converts the charges in the pixel to a detector hit
 \item An \textbf{output} module, saving the data of the simulation to the requested format.
 \end{itemize}
+\todo{An extra geometry reader should be added here to create the \apsq geometry}
+
 In the example we are going to deposit charges in all of the three sensors from the detector configuration file in \ref{sec:detector_config}. Only the charges in the timepix module are going to be propagated and digitized. The final results of hits in the timepix will be written to a ROOT histogram. The documented version of this main configuration file (with all the required parameters) is as follows:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 # initialize the global configuration
@@ -250,7 +251,7 @@ max_depth_distance = 10um
 name = "tpx"
 \end{minted}
 
-The configuration above can be saved to \textit{config.ini} \todo which suffix to use \todo. The detector configuration file in \ref{sec:detector_config} should then be saved as \textit{detector\_config.ini} in the same directory. Hereafter the total simulation can be executed by passing the configuration to the allpix binary as follows:
+The configuration above can be saved to \textit{config.ini} \todo{which suffix to use}. The detector configuration file in \ref{sec:detector_config} should then be saved as \textit{detector\_config.ini} in the same directory. Hereafter the total simulation can be executed by passing the configuration to the allpix binary as follows:
 
 \begin{verbatim}
 $ allpix config.ini
@@ -332,7 +333,7 @@ The simulation should then start. It should return similar output to the one bel
 (I) [R:SimpleTransfer:tpx] Combining charges at same pixel
 (I) [F:detector_histogrammer_test:tpx] Writing histograms to file
 \end{lstlisting}
-The final histogram output should be availabe in \\ \textit{output/detector\_histogrammer\_test\_tpx/histogram.root} \todo Both the directory and the name of this module should be reworked \todo.
+The final histogram output should be availabe in \\ \textit{output/detector\_histogrammer\_test\_tpx/histogram.root} \todo{Both the directory and the name of this module should be reworked}.
 
 If problems occur, please make sure you have an up-to-date and properly installed version of \apsq (see the installation instructions in section \ref{sec:installation}). If modules and models fail to load, more information about loading problems can be found in the detailed framework section \ref{sec:framework}.
 
@@ -361,7 +362,7 @@ macro_run = "geant4_run.in"
 \end{minted}
 
 \paragraph{ElectricFieldReaderInit}
-An electric field in the detectors can be specified using the .init format by using the ElectricFieldReaderInit module. The init format is a temporary format, taken from the PixelAV software\cite{pixelavgit}. (\todo adding a more detailed description is useless as this will be removed anyway? \todo) These fields can be attached to specific detectors using the standard syntax for detector binding. An example would be:
+An electric field in the detectors can be specified using the .init format by using the ElectricFieldReaderInit module. The init format is a temporary format, taken from the PixelAV software\cite{pixelavgit} \todo{adding a more detailed description is useless as this will be removed anyway?}. These fields can be attached to specific detectors using the standard syntax for detector binding. An example would be:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 [ElectricFieldReaderInit]
 # bind the electric field to the timepix sensor
@@ -373,19 +374,19 @@ An example electric field (which the name used above) can be found in the \texti
 
 \subsubsection{Advanced configuration}
 \paragraph{Redirect Module Inputs and Outputs}
-\todo This is not fully implemented yet \todo
+\wip
 
 \paragraph{Using TCAd Electric Field Simulations}
-\todo This is not implemented yet \todo
+\wip
 
 \paragraph{Choosing the Propagation Modules}
-\todo At the moment only a generic propagation module is available \todo
+\wip
 
 \subsection{Logging and Verbosity Levels}
 \label{sec:logging_verbosity}
 One of the main design goals of \apsq is it being easy-to-use. One of the most important elements determining the user-friendlyness is the amount of feedback provided during the simulation. \apsq is designed to catch mistakes and implementation errors as early as possible and tries to give the user a clear indication about the problem. More details about the logger and the internal structure for reporting errors can be found in section \ref{sec:logger} and \ref{sec:error_reporting_exceptions}. This section will instead provide a quick introduction to the logging and information how to set the verbosity levels to get the details you require.
 
-\todo The logger should be restructured before this section can be finished \todo
+\todo{The logger should be restructured before this section can be finished}
 
 \subsection{Storing Output Data}
-\todo This should currently be reworked \todo
+\wip
