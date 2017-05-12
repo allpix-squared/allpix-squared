@@ -54,22 +54,22 @@ namespace allpix {
          * @param conf_manager Pointer to the configuration manager
          * @param geo_manager Pointer to the manager holding the geometry
          */
-        virtual void load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager);
+        void load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager);
 
         /**
          * @brief Initialize all modules before the event sequence
          */
-        virtual void init();
+        void init();
 
         /**
          * @brief Run all modules for the number of events
          */
-        virtual void run();
+        void run();
 
         /**
          * @brief Finalize all modules after the event sequence
          */
-        virtual void finalize();
+        void finalize();
 
     private:
         /**
