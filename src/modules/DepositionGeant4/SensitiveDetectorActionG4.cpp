@@ -70,7 +70,7 @@ void SensitiveDetectorActionG4::EndOfEvent(G4HCofThisEvent*) {
     if(!deposits_.empty()) {
         IFLOG(INFO) {
             uint32_t charges = 0;
-            for(auto ch : deposits_) {
+            for(const auto& ch : deposits_) {
                 charges += ch.getCharge();
             }
             LOG(INFO) << "Deposited " << charges << " charge carriers in sensor of detector \"" << detector_->getName()
