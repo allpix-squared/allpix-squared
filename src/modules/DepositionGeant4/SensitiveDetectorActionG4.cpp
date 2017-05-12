@@ -68,6 +68,15 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
 void SensitiveDetectorActionG4::EndOfEvent(G4HCofThisEvent*) {
     // send a new message if we have any deposits
     if(!deposits_.empty()) {
+        IFLOG(INFO) {
+            uint32_t charges = 0;
+            for(auto ch : deposits_) {
+                charges += ch.getCharge();
+            }
+            LOG(INFO) << "Deposited " << charges << " charge carriers in sensor of detector \"" << detector_->getName()
+                      << "\"";
+        }
+
         // create a new charge deposit message
         DepositedChargeMessage deposit_message(std::move(deposits_), detector_);
 
