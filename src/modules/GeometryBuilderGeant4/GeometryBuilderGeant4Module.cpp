@@ -130,7 +130,10 @@ void GeometryBuilderGeant4Module::init() {
 
     // export geometry in GDML.
     if(config_.has("GDML_output_file")) {
-        std::string GDML_output_file = config_.getPath("GDML_output_file", true);
+        std::string GDML_output_file = getOutputPath(config_.get<std::string>("GDML_output_file"));
+        if(GDML_output_file.size() <= 5 || GDML_output_file.substr(GDML_output_file.size() - 5, 5) != ".gdml") {
+            GDML_output_file += ".gdml";
+        }
         G4GDMLParser parser;
         parser.SetRegionExport(true);
         parser.Write(GDML_output_file,

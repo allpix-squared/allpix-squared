@@ -53,6 +53,10 @@
 // Common includes
 #include "modules/common/ReadGeoDescription.hpp"
 
+// For measuring time
+#include <chrono>
+typedef std::chrono::milliseconds ms;
+
 using namespace std;
 using namespace allpix;
 using namespace ROOT::Math;
@@ -76,7 +80,6 @@ TGeoBuilderModule::TGeoBuilderModule(Configuration config, Messenger*, GeometryM
     // read the configuration
     // FIXME: prefer to use std::string
     m_userDefinedWorldMaterial = m_config.get<TString>("world_material");
-    m_userDefinedGeoOutputFile = m_config.get<TString>("output_file", "");
     m_buildAppliancesFlag = m_config.get<bool>("build_appliances", false);
     if(m_buildAppliancesFlag) {
         m_Appliances_type = m_config.get<int>("appliances_type");
@@ -84,9 +87,12 @@ TGeoBuilderModule::TGeoBuilderModule(Configuration config, Messenger*, GeometryM
     m_buildTestStructureFlag = m_config.get<bool>("build_test_structures", false);
 
     // Read the geometry descriptions from the models
-    std::string model_file_name = m_config.getPath("models_file", true);
     std::vector<std::string> model_paths;
-    model_paths.push_back(model_file_name);
+    // std::string model_file_name = m_config.getPath("models_file", true);
+    if(config.has("model_paths")) {
+        model_paths = config.getPathArray("model_paths", true);
+    }
+    // model_paths.push_back(model_file_name);
     auto geo_descriptions = ReadGeoDescription(model_paths);
 
     // construct the detectors from the config file
@@ -149,16 +155,31 @@ void TGeoBuilderModule::init() {
     // gGeoManager->CheckOverlaps(0.1);
 
     // Save geometry in ROOT file.
-    if(m_userDefinedGeoOutputFile.Length() != 0) {
+    auto startr = std::chrono::system_clock::now();
+    if(m_config.has("output_file")) {
+        m_userDefinedGeoOutputFile = getOutputPath(m_config.get<string>("output_file"));
         if(!m_userDefinedGeoOutputFile.EndsWith(".root")) {
             m_userDefinedGeoOutputFile += ".root";
         }
         gGeoManager->Export(m_userDefinedGeoOutputFile); // ("file.root","","update") ??
+        auto duration = std::chrono::duration_cast<ms>(std::chrono::system_clock::now() - startr);
         LOG(DEBUG) << "Geometry saved in " << m_userDefinedGeoOutputFile;
+        LOG(DEBUG) << "Time needed to export the geometry in ROOT format : " << duration.count() << " ms.";
     }
 
     // Export geometry as GDML.
-    // gGeoManager->Export("MyGeom.gdml");
+    if(m_config.has("GDML_output_file")) {
+        TString GDML_output_file = getOutputPath(m_config.get<string>("GDML_output_file"));
+        if(!GDML_output_file.EndsWith(".gdml")) {
+            GDML_output_file += ".gdml";
+        }
+        auto startg = std::chrono::system_clock::now();
+        gGeoManager->Export(GDML_output_file);
+        auto duration = std::chrono::duration_cast<ms>(std::chrono::system_clock::now() - startg);
+        LOG(DEBUG) << "Time needed to export the geometry in GDML format : " << duration.count() << " ms.";
+    }
+
+    //
 }
 
 /*
