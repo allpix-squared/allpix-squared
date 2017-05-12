@@ -94,6 +94,7 @@ export LD_LIBRARY_PATH="$XercesC_HOME/lib:$LD_LIBRARY_PATH"
 #--------------------------------------------------------------------------------
 
 export G4INSTALL=${CLICREPO}/software/Geant4/10.03.p01/${BUILD_FLAVOUR}
+export G4LIB=$G4INSTALL/lib64/Geant4-10.3.1/
 export G4ENV_INIT="${G4INSTALL}/bin/geant4.sh"
 export G4SYSTEM="Linux-g++"
 
