@@ -66,7 +66,7 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
     }
 
     // print function name and line number information in debug format
-    if(get_format() == LogFormat::DEBUG) {
+    if(get_format() == LogFormat::LONG) {
         os << "<" << file << "/" << function << ":L" << line << "> ";
     }
 
@@ -128,7 +128,7 @@ LogFormat DefaultLogger::getFormat() {
 }
 // convert string to log level and vice versa
 std::string DefaultLogger::getStringFromFormat(LogFormat format) {
-    static const std::array<std::string, 3> type = {{"SHORT", "DEFAULT", "DEBUG"}};
+    static const std::array<std::string, 3> type = {{"SHORT", "DEFAULT", "LONG"}};
     return type.at(static_cast<decltype(type)::size_type>(format));
 }
 
@@ -139,8 +139,8 @@ LogFormat DefaultLogger::getFormatFromString(const std::string& format) {
     if(format == "DEFAULT") {
         return LogFormat::DEFAULT;
     }
-    if(format == "DEBUG") {
-        return LogFormat::DEBUG;
+    if(format == "LONG") {
+        return LogFormat::LONG;
     }
 
     throw std::invalid_argument("unknown log format");

@@ -20,7 +20,7 @@
 
 namespace allpix {
     enum class LogLevel { QUIET = 0, FATAL, ERROR, WARNING, INFO, DEBUG };
-    enum class LogFormat { SHORT = 0, DEFAULT, DEBUG };
+    enum class LogFormat { SHORT = 0, DEFAULT, LONG };
 
     class DefaultLogger {
     public:
