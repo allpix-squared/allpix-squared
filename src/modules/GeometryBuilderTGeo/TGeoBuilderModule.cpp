@@ -53,10 +53,6 @@
 // Common includes
 #include "modules/common/ReadGeoDescription.hpp"
 
-// For measuring time
-#include <chrono>
-typedef std::chrono::milliseconds ms;
-
 using namespace std;
 using namespace allpix;
 using namespace ROOT::Math;
@@ -155,16 +151,13 @@ void TGeoBuilderModule::init() {
     // gGeoManager->CheckOverlaps(0.1);
 
     // Save geometry in ROOT file.
-    auto startr = std::chrono::system_clock::now();
     if(m_config.has("output_file")) {
         m_userDefinedGeoOutputFile = getOutputPath(m_config.get<string>("output_file"));
         if(!m_userDefinedGeoOutputFile.EndsWith(".root")) {
             m_userDefinedGeoOutputFile += ".root";
         }
         gGeoManager->Export(m_userDefinedGeoOutputFile); // ("file.root","","update") ??
-        auto duration = std::chrono::duration_cast<ms>(std::chrono::system_clock::now() - startr);
         LOG(DEBUG) << "Geometry saved in " << m_userDefinedGeoOutputFile;
-        LOG(DEBUG) << "Time needed to export the geometry in ROOT format : " << duration.count() << " ms.";
     }
 
     // Export geometry as GDML.
@@ -173,10 +166,7 @@ void TGeoBuilderModule::init() {
         if(!GDML_output_file.EndsWith(".gdml")) {
             GDML_output_file += ".gdml";
         }
-        auto startg = std::chrono::system_clock::now();
         gGeoManager->Export(GDML_output_file);
-        auto duration = std::chrono::duration_cast<ms>(std::chrono::system_clock::now() - startg);
-        LOG(DEBUG) << "Time needed to export the geometry in GDML format : " << duration.count() << " ms.";
     }
 
     //
