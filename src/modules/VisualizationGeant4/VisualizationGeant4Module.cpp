@@ -5,6 +5,7 @@
 #include "VisualizationGeant4Module.hpp"
 
 #include <cstdlib>
+#include <cstring>
 #include <memory>
 #include <string>
 #include <utility>
@@ -52,9 +53,12 @@ void VisualizationGeant4Module::init() {
     }
 
     if(config_.has("use_gui")) {
-#ifdef G4UI_BUILD_QT_SESSION
-        // FIXME: workaround
-        gui_session_ = std::make_unique<G4UIQt>();
+#ifdef G4UI_USE_QT
+        // Need to provide parameters, simulate this behaviour
+        session_param_ = std::make_unique<char[]>(strlen(ALLPIX_PROJECT_NAME) + 1);
+        strcpy(session_param_.get(), ALLPIX_PROJECT_NAME); // NOLINT
+        char* param_pointer = session_param_.get();
+        gui_session_ = std::make_unique<G4UIQt>(1, &param_pointer);
 #else
         throw InvalidValueError(
             config_, "use_gui", "GUI session cannot be started because Qt is not available in this Geant4");
