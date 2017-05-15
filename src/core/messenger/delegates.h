@@ -1,5 +1,13 @@
 /**
- *  @author Koen Wolters <koen.wolters@cern.ch>
+ * @file
+ * @brief List of internal messenger delegates
+ *
+ * @copyright MIT License
+ */
+
+/**
+ * @defgroup Delegates Delegate classes
+ * @brief  Collection of delegates serving as interface between messages and their receivers
  */
 
 #ifndef ALLPIX_DELEGATE_H
@@ -13,94 +21,183 @@
 #include "core/geometry/Detector.hpp"
 #include "exceptions.h"
 
+// TODO [doc] This should partly move to a source file
+
 namespace allpix {
-    // Flags to pass to a receiver
-    // FIXME: not the most logical location
+    /**
+     * @ingroup Delegates
+     * @brief Flags to change the behaviour of delegates
+     *
+     * All flags are distinct and can be combined using \ref operator|(MsgFlags, MsgFlags). The flags should be passed to the
+     * \ref Messenger when \ref Messenger::registerListener "registering" a listener or when binding either a \ref
+     * Messenger::bindSingle "single" or \ref Messenger::bindMulti "multiple" messages. It depends on the delegate which
+     * combination is flags is valid.
+     */
+    // TODO [doc] Is DelegateFlags or MessengerFlags a better name (and in separate file?)
     enum class MsgFlags : uint32_t {
-        NONE = 0,                  // no enabled flags
-        REQUIRED = (1 << 0),       // require a message before running a module
-        NO_RESET = (1 << 1),       // do not reset a message after run
-        ALLOW_OVERWRITE = (1 << 2) // allow overwriting a previous message
+        NONE = 0,                  ///< No enabled flags
+        REQUIRED = (1 << 0),       ///< Require a message before running a module
+        NO_RESET = (1 << 1),       ///< Do not reset a message after run
+        ALLOW_OVERWRITE = (1 << 2) ///< Allow overwriting a previous message
     };
+    /**
+     * @ingroup Delegates
+     * @brief Combine two sets of message flags
+     * @param f1 First set of flag
+     * @param f2 Second set of flag
+     * @return New set of flag representing the combination of the two given sets
+     */
     inline MsgFlags operator|(MsgFlags f1, MsgFlags f2) {
         return static_cast<MsgFlags>(static_cast<uint32_t>(f1) | static_cast<uint32_t>(f2));
     }
+    /**
+     * @ingroup Delegates
+     * @brief Give the set of flags present in both sets of message flags
+     * @param f1 First flag
+     * @param f2 Second flag
+     * @return New flag representing the flags present in both sets of flags
+     */
     inline MsgFlags operator&(MsgFlags f1, MsgFlags f2) {
         return static_cast<MsgFlags>(static_cast<uint32_t>(f1) & static_cast<uint32_t>(f2));
     }
 
-    // Base class for all delegates (template type erasure)
+    /**
+     * @ingroup Delegates
+     * @brief Base for all delegates
+     *
+     * The base class is used as type-erasure for its subclasses
+     */
     class BaseDelegate {
     public:
-        // Constructor and destructor
+        /**
+         * @brief Construct a delegate with the supplied flags
+         * @param flags Configuration flags
+         */
         explicit BaseDelegate(MsgFlags flags) : processed_(false), flags_(flags) {}
+        /**
+         * @brief Essential virtual destructor
+         */
         virtual ~BaseDelegate() = default;
 
-        // Disallow copy
+        /// @{
+        /**
+         * @brief Copying a delegate is not allowed
+         */
         BaseDelegate(const BaseDelegate&) = delete;
         BaseDelegate& operator=(const BaseDelegate&) = delete;
+        /// @}
 
-        // Check if delegate is satisfied (has been processed if required)
+        /**
+         * @brief Check if delegate satisfied its requirements
+         * @return True if satisfied, false otherwise
+         *
+         * The delegate is always satisfied if the \ref MsgFlags::REQUIRED "REQUIRED" flag has not been passed. Otherwise it
+         * is up to the subclasses to determine if a delegate has been processed.
+         */
         bool isSatisfied() const {
-            // always satisfied if not required
             if((getFlags() & MsgFlags::REQUIRED) == MsgFlags::NONE) {
                 return true;
             }
             return processed_;
         }
 
-        // Get the flags
+        /**
+         * @brief Get the flags for this delegate
+         * @return Message flags
+         */
         MsgFlags getFlags() const { return flags_; }
 
-        // Get linked detector
+        /**
+         * @brief Get the detector bound to a delegate
+         * @return Linked detector
+         */
         virtual std::shared_ptr<Detector> getDetector() const = 0;
 
-        // Process the delegate
+        /**
+         * @brief Process a message and forwards it to its final destination
+         * @param msg Message to process
+         */
         virtual void process(std::shared_ptr<BaseMessage> msg) = 0;
 
-        // Reset the delegate
-        virtual void reset() {
-            // Set processed to false again
-            processed_ = false;
-        }
+        /**
+         * @brief Reset the delegate and set it not satisfied again
+         */
+        virtual void reset() { processed_ = false; }
 
     protected:
+        /**
+         * @brief Set the processed flag to signal that the delegate is satisfied
+         */
         void set_processed() { processed_ = true; }
         bool processed_;
 
         MsgFlags flags_;
     };
 
-    // All delegates that need a Module
+    /**
+     * @ingroup Delegates
+     * @brief Base for all delegates operating on modules
+     *
+     * As all delegates currently operate on modules (as messages should be dispatched to modules), this class is in fact the
+     * templated base class of all delegates.
+     */
     template <typename T> class ModuleDelegate : public BaseDelegate {
     public:
+        /**
+         * @brief Construct a module delegate for the given module
+         * @param flags Messenger flags
+         * @param obj Module object this delegate should operate on
+         */
         explicit ModuleDelegate(MsgFlags flags, T* obj) : BaseDelegate(flags), obj_(obj) {}
-        ~ModuleDelegate() override = default;
 
-        // Disallow copy
+        /// @{
+        /**
+         * @brief Copying a delegate is not allowed
+         */
         ModuleDelegate(const ModuleDelegate&) = delete;
         ModuleDelegate& operator=(const ModuleDelegate&) = delete;
+        /// @}
 
-        // Attached detector
+        /**
+         * @brief Get the detector bound to this module
+         *
+         * Returns the bound detector for detector modules and a null pointer for unique modules
+         */
         std::shared_ptr<Detector> getDetector() const override { return obj_->getDetector(); }
 
     protected:
         T* obj_;
     };
 
-    // Delegate for receiver functions
+    /**
+     * @ingroup Delegates
+     * @brief Delegate for invoking a function in the module
+     */
     template <typename T, typename R> class FunctionDelegate : public ModuleDelegate<T> {
     public:
         using ListenerFunction = void (T::*)(std::shared_ptr<R>);
 
+        /**
+         * @brief Construct a function delegate for the given module
+         * @param flags Messenger flags
+         * @param obj Module object this delegate should operate on
+         * @param method A function taking a shared_ptr to the message to listen to
+         */
         FunctionDelegate(MsgFlags flags, T* obj, ListenerFunction method) : ModuleDelegate<T>(flags, obj), method_(method) {}
-        ~FunctionDelegate() override = default;
 
-        // Disallow copy
-        FunctionDelegate(const FunctionDelegate&) = delete;
+        /// @{
+        /**
+         * @brief Copying a delegate is not allowed
+         */ FunctionDelegate(const FunctionDelegate&) = delete;
         FunctionDelegate& operator=(const FunctionDelegate&) = delete;
+        /// @}
 
-        // Send the message to the function
+        /**
+         * @brief Calls the listener function with the supplied message
+         * @param msg Message to process
+         * @warning The listener function is called directly from the delegate, no heavy processing should be done in the
+         *          listener function
+         */
         void process(std::shared_ptr<BaseMessage> msg) override {
 #ifndef NDEBUG
             // The type names should have been correctly resolved earlier
@@ -117,19 +214,38 @@ namespace allpix {
         ListenerFunction method_;
     };
 
-    // Delegate for single bound shared pointer
+    /**
+     * @ingroup Delegates
+     * @brief Delegate for binding a single message
+     */
     template <typename T, typename R> class SingleBindDelegate : public ModuleDelegate<T> {
     public:
         using BindType = std::shared_ptr<R> T::*;
 
+        /**
+         * @brief Construct a single bound delegate for the given module
+         * @param flags Messenger flags
+         * @param obj Module object this delegate should operate on
+         * @param member Member variable to assign the pointer to the message to
+         */
         SingleBindDelegate(MsgFlags flags, T* obj, BindType member) : ModuleDelegate<T>(flags, obj), member_(member) {}
-        ~SingleBindDelegate() override = default;
 
-        // Disallow copy
+        /// @{
+        /**
+         * @brief Copying a delegate is not allowed
+         */
         SingleBindDelegate(const SingleBindDelegate&) = delete;
         SingleBindDelegate& operator=(const SingleBindDelegate&) = delete;
+        /// @}
 
-        // Set the member to the supplied message
+        /**
+         * @brief Saves the message to the bound message pointer
+         * @param msg Message to process
+         * @throws UnexpectedMessageException If this delegate has already received the message after the previous reset (not
+         *         thrown if the \ref MsgFlags::ALLOW_OVERWRITE "ALLOW_OVERWRITE" flag is passed)
+         *
+         * The saved value is overwritten if the \ref MsgFlags::ALLOW_OVERWRITE "ALLOW_OVERWRITE" flag is enabled.
+         */
         void process(std::shared_ptr<BaseMessage> msg) override {
 #ifndef NDEBUG
             // The type names should have been correctly resolved earlier
@@ -138,6 +254,7 @@ namespace allpix {
 #endif
             // Raise an error if the message is overwritten (unless it is allowed)
             if(this->obj_->*member_ != nullptr && (this->getFlags() & MsgFlags::ALLOW_OVERWRITE) == MsgFlags::NONE) {
+                // TODO [doc] The module name should be passed here
                 throw UnexpectedMessageException("module name", typeid(R));
             }
 
@@ -146,7 +263,12 @@ namespace allpix {
             this->set_processed();
         }
 
-        // Set the obj back to nullptr
+        /**
+         * @brief Reset the delegate by resetting the bound variable
+         *
+         * Always calls the BaseDelegate::reset first. Set the referenced member to a null pointer unless the
+         * \ref MsgFlags::NO_RESET "NO_RESET" flag is passed to the delegate.
+         */
         void reset() override {
             // Always do base reset
             BaseDelegate::reset();
@@ -161,18 +283,34 @@ namespace allpix {
         BindType member_;
     };
 
-    // Delegate for a vector of messages that can be received
+    /**
+     * @ingroup Delegates
+     * @brief Delegate for binding multiple message to a vector
+     */
     template <typename T, typename R> class VectorBindDelegate : public ModuleDelegate<T> {
     public:
         using BindType = std::vector<std::shared_ptr<R>> T::*;
 
+        /**
+         * @brief Construct a vector bound delegate for the given module
+         * @param flags Messenger flags
+         * @param obj Module object this delegate should operate on
+         * @param member Member variable vector to add the pointer to the message to
+         */
         VectorBindDelegate(MsgFlags flags, T* obj, BindType member) : ModuleDelegate<T>(flags, obj), member_(member) {}
-        ~VectorBindDelegate() override = default;
 
-        // Disallow copy
+        /// @{
+        /**
+         * @brief Copying a delegate is not allowed
+         */
         VectorBindDelegate(const VectorBindDelegate&) = delete;
         VectorBindDelegate& operator=(const VectorBindDelegate&) = delete;
+        /// @}
 
+        /**
+         * @brief Adds the message to the bound vector
+         * @param msg Message to process
+         */
         void process(std::shared_ptr<BaseMessage> msg) override {
 #ifndef NDEBUG
             // The type names should have been correctly resolved earlier
@@ -181,10 +319,15 @@ namespace allpix {
 #endif
             // Add the message
             (this->obj_->*member_).push_back(std::static_pointer_cast<R>(msg));
-            this->set_processed(); // FIXME: always mark as processed because it is an array?
+            this->set_processed();
         }
 
-        // Clear the vector of received messages
+        /**
+         * @brief Reset the delegate by clearing the vector of messages
+         *
+         * Always calls the BaseDelegate::reset first. Clears the referenced vector to an empty state unless
+         * \ref MsgFlags::NO_RESET "NO_RESET" flag is passed to the delegate.
+         */
         void reset() override {
             // Always do base reset
             BaseDelegate::reset();

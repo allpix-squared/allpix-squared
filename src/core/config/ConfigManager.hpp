@@ -1,5 +1,7 @@
 /**
- *  @author Koen Wolters <koen.wolters@cern.ch>
+ * @file
+ * @brief Interface to the main configuration and its normal and special sections
+ * @copyright MIT License
  */
 
 #ifndef ALLPIX_CONFIG_MANAGER_H
@@ -14,42 +16,70 @@
 
 namespace allpix {
 
+    /**
+     * @ingroup Managers
+     * @brief Manager responsible for loading and providing access to the main configuration
+     *
+     * The main configuration is the single most important source of configuration. It is split up in:
+     * - Global headers that are combined into a single global (not module specific) configuration
+     * - Ignored headers that are not used at all (mainly useful for debugging)
+     * - All other headers representing all modules that have to be instantiated by the ModuleManager
+     *
+     * Configuration sections are always case-sensitive.
+     */
     class ConfigManager {
     public:
-        // Constructor and destructors
+        /**
+         * @brief Construct the configuration manager
+         * @param file_name Path to the main configuration file
+         */
         explicit ConfigManager(std::string file_name);
 
-        // Disallow copy
+        /// @{
+        /**
+         * @brief Copying the manager is not allowed
+         */
         ConfigManager(const ConfigManager&) = delete;
         ConfigManager& operator=(const ConfigManager&) = delete;
+        /// @}
 
-        // Reload whole configs (clears and rereads)
-        void reload();
+        /**
+         * @brief Set the name of the global header and add to the global names
+         * @param name Name of a global header that should be used as the name
+         */
+        // TODO [doc] Should only set the name and do not add it
+        void setGlobalHeaderName(std::string name);
+        /**
+         * @brief Add a global header name
+         * @param name Name of a global header section
+         */
+        // TODO [doc] Rename to addGlobalHeader
+        void addGlobalHeaderName(std::string name);
 
-        // Define special sections
-        void setGlobalHeaderName(std::string);
-        void addGlobalHeaderName(std::string);
+        /**
+         * @brief Get the global configuration
+         * @return Global configuration
+         */
         Configuration getGlobalConfiguration();
-        void addIgnoreHeaderName(std::string);
 
-        // Check if configuration section exist
-        bool hasConfiguration(const std::string& name) const;
-        unsigned int countConfigurations(const std::string& name) const;
+        /**
+         * @brief Add a header name to fully ignore
+         * @param name Name of a header to ignore
+         */
+        // TODO [doc] Rename to ignoreHeader
+        void addIgnoreHeaderName(std::string name);
 
-        // Return configuration sections by name
-        std::vector<Configuration> getConfigurations(const std::string& name) const;
-
-        // Return all configurations with their name
+        /**
+         * @brief Get all configurations that are not global or ignored
+         * @return List of all normal configurations
+         */
         std::vector<Configuration> getConfigurations() const;
 
     private:
-        // Path to main config file
         std::string file_name_;
 
-        // Reader for the config files
         ConfigReader reader_;
 
-        // List of names which indicate global sections or sections to ignore
         std::string global_default_name_;
         std::set<std::string> global_names_;
         std::set<std::string> ignore_names_;

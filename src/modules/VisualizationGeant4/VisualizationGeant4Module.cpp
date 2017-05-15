@@ -9,21 +9,21 @@
 #include <string>
 #include <utility>
 
-#include "G4RunManager.hh"
-#include "G4UImanager.hh"
-#include "G4UIsession.hh"
-#include "G4UIterminal.hh"
-#include "G4VisExecutive.hh"
-#include "G4VisManager.hh"
+#include <G4RunManager.hh>
+#include <G4UIExecutive.hh>
+#include <G4UImanager.hh>
+#include <G4UIsession.hh>
+#include <G4UIterminal.hh>
+#include <G4VisExecutive.hh>
 
 #include "core/utils/log.h"
 
 using namespace allpix;
 
 VisualizationGeant4Module::VisualizationGeant4Module(Configuration config, Messenger*, GeometryManager*)
-    : config_(std::move(config)), has_run_(false), vis_manager_g4_(nullptr) {}
+    : config_(std::move(config)), has_run_(false), vis_manager_g4_(nullptr), ui_window_(nullptr) {}
 VisualizationGeant4Module::~VisualizationGeant4Module() {
-    if(!has_run_ && vis_manager_g4_ != nullptr) {
+    if(!has_run_ && vis_manager_g4_ != nullptr && vis_manager_g4_->GetCurrentViewer() != nullptr) {
         LOG(DEBUG) << "Invoking VRML workaround to prevent visualization under error conditions";
 
         // FIXME: workaround to skip VRML visualization in case we stopped before reaching the run method
@@ -45,12 +45,20 @@ void VisualizationGeant4Module::init() {
     // check if we have a running G4 manager
     G4RunManager* run_manager_g4 = G4RunManager::GetRunManager();
     if(run_manager_g4 == nullptr) {
+        RELEASE_STREAM(G4cout);
         throw ModuleError("Cannot visualize using Geant4 without a Geant4 geometry builder");
+    }
+
+    // FIXME: workaround
+    if(config_.has("use_gui")) {
+        // FIXME: workaround
+        char* str = const_cast<char*>(""); // NOLINT
+        ui_window_ = std::make_unique<G4UIExecutive>(1, &str);
     }
 
     // initialize the session and the visualization manager
     LOG(INFO) << "Initializing visualization";
-    vis_manager_g4_ = std::make_shared<G4VisExecutive>("quiet");
+    vis_manager_g4_ = std::make_unique<G4VisExecutive>("all");
     vis_manager_g4_->Initialize();
 
     // execute standard commands
@@ -58,9 +66,33 @@ void VisualizationGeant4Module::init() {
     G4UImanager* UI = G4UImanager::GetUIpointer();
     UI->ApplyCommand("/vis/scene/create");
     // FIXME: no way to check if this driver actually exists...
-    UI->ApplyCommand("/vis/sceneHandler/create " + config_.get<std::string>("driver"));
-    UI->ApplyCommand("/vis/sceneHandler/attach");
+    int check_driver = UI->ApplyCommand("/vis/sceneHandler/create " + config_.get<std::string>("driver"));
+    if(check_driver != 0) {
+        RELEASE_STREAM(G4cout);
+        std::set<G4String> candidates;
+        for(auto system : vis_manager_g4_->GetAvailableGraphicsSystems()) {
+            for(auto& nickname : system->GetNicknames()) {
+                if(!nickname.contains("FALLBACK")) {
+                    candidates.insert(nickname);
+                }
+            }
+        }
 
+        std::string candidate_str;
+        for(auto& candidate : candidates) {
+            candidate_str += candidate;
+            candidate_str += ", ";
+        }
+        if(!candidate_str.empty()) {
+            candidate_str = candidate_str.substr(0, candidate_str.size() - 2);
+        }
+
+        vis_manager_g4_.reset();
+        throw InvalidValueError(
+            config_, "driver", "visualization driver does not exists (options are " + candidate_str + ")");
+    }
+
+    UI->ApplyCommand("/vis/sceneHandler/attach");
     UI->ApplyCommand("/vis/viewer/create");
 
     // release the g4 output
@@ -87,8 +119,13 @@ void VisualizationGeant4Module::finalize() {
         std::unique_ptr<G4UIsession> session = std::make_unique<G4UIterminal>();
         session->SessionStart();
     } else {
-        LOG(INFO) << "Starting visualization viewer";
-        vis_manager_g4_->GetCurrentViewer()->ShowView();
+        if(config_.has("use_gui")) {
+            LOG(INFO) << "Starting visualization session";
+            ui_window_->SessionStart();
+        } else {
+            LOG(INFO) << "Starting visualization viewer";
+            vis_manager_g4_->GetCurrentViewer()->ShowView();
+        }
     }
 
     // set that we did succesfully visualize

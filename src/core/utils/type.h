@@ -1,5 +1,7 @@
-/*
- * Layer for generic type functions and run time type identification (demangling)
+/**
+ * @file
+ * @brief Tags for type dispatching and run time type identification
+ * @copyright MIT License
  */
 
 #ifndef ALLPIX_TYPE_H
@@ -9,21 +11,29 @@
 #include <cxxabi.h>
 #include <memory>
 
+// TODO: This should be reworked to show complex types in a better way
+
 namespace allpix {
-    // general allpix tags for dispatching
-    // NOTE: cannot directly use the type due to namespacing ADL lookup
+    /**
+     * @brief Tag for specific type
+     * @note This tag is needed in the \ref allpix namespace due to ADL lookup
+     */
     template <typename T> struct type_tag {};
+    /**
+     * @brief Empty tag
+     * @note This tag is needed in the \ref allpix namespace due to ADL lookup
+     */
     struct empty_tag {};
 
 #ifdef __GNUG__
+    // Only demangled for GNU compiler
     inline std::string demangle(const char* name, bool keep_allpix = false) {
-        // some arbitrary value to eliminate the compiler warning
-        int status = -4;
-
-        // enable c++11 by passing the flag -std=c++11 to g++
+        // Try to demangle
+        int status = -1;
         std::unique_ptr<char, void (*)(void*)> res{abi::__cxa_demangle(name, nullptr, nullptr, &status), std::free};
 
         if(status == 0) {
+            // Remove allpix tag if necessary
             std::string str = res.get();
             if(!keep_allpix && str.find("allpix::") == 0) {
                 return str.substr(8);
@@ -34,7 +44,11 @@ namespace allpix {
     }
 
 #else
-    // does nothing if not g++
+    /**
+     * @brief Demangle the type to human-readable form if it is mangled
+     * @param name The possibly mangled name
+     * @param keep_allpix If true the allpix namespace tag will be kept, otherwise it is removed
+     */
     inline std::string demangle(const char* name, bool keep_allpix = false) { return name; }
 #endif
 } // namespace allpix
