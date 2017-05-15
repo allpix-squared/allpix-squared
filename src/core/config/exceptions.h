@@ -1,8 +1,8 @@
 /**
- * AllPix config exception classes
+ * @file
+ * @brief Collection of all configuration exceptions
  *
- * @author Simon Spannagel <simon.spannagel@cern.ch>
- * @author Koen Wolters <koen.wolters@cern.ch>
+ * @copyright MIT License
  */
 
 #ifndef ALLPIX_CONFIG_EXCEPTIONS_H
@@ -14,69 +14,112 @@
 #include "core/utils/type.h"
 
 namespace allpix {
-    /*
-     * Base class for all configuration related errors
+    /**
+     * @ingroup Exceptions
+     * @brief Base class for all configurations exceptions in the framework.
      */
     class ConfigurationError : public Exception {};
 
-    /*
-     * Error if a config file could not be read
+    /**
+     * @ingroup Exceptions
+     * @brief Notifies of a missing configuration file
      */
+    // TODO [doc] Rename to not found?
     class ConfigFileUnavailableError : public ConfigurationError {
     public:
-        explicit ConfigFileUnavailableError(const std::string& file) {
-            error_message_ = "Could not read configuration file " + file + " (does it exists?)";
+        /**
+         * @brief Construct an error for a configuration that is not found
+         * @param file_name Name of the configuration file
+         */
+        explicit ConfigFileUnavailableError(const std::string& file_name) {
+            error_message_ = "Could not read configuration file " + file_name + " (does it exists?)";
         }
     };
 
-    // invalid key in the configuration
-    // FIXME: this should probably be InvalidValueTypeError (see below)
+    /**
+     * @ingroup Exceptions
+     * @brief Indicates a problem converting the value of a configuration key to the value it should represent
+     */
+    // TODO [doc] this should be InvalidValueTypeError (see below)
     class InvalidKeyError : public ConfigurationError {
     public:
+        /**
+         * @brief Construct an error for a value with an invalid type
+         * @param key Name of the corresponding key
+         * @param section Section where the key/value pair was defined
+         * @param value Value as a literal string
+         * @param type Type where the value should have been converted to
+         * @param reason Reason why the conversion failed
+         */
         InvalidKeyError(const std::string& key,
                         const std::string& section,
                         const std::string& value,
                         const std::type_info& type,
                         const std::string& reason) {
+            // FIXME: file and line number are missing
             error_message_ = "Could not convert value '" + value + "' of key '" + key + "' in section '" + section +
                              "' to type " + allpix::demangle(type.name());
             if(!reason.empty()) {
                 error_message_ += ": " + reason;
             }
         }
-        InvalidKeyError(const std::string& key,
-                        const std::string& section,
-                        const std::string& value,
-                        const std::type_info& type)
-            : InvalidKeyError(key, section, value, type, "") {}
     };
 
-    // missing key in the configuration
+    /**
+     * @ingroup Exceptions
+     * @brief Informs of a missing key that should have been defined
+     */
     class MissingKeyError : public ConfigurationError {
     public:
+        /**
+         * @brief Construct an error for a missing key
+         * @param key Name of the missing key
+         * @param section Section where the key should have been defined
+         */
         MissingKeyError(const std::string& key, const std::string& section) {
+            // FIXME: file and line number are missing
             error_message_ = "Key '" + key + "' in section '" + section + "' does not exist";
         }
     };
 
-    // parse error in the configuration
+    /**
+     * @ingroup Exceptions
+     * @brief Indicates an error while parsing a configuration file
+     */
+    // TODO [doc] Rename to ConfigurationError
     class ConfigParseError : public ConfigurationError {
     public:
-        ConfigParseError(const std::string& file, int line_num) {
+        /**
+         * @brief Construct an error for a missing key
+         * @param file_name Name of the configuration file
+         * @param line_num Line number where the problem occurred
+         */
+        ConfigParseError(const std::string& file_name, int line_num) {
             error_message_ = "Could not parse line ";
             error_message_ += std::to_string(line_num);
-            error_message_ += " in file '" + file + "'";
+            error_message_ += " in file '" + file_name + "'";
             error_message_ += ": not a section header, key/value pair or comment";
         }
     };
 
-    // Value is not valid data for the module (but type is correct so this can only detected by modules)
-    // NOTE: only error that should be called directly by modules
     class Configuration;
+    /**
+     * @ingroup Exceptions
+     * @brief Indicates an error with the contents of value
+     * @note Only configuration error that should be called directly from modules
+     *
+     * Should be raised if the data contains valid data for its type (otherwise an \ref InvalidKeyError should have been
+     * raised earlier), but the value is not in the range of allowed values.
+     */
     class InvalidValueError : public ConfigurationError {
     public:
-        InvalidValueError(const Configuration& config, const std::string& key, const std::string& reason);
-        InvalidValueError(const Configuration& config, const std::string& key);
+        /**
+         * @brief Construct an error for an invalid value
+         * @param config Configuration object containing the problematic key
+         * @param key Name of the problematic key
+         * @param reason Reason why the value is invalid (empty if no explicit reason)
+         */
+        InvalidValueError(const Configuration& config, const std::string& key, const std::string& reason = "");
     };
 } // namespace allpix
 

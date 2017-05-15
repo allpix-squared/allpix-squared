@@ -1,8 +1,8 @@
 /**
- * AllPix messenger exception classes
+ * @file
+ * @brief Collection of all message exceptions
  *
- * @author Simon Spannagel <simon.spannagel@cern.ch>
- * @author Koen Wolters <koen.wolters@cern.ch>
+ * @copyright MIT License
  */
 
 #ifndef ALLPIX_MESSENGER_EXCEPTIONS_H
@@ -14,11 +14,21 @@
 #include "core/utils/type.h"
 
 namespace allpix {
-    /*
-     * Receive of a message that a module did not expect (only one message)
+    /**
+     * @ingroup Exceptions
+     * @brief Receive of a message that was not expected
+     *
+     * Raised if a module receives a message again while its \ref SingleBindDelegate "bound variable" is
+     * already pointing to the earlier received message.
      */
+    // TODO [doc] Should be renamed to UnexpectedMessageError
     class UnexpectedMessageException : public RuntimeError {
     public:
+        /**
+         * @brief Constructs an error with a received message
+         * @param module Receiving module
+         * @param message Type of the received message
+         */
         UnexpectedMessageException(const std::string& module, const std::type_info& message) {
             // FIXME: add detectory and input output instance here
             error_message_ = "Unexpected message ";

@@ -1,5 +1,14 @@
 /**
- * From and to string conversions (mostly necessary for config parsing)
+ * @file
+ * @brief Collection of string utilities
+ * @copyright MIT License
+ *
+ * Used extensively for parsing the configuration in the \ref allpix::ConfigReader.
+ */
+
+/**
+ * @defgroup StringConversions String conversions
+ * @brief Collection of all the overloads of string conversions
  */
 
 #ifndef ALLPIX_STRING_H
@@ -14,34 +23,50 @@
 #include "type.h"
 #include "unit.h"
 
+// TODO [doc]: should possible be put in a separate namespace
+
 namespace allpix {
 
-    /** Trims the leading and trailing white space from a string
+    /**
+     * @brief Trims leading and trailing characters from a string
+     * @param str String that should be trimmed
+     * @param delims List of delimiters to trim from the string (defaults to all whitespace)
      */
-    inline std::string trim(const std::string& s, const std::string& delims = " \t\n\r\v") {
-        size_t b = s.find_first_not_of(delims);
-        size_t e = s.find_last_not_of(delims);
+    inline std::string trim(const std::string& str, const std::string& delims = " \t\n\r\v") {
+        size_t b = str.find_first_not_of(delims);
+        size_t e = str.find_last_not_of(delims);
         if(b == std::string::npos || e == std::string::npos) {
             return "";
         }
-        return std::string(s, b, e - b + 1);
+        return std::string(str, b, e - b + 1);
     }
 
-    /** Converts a string to any type
+    /**
+     * @brief Converts a string to any supported type
+     * @param str String to convert
+     * @see StringConversions
+     *
+     * The matching converter function is automatically found if available. To add a new conversion the \ref from_string_impl
+     * function should be overloaded. The string is passed as first argument to this function, the second argument should be
+     * an \ref allpix::type_tag with the type to convert to.
+     *
      */
     template <typename T> T from_string(std::string str) {
-        // use tag dispatch to select the correct implementation
+        // Use tag dispatch to select the correct helper function
         return from_string_impl(str, type_tag<T>());
     }
 
+    // TODO [doc] This should move to a source file
     // FIXME: include exceptions better
     // helper functions to do cleaning and checks for string reading
     static std::string _from_string_helper(std::string str) {
+        // Check if string is not empty
         str = trim(str);
         if(str == "") {
             throw std::invalid_argument("string is empty");
         }
 
+        // Check if there is whitespace in the string
         size_t white_space = str.find_first_of(" \t\n\r\v");
         if(white_space != std::string::npos) {
             throw std::invalid_argument("remaining data at end");
@@ -49,20 +74,31 @@ namespace allpix {
         return str;
     }
 
-    // fetch for all types that have not a supported conversion
+    /**
+     * @ingroup StringConversions
+     * @brief Conversion handler for all non implemented conversions
+     *
+     * Function does not return but will raise an static assertion.
+     */
     template <typename T, typename = std::enable_if_t<!std::is_arithmetic<T>::value>, typename = void>
-    T from_string_impl(const std::string&, type_tag<T>) {
-        // check if correct conversion
+    constexpr T from_string_impl(const std::string&, type_tag<T>) {
         static_assert(std::is_same<T, void>::value,
                       "Conversion to this type is not implemented: an overload should be added to support this conversion");
         return T();
     }
-    // overload for arithmetic types
+    /**
+     * @ingroup StringConversions
+     * @brief Conversion handler for all arithmetic types
+     * @throws std::invalid_argument If the string cannot be converted to the required arithmetic type
+     *
+     * The unit system is used through \ref Units::get to parse unit suffixes and convert the values to the appropriate
+     * standard framework unit.
+     */
     template <typename T, typename = std::enable_if_t<std::is_arithmetic<T>::value>>
     T from_string_impl(std::string str, type_tag<T>) {
         str = _from_string_helper(str);
 
-        // find an optional unit
+        // Find an optional set of units
         auto unit_idx = str.size() - 1;
         for(; unit_idx > 0; --unit_idx) {
             if(!isalpha(str[unit_idx]) && str[unit_idx] != '*' && str[unit_idx] != '/') {
@@ -71,79 +107,117 @@ namespace allpix {
         }
         std::string units = str.substr(unit_idx + 1);
 
-        // get the actual value
+        // Get the actual arithmetic value
         std::istringstream sstream(str.substr(0, unit_idx + 1));
         T ret_value = 0;
         sstream >> ret_value;
 
-        // std::cout << (sstream.peek() == EOF) << " " << sstream.str() << " " << ret_value << " " <<  sstream.fail() << " "
-        // << sstream.eof() << " " << std::endl;
+        // Check if the reading was succesfull and everything was read
         if(sstream.fail() || sstream.peek() != EOF) {
             throw std::invalid_argument("conversion not possible");
         }
 
-        // apply all the units if they exists
+        // Apply all the units if they exists
         if(!units.empty()) {
             ret_value = allpix::Units::get(ret_value, units);
         }
         return ret_value;
     }
-    // overload for string
+    /**
+     * @ingroup StringConversions
+     * @brief Conversion handler for strings
+     * @throws std::invalid_argument If the string has no closing quotation mark as last character after an opening quotation
+     * mark
+     * @throws std::invalid_argument If the string has no enclosing quotation marks but contains more data after whitespace
+     * is found
+     *
+     * If a pair of enclosing double quotation marks is found, the whole string within the quotation marks is returned.
+     * Otherwise only the first part is read until whitespace is encountered.
+     */
     inline std::string from_string_impl(std::string str, type_tag<std::string>) {
         str = trim(str);
-        // if there are "" then we should take the whole string (FIXME: '' should also be supported)
+        // If there are "" then we should take the whole string (FIXME: '' should also be supported)
         if(!str.empty() && str[0] == '\"') {
             if(str.find('\"', 1) != str.size() - 1) {
                 throw std::invalid_argument("remaining data at end");
             }
             return str.substr(1, str.size() - 2);
         }
-        // otherwise read a single string
+        // Otherwise read a single string
         return _from_string_helper(str);
     }
 
-    /** Converts supported type to a string
+    /**
+     * @brief Converts any type to a string
+     * @note C-strings are not supported due to allocation issues
+     *
+     * The matching converter function is automatically found if available. To add a new conversion the \ref to_string_impl
+     * function should be overloaded. The string is passed as first argument to this function, the second argument should be
+     * an \ref allpix::empty_tag (needed to search in the allpix namespace).
      */
     template <typename T> std::string to_string(T inp) {
-        // use tag dispatch to select the correct implementation
+        // Use tag dispatch to select the correct implementation
         return to_string_impl(inp, empty_tag());
     }
 
-    // catch all overload for not implemented conversion
+    /**
+     * @ingroup StringConversions
+     * @brief Conversion handler for all non implemented conversions
+     *
+     * Function does not return but will raise an static assertion.
+     */
     template <typename T, typename = std::enable_if_t<!std::is_arithmetic<T>::value>, typename = void>
-    void to_string_impl(T, empty_tag) {
+    constexpr void to_string_impl(T, empty_tag) {
         static_assert(std::is_same<T, void>::value,
                       "Conversion to this type is not implemented: an overload should be added to support this conversion");
     }
-    // overload for arithmetic types
+    /**
+     * @ingroup StringConversions
+     * @brief Conversion handler for all arithmetic types
+     */
     template <typename T, typename = std::enable_if_t<std::is_arithmetic<T>::value>>
     std::string to_string_impl(T inp, empty_tag) {
         std::ostringstream out;
         out << inp;
         return out.str();
     }
-    // NOTE: we have to provide all these specializations to prevent std::to_string from being called
-    //       there may be a better way to work with this
+
+    ///@{
+    /**
+     * @ingroup StringConversions
+     * @brief Conversion handler for strings
+     * @note Overloaded for different types of strings
+     *
+     * Adds enclosing double quotation marks to properly store strings containing whitespace.
+     */
     inline std::string to_string_impl(const std::string& inp, empty_tag) { return '"' + inp + '"'; }
     inline std::string to_string_impl(const char* inp, empty_tag) { return '"' + std::string(inp) + '"'; }
     inline std::string to_string_impl(char* inp, empty_tag) { return '"' + std::string(inp) + '"'; }
+    ///@}
 
-    /** Splits string s into elements at delimiter "delim" and returns them as vector
+    /**
+     * @brief Splits string into substrings at delimiters not inside quotation marks
+     * @param str String to split
+     * @param delims Delimiters to split at
+     * @return List of all the substrings with all empty substrings removed
+     * @warning The string is not split at locations inside quotation marks
      */
+    // TODO [doc] single quotiation marks should be removed
     template <typename T> std::vector<T> split(std::string str, std::string delims = " ,") {
         str = trim(str, delims);
 
-        // if the input string is empty, simply return empty container
+        // If the input string is empty, simply return empty container
         if(str.empty()) {
             return std::vector<T>();
         }
 
-        // else we have data, clear the default elements and chop the string:
+        // Else we have data, clear the default elements and chop the string:
         std::vector<T> elems;
 
-        // add the string identifiers as special delims
+        // Add the string identifiers as special delimiters
         delims += "\'\"";
 
+        // Loop through the string
         std::size_t prev = 0, sprev = 0, pos;
         char ins = 0;
         while((pos = str.find_first_of(delims, sprev)) != std::string::npos) {

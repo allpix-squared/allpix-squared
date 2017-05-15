@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @brief Implementation of config reader
+ * @copyright MIT License
+ */
+
 #include "ConfigReader.hpp"
 
 #include <cstdlib>
@@ -10,30 +16,29 @@
 
 using namespace allpix;
 
-// Constructors and destructor
 ConfigReader::ConfigReader() : conf_map_(), conf_array_() {}
-ConfigReader::ConfigReader(std::istream& stream) : ConfigReader(stream, "") {}
 ConfigReader::ConfigReader(std::istream& stream, std::string file_name) : ConfigReader() {
     add(stream, std::move(file_name));
 }
 
-// Add stream and construct the config
-void ConfigReader::add(std::istream& stream) {
-    add(stream, "");
-}
+/**
+ * @throws ConfigParseError If an error occurred during the parsing of the stream
+ *
+ * The configuration is immediately parsed and all of its configurations are available after the functions returns.
+ */
 void ConfigReader::add(std::istream& stream, std::string file_name) {
-    // convert file name to absolute path (if given)
+    // Convert file name to absolute path (if given)
     if(!file_name.empty()) {
         file_name = allpix::get_absolute_path(file_name);
     }
 
-    // build first empty configuration
+    // Build first empty configuration
     std::string section_name;
     Configuration conf(section_name, file_name);
 
     int line_num = 0;
     while(true) {
-        // process config line by line
+        // Process config line by line
         std::string line;
         if(stream.eof()) {
             break;
@@ -41,26 +46,26 @@ void ConfigReader::add(std::istream& stream, std::string file_name) {
         std::getline(stream, line);
         ++line_num;
 
-        // find equal sign
+        // Find equal sign
         size_t equals_pos = line.find('=');
         if(equals_pos == std::string::npos) {
             line = allpix::trim(line);
 
-            // ignore empty lines or comments
+            // Ignore empty lines or comments
             if(line == "" || line[0] == '#') {
                 continue;
             }
 
-            // parse new section
+            // Parse new section
             if(line[0] == '[' && line[line.length() - 1] == ']') {
-                // ignore empty sections if they contain no configurations
+                // Ignore empty sections if they contain no configurations
                 if(!conf.getName().empty() || conf.countSettings() > 0) {
                     // add previous section
                     conf_array_.push_back(conf);
                     conf_map_[section_name].push_back(--conf_array_.end());
                 }
 
-                // begin new section
+                // Begin new section
                 section_name = std::string(line, 1, line.length() - 2);
                 conf = Configuration(section_name, file_name);
             } else {
@@ -86,27 +91,24 @@ void ConfigReader::add(std::istream& stream, std::string file_name) {
                 }
             }
 
-            // add the config key
+            // Add the config key
             conf.setText(key, trim(value));
         }
     }
-    // add last section
+    // Add last section
     conf_array_.push_back(conf);
     conf_map_[section_name].push_back(--conf_array_.end());
 }
 
-// Clear whole config
 void ConfigReader::clear() {
     conf_map_.clear();
     conf_array_.clear();
 }
 
-// Check if configuration key exists at least once
 bool ConfigReader::hasConfiguration(const std::string& name) const {
     return conf_map_.find(name) != conf_map_.end();
 }
 
-// Count the amount of configurations of a given name
 unsigned int ConfigReader::countConfigurations(const std::string& name) const {
     if(!hasConfiguration(name)) {
         return 0;
@@ -114,13 +116,11 @@ unsigned int ConfigReader::countConfigurations(const std::string& name) const {
     return static_cast<unsigned int>(conf_map_.at(name).size());
 }
 
-// Return configuration by name
 std::vector<Configuration> ConfigReader::getConfigurations(const std::string& name) const {
     if(!hasConfiguration(name)) {
         return std::vector<Configuration>();
     }
 
-    // fetch the configurations
     std::vector<Configuration> result;
     for(auto& iter : conf_map_.at(name)) {
         result.push_back(*iter);
@@ -128,7 +128,6 @@ std::vector<Configuration> ConfigReader::getConfigurations(const std::string& na
     return result;
 }
 
-// Return all configurations
 std::vector<Configuration> ConfigReader::getConfigurations() const {
     return std::vector<Configuration>(conf_array_.begin(), conf_array_.end());
 }
