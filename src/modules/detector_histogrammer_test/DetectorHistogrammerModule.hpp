@@ -53,7 +53,7 @@ namespace allpix {
         TH1I* cluster_size;
 
         // output file
-        TFile* output_file_;
+        std::unique_ptr<TFile> output_file_;
     };
 } // namespace allpix
 

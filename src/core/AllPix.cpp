@@ -95,7 +95,7 @@ void AllPix::load() {
             gSystem->ChangeDirectory(directory.c_str());
         } catch(std::invalid_argument& e) {
             LOG(ERROR) << "Cannot create output directory " << directory << ": " << e.what()
-                       << ". Using current directory instead!" << std::endl;
+                       << ". Using current directory instead!";
         }
     }
 

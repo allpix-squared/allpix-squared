@@ -13,7 +13,7 @@
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 
-class G4UIExecutive;
+class G4UIsession;
 class G4VisManager;
 
 namespace allpix {
@@ -42,7 +42,7 @@ namespace allpix {
 
         // pointer to the visualization manager
         std::unique_ptr<G4VisManager> vis_manager_g4_;
-        std::unique_ptr<G4UIExecutive> ui_window_;
+        std::unique_ptr<G4UIsession> gui_session_;
     };
 } // namespace allpix
 
