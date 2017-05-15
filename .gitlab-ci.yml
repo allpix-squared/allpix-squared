@@ -28,7 +28,7 @@ slc6-llvm39:
         - cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen_HOME/lib64/cmake/eigen3 ..
         - ninja
         - ninja check-format
-        # - ninja check-lint
+        - ninja check-lint
         - ninja install
         - ctest --output-on-failure -j4
         - cd ..
@@ -64,7 +64,7 @@ centos7-llvm39:
         - cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen_HOME/lib64/cmake/eigen3 ..
         - ninja
         - ninja check-format
-        # - ninja check-lint
+        - ninja check-lint
         - ninja install
         - ctest --output-on-failure -j4
         - cd ..
