@@ -426,14 +426,14 @@ void GeometryConstructionG4::build_pixel_devices() {
                 model_g4->bumps_cell_log->SetVisAttributes(BumpVisAtt);
             }
 
-            model_g4->parameterization_ = new BumpsParameterizationG4(model);
+            model_g4->parameterization_ = std::make_unique<BumpsParameterizationG4>(model);
             G4int NPixTot = model->getNPixelsX() * model->getNPixelsY();
             new G4PVParameterised(BumpName.second + "phys",
-                                  model_g4->bumps_cell_log,     // logical volume
-                                  model_g4->bumps_log,          // mother volume
-                                  kUndefined,                   // axis
-                                  NPixTot,                      // replicas
-                                  model_g4->parameterization_); // G4VPVParameterisation
+                                  model_g4->bumps_cell_log,           // logical volume
+                                  model_g4->bumps_log,                // mother volume
+                                  kUndefined,                         // axis
+                                  NPixTot,                            // replicas
+                                  model_g4->parameterization_.get()); // G4VPVParameterisation
         }
 
         /* COVER LAYER

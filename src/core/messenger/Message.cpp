@@ -12,7 +12,7 @@
 
 using namespace allpix;
 
-BaseMessage::BaseMessage() : detector_(nullptr) {}
+BaseMessage::BaseMessage() = default;
 BaseMessage::BaseMessage(std::shared_ptr<Detector> detector) : detector_(std::move(detector)) {}
 BaseMessage::~BaseMessage() = default;
 

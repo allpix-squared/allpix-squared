@@ -64,6 +64,14 @@ namespace allpix {
         DefaultLogger& operator=(const DefaultLogger&) = delete;
         ///@}
 
+        ///@{
+        /**
+         * @brief Use default move behaviour
+         */
+        DefaultLogger(DefaultLogger&&) noexcept(false) = default;
+        DefaultLogger& operator=(DefaultLogger&&) noexcept(false) = default;
+        ///@}
+
         /**
          * @brief Gives a stream to write to using the C++ stream syntax
          * @param level Logging level
@@ -168,9 +176,9 @@ namespace allpix {
         std::ostringstream os;
 
         // Number of exceptions to prevent abort
-        int exception_count_;
+        int exception_count_{};
         // Saved value of the length of the header indent
-        unsigned int indent_count_;
+        unsigned int indent_count_{};
 
         // Internal methods to store static values
         static std::string& get_section();

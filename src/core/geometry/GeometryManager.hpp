@@ -29,6 +29,10 @@ namespace allpix {
          * @brief Construct the geometry manager
          */
         GeometryManager();
+        /**
+         * @brief Use default destructor
+         */
+        ~GeometryManager() = default;
 
         /// @{
         /**
@@ -36,6 +40,14 @@ namespace allpix {
          */
         GeometryManager(const GeometryManager&) = delete;
         GeometryManager& operator=(const GeometryManager&) = delete;
+        /// @}
+
+        /// @{
+        /**
+         * @brief Use default move behaviour
+         */
+        GeometryManager(GeometryManager&&) noexcept = default;
+        GeometryManager& operator=(GeometryManager&&) noexcept = default;
         /// @}
 
         /**

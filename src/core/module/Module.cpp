@@ -21,8 +21,7 @@
 using namespace allpix;
 
 Module::Module() : Module(nullptr) {}
-Module::Module(std::shared_ptr<Detector> detector)
-    : output_directory_(), global_directory_(), identifier_(), config_(), delegates_(), detector_(std::move(detector)) {}
+Module::Module(std::shared_ptr<Detector> detector) : detector_(std::move(detector)) {}
 
 /**
  * @throws InvalidModuleActionException If this method is called from the constructor

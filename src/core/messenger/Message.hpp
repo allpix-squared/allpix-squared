@@ -23,21 +23,24 @@ namespace allpix {
         /**
          * @brief Essential virtual destructor
          */
-        ~BaseMessage();
+        virtual ~BaseMessage();
+
+        ///@{
+        /**
+         * @brief Use default copy and move behaviour
+         */
+        BaseMessage(const BaseMessage&) = default;
+        BaseMessage& operator=(const BaseMessage&) = default;
+
+        BaseMessage(BaseMessage&&) noexcept = default;
+        BaseMessage& operator=(BaseMessage&&) noexcept = default;
+        ///@}
 
         /**
          * @brief Get detector bound to this message
          * @return Linked detector
          */
         std::shared_ptr<Detector> getDetector() const;
-
-        /// @{
-        /**
-         * @brief Use default copy behaviour for messages
-         */
-        BaseMessage(const BaseMessage&) = default;
-        BaseMessage& operator=(const BaseMessage&) = default;
-        /// @}
 
     protected:
         /**

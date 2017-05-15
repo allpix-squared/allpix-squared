@@ -39,8 +39,8 @@ using namespace ROOT::Math;
 SimplePropagationModule::SimplePropagationModule(Configuration config,
                                                  Messenger* messenger,
                                                  std::shared_ptr<Detector> detector)
-    : Module(detector), random_generator_(), config_(std::move(config)), messenger_(messenger),
-      detector_(std::move(detector)), model_(), deposits_message_(nullptr), debug_plot_points_(), debug_file_(nullptr) {
+    : Module(detector), config_(std::move(config)), messenger_(messenger), detector_(std::move(detector)),
+      debug_file_(nullptr) {
     // get detector model
     model_ = detector_->getModel();
 
@@ -58,7 +58,6 @@ SimplePropagationModule::SimplePropagationModule(Configuration config,
     config_.setDefault<unsigned int>("charge_per_step", 10);
     config_.setDefault<bool>("debug_plots", false);
 }
-SimplePropagationModule::~SimplePropagationModule() = default;
 
 // init debug plots
 void SimplePropagationModule::init() {

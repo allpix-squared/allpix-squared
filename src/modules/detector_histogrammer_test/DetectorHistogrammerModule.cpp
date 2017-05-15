@@ -24,7 +24,6 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration config,
     // fetch deposit for single module
     messenger->bindSingle(this, &DetectorHistogrammerModule::pixels_message_);
 }
-DetectorHistogrammerModule::~DetectorHistogrammerModule() = default;
 
 // create histograms
 void DetectorHistogrammerModule::init() {

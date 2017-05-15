@@ -33,7 +33,7 @@ SensitiveDetectorActionG4::SensitiveDetectorActionG4(const std::shared_ptr<Detec
                                                      Messenger* msg,
                                                      double charge_creation_energy)
     : G4VSensitiveDetector("SensitiveDetector_" + detector->getName()), charge_creation_energy_(charge_creation_energy),
-      deposits_(), detector_(detector), messenger_(msg) {
+      detector_(detector), messenger_(msg) {
     // add to the sensitive detector manager
     G4SDManager* sd_man_g4 = G4SDManager::GetSDMpointer();
     sd_man_g4->AddNewDetector(this);

@@ -69,7 +69,6 @@ GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration config, M
         geo_manager_->addDetector(detector);
     }
 }
-GeometryBuilderGeant4Module::~GeometryBuilderGeant4Module() = default;
 
 // check geant4 environment variable
 inline static void check_dataset_g4(const std::string& env_name) {

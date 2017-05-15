@@ -19,7 +19,7 @@
 
 using namespace allpix;
 
-Messenger::Messenger() : delegates_() {}
+Messenger::Messenger() = default;
 
 // Check if the detectors match for the message and the delegate
 static bool check_send(BaseMessage* message, BaseDelegate* delegate) {

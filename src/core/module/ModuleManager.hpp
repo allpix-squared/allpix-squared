@@ -39,6 +39,10 @@ namespace allpix {
          * @brief Construct manager
          */
         ModuleManager();
+        /**
+         * @brief Use default destructor
+         */
+        ~ModuleManager() = default;
 
         /// @{
         /**
@@ -46,6 +50,14 @@ namespace allpix {
          */
         ModuleManager(const ModuleManager&) = delete;
         ModuleManager& operator=(const ModuleManager&) = delete;
+        /// @}
+
+        /// @{
+        /**
+         * @brief Use default move behaviour
+         */
+        ModuleManager(ModuleManager&&) noexcept = default;
+        ModuleManager& operator=(ModuleManager&&) noexcept = default;
         /// @}
 
         /**

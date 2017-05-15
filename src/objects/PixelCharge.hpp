@@ -11,19 +11,16 @@
 
 #include <Math/DisplacementVector2D.h>
 
+#include "Object.hpp"
 #include "core/messenger/Message.hpp"
 
 namespace allpix {
     // object definition
-    class PixelCharge {
+    class PixelCharge : public Object {
     public:
         using Pixel = ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>;
 
         PixelCharge(Pixel pixel, unsigned int charge);
-        virtual ~PixelCharge();
-
-        PixelCharge(const PixelCharge&);
-        PixelCharge& operator=(const PixelCharge&);
 
         PixelCharge::Pixel getPixel() const;
         unsigned int getCharge() const;

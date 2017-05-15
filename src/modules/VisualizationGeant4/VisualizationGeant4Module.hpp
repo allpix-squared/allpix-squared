@@ -24,6 +24,14 @@ namespace allpix {
         VisualizationGeant4Module(Configuration config, Messenger*, GeometryManager*);
         ~VisualizationGeant4Module() override;
 
+        // Disallow copy
+        VisualizationGeant4Module(const VisualizationGeant4Module&) = delete;
+        VisualizationGeant4Module& operator=(const VisualizationGeant4Module&) = delete;
+
+        // Default move
+        VisualizationGeant4Module(VisualizationGeant4Module&&) noexcept = default;
+        VisualizationGeant4Module& operator=(VisualizationGeant4Module&&) noexcept = default;
+
         // initializes the visualization and set necessary settings to catch all the required data
         void init() override;
 

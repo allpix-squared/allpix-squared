@@ -54,10 +54,6 @@ namespace allpix {
 
     public:
         TGeoBuilderModule(Configuration config, Messenger*, GeometryManager*);
-        ~TGeoBuilderModule() override;
-
-        TGeoBuilderModule(const TGeoBuilderModule&) = delete;
-        TGeoBuilderModule& operator=(const TGeoBuilderModule&) = delete;
 
         // Init method is used to construct the geometry
         void init() override;

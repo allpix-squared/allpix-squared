@@ -27,7 +27,6 @@ namespace allpix {
     public:
         // constructor and destructor
         DetectorHistogrammerModule(Configuration, Messenger*, std::shared_ptr<Detector>);
-        ~DetectorHistogrammerModule() override;
 
         // create the histograms
         void init() override;

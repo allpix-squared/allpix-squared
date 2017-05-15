@@ -22,7 +22,6 @@ namespace allpix {
     public:
         // constructor should take a pointer to the Configuration, the Messenger and the Geometry Manager
         GeometryBuilderGeant4Module(Configuration config, Messenger*, GeometryManager*);
-        ~GeometryBuilderGeant4Module() override;
 
         // build the Geant4 geometry before a run
         void init() override;

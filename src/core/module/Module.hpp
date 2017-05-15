@@ -31,7 +31,7 @@ namespace allpix {
           * @brief Constructs an empty identifier
           */
         // TODO [doc] Is this method really necessary
-        ModuleIdentifier() : name_(""), identifier_(""), prio_(0) {}
+        ModuleIdentifier() = default;
         /**
          * @brief Construct an identifier
          * @param module_name Name of the module
@@ -59,8 +59,9 @@ namespace allpix {
          */
         std::string getUniqueName() const {
             std::string unique_name = name_;
-            if(!identifier_.empty())
+            if(!identifier_.empty()) {
                 unique_name += ":" + identifier_;
+            }
             return unique_name;
         }
         /**
@@ -90,7 +91,7 @@ namespace allpix {
     private:
         std::string name_;
         std::string identifier_;
-        int prio_;
+        int prio_{};
     };
 
     /**
@@ -132,6 +133,14 @@ namespace allpix {
          */
         Module(const Module&) = delete;
         Module& operator=(const Module&) = delete;
+        /// @}
+
+        /// @{
+        /**
+         * @brief Use default move behaviour
+         */
+        Module(Module&&) noexcept = default;
+        Module& operator=(Module&&) noexcept = default;
         /// @}
 
         /**

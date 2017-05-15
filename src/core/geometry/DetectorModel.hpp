@@ -38,11 +38,22 @@ namespace allpix {
          * @brief Constructs a detector model of a certain type
          * @param type Unique type description of a model
          */
-        explicit DetectorModel(std::string type) : type_(std::move(type)), sensor_size_() {}
+        explicit DetectorModel(std::string type) : type_(std::move(type)) {}
         /**
          * @brief Essential virtual destructor
          */
         virtual ~DetectorModel() = default;
+
+        ///@{
+        /**
+         * @brief Use default copy and move behaviour
+         */
+        DetectorModel(const DetectorModel&) = default;
+        DetectorModel& operator=(const DetectorModel&) = default;
+
+        DetectorModel(DetectorModel&&) = default;
+        DetectorModel& operator=(DetectorModel&&) = default;
+        ///@}
 
         /**
          * @brief Get the type of the model

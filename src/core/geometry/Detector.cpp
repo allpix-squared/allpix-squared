@@ -26,8 +26,8 @@ Detector::Detector(std::string name,
                    std::shared_ptr<DetectorModel> model,
                    ROOT::Math::XYZPoint position,
                    ROOT::Math::EulerAngles orientation)
-    : name_(std::move(name)), model_(std::move(model)), position_(std::move(position)), orientation_(orientation),
-      transform_(), electric_field_sizes_{{0, 0, 0}}, electric_field_(nullptr), external_models_() {
+    : name_(std::move(name)), model_(std::move(model)), position_(std::move(position)),
+      orientation_(orientation), electric_field_sizes_{{0, 0, 0}}, electric_field_(nullptr) {
     // Check if valid model is supplied
     if(model_ == nullptr) {
         throw std::invalid_argument("detector model cannot be null");

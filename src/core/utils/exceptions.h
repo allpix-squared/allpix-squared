@@ -30,7 +30,7 @@ namespace allpix {
          * @brief Creates exception with the specified problem
          * @param what_arg Text describing the problem
          */
-        explicit Exception(std::string what_arg) : std::exception(), error_message_(std::move(what_arg)) {}
+        explicit Exception(std::string what_arg) : error_message_(std::move(what_arg)) {}
 
         /**
          * @brief Return the error message
@@ -42,7 +42,7 @@ namespace allpix {
         /**
          * @brief Internal constructor for exceptions setting the error message indirectly
          */
-        Exception() : error_message_() {}
+        Exception() = default;
 
         std::string error_message_;
     };
