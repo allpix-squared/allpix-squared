@@ -6,8 +6,8 @@
 
 using namespace allpix;
 
-SensorCharge::SensorCharge(ROOT::Math::XYZPoint position, unsigned int charge)
-    : position_(std::move(position)), charge_(charge) {}
+SensorCharge::SensorCharge(ROOT::Math::XYZPoint position, unsigned int charge, long double event_time)
+    : position_(std::move(position)), charge_(charge), event_time_(event_time) {}
 
 ROOT::Math::XYZPoint SensorCharge::getPosition() const {
     return position_;
@@ -15,4 +15,8 @@ ROOT::Math::XYZPoint SensorCharge::getPosition() const {
 
 unsigned int SensorCharge::getCharge() const {
     return charge_;
+}
+
+long double SensorCharge::getEventTime() const {
+    return event_time_;
 }
