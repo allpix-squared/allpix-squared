@@ -21,11 +21,13 @@
 #include <TFile.h>
 #include <TH3F.h>
 #include <TPolyLine3D.h>
+#include <TPolyMarker3D.h>
 
 #include <iostream>
 
 #include "core/config/Configuration.hpp"
 #include "core/messenger/Messenger.hpp"
+#include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "core/utils/random.h"
 #include "core/utils/unit.h"
@@ -62,9 +64,120 @@ SimplePropagationModule::SimplePropagationModule(Configuration config,
 // init debug plots
 void SimplePropagationModule::init() {
     if(config_.get<bool>("debug_plots")) {
+        LOG(DEBUG) << "DEBUG PLOT ENABLED";
         std::string file_name = getOutputPath(config_.get<std::string>("debug_plots_file_name", "debug_plots") + ".root");
         debug_file_ = new TFile(file_name.c_str(), "RECREATE");
     }
+}
+
+void SimplePropagationModule::create_debug_plots(unsigned int event_num) {
+    LOG(DEBUG) << "Writing debug plots";
+
+    // goto the file
+    debug_file_->cd();
+
+    // calculate the axis limits
+    double minX = FLT_MAX, maxX = FLT_MIN;
+    double minY = FLT_MAX, maxY = FLT_MIN;
+    unsigned long max_plot_size = 0;
+    for(auto& points : debug_plot_points_) {
+        for(auto& point : points) {
+            minX = std::min(minX, point.x());
+            maxX = std::max(maxX, point.x());
+
+            minY = std::min(minY, point.y());
+            maxY = std::max(maxY, point.y());
+        }
+        max_plot_size = std::max(max_plot_size, points.size());
+    }
+
+    // create a frame for proper axis alignment
+    TH3F* histogram_frame = new TH3F(("frame_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
+                                     "",
+                                     10,
+                                     minX,
+                                     maxX,
+                                     10,
+                                     minY,
+                                     maxY,
+                                     10,
+                                     model_->getSensorMinZ(),
+                                     model_->getSensorMinZ() + model_->getSensorSizeZ());
+    histogram_frame->GetXaxis()->SetLabelOffset(-0.1f);
+    histogram_frame->GetYaxis()->SetLabelOffset(-0.1f);
+    histogram_frame->SetStats(false);
+
+    // create the main canvas
+    auto* canvas = new TCanvas(("line_plot_" + std::to_string(event_num)).c_str(),
+                               ("Propagation of charge for event " + std::to_string(event_num)).c_str());
+    canvas->cd();
+    canvas->SetTheta(config_.get("debug_plots_theta", 0.0f) * 180.0f / Pi());
+    canvas->SetPhi(config_.get("debug_plots_phi", 0.0f) * 180.0f / Pi());
+
+    // draw the frame
+    histogram_frame->Draw();
+
+    // loop over all point sets
+    std::vector<TPolyLine3D*> lines;
+    short color = 0;
+
+    for(auto& points : debug_plot_points_) {
+        auto line = new TPolyLine3D;
+        for(auto& point : points) {
+            line->SetNextPoint(point.x(), point.y(), point.z());
+        }
+        // plot all lines with at least three points with different color
+        if(line->GetN() >= 3) {
+            line->SetLineColor(color);
+            line->Draw("same");
+            color = static_cast<short>((static_cast<int>(color) + 10) % 101);
+        }
+        lines.push_back(line);
+    }
+
+    // draw and write canvas to file
+    canvas->Draw();
+    canvas->Write();
+
+    // delete and clear variables
+    for(auto& line : lines) {
+        delete line;
+    }
+    delete canvas;
+
+    // create gif animation of process
+    canvas = new TCanvas(("animation_" + std::to_string(event_num)).c_str(),
+                         ("Propagation of charge for event " + std::to_string(event_num)).c_str());
+    canvas->cd();
+    canvas->SetTheta(config_.get("debug_plots_theta", 0.0f) * 180.0f / Pi());
+    canvas->SetPhi(config_.get("debug_plots_phi", 0.0f) * 180.0f / Pi());
+
+    // draw frame
+    histogram_frame->Draw();
+
+    // plot points
+    std::string file_name = getOutputPath("animation.gif");
+    try {
+        remove_path(file_name);
+    } catch(std::invalid_argument&) {
+        throw ModuleError("Cannot overwite gif animation");
+    }
+    for(unsigned long i = 0; i < max_plot_size; ++i) {
+        TPolyMarker3D markers(static_cast<int>(debug_plot_points_.size(), 2));
+        int j = 0;
+        for(auto& points : debug_plot_points_) {
+            auto k = std::min(i, points.size() - 1);
+            markers.SetPoint(j, points[k].x(), points[k].y(), points[k].z());
+            ++j;
+        }
+        markers.SetMarkerStyle(kFullCircle);
+        markers.Draw();
+        if(i < max_plot_size - 1)
+            canvas->Print((file_name + "+20").c_str());
+        else
+            canvas->Print((file_name + "++500").c_str());
+    }
+    delete canvas;
 }
 
 // run the propagation
@@ -105,71 +218,7 @@ void SimplePropagationModule::run(unsigned int event_num) {
 
     // write debug plots if required
     if(config_.get<bool>("debug_plots")) {
-        LOG(DEBUG) << "Writing debug plots";
-
-        // goto the file
-        debug_file_->cd();
-
-        // create the main canvas
-        auto* canvas = new TCanvas(("plot_" + std::to_string(event_num)).c_str(),
-                                   ("Propagation of charge for event " + std::to_string(event_num)).c_str());
-        canvas->cd();
-
-        // calculate the axis limits
-        double minX = FLT_MAX, maxX = FLT_MIN;
-        double minY = FLT_MAX, maxY = FLT_MIN;
-        for(auto& points : debug_plot_points_) {
-            for(auto& point : points) {
-                minX = std::min(minX, point.x());
-                maxX = std::max(maxX, point.x());
-
-                minY = std::min(minY, point.y());
-                maxY = std::max(maxY, point.y());
-            }
-        }
-
-        // add a frame for proper axis alignment
-        TH3F* histogram_frame = new TH3F(("frame_" + std::to_string(event_num)).c_str(),
-                                         "",
-                                         10,
-                                         minX,
-                                         maxX,
-                                         10,
-                                         minY,
-                                         maxY,
-                                         10,
-                                         model_->getSensorMinZ(),
-                                         model_->getSensorMinZ() + model_->getSensorSizeZ());
-        histogram_frame->Draw();
-        histogram_frame->SetStats(false);
-
-        // loop over all point sets
-        std::vector<TPolyLine3D*> lines;
-        short color = 0;
-        for(auto& points : debug_plot_points_) {
-            auto line = new TPolyLine3D;
-            for(auto& point : points) {
-                line->SetNextPoint(point.x(), point.y(), point.z());
-            }
-            // plot all lines with at least three points with different color
-            if(line->GetN() >= 3) {
-                line->SetLineColor(color);
-                line->Draw("same");
-                color = static_cast<short>((static_cast<int>(color) + 10) % 101);
-            }
-            lines.push_back(line);
-        }
-
-        // draw and write canvas to file
-        canvas->Draw();
-        canvas->Write();
-
-        // delete and clear variables
-        for(auto& line : lines) {
-            delete line;
-        }
-        delete canvas;
-        debug_plot_points_.clear();
+        create_debug_plots(event_num);
     }
 
     // create a new message with propagated charges

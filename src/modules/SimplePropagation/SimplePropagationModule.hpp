@@ -35,6 +35,9 @@ namespace allpix {
         void finalize() override;
 
     private:
+        // create debug plots
+        void create_debug_plots(unsigned int event_num);
+
         // propagate a single charge
         std::pair<ROOT::Math::XYZPoint, double> propagate(const ROOT::Math::XYZPoint& pos);
 
