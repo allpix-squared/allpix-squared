@@ -79,16 +79,19 @@ void SimplePropagationModule::create_debug_plots(unsigned int event_num) {
     // calculate the axis limits
     double minX = FLT_MAX, maxX = FLT_MIN;
     double minY = FLT_MAX, maxY = FLT_MIN;
-    unsigned long max_plot_size = 0;
-    for(auto& points : debug_plot_points_) {
-        for(auto& point : points) {
+    unsigned long tot_point_cnt = 0;
+    long double start_time = std::numeric_limits<long double>::max();
+    for(auto& time_points : debug_plot_points_) {
+        for(auto& point : time_points.second) {
             minX = std::min(minX, point.x());
             maxX = std::max(maxX, point.x());
 
             minY = std::min(minY, point.y());
             maxY = std::max(maxY, point.y());
         }
-        max_plot_size = std::max(max_plot_size, points.size());
+        start_time = std::min(start_time, time_points.first);
+
+        tot_point_cnt += time_points.second.size();
     }
 
     // create a frame for proper axis alignment
@@ -121,9 +124,9 @@ void SimplePropagationModule::create_debug_plots(unsigned int event_num) {
     std::vector<TPolyLine3D*> lines;
     short color = 0;
 
-    for(auto& points : debug_plot_points_) {
+    for(auto& time_points : debug_plot_points_) {
         auto line = new TPolyLine3D;
-        for(auto& point : points) {
+        for(auto& point : time_points.second) {
             line->SetNextPoint(point.x(), point.y(), point.z());
         }
         // plot all lines with at least three points with different color
@@ -156,26 +159,54 @@ void SimplePropagationModule::create_debug_plots(unsigned int event_num) {
     histogram_frame->Draw();
 
     // plot points
-    std::string file_name = getOutputPath("animation.gif");
+    std::string file_name = getOutputPath("animation" + std::to_string(event_num) + ".gif");
     try {
         remove_path(file_name);
     } catch(std::invalid_argument&) {
         throw ModuleError("Cannot overwite gif animation");
     }
-    for(unsigned long i = 0; i < max_plot_size; ++i) {
-        TPolyMarker3D markers(static_cast<int>(debug_plot_points_.size(), 2));
-        int j = 0;
-        for(auto& points : debug_plot_points_) {
-            auto k = std::min(i, points.size() - 1);
-            markers.SetPoint(j, points[k].x(), points[k].y(), points[k].z());
-            ++j;
+
+    auto animation_time =
+        static_cast<unsigned int>(std::round((Units::convert(config_.get<long double>("debug_plots_step"), "ms") / 10.0) *
+                                             config_.get<long double>("debug_plots_animation_time_scaling", 1e9)));
+    unsigned int plot_idx = 0;
+    unsigned int point_cnt = 0;
+    while(point_cnt < tot_point_cnt) {
+        TPolyMarker3D markers;
+        unsigned long min_idx_diff = std::numeric_limits<unsigned long>::max();
+
+        for(auto& time_points : debug_plot_points_) {
+            auto points = time_points.second;
+
+            auto diff = static_cast<unsigned long>(
+                std::round((time_points.first - start_time) / config_.get<long double>("debug_plots_step")));
+            if(static_cast<long>(plot_idx) - static_cast<long>(diff) < 0) {
+                min_idx_diff = std::min(min_idx_diff, diff - plot_idx);
+                continue;
+            }
+            auto idx = plot_idx - diff;
+            if(idx >= points.size()) {
+                continue;
+            }
+            min_idx_diff = 0;
+
+            markers.SetNextPoint(points[idx].x(), points[idx].y(), points[idx].z());
+            ++point_cnt;
         }
-        markers.SetMarkerStyle(kFullCircle);
-        markers.Draw();
-        if(i < max_plot_size - 1)
-            canvas->Print((file_name + "+20").c_str());
-        else
-            canvas->Print((file_name + "++500").c_str());
+
+        if(min_idx_diff != 0) {
+            canvas->Print((file_name + "+100").c_str());
+            plot_idx += min_idx_diff;
+        } else {
+            markers.SetMarkerStyle(kFullCircle);
+            markers.Draw();
+            if(point_cnt < tot_point_cnt - 1) {
+                canvas->Print((file_name + "+" + std::to_string(animation_time)).c_str());
+            } else {
+                canvas->Print((file_name + "++500").c_str());
+            }
+            ++plot_idx;
+        }
     }
     delete canvas;
 }
@@ -204,6 +235,10 @@ void SimplePropagationModule::run(unsigned int event_num) {
             // get position and propagate through sensor
             auto position = deposit.getPosition(); // NOTE: this is already a local position
 
+            if(config_.get<bool>("debug_plots")) {
+                debug_plot_points_.emplace_back(deposit.getEventTime(), std::vector<ROOT::Math::XYZPoint>());
+            }
+
             // propagate a single charge deposit
             auto prop_pair = propagate(position);
             position = prop_pair.first;
@@ -211,7 +246,7 @@ void SimplePropagationModule::run(unsigned int event_num) {
             LOG(DEBUG) << " propagated " << charge_per_step << " to " << position << " in " << prop_pair.second << " time";
 
             // create a new propagated charge and add it to the list
-            PropagatedCharge propagated_charge(position, charge_per_step);
+            PropagatedCharge propagated_charge(position, charge_per_step, deposit.getEventTime() + prop_pair.second);
             propagated_charges.push_back(propagated_charge);
         }
     }
@@ -281,11 +316,10 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const XYZPoint& r
     // continue until outside the sensor (no electric field)
     // FIXME: we need to determine what would be a good time to stop
     double last_time = std::numeric_limits<double>::lowest();
-    debug_plot_points_.emplace_back();
     while(true) {
         // update debug plots if necessary
         if(config_.get<bool>("debug_plots") && runge_kutta.getTime() - last_time > config_.get<double>("debug_plots_step")) {
-            debug_plot_points_.back().push_back(static_cast<XYZPoint>(runge_kutta.getValue()));
+            debug_plot_points_.back().second.push_back(static_cast<XYZPoint>(runge_kutta.getValue()));
             last_time = runge_kutta.getTime();
         }
 

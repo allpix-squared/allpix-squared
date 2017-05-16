@@ -58,7 +58,7 @@ namespace allpix {
         std::shared_ptr<DepositedChargeMessage> deposits_message_;
 
         // debug list of points to plot
-        std::vector<std::vector<ROOT::Math::XYZPoint>> debug_plot_points_;
+        std::vector<std::pair<long double, std::vector<ROOT::Math::XYZPoint>>> debug_plot_points_;
         TFile* debug_file_;
     };
 
