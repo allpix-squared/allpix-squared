@@ -27,7 +27,7 @@ using namespace ROOT::Math;
 
 // Constructors
 ReadGeoDescription::ReadGeoDescription() : ReadGeoDescription(std::vector<std::string>()) {}
-ReadGeoDescription::ReadGeoDescription(std::vector<std::string> paths) : models_() {
+ReadGeoDescription::ReadGeoDescription(std::vector<std::string> paths) {
     // construct reader
     ConfigReader reader;
 

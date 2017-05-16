@@ -24,7 +24,6 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration config,
     // fetch deposit for single module
     messenger->bindSingle(this, &DetectorHistogrammerModule::pixels_message_);
 }
-DetectorHistogrammerModule::~DetectorHistogrammerModule() = default;
 
 // create histograms
 void DetectorHistogrammerModule::init() {
@@ -37,7 +36,7 @@ void DetectorHistogrammerModule::init() {
 
     // create root file
     std::string file_name = getOutputPath(config_.get<std::string>("file_name", "histogram") + ".root");
-    output_file_ = new TFile(file_name.c_str(), "RECREATE");
+    output_file_ = std::make_unique<TFile>(file_name.c_str(), "RECREATE");
     output_file_->cd();
 
     // create histogram
@@ -115,5 +114,4 @@ void DetectorHistogrammerModule::finalize() {
 
     // close the file
     output_file_->Close();
-    delete output_file_;
 }

@@ -1,7 +1,8 @@
 /**
- * AllPix config exception classes
+ * @file
+ * @brief Implementation of configuration exceptions
  *
- * @author Koen Wolters <koen.wolters@cern.ch>
+ * @copyright MIT License
  */
 
 #include "exceptions.h"
@@ -16,5 +17,3 @@ InvalidValueError::InvalidValueError(const Configuration& config, const std::str
         error_message_ += ": " + reason;
     }
 }
-InvalidValueError::InvalidValueError(const Configuration& config, const std::string& key)
-    : InvalidValueError(config, key, "") {}

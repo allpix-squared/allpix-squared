@@ -27,6 +27,10 @@ namespace allpix {
         GeometryConstructionG4(const GeometryConstructionG4&) = delete;
         GeometryConstructionG4& operator=(const GeometryConstructionG4&) = delete;
 
+        // Default move
+        GeometryConstructionG4(GeometryConstructionG4&&) = default;
+        GeometryConstructionG4& operator=(GeometryConstructionG4&&) = default;
+
         // Construct the world
         G4VPhysicalVolume* Construct() override;
 

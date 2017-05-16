@@ -11,11 +11,6 @@ namespace allpix {
     // FIXME: we should either both make the detector model (PixelDetectorModel) classes or both structs
     class DetectorModelG4 {
     public:
-        ~DetectorModelG4() {
-            // FIXME: store this pointer somewhere else
-            delete parameterization_;
-        }
-
         // Wrapper for the whole detector in the world model (invisible)
         G4LogicalVolume* wrapper_log;
         G4VPhysicalVolume* wrapper_phys;
@@ -53,7 +48,7 @@ namespace allpix {
         G4LogicalVolume* pixel_log;
 
         // FIXME: do we want to save this one?
-        BumpsParameterizationG4* parameterization_;
+        std::unique_ptr<BumpsParameterizationG4> parameterization_;
     };
 } // namespace allpix
 

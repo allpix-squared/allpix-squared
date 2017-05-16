@@ -5,12 +5,15 @@
 #include "VisualizationGeant4Module.hpp"
 
 #include <cstdlib>
+#include <cstring>
 #include <memory>
 #include <string>
 #include <utility>
 
 #include <G4RunManager.hh>
-#include <G4UIExecutive.hh>
+#ifdef G4UI_USE_QT
+#include <G4UIQt.hh>
+#endif
 #include <G4UImanager.hh>
 #include <G4UIsession.hh>
 #include <G4UIterminal.hh>
@@ -21,7 +24,7 @@
 using namespace allpix;
 
 VisualizationGeant4Module::VisualizationGeant4Module(Configuration config, Messenger*, GeometryManager*)
-    : config_(std::move(config)), has_run_(false), vis_manager_g4_(nullptr), ui_window_(nullptr) {}
+    : config_(std::move(config)), has_run_(false), vis_manager_g4_(nullptr), gui_session_(nullptr) {}
 VisualizationGeant4Module::~VisualizationGeant4Module() {
     if(!has_run_ && vis_manager_g4_ != nullptr && vis_manager_g4_->GetCurrentViewer() != nullptr) {
         LOG(DEBUG) << "Invoking VRML workaround to prevent visualization under error conditions";
@@ -40,7 +43,7 @@ VisualizationGeant4Module::~VisualizationGeant4Module() {
 
 void VisualizationGeant4Module::init() {
     // suppress all geant4 output
-    SUPPRESS_STREAM(G4cout);
+    // SUPPRESS_STREAM(G4cout);
 
     // check if we have a running G4 manager
     G4RunManager* run_manager_g4 = G4RunManager::GetRunManager();
@@ -49,16 +52,22 @@ void VisualizationGeant4Module::init() {
         throw ModuleError("Cannot visualize using Geant4 without a Geant4 geometry builder");
     }
 
-    // FIXME: workaround
     if(config_.has("use_gui")) {
-        // FIXME: workaround
-        char* str = const_cast<char*>(""); // NOLINT
-        ui_window_ = std::make_unique<G4UIExecutive>(1, &str);
+#ifdef G4UI_USE_QT
+        // Need to provide parameters, simulate this behaviour
+        session_param_ = std::make_unique<char[]>(strlen(ALLPIX_PROJECT_NAME) + 1);
+        strcpy(session_param_.get(), ALLPIX_PROJECT_NAME); // NOLINT
+        char* param_pointer = session_param_.get();
+        gui_session_ = std::make_unique<G4UIQt>(1, &param_pointer);
+#else
+        throw InvalidValueError(
+            config_, "use_gui", "GUI session cannot be started because Qt is not available in this Geant4");
+#endif
     }
 
     // initialize the session and the visualization manager
     LOG(INFO) << "Initializing visualization";
-    vis_manager_g4_ = std::make_unique<G4VisExecutive>("all");
+    vis_manager_g4_ = std::make_unique<G4VisExecutive>("quiet");
     vis_manager_g4_->Initialize();
 
     // execute standard commands
@@ -115,15 +124,16 @@ void VisualizationGeant4Module::run(unsigned int) {
 // display the visualization after all events have passed
 void VisualizationGeant4Module::finalize() {
     // flush the view or open an interactive session depending on settings
-    if(config_.get("interactive", false)) {
-        std::unique_ptr<G4UIsession> session = std::make_unique<G4UIterminal>();
-        session->SessionStart();
+    if(config_.has("use_gui")) {
+        LOG(INFO) << "Starting visualization session";
+        gui_session_->SessionStart();
     } else {
-        if(config_.has("use_gui")) {
-            LOG(INFO) << "Starting visualization session";
-            ui_window_->SessionStart();
+        if(config_.get("interactive", false)) {
+            LOG(INFO) << "Starting terminal session";
+            std::unique_ptr<G4UIsession> session = std::make_unique<G4UIterminal>();
+            session->SessionStart();
         } else {
-            LOG(INFO) << "Starting visualization viewer";
+            LOG(INFO) << "Starting viewer";
             vis_manager_g4_->GetCurrentViewer()->ShowView();
         }
     }

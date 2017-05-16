@@ -13,18 +13,15 @@
 
 #include "core/messenger/Message.hpp"
 
+#include "Object.hpp"
+
 namespace allpix {
     // type of the deposits
     // FIXME: better name here?
-    class SensorCharge {
+    class SensorCharge : public Object {
     public:
         // constructor and destructor
         SensorCharge(ROOT::Math::XYZPoint position, unsigned int charge);
-        virtual ~SensorCharge();
-
-        // copy behaviour
-        SensorCharge(const SensorCharge&);
-        SensorCharge& operator=(const SensorCharge&);
 
         // FIXME: should position be in local coordinates or global coordinates?
         ROOT::Math::XYZPoint getPosition() const;

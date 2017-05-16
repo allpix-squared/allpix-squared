@@ -1,5 +1,8 @@
 /**
- *  @author Koen Wolters <koen.wolters@cern.ch>
+ * @file
+ * @brief Implementation of geometry manager
+ *
+ * @copyright MIT License
  */
 
 #include <memory>
@@ -12,27 +15,29 @@
 
 using namespace allpix;
 
-// Constructor and destructor
-GeometryManager::GeometryManager() : detectors_(), detector_names_() {}
-GeometryManager::~GeometryManager() = default;
+GeometryManager::GeometryManager() = default;
 
-// Add detector to the system
-void GeometryManager::addDetector(std::shared_ptr<Detector> det) {
-    if(detector_names_.find(det->getName()) != detector_names_.end()) {
-        throw DetectorNameExistsError(det->getName());
+/**
+ * @throws DetectorNameExistsError If the detector name is already registered before
+ */
+void GeometryManager::addDetector(std::shared_ptr<Detector> detector) {
+    if(detector_names_.find(detector->getName()) != detector_names_.end()) {
+        throw DetectorNameExistsError(detector->getName());
     }
 
-    detector_names_.insert(det->getName());
-    detectors_.push_back(std::move(det));
+    detector_names_.insert(detector->getName());
+    detectors_.push_back(std::move(detector));
 }
 
-// Get detectors
 std::vector<std::shared_ptr<Detector>> GeometryManager::getDetectors() const {
     return detectors_;
 }
 
-// FIXME: this is not a very nice way to do this
+/**
+ * @throws InvalidDetectorError If a detector with this name does not exist
+ */
 std::shared_ptr<Detector> GeometryManager::getDetector(const std::string& name) const {
+    // FIXME: this is not a very nice way to implement this
     for(auto& detector : detectors_) {
         if(detector->getName() == name) {
             return detector;
@@ -40,6 +45,9 @@ std::shared_ptr<Detector> GeometryManager::getDetector(const std::string& name) 
     }
     throw allpix::InvalidDetectorError("name", name);
 }
+/**
+ * @throws InvalidDetectorError If not a single detector with this type exists
+ */
 std::vector<std::shared_ptr<Detector>> GeometryManager::getDetectorsByType(const std::string& type) const {
     std::vector<std::shared_ptr<Detector>> result;
     for(auto& detector : detectors_) {

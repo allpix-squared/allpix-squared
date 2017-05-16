@@ -32,6 +32,10 @@ namespace allpix {
         SensitiveDetectorActionG4(const SensitiveDetectorActionG4&) = delete;
         SensitiveDetectorActionG4& operator=(const SensitiveDetectorActionG4&) = delete;
 
+        // Default move
+        SensitiveDetectorActionG4(SensitiveDetectorActionG4&&) = default;
+        SensitiveDetectorActionG4& operator=(SensitiveDetectorActionG4&&) = default;
+
         // Initialize events, process the hits and handle end of event
         G4bool ProcessHits(G4Step*, G4TouchableHistory*) override;
         void EndOfEvent(G4HCofThisEvent*) override;

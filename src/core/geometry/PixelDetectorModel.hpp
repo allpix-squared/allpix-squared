@@ -1,5 +1,8 @@
 /**
- *  @author Koen Wolters <koen.wolters@cern.ch>
+ * @file
+ * @brief Parameters of a pixel detector model
+ *
+ * @copyright MIT License
  */
 
 #ifndef ALLPIX_PIXEL_DETECTOR_H
@@ -16,17 +19,20 @@
 
 #include "DetectorModel.hpp"
 
+// TODO [doc] This class is fully documented later when it is cleaned up further
+
 namespace allpix {
 
+    /**
+     * @ingroup DetectorModels
+     * @brief Model of a pixel detector (a detector that contains pixels)
+     */
+    // TODO [doc] This class will be renamed
     class PixelDetectorModel : public DetectorModel {
     public:
         // Constructor and destructor
         explicit PixelDetectorModel(std::string type)
-            : DetectorModel(type), number_of_pixels_(1, 1), pixel_size_(), sensor_offset_(), chip_size_(), chip_offset_(),
-              pcb_size_(), bump_sphere_radius_(0.0), bump_height_(0.0), bump_offset_(), bump_cylinder_radius_(0.0),
-              guard_ring_excess_top_(), guard_ring_excess_bottom_(), guard_ring_excess_right_(), guard_ring_excess_left_(),
-              coverlayer_height_(0.0), coverlayer_material_("Al"), has_coverlayer_(false) {}
-        ~PixelDetectorModel() override = default;
+            : DetectorModel(std::move(type)), number_of_pixels_(1, 1), coverlayer_material_("Al"), has_coverlayer_(false) {}
 
         /* Coordinate definitions
          * NOTE: center is at the middle of the first pixel at half z
@@ -174,18 +180,18 @@ namespace allpix {
 
         ROOT::Math::XYZVector pcb_size_;
 
-        double bump_sphere_radius_;
-        double bump_height_;
+        double bump_sphere_radius_{};
+        double bump_height_{};
         ROOT::Math::XYVector bump_offset_;
-        double bump_cylinder_radius_;
+        double bump_cylinder_radius_{};
 
         // FIXME: use a 4D vector here?
-        double guard_ring_excess_top_;
-        double guard_ring_excess_bottom_;
-        double guard_ring_excess_right_;
-        double guard_ring_excess_left_;
+        double guard_ring_excess_top_{};
+        double guard_ring_excess_bottom_{};
+        double guard_ring_excess_right_{};
+        double guard_ring_excess_left_{};
 
-        double coverlayer_height_;
+        double coverlayer_height_{};
         std::string coverlayer_material_;
         bool has_coverlayer_;
     };

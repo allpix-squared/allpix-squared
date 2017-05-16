@@ -1,5 +1,7 @@
 /**
- *  @author Koen Wolters <koen.wolters@cern.ch>
+ * @file
+ * @brief Keeping track of the global geometry of independent detectors
+ * @copyright MIT License
  */
 
 #ifndef ALLPIX_GEOMETRY_MANAGER_H
@@ -14,28 +16,69 @@
 
 namespace allpix {
 
+    /**
+     * @ingroup Managers
+     * @brief Manager responsible for the global geometry
+     *
+     * The framework defines the geometry as a set of independent instances of a \ref Detector "detector". Each independent
+     * detector has a \ref DetectorModel "detector model".
+     */
     class GeometryManager {
     public:
-        // Constructor and destructors
+        /**
+         * @brief Construct the geometry manager
+         */
         GeometryManager();
-        virtual ~GeometryManager();
+        /**
+         * @brief Use default destructor
+         */
+        ~GeometryManager() = default;
 
-        // Disallow copy
+        /// @{
+        /**
+         * @brief Copying the manager is not allowed
+         */
         GeometryManager(const GeometryManager&) = delete;
         GeometryManager& operator=(const GeometryManager&) = delete;
+        /// @}
 
-        // Get internal representation
-        // FIXME: this is not very elegant, but it is probably the only option (possible use a in-between type?)
-        void setInternalDescription(std::string, void*);
-        void* getInternalDescription(std::string);
+        /// @{
+        /**
+         * @brief Use default move behaviour
+         */
+        GeometryManager(GeometryManager&&) noexcept = default;
+        GeometryManager& operator=(GeometryManager&&) noexcept = default;
+        /// @}
 
-        // Add detector to the system
-        void addDetector(std::shared_ptr<Detector>);
+        /**
+         * @brief Add a detector to the global geometry
+         * @param detector Pointer to the detector to add to the geometry
+         */
+        void addDetector(std::shared_ptr<Detector> detector);
 
-        // Get detectors
+        /**
+         * @brief Get all detectors in the geometry
+         * @returns List of all detectors
+         */
         std::vector<std::shared_ptr<Detector>> getDetectors() const;
-        std::shared_ptr<Detector> getDetector(const std::string&) const;
-        std::vector<std::shared_ptr<Detector>> getDetectorsByType(const std::string&) const;
+
+        /**
+         * @brief Get a detector by its name
+         * @param name Name of the detector to search for
+         * @returns Return the detector if it exists (an error is raised if it does not)
+         * @warning This method should not be used to check if a detector name exists
+         */
+        // TODO [doc] Add a has detector
+        std::shared_ptr<Detector> getDetector(const std::string& name) const;
+
+        /**
+         * @brief Get all detectors in the geometry of a particular model type
+         * @param type Type of the detector model to search for
+         * @returns List of all detectors of a particular type (an error is raised if none exist)
+         * @warning This method should not be used to check if an instantiation of a model exists
+         */
+        // TODO [doc] Add a type exists in geometry?
+        std::vector<std::shared_ptr<Detector>> getDetectorsByType(const std::string& type) const;
 
     private:
         std::vector<std::shared_ptr<Detector>> detectors_;

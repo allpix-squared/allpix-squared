@@ -1,6 +1,14 @@
-/**
- *  @author Koen Wolters <koen.wolters@cern.ch>
+/** @file
+ *  @brief Interface to the core framework
+ *  @copyright MIT License
  */
+
+// GLOBAL DOXYGEN DEFINITIONS
+/**
+ * @defgroup Managers Managers
+ * @brief The global set of managers used in framework
+ */
+// END DEFINITIONS
 
 #ifndef ALLPIX_ALLPIX_H
 #define ALLPIX_ALLPIX_H
@@ -14,29 +22,48 @@
 #include "module/ModuleManager.hpp"
 
 namespace allpix {
+    /**
+     * @brief Provides the link between the core framework and the executable.
+     *
+     * Supply the path location the main configuration which should be provided to the executable. Hereafter this class
+     * should be used to load, initialize, run and finalize all the modules.
+     */
 
     class AllPix {
     public:
-        // Constructor and destructor
-        explicit AllPix(std::string name);
+        /**
+         * @brief Constructs an object with the location of the main configuration
+         * @param file_name Path of the main configuration file
+         */
+        explicit AllPix(std::string file_name);
 
-        // Apply default configuration and load all modules
+        /**
+         * @brief Load modules from the main configuration and construct them
+         */
         void load();
 
-        // Initialize all modules (pre-run)
+        /**
+         * @brief Initialize all modules (pre-run)
+         */
         void init();
 
-        // Run all modules for the amount of events (event)
+        /**
+         * @brief Run all modules for the number of events (run)
+         */
         void run();
 
-        // Finalize all modules (post-run)
+        /**
+         * @brief Finalize all modules (post-run)
+         */
         void finalize();
 
     private:
-        // Set the default unit conventions in AllPix
+        /**
+         * @brief Sets the default unit conventions
+         */
         void add_units();
 
-        // Managers
+        // All managers in the framework
         std::unique_ptr<ConfigManager> conf_mgr_;
         std::unique_ptr<ModuleManager> mod_mgr_;
         std::unique_ptr<GeometryManager> geo_mgr_;

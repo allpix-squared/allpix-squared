@@ -23,7 +23,6 @@ namespace allpix {
     public:
         // constructor should take a pointer to the Configuration, the Messenger and the Geometry Manager
         TestDepositReaderModule(Configuration, Messenger*, GeometryManager*);
-        ~TestDepositReaderModule() override;
 
         // show the deposition results
         void run(unsigned int) override;

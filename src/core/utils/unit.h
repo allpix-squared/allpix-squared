@@ -1,5 +1,7 @@
-/*
- * Support for units
+/**
+ * @file
+ * @brief System to support units in the framework
+ * @copyright MIT License
  */
 
 #ifndef ALLPIX_UNIT_H
@@ -10,57 +12,107 @@
 #include <string>
 #include <utility>
 
+// TODO [doc] Check if this class can be constexpressed?
+
 namespace allpix {
 
-    // FIXME: a lowercase namespace instead?
+    /**
+     * @brief Static class to access units
+     * @see The list of framework units defined in \ref AllPix::add_units
+     *
+     * Units are short, unique and case-insensitive strings that indicate a particular multiplication factor from the base
+     * unit in the framework. The unit system can convert external types to the system units and vise-versa for displaying
+     * purposes. Inside the framework only the defaults unit should be used, either directly or through a direct conversion.
+     */
     class Units {
     public:
+        /**
+         * @brief Type used to store the units
+         */
         using UnitType = long double;
 
-        // allow only static access : delete constructor
+        /**
+         * @brief Delete default constructor (only static access)
+         */
         Units() = delete;
 
-        // add a new unit
+        /**
+         * @brief Add a new unit to the system
+         * @param str Identifier of the unit
+         * @param value Multiplication factor from the base unit
+         */
         static void add(std::string str, UnitType value);
 
-        // get a single unit
+        /**
+         * @brief Get value of a single unit in the base units
+         * @param str Name of the unit
+         * @return Value in the base unit
+         */
+        // TODO [doc] This function should likely be removed
         static UnitType getSingle(std::string str);
+        /**
+         * @brief Get single input parameter in the base units
+         * @param inp Value in a particular unit
+         * @param str Name of that particular unit
+         * @return Value in the base unit
+         */
+        // TODO [doc] This function should likely be removed
         template <typename T> static T getSingle(T inp, std::string str);
+        /**
+         * @brief Get single input parameter in the inverse of the base units
+         * @param inp Value in a particular unit
+         * @param str Name of that particular unit
+         * @return Value in the base unit
+         */
+        // TODO [doc] This function should likely be removed
         template <typename T> static T getSingleInverse(T inp, std::string str);
 
-        // get a unit sequence
+        /**
+         * @brief Get value of a unit in the base units
+         * @param str Name of the unit
+         * @return Value in the base unit
+         * @warning Conversions should not be done with the result of this function. The \ref get(std::string) version should
+         *          be used for that purpose instead.
+         */
         static UnitType get(std::string str);
+        /**
+         * @brief Get input parameter in the base units
+         * @param inp Value in a particular unit
+         * @param str Name of that particular unit
+         * @return Value in the base unit
+         */
         template <typename T> static T get(T inp, std::string str);
+        /**
+         * @brief Get input parameter in the inverse of the base units
+         * @param inp Value in a particular unit
+         * @param str Name of that particular unit
+         * @return Value in the base unit
+         */
+        // TODO [doc] This function should likely be removed
         template <typename T> static T getInverse(T inp, std::string str);
 
-        // convert to another unit from the base unit (FIXME: confusing?)
+        /**
+         * @brief Get base unit in the requested unit
+         * @param inp Value in the base unit system
+         * @param str Name of the output unit
+         * @return Value in the requested unit
+         */
+        // TODO [doc] This should return a string with the unit attached
+        // TODO [doc] Can we change the name in something better here
         static UnitType convert(UnitType inp, std::string str);
 
     private:
         static std::map<std::string, UnitType> unit_map_;
     };
 
-    // get single input in the given unit
-    template <typename T> T Units::getSingle(T inp, std::string str) {
-        UnitType out = static_cast<UnitType>(inp) * getSingle(std::move(str));
-        if(out > static_cast<UnitType>(std::numeric_limits<T>::max()) ||
-           out < static_cast<UnitType>(std::numeric_limits<T>::lowest())) {
-            throw std::overflow_error("unit conversion overflows the type");
-        }
-        return static_cast<T>(out);
-    }
+    // TODO [doc] Move these to a separate template implementation file?
 
-    // get single input in the inverse of the given unit
-    template <typename T> T Units::getSingleInverse(T inp, std::string str) {
-        UnitType out = static_cast<UnitType>(inp) / getSingle(std::move(str));
-        if(out > static_cast<UnitType>(std::numeric_limits<T>::max()) ||
-           out < static_cast<UnitType>(std::numeric_limits<T>::lowest())) {
-            throw std::overflow_error("unit conversion overflows the type");
-        }
-        return static_cast<T>(out);
-    }
-
-    // get input in the given unit
+    /**
+     * @throws std::overflow_error If the converted unit overflows the requested type
+     *
+     * The unit type is internally converted to the type \ref Units::UnitType. After multiplying the unit, the output is
+     * checked for overflow problems before the type is converted back to the original type.
+     */
     template <typename T> T Units::get(T inp, std::string str) {
         UnitType out = static_cast<UnitType>(inp) * get(std::move(str));
         if(out > static_cast<UnitType>(std::numeric_limits<T>::max()) ||
@@ -70,7 +122,23 @@ namespace allpix {
         return static_cast<T>(out);
     }
 
-    // get input in the inverse of the given unit
+    // Getters for single and inverse units
+    template <typename T> T Units::getSingle(T inp, std::string str) {
+        UnitType out = static_cast<UnitType>(inp) * getSingle(std::move(str));
+        if(out > static_cast<UnitType>(std::numeric_limits<T>::max()) ||
+           out < static_cast<UnitType>(std::numeric_limits<T>::lowest())) {
+            throw std::overflow_error("unit conversion overflows the type");
+        }
+        return static_cast<T>(out);
+    }
+    template <typename T> T Units::getSingleInverse(T inp, std::string str) {
+        UnitType out = static_cast<UnitType>(inp) / getSingle(std::move(str));
+        if(out > static_cast<UnitType>(std::numeric_limits<T>::max()) ||
+           out < static_cast<UnitType>(std::numeric_limits<T>::lowest())) {
+            throw std::overflow_error("unit conversion overflows the type");
+        }
+        return static_cast<T>(out);
+    }
     template <typename T> T Units::getInverse(T inp, std::string str) {
         UnitType out = static_cast<UnitType>(inp) / get(std::move(str));
         if(out > static_cast<UnitType>(std::numeric_limits<T>::max()) ||

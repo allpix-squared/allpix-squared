@@ -27,7 +27,6 @@ namespace allpix {
     public:
         // constructor and destructor
         DetectorHistogrammerModule(Configuration, Messenger*, std::shared_ptr<Detector>);
-        ~DetectorHistogrammerModule() override;
 
         // create the histograms
         void init() override;
@@ -53,7 +52,7 @@ namespace allpix {
         TH1I* cluster_size;
 
         // output file
-        TFile* output_file_;
+        std::unique_ptr<TFile> output_file_;
     };
 } // namespace allpix
 

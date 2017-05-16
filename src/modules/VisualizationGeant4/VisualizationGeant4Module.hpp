@@ -13,7 +13,7 @@
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 
-class G4UIExecutive;
+class G4UIsession;
 class G4VisManager;
 
 namespace allpix {
@@ -23,6 +23,14 @@ namespace allpix {
         // constructor should take a pointer to the Configuration, the Messenger and the Geometry Manager
         VisualizationGeant4Module(Configuration config, Messenger*, GeometryManager*);
         ~VisualizationGeant4Module() override;
+
+        // Disallow copy
+        VisualizationGeant4Module(const VisualizationGeant4Module&) = delete;
+        VisualizationGeant4Module& operator=(const VisualizationGeant4Module&) = delete;
+
+        // Default move
+        VisualizationGeant4Module(VisualizationGeant4Module&&) noexcept = default;
+        VisualizationGeant4Module& operator=(VisualizationGeant4Module&&) noexcept = default;
 
         // initializes the visualization and set necessary settings to catch all the required data
         void init() override;
@@ -42,7 +50,8 @@ namespace allpix {
 
         // pointer to the visualization manager
         std::unique_ptr<G4VisManager> vis_manager_g4_;
-        std::unique_ptr<G4UIExecutive> ui_window_;
+        std::unique_ptr<G4UIsession> gui_session_;
+        std::unique_ptr<char[]> session_param_;
     };
 } // namespace allpix
 

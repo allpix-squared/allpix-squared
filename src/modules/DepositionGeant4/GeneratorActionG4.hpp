@@ -21,7 +21,6 @@ namespace allpix {
     class GeneratorActionG4 : public G4VUserPrimaryGeneratorAction {
     public:
         explicit GeneratorActionG4(const Configuration& config);
-        ~GeneratorActionG4() override;
 
         // generate the primary events
         void GeneratePrimaries(G4Event*) override;

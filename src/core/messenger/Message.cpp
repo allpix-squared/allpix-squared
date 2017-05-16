@@ -1,5 +1,8 @@
 /**
- *  @author Koen Wolters <koen.wolters@cern.ch>
+ * @file
+ * @brief Implementation of message
+ *
+ * @copyright MIT License
  */
 
 #include "Message.hpp"
@@ -9,12 +12,10 @@
 
 using namespace allpix;
 
-// constructor and destructor
-BaseMessage::BaseMessage() : detector_(nullptr) {}
+BaseMessage::BaseMessage() = default;
 BaseMessage::BaseMessage(std::shared_ptr<Detector> detector) : detector_(std::move(detector)) {}
 BaseMessage::~BaseMessage() = default;
 
-// get and set detector
 std::shared_ptr<Detector> BaseMessage::getDetector() const {
     return detector_;
 }

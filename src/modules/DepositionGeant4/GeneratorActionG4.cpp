@@ -59,7 +59,6 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     single_source->GetEneDist()->SetEnergyDisType("Mono");
     single_source->GetEneDist()->SetMonoEnergy(config.get<double>("particle_energy"));
 }
-GeneratorActionG4::~GeneratorActionG4() = default;
 
 // generate the particles
 void GeneratorActionG4::GeneratePrimaries(G4Event* event) {

@@ -24,7 +24,6 @@ namespace allpix {
     public:
         // constructor and destructor
         SimplePropagationModule(Configuration, Messenger*, std::shared_ptr<Detector>);
-        ~SimplePropagationModule() override;
 
         // init debug plots
         void init() override;

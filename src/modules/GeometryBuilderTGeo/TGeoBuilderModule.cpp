@@ -72,7 +72,7 @@ TString Print(TGeoTranslation* trl) {
 TGeoBuilderModule::TGeoBuilderModule(Configuration config, Messenger*, GeometryManager* geo_manager)
     : m_config(std::move(config)), m_geoDscMng(geo_manager), m_fillingWorldMaterial(nullptr),
       m_userDefinedWorldMaterial("Air"), m_userDefinedGeoOutputFile(""), m_buildAppliancesFlag(false), m_Appliances_type(0),
-      m_buildTestStructureFlag(false), m_vectorWrapperEnhancement(), m_posVectorAppliances() {
+      m_buildTestStructureFlag(false) {
     // read the configuration
     // FIXME: prefer to use std::string
     m_userDefinedWorldMaterial = m_config.get<TString>("world_material");
@@ -118,7 +118,6 @@ TGeoBuilderModule::TGeoBuilderModule(Configuration config, Messenger*, GeometryM
         m_geoDscMng->addDetector(detector);
     }
 }
-TGeoBuilderModule::~TGeoBuilderModule() = default;
 
 /// Run the detector construction.
 void TGeoBuilderModule::init() {

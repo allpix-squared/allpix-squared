@@ -1,8 +1,7 @@
 /**
- * AllPix logger class
- *
- * @author Simon Spannagel <simon.spannagel@cern.ch>
- * @author Koen Wolters <koen.wolters@cern.ch>
+ * @file
+ * @brief Provides a logger and macros for convenient access
+ * @copyright MIT License
  */
 
 #ifndef ALLPIX_LOG_H
@@ -19,66 +18,169 @@
 #include <vector>
 
 namespace allpix {
-    enum class LogLevel { QUIET = 0, FATAL, ERROR, WARNING, INFO, DEBUG };
-    enum class LogFormat { SHORT = 0, DEFAULT, DEBUG };
+    /**
+     * @brief Logging detail level
+     */
+    enum class LogLevel {
+        QUIET = 0, ///< Do not log at all
+        FATAL,     ///< Fatal problems that should terminate the framework (typically exceptions)
+        ERROR,     ///< Critical problems that usually lead to fatal errors
+        WARNING,   ///< Possible issue that could lead to unexpected results
+        INFO,      ///< General informational summaries of process
+        DEBUG      ///< Detailed information about process and execution
+    };
+    /**
+     * @brief Format of the logger
+     */
+    enum class LogFormat {
+        SHORT = 0, ///< Only include a single character for the log level, the section header and the message
+        DEFAULT,   ///< Also include the time and a full logging level description
+        DEBUG      ///< All of the above and also information about the file and line where the message was defined
+    };
 
+    /**
+     * @brief Logger of the framework to inform the user of process
+     *
+     * Should almost never be instantiated directly. The \ref LOG macro should be used instead to pass all the information.
+     * This leads to a cleaner interface for sending log messages.
+     */
+    // TODO [DOC] This just be renamed to Log?
     class DefaultLogger {
     public:
-        // constructors
+        /**
+         * @brief Construct a logger
+         */
         DefaultLogger();
+        /**
+         * @brief Write the output to the streams and destruct the logger
+         */
         ~DefaultLogger();
 
-        // disallow copy
+        ///@{
+        /**
+         * @brief Disable copying
+         */
         DefaultLogger(const DefaultLogger&) = delete;
         DefaultLogger& operator=(const DefaultLogger&) = delete;
+        ///@}
 
-        // get a stream for logging
+        ///@{
+        /**
+         * @brief Use default move behaviour
+         */
+        DefaultLogger(DefaultLogger&&) noexcept(false) = default;
+        DefaultLogger& operator=(DefaultLogger&&) noexcept(false) = default;
+        ///@}
+
+        /**
+         * @brief Gives a stream to write to using the C++ stream syntax
+         * @param level Logging level
+         * @param file The file name of the file containing the log message
+         * @param function The function containing the log message
+         * @param line The line number of the log message
+         * @return A C++ stream to write to
+         */
         std::ostringstream& getStream(LogLevel level = LogLevel::INFO,
                                       const std::string& file = "",
                                       const std::string& function = "",
                                       uint32_t line = 0);
 
-        // set reporting options
+        /**
+         * @brief Get the reporting level for logging
+         * @return The current log level
+         */
         static LogLevel getReportingLevel();
-        static void setReportingLevel(LogLevel);
+        /**
+         * @brief Set a new reporting level to use for logging
+         * @param level The new log level
+         */
+        static void setReportingLevel(LogLevel level);
 
-        // convert log level from/to string
+        /**
+         * @brief Convert a string to a LogLevel
+         * @param level Name of the level
+         * @return Log level corresponding to the name
+         */
         static LogLevel getLevelFromString(const std::string& level);
+        /**
+         * @brief Convert a LogLevel to a string
+         * @param level Log level
+         * @return Name corresponding to the log level
+         */
         static std::string getStringFromLevel(LogLevel level);
 
-        // set format
+        /**
+         * @brief Get the logging format
+         * @return Current log format
+         */
         static LogFormat getFormat();
-        static void setFormat(LogFormat);
+        /**
+         * @brief Set a new logging format
+         * @param format New log log format
+         */
+        static void setFormat(LogFormat format);
 
-        // convert log format from/to string
+        /**
+         * @brief Convert a string to a LogFormat
+         * @param format Name of the format
+         * @return Log format corresponding to the name
+         */
         static LogFormat getFormatFromString(const std::string& format);
+        /**
+         * @brief Convert a LogFormat to a string
+         * @param format Log format
+         * @return Name corresponding to the log format
+         */
         static std::string getStringFromFormat(LogFormat format);
 
-        // set streams (std::cerr is default)
-        // NOTE: cannot remove a stream yet
-        // WARNING: caller has to make sure that ostream exist while the logger is available
-        static void addStream(std::ostream&);
+        /**
+         * @brief Add a stream to write the log message
+         * @param stream Stream to write to
+         */
+        static void addStream(std::ostream& stream);
+        /**
+         * @brief Clear and delete all streams that the logger writes to
+         */
         static void clearStreams();
+        /**
+         * @brief Return all the streams the logger writes to
+         * @return List of all the streams used
+         */
         static const std::vector<std::ostream*>& getStreams();
 
-        // set section names
-        static void setSection(std::string);
+        /**
+         * @brief Set the section header to use from now on
+         * @param header Header to use
+         */
+        static void setSection(std::string header);
+        /**
+         * @brief Get the current section header
+         * @return Header used
+         */
         static std::string getSection();
 
     private:
-        // output stream
-        std::ostringstream os;
-
-        // amount of exceptions to prevent abort
-        int exception_count_;
-        // saved value of the indented header
-        unsigned int indent_count_;
-
-        // internal methods
-        int get_uncaught_exceptions(bool);
+        /**
+         * @brief The number of exceptions that are uncaught
+         * @param cons If true: always return zero if amount of exceptions cannot be properly determined
+         * @return Number of uncaught exceptions
+         */
+        int get_uncaught_exceptions(bool cons);
+        /**
+         * @brief Get the current date as a printable string
+         * @return Current date as a string
+         */
         std::string get_current_date();
 
-        // static save methods
+        // Output stream
+        std::ostringstream os;
+
+        // Number of exceptions to prevent abort
+        int exception_count_{};
+        // Saved value of the length of the header indent
+        unsigned int indent_count_{};
+
+        // Internal methods to store static values
         static std::string& get_section();
         static LogLevel& get_reporting_level();
         static LogFormat& get_format();
@@ -87,15 +189,26 @@ namespace allpix {
 
     using Log = DefaultLogger;
 
+/**
+ *  @brief Base name of the file without the directory
+ */
 #define __FILE_NAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 
-// execute if the log level is high enough
+/**
+ * @brief Execute a block only if the reporting level is high enough
+ * @param level The minimum log level
+ */
+// TODO [doc] rewrite to get ride of the else
 #define IFLOG(level)                                                                                                        \
     if(allpix::LogLevel::level > allpix::Log::getReportingLevel() || allpix::Log::getStreams().empty())                     \
         ;                                                                                                                   \
     else
 
-// log to streams if level is high enough
+/**
+ * @brief Create a logging stream if the reporting level is high enough
+ * @param level The log level of the stream
+ */
+// TODO [doc] rewrite to get ride of the else
 #define LOG(level)                                                                                                          \
     if(allpix::LogLevel::level > allpix::Log::getReportingLevel() || allpix::Log::getStreams().empty())                     \
         ;                                                                                                                   \
@@ -103,11 +216,19 @@ namespace allpix {
         allpix::Log().getStream(                                                                                            \
             allpix::LogLevel::level, __FILE_NAME__, std::string(static_cast<const char*>(__func__)), __LINE__)
 
-    // FIXME: this also be defined in a separate file
+    /**
+     * @brief Suppress an stream from writing any output
+     * @param stream The stream to suppress
+     */
     // suppress a (logging) stream
+    // TODO [doc] rewrite as a lowercase function in a namespace?
     inline void SUPPRESS_STREAM(std::ostream& stream) { stream.setstate(std::ios::failbit); }
 
-    // release a suppressed stream
+    /**
+     * @brief Release an suppressed stream so it can write again
+     * @param stream The stream to release
+     */
+    // TODO [doc] rewrite as a lowercase function in a namespace?
     inline void RELEASE_STREAM(std::ostream& stream) { stream.clear(); }
 } // namespace allpix
 
