@@ -50,8 +50,11 @@ namespace allpix {
 
         // pointer to the visualization manager
         std::unique_ptr<G4VisManager> vis_manager_g4_;
+
+        // sessions and params for the session
+        std::string session_param_;
+        char* session_param_ptr_;
         std::unique_ptr<G4UIsession> gui_session_;
-        std::unique_ptr<char[]> session_param_;
     };
 } // namespace allpix
 
