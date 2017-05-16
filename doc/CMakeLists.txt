@@ -23,33 +23,39 @@ ENDIF(DOXYGEN_FOUND)
 
 FIND_PACKAGE(LATEX)
 
+# Only add target if we have LaTeX
 IF(LATEX_COMPILER)
     MESSAGE(STATUS "Found LaTeX compiler.")
     SET(LATEX_COMPILER_FLAGS "-shell-escape" "-interaction=batchmode" "-file-line-error" CACHE STRING "Flags passed to latex.")
     INCLUDE(${CMAKE_SOURCE_DIR}/cmake/LATEX.cmake)
 
-    SET(LATEX_OUTPUT_PATH ${CMAKE_BINARY_DIR}/usermanual)
-    ADD_LATEX_DOCUMENT(
-        usermanual/allpix-manual.tex 
-        BIBFILES 
-        usermanual/references.bib
-        USE_BIBLATEX
-        INPUTS
-        usermanual/chapters/introduction.tex
-        usermanual/chapters/quick_start.tex
-        usermanual/chapters/installation.tex
-        usermanual/chapters/framework.tex
-        usermanual/chapters/getting_started.tex
-        usermanual/chapters/development.tex
-        usermanual/chapters/faq.tex
-        usermanual/chapters/additional.tex
-        usermanual/chapters/acknowledgements.tex
-        usermanual/appendices/design_notes.tex
-        usermanual/config.tex
-        CONFIGURE
-        usermanual/config.tex
-        EXCLUDE_FROM_ALL
-        )
+    # Check if we have biber and do not build if not
+    IF(BIBER_COMPILER)
+        SET(LATEX_OUTPUT_PATH ${CMAKE_BINARY_DIR}/usermanual)
+        ADD_LATEX_DOCUMENT(
+            usermanual/allpix-manual.tex 
+            BIBFILES 
+            usermanual/references.bib
+            USE_BIBLATEX
+            INPUTS
+            usermanual/chapters/introduction.tex
+            usermanual/chapters/quick_start.tex
+            usermanual/chapters/installation.tex
+            usermanual/chapters/framework.tex
+            usermanual/chapters/getting_started.tex
+            usermanual/chapters/development.tex
+            usermanual/chapters/faq.tex
+            usermanual/chapters/additional.tex
+            usermanual/chapters/acknowledgements.tex
+            usermanual/appendices/design_notes.tex
+            usermanual/config.tex
+            CONFIGURE
+            usermanual/config.tex
+            EXCLUDE_FROM_ALL
+            )
+    ELSE()
+        MESSAGE(WARNING "No biber command, cannot compile user manual.")
+    ENDIF()
 ELSE(LATEX_COMPILER)
-    MESSAGE(STATUS "No LaTeX found, cannot compile user manual.")
+    MESSAGE(WARNING "No LaTeX found, cannot compile user manual.")
 ENDIF(LATEX_COMPILER)

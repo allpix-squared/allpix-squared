@@ -53,10 +53,10 @@ void VisualizationGeant4Module::init() {
     }
 
     if(config_.has("use_gui")) {
-#ifdef G4UI_USE_QT
         // Need to provide parameters, simulate this behaviour
         session_param_ = ALLPIX_PROJECT_NAME;
-        session_param_ptr_ = const_cast<char*>(session_param_.data()); // NOLINT
+        session_param_ptr_ = const_cast<char*>(session_param_.data());
+#ifdef G4UI_USE_QT
         gui_session_ = std::make_unique<G4UIQt>(1, &session_param_ptr_);
 #else
         throw InvalidValueError(
