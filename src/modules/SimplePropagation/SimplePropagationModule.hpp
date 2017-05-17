@@ -17,6 +17,7 @@
 #include "core/module/Module.hpp"
 
 #include "objects/DepositedCharge.hpp"
+#include "objects/PropagatedCharge.hpp"
 
 namespace allpix {
     // define the module to inherit from the module base class
@@ -58,7 +59,7 @@ namespace allpix {
         std::shared_ptr<DepositedChargeMessage> deposits_message_;
 
         // debug list of points to plot
-        std::vector<std::pair<long double, std::vector<ROOT::Math::XYZPoint>>> debug_plot_points_;
+        std::vector<std::pair<PropagatedCharge, std::vector<ROOT::Math::XYZPoint>>> debug_plot_points_;
         TFile* debug_file_;
     };
 
