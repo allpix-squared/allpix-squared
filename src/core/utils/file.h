@@ -152,7 +152,7 @@ namespace allpix {
      */
     inline void remove_path(std::string path) {
         bool status = nftw(path.c_str(),
-                           [](const char* path, const struct stat*, int, struct FTW*) { return remove(path); },
+                           [](const char* remove_path, const struct stat*, int, struct FTW*) { return remove(remove_path); },
                            64,
                            FTW_DEPTH);
 

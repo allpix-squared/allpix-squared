@@ -169,7 +169,7 @@ void SimplePropagationModule::create_debug_plots(unsigned int event_num) {
     auto animation_time =
         static_cast<unsigned int>(std::round((Units::convert(config_.get<long double>("debug_plots_step"), "ms") / 10.0) *
                                              config_.get<long double>("debug_plots_animation_time_scaling", 1e9)));
-    unsigned int plot_idx = 0;
+    unsigned long plot_idx = 0;
     unsigned int point_cnt = 0;
     while(point_cnt < tot_point_cnt) {
         TPolyMarker3D markers;
