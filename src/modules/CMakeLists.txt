@@ -42,6 +42,9 @@ ALLPIX_BUILD_MODULE(SimplePropagation)
 # transfer
 ALLPIX_BUILD_MODULE(SimpleTransfer)
 
+# digitization
+ALLPIX_BUILD_MODULE(DefaultDigitizer)
+
 # visualization
 ALLPIX_BUILD_MODULE(VisualizationGeant4)
 
