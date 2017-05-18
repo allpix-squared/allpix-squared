@@ -7,12 +7,14 @@
 #ifndef ALLPIX_FILE_H
 #define ALLPIX_FILE_H
 
+#include <climits>
 #include <cstdlib>
 #include <cstring>
 #include <stdexcept>
 #include <string>
 
 #include <dirent.h>
+#include <ftw.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -138,6 +140,24 @@ namespace allpix {
             }
 
             pos++;
+        }
+    }
+
+    /**
+     * @brief Recursively removes a path from the file system
+     * @param path Path to the top directory to remove
+     * @throws std::invalid_argument If the path cannot be removed
+     *
+     * All the required directories are deleted recursively from the top-directory (use this with caution).
+     */
+    inline void remove_path(std::string path) {
+        bool status = nftw(path.c_str(),
+                           [](const char* remove_path, const struct stat*, int, struct FTW*) { return remove(remove_path); },
+                           64,
+                           FTW_DEPTH);
+
+        if(status != 0) {
+            throw std::invalid_argument("path cannot be completely deleted");
         }
     }
 }

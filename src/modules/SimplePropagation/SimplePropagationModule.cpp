@@ -19,18 +19,23 @@
 #include <Math/Vector3D.h>
 #include <TCanvas.h>
 #include <TFile.h>
+#include <TH2F.h>
 #include <TH3F.h>
 #include <TPolyLine3D.h>
+#include <TPolyMarker3D.h>
+#include <TStyle.h>
 
 #include <iostream>
 
 #include "core/config/Configuration.hpp"
 #include "core/messenger/Messenger.hpp"
+#include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "core/utils/random.h"
 #include "core/utils/unit.h"
 #include "tools/runge_kutta.h"
 
+#include "objects/DepositedCharge.hpp"
 #include "objects/PropagatedCharge.hpp"
 
 using namespace allpix;
@@ -56,7 +61,11 @@ SimplePropagationModule::SimplePropagationModule(Configuration config,
     config_.setDefault<double>("timestep_min", Units::get(0.0005, "ns"));
     config_.setDefault<double>("timestep_max", Units::get(0.1, "ns"));
     config_.setDefault<unsigned int>("charge_per_step", 10);
+
     config_.setDefault<bool>("debug_plots", false);
+    config_.setDefault<bool>("debug_plots_use_pixel_units", false);
+    config_.setDefault<double>("debug_plots_theta", 0.0f);
+    config_.setDefault<double>("debug_plots_phi", 0.0f);
 }
 
 // init debug plots
@@ -67,8 +76,299 @@ void SimplePropagationModule::init() {
     }
 }
 
+void SimplePropagationModule::create_debug_plots(unsigned int event_num) {
+    LOG(DEBUG) << "Writing debug plots";
+
+    // enable prefer GL
+    gStyle->SetCanvasPreferGL(kTRUE);
+
+    // goto the file
+    debug_file_->cd();
+
+    // convert to pixel units if necessary
+    if(config_.get<bool>("debug_plots_use_pixel_units")) {
+        for(auto& deposit_points : debug_plot_points_) {
+            for(auto& point : deposit_points.second) {
+                point.SetX((point.x() / model_->getPixelSizeX()) + 1);
+                point.SetY((point.y() / model_->getPixelSizeY()) + 1);
+            }
+        }
+    }
+
+    // calculate the axis limits
+    double minX = FLT_MAX, maxX = FLT_MIN;
+    double minY = FLT_MAX, maxY = FLT_MIN;
+    unsigned long tot_point_cnt = 0;
+    long double start_time = std::numeric_limits<long double>::max();
+    unsigned int total_charge = 0;
+    for(auto& deposit_points : debug_plot_points_) {
+        for(auto& point : deposit_points.second) {
+            minX = std::min(minX, point.x());
+            maxX = std::max(maxX, point.x());
+
+            minY = std::min(minY, point.y());
+            maxY = std::max(maxY, point.y());
+        }
+        start_time = std::min(start_time, deposit_points.first.getEventTime());
+        total_charge += deposit_points.first.getCharge();
+
+        tot_point_cnt += deposit_points.second.size();
+    }
+
+    // create a frame for proper axis alignment
+    double centerX = (minX + maxX) / 2.0;
+    double centerY = (minY + maxY) / 2.0;
+
+    // use equal axis if specified
+    if(config_.get<bool>("debug_plots_use_equal_scaling", true)) {
+        if(config_.get<bool>("debug_plots_use_pixel_units")) {
+            minX = centerX - model_->getSensorSizeZ() / model_->getPixelSizeX() / 2.0;
+            maxX = centerX + model_->getSensorSizeZ() / model_->getPixelSizeY() / 2.0;
+
+            minY = centerY - model_->getSensorSizeZ() / model_->getPixelSizeX() / 2.0;
+            maxY = centerY + model_->getSensorSizeZ() / model_->getPixelSizeY() / 2.0;
+        } else {
+            minX = centerX - model_->getSensorSizeZ() / 2.0;
+            maxX = centerX + model_->getSensorSizeZ() / 2.0;
+
+            minY = centerY - model_->getSensorSizeZ() / 2.0;
+            maxY = centerY + model_->getSensorSizeZ() / 2.0;
+        }
+    }
+
+    // create global frame
+    auto* histogram_frame = new TH3F(("frame_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
+                                     "",
+                                     10,
+                                     minX,
+                                     maxX,
+                                     10,
+                                     minY,
+                                     maxY,
+                                     10,
+                                     model_->getSensorMinZ(),
+                                     model_->getSensorMinZ() + model_->getSensorSizeZ());
+    histogram_frame->SetStats(false);
+
+    // create the line plot canvas
+    auto canvas = std::make_unique<TCanvas>(("line_plot_" + std::to_string(event_num)).c_str(),
+                                            ("Propagation of charge for event " + std::to_string(event_num)).c_str(),
+                                            1280,
+                                            1024);
+    canvas->cd();
+    canvas->SetTheta(config_.get<float>("debug_plots_theta") * 180.0f / Pi());
+    canvas->SetPhi(config_.get<float>("debug_plots_phi") * 180.0f / Pi());
+
+    // draw the frame
+    histogram_frame->Draw();
+
+    // loop over all point sets
+    std::vector<std::unique_ptr<TPolyLine3D>> lines;
+    short current_color = 1;
+    std::vector<short> colors;
+    for(auto& deposit_points : debug_plot_points_) {
+        auto line = std::make_unique<TPolyLine3D>();
+        for(auto& point : deposit_points.second) {
+            line->SetNextPoint(point.x(), point.y(), point.z());
+        }
+        // plot all lines with at least three points with different color
+        if(line->GetN() >= 3) {
+            line->SetLineColor(current_color);
+            colors.push_back(current_color);
+            line->Draw("same");
+            current_color = static_cast<short>((static_cast<int>(current_color) + 10) % 101);
+        } else {
+            colors.push_back(0);
+        }
+        lines.push_back(std::move(line));
+    }
+
+    // draw and write canvas to file
+    canvas->Draw();
+    canvas->Write();
+    lines.clear();
+
+    // create gif animation of process
+    canvas = std::make_unique<TCanvas>(("animation_" + std::to_string(event_num)).c_str(),
+                                       ("Propagation of charge for event " + std::to_string(event_num)).c_str(),
+                                       1280,
+                                       1024);
+    canvas->cd();
+
+    // change axis labels if close to zero or pi as they look different here
+    if(std::fabs(config_.get<double>("debug_plots_theta") / (Pi() / 2.0) -
+                 std::round(config_.get<double>("debug_plots_theta") / (Pi() / 2.0))) < 1e-6 ||
+       std::fabs(config_.get<double>("debug_plots_phi") / (Pi() / 2.0) -
+                 std::round(config_.get<double>("debug_plots_phi") / (Pi() / 2.0))) < 1e-6) {
+        histogram_frame->GetXaxis()->SetLabelOffset(-0.1f);
+        histogram_frame->GetYaxis()->SetLabelOffset(-0.1f);
+    }
+    histogram_frame->GetXaxis()->SetTitleOffset(2.0f);
+    histogram_frame->GetYaxis()->SetTitleOffset(2.0f);
+    histogram_frame->GetZaxis()->SetTitleOffset(2.0f);
+
+    // draw frame
+    histogram_frame->Draw();
+
+    // create the contour histogram
+    std::vector<std::string> file_name_contour;
+    std::vector<TH2F*> histogram_contour;
+    file_name_contour.push_back(getOutputPath("contourX" + std::to_string(event_num) + ".gif"));
+    histogram_contour.push_back(new TH2F(("contourX_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
+                                         "",
+                                         100,
+                                         minY,
+                                         maxY,
+                                         100,
+                                         model_->getSensorMinZ(),
+                                         model_->getSensorMinZ() + model_->getSensorSizeZ()));
+    file_name_contour.push_back(getOutputPath("contourY" + std::to_string(event_num) + ".gif"));
+    histogram_contour.push_back(new TH2F(("contourY_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
+                                         "",
+                                         100,
+                                         minX,
+                                         maxX,
+                                         100,
+                                         model_->getSensorMinZ(),
+                                         model_->getSensorMinZ() + model_->getSensorSizeZ()));
+    file_name_contour.push_back(getOutputPath("contourZ" + std::to_string(event_num) + ".gif"));
+    histogram_contour.push_back(new TH2F(
+        ("contourZ_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(), "", 100, minX, maxX, 100, minY, maxY));
+
+    // delete previous output files
+    std::string file_name_anim = getOutputPath("animation" + std::to_string(event_num) + ".gif");
+    try {
+        remove_path(file_name_anim);
+        for(size_t i = 0; i < 3; ++i) {
+            remove_path(file_name_contour[i]);
+            histogram_contour[i]->SetStats(false);
+        }
+    } catch(std::invalid_argument&) {
+        throw ModuleError("Cannot overwite gif animation");
+    }
+
+    // create animation of moving charges
+    auto animation_time =
+        static_cast<unsigned int>(std::round((Units::convert(config_.get<long double>("debug_plots_step"), "ms") / 10.0) *
+                                             config_.get<long double>("debug_plots_animation_time_scaling", 1e9)));
+    unsigned long plot_idx = 0;
+    unsigned int point_cnt = 0;
+    while(point_cnt < tot_point_cnt) {
+        std::vector<std::unique_ptr<TPolyMarker3D>> markers;
+        unsigned long min_idx_diff = std::numeric_limits<unsigned long>::max();
+
+        canvas->Clear();
+        TPad pad("pad", "pad", 0.05, 0.05, 0.95, 0.95);
+        pad.SetTheta(config_.get<float>("debug_plots_theta") * 180.0f / Pi());
+        pad.SetPhi(config_.get<float>("debug_plots_phi") * 180.0f / Pi());
+        pad.SetLeftMargin(200.0);
+        pad.SetBottomMargin(200.0);
+        pad.Draw();
+        pad.cd();
+        histogram_frame->SetTitle("Charge propagation in sensor");
+        histogram_frame->GetXaxis()->SetTitle(
+            (std::string("x ") + (config_.get<bool>("debug_plots_use_pixel_units") ? "(pixels)" : "(mm)")).c_str());
+        histogram_frame->GetYaxis()->SetTitle(
+            (std::string("y ") + (config_.get<bool>("debug_plots_use_pixel_units") ? "(pixels)" : "(mm)")).c_str());
+        histogram_frame->GetZaxis()->SetTitle("z (mm)");
+        histogram_frame->Draw();
+
+        for(auto& deposit_points : debug_plot_points_) {
+            auto points = deposit_points.second;
+
+            auto diff = static_cast<unsigned long>(std::round((deposit_points.first.getEventTime() - start_time) /
+                                                              config_.get<long double>("debug_plots_step")));
+            if(static_cast<long>(plot_idx) - static_cast<long>(diff) < 0) {
+                min_idx_diff = std::min(min_idx_diff, diff - plot_idx);
+                continue;
+            }
+            auto idx = plot_idx - diff;
+            if(idx >= points.size()) {
+                continue;
+            }
+            min_idx_diff = 0;
+
+            auto marker = std::make_unique<TPolyMarker3D>();
+            marker->SetMarkerStyle(kFullCircle);
+            marker->SetMarkerSize(static_cast<float>(deposit_points.first.getCharge()) /
+                                  config_.get<float>("charge_per_step"));
+            marker->SetNextPoint(points[idx].x(), points[idx].y(), points[idx].z());
+            marker->Draw();
+            markers.push_back(std::move(marker));
+
+            histogram_contour[0]->Fill(points[idx].y(), points[idx].z(), deposit_points.first.getCharge());
+            histogram_contour[1]->Fill(points[idx].x(), points[idx].z(), deposit_points.first.getCharge());
+            histogram_contour[2]->Fill(points[idx].x(), points[idx].y(), deposit_points.first.getCharge());
+            ++point_cnt;
+        }
+
+        if(min_idx_diff != 0) {
+            canvas->Print((file_name_anim + "+100").c_str());
+            plot_idx += min_idx_diff;
+        } else {
+            // print animation
+            if(point_cnt < tot_point_cnt - 1) {
+                canvas->Print((file_name_anim + "+" + std::to_string(animation_time)).c_str());
+            } else {
+                canvas->Print((file_name_anim + "++100").c_str());
+            }
+
+            // draw and print contour histograms
+            for(size_t i = 0; i < 3; ++i) {
+                canvas->Clear();
+                histogram_contour[i]->SetTitle(
+                    (std::string("Contour of charge propagation projected on the ") + static_cast<char>('X' + i) + "-axis")
+                        .c_str());
+                histogram_contour[i]->GetXaxis()->SetTitleOffset(1.25f);
+                histogram_contour[i]->GetYaxis()->SetTitleOffset(1.25f);
+                switch(i) {
+                case 0 /* x */:
+                    histogram_contour[i]->GetXaxis()->SetTitle(
+                        (std::string("x ") + (config_.get<bool>("debug_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
+                            .c_str());
+                    histogram_contour[i]->GetYaxis()->SetTitle("z (mm)");
+                    break;
+                case 1 /* y */:
+                    histogram_contour[i]->GetXaxis()->SetTitle(
+                        (std::string("y ") + (config_.get<bool>("debug_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
+                            .c_str());
+                    histogram_contour[i]->GetYaxis()->SetTitle("z (mm)");
+                    break;
+                case 2 /* z */:
+                    histogram_contour[i]->GetXaxis()->SetTitle(
+                        (std::string("x ") + (config_.get<bool>("debug_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
+                            .c_str());
+                    histogram_contour[i]->GetYaxis()->SetTitle(
+                        (std::string("y ") + (config_.get<bool>("debug_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
+                            .c_str());
+                    break;
+                default:;
+                }
+                histogram_contour[i]->SetMinimum(1);
+                histogram_contour[i]->SetMaximum(total_charge / 100);
+                histogram_contour[i]->Draw("CONTZ 0");
+                if(point_cnt < tot_point_cnt - 1) {
+                    canvas->Print((file_name_contour[i] + "+" + std::to_string(animation_time)).c_str());
+                } else {
+                    canvas->Print((file_name_contour[i] + "++100").c_str());
+                }
+                histogram_contour[i]->Reset();
+            }
+            ++plot_idx;
+        }
+        markers.clear();
+
+        LOG(DEBUG) << "Written " << point_cnt << " of " << tot_point_cnt << " points";
+    }
+}
+
 // run the propagation
 void SimplePropagationModule::run(unsigned int event_num) {
+    // check for electric field
+    if(!getDetector()->hasElectricField()) {
+        throw ModuleError("Cannot propagate without an electric field (add a module to read the field)");
+    }
+
     // create vector of propagated charges
     std::vector<PropagatedCharge> propagated_charges;
 
@@ -91,6 +391,11 @@ void SimplePropagationModule::run(unsigned int event_num) {
             // get position and propagate through sensor
             auto position = deposit.getPosition(); // NOTE: this is already a local position
 
+            if(config_.get<bool>("debug_plots")) {
+                debug_plot_points_.emplace_back(PropagatedCharge(position, charge_per_step, deposit.getEventTime()),
+                                                std::vector<ROOT::Math::XYZPoint>());
+            }
+
             // propagate a single charge deposit
             auto prop_pair = propagate(position);
             position = prop_pair.first;
@@ -98,78 +403,14 @@ void SimplePropagationModule::run(unsigned int event_num) {
             LOG(DEBUG) << " propagated " << charge_per_step << " to " << position << " in " << prop_pair.second << " time";
 
             // create a new propagated charge and add it to the list
-            PropagatedCharge propagated_charge(position, charge_per_step);
+            PropagatedCharge propagated_charge(position, charge_per_step, deposit.getEventTime() + prop_pair.second);
             propagated_charges.push_back(propagated_charge);
         }
     }
 
     // write debug plots if required
     if(config_.get<bool>("debug_plots")) {
-        LOG(DEBUG) << "Writing debug plots";
-
-        // goto the file
-        debug_file_->cd();
-
-        // create the main canvas
-        auto* canvas = new TCanvas(("plot_" + std::to_string(event_num)).c_str(),
-                                   ("Propagation of charge for event " + std::to_string(event_num)).c_str());
-        canvas->cd();
-
-        // calculate the axis limits
-        double minX = FLT_MAX, maxX = FLT_MIN;
-        double minY = FLT_MAX, maxY = FLT_MIN;
-        for(auto& points : debug_plot_points_) {
-            for(auto& point : points) {
-                minX = std::min(minX, point.x());
-                maxX = std::max(maxX, point.x());
-
-                minY = std::min(minY, point.y());
-                maxY = std::max(maxY, point.y());
-            }
-        }
-
-        // add a frame for proper axis alignment
-        TH3F* histogram_frame = new TH3F(("frame_" + std::to_string(event_num)).c_str(),
-                                         "",
-                                         10,
-                                         minX,
-                                         maxX,
-                                         10,
-                                         minY,
-                                         maxY,
-                                         10,
-                                         model_->getSensorMinZ(),
-                                         model_->getSensorMinZ() + model_->getSensorSizeZ());
-        histogram_frame->Draw();
-        histogram_frame->SetStats(false);
-
-        // loop over all point sets
-        std::vector<TPolyLine3D*> lines;
-        short color = 0;
-        for(auto& points : debug_plot_points_) {
-            auto line = new TPolyLine3D;
-            for(auto& point : points) {
-                line->SetNextPoint(point.x(), point.y(), point.z());
-            }
-            // plot all lines with at least three points with different color
-            if(line->GetN() >= 3) {
-                line->SetLineColor(color);
-                line->Draw("same");
-                color = static_cast<short>((static_cast<int>(color) + 10) % 101);
-            }
-            lines.push_back(line);
-        }
-
-        // draw and write canvas to file
-        canvas->Draw();
-        canvas->Write();
-
-        // delete and clear variables
-        for(auto& line : lines) {
-            delete line;
-        }
-        delete canvas;
-        debug_plot_points_.clear();
+        create_debug_plots(event_num);
     }
 
     // create a new message with propagated charges
@@ -232,11 +473,10 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const XYZPoint& r
     // continue until outside the sensor (no electric field)
     // FIXME: we need to determine what would be a good time to stop
     double last_time = std::numeric_limits<double>::lowest();
-    debug_plot_points_.emplace_back();
     while(true) {
         // update debug plots if necessary
         if(config_.get<bool>("debug_plots") && runge_kutta.getTime() - last_time > config_.get<double>("debug_plots_step")) {
-            debug_plot_points_.back().push_back(static_cast<XYZPoint>(runge_kutta.getValue()));
+            debug_plot_points_.back().second.push_back(static_cast<XYZPoint>(runge_kutta.getValue()));
             last_time = runge_kutta.getTime();
         }
 

@@ -82,6 +82,11 @@ namespace allpix {
         ROOT::Math::XYZPoint getGlobalPosition(const ROOT::Math::XYZPoint& local_pos) const;
 
         /**
+         * @brief Returns if the detector has an electric field in the sensor
+         * @return True if the detector has an electric field, false otherwise
+         */
+        bool hasElectricField() const;
+        /**
          * @brief Get the electric field in the sensor at a local position
          * @param pos Position in the local frame
          * @return Vector of the field at the queried point

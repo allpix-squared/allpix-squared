@@ -21,15 +21,18 @@ namespace allpix {
     class SensorCharge : public Object {
     public:
         // constructor and destructor
-        SensorCharge(ROOT::Math::XYZPoint position, unsigned int charge);
+        SensorCharge(ROOT::Math::XYZPoint position, unsigned int charge, long double eventTime);
 
         // FIXME: should position be in local coordinates or global coordinates?
         ROOT::Math::XYZPoint getPosition() const;
         unsigned int getCharge() const;
 
+        long double getEventTime() const;
+
     private:
         ROOT::Math::XYZPoint position_;
         unsigned int charge_;
+        long double event_time_;
     };
 } // namespace allpix
 
