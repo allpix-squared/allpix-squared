@@ -74,6 +74,8 @@ void DefaultDigitizerModule::run(unsigned int) {
         if(plots)
             h_pxq_noise->Fill(charge / 1e3);
 
+        // FIXME Simulate gain / gain smearing
+
         // Smear the threshold
         std::normal_distribution<double> thr_smearing(0, config_.get<unsigned int>("threshold_smearing"));
         double threshold = config_.get<unsigned int>("threshold") + thr_smearing(random_generator_);
@@ -95,6 +97,10 @@ void DefaultDigitizerModule::run(unsigned int) {
         charge += adc_smearing(random_generator_);
         if(plots)
             h_pxq_adc->Fill(charge / 1e3);
+
+        // FIXME Simulate analog / digital cross talk
+        // double crosstalk_neigubor_row = 0.00;
+        // double crosstalk_neigubor_column = 0.00;
     }
     // construct my own message
     // OutputMessage msg("my output message");
