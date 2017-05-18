@@ -30,8 +30,9 @@ ALLPIX_BUILD_MODULE(Example)
 ALLPIX_BUILD_MODULE(GeometryBuilderTGeo)
 ALLPIX_BUILD_MODULE(GeometryBuilderGeant4)
 
-# input readers
+# electric field readers
 ALLPIX_BUILD_MODULE(ElectricFieldReaderInit)
+ALLPIX_BUILD_MODULE(ElectricFieldInputLinear)
 
 # deposition
 ALLPIX_BUILD_MODULE(DepositionGeant4)

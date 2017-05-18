@@ -79,6 +79,9 @@ void SimplePropagationModule::init() {
 void SimplePropagationModule::create_debug_plots(unsigned int event_num) {
     LOG(DEBUG) << "Writing debug plots";
 
+    // enable prefer GL
+    gStyle->SetCanvasPreferGL(kTRUE);
+
     // goto the file
     debug_file_->cd();
 
