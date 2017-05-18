@@ -55,4 +55,4 @@ namespace allpix {
     };
 } // namespace allpix
 
-#endif /* ALLPIX_SIMPLE_DEPOSITION_MODULE_H */
+#endif /* ALLPIX_DEFAULT_DIGITIZER_MODULE_H */

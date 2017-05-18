@@ -107,11 +107,8 @@ void DefaultDigitizerModule::run(unsigned int) {
         // double crosstalk_neigubor_row = 0.00;
         // double crosstalk_neigubor_column = 0.00;
     }
-    // construct my own message
-    // OutputMessage msg("my output message");
 
-    // dispatch my message
-    // messenger_->dispatchMessage(msg);
+    // FIXME Create and dispatch output message when defined (PixelHit)
 }
 
 // create file and write the histograms to it
