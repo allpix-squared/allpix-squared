@@ -78,7 +78,7 @@ std::string Module::getOutputPath(const std::string& path, bool global) {
         // Convert the file to an absolute path
         file = get_absolute_path(file);
     } catch(std::invalid_argument& e) {
-        throw ModuleError("Path " + file + " cannot be accessed (or created if it did not yet exist)");
+        throw ModuleError("Path " + file + " cannot be created");
     }
 
     return file;
