@@ -20,7 +20,7 @@ using namespace allpix;
 DefaultDigitizerModule::DefaultDigitizerModule(Configuration config,
                                                Messenger* messenger,
                                                std::shared_ptr<Detector> detector)
-    : Module(detector), config_(std::move(config)), messenger_(messenger), pixel_message_(nullptr) {
+    : Module(std::move(detector)), config_(std::move(config)), messenger_(messenger), pixel_message_(nullptr) {
 
     // require PixelCharge message for single detector
     messenger_->bindSingle(this, &DefaultDigitizerModule::pixel_message_, MsgFlags::REQUIRED);
@@ -60,27 +60,30 @@ void DefaultDigitizerModule::run(unsigned int) {
     // FIXME do I have to check if I received a message? I require them when binding...
     for(auto& pixel_charge : pixel_message_->getData()) {
         auto pixel = pixel_charge.getPixel();
-        double charge = static_cast<double>(pixel_charge.getCharge());
+        auto charge = static_cast<double>(pixel_charge.getCharge());
 
         LOG(DEBUG) << "Received pixel " << pixel.x() << "," << pixel.y() << ", charge " << charge << "e";
-        if(plots)
+        if(plots) {
             h_pxq->Fill(charge / 1e3);
+        }
 
         // Add electronics noise from Gaussian:
         std::normal_distribution<double> el_noise(0, config_.get<unsigned int>("electronics_noise"));
         charge += el_noise(random_generator_);
 
         LOG(DEBUG) << "Charge with noise: " << charge;
-        if(plots)
+        if(plots) {
             h_pxq_noise->Fill(charge / 1e3);
+        }
 
         // FIXME Simulate gain / gain smearing
 
         // Smear the threshold
         std::normal_distribution<double> thr_smearing(0, config_.get<unsigned int>("threshold_smearing"));
         double threshold = config_.get<unsigned int>("threshold") + thr_smearing(random_generator_);
-        if(plots)
+        if(plots) {
             h_thr->Fill(threshold / 1e3);
+        }
 
         // Discard charges below threshold:
         if(charge < threshold) {
@@ -89,14 +92,16 @@ void DefaultDigitizerModule::run(unsigned int) {
         }
 
         LOG(DEBUG) << "Passed threshold: " << charge << " > " << threshold;
-        if(plots)
+        if(plots) {
             h_pxq_thr->Fill(charge / 1e3);
+        }
 
         // Add ADC smearing:
         std::normal_distribution<double> adc_smearing(0, config_.get<unsigned int>("adc_smearing"));
         charge += adc_smearing(random_generator_);
-        if(plots)
+        if(plots) {
             h_pxq_adc->Fill(charge / 1e3);
+        }
 
         // FIXME Simulate analog / digital cross talk
         // double crosstalk_neigubor_row = 0.00;
