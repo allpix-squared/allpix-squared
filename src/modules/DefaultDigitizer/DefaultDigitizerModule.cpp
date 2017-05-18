@@ -48,7 +48,7 @@ void DefaultDigitizerModule::init() {
 
         h_pxq = new TH1D("pixelcharge", "raw pixel charge;pixel charge [ke];pixels", 100, 0, 10);
         h_pxq_noise = new TH1D("pixelcharge_noise", "pixel charge w/ el. noise;pixel charge [ke];pixels", 100, 0, 10);
-        h_thr = new TH1D("threshold", "applied threshold; threshold [ke];events", 10, 0, 30);
+        h_thr = new TH1D("threshold", "applied threshold; threshold [ke];events", 100, 0, 10);
         h_pxq_thr = new TH1D("pixelcharge_threshold", "pixel charge above threshold;pixel charge [ke];pixels", 100, 0, 10);
         h_pxq_adc = new TH1D("pixelcharge_adc", "pixel charge after ADC;pixel charge [ke];pixels", 100, 0, 10);
     }
@@ -78,9 +78,10 @@ void DefaultDigitizerModule::run(unsigned int) {
 
         // FIXME Simulate gain / gain smearing
 
-        // Smear the threshold
-        std::normal_distribution<double> thr_smearing(0, config_.get<unsigned int>("threshold_smearing"));
-        double threshold = config_.get<unsigned int>("threshold") + thr_smearing(random_generator_);
+        // Smear the threshold, Gaussian distribution around "threshold" with width "threshold_smearing"
+        std::normal_distribution<double> thr_smearing(config_.get<unsigned int>("threshold"),
+                                                      config_.get<unsigned int>("threshold_smearing"));
+        double threshold = thr_smearing(random_generator_);
         if(plots) {
             h_thr->Fill(threshold / 1e3);
         }
