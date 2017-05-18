@@ -28,7 +28,9 @@
 #include "modules/common/ReadGeoDescription.hpp"
 
 // GDML
+#ifdef GEANT4_USE_GDML
 #include "G4GDMLParser.hh"
+#endif
 
 using namespace allpix;
 using namespace ROOT;
@@ -128,6 +130,7 @@ void GeometryBuilderGeant4Module::init() {
 
     // export geometry in GDML.
     if(config_.has("GDML_output_file")) {
+#ifdef GEANT4_USE_GDML
         std::string GDML_output_file = getOutputPath(config_.get<std::string>("GDML_output_file"));
         if(GDML_output_file.size() <= 5 || GDML_output_file.substr(GDML_output_file.size() - 5, 5) != ".gdml") {
             GDML_output_file += ".gdml";
@@ -139,6 +142,12 @@ void GeometryBuilderGeant4Module::init() {
                          ->GetNavigatorForTracking()
                          ->GetWorldVolume()
                          ->GetLogicalVolume());
+#else
+        std::string error = "You requested to export the geometry in GDML.";
+        error += "However, GDML support is disabled in your Geant4.";
+        error += "To enable it, configure Geant4 with the option -DGEANT4_USE_GDML=ON.";
+        throw allpix::InvalidValueError(config_, "GDML_output_file", error);
+#endif
     }
 
     // release output from G4
