@@ -11,12 +11,46 @@
 using namespace allpix;
 
 int main(int argc, const char* argv[]) {
-    // FIXME: implement proper argument handling
+
+    // If no arguments are provided, print the help:
+    bool print_help = false;
+    if(argc == 1) {
+        print_help = true;
+    }
+
     std::string config_file_name;
-    if(argc == 2) {
-        config_file_name = argv[1];
-    } else {
-        LOG(FATAL) << "No configuration file provided! Rerun with configuration file as first argument.";
+    for(int i = 1; i < argc; i++) {
+        if(!strcmp(argv[i], "-h")) {
+            print_help = true;
+            continue;
+        } else if(!strcmp(argv[i], "-v")) {
+            try {
+                LogLevel log_level = Log::getLevelFromString(std::string(argv[++i]));
+                Log::setReportingLevel(log_level);
+            } catch(std::invalid_argument& e) {
+                LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\"";
+            }
+            continue;
+        } else if(!strcmp(argv[i], "-c")) {
+            config_file_name = std::string(argv[++i]);
+            continue;
+        } else {
+            LOG(ERROR) << "Unrecognized command line argument \"" << argv[i] << "\"";
+            continue;
+        }
+    }
+
+    if(print_help) {
+        std::cout << "Usage: allpix -c <config> [-v <level>]" << std::endl;
+        std::cout << "Generic simulation framework for pixel detectors" << std::endl;
+        std::cout << "\t -v <level>   verbosity level, default INFO, can be overwritten \n"
+                  << "\t              by global or per-module configuration." << std::endl;
+        std::cout << "\t -c <config>  configuration file to be used" << std::endl;
+        return 0;
+    }
+
+    if(config_file_name.empty()) {
+        LOG(FATAL) << "No configuration file provided! See usage info with \"allpix -h\"";
         return 1;
     }
 
