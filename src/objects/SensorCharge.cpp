@@ -8,10 +8,6 @@ using namespace allpix;
 
 SensorCharge::SensorCharge(ROOT::Math::XYZPoint position, unsigned int charge)
     : position_(std::move(position)), charge_(charge) {}
-SensorCharge::~SensorCharge() = default;
-
-SensorCharge::SensorCharge(const SensorCharge&) = default;
-SensorCharge& SensorCharge::operator=(const SensorCharge&) = default;
 
 ROOT::Math::XYZPoint SensorCharge::getPosition() const {
     return position_;

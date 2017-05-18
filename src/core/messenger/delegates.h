@@ -87,6 +87,14 @@ namespace allpix {
         BaseDelegate& operator=(const BaseDelegate&) = delete;
         /// @}
 
+        /// @{
+        /**
+         * @brief Enable default move behaviour
+         */
+        BaseDelegate(BaseDelegate&&) noexcept = default;
+        BaseDelegate& operator=(BaseDelegate&&) noexcept = default;
+        /// @}
+
         /**
          * @brief Check if delegate satisfied its requirements
          * @return True if satisfied, false otherwise
@@ -154,8 +162,8 @@ namespace allpix {
         /**
          * @brief Copying a delegate is not allowed
          */
-        ModuleDelegate(const ModuleDelegate&) = delete;
-        ModuleDelegate& operator=(const ModuleDelegate&) = delete;
+        // ModuleDelegate(const ModuleDelegate&) = delete;
+        // ModuleDelegate& operator=(const ModuleDelegate&) = delete;
         /// @}
 
         /**
@@ -188,8 +196,9 @@ namespace allpix {
         /// @{
         /**
          * @brief Copying a delegate is not allowed
-         */ FunctionDelegate(const FunctionDelegate&) = delete;
-        FunctionDelegate& operator=(const FunctionDelegate&) = delete;
+         */
+        // FunctionDelegate(const FunctionDelegate&) = delete;
+        // FunctionDelegate& operator=(const FunctionDelegate&) = delete;
         /// @}
 
         /**
@@ -234,8 +243,8 @@ namespace allpix {
         /**
          * @brief Copying a delegate is not allowed
          */
-        SingleBindDelegate(const SingleBindDelegate&) = delete;
-        SingleBindDelegate& operator=(const SingleBindDelegate&) = delete;
+        // SingleBindDelegate(const SingleBindDelegate&) = delete;
+        // SingleBindDelegate& operator=(const SingleBindDelegate&) = delete;
         /// @}
 
         /**
@@ -303,8 +312,8 @@ namespace allpix {
         /**
          * @brief Copying a delegate is not allowed
          */
-        VectorBindDelegate(const VectorBindDelegate&) = delete;
-        VectorBindDelegate& operator=(const VectorBindDelegate&) = delete;
+        // VectorBindDelegate(const VectorBindDelegate&) = delete;
+        // VectorBindDelegate& operator=(const VectorBindDelegate&) = delete;
         /// @}
 
         /**

@@ -37,7 +37,7 @@
 
 using namespace allpix;
 
-ModuleManager::ModuleManager() : modules_(), id_to_module_(), global_config_(), loaded_libraries_() {}
+ModuleManager::ModuleManager() = default;
 
 /**
  * Loads the modules specified in the configuration file. Each module is contained within its own library which is loaded

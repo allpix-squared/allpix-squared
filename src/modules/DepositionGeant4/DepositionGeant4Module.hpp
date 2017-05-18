@@ -22,7 +22,6 @@ namespace allpix {
     public:
         // constructor should take a pointer to the Configuration, the Messenger and the Geometry Manager
         DepositionGeant4Module(Configuration, Messenger*, GeometryManager*);
-        ~DepositionGeant4Module() override;
 
         // initialize the physics list and the generators
         void init() override;

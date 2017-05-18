@@ -32,6 +32,10 @@ namespace allpix {
          * @brief Construct the messenger
          */
         Messenger();
+        /**
+         * @brief Use default destructor
+         */
+        ~Messenger() = default;
 
         /// @{
         /**
@@ -39,6 +43,14 @@ namespace allpix {
          */
         Messenger(const Messenger&) = delete;
         Messenger& operator=(const Messenger&) = delete;
+        /// @}
+
+        /// @{
+        /**
+         * @brief Use default move behaviour
+         */
+        Messenger(Messenger&&) noexcept = default;
+        Messenger& operator=(Messenger&&) noexcept = default;
         /// @}
 
         // FIXME: unregistering of listeners still need to be added (as well as checking for proper deletion)...

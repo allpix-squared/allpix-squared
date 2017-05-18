@@ -35,7 +35,7 @@ namespace allpix {
          * @param stream Stream to read configuration from
          * @param file_name Name of the file related to the stream or empty if not linked to a file
          */
-        ConfigReader(std::istream& stream, std::string file_name = "");
+        explicit ConfigReader(std::istream& stream, std::string file_name = "");
 
         /**
          * @brief Adds a configuration stream to read

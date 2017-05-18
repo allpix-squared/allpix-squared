@@ -19,8 +19,7 @@ using namespace allpix;
 /**
  * @throws ConfigFileUnavailableError If the main configuration file cannot be accessed
  */
-ConfigManager::ConfigManager(std::string file_name)
-    : file_name_(std::move(file_name)), reader_(), global_default_name_(), global_names_(), ignore_names_() {
+ConfigManager::ConfigManager(std::string file_name) : file_name_(std::move(file_name)) {
     // Check if the file exists
     std::ifstream file(file_name_);
     if(!file) {

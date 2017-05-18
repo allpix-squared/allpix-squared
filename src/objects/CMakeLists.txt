@@ -3,6 +3,7 @@ INCLUDE_DIRECTORIES(SYSTEM ${ALLPIX_DEPS_INCLUDE_DIRS})
 
 # define the library
 ADD_LIBRARY(AllpixObjects SHARED
+    Object.cpp
     SensorCharge.cpp
     PixelCharge.cpp
 )

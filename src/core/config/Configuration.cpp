@@ -18,8 +18,7 @@
 
 using namespace allpix;
 
-Configuration::Configuration(std::string name, std::string path)
-    : name_(std::move(name)), path_(std::move(path)), config_() {}
+Configuration::Configuration(std::string name, std::string path) : name_(std::move(name)), path_(std::move(path)) {}
 
 bool Configuration::has(const std::string& key) const {
     return config_.find(key) != config_.cend();

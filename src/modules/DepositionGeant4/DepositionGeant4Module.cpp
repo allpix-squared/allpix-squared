@@ -32,13 +32,11 @@
 using namespace allpix;
 
 DepositionGeant4Module::DepositionGeant4Module(Configuration config, Messenger* messenger, GeometryManager* geo_manager)
-    : config_(std::move(config)), messenger_(messenger), geo_manager_(geo_manager), user_limits_(),
-      run_manager_g4_(nullptr) {
+    : config_(std::move(config)), messenger_(messenger), geo_manager_(geo_manager), run_manager_g4_(nullptr) {
     // create user limits for maximum step length in the sensor
     user_limits_ =
         std::make_unique<G4UserLimits>(config_.get<double>("max_step_length", std::numeric_limits<double>::max()));
 }
-DepositionGeant4Module::~DepositionGeant4Module() = default;
 
 void DepositionGeant4Module::init() {
     // load the G4 run manager (which is currently owned by the geometry builder...)

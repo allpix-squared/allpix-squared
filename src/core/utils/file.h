@@ -35,7 +35,7 @@ namespace allpix {
             throw std::invalid_argument("path " + path + " not found");
         }
         std::string abs_path(path_ptr);
-        free(static_cast<void*>(path_ptr));
+        free(static_cast<void*>(path_ptr)); // NOLINT
         return abs_path;
     }
 
@@ -81,8 +81,10 @@ namespace allpix {
         // Loop through all files
         DIR* dir = opendir(path.c_str());
         while((ent = readdir(dir)) != nullptr) {
-            const std::string file_name = ent->d_name;
-            const std::string full_file_name = path + "/" + file_name;
+            std::string file_name = ent->d_name;
+            std::string full_file_name = path;
+            full_file_name += "/";
+            full_file_name += file_name;
 
             // Ignore useless or wrong paths
             if(!file_name.empty() && file_name[0] == '.') {

@@ -34,6 +34,10 @@ namespace allpix {
          * @param file_name Path to the main configuration file
          */
         explicit ConfigManager(std::string file_name);
+        /**
+         * @brief Use default destructor
+         */
+        ~ConfigManager() = default;
 
         /// @{
         /**
@@ -41,6 +45,14 @@ namespace allpix {
          */
         ConfigManager(const ConfigManager&) = delete;
         ConfigManager& operator=(const ConfigManager&) = delete;
+        /// @}
+
+        /// @{
+        /**
+         * @brief Use default move behaviour
+         */
+        ConfigManager(ConfigManager&&) noexcept = default;
+        ConfigManager& operator=(ConfigManager&&) noexcept = default;
         /// @}
 
         /**

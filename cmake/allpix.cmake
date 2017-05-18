@@ -51,7 +51,9 @@ Create the header or provide the alternative class name as first argument")
     # WARNING: this only works if modules follow the convention by putting Module at the end
     # FIXME: find a better way to force users to do this and inform them with a more useful message
     TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE ALLPIX_MODULE_HEADER="${_allpix_module_class}.hpp")
+    
     TARGET_SOURCES(${${name}} PRIVATE "${PROJECT_SOURCE_DIR}/src/core/module/dynamic_module_impl.cpp")
+    SET_PROPERTY(SOURCE "${PROJECT_SOURCE_DIR}/src/core/module/dynamic_module_impl.cpp" APPEND PROPERTY OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${_allpix_module_class}.hpp")
 ENDMACRO()
 
 # put this at the start of every unique module

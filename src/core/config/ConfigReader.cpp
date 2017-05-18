@@ -16,7 +16,7 @@
 
 using namespace allpix;
 
-ConfigReader::ConfigReader() : conf_map_(), conf_array_() {}
+ConfigReader::ConfigReader() = default;
 ConfigReader::ConfigReader(std::istream& stream, std::string file_name) : ConfigReader() {
     add(stream, std::move(file_name));
 }

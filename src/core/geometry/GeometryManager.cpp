@@ -15,7 +15,7 @@
 
 using namespace allpix;
 
-GeometryManager::GeometryManager() : detectors_(), detector_names_() {}
+GeometryManager::GeometryManager() = default;
 
 /**
  * @throws DetectorNameExistsError If the detector name is already registered before

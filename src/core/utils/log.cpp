@@ -22,7 +22,7 @@ using namespace allpix;
  * The logger will save the number of uncaught exceptions during construction to compare that with the number of exceptions
  * during destruction later.
  */
-DefaultLogger::DefaultLogger() : os(), exception_count_(get_uncaught_exceptions(true)), indent_count_(0) {}
+DefaultLogger::DefaultLogger() : exception_count_(get_uncaught_exceptions(true)) {}
 
 /**
  * The output is written to the streams as soon as the logger gets out-of-scope and desctructed. The destructor checks
