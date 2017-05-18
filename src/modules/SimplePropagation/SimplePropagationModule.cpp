@@ -339,6 +339,7 @@ void SimplePropagationModule::create_debug_plots(unsigned int event_num) {
                         (std::string("y ") + (config_.get<bool>("debug_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
                             .c_str());
                     break;
+                default:;
                 }
                 histogram_contour[i]->SetMinimum(1);
                 histogram_contour[i]->SetMaximum(total_charge / 100);
@@ -360,6 +361,11 @@ void SimplePropagationModule::create_debug_plots(unsigned int event_num) {
 
 // run the propagation
 void SimplePropagationModule::run(unsigned int event_num) {
+    // check for electric field
+    if(!getDetector()->hasElectricField()) {
+        throw ModuleError("Cannot propagate without an electric field (add a module to read the field)");
+    }
+
     // create vector of propagated charges
     std::vector<PropagatedCharge> propagated_charges;
 
