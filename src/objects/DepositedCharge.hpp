@@ -13,7 +13,8 @@ namespace allpix {
     // object definition
     class DepositedCharge : public SensorCharge {
     public:
-        DepositedCharge(ROOT::Math::XYZPoint position, unsigned int charge) : SensorCharge(std::move(position), charge) {}
+        DepositedCharge(ROOT::Math::XYZPoint position, unsigned int charge, long double event_time)
+            : SensorCharge(std::move(position), charge, event_time) {}
     };
 
     // link to the carrying message

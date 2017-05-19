@@ -79,6 +79,14 @@ ROOT::Math::XYZPoint Detector::getGlobalPosition(const ROOT::Math::XYZPoint& loc
  * The electric field is replicated for all pixels and uses flipping at each boundary (side effects are not modeled in this
  * stage). Outside of the sensor the electric field is strictly zero by definition.
  */
+bool Detector::hasElectricField() const {
+    return electric_field_sizes_[0] != 0 && electric_field_sizes_[1] != 0 && electric_field_sizes_[2] != 0;
+}
+
+/**
+ * The electric field is replicated for all pixels and uses flipping at each boundary (side effects are not modeled in this
+ * stage). Outside of the sensor the electric field is strictly zero by definition.
+ */
 ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZPoint& pos) const {
     double* field = get_electric_field_raw(pos.x(), pos.y(), pos.z());
 
@@ -89,6 +97,7 @@ ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZPoint& pos
 
     return ROOT::Math::XYZVector(*(field), *(field + 1), *(field + 2));
 }
+
 /**
  * The local position is first converted to pixel coordinates. The stored electric field if the index is odd.
  */
