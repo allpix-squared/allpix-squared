@@ -63,6 +63,11 @@ namespace allpix {
          */
         void add_units();
 
+        /**
+         * @brief Set the default ROOT plot style
+         */
+        void set_style();
+
         // All managers in the framework
         std::unique_ptr<ConfigManager> conf_mgr_;
         std::unique_ptr<ModuleManager> mod_mgr_;
