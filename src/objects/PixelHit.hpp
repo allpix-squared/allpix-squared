@@ -20,7 +20,7 @@ namespace allpix {
     public:
         using Pixel = ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>;
 
-        PixelHit(Pixel pixel);
+        explicit PixelHit(Pixel pixel);
 
         PixelHit::Pixel getPixel() const;
 
