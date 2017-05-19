@@ -148,7 +148,6 @@ void SimplePropagationModule::create_debug_plots(unsigned int event_num) {
                                      10,
                                      model_->getSensorMinZ(),
                                      model_->getSensorMinZ() + model_->getSensorSizeZ());
-    histogram_frame->SetStats(false);
 
     // create the line plot canvas
     auto canvas = std::make_unique<TCanvas>(("line_plot_" + std::to_string(event_num)).c_str(),
@@ -160,6 +159,11 @@ void SimplePropagationModule::create_debug_plots(unsigned int event_num) {
     canvas->SetPhi(config_.get<float>("debug_plots_phi") * 180.0f / Pi());
 
     // draw the frame
+    histogram_frame->GetXaxis()->SetTitle(
+        (std::string("x ") + (config_.get<bool>("debug_plots_use_pixel_units") ? "(pixels)" : "(mm)")).c_str());
+    histogram_frame->GetYaxis()->SetTitle(
+        (std::string("y ") + (config_.get<bool>("debug_plots_use_pixel_units") ? "(pixels)" : "(mm)")).c_str());
+    histogram_frame->GetZaxis()->SetTitle("z (mm)");
     histogram_frame->Draw();
 
     // loop over all point sets
@@ -201,11 +205,11 @@ void SimplePropagationModule::create_debug_plots(unsigned int event_num) {
        std::fabs(config_.get<double>("debug_plots_phi") / (Pi() / 2.0) -
                  std::round(config_.get<double>("debug_plots_phi") / (Pi() / 2.0))) < 1e-6) {
         histogram_frame->GetXaxis()->SetLabelOffset(-0.1f);
-        histogram_frame->GetYaxis()->SetLabelOffset(-0.1f);
+        histogram_frame->GetYaxis()->SetLabelOffset(-0.075f);
+    } else {
+        histogram_frame->GetXaxis()->SetTitleOffset(2.0f);
+        histogram_frame->GetYaxis()->SetTitleOffset(2.0f);
     }
-    histogram_frame->GetXaxis()->SetTitleOffset(2.0f);
-    histogram_frame->GetYaxis()->SetTitleOffset(2.0f);
-    histogram_frame->GetZaxis()->SetTitleOffset(2.0f);
 
     // draw frame
     histogram_frame->Draw();
@@ -258,13 +262,11 @@ void SimplePropagationModule::create_debug_plots(unsigned int event_num) {
         unsigned long min_idx_diff = std::numeric_limits<unsigned long>::max();
 
         canvas->Clear();
-        TPad pad("pad", "pad", 0.05, 0.05, 0.95, 0.95);
-        pad.SetTheta(config_.get<float>("debug_plots_theta") * 180.0f / Pi());
-        pad.SetPhi(config_.get<float>("debug_plots_phi") * 180.0f / Pi());
-        pad.SetLeftMargin(200.0);
-        pad.SetBottomMargin(200.0);
-        pad.Draw();
-        pad.cd();
+        // TPad pad; //"pad", "pad", 0.05, 0.05, 0.95, 0.95);
+        canvas->SetTheta(config_.get<float>("debug_plots_theta") * 180.0f / Pi());
+        canvas->SetPhi(config_.get<float>("debug_plots_phi") * 180.0f / Pi());
+        canvas->Draw();
+        // pad.cd();
         histogram_frame->SetTitle("Charge propagation in sensor");
         histogram_frame->GetXaxis()->SetTitle(
             (std::string("x ") + (config_.get<bool>("debug_plots_use_pixel_units") ? "(pixels)" : "(mm)")).c_str());
@@ -316,11 +318,11 @@ void SimplePropagationModule::create_debug_plots(unsigned int event_num) {
             // draw and print contour histograms
             for(size_t i = 0; i < 3; ++i) {
                 canvas->Clear();
-                histogram_contour[i]->SetTitle(
+                canvas->SetTitle(
                     (std::string("Contour of charge propagation projected on the ") + static_cast<char>('X' + i) + "-axis")
                         .c_str());
-                histogram_contour[i]->GetXaxis()->SetTitleOffset(1.25f);
-                histogram_contour[i]->GetYaxis()->SetTitleOffset(1.25f);
+                // histogram_contour[i]->GetXaxis()->SetTitleOffset(1.25f);
+                // histogram_contour[i]->GetYaxis()->SetTitleOffset(1.25f);
                 switch(i) {
                 case 0 /* x */:
                     histogram_contour[i]->GetXaxis()->SetTitle(
@@ -345,7 +347,7 @@ void SimplePropagationModule::create_debug_plots(unsigned int event_num) {
                 default:;
                 }
                 histogram_contour[i]->SetMinimum(1);
-                histogram_contour[i]->SetMaximum(total_charge / 100);
+                histogram_contour[i]->SetMaximum(total_charge / config_.get<double>("debug_plots_contour_max_scaling", 10));
                 histogram_contour[i]->Draw("CONTZ 0");
                 if(point_cnt < tot_point_cnt - 1) {
                     canvas->Print((file_name_contour[i] + "+" + std::to_string(animation_time)).c_str());
