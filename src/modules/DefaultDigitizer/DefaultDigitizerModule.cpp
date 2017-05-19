@@ -114,9 +114,11 @@ void DefaultDigitizerModule::run(unsigned int) {
         // double crosstalk_neigubor_column = 0.00;
     }
 
-    // Create and dispatch hit message
-    PixelHitMessage hits_message(hits, getDetector());
-    messenger_->dispatchMessage(hits_message, "hit");
+    if(!hits.empty()) {
+        // Create and dispatch hit message
+        PixelHitMessage hits_message(hits, getDetector());
+        messenger_->dispatchMessage(hits_message, "hit");
+    }
 }
 
 // Create file and write the histograms to it if we have plots enabled
