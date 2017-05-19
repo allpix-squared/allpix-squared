@@ -47,11 +47,21 @@ void DefaultDigitizerModule::init() {
         output_file_ = new TFile(file_name.c_str(), "RECREATE");
 
         // book histograms:
-        h_pxq = new TH1D("pixelcharge", "raw pixel charge;pixel charge [ke];pixels", 100, 0, 10);
-        h_pxq_noise = new TH1D("pixelcharge_noise", "pixel charge w/ el. noise;pixel charge [ke];pixels", 100, 0, 10);
-        h_thr = new TH1D("threshold", "applied threshold; threshold [ke];events", 100, 0, 10);
-        h_pxq_thr = new TH1D("pixelcharge_threshold", "pixel charge above threshold;pixel charge [ke];pixels", 100, 0, 10);
-        h_pxq_adc = new TH1D("pixelcharge_adc", "pixel charge after ADC;pixel charge [ke];pixels", 100, 0, 10);
+        h_pxq =
+            new TH1D(("pixelcharge_" + getUniqueName()).c_str(), "raw pixel charge;pixel charge [ke];pixels", 100, 0, 10);
+        h_pxq_noise = new TH1D(("pixelcharge_noise_" + getUniqueName()).c_str(),
+                               "pixel charge w/ el. noise;pixel charge [ke];pixels",
+                               100,
+                               0,
+                               10);
+        h_thr = new TH1D(("threshold_" + getUniqueName()).c_str(), "applied threshold; threshold [ke];events", 100, 0, 10);
+        h_pxq_thr = new TH1D(("pixelcharge_threshold_" + getUniqueName()).c_str(),
+                             "pixel charge above threshold;pixel charge [ke];pixels",
+                             100,
+                             0,
+                             10);
+        h_pxq_adc = new TH1D(
+            ("pixelcharge_adc_" + getUniqueName()).c_str(), "pixel charge after ADC;pixel charge [ke];pixels", 100, 0, 10);
     }
 }
 

@@ -53,7 +53,7 @@ void DetectorHistogrammerModule::init() {
                          model->getNPixelsY() - 0.5);
 
     // create cluster size plot
-    std::string cluster_size_name = "cluster_" + detector_->getName();
+    std::string cluster_size_name = "cluster_" + getUniqueName();
     std::string cluster_size_title = "Cluster size for " + detector_->getName() + ";size;number";
     cluster_size = new TH1I(cluster_size_name.c_str(),
                             cluster_size_title.c_str(),
