@@ -8,6 +8,11 @@ ENDIF(COMMAND CMAKE_POLICY)
 # Set default version
 SET(ALLPIX_VERSION "v0.1")
 
+# Set default build type
+IF(NOT CMAKE_BUILD_TYPE)
+  SET(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
+ENDIF(NOT CMAKE_BUILD_TYPE)
+
 # Overwrite with the version from git if found
 INCLUDE("cmake/tools.cmake")
 GET_VERSION(ALLPIX_VERSION)
@@ -77,7 +82,7 @@ INCLUDE("cmake/compiler-flag-checks.cmake")
 
 # Set some debug flags 
 # FIXME: not using the flag checker now because it wrongly rejects a sanitizer flag..
-IF(CMAKE_BUILD_TYPE MATCHES DEBUG_ASAN AND ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")))
+IF(CMAKE_BUILD_TYPE MATCHES Debug AND ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")))
     MESSAGE(STATUS "Running debug build - Adding extra sanitizer flags")
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined")
     # FIXME: remove earlier shared linker flags, because they can break the sanitizer debug build
