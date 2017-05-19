@@ -46,7 +46,7 @@ FIND_PROGRAM(CLANG_TIDY "clang-tidy")
 # enable clang tidy only if using a clang compiler
 IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # if debug build enabled do automatic clang tidy
-    IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
+    IF(CMAKE_BUILD_TYPE MATCHES Debug)
         SET(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY} "-header-filter='${CMAKE_SOURCE_DIR}'")
     ENDIF()
 

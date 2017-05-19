@@ -2,7 +2,7 @@
 # FIXME: THIS IS TEMPORARY AND SHOULD LATER BE FIXED IN A BETTER WAY
 
 # Geant4 is required for geometry description and charge deposition.
-FIND_PACKAGE(Geant4 REQUIRED ui_all vis_all)
+FIND_PACKAGE(Geant4 REQUIRED)
 IF(NOT Geant4_FOUND)
     MESSAGE(FATAL_ERROR "Could not find Geant4, make sure to source the Geant4 environment\n"
     "$ source YOUR_GEANT4_DIR/bin/geant4.sh")
