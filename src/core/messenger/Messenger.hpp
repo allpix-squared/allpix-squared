@@ -7,11 +7,11 @@
 #ifndef ALLPIX_MESSENGER_H
 #define ALLPIX_MESSENGER_H
 
+#include <list>
 #include <map>
 #include <memory>
 #include <typeindex>
 #include <utility>
-#include <vector>
 
 #include "Message.hpp"
 #include "core/module/Module.hpp"
@@ -27,15 +27,17 @@ namespace allpix {
      * \ref Delegates. Messages are only send to modules listening to the exact same type of message.
      */
     class Messenger {
+        friend class Module;
+
     public:
         /**
          * @brief Construct the messenger
          */
         Messenger();
         /**
-         * @brief Use default destructor
+         * @brief Default destructor (checks if delegates are removed)
          */
-        ~Messenger() = default;
+        ~Messenger();
 
         /// @{
         /**
@@ -157,14 +159,22 @@ namespace allpix {
 
     private:
         /**
-         * @brief Add a delegate to the list of listeners
+         * @brief Add a delegate to the listeners
          * @param message_type Type the delegate listens to
          * @param message_name Name of the message the delegate listens to
          * @param delegate Delegate that listens to the message
          */
         void add_delegate(const std::type_info& message_type,
                           const std::string& message_name,
+                          Module* module,
                           std::unique_ptr<BaseDelegate> delegate);
+
+        /**
+         * @brief Removes a delegate from the listeners
+         * @param delegate The delegate to remove
+         * @note This should be called by the Module destructor to remove their delegates
+         */
+        void remove_delegate(BaseDelegate* delegate);
 
         /**
          * @brief Dispatch base message to the correct delegates
@@ -173,9 +183,13 @@ namespace allpix {
          */
         void dispatch_message(const std::shared_ptr<BaseMessage>& msg, const std::string& name = "");
 
-        using DelegateMap = std::map<std::type_index, std::map<std::string, std::vector<std::unique_ptr<BaseDelegate>>>>;
+        using DelegateMap = std::map<std::type_index, std::map<std::string, std::list<std::unique_ptr<BaseDelegate>>>>;
+        using DelegateIteratorMap =
+            std::map<BaseDelegate*,
+                     std::tuple<std::type_index, std::string, std::list<std::unique_ptr<BaseDelegate>>::iterator>>;
 
         DelegateMap delegates_;
+        DelegateIteratorMap delegate_to_iterator_;
     };
 } // namespace allpix
 

@@ -25,8 +25,7 @@ namespace allpix {
             "Notifier method should take a shared pointer to a message derived from the Message class as argument");
 
         auto delegate = std::make_unique<FunctionDelegate<T, R>>(flags, receiver, method);
-        receiver->add_delegate(delegate.get());
-        add_delegate(typeid(R), message_name, std::move(delegate));
+        add_delegate(typeid(R), message_name, receiver, std::move(delegate));
     }
 
     template <typename T, typename R>
@@ -40,8 +39,7 @@ namespace allpix {
                       "Bound variable should be a shared pointer to a message derived from the Message class");
 
         auto delegate = std::make_unique<SingleBindDelegate<T, R>>(flags, receiver, member);
-        receiver->add_delegate(delegate.get());
-        add_delegate(typeid(R), message_name, std::move(delegate));
+        add_delegate(typeid(R), message_name, receiver, std::move(delegate));
     }
 
     // FIXME: Allow binding other containers besides vector
@@ -59,7 +57,6 @@ namespace allpix {
                       "Bound variable should be a shared pointer to a message derived from the Message class");
 
         auto delegate = std::make_unique<VectorBindDelegate<T, R>>(flags, receiver, member);
-        receiver->add_delegate(delegate.get());
-        add_delegate(typeid(R), message_name, std::move(delegate));
+        add_delegate(typeid(R), message_name, receiver, std::move(delegate));
     }
 }
