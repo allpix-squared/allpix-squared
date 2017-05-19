@@ -65,13 +65,6 @@ The core is structured around one main object (AllPix) and a set of managers. Be
 \item \textbf{Messenger}: Faciliates the message passing between the modules. Messages should be the only way modules communicate with each other (besides their concurrent access of data through the managers). On instantiation modules should register for the messages they wish to receive. They can either (1) register a callback to be called on message dispatching, (2) to bind the message to variable in the class or (3) to add the message to a list of messages in the module. Messages should only be dispatched in the run() method of every module. The messenger should take care to dispatch messages to the right detector instances and match input, output names that are potentially provided.
 \end{enumerate}
 
-\subsection{Modules}
-An example of a very simple description of a module split up in a header and an implementation file is included below (note that the exact definition is still subject to discussion):
-
-%\inputminted[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos,label=ExampleModule.hpp]{c++}{../src/modules/example/ExampleModule.hpp}
-\vspace{5mm}
-%\inputminted[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos,label=ExampleModule.cpp]{c++}{../src/modules/example/ExampleModule.cpp}
-
 \subsection{Messages}
 A few ideas for messages are the following:
 \begin{itemize}

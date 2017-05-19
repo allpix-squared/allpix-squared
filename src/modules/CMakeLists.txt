@@ -23,9 +23,6 @@ SET(ALLPIX_DEPS_LIBRARIES ${ALLPIX_DEPS_LIBRARIES} AllPixModulesCommon)
 # Build the required modules #
 ##############################
 
-# example module
-ALLPIX_BUILD_MODULE(Example)
-
 # geometry
 ALLPIX_BUILD_MODULE(GeometryBuilderTGeo)
 ALLPIX_BUILD_MODULE(GeometryBuilderGeant4)

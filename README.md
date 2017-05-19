@@ -58,4 +58,4 @@ Before starting with the development of your own module, please have a look at t
 * (optional) the separate [design document](DESIGN.md) for some more in depth notes about the design evolution
 * (optional) some design figures and setup structure in the *doc/design* directory
 
-An example module to start from is found in the directory *src/modules/Example*. There is also a dummy module serving as start for every new module, which can be found in *src/modules/Dummy*. This module also contains a description about the minimum work necessary to get your own module running in the framework. All the other modules in the *src/modules/* directory can also be viewed as examples for doing more complicated tasks.
+A dummy module serving as start for every new module can be found in *src/modules/Dummy*. This module also contains a description about the minimum work necessary to get your own module running in the framework. All the other modules in the *src/modules/* directory can also be viewed as examples for doing more complicated tasks.
