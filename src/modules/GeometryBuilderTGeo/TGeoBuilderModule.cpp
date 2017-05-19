@@ -166,12 +166,13 @@ void TGeoBuilderModule::init() {
         error += "However, GDML support is currently disabled in ROOT. ";
         error += "To enable it, configure and compile ROOT with the option -Dgdml=ON.";
         throw allpix::InvalidValueError(m_config, "GDML_output_file", error);
-#endif
+#else
         TString GDML_output_file = getOutputPath(m_config.get<string>("GDML_output_file"));
         if(!GDML_output_file.EndsWith(".gdml")) {
             GDML_output_file += ".gdml";
         }
         gGeoManager->Export(GDML_output_file);
+#endif
     }
 
     //
