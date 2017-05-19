@@ -20,23 +20,19 @@ int main(int argc, const char* argv[]) {
 
     std::string config_file_name;
     for(int i = 1; i < argc; i++) {
-        if(!strcmp(argv[i], "-h")) {
+        if(strcmp(argv[i], "-h") != 0) {
             print_help = true;
-            continue;
-        } else if(!strcmp(argv[i], "-v")) {
+        } else if(strcmp(argv[i], "-v") != 0 && (i + 1 < argc)) {
             try {
                 LogLevel log_level = Log::getLevelFromString(std::string(argv[++i]));
                 Log::setReportingLevel(log_level);
             } catch(std::invalid_argument& e) {
                 LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\"";
             }
-            continue;
-        } else if(!strcmp(argv[i], "-c")) {
+        } else if(strcmp(argv[i], "-c") != 0 && (i + 1 < argc)) {
             config_file_name = std::string(argv[++i]);
-            continue;
         } else {
             LOG(ERROR) << "Unrecognized command line argument \"" << argv[i] << "\"";
-            continue;
         }
     }
 

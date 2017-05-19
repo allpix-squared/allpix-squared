@@ -286,7 +286,7 @@ void ModuleManager::run() {
     // Loop over the number of events
     auto number_of_events = global_config_.get<unsigned int>("number_of_events", 1u);
     for(unsigned int i = 0; i < number_of_events; ++i) {
-        LOG(INFO) << "Running event " << (i + 1) << " of " << number_of_events;
+        LOG(QUIET) << "Running event " << (i + 1) << " of " << number_of_events;
         for(auto& mod : modules_) {
             // Check if module is satisfied to run
             if(!mod->check_delegates()) {
