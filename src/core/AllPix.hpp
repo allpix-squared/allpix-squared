@@ -69,10 +69,10 @@ namespace allpix {
         void set_style();
 
         // All managers in the framework
-        std::unique_ptr<ConfigManager> conf_mgr_;
-        std::unique_ptr<ModuleManager> mod_mgr_;
-        std::unique_ptr<GeometryManager> geo_mgr_;
         std::unique_ptr<Messenger> msg_;
+        std::unique_ptr<ModuleManager> mod_mgr_;
+        std::unique_ptr<ConfigManager> conf_mgr_;
+        std::unique_ptr<GeometryManager> geo_mgr_;
     };
 } // namespace allpix
 

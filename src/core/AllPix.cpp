@@ -27,8 +27,8 @@ using namespace allpix;
  * Initializes all the managers. This class will own the managers for the lifetime of the simulation.
  */
 AllPix::AllPix(std::string file_name)
-    : conf_mgr_(std::make_unique<ConfigManager>(std::move(file_name))), mod_mgr_(std::make_unique<ModuleManager>()),
-      geo_mgr_(std::make_unique<GeometryManager>()), msg_(std::make_unique<Messenger>()) {}
+    : msg_(std::make_unique<Messenger>()), mod_mgr_(std::make_unique<ModuleManager>()),
+      conf_mgr_(std::make_unique<ConfigManager>(std::move(file_name))), geo_mgr_(std::make_unique<GeometryManager>()) {}
 
 /**
  * Performs the initialization, including:

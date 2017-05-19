@@ -22,6 +22,14 @@ using namespace allpix;
 
 Module::Module() : Module(nullptr) {}
 Module::Module(std::shared_ptr<Detector> detector) : detector_(std::move(detector)) {}
+/**
+ * @note The remove_delegate can throw in theory, but this could never happen in practice
+ */
+Module::~Module() {
+    for(auto delegate : delegates_) {
+        delegate.first->remove_delegate(delegate.second);
+    }
+}
 
 /**
  * @throws InvalidModuleActionException If this method is called from the constructor
@@ -109,20 +117,20 @@ ModuleIdentifier Module::get_identifier() {
 }
 
 // Add messenger delegate
-void Module::add_delegate(BaseDelegate* delegate) {
-    delegates_.emplace_back(delegate);
+void Module::add_delegate(Messenger* messenger, BaseDelegate* delegate) {
+    delegates_.emplace_back(messenger, delegate);
 }
 // Reset all delegates
 void Module::reset_delegates() {
     for(auto& delegate : delegates_) {
-        delegate->reset();
+        delegate.second->reset();
     }
 }
 // Check if all delegates are satisfied
 bool Module::check_delegates() {
     for(auto& delegate : delegates_) {
         // Return false if any delegate is not satisfied
-        if(!delegate->isSatisfied()) {
+        if(!delegate.second->isSatisfied()) {
             return false;
         }
     }

@@ -106,6 +106,7 @@ namespace allpix {
      * The module class also provides a few utility methods and stores internal data of instantations. The internal data is
      * used by the ModuleManager and the Messenger to work.
      */
+    class Messenger;
     class Module {
         friend class ModuleManager;
         friend class Messenger;
@@ -123,9 +124,11 @@ namespace allpix {
          */
         explicit Module(std::shared_ptr<Detector> detector);
         /**
-         * @brief Essential virtual destructor
+         * @brief Essential virtual destructor.
+         *
+         * Also removes all delegates linked to this module
          */
-        virtual ~Module() = default;
+        virtual ~Module();
 
         /// @{
         /**
@@ -233,9 +236,10 @@ namespace allpix {
 
         /**
          * @brief Add a messenger delegate to this instantiation
+         * @param messenger Pointer to the messenger responsible for the delegate
          * @param delegate Delegate object
          */
-        void add_delegate(BaseDelegate* delegate);
+        void add_delegate(Messenger* messenger, BaseDelegate* delegate);
         /**
          * @brief Resets messenger delegates after every event
          */
@@ -244,7 +248,7 @@ namespace allpix {
          * @brief Check if all delegates are satisfied
          */
         bool check_delegates();
-        std::vector<BaseDelegate*> delegates_;
+        std::vector<std::pair<Messenger*, BaseDelegate*>> delegates_;
 
         std::shared_ptr<Detector> detector_;
     };
