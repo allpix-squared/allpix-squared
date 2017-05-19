@@ -62,21 +62,21 @@ SimplePropagationModule::SimplePropagationModule(Configuration config,
     config_.setDefault<double>("timestep_max", Units::get(0.1, "ns"));
     config_.setDefault<unsigned int>("charge_per_step", 10);
 
-    config_.setDefault<bool>("debug_plots", false);
-    config_.setDefault<bool>("debug_plots_use_pixel_units", false);
-    config_.setDefault<double>("debug_plots_theta", 0.0f);
-    config_.setDefault<double>("debug_plots_phi", 0.0f);
+    config_.setDefault<bool>("output_plots", false);
+    config_.setDefault<bool>("output_plots_use_pixel_units", false);
+    config_.setDefault<double>("output_plots_theta", 0.0f);
+    config_.setDefault<double>("output_plots_phi", 0.0f);
 }
 
 // init debug plots
 void SimplePropagationModule::init() {
-    if(config_.get<bool>("debug_plots")) {
-        std::string file_name = getOutputPath(config_.get<std::string>("debug_plots_file_name", "debug_plots") + ".root");
+    if(config_.get<bool>("output_plots")) {
+        std::string file_name = getOutputPath(config_.get<std::string>("output_plots_file_name", "output_plots") + ".root");
         debug_file_ = new TFile(file_name.c_str(), "RECREATE");
     }
 }
 
-void SimplePropagationModule::create_debug_plots(unsigned int event_num) {
+void SimplePropagationModule::create_output_plots(unsigned int event_num) {
     LOG(DEBUG) << "Writing debug plots";
 
     // enable prefer GL
@@ -86,7 +86,7 @@ void SimplePropagationModule::create_debug_plots(unsigned int event_num) {
     debug_file_->cd();
 
     // convert to pixel units if necessary
-    if(config_.get<bool>("debug_plots_use_pixel_units")) {
+    if(config_.get<bool>("output_plots_use_pixel_units")) {
         for(auto& deposit_points : debug_plot_points_) {
             for(auto& point : deposit_points.second) {
                 point.SetX((point.x() / model_->getPixelSizeX()) + 1);
@@ -120,8 +120,8 @@ void SimplePropagationModule::create_debug_plots(unsigned int event_num) {
     double centerY = (minY + maxY) / 2.0;
 
     // use equal axis if specified
-    if(config_.get<bool>("debug_plots_use_equal_scaling", true)) {
-        if(config_.get<bool>("debug_plots_use_pixel_units")) {
+    if(config_.get<bool>("output_plots_use_equal_scaling", true)) {
+        if(config_.get<bool>("output_plots_use_pixel_units")) {
             minX = centerX - model_->getSensorSizeZ() / model_->getPixelSizeX() / 2.0;
             maxX = centerX + model_->getSensorSizeZ() / model_->getPixelSizeY() / 2.0;
 
@@ -155,14 +155,14 @@ void SimplePropagationModule::create_debug_plots(unsigned int event_num) {
                                             1280,
                                             1024);
     canvas->cd();
-    canvas->SetTheta(config_.get<float>("debug_plots_theta") * 180.0f / Pi());
-    canvas->SetPhi(config_.get<float>("debug_plots_phi") * 180.0f / Pi());
+    canvas->SetTheta(config_.get<float>("output_plots_theta") * 180.0f / Pi());
+    canvas->SetPhi(config_.get<float>("output_plots_phi") * 180.0f / Pi());
 
     // draw the frame
     histogram_frame->GetXaxis()->SetTitle(
-        (std::string("x ") + (config_.get<bool>("debug_plots_use_pixel_units") ? "(pixels)" : "(mm)")).c_str());
+        (std::string("x ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)")).c_str());
     histogram_frame->GetYaxis()->SetTitle(
-        (std::string("y ") + (config_.get<bool>("debug_plots_use_pixel_units") ? "(pixels)" : "(mm)")).c_str());
+        (std::string("y ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)")).c_str());
     histogram_frame->GetZaxis()->SetTitle("z (mm)");
     histogram_frame->Draw();
 
@@ -200,10 +200,10 @@ void SimplePropagationModule::create_debug_plots(unsigned int event_num) {
     canvas->cd();
 
     // change axis labels if close to zero or pi as they look different here
-    if(std::fabs(config_.get<double>("debug_plots_theta") / (Pi() / 2.0) -
-                 std::round(config_.get<double>("debug_plots_theta") / (Pi() / 2.0))) < 1e-6 ||
-       std::fabs(config_.get<double>("debug_plots_phi") / (Pi() / 2.0) -
-                 std::round(config_.get<double>("debug_plots_phi") / (Pi() / 2.0))) < 1e-6) {
+    if(std::fabs(config_.get<double>("output_plots_theta") / (Pi() / 2.0) -
+                 std::round(config_.get<double>("output_plots_theta") / (Pi() / 2.0))) < 1e-6 ||
+       std::fabs(config_.get<double>("output_plots_phi") / (Pi() / 2.0) -
+                 std::round(config_.get<double>("output_plots_phi") / (Pi() / 2.0))) < 1e-6) {
         histogram_frame->GetXaxis()->SetLabelOffset(-0.1f);
         histogram_frame->GetYaxis()->SetLabelOffset(-0.075f);
     } else {
@@ -253,8 +253,8 @@ void SimplePropagationModule::create_debug_plots(unsigned int event_num) {
 
     // create animation of moving charges
     auto animation_time =
-        static_cast<unsigned int>(std::round((Units::convert(config_.get<long double>("debug_plots_step"), "ms") / 10.0) *
-                                             config_.get<long double>("debug_plots_animation_time_scaling", 1e9)));
+        static_cast<unsigned int>(std::round((Units::convert(config_.get<long double>("output_plots_step"), "ms") / 10.0) *
+                                             config_.get<long double>("output_plots_animation_time_scaling", 1e9)));
     unsigned long plot_idx = 0;
     unsigned int point_cnt = 0;
     while(point_cnt < tot_point_cnt) {
@@ -263,15 +263,15 @@ void SimplePropagationModule::create_debug_plots(unsigned int event_num) {
 
         canvas->Clear();
         // TPad pad; //"pad", "pad", 0.05, 0.05, 0.95, 0.95);
-        canvas->SetTheta(config_.get<float>("debug_plots_theta") * 180.0f / Pi());
-        canvas->SetPhi(config_.get<float>("debug_plots_phi") * 180.0f / Pi());
+        canvas->SetTheta(config_.get<float>("output_plots_theta") * 180.0f / Pi());
+        canvas->SetPhi(config_.get<float>("output_plots_phi") * 180.0f / Pi());
         canvas->Draw();
         // pad.cd();
         histogram_frame->SetTitle("Charge propagation in sensor");
         histogram_frame->GetXaxis()->SetTitle(
-            (std::string("x ") + (config_.get<bool>("debug_plots_use_pixel_units") ? "(pixels)" : "(mm)")).c_str());
+            (std::string("x ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)")).c_str());
         histogram_frame->GetYaxis()->SetTitle(
-            (std::string("y ") + (config_.get<bool>("debug_plots_use_pixel_units") ? "(pixels)" : "(mm)")).c_str());
+            (std::string("y ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)")).c_str());
         histogram_frame->GetZaxis()->SetTitle("z (mm)");
         histogram_frame->Draw();
 
@@ -279,7 +279,7 @@ void SimplePropagationModule::create_debug_plots(unsigned int event_num) {
             auto points = deposit_points.second;
 
             auto diff = static_cast<unsigned long>(std::round((deposit_points.first.getEventTime() - start_time) /
-                                                              config_.get<long double>("debug_plots_step")));
+                                                              config_.get<long double>("output_plots_step")));
             if(static_cast<long>(plot_idx) - static_cast<long>(diff) < 0) {
                 min_idx_diff = std::min(min_idx_diff, diff - plot_idx);
                 continue;
@@ -326,28 +326,28 @@ void SimplePropagationModule::create_debug_plots(unsigned int event_num) {
                 switch(i) {
                 case 0 /* x */:
                     histogram_contour[i]->GetXaxis()->SetTitle(
-                        (std::string("x ") + (config_.get<bool>("debug_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
+                        (std::string("x ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
                             .c_str());
                     histogram_contour[i]->GetYaxis()->SetTitle("z (mm)");
                     break;
                 case 1 /* y */:
                     histogram_contour[i]->GetXaxis()->SetTitle(
-                        (std::string("y ") + (config_.get<bool>("debug_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
+                        (std::string("y ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
                             .c_str());
                     histogram_contour[i]->GetYaxis()->SetTitle("z (mm)");
                     break;
                 case 2 /* z */:
                     histogram_contour[i]->GetXaxis()->SetTitle(
-                        (std::string("x ") + (config_.get<bool>("debug_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
+                        (std::string("x ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
                             .c_str());
                     histogram_contour[i]->GetYaxis()->SetTitle(
-                        (std::string("y ") + (config_.get<bool>("debug_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
+                        (std::string("y ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
                             .c_str());
                     break;
                 default:;
                 }
                 histogram_contour[i]->SetMinimum(1);
-                histogram_contour[i]->SetMaximum(total_charge / config_.get<double>("debug_plots_contour_max_scaling", 10));
+                histogram_contour[i]->SetMaximum(total_charge / config_.get<double>("output_plots_contour_max_scaling", 10));
                 histogram_contour[i]->Draw("CONTZ 0");
                 if(point_cnt < tot_point_cnt - 1) {
                     canvas->Print((file_name_contour[i] + "+" + std::to_string(animation_time)).c_str());
@@ -393,7 +393,7 @@ void SimplePropagationModule::run(unsigned int event_num) {
             // get position and propagate through sensor
             auto position = deposit.getPosition(); // NOTE: this is already a local position
 
-            if(config_.get<bool>("debug_plots")) {
+            if(config_.get<bool>("output_plots")) {
                 debug_plot_points_.emplace_back(PropagatedCharge(position, charge_per_step, deposit.getEventTime()),
                                                 std::vector<ROOT::Math::XYZPoint>());
             }
@@ -411,8 +411,8 @@ void SimplePropagationModule::run(unsigned int event_num) {
     }
 
     // write debug plots if required
-    if(config_.get<bool>("debug_plots")) {
-        create_debug_plots(event_num);
+    if(config_.get<bool>("output_plots")) {
+        create_output_plots(event_num);
     }
 
     // create a new message with propagated charges
@@ -477,7 +477,8 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const XYZPoint& r
     double last_time = std::numeric_limits<double>::lowest();
     while(true) {
         // update debug plots if necessary
-        if(config_.get<bool>("debug_plots") && runge_kutta.getTime() - last_time > config_.get<double>("debug_plots_step")) {
+        if(config_.get<bool>("output_plots") &&
+           runge_kutta.getTime() - last_time > config_.get<double>("output_plots_step")) {
             debug_plot_points_.back().second.push_back(static_cast<XYZPoint>(runge_kutta.getValue()));
             last_time = runge_kutta.getTime();
         }
@@ -526,7 +527,7 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const XYZPoint& r
 
 // write debug plots
 void SimplePropagationModule::finalize() {
-    if(config_.get<bool>("debug_plots")) {
+    if(config_.get<bool>("output_plots")) {
         debug_file_->Close();
         delete debug_file_;
     }

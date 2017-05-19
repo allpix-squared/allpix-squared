@@ -10,7 +10,7 @@
 
 #include <Math/Vector3D.h>
 #include <TFile.h>
-#include <TH2D.h>
+#include <TH2F.h>
 
 #include "core/config/exceptions.h"
 #include "core/geometry/PixelDetectorModel.hpp"
@@ -37,15 +37,12 @@ void ElectricFieldReaderInitModule::init() {
         detector_->setElectricField(field_data.first, field_data.second);
 
         // produce debug histograms if needed
-        if(config_.get<bool>("debug_histogram", false)) {
-            std::string histogram_name = getUniqueName();
-            std::string histogram_title = "Histogram for " + detector_->getName();
-
-            auto steps = config_.get<size_t>("debug_histogram_steps", 5000);
-            auto project = config_.get<char>("debug_histogram_project", 'x');
+        if(config_.get<bool>("output_plots", false)) {
+            auto steps = config_.get<size_t>("output_plots_steps", 5000);
+            auto project = config_.get<char>("output_plots_project", 'x');
 
             if(project != 'x' && project != 'y' && project != 'z') {
-                throw InvalidValueError(config_, "debug_histogram_project", "can only project on x, y or z axis");
+                throw InvalidValueError(config_, "output_plots_project", "can only project on x, y or z axis");
             }
 
             auto model = detector_->getModel();
@@ -69,8 +66,8 @@ void ElectricFieldReaderInitModule::init() {
                 max2 = model->getSensorMinY() + model->getSensorSizeY();
             }
 
-            auto histogram = new TH2D(histogram_name.c_str(),
-                                      histogram_title.c_str(),
+            auto histogram = new TH2F(("field_" + getUniqueName()).c_str(),
+                                      ("Electric field for " + detector_->getName()).c_str(),
                                       static_cast<int>(steps),
                                       min1,
                                       max1,
@@ -81,13 +78,13 @@ void ElectricFieldReaderInitModule::init() {
             double x = 0, y = 0, z = 0;
             if(project == 'x') {
                 x = model->getSensorMinX() +
-                    config_.get<double>("debug_histogram_projection_percentage", 0.5) * model->getSensorSizeX();
+                    config_.get<double>("output_plots_projection_percentage", 0.5) * model->getSensorSizeX();
             } else if(project == 'y') {
                 y = model->getSensorMinY() +
-                    config_.get<double>("debug_histogram_projection_percentage", 0.5) * model->getSensorSizeY();
+                    config_.get<double>("output_plots_projection_percentage", 0.5) * model->getSensorSizeY();
             } else {
                 z = model->getSensorMinZ() +
-                    config_.get<double>("debug_histogram_projection_percentage", 0.5) * model->getSensorSizeZ();
+                    config_.get<double>("output_plots_projection_percentage", 0.5) * model->getSensorSizeZ();
             }
             for(size_t j = 0; j < steps; ++j) {
                 if(project == 'x') {
@@ -127,7 +124,7 @@ void ElectricFieldReaderInitModule::init() {
             }
 
             // open output file
-            std::string file_name = getOutputPath(config_.get<std::string>("debug_histogram_name", "histogram") + ".root");
+            std::string file_name = getOutputPath(config_.get<std::string>("output_plots_name", "histogram") + ".root");
             TFile file(file_name.c_str(), "RECREATE");
             file.cd();
 
