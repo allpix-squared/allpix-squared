@@ -6,6 +6,7 @@ ADD_LIBRARY(AllpixObjects SHARED
     Object.cpp
     SensorCharge.cpp
     PixelCharge.cpp
+    PixelHit.cpp
 )
 
 # link the standard dependencies

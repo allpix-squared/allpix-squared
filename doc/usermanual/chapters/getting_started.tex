@@ -136,35 +136,8 @@ The rest of all the section headers are used to instantiate all the modules. Mod
 \end{itemize}
 
 A valid example configuration using the detector configuration above could be:
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
-# key is part of the empty section and therefore the global sections
-string_value = "example1"
+\inputminted[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}{../../etc/manual_detector_config.ini}
 
-# the AllPix section is a special global section and merged with above
-[AllPix]
-another_random_string = "example2"
-
-# first run a unique module
-[MyUniqueModule]
-# this module takes no parameters
-
-# [MyUniqueModule] cannot be instantiated another time
-
-# then run some detector modules on different detectors 
-# first run a module on the two detector with name test
-[MyDetectorModule]
-type = "test"
-int_value = 1
-
-# replace the module above for test1 with a specialized version 
-[MyDetectorModule]
-name = "test1"
-int_value = 2
-
-# runs the module on the remaining unspecified detector tpx
-[MyDetectorModule]
-# int_value is not specified, so it uses the default value
-\end{minted}
 This configuration can however not be run in practice because MyUniqueModule and MyDetectorModule do not actually exist. Let us therefore continue to look at some actual parameters and start constructing a useful configuration file. In the next section the global framework parameters are introduced first.
 
 \subsection{Framework parameters}
@@ -194,62 +167,7 @@ Let us directly start with a full, but simple, simulation. A typical simulation 
 \todo{An extra geometry reader should be added here to create the \apsq geometry}
 
 In the example we are going to deposit charges in all of the three sensors from the detector configuration file in \ref{sec:detector_config}. Only the charges in the timepix module are going to be propagated and digitized. The final results of hits in the timepix will be written to a ROOT histogram. The documented version of this main configuration file (with all the required parameters) is as follows:
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
-# initialize the global configuration
-[AllPix]
-# run a total of 10 events
-number_of_events = 10
-# use the short logging format
-log_format = "SHORT"
-
-# read and instantiate the detectors and construct the Geant4 geometry
-[GeometryBuilderGeant4]
-# location of the detector configuration
-detectors_file = "detector_config.ini"
-# size of the world 
-# TODO: this will be optional
-world_size = 1000um 1000um 2000um
-
-# initialize physics list, setup the particle source and deposit the charges
-[DepositionGeant4]
-# use one of the standard Geant4 physics lists
-physics_list = QGSP_BERT
-# use a charged pion as particle
-particle_type = "pi+"
-# use a single particle in a single 'event'
-particle_amount = 1 
-# set the energy of the particle 
-particle_energy = 120GeV
-# the position of the point source
-particle_position = 0 0 0.2mm
-# the shooting direction of the source (negative z-axis)
-particle_direction = 0 0 -1
-
-# read an electric field
-# TODO: this should be excluded in this basic example
-[ElectricFieldReaderInit]
-file_name = "example_electric_field.init"
-
-# propagate the charges in the sensor 
-[SimplePropagation]
-# only propagate the timepix
-type = "timepix"
-# set the temperature of the sensor
-temperature = 293K
-# propagate multiple charges together in one step to speed up
-charge_per_step = 250
-
-# transfer the propagated charges to the pixels
-# TODO: this module is going to be deleted
-[SimpleTransfer]
-# maximum distance from the bottom to become mapped
-max_depth_distance = 10um 
-
-# save histogram for the timepix to an output file
-[detector_histogrammer_test]
-# alternative way to specify to run this only for the timepix
-name = "tpx"
-\end{minted}
+\inputminted[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}{../../etc/manual_config.ini}
 
 The configuration above can be saved to \textit{config.ini} \todo{which suffix to use}. The detector configuration file in \ref{sec:detector_config} should then be saved as \textit{detector\_config.ini} in the same directory. Hereafter the total simulation can be executed by passing the configuration to the allpix binary as follows:
 

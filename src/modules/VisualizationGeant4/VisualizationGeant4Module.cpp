@@ -43,7 +43,7 @@ VisualizationGeant4Module::~VisualizationGeant4Module() {
 
 void VisualizationGeant4Module::init() {
     // suppress all geant4 output
-    // SUPPRESS_STREAM(G4cout);
+    SUPPRESS_STREAM(G4cout);
 
     // check if we have a running G4 manager
     G4RunManager* run_manager_g4 = G4RunManager::GetRunManager();

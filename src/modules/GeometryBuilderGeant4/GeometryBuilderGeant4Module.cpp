@@ -27,6 +27,11 @@
 #include "modules/common/DetectorModelG4.hpp"
 #include "modules/common/ReadGeoDescription.hpp"
 
+// GDML
+#ifdef GEANT4_USE_GDML
+#include "G4GDMLParser.hh"
+#endif
+
 using namespace allpix;
 using namespace ROOT;
 
@@ -122,6 +127,28 @@ void GeometryBuilderGeant4Module::init() {
     // run the geometry construct function in GeometryConstructionG4
     LOG(INFO) << "Building Geant4 geometry";
     run_manager_g4_->InitializeGeometry();
+
+    // export geometry in GDML.
+    if(config_.has("GDML_output_file")) {
+#ifdef GEANT4_USE_GDML
+        std::string GDML_output_file = getOutputPath(config_.get<std::string>("GDML_output_file"));
+        if(GDML_output_file.size() <= 5 || GDML_output_file.substr(GDML_output_file.size() - 5, 5) != ".gdml") {
+            GDML_output_file += ".gdml";
+        }
+        G4GDMLParser parser;
+        parser.SetRegionExport(true);
+        parser.Write(GDML_output_file,
+                     G4TransportationManager::GetTransportationManager()
+                         ->GetNavigatorForTracking()
+                         ->GetWorldVolume()
+                         ->GetLogicalVolume());
+#else
+        std::string error = "You requested to export the geometry in GDML. ";
+        error += "However, GDML support is currently disabled in Geant4. ";
+        error += "To enable it, configure and compile Geant4 with the option -DGEANT4_USE_GDML=ON.";
+        throw allpix::InvalidValueError(config_, "GDML_output_file", error);
+#endif
+    }
 
     // release output from G4
     RELEASE_STREAM(G4cout);

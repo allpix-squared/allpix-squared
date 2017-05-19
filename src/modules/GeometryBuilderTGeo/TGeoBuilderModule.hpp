@@ -4,13 +4,13 @@
 /// Builds the detector geometry according to user defined parameters.
 ///
 /// To do :
-///  - Integrate Configuration
 ///  - Refer to the detector desc with their names instead of integers.
+///  -
 ///  -
 ///
 ///
 /// \date     March 30 2017
-/// \version  0.12
+/// \version  0.13
 /// \author N. Gauvin; CERN
 
 #ifndef ALLPIX_DETECTOR_CONSTRUCTION_TGEO_H
