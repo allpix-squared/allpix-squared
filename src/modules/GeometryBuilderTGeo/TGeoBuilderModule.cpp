@@ -161,6 +161,12 @@ void TGeoBuilderModule::init() {
 
     // Export geometry as GDML.
     if(m_config.has("GDML_output_file")) {
+#ifndef gdml
+        std::string error = "You requested to export the geometry in GDML. ";
+        error += "However, GDML support is currently disabled in ROOT. ";
+        error += "To enable it, configure and compile ROOT with the option -Dgdml=ON.";
+        throw allpix::InvalidValueError(m_config, "GDML_output_file", error);
+#endif
         TString GDML_output_file = getOutputPath(m_config.get<string>("GDML_output_file"));
         if(!GDML_output_file.EndsWith(".gdml")) {
             GDML_output_file += ".gdml";

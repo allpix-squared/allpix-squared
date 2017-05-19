@@ -13,10 +13,10 @@ IF(NOT Geant4_FOUND)
 ENDIF(NOT Geant4_FOUND)
 
 # Print message if GDML support is not enabled in Geant4
-IF(Geant4_gdml_FOUND)
+IF(GEANT4_USE_GDML)
   message(STATUS "Geometry export in GDML format is enabled.")
 ELSE()
-  message(STATUS "Geometry export in GDML format is disabled. To enable it, configure Geant4 with the option -DGEANT4_USE_GDML=ON".)
+  message(STATUS "Geometry export in GDML format is disabled. To enable it, configure and compile Geant4 with the option -DGEANT4_USE_GDML=ON.")
 ENDIF()
   
 # Add Geant4 flags before our own flags

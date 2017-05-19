@@ -143,9 +143,9 @@ void GeometryBuilderGeant4Module::init() {
                          ->GetWorldVolume()
                          ->GetLogicalVolume());
 #else
-        std::string error = "You requested to export the geometry in GDML.";
-        error += "However, GDML support is disabled in your Geant4.";
-        error += "To enable it, configure Geant4 with the option -DGEANT4_USE_GDML=ON.";
+        std::string error = "You requested to export the geometry in GDML. ";
+        error += "However, GDML support is currently disabled in Geant4. ";
+        error += "To enable it, configure and compile Geant4 with the option -DGEANT4_USE_GDML=ON.";
         throw allpix::InvalidValueError(config_, "GDML_output_file", error);
 #endif
     }
