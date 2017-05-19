@@ -121,12 +121,12 @@ double* Detector::get_electric_field_raw(double x, double y, double z) const {
     }
 
     // Compute indices
-    auto x_ind = static_cast<int>(static_cast<double>(electric_field_sizes_[0]) * (x + model_->getPixelSizeX() / 2.0) /
-                                  model_->getPixelSizeX());
-    auto y_ind = static_cast<int>(static_cast<double>(electric_field_sizes_[1]) * (y + model_->getPixelSizeY() / 2.0) /
-                                  model_->getPixelSizeY());
-    auto z_ind = static_cast<int>(static_cast<double>(electric_field_sizes_[2]) * (z - model_->getSensorMinZ()) /
-                                  model_->getSensorSizeZ());
+    auto x_ind = static_cast<int>(std::floor(static_cast<double>(electric_field_sizes_[0]) *
+                                             (x + model_->getPixelSizeX() / 2.0) / model_->getPixelSizeX()));
+    auto y_ind = static_cast<int>(std::floor(static_cast<double>(electric_field_sizes_[1]) *
+                                             (y + model_->getPixelSizeY() / 2.0) / model_->getPixelSizeY()));
+    auto z_ind = static_cast<int>(std::floor(static_cast<double>(electric_field_sizes_[2]) * (z - model_->getSensorMinZ()) /
+                                             model_->getSensorSizeZ()));
 
     // Check for indices within the sensor
     if(x_ind < 0 || x_ind >= static_cast<int>(electric_field_sizes_[0]) || y_ind < 0 ||
