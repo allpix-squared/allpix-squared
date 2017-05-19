@@ -236,7 +236,7 @@ void AllPix::set_style() {
     style->SetMarkerSize(1.2f);
 
     // set palette in 2d histogram to nice and colorful one
-    style->SetPalette(1, 0);
+    style->SetPalette(1, nullptr);
 
     // disable title by default for histograms
     style->SetOptTitle(0);
@@ -267,8 +267,8 @@ void AllPix::set_style() {
     style->SetNdivisions(506, "xy");
 
     // turn off xy grids
-    style->SetPadGridX(0);
-    style->SetPadGridY(0);
+    style->SetPadGridX(false);
+    style->SetPadGridY(false);
 
     // set the tick mark style
     style->SetPadTickX(1);
