@@ -5,6 +5,14 @@
 # Define module and return the generated name as MODULE_NAME
 ALLPIX_UNIQUE_MODULE(MODULE_NAME "TGeoBuilderModule")
 
+# Print message if GDML support is not enabled in ROOT
+IF(gdml)
+  message(STATUS "Geometry export in GDML format is enabled.")
+ELSE()
+  message(STATUS "Geometry export in GDML format is disabled. To enable it, configure and compile ROOT with the option -Dgdml=ON.")
+ENDIF()
+
+
 # Add library
 ALLPIX_MODULE_SOURCES(${MODULE_NAME}
     TGeoBuilderModule.cpp

@@ -79,6 +79,14 @@ ROOT::Math::XYZPoint Detector::getGlobalPosition(const ROOT::Math::XYZPoint& loc
  * The electric field is replicated for all pixels and uses flipping at each boundary (side effects are not modeled in this
  * stage). Outside of the sensor the electric field is strictly zero by definition.
  */
+bool Detector::hasElectricField() const {
+    return electric_field_sizes_[0] != 0 && electric_field_sizes_[1] != 0 && electric_field_sizes_[2] != 0;
+}
+
+/**
+ * The electric field is replicated for all pixels and uses flipping at each boundary (side effects are not modeled in this
+ * stage). Outside of the sensor the electric field is strictly zero by definition.
+ */
 ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZPoint& pos) const {
     double* field = get_electric_field_raw(pos.x(), pos.y(), pos.z());
 
@@ -89,6 +97,7 @@ ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZPoint& pos
 
     return ROOT::Math::XYZVector(*(field), *(field + 1), *(field + 2));
 }
+
 /**
  * The local position is first converted to pixel coordinates. The stored electric field if the index is odd.
  */
@@ -112,12 +121,12 @@ double* Detector::get_electric_field_raw(double x, double y, double z) const {
     }
 
     // Compute indices
-    auto x_ind = static_cast<int>(static_cast<double>(electric_field_sizes_[0]) * (x + model_->getPixelSizeX() / 2.0) /
-                                  model_->getPixelSizeX());
-    auto y_ind = static_cast<int>(static_cast<double>(electric_field_sizes_[1]) * (y + model_->getPixelSizeY() / 2.0) /
-                                  model_->getPixelSizeY());
-    auto z_ind = static_cast<int>(static_cast<double>(electric_field_sizes_[2]) * (z - model_->getSensorMinZ()) /
-                                  model_->getSensorSizeZ());
+    auto x_ind = static_cast<int>(std::floor(static_cast<double>(electric_field_sizes_[0]) *
+                                             (x + model_->getPixelSizeX() / 2.0) / model_->getPixelSizeX()));
+    auto y_ind = static_cast<int>(std::floor(static_cast<double>(electric_field_sizes_[1]) *
+                                             (y + model_->getPixelSizeY() / 2.0) / model_->getPixelSizeY()));
+    auto z_ind = static_cast<int>(std::floor(static_cast<double>(electric_field_sizes_[2]) * (z - model_->getSensorMinZ()) /
+                                             model_->getSensorSizeZ()));
 
     // Check for indices within the sensor
     if(x_ind < 0 || x_ind >= static_cast<int>(electric_field_sizes_[0]) || y_ind < 0 ||

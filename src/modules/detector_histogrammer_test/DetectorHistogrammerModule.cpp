@@ -42,7 +42,7 @@ void DetectorHistogrammerModule::init() {
     // create histogram
     LOG(INFO) << "Creating histograms";
     std::string histogram_name = "histogram_" + getUniqueName();
-    std::string histogram_title = "Histogram for " + detector_->getName();
+    std::string histogram_title = "Hitmap for " + detector_->getName() + ";x (pixels);y (pixels)";
     histogram = new TH2I(histogram_name.c_str(),
                          histogram_title.c_str(),
                          model->getNPixelsX(),
@@ -54,7 +54,7 @@ void DetectorHistogrammerModule::init() {
 
     // create cluster size plot
     std::string cluster_size_name = "cluster_" + detector_->getName();
-    std::string cluster_size_title = "Cluster size for " + detector_->getName();
+    std::string cluster_size_title = "Cluster size for " + detector_->getName() + ";size;number";
     cluster_size = new TH1I(cluster_size_name.c_str(),
                             cluster_size_title.c_str(),
                             model->getNPixelsX() * model->getNPixelsY(),
@@ -66,7 +66,7 @@ void DetectorHistogrammerModule::init() {
 void DetectorHistogrammerModule::run(unsigned int) {
     // check if we got any deposits
     if(pixels_message_ == nullptr) {
-        LOG(WARNING) << "Detector " << detector_->getName() << " did not get any deposits... skipping!";
+        LOG(WARNING) << "Detector " << detector_->getName() << " was not hit... skipping!";
         return;
     }
 
@@ -75,9 +75,8 @@ void DetectorHistogrammerModule::run(unsigned int) {
     // fill 2d histogram
     for(auto& pixel_charge : pixels_message_->getData()) {
         auto pixel = pixel_charge.getPixel();
-        auto charge = pixel_charge.getCharge();
 
-        histogram->Fill(pixel.x(), pixel.y(), charge);
+        histogram->Fill(pixel.x(), pixel.y());
     }
 
     // fill cluster histogram

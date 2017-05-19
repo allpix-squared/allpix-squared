@@ -10,7 +10,9 @@
 #include <stdexcept>
 #include <utility>
 
+#include <TROOT.h>
 #include <TRandom.h>
+#include <TStyle.h>
 #include <TSystem.h>
 
 #include "core/config/exceptions.h"
@@ -102,6 +104,9 @@ void AllPix::load() {
     // Set the default units to use
     add_units();
 
+    // Set the ROOT style
+    set_style();
+
     // Load the modules from the configuration
     LOG(DEBUG) << "Loading modules";
     mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get());
@@ -135,7 +140,6 @@ void AllPix::finalize() {
     LOG(DEBUG) << "Finalization completed";
 }
 
-// Add all units
 void AllPix::add_units() {
     // LENGTH
     Units::add("nm", 1e-6);
@@ -175,4 +179,103 @@ void AllPix::add_units() {
     // NOTE: these are fake units
     Units::add("deg", 0.01745329252);
     Units::add("rad", 1);
+}
+
+/**
+ * This style is inspired by the CLICdp plot style
+ */
+void AllPix::set_style() {
+    // use plain style as base
+    gROOT->SetStyle("Plain");
+    TStyle* style = gROOT->GetStyle("Plain");
+
+    // set backgrounds
+    style->SetCanvasColor(kWhite);
+    style->SetFrameFillColor(kWhite);
+    style->SetStatColor(kWhite);
+    style->SetPadColor(kWhite);
+    style->SetFillColor(10);
+    style->SetTitleFillColor(kWhite);
+
+    // SetPaperSize wants width & height in cm: A4 is 20,26
+    style->SetPaperSize(20, 26);
+    // No yellow border around histogram
+    style->SetDrawBorder(0);
+    // remove border of canvas*
+    style->SetCanvasBorderMode(0);
+    // remove border of pads
+    style->SetPadBorderMode(0);
+    style->SetFrameBorderMode(0);
+    style->SetLegendBorderSize(0);
+
+    // default text size
+    style->SetTextSize(0.04f);
+    style->SetTitleSize(0.04f, "xyz");
+    style->SetLabelSize(0.03f, "xyz");
+
+    // title offset: distance between given text and axis
+    style->SetLabelOffset(0.01f, "xyz");
+    style->SetTitleOffset(1.6f, "yz");
+    style->SetTitleOffset(1.4f, "x");
+
+    // set font settings
+    short font = 42; // use a clear font
+    style->SetTitleFont(font);
+    style->SetTitleFontSize(0.06f);
+    style->SetStatFont(font);
+    style->SetStatFontSize(0.07f);
+    style->SetTextFont(font);
+    style->SetLabelFont(font, "xyz");
+    style->SetTitleFont(font, "xyz");
+    style->SetTitleBorderSize(0);
+    style->SetStatBorderSize(1);
+
+    // set style for markers
+    style->SetMarkerStyle(1);
+    style->SetLineWidth(2);
+    style->SetMarkerSize(1.2f);
+
+    // set palette in 2d histogram to nice and colorful one
+    style->SetPalette(1, nullptr);
+
+    // disable title by default for histograms
+    style->SetOptTitle(0);
+
+    // set statistics
+    style->SetOptStat(0);
+    style->SetOptFit(0);
+
+    // number of decimals used for errors
+    style->SetEndErrorSize(5);
+
+    // set line width to 2 by default so that histograms are visible when printed small
+    // idea: emphasize the data, not the frame around
+    style->SetHistLineWidth(2);
+    style->SetFrameLineWidth(2);
+    style->SetFuncWidth(2);
+    style->SetHistLineColor(kBlack);
+    style->SetFuncColor(kRed);
+    style->SetLabelColor(kBlack, "xyz");
+
+    // set the margins
+    style->SetPadBottomMargin(0.18f);
+    style->SetPadTopMargin(0.08f);
+    style->SetPadRightMargin(0.18f);
+    style->SetPadLeftMargin(0.17f);
+
+    // set the default number of divisions to show
+    style->SetNdivisions(506, "xy");
+
+    // turn off xy grids
+    style->SetPadGridX(false);
+    style->SetPadGridY(false);
+
+    // set the tick mark style
+    style->SetPadTickX(1);
+    style->SetPadTickY(1);
+    style->SetCanvasDefW(800);
+    style->SetCanvasDefH(700);
+
+    // force the style
+    gROOT->ForceStyle();
 }

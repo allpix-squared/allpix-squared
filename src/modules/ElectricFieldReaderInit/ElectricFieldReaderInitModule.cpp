@@ -41,7 +41,7 @@ void ElectricFieldReaderInitModule::init() {
             std::string histogram_name = getUniqueName();
             std::string histogram_title = "Histogram for " + detector_->getName();
 
-            auto steps = config_.get<size_t>("debug_histogram_steps", 500);
+            auto steps = config_.get<size_t>("debug_histogram_steps", 5000);
             auto project = config_.get<char>("debug_histogram_project", 'x');
 
             if(project != 'x' && project != 'y' && project != 'z') {
