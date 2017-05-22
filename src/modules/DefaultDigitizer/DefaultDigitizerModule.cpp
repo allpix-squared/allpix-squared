@@ -42,6 +42,8 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration config,
 // Initialize output plots
 void DefaultDigitizerModule::init() {
     if(config_.get<bool>("output_plots")) {
+        LOG(TRACE) << "Creating output plots";
+
         std::string file_name =
             getOutputPath(config_.get<std::string>("output_plots_file_name", "debug_digitizer") + ".root");
         output_file_ = new TFile(file_name.c_str(), "RECREATE");
@@ -138,7 +140,7 @@ void DefaultDigitizerModule::finalize() {
         output_file_->cd();
 
         // Write histograms
-        LOG(INFO) << "Writing histograms to file";
+        LOG(TRACE) << "Writing output plots to file";
         h_pxq->Write();
         h_pxq_noise->Write();
         h_thr->Write();

@@ -70,7 +70,7 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
                     if(check_file.good()) {
                         lib = dlopen(full_lib_path.c_str(), RTLD_NOW);
                         if(lib != nullptr) {
-                            LOG(DEBUG) << "Found library in config specified directory at " << full_lib_path;
+                            LOG(DEBUG) << "Found library in configuration specified directory at " << full_lib_path;
                         } else {
                             load_error = true;
                         }
@@ -242,7 +242,7 @@ void ModuleManager::set_module_after(std::tuple<LogLevel, LogFormat> prev) {
     LogLevel old_level = std::get<0>(prev);
     if(cur_level != old_level) {
         Log::setReportingLevel(old_level);
-        LOG(DEBUG) << "Reset log level to global level of " << Log::getStringFromLevel(old_level);
+        LOG(TRACE) << "Reset log level to global level of " << Log::getStringFromLevel(old_level);
     }
 
     // Reset the previous log format
@@ -250,7 +250,7 @@ void ModuleManager::set_module_after(std::tuple<LogLevel, LogFormat> prev) {
     LogFormat old_format = std::get<1>(prev);
     if(cur_format != old_format) {
         Log::setFormat(old_format);
-        LOG(DEBUG) << "Reset log format to global level of " << Log::getStringFromFormat(old_format);
+        LOG(TRACE) << "Reset log format to global level of " << Log::getStringFromFormat(old_format);
     }
 }
 
@@ -292,7 +292,7 @@ void ModuleManager::run() {
         for(auto& mod : modules_) {
             // Check if module is satisfied to run
             if(!mod->check_delegates()) {
-                LOG(DEBUG) << "Not all required messages are received for " << mod->get_identifier().getUniqueName()
+                LOG(TRACE) << "Not all required messages are received for " << mod->get_identifier().getUniqueName()
                            << ", skipping module!";
                 continue;
             }
@@ -352,8 +352,6 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
     // Make the vector to return
     std::string module_name = config.getName();
 
-    LOG(DEBUG) << "Creating instantions for unique module " << module_name;
-
     // Load an instance of the module from the library
     ModuleIdentifier identifier(module_name, "", 0);
 
@@ -366,6 +364,8 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
     }
     // Convert to correct generator function
     auto module_generator = reinterpret_cast<Module* (*)(Configuration, Messenger*, GeometryManager*)>(generator); // NOLINT
+
+    LOG(DEBUG) << "Creating unique instantiation " << identifier.getUniqueName();
 
     // Set the log section header
     std::string old_section_name = Log::getSection();
@@ -453,6 +453,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
     // Construct instantiations from the list of requests
     std::vector<std::pair<ModuleIdentifier, Module*>> module_list;
     for(auto& instance : instantiations) {
+        LOG(DEBUG) << "Creating detector instantiation " << instance.second.getUniqueName();
         // Set the log section header
         std::string old_section_name = Log::getSection();
         std::string section_name = "C:";

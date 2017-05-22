@@ -61,7 +61,7 @@ void DepositionGeant4Module::init() {
     // register a step limiter
     physicsList->RegisterPhysics(new G4StepLimiterPhysics());
     // initialize the physics list
-    LOG(INFO) << "Initializing physics processes";
+    LOG(TRACE) << "Initializing physics processes";
     run_manager_g4_->SetUserInitialization(physicsList);
     run_manager_g4_->InitializePhysics();
 
@@ -69,7 +69,7 @@ void DepositionGeant4Module::init() {
     run_manager_g4_->Initialize();
 
     // build generator
-    LOG(INFO) << "Constructing particle source";
+    LOG(TRACE) << "Constructing particle source";
     auto generator = new GeneratorActionG4(config_);
     run_manager_g4_->SetUserAction(generator);
 
@@ -117,7 +117,7 @@ void DepositionGeant4Module::run(unsigned int) {
     }
 
     // start the beam
-    LOG(INFO) << "Enabling beam";
+    LOG(TRACE) << "Enabling beam";
     run_manager_g4_->BeamOn(1);
 
     // release the stream (if it was suspended)

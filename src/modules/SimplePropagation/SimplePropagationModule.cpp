@@ -77,7 +77,7 @@ void SimplePropagationModule::init() {
 }
 
 void SimplePropagationModule::create_output_plots(unsigned int event_num) {
-    LOG(DEBUG) << "Writing debug plots";
+    LOG(TRACE) << "Writing output plots";
 
     // enable prefer GL
     gStyle->SetCanvasPreferGL(kTRUE);
@@ -360,7 +360,8 @@ void SimplePropagationModule::create_output_plots(unsigned int event_num) {
         }
         markers.clear();
 
-        LOG(DEBUG) << "Written " << point_cnt << " of " << tot_point_cnt << " points";
+        LOG_PROGRESS(DEBUG, getUniqueName() + "_OUTPUT_PLOTS")
+            << "Written " << point_cnt << " of " << tot_point_cnt << " points";
     }
 }
 
@@ -375,12 +376,12 @@ void SimplePropagationModule::run(unsigned int event_num) {
     std::vector<PropagatedCharge> propagated_charges;
 
     // propagate all deposits
-    LOG(INFO) << "Propagating charges in sensor";
+    LOG(TRACE) << "Propagating charges in sensor";
     for(auto& deposit : deposits_message_->getData()) {
         // loop over all charges
         unsigned int electrons_remaining = deposit.getCharge();
 
-        LOG(DEBUG) << "set of charges on " << deposit.getPosition();
+        LOG(DEBUG) << "Set of charges on " << deposit.getPosition();
 
         auto charge_per_step = config_.get<unsigned int>("charge_per_step");
         while(electrons_remaining > 0) {
@@ -402,7 +403,7 @@ void SimplePropagationModule::run(unsigned int event_num) {
             auto prop_pair = propagate(position);
             position = prop_pair.first;
 
-            LOG(DEBUG) << " propagated " << charge_per_step << " to " << position << " in " << prop_pair.second << " time";
+            LOG(DEBUG) << " Propagated " << charge_per_step << " to " << position << " in " << prop_pair.second << " time";
 
             // create a new propagated charge and add it to the list
             PropagatedCharge propagated_charge(position, charge_per_step, deposit.getEventTime() + prop_pair.second);
@@ -528,6 +529,8 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const XYZPoint& r
 // write debug plots
 void SimplePropagationModule::finalize() {
     if(config_.get<bool>("output_plots")) {
+        LOG(TRACE) << "Closing output plots";
+
         debug_file_->Close();
         delete debug_file_;
     }

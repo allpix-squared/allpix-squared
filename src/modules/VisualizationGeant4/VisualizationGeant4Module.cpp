@@ -27,7 +27,7 @@ VisualizationGeant4Module::VisualizationGeant4Module(Configuration config, Messe
     : config_(std::move(config)), has_run_(false), vis_manager_g4_(nullptr), gui_session_(nullptr) {}
 VisualizationGeant4Module::~VisualizationGeant4Module() {
     if(!has_run_ && vis_manager_g4_ != nullptr && vis_manager_g4_->GetCurrentViewer() != nullptr) {
-        LOG(DEBUG) << "Invoking VRML workaround to prevent visualization under error conditions";
+        LOG(TRACE) << "Invoking VRML workaround to prevent visualization under error conditions";
 
         // FIXME: workaround to skip VRML visualization in case we stopped before reaching the run method
         auto str = getenv("G4VRMLFILE_VIEWER");
@@ -65,7 +65,7 @@ void VisualizationGeant4Module::init() {
     }
 
     // initialize the session and the visualization manager
-    LOG(INFO) << "Initializing visualization";
+    LOG(TRACE) << "Initializing visualization";
     vis_manager_g4_ = std::make_unique<G4VisExecutive>("quiet");
     vis_manager_g4_->Initialize();
 

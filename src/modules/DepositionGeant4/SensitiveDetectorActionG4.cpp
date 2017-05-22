@@ -61,8 +61,8 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     DepositedCharge deposit(deposit_position, charge, mid_time);
     deposits_.push_back(deposit);
 
-    LOG(DEBUG) << "created deposit of " << charge << " charges at " << mid_pos << " locally on " << deposit_position
-               << " after " << mid_time;
+    LOG(DEBUG) << "Created deposit of " << charge << " charges at " << mid_pos << " locally on " << deposit_position << "in "
+               << detector_->getName() << " after " << mid_time;
 
     return true;
 }
@@ -72,12 +72,11 @@ void SensitiveDetectorActionG4::EndOfEvent(G4HCofThisEvent*) {
     // send a new message if we have any deposits
     if(!deposits_.empty()) {
         IFLOG(INFO) {
-            uint32_t charges = 0;
-            for(const auto& ch : deposits_) {
+            unsigned int charges = 0;
+            for(auto& ch : deposits_) {
                 charges += ch.getCharge();
             }
-            LOG(INFO) << "Deposited " << charges << " charge carriers in sensor of detector \"" << detector_->getName()
-                      << "\"";
+            LOG(DEBUG) << "Deposited " << charges << " charges in sensor of detector " << detector_->getName();
         }
 
         // create a new charge deposit message

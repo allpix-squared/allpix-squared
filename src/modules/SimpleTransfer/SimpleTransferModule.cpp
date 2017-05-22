@@ -44,14 +44,14 @@ void SimpleTransferModule::run(unsigned int) {
     }
 
     // find pixels for all propagated charges
-    LOG(INFO) << "Transferring charges to pixels";
+    LOG(TRACE) << "Transferring charges to pixels";
     std::map<PixelCharge::Pixel, std::vector<PropagatedCharge>, pixel_cmp> pixel_map;
     for(auto& propagated_charge : propagated_message_->getData()) {
         auto position = propagated_charge.getPosition();
         // ignore if outside z range of implant
         // FIXME: this logic should be extended
         if(std::fabs(position.z() - model->getSensorMinZ()) > config_.get<double>("max_depth_distance")) {
-            LOG(DEBUG) << "skipping set of " << propagated_charge.getCharge() << " propagated charges at "
+            LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                        << propagated_charge.getPosition() << " because their local position is not in implant range";
             continue;
         }
@@ -63,7 +63,7 @@ void SimpleTransferModule::run(unsigned int) {
 
         // ignore if out of pixel grid
         if(xpixel < 0 || xpixel >= model->getNPixelsX() || ypixel < 0 || ypixel >= model->getNPixelsY()) {
-            LOG(DEBUG) << "skipping set of " << propagated_charge.getCharge() << " propagated charges at "
+            LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                        << propagated_charge.getPosition() << " because their nearest pixel (" << pixel.x() << ","
                        << pixel.y() << ") is outside the grid";
             continue;
@@ -72,12 +72,12 @@ void SimpleTransferModule::run(unsigned int) {
         // add the pixel the list of hit pixels
         pixel_map[pixel].push_back(propagated_charge);
 
-        LOG(DEBUG) << "set of " << propagated_charge.getCharge() << " propagated charges at "
+        LOG(DEBUG) << "Set of " << propagated_charge.getCharge() << " propagated charges at "
                    << propagated_charge.getPosition() << " brought to pixel (" << pixel.x() << "," << pixel.y() << ")";
     }
 
     // create pixel charges
-    LOG(INFO) << "Combining charges at same pixel";
+    LOG(TRACE) << "Combining charges at same pixel";
     std::vector<PixelCharge> pixel_charges;
     for(auto& pixel : pixel_map) {
         unsigned int charge = 0;
@@ -86,7 +86,7 @@ void SimpleTransferModule::run(unsigned int) {
         }
         pixel_charges.emplace_back(pixel.first, charge);
 
-        LOG(DEBUG) << "set of " << charge << " charges at (" << pixel.first.x() << "," << pixel.first.y() << ")";
+        LOG(DEBUG) << "Set of " << charge << " charges combined at (" << pixel.first.x() << "," << pixel.first.y() << ")";
     }
 
     // dispatch message
