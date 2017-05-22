@@ -73,14 +73,15 @@ void AllPix::load() {
     LOG(TRACE) << "Global log format is set to " << log_format_string;
 
     // Initialize the random seeder
+    uint64_t seed = 0;
     if(global_config.has("random_seed")) {
         // Use provided random seed
-        random_init(global_config.get<uint64_t>("random_seed"));
+        seed = random_init(global_config.get<uint64_t>("random_seed"));
     } else {
         // Use entropy from the system
-        random_init();
+        seed = random_init();
     }
-    LOG(DEBUG) << "Initialized random seeder (first seed is " << get_random_seed() << ")";
+    LOG(INFO) << "Initialized randomizer with seed " << seed;
     // Initialize ROOT random generator
     gRandom->SetSeed(get_random_seed());
 
