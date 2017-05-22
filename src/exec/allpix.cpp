@@ -14,22 +14,24 @@ int main(int argc, const char* argv[]) {
 
     // If no arguments are provided, print the help:
     bool print_help = false;
+    int help_return_code = 0;
     if(argc == 1) {
         print_help = true;
+        help_return_code = 1;
     }
 
     std::string config_file_name;
     for(int i = 1; i < argc; i++) {
-        if(strcmp(argv[i], "-h") != 0) {
+        if(strcmp(argv[i], "-h") == 0) {
             print_help = true;
-        } else if(strcmp(argv[i], "-v") != 0 && (i + 1 < argc)) {
+        } else if(strcmp(argv[i], "-v") == 0 && (i + 1 < argc)) {
             try {
                 LogLevel log_level = Log::getLevelFromString(std::string(argv[++i]));
                 Log::setReportingLevel(log_level);
             } catch(std::invalid_argument& e) {
                 LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\"";
             }
-        } else if(strcmp(argv[i], "-c") != 0 && (i + 1 < argc)) {
+        } else if(strcmp(argv[i], "-c") == 0 && (i + 1 < argc)) {
             config_file_name = std::string(argv[++i]);
         } else {
             LOG(ERROR) << "Unrecognized command line argument \"" << argv[i] << "\"";
@@ -42,7 +44,7 @@ int main(int argc, const char* argv[]) {
         std::cout << "\t -v <level>   verbosity level, default INFO, can be overwritten \n"
                   << "\t              by global or per-module configuration." << std::endl;
         std::cout << "\t -c <config>  configuration file to be used" << std::endl;
-        return 0;
+        return help_return_code;
     }
 
     if(config_file_name.empty()) {
