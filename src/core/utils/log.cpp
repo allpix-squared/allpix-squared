@@ -15,6 +15,7 @@
 #include <iostream>
 #include <ostream>
 #include <string>
+#include <unistd.h>
 
 using namespace allpix;
 
@@ -56,6 +57,7 @@ DefaultLogger::~DefaultLogger() {
         } while((start_pos = out.find('\n', start_pos)) != std::string::npos);
     }
 
+    // Add extra spaces if necessary
     size_t extra_spaces = 0;
     if(!identifier_.empty() && last_identifier_ == identifier_) {
         // Put carriage return for process logs
@@ -84,9 +86,24 @@ DefaultLogger::~DefaultLogger() {
         out += '\n';
     }
 
+    // Create a version without any special terminal characters
+    std::string out_no_special;
+    size_t prev = 0, pos = 0;
+    while((pos = out.find("\x1B[", prev)) != std::string::npos) {
+        out_no_special += out.substr(prev, pos - prev);
+        prev = out.find("m", pos) + 1;
+        if(prev == std::string::npos)
+            break;
+    }
+    out_no_special += out.substr(prev);
+
     // Print output to streams
     for(auto stream : get_streams()) {
-        (*stream) << out;
+        if(is_terminal(*stream)) {
+            (*stream) << out;
+        } else {
+            (*stream) << out_no_special;
+        }
         (*stream).flush();
     }
 }
@@ -97,11 +114,20 @@ DefaultLogger::~DefaultLogger() {
  */
 void DefaultLogger::finish() {
     if(!last_identifier_.empty()) {
-        last_identifier_ = "";
-        last_message_ = "";
+        // Flush final line if necessary
         for(auto stream : get_streams()) {
             (*stream) << std::endl;
             (*stream).flush();
+        }
+    }
+
+    last_identifier_ = "";
+    last_message_ = "";
+
+    // Enable cursor again if stream supports it
+    for(auto stream : get_streams()) {
+        if(is_terminal(*stream)) {
+            (*stream) << "\x1B[?25h";
         }
     }
 }
@@ -114,7 +140,20 @@ std::ostringstream&
 DefaultLogger::getStream(LogLevel level, const std::string& file, const std::string& function, uint32_t line) {
     // Add date in all except short format
     if(get_format() != LogFormat::SHORT) {
+        os << "\x1B[1m"; // BOLD
         os << "|" << get_current_date() << "| ";
+        os << "\x1B[0m"; // RESET
+    }
+
+    // Set color for log level
+    if(level == LogLevel::FATAL || level == LogLevel::ERROR) {
+        os << "\x1B[31;1m"; // RED
+    } else if(level == LogLevel::WARNING) {
+        os << "\x1B[33;1m"; // YELLOW
+    } else if(level == LogLevel::TRACE || level == LogLevel::DEBUG) {
+        os << "\x1B[36m"; // NON-BOLD CYAN
+    } else {
+        os << "\x1B[36;1m"; // CYAN
     }
 
     // Add log level (shortly in the short format)
@@ -126,15 +165,20 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
     } else {
         os << "(" << getStringFromLevel(level).substr(0, 1) << ") ";
     }
+    os << "\x1B[0m"; // RESET
 
     // Add section if available
     if(!get_section().empty()) {
+        os << "\x1B[1m"; // BOLD
         os << "[" << get_section() << "] ";
+        os << "\x1B[0m"; // RESET
     }
 
     // Print function name and line number information in debug format
     if(get_format() == LogFormat::LONG) {
+        os << "\x1B[1m"; // BOLD
         os << "<" << file << "/" << function << ":L" << line << "> ";
+        os << "\x1B[0m"; // RESET
     }
 
     // Save the indent count to fix with newlines
@@ -248,7 +292,7 @@ const std::vector<std::ostream*>& DefaultLogger::getStreams() {
     return get_streams();
 }
 std::vector<std::ostream*>& DefaultLogger::get_streams() {
-    static std::vector<std::ostream*> streams = {&std::cout};
+    static std::vector<std::ostream*> streams;
     return streams;
 }
 void DefaultLogger::clearStreams() {
@@ -261,6 +305,11 @@ void DefaultLogger::clearStreams() {
  * @note Streams cannot be individually removed at the moment and only all at once using \ref clearStreams().
  */
 void DefaultLogger::addStream(std::ostream& stream) {
+    // Disable cursor if stream supports it
+    if(is_terminal(stream)) {
+        stream << "\x1B[?25l";
+    }
+
     get_streams().push_back(&stream);
 }
 
@@ -293,6 +342,20 @@ std::string DefaultLogger::get_current_date() {
     ss << std::setfill('0') << std::setw(3);
     ss << millis;
     return ss.str();
+}
+
+/*
+ * It is impossible to know for sure a terminal has support for all extra terminal features, but every modern terminal has
+ * this so we just assume it.
+ */
+bool DefaultLogger::is_terminal(std::ostream& stream) {
+    if(&std::cout == &stream) {
+        return isatty(fileno(stdout));
+    } else if(&std::cerr == &stream) {
+        return isatty(fileno(stderr));
+    }
+
+    return false;
 }
 
 /**

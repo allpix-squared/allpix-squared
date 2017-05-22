@@ -28,7 +28,6 @@ int main(int argc, const char* argv[]) {
     // Install interrupt inter
     std::signal(SIGINT, interrupt_handler);
     std::signal(SIGTERM, interrupt_handler);
-    std::signal(SIGQUIT, interrupt_handler);
 
     // If no arguments are provided, print the help:
     bool print_help = false;

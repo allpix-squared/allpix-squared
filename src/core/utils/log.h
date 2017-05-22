@@ -194,6 +194,12 @@ namespace allpix {
          */
         std::string get_current_date();
 
+        /**
+         * @brief Return if a stream is likely a terminal screen (supporting colors etc.)
+         * @return True if the stream is terminal, false otherwise
+         */
+        static bool is_terminal(std::ostream& stream);
+
         // Output stream
         std::ostringstream os;
 
