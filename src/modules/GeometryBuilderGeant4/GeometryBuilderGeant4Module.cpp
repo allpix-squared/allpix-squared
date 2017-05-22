@@ -28,7 +28,7 @@
 #include "modules/common/ReadGeoDescription.hpp"
 
 // GDML
-#ifdef GEANT4_USE_GDML
+#ifdef Geant4_GDML
 #include "G4GDMLParser.hh"
 #endif
 
@@ -130,7 +130,7 @@ void GeometryBuilderGeant4Module::init() {
 
     // export geometry in GDML.
     if(config_.has("GDML_output_file")) {
-#ifdef GEANT4_USE_GDML
+#ifdef Geant4_GDML
         std::string GDML_output_file = getOutputPath(config_.get<std::string>("GDML_output_file"));
         if(GDML_output_file.size() <= 5 || GDML_output_file.substr(GDML_output_file.size() - 5, 5) != ".gdml") {
             GDML_output_file += ".gdml";
