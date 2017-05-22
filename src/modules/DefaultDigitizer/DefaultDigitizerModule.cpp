@@ -127,7 +127,7 @@ void DefaultDigitizerModule::run(unsigned int) {
     if(!hits.empty()) {
         // Create and dispatch hit message
         PixelHitMessage hits_message(hits, getDetector());
-        messenger_->dispatchMessage(hits_message, "hit");
+        messenger_->dispatchMessage(this, hits_message, "hit");
     }
 }
 

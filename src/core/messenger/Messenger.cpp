@@ -43,7 +43,7 @@ static bool check_send(BaseMessage* message, BaseDelegate* delegate) {
  * has no name it only sends to all general listeners (not listening to a specific name). If the dispatched
  * message has a name it is also distributed to its specific listeners (besides the general listeners).
  */
-void Messenger::dispatch_message(const std::shared_ptr<BaseMessage>& msg, const std::string& name) {
+void Messenger::dispatch_message(Module* module, const std::shared_ptr<BaseMessage>& msg, const std::string& name) {
     bool send = false;
 
     // Create type identifier from the typeid
@@ -54,6 +54,8 @@ void Messenger::dispatch_message(const std::shared_ptr<BaseMessage>& msg, const 
     if(!name.empty()) {
         for(auto& delegate : delegates_[type_idx][name]) {
             if(check_send(msg.get(), delegate.get())) {
+                LOG(TRACE) << "Sending message " << allpix::demangle(type_idx.name()) << " from " << module->getUniqueName()
+                           << " to " << delegate->getUniqueName();
                 delegate->process(msg);
                 send = true;
             }
@@ -63,6 +65,8 @@ void Messenger::dispatch_message(const std::shared_ptr<BaseMessage>& msg, const 
     // Send all messages also to general listeners
     for(auto& delegate : delegates_[type_idx][""]) {
         if(check_send(msg.get(), delegate.get())) {
+            LOG(TRACE) << "Sending message " << allpix::demangle(type_idx.name()) << " from " << module->getUniqueName()
+                       << " to " << delegate->getUniqueName();
             delegate->process(msg);
             send = true;
         }
@@ -71,7 +75,8 @@ void Messenger::dispatch_message(const std::shared_ptr<BaseMessage>& msg, const 
     // Display a warning if the message is send to no receiver
     // FIXME: better message about source (and check if this really a problem)
     if(!send) {
-        LOG(WARNING) << "Dispatched message of type " << allpix::demangle(type_idx.name()) << " has no receivers!";
+        LOG(WARNING) << "Dispatched message " << allpix::demangle(type_idx.name()) << " from " << module->getUniqueName()
+                     << " has no receivers!";
     }
 }
 

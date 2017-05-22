@@ -29,11 +29,12 @@
 using namespace allpix;
 
 // construct and destruct the sensitive detector
-SensitiveDetectorActionG4::SensitiveDetectorActionG4(const std::shared_ptr<Detector>& detector,
+SensitiveDetectorActionG4::SensitiveDetectorActionG4(Module* module,
+                                                     const std::shared_ptr<Detector>& detector,
                                                      Messenger* msg,
                                                      double charge_creation_energy)
     : G4VSensitiveDetector("SensitiveDetector_" + detector->getName()), charge_creation_energy_(charge_creation_energy),
-      detector_(detector), messenger_(msg) {
+      module_(module), detector_(detector), messenger_(msg) {
     // add to the sensitive detector manager
     G4SDManager* sd_man_g4 = G4SDManager::GetSDMpointer();
     sd_man_g4->AddNewDetector(this);
@@ -83,7 +84,7 @@ void SensitiveDetectorActionG4::EndOfEvent(G4HCofThisEvent*) {
         DepositedChargeMessage deposit_message(std::move(deposits_), detector_);
 
         // dispatch the message
-        messenger_->dispatchMessage(deposit_message, "sensor");
+        messenger_->dispatchMessage(module_, deposit_message, "sensor");
 
         // make a new empty vector of deposits
         deposits_ = std::vector<DepositedCharge>();

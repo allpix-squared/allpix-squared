@@ -25,7 +25,10 @@ namespace allpix {
     class SensitiveDetectorActionG4 : public G4VSensitiveDetector {
     public:
         // Constructor and destructor
-        SensitiveDetectorActionG4(const std::shared_ptr<Detector>&, Messenger*, double charge_creation_energy);
+        SensitiveDetectorActionG4(Module* module,
+                                  const std::shared_ptr<Detector>&,
+                                  Messenger*,
+                                  double charge_creation_energy);
         ~SensitiveDetectorActionG4() override;
 
         // Disallow copy
@@ -46,6 +49,9 @@ namespace allpix {
 
         // list of deposits in sensitive device
         std::vector<DepositedCharge> deposits_;
+
+        // Instantatiation of the deposition module
+        Module* module_;
 
         // the linked detector
         std::shared_ptr<Detector> detector_;

@@ -91,5 +91,5 @@ void SimpleTransferModule::run(unsigned int) {
 
     // dispatch message
     PixelChargeMessage pixel_message(pixel_charges, detector_);
-    messenger_->dispatchMessage(pixel_message, "pixel");
+    messenger_->dispatchMessage(this, pixel_message, "pixel");
 }

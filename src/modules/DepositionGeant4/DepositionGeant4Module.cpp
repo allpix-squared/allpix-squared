@@ -85,7 +85,7 @@ void DepositionGeant4Module::init() {
         model_g4->pixel_log->SetUserLimits(user_limits_.get());
 
         // add the sensitive detector action
-        auto sensitive_detector_action = new SensitiveDetectorActionG4(detector, messenger_, charge_creation_energy);
+        auto sensitive_detector_action = new SensitiveDetectorActionG4(this, detector, messenger_, charge_creation_energy);
         model_g4->pixel_log->SetSensitiveDetector(sensitive_detector_action);
     }
 

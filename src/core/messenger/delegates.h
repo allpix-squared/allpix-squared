@@ -122,6 +122,12 @@ namespace allpix {
         virtual std::shared_ptr<Detector> getDetector() const = 0;
 
         /**
+         * @brief Get the unique identifier for the bound object
+         * @return Unique identifier
+         */
+        virtual std::string getUniqueName() = 0;
+
+        /**
          * @brief Process a message and forwards it to its final destination
          * @param msg Message to process
          */
@@ -158,13 +164,11 @@ namespace allpix {
          */
         explicit ModuleDelegate(MsgFlags flags, T* obj) : BaseDelegate(flags), obj_(obj) {}
 
-        /// @{
         /**
-         * @brief Copying a delegate is not allowed
+         * @brief Get the unique name of the bound module
+         * @return Unique name
          */
-        // ModuleDelegate(const ModuleDelegate&) = delete;
-        // ModuleDelegate& operator=(const ModuleDelegate&) = delete;
-        /// @}
+        std::string getUniqueName() { return obj_->getUniqueName(); }
 
         /**
          * @brief Get the detector bound to this module
@@ -192,14 +196,6 @@ namespace allpix {
          * @param method A function taking a shared_ptr to the message to listen to
          */
         FunctionDelegate(MsgFlags flags, T* obj, ListenerFunction method) : ModuleDelegate<T>(flags, obj), method_(method) {}
-
-        /// @{
-        /**
-         * @brief Copying a delegate is not allowed
-         */
-        // FunctionDelegate(const FunctionDelegate&) = delete;
-        // FunctionDelegate& operator=(const FunctionDelegate&) = delete;
-        /// @}
 
         /**
          * @brief Calls the listener function with the supplied message
@@ -238,14 +234,6 @@ namespace allpix {
          * @param member Member variable to assign the pointer to the message to
          */
         SingleBindDelegate(MsgFlags flags, T* obj, BindType member) : ModuleDelegate<T>(flags, obj), member_(member) {}
-
-        /// @{
-        /**
-         * @brief Copying a delegate is not allowed
-         */
-        // SingleBindDelegate(const SingleBindDelegate&) = delete;
-        // SingleBindDelegate& operator=(const SingleBindDelegate&) = delete;
-        /// @}
 
         /**
          * @brief Saves the message to the bound message pointer
@@ -307,14 +295,6 @@ namespace allpix {
          * @param member Member variable vector to add the pointer to the message to
          */
         VectorBindDelegate(MsgFlags flags, T* obj, BindType member) : ModuleDelegate<T>(flags, obj), member_(member) {}
-
-        /// @{
-        /**
-         * @brief Copying a delegate is not allowed
-         */
-        // VectorBindDelegate(const VectorBindDelegate&) = delete;
-        // VectorBindDelegate& operator=(const VectorBindDelegate&) = delete;
-        /// @}
 
         /**
          * @brief Adds the message to the bound vector

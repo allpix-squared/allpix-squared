@@ -419,7 +419,7 @@ void SimplePropagationModule::run(unsigned int event_num) {
     PropagatedChargeMessage propagated_charge_message(std::move(propagated_charges), detector_);
 
     // dispatch the message
-    messenger_->dispatchMessage(propagated_charge_message, "implant");
+    messenger_->dispatchMessage(this, propagated_charge_message, "implant");
 }
 
 std::pair<XYZPoint, double> SimplePropagationModule::propagate(const XYZPoint& root_pos) {

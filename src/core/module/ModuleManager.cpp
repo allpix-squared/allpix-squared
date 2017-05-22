@@ -51,7 +51,7 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
     for(auto& config : configs) {
         // Load library for each module. Libraries are named (by convention + CMAKE) libAllpixModule Name.suffix
         std::string lib_name = std::string(ALLPIX_MODULE_PREFIX).append(config.getName()).append(SHARED_LIBRARY_SUFFIX);
-        LOG(INFO) << "Loading library " << lib_name;
+        LOG_PROGRESS(QUIET, "LOAD_LOOP") << "Loading module " << config.getName();
 
         void* lib = nullptr;
         bool load_error = false;
@@ -198,6 +198,7 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
             id_to_module_[identifier] = --modules_.end();
         }
     }
+    LOG_PROGRESS(QUIET, "LOAD_LOOP") << "Loaded modules";
 }
 
 // Helper functions to set the module specific log settings if necessary
@@ -210,7 +211,7 @@ std::tuple<LogLevel, LogFormat> ModuleManager::set_module_before(const std::stri
         try {
             LogLevel log_level = Log::getLevelFromString(log_level_string);
             if(log_level != prev_level) {
-                LOG(DEBUG) << "Local log level is set to " << log_level_string;
+                LOG(TRACE) << "Local log level is set to " << log_level_string;
                 Log::setReportingLevel(log_level);
             }
         } catch(std::invalid_argument& e) {
@@ -226,7 +227,7 @@ std::tuple<LogLevel, LogFormat> ModuleManager::set_module_before(const std::stri
         try {
             LogFormat log_format = Log::getFormatFromString(log_format_string);
             if(log_format != prev_format) {
-                LOG(DEBUG) << "Local log format is set to " << log_format_string;
+                LOG(TRACE) << "Local log format is set to " << log_format_string;
                 Log::setFormat(log_format);
             }
         } catch(std::invalid_argument& e) {
@@ -270,7 +271,7 @@ void ModuleManager::init() {
         // Init module
         mod->init();
         // Reset delegates
-        LOG(DEBUG) << "Resetting delegates";
+        LOG(TRACE) << "Resetting messages";
         mod->reset_delegates();
         // Reset logging
         Log::setSection(old_section_name);
@@ -288,7 +289,6 @@ void ModuleManager::run() {
     // Loop over the number of events
     auto number_of_events = global_config_.get<unsigned int>("number_of_events", 1u);
     for(unsigned int i = 0; i < number_of_events; ++i) {
-        LOG_PROGRESS(QUIET, "EVENT_LOOP") << "Running event " << (i + 1) << " of " << number_of_events;
         for(auto& mod : modules_) {
             // Check if module is satisfied to run
             if(!mod->check_delegates()) {
@@ -296,6 +296,8 @@ void ModuleManager::run() {
                            << ", skipping module!";
                 continue;
             }
+            LOG_PROGRESS(QUIET, "EVENT_LOOP") << "Running event " << (i + 1) << " of " << number_of_events << " ["
+                                              << mod->get_identifier().getUniqueName() << "]";
 
             // Set run module section header
             std::string old_section_name = Log::getSection();
@@ -307,13 +309,14 @@ void ModuleManager::run() {
             // Run module
             mod->run(i + 1);
             // Resetting delegates
-            LOG(DEBUG) << "Resetting delegates";
+            LOG(TRACE) << "Resetting messages";
             mod->reset_delegates();
             // Reset logging
             Log::setSection(old_section_name);
             set_module_after(old_settings);
         }
     }
+    LOG_PROGRESS(QUIET, "EVENT_LOOP") << "Finished run of " << number_of_events << " events";
 }
 
 /**
@@ -322,8 +325,7 @@ void ModuleManager::run() {
  */
 void ModuleManager::finalize() {
     for(auto& mod : modules_) {
-        LOG_PROGRESS(QUIET, "INIT_LOOP") << "Finalizing " << mod->get_identifier().getUniqueName();
-
+        LOG_PROGRESS(QUIET, "FINALIZE_LOOP") << "Finalizing " << mod->get_identifier().getUniqueName();
         // Set finalize module section header
         std::string old_section_name = Log::getSection();
         std::string section_name = "F:";
@@ -337,7 +339,7 @@ void ModuleManager::finalize() {
         Log::setSection(old_section_name);
         set_module_after(old_settings);
     }
-    LOG_PROGRESS(QUIET, "INIT_LOOP") << "Finalization completed";
+    LOG_PROGRESS(QUIET, "FINALIZE_LOOP") << "Finalization completed";
 }
 
 /**
@@ -370,7 +372,7 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
     std::string section_name = "C:";
     section_name += identifier.getUniqueName();
     Log::setSection(section_name);
-    // set module specific log settings
+    // Set module specific log settings
     auto old_settings = set_module_before(identifier.getUniqueName(), config);
     // Build module
     Module* module = module_generator(config, messenger, geo_manager);

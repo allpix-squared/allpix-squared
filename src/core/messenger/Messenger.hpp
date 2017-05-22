@@ -141,20 +141,22 @@ namespace allpix {
         /// @{
         /**
          * @brief Dispatches a message
+         * @param source Dispatching module
          * @param msg Message to dispatch
          * @param name Name of the message
          * @warning This method should not be used as it does an internal copy to a shared_ptr (which should be used
          * directly)
          */
         // TODO [doc] Remove this method
-        template <typename T> void dispatchMessage(const T& msg, const std::string& name = "");
+        template <typename T> void dispatchMessage(Module* source, const T& msg, const std::string& name = "");
         /**
          * @brief Dispatches a message
+         * @param source Dispatching module
          * @param msg Pointer to the message to dispatch
          * @param name Name of the message
          */
         // TODO [doc] The source module should also be required as parameter
-        template <typename T> void dispatchMessage(std::shared_ptr<T> msg, const std::string& name = "");
+        template <typename T> void dispatchMessage(Module* source, std::shared_ptr<T> msg, const std::string& name = "");
         /// @}
 
     private:
@@ -178,10 +180,11 @@ namespace allpix {
 
         /**
          * @brief Dispatch base message to the correct delegates
+         * @param source Dispatching module
          * @param msg Message to dispatch
          * @param name Name of the message
          */
-        void dispatch_message(const std::shared_ptr<BaseMessage>& msg, const std::string& name = "");
+        void dispatch_message(Module* source, const std::shared_ptr<BaseMessage>& msg, const std::string& name = "");
 
         using DelegateMap = std::map<std::type_index, std::map<std::string, std::list<std::unique_ptr<BaseDelegate>>>>;
         using DelegateIteratorMap =
