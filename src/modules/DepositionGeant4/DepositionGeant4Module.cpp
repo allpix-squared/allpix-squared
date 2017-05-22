@@ -110,7 +110,16 @@ void DepositionGeant4Module::init() {
 
 // run the deposition
 void DepositionGeant4Module::run(unsigned int) {
+    // suppress stream if not in debugging mode
+    IFLOG(DEBUG);
+    else {
+        SUPPRESS_STREAM(G4cout);
+    }
+
     // start the beam
     LOG(INFO) << "Enabling beam";
     run_manager_g4_->BeamOn(1);
+
+    // release the stream (if it was suspended)
+    RELEASE_STREAM(G4cout);
 }

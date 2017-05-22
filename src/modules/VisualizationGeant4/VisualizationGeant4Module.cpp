@@ -103,21 +103,33 @@ void VisualizationGeant4Module::init() {
     UI->ApplyCommand("/vis/sceneHandler/attach");
     UI->ApplyCommand("/vis/viewer/create");
 
-    // release the g4 output
-    RELEASE_STREAM(G4cout);
+    // release the stream early in debugging mode
+    IFLOG(DEBUG) { RELEASE_STREAM(G4cout); }
 
     // execute initialization macro if provided
     if(config_.has("macro_init")) {
         UI->ApplyCommand("/control/execute " + config_.getPath("macro_init"));
     }
+
+    // release the g4 output
+    RELEASE_STREAM(G4cout);
 }
 
 void VisualizationGeant4Module::run(unsigned int) {
+    // suppress stream if not in debugging mode
+    IFLOG(DEBUG);
+    else {
+        SUPPRESS_STREAM(G4cout);
+    }
+
     // execute the run macro
     if(config_.has("macro_run")) {
         G4UImanager* UI = G4UImanager::GetUIpointer();
         UI->ApplyCommand("/control/execute " + config_.getPath("macro_run"));
     }
+
+    // release the stream (if it was suspended)
+    RELEASE_STREAM(G4cout);
 }
 
 // display the visualization after all events have passed

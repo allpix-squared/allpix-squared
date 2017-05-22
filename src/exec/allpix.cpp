@@ -87,5 +87,8 @@ int main(int argc, const char* argv[]) {
         return 127;
     }
 
+    // Finish the logging
+    Log::finish();
+
     return 0;
 }

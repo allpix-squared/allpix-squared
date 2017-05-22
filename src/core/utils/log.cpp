@@ -18,6 +18,11 @@
 
 using namespace allpix;
 
+// Last name used while printing (for identifying process logs)
+std::string DefaultLogger::last_identifier_ = "";
+// Last message send used to check if extra spaces are needed
+std::string DefaultLogger::last_message_ = "";
+
 /**
  * The logger will save the number of uncaught exceptions during construction to compare that with the number of exceptions
  * during destruction later.
@@ -51,12 +56,53 @@ DefaultLogger::~DefaultLogger() {
         } while((start_pos = out.find('\n', start_pos)) != std::string::npos);
     }
 
-    // Add final newline
-    out += '\n';
+    size_t extra_spaces = 0;
+    if(!identifier_.empty() && last_identifier_ == identifier_) {
+        // Put carriage return for process logs
+        out = '\r' + out;
+
+        // Set extra spaces to fully cover previous message
+        if(last_message_.size() > out.size()) {
+            extra_spaces = last_message_.size() - out.size();
+        }
+    } else if(!last_identifier_.empty()) {
+        // End process log and continue normal logging
+        out = '\n' + out;
+    }
+    last_identifier_ = identifier_;
+
+    // Save last message
+    last_message_ = out;
+
+    // Add extra spaces if required
+    if(extra_spaces > 0) {
+        out += std::string(extra_spaces, ' ');
+    }
+
+    // Add final newline if not a progress log
+    if(identifier_.empty()) {
+        out += '\n';
+    }
 
     // Print output to streams
     for(auto stream : get_streams()) {
         (*stream) << out;
+        (*stream).flush();
+    }
+}
+
+/**
+ * @warning No other log message should be send after this method
+ * @note Does not close the streams
+ */
+void DefaultLogger::finish() {
+    if(!last_identifier_.empty()) {
+        last_identifier_ = "";
+        last_message_ = "";
+        for(auto stream : get_streams()) {
+            (*stream) << std::endl;
+            (*stream).flush();
+        }
     }
 }
 
@@ -96,6 +142,25 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
     return os;
 }
 
+/**
+ * @throws std::invalid_argument If an empty identifier is provided
+ *
+ * This method is typically automatically called by the \ref LOG_PROCESS macro.
+ */
+std::ostringstream& DefaultLogger::getProcessStream(
+    std::string identifier, LogLevel level, const std::string& file, const std::string& function, uint32_t line) {
+    // Get the standard process stream
+    std::ostringstream& stream = getStream(level, file, function, line);
+
+    // Save the identifier to indicate a progress log
+    if(identifier.empty()) {
+        throw std::invalid_argument("the process log identifier cannot be empty");
+    }
+    identifier_ = identifier;
+
+    return stream;
+}
+
 // Getter and setters for the reporting level
 LogLevel& DefaultLogger::get_reporting_level() {
     static LogLevel reporting_level = LogLevel::INFO;
@@ -110,7 +175,7 @@ LogLevel DefaultLogger::getReportingLevel() {
 
 // String to LogLevel conversions and vice versa
 std::string DefaultLogger::getStringFromLevel(LogLevel level) {
-    static const std::array<std::string, 6> type = {{"QUIET", "FATAL", "ERROR", "WARNING", "INFO", "DEBUG"}};
+    static const std::array<std::string, 6> type = {{"FATAL", "QUIET", "ERROR", "WARNING", "INFO", "DEBUG"}};
     return type.at(static_cast<decltype(type)::size_type>(level));
 }
 /**
@@ -129,11 +194,11 @@ LogLevel DefaultLogger::getLevelFromString(const std::string& level) {
     if(level == "ERROR") {
         return LogLevel::ERROR;
     }
-    if(level == "FATAL") {
-        return LogLevel::FATAL;
-    }
     if(level == "QUIET") {
         return LogLevel::QUIET;
+    }
+    if(level == "FATAL") {
+        return LogLevel::FATAL;
     }
 
     throw std::invalid_argument("unknown log level");

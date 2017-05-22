@@ -259,6 +259,7 @@ void ModuleManager::set_module_after(std::tuple<LogLevel, LogFormat> prev) {
  */
 void ModuleManager::init() {
     for(auto& mod : modules_) {
+        LOG_PROGRESS(QUIET, "INIT_LOOP") << "Initializing " << mod->get_identifier().getUniqueName();
         // Set init module section header
         std::string old_section_name = Log::getSection();
         std::string section_name = "I:";
@@ -275,6 +276,7 @@ void ModuleManager::init() {
         Log::setSection(old_section_name);
         set_module_after(old_settings);
     }
+    LOG_PROGRESS(QUIET, "INIT_LOOP") << "Initialization finished";
 }
 
 /**
@@ -286,12 +288,12 @@ void ModuleManager::run() {
     // Loop over the number of events
     auto number_of_events = global_config_.get<unsigned int>("number_of_events", 1u);
     for(unsigned int i = 0; i < number_of_events; ++i) {
-        LOG(QUIET) << "Running event " << (i + 1) << " of " << number_of_events;
+        LOG_PROGRESS(QUIET, "EVENT_LOOP") << "Running event " << (i + 1) << " of " << number_of_events;
         for(auto& mod : modules_) {
             // Check if module is satisfied to run
             if(!mod->check_delegates()) {
                 LOG(DEBUG) << "Not all required messages are received for " << mod->get_identifier().getUniqueName()
-                           << "... skipping!";
+                           << ", skipping module!";
                 continue;
             }
 
@@ -320,6 +322,8 @@ void ModuleManager::run() {
  */
 void ModuleManager::finalize() {
     for(auto& mod : modules_) {
+        LOG_PROGRESS(QUIET, "INIT_LOOP") << "Finalizing " << mod->get_identifier().getUniqueName();
+
         // Set finalize module section header
         std::string old_section_name = Log::getSection();
         std::string section_name = "F:";
@@ -333,6 +337,7 @@ void ModuleManager::finalize() {
         Log::setSection(old_section_name);
         set_module_after(old_settings);
     }
+    LOG_PROGRESS(QUIET, "INIT_LOOP") << "Finalization completed";
 }
 
 /**

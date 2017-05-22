@@ -71,8 +71,7 @@ void Messenger::dispatch_message(const std::shared_ptr<BaseMessage>& msg, const 
     // Display a warning if the message is send to no receiver
     // FIXME: better message about source (and check if this really a problem)
     if(!send) {
-        LOG(WARNING) << "Dispatched message of type " << allpix::demangle(type_idx.name())
-                     << " has no receivers... this is probably not what you want!";
+        LOG(WARNING) << "Dispatched message of type " << allpix::demangle(type_idx.name()) << " has no receivers!";
     }
 }
 
