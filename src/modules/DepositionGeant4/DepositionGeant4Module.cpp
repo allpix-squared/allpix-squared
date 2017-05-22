@@ -23,6 +23,8 @@
 #include "core/utils/random.h"
 #include "tools/geant4.h"
 
+#include "objects/DepositedCharge.hpp"
+
 #include "GeneratorActionG4.hpp"
 #include "SensitiveDetectorActionG4.hpp"
 
@@ -78,7 +80,17 @@ void DepositionGeant4Module::init() {
     auto charge_creation_energy = config_.get<double>("charge_creation_energy", 3.64e-6);
 
     // loop through all detectors and set the sensitive detector (call it action because that is what it is currently doing)
+    bool useful_deposition = false;
     for(auto& detector : geo_manager_->getDetectors()) {
+        // do not add sensitive detector for detectors that have no listeners
+        if(!messenger_->hasReceiver(std::make_shared<DepositedChargeMessage>(std::vector<DepositedCharge>(), detector),
+                                    "sensor")) {
+            LOG(DEBUG) << "Not depositing charges in " << detector->getName() << " because the output is not used";
+            continue;
+        }
+        useful_deposition = true;
+
+        // get model of the detector
         auto model_g4 = detector->getExternalModel<DetectorModelG4>();
 
         // set maximum step length
@@ -87,6 +99,10 @@ void DepositionGeant4Module::init() {
         // add the sensitive detector action
         auto sensitive_detector_action = new SensitiveDetectorActionG4(this, detector, messenger_, charge_creation_energy);
         model_g4->pixel_log->SetSensitiveDetector(sensitive_detector_action);
+    }
+
+    if(!useful_deposition) {
+        LOG(ERROR) << "Not a single listener for deposited charges, module is useless!";
     }
 
     // disable verbose processes

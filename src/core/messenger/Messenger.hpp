@@ -138,25 +138,34 @@ namespace allpix {
                        MsgFlags flags = MsgFlags::NONE);
         /// @}
 
+        /**
+         * @brief Check if a specific message has a receiver
+         * @param message Instantiation of the message to check
+         * @param name Name of the message
+         * @param detector An eventual detector the message is bound to
+         * @return True if the message has at least one receiver, false otherwise
+         */
+        bool hasReceiver(const std::shared_ptr<BaseMessage>& message, const std::string& message_name = "");
+
         /// @{
         /**
          * @brief Dispatches a message
          * @param source Dispatching module
-         * @param msg Message to dispatch
+         * @param message Message to dispatch
          * @param name Name of the message
          * @warning This method should not be used as it does an internal copy to a shared_ptr (which should be used
          * directly)
          */
         // TODO [doc] Remove this method
-        template <typename T> void dispatchMessage(Module* source, const T& msg, const std::string& name = "");
+        template <typename T> void dispatchMessage(Module* source, const T& message, const std::string& name = "");
         /**
          * @brief Dispatches a message
          * @param source Dispatching module
-         * @param msg Pointer to the message to dispatch
+         * @param message Pointer to the message to dispatch
          * @param name Name of the message
          */
         // TODO [doc] The source module should also be required as parameter
-        template <typename T> void dispatchMessage(Module* source, std::shared_ptr<T> msg, const std::string& name = "");
+        template <typename T> void dispatchMessage(Module* source, std::shared_ptr<T> message, const std::string& name = "");
         /// @}
 
     private:
@@ -181,10 +190,10 @@ namespace allpix {
         /**
          * @brief Dispatch base message to the correct delegates
          * @param source Dispatching module
-         * @param msg Message to dispatch
+         * @param message Message to dispatch
          * @param name Name of the message
          */
-        void dispatch_message(Module* source, const std::shared_ptr<BaseMessage>& msg, const std::string& name = "");
+        void dispatch_message(Module* source, const std::shared_ptr<BaseMessage>& message, const std::string& name = "");
 
         using DelegateMap = std::map<std::type_index, std::map<std::string, std::list<std::unique_ptr<BaseDelegate>>>>;
         using DelegateIteratorMap =

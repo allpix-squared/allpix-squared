@@ -39,24 +39,50 @@ static bool check_send(BaseMessage* message, BaseDelegate* delegate) {
 }
 
 /**
+ * Messages should be bound during construction, so this function only gives useful information outside the constructor
+ */
+bool Messenger::hasReceiver(const std::shared_ptr<BaseMessage>& message, const std::string& name) {
+    const BaseMessage* inst = message.get();
+    std::type_index type_idx = typeid(*inst);
+
+    // Check specific listeners
+    if(!name.empty()) {
+        for(auto& delegate : delegates_[type_idx][name]) {
+            if(check_send(message.get(), delegate.get())) {
+                return true;
+            }
+        }
+    }
+
+    // Check general listeners
+    for(auto& delegate : delegates_[type_idx][""]) {
+        if(check_send(message.get(), delegate.get())) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
  * Messages are only dispatched to delegates listening to the exact same type. If the dispatched message
  * has no name it only sends to all general listeners (not listening to a specific name). If the dispatched
  * message has a name it is also distributed to its specific listeners (besides the general listeners).
  */
-void Messenger::dispatch_message(Module* module, const std::shared_ptr<BaseMessage>& msg, const std::string& name) {
+void Messenger::dispatch_message(Module* module, const std::shared_ptr<BaseMessage>& message, const std::string& name) {
     bool send = false;
 
     // Create type identifier from the typeid
-    const BaseMessage* inst = msg.get();
+    const BaseMessage* inst = message.get();
     std::type_index type_idx = typeid(*inst);
 
     // Send named messages only to their specific listeners
     if(!name.empty()) {
         for(auto& delegate : delegates_[type_idx][name]) {
-            if(check_send(msg.get(), delegate.get())) {
+            if(check_send(message.get(), delegate.get())) {
                 LOG(TRACE) << "Sending message " << allpix::demangle(type_idx.name()) << " from " << module->getUniqueName()
                            << " to " << delegate->getUniqueName();
-                delegate->process(msg);
+                delegate->process(message);
                 send = true;
             }
         }
@@ -64,10 +90,10 @@ void Messenger::dispatch_message(Module* module, const std::shared_ptr<BaseMessa
 
     // Send all messages also to general listeners
     for(auto& delegate : delegates_[type_idx][""]) {
-        if(check_send(msg.get(), delegate.get())) {
+        if(check_send(message.get(), delegate.get())) {
             LOG(TRACE) << "Sending message " << allpix::demangle(type_idx.name()) << " from " << module->getUniqueName()
                        << " to " << delegate->getUniqueName();
-            delegate->process(msg);
+            delegate->process(message);
             send = true;
         }
     }
