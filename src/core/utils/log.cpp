@@ -19,9 +19,9 @@
 using namespace allpix;
 
 // Last name used while printing (for identifying process logs)
-std::string DefaultLogger::last_identifier_ = "";
+std::string DefaultLogger::last_identifier_;
 // Last message send used to check if extra spaces are needed
-std::string DefaultLogger::last_message_ = "";
+std::string DefaultLogger::last_message_;
 
 /**
  * The logger will save the number of uncaught exceptions during construction to compare that with the number of exceptions
@@ -148,7 +148,7 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
  * This method is typically automatically called by the \ref LOG_PROCESS macro.
  */
 std::ostringstream& DefaultLogger::getProcessStream(
-    std::string identifier, LogLevel level, const std::string& file, const std::string& function, uint32_t line) {
+    const std::string& identifier, LogLevel level, const std::string& file, const std::string& function, uint32_t line) {
     // Get the standard process stream
     std::ostringstream& stream = getStream(level, file, function, line);
 
@@ -175,13 +175,16 @@ LogLevel DefaultLogger::getReportingLevel() {
 
 // String to LogLevel conversions and vice versa
 std::string DefaultLogger::getStringFromLevel(LogLevel level) {
-    static const std::array<std::string, 6> type = {{"FATAL", "QUIET", "ERROR", "WARNING", "INFO", "DEBUG"}};
+    static const std::array<std::string, 7> type = {{"FATAL", "QUIET", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE"}};
     return type.at(static_cast<decltype(type)::size_type>(level));
 }
 /**
  * @throws std::invalid_argument If the string does not correspond with an existing log level
  */
 LogLevel DefaultLogger::getLevelFromString(const std::string& level) {
+    if(level == "TRACE") {
+        return LogLevel::TRACE;
+    }
     if(level == "DEBUG") {
         return LogLevel::DEBUG;
     }

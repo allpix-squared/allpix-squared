@@ -26,8 +26,10 @@ namespace allpix {
         QUIET,     ///< Only progress information
         ERROR,     ///< Critical problems that usually lead to fatal errors
         WARNING,   ///< Possible issue that could lead to unexpected results
-        INFO,      ///< General informational summaries of process
-        DEBUG      ///< Detailed information about process and execution
+        INFO,      ///< General information about processes (should not be called in run function)
+        DEBUG,     ///< Detailed information about physics process
+        TRACE      ///< Software debugging information about what part is currently running
+
     };
     /**
      * @brief Format of the logger
@@ -94,7 +96,7 @@ namespace allpix {
          * @param line The line number of the log message
          * @return A C++ stream to write to
          */
-        std::ostringstream& getProcessStream(std::string identifier,
+        std::ostringstream& getProcessStream(const std::string& identifier,
                                              LogLevel level = LogLevel::INFO,
                                              const std::string& file = "",
                                              const std::string& function = "",

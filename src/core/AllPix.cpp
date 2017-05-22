@@ -40,6 +40,8 @@ AllPix::AllPix(std::string file_name)
  * - Load the modules from the configuration
  */
 void AllPix::load() {
+    LOG(TRACE) << "Loading AllPix";
+
     // Configure the standard special sections
     conf_mgr_->setGlobalHeaderName("AllPix");
     conf_mgr_->addGlobalHeaderName("");
@@ -67,8 +69,8 @@ void AllPix::load() {
     }
 
     // Wait for the debug messages until level and format are set
-    LOG(DEBUG) << "Global log level is set to " << log_level_string;
-    LOG(DEBUG) << "Global log format is set to " << log_format_string;
+    LOG(TRACE) << "Global log level is set to " << log_level_string;
+    LOG(TRACE) << "Global log format is set to " << log_format_string;
 
     // Initialize the random seeder
     if(global_config.has("random_seed")) {
@@ -83,6 +85,7 @@ void AllPix::load() {
     gRandom->SetSeed(get_random_seed());
 
     // Get output directory
+    LOG(TRACE) << "Switching to output directory";
     std::string directory = gSystem->pwd();
     directory += "/output";
     if(global_config.has("output_directory")) {
@@ -108,39 +111,34 @@ void AllPix::load() {
     set_style();
 
     // Load the modules from the configuration
-    LOG(DEBUG) << "Loading modules";
     mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get());
-    LOG(DEBUG) << "Modules succesfully loaded"; // FIXME: add some more info
 }
 
 /**
  * Runs the Module::init() method linearly for every module
  */
 void AllPix::init() {
-    LOG(DEBUG) << "Initializing modules";
+    LOG(TRACE) << "Initializing AllPix";
     mod_mgr_->init();
-    LOG(DEBUG) << "Finished initialization";
 }
 /**
  * Runs every modules Module::run() method linearly for the number of events
  */
 void AllPix::run() {
-    Configuration global_config = conf_mgr_->getGlobalConfiguration();
-    auto number_of_events = global_config.get<unsigned int>("number_of_events", 1u);
-    LOG(DEBUG) << "Running modules for " << number_of_events << " events";
+    LOG(TRACE) << "Running AllPix";
     mod_mgr_->run();
-    LOG(DEBUG) << "Finished run";
 }
 /**
  * Runs all modules Module::finalize() method linearly for every module
  */
 void AllPix::finalize() {
-    LOG(DEBUG) << "Finalizing modules";
+    LOG(TRACE) << "Finalizing AllPix";
     mod_mgr_->finalize();
-    LOG(DEBUG) << "Finalization completed";
 }
 
 void AllPix::add_units() {
+    LOG(TRACE) << "Adding physical units";
+
     // LENGTH
     Units::add("nm", 1e-6);
     Units::add("um", 1e-3);
@@ -185,6 +183,8 @@ void AllPix::add_units() {
  * This style is inspired by the CLICdp plot style
  */
 void AllPix::set_style() {
+    LOG(TRACE) << "Setting ROOT plotting style";
+
     // use plain style as base
     gROOT->SetStyle("Plain");
     TStyle* style = gROOT->GetStyle("Plain");
