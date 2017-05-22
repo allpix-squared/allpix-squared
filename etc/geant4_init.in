@@ -1,5 +1,43 @@
+# To avoid excessive redrawing on immediate viewers
+/vis/viewer/set/autoRefresh false
+
+# Change background color
+/vis/viewer/set/background white
+
+### Trajectories
 # display trajectories later
 /vis/scene/endOfEventAction accumulate
 /vis/scene/endOfRunAction accumulate
 /tracking/storeTrajectory 1
-/vis/scene/add/trajectories
+#/vis/scene/add/trajectories
+# display smoother lines, not just straight lines between step points.
+/vis/scene/add/trajectories smooth
+# adds hits to the current scene, assuming that you have a hit class and that the hits have visualization information.
+/vis/scene/add/hits
+# OpenGL supports hidden line removal. By default, hidden line removal is disabled
+# To turn on hidden line removal. This hides edges of geometry, but lets trajectories through.
+/vis/viewer/set/hiddenEdge 1
+# To hide trajectories and hits as well
+/vis/viewer/set/hiddenMarker 1
+
+### Camera and lights commands
+# by default, the geometry is viewed from the front.
+#/vis/viewer/set/viewpointVector 0.8 0.25 0.5
+/vis/viewer/set/viewpointThetaPhi 70 20
+# Specify zoom value:
+#/vis/viewer/zoom 2.
+# Specify style (surface or wireframe): note that this will not affect volumes that have style explicitly forced by “setForceWireframe” or “setForceSolid” commands in the c++ code
+#/vis/viewer/set/style wireframe
+# Draw coordinate axes, set the lenght according to your world volume.
+#/vis/scene/add/axes 1 1 1 1 mm
+
+# save your view
+#/vis/viewer/save MyView.vis
+
+/vis/viewer/set/autoRefresh true
+
+#### Good to know
+# set line width for all volumes
+#/vis/geometry/set/lineWidth all 1
+# export the viewer as an image, avaliable format are eps,ps,pdf,svg,bmp,jpg,png,...
+# /vis/ogl/export "toto.png"
