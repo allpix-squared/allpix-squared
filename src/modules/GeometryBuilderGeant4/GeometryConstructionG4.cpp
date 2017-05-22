@@ -67,6 +67,7 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
 
     // set the world to invisible in the viewer
     // FIXME: this should strictly not be defined here, but simplifies things a lot
+    // Default color is orange.
     G4VisAttributes invisibleVisAtt = G4VisAttributes(G4Color(1.0, 0.65, 0.0, 0.1));
     invisibleVisAtt.SetVisibility(false);
     invisibleVisAtt.SetForceSolid(false);
@@ -112,15 +113,16 @@ void GeometryConstructionG4::build_pixel_devices() {
      * FIXME: should strictly not be here but simplifies visualization
      */
 
-    G4VisAttributes BoxVisAtt = G4VisAttributes(G4Color(0, 1, 1, 1));
+    G4VisAttributes BoxVisAtt = G4VisAttributes(G4Color(0, 1, 1, 0.1)); // Cyan
     BoxVisAtt.SetLineWidth(2);
-    BoxVisAtt.SetForceSolid(true);
+    BoxVisAtt.SetForceSolid(false);
+    BoxVisAtt.SetVisibility(false);
 
     G4VisAttributes ChipVisAtt = G4VisAttributes(G4Color::Gray());
     ChipVisAtt.SetLineWidth(2);
     ChipVisAtt.SetForceSolid(true);
 
-    G4VisAttributes BumpBoxVisAtt = G4VisAttributes(G4Color(0, 1, 0, 1.0));
+    G4VisAttributes BumpBoxVisAtt = G4VisAttributes(G4Color(0, 1, 0, 1.0)); // Green
     BumpBoxVisAtt.SetLineWidth(1);
     BumpBoxVisAtt.SetForceSolid(false);
     BumpBoxVisAtt.SetVisibility(true);
@@ -133,11 +135,11 @@ void GeometryConstructionG4::build_pixel_devices() {
     pcbVisAtt.SetLineWidth(1);
     pcbVisAtt.SetForceSolid(true);
 
-    G4VisAttributes guardRingsVisAtt = G4VisAttributes(G4Color(0.5, 0.5, 0.5, 1));
+    G4VisAttributes guardRingsVisAtt = G4VisAttributes(G4Color(0.5, 0.5, 0.5, 1)); // Dark gray
     guardRingsVisAtt.SetLineWidth(1);
     guardRingsVisAtt.SetForceSolid(true);
 
-    G4VisAttributes wrapperVisAtt = G4VisAttributes(G4Color(1, 0, 0, 0.9));
+    G4VisAttributes wrapperVisAtt = G4VisAttributes(G4Color(1, 0, 0, 0.1)); // red
     wrapperVisAtt.SetLineWidth(1);
     wrapperVisAtt.SetForceSolid(false);
     wrapperVisAtt.SetVisibility(false);
