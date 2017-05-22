@@ -1,3 +1,4 @@
+#include <csignal>
 #include <memory>
 #include <string>
 #include <utility>
@@ -10,7 +11,24 @@
 
 using namespace allpix;
 
+// Output interrupt message and finish the logger
+void interrupt_handler(int);
+void interrupt_handler(int) {
+    // NOTE: this is actually not totally reliable (otherwise crashing is fine...)
+    Log::setSection("");
+    LOG(FATAL) << "Interrupted!";
+    Log::finish();
+    std::exit(1);
+}
+
 int main(int argc, const char* argv[]) {
+    // Add cout as the default logging stream
+    Log::addStream(std::cout);
+
+    // Install interrupt inter
+    std::signal(SIGINT, interrupt_handler);
+    std::signal(SIGTERM, interrupt_handler);
+    std::signal(SIGQUIT, interrupt_handler);
 
     // If no arguments are provided, print the help:
     bool print_help = false;
