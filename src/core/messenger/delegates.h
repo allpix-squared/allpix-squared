@@ -168,7 +168,7 @@ namespace allpix {
          * @brief Get the unique name of the bound module
          * @return Unique name
          */
-        std::string getUniqueName() { return obj_->getUniqueName(); }
+        std::string getUniqueName() override { return obj_->getUniqueName(); }
 
         /**
          * @brief Get the detector bound to this module
