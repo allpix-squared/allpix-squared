@@ -483,7 +483,7 @@ void ModuleManager::run() {
 }
 
 static std::string seconds_to_time(long double seconds) {
-    auto duration = std::chrono::duration<long long>(static_cast<long long>(seconds));
+    auto duration = std::chrono::duration<long long>(static_cast<long long>(std::round(seconds)));
 
     std::string time_str;
     auto hours = std::chrono::duration_cast<std::chrono::hours>(duration);

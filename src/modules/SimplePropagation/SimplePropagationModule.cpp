@@ -550,5 +550,5 @@ void SimplePropagationModule::finalize() {
 
     long double average_time = total_time_ / std::max(1u, total_steps_);
     LOG(INFO) << "Propagated total of " << total_propagated_charges_ << " charges in " << total_steps_
-              << " steps in average time of " << average_time;
+              << " steps in average time of " << Units::display(average_time, "ns");
 }
