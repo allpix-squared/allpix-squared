@@ -1,4 +1,5 @@
 #include <csignal>
+#include <cstdlib>
 #include <memory>
 #include <string>
 #include <utility>
@@ -11,14 +12,20 @@
 
 using namespace allpix;
 
-// Output interrupt message and finish the logger
+void clean();
 void interrupt_handler(int);
+
+// Output interrupt message and clean
 void interrupt_handler(int) {
     // NOTE: this is actually not totally reliable (otherwise crashing is fine...)
-    Log::setSection("");
     LOG(FATAL) << "Interrupted!";
-    Log::finish();
+    clean();
     std::exit(1);
+}
+
+// Clean environment
+void clean() {
+    Log::finish();
 }
 
 int main(int argc, const char* argv[]) {
@@ -31,10 +38,10 @@ int main(int argc, const char* argv[]) {
 
     // If no arguments are provided, print the help:
     bool print_help = false;
-    int help_return_code = 0;
+    int return_code = 0;
     if(argc == 1) {
         print_help = true;
-        help_return_code = 1;
+        return_code = 1;
     }
 
     std::string config_file_name;
@@ -61,11 +68,13 @@ int main(int argc, const char* argv[]) {
         std::cout << "\t -v <level>   verbosity level, default INFO, can be overwritten \n"
                   << "\t              by global or per-module configuration." << std::endl;
         std::cout << "\t -c <config>  configuration file to be used" << std::endl;
-        return help_return_code;
+        clean();
+        return return_code;
     }
 
     if(config_file_name.empty()) {
         LOG(FATAL) << "No configuration file provided! See usage info with \"allpix -h\"";
+        clean();
         return 1;
     }
 
@@ -88,24 +97,24 @@ int main(int argc, const char* argv[]) {
         LOG(FATAL) << "Error in the configuration file:" << std::endl
                    << "   " << e.what() << std::endl
                    << "The configuration file needs to be updated! Cannot continue...";
-        return 1;
+        return_code = 1;
     } catch(RuntimeError& e) {
         LOG(FATAL) << "Error during execution of run:" << std::endl
                    << "   " << e.what() << std::endl
                    << "Please check your configuration and modules! Cannot continue...";
-        return 1;
+        return_code = 1;
     } catch(LogicError& e) {
         LOG(FATAL) << "Error in the logic of module:" << std::endl
                    << "   " << e.what() << std::endl
                    << "Module has to be properly defined! Cannot continue...";
-        return 1;
+        return_code = 1;
     } catch(std::exception& e) {
         LOG(FATAL) << "Fatal internal error" << std::endl << "   " << e.what() << std::endl << "Cannot continue...";
-        return 127;
+        return_code = 127;
     }
 
     // Finish the logging
-    Log::finish();
+    clean();
 
-    return 0;
+    return return_code;
 }
