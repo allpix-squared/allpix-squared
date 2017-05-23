@@ -92,7 +92,7 @@ DefaultLogger::~DefaultLogger() {
     size_t prev = 0, pos = 0;
     while((pos = out.find("\x1B[", prev)) != std::string::npos) {
         out_no_special += out.substr(prev, pos - prev);
-        prev = out.find("m", pos) + 1;
+        prev = out.find('m', pos) + 1;
         if(prev == std::string::npos) {
             break;
         }
@@ -188,7 +188,7 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
     std::string out = os.str();
     while((pos = out.find("\x1B[", prev)) != std::string::npos) {
         indent_count_ += static_cast<unsigned int>(pos - prev);
-        prev = out.find("m", pos) + 1;
+        prev = out.find('m', pos) + 1;
         if(prev == std::string::npos) {
             break;
         }
@@ -360,9 +360,10 @@ std::string DefaultLogger::get_current_date() {
  */
 bool DefaultLogger::is_terminal(std::ostream& stream) {
     if(&std::cout == &stream) {
-        return isatty(fileno(stdout));
-    } else if(&std::cerr == &stream) {
-        return isatty(fileno(stderr));
+        return static_cast<bool>(isatty(fileno(stdout)));
+    }
+    if(&std::cerr == &stream) {
+        return static_cast<bool>(isatty(fileno(stderr)));
     }
 
     return false;
