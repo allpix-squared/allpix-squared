@@ -68,7 +68,7 @@ void AllPix::load() {
         throw InvalidValueError(global_config, "log_format", e.what());
     }
 
-    LOG(INFO) << "Welcome to AllPix " << ALLPIX_PROJECT_VERSION;
+    LOG(STATUS) << "Welcome to AllPix " << ALLPIX_PROJECT_VERSION;
 
     // Wait for the debug messages until level and format are set
     LOG(TRACE) << "Global log level is set to " << log_level_string;
@@ -83,7 +83,7 @@ void AllPix::load() {
         // Use entropy from the system
         seed = random_init();
     }
-    LOG(INFO) << "Initialized randomizer with seed " << seed;
+    LOG(STATUS) << "Initialized PRNG with seed " << seed;
     // Initialize ROOT random generator
     gRandom->SetSeed(get_random_seed());
 

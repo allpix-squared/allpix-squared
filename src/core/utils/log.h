@@ -23,7 +23,7 @@ namespace allpix {
      */
     enum class LogLevel {
         FATAL = 0, ///< Fatal problems that terminate the framework (typically exceptions)
-        QUIET,     ///< Only progress information
+        STATUS,    ///< Only critical progress information
         ERROR,     ///< Critical problems that usually lead to fatal errors
         WARNING,   ///< Possible issue that could lead to unexpected results
         INFO,      ///< General information about processes (should not be called in run function)

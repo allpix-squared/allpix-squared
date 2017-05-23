@@ -229,7 +229,7 @@ LogLevel DefaultLogger::getReportingLevel() {
 
 // String to LogLevel conversions and vice versa
 std::string DefaultLogger::getStringFromLevel(LogLevel level) {
-    static const std::array<std::string, 7> type = {{"FATAL", "QUIET", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE"}};
+    static const std::array<std::string, 7> type = {{"FATAL", "STATUS", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE"}};
     return type.at(static_cast<decltype(type)::size_type>(level));
 }
 /**
@@ -251,8 +251,8 @@ LogLevel DefaultLogger::getLevelFromString(const std::string& level) {
     if(level == "ERROR") {
         return LogLevel::ERROR;
     }
-    if(level == "QUIET") {
-        return LogLevel::QUIET;
+    if(level == "STATUS") {
+        return LogLevel::STATUS;
     }
     if(level == "FATAL") {
         return LogLevel::FATAL;

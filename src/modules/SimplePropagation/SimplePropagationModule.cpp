@@ -25,8 +25,6 @@
 #include <TPolyMarker3D.h>
 #include <TStyle.h>
 
-#include <iostream>
-
 #include "core/config/Configuration.hpp"
 #include "core/messenger/Messenger.hpp"
 #include "core/utils/file.h"

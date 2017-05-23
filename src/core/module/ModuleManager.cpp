@@ -53,7 +53,7 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
     for(auto& config : configs) {
         // Load library for each module. Libraries are named (by convention + CMAKE) libAllpixModule Name.suffix
         std::string lib_name = std::string(ALLPIX_MODULE_PREFIX).append(config.getName()).append(SHARED_LIBRARY_SUFFIX);
-        LOG_PROGRESS(QUIET, "LOAD_LOOP") << "Loading module " << config.getName();
+        LOG_PROGRESS(STATUS, "LOAD_LOOP") << "Loading module " << config.getName();
 
         void* lib = nullptr;
         bool load_error = false;
@@ -200,7 +200,7 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
             id_to_module_[identifier] = --modules_.end();
         }
     }
-    LOG_PROGRESS(QUIET, "LOAD_LOOP") << "Loaded " << configs.size() << " modules";
+    LOG_PROGRESS(STATUS, "LOAD_LOOP") << "Loaded " << configs.size() << " modules";
 }
 
 /**
@@ -406,12 +406,13 @@ void ModuleManager::set_module_after(std::tuple<LogLevel, LogFormat> prev) {
 }
 
 /**
- * Sets the section header and logging settings before executing the  \ref Module::init() function. \ref
- * Module::reset_delegates() "Resets" the delegates and the logging after initialization.
+ * Sets the section header and logging settings before executing the  \ref Module::init() function.
+ *  \ref Module::reset_delegates() "Resets" the delegates and the logging after initialization.
  */
 void ModuleManager::init() {
+    LOG_PROGRESS(STATUS, "INIT_LOOP") << "Initializing " << modules_.size() << " module instantiations";
     for(auto& module : modules_) {
-        LOG_PROGRESS(QUIET, "INIT_LOOP") << "Initializing " << module->get_identifier().getUniqueName();
+        LOG_PROGRESS(TRACE, "INIT_LOOP") << "Initializing " << module->get_identifier().getUniqueName();
         // Get current time
         auto start = std::chrono::steady_clock::now();
         // Set init module section header
@@ -433,7 +434,7 @@ void ModuleManager::init() {
         auto end = std::chrono::steady_clock::now();
         module_execution_time_[module.get()] += static_cast<std::chrono::duration<long double>>(end - start).count();
     }
-    LOG_PROGRESS(QUIET, "INIT_LOOP") << "Initialized " << modules_.size() << " module instantiations";
+    LOG_PROGRESS(STATUS, "INIT_LOOP") << "Initialized " << modules_.size() << " module instantiations";
 }
 
 /**
@@ -442,7 +443,6 @@ void ModuleManager::init() {
  * delegates and the logging after initialization
  */
 void ModuleManager::run() {
-    // Loop over the number of events
     auto number_of_events = global_config_.get<unsigned int>("number_of_events", 1u);
     for(unsigned int i = 0; i < number_of_events; ++i) {
         for(auto& module : modules_) {
@@ -452,8 +452,8 @@ void ModuleManager::run() {
                            << ", skipping module!";
                 continue;
             }
-            LOG_PROGRESS(QUIET, "EVENT_LOOP") << "Running event " << (i + 1) << " of " << number_of_events << " ["
-                                              << module->get_identifier().getUniqueName() << "]";
+            LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Running event " << (i + 1) << " of " << number_of_events << " ["
+                                               << module->get_identifier().getUniqueName() << "]";
 
             // Get current time
             auto start = std::chrono::steady_clock::now();
@@ -477,7 +477,7 @@ void ModuleManager::run() {
             module_execution_time_[module.get()] += static_cast<std::chrono::duration<long double>>(end - start).count();
         }
     }
-    LOG_PROGRESS(QUIET, "EVENT_LOOP") << "Finished run of " << number_of_events << " events";
+    LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of " << number_of_events << " events";
 }
 
 static std::string seconds_to_time(long double seconds) {
@@ -507,8 +507,9 @@ static std::string seconds_to_time(long double seconds) {
  * after finalization. No method will be called after finalizing the module (except the destructor).
  */
 void ModuleManager::finalize() {
+    LOG_PROGRESS(TRACE, "FINALIZE_LOOP") << "Finalizing module instantiations";
     for(auto& module : modules_) {
-        LOG_PROGRESS(QUIET, "FINALIZE_LOOP") << "Finalizing " << module->get_identifier().getUniqueName();
+        LOG_PROGRESS(TRACE, "FINALIZE_LOOP") << "Finalizing " << module->get_identifier().getUniqueName();
 
         // Get current time
         auto start = std::chrono::steady_clock::now();
@@ -528,7 +529,7 @@ void ModuleManager::finalize() {
         auto end = std::chrono::steady_clock::now();
         module_execution_time_[module.get()] += static_cast<std::chrono::duration<long double>>(end - start).count();
     }
-    LOG_PROGRESS(QUIET, "FINALIZE_LOOP") << "Finalization completed";
+    LOG_PROGRESS(STATUS, "FINALIZE_LOOP") << "Finalization completed";
 
     long double total_time = 0;
     long double slowest_time = 0;
@@ -540,9 +541,9 @@ void ModuleManager::finalize() {
             slowest_module = module_time.first->getUniqueName();
         }
     }
-    LOG(INFO) << "Executed " << modules_.size() << " instantiations in " << seconds_to_time(total_time) << ", spending "
-              << std::round((100 * slowest_time) / std::max(1.0l, total_time)) << "% of time in slowest module "
-              << slowest_module;
+    LOG(STATUS) << "Executed " << modules_.size() << " instantiations in " << seconds_to_time(total_time) << ", spending "
+                << std::round((100 * slowest_time) / std::max(1.0l, total_time)) << "% of time in slowest instantiation "
+                << slowest_module;
     for(auto& module_time : module_execution_time_) {
         LOG(DEBUG) << " Module " << module_time.first->getUniqueName() << " took " << module_time.second;
     }
