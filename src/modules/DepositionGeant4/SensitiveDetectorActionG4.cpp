@@ -61,8 +61,8 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     DepositedCharge deposit(deposit_position, charge, mid_time);
     deposits_.push_back(deposit);
 
-    LOG(DEBUG) << "Created deposit of " << charge << " charges at " << mid_pos << " locally on " << deposit_position << "in "
-               << detector_->getName() << " after " << mid_time;
+    LOG(DEBUG) << "Created deposit of " << charge << " charges at " << mid_pos << " locally on " << deposit_position
+               << " in " << detector_->getName() << " after " << Units::display(mid_time, {"ns", "ps"});
 
     return true;
 }

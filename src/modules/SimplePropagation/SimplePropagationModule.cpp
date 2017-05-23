@@ -404,7 +404,8 @@ void SimplePropagationModule::run(unsigned int event_num) {
             auto prop_pair = propagate(position);
             position = prop_pair.first;
 
-            LOG(DEBUG) << " Propagated " << charge_per_step << " to " << position << " in " << prop_pair.second << " time";
+            LOG(DEBUG) << " Propagated " << charge_per_step << " to " << position << " in "
+                       << Units::display(prop_pair.second, "ns") << " time";
 
             // create a new propagated charge and add it to the list
             PropagatedCharge propagated_charge(position, charge_per_step, deposit.getEventTime() + prop_pair.second);
@@ -425,7 +426,7 @@ void SimplePropagationModule::run(unsigned int event_num) {
     // write summary and update statistics
     long double average_time = total_time / std::max(1u, step_count);
     LOG(INFO) << "Propagated " << propagated_charges_count << " charges in " << step_count << " steps in average time of "
-              << average_time;
+              << Units::display(average_time, "ns");
     total_propagated_charges_ += propagated_charges_count;
     total_steps_ += step_count;
     total_time_ += total_time;

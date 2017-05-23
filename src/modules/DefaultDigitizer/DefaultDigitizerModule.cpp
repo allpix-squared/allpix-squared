@@ -8,6 +8,7 @@
 #include "core/messenger/Messenger.hpp"
 #include "core/utils/log.h"
 #include "core/utils/random.h"
+#include "core/utils/unit.h"
 
 // ROOT includes
 #include <TFile.h>
@@ -76,7 +77,7 @@ void DefaultDigitizerModule::run(unsigned int) {
         auto pixel = pixel_charge.getPixel();
         auto charge = static_cast<double>(pixel_charge.getCharge());
 
-        LOG(DEBUG) << "Received pixel " << pixel.x() << "," << pixel.y() << ", charge " << charge << "e";
+        LOG(DEBUG) << "Received pixel (" << pixel.x() << "," << pixel.y() << "), charge " << Units::display(charge, "e");
         if(config_.get<bool>("output_plots")) {
             h_pxq->Fill(charge / 1e3);
         }
@@ -85,7 +86,7 @@ void DefaultDigitizerModule::run(unsigned int) {
         std::normal_distribution<double> el_noise(0, config_.get<unsigned int>("electronics_noise"));
         charge += el_noise(random_generator_);
 
-        LOG(DEBUG) << "Charge with noise: " << charge;
+        LOG(DEBUG) << "Charge with noise: " << Units::display(charge, "e");
         if(config_.get<bool>("output_plots")) {
             h_pxq_noise->Fill(charge / 1e3);
         }
@@ -102,11 +103,12 @@ void DefaultDigitizerModule::run(unsigned int) {
 
         // Discard charges below threshold:
         if(charge < threshold) {
-            LOG(DEBUG) << "Below smeared threshold: " << charge << " < " << threshold;
+            LOG(DEBUG) << "Below smeared threshold: " << Units::display(charge, "e") << " < "
+                       << Units::display(threshold, "e");
             continue;
         }
 
-        LOG(DEBUG) << "Passed threshold: " << charge << " > " << threshold;
+        LOG(DEBUG) << "Passed threshold: " << Units::display(charge, "e") << " > " << Units::display(threshold, "e");
         if(config_.get<bool>("output_plots")) {
             h_pxq_thr->Fill(charge / 1e3);
         }

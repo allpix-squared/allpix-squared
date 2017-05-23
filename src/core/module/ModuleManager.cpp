@@ -547,6 +547,6 @@ void ModuleManager::finalize() {
                 << std::round((100 * slowest_time) / std::max(1.0l, total_time)) << "% of time in slowest instantiation "
                 << slowest_module;
     for(auto& module_time : module_execution_time_) {
-        LOG(DEBUG) << " Module " << module_time.first->getUniqueName() << " took " << module_time.second;
+        LOG(DEBUG) << " Module " << module_time.first->getUniqueName() << " took " << module_time.second << " seconds";
     }
 }
