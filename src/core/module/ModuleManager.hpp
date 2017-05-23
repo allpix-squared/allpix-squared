@@ -120,6 +120,8 @@ namespace allpix {
         ModuleList modules_;
         IdentifierToModuleMap id_to_module_;
 
+        std::map<Module*, long double> module_execution_time_;
+
         Configuration global_config_;
 
         std::map<std::string, void*> loaded_libraries_;
