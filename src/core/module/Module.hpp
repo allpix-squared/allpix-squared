@@ -157,7 +157,6 @@ namespace allpix {
         /**
          * @brief Get the unique name of this module
          * @return Unique name
-         * @warning This method can not be called from the constructor
          * @note Can be used to interact with ROOT objects that require an unique name
          */
         std::string getUniqueName();
@@ -167,7 +166,6 @@ namespace allpix {
          * @param path Relative path to add after the main output directory
          * @param global True if the global output directory should be used instead of the module-specific version
          * @return Canonical path to an output file
-         * @warning This method can not be called from the constructor
          */
         // TODO [doc] Should be renamed to getOutputFile
         std::string getOutputPath(const std::string& path, bool global = false);
@@ -198,19 +196,6 @@ namespace allpix {
         virtual void finalize() {}
 
     private:
-        /**
-         * @brief Set the output directory
-         * @param output_dir Base directory for the module
-         */
-        void set_output_directory(std::string output_dir);
-        std::string output_directory_;
-        /**
-         * @brief Set the global output directory
-         * @param output_dir Base output directory
-         */
-        void set_global_directory(std::string);
-        std::string global_directory_;
-
         /**
          * @brief Set the module identifier for internal use
          * @param identifier Identifier of the instantiation

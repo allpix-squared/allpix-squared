@@ -38,10 +38,7 @@ Module::~Module() {
  * This name is guaranteed to be unique for every single instantiation of all modules
  */
 std::string Module::getUniqueName() {
-    std::string unique_name = identifier_.getUniqueName();
-    if(unique_name.empty()) {
-        throw InvalidModuleActionException("Unique name cannot be retrieved from within the constructor");
-    }
+    std::string unique_name = config_.get<std::string>("_unique_name");
     return unique_name;
 }
 
@@ -53,7 +50,6 @@ std::shared_ptr<Detector> Module::getDetector() {
 }
 
 /**
- * @throws InvalidModuleActionException If this method is called from the constructor
  * @throws ModuleError If the file cannot be accessed (or created if it did not yet exist)
  *
  * The output path is automatically created if it does not exists. The path is always accessible if this functions returns.
@@ -62,12 +58,10 @@ std::shared_ptr<Detector> Module::getDetector() {
 std::string Module::getOutputPath(const std::string& path, bool global) {
     std::string file;
     if(global) {
-        file = global_directory_;
+        file = config_.get<std::string>("_global_dir");
     } else {
-        file = output_directory_;
-    }
-    if(file.empty()) {
-        throw InvalidModuleActionException("Output path cannot be retrieved from within the constructor");
+        file = config_.get<std::string>("_output_dir");
+        ;
     }
 
     try {
@@ -91,14 +85,6 @@ std::string Module::getOutputPath(const std::string& path, bool global) {
     }
 
     return file;
-}
-
-// Set internal directories
-void Module::set_output_directory(std::string output_dir) {
-    output_directory_ = std::move(output_dir);
-}
-void Module::set_global_directory(std::string output_dir) {
-    global_directory_ = std::move(output_dir);
 }
 
 // Get internal configuration
