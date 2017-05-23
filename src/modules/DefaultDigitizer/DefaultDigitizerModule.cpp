@@ -126,6 +126,10 @@ void DefaultDigitizerModule::run(unsigned int) {
         // double crosstalk_neigubor_column = 0.00;
     }
 
+    // output summary and update statistics
+    LOG(INFO) << "Digitized " << hits.size() << " pixel hits";
+    total_hits_ += hits.size();
+
     if(!hits.empty()) {
         // Create and dispatch hit message
         PixelHitMessage hits_message(hits, getDetector());
@@ -150,4 +154,6 @@ void DefaultDigitizerModule::finalize() {
         // Close the file
         output_file_->Close();
     }
+
+    LOG(INFO) << "Digitized " << total_hits_ << " pixel hits in total";
 }

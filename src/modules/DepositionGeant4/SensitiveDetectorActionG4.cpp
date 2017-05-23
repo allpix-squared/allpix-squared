@@ -81,7 +81,7 @@ void SensitiveDetectorActionG4::EndOfEvent(G4HCofThisEvent*) {
                 charges += ch.getCharge();
                 total_deposited_charge_ += ch.getCharge();
             }
-            LOG(DEBUG) << "Deposited " << charges << " charges in sensor of detector " << detector_->getName();
+            LOG(INFO) << "Deposited " << charges << " charges in sensor of detector " << detector_->getName();
         }
 
         // create a new charge deposit message

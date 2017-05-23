@@ -375,6 +375,9 @@ void SimplePropagationModule::run(unsigned int event_num) {
 
     // propagate all deposits
     LOG(TRACE) << "Propagating charges in sensor";
+    unsigned int propagated_charges_count = 0;
+    unsigned int step_count = 0;
+    long double total_time = 0;
     for(auto& deposit : deposits_message_->getData()) {
         // loop over all charges
         unsigned int electrons_remaining = deposit.getCharge();
@@ -408,9 +411,9 @@ void SimplePropagationModule::run(unsigned int event_num) {
             propagated_charges.push_back(propagated_charge);
 
             // update statistics
-            ++total_steps_;
-            total_propagated_charges_ += charge_per_step;
-            total_time_ += prop_pair.second;
+            ++step_count;
+            propagated_charges_count += charge_per_step;
+            total_time += prop_pair.second;
         }
     }
 
@@ -418,6 +421,14 @@ void SimplePropagationModule::run(unsigned int event_num) {
     if(config_.get<bool>("output_plots")) {
         create_output_plots(event_num);
     }
+
+    // write summary and update statistics
+    long double average_time = total_time / std::max(1u, step_count);
+    LOG(INFO) << "Propagated " << propagated_charges_count << " charges in " << step_count << " steps in average time of "
+              << average_time;
+    total_propagated_charges_ += propagated_charges_count;
+    total_steps_ += step_count;
+    total_time_ += total_time;
 
     // create a new message with propagated charges
     PropagatedChargeMessage propagated_charge_message(std::move(propagated_charges), detector_);

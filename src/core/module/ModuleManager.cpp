@@ -445,6 +445,8 @@ void ModuleManager::init() {
 void ModuleManager::run() {
     auto number_of_events = global_config_.get<unsigned int>("number_of_events", 1u);
     for(unsigned int i = 0; i < number_of_events; ++i) {
+        LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << (i + 1) << " of " << number_of_events;
+
         for(auto& module : modules_) {
             // Check if module is satisfied to run
             if(!module->check_delegates()) {
@@ -452,8 +454,8 @@ void ModuleManager::run() {
                            << ", skipping module!";
                 continue;
             }
-            LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Running event " << (i + 1) << " of " << number_of_events << " ["
-                                               << module->get_identifier().getUniqueName() << "]";
+            LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << (i + 1) << " of " << number_of_events << " ["
+                                              << module->get_identifier().getUniqueName() << "]";
 
             // Get current time
             auto start = std::chrono::steady_clock::now();
