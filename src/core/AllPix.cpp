@@ -68,6 +68,8 @@ void AllPix::load() {
         throw InvalidValueError(global_config, "log_format", e.what());
     }
 
+    LOG(INFO) << "Welcome to AllPix " << ALLPIX_PROJECT_VERSION;
+
     // Wait for the debug messages until level and format are set
     LOG(TRACE) << "Global log level is set to " << log_level_string;
     LOG(TRACE) << "Global log format is set to " << log_format_string;
