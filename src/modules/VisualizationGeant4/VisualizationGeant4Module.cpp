@@ -24,7 +24,7 @@
 using namespace allpix;
 
 VisualizationGeant4Module::VisualizationGeant4Module(Configuration config, Messenger*, GeometryManager*)
-    : config_(std::move(config)), has_run_(false), vis_manager_g4_(nullptr), gui_session_(nullptr) {}
+    : Module(config), config_(std::move(config)), has_run_(false), vis_manager_g4_(nullptr), gui_session_(nullptr) {}
 VisualizationGeant4Module::~VisualizationGeant4Module() {
     if(!has_run_ && vis_manager_g4_ != nullptr && vis_manager_g4_->GetCurrentViewer() != nullptr) {
         LOG(DEBUG) << "Invoking VRML workaround to prevent visualization under error conditions";

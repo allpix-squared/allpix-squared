@@ -37,7 +37,7 @@ using namespace ROOT;
 
 // constructor and destructor
 GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration config, Messenger*, GeometryManager* geo_manager)
-    : config_(std::move(config)), geo_manager_(geo_manager), run_manager_g4_(nullptr) {
+    : Module(config), config_(std::move(config)), geo_manager_(geo_manager), run_manager_g4_(nullptr) {
     // construct the internal geometry
     // WARNING: we need to do this here to allow for proper instantiation (initialization is only run after loading)
     // FIXME: move this to a separate module or the core?

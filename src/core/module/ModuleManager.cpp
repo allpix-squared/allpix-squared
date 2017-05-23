@@ -174,9 +174,6 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
                 }
             }
 
-            // Set the configuration for this module for later use
-            mod->set_configuration(config);
-
             // Save the identifier in the module
             mod->set_identifier(identifier);
 

@@ -15,7 +15,7 @@
 using namespace allpix;
 
 TestDepositReaderModule::TestDepositReaderModule(Configuration config, Messenger* messenger, GeometryManager*)
-    : config_(std::move(config)) {
+    : Module(config), config_(std::move(config)) {
     // fetch deposits
     messenger->bindMulti(this, &TestDepositReaderModule::deposit_messages_);
 }

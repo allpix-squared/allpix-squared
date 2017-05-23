@@ -20,8 +20,9 @@
 
 using namespace allpix;
 
-Module::Module() : Module(nullptr) {}
-Module::Module(std::shared_ptr<Detector> detector) : detector_(std::move(detector)) {}
+Module::Module(Configuration config) : Module(config, nullptr) {}
+Module::Module(Configuration config, std::shared_ptr<Detector> detector)
+    : config_(std::move(config)), detector_(std::move(detector)) {}
 /**
  * @note The remove_delegate can throw in theory, but this could never happen in practice
  */
@@ -100,10 +101,7 @@ void Module::set_global_directory(std::string output_dir) {
     global_directory_ = std::move(output_dir);
 }
 
-// Getters and setters for internal configuration
-void Module::set_configuration(Configuration config) {
-    config_ = std::move(config);
-}
+// Get internal configuration
 Configuration Module::get_configuration() {
     return config_;
 }

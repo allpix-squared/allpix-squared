@@ -24,7 +24,7 @@ using namespace allpix;
 ElectricFieldInputLinearModule::ElectricFieldInputLinearModule(Configuration config,
                                                                Messenger*,
                                                                std::shared_ptr<Detector> detector)
-    : Module(detector), config_(std::move(config)), detector_(std::move(detector)) {}
+    : Module(config, detector), config_(std::move(config)), detector_(std::move(detector)) {}
 
 // init method that reads the electric field from the file
 void ElectricFieldInputLinearModule::init() {

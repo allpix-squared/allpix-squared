@@ -44,7 +44,7 @@ using namespace ROOT::Math;
 SimplePropagationModule::SimplePropagationModule(Configuration config,
                                                  Messenger* messenger,
                                                  std::shared_ptr<Detector> detector)
-    : Module(detector), config_(std::move(config)), messenger_(messenger), detector_(std::move(detector)),
+    : Module(config, detector), config_(std::move(config)), messenger_(messenger), detector_(std::move(detector)),
       debug_file_(nullptr) {
     // get detector model
     model_ = detector_->getModel();
