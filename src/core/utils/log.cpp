@@ -75,6 +75,7 @@ DefaultLogger::~DefaultLogger() {
 
     // Save last message
     last_message_ = out;
+    last_message_ += " ";
 
     // Add extra spaces if required
     if(extra_spaces > 0) {
