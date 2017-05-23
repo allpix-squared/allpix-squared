@@ -1,11 +1,12 @@
 namespace allpix {
     // TODO [doc] This method should be removed
-    template <typename T> void Messenger::dispatchMessage(Module *source, const T& message, const std::string& name) {
+    template <typename T> void Messenger::dispatchMessage(Module* source, const T& message, const std::string& name) {
         static_assert(std::is_base_of<BaseMessage, T>::value, "Dispatched message should inherit from Message class");
         std::shared_ptr<BaseMessage> msg_ptr = std::make_shared<T>(message);
         dispatch_message(source, msg_ptr, name);
     }
-    template <typename T> void Messenger::dispatchMessage(Module *source, std::shared_ptr<T> message, const std::string& name) {
+    template <typename T>
+    void Messenger::dispatchMessage(Module* source, std::shared_ptr<T> message, const std::string& name) {
         static_assert(std::is_base_of<BaseMessage, T>::value, "Dispatched message should inherit from Message class");
         dispatch_message(source, std::static_pointer_cast<BaseMessage>(message), name);
     }
