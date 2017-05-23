@@ -19,6 +19,8 @@ void interrupt_handler(int);
 void interrupt_handler(int) {
     // NOTE: this is actually not totally reliable (otherwise crashing is fine...)
     LOG(FATAL) << "Interrupted!";
+    // ignore any segmentation fault that may arise after this
+    std::signal(SIGSEGV, SIG_IGN);
     clean();
     std::exit(1);
 }
