@@ -530,7 +530,6 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const XYZPoint& r
 void SimplePropagationModule::finalize() {
     if(config_.get<bool>("output_plots")) {
         LOG(TRACE) << "Closing output plots";
-
         debug_file_->Close();
         delete debug_file_;
     }
