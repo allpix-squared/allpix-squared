@@ -67,6 +67,10 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     return true;
 }
 
+unsigned int SensitiveDetectorActionG4::getTotalDepositedCharge() {
+    return total_deposited_charge_;
+}
+
 // send a message at the end of the event
 void SensitiveDetectorActionG4::EndOfEvent(G4HCofThisEvent*) {
     // send a new message if we have any deposits
@@ -75,6 +79,7 @@ void SensitiveDetectorActionG4::EndOfEvent(G4HCofThisEvent*) {
             unsigned int charges = 0;
             for(auto& ch : deposits_) {
                 charges += ch.getCharge();
+                total_deposited_charge_ += ch.getCharge();
             }
             LOG(DEBUG) << "Deposited " << charges << " charges in sensor of detector " << detector_->getName();
         }

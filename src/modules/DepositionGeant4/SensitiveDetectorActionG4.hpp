@@ -31,6 +31,9 @@ namespace allpix {
                                   double charge_creation_energy);
         ~SensitiveDetectorActionG4() override;
 
+        // Get total deposited charge
+        unsigned int getTotalDepositedCharge();
+
         // Disallow copy
         SensitiveDetectorActionG4(const SensitiveDetectorActionG4&) = delete;
         SensitiveDetectorActionG4& operator=(const SensitiveDetectorActionG4&) = delete;
@@ -46,6 +49,9 @@ namespace allpix {
     private:
         // the conversion factor from energy to charge
         double charge_creation_energy_;
+
+        // charge deposited
+        unsigned int total_deposited_charge_{};
 
         // list of deposits in sensitive device
         std::vector<DepositedCharge> deposits_;

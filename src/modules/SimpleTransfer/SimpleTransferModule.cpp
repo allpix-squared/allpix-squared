@@ -24,16 +24,6 @@ SimpleTransferModule::SimpleTransferModule(Configuration config, Messenger* mess
     messenger->bindSingle(this, &SimpleTransferModule::propagated_message_, MsgFlags::REQUIRED);
 }
 
-// compare two pixels for the pixel map
-struct pixel_cmp {
-    bool operator()(const PixelCharge::Pixel& p1, const PixelCharge::Pixel& p2) const {
-        if(p1.x() == p2.x()) {
-            return p1.y() < p2.y();
-        }
-        return p1.x() < p2.x();
-    }
-};
-
 // run method that does the main computations for the module
 void SimpleTransferModule::run(unsigned int) {
     // get detector model
@@ -72,6 +62,10 @@ void SimpleTransferModule::run(unsigned int) {
         // add the pixel the list of hit pixels
         pixel_map[pixel].push_back(propagated_charge);
 
+        // update statistics
+        unique_pixels_.insert(pixel);
+        total_transferrred_charges_ += propagated_charge.getCharge();
+
         LOG(DEBUG) << "Set of " << propagated_charge.getCharge() << " propagated charges at "
                    << propagated_charge.getPosition() << " brought to pixel (" << pixel.x() << "," << pixel.y() << ")";
     }
@@ -92,4 +86,10 @@ void SimpleTransferModule::run(unsigned int) {
     // dispatch message
     PixelChargeMessage pixel_message(pixel_charges, detector_);
     messenger_->dispatchMessage(this, pixel_message, "pixel");
+}
+
+// print statistics
+void SimpleTransferModule::finalize() {
+    LOG(INFO) << "Transferred total of " << total_transferrred_charges_ << " charges to " << unique_pixels_.size()
+              << " different pixels";
 }

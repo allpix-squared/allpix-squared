@@ -34,7 +34,8 @@
 using namespace allpix;
 
 DepositionGeant4Module::DepositionGeant4Module(Configuration config, Messenger* messenger, GeometryManager* geo_manager)
-    : config_(std::move(config)), messenger_(messenger), geo_manager_(geo_manager), run_manager_g4_(nullptr) {
+    : config_(std::move(config)), messenger_(messenger), geo_manager_(geo_manager), last_event_num_(1),
+      run_manager_g4_(nullptr) {
     // create user limits for maximum step length in the sensor
     user_limits_ =
         std::make_unique<G4UserLimits>(config_.get<double>("max_step_length", std::numeric_limits<double>::max()));
@@ -85,7 +86,8 @@ void DepositionGeant4Module::init() {
         // do not add sensitive detector for detectors that have no listeners
         if(!messenger_->hasReceiver(std::make_shared<DepositedChargeMessage>(std::vector<DepositedCharge>(), detector),
                                     "sensor")) {
-            LOG(DEBUG) << "Not depositing charges in " << detector->getName() << " because the output is not used";
+            LOG(INFO) << "Not depositing charges in " << detector->getName()
+                      << " because there is no listener for its output";
             continue;
         }
         useful_deposition = true;
@@ -99,6 +101,7 @@ void DepositionGeant4Module::init() {
         // add the sensitive detector action
         auto sensitive_detector_action = new SensitiveDetectorActionG4(this, detector, messenger_, charge_creation_energy);
         model_g4->pixel_log->SetSensitiveDetector(sensitive_detector_action);
+        sensors_.push_back(sensitive_detector_action);
     }
 
     if(!useful_deposition) {
@@ -115,9 +118,9 @@ void DepositionGeant4Module::init() {
 
     // set the seed
     std::string seed_command = "/random/setSeeds ";
-    seed_command += std::to_string(static_cast<uint32_t>(get_random_seed()));
+    seed_command += std::to_string(static_cast<uint32_t>(get_random_seed() % UINT_MAX));
     seed_command += " ";
-    seed_command += std::to_string(static_cast<uint32_t>(get_random_seed()));
+    seed_command += std::to_string(static_cast<uint32_t>(get_random_seed() % UINT_MAX));
     UI->ApplyCommand(seed_command);
 
     // release output from G4
@@ -125,7 +128,7 @@ void DepositionGeant4Module::init() {
 }
 
 // run the deposition
-void DepositionGeant4Module::run(unsigned int) {
+void DepositionGeant4Module::run(unsigned int event_num) {
     // suppress stream if not in debugging mode
     IFLOG(DEBUG);
     else {
@@ -135,7 +138,20 @@ void DepositionGeant4Module::run(unsigned int) {
     // start the beam
     LOG(TRACE) << "Enabling beam";
     run_manager_g4_->BeamOn(1);
+    last_event_num_ = event_num;
 
     // release the stream (if it was suspended)
     RELEASE_STREAM(G4cout);
+}
+
+// print summary
+void DepositionGeant4Module::finalize() {
+    size_t total_charges = 0;
+    for(auto& sensor : sensors_) {
+        total_charges += sensor->getTotalDepositedCharge();
+    }
+
+    size_t average_charge = total_charges / sensors_.size() / last_event_num_;
+    LOG(INFO) << "Deposited total of " << total_charges << " charges in " << sensors_.size() << " sensor(s) (average of "
+              << average_charge << " per sensor for every event)";
 }
