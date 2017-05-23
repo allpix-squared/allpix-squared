@@ -1,5 +1,6 @@
 #include <csignal>
 #include <cstdlib>
+#include <fstream>
 #include <memory>
 #include <string>
 #include <utility>
@@ -16,11 +17,12 @@ void clean();
 void interrupt_handler(int);
 
 // Output interrupt message and clean
+// NOTE: This handler is actually not fully reliable (but otherwise crashing is fine...)
 void interrupt_handler(int) {
-    // NOTE: this is actually not totally reliable (otherwise crashing is fine...)
     LOG(FATAL) << "Interrupted!";
-    // ignore any segmentation fault that may arise after this
+    // Ignore any segmentation fault that may arise after this
     std::signal(SIGSEGV, SIG_IGN);
+
     clean();
     std::exit(1);
 }
@@ -46,7 +48,9 @@ int main(int argc, const char* argv[]) {
         return_code = 1;
     }
 
+    // Parse arguments
     std::string config_file_name;
+    std::string log_file_name;
     for(int i = 1; i < argc; i++) {
         if(strcmp(argv[i], "-h") == 0) {
             print_help = true;
@@ -59,25 +63,43 @@ int main(int argc, const char* argv[]) {
             }
         } else if(strcmp(argv[i], "-c") == 0 && (i + 1 < argc)) {
             config_file_name = std::string(argv[++i]);
+        } else if(strcmp(argv[i], "-l") == 0 && (i + 1 < argc)) {
+            log_file_name = std::string(argv[++i]);
         } else {
             LOG(ERROR) << "Unrecognized command line argument \"" << argv[i] << "\"";
         }
     }
 
+    // Print help if requested or no arguments given
     if(print_help) {
         std::cout << "Usage: allpix -c <config> [-v <level>]" << std::endl;
         std::cout << "Generic simulation framework for pixel detectors" << std::endl;
+        std::cout << "\t -c <file>    configuration file to be used" << std::endl;
+        std::cout << "\t -l <file>    file to log to besides standard output" << std::endl;
         std::cout << "\t -v <level>   verbosity level, default INFO, can be overwritten \n"
                   << "\t              by global or per-module configuration." << std::endl;
-        std::cout << "\t -c <config>  configuration file to be used" << std::endl;
         clean();
         return return_code;
     }
 
+    // Check if we have a configuration file
     if(config_file_name.empty()) {
         LOG(FATAL) << "No configuration file provided! See usage info with \"allpix -h\"";
         clean();
         return 1;
+    }
+
+    // Add an extra file to log too if possible
+    std::ofstream log_file;
+    if(!log_file_name.empty()) {
+        log_file.open(log_file_name, std::ios_base::out | std::ios_base::trunc);
+        if(!log_file.good()) {
+            LOG(FATAL) << "Cannot write to provided log file! Check if permissions are sufficient.";
+            clean();
+            return 1;
+        }
+
+        Log::addStream(log_file);
     }
 
     try {
