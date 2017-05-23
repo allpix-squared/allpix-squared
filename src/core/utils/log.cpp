@@ -93,8 +93,9 @@ DefaultLogger::~DefaultLogger() {
     while((pos = out.find("\x1B[", prev)) != std::string::npos) {
         out_no_special += out.substr(prev, pos - prev);
         prev = out.find("m", pos) + 1;
-        if(prev == std::string::npos)
+        if(prev == std::string::npos) {
             break;
+        }
     }
     out_no_special += out.substr(prev);
 
@@ -183,7 +184,15 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
     }
 
     // Save the indent count to fix with newlines
-    indent_count_ = static_cast<unsigned int>(os.str().size());
+    size_t prev = 0, pos = 0;
+    std::string out = os.str();
+    while((pos = out.find("\x1B[", prev)) != std::string::npos) {
+        indent_count_ += static_cast<unsigned int>(pos - prev);
+        prev = out.find("m", pos) + 1;
+        if(prev == std::string::npos) {
+            break;
+        }
+    }
     return os;
 }
 
