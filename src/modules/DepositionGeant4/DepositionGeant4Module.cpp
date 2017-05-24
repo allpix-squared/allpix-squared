@@ -34,7 +34,7 @@
 using namespace allpix;
 
 DepositionGeant4Module::DepositionGeant4Module(Configuration config, Messenger* messenger, GeometryManager* geo_manager)
-    : config_(std::move(config)), messenger_(messenger), geo_manager_(geo_manager), last_event_num_(1),
+    : Module(config), config_(std::move(config)), messenger_(messenger), geo_manager_(geo_manager), last_event_num_(1),
       run_manager_g4_(nullptr) {
     // create user limits for maximum step length in the sensor
     user_limits_ =

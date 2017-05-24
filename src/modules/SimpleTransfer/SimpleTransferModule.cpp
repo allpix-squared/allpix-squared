@@ -19,7 +19,7 @@ using namespace allpix;
 
 // constructor to load the module
 SimpleTransferModule::SimpleTransferModule(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector)
-    : Module(detector), config_(std::move(config)), messenger_(messenger), detector_(std::move(detector)) {
+    : Module(config, detector), config_(std::move(config)), messenger_(messenger), detector_(std::move(detector)) {
     // require propagated deposits for single detector
     messenger->bindSingle(this, &SimpleTransferModule::propagated_message_, MsgFlags::REQUIRED);
 }

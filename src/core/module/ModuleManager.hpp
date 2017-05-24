@@ -92,8 +92,7 @@ namespace allpix {
          * @param geo_manager Pointer to the geometry manager
          * @return An unique module together with its identifier
          */
-        std::pair<ModuleIdentifier, Module*>
-        create_unique_modules(void*, const Configuration&, Messenger*, GeometryManager*);
+        std::pair<ModuleIdentifier, Module*> create_unique_modules(void*, Configuration, Messenger*, GeometryManager*);
         /**
          * @brief Create detector modules
          * @param library Void pointer to the loaded library
@@ -103,7 +102,7 @@ namespace allpix {
          * @return A list of all created detector modules and their identifiers
          */
         std::vector<std::pair<ModuleIdentifier, Module*>>
-        create_detector_modules(void*, const Configuration&, Messenger*, GeometryManager*);
+        create_detector_modules(void*, Configuration, Messenger*, GeometryManager*);
 
         /**
          * @brief Set module specific log setting before running init/run/finalize

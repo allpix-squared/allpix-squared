@@ -12,7 +12,7 @@
 using namespace allpix;
 
 // constructor to load the module
-DummyModule::DummyModule(Configuration config, Messenger*, GeometryManager*) : config_(std::move(config)) {
+DummyModule::DummyModule(Configuration config, Messenger*, GeometryManager*) : Module(config), config_(std::move(config)) {
     // ... implement ... (typically you want to bind some messages here)
     LOG(TRACE) << "Initializing module " << DummyModule::name;
 }

@@ -19,7 +19,7 @@ using namespace allpix;
 DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
-    : Module(detector), config_(std::move(config)), detector_(std::move(detector)), pixels_message_(nullptr),
+    : Module(config, detector), config_(std::move(config)), detector_(std::move(detector)), pixels_message_(nullptr),
       output_file_(nullptr) {
     // fetch deposit for single module
     messenger->bindSingle(this, &DetectorHistogrammerModule::pixels_message_, MsgFlags::REQUIRED);

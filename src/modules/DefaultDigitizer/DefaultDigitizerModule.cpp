@@ -23,7 +23,7 @@ using namespace allpix;
 DefaultDigitizerModule::DefaultDigitizerModule(Configuration config,
                                                Messenger* messenger,
                                                std::shared_ptr<Detector> detector)
-    : Module(std::move(detector)), config_(std::move(config)), messenger_(messenger), pixel_message_(nullptr) {
+    : Module(config, std::move(detector)), config_(std::move(config)), messenger_(messenger), pixel_message_(nullptr) {
 
     // Require PixelCharge message for single detector
     messenger_->bindSingle(this, &DefaultDigitizerModule::pixel_message_, MsgFlags::REQUIRED);

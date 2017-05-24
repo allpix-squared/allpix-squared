@@ -70,7 +70,7 @@ TString Print(TGeoTranslation* trl) {
 
 /// Constructor and destructor
 TGeoBuilderModule::TGeoBuilderModule(Configuration config, Messenger*, GeometryManager* geo_manager)
-    : m_config(std::move(config)), m_geoDscMng(geo_manager), m_fillingWorldMaterial(nullptr),
+    : Module(config), m_config(std::move(config)), m_geoDscMng(geo_manager), m_fillingWorldMaterial(nullptr),
       m_userDefinedWorldMaterial("Air"), m_userDefinedGeoOutputFile(""), m_buildAppliancesFlag(false), m_Appliances_type(0),
       m_buildTestStructureFlag(false) {
     // read the configuration
