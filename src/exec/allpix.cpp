@@ -16,14 +16,15 @@ using namespace allpix;
 void clean();
 void interrupt_handler(int);
 
-// Output interrupt message and clean
+// Handle user interrupt
 // NOTE: This handler is actually not fully reliable (but otherwise crashing is fine...)
 void interrupt_handler(int) {
+    // Output interrupt message and clean
     LOG(FATAL) << "Interrupted!";
+    clean();
+
     // Ignore any segmentation fault that may arise after this
     std::signal(SIGSEGV, SIG_IGN);
-
-    clean();
     std::exit(1);
 }
 

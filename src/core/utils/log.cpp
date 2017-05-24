@@ -130,6 +130,7 @@ void DefaultLogger::finish() {
     for(auto stream : get_streams()) {
         if(is_terminal(*stream)) {
             (*stream) << "\x1B[?25h";
+            (*stream).flush();
         }
     }
 }
