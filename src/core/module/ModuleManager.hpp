@@ -7,6 +7,7 @@
 #ifndef ALLPIX_MODULE_MANAGER_H
 #define ALLPIX_MODULE_MANAGER_H
 
+#include <atomic>
 #include <list>
 #include <map>
 #include <memory>
@@ -83,6 +84,11 @@ namespace allpix {
          */
         void finalize();
 
+        /**
+         * @brief Terminates as soon as the current event is finished
+         */
+        void terminate();
+
     private:
         /**
          * @brief Create unique modules
@@ -124,6 +130,8 @@ namespace allpix {
         Configuration global_config_;
 
         std::map<std::string, void*> loaded_libraries_;
+
+        std::atomic<bool> terminate_;
     };
 } // namespace allpix
 

@@ -1,3 +1,4 @@
+#include <atomic>
 #include <csignal>
 #include <cstdlib>
 #include <fstream>
@@ -15,8 +16,12 @@ using namespace allpix;
 
 void clean();
 void interrupt_handler(int);
+void terminate_handler(int);
 
-// Handle user interrupt
+std::unique_ptr<AllPix> apx;
+std::atomic<bool> apx_ready{false};
+
+// Handle user interrupt which should stop the framework immediately
 // NOTE: This handler is actually not fully reliable (but otherwise crashing is fine...)
 void interrupt_handler(int) {
     // Output interrupt message and clean
@@ -25,21 +30,36 @@ void interrupt_handler(int) {
 
     // Ignore any segmentation fault that may arise after this
     std::signal(SIGSEGV, SIG_IGN); // NOLINT
-    std::exit(1);
+    std::quick_exit(1);
+}
+
+// Request termination as soon as possible while keeping the program flow valid
+void terminate_handler(int) {
+    // Stop the framework if it is loaded
+    if(apx_ready) {
+        LOG(WARNING) << "Termination requested!";
+        apx->terminate();
+    }
 }
 
 // Clean environment
 void clean() {
     Log::finish();
+    if(apx_ready) {
+        apx.reset();
+    }
 }
 
 int main(int argc, const char* argv[]) {
     // Add cout as the default logging stream
     Log::addStream(std::cout);
 
-    // Install interrupt inter
+    // Install interrupt handler (CTRL+C)
     std::signal(SIGINT, interrupt_handler);
     std::signal(SIGTERM, interrupt_handler);
+
+    // Install termination handler (CTRL+D)
+    std::signal(SIGTSTP, terminate_handler);
 
     // If no arguments are provided, print the help:
     bool print_help = false;
@@ -105,7 +125,8 @@ int main(int argc, const char* argv[]) {
 
     try {
         // Construct main AllPix object
-        std::unique_ptr<AllPix> apx = std::make_unique<AllPix>(config_file_name);
+        apx = std::make_unique<AllPix>(config_file_name);
+        apx_ready = true;
 
         // Load modules
         apx->load();

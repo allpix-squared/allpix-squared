@@ -39,7 +39,7 @@
 
 using namespace allpix;
 
-ModuleManager::ModuleManager() = default;
+ModuleManager::ModuleManager() : terminate_(false) {}
 
 /**
  * Loads the modules specified in the configuration file. Each module is contained within its own library which is loaded
@@ -455,6 +455,13 @@ void ModuleManager::init() {
 void ModuleManager::run() {
     auto number_of_events = global_config_.get<unsigned int>("number_of_events", 1u);
     for(unsigned int i = 0; i < number_of_events; ++i) {
+        // Check for termination
+        if(terminate_) {
+            LOG(INFO) << "Interrupting event loop after " << i << " events because of request to terminate";
+            number_of_events = i;
+            break;
+        }
+
         LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Running event " << (i + 1) << " of " << number_of_events;
 
         for(auto& module : modules_) {
@@ -559,4 +566,11 @@ void ModuleManager::finalize() {
     for(auto& module_time : module_execution_time_) {
         LOG(DEBUG) << " Module " << module_time.first->getUniqueName() << " took " << module_time.second << " seconds";
     }
+}
+
+/**
+ * All modules in the event loop continue to finish the current event
+ */
+void ModuleManager::terminate() {
+    terminate_ = true;
 }

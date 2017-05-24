@@ -27,7 +27,7 @@ using namespace allpix;
  * Initializes all the managers. This class will own the managers for the lifetime of the simulation.
  */
 AllPix::AllPix(std::string file_name)
-    : msg_(std::make_unique<Messenger>()), mod_mgr_(std::make_unique<ModuleManager>()),
+    : terminate_(false), has_run_(false), msg_(std::make_unique<Messenger>()), mod_mgr_(std::make_unique<ModuleManager>()),
       conf_mgr_(std::make_unique<ConfigManager>(std::move(file_name))), geo_mgr_(std::make_unique<GeometryManager>()) {}
 
 /**
@@ -123,29 +123,57 @@ void AllPix::load() {
     set_style();
 
     // Load the modules from the configuration
-    mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get());
+    if(!terminate_) {
+        mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get());
+    } else {
+        LOG(INFO) << "Skip loading modules because termination is requested";
+    }
 }
 
 /**
  * Runs the Module::init() method linearly for every module
  */
 void AllPix::init() {
-    LOG(TRACE) << "Initializing AllPix";
-    mod_mgr_->init();
+    if(!terminate_) {
+        LOG(TRACE) << "Initializing AllPix";
+        mod_mgr_->init();
+    } else {
+        LOG(INFO) << "Skip initializing modules because termination is requested";
+    }
 }
 /**
  * Runs every modules Module::run() method linearly for the number of events
  */
 void AllPix::run() {
-    LOG(TRACE) << "Running AllPix";
-    mod_mgr_->run();
+    if(!terminate_) {
+        LOG(TRACE) << "Running AllPix";
+        mod_mgr_->run();
+
+        // Set that we have run and want to finalize as well
+        has_run_ = true;
+    } else {
+        LOG(INFO) << "Skip running modules because termination is requested";
+    }
 }
 /**
  * Runs all modules Module::finalize() method linearly for every module
  */
 void AllPix::finalize() {
-    LOG(TRACE) << "Finalizing AllPix";
-    mod_mgr_->finalize();
+    if(has_run_) {
+        LOG(TRACE) << "Finalizing AllPix";
+        mod_mgr_->finalize();
+    } else {
+        LOG(INFO) << "Skip finalizing modules because no modulue did run";
+    }
+}
+
+/*
+ * This function can be called safely from any signal handler. Time between the request to terminate
+ * and the actual termination is not always negigible.
+ */
+void AllPix::terminate() {
+    terminate_ = true;
+    mod_mgr_->terminate();
 }
 
 void AllPix::add_units() {
