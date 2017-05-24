@@ -266,6 +266,17 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
     std::string module_name = config.getName();
     LOG(DEBUG) << "Creating instantions for detector module " << module_name;
 
+    // Create the basic identifier
+    std::string identifier;
+    if(!config.get<std::string>("input").empty()) {
+        identifier += config.get<std::string>("input");
+        identifier += ":";
+    }
+    if(!config.get<std::string>("output").empty()) {
+        identifier += config.get<std::string>("output");
+        identifier += ":";
+    }
+
     // Open the library and get the module generator function
     void* generator = dlsym(library, ALLPIX_GENERATOR_FUNCTION);
     // If the generator function was not found, throw an error
@@ -286,7 +297,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         std::vector<std::string> names = config.getArray<std::string>("name");
         for(auto& name : names) {
             auto det = geo_manager->getDetector(name);
-            instantiations.emplace_back(det, ModuleIdentifier(module_name, det->getName(), 0));
+            instantiations.emplace_back(det, ModuleIdentifier(module_name, identifier + det->getName(), 0));
 
             // Save the name (to not instantiate it again later)
             module_names.insert(name);
@@ -305,7 +316,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
                     continue;
                 }
 
-                instantiations.emplace_back(det, ModuleIdentifier(module_name, det->getName(), 1));
+                instantiations.emplace_back(det, ModuleIdentifier(module_name, identifier + det->getName(), 1));
             }
         }
     }
@@ -315,7 +326,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         auto detectors = geo_manager->getDetectors();
 
         for(auto& det : detectors) {
-            instantiations.emplace_back(det, ModuleIdentifier(module_name, det->getName(), 2));
+            instantiations.emplace_back(det, ModuleIdentifier(module_name, identifier + det->getName(), 2));
         }
     }
 
