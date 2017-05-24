@@ -368,7 +368,7 @@ void SimplePropagationModule::create_output_plots(unsigned int event_num) {
 void SimplePropagationModule::run(unsigned int event_num) {
     // check for electric field
     if(!getDetector()->hasElectricField()) {
-        throw ModuleError("Cannot propagate without an electric field (add a module to read the field)");
+        LOG(WARNING) << "Running this module without an electric field is not recommmended and can be very slow!";
     }
 
     // create vector of propagated charges
@@ -474,8 +474,9 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const XYZPoint& r
 
     // continue until outside the sensor (no electric field)
     // FIXME: we need to determine what would be a good time to stop
+    double zero_vec[] = {0, 0, 0};
     double last_time = std::numeric_limits<double>::lowest();
-    while(true) {
+    while(detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
         // update debug plots if necessary
         if(config_.get<bool>("output_plots") &&
            runge_kutta.getTime() - last_time > config_.get<double>("output_plots_step")) {
@@ -493,7 +494,7 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const XYZPoint& r
         // get electric field at current position and stop if field does not exist (outside sensor)
         double* raw_field = detector_->getElectricFieldRaw(position);
         if(raw_field == nullptr) {
-            break;
+            raw_field = zero_vec;
         }
 
         // apply diffusion step

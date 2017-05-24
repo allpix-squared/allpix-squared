@@ -82,6 +82,12 @@ namespace allpix {
         ROOT::Math::XYZPoint getGlobalPosition(const ROOT::Math::XYZPoint& local_pos) const;
 
         /**
+         * @brief Returns if a local position is within the sensitive device
+         * @return True if a local position is within the sensor, false otherwise
+         */
+        bool isWithinSensor(const ROOT::Math::XYZPoint& local_pos) const;
+
+        /**
          * @brief Returns if the detector has an electric field in the sensor
          * @return True if the detector has an electric field, false otherwise
          */
