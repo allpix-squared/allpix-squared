@@ -20,7 +20,7 @@
 
 using namespace allpix;
 
-Module::Module(Configuration config) : Module(config, nullptr) {}
+Module::Module(Configuration config) : Module(std::move(config), nullptr) {}
 Module::Module(Configuration config, std::shared_ptr<Detector> detector)
     : config_(std::move(config)), detector_(std::move(detector)) {}
 /**
