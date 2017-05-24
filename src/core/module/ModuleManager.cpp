@@ -205,8 +205,20 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
     // Make the vector to return
     std::string module_name = config.getName();
 
-    // Load an instance of the module from the library
-    ModuleIdentifier identifier(module_name, "", 0);
+    // Create the identifier
+    std::string identifier_str;
+    if(!config.get<std::string>("input").empty()) {
+        identifier_str += config.get<std::string>("input");
+        identifier_str += ":";
+    }
+    if(!config.get<std::string>("output").empty()) {
+        identifier_str += config.get<std::string>("output");
+        identifier_str += ":";
+    }
+    if(!identifier_str.empty()) {
+        identifier_str = identifier_str.substr(0, identifier_str.size() - 1);
+    }
+    ModuleIdentifier identifier(module_name, identifier_str, 0);
 
     // Get the generator function for this module
     void* generator = dlsym(library, ALLPIX_GENERATOR_FUNCTION);
