@@ -103,7 +103,7 @@ namespace allpix {
         static UnitType convert(UnitType inp, std::string str);
 
         /**
-         * @brief Return base unit for display in the best of all the given units
+         * @brief Return value for display in the best of all the provided units
          * @param inp Value in the base unit system
          * @param unit Name of the possible output units
          * @return Value with best unit to be used for display
@@ -111,8 +111,8 @@ namespace allpix {
         // TODO [doc] Shall we change the name in something better here
         static std::string display(UnitType inp, std::initializer_list<std::string> units);
         /**
-         * @brief Return base unit in the requested unit for display
-         * @param inp Value in the base unit system
+         * @brief Return value in the requested unit for display
+         * @param inp Value in other type
          * @param unit Name of the output unit
          * @return Value with unit to be used for display
          */
@@ -165,7 +165,6 @@ namespace allpix {
         }
         return static_cast<T>(out);
     }
-
 } // namespace allpix
 
 #endif /* ALLPIX_UNIT_H */

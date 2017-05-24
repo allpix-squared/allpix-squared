@@ -124,23 +124,28 @@ std::string Units::display(UnitType inp, std::initializer_list<std::string> unit
         throw std::invalid_argument("list of possible units cannot be empty");
     }
 
-    // Find best unit
-    int best_exponent = std::numeric_limits<int>::min();
-    std::string best_unit;
-    for(auto& unit : units) {
-        Units::UnitType value = convert(inp, unit);
-        int exponent = 0;
-        std::frexp(value, &exponent);
-        if((best_exponent <= 0 && exponent > best_exponent) || (exponent > 0 && exponent < best_exponent)) {
-            best_exponent = exponent;
-            best_unit = unit;
-        }
-    }
-
-    // Write unit
     std::ostringstream stream;
-    stream << convert(inp, best_unit);
-    stream << best_unit;
+    if(std::fabs(inp) < std::numeric_limits<Units::UnitType>::epsilon()) {
+        // Zero needs no unit
+        stream << inp;
+    } else {
+        // Find best unit
+        int best_exponent = std::numeric_limits<int>::min();
+        std::string best_unit;
+        for(auto& unit : units) {
+            Units::UnitType value = convert(inp, unit);
+            int exponent = 0;
+            std::frexp(value, &exponent);
+            if((best_exponent <= 0 && exponent > best_exponent) || (exponent > 0 && exponent < best_exponent)) {
+                best_exponent = exponent;
+                best_unit = unit;
+            }
+        }
+
+        // Write unit
+        stream << convert(inp, best_unit);
+        stream << best_unit;
+    }
     return stream.str();
 }
 std::string Units::display(UnitType inp, std::string unit) {

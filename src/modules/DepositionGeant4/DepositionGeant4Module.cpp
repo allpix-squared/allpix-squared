@@ -151,7 +151,11 @@ void DepositionGeant4Module::finalize() {
         total_charges += sensor->getTotalDepositedCharge();
     }
 
-    size_t average_charge = total_charges / sensors_.size() / last_event_num_;
-    LOG(INFO) << "Deposited total of " << total_charges << " charges in " << sensors_.size() << " sensor(s) (average of "
-              << average_charge << " per sensor for every event)";
+    if(sensors_.size() > 0 && total_charges > 0) {
+        size_t average_charge = total_charges / sensors_.size() / last_event_num_;
+        LOG(INFO) << "Deposited total of " << total_charges << " charges in " << sensors_.size() << " sensor(s) (average of "
+                  << average_charge << " per sensor for every event)";
+    } else {
+        LOG(WARNING) << "No charges deposited";
+    }
 }

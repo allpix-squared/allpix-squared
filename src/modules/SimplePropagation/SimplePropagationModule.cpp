@@ -31,6 +31,7 @@
 #include "core/utils/log.h"
 #include "core/utils/random.h"
 #include "core/utils/unit.h"
+#include "tools/ROOT.h"
 #include "tools/runge_kutta.h"
 
 #include "objects/DepositedCharge.hpp"
@@ -404,7 +405,7 @@ void SimplePropagationModule::run(unsigned int event_num) {
             auto prop_pair = propagate(position);
             position = prop_pair.first;
 
-            LOG(DEBUG) << " Propagated " << charge_per_step << " to " << position << " in "
+            LOG(DEBUG) << " Propagated " << charge_per_step << " to " << display_vector(position, {"mm", "um"}) << " in "
                        << Units::display(prop_pair.second, "ns") << " time";
 
             // create a new propagated charge and add it to the list

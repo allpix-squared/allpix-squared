@@ -75,7 +75,7 @@ TGeoBuilderModule::TGeoBuilderModule(Configuration config, Messenger*, GeometryM
       m_buildTestStructureFlag(false) {
     // read the configuration
     // FIXME: prefer to use std::string
-    m_userDefinedWorldMaterial = m_config.get<TString>("world_material");
+    m_userDefinedWorldMaterial = m_config.get<std::string>("world_material");
     m_buildAppliancesFlag = m_config.get<bool>("build_appliances", false);
     if(m_buildAppliancesFlag) {
         m_Appliances_type = m_config.get<int>("appliances_type");

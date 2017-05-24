@@ -27,6 +27,7 @@
 
 #include "core/geometry/PixelDetectorModel.hpp"
 #include "core/utils/log.h"
+#include "tools/ROOT.h"
 #include "tools/geant4.h"
 
 // temporary common includes
@@ -245,11 +246,11 @@ void GeometryConstructionG4::build_pixel_devices() {
                     bump_height - 2. * model->getHalfChipSizeZ() - model->getHalfPCBSizeZ());
 
         LOG(DEBUG) << " Local relative positions of the geometry parts";
-        LOG(DEBUG) << " - Coverlayer position  : " << posCoverlayer;
-        LOG(DEBUG) << " - Sensor position      : " << posDevice;
-        LOG(DEBUG) << " - Bumps position       : " << posBumps;
-        LOG(DEBUG) << " - Chip position        : " << posChip;
-        LOG(DEBUG) << " - PCB position         : " << posPCB;
+        LOG(DEBUG) << " - Coverlayer position  : " << display_vector(posCoverlayer, {"mm", "um"});
+        LOG(DEBUG) << " - Sensor position      : " << display_vector(posDevice, {"mm", "um"});
+        LOG(DEBUG) << " - Bumps position       : " << display_vector(posBumps, {"mm", "um"});
+        LOG(DEBUG) << " - Chip position        : " << display_vector(posChip, {"mm", "um"});
+        LOG(DEBUG) << " - PCB position         : " << display_vector(posPCB, {"mm", "um"});
 
         /* NAMES
          * define the local names of the specific detectors
@@ -281,14 +282,15 @@ void GeometryConstructionG4::build_pixel_devices() {
         G4double wrapperHY = model->getHalfWrapperDY();
         G4double wrapperHZ = model->getHalfWrapperDZ();
 
-        LOG(DEBUG) << " Wrapper dimensions : " << wrapperHX << " " << wrapperHY << " " << wrapperHZ;
+        LOG(DEBUG) << " Wrapper dimensions : " << Units::display(wrapperHX, "mm") << " " << Units::display(wrapperHY, "mm")
+                   << " " << Units::display(wrapperHZ, "mm");
 
         auto* wrapper_box = new G4Box(wrapperName.second, 2. * wrapperHX, 2. * wrapperHY, 2. * wrapperHZ);
         model_g4->wrapper_log = new G4LogicalVolume(wrapper_box, world_material_, wrapperName.second + "_log");
         model_g4->wrapper_log->SetVisAttributes(wrapperVisAtt);
 
         // WARNING: get a proper geometry lib
-        G4ThreeVector posWrapper = toG4Vector((*detItr)->getPosition()); //= (*detItr)->getPosition();
+        G4ThreeVector posWrapper = toG4Vector((*detItr)->getPosition());
 
         // ALERT: NO WRAPPER ENHANCEMENTS
         // Apply the enhancement to the medipixes

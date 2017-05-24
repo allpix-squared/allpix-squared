@@ -24,6 +24,7 @@
 #include "core/geometry/PixelDetectorModel.hpp"
 #include "core/utils/log.h"
 
+#include "tools/ROOT.h"
 #include "tools/geant4.h"
 
 using namespace allpix;
@@ -61,8 +62,9 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     DepositedCharge deposit(deposit_position, charge, mid_time);
     deposits_.push_back(deposit);
 
-    LOG(DEBUG) << "Created deposit of " << charge << " charges at " << mid_pos << " locally on " << deposit_position
-               << " in " << detector_->getName() << " after " << Units::display(mid_time, {"ns", "ps"});
+    LOG(DEBUG) << "Created deposit of " << charge << " charges at " << display_vector(mid_pos, {"mm", "um"})
+               << " locally on " << display_vector(deposit_position, {"mm", "um"}) << " in " << detector_->getName()
+               << " after " << Units::display(mid_time, {"ns", "ps"});
 
     return true;
 }
