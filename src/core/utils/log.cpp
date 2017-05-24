@@ -220,7 +220,7 @@ std::ostringstream& DefaultLogger::getProcessStream(
 
 // Getter and setters for the reporting level
 LogLevel& DefaultLogger::get_reporting_level() {
-    static LogLevel reporting_level = LogLevel::INFO;
+    static LogLevel reporting_level = LogLevel::NONE;
     return reporting_level;
 }
 void DefaultLogger::setReportingLevel(LogLevel level) {
@@ -232,7 +232,8 @@ LogLevel DefaultLogger::getReportingLevel() {
 
 // String to LogLevel conversions and vice versa
 std::string DefaultLogger::getStringFromLevel(LogLevel level) {
-    static const std::array<std::string, 7> type = {{"FATAL", "STATUS", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE"}};
+    static const std::array<std::string, 8> type = {
+        {"FATAL", "STATUS", "ERROR", "WARNING", "INFO", "DEBUG", "NONE", "TRACE"}};
     return type.at(static_cast<decltype(type)::size_type>(level));
 }
 /**

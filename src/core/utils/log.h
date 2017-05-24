@@ -28,8 +28,8 @@ namespace allpix {
         WARNING,   ///< Possible issue that could lead to unexpected results
         INFO,      ///< General information about processes (should not be called in run function)
         DEBUG,     ///< Detailed information about physics process
-        TRACE      ///< Software debugging information about what part is currently running
-
+        NONE,      ///< Indicates the log level has not been set (cannot be selected by the user)
+        TRACE,     ///< Software debugging information about what part is currently running
     };
     /**
      * @brief Format of the logger

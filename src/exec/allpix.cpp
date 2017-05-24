@@ -77,8 +77,8 @@ int main(int argc, const char* argv[]) {
         std::cout << "Generic simulation framework for pixel detectors" << std::endl;
         std::cout << "\t -c <file>    configuration file to be used" << std::endl;
         std::cout << "\t -l <file>    file to log to besides standard output" << std::endl;
-        std::cout << "\t -v <level>   verbosity level, default INFO, can be overwritten \n"
-                  << "\t              by global or per-module configuration." << std::endl;
+        std::cout << "\t -v <level>   verbosity level overwrites global level,\n"
+                  << "\t              but not the per-module configuration." << std::endl;
         clean();
         return return_code;
     }

@@ -40,22 +40,26 @@ AllPix::AllPix(std::string file_name)
  * - Load the modules from the configuration
  */
 void AllPix::load() {
-    LOG(TRACE) << "Loading AllPix";
-
     // Configure the standard special sections
     conf_mgr_->setGlobalHeaderName("AllPix");
     conf_mgr_->addGlobalHeaderName("");
     conf_mgr_->addIgnoreHeaderName("Ignore");
 
-    // Set the log level from config
     Configuration global_config = conf_mgr_->getGlobalConfiguration();
-    std::string log_level_string = global_config.get<std::string>("log_level", "INFO");
-    std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
-    try {
-        LogLevel log_level = Log::getLevelFromString(log_level_string);
-        Log::setReportingLevel(log_level);
-    } catch(std::invalid_argument& e) {
-        throw InvalidValueError(global_config, "log_level", e.what());
+
+    // Set the log level from config if not specified earlier
+    std::string log_level_string;
+    if(Log::getReportingLevel() == LogLevel::NONE) {
+        log_level_string = global_config.get<std::string>("log_level", "INFO");
+        std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
+        try {
+            LogLevel log_level = Log::getLevelFromString(log_level_string);
+            Log::setReportingLevel(log_level);
+        } catch(std::invalid_argument& e) {
+            throw InvalidValueError(global_config, "log_level", e.what());
+        }
+    } else {
+        log_level_string = Log::getStringFromLevel(Log::getReportingLevel());
     }
 
     // Set the log format from config
@@ -68,9 +72,10 @@ void AllPix::load() {
         throw InvalidValueError(global_config, "log_format", e.what());
     }
 
+    // Wait for the first messages until level and format are properly set
     LOG(STATUS) << "Welcome to AllPix " << ALLPIX_PROJECT_VERSION;
 
-    // Wait for the debug messages until level and format are set
+    LOG(TRACE) << "Loading AllPix";
     LOG(TRACE) << "Global log level is set to " << log_level_string;
     LOG(TRACE) << "Global log format is set to " << log_format_string;
 

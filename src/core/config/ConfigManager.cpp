@@ -21,7 +21,7 @@ using namespace allpix;
  * @throws ConfigFileUnavailableError If the main configuration file cannot be accessed
  */
 ConfigManager::ConfigManager(std::string file_name) : file_name_(std::move(file_name)) {
-    LOG(TRACE) << "Using " << file_name << " as main configuration file";
+    LOG(TRACE) << "Using " << file_name_ << " as main configuration file";
 
     // Check if the file exists
     std::ifstream file(file_name_);
