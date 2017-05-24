@@ -134,8 +134,8 @@ void DefaultDigitizerModule::run(unsigned int) {
 
     if(!hits.empty()) {
         // Create and dispatch hit message
-        PixelHitMessage hits_message(hits, getDetector());
-        messenger_->dispatchMessage(this, hits_message, "hit");
+        auto hits_message = std::make_shared<PixelHitMessage>(hits, getDetector());
+        messenger_->dispatchMessage(this, hits_message);
     }
 }
 

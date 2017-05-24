@@ -87,10 +87,10 @@ void SensitiveDetectorActionG4::EndOfEvent(G4HCofThisEvent*) {
         }
 
         // create a new charge deposit message
-        DepositedChargeMessage deposit_message(std::move(deposits_), detector_);
+        auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(deposits_), detector_);
 
         // dispatch the message
-        messenger_->dispatchMessage(module_, deposit_message, "sensor");
+        messenger_->dispatchMessage(module_, deposit_message);
 
         // make a new empty vector of deposits
         deposits_ = std::vector<DepositedCharge>();

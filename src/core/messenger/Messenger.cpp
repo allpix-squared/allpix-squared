@@ -41,9 +41,12 @@ static bool check_send(BaseMessage* message, BaseDelegate* delegate) {
 /**
  * Messages should be bound during construction, so this function only gives useful information outside the constructor
  */
-bool Messenger::hasReceiver(const std::shared_ptr<BaseMessage>& message, const std::string& name) {
+bool Messenger::hasReceiver(Module* module, const std::shared_ptr<BaseMessage>& message) {
     const BaseMessage* inst = message.get();
     std::type_index type_idx = typeid(*inst);
+
+    // Get the name of the output message
+    std::string name = module->get_configuration().get<std::string>("output");
 
     // Check specific listeners
     if(!name.empty()) {
@@ -69,8 +72,11 @@ bool Messenger::hasReceiver(const std::shared_ptr<BaseMessage>& message, const s
  * has no name it only sends to all general listeners (not listening to a specific name). If the dispatched
  * message has a name it is also distributed to its specific listeners (besides the general listeners).
  */
-void Messenger::dispatch_message(Module* module, const std::shared_ptr<BaseMessage>& message, const std::string& name) {
+void Messenger::dispatch_message(Module* module, const std::shared_ptr<BaseMessage>& message) {
     bool send = false;
+
+    // Get the name of the output message
+    std::string name = module->get_configuration().get<std::string>("output");
 
     // Create type identifier from the typeid
     const BaseMessage* inst = message.get();
@@ -106,10 +112,9 @@ void Messenger::dispatch_message(Module* module, const std::shared_ptr<BaseMessa
     }
 }
 
-void Messenger::add_delegate(const std::type_info& message_type,
-                             const std::string& message_name,
-                             Module* module,
-                             std::unique_ptr<BaseDelegate> delegate) {
+void Messenger::add_delegate(const std::type_info& message_type, Module* module, std::unique_ptr<BaseDelegate> delegate) {
+    std::string message_name = module->get_configuration().get<std::string>("input");
+
     // Register delegate internally
     delegates_[std::type_index(message_type)][message_name].push_back(std::move(delegate));
     auto delegate_iter = --delegates_[std::type_index(message_type)][message_name].end();

@@ -148,6 +148,10 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
         std::string global_dir = gSystem->pwd();
         config.set<std::string>("_global_dir", global_dir);
 
+        // Set default input and output name
+        config.setDefault<std::string>("input", "");
+        config.setDefault<std::string>("output", "");
+
         // Create the modules from the library depending on the module type
         std::vector<std::pair<ModuleIdentifier, Module*>> mod_list;
         if(unique) {

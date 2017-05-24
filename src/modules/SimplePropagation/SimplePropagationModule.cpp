@@ -433,10 +433,10 @@ void SimplePropagationModule::run(unsigned int event_num) {
     total_time_ += total_time;
 
     // create a new message with propagated charges
-    PropagatedChargeMessage propagated_charge_message(std::move(propagated_charges), detector_);
+    auto propagated_charge_message = std::make_shared<PropagatedChargeMessage>(std::move(propagated_charges), detector_);
 
     // dispatch the message
-    messenger_->dispatchMessage(this, propagated_charge_message, "implant");
+    messenger_->dispatchMessage(this, propagated_charge_message);
 }
 
 std::pair<XYZPoint, double> SimplePropagationModule::propagate(const XYZPoint& root_pos) {

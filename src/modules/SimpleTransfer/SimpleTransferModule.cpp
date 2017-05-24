@@ -89,8 +89,8 @@ void SimpleTransferModule::run(unsigned int) {
     total_transferrred_charges_ += transferrred_charges_count;
 
     // dispatch message
-    PixelChargeMessage pixel_message(pixel_charges, detector_);
-    messenger_->dispatchMessage(this, pixel_message, "pixel");
+    auto pixel_message = std::make_shared<PixelChargeMessage>(pixel_charges, detector_);
+    messenger_->dispatchMessage(this, pixel_message);
 }
 
 // print statistics

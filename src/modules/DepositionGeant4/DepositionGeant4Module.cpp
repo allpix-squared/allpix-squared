@@ -84,8 +84,8 @@ void DepositionGeant4Module::init() {
     bool useful_deposition = false;
     for(auto& detector : geo_manager_->getDetectors()) {
         // do not add sensitive detector for detectors that have no listeners
-        if(!messenger_->hasReceiver(std::make_shared<DepositedChargeMessage>(std::vector<DepositedCharge>(), detector),
-                                    "sensor")) {
+        if(!messenger_->hasReceiver(this,
+                                    std::make_shared<DepositedChargeMessage>(std::vector<DepositedCharge>(), detector))) {
             LOG(INFO) << "Not depositing charges in " << detector->getName()
                       << " because there is no listener for its output";
             continue;
