@@ -149,5 +149,5 @@ std::string Units::display(UnitType inp, std::initializer_list<std::string> unit
     return stream.str();
 }
 std::string Units::display(UnitType inp, std::string unit) {
-    return display(inp, {unit});
+    return display(inp, {std::move(unit)});
 }

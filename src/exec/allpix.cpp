@@ -24,7 +24,7 @@ void interrupt_handler(int) {
     clean();
 
     // Ignore any segmentation fault that may arise after this
-    std::signal(SIGSEGV, SIG_IGN);
+    std::signal(SIGSEGV, SIG_IGN); // NOLINT
     std::exit(1);
 }
 
