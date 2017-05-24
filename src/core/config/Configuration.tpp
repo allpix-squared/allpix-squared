@@ -57,7 +57,7 @@ namespace allpix {
         // NOTE: not the most elegant way to support arrays
         std::string str;
         for(auto& el : val) {
-            str += " ";
+            str += ",";
             str += allpix::to_string(val);
         }
         set(key, str);

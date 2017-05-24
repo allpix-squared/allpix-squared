@@ -46,7 +46,7 @@ ReadGeoDescription::ReadGeoDescription(std::vector<std::string> paths) {
         paths.emplace_back(data_dir + ALLPIX_PROJECT_NAME);
     }
 
-    LOG(INFO) << "Reading model files";
+    LOG(TRACE) << "Reading model files";
     // add all the paths to the reader
     for(auto& path : paths) {
         // check if file or directory
@@ -74,7 +74,7 @@ ReadGeoDescription::ReadGeoDescription(std::vector<std::string> paths) {
     }
 
     // loop through all configurations and parse them
-    LOG(INFO) << "Parsing models";
+    LOG(TRACE) << "Parsing models";
     for(auto& config : reader.getConfigurations()) {
         if(models_.find(config.getName()) != models_.end()) {
             // skip models that we already loaded earlier higher in the chain

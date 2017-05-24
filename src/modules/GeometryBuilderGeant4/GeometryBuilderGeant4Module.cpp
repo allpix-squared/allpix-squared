@@ -42,7 +42,7 @@ GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration config, M
     // WARNING: we need to do this here to allow for proper instantiation (initialization is only run after loading)
     // FIXME: move this to a separate module or the core?
 
-    LOG(INFO) << "Constructing internal geometry";
+    LOG(TRACE) << "Constructing internal geometry";
     // read the models
     std::vector<std::string> model_paths;
     if(config_.has("model_paths")) {
@@ -125,7 +125,7 @@ void GeometryBuilderGeant4Module::init() {
     run_manager_g4_->SetUserInitialization(geometry_construction);
 
     // run the geometry construct function in GeometryConstructionG4
-    LOG(INFO) << "Building Geant4 geometry";
+    LOG(TRACE) << "Building Geant4 geometry";
     run_manager_g4_->InitializeGeometry();
 
     // export geometry in GDML.

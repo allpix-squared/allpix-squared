@@ -22,7 +22,7 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration config,
     : Module(config, detector), config_(std::move(config)), detector_(std::move(detector)), pixels_message_(nullptr),
       output_file_(nullptr) {
     // fetch deposit for single module
-    messenger->bindSingle(this, &DetectorHistogrammerModule::pixels_message_);
+    messenger->bindSingle(this, &DetectorHistogrammerModule::pixels_message_, MsgFlags::REQUIRED);
 }
 
 // create histograms
@@ -40,7 +40,7 @@ void DetectorHistogrammerModule::init() {
     output_file_->cd();
 
     // create histogram
-    LOG(INFO) << "Creating histograms";
+    LOG(TRACE) << "Creating histograms";
     std::string histogram_name = "histogram_" + getUniqueName();
     std::string histogram_title = "Hitmap for " + detector_->getName() + ";x (pixels);y (pixels)";
     histogram = new TH2I(histogram_name.c_str(),
@@ -64,13 +64,7 @@ void DetectorHistogrammerModule::init() {
 
 // fill the histograms
 void DetectorHistogrammerModule::run(unsigned int) {
-    // check if we got any deposits
-    if(pixels_message_ == nullptr) {
-        LOG(WARNING) << "Detector " << detector_->getName() << " was not hit... skipping!";
-        return;
-    }
-
-    LOG(DEBUG) << "got charges in " << pixels_message_->getData().size() << " pixels";
+    LOG(DEBUG) << "Adding hits in " << pixels_message_->getData().size() << " pixels";
 
     // fill 2d histogram
     for(auto& pixel_charge : pixels_message_->getData()) {
@@ -107,7 +101,7 @@ void DetectorHistogrammerModule::finalize() {
     }
 
     // write histograms
-    LOG(INFO) << "Writing histograms to file";
+    LOG(TRACE) << "Writing histograms to file";
     histogram->Write();
     cluster_size->Write();
 

@@ -11,6 +11,8 @@
 #include <vector>
 
 #include "GeometryManager.hpp"
+#include "core/module/exceptions.h"
+#include "core/utils/log.h"
 #include "exceptions.h"
 
 using namespace allpix;
@@ -18,9 +20,15 @@ using namespace allpix;
 GeometryManager::GeometryManager() = default;
 
 /**
+ * @throws InvalidModuleActionException If the passed detector is a null pointer
  * @throws DetectorNameExistsError If the detector name is already registered before
  */
 void GeometryManager::addDetector(std::shared_ptr<Detector> detector) {
+    if(detector == nullptr) {
+        throw InvalidModuleActionException("Detector to add cannot be a null pointer");
+    }
+
+    LOG(TRACE) << "Registering new detector " << detector->getName();
     if(detector_names_.find(detector->getName()) != detector_names_.end()) {
         throw DetectorNameExistsError(detector->getName());
     }

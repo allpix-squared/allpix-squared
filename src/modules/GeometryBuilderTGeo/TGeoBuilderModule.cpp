@@ -75,7 +75,7 @@ TGeoBuilderModule::TGeoBuilderModule(Configuration config, Messenger*, GeometryM
       m_buildTestStructureFlag(false) {
     // read the configuration
     // FIXME: prefer to use std::string
-    m_userDefinedWorldMaterial = m_config.get<TString>("world_material");
+    m_userDefinedWorldMaterial = m_config.get<std::string>("world_material");
     m_buildAppliancesFlag = m_config.get<bool>("build_appliances", false);
     if(m_buildAppliancesFlag) {
         m_Appliances_type = m_config.get<int>("appliances_type");
@@ -186,7 +186,7 @@ void TGeoBuilderModule::Construct() {
     // Solids will be builds in mm, same units as AllPix1, even if ROOT assumes cm.
     // Beware when computing shape capacity or volume weight.
 
-    LOG(DEBUG) << "Starting construction of the detector geometry.";
+    LOG(TRACE) << "Starting construction of the detector geometry.";
 
     // Create the materials and media.
     BuildMaterialsAndMedia();
@@ -203,7 +203,7 @@ void TGeoBuilderModule::Construct() {
         throw ModuleError("Material " + std::string(m_userDefinedWorldMaterial) +
                           " requested to fill the world volume does not exist");
     } else {
-        LOG(DEBUG) << "Using " << m_userDefinedWorldMaterial << " to fill the world volume.";
+        LOG(TRACE) << "Using " << m_userDefinedWorldMaterial << " to fill the world volume.";
     }
 
     // World volume, ie the experimental hall.
@@ -227,15 +227,15 @@ void TGeoBuilderModule::Construct() {
         BuildTestStructure();
     }
 
-    LOG(DEBUG) << "Construction of the detector geometry successful.";
+    LOG(TRACE) << "Construction of the detector geometry successful.";
 }
 
 void TGeoBuilderModule::BuildPixelDevices() {
 
-    LOG(DEBUG) << "Starting construction of the pixel detectors.";
+    LOG(TRACE) << "Starting construction of the pixel detectors.";
 
     vector<shared_ptr<Detector>> detectors = m_geoDscMng->getDetectors();
-    LOG(DEBUG) << "Building " << detectors.size() << " device(s) ...";
+    LOG(TRACE) << "Building " << detectors.size() << " device(s) ...";
 
     // Big loop on pixel detectors.
     auto detItr = detectors.begin();
@@ -292,10 +292,10 @@ void TGeoBuilderModule::BuildPixelDevices() {
         det_tr->SetName("DetPlacement" + id_s);
 
         // Print out ! The wrapper will just be called "detector".
-        LOG(DEBUG) << "Detector placement relative to the World : ";
-        LOG(DEBUG) << "- Position             : " << Print(&posWrapper);
-        LOG(DEBUG) << "- Orientation          : " << TString::Format("%3.1f %3.1f %3.1f", phi, theta, psi);
-        LOG(DEBUG) << "- Wrapper Dimensions   : " << TString::Format("%3.3f %3.3f %3.3f", wrapperHX, wrapperHY, wrapperHZ);
+        LOG(DEBUG) << " Detector placement relative to the World : ";
+        LOG(DEBUG) << " - Position             : " << Print(&posWrapper);
+        LOG(DEBUG) << " - Orientation          : " << TString::Format("%3.1f %3.1f %3.1f", phi, theta, psi);
+        LOG(DEBUG) << " - Wrapper Dimensions   : " << TString::Format("%3.3f %3.3f %3.3f", wrapperHX, wrapperHY, wrapperHZ);
 
         TGeoVolume* expHall_log = gGeoManager->GetTopVolume();
         expHall_log->AddNode(wrapper_log, 1, det_tr);
@@ -336,8 +336,8 @@ void TGeoBuilderModule::BuildPixelDevices() {
         // Apply position Offset for the detector due to the enhancement
         posDevice->Add(&wrapperEnhancementTransl);
         wrapper_log->AddNode(Wafer_log, 1, posDevice);
-        LOG(DEBUG) << "Relative positions of the elements to the detector :";
-        LOG(DEBUG) << "- Sensor position      : " << Print(posDevice);
+        LOG(DEBUG) << " Relative positions of the elements to the detector :";
+        LOG(DEBUG) << " - Sensor position      : " << Print(posDevice);
 
         ///////////////////////////////////////////////////////////
         // Bumps
@@ -386,7 +386,7 @@ void TGeoBuilderModule::BuildPixelDevices() {
                                     0.,
                                     -dsc->getHalfSensorZ() - 2 * dsc->getHalfCoverlayerHeight() - (bump_height / 2));
             posBumps->Add(posDevice);
-            LOG(DEBUG) << "- Bumps position       : " << Print(posBumps);
+            LOG(DEBUG) << " - Bumps position       : " << Print(posBumps);
             wrapper_log->AddNode(Bumps_log, 1, posBumps);
 
             // A bump logical volume
@@ -439,7 +439,7 @@ void TGeoBuilderModule::BuildPixelDevices() {
                                     dsc->getChipOffsetZ() - dsc->getHalfSensorZ() - 2. * dsc->getHalfCoverlayerHeight() -
                                         bump_height - dsc->getHalfChipSizeZ());
             posChip->Add(posDevice);
-            LOG(DEBUG) << "- Chip position        : " << Print(posChip);
+            LOG(DEBUG) << " - Chip position        : " << Print(posChip);
             wrapper_log->AddNode(Chip_log, 1, posChip);
         }
 
@@ -465,7 +465,7 @@ void TGeoBuilderModule::BuildPixelDevices() {
                                     -dsc->getHalfSensorZ() - 2. * dsc->getHalfCoverlayerHeight() - bump_height -
                                         2. * dsc->getHalfChipSizeZ() - dsc->getHalfPCBSizeZ());
             posPCB->Add(posDevice);
-            LOG(DEBUG) << "- PCB position         : " << Print(posPCB);
+            LOG(DEBUG) << " - PCB position         : " << Print(posPCB);
             wrapper_log->AddNode(PCB_log, 1, posPCB);
 
         } // end if PCB
@@ -482,10 +482,10 @@ void TGeoBuilderModule::BuildPixelDevices() {
              */
             TGeoMedium* Cover_med = gGeoManager->GetMedium(dsc->getCoverlayerMaterial().c_str());
             if(Cover_med == nullptr) {
-                LOG(WARNING) << "Requested material for the coverlayer " << dsc->getCoverlayerMaterial()
-                             << " was not found in the material database. "
-                             << "Check the spelling or add it in BuildMaterialsAndMedia()."
-                             << "Going on with aluminum.";
+                LOG(ERROR) << "Requested material for the coverlayer " << dsc->getCoverlayerMaterial()
+                           << " was not found in the material database. "
+                           << "Check the spelling or add it in BuildMaterialsAndMedia()."
+                           << "Going on with aluminum.";
                 Cover_med = gGeoManager->GetMedium("Al");
             }
 
@@ -503,7 +503,7 @@ void TGeoBuilderModule::BuildPixelDevices() {
             TGeoTranslation* posCover = new TGeoTranslation(
                 "LocalCoverlayerTranslation" + id_s, 0., 0., -dsc->getHalfSensorZ() - dsc->getHalfCoverlayerHeight());
             posCover->Add(posDevice);
-            LOG(DEBUG) << "- Coverlayer position  : " << Print(posCover);
+            LOG(DEBUG) << " - Coverlayer position  : " << Print(posCover);
             wrapper_log->AddNode(Cover_log, 1, posCover);
 
         } // end if Coverlayer
@@ -530,11 +530,11 @@ void TGeoBuilderModule::BuildPixelDevices() {
         // Placement ! Same as device
         wrapper_log->AddNode(GuardRings_log, 1, posDevice);
 
-        LOG(DEBUG) << "Building detector " << detname << " ... done.";
+        LOG(TRACE) << "Building detector " << detname << " ... done.";
 
     } // Big loop on detector descriptions
 
-    LOG(DEBUG) << "Construction of the pixel detectors successful.";
+    LOG(TRACE) << "Construction of the pixel detectors successful.";
 }
 
 void TGeoBuilderModule::BuildAppliances() {
@@ -551,11 +551,11 @@ void TGeoBuilderModule::BuildAppliances() {
     // you can enhance the size of the wrapper so daughter volumens of the wrappers
     // fit in.
 
-    LOG(DEBUG) << "Starting construction of the appliances " << m_Appliances_type;
+    LOG(TRACE) << "Starting construction of the appliances " << m_Appliances_type;
 
     // Check that appliance type is valid.
     if(m_Appliances_type < 0 || m_Appliances_type > 1) {
-        LOG(DEBUG) << "Unknown Appliance Type : " << m_Appliances_type
+        LOG(ERROR) << "Unknown Appliance Type : " << m_Appliances_type
                    << "Available types are 0,1. Set /allpix/extras/setApplianceType accordingly."
                    << "Quitting...";
         return;
@@ -563,7 +563,7 @@ void TGeoBuilderModule::BuildAppliances() {
 
     // Check that we have some position vectors for the appliances.
     if(m_posVectorAppliances.empty()) {
-        LOG(DEBUG) << "You requested to build appliances, but no translation vector given."
+        LOG(ERROR) << "You requested to build appliances, but no translation vector given."
                    << "Please, set /allpix/extras/setAppliancePosition accordingly."
                    << "Abandonning...";
         return;
@@ -635,7 +635,7 @@ void TGeoBuilderModule::BuildAppliances() {
 
     } // end loop positions
 
-    LOG(DEBUG) << "Construction of the appliances successful.";
+    LOG(TRACE) << "Construction of the appliances successful.";
 }
 
 void TGeoBuilderModule::BuildTestStructure() {}

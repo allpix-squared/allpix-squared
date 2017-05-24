@@ -8,6 +8,7 @@
 #include "core/messenger/Messenger.hpp"
 #include "core/utils/log.h"
 #include "core/utils/random.h"
+#include "core/utils/unit.h"
 
 // ROOT includes
 #include <TFile.h>
@@ -42,6 +43,8 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration config,
 // Initialize output plots
 void DefaultDigitizerModule::init() {
     if(config_.get<bool>("output_plots")) {
+        LOG(TRACE) << "Creating output plots";
+
         std::string file_name =
             getOutputPath(config_.get<std::string>("output_plots_file_name", "debug_digitizer") + ".root");
         output_file_ = new TFile(file_name.c_str(), "RECREATE");
@@ -74,7 +77,7 @@ void DefaultDigitizerModule::run(unsigned int) {
         auto pixel = pixel_charge.getPixel();
         auto charge = static_cast<double>(pixel_charge.getCharge());
 
-        LOG(DEBUG) << "Received pixel " << pixel.x() << "," << pixel.y() << ", charge " << charge << "e";
+        LOG(DEBUG) << "Received pixel (" << pixel.x() << "," << pixel.y() << "), charge " << Units::display(charge, "e");
         if(config_.get<bool>("output_plots")) {
             h_pxq->Fill(charge / 1e3);
         }
@@ -83,7 +86,7 @@ void DefaultDigitizerModule::run(unsigned int) {
         std::normal_distribution<double> el_noise(0, config_.get<unsigned int>("electronics_noise"));
         charge += el_noise(random_generator_);
 
-        LOG(DEBUG) << "Charge with noise: " << charge;
+        LOG(DEBUG) << "Charge with noise: " << Units::display(charge, "e");
         if(config_.get<bool>("output_plots")) {
             h_pxq_noise->Fill(charge / 1e3);
         }
@@ -100,11 +103,12 @@ void DefaultDigitizerModule::run(unsigned int) {
 
         // Discard charges below threshold:
         if(charge < threshold) {
-            LOG(DEBUG) << "Below smeared threshold: " << charge << " < " << threshold;
+            LOG(DEBUG) << "Below smeared threshold: " << Units::display(charge, "e") << " < "
+                       << Units::display(threshold, "e");
             continue;
         }
 
-        LOG(DEBUG) << "Passed threshold: " << charge << " > " << threshold;
+        LOG(DEBUG) << "Passed threshold: " << Units::display(charge, "e") << " > " << Units::display(threshold, "e");
         if(config_.get<bool>("output_plots")) {
             h_pxq_thr->Fill(charge / 1e3);
         }
@@ -124,10 +128,14 @@ void DefaultDigitizerModule::run(unsigned int) {
         // double crosstalk_neigubor_column = 0.00;
     }
 
+    // output summary and update statistics
+    LOG(INFO) << "Digitized " << hits.size() << " pixel hits";
+    total_hits_ += hits.size();
+
     if(!hits.empty()) {
         // Create and dispatch hit message
         PixelHitMessage hits_message(hits, getDetector());
-        messenger_->dispatchMessage(hits_message, "hit");
+        messenger_->dispatchMessage(this, hits_message, "hit");
     }
 }
 
@@ -138,7 +146,7 @@ void DefaultDigitizerModule::finalize() {
         output_file_->cd();
 
         // Write histograms
-        LOG(INFO) << "Writing histograms to file";
+        LOG(TRACE) << "Writing output plots to file";
         h_pxq->Write();
         h_pxq_noise->Write();
         h_thr->Write();
@@ -148,4 +156,6 @@ void DefaultDigitizerModule::finalize() {
         // Close the file
         output_file_->Close();
     }
+
+    LOG(INFO) << "Digitized " << total_hits_ << " pixel hits in total";
 }

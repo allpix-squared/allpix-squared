@@ -29,7 +29,7 @@ ElectricFieldInputLinearModule::ElectricFieldInputLinearModule(Configuration con
 // init method that reads the electric field from the file
 void ElectricFieldInputLinearModule::init() {
     // get field
-    LOG(INFO) << "Setting electric field from bias voltage";
+    LOG(TRACE) << "Setting electric field from bias voltage";
 
     // compute the electric field
     LOG(DEBUG) << getDetector()->getModel()->getSensorSize().z();

@@ -24,16 +24,6 @@ SimpleTransferModule::SimpleTransferModule(Configuration config, Messenger* mess
     messenger->bindSingle(this, &SimpleTransferModule::propagated_message_, MsgFlags::REQUIRED);
 }
 
-// compare two pixels for the pixel map
-struct pixel_cmp {
-    bool operator()(const PixelCharge::Pixel& p1, const PixelCharge::Pixel& p2) const {
-        if(p1.x() == p2.x()) {
-            return p1.y() < p2.y();
-        }
-        return p1.x() < p2.x();
-    }
-};
-
 // run method that does the main computations for the module
 void SimpleTransferModule::run(unsigned int) {
     // get detector model
@@ -44,14 +34,15 @@ void SimpleTransferModule::run(unsigned int) {
     }
 
     // find pixels for all propagated charges
-    LOG(INFO) << "Transferring charges to pixels";
+    LOG(TRACE) << "Transferring charges to pixels";
+    unsigned int transferrred_charges_count = 0;
     std::map<PixelCharge::Pixel, std::vector<PropagatedCharge>, pixel_cmp> pixel_map;
     for(auto& propagated_charge : propagated_message_->getData()) {
         auto position = propagated_charge.getPosition();
         // ignore if outside z range of implant
         // FIXME: this logic should be extended
         if(std::fabs(position.z() - model->getSensorMinZ()) > config_.get<double>("max_depth_distance")) {
-            LOG(DEBUG) << "skipping set of " << propagated_charge.getCharge() << " propagated charges at "
+            LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                        << propagated_charge.getPosition() << " because their local position is not in implant range";
             continue;
         }
@@ -63,7 +54,7 @@ void SimpleTransferModule::run(unsigned int) {
 
         // ignore if out of pixel grid
         if(xpixel < 0 || xpixel >= model->getNPixelsX() || ypixel < 0 || ypixel >= model->getNPixelsY()) {
-            LOG(DEBUG) << "skipping set of " << propagated_charge.getCharge() << " propagated charges at "
+            LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                        << propagated_charge.getPosition() << " because their nearest pixel (" << pixel.x() << ","
                        << pixel.y() << ") is outside the grid";
             continue;
@@ -72,12 +63,16 @@ void SimpleTransferModule::run(unsigned int) {
         // add the pixel the list of hit pixels
         pixel_map[pixel].push_back(propagated_charge);
 
-        LOG(DEBUG) << "set of " << propagated_charge.getCharge() << " propagated charges at "
+        // update statistics
+        unique_pixels_.insert(pixel);
+        transferrred_charges_count += propagated_charge.getCharge();
+
+        LOG(DEBUG) << "Set of " << propagated_charge.getCharge() << " propagated charges at "
                    << propagated_charge.getPosition() << " brought to pixel (" << pixel.x() << "," << pixel.y() << ")";
     }
 
     // create pixel charges
-    LOG(INFO) << "Combining charges at same pixel";
+    LOG(TRACE) << "Combining charges at same pixel";
     std::vector<PixelCharge> pixel_charges;
     for(auto& pixel : pixel_map) {
         unsigned int charge = 0;
@@ -86,10 +81,20 @@ void SimpleTransferModule::run(unsigned int) {
         }
         pixel_charges.emplace_back(pixel.first, charge);
 
-        LOG(DEBUG) << "set of " << charge << " charges at (" << pixel.first.x() << "," << pixel.first.y() << ")";
+        LOG(DEBUG) << "Set of " << charge << " charges combined at (" << pixel.first.x() << "," << pixel.first.y() << ")";
     }
+
+    // writing summary and update statistics
+    LOG(INFO) << "Transferred " << transferrred_charges_count << " charges to " << pixel_map.size() << " pixels";
+    total_transferrred_charges_ += transferrred_charges_count;
 
     // dispatch message
     PixelChargeMessage pixel_message(pixel_charges, detector_);
-    messenger_->dispatchMessage(pixel_message, "pixel");
+    messenger_->dispatchMessage(this, pixel_message, "pixel");
+}
+
+// print statistics
+void SimpleTransferModule::finalize() {
+    LOG(INFO) << "Transferred total of " << total_transferrred_charges_ << " charges to " << unique_pixels_.size()
+              << " different pixels";
 }

@@ -7,6 +7,7 @@
 #ifndef ALLPIX_UNIT_H
 #define ALLPIX_UNIT_H
 
+#include <initializer_list>
 #include <limits>
 #include <map>
 #include <string>
@@ -97,9 +98,26 @@ namespace allpix {
          * @param str Name of the output unit
          * @return Value in the requested unit
          */
-        // TODO [doc] This should return a string with the unit attached
-        // TODO [doc] Can we change the name in something better here
+        // TODO [doc] This function should maybe be removed
+        // TODO [doc] Shall we change the name in something better here
         static UnitType convert(UnitType inp, std::string str);
+
+        /**
+         * @brief Return value for display in the best of all the provided units
+         * @param inp Value in the base unit system
+         * @param unit Name of the possible output units
+         * @return Value with best unit to be used for display
+         */
+        // TODO [doc] Shall we change the name in something better here
+        static std::string display(UnitType inp, std::initializer_list<std::string> units);
+        /**
+         * @brief Return value in the requested unit for display
+         * @param inp Value in other type
+         * @param unit Name of the output unit
+         * @return Value with unit to be used for display
+         */
+        // TODO [doc] Shall we change the name in something better here
+        static std::string display(UnitType inp, std::string unit);
 
     private:
         static std::map<std::string, UnitType> unit_map_;
@@ -147,7 +165,6 @@ namespace allpix {
         }
         return static_cast<T>(out);
     }
-
 } // namespace allpix
 
 #endif /* ALLPIX_UNIT_H */

@@ -14,6 +14,7 @@
 
 #include "core/messenger/Messenger.hpp"
 #include "core/utils/file.h"
+#include "core/utils/log.h"
 #include "exceptions.h"
 
 #include <iostream>

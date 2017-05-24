@@ -1,5 +1,0 @@
-# color by charges
-/vis/modeling/trajectories/create/drawByCharge testCharge
-/vis/modeling/trajectories/testCharge/set 1 red
-/vis/modeling/trajectories/testCharge/set 0 red
-/vis/modeling/trajectories/testCharge/set -1 red

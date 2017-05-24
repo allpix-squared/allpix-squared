@@ -27,7 +27,7 @@ VisualizationGeant4Module::VisualizationGeant4Module(Configuration config, Messe
     : Module(config), config_(std::move(config)), has_run_(false), vis_manager_g4_(nullptr), gui_session_(nullptr) {}
 VisualizationGeant4Module::~VisualizationGeant4Module() {
     if(!has_run_ && vis_manager_g4_ != nullptr && vis_manager_g4_->GetCurrentViewer() != nullptr) {
-        LOG(DEBUG) << "Invoking VRML workaround to prevent visualization under error conditions";
+        LOG(TRACE) << "Invoking VRML workaround to prevent visualization under error conditions";
 
         // FIXME: workaround to skip VRML visualization in case we stopped before reaching the run method
         auto str = getenv("G4VRMLFILE_VIEWER");
@@ -65,7 +65,7 @@ void VisualizationGeant4Module::init() {
     }
 
     // initialize the session and the visualization manager
-    LOG(INFO) << "Initializing visualization";
+    LOG(TRACE) << "Initializing visualization";
     vis_manager_g4_ = std::make_unique<G4VisExecutive>("quiet");
     vis_manager_g4_->Initialize();
 
@@ -103,21 +103,33 @@ void VisualizationGeant4Module::init() {
     UI->ApplyCommand("/vis/sceneHandler/attach");
     UI->ApplyCommand("/vis/viewer/create");
 
-    // release the g4 output
-    RELEASE_STREAM(G4cout);
+    // release the stream early in debugging mode
+    IFLOG(DEBUG) { RELEASE_STREAM(G4cout); }
 
     // execute initialization macro if provided
     if(config_.has("macro_init")) {
         UI->ApplyCommand("/control/execute " + config_.getPath("macro_init"));
     }
+
+    // release the g4 output
+    RELEASE_STREAM(G4cout);
 }
 
 void VisualizationGeant4Module::run(unsigned int) {
+    // suppress stream if not in debugging mode
+    IFLOG(DEBUG);
+    else {
+        SUPPRESS_STREAM(G4cout);
+    }
+
     // execute the run macro
     if(config_.has("macro_run")) {
         G4UImanager* UI = G4UImanager::GetUIpointer();
         UI->ApplyCommand("/control/execute " + config_.getPath("macro_run"));
     }
+
+    // release the stream (if it was suspended)
+    RELEASE_STREAM(G4cout);
 }
 
 // display the visualization after all events have passed

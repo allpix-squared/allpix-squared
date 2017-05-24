@@ -37,9 +37,9 @@ namespace allpix {
     template <typename T> inline std::string to_string_impl(const ROOT::Math::DisplacementVector3D<T>& vec, empty_tag) {
         std::string res;
         res += std::to_string(vec.x());
-        res += " ";
+        res += ",";
         res += std::to_string(vec.y());
-        res += " ";
+        res += ",";
         res += std::to_string(vec.z());
         return res;
     }
@@ -57,7 +57,7 @@ namespace allpix {
     template <typename T> inline std::string to_string_impl(const ROOT::Math::DisplacementVector2D<T>& vec, empty_tag) {
         std::string res;
         res += std::to_string(vec.x());
-        res += " ";
+        res += ",";
         res += std::to_string(vec.y());
         return res;
     }
@@ -99,19 +99,27 @@ namespace allpix {
     inline std::string to_string_impl(const ROOT::Math::EulerAngles& vec, allpix::empty_tag) {
         std::string res;
         res += std::to_string(vec.Phi());
-        res += " ";
+        res += ",";
         res += std::to_string(vec.Theta());
-        res += " ";
+        res += ",";
         res += std::to_string(vec.Psi());
         return res;
     }
 
-    // TString
-    // FIXME: do we want this at all
-    inline TString from_string_impl(std::string str, type_tag<TString>) {
-        return TString(allpix::from_string<std::string>(std::move(str)).c_str());
+    // TODO Should this function change name, be moved or put in another namespace?
+    template <typename T> inline std::string display_vector(T inp, std::string unit) {
+        return display_vector(inp, {std::move(unit)});
     }
-    inline std::string to_string_impl(const TString& str, empty_tag) { return std::string(str.Data()); }
+    template <typename T> inline std::string display_vector(T inp, std::initializer_list<std::string> units) {
+        auto split = allpix::split<Units::UnitType>(allpix::to_string(inp));
+        std::string ret_str = "(";
+        for(auto& element : split) {
+            ret_str += Units::display(element, units);
+            ret_str += ",";
+        }
+        ret_str[ret_str.size() - 1] = ')';
+        return ret_str;
+    }
 } // namespace allpix
 
 #endif /* ALLPIX_ROOT_H */
