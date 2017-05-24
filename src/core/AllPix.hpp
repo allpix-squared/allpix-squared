@@ -33,28 +33,32 @@ namespace allpix {
     class AllPix {
     public:
         /**
-         * @brief Constructs an object with the location of the main configuration
-         * @param file_name Path of the main configuration file
+         * @brief Constructs AllPix and initialize all managers
+         * @param config_file_name Path of the main configuration file
          */
-        explicit AllPix(std::string file_name);
+        explicit AllPix(std::string config_file_name);
 
         /**
          * @brief Load modules from the main configuration and construct them
+         * @warning Should be called after the \ref AllPix::Allpix "constructor"
          */
         void load();
 
         /**
          * @brief Initialize all modules (pre-run)
+         * @warning Should be called after the \ref AllPix::init "load function"
          */
         void init();
 
         /**
          * @brief Run all modules for the number of events (run)
+         * @warning Should be called after the \ref AllPix::init "init function"
          */
         void run();
 
         /**
          * @brief Finalize all modules (post-run)
+         * @warning Should be called after the \ref AllPix::init "finalize function"
          */
         void finalize();
 
@@ -82,7 +86,7 @@ namespace allpix {
         std::unique_ptr<Messenger> msg_;
         std::unique_ptr<ModuleManager> mod_mgr_;
         std::unique_ptr<ConfigManager> conf_mgr_;
-        std::unique_ptr<GeometryManager> geo_mgr_;
+        std::unique_ptr<GeometryManager> geo_mgr_{};
     };
 } // namespace allpix
 

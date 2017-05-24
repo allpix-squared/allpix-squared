@@ -55,7 +55,7 @@ GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration config, M
     std::ifstream file(detector_file_name);
     ConfigReader detector_config(file, detector_file_name);
 
-    // add the configurations to the detectors
+    // add the models of the detectors
     for(auto& detector_section : detector_config.getConfigurations()) {
         std::shared_ptr<DetectorModel> detector_model =
             geo_descriptions.getDetectorModel(detector_section.get<std::string>("type"));
@@ -65,13 +65,7 @@ GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration config, M
             throw InvalidValueError(detector_section, "type", "detector type does not exist in registered models");
         }
 
-        // get the position and orientation
-        auto position = detector_section.get<Math::XYZPoint>("position", Math::XYZPoint());
-        auto orientation = detector_section.get<Math::EulerAngles>("orientation", Math::EulerAngles());
-
-        // create the detector and add it
-        auto detector = std::make_shared<Detector>(detector_section.getName(), detector_model, position, orientation);
-        geo_manager_->addDetector(detector);
+        geo_manager_->addModel(detector_model);
     }
 }
 

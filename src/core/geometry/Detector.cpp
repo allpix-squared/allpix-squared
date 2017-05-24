@@ -14,11 +14,12 @@
 #include <Math/Translation3D.h>
 
 #include "Detector.hpp"
+#include "core/module/exceptions.h"
 
 using namespace allpix;
 
 /**
- * @throws std::invalid_argument If the detector model pointer is a null pointer
+ * @throws InvalidModuleActionException If the detector model pointer is a null pointer
  *
  * Creates a detector without any electric field in the sensor.
  */
@@ -26,14 +27,31 @@ Detector::Detector(std::string name,
                    std::shared_ptr<DetectorModel> model,
                    ROOT::Math::XYZPoint position,
                    ROOT::Math::EulerAngles orientation)
-    : name_(std::move(name)), model_(std::move(model)), position_(std::move(position)),
-      orientation_(orientation), electric_field_sizes_{{0, 0, 0}}, electric_field_(nullptr) {
+    : Detector(std::move(name), std::move(position), std::move(orientation)) {
+    model_ = std::move(model);
     // Check if valid model is supplied
     if(model_ == nullptr) {
-        throw std::invalid_argument("detector model cannot be null");
+        throw InvalidModuleActionException("Detector model cannot be a null pointer");
     }
 
-    // Construct transform
+    // Build the transformation matrix
+    build_transform();
+}
+
+/**
+ * This constructor can only be called directly by the \ref GeometryManager to
+ * instantiate incomplete detectors where the model is added later. It is ensured
+ * that these detectors can never be accessed by modules before the detector
+ * model is added.
+ */
+Detector::Detector(std::string name, ROOT::Math::XYZPoint position, ROOT::Math::EulerAngles orientation)
+    : name_(std::move(name)), position_(std::move(position)), orientation_(orientation), electric_field_sizes_{{0, 0, 0}},
+      electric_field_(nullptr) {}
+void Detector::set_model(std::shared_ptr<DetectorModel> model) {
+    model_ = model;
+    build_transform();
+}
+void Detector::build_transform() {
     // Transform from center to local coordinate
     ROOT::Math::Translation3D translation_center(static_cast<ROOT::Math::XYZVector>(position_));
     ROOT::Math::Rotation3D rotation_center(orientation_);

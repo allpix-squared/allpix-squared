@@ -32,9 +32,11 @@ namespace allpix {
      * properties are stored in its DetectorModel instead.
      */
     class Detector {
+        friend class GeometryManager;
+
     public:
         /**
-         * @brief Constructs a detector in the world
+         * @brief Constructs a detector in the geometry
          * @param name Unique name of the detector
          * @param model Model of the detector
          * @param position Position in the world frame
@@ -134,6 +136,14 @@ namespace allpix {
 
     private:
         /**
+         * @brief Constructs a detector in the geometry without a model (added later by the \ref GeometryManager)
+         * @param name Unique name of the detector
+         * @param position Position in the world frame
+         * @param orientation Orientation in Z-X-Z extrinsic Euler angles
+         */
+        Detector(std::string name, ROOT::Math::XYZPoint position, ROOT::Math::EulerAngles orientation);
+
+        /**
          * @brief Get the electric field at a position
          * @param x X-coordinate
          * @param y Y-coordinate
@@ -141,6 +151,17 @@ namespace allpix {
          * @return Pointer to the electric field (or a null pointer if outside of the detector)
          */
         double* get_electric_field_raw(double x, double y, double z) const;
+
+        /**
+         * @brief Set the detector model (used by the \ref GeometryManager for lazy loading)
+         * @param model Detector model to attach
+         */
+        void set_model(std::shared_ptr<DetectorModel> model);
+
+        /**
+         * @brief Create the coordinate transformation
+         */
+        void build_transform();
 
         std::string name_;
         std::shared_ptr<DetectorModel> model_;

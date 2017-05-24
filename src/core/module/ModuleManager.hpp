@@ -71,16 +71,19 @@ namespace allpix {
 
         /**
          * @brief Initialize all modules before the event sequence
+         * @warning Should be called after the \ref AllPix::load "load function"
          */
         void init();
 
         /**
          * @brief Run all modules for the number of events
+         * @warning Should be called after the \ref AllPix::init "init function"
          */
         void run();
 
         /**
          * @brief Finalize all modules after the event sequence
+         * @warning Should be called after the \ref AllPix::init "run function"
          */
         void finalize();
 

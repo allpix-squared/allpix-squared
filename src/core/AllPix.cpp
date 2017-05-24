@@ -6,6 +6,7 @@
 #include "AllPix.hpp"
 
 #include <climits>
+#include <fstream>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -24,27 +25,22 @@
 using namespace allpix;
 
 /**
- * Initializes all the managers. This class will own the managers for the lifetime of the simulation.
- */
-AllPix::AllPix(std::string file_name)
-    : terminate_(false), has_run_(false), msg_(std::make_unique<Messenger>()), mod_mgr_(std::make_unique<ModuleManager>()),
-      conf_mgr_(std::make_unique<ConfigManager>(std::move(file_name))), geo_mgr_(std::make_unique<GeometryManager>()) {}
-
-/**
- * Performs the initialization, including:
+ * This class will own the managers for the lifetime of the simulation. Will do early initialization:
  * - Configure the special header sections.
  * - Set the log level and log format as requested.
- * - Initialize the random seeder
- * - Determine and create the output directory
- * - Include all the defined units
- * - Load the modules from the configuration
+ * - Load the detector configuration and parse it
  */
-void AllPix::load() {
+AllPix::AllPix(std::string config_file_name)
+    : terminate_(false), has_run_(false), msg_(std::make_unique<Messenger>()), mod_mgr_(std::make_unique<ModuleManager>()) {
+    // Load the global configuration
+    conf_mgr_ = std::make_unique<ConfigManager>(std::move(config_file_name));
+
     // Configure the standard special sections
     conf_mgr_->setGlobalHeaderName("AllPix");
     conf_mgr_->addGlobalHeaderName("");
     conf_mgr_->addIgnoreHeaderName("Ignore");
 
+    // Fetch the global configuration
     Configuration global_config = conf_mgr_->getGlobalConfiguration();
 
     // Set the log level from config if not specified earlier
@@ -76,12 +72,32 @@ void AllPix::load() {
         Log::setFormat(LogFormat::DEFAULT);
     }
 
-    // Wait for the first messages until level and format are properly set
-    LOG(STATUS) << "Welcome to AllPix " << ALLPIX_PROJECT_VERSION;
-
-    LOG(TRACE) << "Loading AllPix";
+    // Wait for the first detailed messages until level and format are properly set
     LOG(TRACE) << "Global log level is set to " << log_level_string;
     LOG(TRACE) << "Global log format is set to " << log_format_string;
+
+    // Fetch the detector configuration and initialize the geometry manager
+    std::string detector_file_name = conf_mgr_->getGlobalConfiguration().getPath("detectors_file", true);
+    std::fstream file(detector_file_name);
+    ConfigReader reader(file, detector_file_name);
+    geo_mgr_ = std::make_unique<GeometryManager>(reader);
+}
+
+/**
+ * Performs the initialization, including:
+ * - Initialize the random seeder
+ * - Determine and create the output directory
+ * - Include all the defined units
+ * - Load the modules from the configuration
+ */
+void AllPix::load() {
+    LOG(TRACE) << "Loading AllPix";
+
+    // Put welcome message
+    LOG(STATUS) << "Welcome to AllPix " << ALLPIX_PROJECT_VERSION;
+
+    // Fetch the global configuration
+    Configuration global_config = conf_mgr_->getGlobalConfiguration();
 
     // Initialize the random seeder
     uint64_t seed = 0;
@@ -121,6 +137,9 @@ void AllPix::load() {
 
     // Set the ROOT style
     set_style();
+
+    // Load the geometry
+    geo_mgr_->load();
 
     // Load the modules from the configuration
     if(!terminate_) {
