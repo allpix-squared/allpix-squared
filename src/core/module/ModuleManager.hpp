@@ -57,8 +57,8 @@ namespace allpix {
         /**
          * @brief Use default move behaviour
          */
-        ModuleManager(ModuleManager&&) noexcept = default;
-        ModuleManager& operator=(ModuleManager&&) noexcept = default;
+        ModuleManager(ModuleManager&&) = default;
+        ModuleManager& operator=(ModuleManager&&) = default;
         /// @}
 
         /**
