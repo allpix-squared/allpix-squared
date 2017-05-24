@@ -15,26 +15,26 @@
 using namespace allpix;
 
 void clean();
+void abort_handler(int);
 void interrupt_handler(int);
-void terminate_handler(int);
 
 std::unique_ptr<AllPix> apx;
 std::atomic<bool> apx_ready{false};
 
 // Handle user interrupt which should stop the framework immediately
 // NOTE: This handler is actually not fully reliable (but otherwise crashing is fine...)
-void interrupt_handler(int) {
+void abort_handler(int) {
     // Output interrupt message and clean
-    LOG(FATAL) << "Interrupted!";
+    LOG(FATAL) << "Aborting!";
     clean();
 
     // Ignore any segmentation fault that may arise after this
     std::signal(SIGSEGV, SIG_IGN); // NOLINT
-    std::quick_exit(1);
+    std::abort();
 }
 
 // Request termination as soon as possible while keeping the program flow valid
-void terminate_handler(int) {
+void interrupt_handler(int) {
     // Stop the framework if it is loaded
     if(apx_ready) {
         LOG(WARNING) << "Termination requested!";
@@ -54,12 +54,11 @@ int main(int argc, const char* argv[]) {
     // Add cout as the default logging stream
     Log::addStream(std::cout);
 
+    // Install abort handler (CTRL+\)
+    std::signal(SIGQUIT, abort_handler);
+
     // Install interrupt handler (CTRL+C)
     std::signal(SIGINT, interrupt_handler);
-    std::signal(SIGTERM, interrupt_handler);
-
-    // Install termination handler (CTRL+D)
-    std::signal(SIGTSTP, terminate_handler);
 
     // If no arguments are provided, print the help:
     bool print_help = false;

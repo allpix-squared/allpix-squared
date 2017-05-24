@@ -55,10 +55,10 @@ namespace allpix {
 
         /// @{
         /**
-         * @brief Use default move behaviour
+         * @brief Moving the manager is not allowed
          */
-        ModuleManager(ModuleManager&&) = default;
-        ModuleManager& operator=(ModuleManager&&) = default;
+        ModuleManager(ModuleManager&&) = delete;
+        ModuleManager& operator=(ModuleManager&&) = delete;
         /// @}
 
         /**
