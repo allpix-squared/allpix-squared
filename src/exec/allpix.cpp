@@ -60,7 +60,7 @@ int main(int argc, const char* argv[]) {
                 LogLevel log_level = Log::getLevelFromString(std::string(argv[++i]));
                 Log::setReportingLevel(log_level);
             } catch(std::invalid_argument& e) {
-                LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\"";
+                LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
             }
         } else if(strcmp(argv[i], "-c") == 0 && (i + 1 < argc)) {
             config_file_name = std::string(argv[++i]);
@@ -120,17 +120,17 @@ int main(int argc, const char* argv[]) {
         apx->finalize();
     } catch(ConfigurationError& e) {
         LOG(FATAL) << "Error in the configuration file:" << std::endl
-                   << "   " << e.what() << std::endl
+                   << " " << e.what() << std::endl
                    << "The configuration file needs to be updated! Cannot continue...";
         return_code = 1;
     } catch(RuntimeError& e) {
         LOG(FATAL) << "Error during execution of run:" << std::endl
-                   << "   " << e.what() << std::endl
+                   << " " << e.what() << std::endl
                    << "Please check your configuration and modules! Cannot continue...";
         return_code = 1;
     } catch(LogicError& e) {
         LOG(FATAL) << "Error in the logic of module:" << std::endl
-                   << "   " << e.what() << std::endl
+                   << " " << e.what() << std::endl
                    << "Module has to be properly defined! Cannot continue...";
         return_code = 1;
     } catch(std::exception& e) {

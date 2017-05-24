@@ -56,7 +56,9 @@ void AllPix::load() {
             LogLevel log_level = Log::getLevelFromString(log_level_string);
             Log::setReportingLevel(log_level);
         } catch(std::invalid_argument& e) {
-            throw InvalidValueError(global_config, "log_level", e.what());
+            LOG(ERROR) << "Log level \"" << log_level_string
+                       << "\" specified in the configuration is invalid, defaulting to INFO instead";
+            Log::setReportingLevel(LogLevel::INFO);
         }
     } else {
         log_level_string = Log::getStringFromLevel(Log::getReportingLevel());
@@ -69,7 +71,9 @@ void AllPix::load() {
         LogFormat log_format = Log::getFormatFromString(log_format_string);
         Log::setFormat(log_format);
     } catch(std::invalid_argument& e) {
-        throw InvalidValueError(global_config, "log_format", e.what());
+        LOG(ERROR) << "Log format \"" << log_format_string
+                   << "\" specified in the configuration is invalid, using DEFAULT instead";
+        Log::setFormat(LogFormat::DEFAULT);
     }
 
     // Wait for the first messages until level and format are properly set
