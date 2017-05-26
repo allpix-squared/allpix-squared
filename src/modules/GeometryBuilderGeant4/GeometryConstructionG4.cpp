@@ -167,7 +167,8 @@ void GeometryConstructionG4::build_pixel_devices() {
     auto detItr = detectors.begin();
     for(; detItr != detectors.end(); detItr++) {
         // get pointers for the model of the detector
-        DetectorModelG4* model_g4 = new DetectorModelG4();
+        // FIXME: all the pointers here need to be deleted properly
+        auto model_g4 = new DetectorModelG4();
         std::shared_ptr<PixelDetectorModel> model = std::dynamic_pointer_cast<PixelDetectorModel>((*detItr)->getModel());
 
         // ignore all non-pixel detectors

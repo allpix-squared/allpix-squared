@@ -126,13 +126,13 @@ namespace allpix {
          * @param name Name of the external object
          * @return External object or null pointer if it does not exists
          */
-        template <typename T> std::shared_ptr<T> getExternalObject(std::string);
+        template <typename T> std::shared_ptr<T> getExternalObject(const std::string& name);
         /**
          * @brief Sets an external object linked to this detector
          * @param name Name of the external object
          * @param model External object of arbitrary type
          */
-        template <typename T> void setExternalObject(std::string, std::shared_ptr<T> model);
+        template <typename T> void setExternalObject(const std::string& name, std::shared_ptr<T> model);
 
     private:
         /**
@@ -185,13 +185,13 @@ namespace allpix {
     /**
      * If the returned object is not a null pointer it is guaranteed to be of the correct type
      */
-    template <typename T> std::shared_ptr<T> Detector::getExternalObject(std::string name) {
+    template <typename T> std::shared_ptr<T> Detector::getExternalObject(const std::string& name) {
         return std::static_pointer_cast<T>(external_objects_[typeid(T)][name]);
     }
     /**
      * Stores external representations of objects in this detector that need to be shared between modules.
      */
-    template <typename T> void Detector::setExternalObject(std::string name, std::shared_ptr<T> model) {
+    template <typename T> void Detector::setExternalObject(const std::string& name, std::shared_ptr<T> model) {
         external_objects_[typeid(T)][name] = std::static_pointer_cast<void>(model);
     }
 } // namespace allpix

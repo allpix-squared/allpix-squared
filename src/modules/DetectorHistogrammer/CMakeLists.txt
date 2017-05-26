@@ -3,7 +3,7 @@
 ########################
 
 # Define module and return the generated name as MODULE_NAME
-ALLPIX_DETECTOR_MODULE(MODULE_NAME "DetectorHistogrammerModule")
+ALLPIX_DETECTOR_MODULE(MODULE_NAME)
 
 # Add library
 ALLPIX_MODULE_SOURCES(${MODULE_NAME} 

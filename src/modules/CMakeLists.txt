@@ -32,6 +32,8 @@ ALLPIX_BUILD_MODULE(DefaultDigitizer)
 # visualization
 ALLPIX_BUILD_MODULE(VisualizationGeant4)
 
-# TEST output writers
+# plotters
+ALLPIX_BUILD_MODULE(DetectorHistogrammer)
+
+# output writers
 ALLPIX_BUILD_MODULE(deposit_reader_test)
-ALLPIX_BUILD_MODULE(detector_histogrammer_test)
