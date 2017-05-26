@@ -57,7 +57,7 @@ namespace allpix {
          * @param global_config Global configuration for the framework
          * @warning Has to be the first function called after the constructor
          */
-        void load(Configuration global_config);
+        void load(const Configuration& global_config);
 
         /**
          * @brief Returns the list of standard paths where models should be searched in

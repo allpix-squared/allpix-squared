@@ -27,7 +27,7 @@ Detector::Detector(std::string name,
                    std::shared_ptr<DetectorModel> model,
                    ROOT::Math::XYZPoint position,
                    ROOT::Math::EulerAngles orientation)
-    : Detector(std::move(name), std::move(position), std::move(orientation)) {
+    : Detector(std::move(name), std::move(position), orientation) {
     model_ = std::move(model);
     // Check if valid model is supplied
     if(model_ == nullptr) {

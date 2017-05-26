@@ -30,7 +30,7 @@ GeometryManager::GeometryManager() : closed_{false} {}
 /**
  * Loads the geometry by parsing the configuration file
  */
-void GeometryManager::load(Configuration global_config) {
+void GeometryManager::load(const Configuration& global_config) {
     LOG(TRACE) << "Reading geometry";
 
     std::string detector_file_name = global_config.getPath("detectors_file", true);
