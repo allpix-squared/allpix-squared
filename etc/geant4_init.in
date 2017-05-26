@@ -12,6 +12,12 @@
 #/vis/scene/add/trajectories
 # display smoother lines, not just straight lines between step points.
 /vis/scene/add/trajectories smooth
+# color by charges
+/vis/modeling/trajectories/create/drawByCharge testCharge
+/vis/modeling/trajectories/testCharge/set 1 blue
+/vis/modeling/trajectories/testCharge/set 0 green
+/vis/modeling/trajectories/testCharge/set -1 red
+
 # adds hits to the current scene, assuming that you have a hit class and that the hits have visualization information.
 /vis/scene/add/hits
 # OpenGL supports hidden line removal. By default, hidden line removal is disabled
@@ -41,3 +47,6 @@
 #/vis/geometry/set/lineWidth all 1
 # export the viewer as an image, avaliable format are eps,ps,pdf,svg,bmp,jpg,png,...
 # /vis/ogl/export "toto.png"
+
+
+

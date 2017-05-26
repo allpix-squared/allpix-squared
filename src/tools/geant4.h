@@ -35,7 +35,7 @@ namespace allpix {
         for(int i = 0; i < 3; ++i) {
             res += std::to_string(vec[i]);
             if(i != 2) {
-                res += " ";
+                res += ",";
             }
         }
         return res;
@@ -54,13 +54,12 @@ namespace allpix {
         for(int i = 0; i < 2; ++i) {
             res += std::to_string(vec[i]);
             if(i != 1) {
-                res += " ";
+                res += ",";
             }
         }
         return res;
     }
 
-    // FIXME: do we want this at all
     // convert G4 vector to ROOT vector
     template <typename T> G4ThreeVector toG4Vector(const ROOT::Math::DisplacementVector3D<T>& vector) {
         return G4ThreeVector(vector.x(), vector.y(), vector.z());

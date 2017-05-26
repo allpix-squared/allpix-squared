@@ -39,47 +39,61 @@ static bool check_send(BaseMessage* message, BaseDelegate* delegate) {
 }
 
 /**
+ * Messages should be bound during construction, so this function only gives useful information outside the constructor
+ */
+bool Messenger::hasReceiver(Module* module, const std::shared_ptr<BaseMessage>& message) {
+    const BaseMessage* inst = message.get();
+    std::type_index type_idx = typeid(*inst);
+
+    // Get the name of the output message
+    std::string name = module->get_configuration().get<std::string>("output");
+
+    // Check if a listener exists
+    for(auto& delegate : delegates_[type_idx][name]) {
+        if(check_send(message.get(), delegate.get())) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
  * Messages are only dispatched to delegates listening to the exact same type. If the dispatched message
  * has no name it only sends to all general listeners (not listening to a specific name). If the dispatched
  * message has a name it is also distributed to its specific listeners (besides the general listeners).
  */
-void Messenger::dispatch_message(const std::shared_ptr<BaseMessage>& msg, const std::string& name) {
+void Messenger::dispatch_message(Module* module, const std::shared_ptr<BaseMessage>& message) {
     bool send = false;
 
+    // Get the name of the output message
+    std::string name = module->get_configuration().get<std::string>("output");
+
     // Create type identifier from the typeid
-    const BaseMessage* inst = msg.get();
+    const BaseMessage* inst = message.get();
     std::type_index type_idx = typeid(*inst);
 
-    // Send named messages only to their specific listeners
-    if(!name.empty()) {
-        for(auto& delegate : delegates_[type_idx][name]) {
-            if(check_send(msg.get(), delegate.get())) {
-                delegate->process(msg);
-                send = true;
-            }
-        }
-    }
-
-    // Send all messages also to general listeners
-    for(auto& delegate : delegates_[type_idx][""]) {
-        if(check_send(msg.get(), delegate.get())) {
-            delegate->process(msg);
+    // Send messages only to their specific listeners
+    for(auto& delegate : delegates_[type_idx][name]) {
+        if(check_send(message.get(), delegate.get())) {
+            LOG(TRACE) << "Sending message " << allpix::demangle(type_idx.name()) << " from " << module->getUniqueName()
+                       << " to " << delegate->getUniqueName();
+            delegate->process(message);
             send = true;
         }
     }
 
     // Display a warning if the message is send to no receiver
-    // FIXME: better message about source (and check if this really a problem)
+    // FIXME: Check better if this is a real problem (or do this always only in the module)
     if(!send) {
-        LOG(WARNING) << "Dispatched message of type " << allpix::demangle(type_idx.name())
-                     << " has no receivers... this is probably not what you want!";
+        LOG(WARNING) << "Dispatched message " << allpix::demangle(type_idx.name()) << " from " << module->getUniqueName()
+                     << " has no receivers!";
     }
 }
 
-void Messenger::add_delegate(const std::type_info& message_type,
-                             const std::string& message_name,
-                             Module* module,
-                             std::unique_ptr<BaseDelegate> delegate) {
+void Messenger::add_delegate(const std::type_info& message_type, Module* module, std::unique_ptr<BaseDelegate> delegate) {
+    std::string message_name = module->get_configuration().get<std::string>("input");
+
     // Register delegate internally
     delegates_[std::type_index(message_type)][message_name].push_back(std::move(delegate));
     auto delegate_iter = --delegates_[std::type_index(message_type)][message_name].end();

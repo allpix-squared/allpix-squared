@@ -114,15 +114,17 @@ namespace allpix {
     public:
         /**
          * @brief Base constructor for unique modules
+         * @param config Configuration for this module
          */
-        explicit Module();
+        explicit Module(Configuration config);
         /**
          * @brief Base constructor for detector modules
+         * @param config Configuration for this module
          * @param detector Detector bound to this module
          * @warning Detector modules should not forget to forward their detector to the base constructor. An
          *          \ref InvalidModuleStateException will be raised if the module failed to so.
          */
-        explicit Module(std::shared_ptr<Detector> detector);
+        explicit Module(Configuration config, std::shared_ptr<Detector> detector);
         /**
          * @brief Essential virtual destructor.
          *
@@ -155,7 +157,6 @@ namespace allpix {
         /**
          * @brief Get the unique name of this module
          * @return Unique name
-         * @warning This method can not be called from the constructor
          * @note Can be used to interact with ROOT objects that require an unique name
          */
         std::string getUniqueName();
@@ -165,7 +166,6 @@ namespace allpix {
          * @param path Relative path to add after the main output directory
          * @param global True if the global output directory should be used instead of the module-specific version
          * @return Canonical path to an output file
-         * @warning This method can not be called from the constructor
          */
         // TODO [doc] Should be renamed to getOutputFile
         std::string getOutputPath(const std::string& path, bool global = false);
@@ -197,19 +197,6 @@ namespace allpix {
 
     private:
         /**
-         * @brief Set the output directory
-         * @param output_dir Base directory for the module
-         */
-        void set_output_directory(std::string output_dir);
-        std::string output_directory_;
-        /**
-         * @brief Set the global output directory
-         * @param output_dir Base output directory
-         */
-        void set_global_directory(std::string);
-        std::string global_directory_;
-
-        /**
          * @brief Set the module identifier for internal use
          * @param identifier Identifier of the instantiation
          */
@@ -221,12 +208,6 @@ namespace allpix {
         ModuleIdentifier get_identifier();
         ModuleIdentifier identifier_;
 
-        /**
-         * @brief Set the module configuration for internal use
-         * @note Modules should use the configuration passed to their constructor
-         * @param config Identifier of the instantiation
-         */
-        void set_configuration(Configuration config);
         /**
          * @brief Get the module configuration for internal use
          * @return Configuration of the module

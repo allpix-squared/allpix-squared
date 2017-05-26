@@ -55,14 +55,6 @@ namespace allpix {
         Messenger& operator=(Messenger&&) noexcept = default;
         /// @}
 
-        // FIXME: unregistering of listeners still need to be added (as well as checking for proper deletion)...
-
-        // TODO [doc] Fetch the message type from the configuration instead
-
-        // Register a listener
-        // FIXME: is the empty string a proper catch-all or do we want to have a clearer separation?
-
-        /// @{
         /**
          * @brief Register a function listening for a particular message
          * @param receiver Receiving module
@@ -70,23 +62,8 @@ namespace allpix {
          * @param flags Message configuration flags
          */
         template <typename T, typename R>
-        void registerListener(T* receiver, void (T::*method)(std::shared_ptr<R>), MsgFlags flags);
-        /**
-         * @brief Register a function listening for a particular message
-         * @param receiver Receiving module
-         * @param method Listener function in the module (fetching a pointer to the specific message)
-         * @param flags Message configuration flags (defaults to none)
-         * @param message_name Name of the message to listen to (defaults to all messages)
-         */
-        // TODO [doc] Remove this method (as message name is determined by messenger)
-        template <typename T, typename R>
-        void registerListener(T* receiver,
-                              void (T::*method)(std::shared_ptr<R>),
-                              const std::string& message_name = "",
-                              MsgFlags flags = MsgFlags::NONE);
-        /// @}
+        void registerListener(T* receiver, void (T::*method)(std::shared_ptr<R>), MsgFlags flags = MsgFlags::NONE);
 
-        /// @{
         /**
          * @brief Binds a pointer to a single message
          * @param receiver Receiving module
@@ -95,25 +72,9 @@ namespace allpix {
          * @warning This allows to only receive a single message of the type per run unless the
          *           \ref MsgFlags::ALLOW_OVERWRITE "ALLOW_OVERWRITE" flag is passed
          */
-        template <typename T, typename R> void bindSingle(T* receiver, std::shared_ptr<R> T::*member, MsgFlags flags);
-        /**
-         * @brief Binds a pointer to a single message
-         * @param receiver Receiving module
-         * @param member Pointer to the message to listen to
-         * @param flags Message configuration flags (defaults to none)
-         * @param message_name Name of the message to listen to (defaults to all messages)
-         * @warning This allows to only receive a single message of the type per run unless the
-         *           \ref MsgFlags::ALLOW_OVERWRITE "ALLOW_OVERWRITE" flag is passed
-         */
-        // TODO [doc] Remove this method (as message name is determined by messenger)
         template <typename T, typename R>
-        void bindSingle(T* receiver,
-                        std::shared_ptr<R> T::*member,
-                        const std::string& message_name = "",
-                        MsgFlags flags = MsgFlags::NONE);
-        /// @}
+        void bindSingle(T* receiver, std::shared_ptr<R> T::*member, MsgFlags flags = MsgFlags::NONE);
 
-        /// @{
         /**
          * @brief Binds a pointer to a list of messages
          * @param receiver Receiving module
@@ -122,52 +83,31 @@ namespace allpix {
          */
         // TODO [doc] Better name?
         template <typename T, typename R>
-        void bindMulti(T* receiver, std::vector<std::shared_ptr<R>> T::*member, MsgFlags flags);
-        /**
-         * @brief Binds a pointer to a list of messages
-         * @param receiver Receiving module
-         * @param member Pointer to the vector of messages to listen to
-         * @param flags Message configuration flags (defaults to none)
-         * @param message_name Name of the message to listen to (defaults to all messages)
-         */
-        // TODO [doc] Remove this method (as message name is determined by messenger)
-        template <typename T, typename R>
-        void bindMulti(T* receiver,
-                       std::vector<std::shared_ptr<R>> T::*member,
-                       const std::string& message_name = "",
-                       MsgFlags flags = MsgFlags::NONE);
-        /// @}
+        void bindMulti(T* receiver, std::vector<std::shared_ptr<R>> T::*member, MsgFlags flags = MsgFlags::NONE);
 
-        /// @{
+        /**
+         * @brief Check if a specific message has a receiver
+         * @param source Module that will send the message
+         * @param message Instantiation of the message to check
+         * @return True if the message has at least one receiver, false otherwise
+         */
+        bool hasReceiver(Module* source, const std::shared_ptr<BaseMessage>& message);
+
         /**
          * @brief Dispatches a message
-         * @param msg Message to dispatch
-         * @param name Name of the message
-         * @warning This method should not be used as it does an internal copy to a shared_ptr (which should be used
-         * directly)
+         * @param source Module dispatching the message
+         * @param message Pointer to the message to dispatch
          */
-        // TODO [doc] Remove this method
-        template <typename T> void dispatchMessage(const T& msg, const std::string& name = "");
-        /**
-         * @brief Dispatches a message
-         * @param msg Pointer to the message to dispatch
-         * @param name Name of the message
-         */
-        // TODO [doc] The source module should also be required as parameter
-        template <typename T> void dispatchMessage(std::shared_ptr<T> msg, const std::string& name = "");
-        /// @}
+        template <typename T> void dispatchMessage(Module* source, std::shared_ptr<T> message);
 
     private:
         /**
          * @brief Add a delegate to the listeners
          * @param message_type Type the delegate listens to
-         * @param message_name Name of the message the delegate listens to
+         * @param module Module linked to the delegate
          * @param delegate Delegate that listens to the message
          */
-        void add_delegate(const std::type_info& message_type,
-                          const std::string& message_name,
-                          Module* module,
-                          std::unique_ptr<BaseDelegate> delegate);
+        void add_delegate(const std::type_info& message_type, Module* module, std::unique_ptr<BaseDelegate> delegate);
 
         /**
          * @brief Removes a delegate from the listeners
@@ -178,10 +118,10 @@ namespace allpix {
 
         /**
          * @brief Dispatch base message to the correct delegates
-         * @param msg Message to dispatch
-         * @param name Name of the message
+         * @param source Dispatching module
+         * @param message Message to dispatch
          */
-        void dispatch_message(const std::shared_ptr<BaseMessage>& msg, const std::string& name = "");
+        void dispatch_message(Module* source, const std::shared_ptr<BaseMessage>& message);
 
         using DelegateMap = std::map<std::type_index, std::map<std::string, std::list<std::unique_ptr<BaseDelegate>>>>;
         using DelegateIteratorMap =

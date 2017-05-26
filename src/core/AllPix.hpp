@@ -13,6 +13,7 @@
 #ifndef ALLPIX_ALLPIX_H
 #define ALLPIX_ALLPIX_H
 
+#include <atomic>
 #include <memory>
 #include <string>
 
@@ -57,6 +58,11 @@ namespace allpix {
          */
         void finalize();
 
+        /**
+         * @brief Request termination as early as possible without changing the standard flow
+         */
+        void terminate();
+
     private:
         /**
          * @brief Sets the default unit conventions
@@ -67,6 +73,10 @@ namespace allpix {
          * @brief Set the default ROOT plot style
          */
         void set_style();
+
+        // Indicate the framework should terminate
+        std::atomic<bool> terminate_;
+        std::atomic<bool> has_run_;
 
         // All managers in the framework
         std::unique_ptr<Messenger> msg_;

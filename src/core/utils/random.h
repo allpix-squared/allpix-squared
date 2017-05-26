@@ -42,7 +42,7 @@ namespace allpix {
      * @param init_seed An optional seed to use for the generator. Internal entropy is used otherwise to initialize.
      * @warning This function should be called before any call to \ref get_random_seed()
      */
-    inline void random_init(uint64_t init_seed = UINT64_MAX) {
+    inline uint64_t random_init(uint64_t init_seed = UINT64_MAX) {
         if(init_seed == UINT64_MAX) {
             // use the clock
             auto clock_seed = static_cast<uint64_t>(std::chrono::high_resolution_clock::now().time_since_epoch().count());
@@ -51,9 +51,12 @@ namespace allpix {
             // use thread id
             std::hash<std::thread::id> thrd_hasher;
             auto thread_seed = thrd_hasher(std::this_thread::get_id());
-            get_random_seeder({clock_seed, mem_seed, thread_seed});
+            auto total_seed = (clock_seed ^ mem_seed ^ thread_seed);
+            get_random_seeder({total_seed});
+            return total_seed;
         } else {
             get_random_seeder({init_seed});
+            return init_seed;
         }
     }
 

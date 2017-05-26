@@ -15,8 +15,14 @@
 #include <iostream>
 #include <ostream>
 #include <string>
+#include <unistd.h>
 
 using namespace allpix;
+
+// Last name used while printing (for identifying process logs)
+std::string DefaultLogger::last_identifier_;
+// Last message send used to check if extra spaces are needed
+std::string DefaultLogger::last_message_;
 
 /**
  * The logger will save the number of uncaught exceptions during construction to compare that with the number of exceptions
@@ -51,12 +57,81 @@ DefaultLogger::~DefaultLogger() {
         } while((start_pos = out.find('\n', start_pos)) != std::string::npos);
     }
 
-    // Add final newline
-    out += '\n';
+    // Add extra spaces if necessary
+    size_t extra_spaces = 0;
+    if(!identifier_.empty() && last_identifier_ == identifier_) {
+        // Put carriage return for process logs
+        out = '\r' + out;
+
+        // Set extra spaces to fully cover previous message
+        if(last_message_.size() > out.size()) {
+            extra_spaces = last_message_.size() - out.size();
+        }
+    } else if(!last_identifier_.empty()) {
+        // End process log and continue normal logging
+        out = '\n' + out;
+    }
+    last_identifier_ = identifier_;
+
+    // Save last message
+    last_message_ = out;
+    last_message_ += " ";
+
+    // Add extra spaces if required
+    if(extra_spaces > 0) {
+        out += std::string(extra_spaces, ' ');
+    }
+
+    // Add final newline if not a progress log
+    if(identifier_.empty()) {
+        out += '\n';
+    }
+
+    // Create a version without any special terminal characters
+    std::string out_no_special;
+    size_t prev = 0, pos = 0;
+    while((pos = out.find("\x1B[", prev)) != std::string::npos) {
+        out_no_special += out.substr(prev, pos - prev);
+        prev = out.find('m', pos) + 1;
+        if(prev == std::string::npos) {
+            break;
+        }
+    }
+    out_no_special += out.substr(prev);
 
     // Print output to streams
     for(auto stream : get_streams()) {
-        (*stream) << out;
+        if(is_terminal(*stream)) {
+            (*stream) << out;
+        } else {
+            (*stream) << out_no_special;
+        }
+        (*stream).flush();
+    }
+}
+
+/**
+ * @warning No other log message should be send after this method
+ * @note Does not close the streams
+ */
+void DefaultLogger::finish() {
+    if(!last_identifier_.empty()) {
+        // Flush final line if necessary
+        for(auto stream : get_streams()) {
+            (*stream) << std::endl;
+            (*stream).flush();
+        }
+    }
+
+    last_identifier_ = "";
+    last_message_ = "";
+
+    // Enable cursor again if stream supports it
+    for(auto stream : get_streams()) {
+        if(is_terminal(*stream)) {
+            (*stream) << "\x1B[?25h";
+            (*stream).flush();
+        }
     }
 }
 
@@ -68,7 +143,22 @@ std::ostringstream&
 DefaultLogger::getStream(LogLevel level, const std::string& file, const std::string& function, uint32_t line) {
     // Add date in all except short format
     if(get_format() != LogFormat::SHORT) {
+        os << "\x1B[1m"; // BOLD
         os << "|" << get_current_date() << "| ";
+        os << "\x1B[0m"; // RESET
+    }
+
+    // Set color for log level
+    if(level == LogLevel::FATAL || level == LogLevel::ERROR) {
+        os << "\x1B[31;1m"; // RED
+    } else if(level == LogLevel::WARNING) {
+        os << "\x1B[33;1m"; // YELLOW
+    } else if(level == LogLevel::STATUS) {
+        os << "\x1B[32;1m"; // GREEN
+    } else if(level == LogLevel::TRACE || level == LogLevel::DEBUG) {
+        os << "\x1B[36m"; // NON-BOLD CYAN
+    } else {
+        os << "\x1B[36;1m"; // CYAN
     }
 
     // Add log level (shortly in the short format)
@@ -80,25 +170,57 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
     } else {
         os << "(" << getStringFromLevel(level).substr(0, 1) << ") ";
     }
+    os << "\x1B[0m"; // RESET
 
     // Add section if available
     if(!get_section().empty()) {
+        os << "\x1B[1m"; // BOLD
         os << "[" << get_section() << "] ";
+        os << "\x1B[0m"; // RESET
     }
 
     // Print function name and line number information in debug format
-    if(get_format() == LogFormat::DEBUG) {
+    if(get_format() == LogFormat::LONG) {
+        os << "\x1B[1m"; // BOLD
         os << "<" << file << "/" << function << ":L" << line << "> ";
+        os << "\x1B[0m"; // RESET
     }
 
     // Save the indent count to fix with newlines
-    indent_count_ = static_cast<unsigned int>(os.str().size());
+    size_t prev = 0, pos = 0;
+    std::string out = os.str();
+    while((pos = out.find("\x1B[", prev)) != std::string::npos) {
+        indent_count_ += static_cast<unsigned int>(pos - prev);
+        prev = out.find('m', pos) + 1;
+        if(prev == std::string::npos) {
+            break;
+        }
+    }
     return os;
+}
+
+/**
+ * @throws std::invalid_argument If an empty identifier is provided
+ *
+ * This method is typically automatically called by the \ref LOG_PROCESS macro.
+ */
+std::ostringstream& DefaultLogger::getProcessStream(
+    const std::string& identifier, LogLevel level, const std::string& file, const std::string& function, uint32_t line) {
+    // Get the standard process stream
+    std::ostringstream& stream = getStream(level, file, function, line);
+
+    // Save the identifier to indicate a progress log
+    if(identifier.empty()) {
+        throw std::invalid_argument("the process log identifier cannot be empty");
+    }
+    identifier_ = identifier;
+
+    return stream;
 }
 
 // Getter and setters for the reporting level
 LogLevel& DefaultLogger::get_reporting_level() {
-    static LogLevel reporting_level = LogLevel::INFO;
+    static LogLevel reporting_level = LogLevel::NONE;
     return reporting_level;
 }
 void DefaultLogger::setReportingLevel(LogLevel level) {
@@ -110,13 +232,17 @@ LogLevel DefaultLogger::getReportingLevel() {
 
 // String to LogLevel conversions and vice versa
 std::string DefaultLogger::getStringFromLevel(LogLevel level) {
-    static const std::array<std::string, 6> type = {{"QUIET", "FATAL", "ERROR", "WARNING", "INFO", "DEBUG"}};
+    static const std::array<std::string, 8> type = {
+        {"FATAL", "STATUS", "ERROR", "WARNING", "INFO", "DEBUG", "NONE", "TRACE"}};
     return type.at(static_cast<decltype(type)::size_type>(level));
 }
 /**
  * @throws std::invalid_argument If the string does not correspond with an existing log level
  */
 LogLevel DefaultLogger::getLevelFromString(const std::string& level) {
+    if(level == "TRACE") {
+        return LogLevel::TRACE;
+    }
     if(level == "DEBUG") {
         return LogLevel::DEBUG;
     }
@@ -129,11 +255,11 @@ LogLevel DefaultLogger::getLevelFromString(const std::string& level) {
     if(level == "ERROR") {
         return LogLevel::ERROR;
     }
+    if(level == "STATUS") {
+        return LogLevel::STATUS;
+    }
     if(level == "FATAL") {
         return LogLevel::FATAL;
-    }
-    if(level == "QUIET") {
-        return LogLevel::QUIET;
     }
 
     throw std::invalid_argument("unknown log level");
@@ -153,7 +279,7 @@ LogFormat DefaultLogger::getFormat() {
 
 // Convert string to log format and vice versa
 std::string DefaultLogger::getStringFromFormat(LogFormat format) {
-    static const std::array<std::string, 3> type = {{"SHORT", "DEFAULT", "DEBUG"}};
+    static const std::array<std::string, 3> type = {{"SHORT", "DEFAULT", "LONG"}};
     return type.at(static_cast<decltype(type)::size_type>(format));
 }
 /**
@@ -166,8 +292,8 @@ LogFormat DefaultLogger::getFormatFromString(const std::string& format) {
     if(format == "DEFAULT") {
         return LogFormat::DEFAULT;
     }
-    if(format == "DEBUG") {
-        return LogFormat::DEBUG;
+    if(format == "LONG") {
+        return LogFormat::LONG;
     }
 
     throw std::invalid_argument("unknown log format");
@@ -180,7 +306,7 @@ const std::vector<std::ostream*>& DefaultLogger::getStreams() {
     return get_streams();
 }
 std::vector<std::ostream*>& DefaultLogger::get_streams() {
-    static std::vector<std::ostream*> streams = {&std::cout};
+    static std::vector<std::ostream*> streams;
     return streams;
 }
 void DefaultLogger::clearStreams() {
@@ -193,6 +319,11 @@ void DefaultLogger::clearStreams() {
  * @note Streams cannot be individually removed at the moment and only all at once using \ref clearStreams().
  */
 void DefaultLogger::addStream(std::ostream& stream) {
+    // Disable cursor if stream supports it
+    if(is_terminal(stream)) {
+        stream << "\x1B[?25l";
+    }
+
     get_streams().push_back(&stream);
 }
 
@@ -225,6 +356,21 @@ std::string DefaultLogger::get_current_date() {
     ss << std::setfill('0') << std::setw(3);
     ss << millis;
     return ss.str();
+}
+
+/*
+ * It is impossible to know for sure a terminal has support for all extra terminal features, but every modern terminal has
+ * this so we just assume it.
+ */
+bool DefaultLogger::is_terminal(std::ostream& stream) {
+    if(&std::cout == &stream) {
+        return static_cast<bool>(isatty(fileno(stdout)));
+    }
+    if(&std::cerr == &stream) {
+        return static_cast<bool>(isatty(fileno(stderr)));
+    }
+
+    return false;
 }
 
 /**

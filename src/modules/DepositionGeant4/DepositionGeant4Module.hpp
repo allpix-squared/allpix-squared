@@ -13,6 +13,8 @@
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 
+#include "SensitiveDetectorActionG4.hpp"
+
 class G4UserLimits;
 class G4RunManager;
 
@@ -29,6 +31,8 @@ namespace allpix {
         // run a single deposition
         void run(unsigned int) override;
 
+        void finalize() override;
+
     private:
         // configuration for this module
         Configuration config_;
@@ -38,6 +42,12 @@ namespace allpix {
 
         // global geometry manager
         GeometryManager* geo_manager_;
+
+        // all the sensors
+        std::vector<SensitiveDetectorActionG4*> sensors_;
+
+        // last processed event
+        unsigned int last_event_num_;
 
         // G4 user step limits we should manage
         std::unique_ptr<G4UserLimits> user_limits_;

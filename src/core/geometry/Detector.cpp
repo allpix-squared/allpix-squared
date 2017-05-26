@@ -26,8 +26,8 @@ Detector::Detector(std::string name,
                    std::shared_ptr<DetectorModel> model,
                    ROOT::Math::XYZPoint position,
                    ROOT::Math::EulerAngles orientation)
-    : name_(std::move(name)), model_(std::move(model)), position_(std::move(position)),
-      orientation_(orientation), electric_field_sizes_{{0, 0, 0}}, electric_field_(nullptr) {
+    : name_(std::move(name)), model_(std::move(model)), position_(std::move(position)), orientation_(orientation),
+      electric_field_sizes_{{0, 0, 0}}, electric_field_(nullptr) {
     // Check if valid model is supplied
     if(model_ == nullptr) {
         throw std::invalid_argument("detector model cannot be null");
@@ -73,6 +73,16 @@ ROOT::Math::XYZPoint Detector::getLocalPosition(const ROOT::Math::XYZPoint& glob
 }
 ROOT::Math::XYZPoint Detector::getGlobalPosition(const ROOT::Math::XYZPoint& local_pos) const {
     return transform_(local_pos);
+}
+
+/**
+ * The definition of inside the sensor is determined by the detector model
+ */
+bool Detector::isWithinSensor(const ROOT::Math::XYZPoint& local_pos) const {
+    return (
+        (local_pos.x() >= model_->getSensorMinX() && local_pos.x() <= model_->getSensorMinX() + model_->getSensorSizeX()) &&
+        (local_pos.y() >= model_->getSensorMinY() && local_pos.y() <= model_->getSensorMinY() + model_->getSensorSizeY()) &&
+        (local_pos.z() >= model_->getSensorMinZ() && local_pos.z() <= model_->getSensorMinZ() + model_->getSensorSizeZ()));
 }
 
 /**

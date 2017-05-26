@@ -150,11 +150,11 @@ namespace allpix {
      *
      * All the required directories are deleted recursively from the top-directory (use this with caution).
      */
-    inline void remove_path(std::string path) {
-        bool status = nftw(path.c_str(),
-                           [](const char* remove_path, const struct stat*, int, struct FTW*) { return remove(remove_path); },
-                           64,
-                           FTW_DEPTH);
+    inline void remove_path(const std::string& path) {
+        int status = nftw(path.c_str(),
+                          [](const char* remove_path, const struct stat*, int, struct FTW*) { return remove(remove_path); },
+                          64,
+                          FTW_DEPTH);
 
         if(status != 0) {
             throw std::invalid_argument("path cannot be completely deleted");

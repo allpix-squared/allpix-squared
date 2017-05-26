@@ -27,6 +27,7 @@
 
 #include "core/geometry/PixelDetectorModel.hpp"
 #include "core/utils/log.h"
+#include "tools/ROOT.h"
 #include "tools/geant4.h"
 
 // temporary common includes
@@ -59,7 +60,7 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
 
     // FIXME: stick to vacuum as world material now
     world_material_ = vacuum;
-    LOG(DEBUG) << "Material of world: " << world_material_->GetName();
+    LOG(TRACE) << "Material of world " << world_material_->GetName();
 
     // build the world
     G4Box* world_box = new G4Box("World", world_size_[0], world_size_[1], world_size_[2]);
@@ -163,9 +164,8 @@ void GeometryConstructionG4::build_pixel_devices() {
     /* CONSTRUCTION
      * construct the detectors part by part
      */
-
     std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
-    LOG(DEBUG) << "Building " << detectors.size() << " device(s) ...";
+    LOG(TRACE) << "Building " << detectors.size() << " device(s)";
 
     auto detItr = detectors.begin();
     for(; detItr != detectors.end(); detItr++) {
@@ -175,8 +175,8 @@ void GeometryConstructionG4::build_pixel_devices() {
 
         // ignore all non-pixel detectors
         if(model == nullptr) {
-            LOG(ERROR) << "Cannot build a G4 model for any non-pixel detectors yet... ignoring detector "
-                       << (*detItr)->getName();
+            LOG(ERROR) << "Ignoring detector " << (*detItr)->getName()
+                       << " because a Geant4 model cannot yet be build for a non-pixel detector";
             continue;
         }
 
@@ -185,7 +185,7 @@ void GeometryConstructionG4::build_pixel_devices() {
         std::hash<std::string> hash_func;
         int temp_g4_id = static_cast<int>(hash_func((*detItr)->getName()));
 
-        LOG(DEBUG) << "start creating G4 detector " << (*detItr)->getName() << " (" << temp_g4_id << ")";
+        LOG(DEBUG) << "Creating Geant4 model for " << (*detItr)->getName();
 
         /* POSITIONS
          * calculate the positions of all the elements
@@ -247,12 +247,12 @@ void GeometryConstructionG4::build_pixel_devices() {
                     -
                     bump_height - 2. * model->getHalfChipSizeZ() - model->getHalfPCBSizeZ());
 
-        LOG(DEBUG) << "local relative positions of the elements";
-        LOG(DEBUG) << "- Coverlayer position  : " << posCoverlayer;
-        LOG(DEBUG) << "- Sensor position      : " << posDevice;
-        LOG(DEBUG) << "- Bumps position       : " << posBumps;
-        LOG(DEBUG) << "- Chip position        : " << posChip;
-        LOG(DEBUG) << "- PCB position         : " << posPCB;
+        LOG(DEBUG) << " Local relative positions of the geometry parts";
+        LOG(DEBUG) << " - Coverlayer position  : " << display_vector(posCoverlayer, {"mm", "um"});
+        LOG(DEBUG) << " - Sensor position      : " << display_vector(posDevice, {"mm", "um"});
+        LOG(DEBUG) << " - Bumps position       : " << display_vector(posBumps, {"mm", "um"});
+        LOG(DEBUG) << " - Chip position        : " << display_vector(posChip, {"mm", "um"});
+        LOG(DEBUG) << " - PCB position         : " << display_vector(posPCB, {"mm", "um"});
 
         /* NAMES
          * define the local names of the specific detectors
@@ -284,14 +284,15 @@ void GeometryConstructionG4::build_pixel_devices() {
         G4double wrapperHY = model->getHalfWrapperDY();
         G4double wrapperHZ = model->getHalfWrapperDZ();
 
-        LOG(DEBUG) << "Wrapper Dimensions [mm] : " << wrapperHX / mm << " " << wrapperHY / mm << " " << wrapperHZ / mm;
+        LOG(DEBUG) << " Wrapper dimensions : " << Units::display(wrapperHX, "mm") << " " << Units::display(wrapperHY, "mm")
+                   << " " << Units::display(wrapperHZ, "mm");
 
         auto* wrapper_box = new G4Box(wrapperName.second, 2. * wrapperHX, 2. * wrapperHY, 2. * wrapperHZ);
         model_g4->wrapper_log = new G4LogicalVolume(wrapper_box, world_material_, wrapperName.second + "_log");
         model_g4->wrapper_log->SetVisAttributes(wrapperVisAtt);
 
         // WARNING: get a proper geometry lib
-        G4ThreeVector posWrapper = toG4Vector((*detItr)->getPosition()); //= (*detItr)->getPosition();
+        G4ThreeVector posWrapper = toG4Vector((*detItr)->getPosition());
 
         // ALERT: NO WRAPPER ENHANCEMENTS
         // Apply the enhancement to the medipixes
@@ -588,6 +589,6 @@ void GeometryConstructionG4::build_pixel_devices() {
         // add this geant4 model to the detector
         (*detItr)->setExternalModel(model_g4);
 
-        LOG(DEBUG) << "detector " << (*detItr)->getName() << " ... done";
+        LOG(TRACE) << " Constructed detector " << (*detItr)->getName() << " succesfully";
     }
 }

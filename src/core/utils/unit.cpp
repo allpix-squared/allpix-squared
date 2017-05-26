@@ -8,6 +8,9 @@
 #include "unit.h"
 
 #include <algorithm>
+#include <cmath>
+#include <limits>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
@@ -97,14 +100,54 @@ allpix::Units::UnitType Units::get(std::string str) {
     return ret_value;
 }
 
-// Convert the base unit to another one
-allpix::Units::UnitType Units::convert(UnitType inp, std::string str) {
-    std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+allpix::Units::UnitType Units::convert(UnitType inp, std::string unit) {
+    std::transform(unit.begin(), unit.end(), unit.begin(), ::tolower);
 
-    auto iter = unit_map_.find(str);
+    auto iter = unit_map_.find(unit);
     if(iter == unit_map_.end()) {
-        throw std::invalid_argument("unit " + str + " not found");
+        throw std::invalid_argument("unit " + unit + " not found");
     }
 
     return (1.0l / iter->second) * inp;
+}
+
+/**
+ * @throws std::invalid_argument If the list of units is empty
+ *
+ * The best unit is determined using the two rules below:
+ * - If there exists at least one unit for which the value is larger than one, the unit with value nearest to one is chosen
+ *   from all units with values larger than one
+ * - Otherwise the unit is chosen that has a value as close as possible to one (from below)
+ */
+std::string Units::display(UnitType inp, std::initializer_list<std::string> units) {
+    if(units.size() == 0) {
+        throw std::invalid_argument("list of possible units cannot be empty");
+    }
+
+    std::ostringstream stream;
+    if(std::fabs(inp) < std::numeric_limits<Units::UnitType>::epsilon()) {
+        // Zero needs no unit
+        stream << inp;
+    } else {
+        // Find best unit
+        int best_exponent = std::numeric_limits<int>::min();
+        std::string best_unit;
+        for(auto& unit : units) {
+            Units::UnitType value = convert(inp, unit);
+            int exponent = 0;
+            std::frexp(value, &exponent);
+            if((best_exponent <= 0 && exponent > best_exponent) || (exponent > 0 && exponent < best_exponent)) {
+                best_exponent = exponent;
+                best_unit = unit;
+            }
+        }
+
+        // Write unit
+        stream << convert(inp, best_unit);
+        stream << best_unit;
+    }
+    return stream.str();
+}
+std::string Units::display(UnitType inp, std::string unit) {
+    return display(inp, {std::move(unit)});
 }

@@ -13,7 +13,7 @@ slc6-gcc62:
         - ctest --output-on-failure -j4
         - cd ..
         - source $G4ENV_INIT
-        - bin/allpix etc/example_config.ini
+        - bin/allpix -c etc/example_config.ini
 
 
 slc6-llvm39:
@@ -33,7 +33,7 @@ slc6-llvm39:
         - ctest --output-on-failure -j4
         - cd ..
         - source $G4ENV_INIT
-        - bin/allpix etc/example_config.ini
+        - bin/allpix -c etc/example_config.ini
 
 centos7-gcc62:
     tags:
@@ -50,7 +50,7 @@ centos7-gcc62:
         - ctest --output-on-failure -j4
         - cd ..
         - source $G4ENV_INIT
-        - bin/allpix etc/example_config.ini
+        - bin/allpix -c etc/example_config.ini
 
 centos7-llvm39:
     tags:
@@ -69,7 +69,7 @@ centos7-llvm39:
         - ctest --output-on-failure -j4
         - cd ..
         - source $G4ENV_INIT
-        - bin/allpix etc/example_config.ini
+        - bin/allpix -c etc/example_config.ini
 
 mac1012-clang80:
     tags:
@@ -84,4 +84,4 @@ mac1012-clang80:
         - ctest --output-on-failure -j4
         - cd ..
         - source $G4ENV_INIT
-        - bin/allpix etc/example_config.ini
+        - bin/allpix -c etc/example_config.ini

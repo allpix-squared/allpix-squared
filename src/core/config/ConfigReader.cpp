@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "core/utils/file.h"
+#include "core/utils/log.h"
 #include "exceptions.h"
 
 using namespace allpix;
@@ -27,6 +28,8 @@ ConfigReader::ConfigReader(std::istream& stream, std::string file_name) : Config
  * The configuration is immediately parsed and all of its configurations are available after the functions returns.
  */
 void ConfigReader::add(std::istream& stream, std::string file_name) {
+    LOG(TRACE) << "Parsing configuration file " << file_name;
+
     // Convert file name to absolute path (if given)
     if(!file_name.empty()) {
         file_name = allpix::get_absolute_path(file_name);

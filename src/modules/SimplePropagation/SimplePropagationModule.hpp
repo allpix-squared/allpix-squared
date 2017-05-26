@@ -58,6 +58,11 @@ namespace allpix {
         // deposits for a specific detector
         std::shared_ptr<DepositedChargeMessage> deposits_message_;
 
+        // statistics
+        unsigned int total_propagated_charges_{};
+        unsigned int total_steps_{};
+        long double total_time_{};
+
         // debug list of points to plot
         std::vector<std::pair<PropagatedCharge, std::vector<ROOT::Math::XYZPoint>>> debug_plot_points_;
         TFile* debug_file_;

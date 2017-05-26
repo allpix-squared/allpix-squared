@@ -7,6 +7,7 @@
 #ifndef ALLPIX_MODULE_MANAGER_H
 #define ALLPIX_MODULE_MANAGER_H
 
+#include <atomic>
 #include <list>
 #include <map>
 #include <memory>
@@ -54,10 +55,10 @@ namespace allpix {
 
         /// @{
         /**
-         * @brief Use default move behaviour
+         * @brief Moving the manager is not allowed
          */
-        ModuleManager(ModuleManager&&) noexcept = default;
-        ModuleManager& operator=(ModuleManager&&) noexcept = default;
+        ModuleManager(ModuleManager&&) = delete;
+        ModuleManager& operator=(ModuleManager&&) = delete;
         /// @}
 
         /**
@@ -83,6 +84,11 @@ namespace allpix {
          */
         void finalize();
 
+        /**
+         * @brief Terminates as soon as the current event is finished
+         */
+        void terminate();
+
     private:
         /**
          * @brief Create unique modules
@@ -92,8 +98,7 @@ namespace allpix {
          * @param geo_manager Pointer to the geometry manager
          * @return An unique module together with its identifier
          */
-        std::pair<ModuleIdentifier, Module*>
-        create_unique_modules(void*, const Configuration&, Messenger*, GeometryManager*);
+        std::pair<ModuleIdentifier, Module*> create_unique_modules(void*, Configuration, Messenger*, GeometryManager*);
         /**
          * @brief Create detector modules
          * @param library Void pointer to the loaded library
@@ -103,7 +108,7 @@ namespace allpix {
          * @return A list of all created detector modules and their identifiers
          */
         std::vector<std::pair<ModuleIdentifier, Module*>>
-        create_detector_modules(void*, const Configuration&, Messenger*, GeometryManager*);
+        create_detector_modules(void*, Configuration, Messenger*, GeometryManager*);
 
         /**
          * @brief Set module specific log setting before running init/run/finalize
@@ -120,9 +125,13 @@ namespace allpix {
         ModuleList modules_;
         IdentifierToModuleMap id_to_module_;
 
+        std::map<Module*, long double> module_execution_time_;
+
         Configuration global_config_;
 
         std::map<std::string, void*> loaded_libraries_;
+
+        std::atomic<bool> terminate_;
     };
 } // namespace allpix
 
