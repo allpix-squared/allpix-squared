@@ -15,7 +15,8 @@ namespace allpix {
     public:
         // FIXME: should use smart pointer instead of deleting here
         ~DetectorModelG4() {
-            delete wrapper_log;
+            // FIXME: causes problems, investigate better
+            /*delete wrapper_log;
             delete wrapper_phys;
             delete PCB_log;
             delete PCB_phys;
@@ -26,7 +27,7 @@ namespace allpix {
             delete bumps_cell_log;
             delete guard_rings_log;
             delete guard_rings_phys;
-            delete slice_log;
+            delete slice_log;*/
         }
 
         // Wrapper for the whole detector in the world model (invisible)
