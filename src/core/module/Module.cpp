@@ -28,8 +28,13 @@ Module::Module(Configuration config, std::shared_ptr<Detector> detector)
  * @note The remove_delegate can throw in theory, but this could never happen in practice
  */
 Module::~Module() {
-    for(auto delegate : delegates_) {
-        delegate.first->remove_delegate(delegate.second);
+    try {
+        for(auto delegate : delegates_) {
+            delegate.first->remove_delegate(delegate.second);
+        }
+    } catch(std::invalid_argument&) {
+        LOG(FATAL) << "Internal fault, cannot delete bound message (should never happen)";
+        std::abort();
     }
 }
 
