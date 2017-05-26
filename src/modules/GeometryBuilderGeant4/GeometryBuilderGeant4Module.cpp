@@ -23,9 +23,6 @@
 #include "core/geometry/GeometryManager.hpp"
 #include "core/utils/log.h"
 
-// temporary common includes
-#include "modules/common/DetectorModelG4.hpp"
-
 // GDML
 #ifdef Geant4_GDML
 #include "G4GDMLParser.hh"

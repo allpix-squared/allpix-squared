@@ -1,24 +1,10 @@
-###################
-# Allpix2 Modules #
-###################
-
 # Option to build all modules
 OPTION(BUILD_ALL_MODULES "Build all modules?" OFF)
 
 # reset the saved libraries
 SET(ALLPIX_MODULE_LIBRARIES "" CACHE INTERNAL "Module libraries")
 
-##############################
-# Build the common logic     #
-##############################
-
-# FIXME: THIS IS TEMPORARY AND SHOULD LATER BE FIXED IN A BETTER WAY
-ADD_SUBDIRECTORY(common)
-SET(ALLPIX_DEPS_LIBRARIES ${ALLPIX_DEPS_LIBRARIES} AllPixModulesCommon)
-
-##############################
-# Build the required modules #
-##############################
+# Build the modules 
 
 # model readers
 ALLPIX_BUILD_MODULE(DefaultModelReader)

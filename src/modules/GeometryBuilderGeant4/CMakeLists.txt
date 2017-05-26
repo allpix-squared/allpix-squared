@@ -34,6 +34,7 @@ ENDIF()
 ALLPIX_MODULE_SOURCES(${MODULE_NAME}
     GeometryBuilderGeant4Module.cpp
     GeometryConstructionG4.cpp
+    BumpsParameterizationG4.cpp
 )
 
 # Include Geant4 directories (WARNING: do not use the Geant4_USE_FILE!)
