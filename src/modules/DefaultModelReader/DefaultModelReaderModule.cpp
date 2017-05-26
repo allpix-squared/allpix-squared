@@ -1,73 +1,55 @@
-/**
- * @author Neal Gauvin <neal.gauvin@cern.ch>
- * @author John Idarraga <idarraga@cern.ch>
- * @author Koen Wolters <koen.wolters@cern.ch>
- */
-
-#include "ReadGeoDescription.hpp"
+#include "DefaultModelReaderModule.hpp"
 
 #include <fstream>
-#include <memory>
 #include <string>
+#include <utility>
 
-#include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
 
 #include "core/config/ConfigReader.hpp"
-#include "core/geometry/PixelDetectorModel.hpp"
-#include "core/module/exceptions.h"
 #include "core/utils/file.h"
 #include "core/utils/log.h"
-#include "core/utils/string.h"
 
 #include "tools/ROOT.h"
 
 using namespace allpix;
-using namespace ROOT::Math;
 
 // Constructors
-ReadGeoDescription::ReadGeoDescription() : ReadGeoDescription(std::vector<std::string>()) {}
-ReadGeoDescription::ReadGeoDescription(std::vector<std::string> paths) {
+DefaultModelReaderModule::DefaultModelReaderModule(Configuration config, Messenger*, GeometryManager* geo_mgr)
+    : Module(config), config_(std::move(config)), geo_mgr_(geo_mgr) {
     // construct reader
     ConfigReader reader;
 
-    // add standard paths
-    paths.emplace_back(ALLPIX_MODEL_DIRECTORY);
-    const char* data_dirs_env = std::getenv("XDG_DATA_DIRS");
-    if(data_dirs_env == nullptr || strlen(data_dirs_env) == 0) {
-        data_dirs_env = "/usr/local/share/:/usr/share/:";
+    // get standard paths from geometry reader
+    std::vector<std::string> paths;
+    if(config_.has("model_paths")) {
+        paths = config_.getPathArray("model_paths", true);
     }
-    std::vector<std::string> data_dirs = split<std::string>(data_dirs_env, ":");
-    for(auto data_dir : data_dirs) {
-        if(data_dir.back() != '/') {
-            data_dir += "/";
-        }
-
-        paths.emplace_back(data_dir + ALLPIX_PROJECT_NAME);
-    }
+    auto global_paths = geo_mgr_->getModelsPath();
+    paths.insert(paths.end(), global_paths.begin(), global_paths.end());
 
     LOG(TRACE) << "Reading model files";
     // add all the paths to the reader
     for(auto& path : paths) {
-        // check if file or directory
-        // NOTE: silently ignore all others
+        // Check if file or directory
         if(allpix::path_is_directory(path)) {
             std::vector<std::string> sub_paths = allpix::get_files_in_directory(path);
             for(auto& sub_path : sub_paths) {
                 // accept only with correct model suffix
-                std::string suffix(ALLPIX_MODEL_SUFFIX);
+                // FIXME .ini is not a good suffix for default models
+                std::string suffix(".ini");
                 if(sub_path.size() < suffix.size() || sub_path.substr(sub_path.size() - suffix.size()) != suffix) {
                     continue;
                 }
 
                 // add the sub directory path to the reader
-                LOG(DEBUG) << "Reading model " << sub_path;
+                LOG(TRACE) << "Reading model " << sub_path;
                 std::fstream file(sub_path);
                 reader.add(file, sub_path);
             }
-        } else if(allpix::path_is_file(path)) {
-            // add the path to the reader
-            LOG(DEBUG) << "Reading model " << path;
+        } else {
+            // Always a file because paths are already checked
+            LOG(TRACE) << "Reading model " << path;
             std::fstream file(path);
             reader.add(file, path);
         }
@@ -75,25 +57,34 @@ ReadGeoDescription::ReadGeoDescription(std::vector<std::string> paths) {
 
     // loop through all configurations and parse them
     LOG(TRACE) << "Parsing models";
-    for(auto& config : reader.getConfigurations()) {
-        if(models_.find(config.getName()) != models_.end()) {
-            // skip models that we already loaded earlier higher in the chain
-            LOG(DEBUG) << "Skipping overwritten model " + config.getName() << " in path " << config.getFilePath();
+    for(auto& model_config : reader.getConfigurations()) {
+        if(geo_mgr_->hasModel(model_config.getName())) {
+            // Skip models that we already loaded earlier higher in the chain
+            LOG(DEBUG) << "Skipping overwritten model " + model_config.getName() << " in path "
+                       << model_config.getFilePath();
+            continue;
+        }
+        if(!geo_mgr_->needsModel(model_config.getName())) {
+            // Also skip models that are not needed
+            LOG(TRACE) << "Skipping not required model " + model_config.getName() << " in path "
+                       << model_config.getFilePath();
             continue;
         }
 
-        // FIXME: only parse configs that are actually used
-        models_[config.getName()] = parse_config(config);
+        // Parse configuration
+        geo_mgr_->addModel(parse_config(model_config));
     }
 }
 
-std::shared_ptr<PixelDetectorModel> ReadGeoDescription::parse_config(const Configuration& config) {
+std::shared_ptr<PixelDetectorModel> DefaultModelReaderModule::parse_config(const Configuration& config) {
     std::string model_name = config.getName();
     std::shared_ptr<PixelDetectorModel> model = std::make_shared<PixelDetectorModel>(model_name);
 
+    using namespace ROOT::Math;
+
     // pixel amount
     if(config.has("pixel_amount")) {
-        model->setNPixels(config.get<ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>>("pixel_amount"));
+        model->setNPixels(config.get<DisplacementVector2D<ROOT::Math::Cartesian2D<int>>>("pixel_amount"));
     }
     // size, positions and offsets
     if(config.has("pixel_size")) {
@@ -144,13 +135,4 @@ std::shared_ptr<PixelDetectorModel> ReadGeoDescription::parse_config(const Confi
     }
 
     return model;
-}
-
-// Return detector model
-// FIXME: should we throw an error if it does not exists
-std::shared_ptr<PixelDetectorModel> ReadGeoDescription::getDetectorModel(const std::string& name) const {
-    if(models_.find(name) == models_.end()) {
-        return nullptr;
-    }
-    return models_.at(name);
 }

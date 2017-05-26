@@ -31,7 +31,8 @@ using namespace allpix;
  * - Load the detector configuration and parse it
  */
 AllPix::AllPix(std::string config_file_name)
-    : terminate_(false), has_run_(false), msg_(std::make_unique<Messenger>()), mod_mgr_(std::make_unique<ModuleManager>()) {
+    : terminate_(false), has_run_(false), msg_(std::make_unique<Messenger>()), mod_mgr_(std::make_unique<ModuleManager>()),
+      geo_mgr_(std::make_unique<GeometryManager>()) {
     // Load the global configuration
     conf_mgr_ = std::make_unique<ConfigManager>(std::move(config_file_name));
 
@@ -77,10 +78,6 @@ AllPix::AllPix(std::string config_file_name)
     LOG(TRACE) << "Global log format is set to " << log_format_string;
 
     // Fetch the detector configuration and initialize the geometry manager
-    std::string detector_file_name = conf_mgr_->getGlobalConfiguration().getPath("detectors_file", true);
-    std::fstream file(detector_file_name);
-    ConfigReader reader(file, detector_file_name);
-    geo_mgr_ = std::make_unique<GeometryManager>(reader);
 }
 
 /**
@@ -139,7 +136,7 @@ void AllPix::load() {
     set_style();
 
     // Load the geometry
-    geo_mgr_->load();
+    geo_mgr_->load(global_config);
 
     // Load the modules from the configuration
     if(!terminate_) {

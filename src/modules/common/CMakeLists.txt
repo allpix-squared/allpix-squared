@@ -26,7 +26,6 @@ INCLUDE_DIRECTORIES(SYSTEM ${ALLPIX_DEPS_INCLUDE_DIRS})
 # add the library
 ADD_LIBRARY(AllPixModulesCommon SHARED
     BumpsParameterizationG4.cpp
-    ReadGeoDescription.cpp
 )
 
 # link the standard allpix libraries

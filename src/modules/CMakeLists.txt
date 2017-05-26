@@ -5,9 +5,6 @@
 # Option to build all modules
 OPTION(BUILD_ALL_MODULES "Build all modules?" OFF)
 
-# set the models path
-ADD_DEFINITIONS(-DALLPIX_MODEL_DIRECTORY="${MODEL_DIRECTORY}" -DALLPIX_MODEL_SUFFIX="${MODEL_SUFFIX}")
-
 # reset the saved libraries
 SET(ALLPIX_MODULE_LIBRARIES "" CACHE INTERNAL "Module libraries")
 
@@ -22,6 +19,9 @@ SET(ALLPIX_DEPS_LIBRARIES ${ALLPIX_DEPS_LIBRARIES} AllPixModulesCommon)
 ##############################
 # Build the required modules #
 ##############################
+
+# model readers
+ALLPIX_BUILD_MODULE(DefaultModelReader)
 
 # geometry
 ALLPIX_BUILD_MODULE(GeometryBuilderTGeo)
