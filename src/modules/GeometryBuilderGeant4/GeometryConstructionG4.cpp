@@ -5,10 +5,6 @@
 
 #include "GeometryConstructionG4.hpp"
 
-#include <memory>
-#include <string>
-#include <utility>
-
 #include <G4Box.hh>
 #include <G4LogicalVolume.hh>
 #include <G4NistManager.hh>
@@ -23,6 +19,9 @@
 #include <G4UserLimits.hh>
 #include <G4VSolid.hh>
 #include <G4VisAttributes.hh>
+#include <memory>
+#include <string>
+#include <utility>
 #include "G4StepLimiterPhysics.hh"
 
 #include "core/geometry/PixelDetectorModel.hpp"
@@ -119,24 +118,8 @@ void GeometryConstructionG4::build_pixel_devices() {
     // Transparency can be switched off in the Qt visualisation.
     const double alpha = 0.8;
 
-    G4VisAttributes BoxVisAtt = G4VisAttributes(G4Color(0, 1, 1, 0.1)); // Cyan
-    BoxVisAtt.SetLineWidth(1);
-    BoxVisAtt.SetVisibility(false);
-
-    // Chip
-    auto chipColor = G4Color(0.06, 0.06, 0.06, alpha); // Blackish
-    G4VisAttributes ChipVisAtt = G4VisAttributes(chipColor);
-    ChipVisAtt.SetLineWidth(1);
-    ChipVisAtt.SetForceSolid(force_solid);
-
-    G4VisAttributes BumpBoxVisAtt = G4VisAttributes(G4Color(0, 1, 0, 0.1)); // Green
-    BumpBoxVisAtt.SetLineWidth(1);
-    BumpBoxVisAtt.SetForceSolid(false);
-    BumpBoxVisAtt.SetVisibility(false);
-
-    G4VisAttributes BumpVisAtt = G4VisAttributes(G4Color::Yellow());
-    BumpVisAtt.SetLineWidth(2);
-    BumpVisAtt.SetForceSolid(force_solid);
+    G4VisAttributes wrapperVisAtt = G4VisAttributes(G4Color(1, 0, 0, 0.1)); // Red
+    wrapperVisAtt.SetVisibility(false);
 
     // PCB
     // auto pcbColor = G4Color::Green(); //AP1
@@ -145,13 +128,42 @@ void GeometryConstructionG4::build_pixel_devices() {
     pcbVisAtt.SetLineWidth(1);
     pcbVisAtt.SetForceSolid(force_solid);
 
-    G4VisAttributes guardRingsVisAtt = G4VisAttributes(G4Color(0.5, 0.5, 0.5, 1)); // Dark gray
-    guardRingsVisAtt.SetLineWidth(1);
-    guardRingsVisAtt.SetForceSolid(force_solid);
+    // Chip
+    auto chipColor = G4Color(0.06, 0.06, 0.06, alpha); // Blackish
+    G4VisAttributes ChipVisAtt = G4VisAttributes(chipColor);
+    ChipVisAtt.SetForceSolid(force_solid);
 
-    G4VisAttributes wrapperVisAtt = G4VisAttributes(G4Color(1, 0, 0, 0.1)); // red
-    wrapperVisAtt.SetLineWidth(1);
-    wrapperVisAtt.SetVisibility(false);
+    // Bumps
+    // auto bumpColor = G4Color::Yellow(); // AP1;
+    auto bumpColor = G4Color(0.5, 0.5, 0.5, alpha); // Grey
+    G4VisAttributes BumpVisAtt = G4VisAttributes(bumpColor);
+    BumpVisAtt.SetForceSolid(force_solid);
+    // The logical volume holding all the bumps, Green in AP1
+    G4VisAttributes BumpBoxVisAtt = G4VisAttributes(bumpColor);
+
+    // Sensors, ie pixels
+    auto sensorColor = G4Color(0.0, 0.0, 0.0, alpha); // Blackish
+    G4VisAttributes SensorVisAtt = G4VisAttributes(chipColor);
+    SensorVisAtt.SetForceSolid(force_solid);
+    // Guard rings, Dark gray in AP1.
+    G4VisAttributes guardRingsVisAtt = G4VisAttributes(sensorColor); // Dark gray
+    guardRingsVisAtt.SetForceSolid(force_solid);
+    // The box holding all the pixels, cyan in AP1
+    G4VisAttributes BoxVisAtt = G4VisAttributes(sensorColor); // Cyan
+
+    // In simple view mode, pixels and bumps are set to invisible, not to be displayed. The logical volumes holding them are
+    // instead displayed.
+    if(simple_view_) {
+        SensorVisAtt.SetVisibility(false);
+        BoxVisAtt.SetVisibility(true);
+        BumpVisAtt.SetVisibility(false);
+        BumpBoxVisAtt.SetVisibility(true);
+    } else {
+        SensorVisAtt.SetVisibility(true);
+        BoxVisAtt.SetVisibility(false);
+        BumpVisAtt.SetVisibility(true);
+        BumpBoxVisAtt.SetVisibility(false);
+    }
 
     /* NAMES
      * define the global names for all the elements in the setup
@@ -367,16 +379,12 @@ void GeometryConstructionG4::build_pixel_devices() {
             new G4Box(SliceName.first, model->getHalfPixelSizeX(), model->getHalfSensorSizeY(), model->getHalfSensorZ());
 
         model_g4->slice_log = new G4LogicalVolume(Box_slice, Silicon, SliceName.second); // 0,0,0);
-        if(simple_view_) {
-            model_g4->slice_log->SetVisAttributes(G4VisAttributes::GetInvisible());
-        }
+        model_g4->slice_log->SetVisAttributes(SensorVisAtt);
 
         auto* Box_pixel =
             new G4Box(PixelName.first, model->getHalfPixelSizeX(), model->getHalfPixelSizeY(), model->getHalfSensorZ());
         model_g4->pixel_log = new G4LogicalVolume(Box_pixel, Silicon, PixelName.second); // 0,0,0);
-        if(simple_view_) {
-            model_g4->pixel_log->SetVisAttributes(G4VisAttributes::GetInvisible());
-        }
+        model_g4->pixel_log->SetVisAttributes(SensorVisAtt);
 
         // place the slices
         new G4PVDivision(SliceName.second,
@@ -431,11 +439,7 @@ void GeometryConstructionG4::build_pixel_devices() {
 
             // create the individual bumps through a parameterization
             model_g4->bumps_cell_log = new G4LogicalVolume(aBump, Solder, BumpBoxName.second + "_log");
-            if(simple_view_) {
-                model_g4->bumps_cell_log->SetVisAttributes(G4VisAttributes::GetInvisible());
-            } else {
-                model_g4->bumps_cell_log->SetVisAttributes(BumpVisAtt);
-            }
+            model_g4->bumps_cell_log->SetVisAttributes(BumpVisAtt);
 
             model_g4->parameterization_ = std::make_unique<BumpsParameterizationG4>(model);
             G4int NPixTot = model->getNPixelsX() * model->getNPixelsY();
