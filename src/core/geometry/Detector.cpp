@@ -27,8 +27,8 @@ Detector::Detector(std::string name,
                    std::shared_ptr<DetectorModel> model,
                    ROOT::Math::XYZPoint position,
                    ROOT::Math::EulerAngles orientation)
-    : name_(std::move(name)), model_(std::move(model)), position_(std::move(position)), orientation_(orientation),
-      electric_field_sizes_{{0, 0, 0}}, electric_field_(nullptr) {
+    : Detector(std::move(name), std::move(position), std::move(orientation)) {
+    model_ = std::move(model);
     // Check if valid model is supplied
     if(model_ == nullptr) {
         throw InvalidModuleActionException("Detector model cannot be a null pointer");
