@@ -113,36 +113,44 @@ void GeometryConstructionG4::build_pixel_devices() {
      * set the visibility of several of the volumes
      * FIXME: should strictly not be here but simplifies visualization
      */
+    // We want to be able to set in the Qt visualisation interface the solid/wireframe mode.
+    const bool force_solid = false;
+    // To add some transparency in the solids, set to 0.8. 1 means opaque.
+    // Transparency can be switched off in the Qt visualisation.
+    const double alpha = 0.8;
 
     G4VisAttributes BoxVisAtt = G4VisAttributes(G4Color(0, 1, 1, 0.1)); // Cyan
-    BoxVisAtt.SetLineWidth(2);
-    BoxVisAtt.SetForceSolid(false);
+    BoxVisAtt.SetLineWidth(1);
     BoxVisAtt.SetVisibility(false);
 
-    G4VisAttributes ChipVisAtt = G4VisAttributes(G4Color::Gray());
-    ChipVisAtt.SetLineWidth(2);
-    ChipVisAtt.SetForceSolid(true);
+    // Chip
+    auto chipColor = G4Color(0.06, 0.06, 0.06, alpha); // Blackish
+    G4VisAttributes ChipVisAtt = G4VisAttributes(chipColor);
+    ChipVisAtt.SetLineWidth(1);
+    ChipVisAtt.SetForceSolid(force_solid);
 
-    G4VisAttributes BumpBoxVisAtt = G4VisAttributes(G4Color(0, 1, 0, 1.0)); // Green
+    G4VisAttributes BumpBoxVisAtt = G4VisAttributes(G4Color(0, 1, 0, 0.1)); // Green
     BumpBoxVisAtt.SetLineWidth(1);
     BumpBoxVisAtt.SetForceSolid(false);
-    BumpBoxVisAtt.SetVisibility(true);
+    BumpBoxVisAtt.SetVisibility(false);
 
     G4VisAttributes BumpVisAtt = G4VisAttributes(G4Color::Yellow());
     BumpVisAtt.SetLineWidth(2);
-    BumpVisAtt.SetForceSolid(true);
+    BumpVisAtt.SetForceSolid(force_solid);
 
-    G4VisAttributes pcbVisAtt = G4VisAttributes(G4Color::Green());
+    // PCB
+    // auto pcbColor = G4Color::Green(); //AP1
+    auto pcbColor = G4Color(0.36, 0.66, 0.055, alpha); // Greenish
+    G4VisAttributes pcbVisAtt = G4VisAttributes(pcbColor);
     pcbVisAtt.SetLineWidth(1);
-    pcbVisAtt.SetForceSolid(true);
+    pcbVisAtt.SetForceSolid(force_solid);
 
     G4VisAttributes guardRingsVisAtt = G4VisAttributes(G4Color(0.5, 0.5, 0.5, 1)); // Dark gray
     guardRingsVisAtt.SetLineWidth(1);
-    guardRingsVisAtt.SetForceSolid(true);
+    guardRingsVisAtt.SetForceSolid(force_solid);
 
     G4VisAttributes wrapperVisAtt = G4VisAttributes(G4Color(1, 0, 0, 0.1)); // red
     wrapperVisAtt.SetLineWidth(1);
-    wrapperVisAtt.SetForceSolid(false);
     wrapperVisAtt.SetVisibility(false);
 
     /* NAMES
