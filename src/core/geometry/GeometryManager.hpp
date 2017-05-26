@@ -29,9 +29,8 @@ namespace allpix {
     public:
         /**
          * @brief Construct the geometry manager
-         * @param reader Reader for the file containing the detector configuration
          */
-        GeometryManager(ConfigReader reader);
+        GeometryManager();
         /**
          * @brief Use default destructor
          */
@@ -55,9 +54,23 @@ namespace allpix {
 
         /**
          * @brief Loads the geometry from the reader
+         * @param global_config Global configuration for the framework
          * @warning Has to be the first function called after the constructor
          */
-        void load();
+        void load(const Configuration& global_config);
+
+        /**
+         * @brief Returns the list of standard paths where models should be searched in
+         * @return List of absolute paths to file or directories that contain models
+         */
+        std::vector<std::string> getModelsPath();
+
+        /**
+         * @brief Return if the model is currently in the list of required models
+         * @param name Type of the model to search for
+         * @return True if at least one model still needs this type, false otherwise
+         */
+        bool needsModel(const std::string& name) const;
 
         /**
          * @brief Add a detector model and apply it to the registered detectors
@@ -68,6 +81,7 @@ namespace allpix {
 
         /**
          * @brief Check if a detector model exists
+         * @param name Model type to search for
          * @return True if the model is part of the geometry, false otherwise
          */
         bool hasModel(const std::string& name) const;
@@ -98,6 +112,7 @@ namespace allpix {
 
         /**
          * @brief Check if a detector exists
+         * @param name Model type to search for
          * @return True if the detector is part of the geometry, false otherwise
          */
         bool hasDetector(const std::string& name) const;
@@ -134,12 +149,11 @@ namespace allpix {
         void close_geometry();
         bool closed_;
 
-        ConfigReader reader_;
-
+        std::vector<std::string> model_paths_;
         std::vector<std::shared_ptr<DetectorModel>> models_;
         std::set<std::string> model_names_;
 
-        std::map<Detector*, std::string> nonresolved_models_;
+        std::map<std::string, std::vector<Detector*>> nonresolved_models_;
         std::vector<std::shared_ptr<Detector>> detectors_;
         std::set<std::string> detector_names_;
     };

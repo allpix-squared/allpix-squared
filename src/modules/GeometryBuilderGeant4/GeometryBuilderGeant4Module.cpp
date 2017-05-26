@@ -23,10 +23,6 @@
 #include "core/geometry/GeometryManager.hpp"
 #include "core/utils/log.h"
 
-// temporary common includes
-#include "modules/common/DetectorModelG4.hpp"
-#include "modules/common/ReadGeoDescription.hpp"
-
 // GDML
 #ifdef Geant4_GDML
 #include "G4GDMLParser.hh"
@@ -37,37 +33,7 @@ using namespace ROOT;
 
 // constructor and destructor
 GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration config, Messenger*, GeometryManager* geo_manager)
-    : Module(config), config_(std::move(config)), geo_manager_(geo_manager), run_manager_g4_(nullptr) {
-    // construct the internal geometry
-    // WARNING: we need to do this here to allow for proper instantiation (initialization is only run after loading)
-    // FIXME: move this to a separate module or the core?
-
-    LOG(TRACE) << "Constructing internal geometry";
-    // read the models
-    std::vector<std::string> model_paths;
-    if(config_.has("model_paths")) {
-        model_paths = config_.getPathArray("model_paths", true);
-    }
-    auto geo_descriptions = ReadGeoDescription(model_paths);
-
-    // construct the detectors from the config file
-    std::string detector_file_name = config_.getPath("detectors_file", true);
-    std::ifstream file(detector_file_name);
-    ConfigReader detector_config(file, detector_file_name);
-
-    // add the models of the detectors
-    for(auto& detector_section : detector_config.getConfigurations()) {
-        std::shared_ptr<DetectorModel> detector_model =
-            geo_descriptions.getDetectorModel(detector_section.get<std::string>("type"));
-
-        // check if detector model is defined
-        if(detector_model == nullptr) {
-            throw InvalidValueError(detector_section, "type", "detector type does not exist in registered models");
-        }
-
-        geo_manager_->addModel(detector_model);
-    }
-}
+    : Module(config), config_(std::move(config)), geo_manager_(geo_manager), run_manager_g4_(nullptr) {}
 
 // check geant4 environment variable
 inline static void check_dataset_g4(const std::string& env_name) {

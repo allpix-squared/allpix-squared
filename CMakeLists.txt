@@ -125,11 +125,12 @@ INCLUDE("cmake/clang-cpp-checks.cmake")
 # Define build targets for allpix #
 ###################################
 
-# Always include sources from top directory
-INCLUDE_DIRECTORIES(src)
-
 # Set the models directory and provide install if necessary
 ADD_SUBDIRECTORY(models)
+ADD_DEFINITIONS(-DALLPIX_MODEL_DIRECTORY="${MODEL_DIRECTORY}" -DALLPIX_MODEL_SUFFIX="${MODEL_SUFFIX}")
+
+# Always include sources from top directory
+INCLUDE_DIRECTORIES(src)
 
 # Build core allpix library
 ADD_SUBDIRECTORY(src/core)

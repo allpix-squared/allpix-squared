@@ -4,13 +4,32 @@
 #ifndef ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_DETECTOR_MODEL_G4_H
 #define ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_DETECTOR_MODEL_G4_H
 
+#include <G4LogicalVolume.hh>
+#include <G4VPhysicalVolume.hh>
+
 #include "BumpsParameterizationG4.hpp"
 
 namespace allpix {
 
-    // FIXME: we should either both make the detector model (PixelDetectorModel) classes or both structs
     class DetectorModelG4 {
     public:
+        // FIXME: should use smart pointer instead of deleting here
+        ~DetectorModelG4() {
+            // FIXME: causes problems, investigate better
+            /*delete wrapper_log;
+            delete wrapper_phys;
+            delete PCB_log;
+            delete PCB_phys;
+            delete chip_log;
+            delete chip_phys;
+            delete bumps_log;
+            delete bumps_phys;
+            delete bumps_cell_log;
+            delete guard_rings_log;
+            delete guard_rings_phys;
+            delete slice_log;*/
+        }
+
         // Wrapper for the whole detector in the world model (invisible)
         G4LogicalVolume* wrapper_log;
         G4VPhysicalVolume* wrapper_phys;

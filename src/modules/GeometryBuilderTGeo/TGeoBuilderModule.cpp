@@ -50,9 +50,6 @@
 // Tools
 #include "tools/ROOT.h"
 
-// Common includes
-#include "modules/common/ReadGeoDescription.hpp"
-
 using namespace std;
 using namespace allpix;
 using namespace ROOT::Math;
@@ -81,42 +78,6 @@ TGeoBuilderModule::TGeoBuilderModule(Configuration config, Messenger*, GeometryM
         m_Appliances_type = m_config.get<int>("appliances_type");
     }
     m_buildTestStructureFlag = m_config.get<bool>("build_test_structures", false);
-
-    // Read the geometry descriptions from the models
-    std::vector<std::string> model_paths;
-    // std::string model_file_name = m_config.getPath("models_file", true);
-    if(config.has("model_paths")) {
-        model_paths = config.getPathArray("model_paths", true);
-    }
-    // model_paths.push_back(model_file_name);
-    auto geo_descriptions = ReadGeoDescription(model_paths);
-
-    // construct the detectors from the config file
-    std::string detector_file_name = m_config.getPath("detectors_file", true);
-    std::ifstream file(detector_file_name);
-    if(!file) {
-        throw allpix::ConfigFileUnavailableError(detector_file_name);
-    }
-    ConfigReader detector_config(file);
-
-    // Loop on the detector configuration.
-    for(auto& detector_section : detector_config.getConfigurations()) {
-        std::shared_ptr<DetectorModel> detector_model =
-            geo_descriptions.getDetectorModel(detector_section.get<std::string>("type"));
-
-        // Check that detector types exists.
-        if(detector_model == nullptr) {
-            throw InvalidValueError(detector_section, "type", "detector type does not exist in registered models");
-        }
-
-        auto position = detector_section.get<XYZPoint>("position", XYZPoint());
-        auto orientation = detector_section.get<EulerAngles>("orientation", EulerAngles());
-        // XYZVector wrapperEnhancement = detector_section.get<XYZVector>("wrapper enhancement", XYZVector());
-
-        auto detector = std::make_shared<Detector>(detector_section.getName(), detector_model, position, orientation);
-        // Can I add something else ?
-        m_geoDscMng->addDetector(detector);
-    }
 }
 
 /// Run the detector construction.

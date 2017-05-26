@@ -29,9 +29,7 @@
 #include "tools/ROOT.h"
 #include "tools/geant4.h"
 
-// temporary common includes
-#include "modules/common/BumpsParameterizationG4.hpp"
-#include "modules/common/DetectorModelG4.hpp"
+#include "BumpsParameterizationG4.hpp"
 
 // FIXME: should get rid of CLHEP units
 #include <CLHEP/Units/SystemOfUnits.h>
@@ -190,7 +188,8 @@ void GeometryConstructionG4::build_pixel_devices() {
     auto detItr = detectors.begin();
     for(; detItr != detectors.end(); detItr++) {
         // get pointers for the model of the detector
-        std::shared_ptr<DetectorModelG4> model_g4 = std::make_shared<DetectorModelG4>();
+        // FIXME: all the pointers here need to be deleted properly
+        auto model_g4 = std::make_unique<DetectorModelG4>();
         std::shared_ptr<PixelDetectorModel> model = std::dynamic_pointer_cast<PixelDetectorModel>((*detItr)->getModel());
 
         // ignore all non-pixel detectors
@@ -383,7 +382,9 @@ void GeometryConstructionG4::build_pixel_devices() {
 
         auto* Box_pixel =
             new G4Box(PixelName.first, model->getHalfPixelSizeX(), model->getHalfPixelSizeY(), model->getHalfSensorZ());
-        model_g4->pixel_log = new G4LogicalVolume(Box_pixel, Silicon, PixelName.second); // 0,0,0);
+        auto pixel_log = std::make_shared<G4LogicalVolume>(Box_pixel, Silicon, PixelName.second);
+        (*detItr)->setExternalObject("pixel", pixel_log);
+        model_g4->pixel_log = pixel_log.get();
         model_g4->pixel_log->SetVisAttributes(SensorVisAtt);
 
         // place the slices
@@ -598,8 +599,8 @@ void GeometryConstructionG4::build_pixel_devices() {
 
         // WARNING: temperature, flux, magnetic and electric field are at the moment not part of the geometry
 
-        // add this geant4 model to the detector
-        (*detItr)->setExternalModel(model_g4);
+        // save the geant4 model
+        models_.push_back(std::move(model_g4));
 
         LOG(TRACE) << " Constructed detector " << (*detItr)->getName() << " succesfully";
     }

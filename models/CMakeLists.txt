@@ -1,7 +1,7 @@
-# set the suffix for model files
+# Set the suffix for model files
 SET(MODEL_SUFFIX ".ini" CACHE INTERNAL "Model files suffix" FORCE)
 
-# prefer local models if not installed to other location
+# Prefer local models if not installed to other location
 GET_FILENAME_COMPONENT(ABSOLUTE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} ABSOLUTE)
 IF(ABSOLUTE_INSTALL_PREFIX STREQUAL PROJECT_SOURCE_DIR)
     # use local model directory (unless other is given)
@@ -18,8 +18,8 @@ ELSE()
     ENDIF()
 ENDIF()
 
-# install the files to the models directory
-# NOTE: with default install path this does not change anything
+# Install the files to the models directory
+# NOTE: With default install path this does not change anything
 INSTALL(
     FILES
     test.ini

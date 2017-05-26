@@ -10,6 +10,7 @@
 #include <utility>
 
 #include <G4HadronicProcessStore.hh>
+#include <G4LogicalVolume.hh>
 #include <G4PhysListFactory.hh>
 #include <G4RunManager.hh>
 #include <G4StepLimiterPhysics.hh>
@@ -27,9 +28,6 @@
 
 #include "GeneratorActionG4.hpp"
 #include "SensitiveDetectorActionG4.hpp"
-
-// FIXME: broken common includes
-#include "modules/common/DetectorModelG4.hpp"
 
 using namespace allpix;
 
@@ -93,14 +91,19 @@ void DepositionGeant4Module::init() {
         useful_deposition = true;
 
         // get model of the detector
-        auto model_g4 = detector->getExternalModel<DetectorModelG4>();
+        // auto model_g4 =
+        // auto pixel_log = detector->getExternalModel<DetectorModelG4>()->pixel_log;
+        auto pixel_log = detector->getExternalObject<G4LogicalVolume>("pixel");
+        if(pixel_log == nullptr) {
+            throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
+        }
 
         // set maximum step length
-        model_g4->pixel_log->SetUserLimits(user_limits_.get());
+        pixel_log->SetUserLimits(user_limits_.get());
 
         // add the sensitive detector action
         auto sensitive_detector_action = new SensitiveDetectorActionG4(this, detector, messenger_, charge_creation_energy);
-        model_g4->pixel_log->SetSensitiveDetector(sensitive_detector_action);
+        pixel_log->SetSensitiveDetector(sensitive_detector_action);
         sensors_.push_back(sensitive_detector_action);
     }
 

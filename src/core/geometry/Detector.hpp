@@ -122,17 +122,17 @@ namespace allpix {
         const std::shared_ptr<DetectorModel> getModel() const;
 
         /**
-         * @brief Get an external geometry model by its type
-         * @return External model
+         * @brief Fetch an external object linked to this detector
+         * @param name Name of the external object
+         * @return External object or null pointer if it does not exists
          */
-        // TODO [doc] This feature should be removed
-        template <typename T> std::shared_ptr<T> getExternalModel();
+        template <typename T> std::shared_ptr<T> getExternalObject(const std::string& name);
         /**
-         * @brief Sets an external geometry model by its type
-         * @param model External model
+         * @brief Sets an external object linked to this detector
+         * @param name Name of the external object
+         * @param model External object of arbitrary type
          */
-        // TODO [doc] This feature should be removed
-        template <typename T> void setExternalModel(std::shared_ptr<T> model);
+        template <typename T> void setExternalObject(const std::string& name, std::shared_ptr<T> model);
 
     private:
         /**
@@ -175,18 +175,24 @@ namespace allpix {
         std::array<size_t, 3> electric_field_sizes_;
         std::shared_ptr<std::vector<double>> electric_field_;
 
-        std::map<std::type_index, std::shared_ptr<void>> external_models_;
+        std::map<std::type_index, std::map<std::string, std::shared_ptr<void>>> external_objects_;
     };
 
     template <typename T> double* Detector::getElectricFieldRaw(T pos) const {
         return get_electric_field_raw(pos.x(), pos.y(), pos.z());
     }
 
-    template <typename T> std::shared_ptr<T> Detector::getExternalModel() {
-        return std::static_pointer_cast<T>(external_models_[typeid(T)]);
+    /**
+     * If the returned object is not a null pointer it is guaranteed to be of the correct type
+     */
+    template <typename T> std::shared_ptr<T> Detector::getExternalObject(const std::string& name) {
+        return std::static_pointer_cast<T>(external_objects_[typeid(T)][name]);
     }
-    template <typename T> void Detector::setExternalModel(std::shared_ptr<T> model) {
-        external_models_[typeid(T)] = std::static_pointer_cast<void>(model);
+    /**
+     * Stores external representations of objects in this detector that need to be shared between modules.
+     */
+    template <typename T> void Detector::setExternalObject(const std::string& name, std::shared_ptr<T> model) {
+        external_objects_[typeid(T)][name] = std::static_pointer_cast<void>(model);
     }
 } // namespace allpix
 

@@ -5,6 +5,7 @@
  * @copyright MIT License
  */
 
+#include <fstream>
 #include <memory>
 #include <string>
 #include <utility>
@@ -15,6 +16,7 @@
 
 #include "GeometryManager.hpp"
 #include "core/module/exceptions.h"
+#include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "exceptions.h"
 
@@ -23,16 +25,20 @@
 
 using namespace allpix;
 
-GeometryManager::GeometryManager(ConfigReader reader) : closed_{false}, reader_(std::move(reader)) {}
+GeometryManager::GeometryManager() : closed_{false} {}
 
 /**
  * Loads the geometry by parsing the configuration file
  */
-void GeometryManager::load() {
+void GeometryManager::load(const Configuration& global_config) {
     LOG(TRACE) << "Reading geometry";
 
+    std::string detector_file_name = global_config.getPath("detectors_file", true);
+    std::fstream file(detector_file_name);
+    ConfigReader reader(file, detector_file_name);
+
     // Loop over all defined detectors
-    for(auto& detector_section : reader_.getConfigurations()) {
+    for(auto& detector_section : reader.getConfigurations()) {
         // Get the position and orientation
         auto position = detector_section.get<ROOT::Math::XYZPoint>("position", ROOT::Math::XYZPoint());
         auto orientation = detector_section.get<ROOT::Math::EulerAngles>("orientation", ROOT::Math::EulerAngles());
@@ -43,8 +49,42 @@ void GeometryManager::load() {
         addDetector(detector);
 
         // Add a link to the detector to add the model later
-        nonresolved_models_[detector.get()] = detector_section.get<std::string>("type");
+        nonresolved_models_[detector_section.get<std::string>("type")].push_back(detector.get());
     }
+
+    // Load the list of standard model paths
+    if(global_config.has("model_paths")) {
+        auto extra_paths = global_config.getPathArray("model_paths", true);
+        model_paths_.insert(model_paths_.end(), extra_paths.begin(), extra_paths.end());
+    }
+    if(path_is_directory(ALLPIX_MODEL_DIRECTORY)) {
+        model_paths_.emplace_back(ALLPIX_MODEL_DIRECTORY);
+    }
+    const char* data_dirs_env = std::getenv("XDG_DATA_DIRS");
+    if(data_dirs_env == nullptr || strlen(data_dirs_env) == 0) {
+        data_dirs_env = "/usr/local/share/:/usr/share/:";
+    }
+    std::vector<std::string> data_dirs = split<std::string>(data_dirs_env, ":");
+    for(auto data_dir : data_dirs) {
+        if(data_dir.back() != '/') {
+            data_dir += "/";
+        }
+
+        data_dir += ALLPIX_PROJECT_NAME;
+        if(path_is_directory(data_dir)) {
+            model_paths_.emplace_back(data_dir);
+        }
+    }
+}
+
+/**
+ * The default list of models to search for are in the following order
+ * - The list of paths provided in the main configuration as models_path
+ * - The build variable ALLPIX_MODEL_DIR pointing to the installation directory of the framework models
+ * - The directories in XDG_DATA_DIRS with ALLPIX_PROJECT_NAME attached or /usr/share/:/usr/local/share if not defined
+ */
+std::vector<std::string> GeometryManager::getModelsPath() {
+    return model_paths_;
 }
 
 /**
@@ -65,6 +105,9 @@ void GeometryManager::addModel(std::shared_ptr<DetectorModel> model) {
     models_.push_back(std::move(model));
 }
 
+bool GeometryManager::needsModel(const std::string& name) const {
+    return nonresolved_models_.find(name) != nonresolved_models_.end();
+}
 bool GeometryManager::hasModel(const std::string& name) const {
     return model_names_.find(name) != model_names_.end();
 }
@@ -108,8 +151,9 @@ bool GeometryManager::hasDetector(const std::string& name) const {
 }
 
 std::vector<std::shared_ptr<Detector>> GeometryManager::getDetectors() {
-    if(!closed_)
+    if(!closed_) {
         close_geometry();
+    }
 
     return detectors_;
 }
@@ -117,8 +161,9 @@ std::vector<std::shared_ptr<Detector>> GeometryManager::getDetectors() {
  * @throws InvalidDetectorError If a detector with this name does not exist
  */
 std::shared_ptr<Detector> GeometryManager::getDetector(const std::string& name) {
-    if(!closed_)
+    if(!closed_) {
         close_geometry();
+    }
 
     // FIXME: this is not a very nice way to implement this
     for(auto& detector : detectors_) {
@@ -132,8 +177,9 @@ std::shared_ptr<Detector> GeometryManager::getDetector(const std::string& name) 
  * @throws InvalidDetectorError If not a single detector with this type exists
  */
 std::vector<std::shared_ptr<Detector>> GeometryManager::getDetectorsByType(const std::string& type) {
-    if(!closed_)
+    if(!closed_) {
         close_geometry();
+    }
 
     std::vector<std::shared_ptr<Detector>> result;
     for(auto& detector : detectors_) {
@@ -158,7 +204,9 @@ void GeometryManager::close_geometry() {
     closed_ = true;
 
     // Try to resolve the missing models
-    for(auto& detector_types : nonresolved_models_) {
-        detector_types.first->set_model(getModel(detector_types.second));
+    for(auto& detectors_types : nonresolved_models_) {
+        for(auto& detector : detectors_types.second) {
+            detector->set_model(getModel(detectors_types.first));
+        }
     }
 }

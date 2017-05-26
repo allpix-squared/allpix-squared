@@ -88,33 +88,8 @@ The detector configuration consist of a set of section headers describing the de
 \end{itemize}
 
 An example configuration file for two test detectors and one timepix is given below. 
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
-# name the first detector test1
-[test1]
-# set the type to test
-type = "test"
-# place it at the origin of the world frame
-position = 0 0 0
-orientation = 0 0 0
+\inputminted[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}{../../etc/manual_detector.conf}
 
-# name the second detector test2
-[test2]
-# set the type again to test
-type = "test"
-# place it 0.5 mm down on the z-axis from the origin
-position = 0 0 -0.5mm
-# use the default orientation
-orientation = 0 0 0
-
-# name the third detector tpx
-[tpx]
-# set the type to timepix
-type = "timepix"
-# set the position in the world frame
-position = 10um 10um -0.25mm
-# rotate 45 degrees around the world z-axis
-orientation = 45deg 0 0
-\end{minted}
 This configuration file is used in the rest of this chapter for explaining concepts. 
 
 \subsubsection{Main configuration}
@@ -136,7 +111,29 @@ The rest of all the section headers are used to instantiate all the modules. Mod
 \end{itemize}
 
 A valid example configuration using the detector configuration above could be:
-\inputminted[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}{../../etc/manual_detector_config.ini}
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+# key is part of the empty section and therefore the global sections
+string_value = "example1"
+# the AllPix section is a special global section and merged with above
+[AllPix]
+another_random_string = "example2"
+# first run a unique module
+[MyUniqueModule]
+# this module takes no parameters
+# [MyUniqueModule] cannot be instantiated another time
+# then run some detector modules on different detectors 
+# first run a module on the two detector with name test
+[MyDetectorModule]
+type = "test"
+int_value = 1
+# replace the module above for test1 with a specialized version 
+[MyDetectorModule]
+name = "test1"
+int_value = 2
+# runs the module on the remaining unspecified detector tpx
+[MyDetectorModule]
+# int_value is not specified, so it uses the default value
+\end{minted}
 
 This configuration can however not be run in practice because MyUniqueModule and MyDetectorModule do not actually exist. Let us therefore continue to look at some actual parameters and start constructing a useful configuration file. In the next section the global framework parameters are introduced first.
 
@@ -167,7 +164,7 @@ Let us directly start with a full, but simple, simulation. A typical simulation 
 \todo{An extra geometry reader should be added here to create the \apsq geometry}
 
 In the example we are going to deposit charges in all of the three sensors from the detector configuration file in \ref{sec:detector_config}. Only the charges in the timepix module are going to be propagated and digitized. The final results of hits in the timepix will be written to a ROOT histogram. The documented version of this main configuration file (with all the required parameters) is as follows:
-\inputminted[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}{../../etc/manual_config.ini}
+\inputminted[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}{../../etc/manual.conf}
 
 The configuration above can be saved to \textit{config.ini} \todo{which suffix to use}. The detector configuration file in \ref{sec:detector_config} should then be saved as \textit{detector\_config.ini} in the same directory. Hereafter the total simulation can be executed by passing the configuration to the allpix binary as follows:
 
