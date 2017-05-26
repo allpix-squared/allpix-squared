@@ -31,7 +31,6 @@
 #include "tools/geant4.h"
 
 #include "BumpsParameterizationG4.hpp"
-#include "DetectorModelG4.hpp"
 
 // FIXME: should get rid of CLHEP units
 #include <CLHEP/Units/SystemOfUnits.h>
@@ -168,7 +167,7 @@ void GeometryConstructionG4::build_pixel_devices() {
     for(; detItr != detectors.end(); detItr++) {
         // get pointers for the model of the detector
         // FIXME: all the pointers here need to be deleted properly
-        auto model_g4 = new DetectorModelG4();
+        auto model_g4 = std::make_unique<DetectorModelG4>();
         std::shared_ptr<PixelDetectorModel> model = std::dynamic_pointer_cast<PixelDetectorModel>((*detItr)->getModel());
 
         // ignore all non-pixel detectors
@@ -588,8 +587,8 @@ void GeometryConstructionG4::build_pixel_devices() {
 
         // WARNING: temperature, flux, magnetic and electric field are at the moment not part of the geometry
 
-        // add this geant4 model to the detector
-        //(*detItr)->setExternalModel(model_g4);
+        // save the geant4 model
+        models_.push_back(std::move(model_g4));
 
         LOG(TRACE) << " Constructed detector " << (*detItr)->getName() << " succesfully";
     }

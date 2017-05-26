@@ -11,6 +11,8 @@
 
 #include "core/geometry/GeometryManager.hpp"
 
+#include "DetectorModelG4.hpp"
+
 // FIXME: improve this later on
 
 class G4UserLimits;
@@ -44,6 +46,9 @@ namespace allpix {
         G4ThreeVector world_size_;
         // determine if we have to build with simplified visualization (speed up)
         bool simple_view_;
+
+        // storage of all the internal Geant4 detectors
+        std::vector<std::unique_ptr<DetectorModelG4>> models_;
 
         // internal storage
         G4Material* world_material_;
