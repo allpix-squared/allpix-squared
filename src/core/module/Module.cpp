@@ -32,7 +32,7 @@ Module::~Module() {
         for(auto delegate : delegates_) {
             delegate.first->remove_delegate(delegate.second);
         }
-    } catch(std::invalid_argument&) {
+    } catch(std::out_of_range&) {
         LOG(FATAL) << "Internal fault, cannot delete bound message (should never happen)";
         std::abort();
     }
