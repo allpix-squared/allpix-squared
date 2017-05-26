@@ -27,7 +27,7 @@ using namespace allpix;
  * Initializes all the managers. This class will own the managers for the lifetime of the simulation.
  */
 AllPix::AllPix(std::string file_name)
-    : msg_(std::make_unique<Messenger>()), mod_mgr_(std::make_unique<ModuleManager>()),
+    : terminate_(false), has_run_(false), msg_(std::make_unique<Messenger>()), mod_mgr_(std::make_unique<ModuleManager>()),
       conf_mgr_(std::make_unique<ConfigManager>(std::move(file_name))), geo_mgr_(std::make_unique<GeometryManager>()) {}
 
 /**
@@ -45,15 +45,23 @@ void AllPix::load() {
     conf_mgr_->addGlobalHeaderName("");
     conf_mgr_->addIgnoreHeaderName("Ignore");
 
-    // Set the log level from config
     Configuration global_config = conf_mgr_->getGlobalConfiguration();
-    std::string log_level_string = global_config.get<std::string>("log_level", "INFO");
-    std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
-    try {
-        LogLevel log_level = Log::getLevelFromString(log_level_string);
-        Log::setReportingLevel(log_level);
-    } catch(std::invalid_argument& e) {
-        throw InvalidValueError(global_config, "log_level", e.what());
+
+    // Set the log level from config if not specified earlier
+    std::string log_level_string;
+    if(Log::getReportingLevel() == LogLevel::NONE) {
+        log_level_string = global_config.get<std::string>("log_level", "INFO");
+        std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
+        try {
+            LogLevel log_level = Log::getLevelFromString(log_level_string);
+            Log::setReportingLevel(log_level);
+        } catch(std::invalid_argument& e) {
+            LOG(ERROR) << "Log level \"" << log_level_string
+                       << "\" specified in the configuration is invalid, defaulting to INFO instead";
+            Log::setReportingLevel(LogLevel::INFO);
+        }
+    } else {
+        log_level_string = Log::getStringFromLevel(Log::getReportingLevel());
     }
 
     // Set the log format from config
@@ -63,26 +71,33 @@ void AllPix::load() {
         LogFormat log_format = Log::getFormatFromString(log_format_string);
         Log::setFormat(log_format);
     } catch(std::invalid_argument& e) {
-        throw InvalidValueError(global_config, "log_format", e.what());
+        LOG(ERROR) << "Log format \"" << log_format_string
+                   << "\" specified in the configuration is invalid, using DEFAULT instead";
+        Log::setFormat(LogFormat::DEFAULT);
     }
 
-    // Wait for the debug messages until level and format are set
-    LOG(DEBUG) << "Global log level is set to " << log_level_string;
-    LOG(DEBUG) << "Global log format is set to " << log_format_string;
+    // Wait for the first messages until level and format are properly set
+    LOG(STATUS) << "Welcome to AllPix " << ALLPIX_PROJECT_VERSION;
+
+    LOG(TRACE) << "Loading AllPix";
+    LOG(TRACE) << "Global log level is set to " << log_level_string;
+    LOG(TRACE) << "Global log format is set to " << log_format_string;
 
     // Initialize the random seeder
+    uint64_t seed = 0;
     if(global_config.has("random_seed")) {
         // Use provided random seed
-        random_init(global_config.get<uint64_t>("random_seed"));
+        seed = random_init(global_config.get<uint64_t>("random_seed"));
     } else {
         // Use entropy from the system
-        random_init();
+        seed = random_init();
     }
-    LOG(DEBUG) << "Initialized random seeder (first seed is " << get_random_seed() << ")";
+    LOG(STATUS) << "Initialized PRNG with seed " << seed;
     // Initialize ROOT random generator
     gRandom->SetSeed(get_random_seed());
 
     // Get output directory
+    LOG(TRACE) << "Switching to output directory";
     std::string directory = gSystem->pwd();
     directory += "/output";
     if(global_config.has("output_directory")) {
@@ -108,39 +123,62 @@ void AllPix::load() {
     set_style();
 
     // Load the modules from the configuration
-    LOG(DEBUG) << "Loading modules";
-    mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get());
-    LOG(DEBUG) << "Modules succesfully loaded"; // FIXME: add some more info
+    if(!terminate_) {
+        mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get());
+    } else {
+        LOG(INFO) << "Skip loading modules because termination is requested";
+    }
 }
 
 /**
  * Runs the Module::init() method linearly for every module
  */
 void AllPix::init() {
-    LOG(DEBUG) << "Initializing modules";
-    mod_mgr_->init();
-    LOG(DEBUG) << "Finished initialization";
+    if(!terminate_) {
+        LOG(TRACE) << "Initializing AllPix";
+        mod_mgr_->init();
+    } else {
+        LOG(INFO) << "Skip initializing modules because termination is requested";
+    }
 }
 /**
  * Runs every modules Module::run() method linearly for the number of events
  */
 void AllPix::run() {
-    Configuration global_config = conf_mgr_->getGlobalConfiguration();
-    auto number_of_events = global_config.get<unsigned int>("number_of_events", 1u);
-    LOG(DEBUG) << "Running modules for " << number_of_events << " events";
-    mod_mgr_->run();
-    LOG(DEBUG) << "Finished run";
+    if(!terminate_) {
+        LOG(TRACE) << "Running AllPix";
+        mod_mgr_->run();
+
+        // Set that we have run and want to finalize as well
+        has_run_ = true;
+    } else {
+        LOG(INFO) << "Skip running modules because termination is requested";
+    }
 }
 /**
  * Runs all modules Module::finalize() method linearly for every module
  */
 void AllPix::finalize() {
-    LOG(DEBUG) << "Finalizing modules";
-    mod_mgr_->finalize();
-    LOG(DEBUG) << "Finalization completed";
+    if(has_run_) {
+        LOG(TRACE) << "Finalizing AllPix";
+        mod_mgr_->finalize();
+    } else {
+        LOG(INFO) << "Skip finalizing modules because no modulue did run";
+    }
+}
+
+/*
+ * This function can be called safely from any signal handler. Time between the request to terminate
+ * and the actual termination is not always negigible.
+ */
+void AllPix::terminate() {
+    terminate_ = true;
+    mod_mgr_->terminate();
 }
 
 void AllPix::add_units() {
+    LOG(TRACE) << "Adding physical units";
+
     // LENGTH
     Units::add("nm", 1e-6);
     Units::add("um", 1e-3);
@@ -185,6 +223,8 @@ void AllPix::add_units() {
  * This style is inspired by the CLICdp plot style
  */
 void AllPix::set_style() {
+    LOG(TRACE) << "Setting ROOT plotting style";
+
     // use plain style as base
     gROOT->SetStyle("Plain");
     TStyle* style = gROOT->GetStyle("Plain");

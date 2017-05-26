@@ -7,9 +7,9 @@ Checks : '-*,
           llvm-*,-llvm-include-order,-llvm-header-guard,-llvm-namespace-comment,
           modernize-*,-modernize-raw-string-literal,
           cppcoreguidelines-*,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-pro-type-vararg,-cppcoreguidelines-pro-type-member-init,
-          clang-analyzer-*,-clang-analyzer-alpha*,
           cert-*,-cert-err58-cpp,
-          misc-*,-misc-noexcept-move-constructor,'
+          misc-*,-misc-noexcept-move-constructor,
+          clang-analyzer-*,-clang-analyzer-alpha*,-clang-analyzer-core*'
 WarningsAsErrors: '*'
 HeaderFilterRegex: '*.h *.hpp'
 CheckOptions:

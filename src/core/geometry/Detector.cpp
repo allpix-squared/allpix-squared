@@ -76,6 +76,16 @@ ROOT::Math::XYZPoint Detector::getGlobalPosition(const ROOT::Math::XYZPoint& loc
 }
 
 /**
+ * The definition of inside the sensor is determined by the detector model
+ */
+bool Detector::isWithinSensor(const ROOT::Math::XYZPoint& local_pos) const {
+    return (
+        (local_pos.x() >= model_->getSensorMinX() && local_pos.x() <= model_->getSensorMinX() + model_->getSensorSizeX()) &&
+        (local_pos.y() >= model_->getSensorMinY() && local_pos.y() <= model_->getSensorMinY() + model_->getSensorSizeY()) &&
+        (local_pos.z() >= model_->getSensorMinZ() && local_pos.z() <= model_->getSensorMinZ() + model_->getSensorSizeZ()));
+}
+
+/**
  * The electric field is replicated for all pixels and uses flipping at each boundary (side effects are not modeled in this
  * stage). Outside of the sensor the electric field is strictly zero by definition.
  */

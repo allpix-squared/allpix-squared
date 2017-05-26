@@ -25,14 +25,13 @@
 #include <TPolyMarker3D.h>
 #include <TStyle.h>
 
-#include <iostream>
-
 #include "core/config/Configuration.hpp"
 #include "core/messenger/Messenger.hpp"
 #include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "core/utils/random.h"
 #include "core/utils/unit.h"
+#include "tools/ROOT.h"
 #include "tools/runge_kutta.h"
 
 #include "objects/DepositedCharge.hpp"
@@ -44,7 +43,7 @@ using namespace ROOT::Math;
 SimplePropagationModule::SimplePropagationModule(Configuration config,
                                                  Messenger* messenger,
                                                  std::shared_ptr<Detector> detector)
-    : Module(detector), config_(std::move(config)), messenger_(messenger), detector_(std::move(detector)),
+    : Module(config, detector), config_(std::move(config)), messenger_(messenger), detector_(std::move(detector)),
       debug_file_(nullptr) {
     // get detector model
     model_ = detector_->getModel();
@@ -77,7 +76,7 @@ void SimplePropagationModule::init() {
 }
 
 void SimplePropagationModule::create_output_plots(unsigned int event_num) {
-    LOG(DEBUG) << "Writing debug plots";
+    LOG(TRACE) << "Writing output plots";
 
     // enable prefer GL
     gStyle->SetCanvasPreferGL(kTRUE);
@@ -360,7 +359,8 @@ void SimplePropagationModule::create_output_plots(unsigned int event_num) {
         }
         markers.clear();
 
-        LOG(DEBUG) << "Written " << point_cnt << " of " << tot_point_cnt << " points";
+        LOG_PROGRESS(DEBUG, getUniqueName() + "_OUTPUT_PLOTS")
+            << "Written " << point_cnt << " of " << tot_point_cnt << " points";
     }
 }
 
@@ -368,19 +368,22 @@ void SimplePropagationModule::create_output_plots(unsigned int event_num) {
 void SimplePropagationModule::run(unsigned int event_num) {
     // check for electric field
     if(!getDetector()->hasElectricField()) {
-        throw ModuleError("Cannot propagate without an electric field (add a module to read the field)");
+        LOG(WARNING) << "Running this module without an electric field is not recommmended and can be very slow!";
     }
 
     // create vector of propagated charges
     std::vector<PropagatedCharge> propagated_charges;
 
     // propagate all deposits
-    LOG(INFO) << "Propagating charges in sensor";
+    LOG(TRACE) << "Propagating charges in sensor";
+    unsigned int propagated_charges_count = 0;
+    unsigned int step_count = 0;
+    long double total_time = 0;
     for(auto& deposit : deposits_message_->getData()) {
         // loop over all charges
         unsigned int electrons_remaining = deposit.getCharge();
 
-        LOG(DEBUG) << "set of charges on " << deposit.getPosition();
+        LOG(DEBUG) << "Set of charges on " << deposit.getPosition();
 
         auto charge_per_step = config_.get<unsigned int>("charge_per_step");
         while(electrons_remaining > 0) {
@@ -402,11 +405,17 @@ void SimplePropagationModule::run(unsigned int event_num) {
             auto prop_pair = propagate(position);
             position = prop_pair.first;
 
-            LOG(DEBUG) << " propagated " << charge_per_step << " to " << position << " in " << prop_pair.second << " time";
+            LOG(DEBUG) << " Propagated " << charge_per_step << " to " << display_vector(position, {"mm", "um"}) << " in "
+                       << Units::display(prop_pair.second, "ns") << " time";
 
             // create a new propagated charge and add it to the list
             PropagatedCharge propagated_charge(position, charge_per_step, deposit.getEventTime() + prop_pair.second);
             propagated_charges.push_back(propagated_charge);
+
+            // update statistics
+            ++step_count;
+            propagated_charges_count += charge_per_step;
+            total_time += prop_pair.second;
         }
     }
 
@@ -415,11 +424,19 @@ void SimplePropagationModule::run(unsigned int event_num) {
         create_output_plots(event_num);
     }
 
+    // write summary and update statistics
+    long double average_time = total_time / std::max(1u, step_count);
+    LOG(INFO) << "Propagated " << propagated_charges_count << " charges in " << step_count << " steps in average time of "
+              << Units::display(average_time, "ns");
+    total_propagated_charges_ += propagated_charges_count;
+    total_steps_ += step_count;
+    total_time_ += total_time;
+
     // create a new message with propagated charges
-    PropagatedChargeMessage propagated_charge_message(std::move(propagated_charges), detector_);
+    auto propagated_charge_message = std::make_shared<PropagatedChargeMessage>(std::move(propagated_charges), detector_);
 
     // dispatch the message
-    messenger_->dispatchMessage(propagated_charge_message, "implant");
+    messenger_->dispatchMessage(this, propagated_charge_message);
 }
 
 std::pair<XYZPoint, double> SimplePropagationModule::propagate(const XYZPoint& root_pos) {
@@ -474,8 +491,9 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const XYZPoint& r
 
     // continue until outside the sensor (no electric field)
     // FIXME: we need to determine what would be a good time to stop
+    double zero_vec[] = {0, 0, 0};
     double last_time = std::numeric_limits<double>::lowest();
-    while(true) {
+    while(detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
         // update debug plots if necessary
         if(config_.get<bool>("output_plots") &&
            runge_kutta.getTime() - last_time > config_.get<double>("output_plots_step")) {
@@ -493,7 +511,7 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const XYZPoint& r
         // get electric field at current position and stop if field does not exist (outside sensor)
         double* raw_field = detector_->getElectricFieldRaw(position);
         if(raw_field == nullptr) {
-            break;
+            raw_field = zero_vec;
         }
 
         // apply diffusion step
@@ -528,7 +546,12 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const XYZPoint& r
 // write debug plots
 void SimplePropagationModule::finalize() {
     if(config_.get<bool>("output_plots")) {
+        LOG(TRACE) << "Closing output plots";
         debug_file_->Close();
         delete debug_file_;
     }
+
+    long double average_time = total_time_ / std::max(1u, total_steps_);
+    LOG(INFO) << "Propagated total of " << total_propagated_charges_ << " charges in " << total_steps_
+              << " steps in average time of " << Units::display(average_time, "ns");
 }

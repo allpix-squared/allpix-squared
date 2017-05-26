@@ -11,8 +11,10 @@
 #include <unistd.h>
 
 #include <algorithm>
+#include <chrono>
 #include <cstring>
 #include <fstream>
+#include <limits>
 #include <set>
 #include <stdexcept>
 #include <string>
@@ -37,7 +39,7 @@
 
 using namespace allpix;
 
-ModuleManager::ModuleManager() = default;
+ModuleManager::ModuleManager() : terminate_(false) {}
 
 /**
  * Loads the modules specified in the configuration file. Each module is contained within its own library which is loaded
@@ -51,7 +53,7 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
     for(auto& config : configs) {
         // Load library for each module. Libraries are named (by convention + CMAKE) libAllpixModule Name.suffix
         std::string lib_name = std::string(ALLPIX_MODULE_PREFIX).append(config.getName()).append(SHARED_LIBRARY_SUFFIX);
-        LOG(INFO) << "Loading library " << lib_name;
+        LOG_PROGRESS(STATUS, "LOAD_LOOP") << "Loading module " << config.getName();
 
         void* lib = nullptr;
         bool load_error = false;
@@ -70,7 +72,7 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
                     if(check_file.good()) {
                         lib = dlopen(full_lib_path.c_str(), RTLD_NOW);
                         if(lib != nullptr) {
-                            LOG(DEBUG) << "Found library in config specified directory at " << full_lib_path;
+                            LOG(DEBUG) << "Found library in configuration specified directory at " << full_lib_path;
                         } else {
                             load_error = true;
                         }
@@ -142,6 +144,14 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
             unique = reinterpret_cast<bool (*)()>(uniqueFunction)(); // NOLINT
         }
 
+        // Add the global internal parameters to the configuration
+        std::string global_dir = gSystem->pwd();
+        config.set<std::string>("_global_dir", global_dir);
+
+        // Set default input and output name
+        config.setDefault<std::string>("input", "");
+        config.setDefault<std::string>("output", "");
+
         // Create the modules from the library depending on the module type
         std::vector<std::pair<ModuleIdentifier, Module*>> mod_list;
         if(unique) {
@@ -174,181 +184,41 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
                 }
             }
 
-            // Set the configuration for this module for later use
-            mod->set_configuration(config);
-
             // Save the identifier in the module
             mod->set_identifier(identifier);
-
-            // Set global output directory
-            std::string global_dir = gSystem->pwd();
-            mod->set_global_directory(global_dir);
-
-            // Set local module output directory
-            std::string output_dir;
-            output_dir = global_dir;
-            output_dir += "/";
-            std::string path_mod_name = identifier.getUniqueName();
-            std::replace(path_mod_name.begin(), path_mod_name.end(), ':', '_');
-            output_dir += path_mod_name;
-            mod->set_output_directory(output_dir);
 
             // Add the new module to the run list
             modules_.emplace_back(std::move(mod));
             id_to_module_[identifier] = --modules_.end();
         }
     }
-}
-
-// Helper functions to set the module specific log settings if necessary
-std::tuple<LogLevel, LogFormat> ModuleManager::set_module_before(const std::string&, const Configuration& config) {
-    // Set new log level if necessary
-    LogLevel prev_level = Log::getReportingLevel();
-    if(config.has("log_level")) {
-        std::string log_level_string = config.get<std::string>("log_level");
-        std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
-        try {
-            LogLevel log_level = Log::getLevelFromString(log_level_string);
-            if(log_level != prev_level) {
-                LOG(DEBUG) << "Local log level is set to " << log_level_string;
-                Log::setReportingLevel(log_level);
-            }
-        } catch(std::invalid_argument& e) {
-            throw InvalidValueError(config, "log_level", e.what());
-        }
-    }
-
-    // Set new log format if necessary
-    LogFormat prev_format = Log::getFormat();
-    if(config.has("log_format")) {
-        std::string log_format_string = config.get<std::string>("log_format");
-        std::transform(log_format_string.begin(), log_format_string.end(), log_format_string.begin(), ::toupper);
-        try {
-            LogFormat log_format = Log::getFormatFromString(log_format_string);
-            if(log_format != prev_format) {
-                LOG(DEBUG) << "Local log format is set to " << log_format_string;
-                Log::setFormat(log_format);
-            }
-        } catch(std::invalid_argument& e) {
-            throw InvalidValueError(config, "log_format", e.what());
-        }
-    }
-    return std::make_tuple(prev_level, prev_format);
-}
-void ModuleManager::set_module_after(std::tuple<LogLevel, LogFormat> prev) {
-    // Reset the previous log level
-    LogLevel cur_level = Log::getReportingLevel();
-    LogLevel old_level = std::get<0>(prev);
-    if(cur_level != old_level) {
-        Log::setReportingLevel(old_level);
-        LOG(DEBUG) << "Reset log level to global level of " << Log::getStringFromLevel(old_level);
-    }
-
-    // Reset the previous log format
-    LogFormat cur_format = Log::getFormat();
-    LogFormat old_format = std::get<1>(prev);
-    if(cur_format != old_format) {
-        Log::setFormat(old_format);
-        LOG(DEBUG) << "Reset log format to global level of " << Log::getStringFromFormat(old_format);
-    }
-}
-
-/**
- * Sets the section header and logging settings before executing the  \ref Module::init() function. \ref
- * Module::reset_delegates() "Resets" the delegates and the logging after initialization.
- */
-void ModuleManager::init() {
-    for(auto& mod : modules_) {
-        // Set init module section header
-        std::string old_section_name = Log::getSection();
-        std::string section_name = "I:";
-        section_name += mod->get_identifier().getUniqueName();
-        Log::setSection(section_name);
-        // Set module specific settings
-        auto old_settings = set_module_before(mod->get_identifier().getUniqueName(), mod->get_configuration());
-        // Init module
-        mod->init();
-        // Reset delegates
-        LOG(DEBUG) << "Resetting delegates";
-        mod->reset_delegates();
-        // Reset logging
-        Log::setSection(old_section_name);
-        set_module_after(old_settings);
-    }
-}
-
-/**
- * The run for a module is skipped if its delegates are not \ref Module::check_delegates() "satisfied". Sets the section
- * header and logging settings before executing the \ref Module::run() function. \ref Module::reset_delegates() "Resets" the
- * delegates and the logging after initialization
- */
-void ModuleManager::run() {
-    // Loop over the number of events
-    auto number_of_events = global_config_.get<unsigned int>("number_of_events", 1u);
-    for(unsigned int i = 0; i < number_of_events; ++i) {
-        LOG(INFO) << "Running event " << (i + 1) << " of " << number_of_events;
-        for(auto& mod : modules_) {
-            // Check if module is satisfied to run
-            if(!mod->check_delegates()) {
-                LOG(DEBUG) << "Not all required messages are received for " << mod->get_identifier().getUniqueName()
-                           << "... skipping!";
-                continue;
-            }
-
-            // Set run module section header
-            std::string old_section_name = Log::getSection();
-            std::string section_name = "R:";
-            section_name += mod->get_identifier().getUniqueName();
-            Log::setSection(section_name);
-            // Set module specific settings
-            auto old_settings = set_module_before(mod->get_identifier().getUniqueName(), mod->get_configuration());
-            // Run module
-            mod->run(i + 1);
-            // Resetting delegates
-            LOG(DEBUG) << "Resetting delegates";
-            mod->reset_delegates();
-            // Reset logging
-            Log::setSection(old_section_name);
-            set_module_after(old_settings);
-        }
-    }
-}
-
-/**
- * Sets the section header and logging settings before executing the  \ref Module::finalize() function. Reset the logging
- * after finalization. No method will be called after finalizing the module (except the destructor).
- */
-void ModuleManager::finalize() {
-    for(auto& mod : modules_) {
-        // Set finalize module section header
-        std::string old_section_name = Log::getSection();
-        std::string section_name = "F:";
-        section_name += mod->get_identifier().getUniqueName();
-        Log::setSection(section_name);
-        // Set module specific settings
-        auto old_settings = set_module_before(mod->get_identifier().getUniqueName(), mod->get_configuration());
-        // Finalize module
-        mod->finalize();
-        // Reset logging
-        Log::setSection(old_section_name);
-        set_module_after(old_settings);
-    }
+    LOG_PROGRESS(STATUS, "LOAD_LOOP") << "Loaded " << configs.size() << " modules";
 }
 
 /**
  * For unique modules a single instance is created per section
  */
 std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* library,
-                                                                          const Configuration& config,
+                                                                          Configuration config,
                                                                           Messenger* messenger,
                                                                           GeometryManager* geo_manager) {
     // Make the vector to return
     std::string module_name = config.getName();
 
-    LOG(DEBUG) << "Creating instantions for unique module " << module_name;
-
-    // Load an instance of the module from the library
-    ModuleIdentifier identifier(module_name, "", 0);
+    // Create the identifier
+    std::string identifier_str;
+    if(!config.get<std::string>("input").empty()) {
+        identifier_str += config.get<std::string>("input");
+        identifier_str += ":";
+    }
+    if(!config.get<std::string>("output").empty()) {
+        identifier_str += config.get<std::string>("output");
+        identifier_str += ":";
+    }
+    if(!identifier_str.empty()) {
+        identifier_str = identifier_str.substr(0, identifier_str.size() - 1);
+    }
+    ModuleIdentifier identifier(module_name, identifier_str, 0);
 
     // Get the generator function for this module
     void* generator = dlsym(library, ALLPIX_GENERATOR_FUNCTION);
@@ -357,21 +227,39 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
         LOG(ERROR) << "Module library is invalid or outdated: required interface function not found!";
         throw allpix::DynamicLibraryError(module_name);
     }
+
+    // Add internal module config
+    config.set<std::string>("_unique_name", identifier.getUniqueName());
+    std::string output_dir;
+    output_dir = config.get<std::string>("_global_dir");
+    output_dir += "/";
+    std::string path_mod_name = identifier.getUniqueName();
+    std::replace(path_mod_name.begin(), path_mod_name.end(), ':', '_');
+    output_dir += path_mod_name;
+    config.set<std::string>("_output_dir", output_dir);
+
     // Convert to correct generator function
     auto module_generator = reinterpret_cast<Module* (*)(Configuration, Messenger*, GeometryManager*)>(generator); // NOLINT
 
+    LOG(DEBUG) << "Creating unique instantiation " << identifier.getUniqueName();
+
+    // Get current time
+    auto start = std::chrono::steady_clock::now();
     // Set the log section header
     std::string old_section_name = Log::getSection();
     std::string section_name = "C:";
     section_name += identifier.getUniqueName();
     Log::setSection(section_name);
-    // set module specific log settings
+    // Set module specific log settings
     auto old_settings = set_module_before(identifier.getUniqueName(), config);
     // Build module
     Module* module = module_generator(config, messenger, geo_manager);
     // Reset log
     Log::setSection(old_section_name);
     set_module_after(old_settings);
+    // Update execution time
+    auto end = std::chrono::steady_clock::now();
+    module_execution_time_[module] += static_cast<std::chrono::duration<long double>>(end - start).count();
 
     // Store the module and return it to the Module Manager
     return std::make_pair(identifier, module);
@@ -384,11 +272,22 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
  * no selection parameters are provided. Otherwise instantiations are created for every linked detector name and type.
  */
 std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector_modules(void* library,
-                                                                                         const Configuration& config,
+                                                                                         Configuration config,
                                                                                          Messenger* messenger,
                                                                                          GeometryManager* geo_manager) {
     std::string module_name = config.getName();
     LOG(DEBUG) << "Creating instantions for detector module " << module_name;
+
+    // Create the basic identifier
+    std::string identifier;
+    if(!config.get<std::string>("input").empty()) {
+        identifier += config.get<std::string>("input");
+        identifier += ":";
+    }
+    if(!config.get<std::string>("output").empty()) {
+        identifier += config.get<std::string>("output");
+        identifier += ":";
+    }
 
     // Open the library and get the module generator function
     void* generator = dlsym(library, ALLPIX_GENERATOR_FUNCTION);
@@ -410,7 +309,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         std::vector<std::string> names = config.getArray<std::string>("name");
         for(auto& name : names) {
             auto det = geo_manager->getDetector(name);
-            instantiations.emplace_back(det, ModuleIdentifier(module_name, det->getName(), 0));
+            instantiations.emplace_back(det, ModuleIdentifier(module_name, identifier + det->getName(), 0));
 
             // Save the name (to not instantiate it again later)
             module_names.insert(name);
@@ -429,7 +328,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
                     continue;
                 }
 
-                instantiations.emplace_back(det, ModuleIdentifier(module_name, det->getName(), 1));
+                instantiations.emplace_back(det, ModuleIdentifier(module_name, identifier + det->getName(), 1));
             }
         }
     }
@@ -439,13 +338,27 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         auto detectors = geo_manager->getDetectors();
 
         for(auto& det : detectors) {
-            instantiations.emplace_back(det, ModuleIdentifier(module_name, det->getName(), 2));
+            instantiations.emplace_back(det, ModuleIdentifier(module_name, identifier + det->getName(), 2));
         }
     }
 
     // Construct instantiations from the list of requests
     std::vector<std::pair<ModuleIdentifier, Module*>> module_list;
     for(auto& instance : instantiations) {
+        LOG(DEBUG) << "Creating detector instantiation " << instance.second.getUniqueName();
+        // Get current time
+        auto start = std::chrono::steady_clock::now();
+
+        // Add internal module config
+        config.set<std::string>("_unique_name", instance.second.getUniqueName());
+        std::string output_dir;
+        output_dir = config.get<std::string>("_global_dir");
+        output_dir += "/";
+        std::string path_mod_name = instance.second.getUniqueName();
+        std::replace(path_mod_name.begin(), path_mod_name.end(), ':', '_');
+        output_dir += path_mod_name;
+        config.set<std::string>("_output_dir", output_dir);
+
         // Set the log section header
         std::string old_section_name = Log::getSection();
         std::string section_name = "C:";
@@ -458,6 +371,9 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         // Reset logging
         Log::setSection(old_section_name);
         set_module_after(old_settings);
+        // Update execution time
+        auto end = std::chrono::steady_clock::now();
+        module_execution_time_[module] += static_cast<std::chrono::duration<long double>>(end - start).count();
 
         // Check if the module called the correct base class constructor
         if(module->getDetector().get() != instance.first.get()) {
@@ -471,4 +387,217 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
     }
 
     return module_list;
+}
+
+// Helper functions to set the module specific log settings if necessary
+std::tuple<LogLevel, LogFormat> ModuleManager::set_module_before(const std::string&, const Configuration& config) {
+    // Set new log level if necessary
+    LogLevel prev_level = Log::getReportingLevel();
+    if(config.has("log_level")) {
+        std::string log_level_string = config.get<std::string>("log_level");
+        std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
+        try {
+            LogLevel log_level = Log::getLevelFromString(log_level_string);
+            if(log_level != prev_level) {
+                LOG(TRACE) << "Local log level is set to " << log_level_string;
+                Log::setReportingLevel(log_level);
+            }
+        } catch(std::invalid_argument& e) {
+            throw InvalidValueError(config, "log_level", e.what());
+        }
+    }
+
+    // Set new log format if necessary
+    LogFormat prev_format = Log::getFormat();
+    if(config.has("log_format")) {
+        std::string log_format_string = config.get<std::string>("log_format");
+        std::transform(log_format_string.begin(), log_format_string.end(), log_format_string.begin(), ::toupper);
+        try {
+            LogFormat log_format = Log::getFormatFromString(log_format_string);
+            if(log_format != prev_format) {
+                LOG(TRACE) << "Local log format is set to " << log_format_string;
+                Log::setFormat(log_format);
+            }
+        } catch(std::invalid_argument& e) {
+            throw InvalidValueError(config, "log_format", e.what());
+        }
+    }
+    return std::make_tuple(prev_level, prev_format);
+}
+void ModuleManager::set_module_after(std::tuple<LogLevel, LogFormat> prev) {
+    // Reset the previous log level
+    LogLevel cur_level = Log::getReportingLevel();
+    LogLevel old_level = std::get<0>(prev);
+    if(cur_level != old_level) {
+        Log::setReportingLevel(old_level);
+        LOG(TRACE) << "Reset log level to global level of " << Log::getStringFromLevel(old_level);
+    }
+
+    // Reset the previous log format
+    LogFormat cur_format = Log::getFormat();
+    LogFormat old_format = std::get<1>(prev);
+    if(cur_format != old_format) {
+        Log::setFormat(old_format);
+        LOG(TRACE) << "Reset log format to global level of " << Log::getStringFromFormat(old_format);
+    }
+}
+
+/**
+ * Sets the section header and logging settings before executing the  \ref Module::init() function.
+ *  \ref Module::reset_delegates() "Resets" the delegates and the logging after initialization.
+ */
+void ModuleManager::init() {
+    LOG_PROGRESS(STATUS, "INIT_LOOP") << "Initializing " << modules_.size() << " module instantiations";
+    for(auto& module : modules_) {
+        LOG_PROGRESS(TRACE, "INIT_LOOP") << "Initializing " << module->get_identifier().getUniqueName();
+        // Get current time
+        auto start = std::chrono::steady_clock::now();
+        // Set init module section header
+        std::string old_section_name = Log::getSection();
+        std::string section_name = "I:";
+        section_name += module->get_identifier().getUniqueName();
+        Log::setSection(section_name);
+        // Set module specific settings
+        auto old_settings = set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
+        // Init module
+        module->init();
+        // Reset delegates
+        LOG(TRACE) << "Resetting messages";
+        module->reset_delegates();
+        // Reset logging
+        Log::setSection(old_section_name);
+        set_module_after(old_settings);
+        // Update execution time
+        auto end = std::chrono::steady_clock::now();
+        module_execution_time_[module.get()] += static_cast<std::chrono::duration<long double>>(end - start).count();
+    }
+    LOG_PROGRESS(STATUS, "INIT_LOOP") << "Initialized " << modules_.size() << " module instantiations";
+}
+
+/**
+ * The run for a module is skipped if its delegates are not \ref Module::check_delegates() "satisfied". Sets the section
+ * header and logging settings before executing the \ref Module::run() function. \ref Module::reset_delegates() "Resets" the
+ * delegates and the logging after initialization
+ */
+void ModuleManager::run() {
+    auto number_of_events = global_config_.get<unsigned int>("number_of_events", 1u);
+    for(unsigned int i = 0; i < number_of_events; ++i) {
+        // Check for termination
+        if(terminate_) {
+            LOG(INFO) << "Interrupting event loop after " << i << " events because of request to terminate";
+            number_of_events = i;
+            break;
+        }
+
+        LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Running event " << (i + 1) << " of " << number_of_events;
+
+        for(auto& module : modules_) {
+            // Check if module is satisfied to run
+            if(!module->check_delegates()) {
+                LOG(TRACE) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
+                           << ", skipping module!";
+                continue;
+            }
+            LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << (i + 1) << " of " << number_of_events << " ["
+                                              << module->get_identifier().getUniqueName() << "]";
+
+            // Get current time
+            auto start = std::chrono::steady_clock::now();
+            // Set run module section header
+            std::string old_section_name = Log::getSection();
+            std::string section_name = "R:";
+            section_name += module->get_identifier().getUniqueName();
+            Log::setSection(section_name);
+            // Set module specific settings
+            auto old_settings = set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
+            // Run module
+            module->run(i + 1);
+            // Resetting delegates
+            LOG(TRACE) << "Resetting messages";
+            module->reset_delegates();
+            // Reset logging
+            Log::setSection(old_section_name);
+            set_module_after(old_settings);
+            // Update execution time
+            auto end = std::chrono::steady_clock::now();
+            module_execution_time_[module.get()] += static_cast<std::chrono::duration<long double>>(end - start).count();
+        }
+    }
+    LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of " << number_of_events << " events";
+}
+
+static std::string seconds_to_time(long double seconds) {
+    auto duration = std::chrono::duration<long long>(static_cast<long long>(std::round(seconds)));
+
+    std::string time_str;
+    auto hours = std::chrono::duration_cast<std::chrono::hours>(duration);
+    duration -= hours;
+    if(hours.count() > 0) {
+        time_str += std::to_string(hours.count());
+        time_str += " hours ";
+    }
+    auto minutes = std::chrono::duration_cast<std::chrono::minutes>(duration);
+    duration -= minutes;
+    if(minutes.count() > 0) {
+        time_str += std::to_string(minutes.count());
+        time_str += " minutes ";
+    }
+    time_str += std::to_string(duration.count());
+    time_str += " seconds";
+
+    return time_str;
+}
+
+/**
+ * Sets the section header and logging settings before executing the  \ref Module::finalize() function. Reset the logging
+ * after finalization. No method will be called after finalizing the module (except the destructor).
+ */
+void ModuleManager::finalize() {
+    LOG_PROGRESS(TRACE, "FINALIZE_LOOP") << "Finalizing module instantiations";
+    for(auto& module : modules_) {
+        LOG_PROGRESS(TRACE, "FINALIZE_LOOP") << "Finalizing " << module->get_identifier().getUniqueName();
+
+        // Get current time
+        auto start = std::chrono::steady_clock::now();
+        // Set finalize module section header
+        std::string old_section_name = Log::getSection();
+        std::string section_name = "F:";
+        section_name += module->get_identifier().getUniqueName();
+        Log::setSection(section_name);
+        // Set module specific settings
+        auto old_settings = set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
+        // Finalize module
+        module->finalize();
+        // Reset logging
+        Log::setSection(old_section_name);
+        set_module_after(old_settings);
+        // Update execution time
+        auto end = std::chrono::steady_clock::now();
+        module_execution_time_[module.get()] += static_cast<std::chrono::duration<long double>>(end - start).count();
+    }
+    LOG_PROGRESS(STATUS, "FINALIZE_LOOP") << "Finalization completed";
+
+    long double total_time = 0;
+    long double slowest_time = 0;
+    std::string slowest_module;
+    for(auto& module_time : module_execution_time_) {
+        total_time += module_time.second;
+        if(module_time.second > slowest_time) {
+            slowest_time = module_time.second;
+            slowest_module = module_time.first->getUniqueName();
+        }
+    }
+    LOG(STATUS) << "Executed " << modules_.size() << " instantiations in " << seconds_to_time(total_time) << ", spending "
+                << std::round((100 * slowest_time) / std::max(1.0l, total_time)) << "% of time in slowest instantiation "
+                << slowest_module;
+    for(auto& module_time : module_execution_time_) {
+        LOG(DEBUG) << " Module " << module_time.first->getUniqueName() << " took " << module_time.second << " seconds";
+    }
+}
+
+/**
+ * All modules in the event loop continue to finish the current event
+ */
+void ModuleManager::terminate() {
+    terminate_ = true;
 }

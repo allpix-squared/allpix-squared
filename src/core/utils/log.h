@@ -22,12 +22,14 @@ namespace allpix {
      * @brief Logging detail level
      */
     enum class LogLevel {
-        QUIET = 0, ///< Do not log at all
-        FATAL,     ///< Fatal problems that should terminate the framework (typically exceptions)
+        FATAL = 0, ///< Fatal problems that terminate the framework (typically exceptions)
+        STATUS,    ///< Only critical progress information
         ERROR,     ///< Critical problems that usually lead to fatal errors
         WARNING,   ///< Possible issue that could lead to unexpected results
-        INFO,      ///< General informational summaries of process
-        DEBUG      ///< Detailed information about process and execution
+        INFO,      ///< General information about processes (should not be called in run function)
+        DEBUG,     ///< Detailed information about physics process
+        NONE,      ///< Indicates the log level has not been set (cannot be selected by the user)
+        TRACE,     ///< Software debugging information about what part is currently running
     };
     /**
      * @brief Format of the logger
@@ -35,7 +37,7 @@ namespace allpix {
     enum class LogFormat {
         SHORT = 0, ///< Only include a single character for the log level, the section header and the message
         DEFAULT,   ///< Also include the time and a full logging level description
-        DEBUG      ///< All of the above and also information about the file and line where the message was defined
+        LONG       ///< All of the above and also information about the file and line where the message was defined
     };
 
     /**
@@ -84,6 +86,26 @@ namespace allpix {
                                       const std::string& file = "",
                                       const std::string& function = "",
                                       uint32_t line = 0);
+
+        /**
+         * @brief Gives a process stream which updates the same line as long as it is the same
+         * @param identifier Name to indicate the line, used to distinguish when to update or write new line
+         * @param level Logging level
+         * @param file The file name of the file containing the log message
+         * @param function The function containing the log message
+         * @param line The line number of the log message
+         * @return A C++ stream to write to
+         */
+        std::ostringstream& getProcessStream(const std::string& identifier,
+                                             LogLevel level = LogLevel::INFO,
+                                             const std::string& file = "",
+                                             const std::string& function = "",
+                                             uint32_t line = 0);
+
+        /**
+         * @brief Finish the logging ensuring proper termination of all streams
+         */
+        static void finish();
 
         /**
          * @brief Get the reporting level for logging
@@ -172,6 +194,12 @@ namespace allpix {
          */
         std::string get_current_date();
 
+        /**
+         * @brief Return if a stream is likely a terminal screen (supporting colors etc.)
+         * @return True if the stream is terminal, false otherwise
+         */
+        static bool is_terminal(std::ostream& stream);
+
         // Output stream
         std::ostringstream os;
 
@@ -185,6 +213,11 @@ namespace allpix {
         static LogLevel& get_reporting_level();
         static LogFormat& get_format();
         static std::vector<std::ostream*>& get_streams();
+
+        // Name of the process to log or empty if a normal log message
+        std::string identifier_{};
+        static std::string last_message_;
+        static std::string last_identifier_;
     };
 
     using Log = DefaultLogger;
@@ -198,23 +231,25 @@ namespace allpix {
  * @brief Execute a block only if the reporting level is high enough
  * @param level The minimum log level
  */
-// TODO [doc] rewrite to get ride of the else
-#define IFLOG(level)                                                                                                        \
-    if(allpix::LogLevel::level > allpix::Log::getReportingLevel() || allpix::Log::getStreams().empty())                     \
-        ;                                                                                                                   \
-    else
+#define IFLOG(level) if(allpix::LogLevel::level <= allpix::Log::getReportingLevel() && !allpix::Log::getStreams().empty())
 
 /**
  * @brief Create a logging stream if the reporting level is high enough
  * @param level The log level of the stream
  */
-// TODO [doc] rewrite to get ride of the else
 #define LOG(level)                                                                                                          \
-    if(allpix::LogLevel::level > allpix::Log::getReportingLevel() || allpix::Log::getStreams().empty())                     \
-        ;                                                                                                                   \
-    else                                                                                                                    \
-        allpix::Log().getStream(                                                                                            \
-            allpix::LogLevel::level, __FILE_NAME__, std::string(static_cast<const char*>(__func__)), __LINE__)
+    if(allpix::LogLevel::level <= allpix::Log::getReportingLevel() && !allpix::Log::getStreams().empty())                   \
+    allpix::Log().getStream(                                                                                                \
+        allpix::LogLevel::level, __FILE_NAME__, std::string(static_cast<const char*>(__func__)), __LINE__)
+
+/**
+ * @brief Create a logging stream with
+ * @param level The log level of the stream
+ */
+#define LOG_PROGRESS(level, identifier)                                                                                     \
+    if(allpix::LogLevel::level <= allpix::Log::getReportingLevel() && !allpix::Log::getStreams().empty())                   \
+    allpix::Log().getProcessStream(                                                                                         \
+        identifier, allpix::LogLevel::level, __FILE_NAME__, std::string(static_cast<const char*>(__func__)), __LINE__)
 
     /**
      * @brief Suppress an stream from writing any output

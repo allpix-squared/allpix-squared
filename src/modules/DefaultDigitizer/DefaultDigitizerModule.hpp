@@ -66,6 +66,9 @@ namespace allpix {
         // ROOT file for output plots
         TFile* output_file_;
 
+        // statistics
+        unsigned long long total_hits_{};
+
         // Histograms
         TH1D *h_pxq, *h_pxq_noise, *h_thr, *h_pxq_thr, *h_pxq_adc;
     };

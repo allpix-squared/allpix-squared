@@ -24,13 +24,13 @@ using namespace allpix;
 ElectricFieldReaderInitModule::ElectricFieldReaderInitModule(Configuration config,
                                                              Messenger*,
                                                              std::shared_ptr<Detector> detector)
-    : Module(detector), config_(std::move(config)), detector_(std::move(detector)) {}
+    : Module(config, detector), config_(std::move(config)), detector_(std::move(detector)) {}
 
 // init method that reads the electric field from the file
 void ElectricFieldReaderInitModule::init() {
     try {
         // get field
-        LOG(INFO) << "Reading electric field file";
+        LOG(TRACE) << "Reading electric field file";
         auto field_data = get_by_file_name(config_.getPath("file_name", true), *detector_.get());
 
         // set detector field
@@ -149,12 +149,12 @@ inline static void check_detector_match(Detector& detector, double thickness, do
     // do a few simple checks for pixel detector models
     if(model != nullptr) {
         if(std::fabs(thickness - model->getSensorSizeZ()) > std::numeric_limits<double>::epsilon()) {
-            LOG(WARNING) << "thickness of sensor in file is " << thickness << " but in the model it is "
+            LOG(WARNING) << "Thickness of sensor in file is " << thickness << " but in the model it is "
                          << model->getSensorSizeZ();
         }
         if(std::fabs(xpixsz - model->getPixelSizeX()) > std::numeric_limits<double>::epsilon() ||
            std::fabs(ypixsz - model->getPixelSizeY()) > std::numeric_limits<double>::epsilon()) {
-            LOG(WARNING) << "pixel size is (" << xpixsz << "," << ypixsz << ") but in the model it is ("
+            LOG(WARNING) << "Pixel size is (" << xpixsz << "," << ypixsz << ") but in the model it is ("
                          << model->getPixelSizeX() << "," << model->getPixelSizeY() << ")";
         }
     }
@@ -177,7 +177,7 @@ ElectricFieldReaderInitModule::FieldData ElectricFieldReaderInitModule::get_by_f
     std::string header;
     std::getline(file, header);
 
-    LOG(DEBUG) << "header of file " << file_name << " is " << header;
+    LOG(TRACE) << "Header of file " << file_name << " is " << header;
 
     // read the header
     std::string tmp;
