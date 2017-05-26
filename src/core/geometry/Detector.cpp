@@ -48,7 +48,7 @@ Detector::Detector(std::string name, ROOT::Math::XYZPoint position, ROOT::Math::
     : name_(std::move(name)), position_(std::move(position)), orientation_(orientation), electric_field_sizes_{{0, 0, 0}},
       electric_field_(nullptr) {}
 void Detector::set_model(std::shared_ptr<DetectorModel> model) {
-    model_ = model;
+    model_ = std::move(model);
     build_transform();
 }
 void Detector::build_transform() {

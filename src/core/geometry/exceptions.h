@@ -24,7 +24,7 @@ namespace allpix {
          * @brief Constructs an error with a detector that is not found
          * @param name Identifier for the detector that is not found
          */
-        InvalidDetectorError(const std::string& name) {
+        explicit InvalidDetectorError(const std::string& name) {
             error_message_ = "Could not find a detector with name '" + name + "'";
         }
     };
@@ -39,7 +39,7 @@ namespace allpix {
          * @brief Constructs an error with a model that is not found
          * @param name Identifier for the model that is not found
          */
-        InvalidModelError(const std::string& name) {
+        explicit InvalidModelError(const std::string& name) {
             error_message_ = "Could not find a detector model of type '" + name + "'";
         }
     };

@@ -108,8 +108,9 @@ bool GeometryManager::hasDetector(const std::string& name) const {
 }
 
 std::vector<std::shared_ptr<Detector>> GeometryManager::getDetectors() {
-    if(!closed_)
+    if(!closed_) {
         close_geometry();
+    }
 
     return detectors_;
 }
@@ -117,8 +118,9 @@ std::vector<std::shared_ptr<Detector>> GeometryManager::getDetectors() {
  * @throws InvalidDetectorError If a detector with this name does not exist
  */
 std::shared_ptr<Detector> GeometryManager::getDetector(const std::string& name) {
-    if(!closed_)
+    if(!closed_) {
         close_geometry();
+    }
 
     // FIXME: this is not a very nice way to implement this
     for(auto& detector : detectors_) {
@@ -132,8 +134,9 @@ std::shared_ptr<Detector> GeometryManager::getDetector(const std::string& name) 
  * @throws InvalidDetectorError If not a single detector with this type exists
  */
 std::vector<std::shared_ptr<Detector>> GeometryManager::getDetectorsByType(const std::string& type) {
-    if(!closed_)
+    if(!closed_) {
         close_geometry();
+    }
 
     std::vector<std::shared_ptr<Detector>> result;
     for(auto& detector : detectors_) {
