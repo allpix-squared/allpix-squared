@@ -60,15 +60,15 @@ void SimpleTransferModule::run(unsigned int) {
             continue;
         }
 
-        // add the pixel the list of hit pixels
-        pixel_map[pixel].push_back(propagated_charge);
-
         // update statistics
         unique_pixels_.insert(pixel);
         transferrred_charges_count += propagated_charge.getCharge();
 
         LOG(DEBUG) << "Set of " << propagated_charge.getCharge() << " propagated charges at "
                    << propagated_charge.getPosition() << " brought to pixel (" << pixel.x() << "," << pixel.y() << ")";
+
+        // add the pixel the list of hit pixels
+        pixel_map[pixel].emplace_back(propagated_charge);
     }
 
     // create pixel charges

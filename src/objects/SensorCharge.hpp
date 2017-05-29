@@ -23,6 +23,12 @@ namespace allpix {
         // constructor and destructor
         SensorCharge(ROOT::Math::XYZPoint position, unsigned int charge, long double eventTime);
 
+        SensorCharge(const SensorCharge&);
+        SensorCharge& operator=(const SensorCharge&);
+
+        SensorCharge(SensorCharge&&) noexcept;
+        SensorCharge& operator=(SensorCharge&&) noexcept;
+
         // FIXME: should position be in local coordinates or global coordinates?
         ROOT::Math::XYZPoint getPosition() const;
         unsigned int getCharge() const;

@@ -409,8 +409,7 @@ void SimplePropagationModule::run(unsigned int event_num) {
                        << Units::display(prop_pair.second, "ns") << " time";
 
             // create a new propagated charge and add it to the list
-            PropagatedCharge propagated_charge(position, charge_per_step, deposit.getEventTime() + prop_pair.second);
-            propagated_charges.push_back(propagated_charge);
+            propagated_charges.emplace_back(position, charge_per_step, deposit.getEventTime() + prop_pair.second);
 
             // update statistics
             ++step_count;

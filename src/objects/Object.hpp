@@ -7,8 +7,6 @@
 
 #include <Math/DisplacementVector2D.h>
 
-#include "core/messenger/Message.hpp"
-
 #include "Object.hpp"
 
 namespace allpix {
