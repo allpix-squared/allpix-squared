@@ -1,5 +1,5 @@
-/// \file TGeoBuilderModule.cpp
-/// \brief Implementation of the TGeoBuilderModule class
+/// \file GeometryBuilderTGeoModule.cpp
+/// \brief Implementation of the GeometryBuilderTGeoModule class
 /// \author N. Gauvin
 
 /*
@@ -7,7 +7,7 @@
   - Shall the algo stops if a geometry is already loaded ?
   - Do we want a CheckOverlaps option ? Or we use ROOT's tools offline on the TFile.
     Stop in case of overlap ?
-  - TGeoBuilderModule also responsible for loading the geometry ?
+  - GeometryBuilderTGeoModule also responsible for loading the geometry ?
 
   Colors :
   kOrange+1 : experimental hall
@@ -20,7 +20,7 @@
 */
 
 // Local includes
-#include "TGeoBuilderModule.hpp"
+#include "GeometryBuilderTGeoModule.hpp"
 
 // Global includes
 #include <fstream>
@@ -66,7 +66,7 @@ TString Print(TGeoTranslation* trl) {
 }
 
 /// Constructor and destructor
-TGeoBuilderModule::TGeoBuilderModule(Configuration config, Messenger*, GeometryManager* geo_manager)
+GeometryBuilderTGeoModule::GeometryBuilderTGeoModule(Configuration config, Messenger*, GeometryManager* geo_manager)
     : Module(config), m_config(std::move(config)), m_geoDscMng(geo_manager), m_fillingWorldMaterial(nullptr),
       m_userDefinedWorldMaterial("Air"), m_userDefinedGeoOutputFile(""), m_buildAppliancesFlag(false), m_Appliances_type(0),
       m_buildTestStructureFlag(false) {
@@ -81,7 +81,7 @@ TGeoBuilderModule::TGeoBuilderModule(Configuration config, Messenger*, GeometryM
 }
 
 /// Run the detector construction.
-void TGeoBuilderModule::init() {
+void GeometryBuilderTGeoModule::init() {
     // Import and load external geometry
     // TGeoManager::Import("MyGeom.root");
     // Return
@@ -142,7 +142,7 @@ void TGeoBuilderModule::init() {
 /*
  * The master function to construct the detector according to the user's wishes.
  */
-void TGeoBuilderModule::Construct() {
+void GeometryBuilderTGeoModule::Construct() {
 
     // Solids will be builds in mm, same units as AllPix1, even if ROOT assumes cm.
     // Beware when computing shape capacity or volume weight.
@@ -191,7 +191,7 @@ void TGeoBuilderModule::Construct() {
     LOG(TRACE) << "Construction of the detector geometry successful.";
 }
 
-void TGeoBuilderModule::BuildPixelDevices() {
+void GeometryBuilderTGeoModule::BuildPixelDevices() {
 
     LOG(TRACE) << "Starting construction of the pixel detectors.";
 
@@ -498,7 +498,7 @@ void TGeoBuilderModule::BuildPixelDevices() {
     LOG(TRACE) << "Construction of the pixel detectors successful.";
 }
 
-void TGeoBuilderModule::BuildAppliances() {
+void GeometryBuilderTGeoModule::BuildAppliances() {
 
     // Through the comand
     // --> /allpix/extras/setAppliancePosition
@@ -599,12 +599,12 @@ void TGeoBuilderModule::BuildAppliances() {
     LOG(TRACE) << "Construction of the appliances successful.";
 }
 
-void TGeoBuilderModule::BuildTestStructure() {}
+void GeometryBuilderTGeoModule::BuildTestStructure() {}
 
 /*
   Create the materials and media.
 */
-void TGeoBuilderModule::BuildMaterialsAndMedia() {
+void GeometryBuilderTGeoModule::BuildMaterialsAndMedia() {
 
     /* Create the materials and mediums
        Important note :

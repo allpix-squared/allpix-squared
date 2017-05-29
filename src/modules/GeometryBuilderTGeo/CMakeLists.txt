@@ -3,7 +3,7 @@
 ################################################
 
 # Define module and return the generated name as MODULE_NAME
-ALLPIX_UNIQUE_MODULE(MODULE_NAME "TGeoBuilderModule")
+ALLPIX_UNIQUE_MODULE(MODULE_NAME)
 
 # Print message if GDML support is not enabled in ROOT
 #GET_DIRECTORY_PROPERTY(ROOT_GDML DIRECTORY ${ROOT_DIR} DEFINITION gdml)
@@ -20,7 +20,7 @@ ENDIF()
 
 # Add library
 ALLPIX_MODULE_SOURCES(${MODULE_NAME}
-    TGeoBuilderModule.cpp
+  GeometryBuilderTGeoModule.cpp
 )
 
 # Provide standard install target
