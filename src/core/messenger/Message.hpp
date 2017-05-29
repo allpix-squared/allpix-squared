@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "core/geometry/Detector.hpp"
+#include "objects/Object.hpp"
 
 namespace allpix {
     /**
@@ -41,6 +42,12 @@ namespace allpix {
          * @return Linked detector
          */
         std::shared_ptr<Detector> getDetector() const;
+
+        /**
+         * @brief Get list of objects stored in this message if possible
+         * @return Array of base objects
+         */
+        virtual std::vector<std::reference_wrapper<Object>> getObjectArray();
 
     protected:
         /**
@@ -81,18 +88,25 @@ namespace allpix {
          */
         const std::vector<T>& getData() const;
 
+        /**
+         * @brief Get data as list of objects if the contents can be converted
+         * @return !MOREINFORMATION!
+         */
+        virtual std::vector<std::reference_wrapper<Object>> getObjectArray();
+
     private:
+        template <typename U = T>
+        std::vector<std::reference_wrapper<Object>>
+        get_object_array(typename std::enable_if_t<std::is_base_of<Object, U>::value>* = 0);
+        template <typename U = T>
+        std::vector<std::reference_wrapper<Object>>
+        get_object_array(typename std::enable_if_t<!std::is_base_of<Object, U>::value>* = 0);
+
         std::vector<T> data_;
     };
-
-    // TODO [doc] Should move to an implementation file
-
-    template <typename T> Message<T>::Message(std::vector<T> data) : BaseMessage(), data_(std::move(data)) {}
-    template <typename T>
-    Message<T>::Message(std::vector<T> data, std::shared_ptr<Detector> detector)
-        : BaseMessage(detector), data_(std::move(data)) {}
-
-    template <typename T> const std::vector<T>& Message<T>::getData() const { return data_; }
 } // namespace allpix
+
+// Include template members
+#include "Message.tpp"
 
 #endif /* ALLPIX_MESSAGE_H */

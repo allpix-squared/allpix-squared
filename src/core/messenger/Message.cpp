@@ -19,3 +19,7 @@ BaseMessage::~BaseMessage() = default;
 std::shared_ptr<Detector> BaseMessage::getDetector() const {
     return detector_;
 }
+
+std::vector<std::reference_wrapper<Object>> BaseMessage::getObjectArray() {
+    return std::vector<std::reference_wrapper<Object>>();
+}
