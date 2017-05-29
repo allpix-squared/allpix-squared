@@ -32,5 +32,6 @@ ALLPIX_BUILD_MODULE(DefaultDigitizer)
 # visualization
 ALLPIX_BUILD_MODULE(VisualizationGeant4)
 
-# plotters
+# output
 ALLPIX_BUILD_MODULE(DetectorHistogrammer)
+ALLPIX_BUILD_MODULE(ROOTObjectWriter)

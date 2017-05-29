@@ -30,10 +30,27 @@ namespace allpix {
          * @param message Type of the received message
          */
         UnexpectedMessageException(const std::string& module, const std::type_info& message) {
-            // FIXME: add detectory and input output instance here
+            // FIXME: add detector and input output instance here
             error_message_ = "Unexpected message ";
             error_message_ += allpix::demangle(message.name());
             error_message_ += " received by module " + module + " (only a single one expected per event)";
+        }
+    };
+
+    /**
+     * @ingroup Exceptions
+     * @brief Message does not contain an \ref Object
+     */
+    class MessageWithoutObjectException : public RuntimeError {
+    public:
+        /**
+         * @brief Constructs an error for a message without an object
+         * @param message Type of the received message
+         */
+        MessageWithoutObjectException(const std::type_info& message) {
+            error_message_ = "Message ";
+            error_message_ += allpix::demangle(message.name());
+            error_message_ += " does not contain an AllPix object";
         }
     };
 } // namespace allpix

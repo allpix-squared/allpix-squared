@@ -4,6 +4,16 @@ namespace allpix {
         dispatch_message(source, std::static_pointer_cast<BaseMessage>(message));
     }
 
+    template <typename T>
+    void Messenger::registerListener(T* receiver,
+                                     void (T::*method)(std::shared_ptr<BaseMessage>, std::string name),
+                                     MsgFlags flags) {
+        static_assert(std::is_base_of<Module, T>::value, "Receiver should have Module as a base class");
+        auto delegate = std::make_unique<FunctionAllDelegate<T>>(flags, receiver, method);
+        add_delegate(typeid(BaseMessage), receiver, std::move(delegate));
+        ;
+    }
+
     template <typename T, typename R>
     void Messenger::registerListener(T* receiver, void (T::*method)(std::shared_ptr<R>), MsgFlags flags) {
         static_assert(std::is_base_of<Module, T>::value, "Receiver should have Module as a base class");

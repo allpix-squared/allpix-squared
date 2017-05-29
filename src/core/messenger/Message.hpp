@@ -90,14 +90,21 @@ namespace allpix {
 
         /**
          * @brief Get data as list of objects if the contents can be converted
-         * @return !MOREINFORMATION!
+         * @return Data as list of object references (throws if not possible)
          */
         virtual std::vector<std::reference_wrapper<Object>> getObjectArray();
 
     private:
+        /**
+         * @brief Returns object array for messages containing objects
+         */
         template <typename U = T>
         std::vector<std::reference_wrapper<Object>>
         get_object_array(typename std::enable_if_t<std::is_base_of<Object, U>::value>* = 0);
+
+        /**
+         * @brief Throws error if message does not contain object
+         */
         template <typename U = T>
         std::vector<std::reference_wrapper<Object>>
         get_object_array(typename std::enable_if_t<!std::is_base_of<Object, U>::value>* = 0);
