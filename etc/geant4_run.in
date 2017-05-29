@@ -1,21 +1,2 @@
-<<<<<<< HEAD
-# color by charges
-#/vis/modeling/trajectories/create/drawByCharge testCharge
-#/vis/modeling/trajectories/testCharge/set 1 red
-#/vis/modeling/trajectories/testCharge/set 0 red
-#/vis/modeling/trajectories/testCharge/set -1 red
-
-# Visualize the steps of the tracks.
-/vis/modeling/trajectories/create/drawByCharge
-/vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts true
-/vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 2
-#/vis/modeling/trajectories/drawByCharge-0/default/setStepPtsColour red
-
-# draw your track based on particle ID.
-#/vis/modeling/trajectories/create/drawByParticleID
-#/vis/modeling/trajectories/drawByParticleID-0/set e- blue
 
 
-
-=======
->>>>>>> 6c48504b43a46cffc679829ec4b88636b843ade4

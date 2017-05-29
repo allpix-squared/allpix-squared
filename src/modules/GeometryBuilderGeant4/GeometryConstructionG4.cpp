@@ -112,9 +112,9 @@ void GeometryConstructionG4::build_pixel_devices() {
      */
     // We want to be able to set in the Qt visualisation interface the solid/wireframe mode.
     const bool force_solid = false;
-    // To add some transparency in the solids, set to 0.8. 1 means opaque.
+    // To add some transparency in the solids, set to 0.2. 1 means opaque.
     // Transparency can be switched off in the Qt visualisation.
-    const double alpha = 0.8;
+    const double alpha = 0.2;
 
     G4VisAttributes wrapperVisAtt = G4VisAttributes(G4Color(1, 0, 0, 0.1)); // Red
     wrapperVisAtt.SetVisibility(false);
@@ -127,7 +127,7 @@ void GeometryConstructionG4::build_pixel_devices() {
     pcbVisAtt.SetForceSolid(force_solid);
 
     // Chip
-    auto chipColor = G4Color(0.06, 0.06, 0.06, alpha); // Blackish
+    auto chipColor = G4Color(0.18, 0.2, 0.21, alpha); // Blackish
     G4VisAttributes ChipVisAtt = G4VisAttributes(chipColor);
     ChipVisAtt.SetForceSolid(force_solid);
 
@@ -140,14 +140,14 @@ void GeometryConstructionG4::build_pixel_devices() {
     G4VisAttributes BumpBoxVisAtt = G4VisAttributes(bumpColor);
 
     // Sensors, ie pixels
-    auto sensorColor = G4Color(0.0, 0.0, 0.0, alpha); // Blackish
+    auto sensorColor = G4Color(0.18, 0.2, 0.21, alpha); // Blackish
     G4VisAttributes SensorVisAtt = G4VisAttributes(chipColor);
     SensorVisAtt.SetForceSolid(force_solid);
     // Guard rings, Dark gray in AP1.
-    G4VisAttributes guardRingsVisAtt = G4VisAttributes(sensorColor); // Dark gray
+    G4VisAttributes guardRingsVisAtt = G4VisAttributes(sensorColor);
     guardRingsVisAtt.SetForceSolid(force_solid);
     // The box holding all the pixels, cyan in AP1
-    G4VisAttributes BoxVisAtt = G4VisAttributes(sensorColor); // Cyan
+    G4VisAttributes BoxVisAtt = G4VisAttributes(sensorColor);
 
     // In simple view mode, pixels and bumps are set to invisible, not to be displayed. The logical volumes holding them are
     // instead displayed.

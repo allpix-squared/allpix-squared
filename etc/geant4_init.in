@@ -17,6 +17,13 @@
 /vis/modeling/trajectories/testCharge/set 1 blue
 /vis/modeling/trajectories/testCharge/set 0 green
 /vis/modeling/trajectories/testCharge/set -1 red
+# Visualize the steps of the tracks.
+/vis/modeling/trajectories/testCharge/default/setDrawStepPts true
+/vis/modeling/trajectories/testCharge/default/setStepPtsSize 2
+/vis/modeling/trajectories/testCharge/default/setStepPtsColour red
+# draw your track based on particle ID.
+#/vis/modeling/trajectories/create/drawByParticleID
+#/vis/modeling/trajectories/drawByParticleID-0/set e- blue
 
 # adds hits to the current scene, assuming that you have a hit class and that the hits have visualization information.
 /vis/scene/add/hits
@@ -35,19 +42,17 @@
 # Specify style (surface or wireframe): note that this will not affect volumes that have style explicitly forced by “setForceWireframe” or “setForceSolid” commands in the c++ code
 /vis/viewer/set/style surface
 #/vis/viewer/set/style wireframe
+
 # Draw coordinate axes, set the lenght according to your world volume.
 #/vis/scene/add/axes 1 1 1 1 mm
-
-# save your view
-#/vis/viewer/save MyView.vis
-
-/vis/viewer/set/autoRefresh true
 
 #### Good to know
 # set line width for all volumes
 #/vis/geometry/set/lineWidth all 1
 # export the viewer as an image, avaliable format are eps,ps,pdf,svg,bmp,jpg,png,...
 # /vis/ogl/export "toto.png"
+# save your view
+#/vis/viewer/save MyView.vis
 
-
+/vis/viewer/set/autoRefresh true
 
