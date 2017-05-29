@@ -12,7 +12,6 @@
 #include <Math/DisplacementVector2D.h>
 
 #include "Object.hpp"
-#include "core/messenger/Message.hpp"
 
 namespace allpix {
     // object definition
@@ -25,9 +24,11 @@ namespace allpix {
         PixelCharge::Pixel getPixel() const;
         unsigned int getCharge() const;
 
-    private:
         Pixel pixel_;
         unsigned int charge_;
+
+        ClassDef(PixelCharge, 1);
+        PixelCharge() = default;
     };
 
     // link to the carrying message

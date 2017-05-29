@@ -11,8 +11,6 @@
 
 #include <Math/Point3D.h>
 
-#include "core/messenger/Message.hpp"
-
 #include "Object.hpp"
 
 namespace allpix {
@@ -35,10 +33,14 @@ namespace allpix {
 
         long double getEventTime() const;
 
+        SensorCharge() = default;
+
     private:
         ROOT::Math::XYZPoint position_;
         unsigned int charge_;
         long double event_time_;
+
+        ClassDef(SensorCharge, 1);
     };
 } // namespace allpix
 

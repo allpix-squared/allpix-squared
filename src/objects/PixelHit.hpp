@@ -24,6 +24,9 @@ namespace allpix {
 
         PixelHit::Pixel getPixel() const;
 
+        ClassDef(PixelHit, 1);
+        PixelHit() = default;
+
     private:
         Pixel pixel_;
     };

@@ -23,7 +23,7 @@ namespace allpix {
     template <typename T>
     template <typename U>
     std::vector<std::reference_wrapper<Object>>
-    Message<T>::get_object_array(typename std::enable_if_t<std::is_base_of<Object, U>::value>*) {
+    Message<T>::get_object_array(typename std::enable_if<std::is_base_of<Object, U>::value>::type*) {
         std::vector<std::reference_wrapper<Object>> data(data_.begin(), data_.end());
         return data;
     }
@@ -34,7 +34,7 @@ namespace allpix {
     template <typename T>
     template <typename U>
     std::vector<std::reference_wrapper<Object>>
-    Message<T>::get_object_array(typename std::enable_if_t<!std::is_base_of<Object, U>::value>*) {
+    Message<T>::get_object_array(typename std::enable_if<!std::is_base_of<Object, U>::value>::type*) {
         throw MessageWithoutObjectException(typeid(*this));
     }
 }

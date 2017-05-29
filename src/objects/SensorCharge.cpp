@@ -13,7 +13,7 @@ SensorCharge::SensorCharge(const SensorCharge&) = default;
 SensorCharge& SensorCharge::operator=(const SensorCharge&) = default;
 
 SensorCharge::SensorCharge(SensorCharge&& other) noexcept
-    : position_(other.position_), charge_(other.charge_), event_time_(other.event_time_) {}
+    : position_(std::move(other.position_)), charge_(std::move(other.charge_)), event_time_(std::move(other.event_time_)) {}
 SensorCharge& SensorCharge::operator=(SensorCharge&& other) noexcept {
     position_ = std::move(other.position_);
     charge_ = std::move(other.charge_);
@@ -32,3 +32,5 @@ unsigned int SensorCharge::getCharge() const {
 long double SensorCharge::getEventTime() const {
     return event_time_;
 }
+
+ClassImp(SensorCharge)

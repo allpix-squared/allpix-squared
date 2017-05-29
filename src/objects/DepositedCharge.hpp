@@ -15,6 +15,9 @@ namespace allpix {
     public:
         DepositedCharge(ROOT::Math::XYZPoint position, unsigned int charge, long double event_time)
             : SensorCharge(std::move(position), charge, event_time) {}
+
+        ClassDef(DepositedCharge, 1);
+        DepositedCharge() = default;
     };
 
     // link to the carrying message

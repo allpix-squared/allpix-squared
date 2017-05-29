@@ -100,14 +100,14 @@ namespace allpix {
          */
         template <typename U = T>
         std::vector<std::reference_wrapper<Object>>
-        get_object_array(typename std::enable_if_t<std::is_base_of<Object, U>::value>* = 0);
+        get_object_array(typename std::enable_if<std::is_base_of<Object, U>::value>::type* = nullptr);
 
         /**
          * @brief Throws error if message does not contain object
          */
         template <typename U = T>
         std::vector<std::reference_wrapper<Object>>
-        get_object_array(typename std::enable_if_t<!std::is_base_of<Object, U>::value>* = 0);
+        get_object_array(typename std::enable_if<!std::is_base_of<Object, U>::value>::type* = nullptr);
 
         std::vector<T> data_;
     };

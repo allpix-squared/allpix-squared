@@ -9,6 +9,9 @@ SET(ALLPIX_MODULE_LIBRARIES "" CACHE INTERNAL "Module libraries")
 # model readers
 ALLPIX_BUILD_MODULE(DefaultModelReader)
 
+# input 
+ALLPIX_BUILD_MODULE(ROOTObjectReader)
+
 # geometry
 ALLPIX_BUILD_MODULE(GeometryBuilderTGeo)
 ALLPIX_BUILD_MODULE(GeometryBuilderGeant4)
