@@ -1,4 +1,4 @@
-/// \file TGeoBuilderModule
+/// \file GeometryBuilderTGeoModule
 /// \brief Implementation of the Geometry builder module using TGeo.
 ///
 /// Builds the detector geometry according to user defined parameters.
@@ -50,10 +50,10 @@ TString Print(TGeoTranslation* trl);
 
 namespace allpix {
 
-    class TGeoBuilderModule : public Module {
+    class GeometryBuilderTGeoModule : public Module {
 
     public:
-        TGeoBuilderModule(Configuration config, Messenger*, GeometryManager*);
+        GeometryBuilderTGeoModule(Configuration config, Messenger*, GeometryManager*);
 
         // Init method is used to construct the geometry
         void init() override;
