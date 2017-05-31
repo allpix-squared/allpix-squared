@@ -37,6 +37,8 @@ IF(LATEX_COMPILER)
             BIBFILES 
             usermanual/references.bib
             USE_BIBLATEX
+	    IMAGES
+	    logo.png
             INPUTS
             usermanual/chapters/introduction.tex
             usermanual/chapters/quick_start.tex
