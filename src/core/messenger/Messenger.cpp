@@ -86,10 +86,10 @@ void Messenger::dispatch_message(Module* module, const std::shared_ptr<BaseMessa
     bool send = false;
 
     // Send to specific listeners
-    send |= dispatch_message(module, message, name, name);
+    send = dispatch_message(module, message, name, name) || send;
 
     // Send to generic listeners
-    send |= dispatch_message(module, message, name, "*");
+    send = dispatch_message(module, message, name, "*") || send;
 
     // Display a warning if the message is send to no receiver
     // FIXME: Check better if this is a real problem (or do this always only in the module)
@@ -105,8 +105,8 @@ void Messenger::dispatch_message(Module* module, const std::shared_ptr<BaseMessa
  */
 bool Messenger::dispatch_message(Module* module,
                                  const std::shared_ptr<BaseMessage>& message,
-                                 std::string name,
-                                 std::string id) {
+                                 const std::string& name,
+                                 const std::string& id) {
     bool send = false;
 
     // Create type identifier from the typeid

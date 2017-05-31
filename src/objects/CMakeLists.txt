@@ -15,7 +15,13 @@ ROOT_GENERATE_DICTIONARY(dictionary_objects
     Linkdef.h
 )
 
-SET_SOURCE_FILES_PROPERTIES(dictionary_objects.cxx COMPILE_FLAGS "-Wno-old-style-cast -Wno-missing-declarations -Wno-zero-as-null-pointer-constant -Wno-sign-conversion -Wno-error")
+SET(EXTRA_FLAGS "-Wno-old-style-cast -Wno-missing-declarations -Wno-sign-conversion -Wno-error")
+CHECK_CXX_COMPILER_FLAG( "-Wno-zero-as-null-pointer-constant" CXX_FLAG_WORKS_NO_ZERO_NULL_POINTER )
+IF( ${CXX_FLAG_WORKS_NO_ZERO_NULL_POINTER} )
+    SET ( ${EXTRA_FLAGS} "${EXTRA_FLAGS} -Wno-zero-as-null-pointer-constant")
+ENDIF()
+    
+SET_SOURCE_FILES_PROPERTIES(dictionary_objects.cxx COMPILE_FLAGS ${EXTRA_FLAGS})
 
 # define the library
 ADD_LIBRARY(AllpixObjects SHARED

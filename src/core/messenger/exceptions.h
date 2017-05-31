@@ -47,7 +47,7 @@ namespace allpix {
          * @brief Constructs an error for a message without an object
          * @param message Type of the received message
          */
-        MessageWithoutObjectException(const std::type_info& message) {
+        explicit MessageWithoutObjectException(const std::type_info& message) {
             error_message_ = "Message ";
             error_message_ += allpix::demangle(message.name());
             error_message_ += " does not contain an AllPix object";

@@ -92,7 +92,7 @@ namespace allpix {
          * @brief Get data as list of objects if the contents can be converted
          * @return Data as list of object references (throws if not possible)
          */
-        virtual std::vector<std::reference_wrapper<Object>> getObjectArray();
+        virtual std::vector<std::reference_wrapper<Object>> getObjectArray() override;
 
     private:
         /**

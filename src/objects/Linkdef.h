@@ -9,7 +9,3 @@
 #pragma link C++ class allpix::PixelHit + ;
 
 #pragma link C++ class std::vector < allpix::Object* > +;
-
-#pragma link C++ class std::vector < allpix::DepositedCharge* > +;
-#pragma link C++ class std::vector < allpix::PropagatedCharge* > +;
-#pragma link C++ class std::vector < allpix::PixelCharge* > +;

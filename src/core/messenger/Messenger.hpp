@@ -141,7 +141,10 @@ namespace allpix {
          * @param name Name of the message
          * @param id Identifier to dispatch to (either the name or '*' to dispatch to all)
          */
-        bool dispatch_message(Module* source, const std::shared_ptr<BaseMessage>& message, std::string name, std::string id);
+        bool dispatch_message(Module* source,
+                              const std::shared_ptr<BaseMessage>& message,
+                              const std::string& name,
+                              const std::string& id);
 
         using DelegateMap = std::map<std::type_index, std::map<std::string, std::list<std::unique_ptr<BaseDelegate>>>>;
         using DelegateIteratorMap =
