@@ -16,14 +16,19 @@ ROOT_GENERATE_DICTIONARY(dictionary_objects
     Linkdef.h
 )
 
-SET(INCLUDE_DIR_ARGS "")
 FOREACH(dir IN ITEMS ${ALLPIX_DEPS_INCLUDE_DIRS})
-    SET(INCLUDE_DIR_ARGS "-I${dir} ${INCLUDE_DIR_ARGS}")
+    IF(NOT INCLUDE_DIR_ARGS)
+        SET(INCLUDE_DIR_ARGS "-I${dir}")
+    ELSE() 
+        SET(INCLUDE_DIR_ARGS "${INCLUDE_DIR_ARGS} -I${dir}")
+    ENDIF()
 ENDFOREACH()
+
+MESSAGE(${INCLUDE_DIR_ARGS})
 
 # Compile the dictionary through a special target 
 # WARNING: this hack is necessary to prevent standard warnings and those in clang-tidy
-ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_BINARY_DIR}/src/objects/dictionary_objects.cxx.o COMMAND ${CMAKE_CXX_COMPILER} -fPIC -std=c++${CMAKE_CXX_STANDARD} -I${CMAKE_SOURCE_DIR}/src -isystem ${INCLUDE_DIR_ARGS} -o ${CMAKE_CURRENT_BINARY_DIR}/dictionary_objects.cxx.o -c ${CMAKE_CURRENT_BINARY_DIR}/dictionary_objects.cxx DEPENDS dictionary_objects)
+ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_BINARY_DIR}/src/objects/dictionary_objects.cxx.o COMMAND ${CMAKE_CXX_COMPILER} -fPIC -std=c++${CMAKE_CXX_STANDARD} -I${CMAKE_SOURCE_DIR}/src ${INCLUDE_DIR_ARGS} -o ${CMAKE_CURRENT_BINARY_DIR}/dictionary_objects.cxx.o -c ${CMAKE_CURRENT_BINARY_DIR}/dictionary_objects.cxx DEPENDS dictionary_objects)
 
 # Define the library adding the object file created above
 ADD_LIBRARY(AllpixObjects SHARED

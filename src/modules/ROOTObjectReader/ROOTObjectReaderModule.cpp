@@ -1,7 +1,6 @@
 #include "ROOTObjectReaderModule.hpp"
 
 #include <climits>
-#include <functional>
 #include <string>
 #include <utility>
 
