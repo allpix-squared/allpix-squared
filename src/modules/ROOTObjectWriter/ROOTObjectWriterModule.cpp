@@ -36,13 +36,13 @@ void ROOTObjectWriterModule::init() {
     tree_ = std::make_unique<TTree>("tree", "");
 }
 
-void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::string message_name) {
+void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::string message_name) { // NOLINT
     try {
         const BaseMessage* inst = message.get();
         LOG(TRACE) << "Received " << allpix::demangle(typeid(*inst).name()) << " named " << message_name;
 
         // Get the detector name
-        std::string detector_name = "";
+        std::string detector_name;
         if(message->getDetector() != nullptr) {
             detector_name = message->getDetector()->getName();
         }
@@ -52,14 +52,14 @@ void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::
         if(!object_array.empty()) {
             keep_messages_.push_back(message);
 
-            const Object& object = object_array[0];
-            std::type_index type_idx = typeid(object);
+            const Object& first_object = object_array[0];
+            std::type_index type_idx = typeid(first_object);
 
             // Create a new branch of the correct type if this message was not received before
             if(write_list_[detector_name].find(type_idx) == write_list_[detector_name].end()) {
                 write_list_[detector_name][type_idx] = new std::vector<Object*>();
 
-                auto* cls = TClass::GetClass(typeid(object));
+                auto* cls = TClass::GetClass(typeid(first_object));
                 auto addr = &write_list_[detector_name][type_idx];
                 tree_->Bronch((detector_name + "_" + cls->GetName() + "_" + message_name).c_str(),
                               (std::string("std::vector<") + cls->GetName() + "*>").c_str(),
@@ -67,9 +67,9 @@ void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::
             }
 
             // Fill the branch vector
-            for(size_t i = 0; i < object_array.size(); ++i) {
-                Object& object_conv = object_array[i];
-                write_list_[detector_name][type_idx]->push_back(&object_conv);
+            for(Object& object : object_array) {
+                ++write_cnt_;
+                write_list_[detector_name][type_idx]->push_back(&object);
             }
         }
 
@@ -98,8 +98,10 @@ void ROOTObjectWriterModule::run(unsigned int) {
 }
 
 void ROOTObjectWriterModule::finalize() {
-    // ... implement ... (typically you want to fetch some configuration here and in the end possibly output a message)
     LOG(TRACE) << "Writing objects to file";
+
+    // Print statistics
+    LOG(INFO) << "Written " << write_cnt_ << " objects to " << tree_->GetListOfBranches()->GetEntries() << " branches";
 
     // Write the tree to the output file
     output_file_->Write();

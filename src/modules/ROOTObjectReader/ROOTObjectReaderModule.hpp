@@ -16,7 +16,7 @@ namespace allpix {
     class ROOTObjectReaderModule : public Module {
     public:
         ROOTObjectReaderModule(Configuration config, Messenger*, GeometryManager*);
-        ~ROOTObjectReaderModule();
+        ~ROOTObjectReaderModule() override;
 
         // Receive single messages
         void receive(std::shared_ptr<BaseMessage> message, std::string name);
@@ -35,7 +35,7 @@ namespace allpix {
                      std::function<std::shared_ptr<BaseMessage>(std::vector<Object*>, std::shared_ptr<Detector>)>>;
 
     private:
-        struct MessageInfo {
+        struct message_info {
             std::vector<Object*>* objects;
             std::shared_ptr<Detector> detector;
             std::string name;
@@ -47,7 +47,8 @@ namespace allpix {
 
         std::unique_ptr<TFile> input_file_;
         TTree* tree_;
-        std::list<MessageInfo> message_info_array_;
+        std::list<message_info> message_info_array_;
+        unsigned long read_cnt_{};
 
         MessageCreatorMap message_creator_map_;
     };

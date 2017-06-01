@@ -20,6 +20,7 @@ namespace allpix {
     public:
         // constructor and destructor
         SensorCharge(ROOT::Math::XYZPoint position, unsigned int charge, long double eventTime);
+        ~SensorCharge() override;
 
         SensorCharge(const SensorCharge&);
         SensorCharge& operator=(const SensorCharge&);

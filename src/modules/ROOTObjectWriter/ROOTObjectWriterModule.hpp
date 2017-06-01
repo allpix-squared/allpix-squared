@@ -14,7 +14,7 @@ namespace allpix {
     class ROOTObjectWriterModule : public Module {
     public:
         ROOTObjectWriterModule(Configuration config, Messenger*, GeometryManager*);
-        ~ROOTObjectWriterModule();
+        ~ROOTObjectWriterModule() override;
 
         // Receive single messages
         void receive(std::shared_ptr<BaseMessage> message, std::string name);
@@ -30,14 +30,8 @@ namespace allpix {
 
     private:
         std::vector<std::shared_ptr<BaseMessage>> keep_messages_;
-        // std::map<std::string, std::vector<std::pair<std::string, std::vector<std::reference_wrapper<Object>>>>>
-        // write_list_;
-
-        // std::map<std::string, std::map<std::type_index, std::vector<std::pair<std::string,
-        // std::vector<std::reference_wrapper<Object>>>>>> write_list_;
         std::map<std::string, std::map<std::type_index, std::vector<Object*>*>> write_list_;
-
-        // std::map<std::string, std::vector<Object>>;
+        unsigned long write_cnt_{};
 
         Configuration config_;
 

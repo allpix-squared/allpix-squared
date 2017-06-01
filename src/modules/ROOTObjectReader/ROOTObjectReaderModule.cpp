@@ -24,8 +24,8 @@ using namespace allpix;
 ROOTObjectReaderModule::ROOTObjectReaderModule(Configuration config, Messenger* messenger, GeometryManager* geo_mgr)
     : Module(config), config_(std::move(config)), messenger_(messenger), geo_mgr_(geo_mgr) {}
 ROOTObjectReaderModule::~ROOTObjectReaderModule() {
-    for(auto message_info : message_info_array_) {
-        delete message_info.objects;
+    for(auto message_inf : message_info_array_) {
+        delete message_inf.objects;
     }
 }
 
@@ -38,9 +38,8 @@ template <typename T> static void add_creator(ROOTObjectReaderModule::MessageCre
 
         if(detector == nullptr) {
             return std::make_shared<Message<T>>(data);
-        } else {
-            return std::make_shared<Message<T>>(data, detector);
         }
+        return std::make_shared<Message<T>>(data, detector);
     };
 }
 
@@ -64,7 +63,7 @@ void ROOTObjectReaderModule::init() {
     input_file_ = std::make_unique<TFile>(config_.getPath("file", true).c_str());
 
     // Open the tree
-    tree_ = static_cast<TTree*>(input_file_->Get("tree"));
+    tree_ = dynamic_cast<TTree*>(input_file_->Get("tree"));
     if(tree_ == nullptr) {
         throw ModuleError("Given file does not contain a tree");
     }
@@ -72,12 +71,12 @@ void ROOTObjectReaderModule::init() {
     // Loop over the list of branches and create the set of receiver objects
     TObjArray* branches = tree_->GetListOfBranches();
     for(int i = 0; i < branches->GetEntries(); i++) {
-        TBranch* branch = static_cast<TBranch*>(branches->At(i));
+        auto* branch = dynamic_cast<TBranch*>(branches->At(i));
 
         // Add a new vector of objects and bind it to the branch
-        MessageInfo message_info;
-        message_info.objects = new std::vector<Object*>;
-        message_info_array_.emplace_back(message_info);
+        message_info message_inf;
+        message_inf.objects = new std::vector<Object*>;
+        message_info_array_.emplace_back(message_inf);
         branch->SetAddress(&(message_info_array_.back().objects));
 
         // Fill the rest of the message information
@@ -105,7 +104,7 @@ void ROOTObjectReaderModule::init() {
             throw ModuleError("Tree is malformed and cannot be used for creating messages");
         }
 
-        std::string message_name = "";
+        std::string message_name;
         if(name_idx != INT_MAX) {
             message_info_array_.back().name = split[name_idx];
         }
@@ -126,8 +125,8 @@ void ROOTObjectReaderModule::run(unsigned int event_num) {
     LOG(TRACE) << "Building messages from stored objects";
 
     // Loop through all branches
-    for(auto message_info : message_info_array_) {
-        auto objects = message_info.objects;
+    for(auto message_inf : message_info_array_) {
+        auto objects = message_inf.objects;
 
         // Skip empty objects in current event
         if(objects->empty()) {
@@ -143,8 +142,11 @@ void ROOTObjectReaderModule::run(unsigned int event_num) {
             continue;
         }
 
+        // Update statistics
+        read_cnt_ += objects->size();
+
         // Create a message
-        std::shared_ptr<BaseMessage> message = iter->second(*objects, message_info.detector);
+        std::shared_ptr<BaseMessage> message = iter->second(*objects, message_inf.detector);
 
         // Dispatch the message
         // FIXME: message name is currently ignored
@@ -153,6 +155,9 @@ void ROOTObjectReaderModule::run(unsigned int event_num) {
 }
 
 void ROOTObjectReaderModule::finalize() {
+    // Print statistics
+    LOG(INFO) << "Read " << read_cnt_ << " objects from " << tree_->GetListOfBranches()->GetEntries() << " branches";
+
     // Close the file
     input_file_->Close();
 }

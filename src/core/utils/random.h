@@ -54,10 +54,10 @@ namespace allpix {
             auto total_seed = (clock_seed ^ mem_seed ^ thread_seed);
             get_random_seeder({total_seed});
             return total_seed;
-        } else {
-            get_random_seeder({init_seed});
-            return init_seed;
         }
+
+        get_random_seeder({init_seed});
+        return init_seed;
     }
 
     /**
