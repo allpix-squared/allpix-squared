@@ -81,8 +81,9 @@ bool Messenger::hasReceiver(Module* module, const std::shared_ptr<BaseMessage>& 
  */
 void Messenger::dispatch_message(Module* module, const std::shared_ptr<BaseMessage>& message, std::string name) {
     // Get the name of the output message
-    if(name == "-")
+    if(name == "-") {
         name = module->get_configuration().get<std::string>("output");
+    }
 
     bool send = false;
 
