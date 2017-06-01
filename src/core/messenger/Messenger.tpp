@@ -1,7 +1,8 @@
 namespace allpix {
-    template <typename T> void Messenger::dispatchMessage(Module* source, std::shared_ptr<T> message) {
+    template <typename T>
+    void Messenger::dispatchMessage(Module* source, std::shared_ptr<T> message, const std::string& name) {
         static_assert(std::is_base_of<BaseMessage, T>::value, "Dispatched message should inherit from Message class");
-        dispatch_message(source, std::static_pointer_cast<BaseMessage>(message));
+        dispatch_message(source, std::static_pointer_cast<BaseMessage>(message), name);
     }
 
     template <typename T>

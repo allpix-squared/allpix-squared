@@ -39,7 +39,7 @@ namespace allpix {
         REQUIRED = (1 << 0),        ///< Require a message before running a module
         NO_RESET = (1 << 1),        ///< Do not reset a message after run
         ALLOW_OVERWRITE = (1 << 2), ///< Allow overwriting a previous message
-        IGNORE_NAME = (1 << 3)      ///< Ignore the name of the message and listen to all of the same type
+        IGNORE_NAME = (1 << 3)      ///< Listen to all ignoring message name (equal to * as a input configuration parameter)
     };
     /**
      * @ingroup Delegates

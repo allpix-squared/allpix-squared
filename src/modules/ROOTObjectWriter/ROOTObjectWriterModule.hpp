@@ -30,7 +30,7 @@ namespace allpix {
 
     private:
         std::vector<std::shared_ptr<BaseMessage>> keep_messages_;
-        std::map<std::string, std::map<std::type_index, std::vector<Object*>*>> write_list_;
+        std::map<std::tuple<std::type_index, std::string, std::string>, std::vector<Object*>*> write_list_;
         unsigned long write_cnt_{};
 
         Configuration config_;

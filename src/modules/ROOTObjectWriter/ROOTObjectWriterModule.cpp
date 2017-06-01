@@ -21,10 +21,8 @@ ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration config, Messenger* 
 ROOTObjectWriterModule::~ROOTObjectWriterModule() {
     // Delete all pointers
     // NOTE: cannot be smart pointers due to internal ROOT logic
-    for(auto& detector_data : write_list_) {
-        for(auto& type_data : detector_data.second) {
-            delete type_data.second;
-        }
+    for(auto& index_data : write_list_) {
+        delete index_data.second;
     }
 }
 
@@ -56,11 +54,12 @@ void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::
             std::type_index type_idx = typeid(first_object);
 
             // Create a new branch of the correct type if this message was not received before
-            if(write_list_[detector_name].find(type_idx) == write_list_[detector_name].end()) {
-                write_list_[detector_name][type_idx] = new std::vector<Object*>();
+            auto index_tuple = std::make_tuple(type_idx, detector_name, message_name);
+            if(write_list_.find(index_tuple) == write_list_.end()) {
+                write_list_[index_tuple] = new std::vector<Object*>();
 
                 auto* cls = TClass::GetClass(typeid(first_object));
-                auto addr = &write_list_[detector_name][type_idx];
+                auto addr = &write_list_[index_tuple];
                 tree_->Bronch((detector_name + "_" + cls->GetName() + "_" + message_name).c_str(),
                               (std::string("std::vector<") + cls->GetName() + "*>").c_str(),
                               addr);
@@ -69,7 +68,7 @@ void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::
             // Fill the branch vector
             for(Object& object : object_array) {
                 ++write_cnt_;
-                write_list_[detector_name][type_idx]->push_back(&object);
+                write_list_[index_tuple]->push_back(&object);
             }
         }
 
@@ -88,10 +87,8 @@ void ROOTObjectWriterModule::run(unsigned int) {
     tree_->Fill();
 
     // Clear the current message list
-    for(auto& detector_data : write_list_) {
-        for(auto& type_data : detector_data.second) {
-            type_data.second->clear();
-        }
+    for(auto& index_data : write_list_) {
+        index_data.second->clear();
     }
     // Clear the messages we have to keep because they contain the internal pointers
     keep_messages_.clear();

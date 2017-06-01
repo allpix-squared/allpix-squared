@@ -149,8 +149,7 @@ void ROOTObjectReaderModule::run(unsigned int event_num) {
         std::shared_ptr<BaseMessage> message = iter->second(*objects, message_inf.detector);
 
         // Dispatch the message
-        // FIXME: message name is currently ignored
-        messenger_->dispatchMessage(this, message);
+        messenger_->dispatchMessage(this, message, message_inf.name);
     }
 }
 

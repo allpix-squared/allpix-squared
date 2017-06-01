@@ -79,9 +79,10 @@ bool Messenger::hasReceiver(Module* module, const std::shared_ptr<BaseMessage>& 
 /**
  * Send messages to all specific listeners and also to all generic listeners (listening to all incoming messages)
  */
-void Messenger::dispatch_message(Module* module, const std::shared_ptr<BaseMessage>& message) {
+void Messenger::dispatch_message(Module* module, const std::shared_ptr<BaseMessage>& message, std::string name) {
     // Get the name of the output message
-    std::string name = module->get_configuration().get<std::string>("output");
+    if(name == "-")
+        name = module->get_configuration().get<std::string>("output");
 
     bool send = false;
 

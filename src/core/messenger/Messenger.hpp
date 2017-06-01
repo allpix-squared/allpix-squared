@@ -108,8 +108,11 @@ namespace allpix {
          * @brief Dispatches a message
          * @param source Module dispatching the message
          * @param message Pointer to the message to dispatch
+         * @param name Optional message name (defaults to - indicating that it should dispatch to the module output
+         * parameter)
          */
-        template <typename T> void dispatchMessage(Module* source, std::shared_ptr<T> message);
+        template <typename T>
+        void dispatchMessage(Module* source, std::shared_ptr<T> message, const std::string& name = "-");
 
     private:
         /**
@@ -131,8 +134,9 @@ namespace allpix {
          * @brief Dispatch base message to the specific and general delegates
          * @param source Dispatching module
          * @param message Message to dispatch
+         * @param name Message name (- indicates to use module output parameter)
          */
-        void dispatch_message(Module* source, const std::shared_ptr<BaseMessage>& message);
+        void dispatch_message(Module* source, const std::shared_ptr<BaseMessage>& message, std::string name);
 
         /**
          * @brief Dispatch base message to the exact delegates
