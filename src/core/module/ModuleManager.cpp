@@ -152,9 +152,9 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
         }
 
         // Create main ROOT directory for this module type
-        auto module_dir = modules_file_->mkdir(config.getName().c_str());
+        auto module_dir = modules_file_->GetDirectory(config.getName().c_str());
         if(module_dir == nullptr) {
-            module_dir = modules_file_->GetDirectory(config.getName().c_str());
+            module_dir = modules_file_->mkdir(config.getName().c_str());
             if(module_dir == nullptr) {
                 throw RuntimeError("Cannot create or access ROOT directory for module " + config.getName());
             }
