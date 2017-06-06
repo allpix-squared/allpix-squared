@@ -3,6 +3,7 @@
 #include <string>
 #include <utility>
 
+#include <TBranchElement.h>
 #include <TClass.h>
 
 #include "core/utils/log.h"
@@ -28,10 +29,9 @@ ROOTObjectWriterModule::~ROOTObjectWriterModule() {
 
 void ROOTObjectWriterModule::init() {
     // Create output file
-    output_file_ = std::make_unique<TFile>(getOutputPath("data.root").c_str(), "RECREATE");
+    std::string file_name = getOutputPath(config_.get<std::string>("file_name", "data") + ".root", true);
+    output_file_ = std::make_unique<TFile>(file_name.c_str(), "RECREATE");
     output_file_->cd();
-
-    tree_ = std::make_unique<TTree>("tree", "");
 }
 
 void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::string message_name) { // NOLINT
@@ -60,9 +60,30 @@ void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::
 
                 auto* cls = TClass::GetClass(typeid(first_object));
                 auto addr = &write_list_[index_tuple];
-                tree_->Bronch((detector_name + "_" + cls->GetName() + "_" + message_name).c_str(),
-                              (std::string("std::vector<") + cls->GetName() + "*>").c_str(),
-                              addr);
+
+                // Remove the allpix prefix
+                std::string class_name = cls->GetName();
+                std::string apx_namespace = "allpix::";
+                size_t ap_idx = class_name.find(apx_namespace);
+                if(ap_idx != std::string::npos) {
+                    class_name.replace(ap_idx, apx_namespace.size(), "");
+                }
+
+                if(trees_.find(class_name) == trees_.end()) {
+                    output_file_->cd();
+                    trees_.emplace(
+                        class_name,
+                        std::make_unique<TTree>(class_name.c_str(), (std::string("Tree of ") + class_name).c_str()));
+                }
+
+                std::string branch_name = detector_name;
+                if(!message_name.empty()) {
+                    branch_name += "_";
+                    branch_name += message_name;
+                }
+
+                trees_[class_name]->Bronch(
+                    branch_name.c_str(), (std::string("std::vector<") + cls->GetName() + "*>").c_str(), addr);
             }
 
             // Fill the branch vector
@@ -84,7 +105,9 @@ void ROOTObjectWriterModule::run(unsigned int) {
     output_file_->cd();
 
     // Fill the tree with the current received messages
-    tree_->Fill();
+    for(auto& tree : trees_) {
+        tree.second->Fill();
+    }
 
     // Clear the current message list
     for(auto& index_data : write_list_) {
@@ -96,10 +119,13 @@ void ROOTObjectWriterModule::run(unsigned int) {
 
 void ROOTObjectWriterModule::finalize() {
     LOG(TRACE) << "Writing objects to file";
+    output_file_->Write();
+
+    int branch_count = 0;
+    for(auto& tree : trees_) {
+        branch_count += tree.second->GetListOfBranches()->GetEntries();
+    }
 
     // Print statistics
-    LOG(INFO) << "Written " << write_cnt_ << " objects to " << tree_->GetListOfBranches()->GetEntries() << " branches";
-
-    // Write the tree to the output file
-    output_file_->Write();
+    LOG(INFO) << "Written " << write_cnt_ << " objects to " << branch_count << " branches";
 }

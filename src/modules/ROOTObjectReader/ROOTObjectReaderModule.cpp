@@ -5,9 +5,9 @@
 #include <utility>
 
 #include <TBranch.h>
-#include <TBranchElement.h>
+#include <TKey.h>
 #include <TObjArray.h>
-#include <TVirtualCollectionProxy.h>
+#include <TTree.h>
 
 #include "core/messenger/Messenger.hpp"
 #include "core/utils/log.h"
@@ -59,68 +59,77 @@ void ROOTObjectReaderModule::init() {
     message_creator_map_ = gen_creator_map<allpix::OBJECTS>();
 
     // Open the input file
-    input_file_ = std::make_unique<TFile>(config_.getPath("file", true).c_str());
+    input_file_ = std::make_unique<TFile>(config_.getPath("file_name", true).c_str());
 
-    // Open the tree
-    tree_ = dynamic_cast<TTree*>(input_file_->Get("tree"));
-    if(tree_ == nullptr) {
-        throw ModuleError("Given file does not contain a tree");
+    TList* keys = input_file_->GetListOfKeys();
+    for(auto&& object : *keys) {
+        auto& key = dynamic_cast<TKey&>(*object);
+        if(std::string(key.GetClassName()) == "TTree") {
+            trees_.push_back(static_cast<TTree*>(key.ReadObjectAny(nullptr)));
+        }
     }
 
-    // Loop over the list of branches and create the set of receiver objects
-    TObjArray* branches = tree_->GetListOfBranches();
-    for(int i = 0; i < branches->GetEntries(); i++) {
-        auto* branch = dynamic_cast<TBranch*>(branches->At(i));
+    if(trees_.empty()) {
+        LOG(ERROR) << "Provided ROOT file does not contain any trees, module is useless!";
+    }
 
-        // Add a new vector of objects and bind it to the branch
-        message_info message_inf;
-        message_inf.objects = new std::vector<Object*>;
-        message_info_array_.emplace_back(message_inf);
-        branch->SetAddress(&(message_info_array_.back().objects));
+    // Loop over all found trees
+    for(auto& tree : trees_) {
+        // Loop over the list of branches and create the set of receiver objects
+        TObjArray* branches = tree->GetListOfBranches();
+        for(int i = 0; i < branches->GetEntries(); i++) {
+            auto* branch = dynamic_cast<TBranch*>(branches->At(i));
 
-        // Fill the rest of the message information
-        // FIXME: we want to index this in a different way
-        std::string branch_name = branch->GetName();
-        auto split = allpix::split<std::string>(branch_name, "_");
+            // Add a new vector of objects and bind it to the branch
+            message_info message_inf;
+            message_inf.objects = new std::vector<Object*>;
+            message_info_array_.emplace_back(message_inf);
+            branch->SetAddress(&(message_info_array_.back().objects));
 
-        size_t expected_size = 3;
-        size_t det_idx = 0;
-        size_t type_idx = 1;
-        size_t name_idx = 2;
-        if(branch_name.front() == '_') {
-            --expected_size;
-            det_idx = INT_MAX;
-            --type_idx;
-            --name_idx;
-        }
-        if(branch_name.back() == '_') {
-            --expected_size;
-            name_idx = INT_MAX;
-        }
+            // Fill the rest of the message information
+            // FIXME: we want to index this in a different way
+            std::string branch_name = branch->GetName();
+            auto split = allpix::split<std::string>(branch_name, "_");
 
-        auto split_type = allpix::split<std::string>(branch->GetClassName(), "<>");
-        if(expected_size != split.size() || split_type.size() != 2 || split[type_idx] + "*" != split_type[1]) {
-            throw ModuleError("Tree is malformed and cannot be used for creating messages");
-        }
+            size_t expected_size = 2;
+            size_t det_idx = 0;
+            size_t name_idx = 1;
+            if(branch_name.front() == '_' || branch_name.empty()) {
+                --expected_size;
+                det_idx = INT_MAX;
+                --name_idx;
+            }
+            if(branch_name.find('_') == std::string::npos) {
+                --expected_size;
+                name_idx = INT_MAX;
+            }
 
-        std::string message_name;
-        if(name_idx != INT_MAX) {
-            message_info_array_.back().name = split[name_idx];
-        }
-        std::shared_ptr<Detector> detector = nullptr;
-        if(det_idx != INT_MAX) {
-            message_info_array_.back().detector = geo_mgr_->getDetector(split[det_idx]);
+            auto split_type = allpix::split<std::string>(branch->GetClassName(), "<>");
+            if(expected_size != split.size() || split_type.size() != 2) {
+                throw ModuleError("Tree is malformed and cannot be used for creating messages");
+            }
+
+            std::string message_name;
+            if(name_idx != INT_MAX) {
+                message_info_array_.back().name = split[name_idx];
+            }
+            std::shared_ptr<Detector> detector = nullptr;
+            if(det_idx != INT_MAX) {
+                message_info_array_.back().detector = geo_mgr_->getDetector(split[det_idx]);
+            }
         }
     }
 }
 
 void ROOTObjectReaderModule::run(unsigned int event_num) {
     --event_num;
-    if(event_num >= tree_->GetEntries()) {
-        LOG(WARNING) << "Event tree does not contain data for event " << event_num;
-        return;
+    for(auto& tree : trees_) {
+        if(event_num >= tree->GetEntries()) {
+            LOG(WARNING) << "Skipping run because tree does not contain data for event " << event_num;
+            return;
+        }
+        tree->GetEntry(event_num);
     }
-    tree_->GetEntry(event_num);
     LOG(TRACE) << "Building messages from stored objects";
 
     // Loop through all branches
@@ -153,8 +162,13 @@ void ROOTObjectReaderModule::run(unsigned int event_num) {
 }
 
 void ROOTObjectReaderModule::finalize() {
+    int branch_count = 0;
+    for(auto& tree : trees_) {
+        branch_count += tree->GetListOfBranches()->GetEntries();
+    }
+
     // Print statistics
-    LOG(INFO) << "Read " << read_cnt_ << " objects from " << tree_->GetListOfBranches()->GetEntries() << " branches";
+    LOG(INFO) << "Read " << read_cnt_ << " objects from " << branch_count << " branches";
 
     // Close the file
     input_file_->Close();

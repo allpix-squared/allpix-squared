@@ -53,7 +53,20 @@ namespace allpix {
      *
      * Problems that could never have been detected at compile time
      */
-    class RuntimeError : public Exception {};
+    class RuntimeError : public Exception {
+    public:
+        /**
+         * @brief Creates exception with the given runtime problem
+         * @param what_arg Text describing the problem
+         */
+        explicit RuntimeError(std::string what_arg) : Exception(std::move(what_arg)) {}
+
+    protected:
+        /**
+         * @brief Internal constructor for exceptions setting the error message indirectly
+         */
+        RuntimeError() = default;
+    };
 
     /**
      * @ingroup Exceptions
@@ -61,7 +74,19 @@ namespace allpix {
      *
      * Problems that could also have been detected at compile time by specialized software
      */
-    class LogicError : public Exception {};
+    class LogicError : public Exception {
+        /**
+         * @brief Creates exception with the given logical problem
+         * @param what_arg Text describing the problem
+         */
+        explicit LogicError(std::string what_arg) : Exception(std::move(what_arg)) {}
+
+    protected:
+        /**
+         * @brief Internal constructor for exceptions setting the error message indirectly
+         */
+        LogicError() = default;
+    };
 } // namespace allpix
 
 #endif /* ALLPIX_EXCEPTIONS_H */

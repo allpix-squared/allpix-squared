@@ -13,9 +13,7 @@
 
 #include "objects/PixelCharge.hpp"
 
-#include <TFile.h>
 #include <TH1D.h>
-#include <TProfile.h>
 
 namespace allpix {
     /**
@@ -62,9 +60,6 @@ namespace allpix {
 
         // retrieved message containing collected charges per pixel for a specific detector
         std::shared_ptr<PixelChargeMessage> pixel_message_;
-
-        // ROOT file for output plots
-        TFile* output_file_;
 
         // statistics
         unsigned long long total_hits_{};

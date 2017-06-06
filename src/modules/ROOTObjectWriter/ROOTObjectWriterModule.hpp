@@ -36,6 +36,6 @@ namespace allpix {
         Configuration config_;
 
         std::unique_ptr<TFile> output_file_;
-        std::unique_ptr<TTree> tree_;
+        std::map<std::string, std::unique_ptr<TTree>> trees_;
     };
 } // namespace allpix

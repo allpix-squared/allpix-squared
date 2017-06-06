@@ -8,8 +8,6 @@
 #include <string>
 #include <utility>
 
-#include <TFile.h>
-
 #include "core/geometry/PixelDetectorModel.hpp"
 #include "core/messenger/Messenger.hpp"
 #include "core/utils/log.h"
@@ -19,8 +17,7 @@ using namespace allpix;
 DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
-    : Module(config, detector), config_(std::move(config)), detector_(std::move(detector)), pixels_message_(nullptr),
-      output_file_(nullptr) {
+    : Module(config, detector), config_(std::move(config)), detector_(std::move(detector)), pixels_message_(nullptr) {
     // fetch deposit for single module
     messenger->bindSingle(this, &DetectorHistogrammerModule::pixels_message_, MsgFlags::REQUIRED);
 }
@@ -34,14 +31,9 @@ void DetectorHistogrammerModule::init() {
                           " is not a PixelDetectorModel: other models are not supported by this module!");
     }
 
-    // create root file
-    std::string file_name = getOutputPath(config_.get<std::string>("file_name", "histogram") + ".root");
-    output_file_ = std::make_unique<TFile>(file_name.c_str(), "RECREATE");
-    output_file_->cd();
-
     // create histogram
     LOG(TRACE) << "Creating histograms";
-    std::string histogram_name = "histogram_" + getUniqueName();
+    std::string histogram_name = "histogram";
     std::string histogram_title = "Hitmap for " + detector_->getName() + ";x (pixels);y (pixels)";
     histogram = new TH2I(histogram_name.c_str(),
                          histogram_title.c_str(),
@@ -53,7 +45,7 @@ void DetectorHistogrammerModule::init() {
                          model->getNPixelsY() - 0.5);
 
     // create cluster size plot
-    std::string cluster_size_name = "cluster_" + getUniqueName();
+    std::string cluster_size_name = "cluster";
     std::string cluster_size_title = "Cluster size for " + detector_->getName() + ";size;number";
     cluster_size = new TH1I(cluster_size_name.c_str(),
                             cluster_size_title.c_str(),
@@ -79,9 +71,6 @@ void DetectorHistogrammerModule::run(unsigned int) {
 
 // create file and write the histograms to it
 void DetectorHistogrammerModule::finalize() {
-    // go to output file
-    output_file_->cd();
-
     // set more useful spacing maximum for cluster size histogram
     auto xmax = std::ceil(cluster_size->GetBinCenter(cluster_size->FindLastBinAbove()) + 1);
     cluster_size->GetXaxis()->SetRangeUser(0, xmax);
@@ -104,7 +93,4 @@ void DetectorHistogrammerModule::finalize() {
     LOG(TRACE) << "Writing histograms to file";
     histogram->Write();
     cluster_size->Write();
-
-    // close the file
-    output_file_->Close();
 }

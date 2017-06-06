@@ -47,7 +47,9 @@ namespace allpix {
         GeometryManager* geo_mgr_;
 
         std::unique_ptr<TFile> input_file_;
-        TTree* tree_;
+
+        std::vector<TTree*> trees_;
+
         std::list<message_info> message_info_array_;
         unsigned long read_cnt_{};
 
