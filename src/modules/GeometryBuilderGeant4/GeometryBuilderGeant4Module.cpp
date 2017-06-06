@@ -52,16 +52,6 @@ inline static void check_dataset_g4(const std::string& env_name) {
 
 // create the run manager, check Geant4 state and construct the Geant4 geometry
 void GeometryBuilderGeant4Module::init() {
-    // suppress all output (also cout due to a part in Geant4 where G4cout is not used)
-    SUPPRESS_STREAM(std::cout);
-    SUPPRESS_STREAM(G4cout);
-
-    // create the G4 run manager
-    run_manager_g4_ = std::make_unique<G4RunManager>();
-
-    // release stdout again
-    RELEASE_STREAM(std::cout);
-
     // check if all the required geant4 datasets are defined
     LOG(DEBUG) << "checking Geant4 datasets";
     check_dataset_g4("G4LEVELGAMMADATA");
@@ -74,6 +64,16 @@ void GeometryBuilderGeant4Module::init() {
     check_dataset_g4("G4NEUTRONXSDATA");
     check_dataset_g4("G4ENSDFSTATEDATA");
     check_dataset_g4("G4LEDATA");
+
+    // suppress all output (also cout due to a part in Geant4 where G4cout is not used)
+    SUPPRESS_STREAM(std::cout);
+    SUPPRESS_STREAM(G4cout);
+
+    // create the G4 run manager
+    run_manager_g4_ = std::make_unique<G4RunManager>();
+
+    // release stdout again
+    RELEASE_STREAM(std::cout);
 
     // get the world size
     config_.setDefault("world_size", G4ThreeVector(1000, 1000, 2000));
