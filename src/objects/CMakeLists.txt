@@ -24,8 +24,6 @@ FOREACH(dir IN ITEMS ${ALLPIX_DEPS_INCLUDE_DIRS})
     ENDIF()
 ENDFOREACH()
 
-MESSAGE(${INCLUDE_DIR_ARGS})
-
 # Compile the dictionary through a special target 
 # WARNING: this hack is necessary to prevent standard warnings and those in clang-tidy
 ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_BINARY_DIR}/src/objects/dictionary_objects.cxx.o COMMAND ${CMAKE_CXX_COMPILER} -fPIC -std=c++${CMAKE_CXX_STANDARD} -I${CMAKE_SOURCE_DIR}/src ${INCLUDE_DIR_ARGS} -o ${CMAKE_CURRENT_BINARY_DIR}/dictionary_objects.cxx.o -c ${CMAKE_CURRENT_BINARY_DIR}/dictionary_objects.cxx DEPENDS dictionary_objects)
