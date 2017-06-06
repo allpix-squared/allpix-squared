@@ -97,7 +97,7 @@ std::string Module::getOutputPath(const std::string& path, bool global) {
  */
 TDirectory* Module::getROOTDirectory() {
     // NOTE: This is a nasty (but correct) way to store info, however the only option with constructor access
-    return reinterpret_cast<TDirectory*>(config_.get<uintptr_t>("_ROOT_directory"));
+    return reinterpret_cast<TDirectory*>(config_.get<uintptr_t>("_ROOT_directory")); // NOLINT
 }
 
 // Get internal configuration

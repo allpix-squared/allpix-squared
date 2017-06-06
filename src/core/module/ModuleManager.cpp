@@ -241,7 +241,7 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
         throw RuntimeError("Cannot create or access unique ROOT directory for module " + identifier.getUniqueName());
     }
     directory->cd();
-    config.set<uintptr_t>("_ROOT_directory", reinterpret_cast<uintptr_t>(directory));
+    config.set<uintptr_t>("_ROOT_directory", reinterpret_cast<uintptr_t>(directory)); // NOLINT
 
     // Get the generator function for this module
     void* generator = dlsym(library, ALLPIX_GENERATOR_FUNCTION);
@@ -388,7 +388,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         }
         local_directory->cd();
         // FIXME: is there a better way to store the directory in the module
-        config.set<uintptr_t>("_ROOT_directory", reinterpret_cast<uintptr_t>(local_directory));
+        config.set<uintptr_t>("_ROOT_directory", reinterpret_cast<uintptr_t>(local_directory)); // NOLINT
 
         // Set the log section header
         std::string old_section_name = Log::getSection();
