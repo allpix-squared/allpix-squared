@@ -6,9 +6,6 @@
 #define ALLPIX_OBJECT_H
 
 #include <TBuffer.h>
-#include <TObject.h>
-
-#include "Object.hpp"
 
 namespace allpix {
     template <typename T> class Message;
