@@ -116,18 +116,30 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
         // If library did not load then throw exception
         if(load_error) {
             const char* lib_error = dlerror();
-            if(lib_error != nullptr && std::strstr(lib_error, "cannot allocate memory in static TLS block") != nullptr) {
-                std::string error(lib_error);
-                std::string problem_lib = error.substr(0, error.find(':'));
 
+            // Find the name of the loaded library if it exists
+            std::string lib_error_str = lib_error;
+            size_t end_pos = lib_error_str.find(':');
+            std::string problem_lib;
+            if(end_pos != std::string::npos) {
+                problem_lib = lib_error_str.substr(0, end_pos);
+            }
+
+            // FIXME is checking the error in this way portable?
+            if(lib_error != nullptr && std::strstr(lib_error, "cannot allocate memory in static TLS block") != nullptr) {
                 LOG(ERROR) << "Library could not be loaded: not enough thread local storage available" << std::endl
                            << "Try one of below workarounds:" << std::endl
                            << "- Rerun library with the environmental variable LD_PRELOAD='" << problem_lib << "'"
                            << std::endl
                            << "- Recompile the library " << problem_lib << " with tls-model=global-dynamic";
+            } else if(lib_error != nullptr && std::strstr(lib_error, "cannot open shared object file") != nullptr &&
+                      problem_lib.find(ALLPIX_MODULE_PREFIX) == std::string::npos) {
+                LOG(ERROR) << "Library could not be loaded: one of its dependencies is missing" << std::endl
+                           << "The name of the missing library is " << problem_lib << std::endl
+                           << "Please make sure the library is properly initialized and try again";
             } else {
-                LOG(ERROR) << "Library could not be loaded" << std::endl
-                           << " - Did you compile the library? " << std::endl
+                LOG(ERROR) << "Library could not be loaded: it is not available" << std::endl
+                           << " - Did you enable the library during building? " << std::endl
                            << " - Did you spell the library name correctly? ";
                 if(lib_error != nullptr) {
                     LOG(DEBUG) << "Detailed error: " << lib_error;
