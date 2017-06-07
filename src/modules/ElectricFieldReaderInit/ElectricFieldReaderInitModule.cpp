@@ -142,13 +142,15 @@ inline static void check_detector_match(Detector& detector, double thickness, do
     // do a few simple checks for pixel detector models
     if(model != nullptr) {
         if(std::fabs(thickness - model->getSensorSizeZ()) > std::numeric_limits<double>::epsilon()) {
-            LOG(WARNING) << "Thickness of sensor in file is " << thickness << " but in the model it is "
-                         << model->getSensorSizeZ();
+            LOG(WARNING) << "Thickness of sensor in file is " << Units::display(thickness, "um")
+                         << " but in the model it is " << Units::display(model->getSensorSizeZ(), "um");
         }
         if(std::fabs(xpixsz - model->getPixelSizeX()) > std::numeric_limits<double>::epsilon() ||
            std::fabs(ypixsz - model->getPixelSizeY()) > std::numeric_limits<double>::epsilon()) {
-            LOG(WARNING) << "Pixel size is (" << xpixsz << "," << ypixsz << ") but in the model it is ("
-                         << model->getPixelSizeX() << "," << model->getPixelSizeY() << ")";
+            LOG(WARNING) << "Pixel size is (" << Units::display(xpixsz, {"um", "mm"}) << ","
+                         << Units::display(ypixsz, {"um", "mm"}) << ") but in the model it is ("
+                         << Units::display(model->getPixelSizeX(), {"um", "mm"}) << ","
+                         << Units::display(model->getPixelSizeY(), {"um", "mm"}) << ")";
         }
     }
 }
