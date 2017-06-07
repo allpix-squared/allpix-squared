@@ -29,7 +29,7 @@ std::map<std::string, allpix::Units::UnitType> Units::unit_map_;
  *
  * @note No explicit check is done for alphabetical units
  */
-void Units::add(std::string str, allpix::Units::UnitType value) {
+void Units::add(std::string str, UnitType value) {
     // Do not distinguish between different case for units
     std::transform(str.begin(), str.end(), str.begin(), ::tolower);
 

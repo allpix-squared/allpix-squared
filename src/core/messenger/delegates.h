@@ -28,7 +28,7 @@ namespace allpix {
      * @ingroup Delegates
      * @brief Flags to change the behaviour of delegates
      *
-     * All flags are distinct and can be combined using \ref operator|(MsgFlags, MsgFlags). The flags should be passed to the
+     * All flags are distinct and can be combined using the | (OR) operator. The flags should be passed to the
      * \ref Messenger when \ref Messenger::registerListener "registering" a listener or when binding either a \ref
      * Messenger::bindSingle "single" or \ref Messenger::bindMulti "multiple" messages. It depends on the delegate which
      * combination is flags is valid.
@@ -241,6 +241,7 @@ namespace allpix {
         /**
          * @brief Calls the listener function with the supplied message
          * @param msg Message to process
+         * @param name Name of the message to process
          * @warning The listener function is called directly from the delegate, no heavy processing should be done in the
          *          listener function
          */

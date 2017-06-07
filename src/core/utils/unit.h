@@ -105,7 +105,7 @@ namespace allpix {
         /**
          * @brief Return value for display in the best of all the provided units
          * @param inp Value in the base unit system
-         * @param unit Name of the possible output units
+         * @param units Name of the possible output units
          * @return Value with best unit to be used for display
          */
         // TODO [doc] Shall we change the name in something better here

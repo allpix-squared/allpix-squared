@@ -426,7 +426,7 @@ void SimplePropagationModule::run(unsigned int event_num) {
     messenger_->dispatchMessage(this, propagated_charge_message);
 }
 
-std::pair<XYZPoint, double> SimplePropagationModule::propagate(const XYZPoint& root_pos) {
+std::pair<XYZPoint, double> SimplePropagationModule::propagate(const ROOT::Math::XYZPoint& root_pos) {
     // create a runge kutta solver using the electric field as step function
     Eigen::Vector3d position(root_pos.x(), root_pos.y(), root_pos.z());
 

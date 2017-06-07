@@ -39,7 +39,7 @@ namespace allpix {
 
     /**
      * @ingroup Exceptions
-     * @brief Message does not contain an \ref Object
+     * @brief Message does not contain an \ref allpix::Object
      */
     class MessageWithoutObjectException : public RuntimeError {
     public:

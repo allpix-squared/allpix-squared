@@ -40,7 +40,7 @@ namespace allpix {
 
         /**
          * @brief Load modules from the main configuration and construct them
-         * @warning Should be called after the \ref AllPix::Allpix "constructor"
+         * @warning Should be called after the \ref AllPix::Allpix(std::string) "constructor"
          */
         void load();
 

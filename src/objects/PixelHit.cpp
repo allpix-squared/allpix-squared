@@ -6,7 +6,7 @@
 
 using namespace allpix;
 
-PixelHit::PixelHit(PixelHit::Pixel pixel) : pixel_(std::move(pixel)) {}
+PixelHit::PixelHit(Pixel pixel) : pixel_(std::move(pixel)) {}
 
 PixelHit::Pixel PixelHit::getPixel() const {
     return pixel_;
