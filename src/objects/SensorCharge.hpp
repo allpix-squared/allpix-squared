@@ -38,8 +38,8 @@ namespace allpix {
 
     private:
         ROOT::Math::XYZPoint position_;
-        unsigned int charge_;
-        long double event_time_;
+        unsigned int charge_{};
+        long double event_time_{};
 
         ClassDef(SensorCharge, 1);
     };

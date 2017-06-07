@@ -32,7 +32,7 @@ template <typename T> static void add_creator(ROOTObjectReaderModule::MessageCre
     map[typeid(T)] = [&](std::vector<Object*> objects, std::shared_ptr<Detector> detector = nullptr) {
         std::vector<T> data;
         for(auto& object : objects) {
-            data.emplace_back(std::move(*dynamic_cast<T*>(object)));
+            data.emplace_back(std::move(*static_cast<T*>(object)));
         }
 
         if(detector == nullptr) {
@@ -78,7 +78,7 @@ void ROOTObjectReaderModule::init() {
         // Loop over the list of branches and create the set of receiver objects
         TObjArray* branches = tree->GetListOfBranches();
         for(int i = 0; i < branches->GetEntries(); i++) {
-            auto* branch = dynamic_cast<TBranch*>(branches->At(i));
+            auto* branch = static_cast<TBranch*>(branches->At(i));
 
             // Add a new vector of objects and bind it to the branch
             message_info message_inf;

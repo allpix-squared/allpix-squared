@@ -25,7 +25,7 @@ namespace allpix {
         unsigned int getCharge() const;
 
         Pixel pixel_;
-        unsigned int charge_;
+        unsigned int charge_{};
 
         ClassDef(PixelCharge, 1);
         PixelCharge() = default;
