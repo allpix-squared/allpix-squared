@@ -16,12 +16,12 @@
 namespace allpix {
     /**
      * @brief Tag for specific type
-     * @note This tag is needed in the allpix namespace due to ADL lookup
+     * @note This tag is needed in the \ref ::allpix namespace due to ADL lookup
      */
     template <typename T> struct type_tag {};
     /**
      * @brief Empty tag
-     * @note This tag is needed in the allpix namespace due to ADL lookup
+     * @note This tag is needed in the \ref ::allpix namespace due to ADL lookup
      */
     struct empty_tag {};
 

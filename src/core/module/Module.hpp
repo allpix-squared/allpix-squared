@@ -187,13 +187,12 @@ namespace allpix {
 
         /**
          * @brief Execute the function of the module for every event
-         * @param int Number of the event in the event sequence (starts at 1)
+         * @param event_num Number of the event in the event sequence (starts at 1)
          *
          * Does nothing if not overloaded.
          */
         // TODO [doc] Start the sequence at 0 instead of 1?
-        virtual void run(unsigned int /* event_num */) {}
-
+        virtual void run(unsigned int event_num) { (void)event_num; }
         //
         /**
          * @brief Finalize the module after the event sequence
