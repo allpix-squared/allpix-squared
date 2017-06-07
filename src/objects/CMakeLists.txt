@@ -6,14 +6,14 @@ INCLUDE(${ROOT_USE_FILE}/../modules/RootNewMacros.cmake)
 
 # Generate the ROOT dictionary
 ROOT_GENERATE_DICTIONARY(AllpixObjectsDictionary
-    Object.hpp
-    SensorCharge.hpp
-    PropagatedCharge.hpp
-    DepositedCharge.hpp
-    PixelCharge.hpp
-    PixelHit.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Object.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/SensorCharge.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/PropagatedCharge.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/DepositedCharge.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/PixelCharge.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/PixelHit.hpp
     LINKDEF 
-    Linkdef.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Linkdef.h
 )
 
 FOREACH(dir IN ITEMS ${ALLPIX_DEPS_INCLUDE_DIRS})
