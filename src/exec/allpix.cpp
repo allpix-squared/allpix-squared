@@ -110,6 +110,7 @@ int main(int argc, const char* argv[]) {
     }
 
     // Add an extra file to log too if possible
+    // NOTE: this stream should be available for the duration of the logging
     std::ofstream log_file;
     if(!log_file_name.empty()) {
         log_file.open(log_file_name, std::ios_base::out | std::ios_base::trunc);

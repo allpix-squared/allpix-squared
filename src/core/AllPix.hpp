@@ -14,6 +14,7 @@
 #define ALLPIX_ALLPIX_H
 
 #include <atomic>
+#include <fstream>
 #include <memory>
 #include <string>
 
@@ -81,6 +82,9 @@ namespace allpix {
         // Indicate the framework should terminate
         std::atomic<bool> terminate_;
         std::atomic<bool> has_run_;
+
+        // Log file if specified
+        std::ofstream log_file_;
 
         // All managers in the framework
         std::unique_ptr<Messenger> msg_;
