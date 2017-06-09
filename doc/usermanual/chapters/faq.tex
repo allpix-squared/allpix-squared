@@ -2,13 +2,15 @@
 \label{sec:faq}
 \begin{description}[style=nextline]
 \item[How do I run a module only for one detector?]
-This is only possible for detector modules (which are constructed to work on individual detectors). To run it on a single detector one should add a parameter \texttt{name} having the name of the detector (from the specified in the detector configuration file) as the key.
+This is only possible for detector modules (which are constructed to work on individual detectors). To run it on a single detector one should add a parameter \texttt{name} specifying the name of the detector (as given in the detector configuration file).
 \item[How do I run a module only for a specific detector type?]
-This is only possible for detector modules (which are constructed to work on individual detectors). To run it for a specific type of detectors one should add a parameter \texttt{type} with the type of the detector model (specified in the detector configuration file as the \texttt{model} parameter) as its key.
+This is only possible for detector modules (which are constructed to work on individual detectors). To run it for a specific type of detectors one should add a parameter \texttt{type} with the type of the detector model (as given in the detector configuration file as the \texttt{model} parameter).
+\item[How can I run the exact same type of module with different settings?]
+This is possible by using the \texttt{input} and \texttt{output} parameters of a module that specialize the location where the messages from the modules are send to and received from. By default both the input and the output of module default to the message without a name.
 \item[How can I temporarily ignore a module during development?]
 The section header of a particular module in the configuration file can be replaced by the string \texttt{Ignore}. The section and all of its key/value pairs are then ignored.
 \item[Can I get a high verbosity level only for a specific module?]
-Yes it is possible to specify verbosity levels and log formats per module. This can be done by adding a \texttt{log\_level} and/or \texttt{log\_format} key to a specific module instead of adding in to one of the global configuration sections.
+Yes, it is possible to specify verbosity levels and log formats per module. This can be done by adding a \texttt{log\_level} and/or \texttt{log\_format} key to a specific module instead of adding it to one of the global configuration sections.
 \end{description}
 
 \todo{Add more questions}

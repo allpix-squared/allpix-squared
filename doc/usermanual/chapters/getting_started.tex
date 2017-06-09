@@ -55,24 +55,24 @@ Combinations of base units can be specified by using the multiplication sign \te
 
 Examples of specifying key/values pairs of various types are given below
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
-# all whitespace at the front and back is removed
+# All whitespace at the front and back is removed
 first_string =   string_without_quotation  
-# all whitespace within the quotation marks is kept
+# All whitespace within the quotation marks is kept
 second_string = "  string with quotation marks  "
-# keys are split on whitespace and commas
+# Keys are split on whitespace and commas
 string_array = "first element" "second element","third element"
-# integer and floats can be given in standard formats
+# Integer and floats can be given in standard formats
 int_value = 42
 float_value = 123.456e9
-# units can be passed to arithmetic type
+# Units can be passed to arithmetic type
 energy_value = 1.23MeV
 time_value = 42ns
-# units are combined in linear order
+# Units are combined in linear order
 acceleration_value = 1.0m/s/s
-# thus the quantity below is the same as 1.0deg*kV*K/m/s
+# Thus the quantity below is the same as 1.0deg*kV*K/m/s
 random_quantity = 1.0deg*kV/m/s*K 
-# relative paths are expanded to absolute 
-# path below will be /home/user/test if the config file is in /home/user
+# Relative paths are expanded to absolute 
+# Path below will be /home/user/test if the config file is in /home/user
 output_path = "test" 
 \end{minted}
 
@@ -112,30 +112,30 @@ Modules can be specified multiple times in the configuration files, but it depen
 
 A valid example configuration using the detector configuration above could be:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
-# key is part of the empty section and therefore the global sections
+# Key is part of the empty section and therefore the global sections
 string_value = "example1"
-# the location of the detector configuration should be a global parameter
+# The location of the detector configuration should be a global parameter
 detectors_file = "manual_detector.conf"
-# the AllPix section is also considered global and merged with the above
+# The AllPix section is also considered global and merged with the above
 [AllPix]
 another_random_string = "example2"
 
-# first run a unique module
+# First run a unique module
 [MyUniqueModule]
-# this module takes no parameters
+# This module takes no parameters
 # [MyUniqueModule] cannot be instantiated another time
 
-# then run some detector modules on different detectors 
-# first run a module on the detector of type Timepix
+# Then run some detector modules on different detectors 
+# First run a module on the detector of type Timepix
 [MyDetectorModule]
 type = "timepix"
 int_value = 1
-# replace the module above for `dut` with a specialized version 
-# this does not inherit any parameters from earlier modules
+# Replace the module above for `dut` with a specialized version 
+#   this does not inherit any parameters from earlier modules
 [MyDetectorModule]
 name = "dut"
 int_value = 2
-# runs the module on the remaining unspecified detector `telescope1`
+# Runs the module on the remaining unspecified detector `telescope1`
 [MyDetectorModule]
 # int_value is not specified, so it uses the default value
 \end{minted}
@@ -195,11 +195,11 @@ Displaying the geometry and the particle tracks helps a lot in both checking and
 To start using the Qt viewer the \texttt{simple\_view = 1} parameter should first be added to the \textbf{GeometryBuilderGeant4} section. This simplifies the visualization output and makes it several order of magnitude faster. Finally the example section below should be added at the end of the configuration file before running the simulation again:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 [VisualizationGeant4]
-# setup to use the Qt gui
+# Setup to use the Qt gui
 use_gui = 1
-# use the OpenGL driver
+# Use the OpenGL driver
 driver = "OGL" 
-# point those macro files to the etc/ directory in the allpix source folder
+# Point those macro files to the etc/ directory in the allpix source folder
 # TODO: these macros should be optional
 macro_init = "geant4_init.in"
 macro_run = "geant4_run.in"
@@ -214,9 +214,9 @@ If it gives an error about Qt not being available the VRML viewer can be used as
 
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 [VisualizationGeant4]
-# use the VRML driver
+# Use the VRML driver
 driver = "VRML2FILE" 
-# point those macro files to the etc/ directory in the allpix source folder
+# Point those macro files to the etc/ directory in the allpix source folder
 # TODO: these macros should be optional
 macro_init = "geant4_init.in"
 macro_run = "geant4_run.in"
@@ -228,9 +228,9 @@ macro_run = "geant4_run.in"
 \label{sec:module_electric_field}
 A linear electric field can be added to the sensitive device of the detectors. The section below adds an linear electric field to all the timepix detectors. It sets the electric field to the voltage divided by the thickness of the sensor.
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
-# add a linear electric field to the timepix detectors
+# Add a linear electric field to the timepix detectors
 [ElectricFieldInputLinear]
-# voltage for the linear electric field over the sensor
+# Voltage for the linear electric field over the sensor
 voltage = 50V
 \end{minted}
 More complex electric fields from TCAD can also be added as explained in Section \ref{sec:tcad_electric_field_simulations}.
@@ -247,9 +247,9 @@ More complex electric fields from TCAD can also be added as explained in Section
 An electric field in the detectors can be specified using the .init format by using the ElectricFieldReaderInit module. The init format is format used by the PixelAV software~\cite{pixelavgit} after conversions from internal TCAD formats. These fields can be attached to specific detectors using the standard syntax for detector binding. An example would be:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 [ElectricFieldReaderInit]
-# bind the electric field to the timepix sensor
+# Bind the electric field to the timepix sensor
 name = "tpx"
-# name of the file containing the electric field
+# Name of the file containing the electric field
 file_name = "example_electric_field.init"
 \end{minted}
 An example electric field (which the name used above) can be found in the \textit{etc} directory of the \apsq repository.
