@@ -5,10 +5,9 @@ Before creating a module it is essential to read through the framework module ma
 \begin{enumerate}
 \item The whole directory contents of \textit{src/modules/DummyModule/} should copied to \textit{src/modules/\texttt{ModuleName}/}.
 \item The DummyModule.hpp should be renamed to \texttt{ModuleName}Module.hpp and the DummyModule.cpp to \texttt{ModuleName}Module.cpp.
-\item The CMakeLists.txt has to be modified depending on the module type. If the new module is a unique module the first line should be ALLPIX\_UNIQUE\_MODULE(MODULE\_NAME), if it is
- detector-specific module it should be ALLPIX\_DETECTOR\_MODULE(MODULE\_NAME). Next, the source file created in the previous step has to replace the original dummy source file.
+\item The CMakeLists.txt has to be modified depending on the module type. Depending on the type of the module the first line is different. If the new module is a unique module it should be ALLPIX\_UNIQUE\_MODULE(MODULE\_NAME), if it is a detector-specific module it should be ALLPIX\_DETECTOR\_MODULE(MODULE\_NAME). Next, the source file created in the previous step has to replace the original dummy source file.
 \item The header and source files have to be implemented following the constructor conventions for the specific type of module.
-\item The initial documentation parts of the README.md and the \LaTeX-file \texttt{ModuleName}.tex can already be started with before the module is implemented.
+\item The initial documentation in the README.md and the \LaTeX-file \texttt{ModuleName}.tex can already be started with before the module is implemented.
 \item Now the the initial parts of the constructor, and possible the \texttt{init}, \texttt{run} and/or \texttt{finalize} methods can be written, depending on what the new module is supposed to do.
 \item Finally the new module has to be included in the build process by adding `option\_build\_module(\texttt{ModuleName})` at the appropriate location in \textit{src/modules/CMakeLists.txt}
 \end{enumerate}

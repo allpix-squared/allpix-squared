@@ -190,7 +190,7 @@ If problems occur, please make sure you have an up-to-date and properly installe
 Before going to more advanced configurations, a few simple modules are discussed which a user might want to add.
 
 \paragraph{Visualization}
-Displaying the geometry and the particle tracks helps a lot in both checking and interpreting the results. Visualization is fully supported through Geant4, supporting all the visualization options provided by Geant4 as discussed in their manual in \url{https://geant4.web.cern.ch/geant4/UserDocumentation/UsersGuides/ForApplicationDeveloper/html/ch08.html}. Using the Qt viewer with the OpenGL driver is however the recommended option as long as the installed version of Geant4 supports it.
+Displaying the geometry and the particle tracks helps a lot in both checking and interpreting the results. Visualization is fully supported through Geant4, supporting all the options provided by Geant4 in \url{https://geant4.web.cern.ch/geant4/UserDocumentation/UsersGuides/ForApplicationDeveloper/html/ch08.html}. Using the Qt viewer with the OpenGL driver is however the recommended option as long as the installed version of Geant4 supports it.
 
 To start using the Qt viewer the \texttt{simple\_view = 1} parameter should first be added to the \textbf{GeometryBuilderGeant4} section. This simplifies the visualization output and makes it several order of magnitude faster. Finally the example section below should be added at the end of the configuration file before running the simulation again:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
@@ -206,7 +206,7 @@ macro_run = "geant4_run.in"
 \end{minted}
 If it gives an error about Qt not being available the VRML viewer can be used as a replacement, but it is recommended to reinstall Geant4 with the Qt viewer included. To use the VRML viewer instead, follow the steps below:
 \begin{itemize}
-\item The \texttt{simple\_view = 1} parameter should still be added to the \textbf{GeometryBuilderGeant4} section.
+\item The \texttt{simple\_view = 1} parameter should be added to the \textbf{GeometryBuilderGeant4} section.
 \item Then the viewer should be installed on your operating system. Options include FreeWRL (available on \url{http://freewrl.sourceforge.net/}) and OpenVRML (available on \url{http://openvrml.org/}).
 \item Subsequently two environmental parameters should be exported to inform Geant4 of the configuration. These include \texttt{G4VRMLFILE\_VIEWER} which should point to the location of the viewer and \texttt{G4VRMLFILE\_MAX\_FILE\_NUM} which should typically be set to 1 to prevent too many files from being created.
 \item Finally the example section below should be added at the end of the configuration file before running the simulation again:

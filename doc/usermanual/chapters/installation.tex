@@ -45,12 +45,12 @@ CMake can be run with several extra arguments to change the type of installation
 \begin{itemize}
 \item \textbf{CMAKE\_INSTALL\_PREFIX}: The directory to use as a prefix for installing the binaries, libraries and data. Defaults to the source directory (where the folders \textit{bin/} and \textit{lib/} are added). 
 \item \textbf{CMAKE\_BUILD\_TYPE}: Type of build to install, defaults to \texttt{RelWithDebInfo} (compiles with optimizations and debug symbols). Other possible options are \texttt{Debug} (for compiling with no optimizations, but with debug symbols and extended tracing using the Clang Address Sanitizer library) and \texttt{Release} (for compiling with full optimizations and no debug symbols). 
-\item \textbf{MODEL\_DIRECTORY}: Directory to install the internal models to. Defaults to not installing if the \textbf{CMAKE\_INSTALL\_PREFIX} is set to the directory containing the sources (the default). Otherwise defaults to \\ \textbf{CMAKE\_INSTALL\_PREFIX}\textit{/share/allpix/}. The install directory is automatically added to the model search path used by the geometry model parsers to find all the detector models.
-\item \textbf{BUILD\_\textit{module\_name}}: If the specific \textit{module\_name} should be installed or not. Defaults to ON, thus all modules are installed by default. This set of parameters have to be set appropriately for a build without one of the extra dependencies specified in \ref{sec:prerequisites}.
+\item \textbf{MODEL\_DIRECTORY}: Directory to install the internal models to. Defaults to not installing if the \textbf{CMAKE\_INSTALL\_PREFIX} is set to the directory containing the sources (the default). Otherwise the default value is equal to the directory \textbf{CMAKE\_INSTALL\_PREFIX}\-\textit{/share/allpix/}. The install directory is automatically added to the model search path used by the geometry model parsers to find all the detector models.
+\item \textbf{BUILD\_\textit{module\_name}}: If the specific \textit{module\_name} should be installed or not. Defaults to ON, thus all modules are installed by default. This set of parameters have to be set appropriately for a build without extra dependencies as specified in \ref{sec:prerequisites}.
 \item \textbf{BUILD\_ALL\_MODULES}: Build all included modules, defaulting to OFF. This overwrites any selection using the parameters described above.
 \end{itemize}
 
-An example of an custom installation with full debugging, without the GeometryBuilderGeant4 module and installed to a custom directory, is shown below:
+An example of a custom installation with debugging, without the GeometryBuilderGeant4 module and installed to a custom directory, is shown below:
 \begin{verbatim}
 $ mkdir build
 $ cd build
