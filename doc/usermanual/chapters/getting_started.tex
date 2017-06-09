@@ -240,7 +240,40 @@ More complex electric fields from TCAD can also be added as explained in Section
 \subsubsection{Advanced configuration}
 \paragraph{Redirect Module Inputs and Outputs}
 \label{sec:redirect_module_input_outputs}
-\wip
+By default it is not allowed to have the same type of module (linked to the same detector), but in several cases it may be useful to run the same module with different settings. The \apsq framework support this by allowing to redirect the input and output data of every module. A module sends it output by default to all modules listening to the type of object it dispatches. It is however possible to specify a certain name in addition to the type of the data.
+
+The output name of a module can be changed by setting the \textbf{output} parameter of the module to a unique value. The output of this module is than not send anymore to modules without a configured input, because the default input listens only to data without a name. The \textbf{input} parameter of a particular receiving module should therefore be set to match the value of the \textbf{output} parameter. In addition it is allowed to set the \textbf{input} parameter to the special value \texttt{*} to indicate that it should listen to all messages irrespective of their name.
+
+An example of a configuration with two settings for digitization is shown below:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+# Digitize the propagated charges with low noise levels
+[DefaultDigitizer]
+# Specify an output identifier 
+output = "low_noise"
+# Low amount of noise added by the electronics
+electronics_noise = 100e
+# Default values are used for the other parameters
+
+# Digitize the propagated charges with high noise levels
+[DefaultDigitizer]
+# Specify an output identifier
+output = "high_noise"
+# High amount of noise added by the electronics
+electronics_noise = 500e
+# Default values are used for the other parameters
+
+# Save histogram for 'low_noise' digitized charges
+[DetectorHistogrammer]
+# Specify input identifier 
+input = "low_noise"
+
+# Save histogram for 'high_noise' digitized charges
+[DetectorHistogrammer]
+# Specify input identifier 
+input = "high_noise"
+\end{minted}
+
+\todo{Maybe we need an option to split the modules}
 
 \paragraph{Using TCAD Electric Field Simulations}
 \label{sec:tcad_electric_field_simulations}
@@ -283,4 +316,22 @@ The logging system does also support a few different formats to display the log 
 More details about the logging system and the procedure for reporting errors in the code can be found in Section \ref{sec:logger} and \ref{sec:error_reporting_exceptions}.
 
 \subsection{Storing Output Data}
-\wip
+Saving the output to persistent storage is of primary importance for later review and analysis. \apsq primarily uses ROOT for storing output data, because it supports writing arbitrary objects and is a standard tool in High-Energy Physics. The \texttt{ROOTObjectWriter} automatically saves all the data objects written by the modules to a TTree (see \url{https://root.cern.ch/doc/master/classTTree.html} for more information about TTrees). The module stores all different object types to a separate tree, creating a branch for every combination of detector and the name given to the output as explained in Section \ref{sec:redirect_module_input_outputs}. For each event, values are added to the leafs of the branches containing the data of the objects. This allows for easy histogramming of the acquired data over the total run using the ROOT utilities.
+
+To save the output of all objects an \texttt{ROOTObjectWriter} has to be added with a \texttt{file\_name} parameter (without the root suffix) to specify the file location of the created ROOT file in the global output directory. The default file name is \texttt{data} which means that \textbf{data.root} is created in the output directory. To replicate the default behaviour the following configuration can be used:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+# The object writer listens to all output data
+[ROOTObjectWriter]
+# specify the output path (can be omitted as it the default)
+file_name = "data.root"
+\end{minted}
+
+Besides using the generated tree for analysis it is also possible to read all the object data back in, to propagate it to further modules. This can be used to split the execution of several parts of the simulation in multiple independent steps, which can be executed after each order. The tree data can be read using a \texttt{ROOTObjectReader} module, that automatically dispatches all objects to the right detector with the correct name in the same event, using the internal name of the stored data. An example of using this module is the following:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+# The object reader dispatches all objects in the tree
+[ROOTObjectReader]
+# path to the output data relative to the configuration file
+file_name = "../output/data.root"
+\end{minted}
+
+\todo{more output formats have to be added probably, or do we require the user to do this through ROOT}
