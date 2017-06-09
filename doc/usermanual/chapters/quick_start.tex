@@ -1,7 +1,7 @@
 \section{Quick Start}
 This chapter serves as a very quick introduction to \apsq for users who prefer to start quickly and learn the details while simulating. The typical user should skip the next paragraphs and continue to the next Section \ref{sec:introduction} instead. 
 
-\apsq is a generic simulation framework for tracker and vertex detectors. It provides a modular, flexible and user-friendly framework for the simulation of independent detectors. The framework currently relies on the Geant4~\cite{geant4}, ROOT~\cite{root} and Eigen3~\cite{eigen3} libraries, that need to be installed and loaded before doing a full installation.
+\apsq is a generic simulation framework for tracker and vertex detectors. It provides a modular, flexible and user-friendly framework for the simulation of independent detectors. The framework currently relies on the Geant4~\cite{geant4}, ROOT~\cite{root} and Eigen3~\cite{eigen3} libraries, that need to be installed and loaded before using \apsq.
 
 The minimal, default installation can be done by executing the commands below. More detailed installation instructions are found in Section \ref{sec:installation}.
 \begin{verbatim}
@@ -9,7 +9,6 @@ $ git clone https://gitlab.cern.ch/simonspa/allpix-squared
 $ cd allpix-squared
 $ mkdir build && cd build/
 $ cmake ..
-$ make
 $ make install
 $ cd ..
 \end{verbatim}

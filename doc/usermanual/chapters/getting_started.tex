@@ -271,13 +271,13 @@ An example electric field (which the name used above) can be found in the \texti
 \item \textbf{DEBUG}: In-depth details about the progress of the framework and all the physical details of the simulation. Produces large volumes of output per event usually and this level is therefore normally only used for  debugging the physics simulation of the modules.
 \item \textbf{TRACE}: Messages to trace what the framework or a module is currently doing. Does not contain any direct information unlike the \textbf{DEBUG} level above, but only indicates which part of the module or framework is currently running. Mostly used for software debugging or determining the speed bottleneck in simulations.
 \end{itemize}
-It is not recommended to set the \textbf{log\_level} higher than \textbf{WARNING} in a typical simulation as important messages could then be missed.
+It is not recommended to set the \textbf{log\_level} higher than \textbf{WARNING} in a typical simulation as important messages could be missed.
 
 The logging system does also support a few different formats to display the log messages. The following formats are supported for the global parameter \textbf{log\_format} and for the module parameter with the same name that overwrites it:
 \begin{itemize}
 \item \textbf{SHORT}: Displays the data in a short form. Includes only the first character of the log level followed by the section header and the message.
 \item \textbf{DEFAULT}: The default format. Displays the date, log level, section header and the message itself. 
-\item \textbf{LONG}: Detailed logging level. Besides the information above, it also shows the file and line where the log message was produced. This can help in debugging modules.
+\item \textbf{LONG}: Detailed logging format. Besides the information above, it also shows the file and line where the log message was produced. This can help in debugging modules.
 \end{itemize}
 
 More details about the logging system and the procedure for reporting errors in the code can be found in Section \ref{sec:logger} and \ref{sec:error_reporting_exceptions}.

@@ -173,7 +173,7 @@ If the module definition is successful it is checked if the module is an unique 
 \item \textbf{Unique}: Combination of the name of the module and the \textbf{input} and \textbf{output} parameter (both defaulting to an empty string). The priority is always zero.
 \item \textbf{Detector}: Combination of the name of the module, the \textbf{input} and \textbf{output} parameter (both defaulting to an empty string) and the name of detector this module runs on. If the name of the detector is specified directly by the \textbf{name} parameter the priority is zero. If the detector is only matched by the \textbf{type} parameter the priority is one. If the \textbf{name} and \textbf{type} are both not specified and the module is instantiated for all detectors there priority is two.
 \end{itemize}
-The instantiation logic only allows a single instance for every unique name. If there are multiple instantiations with the same unique name the instantiation with the highest priority is kept (thus the one with the lowest number). If there are multiple instantiations with the same name and priority an exception is raised instead.
+The instantiation logic only allows a single instance for every unique name. If there are multiple instantiations with the same unique name the instantiation with the highest priority is kept (thus the one with the lowest number). Otherwise if there are multiple instantiations with the same name and the same priority an exception is raised.
 
 \subsection{Geometry and Detectors}
 \label{sec:models_geometry}
@@ -196,22 +196,24 @@ void run(unsigned int event_id) {
 \end{minted}
 
 \subsubsection{Coordinate systems}
-The global frame has an arbitrary origin as there is nothing fixed in the world frame except the detectors which are defined relative to this arbitrary origin. Every detector also has a local coordinate system attached to it. The origin of this local coordinate system should NOT necessarily correspond with the geometric center of the sensitive device (and therefore the position and rotation center of the detector in the global frame). The origin of the local coordinate system is instead fixed to the center of the bottom-left collecting element (now referred as a pixel). 
+All detectors have a fixed position in the world frame which has an arbitrary origin. Every detector also has a local coordinate system attached to it. The origin of this local coordinate system does not necessarily correspond with the geometric center of the sensitive device, which is the center of orientation of the detector in the global frame. The origin of the local coordinate system is instead based on the pixel grid in the sensor. This allows for simpler calculations that are also easier to read. 
 
-The positive z-axis should point from the side of the sensor where the collection takes place upwards (normal to the bottom plane) to the top of the sensitive device. The x-axis should point in one of the arbitrary two directions in the plane where the pixel grid is defined. The y-axis should then be normal to both the x and the z-axis in such a way that a righ-handed coordinate system is constructed. 
+While the origin of the local coordinate system depends on the type of the model, there are fixed rules for the orientation of the coordinate system. The positive z-axis should point from the side of the sensor where collection takes place upwards (normal to the collection plane) to the other side of the sensitive device. The x-axis should point in one of the arbitrary two directions in the plane of the pixel grid. The y-axis should then be normal to both the x and the z-axis in such a way that a right-handed coordinate system is constructed. The 2D pixel grid is therefore in the XY-plane.
 
 \subsubsection{Detector models}
 \label{sec:detector_models}
-Different types of detector models can be used inside the framework. All models should extend from the DetectorModel base class which defines the minimum detector model defined in the framework:
+Different types of detector models are already available and shipped with the framework. Every models extends from the DetectorModel base class which defines the minimum parameter of a detector model in the framework:
 \begin{itemize}
-\item The coordinate of the rotation center (thus the specified position of the point in global frame) in the local frame.
-\item The position of the bottom-left (minimum) of the sensor (thus the sensitive device) in the local frame. This determines the size of the border ring ('guard ring') around the pixel grid. 
+\item The coordinate of the rotation center in the local frame. This is the location of the local point which is defined as position in the global frame.
+\item The position of the bottom-left (minimum) of the sensor (thus the sensitive device) in the local frame. This determines the excess of the sensor and the size of the guard rings around the pixel grid. 
 \item The total size of the sensor (thus the top-right corner offset from the bottom-left minimum position).
-\item The number of pixels in the sensor. Every pixel is basically an independent block replicated over the bottom of the sensor. This default to one if not overridden, which means the sensor has no replicated blocks.
+\item The number of pixels in the sensor. Every pixel is an independent block replicated over the XY plane of the sensor. The number of pixel defaults to one if it is not overridden, which means the default sensor has no replicated blocks.
 \item The size of an individual pixel. The multiplication of the pixel size and the number of pixels should not exceed the sensor.
 \end{itemize}
 
-This standard detector model can be extended to provide a more extended geometry if required by certain (more advanced) modules. Currently the only supported option is the PixelDetectorModel \todo{should we change this name?}, which apart from the sensor can also include guards rings, bump bonds, a chip, a PCB and a cover layer. To fetch the detector model as PixelDetectorModel, the base class should be downcasted as follows (the downcast return a null pointer if it is not a PixelDetectorModel).
+This standard detector model can be extended to provide a more detailed geometry as required by certain modules. Currently the only included advanced detector model is the PixelDetectorModel \todo{should we change this name?}, which apart from the sensor also includes guards rings, bump bonds, a readout ASIC chip, a PCB and a cover layer. 
+
+To fetch a detector model as PixelDetectorModel, the base class should be downcasted as follows (the downcast return a null pointer if it is not a PixelDetectorModel).
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
 // detector is a pointer to a Detector object
 std::shared_ptr<PixelDetectorModel> model = std::dynamic_pointer_cast<PixelDetectorModel>(detector->getModel());
@@ -219,14 +221,17 @@ if(model != nullptr) {
     // the model of this Detector is a PixelDetectorModel
 }
 \end{minted}
-For more details about the different types of supported models and how to add your own new model one should look at Section \ref{sec:adding_detector_model}.
+For more details about the different types of supported models and how to add your own new model, Section \ref{sec:adding_detector_model} should be consulted.
 
-Most of the standard detector models are shipped with the framework in the configuration format introduced in Section \ref{sec:config_file_format}. Other models can however be used additionally. The conversion of these configuration files to detector models happens in the geometry construction module \todo{is this where it should be}. The models should be searched for in the directories given in the following order:
+Many detector models are shipped with the framework in the configuration format introduced in Section \ref{sec:config_file_format}. Other models can however be used in addition. To support different detector models and configuration formats the framework supports different types of model readers. These model readers search the directories in the following order:
 \begin{enumerate}
 \item If defined, the paths in the \textit{models\_path} parameter provided to the reader module (overridden by the global configuration \textit{models\_path}) in the given order. Files are added directly. If the path is a directory, all files in the directory are added (not recursing into subdirectories).
 \item The location where the models are installed to (see the MODEL\_DIRECTORY variable in Section \ref{sec:cmake_config}). 
 \item The standard data paths on the system as given by the environmental variable \$XDG\_DATA\_DIRS with the \project-directory appended. The \$XDG\_DATA\_DIRS variable defaults to \textit{/usr/local/share/} (thus effectively \textit{/usr/local/share/\project}) followed by \textit{/usr/share/} (effectively \textit{/usr/share/\project}).
 \end{enumerate}
+ The framework provides a DefaultModelReader module to read all the default models in the framework. Almost every simulation should include this module.
+
+\todo{This should include more details about different model readers}
 
 \subsection{Passing Objects using Messages}
 \label{sec:objects_messages}
