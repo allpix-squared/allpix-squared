@@ -26,7 +26,7 @@ namespace allpix {
     class GeometryConstructionG4 : public G4VUserDetectorConstruction {
     public:
         // Constructor and destructor
-        GeometryConstructionG4(GeometryManager* geo, const G4ThreeVector& world_size, bool simple_view);
+        GeometryConstructionG4(GeometryManager* geo, const G4ThreeVector& world_size);
         ~GeometryConstructionG4() override;
 
         // Disallow copy
@@ -48,8 +48,6 @@ namespace allpix {
 
         // global input parameter for the world size (FIXME: determine this on the fly?)
         G4ThreeVector world_size_;
-        // determine if we have to build with simplified visualization
-        bool simple_view_;
 
         // storage of all the internal Geant4 detectors
         std::vector<std::unique_ptr<DetectorModelG4>> models_;

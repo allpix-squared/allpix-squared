@@ -40,8 +40,8 @@ using namespace std;
 using namespace allpix;
 
 // Constructor and destructor
-GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo, const G4ThreeVector& world_size, bool simple_view)
-    : geo_manager_(geo), world_size_(world_size), simple_view_(simple_view), world_material_(nullptr) {}
+GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo, const G4ThreeVector& world_size)
+    : geo_manager_(geo), world_size_(world_size), world_material_(nullptr) {}
 GeometryConstructionG4::~GeometryConstructionG4() = default;
 
 // Special version of std::make_shared that does not delete the pointer
@@ -65,11 +65,7 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     world_log_ = std::make_unique<G4LogicalVolume>(world_box.get(), world_material_, "World", nullptr, nullptr, nullptr);
 
     // set the world to invisible in the viewer
-    // FIXME: this should strictly not be defined here, but simplifies things a lot
-    G4VisAttributes invisibleVisAtt = G4VisAttributes(G4Color(1.0, 0.65, 0.0, 0.1));
-    invisibleVisAtt.SetVisibility(false);
-    invisibleVisAtt.SetForceSolid(false);
-    world_log_->SetVisAttributes(invisibleVisAtt);
+    world_log_->SetVisAttributes(G4VisAttributes::GetInvisible());
 
     // place the world at the center
     world_phys_ =
@@ -103,44 +99,8 @@ void GeometryConstructionG4::init_materials() {
     materials_["solder"] = Solder;
 }
 
-// WARNING: A DEFINE HERE THAT SHOULD PROBABLY BE A PARAMETER
-// NOTE: MULTIPLE ALERT HERE TO IDENTIFY PARTS THAT ARE NOT COPIED FROM ALLPIX 1
+// Build all pixel detector models
 void GeometryConstructionG4::build_pixel_devices() {
-    /* VISIBILITY
-     * set the visibility of several of the volumes
-     * FIXME: should strictly not be here but simplifies visualization
-     */
-
-    G4VisAttributes BoxVisAtt = G4VisAttributes(G4Color(0, 1, 1, 1));
-    BoxVisAtt.SetLineWidth(2);
-    BoxVisAtt.SetForceSolid(true);
-
-    G4VisAttributes ChipVisAtt = G4VisAttributes(G4Color::Gray());
-    ChipVisAtt.SetLineWidth(2);
-    ChipVisAtt.SetForceSolid(true);
-
-    G4VisAttributes BumpBoxVisAtt = G4VisAttributes(G4Color(0, 1, 0, 1.0));
-    BumpBoxVisAtt.SetLineWidth(1);
-    BumpBoxVisAtt.SetForceSolid(false);
-    BumpBoxVisAtt.SetVisibility(true);
-
-    G4VisAttributes BumpVisAtt = G4VisAttributes(G4Color::Yellow());
-    BumpVisAtt.SetLineWidth(2);
-    BumpVisAtt.SetForceSolid(true);
-
-    G4VisAttributes pcbVisAtt = G4VisAttributes(G4Color::Green());
-    pcbVisAtt.SetLineWidth(1);
-    pcbVisAtt.SetForceSolid(true);
-
-    G4VisAttributes guardRingsVisAtt = G4VisAttributes(G4Color(0.5, 0.5, 0.5, 1));
-    guardRingsVisAtt.SetLineWidth(1);
-    guardRingsVisAtt.SetForceSolid(true);
-
-    G4VisAttributes wrapperVisAtt = G4VisAttributes(G4Color(1, 0, 0, 0.9));
-    wrapperVisAtt.SetLineWidth(1);
-    wrapperVisAtt.SetForceSolid(false);
-    wrapperVisAtt.SetVisibility(false);
-
     /* NAMES
      * define the global names for all the elements in the setup
      */
@@ -246,7 +206,6 @@ void GeometryConstructionG4::build_pixel_devices() {
         solids_.push_back(wrapper_box);
         auto wrapper_log =
             make_shared_no_delete<G4LogicalVolume>(wrapper_box.get(), world_material_, wrapperName.second + "_log");
-        wrapper_log->SetVisAttributes(wrapperVisAtt); // NOTE NOTE
         detector->setExternalObject("wrapper_log", wrapper_log);
 
         // Get position and orientation
@@ -272,7 +231,6 @@ void GeometryConstructionG4::build_pixel_devices() {
         solids_.push_back(sensor_box);
         auto sensor_log =
             make_shared_no_delete<G4LogicalVolume>(sensor_box.get(), materials_["silicon"], BoxName.second + "_log");
-        sensor_log->SetVisAttributes(BoxVisAtt); // NOTE NOTE
         detector->setExternalObject("sensor_log", sensor_log);
 
         auto sensor_phys = make_shared_no_delete<G4PVPlacement>(
@@ -284,11 +242,7 @@ void GeometryConstructionG4::build_pixel_devices() {
             SliceName.first, model->getHalfPixelSizeX(), model->getHalfSensorSizeY(), model->getHalfSensorZ());
         solids_.push_back(slice_box);
 
-        auto slice_log =
-            make_shared_no_delete<G4LogicalVolume>(slice_box.get(), materials_["silicon"], SliceName.second); // 0,0,0);
-        if(simple_view_) {
-            slice_log->SetVisAttributes(G4VisAttributes::GetInvisible()); // NOTE NOTE
-        }
+        auto slice_log = make_shared_no_delete<G4LogicalVolume>(slice_box.get(), materials_["silicon"], SliceName.second);
         detector->setExternalObject("slice_log", slice_log);
 
         // Place the slices
@@ -302,10 +256,6 @@ void GeometryConstructionG4::build_pixel_devices() {
         solids_.push_back(pixel_box);
         auto pixel_log = make_shared_no_delete<G4LogicalVolume>(pixel_box.get(), materials_["silicon"], PixelName.second);
         detector->setExternalObject("pixel_log", pixel_log);
-
-        if(simple_view_) {
-            pixel_log->SetVisAttributes(G4VisAttributes::GetInvisible()); // NOTE NOTE
-        }
 
         // Place the pixels
         auto pixel_div = std::make_shared<G4PVDivision>(
@@ -338,7 +288,6 @@ void GeometryConstructionG4::build_pixel_devices() {
             // Create the logical wrapper volume
             auto bumps_wrapper_log =
                 make_shared_no_delete<G4LogicalVolume>(bump_box.get(), materials_["air"], BumpBoxName.second + "_log");
-            bumps_wrapper_log->SetVisAttributes(BumpBoxVisAtt); // NOTE NOTE
             detector->setExternalObject("bumps_wrapper_log", bumps_wrapper_log);
 
             // Place the general bumps volume
@@ -349,11 +298,6 @@ void GeometryConstructionG4::build_pixel_devices() {
             // Create the logical volume for the individual bumps
             auto bumps_cell_log =
                 make_shared_no_delete<G4LogicalVolume>(bump.get(), materials_["solder"], BumpBoxName.second + "_log");
-            if(simple_view_) {
-                bumps_cell_log->SetVisAttributes(G4VisAttributes::GetInvisible()); // NOTE NOTE
-            } else {
-                bumps_cell_log->SetVisAttributes(BumpVisAtt); // NOTE NOTE
-            }
             detector->setExternalObject("bumps_cell_log", bumps_cell_log);
 
             // Create and instantiate a parameterization of the individual bumps
@@ -389,7 +333,6 @@ void GeometryConstructionG4::build_pixel_devices() {
         // Create the logical volume for the guard rings
         auto guard_rings_log = make_shared_no_delete<G4LogicalVolume>(
             guard_rings_solid.get(), materials_["silicon"], GuardRingsName.second + "_log");
-        guard_rings_log->SetVisAttributes(guardRingsVisAtt); // NOTE NOTE
         detector->setExternalObject("guard_rings_log", guard_rings_log);
 
         // Place the guard rings
@@ -411,7 +354,6 @@ void GeometryConstructionG4::build_pixel_devices() {
             // Create the logical volume for the chip
             auto chip_log =
                 make_shared_no_delete<G4LogicalVolume>(chip_box.get(), materials_["silicon"], ChipName.second + "_log");
-            chip_log->SetVisAttributes(ChipVisAtt);
             detector->setExternalObject("chip_log", chip_log);
 
             // Place the chip
@@ -433,7 +375,6 @@ void GeometryConstructionG4::build_pixel_devices() {
             // Create the logical volume for the PCB
             auto PCB_log =
                 make_shared_no_delete<G4LogicalVolume>(PCB_box.get(), materials_["epoxy"], PCBName.second + "_log");
-            PCB_log->SetVisAttributes(pcbVisAtt);
             detector->setExternalObject("pcb_log", PCB_log);
 
             // Place the PCB

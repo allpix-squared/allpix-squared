@@ -45,6 +45,7 @@ namespace allpix {
         void set_visibility_attributes();
 
         Configuration config_;
+        GeometryManager* geo_manager_;
 
         // variable to check if we did run succesfullly
         bool has_run_;
