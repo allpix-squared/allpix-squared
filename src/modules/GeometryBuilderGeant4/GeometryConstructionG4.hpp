@@ -7,6 +7,7 @@
 
 #include "G4Material.hh"
 #include "G4ThreeVector.hh"
+#include "G4VSolid.hh"
 #include "G4VUserDetectorConstruction.hh"
 
 #include "core/geometry/GeometryManager.hpp"
@@ -37,20 +38,23 @@ namespace allpix {
         G4VPhysicalVolume* Construct() override;
 
     private:
+        void init_materials();
         void build_pixel_devices();
 
-        // geometry manager
         GeometryManager* geo_manager_;
 
         // global input parameter for the world size (FIXME: determine this on the fly?)
         G4ThreeVector world_size_;
-        // determine if we have to build with simplified visualization (speed up)
+        // determine if we have to build with simplified visualization
         bool simple_view_;
 
         // storage of all the internal Geant4 detectors
         std::vector<std::unique_ptr<DetectorModelG4>> models_;
 
+        std::map<std::string, G4Material*> materials_;
+
         // internal storage
+        std::vector<std::shared_ptr<G4VSolid>> solids_;
         G4Material* world_material_;
         G4LogicalVolume* world_log_;
         G4VPhysicalVolume* world_phys_;

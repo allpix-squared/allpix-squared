@@ -91,9 +91,7 @@ void DepositionGeant4Module::init() {
         useful_deposition = true;
 
         // get model of the detector
-        // auto model_g4 =
-        // auto pixel_log = detector->getExternalModel<DetectorModelG4>()->pixel_log;
-        auto pixel_log = detector->getExternalObject<G4LogicalVolume>("pixel");
+        auto pixel_log = detector->getExternalObject<G4LogicalVolume>("pixel_log");
         if(pixel_log == nullptr) {
             throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
         }

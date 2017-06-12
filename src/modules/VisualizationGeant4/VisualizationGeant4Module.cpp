@@ -64,6 +64,9 @@ void VisualizationGeant4Module::init() {
 #endif
     }
 
+    // Set the visibility attributes for visualization
+    set_visibility_attributes();
+
     // initialize the session and the visualization manager
     LOG(TRACE) << "Initializing visualization";
     vis_manager_g4_ = std::make_unique<G4VisExecutive>("quiet");
@@ -113,6 +116,10 @@ void VisualizationGeant4Module::init() {
 
     // release the g4 output
     RELEASE_STREAM(G4cout);
+}
+
+void VisualizationGeant4Module::set_visibility_attributes() {
+    // FIXME
 }
 
 void VisualizationGeant4Module::run(unsigned int) {
