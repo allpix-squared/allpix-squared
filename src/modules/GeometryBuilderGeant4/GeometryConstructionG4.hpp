@@ -5,6 +5,9 @@
 #ifndef ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_DETECTOR_CONSTRUCTION_H
 #define ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_DETECTOR_CONSTRUCTION_H
 
+#include <memory>
+#include <utility>
+
 #include "G4Material.hh"
 #include "G4ThreeVector.hh"
 #include "G4VSolid.hh"
@@ -56,8 +59,8 @@ namespace allpix {
         // internal storage
         std::vector<std::shared_ptr<G4VSolid>> solids_;
         G4Material* world_material_;
-        G4LogicalVolume* world_log_;
-        G4VPhysicalVolume* world_phys_;
+        std::unique_ptr<G4LogicalVolume> world_log_;
+        std::unique_ptr<G4VPhysicalVolume> world_phys_;
     };
 } // namespace allpix
 

@@ -41,9 +41,14 @@ using namespace allpix;
 
 // Constructor and destructor
 GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo, const G4ThreeVector& world_size, bool simple_view)
-    : geo_manager_(geo), world_size_(world_size), simple_view_(simple_view), world_material_(nullptr), world_log_(nullptr),
-      world_phys_(nullptr) {}
+    : geo_manager_(geo), world_size_(world_size), simple_view_(simple_view), world_material_(nullptr) {}
 GeometryConstructionG4::~GeometryConstructionG4() = default;
+
+// Special version of std::make_shared that does not delete the pointer
+// NOTE: needed because some pointers are deleted by Geant4 internally
+template <typename T, typename... Args> static std::shared_ptr<T> make_shared_no_delete(Args... args) {
+    return std::shared_ptr<T>(new T(args...), [](T*) {});
+}
 
 // Build geometry
 G4VPhysicalVolume* GeometryConstructionG4::Construct() {
@@ -55,8 +60,9 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     LOG(TRACE) << "Material of world " << world_material_->GetName();
 
     // build the world
-    G4Box* world_box = new G4Box("World", world_size_[0], world_size_[1], world_size_[2]);
-    world_log_ = new G4LogicalVolume(world_box, world_material_, "World", nullptr, nullptr, nullptr);
+    auto world_box = std::make_shared<G4Box>("World", world_size_[0], world_size_[1], world_size_[2]);
+    solids_.push_back(world_box);
+    world_log_ = std::make_unique<G4LogicalVolume>(world_box.get(), world_material_, "World", nullptr, nullptr, nullptr);
 
     // set the world to invisible in the viewer
     // FIXME: this should strictly not be defined here, but simplifies things a lot
@@ -66,14 +72,15 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     world_log_->SetVisAttributes(invisibleVisAtt);
 
     // place the world at the center
-    world_phys_ = new G4PVPlacement(nullptr, G4ThreeVector(0., 0., 0.), world_log_, "World", nullptr, false, 0);
+    world_phys_ =
+        std::make_unique<G4PVPlacement>(nullptr, G4ThreeVector(0., 0., 0.), world_log_.get(), "World", nullptr, false, 0);
 
     // build the pixel devices
     build_pixel_devices();
 
     // WARNING: some debug printing here about the placement of the detectors
 
-    return world_phys_;
+    return world_phys_.get();
 }
 
 // Initialize all required materials
@@ -140,7 +147,6 @@ void GeometryConstructionG4::build_pixel_devices() {
     pair<G4String, G4String> wrapperName = make_pair("wrapper", "");
     pair<G4String, G4String> PCBName = make_pair("PCB", "");
     pair<G4String, G4String> BoxName = make_pair("Box", "");
-    // pair<G4String, G4String> CoverlayerName = make_pair("Coverlayer", "");
     pair<G4String, G4String> SliceName = make_pair("Slice", "");
     pair<G4String, G4String> GuardRingsExtName = make_pair("GuardRingsExt", "");
     pair<G4String, G4String> GuardRingsName = make_pair("GuardRings", "");
@@ -150,27 +156,20 @@ void GeometryConstructionG4::build_pixel_devices() {
     pair<G4String, G4String> BumpName = make_pair("Bump", "");
     pair<G4String, G4String> BumpBoxName = make_pair("BumpBox", "");
 
-    /* CONSTRUCTION
-     * construct the detectors part by part
-     */
+    // Loop through all detectors to construct them
     std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
     LOG(TRACE) << "Building " << detectors.size() << " device(s)";
 
     for(auto& detector : detectors) {
-        // get pointers for the model of the detector
+        // Get pointers for the model of the detector
         std::shared_ptr<PixelDetectorModel> model = std::dynamic_pointer_cast<PixelDetectorModel>(detector->getModel());
 
-        // ignore all non-pixel detectors
+        // Ignore all non-pixel detectors for now
         if(model == nullptr) {
             LOG(ERROR) << "Ignoring detector " << detector->getName()
                        << " because a Geant4 model cannot yet be build for a non-pixel detector";
             continue;
         }
-
-        // NOTE: create temporary internal integer
-        // FIXME: this is not necessary unique! if this is necessary generate it internally!
-        std::hash<std::string> hash_func;
-        int temp_g4_id = static_cast<int>(hash_func(detector->getName()));
 
         LOG(DEBUG) << "Creating Geant4 model for " << detector->getName();
 
@@ -186,53 +185,23 @@ void GeometryConstructionG4::build_pixel_devices() {
         G4ThreeVector posChip(0, 0, 0);
         G4ThreeVector posPCB(0, 0, 0);
 
-        // ALERT: NO WRAPPER ENHANCEMENTS
-        // apply position offset for the detector due to the enhancement
-        /*if ( m_vectorWrapperEnhancement.find(temp_g4_id) != m_vectorWrapperEnhancement.end() ) {
-            posDevice.setX(posDevice.x() - m_vectorWrapperEnhancement[*detector].x()/2.);
-            posDevice.setY(posDevice.y() - m_vectorWrapperEnhancement[*detector].y()/2.);
-            posDevice.setZ(posDevice.z() - m_vectorWrapperEnhancement[*detector].z()/2.);
-        } else {*/
-        posDevice.setX(posDevice.x());
-        posDevice.setY(posDevice.y());
-        posDevice.setZ(posDevice.z());
-        //}
-
         // calculation of position of the different physical volumes
         if(model->getHalfChipSizeZ() != 0) {
-            posBumps.setX(posDevice.x());
-            posBumps.setY(posDevice.y());
-            posBumps.setZ(posDevice.z()
-                          // wrapperHZ
-                          -
-                          model->getHalfSensorZ()
-                          //- 2.*model->GetHalfCoverlayerZ()
-                          -
-                          (bump_height / 2.));
+            posBumps.setZ(posDevice.z() - model->getHalfSensorZ() - (bump_height / 2.));
 
             posChip.setX(posDevice.x() + model->getChipOffsetX());
             posChip.setY(posDevice.y() + model->getChipOffsetY());
-            posChip.setZ(posDevice.z()
-                         // wrapperHZ
-                         -
-                         model->getHalfSensorZ()
-                         //- 2.*model->GetHalfCoverlayerZ()
-                         -
-                         bump_height - model->getHalfChipSizeZ() + model->getChipOffsetZ());
+            posChip.setZ(posDevice.z() - model->getHalfSensorZ() - bump_height - model->getHalfChipSizeZ() +
+                         model->getChipOffsetZ());
 
         } else {
-            // make sure no offset because of bumps for PCB is calculated if chip is not included
+            // make sure no offset because bumps for PCB are calculated if chip is not included
             bump_height = 0;
         }
         posPCB.setX(posDevice.x() - model->getSensorOffsetX());
         posPCB.setY(posDevice.y() - model->getSensorOffsetY());
-        posPCB.setZ(posDevice.z()
-                    // wrapperHZ
-                    -
-                    model->getHalfSensorZ()
-                    //- 2.*model->GetHalfCoverlayerZ()
-                    -
-                    bump_height - 2. * model->getHalfChipSizeZ() - model->getHalfPCBSizeZ());
+        posPCB.setZ(posDevice.z() - model->getHalfSensorZ() - bump_height - 2. * model->getHalfChipSizeZ() -
+                    model->getHalfPCBSizeZ());
 
         LOG(DEBUG) << " Local relative positions of the geometry parts";
         LOG(DEBUG) << " - Coverlayer position  : " << display_vector(posCoverlayer, {"mm", "um"});
@@ -249,7 +218,6 @@ void GeometryConstructionG4::build_pixel_devices() {
         wrapperName.second = wrapperName.first + "_" + name;
         PCBName.second = PCBName.first + "_" + name;
         BoxName.second = BoxName.first + "_" + name;
-        // CoverlayerName.second = CoverlayerName.first + "_" + name;
         GuardRingsExtName.second = GuardRingsExtName.first + "_" + name;
         GuardRingsName.second = GuardRingsName.first + "_" + name;
         SliceName.second = BoxName.first + "_" + name;
@@ -265,8 +233,7 @@ void GeometryConstructionG4::build_pixel_devices() {
          * FIXME: this should be centered at the correct place
          */
 
-        // The wrapper might be enhanced when the user set up
-        //  Appliances to the detector (extra layers, etc).
+        // Get wrapper sizes
         G4double wrapperHX = model->getHalfWrapperDX();
         G4double wrapperHY = model->getHalfWrapperDY();
         G4double wrapperHZ = model->getHalfWrapperDZ();
@@ -276,22 +243,23 @@ void GeometryConstructionG4::build_pixel_devices() {
 
         // Create the wrapper box and logical volume
         auto wrapper_box = std::make_shared<G4Box>(wrapperName.second, 2. * wrapperHX, 2. * wrapperHY, 2. * wrapperHZ);
+        solids_.push_back(wrapper_box);
         auto wrapper_log =
-            std::make_shared<G4LogicalVolume>(wrapper_box.get(), world_material_, wrapperName.second + "_log");
+            make_shared_no_delete<G4LogicalVolume>(wrapper_box.get(), world_material_, wrapperName.second + "_log");
         wrapper_log->SetVisAttributes(wrapperVisAtt); // NOTE NOTE
         detector->setExternalObject("wrapper_log", wrapper_log);
-        solids_.push_back(wrapper_box);
 
         // Get position and orientation
         G4ThreeVector posWrapper = toG4Vector(detector->getPosition());
         ROOT::Math::EulerAngles angles = detector->getOrientation();
-        auto* rotWrapper = new G4RotationMatrix(angles.Phi(), angles.Theta(), angles.Psi()); // NOTE NOTE
+        auto rotWrapper = std::make_shared<G4RotationMatrix>(angles.Phi(), angles.Theta(), angles.Psi());
+        detector->setExternalObject("rotation_matrix", rotWrapper);
 
         // ALERT: NO WRAPPER ENHANCEMENTS
 
         // Place the wrapper
-        auto wrapper_phys = std::make_shared<G4PVPlacement>(
-            rotWrapper, posWrapper, wrapper_log.get(), wrapperName.second + "_phys", world_log_, false, temp_g4_id, true);
+        auto wrapper_phys = make_shared_no_delete<G4PVPlacement>(
+            rotWrapper.get(), posWrapper, wrapper_log.get(), wrapperName.second + "_phys", world_log_.get(), false, 0, true);
         detector->setExternalObject("wrapper_phys", wrapper_phys);
 
         /* SENSOR
@@ -303,12 +271,12 @@ void GeometryConstructionG4::build_pixel_devices() {
             BoxName.second, model->getHalfSensorSizeX(), model->getHalfSensorSizeY(), model->getHalfSensorZ());
         solids_.push_back(sensor_box);
         auto sensor_log =
-            std::make_shared<G4LogicalVolume>(sensor_box.get(), materials_["silicon"], BoxName.second + "_log");
+            make_shared_no_delete<G4LogicalVolume>(sensor_box.get(), materials_["silicon"], BoxName.second + "_log");
         sensor_log->SetVisAttributes(BoxVisAtt); // NOTE NOTE
         detector->setExternalObject("sensor_log", sensor_log);
 
-        auto sensor_phys = std::make_shared<G4PVPlacement>(
-            nullptr, posDevice, sensor_log.get(), BoxName.second + "_phys", wrapper_log.get(), false, temp_g4_id, true);
+        auto sensor_phys = make_shared_no_delete<G4PVPlacement>(
+            nullptr, posDevice, sensor_log.get(), BoxName.second + "_phys", wrapper_log.get(), false, 0, true);
         detector->setExternalObject("sensor_phys", sensor_phys);
 
         // Create the slice boxes and logical volumes
@@ -317,7 +285,7 @@ void GeometryConstructionG4::build_pixel_devices() {
         solids_.push_back(slice_box);
 
         auto slice_log =
-            std::make_shared<G4LogicalVolume>(slice_box.get(), materials_["silicon"], SliceName.second); // 0,0,0);
+            make_shared_no_delete<G4LogicalVolume>(slice_box.get(), materials_["silicon"], SliceName.second); // 0,0,0);
         if(simple_view_) {
             slice_log->SetVisAttributes(G4VisAttributes::GetInvisible()); // NOTE NOTE
         }
@@ -332,7 +300,7 @@ void GeometryConstructionG4::build_pixel_devices() {
         auto pixel_box = std::make_shared<G4Box>(
             PixelName.first, model->getHalfPixelSizeX(), model->getHalfPixelSizeY(), model->getHalfSensorZ());
         solids_.push_back(pixel_box);
-        auto pixel_log = std::make_shared<G4LogicalVolume>(pixel_box.get(), materials_["silicon"], PixelName.second);
+        auto pixel_log = make_shared_no_delete<G4LogicalVolume>(pixel_box.get(), materials_["silicon"], PixelName.second);
         detector->setExternalObject("pixel_log", pixel_log);
 
         if(simple_view_) {
@@ -369,24 +337,18 @@ void GeometryConstructionG4::build_pixel_devices() {
 
             // Create the logical wrapper volume
             auto bumps_wrapper_log =
-                std::make_shared<G4LogicalVolume>(bump_box.get(), materials_["air"], BumpBoxName.second + "_log");
+                make_shared_no_delete<G4LogicalVolume>(bump_box.get(), materials_["air"], BumpBoxName.second + "_log");
             bumps_wrapper_log->SetVisAttributes(BumpBoxVisAtt); // NOTE NOTE
             detector->setExternalObject("bumps_wrapper_log", bumps_wrapper_log);
 
             // Place the general bumps volume
-            auto bumps_wrapper_phys = std::make_shared<G4PVPlacement>(nullptr,
-                                                                      posBumps,
-                                                                      bumps_wrapper_log.get(),
-                                                                      BumpBoxName.second + "_phys",
-                                                                      wrapper_log.get(),
-                                                                      false,
-                                                                      temp_g4_id,
-                                                                      true);
+            auto bumps_wrapper_phys = make_shared_no_delete<G4PVPlacement>(
+                nullptr, posBumps, bumps_wrapper_log.get(), BumpBoxName.second + "_phys", wrapper_log.get(), false, 0, true);
             detector->setExternalObject("bumps_wrapper_phys", bumps_wrapper_phys);
 
             // Create the logical volume for the individual bumps
             auto bumps_cell_log =
-                std::make_shared<G4LogicalVolume>(bump.get(), materials_["solder"], BumpBoxName.second + "_log");
+                make_shared_no_delete<G4LogicalVolume>(bump.get(), materials_["solder"], BumpBoxName.second + "_log");
             if(simple_view_) {
                 bumps_cell_log->SetVisAttributes(G4VisAttributes::GetInvisible()); // NOTE NOTE
             } else {
@@ -425,13 +387,13 @@ void GeometryConstructionG4::build_pixel_devices() {
         solids_.push_back(guard_rings_solid);
 
         // Create the logical volume for the guard rings
-        auto guard_rings_log = std::make_shared<G4LogicalVolume>(
+        auto guard_rings_log = make_shared_no_delete<G4LogicalVolume>(
             guard_rings_solid.get(), materials_["silicon"], GuardRingsName.second + "_log");
         guard_rings_log->SetVisAttributes(guardRingsVisAtt); // NOTE NOTE
         detector->setExternalObject("guard_rings_log", guard_rings_log);
 
         // Place the guard rings
-        auto guard_rings_phys = std::make_shared<G4PVPlacement>(
+        auto guard_rings_phys = make_shared_no_delete<G4PVPlacement>(
             nullptr, posDevice, guard_rings_log.get(), GuardRingsName.second + "_phys", wrapper_log.get(), false, 0, true);
         detector->setExternalObject("guard_rings_phys", guard_rings_phys);
 
@@ -448,13 +410,13 @@ void GeometryConstructionG4::build_pixel_devices() {
 
             // Create the logical volume for the chip
             auto chip_log =
-                std::make_shared<G4LogicalVolume>(chip_box.get(), materials_["silicon"], ChipName.second + "_log");
+                make_shared_no_delete<G4LogicalVolume>(chip_box.get(), materials_["silicon"], ChipName.second + "_log");
             chip_log->SetVisAttributes(ChipVisAtt);
             detector->setExternalObject("chip_log", chip_log);
 
             // Place the chip
-            auto chip_phys = std::make_shared<G4PVPlacement>(
-                nullptr, posChip, chip_log.get(), ChipName.second + "_phys", wrapper_log.get(), false, temp_g4_id, true);
+            auto chip_phys = make_shared_no_delete<G4PVPlacement>(
+                nullptr, posChip, chip_log.get(), ChipName.second + "_phys", wrapper_log.get(), false, 0, true);
             detector->setExternalObject("chip_phys", chip_phys);
         }
 
@@ -469,13 +431,14 @@ void GeometryConstructionG4::build_pixel_devices() {
             solids_.push_back(PCB_box);
 
             // Create the logical volume for the PCB
-            auto PCB_log = std::make_shared<G4LogicalVolume>(PCB_box.get(), materials_["epoxy"], PCBName.second + "_log");
+            auto PCB_log =
+                make_shared_no_delete<G4LogicalVolume>(PCB_box.get(), materials_["epoxy"], PCBName.second + "_log");
             PCB_log->SetVisAttributes(pcbVisAtt);
             detector->setExternalObject("pcb_log", PCB_log);
 
             // Place the PCB
-            auto PCB_phys = std::make_shared<G4PVPlacement>(
-                nullptr, posPCB, PCB_log.get(), PCBName.second + "_phys", wrapper_log.get(), false, temp_g4_id, true);
+            auto PCB_phys = make_shared_no_delete<G4PVPlacement>(
+                nullptr, posPCB, PCB_log.get(), PCBName.second + "_phys", wrapper_log.get(), false, 0, true);
             detector->setExternalObject("pcb_phys", PCB_phys);
         }
 
