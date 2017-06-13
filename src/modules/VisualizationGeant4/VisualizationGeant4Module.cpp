@@ -157,7 +157,7 @@ void VisualizationGeant4Module::set_visualization_settings() {
     }
 
     // Accumulate all events if requested
-    bool accumulate = config_.get<bool>("accumulate");
+    auto accumulate = config_.get<bool>("accumulate");
     if(accumulate) {
         UI->ApplyCommand("/vis/scene/endOfEventAction accumulate");
         UI->ApplyCommand("/vis/scene/endOfRunAction accumulate");
@@ -178,7 +178,7 @@ void VisualizationGeant4Module::set_visualization_settings() {
         }
 
         // Hide trajectories inside the detectors
-        bool hide_trajectories = config_.get<bool>("hide_trajectories", true);
+        auto hide_trajectories = config_.get<bool>("hide_trajectories", true);
         if(hide_trajectories) {
             UI->ApplyCommand("/vis/viewer/set/hiddenEdge 1");
             UI->ApplyCommand("/vis/viewer/set/hiddenMarker 1");
@@ -251,7 +251,7 @@ void VisualizationGeant4Module::set_visualization_settings() {
     }
 
     // Set viewer style
-    std::string view_style = config_.get<std::string>("view_style", "surface");
+    auto view_style = config_.get<std::string>("view_style", "surface");
     ret_code = UI->ApplyCommand("/vis/viewer/set/style " + view_style);
     if(ret_code != 0) {
         throw InvalidValueError(config_, "view_style", "viewing style is not defined");
