@@ -34,6 +34,9 @@ namespace allpix {
         // Initializes the visualization and parameters
         void init() override;
 
+        // Show updates every run if not accumulating
+        void run(unsigned int) override;
+
         // Display the visualization
         void finalize() override;
 

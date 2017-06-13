@@ -4,10 +4,12 @@
 
 #include "VisualizationGeant4Module.hpp"
 
+#include <chrono>
 #include <cstdlib>
 #include <cstring>
 #include <memory>
 #include <string>
+#include <thread>
 #include <utility>
 
 #include <G4LogicalVolume.hh>
@@ -27,8 +29,9 @@ using namespace allpix;
 
 VisualizationGeant4Module::VisualizationGeant4Module(Configuration config, Messenger*, GeometryManager* geo_manager)
     : Module(config), config_(std::move(config)), geo_manager_(geo_manager), has_run_(false), session_param_ptr_(nullptr) {
-    // Set default mode for display
+    // Set default mode and driver for display
     config_.setDefault("mode", "gui");
+    config_.setDefault("driver", "OGL");
 
     // Set to accumulate all hits and display at the end by default
     config_.setDefault("accumulate", true);
@@ -134,7 +137,7 @@ void VisualizationGeant4Module::init() {
 
     // Execute initialization macro if provided
     if(config_.has("macro_init")) {
-        UI->ApplyCommand("/control/execute " + config_.getPath("macro_init"));
+        UI->ApplyCommand("/control/execute " + config_.getPath("macro_init", true));
     }
 
     // Release the g4 output
@@ -158,14 +161,21 @@ void VisualizationGeant4Module::set_visualization_settings() {
     if(accumulate) {
         UI->ApplyCommand("/vis/scene/endOfEventAction accumulate");
         UI->ApplyCommand("/vis/scene/endOfRunAction accumulate");
-        UI->ApplyCommand("/tracking/storeTrajectory 1");
+    } else {
+        UI->ApplyCommand("/vis/scene/endOfEventAction refresh");
+        UI->ApplyCommand("/vis/scene/endOfRunAction refresh");
     }
 
     // Display trajectories if specified
     auto display_trajectories = config_.get<bool>("display_trajectories", true);
     if(display_trajectories) {
         // Add smooth trajectories
-        UI->ApplyCommand("/vis/scene/add/trajectories smooth");
+        UI->ApplyCommand("/vis/scene/add/trajectories rich smooth");
+
+        // Store trajectories if accumulating
+        if(accumulate) {
+            UI->ApplyCommand("/tracking/storeTrajectory 2");
+        }
 
         // Hide trajectories inside the detectors
         bool hide_trajectories = config_.get<bool>("hide_trajectories", true);
@@ -176,55 +186,61 @@ void VisualizationGeant4Module::set_visualization_settings() {
 
         // color trajectories by charge or particle id
         auto traj_color = config_.get<std::string>("trajectories_color_mode", "charge");
-        if(traj_color == "charge") {
-            // Create draw by charge
-            UI->ApplyCommand("/vis/modeling/trajectories/create/drawByCharge defaultCharge");
+        if(traj_color == "generic") {
+            UI->ApplyCommand("/vis/modeling/trajectories/create/generic allpixModule");
 
-            // Set default settings for steps
-            auto draw_steps = config_.get<bool>("trajectories_draw_step", true);
-            if(draw_steps) {
-                UI->ApplyCommand("/vis/modeling/trajectories/defaultCharge/default/setDrawStepPts true");
-                ret_code = UI->ApplyCommand("/vis/modeling/trajectories/defaultCharge/default/setStepPtsSize " +
-                                            config_.get<std::string>("trajectories_draw_step_size", "2"));
-                if(ret_code != 0) {
-                    throw InvalidValueError(config_, "trajectories_draw_step_size", "step size not valid");
-                }
-                ret_code = UI->ApplyCommand("/vis/modeling/trajectories/defaultCharge/default/setStepPtsColour " +
-                                            config_.get<std::string>("trajectories_draw_step_color", "red"));
-                if(ret_code != 0) {
-                    throw InvalidValueError(config_, "trajectories_draw_step_color", "step color not defined");
-                }
-            }
+            UI->ApplyCommand("/vis/modeling/trajectories/allpixModule/default/setLineColor " +
+                             config_.get<std::string>("trajectories_color", "blue"));
+        } else if(traj_color == "charge") {
+            // Create draw by charge
+            UI->ApplyCommand("/vis/modeling/trajectories/create/drawByCharge allpixModule");
 
             // Set colors for charges
-            ret_code = UI->ApplyCommand("/vis/modeling/trajectories/defaultCharge/set 1 " +
+            ret_code = UI->ApplyCommand("/vis/modeling/trajectories/allpixModule/set 1 " +
                                         config_.get<std::string>("trajectories_color_positive", "blue"));
             if(ret_code != 0) {
                 throw InvalidValueError(config_, "trajectories_color_positive", "charge color not defined");
             }
-            UI->ApplyCommand("/vis/modeling/trajectories/defaultCharge/set 0 " +
+            UI->ApplyCommand("/vis/modeling/trajectories/allpixModule/set 0 " +
                              config_.get<std::string>("trajectories_color_neutral", "green"));
             if(ret_code != 0) {
                 throw InvalidValueError(config_, "trajectories_color_neutral", "charge color not defined");
             }
-            UI->ApplyCommand("/vis/modeling/trajectories/defaultCharge/set -1 " +
+            UI->ApplyCommand("/vis/modeling/trajectories/allpixModule/set -1 " +
                              config_.get<std::string>("trajectories_color_negative", "red"));
             if(ret_code != 0) {
                 throw InvalidValueError(config_, "trajectories_color_negative", "charge color not defined");
             }
         } else if(traj_color == "particle") {
-            UI->ApplyCommand("/vis/modeling/trajectories/create/drawByParticleID defaultParticle");
+            UI->ApplyCommand("/vis/modeling/trajectories/create/drawByParticleID allpixModule");
 
             auto particle_colors = config_.get<std::string>("trajectories_particle_colors");
             for(auto& particle_color : particle_colors) {
-                ret_code = UI->ApplyCommand("/vis/modeling/trajectories/defaultParticle/set " + particle_color);
+                ret_code = UI->ApplyCommand("/vis/modeling/trajectories/allpixModule/set " + particle_color);
                 if(ret_code != 0) {
                     throw InvalidValueError(
                         config_, "trajectories_particle_colors", "combination particle type and color not valid");
                 }
             }
         } else {
-            throw InvalidValueError(config_, "trajectories_color_mode", "only 'charge' or 'particle' are supported");
+            throw InvalidValueError(
+                config_, "trajectories_color_mode", "only 'generic', 'charge' or 'particle' are supported");
+        }
+
+        // Set default settings for steps
+        auto draw_steps = config_.get<bool>("trajectories_draw_step", true);
+        if(draw_steps) {
+            UI->ApplyCommand("/vis/modeling/trajectories/allpixModule/default/setDrawStepPts true");
+            ret_code = UI->ApplyCommand("/vis/modeling/trajectories/allpixModule/default/setStepPtsSize " +
+                                        config_.get<std::string>("trajectories_draw_step_size", "2"));
+            if(ret_code != 0) {
+                throw InvalidValueError(config_, "trajectories_draw_step_size", "step size not valid");
+            }
+            ret_code = UI->ApplyCommand("/vis/modeling/trajectories/allpixModule/default/setStepPtsColour " +
+                                        config_.get<std::string>("trajectories_draw_step_color", "red"));
+            if(ret_code != 0) {
+                throw InvalidValueError(config_, "trajectories_draw_step_color", "step color not defined");
+            }
         }
     }
 
@@ -243,6 +259,11 @@ void VisualizationGeant4Module::set_visualization_settings() {
 
     // Set default viewer orientation
     UI->ApplyCommand("/vis/viewer/set/viewpointThetaPhi 70 20");
+
+    // Do auto refresh if not accumulating and start viewer already
+    if(!accumulate) {
+        UI->ApplyCommand("/vis/viewer/set/autoRefresh true");
+    }
 }
 
 // Create all visualization attributes
@@ -251,7 +272,7 @@ void VisualizationGeant4Module::set_visibility_attributes() {
     // Transparency can be switched off in the visualisation.
     auto alpha = config_.get<double>("transparency", 0.4);
     if(alpha < 0 || alpha > 1) {
-        throw InvalidValueError(config_, "transparency", "Transparency level should be between 0 and 1");
+        throw InvalidValueError(config_, "transparency", "transparency level should be between 0 and 1");
     }
 
     // Wrapper
@@ -353,6 +374,14 @@ void VisualizationGeant4Module::set_visibility_attributes() {
     }
 }
 
+void VisualizationGeant4Module::run(unsigned int) {
+    if(!config_.get<bool>("accumulate")) {
+        vis_manager_g4_->GetCurrentViewer()->ShowView();
+        std::this_thread::sleep_for(
+            std::chrono::nanoseconds(config_.get<unsigned long>("accumulate_time_step", Units::get(100ul, "ms"))));
+    }
+}
+
 // Display the visualization after all events have passed
 void VisualizationGeant4Module::finalize() {
     // Enable automatic refresh before showing view
@@ -363,6 +392,7 @@ void VisualizationGeant4Module::finalize() {
     if(config_.get<std::string>("mode") == "gui") {
         LOG(INFO) << "Starting visualization session";
         gui_session_->SessionStart();
+        LOG(ERROR) << "AFTER";
     } else if(config_.get<std::string>("mode") == "terminal") {
         LOG(INFO) << "Starting terminal session";
         std::unique_ptr<G4UIsession> session = std::make_unique<G4UIterminal>();
