@@ -237,23 +237,6 @@ void VisualizationGeant4Module::set_visibility_attributes() {
     }
 }
 
-void VisualizationGeant4Module::run(unsigned int) {
-    // suppress stream if not in debugging mode
-    IFLOG(DEBUG);
-    else {
-        SUPPRESS_STREAM(G4cout);
-    }
-
-    // execute the run macro
-    if(config_.has("macro_run")) {
-        G4UImanager* UI = G4UImanager::GetUIpointer();
-        UI->ApplyCommand("/control/execute " + config_.getPath("macro_run"));
-    }
-
-    // release the stream (if it was suspended)
-    RELEASE_STREAM(G4cout);
-}
-
 // Display the visualization after all events have passed
 void VisualizationGeant4Module::finalize() {
     // Open GUI / terminal or start viewer depending on sections
