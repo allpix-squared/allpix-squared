@@ -92,9 +92,9 @@ More information about constructing new modules can be found in Section \ref{sec
 Contains the build description of the module with the following components:
 \begin{enumerate}
 \item On the first line either ALLPIX\_DETECTOR\_MODULE(MODULE\_NAME) or \\ ALLPIX\_UNIQUE\_MODULE(MODULE\_NAME) depending on the type of the module defined. The internal name of the module is saved to the \$\{MODULE\_NAME\} variable which should be used as argument to the other functions. Another name can be used as well, but below we exclusively use \$\{MODULE\_NAME\}
-\item The next lines should contain the logic to load the dependencies of the module. Only ROOT is automatically included and linked to the module.
+\item The next lines should contain the logic to load the dependencies of the module (below is an example to load Geant4). Only ROOT is automatically included and linked to the module.
 \item A line with ALLPIX\_MODULE\_SOURCES(\$\{MODULE\_NAME\} \texttt{sources}) where \texttt{sources} should be replaced by all the source files of this module
-\item Possibly lines to include the directories and link the libraries for all the dependencies loaded in point~2.
+\item Possibly lines to include the directories and link the libraries for all the dependencies loaded earlier as explained in point~2. See below for an example.
 \item A line containing ALLPIX\_MODULE\_INSTALL(\$\{MODULE\_NAME\}) to setup the required target for the module to be installed to.
 \end{enumerate}
 
@@ -165,7 +165,7 @@ The modules are dynamically loaded and instantiated by the Module Manager. Modul
 \item The modules already loaded before from an earlier section header
 \item All directories in the global configuration parameter \textit{library\_directories} in the provided order if this parameter exists
 \item The internal RPATH of the executable, that should automatically point to the libraries that are build and installed together with the executable.
-\item The other standard locations to search for libraries depending on the operating system, see \url{http://man7.org/linux/man-pages/man8/ld.so.8.html} for details about the procedure Linux follows.
+\item The other standard locations to search for libraries depending on the operating system. Details about the procedure Linux follows are found in \cite{linuxld}.
 \end{enumerate}
 
 If the module definition is successful it is checked if the module is an unique or a detector module. The instantiation logic determines an unique name and priority, where a lower number indicates a higher priority, for every instantiation. The name and priority for the instantation are determined differently for the two types of modules:

@@ -37,7 +37,7 @@ DefaultModelReaderModule::DefaultModelReaderModule(Configuration config, Messeng
             for(auto& sub_path : sub_paths) {
                 // accept only with correct model suffix
                 // FIXME .ini is not a good suffix for default models
-                std::string suffix(".ini");
+                std::string suffix(ALLPIX_MODEL_SUFFIX);
                 if(sub_path.size() < suffix.size() || sub_path.substr(sub_path.size() - suffix.size()) != suffix) {
                     continue;
                 }

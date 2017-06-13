@@ -182,7 +182,7 @@ The configuration above is available as \textit{etc/manual.conf}. The detector c
 \begin{verbatim}
 $ allpix -c etc/manual.conf
 \end{verbatim}
-The simulation should then start. It should output similar output as the example found in Appendix \ref{sec:example_output}. The final histogram of the hits should then be availabe in the ROOT file \textit{output/modules.root} as the local file \textit{DetectorHistogrammer/histogram}.
+The simulation should then start. It should output similar output as the example found in Appendix \ref{sec:example_output}. The final histogram of the hits will then be availabe in the ROOT file \textit{output/modules.root} as the local file \textit{DetectorHistogrammer/histogram}.
 
 If problems occur, please make sure you have an up-to-date and properly installed version of \apsq (see the installation instructions in Section \ref{sec:installation}). If modules and models fail to load, more information about loading problems can be found in the detailed framework description in Section \ref{sec:framework}.
 
@@ -190,7 +190,7 @@ If problems occur, please make sure you have an up-to-date and properly installe
 Before going to more advanced configurations, a few simple modules are discussed which a user might want to add.
 
 \paragraph{Visualization}
-Displaying the geometry and the particle tracks helps a lot in both checking and interpreting the results. Visualization is fully supported through Geant4, supporting all the options provided by Geant4 in \url{https://geant4.web.cern.ch/geant4/UserDocumentation/UsersGuides/ForApplicationDeveloper/html/ch08.html}. Using the Qt viewer with the OpenGL driver is however the recommended option as long as the installed version of Geant4 supports it.
+Displaying the geometry and the particle tracks helps a lot in both checking and interpreting the results. Visualization is fully supported through Geant4, supporting all the options provided by Geant4~\cite{geant4vis}. Using the Qt viewer with the OpenGL driver is however the recommended option as long as the installed version of Geant4 supports it.
 
 To start using the Qt viewer the \texttt{simple\_view = 1} parameter should first be added to the \textbf{GeometryBuilderGeant4} section. This simplifies the visualization output and makes it several order of magnitude faster. Finally the example section below should be added at the end of the configuration file before running the simulation again:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
@@ -207,7 +207,7 @@ macro_run = "geant4_run.in"
 If it gives an error about Qt not being available the VRML viewer can be used as a replacement, but it is recommended to reinstall Geant4 with the Qt viewer included. To use the VRML viewer instead, follow the steps below:
 \begin{itemize}
 \item The \texttt{simple\_view = 1} parameter should be added to the \textbf{GeometryBuilderGeant4} section.
-\item Then the viewer should be installed on your operating system. Options include FreeWRL (available on \url{http://freewrl.sourceforge.net/}) and OpenVRML (available on \url{http://openvrml.org/}).
+\item Then the viewer should be installed on your operating system. Good options are for example FreeWRL and OpenVRML.
 \item Subsequently two environmental parameters should be exported to inform Geant4 of the configuration. These include \texttt{G4VRMLFILE\_VIEWER} which should point to the location of the viewer and \texttt{G4VRMLFILE\_MAX\_FILE\_NUM} which should typically be set to 1 to prevent too many files from being created.
 \item Finally the example section below should be added at the end of the configuration file before running the simulation again:
 \end{itemize}
@@ -316,7 +316,7 @@ The logging system does also support a few different formats to display the log 
 More details about the logging system and the procedure for reporting errors in the code can be found in Section \ref{sec:logger} and \ref{sec:error_reporting_exceptions}.
 
 \subsection{Storing Output Data}
-Saving the output to persistent storage is of primary importance for later review and analysis. \apsq primarily uses ROOT for storing output data, because it supports writing arbitrary objects and is a standard tool in High-Energy Physics. The \texttt{ROOTObjectWriter} automatically saves all the data objects written by the modules to a TTree (see \url{https://root.cern.ch/doc/master/classTTree.html} for more information about TTrees). The module stores all different object types to a separate tree, creating a branch for every combination of detector and the name given to the output as explained in Section \ref{sec:redirect_module_input_outputs}. For each event, values are added to the leafs of the branches containing the data of the objects. This allows for easy histogramming of the acquired data over the total run using the ROOT utilities.
+Saving the output to persistent storage is of primary importance for later review and analysis. \apsq primarily uses ROOT for storing output data, because it supports writing arbitrary objects and is a standard tool in High-Energy Physics. The \texttt{ROOTObjectWriter} automatically saves all the data objects written by the modules to a TTree~\cite{roottree} for more information about TTrees). The module stores all different object types to a separate tree, creating a branch for every combination of detector and the name given to the output as explained in Section \ref{sec:redirect_module_input_outputs}. For each event, values are added to the leafs of the branches containing the data of the objects. This allows for easy histogramming of the acquired data over the total run using the ROOT utilities.
 
 To save the output of all objects an \texttt{ROOTObjectWriter} has to be added with a \texttt{file\_name} parameter (without the root suffix) to specify the file location of the created ROOT file in the global output directory. The default file name is \texttt{data} which means that \textbf{data.root} is created in the output directory. To replicate the default behaviour the following configuration can be used:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
