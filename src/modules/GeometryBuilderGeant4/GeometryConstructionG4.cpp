@@ -5,6 +5,10 @@
 
 #include "GeometryConstructionG4.hpp"
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include <G4Box.hh>
 #include <G4LogicalVolume.hh>
 #include <G4NistManager.hh>
@@ -19,9 +23,6 @@
 #include <G4UserLimits.hh>
 #include <G4VSolid.hh>
 #include <G4VisAttributes.hh>
-#include <memory>
-#include <string>
-#include <utility>
 #include "G4StepLimiterPhysics.hh"
 
 #include "core/geometry/PixelDetectorModel.hpp"
