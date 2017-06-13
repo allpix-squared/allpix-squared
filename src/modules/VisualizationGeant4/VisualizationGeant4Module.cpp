@@ -5,12 +5,17 @@
 #include "VisualizationGeant4Module.hpp"
 
 #include <chrono>
+#include <csignal>
 #include <cstdlib>
 #include <cstring>
 #include <memory>
 #include <string>
 #include <thread>
 #include <utility>
+
+#ifdef G4UI_USE_QT
+#include <QCoreApplication>
+#endif
 
 #include <G4LogicalVolume.hh>
 #include <G4RunManager.hh>
@@ -382,17 +387,37 @@ void VisualizationGeant4Module::run(unsigned int) {
     }
 }
 
+static bool has_gui = false;
+static sighandler_t prev_handler = nullptr;
+static void interrupt_handler(int signal) {
+// Exit the Qt application if it is used
+// FIXME: Is there a better way to trigger this?
+#ifdef G4UI_USE_QT
+    if(has_gui) {
+        QCoreApplication::exit();
+    }
+#endif
+
+    std::signal(SIGINT, prev_handler);
+    std::raise(signal);
+}
+
 // Display the visualization after all events have passed
 void VisualizationGeant4Module::finalize() {
     // Enable automatic refresh before showing view
     G4UImanager* UI = G4UImanager::GetUIpointer();
     UI->ApplyCommand("/vis/viewer/set/autoRefresh true");
 
+    // Set new signal handler to fetch CTRL+C and close the Qt application
+    if(gui_session_ != nullptr) {
+        has_gui = true;
+    }
+    prev_handler = std::signal(SIGINT, interrupt_handler);
+
     // Open GUI / terminal or start viewer depending on mode
     if(config_.get<std::string>("mode") == "gui") {
         LOG(INFO) << "Starting visualization session";
         gui_session_->SessionStart();
-        LOG(ERROR) << "AFTER";
     } else if(config_.get<std::string>("mode") == "terminal") {
         LOG(INFO) << "Starting terminal session";
         std::unique_ptr<G4UIsession> session = std::make_unique<G4UIterminal>();
