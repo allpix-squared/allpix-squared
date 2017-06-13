@@ -14,7 +14,24 @@ Generic simulation framework for pixel detectors based on [original AllPix](http
 * [Eigen3](http://eigen.tuxfamily.org/index.php?title=Main_Page) (optional in a later stage)
 
 ## Compilation/Installation
-The standard CMake build system is used. The install directory can be specified by adding `-DCMAKE_INSTALL_PREFIX=<prefix>` as argument to the cmake command below. More configuration options will be added later. Make sure to load your ROOT and Geant4 setups for the build to succeed. To compile and install run the following commands:
+The standard CMake build system is used. The install directory can be specified by adding `-DCMAKE_INSTALL_PREFIX=<prefix>` as argument to the cmake command below. More configuration options will be added later. Make sure to load your ROOT and Geant4 setups for the build to succeed. Currently there are two supported installation methods:
+
+### Installation on CERN LXPLUS
+
+In order to install allpix<sup>2</sup> on the CERn LXPLUS batch cluster, a LXPLUS setup script is provided:
+
+```
+$ source etc/scripts/setup_lxplus.sh
+```
+Then, continue as described below.
+
+### Installation on a private machine
+
+The dependencies listen above have to be satisfied. Both ROOT6 and Geant4 libraries and headers have to be in the path, this is usually achieved by sourcing the `thisroot.sh` or `geant4.sh` scripts. After this, continue as described below.
+
+### Compilation
+
+To compile and install allpix<sup>2</sup>, run the following commands:
 
 ```
 $ mkdir build && cd build/
