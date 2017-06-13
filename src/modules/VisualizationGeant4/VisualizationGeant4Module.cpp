@@ -27,8 +27,13 @@ using namespace allpix;
 
 VisualizationGeant4Module::VisualizationGeant4Module(Configuration config, Messenger*, GeometryManager* geo_manager)
     : Module(config), config_(std::move(config)), geo_manager_(geo_manager), has_run_(false), session_param_ptr_(nullptr) {
+    // Set default mode for display
     config_.setDefault("mode", "gui");
 
+    // Set to accumulate all hits and display at the end by default
+    config_.setDefault("accumulate", true);
+
+    // Check mode
     std::string mode = config_.get<std::string>("mode");
     if(mode != "gui" && mode != "terminal" && mode != "none") {
         throw InvalidValueError(config_, "mode", "viewing mode should be 'gui', 'terminal' or 'none'");
@@ -75,6 +80,12 @@ void VisualizationGeant4Module::init() {
 #endif
     }
 
+    // Get the UI commander
+    G4UImanager* UI = G4UImanager::GetUIpointer();
+
+    // Disable auto refresh while we are simulating and building
+    UI->ApplyCommand("/vis/viewer/set/autoRefresh false");
+
     // Set the visibility attributes for visualization
     set_visibility_attributes();
 
@@ -84,7 +95,6 @@ void VisualizationGeant4Module::init() {
     vis_manager_g4_->Initialize();
 
     // Create the viewer
-    G4UImanager* UI = G4UImanager::GetUIpointer();
     UI->ApplyCommand("/vis/scene/create");
 
     // Initialize the driver and checking it actually exists
@@ -116,6 +126,9 @@ void VisualizationGeant4Module::init() {
     UI->ApplyCommand("/vis/sceneHandler/attach");
     UI->ApplyCommand("/vis/viewer/create");
 
+    // Set default visualization settings
+    set_visualization_settings();
+
     // Release the stream early in debugging mode
     IFLOG(DEBUG) { RELEASE_STREAM(G4cout); }
 
@@ -128,12 +141,115 @@ void VisualizationGeant4Module::init() {
     RELEASE_STREAM(G4cout);
 }
 
-void VisualizationGeant4Module::set_visibility_attributes() {
-    // Create all visualization attributes
+// Set default visualization settings
+void VisualizationGeant4Module::set_visualization_settings() {
+    // Get the UI commander
+    G4UImanager* UI = G4UImanager::GetUIpointer();
 
-    // To add some transparency in the solids, set to 0.2. 1 means opaque.
+    // Set the background to white
+    std::string bkg_color = config_.get<std::string>("background_color", "white");
+    auto ret_code = UI->ApplyCommand("/vis/viewer/set/background " + bkg_color);
+    if(ret_code != 0) {
+        throw InvalidValueError(config_, "background_color", "background color not defined");
+    }
+
+    // Accumulate all events if requested
+    bool accumulate = config_.get<bool>("accumulate");
+    if(accumulate) {
+        UI->ApplyCommand("/vis/scene/endOfEventAction accumulate");
+        UI->ApplyCommand("/vis/scene/endOfRunAction accumulate");
+        UI->ApplyCommand("/tracking/storeTrajectory 1");
+    }
+
+    // Display trajectories if specified
+    auto display_trajectories = config_.get<bool>("display_trajectories", true);
+    if(display_trajectories) {
+        // Add smooth trajectories
+        UI->ApplyCommand("/vis/scene/add/trajectories smooth");
+
+        // Hide trajectories inside the detectors
+        bool hide_trajectories = config_.get<bool>("hide_trajectories", true);
+        if(hide_trajectories) {
+            UI->ApplyCommand("/vis/viewer/set/hiddenEdge 1");
+            UI->ApplyCommand("/vis/viewer/set/hiddenMarker 1");
+        }
+
+        // color trajectories by charge or particle id
+        auto traj_color = config_.get<std::string>("trajectories_color_mode", "charge");
+        if(traj_color == "charge") {
+            // Create draw by charge
+            UI->ApplyCommand("/vis/modeling/trajectories/create/drawByCharge defaultCharge");
+
+            // Set default settings for steps
+            auto draw_steps = config_.get<bool>("trajectories_draw_step", true);
+            if(draw_steps) {
+                UI->ApplyCommand("/vis/modeling/trajectories/defaultCharge/default/setDrawStepPts true");
+                ret_code = UI->ApplyCommand("/vis/modeling/trajectories/defaultCharge/default/setStepPtsSize " +
+                                            config_.get<std::string>("trajectories_draw_step_size", "2"));
+                if(ret_code != 0) {
+                    throw InvalidValueError(config_, "trajectories_draw_step_size", "step size not valid");
+                }
+                ret_code = UI->ApplyCommand("/vis/modeling/trajectories/defaultCharge/default/setStepPtsColour " +
+                                            config_.get<std::string>("trajectories_draw_step_color", "red"));
+                if(ret_code != 0) {
+                    throw InvalidValueError(config_, "trajectories_draw_step_color", "step color not defined");
+                }
+            }
+
+            // Set colors for charges
+            ret_code = UI->ApplyCommand("/vis/modeling/trajectories/defaultCharge/set 1 " +
+                                        config_.get<std::string>("trajectories_color_positive", "blue"));
+            if(ret_code != 0) {
+                throw InvalidValueError(config_, "trajectories_color_positive", "charge color not defined");
+            }
+            UI->ApplyCommand("/vis/modeling/trajectories/defaultCharge/set 0 " +
+                             config_.get<std::string>("trajectories_color_neutral", "green"));
+            if(ret_code != 0) {
+                throw InvalidValueError(config_, "trajectories_color_neutral", "charge color not defined");
+            }
+            UI->ApplyCommand("/vis/modeling/trajectories/defaultCharge/set -1 " +
+                             config_.get<std::string>("trajectories_color_negative", "red"));
+            if(ret_code != 0) {
+                throw InvalidValueError(config_, "trajectories_color_negative", "charge color not defined");
+            }
+        } else if(traj_color == "particle") {
+            UI->ApplyCommand("/vis/modeling/trajectories/create/drawByParticleID defaultParticle");
+
+            auto particle_colors = config_.get<std::string>("trajectories_particle_colors");
+            for(auto& particle_color : particle_colors) {
+                ret_code = UI->ApplyCommand("/vis/modeling/trajectories/defaultParticle/set " + particle_color);
+                if(ret_code != 0) {
+                    throw InvalidValueError(
+                        config_, "trajectories_particle_colors", "combination particle type and color not valid");
+                }
+            }
+        } else {
+            throw InvalidValueError(config_, "trajectories_color_mode", "only 'charge' or 'particle' are supported");
+        }
+    }
+
+    // Display hits if specified
+    auto display_hits = config_.get<bool>("display_hits", false);
+    if(display_hits) {
+        UI->ApplyCommand("/vis/scene/add/hits");
+    }
+
+    // Set viewer style
+    std::string view_style = config_.get<std::string>("view_style", "surface");
+    ret_code = UI->ApplyCommand("/vis/viewer/set/style " + view_style);
+    if(ret_code != 0) {
+        throw InvalidValueError(config_, "view_style", "viewing style is not defined");
+    }
+
+    // Set default viewer orientation
+    UI->ApplyCommand("/vis/viewer/set/viewpointThetaPhi 70 20");
+}
+
+// Create all visualization attributes
+void VisualizationGeant4Module::set_visibility_attributes() {
+    // To add some transparency in the solids, set to 0.4. 0 means opaque.
     // Transparency can be switched off in the visualisation.
-    const double alpha = config_.get<double>("transparency", 0.4);
+    auto alpha = config_.get<double>("transparency", 0.4);
     if(alpha < 0 || alpha > 1) {
         throw InvalidValueError(config_, "transparency", "Transparency level should be between 0 and 1");
     }
@@ -239,7 +355,11 @@ void VisualizationGeant4Module::set_visibility_attributes() {
 
 // Display the visualization after all events have passed
 void VisualizationGeant4Module::finalize() {
-    // Open GUI / terminal or start viewer depending on sections
+    // Enable automatic refresh before showing view
+    G4UImanager* UI = G4UImanager::GetUIpointer();
+    UI->ApplyCommand("/vis/viewer/set/autoRefresh true");
+
+    // Open GUI / terminal or start viewer depending on mode
     if(config_.get<std::string>("mode") == "gui") {
         LOG(INFO) << "Starting visualization session";
         gui_session_->SessionStart();
