@@ -49,6 +49,13 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
     std::vector<Configuration> configs = conf_manager->getConfigurations();
     global_config_ = conf_manager->getGlobalConfiguration();
 
+    auto path = std::string(gSystem->pwd()) + "/" + global_config_.get<std::string>("root_file", "modules") + ".root";
+    modules_file_ = std::make_unique<TFile>(path.c_str(), "RECREATE");
+    if(modules_file_->IsZombie()) {
+        throw RuntimeError("Cannot create main ROOT file " + path);
+    }
+    modules_file_->cd();
+
     // Loop through all non-global configurations
     for(auto& config : configs) {
         // Load library for each module. Libraries are named (by convention + CMAKE) libAllpixModule Name.suffix
@@ -109,18 +116,30 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
         // If library did not load then throw exception
         if(load_error) {
             const char* lib_error = dlerror();
-            if(lib_error != nullptr && std::strstr(lib_error, "cannot allocate memory in static TLS block") != nullptr) {
-                std::string error(lib_error);
-                std::string problem_lib = error.substr(0, error.find(':'));
 
+            // Find the name of the loaded library if it exists
+            std::string lib_error_str = lib_error;
+            size_t end_pos = lib_error_str.find(':');
+            std::string problem_lib;
+            if(end_pos != std::string::npos) {
+                problem_lib = lib_error_str.substr(0, end_pos);
+            }
+
+            // FIXME is checking the error in this way portable?
+            if(lib_error != nullptr && std::strstr(lib_error, "cannot allocate memory in static TLS block") != nullptr) {
                 LOG(ERROR) << "Library could not be loaded: not enough thread local storage available" << std::endl
                            << "Try one of below workarounds:" << std::endl
                            << "- Rerun library with the environmental variable LD_PRELOAD='" << problem_lib << "'"
                            << std::endl
                            << "- Recompile the library " << problem_lib << " with tls-model=global-dynamic";
+            } else if(lib_error != nullptr && std::strstr(lib_error, "cannot open shared object file") != nullptr &&
+                      problem_lib.find(ALLPIX_MODULE_PREFIX) == std::string::npos) {
+                LOG(ERROR) << "Library could not be loaded: one of its dependencies is missing" << std::endl
+                           << "The name of the missing library is " << problem_lib << std::endl
+                           << "Please make sure the library is properly initialized and try again";
             } else {
-                LOG(ERROR) << "Library could not be loaded" << std::endl
-                           << " - Did you compile the library? " << std::endl
+                LOG(ERROR) << "Library could not be loaded: it is not available" << std::endl
+                           << " - Did you enable the library during building? " << std::endl
                            << " - Did you spell the library name correctly? ";
                 if(lib_error != nullptr) {
                     LOG(DEBUG) << "Detailed error: " << lib_error;
@@ -144,6 +163,16 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
             unique = reinterpret_cast<bool (*)()>(uniqueFunction)(); // NOLINT
         }
 
+        // Create main ROOT directory for this module type
+        auto module_dir = modules_file_->GetDirectory(config.getName().c_str());
+        if(module_dir == nullptr) {
+            module_dir = modules_file_->mkdir(config.getName().c_str());
+            if(module_dir == nullptr) {
+                throw RuntimeError("Cannot create or access ROOT directory for module " + config.getName());
+            }
+        }
+        module_dir->cd();
+
         // Add the global internal parameters to the configuration
         std::string global_dir = gSystem->pwd();
         config.set<std::string>("_global_dir", global_dir);
@@ -155,9 +184,10 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
         // Create the modules from the library depending on the module type
         std::vector<std::pair<ModuleIdentifier, Module*>> mod_list;
         if(unique) {
-            mod_list.emplace_back(create_unique_modules(loaded_libraries_[lib_name], config, messenger, geo_manager));
+            mod_list.emplace_back(
+                create_unique_modules(loaded_libraries_[lib_name], config, messenger, geo_manager, module_dir));
         } else {
-            mod_list = create_detector_modules(loaded_libraries_[lib_name], config, messenger, geo_manager);
+            mod_list = create_detector_modules(loaded_libraries_[lib_name], config, messenger, geo_manager, module_dir);
         }
 
         // Loop through all created instantiations
@@ -198,10 +228,8 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
 /**
  * For unique modules a single instance is created per section
  */
-std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* library,
-                                                                          Configuration config,
-                                                                          Messenger* messenger,
-                                                                          GeometryManager* geo_manager) {
+std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
+    void* library, Configuration config, Messenger* messenger, GeometryManager* geo_manager, TDirectory* directory) {
     // Make the vector to return
     std::string module_name = config.getName();
 
@@ -209,16 +237,23 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
     std::string identifier_str;
     if(!config.get<std::string>("input").empty()) {
         identifier_str += config.get<std::string>("input");
-        identifier_str += ":";
     }
     if(!config.get<std::string>("output").empty()) {
+        if(!identifier_str.empty()) {
+            identifier_str += "_";
+        }
         identifier_str += config.get<std::string>("output");
-        identifier_str += ":";
-    }
-    if(!identifier_str.empty()) {
-        identifier_str = identifier_str.substr(0, identifier_str.size() - 1);
     }
     ModuleIdentifier identifier(module_name, identifier_str, 0);
+
+    if(!identifier_str.empty()) {
+        directory = directory->mkdir(identifier_str.c_str());
+    }
+    if(directory == nullptr) {
+        throw RuntimeError("Cannot create or access unique ROOT directory for module " + identifier.getUniqueName());
+    }
+    directory->cd();
+    config.set<uintptr_t>("_ROOT_directory", reinterpret_cast<uintptr_t>(directory)); // NOLINT
 
     // Get the generator function for this module
     void* generator = dlsym(library, ALLPIX_GENERATOR_FUNCTION);
@@ -271,22 +306,20 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
  * For detector modules multiple instantiations may be created per section. An instantiation is created for every detector if
  * no selection parameters are provided. Otherwise instantiations are created for every linked detector name and type.
  */
-std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector_modules(void* library,
-                                                                                         Configuration config,
-                                                                                         Messenger* messenger,
-                                                                                         GeometryManager* geo_manager) {
+std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector_modules(
+    void* library, Configuration config, Messenger* messenger, GeometryManager* geo_manager, TDirectory* directory) {
     std::string module_name = config.getName();
     LOG(DEBUG) << "Creating instantions for detector module " << module_name;
 
     // Create the basic identifier
     std::string identifier;
     if(!config.get<std::string>("input").empty()) {
+        identifier += "_";
         identifier += config.get<std::string>("input");
-        identifier += ":";
     }
     if(!config.get<std::string>("output").empty()) {
+        identifier += "_";
         identifier += config.get<std::string>("output");
-        identifier += ":";
     }
 
     // Open the library and get the module generator function
@@ -309,7 +342,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         std::vector<std::string> names = config.getArray<std::string>("name");
         for(auto& name : names) {
             auto det = geo_manager->getDetector(name);
-            instantiations.emplace_back(det, ModuleIdentifier(module_name, identifier + det->getName(), 0));
+            instantiations.emplace_back(det, ModuleIdentifier(module_name, det->getName() + identifier, 0));
 
             // Save the name (to not instantiate it again later)
             module_names.insert(name);
@@ -328,7 +361,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
                     continue;
                 }
 
-                instantiations.emplace_back(det, ModuleIdentifier(module_name, identifier + det->getName(), 1));
+                instantiations.emplace_back(det, ModuleIdentifier(module_name, det->getName() + identifier, 1));
             }
         }
     }
@@ -338,7 +371,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         auto detectors = geo_manager->getDetectors();
 
         for(auto& det : detectors) {
-            instantiations.emplace_back(det, ModuleIdentifier(module_name, identifier + det->getName(), 2));
+            instantiations.emplace_back(det, ModuleIdentifier(module_name, det->getName() + identifier, 2));
         }
     }
 
@@ -355,9 +388,19 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         output_dir = config.get<std::string>("_global_dir");
         output_dir += "/";
         std::string path_mod_name = instance.second.getUniqueName();
-        std::replace(path_mod_name.begin(), path_mod_name.end(), ':', '_');
+        std::replace(path_mod_name.begin(), path_mod_name.end(), ':', '/');
         output_dir += path_mod_name;
         config.set<std::string>("_output_dir", output_dir);
+
+        // Get local directory and save it in the config
+        auto local_directory = directory->mkdir(instance.second.getIdentifier().c_str());
+        if(local_directory == nullptr) {
+            throw RuntimeError("Cannot create or access unique ROOT directory for module " +
+                               instance.second.getUniqueName());
+        }
+        local_directory->cd();
+        // FIXME: is there a better way to store the directory in the module
+        config.set<uintptr_t>("_ROOT_directory", reinterpret_cast<uintptr_t>(local_directory)); // NOLINT
 
         // Set the log section header
         std::string old_section_name = Log::getSection();
@@ -422,6 +465,7 @@ std::tuple<LogLevel, LogFormat> ModuleManager::set_module_before(const std::stri
             throw InvalidValueError(config, "log_format", e.what());
         }
     }
+
     return std::make_tuple(prev_level, prev_format);
 }
 void ModuleManager::set_module_after(std::tuple<LogLevel, LogFormat> prev) {
@@ -459,6 +503,8 @@ void ModuleManager::init() {
         Log::setSection(section_name);
         // Set module specific settings
         auto old_settings = set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
+        // Change to our ROOT directory
+        module->getROOTDirectory()->cd();
         // Init module
         module->init();
         // Reset delegates
@@ -510,6 +556,8 @@ void ModuleManager::run() {
             Log::setSection(section_name);
             // Set module specific settings
             auto old_settings = set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
+            // Change to our ROOT directory
+            module->getROOTDirectory()->cd();
             // Run module
             module->run(i + 1);
             // Resetting delegates
@@ -566,8 +614,12 @@ void ModuleManager::finalize() {
         Log::setSection(section_name);
         // Set module specific settings
         auto old_settings = set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
+        // Change to our ROOT directory
+        module->getROOTDirectory()->cd();
         // Finalize module
         module->finalize();
+        // Close the ROOT directory after finalizing
+        module->getROOTDirectory()->Close();
         // Reset logging
         Log::setSection(old_section_name);
         set_module_after(old_settings);

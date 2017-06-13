@@ -9,7 +9,6 @@
 #include <utility>
 
 #include <Math/Vector3D.h>
-#include <TFile.h>
 #include <TH2F.h>
 
 #include "core/config/exceptions.h"
@@ -38,6 +37,8 @@ void ElectricFieldReaderInitModule::init() {
 
         // produce debug histograms if needed
         if(config_.get<bool>("output_plots", false)) {
+            LOG(TRACE) << "Creating output plots";
+
             auto steps = config_.get<size_t>("output_plots_steps", 5000);
             auto project = config_.get<char>("output_plots_project", 'x');
 
@@ -66,7 +67,7 @@ void ElectricFieldReaderInitModule::init() {
                 max2 = model->getSensorMinY() + model->getSensorSizeY();
             }
 
-            auto histogram = new TH2F(("field_" + getUniqueName()).c_str(),
+            auto histogram = new TH2F("field",
                                       ("Electric field for " + detector_->getName()).c_str(),
                                       static_cast<int>(steps),
                                       min1,
@@ -123,16 +124,8 @@ void ElectricFieldReaderInitModule::init() {
                 }
             }
 
-            // open output file
-            std::string file_name = getOutputPath(config_.get<std::string>("output_plots_name", "histogram") + ".root");
-            TFile file(file_name.c_str(), "RECREATE");
-            file.cd();
-
             // write histogram
             histogram->Write();
-
-            // close file
-            file.Close();
         }
     } catch(std::invalid_argument& e) {
         throw InvalidValueError(config_, "file_name", e.what());
@@ -149,13 +142,15 @@ inline static void check_detector_match(Detector& detector, double thickness, do
     // do a few simple checks for pixel detector models
     if(model != nullptr) {
         if(std::fabs(thickness - model->getSensorSizeZ()) > std::numeric_limits<double>::epsilon()) {
-            LOG(WARNING) << "Thickness of sensor in file is " << thickness << " but in the model it is "
-                         << model->getSensorSizeZ();
+            LOG(WARNING) << "Thickness of sensor in file is " << Units::display(thickness, "um")
+                         << " but in the model it is " << Units::display(model->getSensorSizeZ(), "um");
         }
         if(std::fabs(xpixsz - model->getPixelSizeX()) > std::numeric_limits<double>::epsilon() ||
            std::fabs(ypixsz - model->getPixelSizeY()) > std::numeric_limits<double>::epsilon()) {
-            LOG(WARNING) << "Pixel size is (" << xpixsz << "," << ypixsz << ") but in the model it is ("
-                         << model->getPixelSizeX() << "," << model->getPixelSizeY() << ")";
+            LOG(WARNING) << "Pixel size is (" << Units::display(xpixsz, {"um", "mm"}) << ","
+                         << Units::display(ypixsz, {"um", "mm"}) << ") but in the model it is ("
+                         << Units::display(model->getPixelSizeX(), {"um", "mm"}) << ","
+                         << Units::display(model->getPixelSizeY(), {"um", "mm"}) << ")";
         }
     }
 }

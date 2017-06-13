@@ -26,9 +26,6 @@ namespace allpix {
         // constructor and destructor
         SimplePropagationModule(Configuration, Messenger*, std::shared_ptr<Detector>);
 
-        // init debug plots
-        void init() override;
-
         // do the propagation of the charge deposits
         void run(unsigned int event_num) override;
 
@@ -64,8 +61,7 @@ namespace allpix {
         long double total_time_{};
 
         // debug list of points to plot
-        std::vector<std::pair<PropagatedCharge, std::vector<ROOT::Math::XYZPoint>>> debug_plot_points_;
-        TFile* debug_file_;
+        std::vector<std::pair<PropagatedCharge, std::vector<ROOT::Math::XYZPoint>>> output_plot_points_;
     };
 
 } // namespace allpix

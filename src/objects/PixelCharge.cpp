@@ -15,3 +15,5 @@ PixelCharge::Pixel PixelCharge::getPixel() const {
 unsigned int PixelCharge::getCharge() const {
     return charge_;
 }
+
+ClassImp(PixelCharge)

@@ -64,6 +64,10 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         IF(NPROC EQUAL 0)
             SET(NPROC 1)
         ENDIF()
+        
+        #ADD_CUSTOM_COMMAND(
+        #    fix_compile_commands
+        #    COMMAND sed -i "s|^\.cxx|^\.
 
         ADD_CUSTOM_TARGET(
             lint COMMAND

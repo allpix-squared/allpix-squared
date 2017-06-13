@@ -35,10 +35,11 @@ namespace allpix {
      */
     // TODO [doc] Is DelegateFlags or MessengerFlags a better name (and in separate file?)
     enum class MsgFlags : uint32_t {
-        NONE = 0,                  ///< No enabled flags
-        REQUIRED = (1 << 0),       ///< Require a message before running a module
-        NO_RESET = (1 << 1),       ///< Do not reset a message after run
-        ALLOW_OVERWRITE = (1 << 2) ///< Allow overwriting a previous message
+        NONE = 0,                   ///< No enabled flags
+        REQUIRED = (1 << 0),        ///< Require a message before running a module
+        NO_RESET = (1 << 1),        ///< Do not reset a message after run
+        ALLOW_OVERWRITE = (1 << 2), ///< Allow overwriting a previous message
+        IGNORE_NAME = (1 << 3)      ///< Listen to all ignoring message name (equal to * as a input configuration parameter)
     };
     /**
      * @ingroup Delegates
@@ -130,8 +131,9 @@ namespace allpix {
         /**
          * @brief Process a message and forwards it to its final destination
          * @param msg Message to process
+         * @param name Name of the message
          */
-        virtual void process(std::shared_ptr<BaseMessage> msg) = 0;
+        virtual void process(std::shared_ptr<BaseMessage> msg, std::string name) = 0;
 
         /**
          * @brief Reset the delegate and set it not satisfied again
@@ -203,7 +205,7 @@ namespace allpix {
          * @warning The listener function is called directly from the delegate, no heavy processing should be done in the
          *          listener function
          */
-        void process(std::shared_ptr<BaseMessage> msg) override {
+        void process(std::shared_ptr<BaseMessage> msg, std::string) override {
 #ifndef NDEBUG
             // The type names should have been correctly resolved earlier
             const BaseMessage* inst = msg.get();
@@ -212,6 +214,45 @@ namespace allpix {
 
             // Pass the message and mark as processed
             (this->obj_->*method_)(std::static_pointer_cast<R>(msg));
+            this->set_processed();
+        }
+
+    private:
+        ListenerFunction method_;
+    };
+
+    /**
+     * @ingroup Delegates
+     * @brief Delegate for invoking a function listening to all messages also getting the name
+     */
+    template <typename T> class FunctionAllDelegate : public ModuleDelegate<T> {
+    public:
+        using ListenerFunction = void (T::*)(std::shared_ptr<BaseMessage>, std::string);
+
+        /**
+         * @brief Construct a function delegate for the given module
+         * @param flags Messenger flags
+         * @param obj Module object this delegate should operate on
+         * @param method A function taking a shared_ptr to the message to listen to
+         */
+        FunctionAllDelegate(MsgFlags flags, T* obj, ListenerFunction method)
+            : ModuleDelegate<T>(flags, obj), method_(method) {}
+
+        /**
+         * @brief Calls the listener function with the supplied message
+         * @param msg Message to process
+         * @warning The listener function is called directly from the delegate, no heavy processing should be done in the
+         *          listener function
+         */
+        void process(std::shared_ptr<BaseMessage> msg, std::string name) override {
+#ifndef NDEBUG
+            // The type names should have been correctly resolved earlier
+            const BaseMessage* inst = msg.get();
+            assert(typeid(*inst) == typeid(R));
+#endif
+
+            // Pass the message and mark as processed
+            (this->obj_->*method_)(std::static_pointer_cast<BaseMessage>(msg), name);
             this->set_processed();
         }
 
@@ -243,7 +284,7 @@ namespace allpix {
          *
          * The saved value is overwritten if the \ref MsgFlags::ALLOW_OVERWRITE "ALLOW_OVERWRITE" flag is enabled.
          */
-        void process(std::shared_ptr<BaseMessage> msg) override {
+        void process(std::shared_ptr<BaseMessage> msg, std::string) override {
 #ifndef NDEBUG
             // The type names should have been correctly resolved earlier
             const BaseMessage* inst = msg.get();
@@ -251,8 +292,7 @@ namespace allpix {
 #endif
             // Raise an error if the message is overwritten (unless it is allowed)
             if(this->obj_->*member_ != nullptr && (this->getFlags() & MsgFlags::ALLOW_OVERWRITE) == MsgFlags::NONE) {
-                // TODO [doc] The module name should be passed here
-                throw UnexpectedMessageException("module name", typeid(R));
+                throw UnexpectedMessageException(this->obj_->getUniqueName(), typeid(R));
             }
 
             // Set the message and mark as processed
@@ -300,7 +340,7 @@ namespace allpix {
          * @brief Adds the message to the bound vector
          * @param msg Message to process
          */
-        void process(std::shared_ptr<BaseMessage> msg) override {
+        void process(std::shared_ptr<BaseMessage> msg, std::string) override {
 #ifndef NDEBUG
             // The type names should have been correctly resolved earlier
             const BaseMessage* inst = msg.get();

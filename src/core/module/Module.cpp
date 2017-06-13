@@ -28,6 +28,7 @@ Module::Module(Configuration config, std::shared_ptr<Detector> detector)
  * @note The remove_delegate can throw in theory, but this could never happen in practice
  */
 Module::~Module() {
+    // Remove delegates
     try {
         for(auto delegate : delegates_) {
             delegate.first->remove_delegate(delegate.second);
@@ -60,14 +61,12 @@ std::shared_ptr<Detector> Module::getDetector() {
  *
  * The output path is automatically created if it does not exists. The path is always accessible if this functions returns.
  */
-// TODO [DOC] This function does not support subdirectories
 std::string Module::getOutputPath(const std::string& path, bool global) {
     std::string file;
     if(global) {
         file = config_.get<std::string>("_global_dir");
     } else {
         file = config_.get<std::string>("_output_dir");
-        ;
     }
 
     try {
@@ -91,6 +90,14 @@ std::string Module::getOutputPath(const std::string& path, bool global) {
     }
 
     return file;
+}
+
+/**
+ * @warning This method should not be used from the destructor (the file is then already closed)
+ */
+TDirectory* Module::getROOTDirectory() {
+    // NOTE: This is a nasty (but correct) way to store info, however the only option with constructor access
+    return reinterpret_cast<TDirectory*>(config_.get<uintptr_t>("_ROOT_directory")); // NOLINT
 }
 
 // Get internal configuration

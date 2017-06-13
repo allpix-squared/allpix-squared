@@ -8,10 +8,6 @@
 #include <string>
 #include <utility>
 
-#include <Math/Vector3D.h>
-#include <TFile.h>
-#include <TH2D.h>
-
 #include "core/config/exceptions.h"
 #include "core/geometry/PixelDetectorModel.hpp"
 #include "core/utils/log.h"

@@ -59,8 +59,7 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     if(charge == 0) {
         return false;
     }
-    DepositedCharge deposit(deposit_position, charge, mid_time);
-    deposits_.push_back(deposit);
+    deposits_.emplace_back(deposit_position, charge, mid_time);
 
     LOG(DEBUG) << "Created deposit of " << charge << " charges at " << display_vector(mid_pos, {"mm", "um"})
                << " locally on " << display_vector(deposit_position, {"mm", "um"}) << " in " << detector_->getName()

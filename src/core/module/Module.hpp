@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+#include <TDirectory.h>
+
 #include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
 #include "core/messenger/delegates.h"
@@ -169,6 +171,12 @@ namespace allpix {
          */
         // TODO [doc] Should be renamed to getOutputFile
         std::string getOutputPath(const std::string& path, bool global = false);
+
+        /**
+         * @brief Get ROOT directory which should be used to output histograms and such
+         * @note It is not needed to change to the file explicitly as this in done automatically before running
+         */
+        TDirectory* getROOTDirectory();
 
         /**
          * @brief Initialize the module before the event sequence

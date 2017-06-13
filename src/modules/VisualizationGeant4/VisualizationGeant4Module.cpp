@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 
+#include <G4LogicalVolume.hh>
 #include <G4RunManager.hh>
 #ifdef G4UI_USE_QT
 #include <G4UIQt.hh>
@@ -17,14 +18,15 @@
 #include <G4UImanager.hh>
 #include <G4UIsession.hh>
 #include <G4UIterminal.hh>
+#include <G4VisAttributes.hh>
 #include <G4VisExecutive.hh>
 
 #include "core/utils/log.h"
 
 using namespace allpix;
 
-VisualizationGeant4Module::VisualizationGeant4Module(Configuration config, Messenger*, GeometryManager*)
-    : Module(config), config_(std::move(config)), has_run_(false), session_param_ptr_(nullptr) {}
+VisualizationGeant4Module::VisualizationGeant4Module(Configuration config, Messenger*, GeometryManager* geo_manager)
+    : Module(config), config_(std::move(config)), geo_manager_(geo_manager), has_run_(false), session_param_ptr_(nullptr) {}
 VisualizationGeant4Module::~VisualizationGeant4Module() {
     if(!has_run_ && vis_manager_g4_ != nullptr && vis_manager_g4_->GetCurrentViewer() != nullptr) {
         LOG(TRACE) << "Invoking VRML workaround to prevent visualization under error conditions";
@@ -63,6 +65,9 @@ void VisualizationGeant4Module::init() {
             config_, "use_gui", "GUI session cannot be started because Qt is not available in this Geant4");
 #endif
     }
+
+    // Set the visibility attributes for visualization
+    set_visibility_attributes();
 
     // initialize the session and the visualization manager
     LOG(TRACE) << "Initializing visualization";
@@ -113,6 +118,112 @@ void VisualizationGeant4Module::init() {
 
     // release the g4 output
     RELEASE_STREAM(G4cout);
+}
+
+void VisualizationGeant4Module::set_visibility_attributes() {
+    // Create all visualization attributes
+
+    // To add some transparency in the solids, set to 0.2. 1 means opaque.
+    // Transparency can be switched off in the visualisation.
+    const double alpha = 0.2;
+
+    // Wrapper
+    G4VisAttributes wrapperVisAtt = G4VisAttributes(G4Color(1, 0, 0, 0.1)); // Red
+    wrapperVisAtt.SetVisibility(false);
+
+    // PCB
+    auto pcbColor = G4Color(0.36, 0.66, 0.055, alpha); // Greenish
+    G4VisAttributes pcbVisAtt = G4VisAttributes(pcbColor);
+    pcbVisAtt.SetLineWidth(1);
+    pcbVisAtt.SetForceSolid(false);
+
+    // Chip
+    auto chipColor = G4Color(0.18, 0.2, 0.21, alpha); // Blackish
+    G4VisAttributes ChipVisAtt = G4VisAttributes(chipColor);
+    ChipVisAtt.SetForceSolid(false);
+
+    // Bumps
+    auto bumpColor = G4Color(0.5, 0.5, 0.5, alpha); // Grey
+    G4VisAttributes BumpVisAtt = G4VisAttributes(bumpColor);
+    BumpVisAtt.SetForceSolid(false);
+
+    // The logical volume holding all the bumps
+    G4VisAttributes BumpBoxVisAtt = G4VisAttributes(bumpColor);
+
+    // Sensors, ie pixels
+    auto sensorColor = G4Color(0.18, 0.2, 0.21, alpha); // Blackish
+    G4VisAttributes SensorVisAtt = G4VisAttributes(chipColor);
+    SensorVisAtt.SetForceSolid(false);
+
+    // Guard rings
+    G4VisAttributes guardRingsVisAtt = G4VisAttributes(sensorColor);
+    guardRingsVisAtt.SetForceSolid(false);
+
+    // The box holding all the pixels
+    G4VisAttributes BoxVisAtt = G4VisAttributes(sensorColor);
+
+    // In default simple view mode, pixels and bumps are set to invisible, not to be displayed.
+    // The logical volumes holding them are instead displayed.
+    auto simple_view = config_.get<bool>("simple_view", true);
+    if(simple_view) {
+        SensorVisAtt.SetVisibility(false);
+        BoxVisAtt.SetVisibility(true);
+        BumpVisAtt.SetVisibility(false);
+        BumpBoxVisAtt.SetVisibility(true);
+    } else {
+        SensorVisAtt.SetVisibility(true);
+        BoxVisAtt.SetVisibility(false);
+        BumpVisAtt.SetVisibility(true);
+        BumpBoxVisAtt.SetVisibility(false);
+    }
+
+    // Apply the visualization attributes to all detectors that exist
+    for(auto& detector : geo_manager_->getDetectors()) {
+        auto wrapper_log = detector->getExternalObject<G4LogicalVolume>("wrapper_log");
+        if(wrapper_log != nullptr) {
+            wrapper_log->SetVisAttributes(wrapperVisAtt); // NOTE NOTE
+        }
+
+        auto sensor_log = detector->getExternalObject<G4LogicalVolume>("sensor_log");
+        if(sensor_log != nullptr) {
+            sensor_log->SetVisAttributes(BoxVisAtt); // NOTE NOTE
+        }
+
+        auto slice_log = detector->getExternalObject<G4LogicalVolume>("slice_log");
+        if(slice_log != nullptr) {
+            slice_log->SetVisAttributes(SensorVisAtt); // NOTE NOTE
+        }
+
+        auto pixel_log = detector->getExternalObject<G4LogicalVolume>("pixel_log");
+        if(pixel_log != nullptr) {
+            pixel_log->SetVisAttributes(SensorVisAtt); // NOTE NOTE
+        }
+
+        auto bumps_wrapper_log = detector->getExternalObject<G4LogicalVolume>("bumps_wrapper_log");
+        if(bumps_wrapper_log != nullptr) {
+            bumps_wrapper_log->SetVisAttributes(BumpBoxVisAtt); // NOTE NOTE
+        }
+
+        auto bumps_cell_log = detector->getExternalObject<G4LogicalVolume>("bumps_cell_log");
+        if(bumps_cell_log != nullptr) {
+            bumps_cell_log->SetVisAttributes(BumpVisAtt); // NOTE NOTE
+        }
+
+        auto guard_rings_log = detector->getExternalObject<G4LogicalVolume>("guard_rings_log");
+        if(guard_rings_log != nullptr) {
+            guard_rings_log->SetVisAttributes(guardRingsVisAtt); // NOTE NOTE
+        }
+
+        auto chip_log = detector->getExternalObject<G4LogicalVolume>("chip_log");
+        if(chip_log != nullptr) {
+            chip_log->SetVisAttributes(ChipVisAtt);
+        }
+
+        auto PCB_log = detector->getExternalObject<G4LogicalVolume>("pcb_log");
+        if(PCB_log != nullptr) {
+            PCB_log->SetVisAttributes(pcbVisAtt);
+        }
+    }
 }
 
 void VisualizationGeant4Module::run(unsigned int) {

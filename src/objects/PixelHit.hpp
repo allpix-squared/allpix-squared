@@ -12,7 +12,6 @@
 #include <Math/DisplacementVector2D.h>
 
 #include "Object.hpp"
-#include "core/messenger/Message.hpp"
 
 namespace allpix {
     // object definition
@@ -23,6 +22,9 @@ namespace allpix {
         explicit PixelHit(Pixel pixel);
 
         PixelHit::Pixel getPixel() const;
+
+        ClassDef(PixelHit, 1);
+        PixelHit() = default;
 
     private:
         Pixel pixel_;

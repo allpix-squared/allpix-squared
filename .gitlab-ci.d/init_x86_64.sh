@@ -6,13 +6,16 @@ if [ "$(uname)" == "Linux" ]; then
         OS=slc6
     elif [ "$( cat /etc/*-release | grep CentOS )" ]; then
         OS=centos7
+    else
+        echo "Cannot detect OS, falling back to SLC6"
+        OS=slc6
     fi
 else
-    echo "UNKNOWN OS"
+    echo "Unknown OS"
     exit 1
 fi
 
-#Determine is you have CVMFS installed
+# Determine is you have CVMFS installed
 if [ ! -d "/cvmfs" ]; then
     echo "No CVMFS detected, please install it."
     exit 1
@@ -24,7 +27,7 @@ if [ ! -d "/cvmfs/clicdp.cern.ch" ]; then
 fi
 
 
-#Determine which compiler to use
+# Determine which compiler to use
 if [ -z ${COMPILER_TYPE} ]; then
     COMPILER_TYPE="gcc"
 fi
@@ -35,8 +38,7 @@ if [ ${COMPILER_TYPE} == "llvm" ]; then
     COMPILER_VERSION="llvm40"
 fi
 
-
-#Choose build type
+# Choose build type
 if [ -z ${BUILD_TYPE} ]; then
     BUILD_TYPE=opt
 fi
@@ -98,6 +100,11 @@ export G4ENV_INIT="${G4INSTALL}/bin/geant4.sh"
 export G4SYSTEM="Linux-g++"
 
 #--------------------------------------------------------------------------------
+#     CLHEP
+#--------------------------------------------------------------------------------
+export CLHEP_ROOT_DIR=/lcg/releases/clhep/2.3.1.1-6ba0c/x86_64-slc6-gcc62-opt/
+
+#--------------------------------------------------------------------------------
 #     Boost
 #--------------------------------------------------------------------------------
 
@@ -115,5 +122,5 @@ export PATH="$Ninja_HOME:$PATH"
 #     Eigen
 #--------------------------------------------------------------------------------
 
-export Eigen_HOME=${CLICREPO}/software/Eigen/3.3.0/x86_64-centos7-gcc62-opt/
-
+export Eigen_HOME=${CLICREPO}/software/Eigen/3.3.3/${BUILD_FLAVOUR}/
+export Eigen3_DIR=${Eigen_HOME}/share/eigen3/cmake/

@@ -13,6 +13,9 @@
 #include <memory>
 #include <queue>
 
+#include <TDirectory.h>
+#include <TFile.h>
+
 #include "Module.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/utils/log.h"
@@ -89,6 +92,7 @@ namespace allpix {
 
         /**
          * @brief Terminates as soon as the current event is finished
+         * @note This method is safe to call from any signal handler
          */
         void terminate();
 
@@ -99,19 +103,22 @@ namespace allpix {
          * @param config Configuration of the module
          * @param messenger Pointer to the messenger
          * @param geo_manager Pointer to the geometry manager
+         * @param directory Pointer to the ROOT directory
          * @return An unique module together with its identifier
          */
-        std::pair<ModuleIdentifier, Module*> create_unique_modules(void*, Configuration, Messenger*, GeometryManager*);
+        std::pair<ModuleIdentifier, Module*>
+        create_unique_modules(void*, Configuration, Messenger*, GeometryManager*, TDirectory*);
         /**
          * @brief Create detector modules
          * @param library Void pointer to the loaded library
          * @param config Configuration of the module
          * @param messenger Pointer to the messenger
          * @param geo_manager Pointer to the geometry manager
+         * @param directory Pointer to the ROOT directory
          * @return A list of all created detector modules and their identifiers
          */
         std::vector<std::pair<ModuleIdentifier, Module*>>
-        create_detector_modules(void*, Configuration, Messenger*, GeometryManager*);
+        create_detector_modules(void*, Configuration, Messenger*, GeometryManager*, TDirectory*);
 
         /**
          * @brief Set module specific log setting before running init/run/finalize
@@ -127,6 +134,8 @@ namespace allpix {
 
         ModuleList modules_;
         IdentifierToModuleMap id_to_module_;
+
+        std::unique_ptr<TFile> modules_file_;
 
         std::map<Module*, long double> module_execution_time_;
 

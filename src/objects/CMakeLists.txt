@@ -1,18 +1,55 @@
 # include the standard dependencies
 INCLUDE_DIRECTORIES(SYSTEM ${ALLPIX_DEPS_INCLUDE_DIRS})
 
-# define the library
+# Load the generate dictionaries macro
+INCLUDE(${ROOT_USE_FILE}/../modules/RootNewMacros.cmake)
+
+# Generate the ROOT dictionary
+ROOT_GENERATE_DICTIONARY(AllpixObjectsDictionary
+    ${CMAKE_CURRENT_SOURCE_DIR}/Object.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/SensorCharge.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/PropagatedCharge.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/DepositedCharge.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/PixelCharge.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/PixelHit.hpp
+    LINKDEF 
+    ${CMAKE_CURRENT_SOURCE_DIR}/Linkdef.h
+)
+
+FOREACH(dir IN ITEMS ${ALLPIX_DEPS_INCLUDE_DIRS})
+    IF(NOT INCLUDE_DIR_ARGS)
+        SET(INCLUDE_DIR_ARGS "-I${dir}")
+    ELSE() 
+        SET(INCLUDE_DIR_ARGS "${INCLUDE_DIR_ARGS} -I${dir}")
+    ENDIF()
+ENDFOREACH()
+
+# Compile the dictionary through a special target 
+# WARNING: this hack is necessary to prevent standard warnings and those in clang-tidy
+ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx.o COMMAND ${CMAKE_CXX_COMPILER} -fPIC -std=c++${CMAKE_CXX_STANDARD} -I${CMAKE_SOURCE_DIR}/src ${INCLUDE_DIR_ARGS} -o ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx.o -c ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx DEPENDS AllpixObjectsDictionary)
+
+# Define the library adding the object file created above
 ADD_LIBRARY(AllpixObjects SHARED
     Object.cpp
     SensorCharge.cpp
     PixelCharge.cpp
+    DepositedCharge.cpp
+    PropagatedCharge.cpp
     PixelHit.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx.o
 )
 
-# link the standard dependencies
+# Link the standard dependencies
 TARGET_LINK_LIBRARIES(AllpixObjects ${ALLPIX_DEPS_LIBRARIES})
 
-# specify install for the messages
+# Specify install for the messages
 INSTALL(TARGETS AllpixObjects
-  RUNTIME DESTINATION bin
-  LIBRARY DESTINATION lib)
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib)
+  
+# Also install the dictionary objects
+INSTALL(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/libAllpixObjectsDictionary_rdict.pcm
+    ${CMAKE_CURRENT_BINARY_DIR}/libAllpixObjectsDictionary.rootmap
+    DESTINATION lib)
+

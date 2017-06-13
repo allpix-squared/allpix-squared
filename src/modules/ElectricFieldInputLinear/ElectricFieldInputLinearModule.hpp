@@ -1,4 +1,4 @@
-/*
+/**
  * Module to read electric fields in the INIT format
  * See https://github.com/simonspa/pixelav
  *

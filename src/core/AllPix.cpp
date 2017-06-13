@@ -179,7 +179,7 @@ void AllPix::finalize() {
         LOG(TRACE) << "Finalizing AllPix";
         mod_mgr_->finalize();
     } else {
-        LOG(INFO) << "Skip finalizing modules because no modulue did run";
+        LOG(INFO) << "Skip finalizing modules because no module did run";
     }
 }
 

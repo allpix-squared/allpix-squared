@@ -43,8 +43,7 @@ using namespace ROOT::Math;
 SimplePropagationModule::SimplePropagationModule(Configuration config,
                                                  Messenger* messenger,
                                                  std::shared_ptr<Detector> detector)
-    : Module(config, detector), config_(std::move(config)), messenger_(messenger), detector_(std::move(detector)),
-      debug_file_(nullptr) {
+    : Module(config, detector), config_(std::move(config)), messenger_(messenger), detector_(std::move(detector)) {
     // get detector model
     model_ = detector_->getModel();
 
@@ -67,26 +66,15 @@ SimplePropagationModule::SimplePropagationModule(Configuration config,
     config_.setDefault<double>("output_plots_phi", 0.0f);
 }
 
-// init debug plots
-void SimplePropagationModule::init() {
-    if(config_.get<bool>("output_plots")) {
-        std::string file_name = getOutputPath(config_.get<std::string>("output_plots_file_name", "output_plots") + ".root");
-        debug_file_ = new TFile(file_name.c_str(), "RECREATE");
-    }
-}
-
 void SimplePropagationModule::create_output_plots(unsigned int event_num) {
     LOG(TRACE) << "Writing output plots";
 
     // enable prefer GL
     gStyle->SetCanvasPreferGL(kTRUE);
 
-    // goto the file
-    debug_file_->cd();
-
     // convert to pixel units if necessary
     if(config_.get<bool>("output_plots_use_pixel_units")) {
-        for(auto& deposit_points : debug_plot_points_) {
+        for(auto& deposit_points : output_plot_points_) {
             for(auto& point : deposit_points.second) {
                 point.SetX((point.x() / model_->getPixelSizeX()) + 1);
                 point.SetY((point.y() / model_->getPixelSizeY()) + 1);
@@ -100,7 +88,7 @@ void SimplePropagationModule::create_output_plots(unsigned int event_num) {
     unsigned long tot_point_cnt = 0;
     long double start_time = std::numeric_limits<long double>::max();
     unsigned int total_charge = 0;
-    for(auto& deposit_points : debug_plot_points_) {
+    for(auto& deposit_points : output_plot_points_) {
         for(auto& point : deposit_points.second) {
             minX = std::min(minX, point.x());
             maxX = std::max(maxX, point.x());
@@ -169,7 +157,7 @@ void SimplePropagationModule::create_output_plots(unsigned int event_num) {
     std::vector<std::unique_ptr<TPolyLine3D>> lines;
     short current_color = 1;
     std::vector<short> colors;
-    for(auto& deposit_points : debug_plot_points_) {
+    for(auto& deposit_points : output_plot_points_) {
         auto line = std::make_unique<TPolyLine3D>();
         for(auto& point : deposit_points.second) {
             line->SetNextPoint(point.x(), point.y(), point.z());
@@ -274,7 +262,7 @@ void SimplePropagationModule::create_output_plots(unsigned int event_num) {
         histogram_frame->GetZaxis()->SetTitle("z (mm)");
         histogram_frame->Draw();
 
-        for(auto& deposit_points : debug_plot_points_) {
+        for(auto& deposit_points : output_plot_points_) {
             auto points = deposit_points.second;
 
             auto diff = static_cast<unsigned long>(std::round((deposit_points.first.getEventTime() - start_time) /
@@ -359,8 +347,8 @@ void SimplePropagationModule::create_output_plots(unsigned int event_num) {
         }
         markers.clear();
 
-        LOG_PROGRESS(DEBUG, getUniqueName() + "_OUTPUT_PLOTS") << "Written " << point_cnt << " of " << tot_point_cnt
-                                                               << " points";
+        LOG_PROGRESS(DEBUG, getUniqueName() + "_OUTPUT_PLOTS")
+            << "Written " << point_cnt << " of " << tot_point_cnt << " points";
     }
 }
 
@@ -397,8 +385,8 @@ void SimplePropagationModule::run(unsigned int event_num) {
             auto position = deposit.getPosition(); // NOTE: this is already a local position
 
             if(config_.get<bool>("output_plots")) {
-                debug_plot_points_.emplace_back(PropagatedCharge(position, charge_per_step, deposit.getEventTime()),
-                                                std::vector<ROOT::Math::XYZPoint>());
+                output_plot_points_.emplace_back(PropagatedCharge(position, charge_per_step, deposit.getEventTime()),
+                                                 std::vector<ROOT::Math::XYZPoint>());
             }
 
             // propagate a single charge deposit
@@ -409,8 +397,7 @@ void SimplePropagationModule::run(unsigned int event_num) {
                        << Units::display(prop_pair.second, "ns") << " time";
 
             // create a new propagated charge and add it to the list
-            PropagatedCharge propagated_charge(position, charge_per_step, deposit.getEventTime() + prop_pair.second);
-            propagated_charges.push_back(propagated_charge);
+            propagated_charges.emplace_back(position, charge_per_step, deposit.getEventTime() + prop_pair.second);
 
             // update statistics
             ++step_count;
@@ -494,10 +481,10 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const XYZPoint& r
     double zero_vec[] = {0, 0, 0};
     double last_time = std::numeric_limits<double>::lowest();
     while(detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
-        // update debug plots if necessary
+        // update output plots if necessary
         if(config_.get<bool>("output_plots") &&
            runge_kutta.getTime() - last_time > config_.get<double>("output_plots_step")) {
-            debug_plot_points_.back().second.push_back(static_cast<XYZPoint>(runge_kutta.getValue()));
+            output_plot_points_.back().second.push_back(static_cast<XYZPoint>(runge_kutta.getValue()));
             last_time = runge_kutta.getTime();
         }
 
@@ -543,14 +530,8 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const XYZPoint& r
     return std::make_pair(static_cast<XYZPoint>(position), runge_kutta.getTime());
 }
 
-// write debug plots
+// Write statistics
 void SimplePropagationModule::finalize() {
-    if(config_.get<bool>("output_plots")) {
-        LOG(TRACE) << "Closing output plots";
-        debug_file_->Close();
-        delete debug_file_;
-    }
-
     long double average_time = total_time_ / std::max(1u, total_steps_);
     LOG(INFO) << "Propagated total of " << total_propagated_charges_ << " charges in " << total_steps_
               << " steps in average time of " << Units::display(average_time, "ns");

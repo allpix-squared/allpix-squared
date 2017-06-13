@@ -15,6 +15,9 @@ namespace allpix {
     public:
         PropagatedCharge(ROOT::Math::XYZPoint position, unsigned int charge, long double event_time)
             : SensorCharge(std::move(position), charge, event_time) {}
+
+        ClassDef(PropagatedCharge, 1);
+        PropagatedCharge() = default;
     };
 
     // link to the carrying message

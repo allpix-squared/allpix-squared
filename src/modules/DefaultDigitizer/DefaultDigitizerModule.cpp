@@ -45,26 +45,12 @@ void DefaultDigitizerModule::init() {
     if(config_.get<bool>("output_plots")) {
         LOG(TRACE) << "Creating output plots";
 
-        std::string file_name =
-            getOutputPath(config_.get<std::string>("output_plots_file_name", "debug_digitizer") + ".root");
-        output_file_ = new TFile(file_name.c_str(), "RECREATE");
-
         // book histograms:
-        h_pxq =
-            new TH1D(("pixelcharge_" + getUniqueName()).c_str(), "raw pixel charge;pixel charge [ke];pixels", 100, 0, 10);
-        h_pxq_noise = new TH1D(("pixelcharge_noise_" + getUniqueName()).c_str(),
-                               "pixel charge w/ el. noise;pixel charge [ke];pixels",
-                               100,
-                               0,
-                               10);
-        h_thr = new TH1D(("threshold_" + getUniqueName()).c_str(), "applied threshold; threshold [ke];events", 100, 0, 10);
-        h_pxq_thr = new TH1D(("pixelcharge_threshold_" + getUniqueName()).c_str(),
-                             "pixel charge above threshold;pixel charge [ke];pixels",
-                             100,
-                             0,
-                             10);
-        h_pxq_adc = new TH1D(
-            ("pixelcharge_adc_" + getUniqueName()).c_str(), "pixel charge after ADC;pixel charge [ke];pixels", 100, 0, 10);
+        h_pxq = new TH1D("pixelcharge", "raw pixel charge;pixel charge [ke];pixels", 100, 0, 10);
+        h_pxq_noise = new TH1D("pixelcharge_noise_", "pixel charge w/ el. noise;pixel charge [ke];pixels", 100, 0, 10);
+        h_thr = new TH1D("threshold", "applied threshold; threshold [ke];events", 100, 0, 10);
+        h_pxq_thr = new TH1D("pixelcharge_threshold_", "pixel charge above threshold;pixel charge [ke];pixels", 100, 0, 10);
+        h_pxq_adc = new TH1D("pixelcharge_adc", "pixel charge after ADC;pixel charge [ke];pixels", 100, 0, 10);
     }
 }
 
@@ -134,7 +120,7 @@ void DefaultDigitizerModule::run(unsigned int) {
 
     if(!hits.empty()) {
         // Create and dispatch hit message
-        auto hits_message = std::make_shared<PixelHitMessage>(hits, getDetector());
+        auto hits_message = std::make_shared<PixelHitMessage>(std::move(hits), getDetector());
         messenger_->dispatchMessage(this, hits_message);
     }
 }
@@ -142,9 +128,6 @@ void DefaultDigitizerModule::run(unsigned int) {
 // Create file and write the histograms to it if we have plots enabled
 void DefaultDigitizerModule::finalize() {
     if(config_.get<bool>("output_plots")) {
-        // Go to output file
-        output_file_->cd();
-
         // Write histograms
         LOG(TRACE) << "Writing output plots to file";
         h_pxq->Write();
@@ -152,9 +135,6 @@ void DefaultDigitizerModule::finalize() {
         h_thr->Write();
         h_pxq_thr->Write();
         h_pxq_adc->Write();
-
-        // Close the file
-        output_file_->Close();
     }
 
     LOG(INFO) << "Digitized " << total_hits_ << " pixel hits in total";
