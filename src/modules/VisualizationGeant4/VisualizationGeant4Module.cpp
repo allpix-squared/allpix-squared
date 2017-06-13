@@ -26,8 +26,16 @@
 using namespace allpix;
 
 VisualizationGeant4Module::VisualizationGeant4Module(Configuration config, Messenger*, GeometryManager* geo_manager)
-    : Module(config), config_(std::move(config)), geo_manager_(geo_manager), has_run_(false), session_param_ptr_(nullptr) {}
+    : Module(config), config_(std::move(config)), geo_manager_(geo_manager), has_run_(false), session_param_ptr_(nullptr) {
+    config_.setDefault("mode", "gui");
+
+    std::string mode = config_.get<std::string>("mode");
+    if(mode != "gui" && mode != "terminal" && mode != "none") {
+        throw InvalidValueError(config_, "mode", "viewing mode should be 'gui', 'terminal' or 'none'");
+    }
+}
 VisualizationGeant4Module::~VisualizationGeant4Module() {
+    // Invoke VRML2FILE workaround if necessary to prevent visualisation in case of exceptions
     if(!has_run_ && vis_manager_g4_ != nullptr && vis_manager_g4_->GetCurrentViewer() != nullptr &&
        config_.get<std::string>("driver", "") == "VRML2FILE") {
         LOG(TRACE) << "Invoking VRML workaround to prevent visualization under error conditions";
@@ -45,41 +53,41 @@ VisualizationGeant4Module::~VisualizationGeant4Module() {
 }
 
 void VisualizationGeant4Module::init() {
-    // suppress all geant4 output
+    // Suppress all geant4 output
     SUPPRESS_STREAM(G4cout);
 
-    // check if we have a running G4 manager
+    // Check if we have a running G4 manager
     G4RunManager* run_manager_g4 = G4RunManager::GetRunManager();
     if(run_manager_g4 == nullptr) {
         RELEASE_STREAM(G4cout);
         throw ModuleError("Cannot visualize using Geant4 without a Geant4 geometry builder");
     }
 
-    if(config_.has("use_gui")) {
+    // Create the gui if required
+    if(config_.get<std::string>("mode") == "gui") {
         // Need to provide parameters, simulate this behaviour
         session_param_ = ALLPIX_PROJECT_NAME;
         session_param_ptr_ = const_cast<char*>(session_param_.data()); // NOLINT
 #ifdef G4UI_USE_QT
         gui_session_ = std::make_unique<G4UIQt>(1, &session_param_ptr_);
 #else
-        throw InvalidValueError(
-            config_, "use_gui", "GUI session cannot be started because Qt is not available in this Geant4");
+        throw InvalidValueError(config_, "mode", "GUI session cannot be started because Qt is not available in this Geant4");
 #endif
     }
 
     // Set the visibility attributes for visualization
     set_visibility_attributes();
 
-    // initialize the session and the visualization manager
+    // Initialize the session and the visualization manager
     LOG(TRACE) << "Initializing visualization";
     vis_manager_g4_ = std::make_unique<G4VisExecutive>("quiet");
     vis_manager_g4_->Initialize();
 
-    // execute standard commands
-    // FIXME: should execute this directly and not through the UI
+    // Create the viewer
     G4UImanager* UI = G4UImanager::GetUIpointer();
     UI->ApplyCommand("/vis/scene/create");
-    // FIXME: no way to check if this driver actually exists...
+
+    // Initialize the driver and checking it actually exists
     int check_driver = UI->ApplyCommand("/vis/sceneHandler/create " + config_.get<std::string>("driver"));
     if(check_driver != 0) {
         RELEASE_STREAM(G4cout);
@@ -105,19 +113,18 @@ void VisualizationGeant4Module::init() {
         throw InvalidValueError(
             config_, "driver", "visualization driver does not exists (options are " + candidate_str + ")");
     }
-
     UI->ApplyCommand("/vis/sceneHandler/attach");
     UI->ApplyCommand("/vis/viewer/create");
 
-    // release the stream early in debugging mode
+    // Release the stream early in debugging mode
     IFLOG(DEBUG) { RELEASE_STREAM(G4cout); }
 
-    // execute initialization macro if provided
+    // Execute initialization macro if provided
     if(config_.has("macro_init")) {
         UI->ApplyCommand("/control/execute " + config_.getPath("macro_init"));
     }
 
-    // release the g4 output
+    // Release the g4 output
     RELEASE_STREAM(G4cout);
 }
 
@@ -126,7 +133,7 @@ void VisualizationGeant4Module::set_visibility_attributes() {
 
     // To add some transparency in the solids, set to 0.2. 1 means opaque.
     // Transparency can be switched off in the visualisation.
-    const double alpha = config_.get<double>("transparency", 0.2);
+    const double alpha = config_.get<double>("transparency", 0.4);
     if(alpha < 0 || alpha > 1) {
         throw InvalidValueError(config_, "transparency", "Transparency level should be between 0 and 1");
     }
@@ -247,23 +254,21 @@ void VisualizationGeant4Module::run(unsigned int) {
     RELEASE_STREAM(G4cout);
 }
 
-// display the visualization after all events have passed
+// Display the visualization after all events have passed
 void VisualizationGeant4Module::finalize() {
-    // flush the view or open an interactive session depending on settings
-    if(config_.has("use_gui")) {
+    // Open GUI / terminal or start viewer depending on sections
+    if(config_.get<std::string>("mode") == "gui") {
         LOG(INFO) << "Starting visualization session";
         gui_session_->SessionStart();
+    } else if(config_.get<std::string>("mode") == "terminal") {
+        LOG(INFO) << "Starting terminal session";
+        std::unique_ptr<G4UIsession> session = std::make_unique<G4UIterminal>();
+        session->SessionStart();
     } else {
-        if(config_.get("interactive", false)) {
-            LOG(INFO) << "Starting terminal session";
-            std::unique_ptr<G4UIsession> session = std::make_unique<G4UIterminal>();
-            session->SessionStart();
-        } else {
-            LOG(INFO) << "Starting viewer";
-            vis_manager_g4_->GetCurrentViewer()->ShowView();
-        }
+        LOG(INFO) << "Starting viewer";
+        vis_manager_g4_->GetCurrentViewer()->ShowView();
     }
 
-    // set that we did succesfully visualize
+    // Set that we did succesfully visualize
     has_run_ = true;
 }
