@@ -17,10 +17,9 @@ class G4UIsession;
 class G4VisManager;
 
 namespace allpix {
-    // define the module to inherit from the module base class
     class VisualizationGeant4Module : public Module {
     public:
-        // constructor should take a pointer to the Configuration, the Messenger and the Geometry Manager
+        // Unique module constructor
         VisualizationGeant4Module(Configuration config, Messenger*, GeometryManager*);
         ~VisualizationGeant4Module() override;
 
@@ -32,16 +31,17 @@ namespace allpix {
         VisualizationGeant4Module(VisualizationGeant4Module&&) noexcept = default;
         VisualizationGeant4Module& operator=(VisualizationGeant4Module&&) noexcept = default;
 
-        // initializes the visualization and set necessary settings to catch all the required data
+        // Initializes the visualization and parameters
         void init() override;
 
-        // sets the display settings for the current event
+        // Show updates every run if not accumulating
         void run(unsigned int) override;
 
-        // displays the visualization
+        // Display the visualization
         void finalize() override;
 
     private:
+        void set_visualization_settings();
         void set_visibility_attributes();
 
         Configuration config_;

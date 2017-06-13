@@ -271,6 +271,7 @@ void GeometryConstructionG4::build_pixel_devices() {
             // Define types from parameters
             G4double bump_sphere_radius = model->getBumpSphereRadius();
             G4double bump_cylinder_radius = model->getBumpCylinderRadius();
+
             auto bump_sphere =
                 std::make_shared<G4Sphere>(BumpName.first + "sphere", 0, bump_sphere_radius, 0, 360 * deg, 0, 360 * deg);
             solids_.push_back(bump_sphere);
@@ -303,6 +304,7 @@ void GeometryConstructionG4::build_pixel_devices() {
             // Create and instantiate a parameterization of the individual bumps
             auto bumps_param = std::make_shared<BumpsParameterizationG4>(model);
             detector->setExternalObject("bumps_param", bumps_param);
+
             G4int NPixTot = model->getNPixelsX() * model->getNPixelsY();
             auto bumps_param_inst = std::make_shared<G4PVParameterised>(BumpName.second + "phys",
                                                                         bumps_cell_log.get(),
