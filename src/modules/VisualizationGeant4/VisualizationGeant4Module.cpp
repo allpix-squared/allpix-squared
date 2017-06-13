@@ -214,7 +214,7 @@ void VisualizationGeant4Module::set_visualization_settings() {
         } else if(traj_color == "particle") {
             UI->ApplyCommand("/vis/modeling/trajectories/create/drawByParticleID allpixModule");
 
-            auto particle_colors = config_.get<std::string>("trajectories_particle_colors");
+            auto particle_colors = config_.getArray<std::string>("trajectories_particle_colors");
             for(auto& particle_color : particle_colors) {
                 ret_code = UI->ApplyCommand("/vis/modeling/trajectories/allpixModule/set " + particle_color);
                 if(ret_code != 0) {
