@@ -388,7 +388,7 @@ void VisualizationGeant4Module::run(unsigned int) {
 }
 
 static bool has_gui = false;
-static sighandler_t prev_handler = nullptr;
+static void (*prev_handler)(int) = nullptr;
 static void interrupt_handler(int signal) {
 // Exit the Qt application if it is used
 // FIXME: Is there a better way to trigger this?
