@@ -28,7 +28,8 @@ using namespace allpix;
 VisualizationGeant4Module::VisualizationGeant4Module(Configuration config, Messenger*, GeometryManager* geo_manager)
     : Module(config), config_(std::move(config)), geo_manager_(geo_manager), has_run_(false), session_param_ptr_(nullptr) {}
 VisualizationGeant4Module::~VisualizationGeant4Module() {
-    if(!has_run_ && vis_manager_g4_ != nullptr && vis_manager_g4_->GetCurrentViewer() != nullptr) {
+    if(!has_run_ && vis_manager_g4_ != nullptr && vis_manager_g4_->GetCurrentViewer() != nullptr &&
+       config_.get<std::string>("driver", "") == "VRML2FILE") {
         LOG(TRACE) << "Invoking VRML workaround to prevent visualization under error conditions";
 
         // FIXME: workaround to skip VRML visualization in case we stopped before reaching the run method
@@ -125,7 +126,10 @@ void VisualizationGeant4Module::set_visibility_attributes() {
 
     // To add some transparency in the solids, set to 0.2. 1 means opaque.
     // Transparency can be switched off in the visualisation.
-    const double alpha = 0.2;
+    const double alpha = config_.get<double>("transparency", 0.2);
+    if(alpha < 0 || alpha > 1) {
+        throw InvalidValueError(config_, "transparency", "Transparency level should be between 0 and 1");
+    }
 
     // Wrapper
     G4VisAttributes wrapperVisAtt = G4VisAttributes(G4Color(1, 0, 0, 0.1)); // Red
@@ -181,37 +185,37 @@ void VisualizationGeant4Module::set_visibility_attributes() {
     for(auto& detector : geo_manager_->getDetectors()) {
         auto wrapper_log = detector->getExternalObject<G4LogicalVolume>("wrapper_log");
         if(wrapper_log != nullptr) {
-            wrapper_log->SetVisAttributes(wrapperVisAtt); // NOTE NOTE
+            wrapper_log->SetVisAttributes(wrapperVisAtt);
         }
 
         auto sensor_log = detector->getExternalObject<G4LogicalVolume>("sensor_log");
         if(sensor_log != nullptr) {
-            sensor_log->SetVisAttributes(BoxVisAtt); // NOTE NOTE
+            sensor_log->SetVisAttributes(BoxVisAtt);
         }
 
         auto slice_log = detector->getExternalObject<G4LogicalVolume>("slice_log");
         if(slice_log != nullptr) {
-            slice_log->SetVisAttributes(SensorVisAtt); // NOTE NOTE
+            slice_log->SetVisAttributes(SensorVisAtt);
         }
 
         auto pixel_log = detector->getExternalObject<G4LogicalVolume>("pixel_log");
         if(pixel_log != nullptr) {
-            pixel_log->SetVisAttributes(SensorVisAtt); // NOTE NOTE
+            pixel_log->SetVisAttributes(SensorVisAtt);
         }
 
         auto bumps_wrapper_log = detector->getExternalObject<G4LogicalVolume>("bumps_wrapper_log");
         if(bumps_wrapper_log != nullptr) {
-            bumps_wrapper_log->SetVisAttributes(BumpBoxVisAtt); // NOTE NOTE
+            bumps_wrapper_log->SetVisAttributes(BumpBoxVisAtt);
         }
 
         auto bumps_cell_log = detector->getExternalObject<G4LogicalVolume>("bumps_cell_log");
         if(bumps_cell_log != nullptr) {
-            bumps_cell_log->SetVisAttributes(BumpVisAtt); // NOTE NOTE
+            bumps_cell_log->SetVisAttributes(BumpVisAtt);
         }
 
         auto guard_rings_log = detector->getExternalObject<G4LogicalVolume>("guard_rings_log");
         if(guard_rings_log != nullptr) {
-            guard_rings_log->SetVisAttributes(guardRingsVisAtt); // NOTE NOTE
+            guard_rings_log->SetVisAttributes(guardRingsVisAtt);
         }
 
         auto chip_log = detector->getExternalObject<G4LogicalVolume>("chip_log");
