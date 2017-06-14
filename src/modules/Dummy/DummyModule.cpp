@@ -6,7 +6,7 @@
 #include <utility>
 
 // include allpix headers
-#include " core/utils/log.h"
+#include "core/utils/log.h"
 
 // use the allpix namespace within this file
 using namespace allpix;
