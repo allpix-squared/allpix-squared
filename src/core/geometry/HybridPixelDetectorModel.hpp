@@ -25,13 +25,12 @@ namespace allpix {
 
     /**
      * @ingroup DetectorModels
-     * @brief Model of a pixel detector (a detector that contains pixels)
+     * @brief Model of a hybrid pixel detector: a detector where the sensor is bump-bonded to the chip
      */
-    // TODO [doc] This class will be renamed
-    class PixelDetectorModel : public DetectorModel {
+    class HybridPixelDetectorModel : public DetectorModel {
     public:
         // Constructor and destructor
-        explicit PixelDetectorModel(std::string type)
+        explicit HybridPixelDetectorModel(std::string type)
             : DetectorModel(std::move(type)), number_of_pixels_(1, 1), coverlayer_material_("Al"), has_coverlayer_(false) {}
 
         /* Coordinate definitions

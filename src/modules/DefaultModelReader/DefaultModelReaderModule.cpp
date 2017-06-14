@@ -76,9 +76,9 @@ DefaultModelReaderModule::DefaultModelReaderModule(Configuration config, Messeng
     }
 }
 
-std::shared_ptr<PixelDetectorModel> DefaultModelReaderModule::parse_config(const Configuration& config) {
+std::shared_ptr<HybridPixelDetectorModel> DefaultModelReaderModule::parse_config(const Configuration& config) {
     std::string model_name = config.getName();
-    std::shared_ptr<PixelDetectorModel> model = std::make_shared<PixelDetectorModel>(model_name);
+    std::shared_ptr<HybridPixelDetectorModel> model = std::make_shared<HybridPixelDetectorModel>(model_name);
 
     using namespace ROOT::Math;
 

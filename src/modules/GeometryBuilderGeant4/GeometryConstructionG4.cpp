@@ -25,7 +25,7 @@
 #include <G4VisAttributes.hh>
 #include "G4StepLimiterPhysics.hh"
 
-#include "core/geometry/PixelDetectorModel.hpp"
+#include "core/geometry/HybridPixelDetectorModel.hpp"
 #include "core/utils/log.h"
 #include "tools/ROOT.h"
 #include "tools/geant4.h"
@@ -122,7 +122,8 @@ void GeometryConstructionG4::build_pixel_devices() {
 
     for(auto& detector : detectors) {
         // Get pointers for the model of the detector
-        std::shared_ptr<PixelDetectorModel> model = std::dynamic_pointer_cast<PixelDetectorModel>(detector->getModel());
+        std::shared_ptr<HybridPixelDetectorModel> model =
+            std::dynamic_pointer_cast<HybridPixelDetectorModel>(detector->getModel());
 
         // Ignore all non-pixel detectors for now
         if(model == nullptr) {

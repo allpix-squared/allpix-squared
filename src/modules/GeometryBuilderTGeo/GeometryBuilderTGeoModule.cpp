@@ -202,7 +202,7 @@ void GeometryBuilderTGeoModule::BuildPixelDevices() {
     auto detItr = detectors.begin();
     for(; detItr != detectors.end(); detItr++) {
 
-        shared_ptr<PixelDetectorModel> dsc = dynamic_pointer_cast<PixelDetectorModel>((*detItr)->getModel());
+        shared_ptr<HybridPixelDetectorModel> dsc = dynamic_pointer_cast<HybridPixelDetectorModel>((*detItr)->getModel());
         string detname = (*detItr)->getName();
         // TString id_s = Form("_%i", id);
         TString id_s = "_";

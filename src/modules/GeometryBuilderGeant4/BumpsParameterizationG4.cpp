@@ -8,7 +8,7 @@
 
 using namespace allpix;
 
-BumpsParameterizationG4::BumpsParameterizationG4(const std::shared_ptr<PixelDetectorModel>& model)
+BumpsParameterizationG4::BumpsParameterizationG4(const std::shared_ptr<HybridPixelDetectorModel>& model)
     : model_(model), hsensorX(model->getHalfSensorSizeX()), hsensorY(model_->getHalfSensorSizeY()),
       hpixelX(model->getHalfPixelSizeX()), hpixelY(model->getHalfPixelSizeY()), npixelX(model->getNPixelsX()),
       npixelY(model->getNPixelsY()) {}
@@ -23,11 +23,11 @@ void BumpsParameterizationG4::ComputeTransformation(const G4int copyId, G4VPhysi
 }
 
 double BumpsParameterizationG4::posX(int id) const {
-    G4int X = id % npixelX;
-    return X * hpixelX * 2 + hpixelX - hsensorX;
+    G4int X = id % model_->getNPixelsX();
+    return X * model_->getHalfPixelSizeX() * 2 + model_->getHalfPixelSizeX() - model_->getHalfSensorSizeX();
 }
 
 double BumpsParameterizationG4::posY(int id) const {
-    G4int Y = (id - (id % npixelX)) / npixelY;
-    return Y * hpixelY * 2 + hpixelY - hsensorY;
+    G4int Y = (id - (id % model_->getNPixelsX())) / model_->getNPixelsY();
+    return Y * model_->getHalfPixelSizeY() * 2 + model_->getHalfPixelSizeY() - model_->getHalfSensorSizeY();
 }

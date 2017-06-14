@@ -12,7 +12,7 @@
 #include <TH2F.h>
 
 #include "core/config/exceptions.h"
-#include "core/geometry/PixelDetectorModel.hpp"
+#include "core/geometry/HybridPixelDetectorModel.hpp"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 
@@ -138,7 +138,7 @@ void ElectricFieldReaderInitModule::init() {
 
 // check if the detector matches the file
 inline static void check_detector_match(Detector& detector, double thickness, double xpixsz, double ypixsz) {
-    auto model = std::dynamic_pointer_cast<PixelDetectorModel>(detector.getModel());
+    auto model = std::dynamic_pointer_cast<HybridPixelDetectorModel>(detector.getModel());
     // do a few simple checks for pixel detector models
     if(model != nullptr) {
         if(std::fabs(thickness - model->getSensorSizeZ()) > std::numeric_limits<double>::epsilon()) {
