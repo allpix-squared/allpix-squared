@@ -226,14 +226,14 @@ macro_run = "geant4_run.in"
 
 \paragraph{Linear Electric Field}
 \label{sec:module_electric_field}
-A linear electric field can be added to the sensitive device of the detectors. The section below adds an linear electric field to all the timepix detectors. It sets the electric field to the voltage divided by the thickness of the sensor.
+The example configuration before already contained a module for adding a linear electric field to the sensitive detector. All detectors by default do not have any electric field. This will make the \texttt{SimplePropagation} module slow, because it will wait for the propagated charges to reach the end of the sensor, which can take a long time with diffusion solely. Therefore a simple linear electric field have been added to the sensors. The section below sets the electric field on every point in the pixel grid to the voltage divided by the thickness of the sensor.
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
-# Add a linear electric field to the timepix detectors
+# Add a linear electric field
 [ElectricFieldInputLinear]
-# Voltage for the linear electric field over the sensor
+# Bias voltage used to create the linear electric field
 voltage = 50V
 \end{minted}
-More complex electric fields from TCAD can also be added as explained in Section \ref{sec:tcad_electric_field_simulations}.
+More complex electric fields from TCAD can also be added as explained in more detail in Section \ref{sec:tcad_electric_field_simulations}.
 
 \todo{This is already added to the example, because it is very slow otherwise}
 
