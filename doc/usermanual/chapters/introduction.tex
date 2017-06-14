@@ -1,46 +1,47 @@
 \section{Introduction}
 \label{sec:introduction}
-\apsq is a generic simulation framework for tracker and vertex detectors written in modern C++. It is the successor of a previously developed simulation framework called AllPix\cite{ap1wiki}\cite{ap1git}. The goal of the \apsq framework is provide a complete easy-to-use package to simulate the performance of detectors from a general source of particles until the digitization of hits in the detector chip. 
+\apsq is a generic simulation framework for silicon tracker and vertex detectors written in modern C++. It is the successor of a previously developed simulation framework called AllPix~\cite{ap1wiki,ap1git}. The goal of the \apsq framework is to provide a complete and easy-to-use package for simulating the performance of detectors from a general source of particles until the digitization of hits in the detector chip. 
 
-Other frameworks are used within \apsq to perform specialized tasks in the simulation chain, most notably Geant4\cite{geant4} for the deposition of particles in the sensor and ROOT\cite{root} for producing histograms and generating the output data. The cores of the framework focuses on the simulation of charge transport in semiconductor detectors and the digitization to hits in the integrated circuits. The framework does not perform reconstruction of the generated hits, other specific packages (like ??) should be used for that.
+The framework builds upon other packages to perform tasks in the simulation chain, most notably Geant4~\cite{geant4} for the deposition of charge carriers in the sensor and ROOT~\cite{root} for producing histograms and saving the produced data to storage. The core of the framework focuses on the simulation of charge transport in semiconductor detectors and the digitization to hits in the frontend electronics. The framework does not perform a reconstruction of the particle tracks.
 
-\apsq is designed as a modular framework, which allows it to be easily extended for more complex and specific detector simulations. A modular setup also allows to separate the core of the framework from the implementation of the modules, leading to a framework which is both easier to understand and to maintain. Besides modularity the \apsq framework was designed with the following main design goals in mind (listed from most to least important):
+\apsq is designed as a modular framework, allowing for an easy extension to more complex and specialized detector simulations. A modular setup also allows to separate the core of the framework from the implementation of the algorithms in the modules, leading to a framework which is both easier to understand and to maintain. Besides modularity, the \apsq framework was designed with the following main design goals in mind (listed from most to least important):
 \begin{enumerate}
     \item Reflects the physics
     \begin{itemize}
-        \item A run consists of several events. A single event here refers to an indepent particle(s) passage through the setup
+        \item A run consists of several sequential events. A single event here refers to an independent passage of one or multiple particles through the setup
         \item Detectors are treated as separate objects for particles to pass through
-        \item All of the information must be contained at the very end of processing an event (sequential events)
+        \item All of the information must be contained at the very end of processing every single event (sequential events)
     \end{itemize}
     \item Ease of use (user-friendly)
     \begin{itemize}
-        \item Simplicity for module implementation without knowing details of the framework
-        \item Simple intuitive configuration and execution ("does what you expect")
+        \item Simple, intuitive configuration and execution ("does what you expect")
+        \item Clear and extensive logging and error reporting
+        \item Implementing a new module should be feasible without knowing all details of the framework
     \end{itemize}
     \item Flexibility
     \begin{itemize}
-        \item Independent modules allows very simple but also advanced user configurations
-        \item Allow to combine different detectors with different modules
-        \item Limit flexibility for the sake of simplicity and ease of use (higher on the list)
+        \item Event loop runs sequence of modules, allowing for both simple and advanced user configurations
+        \item Possibility to run multiple different modules on different detectors
+        \item Limit flexibility for the sake of simplicity and ease of use
     \end{itemize}
 \end{enumerate}
 
-\subsection{History and prospects}
-Development of AllPix (the original version) started around 2012 \todo{is this true} as a generic simulation framework for pixel detectors. It has been used in various simulatios in the world throughout the years. It was originally written as a Geant4 user application, but at some point the framework grown out of control. The framework lacked a good structure, did not have any modularity, had a confusing geometry setup and limited configuration possibilities. Around 2016 discussions between various collaborators started on a rewrite from the software from scratch. 
+\subsection{History}
+Development of AllPix (the original version) started around 2012 as a generic simulation framework for pixel detectors. It has been succesfully used for simulating a variety of different detector setups through the years. Originally written as a Geant4 user application the framework has grown `organically` after new features continued to be added. Around 2016 discussions between collaborators started to discuss a rewrite of the software from scratch. Primary possibilities for improvements included better modularity, more extensive configuration options and an easier geometry setup.
 
-Early development of \apsq started in end of 2016, but most of the initial rework in modern C++ has been carried out in the framework of a technical student project in the beginning of 2017. Currently, around May 2017, the core of the framework starts to mature and initial versions of various generic core modules have been created. Finishing missing modules, adding new detector models and doing real tests and analyses with the framework are several of the core points on the list for the coming months. 
+Early development of \apsq started in end of 2016, but most of the initial rework in modern C++ has been carried out in the framework of a technical student project in the beginning of 2017. The core of the framework starts to mature and initial versions of various generic core modules have been created at the time of writing. 
 
 \subsection{Scope of this manual}
-This document is the primary Users Guide for \apsq. It presents all necessary components to get started using the framework. More detailed this manual is designed to:
+This document is the primary User's Guide for \apsq. It presents all of the required to start using the framework. In more detail this manual is designed to:
 \begin{itemize}
 \item guide all new users through the installation 
-\item explain the structure of the core framework and the components it provides to the modules
 \item introduce new users to the toolkit for the purpose of running their own simulations
-\item provide detailed information about all modules and how-to use them
-\item supply developers with the requirements to extend the framework with a new detector model or module
+\item explain the structure of the core framework and the components it provides to the modules
+\item provide detailed information about all modules and how-to use and configure them
+\item describe the required steps for adding a new detector model and implementing a new module
 \end{itemize}
 
-In the manual an overview is given to the framework, more detailed information about the code itself can be found in the Doxygen reference manual. The reader does not need any programming experience to get started, but knowledge of (modern) C++ will be useful in the advanced chapters.
+In the manual an overview of the framework is given, more detailed information on the code itself can be found in the Doxygen reference manual. The reader does not need any programming experience to get started, but knowledge of (modern) C++ will be useful in the later chapters.
 
 \subsection{Support and reporting issues}
-Extended support is not yet provided to users, because the framework is in early development. In this alpha stage bugs and other issues will inevitable arise. We are happy to receive feedback on any problems. Reports for issues, questions about unclear parts, as well as suggestions for improvements, are very much appreciated. These should preferably be brought up on the repositories issues page, which can be found at \url{https://gitlab.cern.ch/simonspa/allpix-squared/issues}.
+We are happy to receive feedback on any problem that might arise. Reports for issues, questions about unclear parts, as well as suggestions for improvements, are very much appreciated. These should preferably be brought up on the issues page of the repository, which can be found at \url{https://gitlab.cern.ch/simonspa/allpix-squared/issues}.

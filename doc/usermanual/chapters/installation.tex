@@ -1,21 +1,31 @@
 \section{Installation}
 \label{sec:installation}
-Full instructions to setup a working installation of \apsq are found in the next paragraphs. It will provide detailed information about the installation process and various options. This section is especially useful if there went someting wrong during the standard build you tried before, if you want to use a non-standard installation or if you want more precise installation instructions in general.
+After installing and loading the required dependencies, there are various options to customize the installation of \apsq. This chapter contains details on the standard installation process and information about custom installations.
+
 \subsection{Prerequisites}
 \label{sec:prerequisites}
-\apsq should be able to run without problems on Mac as well as any recent Linux distribution. Windows is not supported and will likely never be. It could be theoretically possible to install \apsq using MinGW or Cygwin, but this has not been tested and is unsupported.
+\apsq should be able to run without problems on Mac as well as any recent Linux distribution. Windows is not officially supported and will likely never be. It could however be theoretically possible to install \apsq using MinGW or Cygwin, but this has not been tested.
 
-The core framework is split from the individual modules and \apsq has therefore only one required dependency: ROOT 6 (versions below 6 are not supported!) \cite{root}. Please refer to the ROOT documentation at \url{https://root.cern.ch/} about details how to install ROOT. ROOT has several extra components and the GenVector package is required to run \apsq. This package is included by default in the standard build.
+The core framework is separated from the individual modules and \apsq has therefore only one required dependency: ROOT 6 (versions below 6 are not supported!)~\cite{root}. If the framework is run on a CERN cluster the default dependencies can be loaded from CVMFS as explained in Section \ref{sec:initialize_dependencies}. Otherwise all required dependencies need to be installed before building \apsq. Please refer to \cite{rootinstallation} for instructions on how to install ROOT. ROOT has several extra components and the GenVector package is required to run \apsq. This package is included in the default build.
 
-For various modules extra dependencies are necessary. For details about the dependencies and their installation visit the module documentation later on in this document. In general the following dependencies are needed to compile the standard installation:
+For various modules additional dependencies are necessary. For details about the dependencies and their installation visit the module documentation in Section \ref{sec:modules}. The following dependencies are needed to compile the standard installation:
 \begin{itemize}
-\item Geant4\cite{geant4}: Used to simulate the geometry and deposit charges in the detector. See the instructions at \url{http://geant4.cern.ch/} about details how to install the software. Geant4 datasets should be included to use it in the modules.
-\item Eigen3\cite{eigen3}: Used vector package to do Runge-Kutta integration in the generic charge propagation module. Eigen is available in almost all Linux distributions through their package manager. See the installation instruction at \url{http://eigen.tuxfamily.org/index.php?title=Main_Page} for more information about Eigen3.
+\item Geant4~\cite{geant4}: Used to simulate the geometry and deposit charges in the detector. See the instructions in \cite{geant4installation} for details on how to install the software. All the Geant4 datasets are required to run the modules succesfully. Also GDML support could be enabled to save the Geant4 geometry for later review. Finally it is very much recommended to enable Qt visualization. A good set of CMake build flags to start with is the following:
+\begin{verbatim}
+-DGEANT4_INSTALL_DATA=ON
+-DGEANT4_BUILD_MULTITHREADED=ON
+-DGEANT4_USE_GDML=ON
+-DGEANT4_USE_QT=ON
+-DGEANT4_USE_XM=ON 
+-DGEANT4_USE_OPENGL_X11=ON
+-DGEANT4_USE_SYSTEM_CLHEP=OFF
+\end{verbatim}
+\item Eigen3~\cite{eigen3}: Used vector package to do Runge-Kutta integration in the generic charge propagation module. Eigen is available in almost all Linux distributions through the package manager. Otherwise it can be easily installed, because it is a header-only library.
 \end{itemize}
-Extra flags needs to be set if you want to compile an \apsq installation without these dependencies. These configuration options are explained in section \ref{sec:cmake_config}.
+Extra flags needs to be set for building an \apsq installation without these dependencies. Details about these configuration options are given in Section \ref{sec:cmake_config}.
 
 \subsection{Downloading the source code}
-The source code is available at different places but only in Git repositories. Separate source code releases are not yet provided at this stage. The recommended download location is from GitLab at \url{https://gitlab.cern.ch/simonspa/allpix-squared}. A plain clone should fetch the source code succesfully:
+The latest version of \apsq can be fetched from the Gitlab repository at \url{https://gitlab.cern.ch/simonspa/allpix-squared}. This version is under heavy development, but should work out-of-the-box. The software can be cloned and accessed as follows:
 
 \begin{verbatim}
 $ git clone https://gitlab.cern.ch/simonspa/allpix-squared
@@ -24,15 +34,20 @@ $ cd allpix-squared
 
 \subsection{Initializing the dependencies}
 \label{sec:initialize_dependencies}
-Before continuuing with running the build the necessary setup scripts for ROOT and Geant4 (unless a build without Geant4 modules is run) should be run. This generally implies running the following two commands from the respective installation directories (replacing \textit{\textless root\_install\_dir\textgreater} with your ROOT installation directory and similar for Geant):
+Before continuing with the build, the necessary setup scripts for ROOT and Geant4 (unless a build without Geant4 modules is attempted) should be run. In Bash on Linux this means executing the following two commands from the respective installation directories (replacing \textit{\textless root\_install\_dir\textgreater} with the local ROOT installation directory and similar for Geant):
 \begin{verbatim}
-$ <root_install_dir>/bin/thisroot.sh
-$ <geant4_install_dir>/bin/geant4.sh
+$ source <root_install_dir>/bin/thisroot.sh
+$ source <geant4_install_dir>/bin/geant4.sh
+\end{verbatim}
+
+On the CERN LXPLUS service a standard initialization script is available to load all dependencies from the CVMFS infrastructure. This script should be run as follows (from the main repository directory):
+\begin{verbatim}
+$ source etc/scripts/setup_lxplus.sh
 \end{verbatim}
 
 \subsection{Configuration via CMake}
 \label{sec:cmake_config}
-\apsq uses the CMake build system to build and install the core framework and the modules. An out-of-source build is recommended: this means that you should not run CMake in the source folder. Instead create a \textit{build} folder inside the source folder and execute cmake from there. For a standard output without any flags this implies running:
+\apsq uses the CMake build system to build and install the core framework and the modules. An out-of-source build is recommended: this means CMake should not be directly executed in the source folder. Instead a \textit{build} folder should be created inside the source folder from which CMake should be run. For a standard build without any flags this implies executing:
 
 \begin{verbatim}
 $ mkdir build
@@ -40,17 +55,16 @@ $ cd build
 $ cmake ..
 \end{verbatim}
 
-CMake can be run with several extra arguments to change the type of installation. These options can be set with -D\textit{option} (see the end of this section as an example). Currently the following options are supported:
+CMake can be run with several extra arguments to change the type of installation. These options can be set with -D\textit{option} (see the end of this section for an example). Currently the following options are supported:
 \begin{itemize}
-\item \textbf{CMAKE\_INSTALL\_PREFIX}: The directory to use as a prefix for installing the binaries, libraries and data. Defaults to the source directory (where the folders bin/ and lib/ are then created). 
-\item \textbf{CMAKE\_BUILD\_TYPE}: Type of build to install, defaults to RELEASE (compiles with full optimizations but without debug symbols). Other possible options are DEBUG (for compiling without optimizations, but with debug symbols), DEBUG\_ASAN (for compiling without optimizations, with debug symbol and with the Clang Address Sanitizer library). 
-\item \textbf{MODEL\_DIRECTORY}: Directory to install the internal models to. Defaults to not installing if the CMAKE\_INSTALL\_PREFIX is set to the source directory (the default). Otherwise defaults to CMAKE\_INSTALL\_PREFIX\textit{/share/allpix/}. The supplied install directory is hardcoded into the modules to use in the search path for model directories.
-\item \textbf{BUILD\_ALL\_MODULES}: Build all included modules, defaulting to OFF. This ignores any selection using the parameter described below.
-\item \textbf{BUILD\_\textit{module\_name}}: If the specific \textit{module\_name} should be installed or not. Defaults to ON, thus all modules are installed by default. This set of parameters have to be set appropriately if you want a build without one of the extra dependencies specified in \ref{sec:prerequisites}.
+\item \textbf{CMAKE\_INSTALL\_PREFIX}: The directory to use as a prefix for installing the binaries, libraries and data. Defaults to the source directory (where the folders \textit{bin/} and \textit{lib/} are added). 
+\item \textbf{CMAKE\_BUILD\_TYPE}: Type of build to install, defaults to \texttt{RelWithDebInfo} (compiles with optimizations and debug symbols). Other possible options are \texttt{Debug} (for compiling with no optimizations, but with debug symbols and extended tracing using the Clang Address Sanitizer library) and \texttt{Release} (for compiling with full optimizations and no debug symbols). 
+\item \textbf{MODEL\_DIRECTORY}: Directory to install the internal models to. Defaults to not installing if the \textbf{CMAKE\_INSTALL\_PREFIX} is set to the directory containing the sources (the default). Otherwise the default value is equal to the directory \textbf{CMAKE\_INSTALL\_PREFIX}\-\textit{/share/allpix/}. The install directory is automatically added to the model search path used by the geometry model parsers to find all the detector models.
+\item \textbf{BUILD\_\textit{module\_name}}: If the specific \textit{module\_name} should be installed or not. Defaults to ON, thus all modules are installed by default. This set of parameters have to be set appropriately for a build without extra dependencies as specified in \ref{sec:prerequisites}.
+\item \textbf{BUILD\_ALL\_MODULES}: Build all included modules, defaulting to OFF. This overwrites any selection using the parameters described above.
 \end{itemize}
-\todo{do we need a parameter to automatically exclude packages which cannot be build (instead of throwing an error) ?}
 
-For example if one wants to do a debug build to a special install directory without the GeometryBuilderGeant4 module you need to execute the following commands.
+An example of a custom installation with debugging, without the GeometryBuilderGeant4 module and installed to a custom directory, is shown below:
 \begin{verbatim}
 $ mkdir build
 $ cd build
@@ -60,15 +74,15 @@ $ cmake -DCMAKE_INSTALL_PREFIX=../install/ \
 \end{verbatim}
 
 \subsection{Compilation and installation}
-Compiling the framework is now a single command in the build folder created above:
+Compiling the framework is now a single command in the build folder created earlier (replacing \textit{\textless number\_of\_cores> \textgreater} with the number of cores to use for compilation):
 \begin{verbatim}
-$ make
+$ make -j<number_of_cores>
 \end{verbatim}
-If you do not want to install but use the local build version you can access it through \textit{src/exec/allpix} in the build folder. This is not recommended for normal users, but can be useful for developers.
+The compiled (non-installed) version of the executable can be found at \textit{src/exec/allpix} in the build folder. Running \apsq directly without installing can be useful for developers, but is not recommended for normal users.
 
-To install the library to the selected install location (defaults to the source directory) you need a single install command:
+To install the library to the selected install location (defaulting to the source directory) requires the following command:
 \begin{verbatim}
 $ make install
 \end{verbatim}
 
-The binary is now available at \textit{bin/allpix} in your installation directory. The example configuration files are not installed as they should only be used as a starting point for your own configuration. They can however be used to test if everything has been installed correctly. Running the allpix binary with the example config as first argument (like \textit{etc/example\_config.ini}) should run without problems with a default install (of course it can give problems if some modules are not installed).
+The binary is now available as \textit{bin/allpix} in the installation directory. The example configuration files are not installed as they should only be used as a starting point for your own configuration. They can however be used to check if the installation was succesful. Running the allpix binary with the example configuration (like \texttt{bin/allpix -c \textit{etc/example.conf}}) should run without problems when a standard installation is used.

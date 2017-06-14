@@ -243,8 +243,9 @@ namespace allpix {
         allpix::LogLevel::level, __FILE_NAME__, std::string(static_cast<const char*>(__func__)), __LINE__)
 
 /**
- * @brief Create a logging stream with
+ * @brief Create a logging stream that overwrites the line if the previous message has the same identifier
  * @param level The log level of the stream
+ * @param identifier Identifier for this stream to determine overwrites
  */
 #define LOG_PROGRESS(level, identifier)                                                                                     \
     if(allpix::LogLevel::level <= allpix::Log::getReportingLevel() && !allpix::Log::getStreams().empty())                   \

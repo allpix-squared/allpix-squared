@@ -1,5 +1,5 @@
 # Set the suffix for model files
-SET(MODEL_SUFFIX ".ini" CACHE INTERNAL "Model files suffix" FORCE)
+SET(MODEL_SUFFIX ".conf" CACHE INTERNAL "Model files suffix" FORCE)
 
 # Prefer local models if not installed to other location
 GET_FILENAME_COMPONENT(ABSOLUTE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} ABSOLUTE)
@@ -22,6 +22,6 @@ ENDIF()
 # NOTE: With default install path this does not change anything
 INSTALL(
     FILES
-    test.ini
-    timepix.ini
+    test.conf
+    timepix.conf
     DESTINATION ${MODEL_DIRECTORY})

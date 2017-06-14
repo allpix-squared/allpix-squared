@@ -73,11 +73,16 @@ AllPix::AllPix(std::string config_file_name)
         Log::setFormat(LogFormat::DEFAULT);
     }
 
+    // Open log file to write output to
+    if(global_config.has("log_file")) {
+        // NOTE: this stream should be available for the duration of the logging
+        log_file_.open(global_config.getPath("log_file"), std::ios_base::out | std::ios_base::trunc);
+        Log::addStream(log_file_);
+    }
+
     // Wait for the first detailed messages until level and format are properly set
     LOG(TRACE) << "Global log level is set to " << log_level_string;
     LOG(TRACE) << "Global log format is set to " << log_format_string;
-
-    // Fetch the detector configuration and initialize the geometry manager
 }
 
 /**

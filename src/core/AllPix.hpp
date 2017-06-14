@@ -14,6 +14,7 @@
 #define ALLPIX_ALLPIX_H
 
 #include <atomic>
+#include <fstream>
 #include <memory>
 #include <string>
 
@@ -40,13 +41,13 @@ namespace allpix {
 
         /**
          * @brief Load modules from the main configuration and construct them
-         * @warning Should be called after the \ref AllPix::Allpix "constructor"
+         * @warning Should be called after the \ref AllPix() "constructor"
          */
         void load();
 
         /**
          * @brief Initialize all modules (pre-run)
-         * @warning Should be called after the \ref AllPix::init "load function"
+         * @warning Should be called after the \ref AllPix::load "load function"
          */
         void init();
 
@@ -58,7 +59,7 @@ namespace allpix {
 
         /**
          * @brief Finalize all modules (post-run)
-         * @warning Should be called after the \ref AllPix::init "finalize function"
+         * @warning Should be called after the \ref AllPix::run "run function"
          */
         void finalize();
 
@@ -81,6 +82,9 @@ namespace allpix {
         // Indicate the framework should terminate
         std::atomic<bool> terminate_;
         std::atomic<bool> has_run_;
+
+        // Log file if specified
+        std::ofstream log_file_;
 
         // All managers in the framework
         std::unique_ptr<Messenger> msg_;

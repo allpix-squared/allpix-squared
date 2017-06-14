@@ -6,7 +6,7 @@
 
 using namespace allpix;
 
-PixelCharge::PixelCharge(PixelCharge::Pixel pixel, unsigned int charge) : pixel_(std::move(pixel)), charge_(charge) {}
+PixelCharge::PixelCharge(Pixel pixel, unsigned int charge) : pixel_(std::move(pixel)), charge_(charge) {}
 
 PixelCharge::Pixel PixelCharge::getPixel() const {
     return pixel_;

@@ -202,7 +202,7 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
 /**
  * @throws std::invalid_argument If an empty identifier is provided
  *
- * This method is typically automatically called by the \ref LOG_PROCESS macro.
+ * This method is typically automatically called by the \ref LOG_PROGRESS macro.
  */
 std::ostringstream& DefaultLogger::getProcessStream(
     const std::string& identifier, LogLevel level, const std::string& file, const std::string& function, uint32_t line) {

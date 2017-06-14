@@ -26,7 +26,7 @@ FIND_PACKAGE(LATEX)
 # Only add target if we have LaTeX
 IF(LATEX_COMPILER)
     MESSAGE(STATUS "Found LaTeX compiler.")
-    SET(LATEX_COMPILER_FLAGS "-shell-escape" "-interaction=batchmode" "-file-line-error" CACHE STRING "Flags passed to latex.")
+    SET(LATEX_COMPILER_FLAGS "-shell-escape" "-interaction nonstopmode" "-halt-on-error" "-file-line-error" CACHE STRING "Flags passed to latex.")
     INCLUDE(${CMAKE_SOURCE_DIR}/cmake/LATEX.cmake)
 
     # Check if we have biber and do not build if not
@@ -50,6 +50,7 @@ IF(LATEX_COMPILER)
             usermanual/chapters/additional.tex
             usermanual/chapters/acknowledgements.tex
             usermanual/appendices/design_notes.tex
+            usermanual/appendices/example_output.tex
             usermanual/config.tex
             CONFIGURE
             usermanual/config.tex

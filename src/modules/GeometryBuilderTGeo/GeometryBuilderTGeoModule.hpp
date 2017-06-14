@@ -1,13 +1,10 @@
-/// \file GeometryBuilderTGeoModule
+/// \file
 /// \brief Implementation of the Geometry builder module using TGeo.
 ///
 /// Builds the detector geometry according to user defined parameters.
 ///
 /// To do :
 ///  - Refer to the detector desc with their names instead of integers.
-///  -
-///  -
-///
 ///
 /// \date     March 30 2017
 /// \version  0.13
