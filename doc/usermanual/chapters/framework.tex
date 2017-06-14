@@ -84,7 +84,7 @@ Every module directory should at the minimum contain the following documents (wi
 \item \textbf{\texttt{ModuleName}Module.hpp}: The header file of the module (note that another name can be used for this source file, but that is deprecated)
 \item \textbf{\texttt{ModuleName}Module.cpp}: The implementation file of the module
 \end{itemize}
-The files are discussed in more detail below. Before the module can be used it should also be linked to the main CMakeLists.txt in \textit{src/modules/} by adding \\ ALLPIX\_BUILD\_MODULE(\texttt{ModuleName}) with the \texttt{ModuleName} being the directory of the module. 
+The files are discussed in more detail below. All modules that are added to the \textit{src/modules/} directory will be build automatically by CMake. This also means that all subdirectories in this module directory should contain a module with a \textit{CMakeLists.txt} to build the module.
 
 More information about constructing new modules can be found in Section \ref{sec:building_new_module}.
 

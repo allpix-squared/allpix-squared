@@ -4,37 +4,11 @@ OPTION(BUILD_ALL_MODULES "Build all modules?" OFF)
 # reset the saved libraries
 SET(ALLPIX_MODULE_LIBRARIES "" CACHE INTERNAL "Module libraries")
 
-# Build the modules 
-
-# model readers
-ALLPIX_BUILD_MODULE(DefaultModelReader)
-
-# input 
-ALLPIX_BUILD_MODULE(ROOTObjectReader)
-
-# geometry
-ALLPIX_BUILD_MODULE(GeometryBuilderTGeo)
-ALLPIX_BUILD_MODULE(GeometryBuilderGeant4)
-
-# electric field readers
-ALLPIX_BUILD_MODULE(ElectricFieldReaderInit)
-ALLPIX_BUILD_MODULE(ElectricFieldInputLinear)
-
-# deposition
-ALLPIX_BUILD_MODULE(DepositionGeant4)
-
-# propagation
-ALLPIX_BUILD_MODULE(SimplePropagation)
-
-# transfer
-ALLPIX_BUILD_MODULE(SimpleTransfer)
-
-# digitization
-ALLPIX_BUILD_MODULE(DefaultDigitizer)
-
-# visualization
-ALLPIX_BUILD_MODULE(VisualizationGeant4)
-
-# output
-ALLPIX_BUILD_MODULE(DetectorHistogrammer)
-ALLPIX_BUILD_MODULE(ROOTObjectWriter)
+# Build all the modules 
+FILE(GLOB subdirs RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/*)
+FOREACH(subdir ${subdirs})
+    IF(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${subdir})
+        # Internally checks if the module is enabled
+        ALLPIX_BUILD_MODULE(${subdir})
+    ENDIF()
+ENDFOREACH()

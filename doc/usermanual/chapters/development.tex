@@ -9,7 +9,6 @@ Before creating a module it is essential to read through the framework module ma
 \item The header and source files have to be implemented following the constructor conventions for the specific type of module.
 \item The initial documentation in the README.md and the \LaTeX-file \texttt{ModuleName}.tex can already be started with before the module is implemented.
 \item Now the the initial parts of the constructor, and possible the \texttt{init}, \texttt{run} and/or \texttt{finalize} methods can be written, depending on what the new module is supposed to do.
-\item Finally the new module has to be included in the build process by adding `option\_build\_module(\texttt{ModuleName})` at the appropriate location in \textit{src/modules/CMakeLists.txt}
 \end{enumerate}
 \todo{Part of the process above can be automized in a script}
 
