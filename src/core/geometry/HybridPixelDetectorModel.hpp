@@ -39,10 +39,10 @@ namespace allpix {
         // sensor coordinates relative to center of local frame
         double getSensorMinX() const override { return -getHalfPixelSizeX(); }
         double getSensorMinY() const override { return -getHalfPixelSizeX(); }
-        double getSensorMinZ() const override { return -getHalfSensorZ(); }
+        double getSensorMinZ() const override { return -getSensorSize().z() / 2.0; }
         ROOT::Math::XYZPoint getCenter() const override {
             return ROOT::Math::XYZPoint(
-                getHalfSensorSizeX() - getHalfPixelSizeX(), getHalfSensorSizeY() - getHalfPixelSizeY(), 0);
+                getSensorSize().x() / 2.0 - getHalfPixelSizeX(), getSensorSize().y() / 2.0 - getHalfPixelSizeY(), 0);
         }
 
         /* Number of pixels */
@@ -67,11 +67,6 @@ namespace allpix {
         double getHalfPixelSizeY() const { return pixel_size_.y() / 2.0; };
 
         void setPixelSize(ROOT::Math::XYVector val) { pixel_size_ = std::move(val); }
-
-        /* Sensor dimensions */
-        double getHalfSensorSizeX() const { return getSensorSize().x() / 2.0; };
-        double getHalfSensorSizeY() const { return getSensorSize().y() / 2.0; };
-        double getHalfSensorZ() const { return getSensorSize().z() / 2.0; };
 
         /* Sensor offset */
         // FIXME: a PCB offset makes probably far more sense
@@ -146,7 +141,7 @@ namespace allpix {
         double getHalfWrapperDY() const { return getHalfPCBSizeY(); }
         double getHalfWrapperDZ() const {
 
-            double whdz = getHalfPCBSizeZ() + getHalfChipSizeZ() + getBumpHeight() / 2.0 + getHalfSensorZ();
+            double whdz = getHalfPCBSizeZ() + getHalfChipSizeZ() + getBumpHeight() / 2.0 + getSensorSize().z() / 2.0;
 
             if(has_coverlayer_) {
                 whdz += getHalfCoverlayerHeight();

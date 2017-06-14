@@ -109,17 +109,17 @@ void SimplePropagationModule::create_output_plots(unsigned int event_num) {
     // use equal axis if specified
     if(config_.get<bool>("output_plots_use_equal_scaling", true)) {
         if(config_.get<bool>("output_plots_use_pixel_units")) {
-            minX = centerX - model_->getSensorSizeZ() / model_->getPixelSizeX() / 2.0;
-            maxX = centerX + model_->getSensorSizeZ() / model_->getPixelSizeY() / 2.0;
+            minX = centerX - model_->getSensorSize().z() / model_->getPixelSizeX() / 2.0;
+            maxX = centerX + model_->getSensorSize().z() / model_->getPixelSizeY() / 2.0;
 
-            minY = centerY - model_->getSensorSizeZ() / model_->getPixelSizeX() / 2.0;
-            maxY = centerY + model_->getSensorSizeZ() / model_->getPixelSizeY() / 2.0;
+            minY = centerY - model_->getSensorSize().z() / model_->getPixelSizeX() / 2.0;
+            maxY = centerY + model_->getSensorSize().z() / model_->getPixelSizeY() / 2.0;
         } else {
-            minX = centerX - model_->getSensorSizeZ() / 2.0;
-            maxX = centerX + model_->getSensorSizeZ() / 2.0;
+            minX = centerX - model_->getSensorSize().z() / 2.0;
+            maxX = centerX + model_->getSensorSize().z() / 2.0;
 
-            minY = centerY - model_->getSensorSizeZ() / 2.0;
-            maxY = centerY + model_->getSensorSizeZ() / 2.0;
+            minY = centerY - model_->getSensorSize().z() / 2.0;
+            maxY = centerY + model_->getSensorSize().z() / 2.0;
         }
     }
 
@@ -134,7 +134,7 @@ void SimplePropagationModule::create_output_plots(unsigned int event_num) {
                                      maxY,
                                      10,
                                      model_->getSensorMinZ(),
-                                     model_->getSensorMinZ() + model_->getSensorSizeZ());
+                                     model_->getSensorMinZ() + model_->getSensorSize().z());
 
     // create the line plot canvas
     auto canvas = std::make_unique<TCanvas>(("line_plot_" + std::to_string(event_num)).c_str(),
@@ -212,7 +212,7 @@ void SimplePropagationModule::create_output_plots(unsigned int event_num) {
                                          maxY,
                                          100,
                                          model_->getSensorMinZ(),
-                                         model_->getSensorMinZ() + model_->getSensorSizeZ()));
+                                         model_->getSensorMinZ() + model_->getSensorSize().z()));
     file_name_contour.push_back(getOutputPath("contourY" + std::to_string(event_num) + ".gif"));
     histogram_contour.push_back(new TH2F(("contourY_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
                                          "",
@@ -221,7 +221,7 @@ void SimplePropagationModule::create_output_plots(unsigned int event_num) {
                                          maxX,
                                          100,
                                          model_->getSensorMinZ(),
-                                         model_->getSensorMinZ() + model_->getSensorSizeZ()));
+                                         model_->getSensorMinZ() + model_->getSensorSize().z()));
     file_name_contour.push_back(getOutputPath("contourZ" + std::to_string(event_num) + ".gif"));
     histogram_contour.push_back(new TH2F(
         ("contourZ_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(), "", 100, minX, maxX, 100, minY, maxY));
@@ -509,7 +509,7 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const ROOT::Math:
         // adapt step size to precision
         double uncertainty = step.error.norm();
         auto target_spatial_precision = config_.get<double>("spatial_precision");
-        if(model_->getSensorSizeZ() - position.z() < step.value.z() * 1.2) {
+        if(model_->getSensorSize().z() - position.z() < step.value.z() * 1.2) {
             timestep *= 0.7;
         } else {
             if(uncertainty > target_spatial_precision) {

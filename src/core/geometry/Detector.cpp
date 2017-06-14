@@ -97,10 +97,12 @@ ROOT::Math::XYZPoint Detector::getGlobalPosition(const ROOT::Math::XYZPoint& loc
  * The definition of inside the sensor is determined by the detector model
  */
 bool Detector::isWithinSensor(const ROOT::Math::XYZPoint& local_pos) const {
-    return (
-        (local_pos.x() >= model_->getSensorMinX() && local_pos.x() <= model_->getSensorMinX() + model_->getSensorSizeX()) &&
-        (local_pos.y() >= model_->getSensorMinY() && local_pos.y() <= model_->getSensorMinY() + model_->getSensorSizeY()) &&
-        (local_pos.z() >= model_->getSensorMinZ() && local_pos.z() <= model_->getSensorMinZ() + model_->getSensorSizeZ()));
+    return ((local_pos.x() >= model_->getSensorMinX() &&
+             local_pos.x() <= model_->getSensorMinX() + model_->getSensorSize().x()) &&
+            (local_pos.y() >= model_->getSensorMinY() &&
+             local_pos.y() <= model_->getSensorMinY() + model_->getSensorSize().y()) &&
+            (local_pos.z() >= model_->getSensorMinZ() &&
+             local_pos.z() <= model_->getSensorMinZ() + model_->getSensorSize().z()));
 }
 
 /**
@@ -154,7 +156,7 @@ double* Detector::get_electric_field_raw(double x, double y, double z) const {
     auto y_ind = static_cast<int>(std::floor(static_cast<double>(electric_field_sizes_[1]) *
                                              (y + model_->getPixelSizeY() / 2.0) / model_->getPixelSizeY()));
     auto z_ind = static_cast<int>(std::floor(static_cast<double>(electric_field_sizes_[2]) * (z - model_->getSensorMinZ()) /
-                                             model_->getSensorSizeZ()));
+                                             model_->getSensorSize().z()));
 
     // Check for indices within the sensor
     if(x_ind < 0 || x_ind >= static_cast<int>(electric_field_sizes_[0]) || y_ind < 0 ||

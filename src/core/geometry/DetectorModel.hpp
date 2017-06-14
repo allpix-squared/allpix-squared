@@ -67,25 +67,6 @@ namespace allpix {
         ROOT::Math::XYZVector getSensorSize() const { return sensor_size_; }
 
         /**
-         * @brief Get size of the sensor in x-direction
-         * @return Length in x
-         */
-        // TODO [doc] This method should be removed (or renamed)
-        double getSensorSizeX() const { return sensor_size_.x(); };
-        /**
-         * @brief Get size of the sensor in x-direction
-         * @return Length in y
-         */
-        // TODO [doc] This method should be removed (or renamed)
-        double getSensorSizeY() const { return sensor_size_.y(); };
-        /**
-         * @brief Get size of the sensor in x-direction
-         * @return Length in z
-         */
-        // TODO [doc] This method should be removed (or renamed)
-        double getSensorSizeZ() const { return sensor_size_.z(); };
-
-        /**
          * @brief Set the size of the sensor
          * @param val Size of the sensor
          */
@@ -115,7 +96,7 @@ namespace allpix {
          * @return Size of a pixel
          */
         virtual ROOT::Math::XYVector getPixelSize() const {
-            return ROOT::Math::XYVector(getSensorSizeX() / getNPixelsX(), getSensorSizeY() / getNPixelsY());
+            return ROOT::Math::XYVector(getSensorSize().x() / getNPixelsX(), getSensorSize().y() / getNPixelsY());
         }
         /**
          * @brief Get size of a single pixel in x-direction

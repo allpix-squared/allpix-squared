@@ -148,11 +148,11 @@ void GeometryConstructionG4::build_pixel_devices() {
 
         // calculation of position of the different physical volumes
         if(model->getHalfChipSizeZ() != 0) {
-            posBumps.setZ(posDevice.z() - model->getHalfSensorZ() - (bump_height / 2.));
+            posBumps.setZ(posDevice.z() - model->getSensorSize().z() / 2.0 - (bump_height / 2.));
 
             posChip.setX(posDevice.x() + model->getChipOffsetX());
             posChip.setY(posDevice.y() + model->getChipOffsetY());
-            posChip.setZ(posDevice.z() - model->getHalfSensorZ() - bump_height - model->getHalfChipSizeZ() +
+            posChip.setZ(posDevice.z() - model->getSensorSize().z() / 2.0 - bump_height - model->getHalfChipSizeZ() +
                          model->getChipOffsetZ());
 
         } else {
@@ -161,7 +161,7 @@ void GeometryConstructionG4::build_pixel_devices() {
         }
         posPCB.setX(posDevice.x() - model->getSensorOffsetX());
         posPCB.setY(posDevice.y() - model->getSensorOffsetY());
-        posPCB.setZ(posDevice.z() - model->getHalfSensorZ() - bump_height - 2. * model->getHalfChipSizeZ() -
+        posPCB.setZ(posDevice.z() - model->getSensorSize().z() / 2.0 - bump_height - 2. * model->getHalfChipSizeZ() -
                     model->getHalfPCBSizeZ());
 
         LOG(DEBUG) << " Local relative positions of the geometry parts";
@@ -227,8 +227,10 @@ void GeometryConstructionG4::build_pixel_devices() {
          */
 
         // Create the sensor box and logical volume
-        auto sensor_box = std::make_shared<G4Box>(
-            BoxName.second, model->getHalfSensorSizeX(), model->getHalfSensorSizeY(), model->getHalfSensorZ());
+        auto sensor_box = std::make_shared<G4Box>(BoxName.second,
+                                                  model->getSensorSize().x() / 2.0,
+                                                  model->getSensorSize().y() / 2.0,
+                                                  model->getSensorSize().z() / 2.0);
         solids_.push_back(sensor_box);
         auto sensor_log =
             make_shared_no_delete<G4LogicalVolume>(sensor_box.get(), materials_["silicon"], BoxName.second + "_log");
@@ -240,7 +242,7 @@ void GeometryConstructionG4::build_pixel_devices() {
 
         // Create the slice boxes and logical volumes
         auto slice_box = std::make_shared<G4Box>(
-            SliceName.first, model->getHalfPixelSizeX(), model->getHalfSensorSizeY(), model->getHalfSensorZ());
+            SliceName.first, model->getHalfPixelSizeX(), model->getSensorSize().y() / 2.0, model->getSensorSize().z() / 2.0);
         solids_.push_back(slice_box);
 
         auto slice_log = make_shared_no_delete<G4LogicalVolume>(slice_box.get(), materials_["silicon"], SliceName.second);
@@ -253,7 +255,7 @@ void GeometryConstructionG4::build_pixel_devices() {
 
         // Create the pixels and logical volumes
         auto pixel_box = std::make_shared<G4Box>(
-            PixelName.first, model->getHalfPixelSizeX(), model->getHalfPixelSizeY(), model->getHalfSensorZ());
+            PixelName.first, model->getHalfPixelSizeX(), model->getHalfPixelSizeY(), model->getSensorSize().z() / 2.0);
         solids_.push_back(pixel_box);
         auto pixel_log = make_shared_no_delete<G4LogicalVolume>(pixel_box.get(), materials_["silicon"], PixelName.second);
         detector->setExternalObject("pixel_log", pixel_log);
@@ -284,7 +286,7 @@ void GeometryConstructionG4::build_pixel_devices() {
 
             // Create the volume containing the bumps
             auto bump_box = std::make_shared<G4Box>(
-                BumpBoxName.first, model->getHalfSensorSizeX(), model->getHalfSensorSizeY(), bump_height / 2.);
+                BumpBoxName.first, model->getSensorSize().x() / 2.0, model->getSensorSize().y() / 2.0, bump_height / 2.);
             solids_.push_back(bump_box);
 
             // Create the logical wrapper volume
@@ -325,9 +327,9 @@ void GeometryConstructionG4::build_pixel_devices() {
         // Create the box volumes for the guard rings
         auto guard_rings_box = std::make_shared<G4Box>(
             GuardRingsExtName.second,
-            model->getHalfSensorSizeX() + (model->getGuardRingExcessRight() + model->getGuardRingExcessLeft()),
-            model->getHalfSensorSizeY() + (model->getGuardRingExcessTop() + model->getGuardRingExcessBottom()),
-            model->getHalfSensorZ());
+            model->getSensorSize().x() / 2.0 + (model->getGuardRingExcessRight() + model->getGuardRingExcessLeft()),
+            model->getSensorSize().y() / 2.0 + (model->getGuardRingExcessTop() + model->getGuardRingExcessBottom()),
+            model->getSensorSize().z() / 2.0);
         solids_.push_back(guard_rings_box);
         auto guard_rings_solid =
             std::make_shared<G4SubtractionSolid>(GuardRingsName.second, guard_rings_box.get(), sensor_box.get());
