@@ -28,6 +28,7 @@
 #include <G4VisAttributes.hh>
 #include <G4VisExecutive.hh>
 
+#include "core/config/exceptions.h"
 #include "core/utils/log.h"
 
 using namespace allpix;
@@ -49,8 +50,14 @@ VisualizationGeant4Module::VisualizationGeant4Module(Configuration config, Messe
 }
 VisualizationGeant4Module::~VisualizationGeant4Module() {
     // Invoke VRML2FILE workaround if necessary to prevent visualisation in case of exceptions
-    if(!has_run_ && vis_manager_g4_ != nullptr && vis_manager_g4_->GetCurrentViewer() != nullptr &&
-       config_.get<std::string>("driver", "") == "VRML2FILE") {
+
+    std::string driver;
+    try {
+        driver = config_.get<std::string>("driver", "");
+    } catch(InvalidKeyError& e) {
+    }
+
+    if(!has_run_ && vis_manager_g4_ != nullptr && vis_manager_g4_->GetCurrentViewer() != nullptr && driver == "VRML2FILE") {
         LOG(TRACE) << "Invoking VRML workaround to prevent visualization under error conditions";
 
         // FIXME: workaround to skip VRML visualization in case we stopped before reaching the run method
