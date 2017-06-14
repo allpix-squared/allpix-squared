@@ -49,14 +49,14 @@ VisualizationGeant4Module::VisualizationGeant4Module(Configuration config, Messe
     }
 }
 VisualizationGeant4Module::~VisualizationGeant4Module() {
-    // Invoke VRML2FILE workaround if necessary to prevent visualisation in case of exceptions
-
+    // Add a driver
     std::string driver;
     try {
         driver = config_.get<std::string>("driver", "");
     } catch(InvalidKeyError& e) {
     }
 
+    // Invoke VRML2FILE workaround if necessary to prevent visualisation in case of exceptions
     if(!has_run_ && vis_manager_g4_ != nullptr && vis_manager_g4_->GetCurrentViewer() != nullptr && driver == "VRML2FILE") {
         LOG(TRACE) << "Invoking VRML workaround to prevent visualization under error conditions";
 
