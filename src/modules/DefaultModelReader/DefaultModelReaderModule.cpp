@@ -117,7 +117,7 @@ std::shared_ptr<HybridPixelDetectorModel> DefaultModelReaderModule::parse_config
         model->getGuardRingExcessLeft(config.get<double>("sensor_gr_excess_hleft"));
     }
     if(config.has("sensor_gr_excess_hright")) {
-        model->setGuardRingExcessHRight(config.get<double>("sensor_gr_excess_hright"));
+        model->setGuardRingExcessRight(config.get<double>("sensor_gr_excess_hright"));
     }
 
     // bump parameters

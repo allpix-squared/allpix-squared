@@ -60,6 +60,15 @@ namespace allpix {
          * @return Model type
          */
         std::string getType() const { return type_; }
+
+        /**
+         * @brief Get coordinate of center of chip in local frame of derived model
+         * @note It can be a bit counter intuitive that this is not always (0, 0, 0)
+         *
+         * The center coordinate corresponds to the \ref Detector::getPosition "position" in the global frame.
+         */
+        virtual ROOT::Math::XYZPoint getCenter() const = 0;
+
         /**
          * @brief Get size of the sensor
          * @return Size of the sensor
@@ -73,7 +82,7 @@ namespace allpix {
         void setSensorSize(ROOT::Math::XYZVector val) { sensor_size_ = std::move(val); }
 
         /**
-         * @brief Get number of pixel (replicated blocks in general sense)
+         * @brief Get number of pixel (replicated blocks in generic sensors)
          * @return List of two dimensional pixels
          */
         virtual ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> getNPixels() const {
@@ -92,25 +101,20 @@ namespace allpix {
          * @brief Get starting coordinate in x-direction of sensor in local frame of derived model
          * @return Minimum x-coordinate
          */
+        // FIXME: This will be replaced by getSensorCenter()
         virtual double getSensorMinX() const = 0;
         /**
          * @brief Get starting coordinate in y-direction of sensor in local frame of derived model
          * @return Minimum y-coordinate
          */
+        // FIXME: This will be replaced by getSensorCenter()
         virtual double getSensorMinY() const = 0;
         /**
          * @brief Get starting coordinate in z-direction of sensor in local frame of derived model
          * @return Minimum z-coordinate
          */
+        // FIXME: This will be replaced by getSensorCenter()
         virtual double getSensorMinZ() const = 0;
-
-        /**
-         * @brief Get coordinate of center of chip in local frame of derived model
-         * @note It can be a bit counter intuitive that this is not always (0, 0, 0)
-         *
-         * The center coordinate corresponds to the \ref Detector::getPosition "position" in the global frame.
-         */
-        virtual ROOT::Math::XYZPoint getCenter() const = 0;
 
     private:
         std::string type_;

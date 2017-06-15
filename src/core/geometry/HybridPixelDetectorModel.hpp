@@ -36,10 +36,6 @@ namespace allpix {
         /* Coordinate definitions
          * NOTE: center is at the middle of the first pixel at half z
          */
-        // sensor coordinates relative to center of local frame
-        double getSensorMinX() const override { return -getPixelSize().x() / 2.0; }
-        double getSensorMinY() const override { return -getPixelSize().x() / 2.0; }
-        double getSensorMinZ() const override { return -getSensorSize().z() / 2.0; }
         ROOT::Math::XYZPoint getCenter() const override {
             return ROOT::Math::XYZPoint(getSensorSize().x() / 2.0 - getPixelSize().x() / 2.0,
                                         getSensorSize().y() / 2.0 - getPixelSize().y() / 2.0,
@@ -59,6 +55,10 @@ namespace allpix {
         void setPixelSize(ROOT::Math::XYVector val) { pixel_size_ = std::move(val); }
 
         /* Sensor offset */
+        // sensor coordinates relative to center of local frame
+        double getSensorMinX() const override { return -getPixelSize().x() / 2.0; }
+        double getSensorMinY() const override { return -getPixelSize().x() / 2.0; }
+        double getSensorMinZ() const override { return -getSensorSize().z() / 2.0; }
         // FIXME: a PCB offset makes probably far more sense
         ROOT::Math::XYVector getSensorOffset() const { return sensor_offset_; }
         void setSensorOffset(ROOT::Math::XYVector val) { sensor_offset_ = std::move(val); }
@@ -66,7 +66,6 @@ namespace allpix {
         /* Chip dimensions */
         ROOT::Math::XYZVector getChipSize() const { return chip_size_; }
         void setChipSize(ROOT::Math::XYZVector val) { chip_size_ = std::move(val); }
-
         /* Chip offset */
         ROOT::Math::XYZVector getChipOffset() const { return chip_offset_; }
         void setChipOffset(ROOT::Math::XYZVector val) { chip_offset_ = std::move(val); }
@@ -78,28 +77,32 @@ namespace allpix {
         /* Bump bonds */
         double getBumpSphereRadius() const { return bump_sphere_radius_; }
         void setBumpSphereRadius(double val) { bump_sphere_radius_ = val; }
-
         double getBumpHeight() const { return bump_height_; }
         void setBumpHeight(double val) { bump_height_ = val; }
-
         ROOT::Math::XYVector getBumpOffset() const { return bump_offset_; }
         void setBumpOffset(ROOT::Math::XYVector val) { bump_offset_ = std::move(val); }
-
         double getBumpCylinderRadius() const { return bump_cylinder_radius_; }
         void setBumpCylinderRadius(double val) { bump_cylinder_radius_ = val; }
 
         /* Guard rings */
         double getGuardRingExcessTop() const { return guard_ring_excess_top_; }
-        double getGuardRingExcessBottom() const { return guard_ring_excess_bottom_; }
-        double getGuardRingExcessRight() const { return guard_ring_excess_right_; }
-        double getGuardRingExcessLeft() const { return guard_ring_excess_left_; }
-
         void setGuardRingExcessTop(double val) { guard_ring_excess_top_ = val; }
+        double getGuardRingExcessBottom() const { return guard_ring_excess_bottom_; }
         void setGuardRingExcessBottom(double val) { guard_ring_excess_bottom_ = val; }
-        void setGuardRingExcessHRight(double val) { guard_ring_excess_right_ = val; }
+        double getGuardRingExcessRight() const { return guard_ring_excess_right_; }
+        void setGuardRingExcessRight(double val) { guard_ring_excess_right_ = val; }
+        double getGuardRingExcessLeft() const { return guard_ring_excess_left_; }
         void getGuardRingExcessLeft(double val) { guard_ring_excess_left_ = val; }
 
-        /* Wrapper calculations (FIXME: this has to be reworked...) */
+        /* Coverlayer */
+        bool hasCoverlayer() const { return has_coverlayer_; }
+        double getCoverlayerHeight() const { return coverlayer_height_; }
+        void setCoverlayerHeight(double val) {
+            coverlayer_height_ = val;
+            has_coverlayer_ = true;
+        }
+
+        /* FIXME: This will be reworked */
         double getHalfWrapperDX() const { return getPCBSize().x() / 2.0; }
         double getHalfWrapperDY() const { return getPCBSize().y() / 2.0; }
         double getHalfWrapperDZ() const {
@@ -112,14 +115,6 @@ namespace allpix {
             }
 
             return whdz;
-        }
-
-        /* Coverlayer */
-        bool hasCoverlayer() const { return has_coverlayer_; }
-        double getCoverlayerHeight() const { return coverlayer_height_; }
-        void setCoverlayerHeight(double val) {
-            coverlayer_height_ = val;
-            has_coverlayer_ = true;
         }
 
         std::string getCoverlayerMaterial() const { return coverlayer_material_; }
