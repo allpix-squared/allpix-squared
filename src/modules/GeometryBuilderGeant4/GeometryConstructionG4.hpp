@@ -15,8 +15,6 @@
 
 #include "core/geometry/GeometryManager.hpp"
 
-#include "DetectorModelG4.hpp"
-
 // FIXME: improve this later on
 
 class G4UserLimits;
@@ -49,9 +47,7 @@ namespace allpix {
         // global input parameter for the world size (FIXME: determine this on the fly?)
         G4ThreeVector world_size_;
 
-        // storage of all the internal Geant4 detectors
-        std::vector<std::unique_ptr<DetectorModelG4>> models_;
-
+        // all used materials
         std::map<std::string, G4Material*> materials_;
 
         // internal storage

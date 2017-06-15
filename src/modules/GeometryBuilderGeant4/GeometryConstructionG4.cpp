@@ -30,7 +30,7 @@
 #include "tools/ROOT.h"
 #include "tools/geant4.h"
 
-#include "BumpsParameterizationG4.hpp"
+#include "Parameterization2DG4.hpp"
 
 // FIXME: should get rid of CLHEP units
 #include <CLHEP/Units/SystemOfUnits.h>
@@ -140,7 +140,9 @@ void GeometryConstructionG4::build_pixel_devices() {
         G4double bump_height = model->getBumpHeight();
 
         // positions of all the elements
-        G4ThreeVector posCoverlayer(0, 0, 0);
+        // G4ThreeVector posCoverlayer(0, 0, 0);
+        // G4ThreeVector posSensor = toG4Vector(model->getSensorCenter() - model->getCenter();
+
         G4ThreeVector posDevice(0, 0, 0);
         G4ThreeVector posBumps(0, 0, 0);
         G4ThreeVector posChip(0, 0, 0);
@@ -164,8 +166,8 @@ void GeometryConstructionG4::build_pixel_devices() {
         posPCB.setZ(posDevice.z() - model->getSensorSize().z() / 2.0 - bump_height - 2. * model->getChipSize().z() / 2.0 -
                     model->getPCBSize().z() / 2.0);
 
-        LOG(DEBUG) << " Local relative positions of the geometry parts";
-        LOG(DEBUG) << " - Coverlayer position  : " << display_vector(posCoverlayer, {"mm", "um"});
+        LOG(DEBUG) << "Center of the geometry parts relative to the origin";
+        // LOG(DEBUG) << " - Coverlayer position  : " << display_vector(posCoverlayer, {"mm", "um"});
         LOG(DEBUG) << " - Sensor position      : " << display_vector(posDevice, {"mm", "um"});
         LOG(DEBUG) << " - Bumps position       : " << display_vector(posBumps, {"mm", "um"});
         LOG(DEBUG) << " - Chip position        : " << display_vector(posChip, {"mm", "um"});
@@ -174,7 +176,6 @@ void GeometryConstructionG4::build_pixel_devices() {
         /* NAMES
          * define the local names of the specific detectors
          */
-
         std::string name = detector->getName();
         wrapperName.second = wrapperName.first + "_" + name;
         PCBName.second = PCBName.first + "_" + name;
@@ -236,27 +237,15 @@ void GeometryConstructionG4::build_pixel_devices() {
             make_shared_no_delete<G4LogicalVolume>(sensor_box.get(), materials_["silicon"], BoxName.second + "_log");
         detector->setExternalObject("sensor_log", sensor_log);
 
+        // Place the sensor box
+        auto sensor_pos = toG4Vector(model->getSensorCenter() - model->getCenter());
+        LOG(DEBUG) << " - Sensor\t: " << display_vector(sensor_pos, {"mm", "um"});
         auto sensor_phys = make_shared_no_delete<G4PVPlacement>(
-            nullptr, posDevice, sensor_log.get(), BoxName.second + "_phys", wrapper_log.get(), false, 0, true);
+            nullptr, sensor_pos, sensor_log.get(), BoxName.second + "_phys", wrapper_log.get(), false, 0, true);
         detector->setExternalObject("sensor_phys", sensor_phys);
 
-        // Create the slice boxes and logical volumes
-        auto slice_box = std::make_shared<G4Box>(SliceName.first,
-                                                 model->getPixelSize().x() / 2.0,
-                                                 model->getSensorSize().y() / 2.0,
-                                                 model->getSensorSize().z() / 2.0);
-        solids_.push_back(slice_box);
-
-        auto slice_log = make_shared_no_delete<G4LogicalVolume>(slice_box.get(), materials_["silicon"], SliceName.second);
-        detector->setExternalObject("slice_log", slice_log);
-
-        // Place the slices
-        auto slice_div = std::make_shared<G4PVDivision>(
-            SliceName.second, slice_log.get(), sensor_log.get(), kXAxis, model->getNPixels().x(), 0);
-        detector->setExternalObject("slice_div", slice_div);
-
-        // Create the pixels and logical volumes
-        auto pixel_box = std::make_shared<G4Box>(PixelName.first,
+        // Create the pixel box and logical volume
+        auto pixel_box = std::make_shared<G4Box>(PixelName.second,
                                                  model->getPixelSize().x() / 2.0,
                                                  model->getPixelSize().y() / 2.0,
                                                  model->getSensorSize().z() / 2.0);
@@ -264,72 +253,30 @@ void GeometryConstructionG4::build_pixel_devices() {
         auto pixel_log = make_shared_no_delete<G4LogicalVolume>(pixel_box.get(), materials_["silicon"], PixelName.second);
         detector->setExternalObject("pixel_log", pixel_log);
 
-        // Place the pixels
-        auto pixel_div = std::make_shared<G4PVDivision>(
-            PixelName.second, pixel_log.get(), slice_log.get(), kYAxis, model->getNPixels().y(), 0);
-        detector->setExternalObject("pixel_div", pixel_div);
+        // Place the pixel grid
+        auto pixel_param_internal =
+            std::make_shared<Parameterization2DG4>(model->getNPixels().x(),
+                                                   model->getPixelSize().x(),
+                                                   model->getPixelSize().y(),
+                                                   -(model->getNPixels().x() * model->getPixelSize().x()) / 2.0,
+                                                   -(model->getNPixels().y() * model->getPixelSize().y()) / 2.0,
+                                                   0);
+        detector->setExternalObject("pixel_param_internal", pixel_param_internal);
 
-        /* BUMPS
-         * the bump bonds connect the sensor to the readout chip
-         */
-
-        // Construct the bumps only if necessary
-        if(model->getBumpHeight() > 1e-9 && model->getChipSize().z() / 2.0 != 0) {
-            // Define types from parameters
-            G4double bump_sphere_radius = model->getBumpSphereRadius();
-            G4double bump_cylinder_radius = model->getBumpCylinderRadius();
-
-            auto bump_sphere =
-                std::make_shared<G4Sphere>(BumpName.first + "sphere", 0, bump_sphere_radius, 0, 360 * deg, 0, 360 * deg);
-            solids_.push_back(bump_sphere);
-            auto bump_tube =
-                std::make_shared<G4Tubs>(BumpName.first + "Tube", 0., bump_cylinder_radius, bump_height / 2., 0., 360 * deg);
-            solids_.push_back(bump_tube);
-            auto bump = std::make_shared<G4UnionSolid>(BumpName.first, bump_sphere.get(), bump_tube.get());
-            solids_.push_back(bump);
-
-            // Create the volume containing the bumps
-            auto bump_box = std::make_shared<G4Box>(
-                BumpBoxName.first, model->getSensorSize().x() / 2.0, model->getSensorSize().y() / 2.0, bump_height / 2.);
-            solids_.push_back(bump_box);
-
-            // Create the logical wrapper volume
-            auto bumps_wrapper_log =
-                make_shared_no_delete<G4LogicalVolume>(bump_box.get(), materials_["air"], BumpBoxName.second + "_log");
-            detector->setExternalObject("bumps_wrapper_log", bumps_wrapper_log);
-
-            // Place the general bumps volume
-            auto bumps_wrapper_phys = make_shared_no_delete<G4PVPlacement>(
-                nullptr, posBumps, bumps_wrapper_log.get(), BumpBoxName.second + "_phys", wrapper_log.get(), false, 0, true);
-            detector->setExternalObject("bumps_wrapper_phys", bumps_wrapper_phys);
-
-            // Create the logical volume for the individual bumps
-            auto bumps_cell_log =
-                make_shared_no_delete<G4LogicalVolume>(bump.get(), materials_["solder"], BumpBoxName.second + "_log");
-            detector->setExternalObject("bumps_cell_log", bumps_cell_log);
-
-            // Create and instantiate a parameterization of the individual bumps
-            auto bumps_param = std::make_shared<BumpsParameterizationG4>(model);
-            detector->setExternalObject("bumps_param", bumps_param);
-
-            G4int NPixTot = model->getNPixels().x() * model->getNPixels().y();
-            auto bumps_param_inst = std::make_shared<G4PVParameterised>(BumpName.second + "phys",
-                                                                        bumps_cell_log.get(),
-                                                                        bumps_wrapper_log.get(),
-                                                                        kUndefined,
-                                                                        NPixTot,
-                                                                        bumps_param.get());
-            detector->setExternalObject("bumps_param_inst", bumps_param_inst);
-        }
-
-        // ALERT: NO COVER LAYER
+        auto pixel_param = std::make_shared<G4PVParameterised>(PixelName.second + "phys",
+                                                               pixel_log.get(),
+                                                               sensor_log.get(),
+                                                               kUndefined,
+                                                               model->getNPixels().x() * model->getNPixels().y(),
+                                                               pixel_param_internal.get());
+        detector->setExternalObject("pixel_param", pixel_param);
 
         /* GUARD RINGS
          * rings around the sensitive device
          */
 
         // Create the box volumes for the guard rings
-        auto guard_rings_box = std::make_shared<G4Box>(
+        /*auto guard_rings_box = std::make_shared<G4Box>(
             GuardRingsExtName.second,
             model->getSensorSize().x() / 2.0 + (model->getGuardRingExcessRight() + model->getGuardRingExcessLeft()),
             model->getSensorSize().y() / 2.0 + (model->getGuardRingExcessTop() + model->getGuardRingExcessBottom()),
@@ -347,7 +294,7 @@ void GeometryConstructionG4::build_pixel_devices() {
         // Place the guard rings
         auto guard_rings_phys = make_shared_no_delete<G4PVPlacement>(
             nullptr, posDevice, guard_rings_log.get(), GuardRingsName.second + "_phys", wrapper_log.get(), false, 0, true);
-        detector->setExternalObject("guard_rings_phys", guard_rings_phys);
+        detector->setExternalObject("guard_rings_phys", guard_rings_phys);*/
 
         /* CHIPS
          * the chip connected to the bumps bond and the PCB
@@ -393,6 +340,65 @@ void GeometryConstructionG4::build_pixel_devices() {
                 nullptr, posPCB, PCB_log.get(), PCBName.second + "_phys", wrapper_log.get(), false, 0, true);
             detector->setExternalObject("pcb_phys", PCB_phys);
         }
+
+        /* BUMPS
+         * the bump bonds connect the sensor to the readout chip
+         */
+        // Construct the bumps only if necessary
+        if(model->getBumpHeight() > 1e-9) {
+            // Define types from parameters
+            G4double bump_sphere_radius = model->getBumpSphereRadius();
+            G4double bump_cylinder_radius = model->getBumpCylinderRadius();
+
+            auto bump_sphere =
+                std::make_shared<G4Sphere>(BumpName.first + "sphere", 0, bump_sphere_radius, 0, 360 * deg, 0, 360 * deg);
+            solids_.push_back(bump_sphere);
+            auto bump_tube =
+                std::make_shared<G4Tubs>(BumpName.first + "tube", 0., bump_cylinder_radius, bump_height / 2., 0., 360 * deg);
+            solids_.push_back(bump_tube);
+            auto bump = std::make_shared<G4UnionSolid>(BumpName.first, bump_sphere.get(), bump_tube.get());
+            solids_.push_back(bump);
+
+            // Create the volume containing the bumps
+            auto bump_box = std::make_shared<G4Box>(
+                BumpBoxName.first, model->getSensorSize().x() / 2.0, model->getSensorSize().y() / 2.0, bump_height / 2.);
+            solids_.push_back(bump_box);
+
+            // Create the logical wrapper volume
+            auto bumps_wrapper_log =
+                make_shared_no_delete<G4LogicalVolume>(bump_box.get(), materials_["air"], BumpBoxName.second + "_log");
+            detector->setExternalObject("bumps_wrapper_log", bumps_wrapper_log);
+
+            // Place the general bumps volume
+            auto bumps_wrapper_phys = make_shared_no_delete<G4PVPlacement>(
+                nullptr, posBumps, bumps_wrapper_log.get(), BumpBoxName.second + "_phys", wrapper_log.get(), false, 0, true);
+            detector->setExternalObject("bumps_wrapper_phys", bumps_wrapper_phys);
+
+            // Create the logical volume for the individual bumps
+            auto bumps_cell_log =
+                make_shared_no_delete<G4LogicalVolume>(bump.get(), materials_["solder"], BumpBoxName.second + "_log");
+            detector->setExternalObject("bumps_cell_log", bumps_cell_log);
+
+            // Place the bump bonds grid
+            auto bumps_param_internal = std::make_shared<Parameterization2DG4>(
+                model->getNPixels().x(),
+                model->getPixelSize().x(),
+                model->getPixelSize().y(),
+                -(model->getNPixels().x() * model->getPixelSize().x()) / 2.0 + model->getBumpOffset().x(),
+                -(model->getNPixels().y() * model->getPixelSize().y()) / 2.0 + model->getBumpOffset().y(),
+                0);
+            detector->setExternalObject("bumps_param", bumps_param_internal);
+
+            auto bumps_param = std::make_shared<G4PVParameterised>(BumpName.second + "phys",
+                                                                   bumps_cell_log.get(),
+                                                                   bumps_wrapper_log.get(),
+                                                                   kUndefined,
+                                                                   model->getNPixels().x() * model->getNPixels().y(),
+                                                                   bumps_param_internal.get());
+            detector->setExternalObject("bumps_param", bumps_param);
+        }
+
+        // ALERT: NO COVER LAYER
 
         LOG(TRACE) << " Constructed detector " << detector->getName() << " succesfully";
     }

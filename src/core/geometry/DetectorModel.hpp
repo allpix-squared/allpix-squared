@@ -77,11 +77,12 @@ namespace allpix {
          * @brief Get size of the sensor
          * @return Size of the sensor
          */
-        ROOT::Math::XYZVector getSensorSize() const { return sensor_size_; }
+        virtual ROOT::Math::XYZVector getSensorSize() const { return sensor_size_; }
         /**
          * @brief Set the size of the sensor
          * @param val Size of the sensor
          */
+        // FIXME: This method will be removed
         void setSensorSize(ROOT::Math::XYZVector val) { sensor_size_ = std::move(val); }
         /**
          * @brief Get center of the sensor in local coordinates
@@ -106,7 +107,7 @@ namespace allpix {
             return ROOT::Math::XYVector(getSensorSize().x() / getNPixels().x(), getSensorSize().y() / getNPixels().y());
         }
 
-    private:
+    protected:
         std::string type_;
 
         ROOT::Math::XYZVector sensor_size_;

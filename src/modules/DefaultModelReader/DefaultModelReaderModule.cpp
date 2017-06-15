@@ -82,11 +82,11 @@ std::shared_ptr<HybridPixelDetectorModel> DefaultModelReaderModule::parse_config
 
     using namespace ROOT::Math;
 
-    // pixel amount
+    // Pixel amount
     if(config.has("pixel_amount")) {
-        model->setNPixels(config.get<DisplacementVector2D<ROOT::Math::Cartesian2D<int>>>("pixel_amount"));
+        model->setNPixels(config.get<DisplacementVector2D<Cartesian2D<int>>>("pixel_amount"));
     }
-    // size, positions and offsets
+    // Size, positions and offsets
     if(config.has("pixel_size")) {
         model->setPixelSize(config.get<XYVector>("pixel_size"));
     }
@@ -106,21 +106,21 @@ std::shared_ptr<HybridPixelDetectorModel> DefaultModelReaderModule::parse_config
         model->setPCBSize(config.get<XYZVector>("pcb_size"));
     }
 
-    // excess for the guard rings
-    if(config.has("sensor_gr_excess_htop")) {
-        model->setGuardRingExcessTop(config.get<double>("sensor_gr_excess_htop"));
+    // Excess around the pixel grid
+    if(config.has("sensor_excess_top")) {
+        model->setGuardRingExcessTop(config.get<double>("sensor_excess_top"));
     }
-    if(config.has("sensor_gr_excess_hbottom")) {
-        model->setGuardRingExcessBottom(config.get<double>("sensor_gr_excess_hbottom"));
+    if(config.has("sensor_excess_bottom")) {
+        model->setGuardRingExcessBottom(config.get<double>("sensor_excess_bottom"));
     }
-    if(config.has("sensor_gr_excess_hleft")) {
-        model->getGuardRingExcessLeft(config.get<double>("sensor_gr_excess_hleft"));
+    if(config.has("sensor_excess_left")) {
+        model->getGuardRingExcessLeft(config.get<double>("sensor_excess_left"));
     }
-    if(config.has("sensor_gr_excess_hright")) {
-        model->setGuardRingExcessRight(config.get<double>("sensor_gr_excess_hright"));
+    if(config.has("sensor_excess_right")) {
+        model->setGuardRingExcessRight(config.get<double>("sensor_excess_right"));
     }
 
-    // bump parameters
+    // Bump parameters
     if(config.has("bump_sphere_radius")) {
         model->setBumpSphereRadius(config.get<double>("bump_sphere_radius"));
     }

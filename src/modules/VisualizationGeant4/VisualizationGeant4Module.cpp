@@ -309,10 +309,11 @@ void VisualizationGeant4Module::set_visibility_attributes() {
 
     // The logical volume holding all the bumps
     G4VisAttributes BumpBoxVisAtt = G4VisAttributes(bumpColor);
+    // BumpBoxVisAtt.SetForceSolid(false);
 
     // Sensors, ie pixels
     auto sensorColor = G4Color(0.18, 0.2, 0.21, alpha); // Blackish
-    G4VisAttributes SensorVisAtt = G4VisAttributes(chipColor);
+    G4VisAttributes SensorVisAtt = G4VisAttributes(sensorColor);
     SensorVisAtt.SetForceSolid(false);
 
     // Guard rings
@@ -321,6 +322,7 @@ void VisualizationGeant4Module::set_visibility_attributes() {
 
     // The box holding all the pixels
     G4VisAttributes BoxVisAtt = G4VisAttributes(sensorColor);
+    // BoxVisAtt.SetForceSolid(false);
 
     // In default simple view mode, pixels and bumps are set to invisible, not to be displayed.
     // The logical volumes holding them are instead displayed.
@@ -332,7 +334,7 @@ void VisualizationGeant4Module::set_visibility_attributes() {
         BumpBoxVisAtt.SetVisibility(true);
     } else {
         SensorVisAtt.SetVisibility(true);
-        BoxVisAtt.SetVisibility(false);
+        BoxVisAtt.SetVisibility(true);
         BumpVisAtt.SetVisibility(true);
         BumpBoxVisAtt.SetVisibility(false);
     }

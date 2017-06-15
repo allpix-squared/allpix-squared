@@ -19,6 +19,8 @@
 
 #include "DetectorModel.hpp"
 
+#include "core/utils/log.h"
+
 // TODO [doc] This class is fully documented later when it is cleaned up further
 
 namespace allpix {
@@ -44,6 +46,22 @@ namespace allpix {
         /* Pixel dimensions */
         ROOT::Math::XYVector getPixelSize() const override { return pixel_size_; }
         void setPixelSize(ROOT::Math::XYVector val) { pixel_size_ = std::move(val); }
+
+        /* Sensor center */
+        virtual ROOT::Math::XYZPoint getSensorCenter() const {
+            ROOT::Math::XYZVector offset((getGuardRingExcessRight() - getGuardRingExcessLeft()) / 2.0,
+                                         (getGuardRingExcessTop() - getGuardRingExcessBottom()) / 2.0,
+                                         0);
+            return getCenter() + offset;
+        }
+
+        /* Sensor size */
+        virtual ROOT::Math::XYZVector getSensorSize() const {
+            ROOT::Math::XYZVector excess((getGuardRingExcessRight() + getGuardRingExcessLeft()),
+                                         (getGuardRingExcessTop() + getGuardRingExcessBottom()),
+                                         0);
+            return sensor_size_ + excess;
+        }
 
         /* Sensor offset */
         // FIXME: a PCB offset makes probably far more sense
