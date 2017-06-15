@@ -33,15 +33,6 @@ namespace allpix {
         explicit HybridPixelDetectorModel(std::string type)
             : DetectorModel(std::move(type)), number_of_pixels_(1, 1), coverlayer_material_("Al"), has_coverlayer_(false) {}
 
-        /* Coordinate definitions
-         * NOTE: center is at the middle of the first pixel at half z
-         */
-        ROOT::Math::XYZPoint getCenter() const override {
-            return ROOT::Math::XYZPoint(getSensorSize().x() / 2.0 - getPixelSize().x() / 2.0,
-                                        getSensorSize().y() / 2.0 - getPixelSize().y() / 2.0,
-                                        0);
-        }
-
         /* Number of pixels */
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> getNPixels() const override {
             return number_of_pixels_;
@@ -55,10 +46,6 @@ namespace allpix {
         void setPixelSize(ROOT::Math::XYVector val) { pixel_size_ = std::move(val); }
 
         /* Sensor offset */
-        // sensor coordinates relative to center of local frame
-        double getSensorMinX() const override { return -getPixelSize().x() / 2.0; }
-        double getSensorMinY() const override { return -getPixelSize().x() / 2.0; }
-        double getSensorMinZ() const override { return -getSensorSize().z() / 2.0; }
         // FIXME: a PCB offset makes probably far more sense
         ROOT::Math::XYVector getSensorOffset() const { return sensor_offset_; }
         void setSensorOffset(ROOT::Math::XYVector val) { sensor_offset_ = std::move(val); }

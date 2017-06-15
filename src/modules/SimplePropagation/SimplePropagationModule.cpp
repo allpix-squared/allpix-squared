@@ -133,8 +133,8 @@ void SimplePropagationModule::create_output_plots(unsigned int event_num) {
                                      minY,
                                      maxY,
                                      10,
-                                     model_->getSensorMinZ(),
-                                     model_->getSensorMinZ() + model_->getSensorSize().z());
+                                     model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0,
+                                     model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0);
 
     // create the line plot canvas
     auto canvas = std::make_unique<TCanvas>(("line_plot_" + std::to_string(event_num)).c_str(),
@@ -211,8 +211,8 @@ void SimplePropagationModule::create_output_plots(unsigned int event_num) {
                                          minY,
                                          maxY,
                                          100,
-                                         model_->getSensorMinZ(),
-                                         model_->getSensorMinZ() + model_->getSensorSize().z()));
+                                         model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0,
+                                         model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0));
     file_name_contour.push_back(getOutputPath("contourY" + std::to_string(event_num) + ".gif"));
     histogram_contour.push_back(new TH2F(("contourY_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
                                          "",
@@ -220,8 +220,8 @@ void SimplePropagationModule::create_output_plots(unsigned int event_num) {
                                          minX,
                                          maxX,
                                          100,
-                                         model_->getSensorMinZ(),
-                                         model_->getSensorMinZ() + model_->getSensorSize().z()));
+                                         model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0,
+                                         model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0));
     file_name_contour.push_back(getOutputPath("contourZ" + std::to_string(event_num) + ".gif"));
     histogram_contour.push_back(new TH2F(
         ("contourZ_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(), "", 100, minX, maxX, 100, minY, maxY));

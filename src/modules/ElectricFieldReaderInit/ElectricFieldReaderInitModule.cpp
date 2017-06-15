@@ -51,20 +51,20 @@ void ElectricFieldReaderInitModule::init() {
             double min1, max1;
             double min2, max2;
             if(project == 'x') {
-                min1 = model->getSensorMinY();
-                max1 = model->getSensorMinY() + model->getSensorSize().y();
-                min2 = model->getSensorMinZ();
-                max2 = model->getSensorMinZ() + model->getSensorSize().z();
+                min1 = model->getSensorCenter().y() - model->getSensorSize().y() / 2.0;
+                max1 = model->getSensorCenter().y() + model->getSensorSize().y() / 2.0;
+                min2 = model->getSensorCenter().z() - model->getSensorSize().z() / 2.0;
+                max2 = model->getSensorCenter().z() + model->getSensorSize().z() / 2.0;
             } else if(project == 'y') {
-                min1 = model->getSensorMinX();
-                max1 = model->getSensorMinX() + model->getSensorSize().x();
-                min2 = model->getSensorMinZ();
-                max2 = model->getSensorMinZ() + model->getSensorSize().z();
+                min1 = model->getSensorCenter().x() - model->getSensorSize().x() / 2.0;
+                max1 = model->getSensorCenter().x() + model->getSensorSize().x() / 2.0;
+                min2 = model->getSensorCenter().z() - model->getSensorSize().z() / 2.0;
+                max2 = model->getSensorCenter().z() + model->getSensorSize().z() / 2.0;
             } else {
-                min1 = model->getSensorMinX();
-                max1 = model->getSensorMinX() + model->getSensorSize().x();
-                min2 = model->getSensorMinY();
-                max2 = model->getSensorMinY() + model->getSensorSize().y();
+                min1 = model->getSensorCenter().x() - model->getSensorSize().x() / 2.0;
+                max1 = model->getSensorCenter().x() + model->getSensorSize().x() / 2.0;
+                min2 = model->getSensorCenter().y() - model->getSensorSize().y() / 2.0;
+                max2 = model->getSensorCenter().y() + model->getSensorSize().y() / 2.0;
             }
 
             auto histogram = new TH2F("field",
@@ -78,35 +78,35 @@ void ElectricFieldReaderInitModule::init() {
 
             double x = 0, y = 0, z = 0;
             if(project == 'x') {
-                x = model->getSensorMinX() +
+                x = model->getSensorCenter().x() - model->getSensorSize().x() / 2.0 +
                     config_.get<double>("output_plots_projection_percentage", 0.5) * model->getSensorSize().x();
             } else if(project == 'y') {
-                y = model->getSensorMinY() +
+                y = model->getSensorCenter().y() - model->getSensorSize().y() / 2.0 +
                     config_.get<double>("output_plots_projection_percentage", 0.5) * model->getSensorSize().y();
             } else {
-                z = model->getSensorMinZ() +
+                z = model->getSensorCenter().z() - model->getSensorSize().z() / 2.0 +
                     config_.get<double>("output_plots_projection_percentage", 0.5) * model->getSensorSize().z();
             }
             for(size_t j = 0; j < steps; ++j) {
                 if(project == 'x') {
-                    y = model->getSensorMinY() +
+                    y = model->getSensorCenter().y() - model->getSensorSize().y() / 2.0 +
                         ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().y();
                 } else if(project == 'y') {
-                    x = model->getSensorMinX() +
+                    x = model->getSensorCenter().x() - model->getSensorSize().x() / 2.0 +
                         ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().x();
                 } else {
-                    x = model->getSensorMinX() +
+                    x = model->getSensorCenter().x() - model->getSensorSize().x() / 2.0 +
                         ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().x();
                 }
                 for(size_t k = 0; k < steps; ++k) {
                     if(project == 'x') {
-                        z = model->getSensorMinZ() +
+                        z = model->getSensorCenter().z() - model->getSensorSize().z() / 2.0 +
                             ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().z();
                     } else if(project == 'y') {
-                        z = model->getSensorMinZ() +
+                        z = model->getSensorCenter().z() - model->getSensorSize().z() / 2.0 +
                             ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().z();
                     } else {
-                        y = model->getSensorMinY() +
+                        y = model->getSensorCenter().y() - model->getSensorSize().y() / 2.0 +
                             ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().y();
                     }
 

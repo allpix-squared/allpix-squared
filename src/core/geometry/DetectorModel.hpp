@@ -67,19 +67,29 @@ namespace allpix {
          *
          * The center coordinate corresponds to the \ref Detector::getPosition "position" in the global frame.
          */
-        virtual ROOT::Math::XYZPoint getCenter() const = 0;
+        virtual ROOT::Math::XYZPoint getCenter() const {
+            return ROOT::Math::XYZPoint(getSensorSize().x() / 2.0 - getPixelSize().x() / 2.0,
+                                        getSensorSize().y() / 2.0 - getPixelSize().y() / 2.0,
+                                        0);
+        }
 
         /**
          * @brief Get size of the sensor
          * @return Size of the sensor
          */
         ROOT::Math::XYZVector getSensorSize() const { return sensor_size_; }
-
         /**
          * @brief Set the size of the sensor
          * @param val Size of the sensor
          */
         void setSensorSize(ROOT::Math::XYZVector val) { sensor_size_ = std::move(val); }
+        /**
+         * @brief Get center of the sensor in local coordinates
+         * @return Center of the sensor
+         *
+         * Default to the center of the grid as given by \ref Detector::getCenter().
+         */
+        virtual ROOT::Math::XYZPoint getSensorCenter() const { return getCenter(); }
 
         /**
          * @brief Get number of pixel (replicated blocks in generic sensors)
@@ -88,7 +98,6 @@ namespace allpix {
         virtual ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> getNPixels() const {
             return ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>(1, 1);
         }
-
         /**
          * @brief Get size of a single pixel
          * @return Size of a pixel
@@ -96,25 +105,6 @@ namespace allpix {
         virtual ROOT::Math::XYVector getPixelSize() const {
             return ROOT::Math::XYVector(getSensorSize().x() / getNPixels().x(), getSensorSize().y() / getNPixels().y());
         }
-
-        /**
-         * @brief Get starting coordinate in x-direction of sensor in local frame of derived model
-         * @return Minimum x-coordinate
-         */
-        // FIXME: This will be replaced by getSensorCenter()
-        virtual double getSensorMinX() const = 0;
-        /**
-         * @brief Get starting coordinate in y-direction of sensor in local frame of derived model
-         * @return Minimum y-coordinate
-         */
-        // FIXME: This will be replaced by getSensorCenter()
-        virtual double getSensorMinY() const = 0;
-        /**
-         * @brief Get starting coordinate in z-direction of sensor in local frame of derived model
-         * @return Minimum z-coordinate
-         */
-        // FIXME: This will be replaced by getSensorCenter()
-        virtual double getSensorMinZ() const = 0;
 
     private:
         std::string type_;

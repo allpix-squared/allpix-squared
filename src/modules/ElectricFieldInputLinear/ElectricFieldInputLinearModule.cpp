@@ -27,7 +27,6 @@ void ElectricFieldInputLinearModule::init() {
     LOG(TRACE) << "Setting electric field from bias voltage";
 
     // compute the electric field
-    LOG(DEBUG) << getDetector()->getModel()->getSensorSize().z();
     auto field_z = config_.get<double>("voltage") / getDetector()->getModel()->getSensorSize().z();
 
     auto field = std::make_shared<std::vector<double>>(3);
