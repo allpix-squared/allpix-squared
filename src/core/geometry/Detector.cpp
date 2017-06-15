@@ -135,12 +135,12 @@ double* Detector::get_electric_field_raw(double x, double y, double z) const {
     // FIXME: We need to revisit this to be faster and not too specific
 
     // Compute corresponding pixel indices
-    auto pixel_x = static_cast<int>(std::round(x / model_->getPixelSizeX()));
-    auto pixel_y = static_cast<int>(std::round(y / model_->getPixelSizeY()));
+    auto pixel_x = static_cast<int>(std::round(x / model_->getPixelSize().x()));
+    auto pixel_y = static_cast<int>(std::round(y / model_->getPixelSize().y()));
 
     // Convert to the pixel frame
-    x -= pixel_x * model_->getPixelSizeX();
-    y -= pixel_y * model_->getPixelSizeY();
+    x -= pixel_x * model_->getPixelSize().x();
+    y -= pixel_y * model_->getPixelSize().y();
 
     // Do flipping if necessary
     if((pixel_x % 2) == 1) {
@@ -152,9 +152,9 @@ double* Detector::get_electric_field_raw(double x, double y, double z) const {
 
     // Compute indices
     auto x_ind = static_cast<int>(std::floor(static_cast<double>(electric_field_sizes_[0]) *
-                                             (x + model_->getPixelSizeX() / 2.0) / model_->getPixelSizeX()));
+                                             (x + model_->getPixelSize().x() / 2.0) / model_->getPixelSize().x()));
     auto y_ind = static_cast<int>(std::floor(static_cast<double>(electric_field_sizes_[1]) *
-                                             (y + model_->getPixelSizeY() / 2.0) / model_->getPixelSizeY()));
+                                             (y + model_->getPixelSize().y() / 2.0) / model_->getPixelSize().y()));
     auto z_ind = static_cast<int>(std::floor(static_cast<double>(electric_field_sizes_[2]) * (z - model_->getSensorMinZ()) /
                                              model_->getSensorSize().z()));
 

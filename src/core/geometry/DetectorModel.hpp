@@ -76,38 +76,17 @@ namespace allpix {
          * @brief Get number of pixel (replicated blocks in general sense)
          * @return List of two dimensional pixels
          */
-        // NOTE: default to 1, no copied units
         virtual ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> getNPixels() const {
             return ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>(1, 1);
         }
-        /**
-         * @brief Get number of pixel in y-direction
-         * @return Number of pixels in y-direction
-         */
-        virtual int getNPixelsX() const { return 1; };
-        /**
-         * @brief Get number of pixel in x-direction
-         * @return Number of pixels in x-direction
-         */
-        virtual int getNPixelsY() const { return 1; };
 
         /**
          * @brief Get size of a single pixel
          * @return Size of a pixel
          */
         virtual ROOT::Math::XYVector getPixelSize() const {
-            return ROOT::Math::XYVector(getSensorSize().x() / getNPixelsX(), getSensorSize().y() / getNPixelsY());
+            return ROOT::Math::XYVector(getSensorSize().x() / getNPixels().x(), getSensorSize().y() / getNPixels().y());
         }
-        /**
-         * @brief Get size of a single pixel in x-direction
-         * @return Length in x
-         */
-        virtual double getPixelSizeX() const { return getPixelSize().x(); };
-        /**
-         * @brief Get size of a single pixel in y-direction
-         * @return Length in y
-         */
-        virtual double getPixelSizeY() const { return getPixelSize().y(); };
 
         /**
          * @brief Get starting coordinate in x-direction of sensor in local frame of derived model

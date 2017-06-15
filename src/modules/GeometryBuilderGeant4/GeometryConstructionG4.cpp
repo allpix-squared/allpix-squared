@@ -241,8 +241,10 @@ void GeometryConstructionG4::build_pixel_devices() {
         detector->setExternalObject("sensor_phys", sensor_phys);
 
         // Create the slice boxes and logical volumes
-        auto slice_box = std::make_shared<G4Box>(
-            SliceName.first, model->getHalfPixelSizeX(), model->getSensorSize().y() / 2.0, model->getSensorSize().z() / 2.0);
+        auto slice_box = std::make_shared<G4Box>(SliceName.first,
+                                                 model->getPixelSize().x() / 2.0,
+                                                 model->getSensorSize().y() / 2.0,
+                                                 model->getSensorSize().z() / 2.0);
         solids_.push_back(slice_box);
 
         auto slice_log = make_shared_no_delete<G4LogicalVolume>(slice_box.get(), materials_["silicon"], SliceName.second);
@@ -250,19 +252,21 @@ void GeometryConstructionG4::build_pixel_devices() {
 
         // Place the slices
         auto slice_div = std::make_shared<G4PVDivision>(
-            SliceName.second, slice_log.get(), sensor_log.get(), kXAxis, model->getNPixelsX(), 0);
+            SliceName.second, slice_log.get(), sensor_log.get(), kXAxis, model->getNPixels().x(), 0);
         detector->setExternalObject("slice_div", slice_div);
 
         // Create the pixels and logical volumes
-        auto pixel_box = std::make_shared<G4Box>(
-            PixelName.first, model->getHalfPixelSizeX(), model->getHalfPixelSizeY(), model->getSensorSize().z() / 2.0);
+        auto pixel_box = std::make_shared<G4Box>(PixelName.first,
+                                                 model->getPixelSize().x() / 2.0,
+                                                 model->getPixelSize().y() / 2.0,
+                                                 model->getSensorSize().z() / 2.0);
         solids_.push_back(pixel_box);
         auto pixel_log = make_shared_no_delete<G4LogicalVolume>(pixel_box.get(), materials_["silicon"], PixelName.second);
         detector->setExternalObject("pixel_log", pixel_log);
 
         // Place the pixels
         auto pixel_div = std::make_shared<G4PVDivision>(
-            PixelName.second, pixel_log.get(), slice_log.get(), kYAxis, model->getNPixelsY(), 0);
+            PixelName.second, pixel_log.get(), slice_log.get(), kYAxis, model->getNPixels().y(), 0);
         detector->setExternalObject("pixel_div", pixel_div);
 
         /* BUMPS
@@ -308,7 +312,7 @@ void GeometryConstructionG4::build_pixel_devices() {
             auto bumps_param = std::make_shared<BumpsParameterizationG4>(model);
             detector->setExternalObject("bumps_param", bumps_param);
 
-            G4int NPixTot = model->getNPixelsX() * model->getNPixelsY();
+            G4int NPixTot = model->getNPixels().x() * model->getNPixels().y();
             auto bumps_param_inst = std::make_shared<G4PVParameterised>(BumpName.second + "phys",
                                                                         bumps_cell_log.get(),
                                                                         bumps_wrapper_log.get(),

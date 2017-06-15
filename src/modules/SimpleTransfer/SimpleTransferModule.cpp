@@ -48,12 +48,12 @@ void SimpleTransferModule::run(unsigned int) {
         }
 
         // find the nearest pixel
-        auto xpixel = static_cast<int>(std::round(position.x() / model->getPixelSizeX()));
-        auto ypixel = static_cast<int>(std::round(position.y() / model->getPixelSizeY()));
+        auto xpixel = static_cast<int>(std::round(position.x() / model->getPixelSize().x()));
+        auto ypixel = static_cast<int>(std::round(position.y() / model->getPixelSize().y()));
         PixelCharge::Pixel pixel(xpixel, ypixel);
 
         // ignore if out of pixel grid
-        if(xpixel < 0 || xpixel >= model->getNPixelsX() || ypixel < 0 || ypixel >= model->getNPixelsY()) {
+        if(xpixel < 0 || xpixel >= model->getNPixels().x() || ypixel < 0 || ypixel >= model->getNPixels().y()) {
             LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                        << propagated_charge.getPosition() << " because their nearest pixel (" << pixel.x() << ","
                        << pixel.y() << ") is outside the grid";

@@ -76,8 +76,8 @@ void SimplePropagationModule::create_output_plots(unsigned int event_num) {
     if(config_.get<bool>("output_plots_use_pixel_units")) {
         for(auto& deposit_points : output_plot_points_) {
             for(auto& point : deposit_points.second) {
-                point.SetX((point.x() / model_->getPixelSizeX()) + 1);
-                point.SetY((point.y() / model_->getPixelSizeY()) + 1);
+                point.SetX((point.x() / model_->getPixelSize().x()) + 1);
+                point.SetY((point.y() / model_->getPixelSize().y()) + 1);
             }
         }
     }
@@ -109,11 +109,11 @@ void SimplePropagationModule::create_output_plots(unsigned int event_num) {
     // use equal axis if specified
     if(config_.get<bool>("output_plots_use_equal_scaling", true)) {
         if(config_.get<bool>("output_plots_use_pixel_units")) {
-            minX = centerX - model_->getSensorSize().z() / model_->getPixelSizeX() / 2.0;
-            maxX = centerX + model_->getSensorSize().z() / model_->getPixelSizeY() / 2.0;
+            minX = centerX - model_->getSensorSize().z() / model_->getPixelSize().x() / 2.0;
+            maxX = centerX + model_->getSensorSize().z() / model_->getPixelSize().y() / 2.0;
 
-            minY = centerY - model_->getSensorSize().z() / model_->getPixelSizeX() / 2.0;
-            maxY = centerY + model_->getSensorSize().z() / model_->getPixelSizeY() / 2.0;
+            minY = centerY - model_->getSensorSize().z() / model_->getPixelSize().x() / 2.0;
+            maxY = centerY + model_->getSensorSize().z() / model_->getPixelSize().y() / 2.0;
         } else {
             minX = centerX - model_->getSensorSize().z() / 2.0;
             maxX = centerX + model_->getSensorSize().z() / 2.0;

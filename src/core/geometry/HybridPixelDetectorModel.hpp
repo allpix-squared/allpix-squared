@@ -37,35 +37,25 @@ namespace allpix {
          * NOTE: center is at the middle of the first pixel at half z
          */
         // sensor coordinates relative to center of local frame
-        double getSensorMinX() const override { return -getHalfPixelSizeX(); }
-        double getSensorMinY() const override { return -getHalfPixelSizeX(); }
+        double getSensorMinX() const override { return -getPixelSize().x() / 2.0; }
+        double getSensorMinY() const override { return -getPixelSize().x() / 2.0; }
         double getSensorMinZ() const override { return -getSensorSize().z() / 2.0; }
         ROOT::Math::XYZPoint getCenter() const override {
-            return ROOT::Math::XYZPoint(
-                getSensorSize().x() / 2.0 - getHalfPixelSizeX(), getSensorSize().y() / 2.0 - getHalfPixelSizeY(), 0);
+            return ROOT::Math::XYZPoint(getSensorSize().x() / 2.0 - getPixelSize().x() / 2.0,
+                                        getSensorSize().y() / 2.0 - getPixelSize().y() / 2.0,
+                                        0);
         }
 
         /* Number of pixels */
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> getNPixels() const override {
             return number_of_pixels_;
         }
-        int getNPixelsX() const override { return number_of_pixels_.x(); };
-        int getNPixelsY() const override { return number_of_pixels_.y(); };
-
         void setNPixels(ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> val) {
             number_of_pixels_ = std::move(val);
         }
-        void setNPixelsX(int val) { number_of_pixels_.SetX(val); };
-        void setNPixelsY(int val) { number_of_pixels_.SetY(val); };
 
         /* Pixel dimensions */
         ROOT::Math::XYVector getPixelSize() const override { return pixel_size_; }
-        double getPixelSizeX() const override { return pixel_size_.x(); };
-        double getPixelSizeY() const override { return pixel_size_.y(); };
-
-        double getHalfPixelSizeX() const { return pixel_size_.x() / 2.0; };
-        double getHalfPixelSizeY() const { return pixel_size_.y() / 2.0; };
-
         void setPixelSize(ROOT::Math::XYVector val) { pixel_size_ = std::move(val); }
 
         /* Sensor offset */

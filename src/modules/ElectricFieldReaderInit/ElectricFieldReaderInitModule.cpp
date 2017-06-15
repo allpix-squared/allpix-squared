@@ -145,12 +145,12 @@ inline static void check_detector_match(Detector& detector, double thickness, do
             LOG(WARNING) << "Thickness of sensor in file is " << Units::display(thickness, "um")
                          << " but in the model it is " << Units::display(model->getSensorSize().z(), "um");
         }
-        if(std::fabs(xpixsz - model->getPixelSizeX()) > std::numeric_limits<double>::epsilon() ||
-           std::fabs(ypixsz - model->getPixelSizeY()) > std::numeric_limits<double>::epsilon()) {
+        if(std::fabs(xpixsz - model->getPixelSize().x()) > std::numeric_limits<double>::epsilon() ||
+           std::fabs(ypixsz - model->getPixelSize().y()) > std::numeric_limits<double>::epsilon()) {
             LOG(WARNING) << "Pixel size is (" << Units::display(xpixsz, {"um", "mm"}) << ","
                          << Units::display(ypixsz, {"um", "mm"}) << ") but in the model it is ("
-                         << Units::display(model->getPixelSizeX(), {"um", "mm"}) << ","
-                         << Units::display(model->getPixelSizeY(), {"um", "mm"}) << ")";
+                         << Units::display(model->getPixelSize().x(), {"um", "mm"}) << ","
+                         << Units::display(model->getPixelSize().y(), {"um", "mm"}) << ")";
         }
     }
 }

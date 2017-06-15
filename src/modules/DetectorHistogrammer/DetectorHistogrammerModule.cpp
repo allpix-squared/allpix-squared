@@ -37,21 +37,21 @@ void DetectorHistogrammerModule::init() {
     std::string histogram_title = "Hitmap for " + detector_->getName() + ";x (pixels);y (pixels)";
     histogram = new TH2I(histogram_name.c_str(),
                          histogram_title.c_str(),
-                         model->getNPixelsX(),
+                         model->getNPixels().x(),
                          -0.5,
-                         model->getNPixelsX() - 0.5,
-                         model->getNPixelsY(),
+                         model->getNPixels().x() - 0.5,
+                         model->getNPixels().y(),
                          -0.5,
-                         model->getNPixelsY() - 0.5);
+                         model->getNPixels().y() - 0.5);
 
     // create cluster size plot
     std::string cluster_size_name = "cluster";
     std::string cluster_size_title = "Cluster size for " + detector_->getName() + ";size;number";
     cluster_size = new TH1I(cluster_size_name.c_str(),
                             cluster_size_title.c_str(),
-                            model->getNPixelsX() * model->getNPixelsY(),
+                            model->getNPixels().x() * model->getNPixels().y(),
                             0.5,
-                            model->getNPixelsX() * model->getNPixelsY() + 0.5);
+                            model->getNPixels().x() * model->getNPixels().y() + 0.5);
 }
 
 // fill the histograms

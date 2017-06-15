@@ -283,10 +283,10 @@ void GeometryBuilderTGeoModule::BuildPixelDevices() {
         // Replication along X axis, creation of a family.
         // Option "N" tells to divide the whole axis range into NPixelsX.
         // Start and step arguments are dummy.
-        TGeoVolume* Slice_log = Wafer_log->Divide(SliceName + id_s, 1, dsc->getNPixelsX(), 0, 1, 0, "N");
+        TGeoVolume* Slice_log = Wafer_log->Divide(SliceName + id_s, 1, dsc->getNPixels().x(), 0, 1, 0, "N");
         // Slice_log->SetVisibility(false);
         // Replication along Y axis
-        TGeoVolume* Pixel_log = Slice_log->Divide(PixelName + id_s, 2, dsc->getNPixelsY(), 0, 1, 0, "N");
+        TGeoVolume* Pixel_log = Slice_log->Divide(PixelName + id_s, 2, dsc->getNPixels().y(), 0, 1, 0, "N");
         Pixel_log->SetLineColor(kCyan);
         // Pixel_log->SetVisibility(false);
         /*
@@ -361,21 +361,21 @@ void GeometryBuilderTGeoModule::BuildPixelDevices() {
 
             // Replication and positionning of the bumps.
             // Loop on x axis
-            for(int ix = 0; ix < dsc->getNPixelsX(); ++ix) {
+            for(int ix = 0; ix < dsc->getNPixels().x(); ++ix) {
 
                 // Loop on y axis
-                for(int iy = 0; iy < dsc->getNPixelsY(); ++iy) {
+                for(int iy = 0; iy < dsc->getNPixels().y(); ++iy) {
 
                     // Positions
-                    double XPos =
-                        (ix * 2 + 1) * dsc->getHalfPixelSizeX() - dsc->getSensorSize().x() / 2.0 + dsc->getBumpOffsetX();
-                    double YPos =
-                        (iy * 2 + 1) * dsc->getHalfPixelSizeY() - dsc->getSensorSize().y() / 2.0 + dsc->getBumpOffsetY();
+                    double XPos = (ix * 2 + 1) * dsc->getPixelSize().x() / 2.0 - dsc->getSensorSize().x() / 2.0 +
+                                  dsc->getBumpOffsetX();
+                    double YPos = (iy * 2 + 1) * dsc->getPixelSize().y() / 2.0 - dsc->getSensorSize().y() / 2.0 +
+                                  dsc->getBumpOffsetY();
                     TString xy_s = Form("_%i_%i", ix, iy);
                     TGeoTranslation* posBump = new TGeoTranslation("LocalBumpTranslation" + id_s + xy_s, XPos, YPos, 0.);
 
                     // Placement !
-                    Bumps_log->AddNode(Bumps, ix + 1 + (iy * dsc->getNPixelsX()), posBump);
+                    Bumps_log->AddNode(Bumps, ix + 1 + (iy * dsc->getNPixels().x()), posBump);
 
                 } // end loop y axis
 
