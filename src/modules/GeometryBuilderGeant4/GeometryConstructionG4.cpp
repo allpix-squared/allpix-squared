@@ -147,22 +147,22 @@ void GeometryConstructionG4::build_pixel_devices() {
         G4ThreeVector posPCB(0, 0, 0);
 
         // calculation of position of the different physical volumes
-        if(model->getHalfChipSizeZ() != 0) {
+        if(model->getChipSize().z() / 2.0 != 0) {
             posBumps.setZ(posDevice.z() - model->getSensorSize().z() / 2.0 - (bump_height / 2.));
 
-            posChip.setX(posDevice.x() + model->getChipOffsetX());
-            posChip.setY(posDevice.y() + model->getChipOffsetY());
-            posChip.setZ(posDevice.z() - model->getSensorSize().z() / 2.0 - bump_height - model->getHalfChipSizeZ() +
-                         model->getChipOffsetZ());
+            posChip.setX(posDevice.x() + model->getChipOffset().x());
+            posChip.setY(posDevice.y() + model->getChipOffset().y());
+            posChip.setZ(posDevice.z() - model->getSensorSize().z() / 2.0 - bump_height - model->getChipSize().z() / 2.0 +
+                         model->getChipOffset().z());
 
         } else {
             // make sure no offset because bumps for PCB are calculated if chip is not included
             bump_height = 0;
         }
-        posPCB.setX(posDevice.x() - model->getSensorOffsetX());
-        posPCB.setY(posDevice.y() - model->getSensorOffsetY());
-        posPCB.setZ(posDevice.z() - model->getSensorSize().z() / 2.0 - bump_height - 2. * model->getHalfChipSizeZ() -
-                    model->getHalfPCBSizeZ());
+        posPCB.setX(posDevice.x() - model->getSensorOffset().x());
+        posPCB.setY(posDevice.y() - model->getSensorOffset().y());
+        posPCB.setZ(posDevice.z() - model->getSensorSize().z() / 2.0 - bump_height - 2. * model->getChipSize().z() / 2.0 -
+                    model->getPCBSize().z() / 2.0);
 
         LOG(DEBUG) << " Local relative positions of the geometry parts";
         LOG(DEBUG) << " - Coverlayer position  : " << display_vector(posCoverlayer, {"mm", "um"});
@@ -274,7 +274,7 @@ void GeometryConstructionG4::build_pixel_devices() {
          */
 
         // Construct the bumps only if necessary
-        if(model->getBumpHeight() > 1e-9 && model->getHalfChipSizeZ() != 0) {
+        if(model->getBumpHeight() > 1e-9 && model->getChipSize().z() / 2.0 != 0) {
             // Define types from parameters
             G4double bump_sphere_radius = model->getBumpSphereRadius();
             G4double bump_cylinder_radius = model->getBumpCylinderRadius();
@@ -354,10 +354,12 @@ void GeometryConstructionG4::build_pixel_devices() {
          */
 
         // Construct the chips only if necessary
-        if(model->getHalfChipSizeZ() != 0) {
+        if(model->getChipSize().z() / 2.0 != 0) {
             // Create the chip box
-            auto chip_box = std::make_shared<G4Box>(
-                ChipName.second, model->getHalfChipSizeX(), model->getHalfChipSizeY(), model->getHalfChipSizeZ());
+            auto chip_box = std::make_shared<G4Box>(ChipName.second,
+                                                    model->getChipSize().x() / 2.0,
+                                                    model->getChipSize().y() / 2.0,
+                                                    model->getChipSize().z() / 2.0);
             solids_.push_back(chip_box);
 
             // Create the logical volume for the chip
@@ -375,10 +377,10 @@ void GeometryConstructionG4::build_pixel_devices() {
          * global pcb chip
          */
 
-        if(model->getHalfPCBSizeZ() != 0) {
+        if(model->getPCBSize().z() / 2.0 != 0) {
             // Create the box containing the PCB
             auto PCB_box = std::make_shared<G4Box>(
-                PCBName.second, model->getHalfPCBSizeX(), model->getHalfPCBSizeY(), model->getHalfPCBSizeZ());
+                PCBName.second, model->getPCBSize().x() / 2.0, model->getPCBSize().y() / 2.0, model->getPCBSize().z() / 2.0);
             solids_.push_back(PCB_box);
 
             // Create the logical volume for the PCB

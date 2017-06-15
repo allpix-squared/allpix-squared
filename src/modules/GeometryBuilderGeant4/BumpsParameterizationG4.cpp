@@ -14,8 +14,8 @@ BumpsParameterizationG4::BumpsParameterizationG4(const std::shared_ptr<HybridPix
       npixelY(model->getNPixels().y()) {}
 
 void BumpsParameterizationG4::ComputeTransformation(const G4int copyId, G4VPhysicalVolume* Bump) const {
-    G4double XPos = posX(copyId) + model_->getBumpOffsetX();
-    G4double YPos = posY(copyId) + model_->getBumpOffsetY();
+    G4double XPos = posX(copyId) + model_->getBumpOffset().x();
+    G4double YPos = posY(copyId) + model_->getBumpOffset().y();
     G4double ZPos = 0;
 
     Bump->SetTranslation(G4ThreeVector(XPos, YPos, ZPos));

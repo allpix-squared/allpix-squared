@@ -314,7 +314,7 @@ void GeometryBuilderTGeoModule::BuildPixelDevices() {
         // aBump_Tube   -> Bump_Tube
         // m_Bumps_Cell_log -> Bumps
         double bump_height = dsc->getBumpHeight();
-        if(bump_height != 0. && dsc->getHalfChipSizeZ() != 0.) {
+        if(bump_height != 0. && dsc->getChipSize().z() / 2.0 != 0.) {
 
             // Build the basic shapes
             TString BumpSphereName = BumpName + "Sphere" + id_s;
@@ -347,7 +347,7 @@ void GeometryBuilderTGeoModule::BuildPixelDevices() {
                                                             0.,
                                                             0.,
                                                             -dsc->getSensorSize().z() / 2.0 -
-                                                                2 * dsc->getHalfCoverlayerHeight() - (bump_height / 2));
+                                                                2 * dsc->getCoverlayerHeight() / 2.0 - (bump_height / 2));
             posBumps->Add(posDevice);
             LOG(DEBUG) << " - Bumps position       : " << Print(posBumps);
             wrapper_log->AddNode(Bumps_log, 1, posBumps);
@@ -368,9 +368,9 @@ void GeometryBuilderTGeoModule::BuildPixelDevices() {
 
                     // Positions
                     double XPos = (ix * 2 + 1) * dsc->getPixelSize().x() / 2.0 - dsc->getSensorSize().x() / 2.0 +
-                                  dsc->getBumpOffsetX();
+                                  dsc->getBumpOffset().x();
                     double YPos = (iy * 2 + 1) * dsc->getPixelSize().y() / 2.0 - dsc->getSensorSize().y() / 2.0 +
-                                  dsc->getBumpOffsetY();
+                                  dsc->getBumpOffset().y();
                     TString xy_s = Form("_%i_%i", ix, iy);
                     TGeoTranslation* posBump = new TGeoTranslation("LocalBumpTranslation" + id_s + xy_s, XPos, YPos, 0.);
 
@@ -387,9 +387,12 @@ void GeometryBuilderTGeoModule::BuildPixelDevices() {
         // Chip
         // The Si wafer is placed respect to the wrapper.
         // Needs to be pushed -half Si wafer in z direction
-        if(dsc->getHalfChipSizeZ() != 0) {
-            TGeoVolume* Chip_log = gGeoManager->MakeBox(
-                ChipName + id_s, Si_med, dsc->getHalfChipSizeX(), dsc->getHalfChipSizeY(), dsc->getHalfChipSizeZ());
+        if(dsc->getChipSize().z() / 2.0 != 0) {
+            TGeoVolume* Chip_log = gGeoManager->MakeBox(ChipName + id_s,
+                                                        Si_med,
+                                                        dsc->getChipSize().x() / 2.0,
+                                                        dsc->getChipSize().y() / 2.0,
+                                                        dsc->getChipSize().z() / 2.0);
             // G4Color::Gray(), SetLineWidth(2), SetForceSolid(true), SetVisibility(true)
             Chip_log->SetLineColor(kGray);
             Chip_log->SetLineWidth(2);
@@ -397,10 +400,10 @@ void GeometryBuilderTGeoModule::BuildPixelDevices() {
             // Placement !
             TGeoTranslation* posChip =
                 new TGeoTranslation("LocalChipTranslation" + id_s,
-                                    dsc->getChipOffsetX(),
-                                    dsc->getChipOffsetY(),
-                                    dsc->getChipOffsetZ() - dsc->getSensorSize().z() / 2.0 -
-                                        2. * dsc->getHalfCoverlayerHeight() - bump_height - dsc->getHalfChipSizeZ());
+                                    dsc->getChipOffset().x(),
+                                    dsc->getChipOffset().y(),
+                                    dsc->getChipOffset().z() - dsc->getSensorSize().z() / 2.0 -
+                                        2. * dsc->getCoverlayerHeight() / 2.0 - bump_height - dsc->getChipSize().z() / 2.0);
             posChip->Add(posDevice);
             LOG(DEBUG) << " - Chip position        : " << Print(posChip);
             wrapper_log->AddNode(Chip_log, 1, posChip);
@@ -410,23 +413,26 @@ void GeometryBuilderTGeoModule::BuildPixelDevices() {
         // PCB
         // The PCB is placed respect to the wrapper.
         // Needs to be pushed -half Si wafer in z direction
-        if(dsc->getHalfPCBSizeZ() != 0) {
+        if(dsc->getPCBSize().z() / 2.0 != 0) {
 
             // Retrieve Plexiglass
             TGeoMedium* plexiglass_med = gGeoManager->GetMedium("Plexiglass");
             // Create logical volume
-            TGeoVolume* PCB_log = gGeoManager->MakeBox(
-                PCBName + id_s, plexiglass_med, dsc->getHalfPCBSizeX(), dsc->getHalfPCBSizeY(), dsc->getHalfPCBSizeZ());
+            TGeoVolume* PCB_log = gGeoManager->MakeBox(PCBName + id_s,
+                                                       plexiglass_med,
+                                                       dsc->getPCBSize().x() / 2.0,
+                                                       dsc->getPCBSize().y() / 2.0,
+                                                       dsc->getPCBSize().z() / 2.0);
             // G4Color::Green(), SetLineWidth(1), SetForceSolid(true)
             PCB_log->SetLineColor(kGreen);
 
             // Placement !
             TGeoTranslation* posPCB =
                 new TGeoTranslation("LocalPCBTranslation" + id_s,
-                                    -dsc->getSensorOffsetX(),
-                                    -dsc->getSensorOffsetY(),
-                                    -dsc->getSensorSize().z() / 2.0 - 2. * dsc->getHalfCoverlayerHeight() - bump_height -
-                                        2. * dsc->getHalfChipSizeZ() - dsc->getHalfPCBSizeZ());
+                                    -dsc->getSensorOffset().x(),
+                                    -dsc->getSensorOffset().y(),
+                                    -dsc->getSensorSize().z() / 2.0 - 2. * dsc->getCoverlayerHeight() / 2.0 - bump_height -
+                                        2. * dsc->getChipSize().z() / 2.0 - dsc->getPCBSize().z() / 2.0);
             posPCB->Add(posDevice);
             LOG(DEBUG) << " - PCB position         : " << Print(posPCB);
             wrapper_log->AddNode(PCB_log, 1, posPCB);
@@ -457,7 +463,7 @@ void GeometryBuilderTGeoModule::BuildPixelDevices() {
                                                          Cover_med,
                                                          dsc->getSensorSize().x() / 2.0,
                                                          dsc->getSensorSize().y() / 2.0,
-                                                         dsc->getHalfCoverlayerHeight());
+                                                         dsc->getCoverlayerHeight() / 2.0);
             // G4Color::White() !!, SetLineWidth(2), SetForceSolid(true)
             // ROOT background is withe by default. Change White into ...
             Cover_log->SetLineWidth(2);
@@ -467,7 +473,7 @@ void GeometryBuilderTGeoModule::BuildPixelDevices() {
                 new TGeoTranslation("LocalCoverlayerTranslation" + id_s,
                                     0.,
                                     0.,
-                                    -dsc->getSensorSize().z() / 2.0 - dsc->getHalfCoverlayerHeight());
+                                    -dsc->getSensorSize().z() / 2.0 - dsc->getCoverlayerHeight() / 2.0);
             posCover->Add(posDevice);
             LOG(DEBUG) << " - Coverlayer position  : " << Print(posCover);
             wrapper_log->AddNode(Cover_log, 1, posCover);
