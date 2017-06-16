@@ -108,16 +108,16 @@ std::shared_ptr<HybridPixelDetectorModel> DefaultModelReaderModule::parse_config
 
     // Excess around the pixel grid
     if(config.has("sensor_excess_top")) {
-        model->setGuardRingExcessTop(config.get<double>("sensor_excess_top"));
+        model->setSensorExcessTop(config.get<double>("sensor_excess_top"));
     }
     if(config.has("sensor_excess_bottom")) {
-        model->setGuardRingExcessBottom(config.get<double>("sensor_excess_bottom"));
+        model->setSensorExcessBottom(config.get<double>("sensor_excess_bottom"));
     }
     if(config.has("sensor_excess_left")) {
-        model->getGuardRingExcessLeft(config.get<double>("sensor_excess_left"));
+        model->getSensorExcessLeft(config.get<double>("sensor_excess_left"));
     }
     if(config.has("sensor_excess_right")) {
-        model->setGuardRingExcessRight(config.get<double>("sensor_excess_right"));
+        model->setSensorExcessRight(config.get<double>("sensor_excess_right"));
     }
 
     // Bump parameters

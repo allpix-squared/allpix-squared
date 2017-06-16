@@ -485,8 +485,8 @@ void GeometryBuilderTGeoModule::BuildPixelDevices() {
         // Guard rings will be GuardRingsExt - Box
         TString GuardRingsExtName = GuardRingsName + "Ext" + id_s;
         new TGeoBBox(GuardRingsExtName,
-                     dsc->getSensorSize().x() / 2.0 + dsc->getGuardRingExcessRight() + dsc->getGuardRingExcessLeft(),
-                     dsc->getSensorSize().y() / 2.0 + dsc->getGuardRingExcessTop() + dsc->getGuardRingExcessBottom(),
+                     dsc->getSensorSize().x() / 2.0 + dsc->getSensorExcessRight() + dsc->getSensorExcessLeft(),
+                     dsc->getSensorSize().y() / 2.0 + dsc->getSensorExcessTop() + dsc->getSensorExcessBottom(),
                      // same depth as the sensor
                      dsc->getSensorSize().z() / 2.0);
 

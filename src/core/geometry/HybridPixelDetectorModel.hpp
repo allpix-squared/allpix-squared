@@ -48,18 +48,17 @@ namespace allpix {
         void setPixelSize(ROOT::Math::XYVector val) { pixel_size_ = std::move(val); }
 
         /* Sensor center */
-        virtual ROOT::Math::XYZPoint getSensorCenter() const {
-            ROOT::Math::XYZVector offset((getGuardRingExcessRight() - getGuardRingExcessLeft()) / 2.0,
-                                         (getGuardRingExcessTop() - getGuardRingExcessBottom()) / 2.0,
+        virtual ROOT::Math::XYZPoint getSensorCenter() const override {
+            ROOT::Math::XYZVector offset((getSensorExcessRight() - getSensorExcessLeft()) / 2.0,
+                                         (getSensorExcessTop() - getSensorExcessBottom()) / 2.0,
                                          0);
             return getCenter() + offset;
         }
 
         /* Sensor size */
-        virtual ROOT::Math::XYZVector getSensorSize() const {
-            ROOT::Math::XYZVector excess((getGuardRingExcessRight() + getGuardRingExcessLeft()),
-                                         (getGuardRingExcessTop() + getGuardRingExcessBottom()),
-                                         0);
+        ROOT::Math::XYZVector getSensorSize() const override {
+            ROOT::Math::XYZVector excess(
+                (getSensorExcessRight() + getSensorExcessLeft()), (getSensorExcessTop() + getSensorExcessBottom()), 0);
             return sensor_size_ + excess;
         }
 
@@ -90,14 +89,14 @@ namespace allpix {
         void setBumpCylinderRadius(double val) { bump_cylinder_radius_ = val; }
 
         /* Guard rings */
-        double getGuardRingExcessTop() const { return guard_ring_excess_top_; }
-        void setGuardRingExcessTop(double val) { guard_ring_excess_top_ = val; }
-        double getGuardRingExcessBottom() const { return guard_ring_excess_bottom_; }
-        void setGuardRingExcessBottom(double val) { guard_ring_excess_bottom_ = val; }
-        double getGuardRingExcessRight() const { return guard_ring_excess_right_; }
-        void setGuardRingExcessRight(double val) { guard_ring_excess_right_ = val; }
-        double getGuardRingExcessLeft() const { return guard_ring_excess_left_; }
-        void getGuardRingExcessLeft(double val) { guard_ring_excess_left_ = val; }
+        double getSensorExcessTop() const { return guard_ring_excess_top_; }
+        void setSensorExcessTop(double val) { guard_ring_excess_top_ = val; }
+        double getSensorExcessBottom() const { return guard_ring_excess_bottom_; }
+        void setSensorExcessBottom(double val) { guard_ring_excess_bottom_ = val; }
+        double getSensorExcessRight() const { return guard_ring_excess_right_; }
+        void setSensorExcessRight(double val) { guard_ring_excess_right_ = val; }
+        double getSensorExcessLeft() const { return guard_ring_excess_left_; }
+        void getSensorExcessLeft(double val) { guard_ring_excess_left_ = val; }
 
         /* Coverlayer */
         bool hasCoverlayer() const { return has_coverlayer_; }
@@ -106,6 +105,8 @@ namespace allpix {
             coverlayer_height_ = val;
             has_coverlayer_ = true;
         }
+        std::string getCoverlayerMaterial() const { return coverlayer_material_; }
+        void setCoverlayerMaterial(std::string mat) { coverlayer_material_ = std::move(mat); }
 
         /* FIXME: This will be reworked */
         double getHalfWrapperDX() const { return getPCBSize().x() / 2.0; }
@@ -121,9 +122,6 @@ namespace allpix {
 
             return whdz;
         }
-
-        std::string getCoverlayerMaterial() const { return coverlayer_material_; }
-        void setCoverlayerMaterial(std::string mat) { coverlayer_material_ = std::move(mat); }
 
     private:
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> number_of_pixels_;

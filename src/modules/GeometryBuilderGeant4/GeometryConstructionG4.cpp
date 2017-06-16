@@ -271,31 +271,6 @@ void GeometryConstructionG4::build_pixel_devices() {
                                                                pixel_param_internal.get());
         detector->setExternalObject("pixel_param", pixel_param);
 
-        /* GUARD RINGS
-         * rings around the sensitive device
-         */
-
-        // Create the box volumes for the guard rings
-        /*auto guard_rings_box = std::make_shared<G4Box>(
-            GuardRingsExtName.second,
-            model->getSensorSize().x() / 2.0 + (model->getGuardRingExcessRight() + model->getGuardRingExcessLeft()),
-            model->getSensorSize().y() / 2.0 + (model->getGuardRingExcessTop() + model->getGuardRingExcessBottom()),
-            model->getSensorSize().z() / 2.0);
-        solids_.push_back(guard_rings_box);
-        auto guard_rings_solid =
-            std::make_shared<G4SubtractionSolid>(GuardRingsName.second, guard_rings_box.get(), sensor_box.get());
-        solids_.push_back(guard_rings_solid);
-
-        // Create the logical volume for the guard rings
-        auto guard_rings_log = make_shared_no_delete<G4LogicalVolume>(
-            guard_rings_solid.get(), materials_["silicon"], GuardRingsName.second + "_log");
-        detector->setExternalObject("guard_rings_log", guard_rings_log);
-
-        // Place the guard rings
-        auto guard_rings_phys = make_shared_no_delete<G4PVPlacement>(
-            nullptr, posDevice, guard_rings_log.get(), GuardRingsName.second + "_phys", wrapper_log.get(), false, 0, true);
-        detector->setExternalObject("guard_rings_phys", guard_rings_phys);*/
-
         /* CHIPS
          * the chip connected to the bumps bond and the PCB
          */
