@@ -43,7 +43,9 @@ using namespace ROOT::Math;
 SimplePropagationModule::SimplePropagationModule(Configuration config,
                                                  Messenger* messenger,
                                                  std::shared_ptr<Detector> detector)
-    : Module(config, detector), config_(std::move(config)), messenger_(messenger), detector_(std::move(detector)) {
+    : Module(config, detector), config_(std::move(config)), temperature(0), timestep_min(0), timestep_max(0),
+      timestep_start(0), target_spatial_precision(0), output_plots_step(0), output_plots(false), messenger_(messenger),
+      detector_(std::move(detector)) {
     // get detector model
     model_ = detector_->getModel();
 
@@ -61,9 +63,19 @@ SimplePropagationModule::SimplePropagationModule(Configuration config,
     config_.setDefault<unsigned int>("charge_per_step", 10);
 
     config_.setDefault<bool>("output_plots", false);
+    config_.setDefault<double>("output_plots_step", config_.get<double>("timestep_max"));
     config_.setDefault<bool>("output_plots_use_pixel_units", false);
     config_.setDefault<double>("output_plots_theta", 0.0f);
     config_.setDefault<double>("output_plots_phi", 0.0f);
+
+    // copy some variables from configuration to avoid lookups:
+    temperature = config_.get<double>("temperature");
+    timestep_min = config_.get<double>("timestep_min");
+    timestep_max = config_.get<double>("timestep_max");
+    timestep_start = config_.get<double>("timestep_start");
+    target_spatial_precision = config_.get<double>("spatial_precision");
+    output_plots = config_.get<bool>("output_plots");
+    output_plots_step = config_.get<double>("output_plots_step");
 }
 
 void SimplePropagationModule::create_output_plots(unsigned int event_num) {
@@ -434,7 +446,6 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const ROOT::Math:
     auto electron_mobility = [&](double efield_mag) {
         /* Reference: https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2) */
         // variables for charge mobility
-        auto temperature = config_.get<double>("temperature");
         double electron_Vm = Units::get(1.53e9 * std::pow(temperature, -0.87), "cm/s");
         double electron_Ec = Units::get(1.01 * std::pow(temperature, 1.55), "V/cm");
         double electron_Beta = 2.57e-2 * std::pow(temperature, 0.66);
@@ -446,8 +457,8 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const ROOT::Math:
     };
 
     // define a function to compute the diffusion
-    auto boltzmann_kT = Units::get(8.6173e-5, "eV/K") * config_.get<double>("temperature");
-    auto timestep = config_.get<double>("timestep_start");
+    auto boltzmann_kT = Units::get(8.6173e-5, "eV/K") * temperature;
+    auto timestep = timestep_start;
     auto electron_diffusion = [&](double efield_mag) -> Eigen::Vector3d {
         double diffusion_constant = boltzmann_kT * electron_mobility(efield_mag);
         double diffusion_std_dev = std::sqrt(2. * diffusion_constant * timestep);
@@ -482,8 +493,7 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const ROOT::Math:
     double last_time = std::numeric_limits<double>::lowest();
     while(detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
         // update output plots if necessary
-        if(config_.get<bool>("output_plots") &&
-           runge_kutta.getTime() - last_time > config_.get<double>("output_plots_step")) {
+        if(output_plots && runge_kutta.getTime() - last_time > output_plots_step) {
             output_plot_points_.back().second.push_back(static_cast<XYZPoint>(runge_kutta.getValue()));
             last_time = runge_kutta.getTime();
         }
@@ -508,7 +518,6 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const ROOT::Math:
 
         // adapt step size to precision
         double uncertainty = step.error.norm();
-        auto target_spatial_precision = config_.get<double>("spatial_precision");
         if(model_->getSensorSizeZ() - position.z() < step.value.z() * 1.2) {
             timestep *= 0.7;
         } else {
@@ -518,10 +527,10 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const ROOT::Math:
                 timestep *= 2;
             }
         }
-        if(timestep > config_.get<double>("timestep_max")) {
-            timestep = config_.get<double>("timestep_max");
-        } else if(timestep < config_.get<double>("timestep_min")) {
-            timestep = config_.get<double>("timestep_min");
+        if(timestep > timestep_max) {
+            timestep = timestep_max;
+        } else if(timestep < timestep_min) {
+            timestep = timestep_min;
         }
         runge_kutta.setTimeStep(timestep);
     }
