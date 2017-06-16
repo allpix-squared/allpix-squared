@@ -532,6 +532,7 @@ void ModuleManager::run() {
         if(terminate_) {
             LOG(INFO) << "Interrupting event loop after " << i << " events because of request to terminate";
             number_of_events = i;
+            global_config_.set<unsigned int>("number_of_events", i);
             break;
         }
 
@@ -645,6 +646,8 @@ void ModuleManager::finalize() {
     for(auto& module_time : module_execution_time_) {
         LOG(DEBUG) << " Module " << module_time.first->getUniqueName() << " took " << module_time.second << " seconds";
     }
+    LOG(STATUS) << "Average time per event: "
+                << std::round((1000 * total_time) / global_config_.get<unsigned int>("number_of_events", 1u)) << " ms";
 }
 
 /**
