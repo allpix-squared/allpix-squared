@@ -1,6 +1,6 @@
 # Tools
 
-## `print_module_parameters.sh`
+## print_module_parameters.sh
 
 Simple tool which parses the source code of a module and prints a list of all available configuration parameters together with their type. It takes the source code directory of the respective module as command line argument.
 
