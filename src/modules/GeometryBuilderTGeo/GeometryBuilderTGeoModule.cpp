@@ -400,10 +400,10 @@ void GeometryBuilderTGeoModule::BuildPixelDevices() {
             // Placement !
             TGeoTranslation* posChip =
                 new TGeoTranslation("LocalChipTranslation" + id_s,
-                                    dsc->getChipOffset().x(),
-                                    dsc->getChipOffset().y(),
-                                    dsc->getChipOffset().z() - dsc->getSensorSize().z() / 2.0 -
-                                        2. * dsc->getCoverlayerHeight() / 2.0 - bump_height - dsc->getChipSize().z() / 2.0);
+                                    dsc->getChipCenter().x() - dsc->getCenter().x(),
+                                    dsc->getChipCenter().y() - dsc->getCenter().y(),
+                                    -dsc->getSensorSize().z() / 2.0 - 2. * dsc->getCoverlayerHeight() / 2.0 - bump_height -
+                                        dsc->getChipSize().z() / 2.0);
             posChip->Add(posDevice);
             LOG(DEBUG) << " - Chip position        : " << Print(posChip);
             wrapper_log->AddNode(Chip_log, 1, posChip);
@@ -429,8 +429,8 @@ void GeometryBuilderTGeoModule::BuildPixelDevices() {
             // Placement !
             TGeoTranslation* posPCB =
                 new TGeoTranslation("LocalPCBTranslation" + id_s,
-                                    -dsc->getSensorOffset().x(),
-                                    -dsc->getSensorOffset().y(),
+                                    0,
+                                    0,
                                     -dsc->getSensorSize().z() / 2.0 - 2. * dsc->getCoverlayerHeight() / 2.0 - bump_height -
                                         2. * dsc->getChipSize().z() / 2.0 - dsc->getPCBSize().z() / 2.0);
             posPCB->Add(posDevice);
@@ -485,8 +485,8 @@ void GeometryBuilderTGeoModule::BuildPixelDevices() {
         // Guard rings will be GuardRingsExt - Box
         TString GuardRingsExtName = GuardRingsName + "Ext" + id_s;
         new TGeoBBox(GuardRingsExtName,
-                     dsc->getSensorSize().x() / 2.0 + dsc->getSensorExcessRight() + dsc->getSensorExcessLeft(),
-                     dsc->getSensorSize().y() / 2.0 + dsc->getSensorExcessTop() + dsc->getSensorExcessBottom(),
+                     dsc->getSensorSize().x() / 2.0,
+                     dsc->getSensorSize().y() / 2.0,
                      // same depth as the sensor
                      dsc->getSensorSize().z() / 2.0);
 

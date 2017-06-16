@@ -90,23 +90,19 @@ std::shared_ptr<HybridPixelDetectorModel> DefaultModelReaderModule::parse_config
     if(config.has("pixel_size")) {
         model->setPixelSize(config.get<XYVector>("pixel_size"));
     }
-    if(config.has("chip_size")) {
-        model->setChipSize(config.get<XYZVector>("chip_size"));
-    }
-    if(config.has("chip_offset")) {
-        model->setChipOffset(config.get<XYZVector>("chip_offset"));
+    // Sensor thickness
+    if(config.has("sensor_thickness")) {
+        model->setSensorThickness(config.get<double>("sensor_thickness"));
     }
     if(config.has("sensor_size")) {
-        model->setSensorSize(config.get<XYZVector>("sensor_size"));
+        // DEPRECATED
+        model->setSensorThickness(config.get<XYZVector>("sensor_size").z());
     }
     if(config.has("sensor_offset")) {
-        model->setSensorOffset(config.get<XYVector>("sensor_offset"));
+        // DEPRECATED
+        // model->setSensorOffset(config.get<XYVector>("sensor_offset"));
     }
-    if(config.has("pcb_size")) {
-        model->setPCBSize(config.get<XYZVector>("pcb_size"));
-    }
-
-    // Excess around the pixel grid
+    // Excess around the sensor from the pixel grid
     if(config.has("sensor_excess_top")) {
         model->setSensorExcessTop(config.get<double>("sensor_excess_top"));
     }
@@ -114,10 +110,58 @@ std::shared_ptr<HybridPixelDetectorModel> DefaultModelReaderModule::parse_config
         model->setSensorExcessBottom(config.get<double>("sensor_excess_bottom"));
     }
     if(config.has("sensor_excess_left")) {
-        model->getSensorExcessLeft(config.get<double>("sensor_excess_left"));
+        model->setSensorExcessLeft(config.get<double>("sensor_excess_left"));
     }
     if(config.has("sensor_excess_right")) {
         model->setSensorExcessRight(config.get<double>("sensor_excess_right"));
+    }
+
+    // Chip thickness
+    if(config.has("chip_thickness")) {
+        model->setChipThickness(config.get<double>("chip_thickness"));
+    }
+    if(config.has("chip_size")) {
+        // DEPRECATED
+        model->setChipThickness(config.get<XYZVector>("chip_size").z());
+    }
+    if(config.has("chip_offset")) {
+        // DEPRECATED
+        // model->setChipOffset(config.get<XYZVector>("chip_offset"));
+    }
+    // Excess around the chip from the pixel grid
+    if(config.has("chip_excess_top")) {
+        model->setChipExcessTop(config.get<double>("chip_excess_top"));
+    }
+    if(config.has("chip_excess_bottom")) {
+        model->setChipExcessBottom(config.get<double>("chip_excess_bottom"));
+    }
+    if(config.has("chip_excess_left")) {
+        model->setChipExcessLeft(config.get<double>("chip_excess_left"));
+    }
+    if(config.has("chip_excess_right")) {
+        model->setChipExcessRight(config.get<double>("chip_excess_right"));
+    }
+
+    if(config.has("pcb_size")) {
+        // DEPRECATED
+        model->setPCBThickness(config.get<XYZVector>("pcb_size").z());
+    }
+    if(config.has("pcb_thickness")) {
+        // DEPRECATED
+        model->setPCBThickness(config.get<double>("pcb_thickness"));
+    }
+    // Excess around the chip from the pixel grid
+    if(config.has("pcb_excess_top")) {
+        model->setPCBExcessTop(config.get<double>("pcb_excess_top"));
+    }
+    if(config.has("pcb_excess_bottom")) {
+        model->setPCBExcessBottom(config.get<double>("pcb_excess_bottom"));
+    }
+    if(config.has("pcb_excess_left")) {
+        model->setPCBExcessLeft(config.get<double>("pcb_excess_left"));
+    }
+    if(config.has("pcb_excess_right")) {
+        model->setPCBExcessRight(config.get<double>("pcb_excess_right"));
     }
 
     // Bump parameters

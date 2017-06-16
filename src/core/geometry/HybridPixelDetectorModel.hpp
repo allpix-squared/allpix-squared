@@ -43,40 +43,64 @@ namespace allpix {
             number_of_pixels_ = std::move(val);
         }
 
-        /* Pixel dimensions */
-        ROOT::Math::XYVector getPixelSize() const override { return pixel_size_; }
-        void setPixelSize(ROOT::Math::XYVector val) { pixel_size_ = std::move(val); }
-
-        /* Sensor center */
-        virtual ROOT::Math::XYZPoint getSensorCenter() const override {
-            ROOT::Math::XYZVector offset((getSensorExcessRight() - getSensorExcessLeft()) / 2.0,
-                                         (getSensorExcessTop() - getSensorExcessBottom()) / 2.0,
-                                         0);
-            return getCenter() + offset;
-        }
-
         /* Sensor size */
         ROOT::Math::XYZVector getSensorSize() const override {
-            ROOT::Math::XYZVector excess(
-                (getSensorExcessRight() + getSensorExcessLeft()), (getSensorExcessTop() + getSensorExcessBottom()), 0);
-            return sensor_size_ + excess;
+            ROOT::Math::XYZVector excess_thickness(
+                (sensor_excess_[1] + sensor_excess_[3]), (sensor_excess_[0] + sensor_excess_[2]), sensor_thickness_);
+            return getGridSize() + excess_thickness;
         }
+        /* Sensor center */
+        virtual ROOT::Math::XYZPoint getSensorCenter() const override {
+            ROOT::Math::XYZVector offset(
+                (sensor_excess_[1] - sensor_excess_[3]) / 2.0, (sensor_excess_[0] - sensor_excess_[2]) / 2.0, 0);
+            return getCenter() + offset;
+        }
+        /* Sensor offsets */
+        void setSensorExcessTop(double val) { sensor_excess_[0] = val; }
+        void setSensorExcessRight(double val) { sensor_excess_[1] = val; }
+        void setSensorExcessBottom(double val) { sensor_excess_[2] = val; }
+        void setSensorExcessLeft(double val) { sensor_excess_[3] = val; }
 
-        /* Sensor offset */
-        // FIXME: a PCB offset makes probably far more sense
-        ROOT::Math::XYVector getSensorOffset() const { return sensor_offset_; }
-        void setSensorOffset(ROOT::Math::XYVector val) { sensor_offset_ = std::move(val); }
+        /* Chip size */
+        ROOT::Math::XYZVector getChipSize() const override {
+            ROOT::Math::XYZVector excess_thickness(
+                (chip_excess_[1] - chip_excess_[3]), (chip_excess_[0] - chip_excess_[2]), chip_thickness_);
+            return getGridSize() + excess_thickness;
+        }
+        /* Chip center */
+        virtual ROOT::Math::XYZPoint getChipCenter() const override {
+            ROOT::Math::XYZVector offset((chip_excess_[1] - chip_excess_[3]) / 2.0,
+                                         (chip_excess_[0] - chip_excess_[2]) / 2.0,
+                                         -getSensorSize().z() / 2.0 - getBumpHeight() - getChipSize().z() / 2.0);
+            return getCenter() + offset;
+        }
+        /* Chip thickness and excess */
+        void setChipThickness(double val) { chip_thickness_ = val; }
+        void setChipExcessTop(double val) { chip_excess_[0] = val; }
+        void setChipExcessRight(double val) { chip_excess_[1] = val; }
+        void setChipExcessBottom(double val) { chip_excess_[2] = val; }
+        void setChipExcessLeft(double val) { chip_excess_[3] = val; }
 
-        /* Chip dimensions */
-        ROOT::Math::XYZVector getChipSize() const { return chip_size_; }
-        void setChipSize(ROOT::Math::XYZVector val) { chip_size_ = std::move(val); }
-        /* Chip offset */
-        ROOT::Math::XYZVector getChipOffset() const { return chip_offset_; }
-        void setChipOffset(ROOT::Math::XYZVector val) { chip_offset_ = std::move(val); }
-
-        /* PCB dimensions */
-        ROOT::Math::XYZVector getPCBSize() const { return pcb_size_; }
-        void setPCBSize(ROOT::Math::XYZVector val) { pcb_size_ = std::move(val); }
+        /* PCB size */
+        ROOT::Math::XYZVector getPCBSize() const override {
+            ROOT::Math::XYZVector excess_thickness(
+                (pcb_excess_[1] + pcb_excess_[3]), (pcb_excess_[0] + pcb_excess_[2]), pcb_thickness_);
+            return getGridSize() + excess_thickness;
+        }
+        /* PCB center */
+        virtual ROOT::Math::XYZPoint getPCBCenter() const override {
+            ROOT::Math::XYZVector offset((pcb_excess_[1] - pcb_excess_[3]) / 2.0,
+                                         (pcb_excess_[0] - pcb_excess_[2]) / 2.0,
+                                         -getSensorSize().z() / 2.0 - getBumpHeight() - getChipSize().z() -
+                                             getPCBSize().z() / 2.0);
+            return getCenter() + offset;
+        }
+        /* set PCB thickness and excess */
+        void setPCBThickness(double val) { pcb_thickness_ = val; }
+        void setPCBExcessTop(double val) { pcb_excess_[0] = val; }
+        void setPCBExcessRight(double val) { pcb_excess_[1] = val; }
+        void setPCBExcessBottom(double val) { pcb_excess_[2] = val; }
+        void setPCBExcessLeft(double val) { pcb_excess_[3] = val; }
 
         /* Bump bonds */
         double getBumpSphereRadius() const { return bump_sphere_radius_; }
@@ -87,16 +111,6 @@ namespace allpix {
         void setBumpOffset(ROOT::Math::XYVector val) { bump_offset_ = std::move(val); }
         double getBumpCylinderRadius() const { return bump_cylinder_radius_; }
         void setBumpCylinderRadius(double val) { bump_cylinder_radius_ = val; }
-
-        /* Guard rings */
-        double getSensorExcessTop() const { return guard_ring_excess_top_; }
-        void setSensorExcessTop(double val) { guard_ring_excess_top_ = val; }
-        double getSensorExcessBottom() const { return guard_ring_excess_bottom_; }
-        void setSensorExcessBottom(double val) { guard_ring_excess_bottom_ = val; }
-        double getSensorExcessRight() const { return guard_ring_excess_right_; }
-        void setSensorExcessRight(double val) { guard_ring_excess_right_ = val; }
-        double getSensorExcessLeft() const { return guard_ring_excess_left_; }
-        void getSensorExcessLeft(double val) { guard_ring_excess_left_ = val; }
 
         /* Coverlayer */
         bool hasCoverlayer() const { return has_coverlayer_; }
@@ -128,23 +142,18 @@ namespace allpix {
 
         ROOT::Math::XYVector pixel_size_;
 
-        ROOT::Math::XYVector sensor_offset_;
+        double sensor_excess_[4]{};
 
-        ROOT::Math::XYZVector chip_size_;
-        ROOT::Math::XYZVector chip_offset_;
+        double chip_thickness_;
+        double chip_excess_[4]{};
 
-        ROOT::Math::XYZVector pcb_size_;
+        double pcb_thickness_;
+        double pcb_excess_[4]{};
 
         double bump_sphere_radius_{};
         double bump_height_{};
         ROOT::Math::XYVector bump_offset_;
         double bump_cylinder_radius_{};
-
-        // FIXME: use a 4D vector here?
-        double guard_ring_excess_top_{};
-        double guard_ring_excess_bottom_{};
-        double guard_ring_excess_right_{};
-        double guard_ring_excess_left_{};
 
         double coverlayer_height_{};
         std::string coverlayer_material_;

@@ -145,24 +145,17 @@ void GeometryConstructionG4::build_pixel_devices() {
 
         G4ThreeVector posDevice(0, 0, 0);
         G4ThreeVector posBumps(0, 0, 0);
-        G4ThreeVector posChip(0, 0, 0);
         G4ThreeVector posPCB(0, 0, 0);
 
         // calculation of position of the different physical volumes
         if(model->getChipSize().z() / 2.0 != 0) {
             posBumps.setZ(posDevice.z() - model->getSensorSize().z() / 2.0 - (bump_height / 2.));
-
-            posChip.setX(posDevice.x() + model->getChipOffset().x());
-            posChip.setY(posDevice.y() + model->getChipOffset().y());
-            posChip.setZ(posDevice.z() - model->getSensorSize().z() / 2.0 - bump_height - model->getChipSize().z() / 2.0 +
-                         model->getChipOffset().z());
-
         } else {
             // make sure no offset because bumps for PCB are calculated if chip is not included
             bump_height = 0;
         }
-        posPCB.setX(posDevice.x() - model->getSensorOffset().x());
-        posPCB.setY(posDevice.y() - model->getSensorOffset().y());
+        posPCB.setX(posDevice.x());
+        posPCB.setY(posDevice.y());
         posPCB.setZ(posDevice.z() - model->getSensorSize().z() / 2.0 - bump_height - 2. * model->getChipSize().z() / 2.0 -
                     model->getPCBSize().z() / 2.0);
 
@@ -170,7 +163,7 @@ void GeometryConstructionG4::build_pixel_devices() {
         // LOG(DEBUG) << " - Coverlayer position  : " << display_vector(posCoverlayer, {"mm", "um"});
         LOG(DEBUG) << " - Sensor position      : " << display_vector(posDevice, {"mm", "um"});
         LOG(DEBUG) << " - Bumps position       : " << display_vector(posBumps, {"mm", "um"});
-        LOG(DEBUG) << " - Chip position        : " << display_vector(posChip, {"mm", "um"});
+        // LOG(DEBUG) << " - Chip position        : " << display_vector(posChip, {"mm", "um"});
         LOG(DEBUG) << " - PCB position         : " << display_vector(posPCB, {"mm", "um"});
 
         /* NAMES
@@ -271,12 +264,12 @@ void GeometryConstructionG4::build_pixel_devices() {
                                                                pixel_param_internal.get());
         detector->setExternalObject("pixel_param", pixel_param);
 
-        /* CHIPS
+        /* CHIP
          * the chip connected to the bumps bond and the PCB
          */
 
         // Construct the chips only if necessary
-        if(model->getChipSize().z() / 2.0 != 0) {
+        if(model->getChipSize().z() > 1e-9) {
             // Create the chip box
             auto chip_box = std::make_shared<G4Box>(ChipName.second,
                                                     model->getChipSize().x() / 2.0,
@@ -290,8 +283,10 @@ void GeometryConstructionG4::build_pixel_devices() {
             detector->setExternalObject("chip_log", chip_log);
 
             // Place the chip
+            auto chip_pos = toG4Vector(model->getChipCenter() - model->getCenter());
+            LOG(DEBUG) << " - Chip\t: " << display_vector(chip_pos, {"mm", "um"});
             auto chip_phys = make_shared_no_delete<G4PVPlacement>(
-                nullptr, posChip, chip_log.get(), ChipName.second + "_phys", wrapper_log.get(), false, 0, true);
+                nullptr, chip_pos, chip_log.get(), ChipName.second + "_phys", wrapper_log.get(), false, 0, true);
             detector->setExternalObject("chip_phys", chip_phys);
         }
 
@@ -299,7 +294,7 @@ void GeometryConstructionG4::build_pixel_devices() {
          * global pcb chip
          */
 
-        if(model->getPCBSize().z() / 2.0 != 0) {
+        if(model->getPCBSize().z() > 1e-9) {
             // Create the box containing the PCB
             auto PCB_box = std::make_shared<G4Box>(
                 PCBName.second, model->getPCBSize().x() / 2.0, model->getPCBSize().y() / 2.0, model->getPCBSize().z() / 2.0);
@@ -311,8 +306,10 @@ void GeometryConstructionG4::build_pixel_devices() {
             detector->setExternalObject("pcb_log", PCB_log);
 
             // Place the PCB
+            auto pcb_pos = toG4Vector(model->getPCBCenter() - model->getCenter());
+            LOG(DEBUG) << " - PCB\t: " << display_vector(pcb_pos, {"mm", "um"});
             auto PCB_phys = make_shared_no_delete<G4PVPlacement>(
-                nullptr, posPCB, PCB_log.get(), PCBName.second + "_phys", wrapper_log.get(), false, 0, true);
+                nullptr, pcb_pos, PCB_log.get(), PCBName.second + "_phys", wrapper_log.get(), false, 0, true);
             detector->setExternalObject("pcb_phys", PCB_phys);
         }
 
