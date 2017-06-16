@@ -38,7 +38,7 @@ namespace allpix {
          * @brief Constructs a detector model of a certain type
          * @param type Unique type description of a model
          */
-        explicit DetectorModel(std::string type) : type_(std::move(type)) {}
+        explicit DetectorModel(std::string type) : type_(std::move(type)), number_of_pixels_(1, 1) {}
         /**
          * @brief Essential virtual destructor
          */
@@ -76,10 +76,17 @@ namespace allpix {
         /** PIXEL GRID **/
         /**
          * @brief Get number of pixel (replicated blocks in generic sensors)
-         * @return List of two dimensional pixels
+         * @return Number of two dimensional pixels
          */
         virtual ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> getNPixels() const {
-            return ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>(1, 1);
+            return number_of_pixels_;
+        }
+        /**
+         * @brief Set number of pixels (replicated blocks in generic sensors)
+         * @param val Number of two dimensional pixels
+         */
+        void setNPixels(ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> val) {
+            number_of_pixels_ = std::move(val);
         }
         /**
          * @brief Get size of a single pixel
@@ -92,10 +99,11 @@ namespace allpix {
          */
         void setPixelSize(ROOT::Math::XYVector val) { pixel_size_ = std::move(val); }
         /**
-         * @brief Get total size of the pixel grid (grid has zero thickness)
+         * @brief Get total size of the pixel grid
          * @param val Size of the pixel grid
          *
-         * @note This is basically a 2D method, but provided as 3D because it is primarily used for that
+         * @warning The grid has zero thickness
+         * @note This is basically a 2D method, but provided in 3D because it is primarily used there
          */
         ROOT::Math::XYZVector getGridSize() const {
             return ROOT::Math::XYZVector(getNPixels().x() * getPixelSize().x(), getNPixels().y() * getPixelSize().y(), 0);
@@ -105,36 +113,48 @@ namespace allpix {
         /**
          * @brief Get size of the sensor
          * @return Size of the sensor
+         *
+         * Calculated from \ref Detector::getGridSize "pixel grid size", sensor excess and sensor thickness
          */
         virtual ROOT::Math::XYZVector getSensorSize() const {
-            return getGridSize() + ROOT::Math::XYZVector(0, 0, sensor_thickness_);
+            ROOT::Math::XYZVector excess_thickness(
+                (sensor_excess_[1] + sensor_excess_[3]), (sensor_excess_[0] + sensor_excess_[2]), sensor_thickness_);
+            return getGridSize() + excess_thickness;
+        }
+        /**
+         * @brief Get center of the sensor in local coordinates
+         * @return Center of the sensor
+         *
+         * Center of the model with excess taken into account
+         */
+        virtual ROOT::Math::XYZPoint getSensorCenter() const {
+            ROOT::Math::XYZVector offset(
+                (sensor_excess_[1] - sensor_excess_[3]) / 2.0, (sensor_excess_[0] - sensor_excess_[2]) / 2.0, 0);
+            return getCenter() + offset;
         }
         /**
          * @brief Set the thickness of the sensor
          * @param val Thickness of the sensor
          */
         void setSensorThickness(double val) { sensor_thickness_ = val; }
-        /**
-         * @brief Get the thickness of the sensor
-         * @return Thickness of the sensor
-         */
-        double getSensorThickness() const { return sensor_thickness_; }
-        /**
-         * @brief Get center of the sensor in local coordinates
-         * @return Center of the sensor
-         *
-         * Default to the center of the grid as given by \ref Detector::getCenter().
-         */
-        virtual ROOT::Math::XYZPoint getSensorCenter() const { return getCenter(); }
+        /* FIXME: sensor params */
+        void setSensorExcessTop(double val) { sensor_excess_[0] = val; }
+        void setSensorExcessRight(double val) { sensor_excess_[1] = val; }
+        void setSensorExcessBottom(double val) { sensor_excess_[2] = val; }
+        void setSensorExcessLeft(double val) { sensor_excess_[3] = val; }
 
         /** CHIP **/
         /**
          * @brief Get size of the chip
          * @return Size of the chip
          *
-         * Defaults to the pixel grid size as given by \ref Detector::getGridSize.
+         * Calculated from \ref Detector::getGridSize "pixel grid size", chip excess and chip thickness
          */
-        virtual ROOT::Math::XYZVector getChipSize() const { return getGridSize(); }
+        virtual ROOT::Math::XYZVector getChipSize() const {
+            ROOT::Math::XYZVector excess_thickness(
+                (chip_excess_[1] - chip_excess_[3]), (chip_excess_[0] - chip_excess_[2]), chip_thickness_);
+            return getGridSize() + excess_thickness;
+        }
         /**
          * @brief Get center of the chip in local coordinates
          * @return Center of the chip
@@ -142,34 +162,61 @@ namespace allpix {
          * Defaults to the center of the grid as given by \ref Detector::getCenter() with sensor offset.
          */
         virtual ROOT::Math::XYZPoint getChipCenter() const {
-            ROOT::Math::XYZVector offset(0, 0, -getSensorSize().z() / 2.0 - getChipSize().z() / 2.0);
+            ROOT::Math::XYZVector offset((chip_excess_[1] - chip_excess_[3]) / 2.0,
+                                         (chip_excess_[0] - chip_excess_[2]) / 2.0,
+                                         -getSensorSize().z() / 2.0 - getChipSize().z() / 2.0);
             return getCenter() + offset;
         }
+        /* FIXME: set chip thickness and excess */
+        void setChipThickness(double val) { chip_thickness_ = val; }
+        void setChipExcessTop(double val) { chip_excess_[0] = val; }
+        void setChipExcessRight(double val) { chip_excess_[1] = val; }
+        void setChipExcessBottom(double val) { chip_excess_[2] = val; }
+        void setChipExcessLeft(double val) { chip_excess_[3] = val; }
 
         /** PCB **/
         /**
          * @brief Get size of the PCB
          * @return Size of the PCB
          *
-         * Defaults to the pixel grid size as given by \ref Detector::getGridSize.
+         * Calculated from \ref Detector::getGridSize "pixel grid size", chip excess and chip thickness
          */
-        virtual ROOT::Math::XYZVector getPCBSize() const { return getGridSize(); }
+        virtual ROOT::Math::XYZVector getPCBSize() const {
+            ROOT::Math::XYZVector excess_thickness(
+                (pcb_excess_[1] + pcb_excess_[3]), (pcb_excess_[0] + pcb_excess_[2]), pcb_thickness_);
+            return getGridSize() + excess_thickness;
+        }
         /**
          * @brief Get center of the chip in local coordinates
          * @return Center of the chip
-         *
-         * Default to the center of the grid as given by \ref Detector::getCenter() with sensor and chip offset.
          */
         virtual ROOT::Math::XYZPoint getPCBCenter() const {
-            ROOT::Math::XYZVector offset(0, 0, -getSensorSize().z() / 2.0 - getChipSize().z() - getPCBSize().z() / 2.0);
+            ROOT::Math::XYZVector offset((pcb_excess_[1] - pcb_excess_[3]),
+                                         (pcb_excess_[0] - pcb_excess_[2]),
+                                         -getSensorSize().z() / 2.0 - getChipSize().z() - getPCBSize().z() / 2.0);
             return getCenter() + offset;
         }
+        /* FIXME: set PCB thickness and excess */
+        void setPCBThickness(double val) { pcb_thickness_ = val; }
+        void setPCBExcessTop(double val) { pcb_excess_[0] = val; }
+        void setPCBExcessRight(double val) { pcb_excess_[1] = val; }
+        void setPCBExcessBottom(double val) { pcb_excess_[2] = val; }
+        void setPCBExcessLeft(double val) { pcb_excess_[3] = val; }
 
     protected:
         std::string type_;
 
-        double sensor_thickness_;
+        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> number_of_pixels_;
         ROOT::Math::XYVector pixel_size_;
+
+        double sensor_thickness_;
+        double sensor_excess_[4]{};
+
+        double chip_thickness_;
+        double chip_excess_[4]{};
+
+        double pcb_thickness_;
+        double pcb_excess_[4]{};
     };
 } // namespace allpix
 

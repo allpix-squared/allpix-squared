@@ -134,38 +134,6 @@ void GeometryConstructionG4::build_pixel_devices() {
 
         LOG(DEBUG) << "Creating Geant4 model for " << detector->getName();
 
-        /* POSITIONS
-         * calculate the positions of all the elements
-         */
-        G4double bump_height = model->getBumpHeight();
-
-        // positions of all the elements
-        // G4ThreeVector posCoverlayer(0, 0, 0);
-        // G4ThreeVector posSensor = toG4Vector(model->getSensorCenter() - model->getCenter();
-
-        G4ThreeVector posDevice(0, 0, 0);
-        G4ThreeVector posBumps(0, 0, 0);
-        G4ThreeVector posPCB(0, 0, 0);
-
-        // calculation of position of the different physical volumes
-        if(model->getChipSize().z() / 2.0 != 0) {
-            posBumps.setZ(posDevice.z() - model->getSensorSize().z() / 2.0 - (bump_height / 2.));
-        } else {
-            // make sure no offset because bumps for PCB are calculated if chip is not included
-            bump_height = 0;
-        }
-        posPCB.setX(posDevice.x());
-        posPCB.setY(posDevice.y());
-        posPCB.setZ(posDevice.z() - model->getSensorSize().z() / 2.0 - bump_height - 2. * model->getChipSize().z() / 2.0 -
-                    model->getPCBSize().z() / 2.0);
-
-        LOG(DEBUG) << "Center of the geometry parts relative to the origin";
-        // LOG(DEBUG) << " - Coverlayer position  : " << display_vector(posCoverlayer, {"mm", "um"});
-        LOG(DEBUG) << " - Sensor position      : " << display_vector(posDevice, {"mm", "um"});
-        LOG(DEBUG) << " - Bumps position       : " << display_vector(posBumps, {"mm", "um"});
-        // LOG(DEBUG) << " - Chip position        : " << display_vector(posChip, {"mm", "um"});
-        LOG(DEBUG) << " - PCB position         : " << display_vector(posPCB, {"mm", "um"});
-
         /* NAMES
          * define the local names of the specific detectors
          */
@@ -195,6 +163,7 @@ void GeometryConstructionG4::build_pixel_devices() {
 
         LOG(DEBUG) << " Wrapper dimensions : " << Units::display(wrapperHX, "mm") << " " << Units::display(wrapperHY, "mm")
                    << " " << Units::display(wrapperHZ, "mm");
+        LOG(DEBUG) << "Center of the geometry parts relative to the origin";
 
         // Create the wrapper box and logical volume
         auto wrapper_box = std::make_shared<G4Box>(wrapperName.second, 2. * wrapperHX, 2. * wrapperHY, 2. * wrapperHZ);
@@ -208,8 +177,6 @@ void GeometryConstructionG4::build_pixel_devices() {
         ROOT::Math::EulerAngles angles = detector->getOrientation();
         auto rotWrapper = std::make_shared<G4RotationMatrix>(angles.Phi(), angles.Theta(), angles.Psi());
         detector->setExternalObject("rotation_matrix", rotWrapper);
-
-        // ALERT: NO WRAPPER ENHANCEMENTS
 
         // Place the wrapper
         auto wrapper_phys = make_shared_no_delete<G4PVPlacement>(
@@ -247,13 +214,12 @@ void GeometryConstructionG4::build_pixel_devices() {
         detector->setExternalObject("pixel_log", pixel_log);
 
         // Place the pixel grid
-        auto pixel_param_internal =
-            std::make_shared<Parameterization2DG4>(model->getNPixels().x(),
-                                                   model->getPixelSize().x(),
-                                                   model->getPixelSize().y(),
-                                                   -(model->getNPixels().x() * model->getPixelSize().x()) / 2.0,
-                                                   -(model->getNPixels().y() * model->getPixelSize().y()) / 2.0,
-                                                   0);
+        auto pixel_param_internal = std::make_shared<Parameterization2DG4>(model->getNPixels().x(),
+                                                                           model->getPixelSize().x(),
+                                                                           model->getPixelSize().y(),
+                                                                           -model->getGridSize().x() / 2.0,
+                                                                           -model->getGridSize().y() / 2.0,
+                                                                           0);
         detector->setExternalObject("pixel_param_internal", pixel_param_internal);
 
         auto pixel_param = std::make_shared<G4PVParameterised>(PixelName.second + "phys",
@@ -318,9 +284,10 @@ void GeometryConstructionG4::build_pixel_devices() {
          */
         // Construct the bumps only if necessary
         if(model->getBumpHeight() > 1e-9) {
-            // Define types from parameters
-            G4double bump_sphere_radius = model->getBumpSphereRadius();
-            G4double bump_cylinder_radius = model->getBumpCylinderRadius();
+            // Get parameters from model
+            auto bump_height = model->getBumpHeight();
+            auto bump_sphere_radius = model->getBumpSphereRadius();
+            auto bump_cylinder_radius = model->getBumpCylinderRadius();
 
             auto bump_sphere =
                 std::make_shared<G4Sphere>(BumpName.first + "sphere", 0, bump_sphere_radius, 0, 360 * deg, 0, 360 * deg);
@@ -342,8 +309,16 @@ void GeometryConstructionG4::build_pixel_devices() {
             detector->setExternalObject("bumps_wrapper_log", bumps_wrapper_log);
 
             // Place the general bumps volume
-            auto bumps_wrapper_phys = make_shared_no_delete<G4PVPlacement>(
-                nullptr, posBumps, bumps_wrapper_log.get(), BumpBoxName.second + "_phys", wrapper_log.get(), false, 0, true);
+            G4ThreeVector bumps_pos = toG4Vector(model->getBumpsCenter() - model->getCenter());
+            // bumps_wrapper_pos(0, 0, posDevice.z() - model->getSensorSize().z() / 2.0 - (bump_height / 2.));
+            auto bumps_wrapper_phys = make_shared_no_delete<G4PVPlacement>(nullptr,
+                                                                           bumps_pos,
+                                                                           bumps_wrapper_log.get(),
+                                                                           BumpBoxName.second + "_phys",
+                                                                           wrapper_log.get(),
+                                                                           false,
+                                                                           0,
+                                                                           true);
             detector->setExternalObject("bumps_wrapper_phys", bumps_wrapper_phys);
 
             // Create the logical volume for the individual bumps
@@ -370,7 +345,7 @@ void GeometryConstructionG4::build_pixel_devices() {
             detector->setExternalObject("bumps_param", bumps_param);
         }
 
-        // ALERT: NO COVER LAYER
+        // ALERT: NO COVER LAYER YET
 
         LOG(TRACE) << " Constructed detector " << detector->getName() << " succesfully";
     }
