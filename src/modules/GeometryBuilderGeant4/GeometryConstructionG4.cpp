@@ -161,7 +161,7 @@ void GeometryConstructionG4::build_pixel_devices() {
         G4double wrapperHY = model->getHalfWrapperDY();
         G4double wrapperHZ = model->getHalfWrapperDZ();
 
-        LOG(DEBUG) << " Wrapper dimensions : " << Units::display(wrapperHX, "mm") << " " << Units::display(wrapperHY, "mm")
+        LOG(DEBUG) << "Wrapper dimensions : " << Units::display(wrapperHX, "mm") << " " << Units::display(wrapperHY, "mm")
                    << " " << Units::display(wrapperHZ, "mm");
         LOG(DEBUG) << "Center of the geometry parts relative to the origin";
 
@@ -327,13 +327,15 @@ void GeometryConstructionG4::build_pixel_devices() {
             detector->setExternalObject("bumps_cell_log", bumps_cell_log);
 
             // Place the bump bonds grid
-            auto bumps_param_internal = std::make_shared<Parameterization2DG4>(
-                model->getNPixels().x(),
-                model->getPixelSize().x(),
-                model->getPixelSize().y(),
-                -(model->getNPixels().x() * model->getPixelSize().x()) / 2.0 + model->getBumpOffset().x(),
-                -(model->getNPixels().y() * model->getPixelSize().y()) / 2.0 + model->getBumpOffset().y(),
-                0);
+            auto bumps_param_internal =
+                std::make_shared<Parameterization2DG4>(model->getNPixels().x(),
+                                                       model->getPixelSize().x(),
+                                                       model->getPixelSize().y(),
+                                                       -(model->getNPixels().x() * model->getPixelSize().x()) / 2.0 +
+                                                           (model->getBumpsCenter().x() - model->getCenter().x()),
+                                                       -(model->getNPixels().y() * model->getPixelSize().y()) / 2.0 +
+                                                           (model->getBumpsCenter().y() - model->getCenter().y()),
+                                                       0);
             detector->setExternalObject("bumps_param", bumps_param_internal);
 
             auto bumps_param = std::make_shared<G4PVParameterised>(BumpName.second + "phys",

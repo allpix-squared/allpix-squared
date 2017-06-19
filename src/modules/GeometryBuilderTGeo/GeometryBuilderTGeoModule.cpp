@@ -368,9 +368,9 @@ void GeometryBuilderTGeoModule::BuildPixelDevices() {
 
                     // Positions
                     double XPos = (ix * 2 + 1) * dsc->getPixelSize().x() / 2.0 - dsc->getSensorSize().x() / 2.0 +
-                                  dsc->getBumpOffset().x();
+                                  (dsc->getBumpsCenter().x() - dsc->getCenter().x());
                     double YPos = (iy * 2 + 1) * dsc->getPixelSize().y() / 2.0 - dsc->getSensorSize().y() / 2.0 +
-                                  dsc->getBumpOffset().y();
+                                  (dsc->getBumpsCenter().y() - dsc->getCenter().y());
                     TString xy_s = Form("_%i_%i", ix, iy);
                     TGeoTranslation* posBump = new TGeoTranslation("LocalBumpTranslation" + id_s + xy_s, XPos, YPos, 0.);
 

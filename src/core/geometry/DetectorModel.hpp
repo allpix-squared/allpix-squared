@@ -25,12 +25,10 @@ namespace allpix {
      * @ingroup DetectorModels
      * @brief Base of all detector models
      *
-     * Implements the minimum required for a detector model. A model always has a sensitive device (referred as the sensor).
-     * This sensor has the following properties:
-     * - A size in three dimensions
-     * - A set of two dimensional replicated blocks called pixels
-     * - An offset of the sensor minimum from the center of the first pixel (the origin in the local coordinate system)
-     * - The coordinates of the position that is used to place the detector in the global frame (the rotation center)
+     * Implements the minimum required for a detector model. A model always has a pixel grid with a specific pixel size. The
+     * pixel grid defines the base size of the sensor, chip and PCB. Excess length can be specified. Every part of the
+     * detector model has a defined center and size which can be overloaded by specialized detector models. The basic
+     * detector model also defines the rotation center in the local coordinate system.
      */
     class DetectorModel {
     public:
@@ -125,7 +123,7 @@ namespace allpix {
          * @brief Get center of the sensor in local coordinates
          * @return Center of the sensor
          *
-         * Center of the model with excess taken into account
+         * Center of the sensor with excess taken into account
          */
         virtual ROOT::Math::XYZPoint getSensorCenter() const {
             ROOT::Math::XYZVector offset(
@@ -137,10 +135,25 @@ namespace allpix {
          * @param val Thickness of the sensor
          */
         void setSensorThickness(double val) { sensor_thickness_ = val; }
-        /* FIXME: sensor params */
+        /**
+         * @brief Set the excess at the top of the sensor (positive y-coordinate)
+         * @param val Sensor top excess
+         */
         void setSensorExcessTop(double val) { sensor_excess_[0] = val; }
+        /**
+         * @brief Set the excess at the right of the sensor (positive x-coordinate)
+         * @param val Sensor right excess
+         */
         void setSensorExcessRight(double val) { sensor_excess_[1] = val; }
+        /**
+         * @brief Set the excess at the bottom of the sensor (negative y-coordinate)
+         * @param val Sensor bottom excess
+         */
         void setSensorExcessBottom(double val) { sensor_excess_[2] = val; }
+        /**
+         * @brief Set the excess at the left of the sensor (negative x-coordinate)
+         * @param val Sensor right excess
+         */
         void setSensorExcessLeft(double val) { sensor_excess_[3] = val; }
 
         /** CHIP **/
@@ -159,7 +172,7 @@ namespace allpix {
          * @brief Get center of the chip in local coordinates
          * @return Center of the chip
          *
-         * Defaults to the center of the grid as given by \ref Detector::getCenter() with sensor offset.
+         * Center of the chip calculcated from chip excess and sensor offset
          */
         virtual ROOT::Math::XYZPoint getChipCenter() const {
             ROOT::Math::XYZVector offset((chip_excess_[1] - chip_excess_[3]) / 2.0,
@@ -167,11 +180,30 @@ namespace allpix {
                                          -getSensorSize().z() / 2.0 - getChipSize().z() / 2.0);
             return getCenter() + offset;
         }
-        /* FIXME: set chip thickness and excess */
+        /**
+         * @brief Set the thickness of the sensor
+         * @param val Thickness of the sensor
+         */
         void setChipThickness(double val) { chip_thickness_ = val; }
+        /**
+         * @brief Set the excess at the top of the chip (positive y-coordinate)
+         * @param val Chip top excess
+         */
         void setChipExcessTop(double val) { chip_excess_[0] = val; }
+        /**
+         * @brief Set the excess at the right of the chip (positive x-coordinate)
+         * @param val Chip right excess
+         */
         void setChipExcessRight(double val) { chip_excess_[1] = val; }
+        /**
+         * @brief Set the excess at the bottom of the chip (negative y-coordinate)
+         * @param val Chip bottom excess
+         */
         void setChipExcessBottom(double val) { chip_excess_[2] = val; }
+        /**
+         * @brief Set the excess at the left of the chip (negative x-coordinate)
+         * @param val Chip left excess
+         */
         void setChipExcessLeft(double val) { chip_excess_[3] = val; }
 
         /** PCB **/
@@ -187,8 +219,10 @@ namespace allpix {
             return getGridSize() + excess_thickness;
         }
         /**
-         * @brief Get center of the chip in local coordinates
-         * @return Center of the chip
+         * @brief Get center of the PCB in local coordinates
+         * @return Center of the PCB
+         *
+         * Center of the PCB calculcated from PCB excess, sensor and chip offsets
          */
         virtual ROOT::Math::XYZPoint getPCBCenter() const {
             ROOT::Math::XYZVector offset((pcb_excess_[1] - pcb_excess_[3]),
@@ -196,11 +230,30 @@ namespace allpix {
                                          -getSensorSize().z() / 2.0 - getChipSize().z() - getPCBSize().z() / 2.0);
             return getCenter() + offset;
         }
-        /* FIXME: set PCB thickness and excess */
+        /**
+         * @brief Set the thickness of the PCB
+         * @param val Thickness of the PCB
+         */
         void setPCBThickness(double val) { pcb_thickness_ = val; }
+        /**
+         * @brief Set the excess at the top of the sensor (positive y-coordinate)
+         * @param val PCB top excess
+         */
         void setPCBExcessTop(double val) { pcb_excess_[0] = val; }
+        /**
+         * @brief Set the excess at the right of the PCB (positive x-coordinate)
+         * @param val PCB right excess
+         */
         void setPCBExcessRight(double val) { pcb_excess_[1] = val; }
+        /**
+         * @brief Set the excess at the bottom of the PCB (negative y-coordinate)
+         * @param val PCB bottom excess
+         */
         void setPCBExcessBottom(double val) { pcb_excess_[2] = val; }
+        /**
+         * @brief Set the excess at the left of the PCB (negative x-coordinate)
+         * @param val PCB left excess
+         */
         void setPCBExcessLeft(double val) { pcb_excess_[3] = val; }
 
     protected:
