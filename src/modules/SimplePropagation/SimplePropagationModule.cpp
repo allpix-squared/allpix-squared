@@ -43,8 +43,8 @@ using namespace ROOT::Math;
 SimplePropagationModule::SimplePropagationModule(Configuration config,
                                                  Messenger* messenger,
                                                  std::shared_ptr<Detector> detector)
-    : Module(config, detector), config_(std::move(config)), temperature(0), timestep_min(0), timestep_max(0),
-      timestep_start(0), target_spatial_precision(0), output_plots_step(0), output_plots(false), messenger_(messenger),
+    : Module(config, detector), config_(std::move(config)), temperature_(0), timestep_min_(0), timestep_max_(0),
+      timestep_start_(0), target_spatial_precision_(0), output_plots_step_(0), output_plots_(false), messenger_(messenger),
       detector_(std::move(detector)) {
     // get detector model
     model_ = detector_->getModel();
@@ -69,19 +69,19 @@ SimplePropagationModule::SimplePropagationModule(Configuration config,
     config_.setDefault<double>("output_plots_phi", 0.0f);
 
     // copy some variables from configuration to avoid lookups:
-    temperature = config_.get<double>("temperature");
-    timestep_min = config_.get<double>("timestep_min");
-    timestep_max = config_.get<double>("timestep_max");
-    timestep_start = config_.get<double>("timestep_start");
-    target_spatial_precision = config_.get<double>("spatial_precision");
-    output_plots = config_.get<bool>("output_plots");
-    output_plots_step = config_.get<double>("output_plots_step");
+    temperature_ = config_.get<double>("temperature");
+    timestep_min_ = config_.get<double>("timestep_min");
+    timestep_max_ = config_.get<double>("timestep_max");
+    timestep_start_ = config_.get<double>("timestep_start");
+    target_spatial_precision_ = config_.get<double>("spatial_precision");
+    output_plots_ = config_.get<bool>("output_plots");
+    output_plots_step_ = config_.get<double>("output_plots_step");
 
     /* Reference: https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2) */
     // variables for charge mobility
-    electron_Vm_ = Units::get(1.53e9 * std::pow(temperature, -0.87), "cm/s");
-    electron_Ec_ = Units::get(1.01 * std::pow(temperature, 1.55), "V/cm");
-    electron_Beta_ = 2.57e-2 * std::pow(temperature, 0.66);
+    electron_Vm_ = Units::get(1.53e9 * std::pow(temperature_, -0.87), "cm/s");
+    electron_Ec_ = Units::get(1.01 * std::pow(temperature_, 1.55), "V/cm");
+    electron_Beta_ = 2.57e-2 * std::pow(temperature_, 0.66);
 }
 
 void SimplePropagationModule::create_output_plots(unsigned int event_num) {
@@ -457,8 +457,8 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const ROOT::Math:
     };
 
     // define a function to compute the diffusion
-    auto boltzmann_kT = Units::get(8.6173e-5, "eV/K") * temperature;
-    auto timestep = timestep_start;
+    auto boltzmann_kT = Units::get(8.6173e-5, "eV/K") * temperature_;
+    auto timestep = timestep_start_;
     auto electron_diffusion = [&](double efield_mag) -> Eigen::Vector3d {
         double diffusion_constant = boltzmann_kT * electron_mobility(efield_mag);
         double diffusion_std_dev = std::sqrt(2. * diffusion_constant * timestep);
@@ -493,7 +493,7 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const ROOT::Math:
     double last_time = std::numeric_limits<double>::lowest();
     while(detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
         // update output plots if necessary
-        if(output_plots && runge_kutta.getTime() - last_time > output_plots_step) {
+        if(output_plots_ && runge_kutta.getTime() - last_time > output_plots_step_) {
             output_plot_points_.back().second.push_back(static_cast<XYZPoint>(runge_kutta.getValue()));
             last_time = runge_kutta.getTime();
         }
@@ -521,16 +521,16 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const ROOT::Math:
         if(model_->getSensorSizeZ() - position.z() < step.value.z() * 1.2) {
             timestep *= 0.7;
         } else {
-            if(uncertainty > target_spatial_precision) {
+            if(uncertainty > target_spatial_precision_) {
                 timestep *= 0.7;
-            } else if(uncertainty < 0.5 * target_spatial_precision) {
+            } else if(uncertainty < 0.5 * target_spatial_precision_) {
                 timestep *= 2;
             }
         }
-        if(timestep > timestep_max) {
-            timestep = timestep_max;
-        } else if(timestep < timestep_min) {
-            timestep = timestep_min;
+        if(timestep > timestep_max_) {
+            timestep = timestep_max_;
+        } else if(timestep < timestep_min_) {
+            timestep = timestep_min_;
         }
         runge_kutta.setTimeStep(timestep);
     }

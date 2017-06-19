@@ -45,8 +45,8 @@ namespace allpix {
         // configuration for this module
         Configuration config_;
         // local copies of configuration parameters to avoid unnecessary lookup:
-        double temperature, timestep_min, timestep_max, timestep_start, target_spatial_precision, output_plots_step;
-        bool output_plots;
+        double temperature_, timestep_min_, timestep_max_, timestep_start_, target_spatial_precision_, output_plots_step_;
+        bool output_plots_;
 
         // pointer to the messenger
         Messenger* messenger_;
