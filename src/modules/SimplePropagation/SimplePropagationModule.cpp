@@ -76,6 +76,12 @@ SimplePropagationModule::SimplePropagationModule(Configuration config,
     target_spatial_precision = config_.get<double>("spatial_precision");
     output_plots = config_.get<bool>("output_plots");
     output_plots_step = config_.get<double>("output_plots_step");
+
+    /* Reference: https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2) */
+    // variables for charge mobility
+    electron_Vm_ = Units::get(1.53e9 * std::pow(temperature, -0.87), "cm/s");
+    electron_Ec_ = Units::get(1.01 * std::pow(temperature, 1.55), "V/cm");
+    electron_Beta_ = 2.57e-2 * std::pow(temperature, 0.66);
 }
 
 void SimplePropagationModule::create_output_plots(unsigned int event_num) {
@@ -444,15 +450,9 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const ROOT::Math:
 
     // define a function to compute the electron mobility
     auto electron_mobility = [&](double efield_mag) {
-        /* Reference: https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2) */
-        // variables for charge mobility
-        double electron_Vm = Units::get(1.53e9 * std::pow(temperature, -0.87), "cm/s");
-        double electron_Ec = Units::get(1.01 * std::pow(temperature, 1.55), "V/cm");
-        double electron_Beta = 2.57e-2 * std::pow(temperature, 0.66);
-
         // compute electron mobility
-        double numerator = electron_Vm / electron_Ec;
-        double denominator = std::pow(1. + std::pow(efield_mag / electron_Ec, electron_Beta), 1.0 / electron_Beta);
+        double numerator = electron_Vm_ / electron_Ec_;
+        double denominator = std::pow(1. + std::pow(efield_mag / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_);
         return numerator / denominator;
     };
 

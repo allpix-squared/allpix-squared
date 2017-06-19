@@ -63,6 +63,11 @@ namespace allpix {
         unsigned int total_steps_{};
         long double total_time_{};
 
+        // Precalculated values for electron mobility
+        double electron_Vm_;
+        double electron_Ec_;
+        double electron_Beta_;
+
         // debug list of points to plot
         std::vector<std::pair<PropagatedCharge, std::vector<ROOT::Math::XYZPoint>>> output_plot_points_;
     };
