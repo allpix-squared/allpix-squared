@@ -78,8 +78,12 @@ void DetectorHistogrammerModule::run(unsigned int) {
 
 // create file and write the histograms to it
 void DetectorHistogrammerModule::finalize() {
-    LOG(INFO) << "Plotted " << total_hits_ << " hits in total, mean position is "
-              << display_vector(total_vector_ / static_cast<double>(total_hits_), {"mm", "um"});
+    if(total_hits_ != 0) {
+        LOG(INFO) << "Plotted " << total_hits_ << " hits in total, mean position is "
+                  << display_vector(total_vector_ / static_cast<double>(total_hits_), {"mm", "um"});
+    } else {
+        LOG(WARNING) << "No hits plotted";
+    }
 
     // set more useful spacing maximum for cluster size histogram
     auto xmax = std::ceil(cluster_size->GetBinCenter(cluster_size->FindLastBinAbove()) + 1);

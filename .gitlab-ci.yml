@@ -10,7 +10,9 @@ slc6-gcc62:
         - cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - ninja
         - ninja install
+        - source $G4ENV_INIT
         - ctest --output-on-failure -j4
+        - cat output_check_performance.log  
 
 slc6-llvm39:
     tags:
@@ -40,7 +42,9 @@ centos7-gcc62:
         - cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - ninja
         - ninja install
+        - source $G4ENV_INIT
         - ctest --output-on-failure -j4
+        - cat output_check_performance.log 
 
 centos7-llvm39:
     tags:
@@ -68,4 +72,6 @@ mac1012-clang80:
         - cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - ninja
         - ninja install
+        - source $G4ENV_INIT
         - ctest --output-on-failure -j4
+        - cat output_check_performance.log 
