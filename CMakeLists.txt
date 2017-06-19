@@ -158,3 +158,13 @@ ADD_SUBDIRECTORY(src/exec)
 
 # Add targets for Doxygen code reference and LaTeX User manual
 ADD_SUBDIRECTORY(doc)
+
+###################################
+# Setup tests for allpix          #
+###################################
+
+# Enable testing
+ENABLE_TESTING()
+
+# Include all tests
+ADD_SUBDIRECTORY(test)

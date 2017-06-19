@@ -11,10 +11,6 @@ slc6-gcc62:
         - ninja
         - ninja install
         - ctest --output-on-failure -j4
-        - cd ..
-        - source $G4ENV_INIT
-        - bin/allpix -c etc/example.conf
-
 
 slc6-llvm39:
     tags:
@@ -30,10 +26,7 @@ slc6-llvm39:
         - ninja check-format
         - ninja check-lint
         - ninja install
-        - ctest --output-on-failure -j4
-        - cd ..
-        - source $G4ENV_INIT
-        - bin/allpix -c etc/example.conf
+# skip tests because lint takes long
 
 centos7-gcc62:
     tags:
@@ -48,9 +41,6 @@ centos7-gcc62:
         - ninja
         - ninja install
         - ctest --output-on-failure -j4
-        - cd ..
-        - source $G4ENV_INIT
-        - bin/allpix -c etc/example.conf
 
 centos7-llvm39:
     tags:
@@ -66,10 +56,7 @@ centos7-llvm39:
         - ninja check-format
         - ninja check-lint
         - ninja install
-        - ctest --output-on-failure -j4
-        - cd ..
-        - source $G4ENV_INIT
-        - bin/allpix -c etc/example.conf
+# skip tests because lint takes long
 
 mac1012-clang80:
     tags:
@@ -82,6 +69,3 @@ mac1012-clang80:
         - ninja
         - ninja install
         - ctest --output-on-failure -j4
-        - cd ..
-        - source $G4ENV_INIT
-        - bin/allpix -c etc/example.conf

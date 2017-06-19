@@ -12,6 +12,8 @@
 #include "core/messenger/Messenger.hpp"
 #include "core/utils/log.h"
 
+#include "tools/ROOT.h"
+
 using namespace allpix;
 
 DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration config,
@@ -62,7 +64,12 @@ void DetectorHistogrammerModule::run(unsigned int) {
     for(auto& pixel_charge : pixels_message_->getData()) {
         auto pixel = pixel_charge.getPixel();
 
+        // Add pixel
         histogram->Fill(pixel.x(), pixel.y());
+
+        // Update statistics
+        total_vector_ += pixel;
+        total_hits_ += 1;
     }
 
     // fill cluster histogram
@@ -71,6 +78,9 @@ void DetectorHistogrammerModule::run(unsigned int) {
 
 // create file and write the histograms to it
 void DetectorHistogrammerModule::finalize() {
+    LOG(INFO) << "Plotted " << total_hits_ << " hits in total, mean position is "
+              << display_vector(total_vector_ / static_cast<double>(total_hits_), {"mm", "um"});
+
     // set more useful spacing maximum for cluster size histogram
     auto xmax = std::ceil(cluster_size->GetBinCenter(cluster_size->FindLastBinAbove()) + 1);
     cluster_size->GetXaxis()->SetRangeUser(0, xmax);
