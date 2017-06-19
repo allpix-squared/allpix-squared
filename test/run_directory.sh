@@ -1,6 +1,7 @@
 ABSOLUTE_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Load dependencies if run by the CI
+# FIXME: This is needed because of broken RPATH on Mac
 if [ -n "${CI}" ]; then
     if [ "$(uname)" == "Darwin" ]; then
         source $ABSOLUTE_PATH/../.gitlab-ci.d/init_mac.sh

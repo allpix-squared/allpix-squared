@@ -76,5 +76,5 @@ mac1012-clang80:
         - cd ..
         - bin/allpix -c etc/example.conf
         - cd build
-        - ctest --verbose -j4
+        - ctest --output-on-failure -j4
         - cat output_check_performance.log 

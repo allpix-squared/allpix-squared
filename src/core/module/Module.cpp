@@ -70,6 +70,7 @@ std::string Module::getOutputPath(const std::string& path, bool global) const {
         file = config_.get<std::string>("_output_dir");
     }
 
+    // The file name will only be empty if this method is executed from the constructor
     if(file.empty()) {
         throw InvalidModuleActionException("Cannot access local output path in constructor");
     }
@@ -103,6 +104,7 @@ std::string Module::getOutputPath(const std::string& path, bool global) const {
  * @note It is not needed to change directory to this file explicitly in the module, this is done automatically.
  */
 TDirectory* Module::getROOTDirectory() const {
+    // The directory will only be a null pointer if this method is executed from the constructor or destructor
     if(directory_ == nullptr) {
         throw InvalidModuleActionException("Cannot access ROOT directory in constructor or destructor");
     }

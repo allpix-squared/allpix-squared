@@ -627,6 +627,7 @@ void ModuleManager::finalize() {
         module->finalize();
         // Close the ROOT directory after finalizing
         module->getROOTDirectory()->Close();
+        module->set_ROOT_directory(nullptr);
         // Reset logging
         Log::setSection(old_section_name);
         set_module_after(old_settings);
