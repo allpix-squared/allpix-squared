@@ -52,7 +52,7 @@ namespace allpix {
         Messenger* messenger_;
 
         // attached detector and detector model
-        std::shared_ptr<Detector> detector_;
+        std::shared_ptr<const Detector> detector_;
         std::shared_ptr<DetectorModel> model_;
 
         // deposits for a specific detector
