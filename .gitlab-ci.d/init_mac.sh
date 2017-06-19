@@ -3,7 +3,7 @@
 if [ "$(uname)" == "Darwin" ]; then
     if [ $(sw_vers -productVersion | awk -F '.' '{print $1 "." $2}') == "10.12" ]; then
         OS=mac1012
-        COMPILER_TYPE=clang
+        COMPILER_TYPE=llvm
         COMPILER_VERSION=clang80
     else
         echo "Bootstrap only works on macOS Sierra (10.12)"
@@ -14,7 +14,7 @@ else
     exit 1
 fi
 
-#Determine is you have CVMFS installed
+# Determine is you have CVMFS installed
 if [ ! -d "/cvmfs" ]; then
     echo "No CVMFS detected, please install it."
     exit 1
@@ -25,20 +25,7 @@ if [ ! -d "/cvmfs/clicdp.cern.ch" ]; then
     exit 1
 fi
 
-
-#Determine which compiler to use
-if [ -z ${COMPILER_TYPE} ]; then
-    COMPILER_TYPE="gcc"
-fi
-if [ ${COMPILER_TYPE} == "gcc" ]; then
-    COMPILER_VERSION="gcc62"
-fi
-if [ ${COMPILER_TYPE} == "llvm" ]; then
-    COMPILER_VERSION="llvm39"
-fi
-
-
-#Choose build type
+# Choose build type
 if [ -z ${BUILD_TYPE} ]; then
     BUILD_TYPE=opt
 fi
@@ -52,12 +39,7 @@ BUILD_FLAVOUR=x86_64-${OS}-${COMPILER_VERSION}-${BUILD_TYPE}
 #     Compiler
 #--------------------------------------------------------------------------------
 
-if [ ${COMPILER_TYPE} == "gcc" ]; then
-    source ${CLICREPO}/compilers/gcc/6.2.0/x86_64-${OS}/setup.sh
-fi
-if [ ${COMPILER_TYPE} == "llvm" ]; then
-    source ${CLICREPO}/compilers/llvm/3.9.0/x86_64-${OS}/setup.sh
-fi
+export CXX=$(which clang++)
 
 #--------------------------------------------------------------------------------
 #     Python
