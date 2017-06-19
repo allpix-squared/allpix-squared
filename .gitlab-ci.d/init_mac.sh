@@ -36,17 +36,11 @@ CLICREPO=/cvmfs/clicdp.cern.ch
 BUILD_FLAVOUR=x86_64-${OS}-${COMPILER_VERSION}-${BUILD_TYPE}
 
 #--------------------------------------------------------------------------------
-#     Compiler
-#--------------------------------------------------------------------------------
-
-export CXX=$(which clang++)
-
-#--------------------------------------------------------------------------------
 #     Python
 #--------------------------------------------------------------------------------
 export PYTHONDIR=${CLICREPO}/software/Python/2.7.12/${BUILD_FLAVOUR}
 export PATH=${PYTHONDIR}/bin:$PATH
-export LD_LIBRARY_PATH=${PYTHONDIR}/lib:${LD_LIBRARY_PATH}
+export DYLD_LIBRARY_PATH=${PYTHONDIR}/lib:${LD_LIBRARY_PATH}
 
 #--------------------------------------------------------------------------------
 #     CMake
@@ -61,7 +55,7 @@ export PATH=${CMAKE_HOME}/bin:$PATH
 
 export PYTHONDIR=${CLICREPO}/software/Python/2.7.12/${BUILD_FLAVOUR}
 export PATH=${PYTHONDIR}/bin:$PATH
-export LD_LIBRARY_PATH=${PYTHONDIR}/lib:${LD_LIBRARY_PATH}
+export DYLD_LIBRARY_PATH="${PYTHONDIR}/lib:$DYLD_LIBRARY_PATH"
 
 #--------------------------------------------------------------------------------
 #     ROOT
@@ -70,7 +64,7 @@ export LD_LIBRARY_PATH=${PYTHONDIR}/lib:${LD_LIBRARY_PATH}
 export ROOTSYS=${CLICREPO}/software/ROOT/6.08.00/${BUILD_FLAVOUR}
 export PYTHONPATH="$ROOTSYS/lib:$PYTHONPATH"
 export PATH="$ROOTSYS/bin:$PATH"
-export LD_LIBRARY_PATH="$ROOTSYS/lib:$LD_LIBRARY_PATH"
+export DYLD_LIBRARY_PATH="$ROOTSYS/lib:$DYLD_LIBRARY_PATH"
 
 #--------------------------------------------------------------------------------
 #     XercesC
@@ -78,7 +72,7 @@ export LD_LIBRARY_PATH="$ROOTSYS/lib:$LD_LIBRARY_PATH"
 
 export XercesC_HOME=${CLICREPO}/software/Xerces-C/3.1.4/${BUILD_FLAVOUR}
 export PATH="$XercesC_HOME/bin:$PATH"
-export LD_LIBRARY_PATH="$XercesC_HOME/lib:$LD_LIBRARY_PATH"
+export DYLD_LIBRARY_PATH="$XercesC_HOME/lib:$DYLD_LIBRARY_PATH"
 
 
 #--------------------------------------------------------------------------------
@@ -96,7 +90,7 @@ export G4SYSTEM="Linux-g++"
 #--------------------------------------------------------------------------------
 
 export BOOST_ROOT=${CLICREPO}/software/Boost/1.62.0/${BUILD_FLAVOUR}
-export LD_LIBRARY_PATH="${BOOST_ROOT}/lib:$LD_LIBRARY_PATH"
+export DYLD_LIBRARY_PATH="${BOOST_ROOT}/lib:$DYLD_LIBRARY_PATH"
 
 #--------------------------------------------------------------------------------
 #     Ninja

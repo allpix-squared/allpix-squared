@@ -73,5 +73,8 @@ mac1012-clang80:
         - cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - ninja
         - ninja install
-        - ctest --output-on-failure -j4
+        - cd ..
+        - bin/allpix -c etc/example.conf
+        - cd build
+        - ctest --verbose -j4
         - cat output_check_performance.log 
