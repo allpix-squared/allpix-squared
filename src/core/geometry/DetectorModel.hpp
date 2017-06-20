@@ -260,7 +260,7 @@ namespace allpix {
          */
         virtual ROOT::Math::XYZVector getChipSize() const {
             ROOT::Math::XYZVector excess_thickness(
-                (chip_excess_[1] - chip_excess_[3]), (chip_excess_[0] - chip_excess_[2]), chip_thickness_);
+                (chip_excess_[1] + chip_excess_[3]), (chip_excess_[0] + chip_excess_[2]), chip_thickness_);
             return getGridSize() + excess_thickness;
         }
         /**
@@ -320,8 +320,8 @@ namespace allpix {
          * Center of the PCB calculcated from PCB excess, sensor and chip offsets
          */
         virtual ROOT::Math::XYZPoint getPCBCenter() const {
-            ROOT::Math::XYZVector offset((pcb_excess_[1] - pcb_excess_[3]),
-                                         (pcb_excess_[0] - pcb_excess_[2]),
+            ROOT::Math::XYZVector offset((pcb_excess_[1] - pcb_excess_[3]) / 2.0,
+                                         (pcb_excess_[0] - pcb_excess_[2]) / 2.0,
                                          -getSensorSize().z() / 2.0 - getChipSize().z() - getPCBSize().z() / 2.0);
             return getCenter() + offset;
         }
