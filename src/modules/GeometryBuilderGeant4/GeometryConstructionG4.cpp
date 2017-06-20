@@ -40,8 +40,8 @@ using namespace std;
 using namespace allpix;
 
 // Constructor and destructor
-GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo, const G4ThreeVector& world_size)
-    : geo_manager_(geo), world_size_(world_size), world_material_(nullptr) {}
+GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo, Configuration config)
+    : geo_manager_(geo), config_(std::move(config)) {}
 GeometryConstructionG4::~GeometryConstructionG4() = default;
 
 // Special version of std::make_shared that does not delete the pointer
@@ -57,24 +57,51 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
 
     // Set world material
     world_material_ = materials_["vacuum"];
-    LOG(TRACE) << "Material of world " << world_material_->GetName();
+    LOG(TRACE) << "Material of world is " << world_material_->GetName();
 
-    // build the world
-    auto world_box = std::make_shared<G4Box>("World", world_size_[0], world_size_[1], world_size_[2]);
+    // Calculate world size
+    ROOT::Math::XYZVector world_size;
+    ROOT::Math::XYZPoint min_coord = geo_manager_->getMinimumCoordinate();
+    ROOT::Math::XYZPoint max_coord = geo_manager_->getMaximumCoordinate();
+    world_size.SetX(std::max(std::abs(min_coord.x()), std::abs(max_coord.x())));
+    world_size.SetY(std::max(std::abs(min_coord.y()), std::abs(max_coord.y())));
+    world_size.SetZ(std::max(std::abs(min_coord.z()), std::abs(max_coord.z())));
+
+    // Calculate and apply margins to world size
+    double margin_percentage = config_.get<double>("margin_percentage", 0.1);
+    auto minimum_margin = config_.get<ROOT::Math::XYZPoint>("minimum_margin", {0, 0, 0});
+    double add_x = world_size.x() * margin_percentage;
+    if(add_x < minimum_margin.x()) {
+        add_x = minimum_margin.x();
+    }
+    double add_y = world_size.y() * margin_percentage;
+    if(add_y < minimum_margin.y()) {
+        add_y = minimum_margin.y();
+    }
+    double add_z = world_size.z() * margin_percentage;
+    if(add_z < minimum_margin.z()) {
+        add_z = minimum_margin.z();
+    }
+    world_size.SetX(world_size.x() + add_x);
+    world_size.SetY(world_size.y() + add_y);
+    world_size.SetZ(world_size.z() + add_z);
+
+    LOG(DEBUG) << "World size is " << display_vector(world_size, {"mm"});
+
+    // Build the world
+    auto world_box = std::make_shared<G4Box>("World", world_size.x(), world_size.y(), world_size.z());
     solids_.push_back(world_box);
     world_log_ = std::make_unique<G4LogicalVolume>(world_box.get(), world_material_, "World", nullptr, nullptr, nullptr);
 
-    // set the world to invisible in the viewer
+    // Set the world to invisible in the viewer
     world_log_->SetVisAttributes(G4VisAttributes::GetInvisible());
 
-    // place the world at the center
+    // Place the world at the center
     world_phys_ =
         std::make_unique<G4PVPlacement>(nullptr, G4ThreeVector(0., 0., 0.), world_log_.get(), "World", nullptr, false, 0);
 
-    // build the pixel devices
+    // Build the pixel devices
     build_pixel_devices();
-
-    // WARNING: some debug printing here about the placement of the detectors
 
     return world_phys_.get();
 }
@@ -154,15 +181,8 @@ void GeometryConstructionG4::build_pixel_devices() {
          * the wrapper is the box around all of the detector
          */
 
-        // LOG(ERROR) << display_vector(model->getSize(), {"mm", "um"});
-
-        // Get wrapper sizes
-        // G4double wrapperHX = model->getHalfWrapperDX();
-        // G4double wrapperHY = model->getHalfWrapperDY();
-        // G4double wrapperHZ = model->getHalfWrapperDZ();
-
-        LOG(DEBUG) << "Wrapper dimensions " << display_vector(model->getSize(), {"mm", "um"});
-        LOG(DEBUG) << "Center of the geometry parts relative to the origin";
+        LOG(DEBUG) << " Wrapper dimensions of model: " << display_vector(model->getSize(), {"mm", "um"});
+        LOG(DEBUG) << " Center of the geometry parts relative to the origin:";
 
         // Create the wrapper box and logical volume
         auto wrapper_box = std::make_shared<G4Box>(
@@ -199,7 +219,7 @@ void GeometryConstructionG4::build_pixel_devices() {
 
         // Place the sensor box
         auto sensor_pos = toG4Vector(model->getSensorCenter() - model->getCenter());
-        LOG(DEBUG) << " - Sensor\t: " << display_vector(sensor_pos, {"mm", "um"});
+        LOG(DEBUG) << "  - Sensor\t: " << display_vector(sensor_pos, {"mm", "um"});
         auto sensor_phys = make_shared_no_delete<G4PVPlacement>(
             nullptr, sensor_pos, sensor_log.get(), BoxName.second + "_phys", wrapper_log.get(), false, 0, true);
         detector->setExternalObject("sensor_phys", sensor_phys);
@@ -250,7 +270,7 @@ void GeometryConstructionG4::build_pixel_devices() {
 
             // Place the chip
             auto chip_pos = toG4Vector(model->getChipCenter() - model->getCenter());
-            LOG(DEBUG) << " - Chip\t: " << display_vector(chip_pos, {"mm", "um"});
+            LOG(DEBUG) << "  - Chip\t: " << display_vector(chip_pos, {"mm", "um"});
             auto chip_phys = make_shared_no_delete<G4PVPlacement>(
                 nullptr, chip_pos, chip_log.get(), ChipName.second + "_phys", wrapper_log.get(), false, 0, true);
             detector->setExternalObject("chip_phys", chip_phys);
@@ -273,7 +293,7 @@ void GeometryConstructionG4::build_pixel_devices() {
 
             // Place the PCB
             auto pcb_pos = toG4Vector(model->getPCBCenter() - model->getCenter());
-            LOG(DEBUG) << " - PCB\t: " << display_vector(pcb_pos, {"mm", "um"});
+            LOG(DEBUG) << "  - PCB\t: " << display_vector(pcb_pos, {"mm", "um"});
             auto PCB_phys = make_shared_no_delete<G4PVPlacement>(
                 nullptr, pcb_pos, PCB_log.get(), PCBName.second + "_phys", wrapper_log.get(), false, 0, true);
             detector->setExternalObject("pcb_phys", PCB_phys);

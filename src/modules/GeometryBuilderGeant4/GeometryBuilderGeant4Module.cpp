@@ -53,7 +53,7 @@ inline static void check_dataset_g4(const std::string& env_name) {
 // create the run manager, check Geant4 state and construct the Geant4 geometry
 void GeometryBuilderGeant4Module::init() {
     // check if all the required geant4 datasets are defined
-    LOG(DEBUG) << "checking Geant4 datasets";
+    LOG(DEBUG) << "Checking Geant4 datasets";
     check_dataset_g4("G4LEVELGAMMADATA");
     check_dataset_g4("G4RADIOACTIVEDATA");
     check_dataset_g4("G4PIIDATA");
@@ -75,12 +75,8 @@ void GeometryBuilderGeant4Module::init() {
     // release stdout again
     RELEASE_STREAM(std::cout);
 
-    // get the world size
-    config_.setDefault("world_size", G4ThreeVector(1000, 1000, 2000));
-    G4ThreeVector world_size = config_.get<G4ThreeVector>("world_size");
-
     // set the geometry constructor
-    auto geometry_construction = new GeometryConstructionG4(geo_manager_, world_size);
+    auto geometry_construction = new GeometryConstructionG4(geo_manager_, config_);
     run_manager_g4_->SetUserInitialization(geometry_construction);
 
     // run the geometry construct function in GeometryConstructionG4

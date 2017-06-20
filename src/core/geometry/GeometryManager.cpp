@@ -96,13 +96,30 @@ ROOT::Math::XYZPoint GeometryManager::getMinimumCoordinate() {
         close_geometry();
     }
 
+    ROOT::Math::XYZPoint min_point(0, 0, 0);
     // Loop through all detector
     for(auto& detector : detectors_) {
         // Get the model of the detector
         auto model = detector->getModel();
+
+        int offset_x[] = {1, 1, 1, 1, -1, -1, -1, -1};
+        int offset_y[] = {1, 1, -1, -1, 1, 1, -1, -1};
+        int offset_z[] = {1, -1, 1, -1, 1, -1, 1, -1};
+
+        for(int i = 0; i < 8; ++i) {
+            auto point = model->getCenter();
+            point.SetX(point.x() + offset_x[i] * model->getSize().x() / 2.0);
+            point.SetY(point.y() + offset_y[i] * model->getSize().y() / 2.0);
+            point.SetZ(point.z() + offset_z[i] * model->getSize().z() / 2.0);
+            point = detector->getGlobalPosition(point);
+
+            min_point.SetX(std::min(min_point.x(), point.x()));
+            min_point.SetY(std::min(min_point.y(), point.y()));
+            min_point.SetZ(std::min(min_point.z(), point.z()));
+        }
     }
 
-    return ROOT::Math::XYZPoint(0, 0, 0);
+    return min_point;
 }
 
 /**
@@ -114,7 +131,30 @@ ROOT::Math::XYZPoint GeometryManager::getMaximumCoordinate() {
         close_geometry();
     }
 
-    return ROOT::Math::XYZPoint(0, 0, 0);
+    ROOT::Math::XYZPoint max_point(0, 0, 0);
+    // Loop through all detector
+    for(auto& detector : detectors_) {
+        // Get the model of the detector
+        auto model = detector->getModel();
+
+        int offset_x[] = {1, 1, 1, 1, -1, -1, -1, -1};
+        int offset_y[] = {1, 1, -1, -1, 1, 1, -1, -1};
+        int offset_z[] = {1, -1, 1, -1, 1, -1, 1, -1};
+
+        for(int i = 0; i < 8; ++i) {
+            auto point = model->getCenter();
+            point.SetX(point.x() + offset_x[i] * model->getSize().x() / 2.0);
+            point.SetY(point.y() + offset_y[i] * model->getSize().y() / 2.0);
+            point.SetZ(point.z() + offset_z[i] * model->getSize().z() / 2.0);
+            point = detector->getGlobalPosition(point);
+
+            max_point.SetX(std::max(max_point.x(), point.x()));
+            max_point.SetY(std::max(max_point.y(), point.y()));
+            max_point.SetZ(std::max(max_point.z(), point.z()));
+        }
+    }
+
+    return max_point;
 }
 
 /**
