@@ -102,9 +102,9 @@ ROOT::Math::XYZPoint GeometryManager::getMinimumCoordinate() {
         // Get the model of the detector
         auto model = detector->getModel();
 
-        std::array<int, 8> offset_x = {1, 1, 1, 1, -1, -1, -1, -1};
-        std::array<int, 8> offset_y = {1, 1, -1, -1, 1, 1, -1, -1};
-        std::array<int, 8> offset_z = {1, -1, 1, -1, 1, -1, 1, -1};
+        std::array<int, 8> offset_x = {{1, 1, 1, 1, -1, -1, -1, -1}};
+        std::array<int, 8> offset_y = {{1, 1, -1, -1, 1, 1, -1, -1}};
+        std::array<int, 8> offset_z = {{1, -1, 1, -1, 1, -1, 1, -1}};
 
         for(size_t i = 0; i < 8; ++i) {
             auto point = model->getCenter();
@@ -144,9 +144,9 @@ ROOT::Math::XYZPoint GeometryManager::getMaximumCoordinate() {
         // Get the model of the detector
         auto model = detector->getModel();
 
-        std::array<int, 8> offset_x = {1, 1, 1, 1, -1, -1, -1, -1};
-        std::array<int, 8> offset_y = {1, 1, -1, -1, 1, 1, -1, -1};
-        std::array<int, 8> offset_z = {1, -1, 1, -1, 1, -1, 1, -1};
+        std::array<int, 8> offset_x = {{1, 1, 1, 1, -1, -1, -1, -1}};
+        std::array<int, 8> offset_y = {{1, 1, -1, -1, 1, 1, -1, -1}};
+        std::array<int, 8> offset_z = {{1, -1, 1, -1, 1, -1, 1, -1}};
 
         for(size_t i = 0; i < 8; ++i) {
             auto point = model->getCenter();
