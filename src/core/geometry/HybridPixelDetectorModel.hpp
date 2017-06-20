@@ -28,8 +28,22 @@ namespace allpix {
     class HybridPixelDetectorModel : public DetectorModel {
     public:
         // Constructor and destructor
-        explicit HybridPixelDetectorModel(std::string type)
-            : DetectorModel(std::move(type)), coverlayer_material_("Al"), has_coverlayer_(false) {}
+        explicit HybridPixelDetectorModel(const Configuration& config)
+            : DetectorModel(config), coverlayer_material_("Al"), has_coverlayer_(false) {
+            // Set bump parameters
+            if(config.has("bump_sphere_radius")) {
+                setBumpSphereRadius(config.get<double>("bump_sphere_radius"));
+            }
+            if(config.has("bump_height")) {
+                setBumpHeight(config.get<double>("bump_height"));
+            }
+            if(config.has("bump_cylinder_radius")) {
+                setBumpCylinderRadius(config.get<double>("bump_cylinder_radius"));
+            }
+            if(config.has("bump_offset")) {
+                setBumpOffset(config.get<ROOT::Math::XYVector>("bump_offset"));
+            }
+        }
 
         /**
          * @brief Get center of the chip in local coordinates

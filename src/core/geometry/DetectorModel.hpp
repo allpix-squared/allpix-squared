@@ -21,6 +21,9 @@
 #include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
 
+#include "core/config/Configuration.hpp"
+#include "tools/ROOT.h"
+
 namespace allpix {
     /**
      * @ingroup DetectorModels
@@ -37,7 +40,66 @@ namespace allpix {
          * @brief Constructs a detector model of a certain type
          * @param type Unique type description of a model
          */
-        explicit DetectorModel(std::string type) : type_(std::move(type)), number_of_pixels_(1, 1) {}
+        explicit DetectorModel(const Configuration& config) : type_(config.getName()), number_of_pixels_(1, 1) {
+            using namespace ROOT::Math;
+
+            // Number of pixels
+            setNPixels(config.get<DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels"));
+            // Size of the pixels
+            setPixelSize(config.get<XYVector>("pixel_size"));
+
+            // Sensor thickness
+            setSensorThickness(config.get<double>("sensor_thickness"));
+            // Excess around the sensor from the pixel grid
+            if(config.has("sensor_excess_top")) {
+                setSensorExcessTop(config.get<double>("sensor_excess_top"));
+            }
+            if(config.has("sensor_excess_bottom")) {
+                setSensorExcessBottom(config.get<double>("sensor_excess_bottom"));
+            }
+            if(config.has("sensor_excess_left")) {
+                setSensorExcessLeft(config.get<double>("sensor_excess_left"));
+            }
+            if(config.has("sensor_excess_right")) {
+                setSensorExcessRight(config.get<double>("sensor_excess_right"));
+            }
+
+            // Chip thickness
+            if(config.has("chip_thickness")) {
+                setChipThickness(config.get<double>("chip_thickness"));
+            }
+            // Excess around the chip from the pixel grid
+            if(config.has("chip_excess_top")) {
+                setChipExcessTop(config.get<double>("chip_excess_top"));
+            }
+            if(config.has("chip_excess_bottom")) {
+                setChipExcessBottom(config.get<double>("chip_excess_bottom"));
+            }
+            if(config.has("chip_excess_left")) {
+                setChipExcessLeft(config.get<double>("chip_excess_left"));
+            }
+            if(config.has("chip_excess_right")) {
+                setChipExcessRight(config.get<double>("chip_excess_right"));
+            }
+
+            // PCB thickness
+            if(config.has("pcb_thickness")) {
+                setPCBThickness(config.get<double>("pcb_thickness"));
+            }
+            // Excess around the pcb from the pixel grid
+            if(config.has("pcb_excess_top")) {
+                setPCBExcessTop(config.get<double>("pcb_excess_top"));
+            }
+            if(config.has("pcb_excess_bottom")) {
+                setPCBExcessBottom(config.get<double>("pcb_excess_bottom"));
+            }
+            if(config.has("pcb_excess_left")) {
+                setPCBExcessLeft(config.get<double>("pcb_excess_left"));
+            }
+            if(config.has("pcb_excess_right")) {
+                setPCBExcessRight(config.get<double>("pcb_excess_right"));
+            }
+        }
         /**
          * @brief Essential virtual destructor
          */

@@ -19,8 +19,6 @@
 #include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "exceptions.h"
-
-// FIXME: Do we allow including tools in the core
 #include "tools/ROOT.h"
 
 using namespace allpix;

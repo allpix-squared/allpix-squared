@@ -15,7 +15,7 @@ namespace allpix {
 
     private:
         // Parses the file and construct a model
-        std::shared_ptr<HybridPixelDetectorModel> parse_config(const Configuration&);
+        std::shared_ptr<DetectorModel> parse_config(const Configuration&);
 
         Configuration config_;
         GeometryManager* geo_mgr_;

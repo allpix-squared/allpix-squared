@@ -76,107 +76,18 @@ DefaultModelReaderModule::DefaultModelReaderModule(Configuration config, Messeng
     }
 }
 
-std::shared_ptr<HybridPixelDetectorModel> DefaultModelReaderModule::parse_config(const Configuration& config) {
-    std::string model_name = config.getName();
-    std::shared_ptr<HybridPixelDetectorModel> model = std::make_shared<HybridPixelDetectorModel>(model_name);
+std::shared_ptr<DetectorModel> DefaultModelReaderModule::parse_config(const Configuration& config) {
+    if(!config.has("type")) {
+        LOG(ERROR) << "Model file " << config.getFilePath() << " does not provide a type parameter";
+    }
+    auto type = config.get<std::string>("type");
 
-    using namespace ROOT::Math;
-
-    // Pixel amount
-    if(config.has("pixel_amount")) {
-        model->setNPixels(config.get<DisplacementVector2D<Cartesian2D<int>>>("pixel_amount"));
-    }
-    // Size, positions and offsets
-    if(config.has("pixel_size")) {
-        model->setPixelSize(config.get<XYVector>("pixel_size"));
-    }
-    // Sensor thickness
-    if(config.has("sensor_thickness")) {
-        model->setSensorThickness(config.get<double>("sensor_thickness"));
-    }
-    if(config.has("sensor_size")) {
-        // DEPRECATED
-        model->setSensorThickness(config.get<XYZVector>("sensor_size").z());
-    }
-    if(config.has("sensor_offset")) {
-        // DEPRECATED
-        // model->setSensorOffset(config.get<XYVector>("sensor_offset"));
-    }
-    // Excess around the sensor from the pixel grid
-    if(config.has("sensor_excess_top")) {
-        model->setSensorExcessTop(config.get<double>("sensor_excess_top"));
-    }
-    if(config.has("sensor_excess_bottom")) {
-        model->setSensorExcessBottom(config.get<double>("sensor_excess_bottom"));
-    }
-    if(config.has("sensor_excess_left")) {
-        model->setSensorExcessLeft(config.get<double>("sensor_excess_left"));
-    }
-    if(config.has("sensor_excess_right")) {
-        model->setSensorExcessRight(config.get<double>("sensor_excess_right"));
+    // Instantiate the correct detector model
+    if(type == "hybrid") {
+        return std::make_shared<HybridPixelDetectorModel>(config);
     }
 
-    // Chip thickness
-    if(config.has("chip_thickness")) {
-        model->setChipThickness(config.get<double>("chip_thickness"));
-    }
-    if(config.has("chip_size")) {
-        // DEPRECATED
-        model->setChipThickness(config.get<XYZVector>("chip_size").z());
-    }
-    if(config.has("chip_offset")) {
-        // DEPRECATED
-        // model->setChipOffset(config.get<XYZVector>("chip_offset"));
-    }
-    // Excess around the chip from the pixel grid
-    if(config.has("chip_excess_top")) {
-        model->setChipExcessTop(config.get<double>("chip_excess_top"));
-    }
-    if(config.has("chip_excess_bottom")) {
-        model->setChipExcessBottom(config.get<double>("chip_excess_bottom"));
-    }
-    if(config.has("chip_excess_left")) {
-        model->setChipExcessLeft(config.get<double>("chip_excess_left"));
-    }
-    if(config.has("chip_excess_right")) {
-        model->setChipExcessRight(config.get<double>("chip_excess_right"));
-    }
-
-    if(config.has("pcb_size")) {
-        // DEPRECATED
-        model->setPCBThickness(config.get<XYZVector>("pcb_size").z());
-    }
-    if(config.has("pcb_thickness")) {
-        // DEPRECATED
-        model->setPCBThickness(config.get<double>("pcb_thickness"));
-    }
-    // Excess around the chip from the pixel grid
-    if(config.has("pcb_excess_top")) {
-        model->setPCBExcessTop(config.get<double>("pcb_excess_top"));
-    }
-    if(config.has("pcb_excess_bottom")) {
-        model->setPCBExcessBottom(config.get<double>("pcb_excess_bottom"));
-    }
-    if(config.has("pcb_excess_left")) {
-        model->setPCBExcessLeft(config.get<double>("pcb_excess_left"));
-    }
-    if(config.has("pcb_excess_right")) {
-        model->setPCBExcessRight(config.get<double>("pcb_excess_right"));
-    }
-
-    // Bump parameters
-    if(config.has("bump_sphere_radius")) {
-        model->setBumpSphereRadius(config.get<double>("bump_sphere_radius"));
-    }
-    if(config.has("bump_height")) {
-        model->setBumpHeight(config.get<double>("bump_height"));
-    }
-    if(config.has("bump_cylinder_radius")) {
-        model->setBumpCylinderRadius(config.get<double>("bump_cylinder_radius"));
-    }
-    if(config.has("bump_offset")) {
-        model->setBumpOffset(config.get<XYVector>("bump_offset"));
-    }
-
-    return model;
+    LOG(ERROR) << "Model file " << config.getFilePath() << " type parameter is not valid";
+    // FIXME: The model can probably be silently ignored if we have more model readers later
+    throw InvalidValueError(config, "type", "model type is not supported");
 }
