@@ -88,6 +88,36 @@ std::vector<std::string> GeometryManager::getModelsPath() {
 }
 
 /**
+ * The minimum coordinate is the location of the point where no part of any detector exist with a lower x, y or z-coordinate
+ * in the geometry. The minimum point is never above the origin (the origin is always included in the geometry).
+ */
+ROOT::Math::XYZPoint GeometryManager::getMinimumCoordinate() {
+    if(!closed_) {
+        close_geometry();
+    }
+
+    // Loop through all detector
+    for(auto& detector : detectors_) {
+        // Get the model of the detector
+        auto model = detector->getModel();
+    }
+
+    return ROOT::Math::XYZPoint(0, 0, 0);
+}
+
+/**
+ * The maximum coordinate is the location of the point where no part of any detector exist with a higher x, y or z-coordinate
+ * in the geometry. The maximum point is never below the origin (the origin is always included in the geometry).
+ */
+ROOT::Math::XYZPoint GeometryManager::getMaximumCoordinate() {
+    if(!closed_) {
+        close_geometry();
+    }
+
+    return ROOT::Math::XYZPoint(0, 0, 0);
+}
+
+/**
  * @throws InvalidModuleActionException If the passed detector is a null pointer
  * @throws ModuleError If the geometry is already closed before calling this function
  * @throws DetectorModelExistsError If the detector name is already registered before

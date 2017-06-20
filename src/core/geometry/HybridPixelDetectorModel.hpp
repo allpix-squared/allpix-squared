@@ -1,12 +1,12 @@
 /**
  * @file
- * @brief Parameters of a pixel detector model
+ * @brief Parameters of a hybrid pixel detector model
  *
  * @copyright MIT License
  */
 
-#ifndef ALLPIX_PIXEL_DETECTOR_H
-#define ALLPIX_PIXEL_DETECTOR_H
+#ifndef ALLPIX_HYBRID_PIXEL_DETECTOR_H
+#define ALLPIX_HYBRID_PIXEL_DETECTOR_H
 
 #include <string>
 #include <utility>
@@ -18,8 +18,6 @@
 #include <Math/Vector3D.h>
 
 #include "DetectorModel.hpp"
-
-#include "core/utils/log.h"
 
 namespace allpix {
 
@@ -133,21 +131,6 @@ namespace allpix {
          */
         void setCoverlayerMaterial(std::string mat) { coverlayer_material_ = std::move(mat); }
 
-        /* FIXME: This will be reworked */
-        double getHalfWrapperDX() const { return getPCBSize().x() / 2.0; }
-        double getHalfWrapperDY() const { return getPCBSize().y() / 2.0; }
-        double getHalfWrapperDZ() const {
-
-            double whdz =
-                getPCBSize().z() / 2.0 + getChipSize().z() / 2.0 + getBumpHeight() / 2.0 + getSensorSize().z() / 2.0;
-
-            if(has_coverlayer_) {
-                whdz += getCoverlayerHeight() / 2.0;
-            }
-
-            return whdz;
-        }
-
     private:
         double bump_sphere_radius_{};
         double bump_height_{};
@@ -160,4 +143,4 @@ namespace allpix {
     };
 } // namespace allpix
 
-#endif /* ALLPIX_PIXEL_DETECTOR_H */
+#endif /* ALLPIX_HYBRID_PIXEL_DETECTOR_H */

@@ -152,21 +152,21 @@ void GeometryConstructionG4::build_pixel_devices() {
 
         /* WRAPPER
          * the wrapper is the box around all of the detector
-         *
-         * FIXME: this should be centered at the correct place
          */
 
-        // Get wrapper sizes
-        G4double wrapperHX = model->getHalfWrapperDX();
-        G4double wrapperHY = model->getHalfWrapperDY();
-        G4double wrapperHZ = model->getHalfWrapperDZ();
+        // LOG(ERROR) << display_vector(model->getSize(), {"mm", "um"});
 
-        LOG(DEBUG) << "Wrapper dimensions : " << Units::display(wrapperHX, "mm") << " " << Units::display(wrapperHY, "mm")
-                   << " " << Units::display(wrapperHZ, "mm");
+        // Get wrapper sizes
+        // G4double wrapperHX = model->getHalfWrapperDX();
+        // G4double wrapperHY = model->getHalfWrapperDY();
+        // G4double wrapperHZ = model->getHalfWrapperDZ();
+
+        LOG(DEBUG) << "Wrapper dimensions " << display_vector(model->getSize(), {"mm", "um"});
         LOG(DEBUG) << "Center of the geometry parts relative to the origin";
 
         // Create the wrapper box and logical volume
-        auto wrapper_box = std::make_shared<G4Box>(wrapperName.second, 2. * wrapperHX, 2. * wrapperHY, 2. * wrapperHZ);
+        auto wrapper_box = std::make_shared<G4Box>(
+            wrapperName.second, model->getSize().x() / 2.0, model->getSize().y() / 2.0, model->getSize().z() / 2.0);
         solids_.push_back(wrapper_box);
         auto wrapper_log =
             make_shared_no_delete<G4LogicalVolume>(wrapper_box.get(), world_material_, wrapperName.second + "_log");
@@ -310,7 +310,6 @@ void GeometryConstructionG4::build_pixel_devices() {
 
             // Place the general bumps volume
             G4ThreeVector bumps_pos = toG4Vector(model->getBumpsCenter() - model->getCenter());
-            // bumps_wrapper_pos(0, 0, posDevice.z() - model->getSensorSize().z() / 2.0 - (bump_height / 2.));
             auto bumps_wrapper_phys = make_shared_no_delete<G4PVPlacement>(nullptr,
                                                                            bumps_pos,
                                                                            bumps_wrapper_log.get(),

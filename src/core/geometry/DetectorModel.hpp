@@ -7,15 +7,16 @@
 
 /**
  * @defgroup DetectorModels Detector models
- * @brief Collection of global detector models supported by the framework
+ * @brief Collection of detector models supported by the framework
  */
 
-#ifndef ALLPIX_GEOMETRY_DETECTOR_MODEL_H
-#define ALLPIX_GEOMETRY_DETECTOR_MODEL_H
+#ifndef ALLPIX_DETECTOR_MODEL_H
+#define ALLPIX_DETECTOR_MODEL_H
 
 #include <string>
 #include <utility>
 
+#include <Math/Point2D.h>
 #include <Math/Point3D.h>
 #include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
@@ -60,8 +61,8 @@ namespace allpix {
         std::string getType() const { return type_; }
 
         /**
-         * @brief Get coordinate of center of chip in local frame of derived model
-         * @note It can be a bit counter intuitive that this is not always (0, 0, 0)
+         * @brief Get local coordinate of the position and rotation center in global frame
+         * @note It can be a counter intuitive that this is not usually the origin, neither the geometric center of the model
          *
          * The center coordinate corresponds to the \ref Detector::getPosition "position" in the global frame.
          */
@@ -71,7 +72,39 @@ namespace allpix {
                                         0);
         }
 
-        /** PIXEL GRID **/
+        /**
+         * @brief Get size of the box around the model that contains all elements
+         * @return Size of the detector model
+         *
+         * All elements should be covered by a box with \ref Detector::getCenter as center. This means that the size returned
+         * by this method is likely larger than the minimum possible size of a box around all elements. It will only return
+         * the minimum size if \ref Detector::getCenter corresponds with the geometric center of the model.
+         */
+        virtual ROOT::Math::XYZVector getSize() const {
+            ROOT::Math::XYVector max(std::numeric_limits<double>::lowest(), std::numeric_limits<double>::lowest());
+            ROOT::Math::XYVector min(std::numeric_limits<double>::max(), std::numeric_limits<double>::max());
+            max.SetX(std::max(max.x(), (getSensorCenter() + getSensorSize() / 2.0).x()));
+            max.SetY(std::max(max.y(), (getSensorCenter() + getSensorSize() / 2.0).y()));
+            max.SetX(std::max(max.x(), (getChipCenter() + getChipSize() / 2.0).x()));
+            max.SetY(std::max(max.y(), (getChipCenter() + getChipSize() / 2.0).y()));
+            max.SetX(std::max(max.x(), (getPCBCenter() + getPCBSize() / 2.0).x()));
+            max.SetY(std::max(max.y(), (getPCBCenter() + getPCBSize() / 2.0).y()));
+            min.SetX(std::min(min.x(), (getSensorCenter() - getSensorSize() / 2.0).x()));
+            min.SetY(std::min(min.y(), (getSensorCenter() - getSensorSize() / 2.0).y()));
+            min.SetX(std::min(min.x(), (getChipCenter() - getChipSize() / 2.0).x()));
+            min.SetY(std::min(min.y(), (getChipCenter() - getChipSize() / 2.0).y()));
+            min.SetX(std::min(min.x(), (getPCBCenter() - getPCBSize() / 2.0).x()));
+            min.SetY(std::min(min.y(), (getPCBCenter() - getPCBSize() / 2.0).y()));
+
+            ROOT::Math::XYZVector size;
+            size.SetX(2 * std::max(max.x() - getCenter().x(), getCenter().x() - min.x()));
+            size.SetY(2 * std::max(max.y() - getCenter().y(), getCenter().y() - min.y()));
+            size.SetZ(2 * std::max((getSensorCenter().z() + getSensorSize().z() / 2.0) - getCenter().z(),
+                                   getCenter().z() - (getPCBCenter().z() - getPCBSize().z() / 2.0)));
+            return size;
+        }
+
+        /* PIXEL GRID */
         /**
          * @brief Get number of pixel (replicated blocks in generic sensors)
          * @return Number of two dimensional pixels
@@ -107,7 +140,7 @@ namespace allpix {
             return ROOT::Math::XYZVector(getNPixels().x() * getPixelSize().x(), getNPixels().y() * getPixelSize().y(), 0);
         }
 
-        /** SENSOR **/
+        /* SENSOR */
         /**
          * @brief Get size of the sensor
          * @return Size of the sensor
@@ -156,7 +189,7 @@ namespace allpix {
          */
         void setSensorExcessLeft(double val) { sensor_excess_[3] = val; }
 
-        /** CHIP **/
+        /* CHIP */
         /**
          * @brief Get size of the chip
          * @return Size of the chip
@@ -206,7 +239,7 @@ namespace allpix {
          */
         void setChipExcessLeft(double val) { chip_excess_[3] = val; }
 
-        /** PCB **/
+        /* PCB */
         /**
          * @brief Get size of the PCB
          * @return Size of the PCB
@@ -273,4 +306,4 @@ namespace allpix {
     };
 } // namespace allpix
 
-#endif // ALLPIX_GEOMETRY_MANAGER_H
+#endif // ALLPIX_DETECTOR_MODEL_H

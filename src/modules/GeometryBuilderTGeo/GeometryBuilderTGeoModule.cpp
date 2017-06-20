@@ -213,9 +213,9 @@ void GeometryBuilderTGeoModule::BuildPixelDevices() {
         // wrapper
         // The wrapper might be enhanced when the user set up
         //  Appliances to the detector (extra layers, etc).
-        double wrapperHX = dsc->getHalfWrapperDX();
-        double wrapperHY = dsc->getHalfWrapperDY();
-        double wrapperHZ = dsc->getHalfWrapperDZ();
+        double wrapperHX = dsc->getSize().x() / 2.0;
+        double wrapperHY = dsc->getSize().y() / 2.0;
+        double wrapperHZ = dsc->getSize().z() / 2.0;
 
         // Apply the enhancement to the medipixes (to contain possible appliances)
         // We can have N medipixes and K enhancements, where K<=N.

@@ -12,6 +12,8 @@
 #include <string>
 #include <vector>
 
+#include <Math/Vector3D.h>
+
 #include "Detector.hpp"
 #include "DetectorModel.hpp"
 #include "core/config/ConfigReader.hpp"
@@ -66,6 +68,19 @@ namespace allpix {
         std::vector<std::string> getModelsPath();
 
         /**
+         * @brief Return the minimum coordinate of all detectors in the geometry
+         * @return Minimum coordinate in global frame
+         * @note Closes the geometry if it has not been closed yet
+         */
+        ROOT::Math::XYZPoint getMinimumCoordinate();
+        /**
+         * @brief Return the maximum coordinate of all detectors in the geometry
+         * @return Maximum coordinate in global frame
+         * @note Closes the geometry if it has not been closed yet
+         */
+        ROOT::Math::XYZPoint getMaximumCoordinate();
+
+        /**
          * @brief Return if the model is currently in the list of required models
          * @param name Type of the model to search for
          * @return True if at least one model still needs this type, false otherwise
@@ -97,9 +112,8 @@ namespace allpix {
          * @brief Get a detector model by its name
          * @param name Name of the model to search for
          * @returns Return the model if it exists (an error is raised if it does not)
-         * @warning This method should not be used to check if a model exists
+         * @warning The method \ref GeometryManager::hasModel should be used to check for existence
          */
-        // TODO [doc] Add a has model
         std::shared_ptr<DetectorModel> getModel(const std::string& name) const;
 
         /**
@@ -107,7 +121,6 @@ namespace allpix {
          * @param detector Pointer to the detector to add to the geometry
          * @warning Can only be used as long as the geometry is still open
          */
-        // TODO [doc] Remove this method
         void addDetector(std::shared_ptr<Detector> detector);
 
         /**
