@@ -51,54 +51,31 @@ namespace allpix {
             // Sensor thickness
             setSensorThickness(config.get<double>("sensor_thickness"));
             // Excess around the sensor from the pixel grid
-            if(config.has("sensor_excess_top")) {
-                setSensorExcessTop(config.get<double>("sensor_excess_top"));
-            }
-            if(config.has("sensor_excess_bottom")) {
-                setSensorExcessBottom(config.get<double>("sensor_excess_bottom"));
-            }
-            if(config.has("sensor_excess_left")) {
-                setSensorExcessLeft(config.get<double>("sensor_excess_left"));
-            }
-            if(config.has("sensor_excess_right")) {
-                setSensorExcessRight(config.get<double>("sensor_excess_right"));
-            }
+            auto default_sensor_excess = config.get<double>("sensor_excess", 0);
+            setSensorExcessTop(config.get<double>("sensor_excess_top", default_sensor_excess));
+            setSensorExcessBottom(config.get<double>("sensor_excess_bottom", default_sensor_excess));
+            setSensorExcessLeft(config.get<double>("sensor_excess_left", default_sensor_excess));
+            setSensorExcessRight(config.get<double>("sensor_excess_right", default_sensor_excess));
 
             // Chip thickness
-            if(config.has("chip_thickness")) {
-                setChipThickness(config.get<double>("chip_thickness"));
-            }
+            setChipThickness(config.get<double>("chip_thickness", 0));
+
             // Excess around the chip from the pixel grid
-            if(config.has("chip_excess_top")) {
-                setChipExcessTop(config.get<double>("chip_excess_top"));
-            }
-            if(config.has("chip_excess_bottom")) {
-                setChipExcessBottom(config.get<double>("chip_excess_bottom"));
-            }
-            if(config.has("chip_excess_left")) {
-                setChipExcessLeft(config.get<double>("chip_excess_left"));
-            }
-            if(config.has("chip_excess_right")) {
-                setChipExcessRight(config.get<double>("chip_excess_right"));
-            }
+            auto default_chip_excess = config.get<double>("chip_excess", 0);
+            setChipExcessTop(config.get<double>("chip_excess_top", default_chip_excess));
+            setChipExcessBottom(config.get<double>("chip_excess_bottom", default_chip_excess));
+            setChipExcessLeft(config.get<double>("chip_excess_left", default_chip_excess));
+            setChipExcessRight(config.get<double>("chip_excess_right", default_chip_excess));
 
             // PCB thickness
-            if(config.has("pcb_thickness")) {
-                setPCBThickness(config.get<double>("pcb_thickness"));
-            }
+            setPCBThickness(config.get<double>("pcb_thickness", 0));
+
             // Excess around the pcb from the pixel grid
-            if(config.has("pcb_excess_top")) {
-                setPCBExcessTop(config.get<double>("pcb_excess_top"));
-            }
-            if(config.has("pcb_excess_bottom")) {
-                setPCBExcessBottom(config.get<double>("pcb_excess_bottom"));
-            }
-            if(config.has("pcb_excess_left")) {
-                setPCBExcessLeft(config.get<double>("pcb_excess_left"));
-            }
-            if(config.has("pcb_excess_right")) {
-                setPCBExcessRight(config.get<double>("pcb_excess_right"));
-            }
+            auto default_pcb_excess = config.get<double>("pcb_excess", 0);
+            setPCBExcessTop(config.get<double>("pcb_excess_top", default_pcb_excess));
+            setPCBExcessBottom(config.get<double>("pcb_excess_bottom", default_pcb_excess));
+            setPCBExcessLeft(config.get<double>("pcb_excess_left", default_pcb_excess));
+            setPCBExcessRight(config.get<double>("pcb_excess_right", default_pcb_excess));
         }
         /**
          * @brief Essential virtual destructor

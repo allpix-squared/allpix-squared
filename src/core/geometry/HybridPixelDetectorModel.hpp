@@ -31,18 +31,10 @@ namespace allpix {
         explicit HybridPixelDetectorModel(const Configuration& config)
             : DetectorModel(config), coverlayer_material_("Al"), has_coverlayer_(false) {
             // Set bump parameters
-            if(config.has("bump_sphere_radius")) {
-                setBumpSphereRadius(config.get<double>("bump_sphere_radius"));
-            }
-            if(config.has("bump_height")) {
-                setBumpHeight(config.get<double>("bump_height"));
-            }
-            if(config.has("bump_cylinder_radius")) {
-                setBumpCylinderRadius(config.get<double>("bump_cylinder_radius"));
-            }
-            if(config.has("bump_offset")) {
-                setBumpOffset(config.get<ROOT::Math::XYVector>("bump_offset"));
-            }
+            setBumpCylinderRadius(config.get<double>("bump_cylinder_radius"));
+            setBumpHeight(config.get<double>("bump_height"));
+            setBumpSphereRadius(config.get<double>("bump_sphere_radius", 0));
+            setBumpOffset(config.get<ROOT::Math::XYVector>("bump_offset", {0, 0}));
         }
 
         /**
