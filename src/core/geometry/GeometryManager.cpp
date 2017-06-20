@@ -119,6 +119,13 @@ ROOT::Math::XYZPoint GeometryManager::getMinimumCoordinate() {
         }
     }
 
+    // Loop through all separate points
+    for(auto& point : points_) {
+        min_point.SetX(std::min(min_point.x(), point.x()));
+        min_point.SetY(std::min(min_point.y(), point.y()));
+        min_point.SetZ(std::min(min_point.z(), point.z()));
+    }
+
     return min_point;
 }
 
@@ -154,7 +161,26 @@ ROOT::Math::XYZPoint GeometryManager::getMaximumCoordinate() {
         }
     }
 
+    // Loop through all separate points
+    for(auto& point : points_) {
+        max_point.SetX(std::max(max_point.x(), point.x()));
+        max_point.SetY(std::max(max_point.y(), point.y()));
+        max_point.SetZ(std::max(max_point.z(), point.z()));
+    }
+
     return max_point;
+}
+
+/**
+ * @throws ModuleError If the geometry is already closed before calling this function
+ *
+ * Can be used to add an arbitrary and unspecified point which is part of the geometry
+ */
+void GeometryManager::addPoint(ROOT::Math::XYZPoint point) {
+    if(closed_) {
+        throw ModuleError("Geometry is already closed before adding detector");
+    }
+    points_.push_back(point);
 }
 
 /**

@@ -81,6 +81,15 @@ namespace allpix {
         ROOT::Math::XYZPoint getMaximumCoordinate();
 
         /**
+         * @brief Add a point to the geometry (used for the \ref GeometryManager::getMinimumCoordinate "minimum"
+         *        and \ref GeometryManager::getMaximumCoordinate "maximum" coordinate)
+         * @param val Point that is part of the geometry
+         * @warning Can only be used as long as the geometry is still open
+         */
+        // TODO: Add more details to the point and interaction with external geometry
+        void addPoint(ROOT::Math::XYZPoint);
+
+        /**
          * @brief Return if the model is currently in the list of required models
          * @param name Type of the model to search for
          * @return True if at least one model still needs this type, false otherwise
@@ -161,6 +170,8 @@ namespace allpix {
          */
         void close_geometry();
         bool closed_;
+
+        std::vector<ROOT::Math::XYZPoint> points_;
 
         std::vector<std::string> model_paths_;
         std::vector<std::shared_ptr<DetectorModel>> models_;

@@ -107,9 +107,6 @@ namespace allpix {
     }
 
     // TODO Should this function change name, be moved or put in another namespace?
-    template <typename T> inline std::string display_vector(T inp, std::string unit) {
-        return display_vector(inp, {std::move(unit)});
-    }
     template <typename T> inline std::string display_vector(T inp, std::initializer_list<std::string> units) {
         auto split = allpix::split<Units::UnitType>(allpix::to_string(inp));
         std::string ret_str = "(";
