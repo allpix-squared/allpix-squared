@@ -89,9 +89,13 @@ std::vector<std::string> GeometryManager::getModelsPath() {
 
 /**
  * @throws InvalidModuleActionException If the passed detector is a null pointer
- * @throws DetectorNameExistsError If the detector name is already registered before
+ * @throws ModuleError If the geometry is already closed before calling this function
+ * @throws DetectorModelExistsError If the detector name is already registered before
  */
 void GeometryManager::addModel(std::shared_ptr<DetectorModel> model) {
+    if(closed_) {
+        throw ModuleError("Geometry is already closed before adding detector");
+    }
     if(model == nullptr) {
         throw InvalidModuleActionException("Added model cannot be a null pointer");
     }
@@ -130,9 +134,13 @@ std::shared_ptr<DetectorModel> GeometryManager::getModel(const std::string& name
 
 /**
  * @throws InvalidModuleActionException If the passed detector is a null pointer
+ * @throws ModuleError If the geometry is already closed before calling this function
  * @throws DetectorNameExistsError If the detector name is already registered before
  */
 void GeometryManager::addDetector(std::shared_ptr<Detector> detector) {
+    if(closed_) {
+        throw ModuleError("Geometry is already closed before adding detector");
+    }
     if(detector == nullptr) {
         throw InvalidModuleActionException("Added detector cannot be a null pointer");
     }
