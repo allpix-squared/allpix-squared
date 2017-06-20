@@ -102,15 +102,15 @@ ROOT::Math::XYZPoint GeometryManager::getMinimumCoordinate() {
         // Get the model of the detector
         auto model = detector->getModel();
 
-        int offset_x[] = {1, 1, 1, 1, -1, -1, -1, -1};
-        int offset_y[] = {1, 1, -1, -1, 1, 1, -1, -1};
-        int offset_z[] = {1, -1, 1, -1, 1, -1, 1, -1};
+        std::array<int, 8> offset_x = {1, 1, 1, 1, -1, -1, -1, -1};
+        std::array<int, 8> offset_y = {1, 1, -1, -1, 1, 1, -1, -1};
+        std::array<int, 8> offset_z = {1, -1, 1, -1, 1, -1, 1, -1};
 
-        for(int i = 0; i < 8; ++i) {
+        for(size_t i = 0; i < 8; ++i) {
             auto point = model->getCenter();
-            point.SetX(point.x() + offset_x[i] * model->getSize().x() / 2.0);
-            point.SetY(point.y() + offset_y[i] * model->getSize().y() / 2.0);
-            point.SetZ(point.z() + offset_z[i] * model->getSize().z() / 2.0);
+            point.SetX(point.x() + offset_x.at(i) * model->getSize().x() / 2.0);
+            point.SetY(point.y() + offset_y.at(i) * model->getSize().y() / 2.0);
+            point.SetZ(point.z() + offset_z.at(i) * model->getSize().z() / 2.0);
             point = detector->getGlobalPosition(point);
 
             min_point.SetX(std::min(min_point.x(), point.x()));
@@ -144,15 +144,15 @@ ROOT::Math::XYZPoint GeometryManager::getMaximumCoordinate() {
         // Get the model of the detector
         auto model = detector->getModel();
 
-        int offset_x[] = {1, 1, 1, 1, -1, -1, -1, -1};
-        int offset_y[] = {1, 1, -1, -1, 1, 1, -1, -1};
-        int offset_z[] = {1, -1, 1, -1, 1, -1, 1, -1};
+        std::array<int, 8> offset_x = {1, 1, 1, 1, -1, -1, -1, -1};
+        std::array<int, 8> offset_y = {1, 1, -1, -1, 1, 1, -1, -1};
+        std::array<int, 8> offset_z = {1, -1, 1, -1, 1, -1, 1, -1};
 
-        for(int i = 0; i < 8; ++i) {
+        for(size_t i = 0; i < 8; ++i) {
             auto point = model->getCenter();
-            point.SetX(point.x() + offset_x[i] * model->getSize().x() / 2.0);
-            point.SetY(point.y() + offset_y[i] * model->getSize().y() / 2.0);
-            point.SetZ(point.z() + offset_z[i] * model->getSize().z() / 2.0);
+            point.SetX(point.x() + offset_x.at(i) * model->getSize().x() / 2.0);
+            point.SetY(point.y() + offset_y.at(i) * model->getSize().y() / 2.0);
+            point.SetZ(point.z() + offset_z.at(i) * model->getSize().z() / 2.0);
             point = detector->getGlobalPosition(point);
 
             max_point.SetX(std::max(max_point.x(), point.x()));
@@ -180,7 +180,7 @@ void GeometryManager::addPoint(ROOT::Math::XYZPoint point) {
     if(closed_) {
         throw ModuleError("Geometry is already closed before adding detector");
     }
-    points_.push_back(point);
+    points_.push_back(std::move(point));
 }
 
 /**

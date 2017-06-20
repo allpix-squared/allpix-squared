@@ -68,7 +68,7 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     world_size.SetZ(std::max(std::abs(min_coord.z()), std::abs(max_coord.z())));
 
     // Calculate and apply margins to world size
-    double margin_percentage = config_.get<double>("margin_percentage", 0.1);
+    auto margin_percentage = config_.get<double>("margin_percentage", 0.1);
     auto minimum_margin = config_.get<ROOT::Math::XYZPoint>("minimum_margin", {0, 0, 0});
     double add_x = world_size.x() * margin_percentage;
     if(add_x < minimum_margin.x()) {
