@@ -58,6 +58,7 @@ std::shared_ptr<Detector> Module::getDetector() const {
 
 /**
  * @throws ModuleError If the file cannot be accessed (or created if it did not yet exist)
+ * @throws InvalidModuleActionException If this method is called from the constructor with the global flag false
  * @warning A local path cannot be fetched from the constructor, because the instantiation logic has not finished yet
  *
  * The output path is automatically created if it does not exists. The path is always accessible if this functions returns.
@@ -70,6 +71,7 @@ std::string Module::getOutputPath(const std::string& path, bool global) const {
         file = config_.get<std::string>("_output_dir");
     }
 
+    // The file name will only be empty if this method is executed from the constructor
     if(file.empty()) {
         throw InvalidModuleActionException("Cannot access local output path in constructor");
     }
@@ -98,11 +100,13 @@ std::string Module::getOutputPath(const std::string& path, bool global) const {
 }
 
 /**
+ * @throws InvalidModuleActionException If this method is called from the constructor or destructor
  * @warning Cannot be used from the constructor, because the instantiation logic has not finished yet
  * @warning This method should not be accessed from the destructor (the file is then already closed)
  * @note It is not needed to change directory to this file explicitly in the module, this is done automatically.
  */
 TDirectory* Module::getROOTDirectory() const {
+    // The directory will only be a null pointer if this method is executed from the constructor or destructor
     if(directory_ == nullptr) {
         throw InvalidModuleActionException("Cannot access ROOT directory in constructor or destructor");
     }
