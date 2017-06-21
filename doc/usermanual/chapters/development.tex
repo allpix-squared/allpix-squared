@@ -8,7 +8,7 @@ Before creating a module it is essential to read through the framework module ma
 \item The CMakeLists.txt has to be modified depending on the module type. Depending on the type of the module the first line is different. If the new module is a unique module it should be ALLPIX\_UNIQUE\_MODULE(MODULE\_NAME), if it is a detector-specific module it should be ALLPIX\_DETECTOR\_MODULE(MODULE\_NAME). Next, the source file created in the previous step has to replace the original dummy source file.
 \item The header and source files have to be implemented following the constructor conventions for the specific type of module.
 \item The initial documentation in the README.md and the \LaTeX-file \texttt{ModuleName}.tex can already be started with before the module is implemented.
-\item Now the the initial parts of the constructor, and possible the \texttt{init}, \texttt{run} and/or \texttt{finalize} methods can be written, depending on what the new module is supposed to do.
+\item Now the the initial parts of the constructor, and possibly the \texttt{init}, \texttt{run} and/or \texttt{finalize} methods can be written, depending on what the new module is supposed to do.
 \end{enumerate}
 \todo{Part of the process above can be automized in a script}
 
