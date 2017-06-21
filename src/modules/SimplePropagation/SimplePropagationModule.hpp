@@ -44,12 +44,15 @@ namespace allpix {
 
         // configuration for this module
         Configuration config_;
+        // local copies of configuration parameters to avoid unnecessary lookup:
+        double temperature_, timestep_min_, timestep_max_, timestep_start_, target_spatial_precision_, output_plots_step_;
+        bool output_plots_;
 
         // pointer to the messenger
         Messenger* messenger_;
 
         // attached detector and detector model
-        std::shared_ptr<Detector> detector_;
+        std::shared_ptr<const Detector> detector_;
         std::shared_ptr<DetectorModel> model_;
 
         // deposits for a specific detector
@@ -59,6 +62,11 @@ namespace allpix {
         unsigned int total_propagated_charges_{};
         unsigned int total_steps_{};
         long double total_time_{};
+
+        // Precalculated values for electron mobility
+        double electron_Vm_;
+        double electron_Ec_;
+        double electron_Beta_;
 
         // debug list of points to plot
         std::vector<std::pair<PropagatedCharge, std::vector<ROOT::Math::XYZPoint>>> output_plot_points_;
