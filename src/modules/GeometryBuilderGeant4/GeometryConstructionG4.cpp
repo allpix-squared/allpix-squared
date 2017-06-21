@@ -148,16 +148,8 @@ void GeometryConstructionG4::build_pixel_devices() {
     LOG(TRACE) << "Building " << detectors.size() << " device(s)";
 
     for(auto& detector : detectors) {
-        // Get pointers for the model of the detector
-        std::shared_ptr<HybridPixelDetectorModel> model =
-            std::dynamic_pointer_cast<HybridPixelDetectorModel>(detector->getModel());
-
-        // Ignore all non-pixel detectors for now
-        if(model == nullptr) {
-            LOG(ERROR) << "Ignoring detector " << detector->getName()
-                       << " because a Geant4 model cannot yet be build for a non-pixel detector";
-            continue;
-        }
+        // Get pointer to the model of the detector
+        auto model = detector->getModel();
 
         LOG(DEBUG) << "Creating Geant4 model for " << detector->getName();
 
@@ -299,15 +291,17 @@ void GeometryConstructionG4::build_pixel_devices() {
             detector->setExternalObject("pcb_phys", PCB_phys);
         }
 
-        /* BUMPS
-         * the bump bonds connect the sensor to the readout chip
-         */
-        // Construct the bumps only if necessary
-        if(model->getBumpHeight() > 1e-9) {
+        // Build the bump bonds only for hybrid pixel detectors
+        auto hybrid_model = std::dynamic_pointer_cast<HybridPixelDetectorModel>(model);
+        if(hybrid_model != nullptr) {
+            /* BUMPS
+            * the bump bonds connect the sensor to the readout chip
+            */
+
             // Get parameters from model
-            auto bump_height = model->getBumpHeight();
-            auto bump_sphere_radius = model->getBumpSphereRadius();
-            auto bump_cylinder_radius = model->getBumpCylinderRadius();
+            auto bump_height = hybrid_model->getBumpHeight();
+            auto bump_sphere_radius = hybrid_model->getBumpSphereRadius();
+            auto bump_cylinder_radius = hybrid_model->getBumpCylinderRadius();
 
             auto bump_sphere =
                 std::make_shared<G4Sphere>(BumpName.first + "sphere", 0, bump_sphere_radius, 0, 360 * deg, 0, 360 * deg);
@@ -319,8 +313,10 @@ void GeometryConstructionG4::build_pixel_devices() {
             solids_.push_back(bump);
 
             // Create the volume containing the bumps
-            auto bump_box = std::make_shared<G4Box>(
-                BumpBoxName.first, model->getSensorSize().x() / 2.0, model->getSensorSize().y() / 2.0, bump_height / 2.);
+            auto bump_box = std::make_shared<G4Box>(BumpBoxName.first,
+                                                    hybrid_model->getSensorSize().x() / 2.0,
+                                                    hybrid_model->getSensorSize().y() / 2.0,
+                                                    bump_height / 2.);
             solids_.push_back(bump_box);
 
             // Create the logical wrapper volume
@@ -329,7 +325,7 @@ void GeometryConstructionG4::build_pixel_devices() {
             detector->setExternalObject("bumps_wrapper_log", bumps_wrapper_log);
 
             // Place the general bumps volume
-            G4ThreeVector bumps_pos = toG4Vector(model->getBumpsCenter() - model->getCenter());
+            G4ThreeVector bumps_pos = toG4Vector(hybrid_model->getBumpsCenter() - hybrid_model->getCenter());
             auto bumps_wrapper_phys = make_shared_no_delete<G4PVPlacement>(nullptr,
                                                                            bumps_pos,
                                                                            bumps_wrapper_log.get(),
@@ -346,23 +342,24 @@ void GeometryConstructionG4::build_pixel_devices() {
             detector->setExternalObject("bumps_cell_log", bumps_cell_log);
 
             // Place the bump bonds grid
-            auto bumps_param_internal =
-                std::make_shared<Parameterization2DG4>(model->getNPixels().x(),
-                                                       model->getPixelSize().x(),
-                                                       model->getPixelSize().y(),
-                                                       -(model->getNPixels().x() * model->getPixelSize().x()) / 2.0 +
-                                                           (model->getBumpsCenter().x() - model->getCenter().x()),
-                                                       -(model->getNPixels().y() * model->getPixelSize().y()) / 2.0 +
-                                                           (model->getBumpsCenter().y() - model->getCenter().y()),
-                                                       0);
+            auto bumps_param_internal = std::make_shared<Parameterization2DG4>(
+                hybrid_model->getNPixels().x(),
+                hybrid_model->getPixelSize().x(),
+                hybrid_model->getPixelSize().y(),
+                -(hybrid_model->getNPixels().x() * hybrid_model->getPixelSize().x()) / 2.0 +
+                    (hybrid_model->getBumpsCenter().x() - hybrid_model->getCenter().x()),
+                -(hybrid_model->getNPixels().y() * hybrid_model->getPixelSize().y()) / 2.0 +
+                    (hybrid_model->getBumpsCenter().y() - hybrid_model->getCenter().y()),
+                0);
             detector->setExternalObject("bumps_param", bumps_param_internal);
 
-            auto bumps_param = std::make_shared<G4PVParameterised>(BumpName.second + "phys",
-                                                                   bumps_cell_log.get(),
-                                                                   bumps_wrapper_log.get(),
-                                                                   kUndefined,
-                                                                   model->getNPixels().x() * model->getNPixels().y(),
-                                                                   bumps_param_internal.get());
+            auto bumps_param =
+                std::make_shared<G4PVParameterised>(BumpName.second + "phys",
+                                                    bumps_cell_log.get(),
+                                                    bumps_wrapper_log.get(),
+                                                    kUndefined,
+                                                    hybrid_model->getNPixels().x() * hybrid_model->getNPixels().y(),
+                                                    bumps_param_internal.get());
             detector->setExternalObject("bumps_param", bumps_param);
         }
 
