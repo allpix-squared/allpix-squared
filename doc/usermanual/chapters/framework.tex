@@ -12,7 +12,7 @@ Finally \apsq provides an executable which instantiates the core, passes the con
 In this chapter, first an overview of the architectural setup of the core is given and how it interacts with the total \apsq framework. Afterwards, the different subcomponents are discussed and explained in more detail. Some C++ code will be provided in the text, but readers not interested may skip the technical details.
 
 \subsection{Architecture of the Core}
-The core is constructed as a light-weight framework that provides various subsystems to the modules. It also contains the part responsible for instantiating and running the modules from the supplied configuration file. The core is structured around five subsystems of which four are centered around managers and the fifth contain a set of simple general utilities. The systems provided are:
+The core is constructed as a light-weight framework that provides various subsystems to the modules. It also contains the part responsible for instantiating and running the modules from the supplied configuration file. The core is structured around five subsystems of which four are centered around a manager and the fifth contain a set of simple general utilities. The systems provided are:
 \begin{enumerate}
 \item \textbf{Configuration}: Provides a general configuration object from which data can be retrieved or stored, together with a TOML-like~\cite{tomlgit} file parser to instantiate the configurations. Also provides a general \apsq configuration manager providing access to the main configuration file and its sections. It is used by the module manager system to find the required instantiations and access the global configuration. More information is given in Section \ref{sec:config_parameters}.
 \item \textbf{Module}: Contain the base class of all the \apsq modules and the manager responsible for loading and running the modules (using the configuration system). This component is discussed in more detail in Section \ref{sec:module_manager}.
@@ -164,7 +164,7 @@ The modules are dynamically loaded and instantiated by the Module Manager. Modul
 \begin{enumerate}
 \item The modules already loaded before from an earlier section header
 \item All directories in the global configuration parameter \textit{library\_directories} in the provided order if this parameter exists
-\item The internal RPATH of the executable, that should automatically point to the libraries that are build and installed together with the executable.
+\item The internal library paths of the executable, that should automatically point to the libraries that are build and installed together with the executable. These library paths are stored in RPATH on Linux, see the next point for more information.
 \item The other standard locations to search for libraries depending on the operating system. Details about the procedure Linux follows are found in \cite{linuxld}.
 \end{enumerate}
 
@@ -196,34 +196,37 @@ void run(unsigned int event_id) {
 \end{minted}
 
 \subsubsection{Coordinate systems}
-All detectors have a fixed position in the world frame which has an arbitrary origin. Every detector also has a local coordinate system attached to it. The origin of this local coordinate system does not necessarily correspond with the geometric center of the sensitive device, which is the center of orientation of the detector in the global frame. The origin of the local coordinate system is instead based on the pixel grid in the sensor. This allows for simpler calculations that are also easier to read. 
+All detectors have a fixed position in the world frame which has an arbitrary origin. Every detector also has a local coordinate system attached to it. The origin of this local coordinate system does not necessarily correspond with the geometric center of the sensitive device, which is the center of rotation of the detector in the global frame. The origin of the local coordinate system is instead based on the pixel grid in the sensor. This allows for simpler calculations that are also easier to understand. 
 
-While the origin of the local coordinate system depends on the type of the model, there are fixed rules for the orientation of the coordinate system. The positive z-axis should point from the side of the sensor where collection takes place upwards (normal to the collection plane) to the other side of the sensitive device. The x-axis should point in one of the arbitrary two directions in the plane of the pixel grid. The y-axis should then be normal to both the x and the z-axis in such a way that a right-handed coordinate system is constructed. The 2D pixel grid is therefore in the XY-plane.
+While the origin of the local coordinate system depends on the type of the model, there are fixed rules for the orientation of the coordinate system. The positive z-axis should point in the direction the particle beam is supposed to enter the sensor, perpendicular to the 2D pixel grid. The x-axis should be in the plane that defines the pixel grid. It should be in horizontal direction perpendicular to the direction of the beam, if the sensor is placed unrotated in a horizontal beam. The y-axis should be normal to both the x- and the z-axis in such a way that a right-handed coordinate system is constructed. 
 
 \subsubsection{Detector models}
 \label{sec:detector_models}
-Different types of detector models are already available and shipped with the framework. Every models extends from the \texttt{DetectorModel} base class which defines the minimum parameter of a detector model in the framework:
+Different types of detector models are already available and shipped with the framework. The configuration for these standard models use the configuration format introduced in Section \ref{sec:config_file_format} and can be found in the \textit{models} directory in the repository. Every models extends from the \texttt{DetectorModel} base class which defines the minimum parameter of a detector model in the framework:
 \begin{itemize}
-\item The coordinate of the rotation center in the local frame. This is the location of the local point which is defined as position in the global frame.
-\item The position of the bottom-left (minimum) of the sensor (thus the sensitive device) in the local frame. This determines the excess of the sensor and the size of the guard rings around the pixel grid. 
-\item The total size of the sensor (thus the top-right corner offset from the bottom-left minimum position).
-\item The number of pixels in the sensor. Every pixel is an independent block replicated over the XY plane of the sensor. The number of pixel defaults to one if it is not overridden, which means the default sensor has no replicated blocks.
-\item The size of an individual pixel. The multiplication of the pixel size and the number of pixels should not exceed the sensor.
+\item The coordinate of the center in the local frame. This is the location of the local point which is defined as position in the global frame, and the rotation center for the specified orientation.
+\item The number of pixels in the sensor in both the x- and y-axis. Every pixel is an independent block replicated over the x,y-plane of the sensor. 
+\item The size of an individual pixel. The multiplication of the pixel size and the number of pixels is known as the pixel grid and goes over the full x,y-plane.
+\item The sensor with a center and a size. The sensor is at least as large as the pixel grid size and has a certain thickness. It can have excess length in the x,y-plane in each direction. The top, bottom, right and left direction are respectively the positive y-axis, the negative y-axis, the positive x-axis and the negative x-axis.
+\item The readout chip with a center and a size. It is positioned directly after the sensor by default. The chip can also have an excess as described above for the sensor.
+\item The PCB with a center and a size. It is positioned directly after the sensor and the chip by default. The PCB can also have an excess as described above for the sensor.
+\item Total size of the box with the local frame center in the middle that fit all elements of the model.
 \end{itemize}
+This standard detector model can be extended to provide a more detailed geometry if required by particular modules (most notably the Geant4 geometry). The position and size of all elements can be changed by these extending models. A model with only the standard elements described above is the \texttt{MonolithicPixelDetectorModel}. Currently the only more advanced detector model is the \texttt{HybridPixelDetectorModel}, which also include bump bonds between the sensor and the readout chip. 
 
-This standard detector model can be extended to provide a more detailed geometry as required by certain modules. Currently the only included advanced detector model is the \texttt{PixelDetectorModel} \todo{This name should be changed}, which apart from the sensor also includes guards rings, bump bonds, a readout ASIC chip, a PCB and a cover layer. 
+\todo{The exact parameters need to be specified here}
 
-To fetch a detector model as \texttt{PixelDetectorModel}, the base class should be downcasted as follows (the downcast return a null pointer if it is not a PixelDetectorModel).
+To fetch a detector model as \texttt{HybridPixelDetectorModel}, the base class should be downcasted as follows (the downcast return a null pointer if it is not a HybridPixelDetectorModel).
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
 // Detector is a pointer to a Detector object
-std::shared_ptr<PixelDetectorModel> model = std::dynamic_pointer_cast<PixelDetectorModel>(detector->getModel());
+std::shared_ptr<HybridPixelDetectorModel> model = std::dynamic_pointer_cast<HybridPixelDetectorModel>(detector->getModel());
 if(model != nullptr) {
-    // The model of this Detector is a PixelDetectorModel
+    // The model of this Detector is a HybridPixelDetectorModel
 }
 \end{minted}
-For more details about the different types of supported models and how to add your own new model, Section \ref{sec:adding_detector_model} should be consulted.
+For more details about the different types models and how to add your own new model, Section \ref{sec:adding_detector_model} should be consulted.
 
-Many detector models are shipped with the framework in the configuration format introduced in Section \ref{sec:config_file_format}. Other models can however be used in addition. To support different detector models and configuration formats the framework supports different types of model readers. These model readers search the directories in the following order:
+To support different detector models and storage locations the framework supports model readers. These model readers search for model files in the following order:
 \begin{enumerate}
 \item If defined, the paths in the \textit{models\_path} parameter provided to the model reader module (for example the \texttt{DefaultModelReader}) or the global \textit{models\_path} parameter if no module-specific one is defined. Files are read and parsed directly. If the path is a directory, all files in the directory are added (not recursing into subdirectories).
 \item The location where the models are installed to (see the MODEL\_DIRECTORY variable in Section \ref{sec:cmake_config}). 
@@ -283,7 +286,7 @@ TestModule(Configuration, Messenger* messenger, std::shared_ptr<Detector>) {
 }
 std::vector<std::shared_ptr<Message<Object>>> messages;
 \end{minted}
-\item Listen to a particular message type and execute a \textbf{listening function} as soon as an object is received. Should be used for more advanced strategies for fetching messages. The listening module should \underline{not} do any heavy work in the listening function as this is supposed to take place in the \texttt{run()} method instead. An example of using this to listen to a message containing an array of \texttt{Object} types in a detector \texttt{TestModule} would be:
+\item Listen to a particular message type and execute a \textbf{listener function} as soon as an object is received. Can be used for more advanced strategies for fetching messages. Note that this method can lead to surprising behaviour because the listener function is executed during the run of the dispatching module (leading to log messages with incorrect section headers at the minimum). The listening module should \underline{not} do any heavy work in the listening function as this is supposed to take place in their \texttt{run()} method instead. An example of using this to listen to a message containing an array of \texttt{Object} types in a detector \texttt{TestModule} would be:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
 TestModule(Configuration, Messenger* messenger, std::shared_ptr<Detector>) {
     messenger->registerListener(this,
@@ -313,6 +316,7 @@ All supported objects that can be transferred between modules are shipped with t
 \item \textbf{DepositedCharge}: Set of charges at a specific position in the sensor of a detector. Deposited by an ionizing particle crossing the active material of the sensor.
 \item \textbf{PropagatedCharge}: Charge at a specific position after propagation.
 \item \textbf{PixelCharge}: Set of charges at a particular pixel in the pixel grid.
+\item \textbf{PixelHit}: Hit of a particular pixel after digitization.
 \end{itemize}
 
 \todo{this should be a separate section}
@@ -352,7 +356,7 @@ Units::add("ns", 1);
 Units::get(1, "m/ns"); 
 // Get the framework unit of mm/ns in m/ns 
 Units::convert(1, "m/ns");
-// Give the unit in the best type as string (lowest number higher than one)
+// Give the unit in the best type (lowest number above one) as string 
 //   input is default unit 2000mm/ns and 'best' output is 2m/ns (string)
 Units::display(2e3, {"mm/ns", "m/ns"}); 
 \end{minted}
