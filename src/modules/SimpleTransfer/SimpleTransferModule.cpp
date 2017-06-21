@@ -41,7 +41,7 @@ void SimpleTransferModule::run(unsigned int) {
         auto position = propagated_charge.getPosition();
         // ignore if outside z range of implant
         // FIXME: this logic should be extended
-        if(std::fabs(position.z() - (model->getSensorCenter().z() - model->getSensorSize().z() / 2.0)) >
+        if(std::fabs(position.z() - (model->getSensorCenter().z() + model->getSensorSize().z() / 2.0)) >
            config_.get<double>("max_depth_distance")) {
             LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                        << propagated_charge.getPosition() << " because their local position is not in implant range";

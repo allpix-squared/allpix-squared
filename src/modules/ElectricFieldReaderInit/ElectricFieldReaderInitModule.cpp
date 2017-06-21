@@ -221,7 +221,8 @@ ElectricFieldReaderInitModule::FieldData ElectricFieldReaderInitModule::get_by_f
             file >> input;
 
             // set the electric field at a position
-            (*field)[xind * ysize * zsize * 3 + yind * zsize * 3 + zind * 3 + j] = Units::get(input, "V/cm");
+            // FIXME: need to check if we actually set the field in the correct direction here
+            (*field)[xind * ysize * zsize * 3 + yind * zsize * 3 + zind * 3 + j] = Units::get(-input, "V/cm");
         }
     }
 

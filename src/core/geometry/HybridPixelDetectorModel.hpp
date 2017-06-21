@@ -44,7 +44,7 @@ namespace allpix {
          * The center of the chip as given by \ref DetectorModel::getChipCenter() with extra offset for bump bonds.
          */
         virtual ROOT::Math::XYZPoint getChipCenter() const override {
-            ROOT::Math::XYZVector offset(0, 0, -getBumpHeight());
+            ROOT::Math::XYZVector offset(0, 0, getBumpHeight());
             return DetectorModel::getChipCenter() + offset;
         }
 
@@ -55,7 +55,7 @@ namespace allpix {
          * The center of the chip as given by \ref DetectorModel::getPCBCenter() with extra offset for bump bonds.
          */
         virtual ROOT::Math::XYZPoint getPCBCenter() const override {
-            ROOT::Math::XYZVector offset(0, 0, -getBumpHeight());
+            ROOT::Math::XYZVector offset(0, 0, getBumpHeight());
             return DetectorModel::getPCBCenter() + offset;
         }
 
@@ -68,7 +68,7 @@ namespace allpix {
          */
         virtual ROOT::Math::XYZPoint getBumpsCenter() const {
             ROOT::Math::XYZVector offset(
-                bump_offset_.x(), bump_offset_.y(), -getSensorSize().z() / 2.0 - getBumpHeight() / 2.0);
+                bump_offset_.x(), bump_offset_.y(), getSensorSize().z() / 2.0 + getBumpHeight() / 2.0);
             return getCenter() + offset;
         }
         /**

@@ -32,7 +32,7 @@ void ElectricFieldInputLinearModule::init() {
     auto field = std::make_shared<std::vector<double>>(3);
     (*field)[0] = 0;
     (*field)[1] = 0;
-    (*field)[2] = -field_z;
+    (*field)[2] = field_z;
 
     // set detector field
     detector_->setElectricField(field, {{1, 1, 1}});

@@ -270,7 +270,7 @@ void VisualizationGeant4Module::set_visualization_settings() {
     }
 
     // Set default viewer orientation
-    UI->ApplyCommand("/vis/viewer/set/viewpointThetaPhi 70 20");
+    UI->ApplyCommand("/vis/viewer/set/viewpointThetaPhi -70 20");
 
     // Do auto refresh if not accumulating and start viewer already
     if(!accumulate) {

@@ -80,7 +80,7 @@ void DetectorHistogrammerModule::run(unsigned int) {
 void DetectorHistogrammerModule::finalize() {
     if(total_hits_ != 0) {
         LOG(INFO) << "Plotted " << total_hits_ << " hits in total, mean position is "
-                  << display_vector(total_vector_ / static_cast<double>(total_hits_), {"mm", "um"});
+                  << total_vector_ / static_cast<double>(total_hits_);
     } else {
         LOG(WARNING) << "No hits plotted";
     }

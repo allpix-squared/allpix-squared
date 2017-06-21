@@ -138,8 +138,8 @@ namespace allpix {
             ROOT::Math::XYZVector size;
             size.SetX(2 * std::max(max.x() - getCenter().x(), getCenter().x() - min.x()));
             size.SetY(2 * std::max(max.y() - getCenter().y(), getCenter().y() - min.y()));
-            size.SetZ(2 * std::max((getSensorCenter().z() + getSensorSize().z() / 2.0) - getCenter().z(),
-                                   getCenter().z() - (getPCBCenter().z() - getPCBSize().z() / 2.0)));
+            size.SetZ(2 * std::max(getCenter().z() - (getSensorCenter().z() - getSensorSize().z() / 2.0),
+                                   (getPCBCenter().z() + getPCBSize().z() / 2.0) - getCenter().z()));
             return size;
         }
 
@@ -249,7 +249,7 @@ namespace allpix {
         virtual ROOT::Math::XYZPoint getChipCenter() const {
             ROOT::Math::XYZVector offset((chip_excess_[1] - chip_excess_[3]) / 2.0,
                                          (chip_excess_[0] - chip_excess_[2]) / 2.0,
-                                         -getSensorSize().z() / 2.0 - getChipSize().z() / 2.0);
+                                         getSensorSize().z() / 2.0 + getChipSize().z() / 2.0);
             return getCenter() + offset;
         }
         /**
@@ -299,7 +299,7 @@ namespace allpix {
         virtual ROOT::Math::XYZPoint getPCBCenter() const {
             ROOT::Math::XYZVector offset((pcb_excess_[1] - pcb_excess_[3]) / 2.0,
                                          (pcb_excess_[0] - pcb_excess_[2]) / 2.0,
-                                         -getSensorSize().z() / 2.0 - getChipSize().z() - getPCBSize().z() / 2.0);
+                                         getSensorSize().z() / 2.0 + getChipSize().z() + getPCBSize().z() / 2.0);
             return getCenter() + offset;
         }
         /**
