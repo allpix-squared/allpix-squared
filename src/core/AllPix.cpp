@@ -106,11 +106,13 @@ void AllPix::load() {
     if(global_config.has("random_seed")) {
         // Use provided random seed
         seed = random_init(global_config.get<uint64_t>("random_seed"));
+        LOG(STATUS) << "Initialized PRNG with configured seed " << seed;
     } else {
         // Use entropy from the system
         seed = random_init();
+        LOG(STATUS) << "Initialized PRNG with system entropy seed " << seed;
     }
-    LOG(STATUS) << "Initialized PRNG with seed " << seed;
+
     // Initialize ROOT random generator
     gRandom->SetSeed(get_random_seed());
 
