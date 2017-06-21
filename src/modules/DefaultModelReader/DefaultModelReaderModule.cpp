@@ -86,7 +86,8 @@ std::shared_ptr<DetectorModel> DefaultModelReaderModule::parse_config(const Conf
     // Instantiate the correct detector model
     if(type == "hybrid") {
         return std::make_shared<HybridPixelDetectorModel>(config);
-    } else if(type == "monolithic") {
+    }
+    if(type == "monolithic") {
         return std::make_shared<MonolithicPixelDetectorModel>(config);
     }
 
