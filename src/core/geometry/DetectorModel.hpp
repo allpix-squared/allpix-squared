@@ -37,8 +37,8 @@ namespace allpix {
     class DetectorModel {
     public:
         /**
-         * @brief Constructs a detector model of a certain type
-         * @param type Unique type description of a model
+         * @brief Constructs the base detector model
+         * @param config Configuration description of a model
          */
         explicit DetectorModel(const Configuration& config) : type_(config.getName()), number_of_pixels_(1, 1) {
             using namespace ROOT::Math;

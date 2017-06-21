@@ -27,7 +27,10 @@ namespace allpix {
      */
     class HybridPixelDetectorModel : public DetectorModel {
     public:
-        // Constructor and destructor
+        /**
+         * @brief Constructs the hybrid pixel detector model
+         * @param config Configuration description of the model
+         */
         explicit HybridPixelDetectorModel(const Configuration& config)
             : DetectorModel(config), coverlayer_material_("Al"), has_coverlayer_(false) {
             // Set bump parameters

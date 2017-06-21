@@ -5,8 +5,6 @@
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 
-#include "core/geometry/HybridPixelDetectorModel.hpp"
-
 namespace allpix {
     class DefaultModelReaderModule : public Module {
     public:

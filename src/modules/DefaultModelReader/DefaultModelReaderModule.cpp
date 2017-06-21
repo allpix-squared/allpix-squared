@@ -9,8 +9,10 @@
 #include "core/config/ConfigReader.hpp"
 #include "core/utils/file.h"
 #include "core/utils/log.h"
-
 #include "tools/ROOT.h"
+
+#include "core/geometry/HybridPixelDetectorModel.hpp"
+#include "core/geometry/MonolithicPixelDetectorModel.hpp"
 
 using namespace allpix;
 
@@ -36,7 +38,6 @@ DefaultModelReaderModule::DefaultModelReaderModule(Configuration config, Messeng
             std::vector<std::string> sub_paths = allpix::get_files_in_directory(path);
             for(auto& sub_path : sub_paths) {
                 // accept only with correct model suffix
-                // FIXME .ini is not a good suffix for default models
                 std::string suffix(ALLPIX_MODEL_SUFFIX);
                 if(sub_path.size() < suffix.size() || sub_path.substr(sub_path.size() - suffix.size()) != suffix) {
                     continue;
@@ -85,6 +86,8 @@ std::shared_ptr<DetectorModel> DefaultModelReaderModule::parse_config(const Conf
     // Instantiate the correct detector model
     if(type == "hybrid") {
         return std::make_shared<HybridPixelDetectorModel>(config);
+    } else if(type == "monolithic") {
+        return std::make_shared<MonolithicPixelDetectorModel>(config);
     }
 
     LOG(ERROR) << "Model file " << config.getFilePath() << " type parameter is not valid";
