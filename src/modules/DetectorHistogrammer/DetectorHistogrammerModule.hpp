@@ -46,6 +46,9 @@ namespace allpix {
         // deposits for a specific detector
         std::shared_ptr<PixelHitMessage> pixels_message_;
 
+        ROOT::Math::XYVector total_vector_{};
+        unsigned long total_hits_{};
+
         // histograms
         TH2I* histogram; // FIXME: bad name
         TH1I* cluster_size;

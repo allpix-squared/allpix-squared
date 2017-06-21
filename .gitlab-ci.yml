@@ -5,16 +5,14 @@ slc6-gcc62:
     script:
         - export COMPILER_TYPE="gcc"
         - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab-ci.d/load_deps.sh
         - mkdir build
         - cd build
         - cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - ninja
         - ninja install
         - ctest --output-on-failure -j4
-        - cd ..
-        - source $G4ENV_INIT
-        - bin/allpix -c etc/example.conf
-
+        - cat output_check_performance.log  
 
 slc6-llvm39:
     tags:
@@ -30,10 +28,7 @@ slc6-llvm39:
         - ninja check-format
         - ninja check-lint
         - ninja install
-        - ctest --output-on-failure -j4
-        - cd ..
-        - source $G4ENV_INIT
-        - bin/allpix -c etc/example.conf
+# skip tests because lint takes long
 
 centos7-gcc62:
     tags:
@@ -42,15 +37,14 @@ centos7-gcc62:
     script:
         - export COMPILER_TYPE="gcc"
         - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab-ci.d/load_deps.sh
         - mkdir build
         - cd build
         - cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - ninja
         - ninja install
         - ctest --output-on-failure -j4
-        - cd ..
-        - source $G4ENV_INIT
-        - bin/allpix -c etc/example.conf
+        - cat output_check_performance.log 
 
 centos7-llvm39:
     tags:
@@ -66,22 +60,21 @@ centos7-llvm39:
         - ninja check-format
         - ninja check-lint
         - ninja install
-        - ctest --output-on-failure -j4
-        - cd ..
-        - source $G4ENV_INIT
-        - bin/allpix -c etc/example.conf
+# skip tests because lint takes long
 
 mac1012-clang80:
     tags:
         - mac
     script:
         - source .gitlab-ci.d/init_mac.sh
+        - source .gitlab-ci.d/load_deps.sh
         - mkdir build
         - cd build
         - cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - ninja
         - ninja install
-        - ctest --output-on-failure -j4
         - cd ..
-        - source $G4ENV_INIT
         - bin/allpix -c etc/example.conf
+        - cd build
+        - ctest --output-on-failure -j4
+        - cat output_check_performance.log 
