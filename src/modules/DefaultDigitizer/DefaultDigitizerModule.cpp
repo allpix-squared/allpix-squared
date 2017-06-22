@@ -107,7 +107,7 @@ void DefaultDigitizerModule::run(unsigned int) {
         }
 
         // Add the hit to the hitmap
-        hits.emplace_back(pixel);
+        hits.emplace_back(pixel, 0, charge);
 
         // FIXME Simulate analog / digital cross talk
         // double crosstalk_neigubor_row = 0.00;
