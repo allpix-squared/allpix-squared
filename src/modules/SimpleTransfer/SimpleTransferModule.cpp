@@ -12,6 +12,7 @@
 #include "core/geometry/HybridPixelDetectorModel.hpp"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
+#include "tools/ROOT.h"
 
 #include "objects/PixelCharge.hpp"
 
@@ -56,8 +57,8 @@ void SimpleTransferModule::run(unsigned int) {
         // ignore if out of pixel grid
         if(xpixel < 0 || xpixel >= model->getNPixels().x() || ypixel < 0 || ypixel >= model->getNPixels().y()) {
             LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
-                       << propagated_charge.getPosition() << " because their nearest pixel (" << pixel.x() << ","
-                       << pixel.y() << ") is outside the grid";
+                       << propagated_charge.getPosition() << " because their nearest pixel " << pixel
+                       << " is outside the grid";
             continue;
         }
 
@@ -66,7 +67,7 @@ void SimpleTransferModule::run(unsigned int) {
         transferrred_charges_count += propagated_charge.getCharge();
 
         LOG(DEBUG) << "Set of " << propagated_charge.getCharge() << " propagated charges at "
-                   << propagated_charge.getPosition() << " brought to pixel (" << pixel.x() << "," << pixel.y() << ")";
+                   << propagated_charge.getPosition() << " brought to pixel " << pixel;
 
         // add the pixel the list of hit pixels
         pixel_map[pixel].emplace_back(propagated_charge);
@@ -82,7 +83,7 @@ void SimpleTransferModule::run(unsigned int) {
         }
         pixel_charges.emplace_back(pixel.first, charge);
 
-        LOG(DEBUG) << "Set of " << charge << " charges combined at (" << pixel.first.x() << "," << pixel.first.y() << ")";
+        LOG(DEBUG) << "Set of " << charge << " charges combined at " << pixel.first;
     }
 
     // writing summary and update statistics
