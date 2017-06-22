@@ -266,7 +266,7 @@ void VisualizationGeant4Module::set_visualization_settings() {
     auto view_style = config_.get<std::string>("view_style", "surface");
     ret_code = UI->ApplyCommand("/vis/viewer/set/style " + view_style);
     if(ret_code != 0) {
-        throw InvalidValueError(config_, "view_style", "viewing style is not defined");
+        throw InvalidValueError(config_, "view_style", "view style is not defined");
     }
 
     // Set default viewer orientation
