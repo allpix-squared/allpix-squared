@@ -13,6 +13,7 @@
 #ifndef ALLPIX_DETECTOR_MODEL_H
 #define ALLPIX_DETECTOR_MODEL_H
 
+#include <array>
 #include <string>
 #include <utility>
 
