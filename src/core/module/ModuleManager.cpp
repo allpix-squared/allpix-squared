@@ -163,16 +163,6 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
             unique = reinterpret_cast<bool (*)()>(uniqueFunction)(); // NOLINT
         }
 
-        // Create main ROOT directory for this module type
-        auto module_dir = modules_file_->GetDirectory(config.getName().c_str());
-        if(module_dir == nullptr) {
-            module_dir = modules_file_->mkdir(config.getName().c_str());
-            if(module_dir == nullptr) {
-                throw RuntimeError("Cannot create or access ROOT directory for module " + config.getName());
-            }
-        }
-        module_dir->cd();
-
         // Add the global internal parameters to the configuration
         std::string global_dir = gSystem->pwd();
         config.set<std::string>("_global_dir", global_dir);
@@ -184,10 +174,9 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
         // Create the modules from the library depending on the module type
         std::vector<std::pair<ModuleIdentifier, Module*>> mod_list;
         if(unique) {
-            mod_list.emplace_back(
-                create_unique_modules(loaded_libraries_[lib_name], config, messenger, geo_manager, module_dir));
+            mod_list.emplace_back(create_unique_modules(loaded_libraries_[lib_name], config, messenger, geo_manager));
         } else {
-            mod_list = create_detector_modules(loaded_libraries_[lib_name], config, messenger, geo_manager, module_dir);
+            mod_list = create_detector_modules(loaded_libraries_[lib_name], config, messenger, geo_manager);
         }
 
         // Loop through all created instantiations
@@ -228,8 +217,10 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
 /**
  * For unique modules a single instance is created per section
  */
-std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
-    void* library, Configuration config, Messenger* messenger, GeometryManager* geo_manager, TDirectory* directory) {
+std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* library,
+                                                                          Configuration config,
+                                                                          Messenger* messenger,
+                                                                          GeometryManager* geo_manager) {
     // Make the vector to return
     std::string module_name = config.getName();
 
@@ -245,15 +236,6 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
         identifier_str += config.get<std::string>("output");
     }
     ModuleIdentifier identifier(module_name, identifier_str, 0);
-
-    if(!identifier_str.empty()) {
-        directory = directory->mkdir(identifier_str.c_str());
-    }
-    if(directory == nullptr) {
-        throw RuntimeError("Cannot create or access unique ROOT directory for module " + identifier.getUniqueName());
-    }
-    directory->cd();
-    config.set<uintptr_t>("_ROOT_directory", reinterpret_cast<uintptr_t>(directory)); // NOLINT
 
     // Get the generator function for this module
     void* generator = dlsym(library, ALLPIX_GENERATOR_FUNCTION);
@@ -271,7 +253,6 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
     std::string path_mod_name = identifier.getUniqueName();
     std::replace(path_mod_name.begin(), path_mod_name.end(), ':', '_');
     output_dir += path_mod_name;
-    config.set<std::string>("_output_dir", output_dir);
 
     // Convert to correct generator function
     auto module_generator = reinterpret_cast<Module* (*)(Configuration, Messenger*, GeometryManager*)>(generator); // NOLINT
@@ -296,6 +277,9 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
     auto end = std::chrono::steady_clock::now();
     module_execution_time_[module] += static_cast<std::chrono::duration<long double>>(end - start).count();
 
+    // Set the module directory afterwards to catch invalid access in constructor
+    module->get_configuration().set<std::string>("_output_dir", output_dir);
+
     // Store the module and return it to the Module Manager
     return std::make_pair(identifier, module);
 }
@@ -306,8 +290,10 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
  * For detector modules multiple instantiations may be created per section. An instantiation is created for every detector if
  * no selection parameters are provided. Otherwise instantiations are created for every linked detector name and type.
  */
-std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector_modules(
-    void* library, Configuration config, Messenger* messenger, GeometryManager* geo_manager, TDirectory* directory) {
+std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector_modules(void* library,
+                                                                                         Configuration config,
+                                                                                         Messenger* messenger,
+                                                                                         GeometryManager* geo_manager) {
     std::string module_name = config.getName();
     LOG(DEBUG) << "Creating instantions for detector module " << module_name;
 
@@ -390,17 +376,6 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         std::string path_mod_name = instance.second.getUniqueName();
         std::replace(path_mod_name.begin(), path_mod_name.end(), ':', '/');
         output_dir += path_mod_name;
-        config.set<std::string>("_output_dir", output_dir);
-
-        // Get local directory and save it in the config
-        auto local_directory = directory->mkdir(instance.second.getIdentifier().c_str());
-        if(local_directory == nullptr) {
-            throw RuntimeError("Cannot create or access unique ROOT directory for module " +
-                               instance.second.getUniqueName());
-        }
-        local_directory->cd();
-        // FIXME: is there a better way to store the directory in the module
-        config.set<uintptr_t>("_ROOT_directory", reinterpret_cast<uintptr_t>(local_directory)); // NOLINT
 
         // Set the log section header
         std::string old_section_name = Log::getSection();
@@ -417,6 +392,9 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         // Update execution time
         auto end = std::chrono::steady_clock::now();
         module_execution_time_[module] += static_cast<std::chrono::duration<long double>>(end - start).count();
+
+        // Set the module directory afterwards to catch invalid access in constructor
+        module->get_configuration().set<std::string>("_output_dir", output_dir);
 
         // Check if the module called the correct base class constructor
         if(module->getDetector().get() != instance.first.get()) {
@@ -494,6 +472,34 @@ void ModuleManager::init() {
     LOG_PROGRESS(STATUS, "INIT_LOOP") << "Initializing " << modules_.size() << " module instantiations";
     for(auto& module : modules_) {
         LOG_PROGRESS(TRACE, "INIT_LOOP") << "Initializing " << module->get_identifier().getUniqueName();
+
+        LOG(TRACE) << "Creating and accessing ROOT directory";
+        // Create main ROOT directory for this module class if it does not exists yet
+        std::string module_name = module->get_configuration().getName();
+        auto directory = modules_file_->GetDirectory(module_name.c_str());
+        if(directory == nullptr) {
+            directory = modules_file_->mkdir(module_name.c_str());
+            if(directory == nullptr) {
+                throw RuntimeError("Cannot create or access overall ROOT directory for module " + module_name);
+            }
+        }
+        directory->cd();
+
+        // Create local directory for this instance
+        TDirectory* local_directory = nullptr;
+        if(module->get_identifier().getIdentifier().empty()) {
+            local_directory = directory;
+        } else {
+            local_directory = directory->mkdir(module->get_identifier().getIdentifier().c_str());
+            if(local_directory == nullptr) {
+                throw RuntimeError("Cannot create or access local ROOT directory for module " + module->getUniqueName());
+            }
+        }
+
+        // Change to the directory and save it in the module
+        local_directory->cd();
+        module->set_ROOT_directory(local_directory);
+
         // Get current time
         auto start = std::chrono::steady_clock::now();
         // Set init module section header
@@ -532,6 +538,7 @@ void ModuleManager::run() {
         if(terminate_) {
             LOG(INFO) << "Interrupting event loop after " << i << " events because of request to terminate";
             number_of_events = i;
+            global_config_.set<unsigned int>("number_of_events", i);
             break;
         }
 
@@ -620,6 +627,7 @@ void ModuleManager::finalize() {
         module->finalize();
         // Close the ROOT directory after finalizing
         module->getROOTDirectory()->Close();
+        module->set_ROOT_directory(nullptr);
         // Reset logging
         Log::setSection(old_section_name);
         set_module_after(old_settings);
@@ -645,6 +653,10 @@ void ModuleManager::finalize() {
     for(auto& module_time : module_execution_time_) {
         LOG(DEBUG) << " Module " << module_time.first->getUniqueName() << " took " << module_time.second << " seconds";
     }
+    LOG(STATUS) << "Average processing time is \x1B[1m"
+                << std::round((1000 * total_time) / global_config_.get<unsigned int>("number_of_events", 1u))
+                << " ms/event\x1B[0m, event generation at \x1B[1m"
+                << std::round(global_config_.get<double>("number_of_events", 1.) / total_time) << " Hz\x1B[0m";
 }
 
 /**

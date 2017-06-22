@@ -3,7 +3,7 @@
 if [ "$(uname)" == "Darwin" ]; then
     if [ $(sw_vers -productVersion | awk -F '.' '{print $1 "." $2}') == "10.12" ]; then
         OS=mac1012
-        COMPILER_TYPE=clang
+        COMPILER_TYPE=llvm
         COMPILER_VERSION=clang80
     else
         echo "Bootstrap only works on macOS Sierra (10.12)"
@@ -14,7 +14,7 @@ else
     exit 1
 fi
 
-#Determine is you have CVMFS installed
+# Determine is you have CVMFS installed
 if [ ! -d "/cvmfs" ]; then
     echo "No CVMFS detected, please install it."
     exit 1
@@ -25,20 +25,7 @@ if [ ! -d "/cvmfs/clicdp.cern.ch" ]; then
     exit 1
 fi
 
-
-#Determine which compiler to use
-if [ -z ${COMPILER_TYPE} ]; then
-    COMPILER_TYPE="gcc"
-fi
-if [ ${COMPILER_TYPE} == "gcc" ]; then
-    COMPILER_VERSION="gcc62"
-fi
-if [ ${COMPILER_TYPE} == "llvm" ]; then
-    COMPILER_VERSION="llvm39"
-fi
-
-
-#Choose build type
+# Choose build type
 if [ -z ${BUILD_TYPE} ]; then
     BUILD_TYPE=opt
 fi
@@ -49,22 +36,11 @@ CLICREPO=/cvmfs/clicdp.cern.ch
 BUILD_FLAVOUR=x86_64-${OS}-${COMPILER_VERSION}-${BUILD_TYPE}
 
 #--------------------------------------------------------------------------------
-#     Compiler
-#--------------------------------------------------------------------------------
-
-if [ ${COMPILER_TYPE} == "gcc" ]; then
-    source ${CLICREPO}/compilers/gcc/6.2.0/x86_64-${OS}/setup.sh
-fi
-if [ ${COMPILER_TYPE} == "llvm" ]; then
-    source ${CLICREPO}/compilers/llvm/3.9.0/x86_64-${OS}/setup.sh
-fi
-
-#--------------------------------------------------------------------------------
 #     Python
 #--------------------------------------------------------------------------------
 export PYTHONDIR=${CLICREPO}/software/Python/2.7.12/${BUILD_FLAVOUR}
 export PATH=${PYTHONDIR}/bin:$PATH
-export LD_LIBRARY_PATH=${PYTHONDIR}/lib:${LD_LIBRARY_PATH}
+export DYLD_LIBRARY_PATH=${PYTHONDIR}/lib:${LD_LIBRARY_PATH}
 
 #--------------------------------------------------------------------------------
 #     CMake
@@ -79,7 +55,7 @@ export PATH=${CMAKE_HOME}/bin:$PATH
 
 export PYTHONDIR=${CLICREPO}/software/Python/2.7.12/${BUILD_FLAVOUR}
 export PATH=${PYTHONDIR}/bin:$PATH
-export LD_LIBRARY_PATH=${PYTHONDIR}/lib:${LD_LIBRARY_PATH}
+export DYLD_LIBRARY_PATH="${PYTHONDIR}/lib:$DYLD_LIBRARY_PATH"
 
 #--------------------------------------------------------------------------------
 #     ROOT
@@ -88,7 +64,7 @@ export LD_LIBRARY_PATH=${PYTHONDIR}/lib:${LD_LIBRARY_PATH}
 export ROOTSYS=${CLICREPO}/software/ROOT/6.08.00/${BUILD_FLAVOUR}
 export PYTHONPATH="$ROOTSYS/lib:$PYTHONPATH"
 export PATH="$ROOTSYS/bin:$PATH"
-export LD_LIBRARY_PATH="$ROOTSYS/lib:$LD_LIBRARY_PATH"
+export DYLD_LIBRARY_PATH="$ROOTSYS/lib:$DYLD_LIBRARY_PATH"
 
 #--------------------------------------------------------------------------------
 #     XercesC
@@ -96,7 +72,7 @@ export LD_LIBRARY_PATH="$ROOTSYS/lib:$LD_LIBRARY_PATH"
 
 export XercesC_HOME=${CLICREPO}/software/Xerces-C/3.1.4/${BUILD_FLAVOUR}
 export PATH="$XercesC_HOME/bin:$PATH"
-export LD_LIBRARY_PATH="$XercesC_HOME/lib:$LD_LIBRARY_PATH"
+export DYLD_LIBRARY_PATH="$XercesC_HOME/lib:$DYLD_LIBRARY_PATH"
 
 
 #--------------------------------------------------------------------------------
@@ -114,7 +90,7 @@ export G4SYSTEM="Linux-g++"
 #--------------------------------------------------------------------------------
 
 export BOOST_ROOT=${CLICREPO}/software/Boost/1.62.0/${BUILD_FLAVOUR}
-export LD_LIBRARY_PATH="${BOOST_ROOT}/lib:$LD_LIBRARY_PATH"
+export DYLD_LIBRARY_PATH="${BOOST_ROOT}/lib:$DYLD_LIBRARY_PATH"
 
 #--------------------------------------------------------------------------------
 #     Ninja

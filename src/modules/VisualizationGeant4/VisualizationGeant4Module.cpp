@@ -28,6 +28,7 @@
 #include <G4VisAttributes.hh>
 #include <G4VisExecutive.hh>
 
+#include "core/config/exceptions.h"
 #include "core/utils/log.h"
 
 using namespace allpix;
@@ -48,9 +49,15 @@ VisualizationGeant4Module::VisualizationGeant4Module(Configuration config, Messe
     }
 }
 VisualizationGeant4Module::~VisualizationGeant4Module() {
+    // Add a driver
+    std::string driver;
+    try {
+        driver = config_.get<std::string>("driver", "");
+    } catch(InvalidKeyError& e) {
+    }
+
     // Invoke VRML2FILE workaround if necessary to prevent visualisation in case of exceptions
-    if(!has_run_ && vis_manager_g4_ != nullptr && vis_manager_g4_->GetCurrentViewer() != nullptr &&
-       config_.get<std::string>("driver", "") == "VRML2FILE") {
+    if(!has_run_ && vis_manager_g4_ != nullptr && vis_manager_g4_->GetCurrentViewer() != nullptr && driver == "VRML2FILE") {
         LOG(TRACE) << "Invoking VRML workaround to prevent visualization under error conditions";
 
         // FIXME: workaround to skip VRML visualization in case we stopped before reaching the run method
@@ -259,7 +266,7 @@ void VisualizationGeant4Module::set_visualization_settings() {
     auto view_style = config_.get<std::string>("view_style", "surface");
     ret_code = UI->ApplyCommand("/vis/viewer/set/style " + view_style);
     if(ret_code != 0) {
-        throw InvalidValueError(config_, "view_style", "viewing style is not defined");
+        throw InvalidValueError(config_, "view_style", "view style is not defined");
     }
 
     // Set default viewer orientation

@@ -19,15 +19,19 @@ namespace allpix {
     public:
         using Pixel = ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>;
 
-        explicit PixelHit(Pixel pixel);
+        explicit PixelHit(Pixel pixel, double time, double signal);
 
         PixelHit::Pixel getPixel() const;
+        double getTime() const { return time_; }
+        double getSignal() const { return signal_; }
 
         ClassDef(PixelHit, 1);
         PixelHit() = default;
 
     private:
         Pixel pixel_;
+        double time_;
+        double signal_;
     };
 
     // link to the carrying message

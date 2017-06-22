@@ -154,14 +154,14 @@ namespace allpix {
          * @brief Get the detector linked to this module
          * @return Linked detector or a null pointer if this is an unique module
          */
-        std::shared_ptr<Detector> getDetector();
+        std::shared_ptr<Detector> getDetector() const;
 
         /**
          * @brief Get the unique name of this module
          * @return Unique name
          * @note Can be used to interact with ROOT objects that require an unique name
          */
-        std::string getUniqueName();
+        std::string getUniqueName() const;
 
         /**
          * @brief Get an absolute path to be used for output from a relative path
@@ -170,13 +170,13 @@ namespace allpix {
          * @return Canonical path to an output file
          */
         // TODO [doc] Should be renamed to getOutputFile
-        std::string getOutputPath(const std::string& path, bool global = false);
+        std::string getOutputPath(const std::string& path, bool global = false) const;
 
         /**
-         * @brief Get ROOT directory which should be used to output histograms and such
-         * @note It is not needed to change to the file explicitly as this in done automatically before running
+         * @brief Get ROOT directory which should be used to output histograms et cetera
+         * @return ROOT directory for storage
          */
-        TDirectory* getROOTDirectory();
+        TDirectory* getROOTDirectory() const;
 
         /**
          * @brief Initialize the module before the event sequence
@@ -212,15 +212,22 @@ namespace allpix {
          * @brief Get the module identifier for internal use
          * @return Identifier of the instantiation
          */
-        ModuleIdentifier get_identifier();
+        ModuleIdentifier get_identifier() const;
         ModuleIdentifier identifier_;
 
         /**
          * @brief Get the module configuration for internal use
          * @return Configuration of the module
          */
-        Configuration get_configuration();
+        Configuration& get_configuration();
         Configuration config_;
+
+        /**
+         * @brief Set the ROOT directory for output
+         * @param val ROOT directory for storage
+         */
+        void set_ROOT_directory(TDirectory* directory);
+        TDirectory* directory_{};
 
         /**
          * @brief Add a messenger delegate to this instantiation

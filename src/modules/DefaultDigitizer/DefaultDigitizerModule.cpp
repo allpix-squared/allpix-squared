@@ -9,6 +9,7 @@
 #include "core/utils/log.h"
 #include "core/utils/random.h"
 #include "core/utils/unit.h"
+#include "tools/ROOT.h"
 
 // ROOT includes
 #include <TFile.h>
@@ -63,7 +64,7 @@ void DefaultDigitizerModule::run(unsigned int) {
         auto pixel = pixel_charge.getPixel();
         auto charge = static_cast<double>(pixel_charge.getCharge());
 
-        LOG(DEBUG) << "Received pixel (" << pixel.x() << "," << pixel.y() << "), charge " << Units::display(charge, "e");
+        LOG(DEBUG) << "Received pixel " << pixel << ", charge " << Units::display(charge, "e");
         if(config_.get<bool>("output_plots")) {
             h_pxq->Fill(charge / 1e3);
         }
@@ -107,7 +108,7 @@ void DefaultDigitizerModule::run(unsigned int) {
         }
 
         // Add the hit to the hitmap
-        hits.emplace_back(pixel);
+        hits.emplace_back(pixel, 0, charge);
 
         // FIXME Simulate analog / digital cross talk
         // double crosstalk_neigubor_row = 0.00;
