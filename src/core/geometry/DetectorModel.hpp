@@ -140,12 +140,12 @@ namespace allpix {
             std::array<ROOT::Math::XYZVector, 3> sizes = {{getSensorSize(), getChipSize(), getSupportSize()}};
 
             for(size_t i = 0; i < 3; ++i) {
-                max.SetX(std::max(max.x(), (centers[i] + sizes[i] / 2.0).x()));
-                max.SetY(std::max(max.y(), (centers[i] + sizes[i] / 2.0).y()));
-                max.SetZ(std::max(max.z(), (centers[i] + sizes[i] / 2.0).z()));
-                min.SetX(std::min(min.x(), (centers[i] - sizes[i] / 2.0).x()));
-                min.SetY(std::min(min.y(), (centers[i] - sizes[i] / 2.0).y()));
-                min.SetZ(std::max(min.z(), (centers[i] - sizes[i] / 2.0).z()));
+                max.SetX(std::max(max.x(), (centers.at(i) + sizes.at(i) / 2.0).x()));
+                max.SetY(std::max(max.y(), (centers.at(i) + sizes.at(i) / 2.0).y()));
+                max.SetZ(std::max(max.z(), (centers.at(i) + sizes.at(i) / 2.0).z()));
+                min.SetX(std::min(min.x(), (centers.at(i) - sizes.at(i) / 2.0).x()));
+                min.SetY(std::min(min.y(), (centers.at(i) - sizes.at(i) / 2.0).y()));
+                min.SetZ(std::max(min.z(), (centers.at(i) - sizes.at(i) / 2.0).z()));
             }
 
             ROOT::Math::XYZVector size;
