@@ -291,11 +291,11 @@ void VisualizationGeant4Module::set_visibility_attributes() {
     G4VisAttributes wrapperVisAtt = G4VisAttributes(G4Color(1, 0, 0, 0.1)); // Red
     wrapperVisAtt.SetVisibility(false);
 
-    // PCB
-    auto pcbColor = G4Color(0.36, 0.66, 0.055, alpha); // Greenish
-    G4VisAttributes pcbVisAtt = G4VisAttributes(pcbColor);
-    pcbVisAtt.SetLineWidth(1);
-    pcbVisAtt.SetForceSolid(false);
+    // support
+    auto supportColor = G4Color(0.36, 0.66, 0.055, alpha); // Greenish
+    G4VisAttributes supportVisAtt = G4VisAttributes(supportColor);
+    supportVisAtt.SetLineWidth(1);
+    supportVisAtt.SetForceSolid(false);
 
     // Chip
     auto chipColor = G4Color(0.18, 0.2, 0.21, alpha); // Blackish
@@ -381,9 +381,9 @@ void VisualizationGeant4Module::set_visibility_attributes() {
             chip_log->SetVisAttributes(ChipVisAtt);
         }
 
-        auto PCB_log = detector->getExternalObject<G4LogicalVolume>("pcb_log");
-        if(PCB_log != nullptr) {
-            PCB_log->SetVisAttributes(pcbVisAtt);
+        auto support_log = detector->getExternalObject<G4LogicalVolume>("support_log");
+        if(support_log != nullptr) {
+            support_log->SetVisAttributes(supportVisAtt);
         }
     }
 }

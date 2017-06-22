@@ -13,7 +13,7 @@
   kOrange+1 : experimental hall
   kRed      : wrapper
   kCyan     : Wafer, pixels
-  kGreen    : PCB, bumps container volumes
+  kGreen    : support, bumps container volumes
   kYellow   : Bump logical volume
   kGray     : Chip, GuardRings (+2)
   kBlack    : Appliances
@@ -410,34 +410,34 @@ void GeometryBuilderTGeoModule::BuildPixelDevices() {
         }
 
         ///////////////////////////////////////////////////////////
-        // PCB
-        // The PCB is placed respect to the wrapper.
+        // support
+        // The support is placed respect to the wrapper.
         // Needs to be pushed -half Si wafer in z direction
-        if(dsc->getPCBSize().z() / 2.0 != 0) {
+        if(dsc->getSupportSize().z() / 2.0 != 0) {
 
             // Retrieve Plexiglass
             TGeoMedium* plexiglass_med = gGeoManager->GetMedium("Plexiglass");
             // Create logical volume
-            TGeoVolume* PCB_log = gGeoManager->MakeBox(PCBName + id_s,
-                                                       plexiglass_med,
-                                                       dsc->getPCBSize().x() / 2.0,
-                                                       dsc->getPCBSize().y() / 2.0,
-                                                       dsc->getPCBSize().z() / 2.0);
+            TGeoVolume* support_log = gGeoManager->MakeBox(supportName + id_s,
+                                                           plexiglass_med,
+                                                           dsc->getSupportSize().x() / 2.0,
+                                                           dsc->getSupportSize().y() / 2.0,
+                                                           dsc->getSupportSize().z() / 2.0);
             // G4Color::Green(), SetLineWidth(1), SetForceSolid(true)
-            PCB_log->SetLineColor(kGreen);
+            support_log->SetLineColor(kGreen);
 
             // Placement !
-            TGeoTranslation* posPCB =
-                new TGeoTranslation("LocalPCBTranslation" + id_s,
+            TGeoTranslation* possupport =
+                new TGeoTranslation("LocalsupportTranslation" + id_s,
                                     0,
                                     0,
                                     -dsc->getSensorSize().z() / 2.0 - 2. * dsc->getCoverlayerHeight() / 2.0 - bump_height -
-                                        2. * dsc->getChipSize().z() / 2.0 - dsc->getPCBSize().z() / 2.0);
-            posPCB->Add(posDevice);
-            LOG(DEBUG) << " - PCB position         : " << Print(posPCB);
-            wrapper_log->AddNode(PCB_log, 1, posPCB);
+                                        2. * dsc->getChipSize().z() / 2.0 - dsc->getSupportSize().z() / 2.0);
+            possupport->Add(posDevice);
+            LOG(DEBUG) << " - support position         : " << Print(possupport);
+            wrapper_log->AddNode(support_log, 1, possupport);
 
-        } // end if PCB
+        } // end if support
 
         ///////////////////////////////////////////////////////////
         // Coverlayer if requested (typically made of Al, but user configurable)
@@ -743,9 +743,9 @@ BumpVisAtt->SetForceSolid(true);
 //BumpVisAtt->SetVisibility(true);
 //BumpVisAtt->SetForceAuxEdgeVisible(true);
 
-G4VisAttributes * pcbVisAtt = new G4VisAttributes(G4Color::Green());
-pcbVisAtt->SetLineWidth(1);
-pcbVisAtt->SetForceSolid(true);
+G4VisAttributes * supportVisAtt = new G4VisAttributes(G4Color::Green());
+supportVisAtt->SetLineWidth(1);
+supportVisAtt->SetForceSolid(true);
 
 G4VisAttributes * guardRingsVisAtt = new G4VisAttributes(G4Color(0.5,0.5,0.5,1));
 guardRingsVisAtt->SetLineWidth(1);

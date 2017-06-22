@@ -52,14 +52,14 @@ namespace allpix {
         }
 
         /**
-         * @brief Get center of the PCB in local coordinates
-         * @return Center of the PCB
+         * @brief Get center of the support in local coordinates
+         * @return Center of the support
          *
-         * The center of the chip as given by \ref DetectorModel::getPCBCenter() with extra offset for bump bonds.
+         * The center of the chip as given by \ref DetectorModel::getSupportCenter() with extra offset for bump bonds.
          */
-        virtual ROOT::Math::XYZPoint getPCBCenter() const override {
+        virtual ROOT::Math::XYZPoint getSupportCenter() const override {
             ROOT::Math::XYZVector offset(0, 0, getBumpHeight());
-            return DetectorModel::getPCBCenter() + offset;
+            return DetectorModel::getSupportCenter() + offset;
         }
 
         /**

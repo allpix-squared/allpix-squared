@@ -30,7 +30,7 @@ namespace allpix {
      * @brief Base of all detector models
      *
      * Implements the minimum required for a detector model. A model always has a pixel grid with a specific pixel size. The
-     * pixel grid defines the base size of the sensor, chip and PCB. Excess length can be specified. Every part of the
+     * pixel grid defines the base size of the sensor, chip and support. Excess length can be specified. Every part of the
      * detector model has a defined center and size which can be overloaded by specialized detector models. The basic
      * detector model also defines the rotation center in the local coordinate system.
      */
@@ -67,15 +67,15 @@ namespace allpix {
             setChipExcessLeft(config.get<double>("chip_excess_left", default_chip_excess));
             setChipExcessRight(config.get<double>("chip_excess_right", default_chip_excess));
 
-            // PCB thickness
-            setPCBThickness(config.get<double>("pcb_thickness", 0));
+            // support thickness
+            setSupportThickness(config.get<double>("support_thickness", 0));
 
-            // Excess around the pcb from the pixel grid
-            auto default_pcb_excess = config.get<double>("pcb_excess", 0);
-            setPCBExcessTop(config.get<double>("pcb_excess_top", default_pcb_excess));
-            setPCBExcessBottom(config.get<double>("pcb_excess_bottom", default_pcb_excess));
-            setPCBExcessLeft(config.get<double>("pcb_excess_left", default_pcb_excess));
-            setPCBExcessRight(config.get<double>("pcb_excess_right", default_pcb_excess));
+            // Excess around the support from the pixel grid
+            auto default_support_excess = config.get<double>("support_excess", 0);
+            setSupportExcessTop(config.get<double>("support_excess_top", default_support_excess));
+            setSupportExcessBottom(config.get<double>("support_excess_bottom", default_support_excess));
+            setSupportExcessLeft(config.get<double>("support_excess_left", default_support_excess));
+            setSupportExcessRight(config.get<double>("support_excess_right", default_support_excess));
         }
         /**
          * @brief Essential virtual destructor
@@ -126,20 +126,20 @@ namespace allpix {
             max.SetY(std::max(max.y(), (getSensorCenter() + getSensorSize() / 2.0).y()));
             max.SetX(std::max(max.x(), (getChipCenter() + getChipSize() / 2.0).x()));
             max.SetY(std::max(max.y(), (getChipCenter() + getChipSize() / 2.0).y()));
-            max.SetX(std::max(max.x(), (getPCBCenter() + getPCBSize() / 2.0).x()));
-            max.SetY(std::max(max.y(), (getPCBCenter() + getPCBSize() / 2.0).y()));
+            max.SetX(std::max(max.x(), (getSupportCenter() + getSupportSize() / 2.0).x()));
+            max.SetY(std::max(max.y(), (getSupportCenter() + getSupportSize() / 2.0).y()));
             min.SetX(std::min(min.x(), (getSensorCenter() - getSensorSize() / 2.0).x()));
             min.SetY(std::min(min.y(), (getSensorCenter() - getSensorSize() / 2.0).y()));
             min.SetX(std::min(min.x(), (getChipCenter() - getChipSize() / 2.0).x()));
             min.SetY(std::min(min.y(), (getChipCenter() - getChipSize() / 2.0).y()));
-            min.SetX(std::min(min.x(), (getPCBCenter() - getPCBSize() / 2.0).x()));
-            min.SetY(std::min(min.y(), (getPCBCenter() - getPCBSize() / 2.0).y()));
+            min.SetX(std::min(min.x(), (getSupportCenter() - getSupportSize() / 2.0).x()));
+            min.SetY(std::min(min.y(), (getSupportCenter() - getSupportSize() / 2.0).y()));
 
             ROOT::Math::XYZVector size;
             size.SetX(2 * std::max(max.x() - getCenter().x(), getCenter().x() - min.x()));
             size.SetY(2 * std::max(max.y() - getCenter().y(), getCenter().y() - min.y()));
             size.SetZ(2 * std::max(getCenter().z() - (getSensorCenter().z() - getSensorSize().z() / 2.0),
-                                   (getPCBCenter().z() + getPCBSize().z() / 2.0) - getCenter().z()));
+                                   (getSupportCenter().z() + getSupportSize().z() / 2.0) - getCenter().z()));
             return size;
         }
 
@@ -278,55 +278,55 @@ namespace allpix {
          */
         void setChipExcessLeft(double val) { chip_excess_[3] = val; }
 
-        /* PCB */
+        /* support */
         /**
-         * @brief Get size of the PCB
-         * @return Size of the PCB
+         * @brief Get size of the support
+         * @return Size of the support
          *
          * Calculated from \ref Detector::getGridSize "pixel grid size", chip excess and chip thickness
          */
-        virtual ROOT::Math::XYZVector getPCBSize() const {
+        virtual ROOT::Math::XYZVector getSupportSize() const {
             ROOT::Math::XYZVector excess_thickness(
-                (pcb_excess_[1] + pcb_excess_[3]), (pcb_excess_[0] + pcb_excess_[2]), pcb_thickness_);
+                (support_excess_[1] + support_excess_[3]), (support_excess_[0] + support_excess_[2]), support_thickness_);
             return getGridSize() + excess_thickness;
         }
         /**
-         * @brief Get center of the PCB in local coordinates
-         * @return Center of the PCB
+         * @brief Get center of the support in local coordinates
+         * @return Center of the support
          *
-         * Center of the PCB calculcated from PCB excess, sensor and chip offsets
+         * Center of the support calculcated from support excess, sensor and chip offsets
          */
-        virtual ROOT::Math::XYZPoint getPCBCenter() const {
-            ROOT::Math::XYZVector offset((pcb_excess_[1] - pcb_excess_[3]) / 2.0,
-                                         (pcb_excess_[0] - pcb_excess_[2]) / 2.0,
-                                         getSensorSize().z() / 2.0 + getChipSize().z() + getPCBSize().z() / 2.0);
+        virtual ROOT::Math::XYZPoint getSupportCenter() const {
+            ROOT::Math::XYZVector offset((support_excess_[1] - support_excess_[3]) / 2.0,
+                                         (support_excess_[0] - support_excess_[2]) / 2.0,
+                                         getSensorSize().z() / 2.0 + getChipSize().z() + getSupportSize().z() / 2.0);
             return getCenter() + offset;
         }
         /**
-         * @brief Set the thickness of the PCB
-         * @param val Thickness of the PCB
+         * @brief Set the thickness of the support
+         * @param val Thickness of the support
          */
-        void setPCBThickness(double val) { pcb_thickness_ = val; }
+        void setSupportThickness(double val) { support_thickness_ = val; }
         /**
          * @brief Set the excess at the top of the sensor (positive y-coordinate)
-         * @param val PCB top excess
+         * @param val support top excess
          */
-        void setPCBExcessTop(double val) { pcb_excess_[0] = val; }
+        void setSupportExcessTop(double val) { support_excess_[0] = val; }
         /**
-         * @brief Set the excess at the right of the PCB (positive x-coordinate)
-         * @param val PCB right excess
+         * @brief Set the excess at the right of the support (positive x-coordinate)
+         * @param val support right excess
          */
-        void setPCBExcessRight(double val) { pcb_excess_[1] = val; }
+        void setSupportExcessRight(double val) { support_excess_[1] = val; }
         /**
-         * @brief Set the excess at the bottom of the PCB (negative y-coordinate)
-         * @param val PCB bottom excess
+         * @brief Set the excess at the bottom of the support (negative y-coordinate)
+         * @param val support bottom excess
          */
-        void setPCBExcessBottom(double val) { pcb_excess_[2] = val; }
+        void setSupportExcessBottom(double val) { support_excess_[2] = val; }
         /**
-         * @brief Set the excess at the left of the PCB (negative x-coordinate)
-         * @param val PCB left excess
+         * @brief Set the excess at the left of the support (negative x-coordinate)
+         * @param val support left excess
          */
-        void setPCBExcessLeft(double val) { pcb_excess_[3] = val; }
+        void setSupportExcessLeft(double val) { support_excess_[3] = val; }
 
     protected:
         std::string type_;
@@ -340,8 +340,8 @@ namespace allpix {
         double chip_thickness_;
         double chip_excess_[4]{};
 
-        double pcb_thickness_;
-        double pcb_excess_[4]{};
+        double support_thickness_;
+        double support_excess_[4]{};
     };
 } // namespace allpix
 

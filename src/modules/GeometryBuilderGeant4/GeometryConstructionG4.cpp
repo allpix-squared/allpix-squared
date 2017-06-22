@@ -132,7 +132,7 @@ void GeometryConstructionG4::build_pixel_devices() {
      * define the global names for all the elements in the setup
      */
     pair<G4String, G4String> wrapperName = make_pair("wrapper", "");
-    pair<G4String, G4String> PCBName = make_pair("PCB", "");
+    pair<G4String, G4String> supportName = make_pair("support", "");
     pair<G4String, G4String> BoxName = make_pair("Box", "");
     pair<G4String, G4String> SliceName = make_pair("Slice", "");
     pair<G4String, G4String> GuardRingsExtName = make_pair("GuardRingsExt", "");
@@ -158,7 +158,7 @@ void GeometryConstructionG4::build_pixel_devices() {
          */
         std::string name = detector->getName();
         wrapperName.second = wrapperName.first + "_" + name;
-        PCBName.second = PCBName.first + "_" + name;
+        supportName.second = supportName.first + "_" + name;
         BoxName.second = BoxName.first + "_" + name;
         GuardRingsExtName.second = GuardRingsExtName.first + "_" + name;
         GuardRingsName.second = GuardRingsName.first + "_" + name;
@@ -243,7 +243,7 @@ void GeometryConstructionG4::build_pixel_devices() {
         detector->setExternalObject("pixel_param", pixel_param);
 
         /* CHIP
-         * the chip connected to the bumps bond and the PCB
+         * the chip connected to the bumps bond and the support
          */
 
         // Construct the chips only if necessary
@@ -268,27 +268,29 @@ void GeometryConstructionG4::build_pixel_devices() {
             detector->setExternalObject("chip_phys", chip_phys);
         }
 
-        /* PCB
-         * global pcb chip
+        /* support
+         * global support chip
          */
 
-        if(model->getPCBSize().z() > 1e-9) {
-            // Create the box containing the PCB
-            auto PCB_box = std::make_shared<G4Box>(
-                PCBName.second, model->getPCBSize().x() / 2.0, model->getPCBSize().y() / 2.0, model->getPCBSize().z() / 2.0);
-            solids_.push_back(PCB_box);
+        if(model->getSupportSize().z() > 1e-9) {
+            // Create the box containing the support
+            auto support_box = std::make_shared<G4Box>(supportName.second,
+                                                       model->getSupportSize().x() / 2.0,
+                                                       model->getSupportSize().y() / 2.0,
+                                                       model->getSupportSize().z() / 2.0);
+            solids_.push_back(support_box);
 
-            // Create the logical volume for the PCB
-            auto PCB_log =
-                make_shared_no_delete<G4LogicalVolume>(PCB_box.get(), materials_["epoxy"], PCBName.second + "_log");
-            detector->setExternalObject("pcb_log", PCB_log);
+            // Create the logical volume for the support
+            auto support_log =
+                make_shared_no_delete<G4LogicalVolume>(support_box.get(), materials_["epoxy"], supportName.second + "_log");
+            detector->setExternalObject("support_log", support_log);
 
-            // Place the PCB
-            auto pcb_pos = toG4Vector(model->getPCBCenter() - model->getCenter());
-            LOG(DEBUG) << "  - PCB\t: " << display_vector(pcb_pos, {"mm", "um"});
-            auto PCB_phys = make_shared_no_delete<G4PVPlacement>(
-                nullptr, pcb_pos, PCB_log.get(), PCBName.second + "_phys", wrapper_log.get(), false, 0, true);
-            detector->setExternalObject("pcb_phys", PCB_phys);
+            // Place the support
+            auto support_pos = toG4Vector(model->getSupportCenter() - model->getCenter());
+            LOG(DEBUG) << "  - support\t: " << display_vector(support_pos, {"mm", "um"});
+            auto support_phys = make_shared_no_delete<G4PVPlacement>(
+                nullptr, support_pos, support_log.get(), supportName.second + "_phys", wrapper_log.get(), false, 0, true);
+            detector->setExternalObject("support_phys", support_phys);
         }
 
         // Build the bump bonds only for hybrid pixel detectors
