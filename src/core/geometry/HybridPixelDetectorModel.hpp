@@ -55,10 +55,14 @@ namespace allpix {
          * @brief Get center of the support in local coordinates
          * @return Center of the support
          *
-         * The center of the chip as given by \ref DetectorModel::getSupportCenter() with extra offset for bump bonds.
+         * The center of the chip as given by \ref DetectorModel::getSupportCenter() possibly with extra offset for bump
+         * bonds.
          */
         virtual ROOT::Math::XYZPoint getSupportCenter() const override {
-            ROOT::Math::XYZVector offset(0, 0, getBumpHeight());
+            ROOT::Math::XYZVector offset(0, 0, 0);
+            if(support_location_ == "chip") {
+                offset.SetZ(getBumpHeight());
+            }
             return DetectorModel::getSupportCenter() + offset;
         }
 
@@ -110,7 +114,7 @@ namespace allpix {
          */
         void setBumpOffset(ROOT::Math::XYVector val) { bump_offset_ = std::move(val); }
 
-        // FIXME: Coverlayer will possibly be revised
+        // FIXME: Coverlayer will possibly be revised and is currently not supported
         /**
          * @brief Returns if this detector model has a cover layer
          * @return If the model has a cover layer

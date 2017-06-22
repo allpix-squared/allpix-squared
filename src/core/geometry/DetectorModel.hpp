@@ -22,7 +22,10 @@
 #include <Math/Vector3D.h>
 
 #include "core/config/Configuration.hpp"
+#include "core/config/exceptions.h"
 #include "tools/ROOT.h"
+
+#include "core/utils/log.h"
 
 namespace allpix {
     /**
@@ -40,7 +43,7 @@ namespace allpix {
          * @brief Constructs the base detector model
          * @param config Configuration description of a model
          */
-        explicit DetectorModel(const Configuration& config) : type_(config.getName()), number_of_pixels_(1, 1) {
+        explicit DetectorModel(const Configuration& config) : type_(config.getName()) {
             using namespace ROOT::Math;
 
             // Number of pixels
@@ -59,7 +62,6 @@ namespace allpix {
 
             // Chip thickness
             setChipThickness(config.get<double>("chip_thickness", 0));
-
             // Excess around the chip from the pixel grid
             auto default_chip_excess = config.get<double>("chip_excess", 0);
             setChipExcessTop(config.get<double>("chip_excess_top", default_chip_excess));
@@ -67,15 +69,20 @@ namespace allpix {
             setChipExcessLeft(config.get<double>("chip_excess_left", default_chip_excess));
             setChipExcessRight(config.get<double>("chip_excess_right", default_chip_excess));
 
-            // support thickness
+            // Support thickness
             setSupportThickness(config.get<double>("support_thickness", 0));
-
             // Excess around the support from the pixel grid
             auto default_support_excess = config.get<double>("support_excess", 0);
             setSupportExcessTop(config.get<double>("support_excess_top", default_support_excess));
             setSupportExcessBottom(config.get<double>("support_excess_bottom", default_support_excess));
             setSupportExcessLeft(config.get<double>("support_excess_left", default_support_excess));
             setSupportExcessRight(config.get<double>("support_excess_right", default_support_excess));
+            // Support location
+            auto support_location = config.get<std::string>("support_location", "chip");
+            if(support_location != "sensor" && support_location != "chip") {
+                throw InvalidValueError(config, "support_location", "location of the support should be 'chip' or 'sensor'");
+            }
+            setSupportLocation(support_location);
         }
         /**
          * @brief Essential virtual destructor
@@ -120,26 +127,28 @@ namespace allpix {
          * the minimum size if \ref Detector::getCenter corresponds with the geometric center of the model.
          */
         virtual ROOT::Math::XYZVector getSize() const {
-            ROOT::Math::XYVector max(std::numeric_limits<double>::lowest(), std::numeric_limits<double>::lowest());
-            ROOT::Math::XYVector min(std::numeric_limits<double>::max(), std::numeric_limits<double>::max());
-            max.SetX(std::max(max.x(), (getSensorCenter() + getSensorSize() / 2.0).x()));
-            max.SetY(std::max(max.y(), (getSensorCenter() + getSensorSize() / 2.0).y()));
-            max.SetX(std::max(max.x(), (getChipCenter() + getChipSize() / 2.0).x()));
-            max.SetY(std::max(max.y(), (getChipCenter() + getChipSize() / 2.0).y()));
-            max.SetX(std::max(max.x(), (getSupportCenter() + getSupportSize() / 2.0).x()));
-            max.SetY(std::max(max.y(), (getSupportCenter() + getSupportSize() / 2.0).y()));
-            min.SetX(std::min(min.x(), (getSensorCenter() - getSensorSize() / 2.0).x()));
-            min.SetY(std::min(min.y(), (getSensorCenter() - getSensorSize() / 2.0).y()));
-            min.SetX(std::min(min.x(), (getChipCenter() - getChipSize() / 2.0).x()));
-            min.SetY(std::min(min.y(), (getChipCenter() - getChipSize() / 2.0).y()));
-            min.SetX(std::min(min.x(), (getSupportCenter() - getSupportSize() / 2.0).x()));
-            min.SetY(std::min(min.y(), (getSupportCenter() - getSupportSize() / 2.0).y()));
+            ROOT::Math::XYZVector max(std::numeric_limits<double>::lowest(),
+                                      std::numeric_limits<double>::lowest(),
+                                      std::numeric_limits<double>::lowest());
+            ROOT::Math::XYZVector min(
+                std::numeric_limits<double>::max(), std::numeric_limits<double>::max(), std::numeric_limits<double>::max());
+
+            std::array<ROOT::Math::XYZPoint, 3> centers = {getSensorCenter(), getChipCenter(), getSupportCenter()};
+            std::array<ROOT::Math::XYZVector, 3> sizes = {getSensorSize(), getChipSize(), getSupportSize()};
+
+            for(size_t i = 0; i < 3; ++i) {
+                max.SetX(std::max(max.x(), (centers[i] + sizes[i] / 2.0).x()));
+                max.SetY(std::max(max.y(), (centers[i] + sizes[i] / 2.0).y()));
+                max.SetZ(std::max(max.z(), (centers[i] + sizes[i] / 2.0).z()));
+                min.SetX(std::min(min.x(), (centers[i] - sizes[i] / 2.0).x()));
+                min.SetY(std::min(min.y(), (centers[i] - sizes[i] / 2.0).y()));
+                min.SetZ(std::max(min.z(), (centers[i] - sizes[i] / 2.0).z()));
+            }
 
             ROOT::Math::XYZVector size;
             size.SetX(2 * std::max(max.x() - getCenter().x(), getCenter().x() - min.x()));
             size.SetY(2 * std::max(max.y() - getCenter().y(), getCenter().y() - min.y()));
-            size.SetZ(2 * std::max(getCenter().z() - (getSensorCenter().z() - getSensorSize().z() / 2.0),
-                                   (getSupportCenter().z() + getSupportSize().z() / 2.0) - getCenter().z()));
+            size.SetZ(2 * std::max(max.z() - getCenter().z(), getCenter().z() - min.z()));
             return size;
         }
 
@@ -278,7 +287,7 @@ namespace allpix {
          */
         void setChipExcessLeft(double val) { chip_excess_[3] = val; }
 
-        /* support */
+        /* SUPPORT */
         /**
          * @brief Get size of the support
          * @return Size of the support
@@ -297,9 +306,13 @@ namespace allpix {
          * Center of the support calculcated from support excess, sensor and chip offsets
          */
         virtual ROOT::Math::XYZPoint getSupportCenter() const {
-            ROOT::Math::XYZVector offset((support_excess_[1] - support_excess_[3]) / 2.0,
-                                         (support_excess_[0] - support_excess_[2]) / 2.0,
-                                         getSensorSize().z() / 2.0 + getChipSize().z() + getSupportSize().z() / 2.0);
+            ROOT::Math::XYZVector offset(
+                (support_excess_[1] - support_excess_[3]) / 2.0, (support_excess_[0] - support_excess_[2]) / 2.0, 0);
+            if(support_location_ == "sensor") {
+                offset.SetZ(-getSensorSize().z() / 2.0 - getSupportSize().z() / 2.0);
+            } else if(support_location_ == "chip") {
+                offset.SetZ(getSensorSize().z() / 2.0 + getChipSize().z() + getSupportSize().z() / 2.0);
+            }
             return getCenter() + offset;
         }
         /**
@@ -327,6 +340,10 @@ namespace allpix {
          * @param val support left excess
          */
         void setSupportExcessLeft(double val) { support_excess_[3] = val; }
+        /**
+         * @brief Set the location of the support (defaults to next to the chip)
+         */
+        void setSupportLocation(std::string val) { support_location_ = std::move(val); };
 
     protected:
         std::string type_;
@@ -334,13 +351,14 @@ namespace allpix {
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> number_of_pixels_;
         ROOT::Math::XYVector pixel_size_;
 
-        double sensor_thickness_;
+        double sensor_thickness_{};
         double sensor_excess_[4]{};
 
-        double chip_thickness_;
+        double chip_thickness_{};
         double chip_excess_[4]{};
 
-        double support_thickness_;
+        std::string support_location_;
+        double support_thickness_{};
         double support_excess_[4]{};
     };
 } // namespace allpix
