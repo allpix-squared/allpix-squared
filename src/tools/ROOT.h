@@ -7,6 +7,7 @@
 #ifndef ALLPIX_ROOT_H
 #define ALLPIX_ROOT_H
 
+#include <ostream>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -105,6 +106,26 @@ namespace allpix {
         res += std::to_string(vec.Psi());
         return res;
     }
+
+    /** Overload all ostream operator for vectors in ROOT to let them also work for integers etc. */
+    template <typename T, typename U>
+    inline std::ostream& operator<<(std::ostream& os, const ROOT::Math::PositionVector3D<T, U>& vec) {
+        return os << "(" << vec.x() << "," << vec.y() << "," << vec.z() << ")";
+    }
+    template <typename T, typename U>
+    inline std::ostream& operator<<(std::ostream& os, const ROOT::Math::PositionVector2D<T, U>& vec) {
+        return os << "(" << vec.x() << "," << vec.y() << ")";
+    }
+    template <typename T, typename U>
+    inline std::ostream& operator<<(std::ostream& os, const ROOT::Math::DisplacementVector3D<T, U>& vec) {
+        return os << "(" << vec.x() << "," << vec.y() << "," << vec.z() << ")";
+    }
+    template <typename T, typename U>
+    inline std::ostream& operator<<(std::ostream& os, const ROOT::Math::DisplacementVector2D<T, U>& vec) {
+        return os << "(" << vec.x() << "," << vec.y() << ")";
+    }
+
+    /** Utility function for displaying ROOT vectors with units */
 
     // TODO Should this function change name, be moved or put in another namespace?
     template <typename T> inline std::string display_vector(T inp, std::string unit) {
