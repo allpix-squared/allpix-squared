@@ -26,6 +26,7 @@
 #include "G4StepLimiterPhysics.hh"
 
 #include "core/geometry/HybridPixelDetectorModel.hpp"
+#include "core/module/exceptions.h"
 #include "core/utils/log.h"
 #include "tools/ROOT.h"
 #include "tools/geant4.h"
@@ -112,11 +113,14 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
 void GeometryConstructionG4::init_materials() {
     G4NistManager* nistman = G4NistManager::Instance();
 
+    // Add vacuum and air
     materials_["vacuum"] = new G4Material("Vacuum", 1, 1.01 * g / mole, 0.0001 * g / cm3);
     materials_["air"] = nistman->FindOrBuildMaterial("G4_AIR");
 
+    // Build table of materials from database
     materials_["silicon"] = nistman->FindOrBuildMaterial("G4_Si");
-    materials_["epoxy"] = nistman->FindOrBuildMaterial("G4_PLEXIGLASS");
+    materials_["epoxy"] = nistman->FindOrBuildMaterial("G4_PLEXIGLASS"); // FIXME: more exact material
+    materials_["kapton"] = nistman->FindOrBuildMaterial("G4_KAPTON");
 
     // Create solder element
     G4Element* Sn = new G4Element("Tin", "Sn", 50., 118.710 * g / mole);
@@ -283,13 +287,17 @@ void GeometryConstructionG4::build_pixel_devices() {
             solids_.push_back(support_box);
 
             // Create the logical volume for the support
+            auto support_material_iter = materials_.find(model->getSupportMaterial());
+            if(support_material_iter == materials_.end()) {
+                throw ModuleError("Cannot construct a support layer of material '" + model->getSupportMaterial() + "'");
+            }
             auto support_log =
                 make_shared_no_delete<G4LogicalVolume>(support_box.get(), materials_["epoxy"], supportName.second + "_log");
             detector->setExternalObject("support_log", support_log);
 
             // Place the support
             auto support_pos = toG4Vector(model->getSupportCenter() - model->getCenter());
-            LOG(DEBUG) << "  - support\t: " << display_vector(support_pos, {"mm", "um"});
+            LOG(DEBUG) << "  - Support\t: " << display_vector(support_pos, {"mm", "um"});
             auto support_phys = make_shared_no_delete<G4PVPlacement>(
                 nullptr, support_pos, support_log.get(), supportName.second + "_phys", wrapper_log.get(), false, 0, true);
             detector->setExternalObject("support_phys", support_phys);
@@ -330,6 +338,7 @@ void GeometryConstructionG4::build_pixel_devices() {
 
             // Place the general bumps volume
             G4ThreeVector bumps_pos = toG4Vector(hybrid_model->getBumpsCenter() - hybrid_model->getCenter());
+            LOG(DEBUG) << "  - Bumps\t: " << display_vector(bumps_pos, {"mm", "um"});
             auto bumps_wrapper_phys = make_shared_no_delete<G4PVPlacement>(nullptr,
                                                                            bumps_pos,
                                                                            bumps_wrapper_log.get(),

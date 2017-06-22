@@ -83,6 +83,8 @@ namespace allpix {
                 throw InvalidValueError(config, "support_location", "location of the support should be 'chip' or 'sensor'");
             }
             setSupportLocation(support_location);
+            // Support material
+            setSupportMaterial(config.get<std::string>("support_material", "epoxy"));
         }
         /**
          * @brief Essential virtual destructor
@@ -345,6 +347,17 @@ namespace allpix {
          * @param val Location of the support ('chip' or 'sensor')
          */
         void setSupportLocation(std::string val) { support_location_ = std::move(val); };
+        /**
+         * @brief Get the support material
+         * @return Name of the support material
+         */
+        std::string getSupportMaterial() { return support_material_; }
+        /**
+         * @brief Set the material of the support (defaults to epoxy)
+         * @param val Name of the support material ('epoxy' or 'kapton' common)
+         */
+        // FIXME: define the set of allowed values more strictly
+        void setSupportMaterial(std::string val) { support_material_ = std::move(val); };
 
     protected:
         std::string type_;
@@ -358,9 +371,10 @@ namespace allpix {
         double chip_thickness_{};
         double chip_excess_[4]{};
 
-        std::string support_location_;
         double support_thickness_{};
         double support_excess_[4]{};
+        std::string support_location_;
+        std::string support_material_;
     };
 } // namespace allpix
 
