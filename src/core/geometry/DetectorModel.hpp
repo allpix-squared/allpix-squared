@@ -322,26 +322,27 @@ namespace allpix {
         void setSupportThickness(double val) { support_thickness_ = val; }
         /**
          * @brief Set the excess at the top of the sensor (positive y-coordinate)
-         * @param val support top excess
+         * @param val Support top excess
          */
         void setSupportExcessTop(double val) { support_excess_[0] = val; }
         /**
          * @brief Set the excess at the right of the support (positive x-coordinate)
-         * @param val support right excess
+         * @param val Support right excess
          */
         void setSupportExcessRight(double val) { support_excess_[1] = val; }
         /**
          * @brief Set the excess at the bottom of the support (negative y-coordinate)
-         * @param val support bottom excess
+         * @param val Support bottom excess
          */
         void setSupportExcessBottom(double val) { support_excess_[2] = val; }
         /**
          * @brief Set the excess at the left of the support (negative x-coordinate)
-         * @param val support left excess
+         * @param val Support left excess
          */
         void setSupportExcessLeft(double val) { support_excess_[3] = val; }
         /**
          * @brief Set the location of the support (defaults to next to the chip)
+         * @param val Location of the support ('chip' or 'sensor')
          */
         void setSupportLocation(std::string val) { support_location_ = std::move(val); };
 

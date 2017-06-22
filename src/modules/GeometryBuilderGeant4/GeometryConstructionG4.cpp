@@ -32,9 +32,6 @@
 
 #include "Parameterization2DG4.hpp"
 
-// FIXME: should get rid of CLHEP units
-#include <CLHEP/Units/SystemOfUnits.h>
-
 using namespace CLHEP;
 using namespace std;
 using namespace allpix;
@@ -56,6 +53,11 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     init_materials();
 
     // Set world material
+    std::string world_material = config_.get<std::string>("world_material", "air");
+    if(materials_.find(world_material) == materials_.end()) {
+        throw InvalidValueError(config_, "world_material", "material does not exists, use 'air' or 'vacuum'");
+    }
+
     world_material_ = materials_["vacuum"];
     LOG(TRACE) << "Material of world is " << world_material_->GetName();
 
@@ -323,7 +325,7 @@ void GeometryConstructionG4::build_pixel_devices() {
 
             // Create the logical wrapper volume
             auto bumps_wrapper_log =
-                make_shared_no_delete<G4LogicalVolume>(bump_box.get(), materials_["air"], BumpBoxName.second + "_log");
+                make_shared_no_delete<G4LogicalVolume>(bump_box.get(), world_material_, BumpBoxName.second + "_log");
             detector->setExternalObject("bumps_wrapper_log", bumps_wrapper_log);
 
             // Place the general bumps volume
