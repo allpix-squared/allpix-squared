@@ -135,8 +135,8 @@ namespace allpix {
             ROOT::Math::XYZVector min(
                 std::numeric_limits<double>::max(), std::numeric_limits<double>::max(), std::numeric_limits<double>::max());
 
-            std::array<ROOT::Math::XYZPoint, 3> centers = {getSensorCenter(), getChipCenter(), getSupportCenter()};
-            std::array<ROOT::Math::XYZVector, 3> sizes = {getSensorSize(), getChipSize(), getSupportSize()};
+            std::array<ROOT::Math::XYZPoint, 3> centers = {{getSensorCenter(), getChipCenter(), getSupportCenter()}};
+            std::array<ROOT::Math::XYZVector, 3> sizes = {{getSensorSize(), getChipSize(), getSupportSize()}};
 
             for(size_t i = 0; i < 3; ++i) {
                 max.SetX(std::max(max.x(), (centers[i] + sizes[i] / 2.0).x()));
