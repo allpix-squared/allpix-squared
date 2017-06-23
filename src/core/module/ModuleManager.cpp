@@ -532,7 +532,8 @@ void ModuleManager::init() {
  * delegates and the logging after initialization
  */
 void ModuleManager::run() {
-    auto number_of_events = global_config_.get<unsigned int>("number_of_events", 1u);
+    global_config_.setDefault<unsigned int>("number_of_events", 1u);
+    auto number_of_events = global_config_.get<unsigned int>("number_of_events");
     for(unsigned int i = 0; i < number_of_events; ++i) {
         // Check for termination
         if(terminate_) {
@@ -653,10 +654,13 @@ void ModuleManager::finalize() {
     for(auto& module_time : module_execution_time_) {
         LOG(DEBUG) << " Module " << module_time.first->getUniqueName() << " took " << module_time.second << " seconds";
     }
-    LOG(STATUS) << "Average processing time is \x1B[1m"
-                << std::round((1000 * total_time) / global_config_.get<unsigned int>("number_of_events", 1u))
-                << " ms/event\x1B[0m, event generation at \x1B[1m"
-                << std::round(global_config_.get<double>("number_of_events", 1.) / total_time) << " Hz\x1B[0m";
+    long double processing_time = 0;
+    if(global_config_.get<unsigned int>("number_of_events") > 0) {
+        processing_time = std::round((1000 * total_time) / global_config_.get<unsigned int>("number_of_events"));
+    }
+
+    LOG(STATUS) << "Average processing time is \x1B[1m" << processing_time << " ms/event\x1B[0m, event generation at \x1B[1m"
+                << std::round(global_config_.get<double>("number_of_events") / total_time) << " Hz\x1B[0m";
 }
 
 /**

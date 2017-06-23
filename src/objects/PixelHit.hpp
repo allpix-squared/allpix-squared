@@ -30,8 +30,8 @@ namespace allpix {
 
     private:
         Pixel pixel_;
-        double time_;
-        double signal_;
+        double time_{};
+        double signal_{};
     };
 
     // link to the carrying message
