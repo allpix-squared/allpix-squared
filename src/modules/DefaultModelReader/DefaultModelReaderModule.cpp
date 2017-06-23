@@ -9,8 +9,10 @@
 #include "core/config/ConfigReader.hpp"
 #include "core/utils/file.h"
 #include "core/utils/log.h"
-
 #include "tools/ROOT.h"
+
+#include "core/geometry/HybridPixelDetectorModel.hpp"
+#include "core/geometry/MonolithicPixelDetectorModel.hpp"
 
 using namespace allpix;
 
@@ -36,7 +38,6 @@ DefaultModelReaderModule::DefaultModelReaderModule(Configuration config, Messeng
             std::vector<std::string> sub_paths = allpix::get_files_in_directory(path);
             for(auto& sub_path : sub_paths) {
                 // accept only with correct model suffix
-                // FIXME .ini is not a good suffix for default models
                 std::string suffix(ALLPIX_MODEL_SUFFIX);
                 if(sub_path.size() < suffix.size() || sub_path.substr(sub_path.size() - suffix.size()) != suffix) {
                     continue;
@@ -76,63 +77,21 @@ DefaultModelReaderModule::DefaultModelReaderModule(Configuration config, Messeng
     }
 }
 
-std::shared_ptr<PixelDetectorModel> DefaultModelReaderModule::parse_config(const Configuration& config) {
-    std::string model_name = config.getName();
-    std::shared_ptr<PixelDetectorModel> model = std::make_shared<PixelDetectorModel>(model_name);
+std::shared_ptr<DetectorModel> DefaultModelReaderModule::parse_config(const Configuration& config) {
+    if(!config.has("type")) {
+        LOG(ERROR) << "Model file " << config.getFilePath() << " does not provide a type parameter";
+    }
+    auto type = config.get<std::string>("type");
 
-    using namespace ROOT::Math;
-
-    // pixel amount
-    if(config.has("pixel_amount")) {
-        model->setNPixels(config.get<DisplacementVector2D<ROOT::Math::Cartesian2D<int>>>("pixel_amount"));
+    // Instantiate the correct detector model
+    if(type == "hybrid") {
+        return std::make_shared<HybridPixelDetectorModel>(config);
     }
-    // size, positions and offsets
-    if(config.has("pixel_size")) {
-        model->setPixelSize(config.get<XYVector>("pixel_size"));
-    }
-    if(config.has("chip_size")) {
-        model->setChipSize(config.get<XYZVector>("chip_size"));
-    }
-    if(config.has("chip_offset")) {
-        model->setChipOffset(config.get<XYZVector>("chip_offset"));
-    }
-    if(config.has("sensor_size")) {
-        model->setSensorSize(config.get<XYZVector>("sensor_size"));
-    }
-    if(config.has("sensor_offset")) {
-        model->setSensorOffset(config.get<XYVector>("sensor_offset"));
-    }
-    if(config.has("pcb_size")) {
-        model->setPCBSize(config.get<XYZVector>("pcb_size"));
+    if(type == "monolithic") {
+        return std::make_shared<MonolithicPixelDetectorModel>(config);
     }
 
-    // excess for the guard rings
-    if(config.has("sensor_gr_excess_htop")) {
-        model->setGuardRingExcessTop(config.get<double>("sensor_gr_excess_htop"));
-    }
-    if(config.has("sensor_gr_excess_hbottom")) {
-        model->setGuardRingExcessBottom(config.get<double>("sensor_gr_excess_hbottom"));
-    }
-    if(config.has("sensor_gr_excess_hleft")) {
-        model->getGuardRingExcessLeft(config.get<double>("sensor_gr_excess_hleft"));
-    }
-    if(config.has("sensor_gr_excess_hright")) {
-        model->setGuardRingExcessHRight(config.get<double>("sensor_gr_excess_hright"));
-    }
-
-    // bump parameters
-    if(config.has("bump_sphere_radius")) {
-        model->setBumpSphereRadius(config.get<double>("bump_sphere_radius"));
-    }
-    if(config.has("bump_height")) {
-        model->setBumpHeight(config.get<double>("bump_height"));
-    }
-    if(config.has("bump_cylinder_radius")) {
-        model->setBumpCylinderRadius(config.get<double>("bump_cylinder_radius"));
-    }
-    if(config.has("bump_offset")) {
-        model->setBumpOffset(config.get<XYVector>("bump_offset"));
-    }
-
-    return model;
+    LOG(ERROR) << "Model file " << config.getFilePath() << " type parameter is not valid";
+    // FIXME: The model can probably be silently ignored if we have more model readers later
+    throw InvalidValueError(config, "type", "model type is not supported");
 }

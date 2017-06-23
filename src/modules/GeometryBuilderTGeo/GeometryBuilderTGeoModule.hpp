@@ -23,7 +23,7 @@
 // AllPix2
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
-#include "core/geometry/PixelDetectorModel.hpp"
+#include "core/geometry/HybridPixelDetectorModel.hpp"
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 
@@ -32,7 +32,7 @@
  * as they will be used to retrieve the objects from the gGeoManager.
  ***/
 const TString WrapperName = "Wrapper";
-const TString PCBName = "PCB";
+const TString supportName = "support";
 const TString WaferName = "Wafer"; // Box in AllPix1
 const TString CoverName = "Coverlayer";
 const TString SliceName = "Slice";

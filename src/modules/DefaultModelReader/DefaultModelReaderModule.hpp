@@ -5,8 +5,6 @@
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 
-#include "core/geometry/PixelDetectorModel.hpp"
-
 namespace allpix {
     class DefaultModelReaderModule : public Module {
     public:
@@ -15,7 +13,7 @@ namespace allpix {
 
     private:
         // Parses the file and construct a model
-        std::shared_ptr<PixelDetectorModel> parse_config(const Configuration&);
+        std::shared_ptr<DetectorModel> parse_config(const Configuration&);
 
         Configuration config_;
         GeometryManager* geo_mgr_;

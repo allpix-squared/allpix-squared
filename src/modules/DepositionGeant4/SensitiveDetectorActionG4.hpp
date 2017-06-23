@@ -20,8 +20,6 @@ class G4HCofThisEvent;
 class G4Event;
 
 namespace allpix {
-    class PixelDetectorModel;
-
     class SensitiveDetectorActionG4 : public G4VSensitiveDetector {
     public:
         // Constructor and destructor

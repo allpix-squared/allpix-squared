@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "core/config/exceptions.h"
-#include "core/geometry/PixelDetectorModel.hpp"
+#include "core/geometry/HybridPixelDetectorModel.hpp"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "tools/ROOT.h"
@@ -28,7 +28,7 @@ SimpleTransferModule::SimpleTransferModule(Configuration config, Messenger* mess
 // run method that does the main computations for the module
 void SimpleTransferModule::run(unsigned int) {
     // get detector model
-    auto model = std::dynamic_pointer_cast<PixelDetectorModel>(detector_->getModel());
+    auto model = std::dynamic_pointer_cast<HybridPixelDetectorModel>(detector_->getModel());
     if(model == nullptr) {
         throw ModuleError("Detector model of " + detector_->getName() +
                           " is not a PixelDetectorModel: other models are not supported by this module!");
@@ -42,19 +42,20 @@ void SimpleTransferModule::run(unsigned int) {
         auto position = propagated_charge.getPosition();
         // ignore if outside z range of implant
         // FIXME: this logic should be extended
-        if(std::fabs(position.z() - model->getSensorMinZ()) > config_.get<double>("max_depth_distance")) {
+        if(std::fabs(position.z() - (model->getSensorCenter().z() + model->getSensorSize().z() / 2.0)) >
+           config_.get<double>("max_depth_distance")) {
             LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                        << propagated_charge.getPosition() << " because their local position is not in implant range";
             continue;
         }
 
         // find the nearest pixel
-        auto xpixel = static_cast<int>(std::round(position.x() / model->getPixelSizeX()));
-        auto ypixel = static_cast<int>(std::round(position.y() / model->getPixelSizeY()));
+        auto xpixel = static_cast<int>(std::round(position.x() / model->getPixelSize().x()));
+        auto ypixel = static_cast<int>(std::round(position.y() / model->getPixelSize().y()));
         PixelCharge::Pixel pixel(xpixel, ypixel);
 
         // ignore if out of pixel grid
-        if(xpixel < 0 || xpixel >= model->getNPixelsX() || ypixel < 0 || ypixel >= model->getNPixelsY()) {
+        if(xpixel < 0 || xpixel >= model->getNPixels().x() || ypixel < 0 || ypixel >= model->getNPixels().y()) {
             LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                        << propagated_charge.getPosition() << " because their nearest pixel " << pixel
                        << " is outside the grid";

@@ -60,9 +60,12 @@ Configuration ConfigManager::getGlobalConfiguration() {
     }
     return global_config;
 }
-
 void ConfigManager::addIgnoreHeaderName(std::string name) {
     ignore_names_.emplace(std::move(name));
+}
+
+bool ConfigManager::hasConfiguration(const std::string& name) {
+    return reader_.hasConfiguration(name);
 }
 
 /**

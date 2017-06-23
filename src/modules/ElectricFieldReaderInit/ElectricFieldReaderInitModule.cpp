@@ -12,7 +12,7 @@
 #include <TH2F.h>
 
 #include "core/config/exceptions.h"
-#include "core/geometry/PixelDetectorModel.hpp"
+#include "core/geometry/HybridPixelDetectorModel.hpp"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 
@@ -51,20 +51,20 @@ void ElectricFieldReaderInitModule::init() {
             double min1, max1;
             double min2, max2;
             if(project == 'x') {
-                min1 = model->getSensorMinY();
-                max1 = model->getSensorMinY() + model->getSensorSizeY();
-                min2 = model->getSensorMinZ();
-                max2 = model->getSensorMinZ() + model->getSensorSizeZ();
+                min1 = model->getSensorCenter().y() - model->getSensorSize().y() / 2.0;
+                max1 = model->getSensorCenter().y() + model->getSensorSize().y() / 2.0;
+                min2 = model->getSensorCenter().z() - model->getSensorSize().z() / 2.0;
+                max2 = model->getSensorCenter().z() + model->getSensorSize().z() / 2.0;
             } else if(project == 'y') {
-                min1 = model->getSensorMinX();
-                max1 = model->getSensorMinX() + model->getSensorSizeX();
-                min2 = model->getSensorMinZ();
-                max2 = model->getSensorMinZ() + model->getSensorSizeZ();
+                min1 = model->getSensorCenter().x() - model->getSensorSize().x() / 2.0;
+                max1 = model->getSensorCenter().x() + model->getSensorSize().x() / 2.0;
+                min2 = model->getSensorCenter().z() - model->getSensorSize().z() / 2.0;
+                max2 = model->getSensorCenter().z() + model->getSensorSize().z() / 2.0;
             } else {
-                min1 = model->getSensorMinX();
-                max1 = model->getSensorMinX() + model->getSensorSizeX();
-                min2 = model->getSensorMinY();
-                max2 = model->getSensorMinY() + model->getSensorSizeY();
+                min1 = model->getSensorCenter().x() - model->getSensorSize().x() / 2.0;
+                max1 = model->getSensorCenter().x() + model->getSensorSize().x() / 2.0;
+                min2 = model->getSensorCenter().y() - model->getSensorSize().y() / 2.0;
+                max2 = model->getSensorCenter().y() + model->getSensorSize().y() / 2.0;
             }
 
             auto histogram = new TH2F("field",
@@ -78,36 +78,36 @@ void ElectricFieldReaderInitModule::init() {
 
             double x = 0, y = 0, z = 0;
             if(project == 'x') {
-                x = model->getSensorMinX() +
-                    config_.get<double>("output_plots_projection_percentage", 0.5) * model->getSensorSizeX();
+                x = model->getSensorCenter().x() - model->getSensorSize().x() / 2.0 +
+                    config_.get<double>("output_plots_projection_percentage", 0.5) * model->getSensorSize().x();
             } else if(project == 'y') {
-                y = model->getSensorMinY() +
-                    config_.get<double>("output_plots_projection_percentage", 0.5) * model->getSensorSizeY();
+                y = model->getSensorCenter().y() - model->getSensorSize().y() / 2.0 +
+                    config_.get<double>("output_plots_projection_percentage", 0.5) * model->getSensorSize().y();
             } else {
-                z = model->getSensorMinZ() +
-                    config_.get<double>("output_plots_projection_percentage", 0.5) * model->getSensorSizeZ();
+                z = model->getSensorCenter().z() - model->getSensorSize().z() / 2.0 +
+                    config_.get<double>("output_plots_projection_percentage", 0.5) * model->getSensorSize().z();
             }
             for(size_t j = 0; j < steps; ++j) {
                 if(project == 'x') {
-                    y = model->getSensorMinY() +
-                        ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * model->getSensorSizeY();
+                    y = model->getSensorCenter().y() - model->getSensorSize().y() / 2.0 +
+                        ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().y();
                 } else if(project == 'y') {
-                    x = model->getSensorMinX() +
-                        ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * model->getSensorSizeX();
+                    x = model->getSensorCenter().x() - model->getSensorSize().x() / 2.0 +
+                        ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().x();
                 } else {
-                    x = model->getSensorMinX() +
-                        ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * model->getSensorSizeX();
+                    x = model->getSensorCenter().x() - model->getSensorSize().x() / 2.0 +
+                        ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().x();
                 }
                 for(size_t k = 0; k < steps; ++k) {
                     if(project == 'x') {
-                        z = model->getSensorMinZ() +
-                            ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * model->getSensorSizeZ();
+                        z = model->getSensorCenter().z() - model->getSensorSize().z() / 2.0 +
+                            ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().z();
                     } else if(project == 'y') {
-                        z = model->getSensorMinZ() +
-                            ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * model->getSensorSizeZ();
+                        z = model->getSensorCenter().z() - model->getSensorSize().z() / 2.0 +
+                            ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().z();
                     } else {
-                        y = model->getSensorMinY() +
-                            ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * model->getSensorSizeY();
+                        y = model->getSensorCenter().y() - model->getSensorSize().y() / 2.0 +
+                            ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().y();
                     }
 
                     // get field strength and fill histogram
@@ -138,19 +138,19 @@ void ElectricFieldReaderInitModule::init() {
 
 // check if the detector matches the file
 inline static void check_detector_match(Detector& detector, double thickness, double xpixsz, double ypixsz) {
-    auto model = std::dynamic_pointer_cast<PixelDetectorModel>(detector.getModel());
+    auto model = std::dynamic_pointer_cast<HybridPixelDetectorModel>(detector.getModel());
     // do a few simple checks for pixel detector models
     if(model != nullptr) {
-        if(std::fabs(thickness - model->getSensorSizeZ()) > std::numeric_limits<double>::epsilon()) {
+        if(std::fabs(thickness - model->getSensorSize().z()) > std::numeric_limits<double>::epsilon()) {
             LOG(WARNING) << "Thickness of sensor in file is " << Units::display(thickness, "um")
-                         << " but in the model it is " << Units::display(model->getSensorSizeZ(), "um");
+                         << " but in the model it is " << Units::display(model->getSensorSize().z(), "um");
         }
-        if(std::fabs(xpixsz - model->getPixelSizeX()) > std::numeric_limits<double>::epsilon() ||
-           std::fabs(ypixsz - model->getPixelSizeY()) > std::numeric_limits<double>::epsilon()) {
+        if(std::fabs(xpixsz - model->getPixelSize().x()) > std::numeric_limits<double>::epsilon() ||
+           std::fabs(ypixsz - model->getPixelSize().y()) > std::numeric_limits<double>::epsilon()) {
             LOG(WARNING) << "Pixel size is (" << Units::display(xpixsz, {"um", "mm"}) << ","
                          << Units::display(ypixsz, {"um", "mm"}) << ") but in the model it is ("
-                         << Units::display(model->getPixelSizeX(), {"um", "mm"}) << ","
-                         << Units::display(model->getPixelSizeY(), {"um", "mm"}) << ")";
+                         << Units::display(model->getPixelSize().x(), {"um", "mm"}) << ","
+                         << Units::display(model->getPixelSize().y(), {"um", "mm"}) << ")";
         }
     }
 }
@@ -221,7 +221,8 @@ ElectricFieldReaderInitModule::FieldData ElectricFieldReaderInitModule::get_by_f
             file >> input;
 
             // set the electric field at a position
-            (*field)[xind * ysize * zsize * 3 + yind * zsize * 3 + zind * 3 + j] = Units::get(input, "V/cm");
+            // FIXME: need to check if we actually set the field in the correct direction here
+            (*field)[xind * ysize * zsize * 3 + yind * zsize * 3 + zind * 3 + j] = Units::get(-input, "V/cm");
         }
     }
 

@@ -19,8 +19,6 @@
 #include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "exceptions.h"
-
-// FIXME: Do we allow including tools in the core
 #include "tools/ROOT.h"
 
 using namespace allpix;
@@ -88,10 +86,110 @@ std::vector<std::string> GeometryManager::getModelsPath() {
 }
 
 /**
+ * The minimum coordinate is the location of the point where no part of any detector exist with a lower x, y or z-coordinate
+ * in the geometry. The minimum point is never above the origin (the origin is always included in the geometry).
+ */
+ROOT::Math::XYZPoint GeometryManager::getMinimumCoordinate() {
+    if(!closed_) {
+        close_geometry();
+    }
+
+    ROOT::Math::XYZPoint min_point(0, 0, 0);
+    // Loop through all detector
+    for(auto& detector : detectors_) {
+        // Get the model of the detector
+        auto model = detector->getModel();
+
+        std::array<int, 8> offset_x = {{1, 1, 1, 1, -1, -1, -1, -1}};
+        std::array<int, 8> offset_y = {{1, 1, -1, -1, 1, 1, -1, -1}};
+        std::array<int, 8> offset_z = {{1, -1, 1, -1, 1, -1, 1, -1}};
+
+        for(size_t i = 0; i < 8; ++i) {
+            auto point = model->getCenter();
+            point.SetX(point.x() + offset_x.at(i) * model->getSize().x() / 2.0);
+            point.SetY(point.y() + offset_y.at(i) * model->getSize().y() / 2.0);
+            point.SetZ(point.z() + offset_z.at(i) * model->getSize().z() / 2.0);
+            point = detector->getGlobalPosition(point);
+
+            min_point.SetX(std::min(min_point.x(), point.x()));
+            min_point.SetY(std::min(min_point.y(), point.y()));
+            min_point.SetZ(std::min(min_point.z(), point.z()));
+        }
+    }
+
+    // Loop through all separate points
+    for(auto& point : points_) {
+        min_point.SetX(std::min(min_point.x(), point.x()));
+        min_point.SetY(std::min(min_point.y(), point.y()));
+        min_point.SetZ(std::min(min_point.z(), point.z()));
+    }
+
+    return min_point;
+}
+
+/**
+ * The maximum coordinate is the location of the point where no part of any detector exist with a higher x, y or z-coordinate
+ * in the geometry. The maximum point is never below the origin (the origin is always included in the geometry).
+ */
+ROOT::Math::XYZPoint GeometryManager::getMaximumCoordinate() {
+    if(!closed_) {
+        close_geometry();
+    }
+
+    ROOT::Math::XYZPoint max_point(0, 0, 0);
+    // Loop through all detector
+    for(auto& detector : detectors_) {
+        // Get the model of the detector
+        auto model = detector->getModel();
+
+        std::array<int, 8> offset_x = {{1, 1, 1, 1, -1, -1, -1, -1}};
+        std::array<int, 8> offset_y = {{1, 1, -1, -1, 1, 1, -1, -1}};
+        std::array<int, 8> offset_z = {{1, -1, 1, -1, 1, -1, 1, -1}};
+
+        for(size_t i = 0; i < 8; ++i) {
+            auto point = model->getCenter();
+            point.SetX(point.x() + offset_x.at(i) * model->getSize().x() / 2.0);
+            point.SetY(point.y() + offset_y.at(i) * model->getSize().y() / 2.0);
+            point.SetZ(point.z() + offset_z.at(i) * model->getSize().z() / 2.0);
+            point = detector->getGlobalPosition(point);
+
+            max_point.SetX(std::max(max_point.x(), point.x()));
+            max_point.SetY(std::max(max_point.y(), point.y()));
+            max_point.SetZ(std::max(max_point.z(), point.z()));
+        }
+    }
+
+    // Loop through all separate points
+    for(auto& point : points_) {
+        max_point.SetX(std::max(max_point.x(), point.x()));
+        max_point.SetY(std::max(max_point.y(), point.y()));
+        max_point.SetZ(std::max(max_point.z(), point.z()));
+    }
+
+    return max_point;
+}
+
+/**
+ * @throws ModuleError If the geometry is already closed before calling this function
+ *
+ * Can be used to add an arbitrary and unspecified point which is part of the geometry
+ */
+void GeometryManager::addPoint(ROOT::Math::XYZPoint point) {
+    if(closed_) {
+        throw ModuleError("Geometry is already closed before adding detector");
+    }
+    points_.push_back(std::move(point));
+}
+
+/**
  * @throws InvalidModuleActionException If the passed detector is a null pointer
- * @throws DetectorNameExistsError If the detector name is already registered before
+ * @throws ModuleError If the geometry is already closed before calling this function
+ * @throws DetectorModelExistsError If the detector name is already registered before
  */
 void GeometryManager::addModel(std::shared_ptr<DetectorModel> model) {
+    if(closed_) {
+        throw ModuleError("Geometry is already closed before adding detector");
+    }
     if(model == nullptr) {
         throw InvalidModuleActionException("Added model cannot be a null pointer");
     }
@@ -130,9 +228,13 @@ std::shared_ptr<DetectorModel> GeometryManager::getModel(const std::string& name
 
 /**
  * @throws InvalidModuleActionException If the passed detector is a null pointer
+ * @throws ModuleError If the geometry is already closed before calling this function
  * @throws DetectorNameExistsError If the detector name is already registered before
  */
 void GeometryManager::addDetector(std::shared_ptr<Detector> detector) {
+    if(closed_) {
+        throw ModuleError("Geometry is already closed before adding detector");
+    }
     if(detector == nullptr) {
         throw InvalidModuleActionException("Added detector cannot be a null pointer");
     }
