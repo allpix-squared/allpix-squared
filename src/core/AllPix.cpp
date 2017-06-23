@@ -145,11 +145,6 @@ void AllPix::load() {
     // Load the geometry
     geo_mgr_->load(global_config);
 
-    // Check if we have DefaultModelReader module, warn otherwise
-    if(!conf_mgr_->hasConfiguration("DefaultModelReader")) {
-        LOG(WARNING) << "Simulation will likely not run, because a default model reader is missing in the configuration";
-    }
-
     // Load the modules from the configuration
     if(!terminate_) {
         mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get());

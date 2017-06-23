@@ -380,8 +380,7 @@ std::shared_ptr<DetectorModel> GeometryManager::parse_config(const Configuration
  * configuration are resolved to requested type (and an error is thrown if this is not possible)
  */
 void GeometryManager::close_geometry() {
-    LOG(TRACE) << "Closing geometry";
-    closed_ = true;
+    LOG(TRACE) << "Starting geometry closing procedure";
 
     // Load all standard models
     load_models();
@@ -392,4 +391,7 @@ void GeometryManager::close_geometry() {
             detector->set_model(getModel(detectors_types.first));
         }
     }
+
+    closed_ = true;
+    LOG(TRACE) << "Closed geometry";
 }
