@@ -26,7 +26,7 @@ ENDFOREACH()
 
 # Compile the dictionary through a special target 
 # WARNING: this hack is necessary to prevent standard warnings and those in clang-tidy
-ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx.o COMMAND ${CMAKE_CXX_COMPILER} -fPIC -std=c++${CMAKE_CXX_STANDARD} -I${CMAKE_SOURCE_DIR}/src ${INCLUDE_DIR_ARGS} -o ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx.o -c ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx DEPENDS AllpixObjectsDictionary)
+ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx.o COMMAND ${CMAKE_CXX_COMPILER} -fPIC -std=c++${CMAKE_CXX_STANDARD} -I${CMAKE_SOURCE_DIR}/src ${INCLUDE_DIR_ARGS} -o ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx.o -c ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx)
 
 # Define the library adding the object file created above
 ADD_LIBRARY(AllpixObjects SHARED
