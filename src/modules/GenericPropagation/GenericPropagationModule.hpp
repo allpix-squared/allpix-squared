@@ -21,10 +21,10 @@
 
 namespace allpix {
     // define the module to inherit from the module base class
-    class SimplePropagationModule : public Module {
+    class GenericPropagationModule : public Module {
     public:
         // constructor and destructor
-        SimplePropagationModule(Configuration, Messenger*, std::shared_ptr<Detector>);
+        GenericPropagationModule(Configuration, Messenger*, std::shared_ptr<Detector>);
 
         // do the propagation of the charge deposits
         void run(unsigned int event_num) override;

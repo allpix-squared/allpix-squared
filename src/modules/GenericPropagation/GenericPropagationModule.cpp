@@ -3,7 +3,7 @@
  * @author Koen Wolters <koen.wolters@cern.ch>
  */
 
-#include "SimplePropagationModule.hpp"
+#include "GenericPropagationModule.hpp"
 
 #include <cmath>
 #include <limits>
@@ -40,9 +40,9 @@
 using namespace allpix;
 using namespace ROOT::Math;
 
-SimplePropagationModule::SimplePropagationModule(Configuration config,
-                                                 Messenger* messenger,
-                                                 std::shared_ptr<Detector> detector)
+GenericPropagationModule::GenericPropagationModule(Configuration config,
+                                                   Messenger* messenger,
+                                                   std::shared_ptr<Detector> detector)
     : Module(config, detector), config_(std::move(config)), temperature_(0), timestep_min_(0), timestep_max_(0),
       timestep_start_(0), target_spatial_precision_(0), output_plots_step_(0), output_plots_(false), messenger_(messenger),
       detector_(std::move(detector)) {
@@ -50,7 +50,7 @@ SimplePropagationModule::SimplePropagationModule(Configuration config,
     model_ = detector_->getModel();
 
     // require deposits message for single detector
-    messenger_->bindSingle(this, &SimplePropagationModule::deposits_message_, MsgFlags::REQUIRED);
+    messenger_->bindSingle(this, &GenericPropagationModule::deposits_message_, MsgFlags::REQUIRED);
 
     // seed the random generator
     random_generator_.seed(get_random_seed());
@@ -84,7 +84,7 @@ SimplePropagationModule::SimplePropagationModule(Configuration config,
     electron_Beta_ = 2.57e-2 * std::pow(temperature_, 0.66);
 }
 
-void SimplePropagationModule::create_output_plots(unsigned int event_num) {
+void GenericPropagationModule::create_output_plots(unsigned int event_num) {
     LOG(TRACE) << "Writing output plots";
 
     // enable prefer GL
@@ -371,7 +371,7 @@ void SimplePropagationModule::create_output_plots(unsigned int event_num) {
 }
 
 // run the propagation
-void SimplePropagationModule::run(unsigned int event_num) {
+void GenericPropagationModule::run(unsigned int event_num) {
     // check for electric field
     if(!getDetector()->hasElectricField()) {
         LOG(WARNING) << "Running this module without an electric field is not recommmended and can be very slow!";
@@ -444,7 +444,7 @@ void SimplePropagationModule::run(unsigned int event_num) {
     messenger_->dispatchMessage(this, propagated_charge_message);
 }
 
-std::pair<XYZPoint, double> SimplePropagationModule::propagate(const ROOT::Math::XYZPoint& root_pos) {
+std::pair<XYZPoint, double> GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& root_pos) {
     // create a runge kutta solver using the electric field as step function
     Eigen::Vector3d position(root_pos.x(), root_pos.y(), root_pos.z());
 
@@ -540,7 +540,7 @@ std::pair<XYZPoint, double> SimplePropagationModule::propagate(const ROOT::Math:
 }
 
 // Write statistics
-void SimplePropagationModule::finalize() {
+void GenericPropagationModule::finalize() {
     long double average_time = total_time_ / std::max(1u, total_steps_);
     LOG(INFO) << "Propagated total of " << total_propagated_charges_ << " charges in " << total_steps_
               << " steps in average time of " << Units::display(average_time, "ns");

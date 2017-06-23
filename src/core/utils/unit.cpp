@@ -100,15 +100,34 @@ allpix::Units::UnitType Units::get(std::string str) {
     return ret_value;
 }
 
-allpix::Units::UnitType Units::convert(UnitType inp, std::string unit) {
-    std::transform(unit.begin(), unit.end(), unit.begin(), ::tolower);
+allpix::Units::UnitType Units::convert(UnitType input, std::string str) {
+    // Do not distinguish between different case for units
+    std::transform(str.begin(), str.end(), str.begin(), ::tolower);
 
-    auto iter = unit_map_.find(unit);
-    if(iter == unit_map_.end()) {
-        throw std::invalid_argument("unit " + unit + " not found");
+    // Go through all units
+    char lst = '*';
+    std::string unit;
+    for(char ch : str) {
+        if(ch == '*' || ch == '/') {
+            if(lst == '*') {
+                input = getSingleInverse(input, unit);
+                unit.clear();
+            } else if(lst == '/') {
+                input = getSingle(input, unit);
+                unit.clear();
+            }
+            lst = ch;
+        } else {
+            unit += ch;
+        }
     }
-
-    return (1.0l / iter->second) * inp;
+    // Handle last unit
+    if(lst == '*') {
+        input = getSingleInverse(input, unit);
+    } else if(lst == '/') {
+        input = getSingle(input, unit);
+    }
+    return input;
 }
 
 /**
@@ -119,21 +138,21 @@ allpix::Units::UnitType Units::convert(UnitType inp, std::string unit) {
  *   from all units with values larger than one
  * - Otherwise the unit is chosen that has a value as close as possible to one (from below)
  */
-std::string Units::display(UnitType inp, std::initializer_list<std::string> units) {
+std::string Units::display(UnitType input, std::initializer_list<std::string> units) {
     if(units.size() == 0) {
         throw std::invalid_argument("list of possible units cannot be empty");
     }
 
     std::ostringstream stream;
-    if(std::fabs(inp) < std::numeric_limits<Units::UnitType>::epsilon()) {
+    if(std::fabs(input) < std::numeric_limits<Units::UnitType>::epsilon()) {
         // Zero needs no unit
-        stream << inp;
+        stream << input;
     } else {
         // Find best unit
         int best_exponent = std::numeric_limits<int>::min();
         std::string best_unit;
         for(auto& unit : units) {
-            Units::UnitType value = convert(inp, unit);
+            Units::UnitType value = convert(input, unit);
             int exponent = 0;
             std::frexp(value, &exponent);
             if((best_exponent <= 0 && exponent > best_exponent) || (exponent > 0 && exponent < best_exponent)) {
@@ -143,11 +162,11 @@ std::string Units::display(UnitType inp, std::initializer_list<std::string> unit
         }
 
         // Write unit
-        stream << convert(inp, best_unit);
+        stream << convert(input, best_unit);
         stream << best_unit;
     }
     return stream.str();
 }
-std::string Units::display(UnitType inp, std::string unit) {
-    return display(inp, {std::move(unit)});
+std::string Units::display(UnitType input, std::string unit) {
+    return display(input, {std::move(unit)});
 }
