@@ -1,4 +1,4 @@
-/**
+/*
  * Module to read electric fields in the INIT format
  * See https://github.com/simonspa/pixelav
  *
@@ -17,19 +17,28 @@
 #include "core/module/Module.hpp"
 
 namespace allpix {
-    // define the module inheriting from the module base class
-    class ElectricFieldInputLinearModule : public Module {
-    public:
-        // constructor of the module
-        ElectricFieldInputLinearModule(Configuration config, Messenger*, std::shared_ptr<Detector>);
+    // Define the module inheriting from the module base class
+    class ElectricFieldReaderModule : public Module {
+        using FieldData = std::pair<std::shared_ptr<std::vector<double>>, std::array<size_t, 3>>;
 
-        // read the electric field and set it for the detectors
+    public:
+        // Constructor of the module
+        ElectricFieldReaderModule(Configuration config, Messenger*, std::shared_ptr<Detector>);
+
+        // Read the electric field and set it for the detectors
         void init() override;
 
     private:
-        using FieldData = std::pair<std::shared_ptr<std::vector<double>>, std::array<size_t, 3>>;
+        // Construct linear field
+        FieldData construct_linear_field();
 
-        // get the electric field from a file name
+        // Read init field
+        FieldData read_init_field();
+
+        // Create output plots
+        void create_output_plots();
+
+        // Get the electric field from a file name
         static FieldData get_by_file_name(const std::string& name, Detector&);
         static std::map<std::string, FieldData> field_map_;
 
