@@ -16,7 +16,7 @@ The core is constructed as a light-weight framework that provides various subsys
 \begin{enumerate}
 \item \textbf{Configuration}: Provides a general configuration object from which data can be retrieved or stored, together with a TOML-like~\cite{tomlgit} file parser to instantiate the configurations. Also provides a general \apsq configuration manager providing access to the main configuration file and its sections. It is used by the module manager system to find the required instantiations and access the global configuration. More information is given in Section \ref{sec:config_parameters}.
 \item \textbf{Module}: Contain the base class of all the \apsq modules and the manager responsible for loading and running the modules (using the configuration system). This component is discussed in more detail in Section \ref{sec:module_manager}.
-\item \textbf{Geometry}: Supplies helpers for the simulation geometry. The manager contains all registered detectors. A detector has a certain position and orientation linked to an instantiation of a particular detector model. The detector model contains all parameters describing the geometry of the detector. More details about the geometry and detector models is provided in Section \ref{sec:models_geometry}.
+\item \textbf{Geometry}: Supplies helpers for the simulation geometry. The manager instantiates all detectors from the detector configuration file. A detector has a certain position and orientation linked to an instantiation of a particular detector model. The detector model contains all parameters describing the geometry of the detector. More details about the geometry and detector models is provided in Section \ref{sec:models_geometry}.
 \item \textbf{Messenger}: The messenger is responsible for sending objects from one module to another. The messenger object is passed to every module and can be used to bind to messages to listen for. Messages with objects are also dispatched through the messenger to send data to the modules listening. Please refer to Section \ref{sec:objects_messages} for more details.
 \item \textbf{Utilities}: The framework provides a set of simple utilities for logging, file and directory access, random number seeding and unit conversion. An explanation how to use of these utilities can be found in Section \ref{sec:logging_utilities}. A set of C++ exceptions is also provided in the utilities, which are inherited and extended by the other components. Proper use of exceptions, together with logging informational messages and reporting errors, make the framework easier to use and debug. A few notes about the use and structure of exceptions are given in Section \ref{sec:error_reporting_exceptions}.
 \end{enumerate}
@@ -187,7 +187,12 @@ Simulations are frequently run on a set of different detectors (such as as a bea
 \end{itemize}
 The detector configuration is provided in the special detector configuration which is explained in Section \ref{sec:detector_config}.
 
-The detectors can be accessed by name through the GeometryManager. If the module is a detector-specific module its related Detector can be accessed through the \texttt{getDetector()} method (returns a null pointer for unique modules) as follows:
+\subsubsection{Changing and accessing the geometry}
+The geometry is needed early on because it determines the number of detector instantiations as explained in Section \ref{sec:module_instantiation}. It is unfortunately not possible to determine the exact time the first detector instantation is created or the geometry is accessed in any other way. In the framework it is however very important to have a fixed geometry that does not change between modules. To allow special modules to change the geometry before accessing it, the geometry manager uses the concept of lazy geometry closing. This means that the geometry will be closed as soon as a method is called which accesses the geometry (usually the \texttt{getDetectors} method). Detectors and models can only be added before the geometry is closed. At the point of closing all remaining detector models are loaded and linked to the detectors without models. The procedure of finding the detector models is explained in more detail in Section \ref{sec:detector_models}.
+
+Geometry is typically directly added from the detector configuration file described in Section \ref{sec:detector_config}. The geometry manager parses this file on construction, the detector models are loaded and linked later during geometry closing as described above. It is also possible to add additional models and detectors directly using \texttt{addModel} and \texttt{addDetector} (before the geometry is closed). Furthermore it is possible to add additional points which should be part of the world geometry using \texttt{addPoint}. This can for example be used to add the beam source to the world geometry.
+
+The detectors and models can be accessed by name and type through the geometry manager using respectively \texttt{getDetector} and \texttt{getModel}. Typically however all detectors are fetched at once using the \texttt{getDetectors} method. If the module is a detector-specific module its related Detector can be accessed through the \texttt{getDetector} method of the module base class instead (returns a null pointer for unique modules) as follows:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
 void run(unsigned int event_id) {
     // Returns the linked detector
@@ -226,13 +231,13 @@ if(model != nullptr) {
 \end{minted}
 For more details about the different types models and how to add your own new model, Section \ref{sec:adding_detector_model} should be consulted.
 
-To support different detector models and storage locations the framework supports model readers. These model readers search for model files in the following order:
+To support different detector models and storage locations the framework supports model readers. The core geometry manager does also read models and will read all remaining models, not parsed earlier, before the geometry is closed. The model readers and the core geometry manager should search for model files in the following order.
 \begin{enumerate}
-\item If defined, the paths in the \textit{models\_path} parameter provided to the model reader module (for example the \texttt{DefaultModelReader}) or the global \textit{models\_path} parameter if no module-specific one is defined. Files are read and parsed directly. If the path is a directory, all files in the directory are added (not recursing into subdirectories).
+\item If defined, the paths in the \textit{models\_path} parameter provided to the model reader module or the global \textit{models\_path} parameter if no module-specific one is defined (the geometry manager only uses the global one). Files are read and parsed directly. If the path is a directory, all files in the directory are added (not recursing into subdirectories).
 \item The location where the models are installed to (see the MODEL\_DIRECTORY variable in Section \ref{sec:cmake_config}). 
 \item The standard data paths on the system as given by the environmental variable \$XDG\_DATA\_DIRS with the \project-directory appended. The \$XDG\_DATA\_DIRS variable defaults to \textit{/usr/local/share/} (thus effectively \textit{/usr/local/share/\project}) followed by \textit{/usr/share/} (effectively \textit{/usr/share/\project}).
 \end{enumerate}
-The framework provides a \texttt{DefaultModelReader} module to read all the default models in the framework. Every simulation should include this module at the beginning of the configuration file, unless another detector model reader is used.
+For almost all purposes a specific model reader is not needed and all internal models can be read by the geometry manager.
 
 \todo{This should include more details about different model readers}
 
@@ -247,7 +252,7 @@ The dispatching module can specify an optional name, but most modules should not
 \item If the receiving module is a detector module it will \underline{only} receive messages that are bound to that specific detector \underline{or} messages that are not bound to any detector.
 \end{enumerate}
 
-An example how to dispatch, in the \texttt{run()} function of a module, a message containing an array of \texttt{Object} types bound to a detector named \texttt{dut} is provided here:
+An example how to dispatch, in the \texttt{run} function of a module, a message containing an array of \texttt{Object} types bound to a detector named \texttt{dut} is provided here:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
 void run(unsigned int event_id) {
     std::vector<Object> data;
@@ -286,7 +291,7 @@ TestModule(Configuration, Messenger* messenger, std::shared_ptr<Detector>) {
 }
 std::vector<std::shared_ptr<Message<Object>>> messages;
 \end{minted}
-\item Listen to a particular message type and execute a \textbf{listener function} as soon as an object is received. Can be used for more advanced strategies for fetching messages. Note that this method can lead to surprising behaviour because the listener function is executed during the run of the dispatching module (leading to log messages with incorrect section headers at the minimum). The listening module should \underline{not} do any heavy work in the listening function as this is supposed to take place in their \texttt{run()} method instead. An example of using this to listen to a message containing an array of \texttt{Object} types in a detector \texttt{TestModule} would be:
+\item Listen to a particular message type and execute a \textbf{listener function} as soon as an object is received. Can be used for more advanced strategies for fetching messages. Note that this method can lead to surprising behaviour because the listener function is executed during the run of the dispatching module (leading to log messages with incorrect section headers at the minimum). The listening module should \underline{not} do any heavy work in the listening function as this is supposed to take place in their \texttt{run} method instead. An example of using this to listen to a message containing an array of \texttt{Object} types in a detector \texttt{TestModule} would be:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
 TestModule(Configuration, Messenger* messenger, std::shared_ptr<Detector>) {
     messenger->registerListener(this,
@@ -305,7 +310,7 @@ void listener(std::shared_ptr<Message<Object>> message) {
 Various flags can be added to the bind function and listening functions. The flags enable a particular behaviour of the framework (if the particular type of method supports the flag).
 \begin{itemize}
 \item \textbf{REQUIRED}: Specify that this message is required to be received. If the particular type of message is not received before it is time to execute the run function, the run is automatically skipped by the framework. This can be used to ignore modules that cannot do any action without received messages, for example propagation without any deposited charges.
-\item \textbf{NO\_RESET}: Messages are by default automatically reset after the \texttt{run()} function executes to prevent older messages from previous runs to appear again. This behaviour can be disabled by setting this flag (this does not have any effect for listening functions). Setting this flag for single bound messages (without ALLOW\_OVERWRITE) would cause an exception to be raised if the message is overwritten in a later event.
+\item \textbf{NO\_RESET}: Messages are by default automatically reset after the \texttt{run} function executes to prevent older messages from previous runs to appear again. This behaviour can be disabled by setting this flag (this does not have any effect for listening functions). Setting this flag for single bound messages (without ALLOW\_OVERWRITE) would cause an exception to be raised if the message is overwritten in a later event.
 \item \textbf{ALLOW\_OVERWRITE}: By default an exception is automatically raised if a single bound message is overwritten (thus setting it multiple times instead of once). This flag prevents this behaviour. It is only used for variables to a single message.
 \item \textbf{IGNORE\_NAME}: If this flag is specified, the name of the dispatched message is not considered. Thus the \textbf{input} parameter is ignored and forced to the value \texttt{*}. 
 \end{itemize}
