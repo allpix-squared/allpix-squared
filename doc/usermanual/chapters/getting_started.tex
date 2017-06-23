@@ -233,7 +233,7 @@ simple_view = 1
 
 \paragraph{Linear Electric Field}
 \label{sec:module_electric_field}
-The example configuration before already contained a module for adding a linear electric field to the sensitive detector. All detectors by default do not have any electric field. This will make the \texttt{SimplePropagation} module slow, because it will wait for the propagated charges to reach the end of the sensor, which can take a long time with diffusion solely. Therefore a simple linear electric field have been added to the sensors. The section below sets the electric field on every point in the pixel grid to the voltage divided by the thickness of the sensor.
+The example configuration before already contained a module for adding a linear electric field to the sensitive detector. All detectors by default do not have any electric field. This will make the \texttt{GenericPropagation} module slow, because it will wait for the propagated charges to reach the end of the sensor, which can take a long time with diffusion solely. Therefore a simple linear electric field have been added to the sensors. The section below sets the electric field on every point in the pixel grid to the voltage divided by the thickness of the sensor.
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 # Add a linear electric field
 [ElectricFieldInputLinear]

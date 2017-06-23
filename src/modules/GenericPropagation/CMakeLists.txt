@@ -7,7 +7,7 @@ ALLPIX_DETECTOR_MODULE(MODULE_NAME)
 
 # Add library
 ALLPIX_MODULE_SOURCES(${MODULE_NAME} 
-    SimplePropagationModule.cpp
+    GenericPropagationModule.cpp
 )
 
 # Eigen is required for Runge-Kutta propagation
