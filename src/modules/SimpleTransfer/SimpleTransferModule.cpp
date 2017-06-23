@@ -28,11 +28,7 @@ SimpleTransferModule::SimpleTransferModule(Configuration config, Messenger* mess
 // run method that does the main computations for the module
 void SimpleTransferModule::run(unsigned int) {
     // get detector model
-    auto model = std::dynamic_pointer_cast<HybridPixelDetectorModel>(detector_->getModel());
-    if(model == nullptr) {
-        throw ModuleError("Detector model of " + detector_->getName() +
-                          " is not a PixelDetectorModel: other models are not supported by this module!");
-    }
+    auto model = detector_->getModel();
 
     // find pixels for all propagated charges
     LOG(TRACE) << "Transferring charges to pixels";

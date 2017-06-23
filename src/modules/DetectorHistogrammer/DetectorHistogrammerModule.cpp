@@ -27,11 +27,7 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration config,
 // create histograms
 void DetectorHistogrammerModule::init() {
     // get detector model
-    auto model = std::dynamic_pointer_cast<HybridPixelDetectorModel>(detector_->getModel());
-    if(model == nullptr) {
-        throw ModuleError("Detector model of " + detector_->getName() +
-                          " is not a PixelDetectorModel: other models are not supported by this module!");
-    }
+    auto model = detector_->getModel();
 
     // create histogram
     LOG(TRACE) << "Creating histograms";
