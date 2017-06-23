@@ -94,7 +94,7 @@ namespace allpix {
 
         /**
          * @brief Get base unit in the requested unit
-         * @param inp Value in the base unit system
+         * @param input Value in the base unit system
          * @param str Name of the output unit
          * @return Value in the requested unit
          */
@@ -104,7 +104,7 @@ namespace allpix {
 
         /**
          * @brief Return value for display in the best of all the provided units
-         * @param inp Value in the base unit system
+         * @param input Value in the base unit system
          * @param units Name of the possible output units
          * @return Value with best unit to be used for display
          */
@@ -112,7 +112,7 @@ namespace allpix {
         static std::string display(UnitType inp, std::initializer_list<std::string> units);
         /**
          * @brief Return value in the requested unit for display
-         * @param inp Value in other type
+         * @param input Value in other type
          * @param unit Name of the output unit
          * @return Value with unit to be used for display
          */
