@@ -14,6 +14,8 @@ ROOT_GENERATE_DICTIONARY(AllpixObjectsDictionary
     ${CMAKE_CURRENT_SOURCE_DIR}/PixelHit.hpp
     LINKDEF 
     ${CMAKE_CURRENT_SOURCE_DIR}/Linkdef.h
+    MODULE
+    AllpixObjects
 )
 
 FOREACH(dir IN ITEMS ${ALLPIX_DEPS_INCLUDE_DIRS})
@@ -49,7 +51,7 @@ INSTALL(TARGETS AllpixObjects
   
 # Also install the dictionary objects
 INSTALL(FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/libAllpixObjectsDictionary_rdict.pcm
-    ${CMAKE_CURRENT_BINARY_DIR}/libAllpixObjectsDictionary.rootmap
+    ${CMAKE_CURRENT_BINARY_DIR}/libAllpixObjects_rdict.pcm
+    ${CMAKE_CURRENT_BINARY_DIR}/libAllpixObjects.rootmap
     DESTINATION lib)
 
