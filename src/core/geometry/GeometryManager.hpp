@@ -12,6 +12,8 @@
 #include <string>
 #include <vector>
 
+#include <Math/Vector3D.h>
+
 #include "Detector.hpp"
 #include "DetectorModel.hpp"
 #include "core/config/ConfigReader.hpp"
@@ -66,6 +68,28 @@ namespace allpix {
         std::vector<std::string> getModelsPath();
 
         /**
+         * @brief Return the minimum coordinate of all detectors in the geometry
+         * @return Minimum coordinate in global frame
+         * @note Closes the geometry if it has not been closed yet
+         */
+        ROOT::Math::XYZPoint getMinimumCoordinate();
+        /**
+         * @brief Return the maximum coordinate of all detectors in the geometry
+         * @return Maximum coordinate in global frame
+         * @note Closes the geometry if it has not been closed yet
+         */
+        ROOT::Math::XYZPoint getMaximumCoordinate();
+
+        /**
+         * @brief Add a point to the geometry (used for the \ref GeometryManager::getMinimumCoordinate "minimum"
+         *        and \ref GeometryManager::getMaximumCoordinate "maximum" coordinate)
+         * @param val Point that is part of the geometry
+         * @warning Can only be used as long as the geometry is still open
+         */
+        // TODO: Add more details to the point and interaction with external geometry
+        void addPoint(ROOT::Math::XYZPoint);
+
+        /**
          * @brief Return if the model is currently in the list of required models
          * @param name Type of the model to search for
          * @return True if at least one model still needs this type, false otherwise
@@ -97,9 +121,8 @@ namespace allpix {
          * @brief Get a detector model by its name
          * @param name Name of the model to search for
          * @returns Return the model if it exists (an error is raised if it does not)
-         * @warning This method should not be used to check if a model exists
+         * @warning The method \ref GeometryManager::hasModel should be used to check for existence
          */
-        // TODO [doc] Add a has model
         std::shared_ptr<DetectorModel> getModel(const std::string& name) const;
 
         /**
@@ -107,7 +130,6 @@ namespace allpix {
          * @param detector Pointer to the detector to add to the geometry
          * @warning Can only be used as long as the geometry is still open
          */
-        // TODO [doc] Remove this method
         void addDetector(std::shared_ptr<Detector> detector);
 
         /**
@@ -144,10 +166,24 @@ namespace allpix {
 
     private:
         /**
+         * @brief Load all standard framework models (automatically done when the geometry is closed)
+         */
+        void load_models();
+
+        /**
+         * @brief Parse a configuration object and instantiate the corresponding model
+         * @param config Configuration for the model
+         * @return Detector model instantiated from the configuration
+         */
+        std::shared_ptr<DetectorModel> parse_config(const Configuration&);
+
+        /**
          * @brief Close the geometry after which changes to the detector geometry cannot be made anymore
          */
         void close_geometry();
         bool closed_;
+
+        std::vector<ROOT::Math::XYZPoint> points_;
 
         std::vector<std::string> model_paths_;
         std::vector<std::shared_ptr<DetectorModel>> models_;

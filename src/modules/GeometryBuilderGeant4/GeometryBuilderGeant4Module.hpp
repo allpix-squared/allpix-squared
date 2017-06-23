@@ -10,7 +10,6 @@
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
-#include "core/geometry/PixelDetectorModel.hpp"
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 

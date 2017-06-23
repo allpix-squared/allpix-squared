@@ -22,9 +22,9 @@
 #include "core/module/exceptions.h"
 #include "core/utils/log.h"
 #include "core/utils/random.h"
-#include "tools/geant4.h"
-
 #include "objects/DepositedCharge.hpp"
+#include "tools/ROOT.h"
+#include "tools/geant4.h"
 
 #include "GeneratorActionG4.hpp"
 #include "SensitiveDetectorActionG4.hpp"
@@ -34,9 +34,12 @@ using namespace allpix;
 DepositionGeant4Module::DepositionGeant4Module(Configuration config, Messenger* messenger, GeometryManager* geo_manager)
     : Module(config), config_(std::move(config)), messenger_(messenger), geo_manager_(geo_manager), last_event_num_(1),
       run_manager_g4_(nullptr) {
-    // create user limits for maximum step length in the sensor
+    // Create user limits for maximum step length in the sensor
     user_limits_ =
         std::make_unique<G4UserLimits>(config_.get<double>("max_step_length", std::numeric_limits<double>::max()));
+
+    // Add the particle source position to the geometry
+    geo_manager_->addPoint(config_.get<ROOT::Math::XYZPoint>("particle_position"));
 }
 
 void DepositionGeant4Module::init() {

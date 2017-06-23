@@ -24,4 +24,11 @@ INSTALL(
     FILES
     test.conf
     timepix.conf
+    medipix3.conf
+    mimosa26.conf
+    fei3.conf
+    fei4.conf
+    cmsp1.conf
+    clicpix.conf
+    clicpix2.conf
     DESTINATION ${MODEL_DIRECTORY})

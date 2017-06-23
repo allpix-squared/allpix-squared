@@ -82,6 +82,13 @@ namespace allpix {
         void addIgnoreHeaderName(std::string name);
 
         /**
+         * @brief Return if section with given name exists
+         * @param name Name of the section
+         * @return True if at least one section with that name exists, false otherwise
+         */
+        bool hasConfiguration(const std::string&);
+
+        /**
          * @brief Get all configurations that are not global or ignored
          * @return List of all normal configurations
          */

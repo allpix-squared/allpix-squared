@@ -21,7 +21,6 @@
 #include "TMath.h"
 #include "TString.h"
 
-#include "core/geometry/PixelDetectorModel.hpp"
 #include "core/utils/log.h"
 
 #include "tools/ROOT.h"

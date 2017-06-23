@@ -164,15 +164,14 @@ With this information in mind it is time to setup a real simulation. Module para
 \label{sec:setting_up_simulation_chain}
 Below a simple, but complete simulation is described. A typical simulation in \apsq contains at least the following components.
 \begin{itemize}
-\item A \textbf{model reader}, which reads the model paths and creates the detector models it can parse (should all be models specified in the detector configuration). In the current version this means almost every simulation should contain the \texttt{DefaultModelReader} module at the top of the main configuration.
+
 \item The \textbf{geometry builder}, responsible for creating the external Geant4 geometry from the internal geometry. In this document internal geometry refers to the parameters containing the geometry description in \apsq, while external geometry refers to the constructed Geant4 geometry used for deposition (and possibly visualization).
 \item The \textbf{deposition} module that simulates the particle beam that deposits charge carriers in the detectors using the provided physics list (containing a description of the simulated interactions) and the geometry created above.
-\item A \textbf{propagation} module that propagates the charges through the sensor and assigns them to a pixel.
+\item A \textbf{propagation} module that propagates the charges through the sensor.
+\item A \textbf{transfer} module that transfers the charges from the sensor and assigns them to a pixel. 
 \item A \textbf{digitizer} module which converts the charges in the pixel to a detector hit, simulating the frontend electronics response.
 \item An \textbf{output} module, saving the data of the simulation. At the moment output can be written as ROOT TTree as explained in more detail in Section \ref{sec:storing_output_data}.
 \end{itemize}
-\todo{Should the model reader be automatically added if not specified}
-\todo{The SimpleTransfer module should still be deleted}
 
 In the example charges will be deposited in the three sensors from the detector configuration file in Section \ref{sec:detector_config}. Only the charges in the Timepix models are going to be propagated and digitized. The final results of hits in the device under test (dut) will be written to a ROOT histogram. A configuration file that implements this description is as follows:
 \inputminted[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}{../../etc/manual.conf}

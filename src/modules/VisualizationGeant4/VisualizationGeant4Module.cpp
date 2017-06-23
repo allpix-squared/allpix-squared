@@ -270,7 +270,7 @@ void VisualizationGeant4Module::set_visualization_settings() {
     }
 
     // Set default viewer orientation
-    UI->ApplyCommand("/vis/viewer/set/viewpointThetaPhi 70 20");
+    UI->ApplyCommand("/vis/viewer/set/viewpointThetaPhi -70 20");
 
     // Do auto refresh if not accumulating and start viewer already
     if(!accumulate) {
@@ -291,11 +291,11 @@ void VisualizationGeant4Module::set_visibility_attributes() {
     G4VisAttributes wrapperVisAtt = G4VisAttributes(G4Color(1, 0, 0, 0.1)); // Red
     wrapperVisAtt.SetVisibility(false);
 
-    // PCB
-    auto pcbColor = G4Color(0.36, 0.66, 0.055, alpha); // Greenish
-    G4VisAttributes pcbVisAtt = G4VisAttributes(pcbColor);
-    pcbVisAtt.SetLineWidth(1);
-    pcbVisAtt.SetForceSolid(false);
+    // support
+    auto supportColor = G4Color(0.36, 0.66, 0.055, alpha); // Greenish
+    G4VisAttributes supportVisAtt = G4VisAttributes(supportColor);
+    supportVisAtt.SetLineWidth(1);
+    supportVisAtt.SetForceSolid(false);
 
     // Chip
     auto chipColor = G4Color(0.18, 0.2, 0.21, alpha); // Blackish
@@ -309,10 +309,11 @@ void VisualizationGeant4Module::set_visibility_attributes() {
 
     // The logical volume holding all the bumps
     G4VisAttributes BumpBoxVisAtt = G4VisAttributes(bumpColor);
+    // BumpBoxVisAtt.SetForceSolid(false);
 
     // Sensors, ie pixels
     auto sensorColor = G4Color(0.18, 0.2, 0.21, alpha); // Blackish
-    G4VisAttributes SensorVisAtt = G4VisAttributes(chipColor);
+    G4VisAttributes SensorVisAtt = G4VisAttributes(sensorColor);
     SensorVisAtt.SetForceSolid(false);
 
     // Guard rings
@@ -321,6 +322,7 @@ void VisualizationGeant4Module::set_visibility_attributes() {
 
     // The box holding all the pixels
     G4VisAttributes BoxVisAtt = G4VisAttributes(sensorColor);
+    // BoxVisAtt.SetForceSolid(false);
 
     // In default simple view mode, pixels and bumps are set to invisible, not to be displayed.
     // The logical volumes holding them are instead displayed.
@@ -332,7 +334,7 @@ void VisualizationGeant4Module::set_visibility_attributes() {
         BumpBoxVisAtt.SetVisibility(true);
     } else {
         SensorVisAtt.SetVisibility(true);
-        BoxVisAtt.SetVisibility(false);
+        BoxVisAtt.SetVisibility(true);
         BumpVisAtt.SetVisibility(true);
         BumpBoxVisAtt.SetVisibility(false);
     }
@@ -379,9 +381,9 @@ void VisualizationGeant4Module::set_visibility_attributes() {
             chip_log->SetVisAttributes(ChipVisAtt);
         }
 
-        auto PCB_log = detector->getExternalObject<G4LogicalVolume>("pcb_log");
-        if(PCB_log != nullptr) {
-            PCB_log->SetVisAttributes(pcbVisAtt);
+        auto support_log = detector->getExternalObject<G4LogicalVolume>("support_log");
+        if(support_log != nullptr) {
+            support_log->SetVisAttributes(supportVisAtt);
         }
     }
 }

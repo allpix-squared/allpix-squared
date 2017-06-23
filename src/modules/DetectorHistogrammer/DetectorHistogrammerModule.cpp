@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-#include "core/geometry/PixelDetectorModel.hpp"
+#include "core/geometry/HybridPixelDetectorModel.hpp"
 #include "core/messenger/Messenger.hpp"
 #include "core/utils/log.h"
 
@@ -27,11 +27,7 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration config,
 // create histograms
 void DetectorHistogrammerModule::init() {
     // get detector model
-    auto model = std::dynamic_pointer_cast<PixelDetectorModel>(detector_->getModel());
-    if(model == nullptr) {
-        throw ModuleError("Detector model of " + detector_->getName() +
-                          " is not a PixelDetectorModel: other models are not supported by this module!");
-    }
+    auto model = detector_->getModel();
 
     // create histogram
     LOG(TRACE) << "Creating histograms";
@@ -39,21 +35,21 @@ void DetectorHistogrammerModule::init() {
     std::string histogram_title = "Hitmap for " + detector_->getName() + ";x (pixels);y (pixels)";
     histogram = new TH2I(histogram_name.c_str(),
                          histogram_title.c_str(),
-                         model->getNPixelsX(),
+                         model->getNPixels().x(),
                          -0.5,
-                         model->getNPixelsX() - 0.5,
-                         model->getNPixelsY(),
+                         model->getNPixels().x() - 0.5,
+                         model->getNPixels().y(),
                          -0.5,
-                         model->getNPixelsY() - 0.5);
+                         model->getNPixels().y() - 0.5);
 
     // create cluster size plot
     std::string cluster_size_name = "cluster";
     std::string cluster_size_title = "Cluster size for " + detector_->getName() + ";size;number";
     cluster_size = new TH1I(cluster_size_name.c_str(),
                             cluster_size_title.c_str(),
-                            model->getNPixelsX() * model->getNPixelsY(),
+                            model->getNPixels().x() * model->getNPixels().y(),
                             0.5,
-                            model->getNPixelsX() * model->getNPixelsY() + 0.5);
+                            model->getNPixels().x() * model->getNPixels().y() + 0.5);
 }
 
 // fill the histograms
@@ -80,7 +76,7 @@ void DetectorHistogrammerModule::run(unsigned int) {
 void DetectorHistogrammerModule::finalize() {
     if(total_hits_ != 0) {
         LOG(INFO) << "Plotted " << total_hits_ << " hits in total, mean position is "
-                  << display_vector(total_vector_ / static_cast<double>(total_hits_), {"mm", "um"});
+                  << total_vector_ / static_cast<double>(total_hits_);
     } else {
         LOG(WARNING) << "No hits plotted";
     }

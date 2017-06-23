@@ -15,13 +15,15 @@
 #include <Math/Vector3D.h>
 
 #include "GeometryManager.hpp"
+#include "core/config/ConfigReader.hpp"
 #include "core/module/exceptions.h"
 #include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "exceptions.h"
-
-// FIXME: Do we allow including tools in the core
 #include "tools/ROOT.h"
+
+#include "core/geometry/HybridPixelDetectorModel.hpp"
+#include "core/geometry/MonolithicPixelDetectorModel.hpp"
 
 using namespace allpix;
 
@@ -88,10 +90,110 @@ std::vector<std::string> GeometryManager::getModelsPath() {
 }
 
 /**
+ * The minimum coordinate is the location of the point where no part of any detector exist with a lower x, y or z-coordinate
+ * in the geometry. The minimum point is never above the origin (the origin is always included in the geometry).
+ */
+ROOT::Math::XYZPoint GeometryManager::getMinimumCoordinate() {
+    if(!closed_) {
+        close_geometry();
+    }
+
+    ROOT::Math::XYZPoint min_point(0, 0, 0);
+    // Loop through all detector
+    for(auto& detector : detectors_) {
+        // Get the model of the detector
+        auto model = detector->getModel();
+
+        std::array<int, 8> offset_x = {{1, 1, 1, 1, -1, -1, -1, -1}};
+        std::array<int, 8> offset_y = {{1, 1, -1, -1, 1, 1, -1, -1}};
+        std::array<int, 8> offset_z = {{1, -1, 1, -1, 1, -1, 1, -1}};
+
+        for(size_t i = 0; i < 8; ++i) {
+            auto point = model->getCenter();
+            point.SetX(point.x() + offset_x.at(i) * model->getSize().x() / 2.0);
+            point.SetY(point.y() + offset_y.at(i) * model->getSize().y() / 2.0);
+            point.SetZ(point.z() + offset_z.at(i) * model->getSize().z() / 2.0);
+            point = detector->getGlobalPosition(point);
+
+            min_point.SetX(std::min(min_point.x(), point.x()));
+            min_point.SetY(std::min(min_point.y(), point.y()));
+            min_point.SetZ(std::min(min_point.z(), point.z()));
+        }
+    }
+
+    // Loop through all separate points
+    for(auto& point : points_) {
+        min_point.SetX(std::min(min_point.x(), point.x()));
+        min_point.SetY(std::min(min_point.y(), point.y()));
+        min_point.SetZ(std::min(min_point.z(), point.z()));
+    }
+
+    return min_point;
+}
+
+/**
+ * The maximum coordinate is the location of the point where no part of any detector exist with a higher x, y or z-coordinate
+ * in the geometry. The maximum point is never below the origin (the origin is always included in the geometry).
+ */
+ROOT::Math::XYZPoint GeometryManager::getMaximumCoordinate() {
+    if(!closed_) {
+        close_geometry();
+    }
+
+    ROOT::Math::XYZPoint max_point(0, 0, 0);
+    // Loop through all detector
+    for(auto& detector : detectors_) {
+        // Get the model of the detector
+        auto model = detector->getModel();
+
+        std::array<int, 8> offset_x = {{1, 1, 1, 1, -1, -1, -1, -1}};
+        std::array<int, 8> offset_y = {{1, 1, -1, -1, 1, 1, -1, -1}};
+        std::array<int, 8> offset_z = {{1, -1, 1, -1, 1, -1, 1, -1}};
+
+        for(size_t i = 0; i < 8; ++i) {
+            auto point = model->getCenter();
+            point.SetX(point.x() + offset_x.at(i) * model->getSize().x() / 2.0);
+            point.SetY(point.y() + offset_y.at(i) * model->getSize().y() / 2.0);
+            point.SetZ(point.z() + offset_z.at(i) * model->getSize().z() / 2.0);
+            point = detector->getGlobalPosition(point);
+
+            max_point.SetX(std::max(max_point.x(), point.x()));
+            max_point.SetY(std::max(max_point.y(), point.y()));
+            max_point.SetZ(std::max(max_point.z(), point.z()));
+        }
+    }
+
+    // Loop through all separate points
+    for(auto& point : points_) {
+        max_point.SetX(std::max(max_point.x(), point.x()));
+        max_point.SetY(std::max(max_point.y(), point.y()));
+        max_point.SetZ(std::max(max_point.z(), point.z()));
+    }
+
+    return max_point;
+}
+
+/**
+ * @throws ModuleError If the geometry is already closed before calling this function
+ *
+ * Can be used to add an arbitrary and unspecified point which is part of the geometry
+ */
+void GeometryManager::addPoint(ROOT::Math::XYZPoint point) {
+    if(closed_) {
+        throw ModuleError("Geometry is already closed before adding detector");
+    }
+    points_.push_back(std::move(point));
+}
+
+/**
  * @throws InvalidModuleActionException If the passed detector is a null pointer
- * @throws DetectorNameExistsError If the detector name is already registered before
+ * @throws ModuleError If the geometry is already closed before calling this function
+ * @throws DetectorModelExistsError If the detector name is already registered before
  */
 void GeometryManager::addModel(std::shared_ptr<DetectorModel> model) {
+    if(closed_) {
+        throw ModuleError("Geometry is already closed before adding detector");
+    }
     if(model == nullptr) {
         throw InvalidModuleActionException("Added model cannot be a null pointer");
     }
@@ -130,9 +232,13 @@ std::shared_ptr<DetectorModel> GeometryManager::getModel(const std::string& name
 
 /**
  * @throws InvalidModuleActionException If the passed detector is a null pointer
+ * @throws ModuleError If the geometry is already closed before calling this function
  * @throws DetectorNameExistsError If the detector name is already registered before
  */
 void GeometryManager::addDetector(std::shared_ptr<Detector> detector) {
+    if(closed_) {
+        throw ModuleError("Geometry is already closed before adding detector");
+    }
     if(detector == nullptr) {
         throw InvalidModuleActionException("Added detector cannot be a null pointer");
     }
@@ -194,14 +300,90 @@ std::vector<std::shared_ptr<Detector>> GeometryManager::getDetectorsByType(const
     return result;
 }
 
+void GeometryManager::load_models() {
+    LOG(TRACE) << "Loading remaining default models";
+
+    // Construct model reader
+    ConfigReader reader;
+
+    // Get paths to read models from
+    std::vector<std::string> paths = getModelsPath();
+
+    LOG(TRACE) << "Reading model files";
+    // Add all the paths to the reader
+    for(auto& path : paths) {
+        // Check if file or directory
+        if(allpix::path_is_directory(path)) {
+            std::vector<std::string> sub_paths = allpix::get_files_in_directory(path);
+            for(auto& sub_path : sub_paths) {
+                // Accept only with correct model suffix
+                std::string suffix(ALLPIX_MODEL_SUFFIX);
+                if(sub_path.size() < suffix.size() || sub_path.substr(sub_path.size() - suffix.size()) != suffix) {
+                    continue;
+                }
+
+                // Add the sub directory path to the reader
+                LOG(TRACE) << "Reading model " << sub_path;
+                std::fstream file(sub_path);
+                reader.add(file, sub_path);
+            }
+        } else {
+            // Always a file because paths are already checked
+            LOG(TRACE) << "Reading model " << path;
+            std::fstream file(path);
+            reader.add(file, path);
+        }
+    }
+
+    // Loop through all configurations and parse them
+    LOG(TRACE) << "Parsing models";
+    for(auto& model_config : reader.getConfigurations()) {
+        if(hasModel(model_config.getName())) {
+            // Skip models that we already loaded earlier higher in the chain
+            LOG(DEBUG) << "Skipping overwritten model " + model_config.getName() << " in path "
+                       << model_config.getFilePath();
+            continue;
+        }
+        if(!needsModel(model_config.getName())) {
+            // Also skip models that are not needed
+            LOG(TRACE) << "Skipping not required model " + model_config.getName() << " in path "
+                       << model_config.getFilePath();
+            continue;
+        }
+
+        // Parse configuration and add model to the config
+        addModel(parse_config(model_config));
+    }
+}
+
+std::shared_ptr<DetectorModel> GeometryManager::parse_config(const Configuration& config) {
+    if(!config.has("type")) {
+        LOG(ERROR) << "Model file " << config.getFilePath() << " does not provide a type parameter";
+    }
+    auto type = config.get<std::string>("type");
+
+    // Instantiate the correct detector model
+    if(type == "hybrid") {
+        return std::make_shared<HybridPixelDetectorModel>(config);
+    }
+    if(type == "monolithic") {
+        return std::make_shared<MonolithicPixelDetectorModel>(config);
+    }
+
+    LOG(ERROR) << "Model file " << config.getFilePath() << " type parameter is not valid";
+    // FIXME: The model can probably be silently ignored if we have more model readers later
+    throw InvalidValueError(config, "type", "model type is not supported");
+}
+
 /*
  * After closing the geometry new parts of the geometry cannot be added anymore. All the models for the detectors in the
  * configuration are resolved to requested type (and an error is thrown if this is not possible)
  */
 void GeometryManager::close_geometry() {
-    LOG(TRACE) << "Geometry is closed";
+    LOG(TRACE) << "Starting geometry closing procedure";
 
-    closed_ = true;
+    // Load all standard models
+    load_models();
 
     // Try to resolve the missing models
     for(auto& detectors_types : nonresolved_models_) {
@@ -209,4 +391,7 @@ void GeometryManager::close_geometry() {
             detector->set_model(getModel(detectors_types.first));
         }
     }
+
+    closed_ = true;
+    LOG(TRACE) << "Closed geometry";
 }
