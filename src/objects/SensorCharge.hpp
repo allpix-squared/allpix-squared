@@ -19,7 +19,7 @@ namespace allpix {
     class SensorCharge : public Object {
     public:
         // constructor and destructor
-        SensorCharge(ROOT::Math::XYZPoint position, unsigned int charge, long double eventTime);
+        SensorCharge(ROOT::Math::XYZPoint position, unsigned int charge, double eventTime);
         ~SensorCharge() override;
 
         SensorCharge(const SensorCharge&);
@@ -32,14 +32,14 @@ namespace allpix {
         ROOT::Math::XYZPoint getPosition() const;
         unsigned int getCharge() const;
 
-        long double getEventTime() const;
+        double getEventTime() const;
 
         SensorCharge() = default;
 
     private:
         ROOT::Math::XYZPoint position_;
         unsigned int charge_{};
-        long double event_time_{};
+        double event_time_{};
 
         ClassDef(SensorCharge, 1);
     };

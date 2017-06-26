@@ -13,7 +13,7 @@ namespace allpix {
     // object definition
     class PropagatedCharge : public SensorCharge {
     public:
-        PropagatedCharge(ROOT::Math::XYZPoint position, unsigned int charge, long double event_time)
+        PropagatedCharge(ROOT::Math::XYZPoint position, unsigned int charge, double event_time)
             : SensorCharge(std::move(position), charge, event_time) {}
 
         ClassDef(PropagatedCharge, 1);

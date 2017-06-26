@@ -104,7 +104,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
     double minX = FLT_MAX, maxX = FLT_MIN;
     double minY = FLT_MAX, maxY = FLT_MIN;
     unsigned long tot_point_cnt = 0;
-    long double start_time = std::numeric_limits<long double>::max();
+    double start_time = std::numeric_limits<double>::max();
     unsigned int total_charge = 0;
     for(auto& deposit_points : output_plot_points_) {
         for(auto& point : deposit_points.second) {
