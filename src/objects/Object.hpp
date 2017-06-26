@@ -22,19 +22,8 @@ namespace allpix {
         Object(Object&&);
         Object& operator=(Object&&);
 
-        ClassDef(Object, 1)
+        ClassDef(Object, 1);
     };
 } // namespace allpix
-
-inline TBuffer& operator<<(TBuffer& buf, long double d) {
-    buf.WriteDouble(static_cast<double>(d));
-    return buf;
-}
-inline TBuffer& operator>>(TBuffer& buf, long double& ld) {
-    double d;
-    buf.ReadDouble(d);
-    ld = static_cast<long double>(d);
-    return buf;
-}
 
 #endif
