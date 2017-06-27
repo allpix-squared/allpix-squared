@@ -14,10 +14,10 @@
 #include "core/messenger/Messenger.hpp"
 
 #include "objects/DepositedCharge.hpp"
+#include "objects/MCParticle.hpp"
 
 class G4Step;
 class G4HCofThisEvent;
-class G4Event;
 
 namespace allpix {
     class SensitiveDetectorActionG4 : public G4VSensitiveDetector {
@@ -53,6 +53,15 @@ namespace allpix {
 
         // list of deposits in sensitive device
         std::vector<DepositedCharge> deposits_;
+
+        // list of entry points for all track id
+        std::map<int, ROOT::Math::XYZPoint> entry_points_;
+
+        // parent of all tracks
+        std::map<int, int> track_parents_;
+
+        // list of all MC particles
+        std::vector<MCParticle> mc_particles_;
 
         // Instantatiation of the deposition module
         Module* module_;
