@@ -63,36 +63,36 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     LOG(TRACE) << "Material of world is " << world_material_->GetName();
 
     // Calculate world size
-    ROOT::Math::XYZVector world_size;
+    ROOT::Math::XYZVector half_world_size;
     ROOT::Math::XYZPoint min_coord = geo_manager_->getMinimumCoordinate();
     ROOT::Math::XYZPoint max_coord = geo_manager_->getMaximumCoordinate();
-    world_size.SetX(std::max(std::abs(min_coord.x()), std::abs(max_coord.x())));
-    world_size.SetY(std::max(std::abs(min_coord.y()), std::abs(max_coord.y())));
-    world_size.SetZ(std::max(std::abs(min_coord.z()), std::abs(max_coord.z())));
+    half_world_size.SetX(std::max(std::abs(min_coord.x()), std::abs(max_coord.x())));
+    half_world_size.SetY(std::max(std::abs(min_coord.y()), std::abs(max_coord.y())));
+    half_world_size.SetZ(std::max(std::abs(min_coord.z()), std::abs(max_coord.z())));
 
     // Calculate and apply margins to world size
     auto margin_percentage = config_.get<double>("margin_percentage", 0.1);
     auto minimum_margin = config_.get<ROOT::Math::XYZPoint>("minimum_margin", {0, 0, 0});
-    double add_x = world_size.x() * margin_percentage;
+    double add_x = half_world_size.x() * margin_percentage;
     if(add_x < minimum_margin.x()) {
         add_x = minimum_margin.x();
     }
-    double add_y = world_size.y() * margin_percentage;
+    double add_y = half_world_size.y() * margin_percentage;
     if(add_y < minimum_margin.y()) {
         add_y = minimum_margin.y();
     }
-    double add_z = world_size.z() * margin_percentage;
+    double add_z = half_world_size.z() * margin_percentage;
     if(add_z < minimum_margin.z()) {
         add_z = minimum_margin.z();
     }
-    world_size.SetX(world_size.x() + add_x);
-    world_size.SetY(world_size.y() + add_y);
-    world_size.SetZ(world_size.z() + add_z);
+    half_world_size.SetX(half_world_size.x() + add_x);
+    half_world_size.SetY(half_world_size.y() + add_y);
+    half_world_size.SetZ(half_world_size.z() + add_z);
 
-    LOG(DEBUG) << "World size is " << display_vector(world_size, {"mm"});
+    LOG(DEBUG) << "World size is " << display_vector(2 * half_world_size, {"mm"});
 
     // Build the world
-    auto world_box = std::make_shared<G4Box>("World", world_size.x(), world_size.y(), world_size.z());
+    auto world_box = std::make_shared<G4Box>("World", half_world_size.x(), half_world_size.y(), half_world_size.z());
     solids_.push_back(world_box);
     world_log_ = std::make_unique<G4LogicalVolume>(world_box.get(), world_material_, "World", nullptr, nullptr, nullptr);
 
