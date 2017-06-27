@@ -9,6 +9,7 @@
 
 // AP2 objects
 #pragma link C++ class allpix::Object + ;
+#pragma link C++ class allpix::MCParticle + ;
 #pragma link C++ class allpix::SensorCharge + ;
 #pragma link C++ class allpix::PropagatedCharge + ;
 #pragma link C++ class allpix::DepositedCharge + ;
