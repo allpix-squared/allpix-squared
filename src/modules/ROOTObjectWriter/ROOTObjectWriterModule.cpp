@@ -37,7 +37,11 @@ void ROOTObjectWriterModule::init() {
 void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::string message_name) { // NOLINT
     try {
         const BaseMessage* inst = message.get();
-        LOG(TRACE) << "Received " << allpix::demangle(typeid(*inst).name()) << " named " << message_name;
+        std::string name_str = " without a name";
+        if(!message_name.empty()) {
+            name_str = " named " + message_name;
+        }
+        LOG(TRACE) << "ROOT object writer received " << allpix::demangle(typeid(*inst).name()) << name_str;
 
         // Get the detector name
         std::string detector_name;
@@ -95,8 +99,8 @@ void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::
 
     } catch(MessageWithoutObjectException& e) {
         const BaseMessage* inst = message.get();
-        LOG(WARNING) << "Cannot process message of type" << allpix::demangle(typeid(*inst).name()) << " with name "
-                     << message_name;
+        LOG(WARNING) << "ROOT object writer cannot process message of type" << allpix::demangle(typeid(*inst).name())
+                     << " with name " << message_name;
     }
 }
 
