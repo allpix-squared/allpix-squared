@@ -116,9 +116,8 @@ namespace allpix {
          * The center coordinate corresponds to the \ref Detector::getPosition "position" in the global frame.
          */
         virtual ROOT::Math::XYZPoint getCenter() const {
-            return ROOT::Math::XYZPoint(getSensorSize().x() / 2.0 - getPixelSize().x() / 2.0,
-                                        getSensorSize().y() / 2.0 - getPixelSize().y() / 2.0,
-                                        0);
+            return ROOT::Math::XYZPoint(
+                getGridSize().x() / 2.0 - getPixelSize().x() / 2.0, getGridSize().y() / 2.0 - getPixelSize().y() / 2.0, 0);
         }
 
         /**
