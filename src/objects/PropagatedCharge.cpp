@@ -7,7 +7,7 @@ PropagatedCharge::PropagatedCharge(ROOT::Math::XYZPoint position,
                                    double event_time,
                                    const DepositedCharge* deposited_charge)
     : SensorCharge(std::move(position), charge, event_time) {
-    deposited_charge_ = const_cast<DepositedCharge*>(deposited_charge);
+    deposited_charge_ = const_cast<DepositedCharge*>(deposited_charge); // NOLINT
 }
 
 const DepositedCharge* PropagatedCharge::getDepositedCharge() const {

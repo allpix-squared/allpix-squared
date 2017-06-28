@@ -13,7 +13,7 @@ using namespace allpix;
 
 PixelHit::PixelHit(Pixel pixel, double time, double signal, const PixelCharge* pixel_charge)
     : pixel_(std::move(pixel)), time_(time), signal_(signal) {
-    pixel_charge_ = const_cast<PixelCharge*>(pixel_charge);
+    pixel_charge_ = const_cast<PixelCharge*>(pixel_charge); // NOLINT
 }
 
 PixelHit::Pixel PixelHit::getPixel() const {

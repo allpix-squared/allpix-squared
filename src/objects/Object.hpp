@@ -14,7 +14,7 @@ namespace allpix {
     class Object : public TObject {
     public:
         Object();
-        virtual ~Object();
+        ~Object() override;
 
         Object(const Object&);
         Object& operator=(const Object&);

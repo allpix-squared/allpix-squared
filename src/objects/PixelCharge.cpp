@@ -10,7 +10,7 @@ PixelCharge::PixelCharge(Pixel pixel, unsigned int charge, std::vector<const Pro
     : pixel_(std::move(pixel)), charge_(charge) {
     for(auto& propagated_charge : propagated_charges) {
         // FIXME: This const cast has to be done
-        propagated_charges_.Add(const_cast<PropagatedCharge*>(propagated_charge));
+        propagated_charges_.Add(const_cast<PropagatedCharge*>(propagated_charge)); // NOLINT
     }
 }
 
