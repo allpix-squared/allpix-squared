@@ -5,13 +5,13 @@
 #ifndef ALLPIX_OBJECT_H
 #define ALLPIX_OBJECT_H
 
-#include <TBuffer.h>
+#include <TObject.h>
 
 namespace allpix {
     template <typename T> class Message;
 
     // object definition
-    class Object {
+    class Object : public TObject {
     public:
         Object();
         virtual ~Object();

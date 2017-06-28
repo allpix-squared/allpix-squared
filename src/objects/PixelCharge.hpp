@@ -11,7 +11,10 @@
 
 #include <Math/DisplacementVector2D.h>
 
+#include <TRefArray.h>
+
 #include "Object.hpp"
+#include "PropagatedCharge.hpp"
 
 namespace allpix {
     // object definition
@@ -19,16 +22,23 @@ namespace allpix {
     public:
         using Pixel = ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>;
 
-        PixelCharge(Pixel pixel, unsigned int charge);
+        PixelCharge(Pixel pixel,
+                    unsigned int charge,
+                    std::vector<const PropagatedCharge*> propagated_charges = std::vector<const PropagatedCharge*>());
 
         PixelCharge::Pixel getPixel() const;
         unsigned int getCharge() const;
 
-        Pixel pixel_;
-        unsigned int charge_{};
+        std::vector<const PropagatedCharge*> getPropagatedCharges() const;
 
         ClassDef(PixelCharge, 1);
         PixelCharge() = default;
+
+    private:
+        Pixel pixel_;
+        unsigned int charge_{};
+
+        TRefArray propagated_charges_;
     };
 
     // link to the carrying message

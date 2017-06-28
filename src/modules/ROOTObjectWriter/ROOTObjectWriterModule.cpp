@@ -74,10 +74,14 @@ void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::
                 }
 
                 if(trees_.find(class_name) == trees_.end()) {
+                    // Create new tree
                     output_file_->cd();
-                    trees_.emplace(
+                    auto insert_result = trees_.emplace(
                         class_name,
                         std::make_unique<TTree>(class_name.c_str(), (std::string("Tree of ") + class_name).c_str()));
+
+                    // Enable saving references
+                    insert_result.first->second->BranchRef();
                 }
 
                 std::string branch_name = detector_name;
@@ -123,12 +127,18 @@ void ROOTObjectWriterModule::run(unsigned int) {
 
 void ROOTObjectWriterModule::finalize() {
     LOG(TRACE) << "Writing objects to file";
-    output_file_->Write();
 
     int branch_count = 0;
     for(auto& tree : trees_) {
+        // Update statistics
         branch_count += tree.second->GetListOfBranches()->GetEntries();
+
+        // Write every tree
+        tree.second->Write();
     }
+
+    // Finish writing to output file
+    output_file_->Write();
 
     // Print statistics
     LOG(INFO) << "Written " << write_cnt_ << " objects to " << branch_count << " branches";

@@ -19,6 +19,7 @@
 #include <stdexcept>
 #include <string>
 
+#include <TProcessID.h>
 #include <TSystem.h>
 
 #include "core/config/ConfigManager.hpp"
@@ -545,6 +546,8 @@ void ModuleManager::run() {
 
         LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Running event " << (i + 1) << " of " << number_of_events;
 
+        auto save_id = TProcessID::GetObjectCount();
+
         for(auto& module : modules_) {
             // Check if module is satisfied to run
             if(!module->check_delegates()) {
@@ -578,6 +581,8 @@ void ModuleManager::run() {
             auto end = std::chrono::steady_clock::now();
             module_execution_time_[module.get()] += static_cast<std::chrono::duration<long double>>(end - start).count();
         }
+
+        TProcessID::SetObjectCount(save_id);
     }
     LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of " << number_of_events << " events";
 }

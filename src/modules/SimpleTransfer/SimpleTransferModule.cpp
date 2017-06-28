@@ -33,7 +33,7 @@ void SimpleTransferModule::run(unsigned int) {
     // find pixels for all propagated charges
     LOG(TRACE) << "Transferring charges to pixels";
     unsigned int transferrred_charges_count = 0;
-    std::map<PixelCharge::Pixel, std::vector<PropagatedCharge>, pixel_cmp> pixel_map;
+    std::map<PixelCharge::Pixel, std::vector<const PropagatedCharge*>, pixel_cmp> pixel_map;
     for(auto& propagated_charge : propagated_message_->getData()) {
         auto position = propagated_charge.getPosition();
         // ignore if outside z range of implant
@@ -66,7 +66,7 @@ void SimpleTransferModule::run(unsigned int) {
                    << propagated_charge.getPosition() << " brought to pixel " << pixel;
 
         // add the pixel the list of hit pixels
-        pixel_map[pixel].emplace_back(propagated_charge);
+        pixel_map[pixel].emplace_back(&propagated_charge);
     }
 
     // create pixel charges
@@ -75,9 +75,9 @@ void SimpleTransferModule::run(unsigned int) {
     for(auto& pixel : pixel_map) {
         unsigned int charge = 0;
         for(auto& propagated_charge : pixel.second) {
-            charge += propagated_charge.getCharge();
+            charge += propagated_charge->getCharge();
         }
-        pixel_charges.emplace_back(pixel.first, charge);
+        pixel_charges.emplace_back(pixel.first, charge, pixel.second);
 
         LOG(DEBUG) << "Set of " << charge << " charges combined at " << pixel.first;
     }
