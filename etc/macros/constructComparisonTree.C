@@ -6,7 +6,7 @@
 #include <memory>
 
 // FIXME: these includes should be absolute and provided with installation?
-#include "../../src/objects/DepositedCharge.hpp"
+#include "../../src/objects/PropagatedCharge.hpp"
 #include "../..//src/objects/PixelCharge.hpp"
 #include "../../src/objects/PixelHit.hpp"
 #include "../../src/objects/MCParticle.hpp"
@@ -18,6 +18,8 @@ std::shared_ptr<TTree> constructComparisonTree(TFile *file, std::string dut, ROO
     TBranch *pixel_hit_branch = pixel_hit_tree->FindBranch(dut.c_str());
     std::vector<allpix::PixelHit*> input_hits;
     pixel_hit_branch->SetObject(&input_hits);
+    
+    TTree *propagated_charge_tree = static_cast<TTree*>(file->Get("PropagatedCharge"));
     
     // Read pixel charge output
     TTree *pixel_charge_tree = static_cast<TTree*>(file->Get("PixelCharge"));
@@ -71,6 +73,7 @@ std::shared_ptr<TTree> constructComparisonTree(TFile *file, std::string dut, ROO
         pixel_hit_tree->GetEntry(i);
         pixel_charge_tree->GetEntry(i);
         mc_particle_tree->GetEntry(i);
+        propagated_charge_tree->GetEntry(i);
         
         // Skip all events with multiple particles 
         // FIXME: until we handle the mc particle better
@@ -120,7 +123,7 @@ std::shared_ptr<TTree> constructComparisonTree(TFile *file, std::string dut, ROO
         output_track_count = input_particles.size();
         for(auto& particle : input_particles) {
             // FIXME just use the middle position between the entry point and the exit as the track position
-            output_track_x = (particle->getEntryPoint().x() + particle->getExitPoint().x())/ 2.0;
+            output_track_x = (particle->getEntryPoint().x() + particle->getExitPoint().x()) / 2.0;
             output_track_y = (particle->getEntryPoint().y() + particle->getExitPoint().y()) / 2.0;
         }
         
