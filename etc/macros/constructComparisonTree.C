@@ -9,6 +9,7 @@
 #include "../../src/objects/DepositedCharge.hpp"
 #include "../..//src/objects/PixelCharge.hpp"
 #include "../../src/objects/PixelHit.hpp"
+#include "../../src/objects/MCParticle.hpp"
 
 // FIXME: pixel size should be available in the data
 std::shared_ptr<TTree> constructComparisonTree(TFile *file, std::string dut, ROOT::Math::XYVector pixel_size) {
@@ -23,13 +24,13 @@ std::shared_ptr<TTree> constructComparisonTree(TFile *file, std::string dut, ROO
     TBranch *pixel_charge_branch = pixel_charge_tree->FindBranch(dut.c_str());
     std::vector<allpix::PixelCharge*> input_charges;
     pixel_charge_branch->SetObject(&input_charges);
-    
-    // Read deposited charge output
-    TTree *deposited_charge_tree = static_cast<TTree*>(file->Get("DepositedCharge"));
-    TBranch *deposited_charge_branch = deposited_charge_tree->FindBranch(dut.c_str());
-    std::vector<allpix::DepositedCharge*> input_deposits;
-    deposited_charge_branch->SetObject(&input_deposits);
         
+    // Read MC truth
+    TTree *mc_particle_tree = static_cast<TTree*>(file->Get("MCParticle"));
+    TBranch *mc_particle_branch = mc_particle_tree->FindBranch(dut.c_str());
+    std::vector<allpix::MCParticle*> input_particles;
+    mc_particle_branch->SetObject(&input_particles);
+    
     // Initialize output tree and branches
     auto output_tree = std::make_shared<TTree>("clusters", ("Cluster information for " + dut).c_str());
     int event_num;
@@ -69,7 +70,11 @@ std::shared_ptr<TTree> constructComparisonTree(TFile *file, std::string dut, ROO
     for(int i = 0; i<pixel_hit_tree->GetEntries(); ++i) {
         pixel_hit_tree->GetEntry(i);
         pixel_charge_tree->GetEntry(i);
-        deposited_charge_tree->GetEntry(i);
+        mc_particle_tree->GetEntry(i);
+        
+        // Skip all events with multiple particles 
+        // FIXME: until we handle the mc particle better
+        if(input_particles.size() > 1) continue;
         
         // Set event number
         event_num = i+1;
@@ -111,19 +116,12 @@ std::shared_ptr<TTree> constructComparisonTree(TFile *file, std::string dut, ROO
             output_cols.push_back(hit->getPixel().x());
         }
         
-        // Guess information about the track (should be an extra object)
-        double min_position_z = 0;
-        for(auto& deposit : input_deposits) {
-            min_position_z = std::min(min_position_z, deposit->getPosition().z()); 
-        }
-        output_track_count = 0;
-        for(auto& deposit : input_deposits) {
-            if(std::fabs(min_position_z - deposit->getPosition().z()) < 1e-9) {
-                ++output_track_count;
-                // FIXME just picks the last 'track' now
-                output_track_x = deposit->getPosition().x();
-                output_track_y = deposit->getPosition().y();
-            }
+        // Get information about the actual track
+        output_track_count = input_particles.size();
+        for(auto& particle : input_particles) {
+            // FIXME just use the middle position between the entry point and the exit as the track position
+            output_track_x = (particle->getEntryPoint().x() + particle->getExitPoint().x())/ 2.0;
+            output_track_y = (particle->getEntryPoint().y() + particle->getExitPoint().y()) / 2.0;
         }
         
         // Calculate local x using a simple center of gravity fit
