@@ -53,6 +53,7 @@ namespace allpix {
 
         // list of deposits in sensitive device
         std::vector<DepositedCharge> deposits_;
+        std::vector<int> deposit_ids_;
 
         // list of entry points for all track id
         std::map<int, ROOT::Math::XYZPoint> entry_points_;
@@ -62,6 +63,7 @@ namespace allpix {
 
         // list of all MC particles
         std::vector<MCParticle> mc_particles_;
+        std::map<int, unsigned int> id_to_particle_;
 
         // Instantatiation of the deposition module
         Module* module_;

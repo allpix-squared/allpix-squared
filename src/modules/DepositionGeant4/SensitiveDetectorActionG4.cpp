@@ -80,13 +80,16 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
             entry_points_[step->GetTrack()->GetTrackID()],
             detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(postStepPoint->GetPosition())),
             step->GetTrack()->GetDynamicParticle()->GetPDGcode());
+        id_to_particle_[step->GetTrack()->GetTrackID()] = static_cast<unsigned int>(mc_particles_.size() - 1);
     }
 
     // Add new deposit if the charge is more than zero
     if(charge == 0) {
         return false;
     }
+
     deposits_.emplace_back(deposit_position, charge, mid_time);
+    deposit_ids_.emplace_back(step->GetTrack()->GetTrackID());
 
     LOG(DEBUG) << "Created deposit of " << charge << " charges at " << display_vector(mid_pos, {"mm", "um"})
                << " locally on " << display_vector(deposit_position, {"mm", "um"}) << " in " << detector_->getName()
@@ -101,6 +104,14 @@ unsigned int SensitiveDetectorActionG4::getTotalDepositedCharge() {
 
 // send a message at the end of the event
 void SensitiveDetectorActionG4::EndOfEvent(G4HCofThisEvent*) {
+    // Always send the track information
+    auto mc_particle_message = std::make_shared<MCParticleMessage>(std::move(mc_particles_), detector_);
+    messenger_->dispatchMessage(module_, mc_particle_message);
+
+    // Create new mc particle vector
+    mc_particles_ = std::vector<MCParticle>();
+    id_to_particle_.clear();
+
     // Send a new message if we have any deposits
     if(!deposits_.empty()) {
         IFLOG(INFO) {
@@ -112,22 +123,25 @@ void SensitiveDetectorActionG4::EndOfEvent(G4HCofThisEvent*) {
             LOG(INFO) << "Deposited " << charges << " charges in sensor of detector " << detector_->getName();
         }
 
-        // create a new charge deposit message
+        // Match deposit with mc particle if possible
+        for(size_t i = 0; i < deposits_.size(); ++i) {
+            auto iter = id_to_particle_.find(deposit_ids_.at(i));
+            if(iter != id_to_particle_.end()) {
+                deposits_.at(i).setMCParticle(&mc_particle_message->getData().at(iter->second));
+                // LOG(FATAL) << "TEST";
+            }
+        }
+
+        // Create a new charge deposit message
         auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(deposits_), detector_);
 
-        // dispatch the message
+        // Dispatch the message
         messenger_->dispatchMessage(module_, deposit_message);
 
         // Make a new empty vector of deposits
         deposits_ = std::vector<DepositedCharge>();
+        deposit_ids_.clear();
     }
-
-    // Always send the track information
-    auto mc_particle_message = std::make_shared<MCParticleMessage>(std::move(mc_particles_), detector_);
-    messenger_->dispatchMessage(module_, mc_particle_message);
-
-    // Create new mc particle vector
-    mc_particles_ = std::vector<MCParticle>();
 
     // Clear track parents and entry point list
     track_parents_.clear();

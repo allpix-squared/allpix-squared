@@ -19,6 +19,8 @@ std::shared_ptr<TTree> constructComparisonTree(TFile *file, std::string dut, ROO
     std::vector<allpix::PixelHit*> input_hits;
     pixel_hit_branch->SetObject(&input_hits);
     
+    // Read deposited and propagated charges for history
+    TTree *deposited_charge_tree = static_cast<TTree*>(file->Get("DepositedCharge"));
     TTree *propagated_charge_tree = static_cast<TTree*>(file->Get("PropagatedCharge"));
     
     // Read pixel charge output
@@ -73,6 +75,7 @@ std::shared_ptr<TTree> constructComparisonTree(TFile *file, std::string dut, ROO
         pixel_hit_tree->GetEntry(i);
         pixel_charge_tree->GetEntry(i);
         mc_particle_tree->GetEntry(i);
+        deposited_charge_tree->GetEntry(i);
         propagated_charge_tree->GetEntry(i);
         
         // Skip all events with multiple particles 
