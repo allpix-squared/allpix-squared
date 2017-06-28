@@ -64,8 +64,7 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
         auto entry_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(preStepPoint->GetPosition()));
         while(track_parents_[track_id] != 0 &&
               std::fabs(entry_position.z() - (detector_->getModel()->getSensorCenter().z() -
-                                              detector_->getModel()->getSensorSize().z() / 2.0) >
-                        1e-9)) {
+                                              detector_->getModel()->getSensorSize().z() / 2.0)) > 1e-9) {
             track_id = track_parents_[track_id];
             entry_position = entry_points_[track_id];
         }
