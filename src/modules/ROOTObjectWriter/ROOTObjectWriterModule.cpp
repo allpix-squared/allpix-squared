@@ -1,11 +1,13 @@
 #include "ROOTObjectWriterModule.hpp"
 
+#include <fstream>
 #include <string>
 #include <utility>
 
 #include <TBranchElement.h>
 #include <TClass.h>
 
+#include "core/config/ConfigReader.hpp"
 #include "core/utils/log.h"
 #include "core/utils/type.h"
 
@@ -14,8 +16,8 @@
 
 using namespace allpix;
 
-ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration config, Messenger* messenger, GeometryManager*)
-    : Module(config), config_(std::move(config)) {
+ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration config, Messenger* messenger, GeometryManager* geo_mgr)
+    : Module(config), config_(std::move(config)), geo_mgr_(geo_mgr) {
     // Bind to all messages
     messenger->registerListener(this, &ROOTObjectWriterModule::receive);
 }
@@ -127,6 +129,7 @@ void ROOTObjectWriterModule::run(unsigned int) {
 
 void ROOTObjectWriterModule::finalize() {
     LOG(TRACE) << "Writing objects to file";
+    output_file_->cd();
 
     int branch_count = 0;
     for(auto& tree : trees_) {
@@ -135,6 +138,35 @@ void ROOTObjectWriterModule::finalize() {
 
         // Write every tree
         tree.second->Write();
+    }
+
+    // Save the main configuration to the tree if possible
+    // FIXME This should be improved to write the information in a more flexible way
+    std::string path = config_.getFilePath();
+    if(!path.empty()) {
+        // Create main config directory
+        TDirectory* config_dir = output_file_->mkdir("config");
+        config_dir->cd();
+
+        // Read the configuration
+        std::fstream file(path);
+        ConfigReader full_config(file);
+
+        // Loop over all configurations
+        std::map<std::string, int> count_configs;
+        for(auto& config : full_config.getConfigurations()) {
+            // Create a new directory per section (adding a number to make every folder unique)
+            TDirectory* section_dir =
+                config_dir->mkdir((config.getName() + "-" + std::to_string(count_configs[config.getName()])).c_str());
+            count_configs[config.getName()]++;
+
+            // Loop over all values in the section
+            for(auto& key_value : config.getAll()) {
+                section_dir->WriteObject(&key_value.second, key_value.first.c_str());
+            }
+        }
+    } else {
+        LOG(ERROR) << "Cannot save main configuration, because the ROOTObjectWriter is not loaded directly from the file";
     }
 
     // Finish writing to output file

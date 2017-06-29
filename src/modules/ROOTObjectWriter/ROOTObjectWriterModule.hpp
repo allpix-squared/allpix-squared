@@ -34,6 +34,7 @@ namespace allpix {
         unsigned long write_cnt_{};
 
         Configuration config_;
+        GeometryManager* geo_mgr_;
 
         std::unique_ptr<TFile> output_file_;
         std::map<std::string, std::unique_ptr<TTree>> trees_;
