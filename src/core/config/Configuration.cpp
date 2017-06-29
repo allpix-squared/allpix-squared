@@ -125,11 +125,11 @@ std::vector<std::pair<std::string, std::string>> Configuration::getAll() {
     // Loop over all configuration keys
     for(auto& key_value : config_) {
         // Skip internal keys starting with an underscore
-        if(key_value.first.size() > 0 && key_value.first[0] == '_') {
+        if(!key_value.first.empty() && key_value.first[0] == '_') {
             continue;
         }
 
-        result.push_back(key_value);
+        result.emplace_back(key_value);
     }
 
     return result;
