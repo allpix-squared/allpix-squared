@@ -44,48 +44,48 @@ namespace allpix {
          * @brief Constructs the base detector model
          * @param config Configuration description of a model
          */
-        explicit DetectorModel(const Configuration& config) : type_(config.getName()) {
+        explicit DetectorModel(Configuration config) : type_(config.getName()), config_(std::move(config)) {
             using namespace ROOT::Math;
 
             // Number of pixels
-            setNPixels(config.get<DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels"));
+            setNPixels(config_.get<DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels"));
             // Size of the pixels
-            setPixelSize(config.get<XYVector>("pixel_size"));
+            setPixelSize(config_.get<XYVector>("pixel_size"));
 
             // Sensor thickness
-            setSensorThickness(config.get<double>("sensor_thickness"));
+            setSensorThickness(config_.get<double>("sensor_thickness"));
             // Excess around the sensor from the pixel grid
-            auto default_sensor_excess = config.get<double>("sensor_excess", 0);
-            setSensorExcessTop(config.get<double>("sensor_excess_top", default_sensor_excess));
-            setSensorExcessBottom(config.get<double>("sensor_excess_bottom", default_sensor_excess));
-            setSensorExcessLeft(config.get<double>("sensor_excess_left", default_sensor_excess));
-            setSensorExcessRight(config.get<double>("sensor_excess_right", default_sensor_excess));
+            auto default_sensor_excess = config_.get<double>("sensor_excess", 0);
+            setSensorExcessTop(config_.get<double>("sensor_excess_top", default_sensor_excess));
+            setSensorExcessBottom(config_.get<double>("sensor_excess_bottom", default_sensor_excess));
+            setSensorExcessLeft(config_.get<double>("sensor_excess_left", default_sensor_excess));
+            setSensorExcessRight(config_.get<double>("sensor_excess_right", default_sensor_excess));
 
             // Chip thickness
-            setChipThickness(config.get<double>("chip_thickness", 0));
+            setChipThickness(config_.get<double>("chip_thickness", 0));
             // Excess around the chip from the pixel grid
-            auto default_chip_excess = config.get<double>("chip_excess", 0);
-            setChipExcessTop(config.get<double>("chip_excess_top", default_chip_excess));
-            setChipExcessBottom(config.get<double>("chip_excess_bottom", default_chip_excess));
-            setChipExcessLeft(config.get<double>("chip_excess_left", default_chip_excess));
-            setChipExcessRight(config.get<double>("chip_excess_right", default_chip_excess));
+            auto default_chip_excess = config_.get<double>("chip_excess", 0);
+            setChipExcessTop(config_.get<double>("chip_excess_top", default_chip_excess));
+            setChipExcessBottom(config_.get<double>("chip_excess_bottom", default_chip_excess));
+            setChipExcessLeft(config_.get<double>("chip_excess_left", default_chip_excess));
+            setChipExcessRight(config_.get<double>("chip_excess_right", default_chip_excess));
 
             // Support thickness
-            setSupportThickness(config.get<double>("support_thickness", 0));
+            setSupportThickness(config_.get<double>("support_thickness", 0));
             // Excess around the support from the pixel grid
-            auto default_support_excess = config.get<double>("support_excess", 0);
-            setSupportExcessTop(config.get<double>("support_excess_top", default_support_excess));
-            setSupportExcessBottom(config.get<double>("support_excess_bottom", default_support_excess));
-            setSupportExcessLeft(config.get<double>("support_excess_left", default_support_excess));
-            setSupportExcessRight(config.get<double>("support_excess_right", default_support_excess));
+            auto default_support_excess = config_.get<double>("support_excess", 0);
+            setSupportExcessTop(config_.get<double>("support_excess_top", default_support_excess));
+            setSupportExcessBottom(config_.get<double>("support_excess_bottom", default_support_excess));
+            setSupportExcessLeft(config_.get<double>("support_excess_left", default_support_excess));
+            setSupportExcessRight(config_.get<double>("support_excess_right", default_support_excess));
             // Support location
-            auto support_location = config.get<std::string>("support_location", "chip");
+            auto support_location = config_.get<std::string>("support_location", "chip");
             if(support_location != "sensor" && support_location != "chip") {
-                throw InvalidValueError(config, "support_location", "location of the support should be 'chip' or 'sensor'");
+                throw InvalidValueError(config_, "support_location", "location of the support should be 'chip' or 'sensor'");
             }
             setSupportLocation(support_location);
             // Support material
-            setSupportMaterial(config.get<std::string>("support_material", "epoxy"));
+            setSupportMaterial(config_.get<std::string>("support_material", "epoxy"));
         }
         /**
          * @brief Essential virtual destructor
@@ -102,6 +102,12 @@ namespace allpix {
         DetectorModel(DetectorModel&&) = default;
         DetectorModel& operator=(DetectorModel&&) = default;
         ///@}
+
+        /**
+         * @brief Get the configuration associated with this model
+         * @return Configuration used to construct the model
+         */
+        Configuration getConfiguration() const { return config_; }
 
         /**
          * @brief Get the type of the model
@@ -375,6 +381,9 @@ namespace allpix {
         double support_excess_[4]{};
         std::string support_location_;
         std::string support_material_;
+
+    private:
+        Configuration config_;
     };
 } // namespace allpix
 
