@@ -19,7 +19,7 @@ RCEWriterModule::RCEWriterModule(Configuration config, Messenger* messenger, Geo
     : Module(config), config_(std::move(config)), geo_mgr_(geo_mgr) {
     // Bind to all messages
     //  messenger->bindMulti(this, &RCEWriterModule::pixel_charge_messages_, MsgFlags::REQUIRED);
-    messenger->bindMulti(this, &RCEWriterModule::pixel_hit_messages_, MsgFlags::REQUIRED);
+    messenger->bindMulti(this, &RCEWriterModule::pixel_hit_messages_);
 }
 RCEWriterModule::~RCEWriterModule() = default;
 
