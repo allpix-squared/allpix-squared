@@ -13,7 +13,7 @@
 \usepackage{siunitx}
 \usepackage{booktabs}
 \usepackage{xspace}
-\usepackage{color}
+\usepackage{xcolor}
 \usepackage{minted}
 \usepackage{a4wide}
 \usepackage{listings}
@@ -24,6 +24,7 @@
 \usepackage{enumitem}
 \usepackage{hyperref}
 \usepackage{microtype}
+\usepackage{pgf,pgffor}
 
 % Set paths
 \makeatletter
@@ -82,8 +83,9 @@
 % modules
 \section{Modules}
 \label{sec:modules}
-\wip
-\todo{This section should be automatically build}
+\lstset{language=Ini}
+\includemodulesdoc
+\lstset{language=}
 \clearpage
 
 % development of new modules and detectors models

@@ -11,6 +11,28 @@
 
 \newcommand{\wip}{\textit{This section is not written yet.}}
 
+% Define ini format used in the converted Markdown files
+\lstdefinelanguage{Ini}
+{
+    basicstyle=\ttfamily\small,
+    columns=fullflexible,
+    morecomment=[s][\color{blue}\bfseries]{[}{]},
+    morecomment=[l]{\#},
+    morecomment=[l]{;},
+    commentstyle=\color{gray}\ttfamily,
+    morekeywords={},
+    otherkeywords={=,:},
+    keywordstyle={\color{green}\bfseries}
+}
+     
+% Set modules
+\newcommand{\includemodulesdoc}{\def\temp{@ALLPIX_MODULE_FILES@}\ifx\temp\empty
+  \textit{Module documentation not added because Markdown to LaTex conversion was not possible}
+\else
+  \foreach \n in @ALLPIX_MODULE_FILES@ {\input{\n}}
+\fi}
+
+
 % Set bibliography
 \addbibresource{usermanual/references.bib}
 
