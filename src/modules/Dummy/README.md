@@ -1,8 +1,8 @@
 ## Dummy
-**Maintainer**: **NAME** (**EMAIL**)  
+**Maintainer**: *NAME* (*EMAIL*)  
 **Status**: Functional  
-[**Input**: **INPUT_MESSAGE**]  
-[**Output**: **OUTPUT_MESSAGE**]  
+[**Input**: *INPUT_MESSAGE*]  
+[**Output**: *OUTPUT_MESSAGE*]  
 
 #### Description
 *Short description of this module*

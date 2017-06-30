@@ -1,11 +1,7 @@
-##################
-# Example Module #
-##################
-
 # Define module and return the generated name as MODULE_NAME
 ALLPIX_DETECTOR_MODULE(MODULE_NAME)
 
-# Add library
+# Add library with the module
 ALLPIX_MODULE_SOURCES(${MODULE_NAME} 
     DefaultDigitizerModule.cpp
 )
