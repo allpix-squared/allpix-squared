@@ -130,9 +130,10 @@ namespace allpix {
          * @brief Get size of the box around the model that contains all elements
          * @return Size of the detector model
          *
-         * All elements should be covered by a box with \ref Detector::getCenter as center. This means that the size returned
+         * All elements should be covered by a box with \ref DetectorModel::getCenter as center. This means that the size
+         * returned
          * by this method is likely larger than the minimum possible size of a box around all elements. It will only return
-         * the minimum size if \ref Detector::getCenter corresponds with the geometric center of the model.
+         * the minimum size if \ref DetectorModel::getCenter corresponds with the geometric center of the model.
          */
         virtual ROOT::Math::XYZVector getSize() const {
             ROOT::Math::XYZVector max(std::numeric_limits<double>::lowest(),
@@ -187,7 +188,7 @@ namespace allpix {
         void setPixelSize(ROOT::Math::XYVector val) { pixel_size_ = std::move(val); }
         /**
          * @brief Get total size of the pixel grid
-         * @param val Size of the pixel grid
+         * @return Size of the pixel grid
          *
          * @warning The grid has zero thickness
          * @note This is basically a 2D method, but provided in 3D because it is primarily used there
@@ -201,7 +202,7 @@ namespace allpix {
          * @brief Get size of the sensor
          * @return Size of the sensor
          *
-         * Calculated from \ref Detector::getGridSize "pixel grid size", sensor excess and sensor thickness
+         * Calculated from \ref DetectorModel::getGridSize "pixel grid size", sensor excess and sensor thickness
          */
         virtual ROOT::Math::XYZVector getSensorSize() const {
             ROOT::Math::XYZVector excess_thickness(
@@ -250,7 +251,7 @@ namespace allpix {
          * @brief Get size of the chip
          * @return Size of the chip
          *
-         * Calculated from \ref Detector::getGridSize "pixel grid size", chip excess and chip thickness
+         * Calculated from \ref DetectorModel::getGridSize "pixel grid size", chip excess and chip thickness
          */
         virtual ROOT::Math::XYZVector getChipSize() const {
             ROOT::Math::XYZVector excess_thickness(
@@ -300,7 +301,7 @@ namespace allpix {
          * @brief Get size of the support
          * @return Size of the support
          *
-         * Calculated from \ref Detector::getGridSize "pixel grid size", chip excess and chip thickness
+         * Calculated from \ref DetectorModel::getGridSize "pixel grid size", chip excess and chip thickness
          */
         virtual ROOT::Math::XYZVector getSupportSize() const {
             ROOT::Math::XYZVector excess_thickness(

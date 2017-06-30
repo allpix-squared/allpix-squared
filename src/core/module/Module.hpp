@@ -223,8 +223,8 @@ namespace allpix {
         Configuration config_;
 
         /**
-         * @brief Set the ROOT directory for output
-         * @param val ROOT directory for storage
+         * @brief Set the output ROOT directory for this module
+         * @param directory ROOT directory for storage
          */
         void set_ROOT_directory(TDirectory* directory);
         TDirectory* directory_{};

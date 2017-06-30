@@ -100,7 +100,7 @@ namespace allpix {
          */
         // TODO [doc] This function should maybe be removed
         // TODO [doc] Shall we change the name in something better here
-        static UnitType convert(UnitType inp, std::string str);
+        static UnitType convert(UnitType input, std::string str);
 
         /**
          * @brief Return value for display in the best of all the provided units
@@ -109,7 +109,7 @@ namespace allpix {
          * @return Value with best unit to be used for display
          */
         // TODO [doc] Shall we change the name in something better here
-        static std::string display(UnitType inp, std::initializer_list<std::string> units);
+        static std::string display(UnitType input, std::initializer_list<std::string> units);
         /**
          * @brief Return value in the requested unit for display
          * @param input Value in other type
@@ -117,7 +117,7 @@ namespace allpix {
          * @return Value with unit to be used for display
          */
         // TODO [doc] Shall we change the name in something better here
-        static std::string display(UnitType inp, std::string unit);
+        static std::string display(UnitType input, std::string unit);
 
     private:
         static std::map<std::string, UnitType> unit_map_;

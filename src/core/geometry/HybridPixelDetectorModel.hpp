@@ -140,9 +140,9 @@ namespace allpix {
         std::string getCoverlayerMaterial() const { return coverlayer_material_; }
         /**
          * @brief Set the material of the cover layer. Should represent element in periodic system.
-         * @param val Material of the cover layer
+         * @param material Material of the cover layer
          */
-        void setCoverlayerMaterial(std::string mat) { coverlayer_material_ = std::move(mat); }
+        void setCoverlayerMaterial(std::string material) { coverlayer_material_ = std::move(material); }
 
     private:
         double bump_sphere_radius_{};
