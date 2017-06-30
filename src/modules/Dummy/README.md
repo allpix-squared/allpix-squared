@@ -8,7 +8,7 @@
 *Short description of this module*
 
 #### Parameters
-* `param = optional_default`: *explanation*
+* `param`: *explanation with optional default*
 
 #### Usage
 *Example how to use this module*
