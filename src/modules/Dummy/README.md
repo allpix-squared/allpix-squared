@@ -1,14 +1,14 @@
 ## Dummy
-* Maintainer: **NAME** (**EMAIL**)
-* Status: Functional
-* [Input: **INPUT_MESSAGE**]
-* [Output: **OUTPUT_MESSAGE**]
+**Maintainer**: **NAME** (**EMAIL**)  
+**Status**: Functional  
+[**Input**: **INPUT_MESSAGE**]  
+[**Output**: **OUTPUT_MESSAGE**]  
 
-### Description
+#### Description
 *Short description of this module*
 
-### Parameters
+#### Parameters
 * `param = optional_default`: *explanation*
 
-### Usage
+#### Usage
 *Example how to use this module*
