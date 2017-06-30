@@ -1,17 +1,10 @@
-// stl include
-#include <string>
-
-// module include
-#include "DefaultDigitizerModule.hpp"
-
-// framework includes
-#include "core/messenger/Messenger.hpp"
-#include "core/utils/log.h"
 /**
  * @file
  * @brief Implementation of DefaultDigitizer module
  * @copyright MIT License
  */
+
+#include "DefaultDigitizerModule.hpp"
 
 #include "core/utils/random.h"
 #include "core/utils/unit.h"
@@ -48,7 +41,7 @@ void DefaultDigitizerModule::init() {
     if(config_.get<bool>("output_plots")) {
         LOG(TRACE) << "Creating output plots";
 
-        // book histograms:
+        // Create histograms if needed
         h_pxq = new TH1D("pixelcharge", "raw pixel charge;pixel charge [ke];pixels", 100, 0, 10);
         h_pxq_noise = new TH1D("pixelcharge_noise_", "pixel charge w/ el. noise;pixel charge [ke];pixels", 100, 0, 10);
         h_thr = new TH1D("threshold", "applied threshold; threshold [ke];events", 100, 0, 10);
