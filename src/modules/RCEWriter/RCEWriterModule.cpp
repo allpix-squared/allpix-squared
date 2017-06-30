@@ -45,11 +45,14 @@ void RCEWriterModule::init() {
     // Sort the detector names
     std::sort(detector_names_.begin(), detector_names_.end());
     // For each detector name, initialze an instance of SensorData
+    int det_index = 0;
     for(const auto& detector_name : detector_names_) {
         auto& sensor = sensors_[detector_name];
         // Create directories for each detector
-        TDirectory* detector = output_file_->mkdir(detector_name.c_str());
+        det_dir_name = "Plane" + std::to_string(det_index);
+        TDirectory* detector = output_file_->mkdir(det_dir_name.c_str());
         detector->cd();
+        det_index += 1;
 
         // Initialize the struct for each detector
         sensor.tree = std::make_unique<TTree>("Hits", "");

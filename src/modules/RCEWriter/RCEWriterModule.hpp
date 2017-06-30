@@ -48,6 +48,7 @@ namespace allpix {
         std::unique_ptr<TFile> output_file_;
         std::unique_ptr<TTree> event_tree_;
         std::map<std::string, SensorData> sensors_;
+        std::string det_dir_name;
 
         ULong64_t timestamp_;
         ULong64_t frame_number_;
