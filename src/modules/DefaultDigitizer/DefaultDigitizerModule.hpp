@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Definition of DefaultDigitizer module
+ * @brief Definition of default digitization module
  * @copyright MIT License
  */
 
@@ -21,16 +21,16 @@
 
 namespace allpix {
     /**
-      * @brief Module to simulate digitization of collected charges
-      *
-      * This module provides a relatively simple simulation of the frontend electronics behavior. It simulates the
-      * propagation of the signal of collected charges through the amplifier, comparator and ADC while adding electronics
-      * noise and simulating the threshold as well as accounting for threshold dispersion and ADC noise.
-      */
+     * @brief Module to simulate digitization of collected charges
+     *
+     * This module provides a relatively simple simulation of the frontend electronics behavior. It simulates the
+     * propagation of the signal of collected charges through the amplifier, comparator and ADC while adding electronics
+     * noise and simulating the threshold as well as accounting for threshold dispersion and ADC noise.
+     */
     class DefaultDigitizerModule : public Module {
     public:
         /**
-         * @brief Constructor for the DefaultDigitizerModule, inheriting from the base class allpix::Module
+         * @brief Constructor for this detector-specific module
          * @param config Configuration object for this module as retrieved from the steering file
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
          * @param detector Pointer to the detector for this module instance

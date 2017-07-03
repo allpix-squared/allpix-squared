@@ -1,31 +1,43 @@
-/*
- * Minimal dummy module to use as a start for the development of your own module
+/**
+ * @file
+ * @brief Definition of [Dummy] module
+ * @copyright MIT License
  *
- * To integrate your own module into the framework, follow the steps below
- * - copy this module to a new directory <your_directory_name> in modules
- * - modify CMakeLists.txt for building your new module
+ * Contains minimal dummy module to use as a start for the development of your own module
+ *
+ * To integrate your own module into the framework, follow the simple steps below
+ * - Copy this module to a new directory [YourModuleName] in modules
+ * - Modify CMakeLists.txt to build your new module
+ *
+ * Refer to the User's Manual for more details.
  */
 
-// include stl
 #include <string>
 
-// include dependencies
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
-
-// include module base class
 #include "core/module/Module.hpp"
 
-// use the allpix namespace
 namespace allpix {
-    // define the module inheriting from the module base class
+    /**
+     * @brief Module to do action
+     *
+     * More detailed explanation of module
+     */
     class DummyModule : public Module {
     public:
-        // constructor should take a pointer to the Configuration, the Messenger and the Geometry Manager
+        /**
+         * @brief Constructor for this unique module
+         * @param config Configuration object for this module as retrieved from the steering file
+         * @param messenger Pointer to the messenger object to allow binding to messages on the bus
+         * @param geo_manager Pointer to the geometry manager, containing the detectors
+         */
         DummyModule(Configuration config, Messenger*, GeometryManager*);
 
-        // method that will do the computations
+        /**
+         * @brief [Run the function of this module]
+         */
         void run(unsigned int) override;
 
     private:

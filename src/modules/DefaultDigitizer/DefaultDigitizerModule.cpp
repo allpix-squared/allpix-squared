@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Implementation of DefaultDigitizer module
+ * @brief Implementation of default digitization module
  * @copyright MIT License
  */
 

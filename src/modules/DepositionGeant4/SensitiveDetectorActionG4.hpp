@@ -1,5 +1,7 @@
 /**
- *  @author John Idarraga <idarraga@cern.ch>
+ * @file
+ * @brief Defines the handling of the sensitive device
+ * @copyright MIT License
  */
 
 #ifndef ALLPIX_SIMPLE_DEPOSITION_MODULE_SENSITIVE_DETECTOR_ACTION_H
@@ -16,63 +18,63 @@
 #include "objects/DepositedCharge.hpp"
 #include "objects/MCParticle.hpp"
 
-class G4Step;
-class G4HCofThisEvent;
-
 namespace allpix {
     class SensitiveDetectorActionG4 : public G4VSensitiveDetector {
     public:
-        // Constructor and destructor
+        /**
+         * @brief Constructs the action handling for every sensitive detector
+         * @param module Pointer to the DepositionGeant4 module holding this class
+         * @param detector Detector this sensitive device is bound to
+         * @param msg Pointer to the messenger to send the charge deposits
+         * @param charge_creation_energy Energy needed per deposited charge
+         */
         SensitiveDetectorActionG4(Module* module,
-                                  const std::shared_ptr<Detector>&,
-                                  Messenger*,
+                                  const std::shared_ptr<Detector>& detector,
+                                  Messenger* msg,
                                   double charge_creation_energy);
-        ~SensitiveDetectorActionG4() override;
 
-        // Get total deposited charge
+        /**
+         * @brief Get total of charges deposited in the sensitive device bound to this action
+         */
         unsigned int getTotalDepositedCharge();
 
-        // Disallow copy
-        SensitiveDetectorActionG4(const SensitiveDetectorActionG4&) = delete;
-        SensitiveDetectorActionG4& operator=(const SensitiveDetectorActionG4&) = delete;
+        /**
+         * @brief Process a single step of a particle passage through this sensor
+         * @param step Information about the step
+         * @param history Parameter not used
+         */
+        G4bool ProcessHits(G4Step* step, G4TouchableHistory* history) override;
 
-        // Default move
-        SensitiveDetectorActionG4(SensitiveDetectorActionG4&&) = default;
-        SensitiveDetectorActionG4& operator=(SensitiveDetectorActionG4&&) = default;
-
-        // Initialize events, process the hits and handle end of event
-        G4bool ProcessHits(G4Step*, G4TouchableHistory*) override;
+        /**
+         * @brief Handle the end of the event and dispatch the deposited charges and MC particles
+         */
         void EndOfEvent(G4HCofThisEvent*) override;
 
     private:
-        // the conversion factor from energy to charge
-        double charge_creation_energy_;
-
-        // charge deposited
-        unsigned int total_deposited_charge_{};
-
-        // list of deposits in sensitive device
-        std::vector<DepositedCharge> deposits_;
-        std::vector<int> deposit_ids_;
-
-        // list of entry points for all track id
-        std::map<int, ROOT::Math::XYZPoint> entry_points_;
-
-        // parent of all tracks
-        std::map<int, int> track_parents_;
-
-        // list of all MC particles
-        std::vector<MCParticle> mc_particles_;
-        std::map<int, unsigned int> id_to_particle_;
-
         // Instantatiation of the deposition module
         Module* module_;
-
-        // the linked detector
         std::shared_ptr<Detector> detector_;
-
-        // link to the messenger
         Messenger* messenger_;
+
+        double charge_creation_energy_;
+
+        // Statistics of total deposited charge
+        unsigned int total_deposited_charge_{};
+
+        // Set of deposited charges in this event
+        std::vector<DepositedCharge> deposits_;
+        // List of ids for every deposit
+        std::vector<int> deposit_ids_;
+
+        // List of entry points for all tracks
+        std::map<int, ROOT::Math::XYZPoint> entry_points_;
+        // Parent of all tracks
+        std::map<int, int> track_parents_;
+
+        // List of all MC particles
+        std::vector<MCParticle> mc_particles_;
+        // Conversions from id to particle index
+        std::map<int, unsigned int> id_to_particle_;
     };
 } // namespace allpix
 

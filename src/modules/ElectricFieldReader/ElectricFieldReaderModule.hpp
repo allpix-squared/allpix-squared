@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @brief Definition of module to read electric fields
+ * @copyright MIT License
+ */
+
 /*
  * Module to read electric fields in the INIT format
  * See https://github.com/simonspa/pixelav

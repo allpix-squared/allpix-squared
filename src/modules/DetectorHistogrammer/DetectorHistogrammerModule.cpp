@@ -1,5 +1,7 @@
 /**
- * @author Koen Wolters <koen.wolters@cern.ch>
+ * @file
+ * @brief Implementation of detector histogramming module
+ * @copyright MIT License
  */
 
 #include "DetectorHistogrammerModule.hpp"
@@ -20,16 +22,15 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
     : Module(config, detector), config_(std::move(config)), detector_(std::move(detector)), pixels_message_(nullptr) {
-    // fetch deposit for single module
+    // Bind pixel hits message
     messenger->bindSingle(this, &DetectorHistogrammerModule::pixels_message_, MsgFlags::REQUIRED);
 }
 
-// create histograms
 void DetectorHistogrammerModule::init() {
-    // get detector model
+    // Fetch detector model
     auto model = detector_->getModel();
 
-    // create histogram
+    // Create histogram of hitmap
     LOG(TRACE) << "Creating histograms";
     std::string histogram_name = "histogram";
     std::string histogram_title = "Hitmap for " + detector_->getName() + ";x (pixels);y (pixels)";
@@ -42,7 +43,7 @@ void DetectorHistogrammerModule::init() {
                          -0.5,
                          model->getNPixels().y() - 0.5);
 
-    // create cluster size plot
+    // Create cluster size plot
     std::string cluster_size_name = "cluster";
     std::string cluster_size_title = "Cluster size for " + detector_->getName() + ";size;number";
     cluster_size = new TH1I(cluster_size_name.c_str(),
@@ -52,11 +53,10 @@ void DetectorHistogrammerModule::init() {
                             model->getNPixels().x() * model->getNPixels().y() + 0.5);
 }
 
-// fill the histograms
 void DetectorHistogrammerModule::run(unsigned int) {
     LOG(DEBUG) << "Adding hits in " << pixels_message_->getData().size() << " pixels";
 
-    // fill 2d histogram
+    // Fill 2D hitmap histogram
     for(auto& pixel_charge : pixels_message_->getData()) {
         auto pixel = pixel_charge.getPixel();
 
@@ -68,12 +68,12 @@ void DetectorHistogrammerModule::run(unsigned int) {
         total_hits_ += 1;
     }
 
-    // fill cluster histogram
+    // Fill cluster histogram
     cluster_size->Fill(static_cast<double>(pixels_message_->getData().size()));
 }
 
-// create file and write the histograms to it
 void DetectorHistogrammerModule::finalize() {
+    // Print statistics
     if(total_hits_ != 0) {
         LOG(INFO) << "Plotted " << total_hits_ << " hits in total, mean position is "
                   << total_vector_ / static_cast<double>(total_hits_);
@@ -81,17 +81,17 @@ void DetectorHistogrammerModule::finalize() {
         LOG(WARNING) << "No hits plotted";
     }
 
-    // set more useful spacing maximum for cluster size histogram
+    // FIXME Set more useful spacing maximum for cluster size histogram
     auto xmax = std::ceil(cluster_size->GetBinCenter(cluster_size->FindLastBinAbove()) + 1);
     cluster_size->GetXaxis()->SetRangeUser(0, xmax);
-    // set cluster size axis spacing (FIXME: worth to do?)
+    // Set cluster size axis spacing
     if(static_cast<int>(xmax) < 10) {
         cluster_size->GetXaxis()->SetNdivisions(static_cast<int>(xmax) + 1, 0, 0, true);
     }
 
-    // set default drawing option histogram
+    // Set default drawing option histogram for hitmap
     histogram->SetOption("colz");
-    // set histogram axis spacing (FIXME: worth to do?)
+    // Set histogram axis spacing
     if(static_cast<int>(histogram->GetXaxis()->GetXmax()) < 10) {
         histogram->GetXaxis()->SetNdivisions(static_cast<int>(histogram->GetXaxis()->GetXmax()) + 1, 0, 0, true);
     }
@@ -99,7 +99,7 @@ void DetectorHistogrammerModule::finalize() {
         histogram->GetYaxis()->SetNdivisions(static_cast<int>(histogram->GetYaxis()->GetXmax()) + 1, 0, 0, true);
     }
 
-    // write histograms
+    // Write histograms
     LOG(TRACE) << "Writing histograms to file";
     histogram->Write();
     cluster_size->Write();

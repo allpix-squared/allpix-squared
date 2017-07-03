@@ -1,6 +1,8 @@
 /**
- *  @author John Idarraga <idarraga@cern.ch>
- *  @author Koen Wolters <koen.wolters@cern.ch>
+ * @file
+ * @brief Implements the handling of the sensitive device
+ * @remarks Based on code from John Idarraga
+ * @copyright MIT License
  */
 
 #include "SensitiveDetectorActionG4.hpp"
@@ -27,20 +29,18 @@
 
 using namespace allpix;
 
-// construct and destruct the sensitive detector
 SensitiveDetectorActionG4::SensitiveDetectorActionG4(Module* module,
                                                      const std::shared_ptr<Detector>& detector,
                                                      Messenger* msg,
                                                      double charge_creation_energy)
-    : G4VSensitiveDetector("SensitiveDetector_" + detector->getName()), charge_creation_energy_(charge_creation_energy),
-      module_(module), detector_(detector), messenger_(msg) {
-    // add to the sensitive detector manager
+    : G4VSensitiveDetector("SensitiveDetector_" + detector->getName()), module_(module), detector_(detector),
+      messenger_(msg), charge_creation_energy_(charge_creation_energy) {
+
+    // Add the sensor to the internal sensitive detector manager
     G4SDManager* sd_man_g4 = G4SDManager::GetSDMpointer();
     sd_man_g4->AddNewDetector(this);
 }
-SensitiveDetectorActionG4::~SensitiveDetectorActionG4() = default;
 
-// process a Geant4 hit interaction
 G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*) {
     // Get the step parameters
     auto edep = step->GetTotalEnergyDeposit();
@@ -102,7 +102,6 @@ unsigned int SensitiveDetectorActionG4::getTotalDepositedCharge() {
     return total_deposited_charge_;
 }
 
-// send a message at the end of the event
 void SensitiveDetectorActionG4::EndOfEvent(G4HCofThisEvent*) {
     // Always send the track information
     auto mc_particle_message = std::make_shared<MCParticleMessage>(std::move(mc_particles_), detector_);
@@ -128,7 +127,6 @@ void SensitiveDetectorActionG4::EndOfEvent(G4HCofThisEvent*) {
             auto iter = id_to_particle_.find(deposit_ids_.at(i));
             if(iter != id_to_particle_.end()) {
                 deposits_.at(i).setMCParticle(&mc_particle_message->getData().at(iter->second));
-                // LOG(FATAL) << "TEST";
             }
         }
 

@@ -84,7 +84,7 @@ ROOT::Math::EulerAngles Detector::getOrientation() const {
 /**
  * @warning The local coordinate position does normally not have its origin at the center of rotation
  *
- * The origin of the local frame is at the center of the first pixel in the middle of the sensor
+ * The origin of the local frame is at the center of the first pixel in the middle of the sensor.
  */
 ROOT::Math::XYZPoint Detector::getLocalPosition(const ROOT::Math::XYZPoint& global_pos) const {
     return transform_.Inverse()(global_pos);

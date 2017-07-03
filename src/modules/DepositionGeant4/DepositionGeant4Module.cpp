@@ -1,6 +1,8 @@
 /**
- * @author Koen Wolters <koen.wolters@cern.ch>
- * @author Mathieu Benoit <benoit@lal.in2p3.fr>
+ * @file
+ * @brief Implementation of Geant4 deposition module
+ * @remark Based on code from Mathieu Benoit
+ * @copyright MIT License
  */
 
 #include "DepositionGeant4Module.hpp"
@@ -31,6 +33,9 @@
 
 using namespace allpix;
 
+/**
+ * Includes the particle source point to the geometry using \ref GeometryManager::addPoint.
+ */
 DepositionGeant4Module::DepositionGeant4Module(Configuration config, Messenger* messenger, GeometryManager* geo_manager)
     : Module(config), config_(std::move(config)), messenger_(messenger), geo_manager_(geo_manager), last_event_num_(1),
       run_manager_g4_(nullptr) {
@@ -42,49 +47,51 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration config, Messenger* 
     geo_manager_->addPoint(config_.get<ROOT::Math::XYZPoint>("particle_position"));
 }
 
+/**
+ * Module depends on \ref GeometryBuilderGeant4 loaded first, because it owns the pointer to the Geant4 run manager.
+ */
 void DepositionGeant4Module::init() {
-    // load the G4 run manager (which is currently owned by the geometry builder...)
+    // Load the G4 run manager (which is owned by the geometry builder)
     run_manager_g4_ = G4RunManager::GetRunManager();
     if(run_manager_g4_ == nullptr) {
         throw ModuleError("Cannot deposit charges using Geant4 without a Geant4 geometry builder");
     }
 
-    // suppress all output for G4
+    // Suppress all output from G4
     SUPPRESS_STREAM(G4cout);
 
-    // find the physics list
-    // FIXME: this is not on the correct place in the event / run logic
-    // FIXME: set a good default physics list
+    // Find the physics list
+    // FIXME Set a good default physics list
     G4PhysListFactory physListFactory;
     G4VModularPhysicsList* physicsList = physListFactory.GetReferencePhysList(config_.get<std::string>("physics_list"));
     if(physicsList == nullptr) {
         RELEASE_STREAM(G4cout);
-        // FIXME: more information about available lists
+        // FIXME More information about available lists
         throw InvalidValueError(config_, "physics_list", "specified physics list does not exists");
     }
-    // register a step limiter
+    // Register a step limiter (uses the user limits defined earlier)
     physicsList->RegisterPhysics(new G4StepLimiterPhysics());
-    // initialize the physics list
+    // Initialize the physics list
     LOG(TRACE) << "Initializing physics processes";
     run_manager_g4_->SetUserInitialization(physicsList);
     run_manager_g4_->InitializePhysics();
 
-    // initialize the full run manager to ensure correct state flags
+    // Initialize the full run manager to ensure correct state flags
     run_manager_g4_->Initialize();
 
-    // build generator
+    // Build particle generator
     LOG(TRACE) << "Constructing particle source";
     auto generator = new GeneratorActionG4(config_);
     run_manager_g4_->SetUserAction(generator);
 
-    // get the creation energy for charge (default is silicon electron hole pair energy)
-    // FIXME: is this a good name...
-    auto charge_creation_energy = config_.get<double>("charge_creation_energy", 3.64e-6);
+    // Get the creation energy for charge (default is silicon electron hole pair energy)
+    auto charge_creation_energy = config_.get<double>("charge_creation_energy", Units::get(3.64, "eV"));
 
-    // loop through all detectors and set the sensitive detector (call it action because that is what it is currently doing)
+    // Loop through all detectors and set the sensitive detector action that handles the particle passage
     bool useful_deposition = false;
     for(auto& detector : geo_manager_->getDetectors()) {
-        // do not add sensitive detector for detectors that have no listeners
+        // Do not add sensitive detector for detectors that have no listeners for the deposited charges
+        // FIXME Probably the MCParticle has to be checked as well
         if(!messenger_->hasReceiver(this,
                                     std::make_shared<DepositedChargeMessage>(std::vector<DepositedCharge>(), detector))) {
             LOG(INFO) << "Not depositing charges in " << detector->getName()
@@ -93,16 +100,17 @@ void DepositionGeant4Module::init() {
         }
         useful_deposition = true;
 
-        // get model of the detector
+        // Get model of the sensitive device
+        // FIXME This has to be sensor_log instead of pixel_log
         auto pixel_log = detector->getExternalObject<G4LogicalVolume>("pixel_log");
         if(pixel_log == nullptr) {
             throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
         }
 
-        // set maximum step length
+        // Apply the user limits to this element
         pixel_log->SetUserLimits(user_limits_.get());
 
-        // add the sensitive detector action
+        // Add the sensitive detector action
         auto sensitive_detector_action = new SensitiveDetectorActionG4(this, detector, messenger_, charge_creation_energy);
         pixel_log->SetSensitiveDetector(sensitive_detector_action);
         sensors_.push_back(sensitive_detector_action);
@@ -112,50 +120,49 @@ void DepositionGeant4Module::init() {
         LOG(ERROR) << "Not a single listener for deposited charges, module is useless!";
     }
 
-    // disable verbose processes
-    // FIXME: there should be a more general way to do it, but I have not found it yet
+    // Disable verbose messages from processes
     G4UImanager* UI = G4UImanager::GetUIpointer();
     UI->ApplyCommand("/process/verbose 0");
     UI->ApplyCommand("/process/em/verbose 0");
     UI->ApplyCommand("/process/eLoss/verbose 0");
     G4HadronicProcessStore::Instance()->SetVerbose(0);
 
-    // set the seed
+    // Set the random seed for Geant4 generation
+    // NOTE Assumes this is the only Geant4 module using random numbers
     std::string seed_command = "/random/setSeeds ";
     seed_command += std::to_string(static_cast<uint32_t>(get_random_seed() % UINT_MAX));
     seed_command += " ";
     seed_command += std::to_string(static_cast<uint32_t>(get_random_seed() % UINT_MAX));
     UI->ApplyCommand(seed_command);
 
-    // release output from G4
+    // Release the output stream
     RELEASE_STREAM(G4cout);
 }
 
-// run the deposition
 void DepositionGeant4Module::run(unsigned int event_num) {
-    // suppress stream if not in debugging mode
+    // Suppress output stream if not in debugging mode
     IFLOG(DEBUG);
     else {
         SUPPRESS_STREAM(G4cout);
     }
 
-    // start the beam
+    // Start a single event from the beam
     LOG(TRACE) << "Enabling beam";
     run_manager_g4_->BeamOn(1);
     last_event_num_ = event_num;
 
-    // release the stream (if it was suspended)
+    // Release the stream (if it was suspended)
     RELEASE_STREAM(G4cout);
 }
 
-// print summary
 void DepositionGeant4Module::finalize() {
     size_t total_charges = 0;
     for(auto& sensor : sensors_) {
         total_charges += sensor->getTotalDepositedCharge();
     }
 
-    if(!sensors_.empty() && total_charges > 0) {
+    // Print summary or warns if module did not output any charges
+    if(!sensors_.empty() && total_charges > 0 && last_event_num_ > 0) {
         size_t average_charge = total_charges / sensors_.size() / last_event_num_;
         LOG(INFO) << "Deposited total of " << total_charges << " charges in " << sensors_.size() << " sensor(s) (average of "
                   << average_charge << " per sensor for every event)";

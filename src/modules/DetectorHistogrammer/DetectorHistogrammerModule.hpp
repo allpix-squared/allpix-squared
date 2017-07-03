@@ -1,11 +1,14 @@
-/*
- * Temporary producer of histogram hits
+/**
+ * @file
+ * @brief Definition of detector histogramming module
+ * @copyright MIT License
  */
 
 #ifndef ALLPIX_MODULE_DETECTOR_HISTOGRAMMER_H
 #define ALLPIX_MODULE_DETECTOR_HISTOGRAMMER_H
 
 #include <memory>
+
 #include <string>
 
 #include <TH1I.h>
@@ -19,37 +22,49 @@
 #include "objects/PixelHit.hpp"
 
 namespace allpix {
-    class DepositionMessage;
 
-    // define the module to inherit from the module base class
+    /**
+     * @brief Module to plot the final digitized pixel data
+     *
+     * Generates a hitmap of all the produced pixel hits, together with a histogram of the cluster size
+     */
     class DetectorHistogrammerModule : public Module {
     public:
-        // constructor and destructor
+        /**
+         * @brief Constructor for this detector-specific module
+         * @param config Configuration object for this module as retrieved from the steering file
+         * @param messenger Pointer to the messenger object to allow binding to messages on the bus
+         * @param detector Pointer to the detector for this module instance
+         */
         DetectorHistogrammerModule(Configuration, Messenger*, std::shared_ptr<Detector>);
 
-        // create the histograms
+        /**
+         * @brief Initialize the histograms
+         */
         void init() override;
 
-        // fill the histograms
+        /**
+         * @brief Fill the histograms
+         */
         void run(unsigned int) override;
 
-        // write the histograms
+        /**
+         * @brief Write the histograms to the modules file
+         */
         void finalize() override;
 
     private:
-        // configuration for this module
         Configuration config_;
-
-        // attached detector and model
         std::shared_ptr<Detector> detector_;
 
-        // deposits for a specific detector
+        // List of pixel hits
         std::shared_ptr<PixelHitMessage> pixels_message_;
 
+        // Statistics to compute mean position
         ROOT::Math::XYVector total_vector_{};
         unsigned long total_hits_{};
 
-        // histograms
+        // Histograms to output
         TH2I* histogram; // FIXME: bad name
         TH1I* cluster_size;
     };

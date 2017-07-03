@@ -1,7 +1,7 @@
 # Define module and return the generated name as MODULE_NAME
 ALLPIX_UNIQUE_MODULE(MODULE_NAME)
 
-# Add library with the module
+# Add source files to library
 ALLPIX_MODULE_SOURCES(${MODULE_NAME} 
     DummyModule.cpp
     # ADD SOURCE FILES HERE...
