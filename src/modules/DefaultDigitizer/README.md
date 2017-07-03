@@ -18,7 +18,7 @@ More detailed it applies the following steps:
 * `treshold` : Threshold for considering the readout charge as a hit. Defaults to 600 electrons.
 * `treshold_smearing` : Standard deviation of the Gaussian uncertainty in the threshold. Defaults to 30 electrons.
 * `adc_smearing` : Standard deviation of the Gaussian noise in the ADC conversion (after applying the threshold). Defaults to 300 electrons.
-* `output_plots` : Enables if histograms should be generated with the data in every step. Disabled by default.
+* `output_plots` : Enables if histograms should be generated from the data in every step (slows down simulation). Disabled by default.
 
 #### Usage
 The default configuration is equal to the following

@@ -19,6 +19,9 @@
 #include "objects/MCParticle.hpp"
 
 namespace allpix {
+    /**
+     * @brief Handles the steps of the particles in all sensitive devices
+     */
     class SensitiveDetectorActionG4 : public G4VSensitiveDetector {
     public:
         /**

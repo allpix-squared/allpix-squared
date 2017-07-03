@@ -1,15 +1,7 @@
-################################################
-# Geometry Builder Module, TGeo Implementation #
-################################################
-
-# Define module and return the generated name as MODULE_NAME
+# Define module
 ALLPIX_UNIQUE_MODULE(MODULE_NAME)
 
 # Print message if GDML support is not enabled in ROOT
-#GET_DIRECTORY_PROPERTY(ROOT_GDML DIRECTORY ${ROOT_DIR} DEFINITION gdml)
-#FIND_PACKAGE(ROOT OPTIONAL_COMPONENTS gdml)
-#IF(gdml)
-#IF(ROOT_GDML)
 IF(ROOT_gdml_FOUND)
   message(STATUS "Geometry export in GDML format is enabled.")
   ADD_DEFINITIONS(-DROOT_GDML)
@@ -18,7 +10,7 @@ ELSE()
 ENDIF()
 
 
-# Add library
+# Add source files to library
 ALLPIX_MODULE_SOURCES(${MODULE_NAME}
   GeometryBuilderTGeoModule.cpp
 )

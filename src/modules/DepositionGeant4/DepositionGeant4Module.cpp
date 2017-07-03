@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Implementation of Geant4 deposition module
- * @remark Based on code from Mathieu Benoit
+ * @remarks Based on code from Mathieu Benoit
  * @copyright MIT License
  */
 
@@ -48,7 +48,7 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration config, Messenger* 
 }
 
 /**
- * Module depends on \ref GeometryBuilderGeant4 loaded first, because it owns the pointer to the Geant4 run manager.
+ * Module depends on \ref GeometryBuilderGeant4Module loaded first, because it owns the pointer to the Geant4 run manager.
  */
 void DepositionGeant4Module::init() {
     // Load the G4 run manager (which is owned by the geometry builder)

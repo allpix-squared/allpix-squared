@@ -43,15 +43,15 @@ IF(${CMAKE_CXX_STANDARD})
 ENDIF()
 
 FIND_PROGRAM(CLANG_TIDY "clang-tidy")
-# enable clang tidy only if using a clang compiler
+# Enable clang tidy only if using a clang compiler
 IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    # if debug build enabled do automatic clang tidy
+    # If debug build enabled do automatic clang tidy
     IF(CMAKE_BUILD_TYPE MATCHES Debug)
         SET(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY} "-header-filter='${CMAKE_SOURCE_DIR}'")
     ENDIF()
 
-    # enable checking and formatting through run-clang-tidy if available
-    # FIXME: make finding this program more portable
+    # Enable checking and formatting through run-clang-tidy if available
+    # FIXME Make finding this program more portable
     GET_FILENAME_COMPONENT(CLANG_DIR ${CLANG_TIDY} DIRECTORY)
     FIND_PROGRAM(RUN_CLANG_TIDY "run-clang-tidy.py" HINTS /usr/share/clang/ ${CLANG_DIR}/../share/clang/)
     IF(RUN_CLANG_TIDY)
@@ -64,10 +64,6 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         IF(NPROC EQUAL 0)
             SET(NPROC 1)
         ENDIF()
-        
-        #ADD_CUSTOM_COMMAND(
-        #    fix_compile_commands
-        #    COMMAND sed -i "s|^\.cxx|^\.
 
         ADD_CUSTOM_TARGET(
             lint COMMAND

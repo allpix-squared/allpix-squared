@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @brief Implementation of ROOT data file writer module
+ * @copyright MIT License
+ */
+
 #include "ROOTObjectWriterModule.hpp"
 
 #include <fstream>
@@ -21,9 +27,11 @@ ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration config, Messenger* 
     // Bind to all messages
     messenger->registerListener(this, &ROOTObjectWriterModule::receive);
 }
+/**
+ * @note Objects cannot be stored in smart pointers due to internal ROOT logic
+ */
 ROOTObjectWriterModule::~ROOTObjectWriterModule() {
-    // Delete all pointers
-    // NOTE: cannot be smart pointers due to internal ROOT logic
+    // Delete all object pointers
     for(auto& index_data : write_list_) {
         delete index_data.second;
     }

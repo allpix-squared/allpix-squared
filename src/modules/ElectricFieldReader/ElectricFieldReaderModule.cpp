@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @brief Implementation of module to read electric fields
+ * @copyright MIT License
+ */
+
 #include "ElectricFieldReaderModule.hpp"
 
 #include <fstream>
@@ -16,16 +22,13 @@
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 
-// use the allpix namespace within this file
 using namespace allpix;
 
-// constructor to load the module
 ElectricFieldReaderModule::ElectricFieldReaderModule(Configuration config, Messenger*, std::shared_ptr<Detector> detector)
     : Module(config, detector), config_(std::move(config)), detector_(std::move(detector)) {}
 
-// init method that reads the electric field from the file
 void ElectricFieldReaderModule::init() {
-    // Get electric field from model parameter
+    // Get type of electric field from model parameter
     ElectricFieldReaderModule::FieldData field_data;
     if(config_.get<std::string>("model") == "linear") {
         field_data = construct_linear_field();
@@ -44,6 +47,9 @@ void ElectricFieldReaderModule::init() {
     }
 }
 
+/**
+ * The linear field does not have a X or Y component and is constant over the whole thickness of the sensor.
+ */
 ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::construct_linear_field() {
     LOG(TRACE) << "Constructing electric field from linear bias voltage";
 
@@ -62,11 +68,15 @@ ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::construct_linear
     return ElectricFieldReaderModule::FieldData(field, {{1, 1, 1}});
 }
 
+/**
+ * The field read from the INIT format are shared between module instantiations using the static
+ * ElectricFieldReaderModuleget_by_file_name method.
+ */
 ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::read_init_field() {
     try {
         LOG(TRACE) << "Fetching electric field from init file";
 
-        // Get field
+        // Get field from file
         auto field_data = get_by_file_name(config_.getPath("file_name", true), *detector_.get());
         LOG(INFO) << "Set electric field with " << field_data.second.at(0) << "x" << field_data.second.at(1) << "x"
                   << field_data.second.at(2) << " cells";
@@ -94,6 +104,7 @@ void ElectricFieldReaderModule::create_output_plots() {
 
     auto model = detector_->getModel();
 
+    // Determine minimum and maximum index depending on projection axis
     double min1, max1;
     double min2, max2;
     if(project == 'x') {
@@ -113,6 +124,7 @@ void ElectricFieldReaderModule::create_output_plots() {
         max2 = model->getSensorCenter().y() + model->getSensorSize().y() / 2.0;
     }
 
+    // Create 2D histogram
     auto histogram = new TH2F("field",
                               ("Electric field for " + detector_->getName()).c_str(),
                               static_cast<int>(steps),
@@ -122,6 +134,7 @@ void ElectricFieldReaderModule::create_output_plots() {
                               min2,
                               max2);
 
+    // Determine the coordinate to use for projection
     double x = 0, y = 0, z = 0;
     if(project == 'x') {
         x = model->getSensorCenter().x() - model->getSensorSize().x() / 2.0 +
@@ -133,6 +146,8 @@ void ElectricFieldReaderModule::create_output_plots() {
         z = model->getSensorCenter().z() - model->getSensorSize().z() / 2.0 +
             config_.get<double>("output_plots_projection_percentage", 0.5) * model->getSensorSize().z();
     }
+
+    // Find the electric field at every index
     for(size_t j = 0; j < steps; ++j) {
         if(project == 'x') {
             y = model->getSensorCenter().y() - model->getSensorSize().y() / 2.0 +
@@ -156,10 +171,10 @@ void ElectricFieldReaderModule::create_output_plots() {
                     ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().y();
             }
 
-            // get field strength and fill histogram
+            // Get field strength from detector
             auto field_strength = std::sqrt(detector_->getElectricField(ROOT::Math::XYZPoint(x, y, z)).Mag2());
 
-            // fill histogram
+            // Fill the histogram
             if(project == 'x') {
                 histogram->Fill(y, z, field_strength);
             } else if(project == 'y') {
@@ -170,14 +185,16 @@ void ElectricFieldReaderModule::create_output_plots() {
         }
     }
 
-    // write histogram
+    // Write the histogram to module file
     histogram->Write();
 }
 
-// check if the detector matches the file
+/**
+ * @brief Check if the detector matches the file header
+ */
 inline static void check_detector_match(Detector& detector, double thickness, double xpixsz, double ypixsz) {
     auto model = detector.getModel();
-    // Do a few simple checks with the detector model
+    // Do a several checks with the detector model
     if(model != nullptr) {
         if(std::fabs(thickness - model->getSensorSize().z()) > std::numeric_limits<double>::epsilon()) {
             LOG(WARNING) << "Thickness of sensor in file is " << Units::display(thickness, "um")
@@ -193,18 +210,17 @@ inline static void check_detector_match(Detector& detector, double thickness, do
     }
 }
 
-// get the electric field from file name (reusing the same if catched earlier)
 std::map<std::string, ElectricFieldReaderModule::FieldData> ElectricFieldReaderModule::field_map_;
 ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::get_by_file_name(const std::string& file_name,
                                                                                  Detector& detector) {
-    // search in cache (NOTE: the path reached here is always a canonical name)
+    // Search in cache (NOTE: the path reached here is always a canonical name)
     auto iter = field_map_.find(file_name);
     if(iter != field_map_.end()) {
-        // FIXME: check detector match here as well
+        // FIXME Check detector match here as well
         return iter->second;
     }
 
-    // load file
+    // Load file
     std::ifstream file(file_name);
 
     std::string header;
@@ -212,7 +228,7 @@ ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::get_by_file_name
 
     LOG(TRACE) << "Header of file " << file_name << " is " << header;
 
-    // read the header
+    // Read the header
     std::string tmp;
     file >> tmp >> tmp;        // ignore the init seed and cluster length
     file >> tmp >> tmp >> tmp; // ignore the incident pion direction
@@ -227,7 +243,7 @@ ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::get_by_file_name
     file >> xsize >> ysize >> zsize;
     file >> tmp;
 
-    // check if electric field matches chip
+    // Check if electric field matches chip
     check_detector_match(detector, thickness, xpixsz, ypixsz);
 
     if(file.fail()) {
@@ -236,13 +252,13 @@ ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::get_by_file_name
     auto field = std::make_shared<std::vector<double>>();
     field->resize(xsize * ysize * zsize * 3);
 
-    // loop through all the field data
+    // Loop through all the field data
     for(size_t i = 0; i < xsize * ysize * zsize; ++i) {
         if(file.eof()) {
             throw std::runtime_error("unexpected end of file");
         }
 
-        // get index of electric field
+        // Get index of electric field
         size_t xind, yind, zind;
         file >> xind >> yind >> zind;
 
@@ -253,12 +269,12 @@ ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::get_by_file_name
         yind--;
         zind--;
 
-        // loop through components of electric field
+        // Loop through components of electric field
         for(size_t j = 0; j < 3; ++j) {
             double input;
             file >> input;
 
-            // set the electric field at a position
+            // Set the electric field at a position
             (*field)[xind * ysize * zsize * 3 + yind * zsize * 3 + zind * 3 + j] = Units::get(-input, "V/cm");
         }
     }

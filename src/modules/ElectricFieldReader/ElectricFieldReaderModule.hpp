@@ -4,13 +4,6 @@
  * @copyright MIT License
  */
 
-/*
- * Module to read electric fields in the INIT format
- * See https://github.com/simonspa/pixelav
- *
- * @author Koen Wolters <koen.wolters@cern.ch>
- */
-
 #include <map>
 #include <memory>
 #include <string>
@@ -23,35 +16,53 @@
 #include "core/module/Module.hpp"
 
 namespace allpix {
-    // Define the module inheriting from the module base class
+    /**
+     * @brief Module to read electric fields from INIT format or apply a linear electric field
+     *
+     * Read the model of the electric field from the config during initialization:
+     * - For a linear field create a constant electric field to apply over the whole sensitive device
+     * - For the INIT format, reads the specified file and add the electric field grid to the bound detectors
+     */
     class ElectricFieldReaderModule : public Module {
         using FieldData = std::pair<std::shared_ptr<std::vector<double>>, std::array<size_t, 3>>;
 
     public:
-        // Constructor of the module
+        /**
+         * @brief Constructor for this detector-specific module
+         * @param config Configuration object for this module as retrieved from the steering file
+         * @param messenger Pointer to the messenger object to allow binding to messages on the bus
+         * @param detector Pointer to the detector for this module instance
+         */
         ElectricFieldReaderModule(Configuration config, Messenger*, std::shared_ptr<Detector>);
 
-        // Read the electric field and set it for the detectors
+        /**
+         * @brief Read electric field and apply it to the bound detectors
+         */
         void init() override;
 
     private:
-        // Construct linear field
+        Configuration config_;
+        std::shared_ptr<Detector> detector_;
+
+        /**
+         * @brief Create and apply a linear field
+         */
         FieldData construct_linear_field();
 
-        // Read init field
+        /**
+         * @brief Read field in the init format and apply it
+         */
         FieldData read_init_field();
 
-        // Create output plots
+        /**
+         * @brief Create output plots of the electric field profile
+         */
         void create_output_plots();
 
-        // Get the electric field from a file name
+        /**
+         * @brief Get the electric field from a file name, caching the result between instantiations
+         */
         static FieldData get_by_file_name(const std::string& name, Detector&);
         static std::map<std::string, FieldData> field_map_;
-
-        // configuration for this reader
-        Configuration config_;
-
-        // linked detector for this instantiation
-        std::shared_ptr<Detector> detector_;
     };
 } // namespace allpix

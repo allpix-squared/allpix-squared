@@ -22,7 +22,6 @@
 #include "objects/PixelHit.hpp"
 
 namespace allpix {
-
     /**
      * @brief Module to plot the final digitized pixel data
      *

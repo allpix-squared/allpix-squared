@@ -18,7 +18,6 @@
 #include "core/config/Configuration.hpp"
 
 namespace allpix {
-
     /**
      * @brief Generates the particles in every event
      */

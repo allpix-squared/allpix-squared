@@ -1,5 +1,7 @@
-/*
- * Geometry construction module
+/**
+ * @file
+ * @brief Definition of Geant4 geometry construction module
+ * @copyright MIT License
  */
 
 #ifndef ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_H
@@ -16,24 +18,33 @@
 class G4RunManager;
 
 namespace allpix {
-    // define the module to inherit from the module base class
+    /**
+     * @brief Module to construct the Geant4 geometry from the internal geometry
+     *
+     * Creates the world from the information available from the \ref GeometryManager. Then continues with constructing every
+     * detector, building it from the internal detector model. The geometry that is eventually constructed is used to
+     * simulate the charge deposition in the \ref DepositionGeant4Module.
+     */
     class GeometryBuilderGeant4Module : public Module {
     public:
-        // constructor should take a pointer to the Configuration, the Messenger and the Geometry Manager
+        /**
+         * @brief Constructor for this unique module
+         * @param config Configuration object for this module as retrieved from the steering file
+         * @param messenger Pointer to the messenger object to allow binding to messages on the bus
+         * @param geo_manager Pointer to the geometry manager, containing the detectors
+         */
         GeometryBuilderGeant4Module(Configuration config, Messenger*, GeometryManager*);
 
-        // build the Geant4 geometry before a run
+        /**
+         * @brief Initializes Geant4 and construct the Geant4 geometry from the internal AllPix geometry
+         */
         void init() override;
 
     private:
-        // configuration for this module
         Configuration config_;
-
-        // link to geometry manager
         GeometryManager* geo_manager_;
 
-        // geant run manager
-        // FIXME: is it right to let the geometry own this pointer
+        // Geant4 run manager is owned by this module
         std::unique_ptr<G4RunManager> run_manager_g4_;
     };
 } // namespace allpix

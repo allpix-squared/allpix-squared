@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @brief Implementation of ROOT data file reader module
+ * @copyright MIT License
+ */
+
 #include "ROOTObjectReaderModule.hpp"
 
 #include <climits>
@@ -22,12 +28,20 @@ using namespace allpix;
 
 ROOTObjectReaderModule::ROOTObjectReaderModule(Configuration config, Messenger* messenger, GeometryManager* geo_mgr)
     : Module(config), config_(std::move(config)), messenger_(messenger), geo_mgr_(geo_mgr) {}
+
+/**
+ * @note Objects cannot be stored in smart pointers due to internal ROOT logic
+ */
 ROOTObjectReaderModule::~ROOTObjectReaderModule() {
     for(auto message_inf : message_info_array_) {
         delete message_inf.objects;
     }
 }
 
+/**
+ * Adds lambda function map to convert a vector of generic objects to a templated message containing this particular type of
+ * object from its typeid.
+ */
 template <typename T> static void add_creator(ROOTObjectReaderModule::MessageCreatorMap& map) {
     map[typeid(T)] = [&](std::vector<Object*> objects, std::shared_ptr<Detector> detector = nullptr) {
         std::vector<T> data;
@@ -42,25 +56,33 @@ template <typename T> static void add_creator(ROOTObjectReaderModule::MessageCre
     };
 }
 
+/**
+ * Uses SFINAE trick to call the add_creator function for all template arguments of a container class. Used to add creater
+ * for every object in tuple of objects.
+ */
 template <template <typename...> class T, typename... Args>
-static void gen_creator_map(ROOTObjectReaderModule::MessageCreatorMap& map, type_tag<T<Args...>>) {
+static void gen_creator_map_from_tag(ROOTObjectReaderModule::MessageCreatorMap& map, type_tag<T<Args...>>) {
     std::initializer_list<int> value{(add_creator<Args>(map), 0)...};
     (void)value;
 }
 
+/**
+ * Wrapper function to make the SFINAE trick in \ref gen_creator_map_from_tag work.
+ */
 template <typename T> static ROOTObjectReaderModule::MessageCreatorMap gen_creator_map() {
     ROOTObjectReaderModule::MessageCreatorMap ret_map;
-    gen_creator_map(ret_map, type_tag<T>());
+    gen_creator_map_from_tag(ret_map, type_tag<T>());
     return ret_map;
 }
 
 void ROOTObjectReaderModule::init() {
-    // Initialize the call map
+    // Initialize the call map from the tuple of available objects
     message_creator_map_ = gen_creator_map<allpix::OBJECTS>();
 
-    // Open the input file
+    // Open the file with the objects
     input_file_ = std::make_unique<TFile>(config_.getPath("file_name", true).c_str());
 
+    // Read all the trees in the file
     TList* keys = input_file_->GetListOfKeys();
     for(auto&& object : *keys) {
         auto& key = dynamic_cast<TKey&>(*object);
@@ -91,6 +113,7 @@ void ROOTObjectReaderModule::init() {
             std::string branch_name = branch->GetName();
             auto split = allpix::split<std::string>(branch_name, "_");
 
+            // Fetch information from the tree name
             size_t expected_size = 2;
             size_t det_idx = 0;
             size_t name_idx = 1;
