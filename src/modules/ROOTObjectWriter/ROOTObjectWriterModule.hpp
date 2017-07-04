@@ -50,8 +50,7 @@ namespace allpix {
         void init() override;
 
         /**
-         * @brief Writes the objects fetched to their specific tree, constructing trees on the fly for new objects
-         * encountered.
+         * @brief Writes the objects fetched to their specific tree, constructing trees on the fly for new objects.
          */
         void run(unsigned int) override;
 

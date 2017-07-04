@@ -1,8 +1,4 @@
-########################
-# Visualization Module #
-########################
-
-# Define module and return the generated name as MODULE_NAME
+# Define module
 ALLPIX_UNIQUE_MODULE(MODULE_NAME)
 
 # Geant4 is required for geometry description and charge deposition.
@@ -21,10 +17,10 @@ ELSEIF(CMAKE_BUILD_TYPE MATCHES RELEASE)
     SET(${CMAKE_CXX_FLAGS} "${Geant4_CXX_FLAGS_RELEASE} ${CMAKE_CXX_FLAGS}")
 ENDIF()
 
-# Include Geant4 directories (WARNING: do not use the Geant4_USE_FILE!)
+# Include Geant4 directories (NOTE Geant4_USE_FILE is not used!)
 INCLUDE_DIRECTORIES(SYSTEM ${Geant4_INCLUDE_DIRS})
 
-# Add library
+# Add source files to library
 ALLPIX_MODULE_SOURCES(${MODULE_NAME} 
     VisualizationGeant4Module.cpp
 )

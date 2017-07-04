@@ -1,5 +1,7 @@
-/*
- * Visualization module
+/**
+ * @file
+ * @brief Definition of Geant4 geometry visualization module
+ * @copyright MIT License
  */
 
 #ifndef ALLPIX_TEST_VISUALIZATION_MODULE_H
@@ -17,43 +19,61 @@ class G4UIsession;
 class G4VisManager;
 
 namespace allpix {
+    /**
+     * @brief Module that shows visualization of constructed Geant4 geometry
+     *
+     * Displays the geometry constructed in \ref GeometryBuilderGeant4Module. Allows passing a variety of options to
+     * configure both the visualization viewer as well as the display of the various detector components and the beam.
+     */
     class VisualizationGeant4Module : public Module {
     public:
-        // Unique module constructor
+        /**
+         * @brief Constructor for this unique module
+         * @param config Configuration object for this module as retrieved from the steering file
+         * @param messenger Pointer to the messenger object to allow binding to messages on the bus
+         * @param geo_manager Pointer to the geometry manager, containing the detectors
+         */
         VisualizationGeant4Module(Configuration config, Messenger*, GeometryManager*);
+        /**
+         * @brief Destructor applies a workaround for some visualizaton drivers to prevent display during exception handling
+         */
         ~VisualizationGeant4Module() override;
 
-        // Disallow copy
-        VisualizationGeant4Module(const VisualizationGeant4Module&) = delete;
-        VisualizationGeant4Module& operator=(const VisualizationGeant4Module&) = delete;
-
-        // Default move
-        VisualizationGeant4Module(VisualizationGeant4Module&&) noexcept = default;
-        VisualizationGeant4Module& operator=(VisualizationGeant4Module&&) noexcept = default;
-
-        // Initializes the visualization and parameters
+        /**
+         * @brief Initializes visualization and apply configuration parameters
+         */
         void init() override;
 
-        // Show updates every run if not accumulating
+        /**
+         * @brief Show visualization updates if not accumulating data
+         */
         void run(unsigned int) override;
 
-        // Display the visualization
+        /**
+         * @brief Possibly start GUI or terminal and display the visualization
+         */
         void finalize() override;
 
     private:
-        void set_visualization_settings();
-        void set_visibility_attributes();
-
         Configuration config_;
         GeometryManager* geo_manager_;
 
-        // variable to check if we did run succesfullly
+        /**
+         * @brief Set the visualization settings from the configuration
+         */
+        void set_visualization_settings();
+        /**
+         * @brief Set the default visualization attributes of the different components
+         */
+        void set_visualization_attributes();
+
+        // Check if we did run succesfully, used to apply workaround in destructor if needed
         bool has_run_;
 
-        // pointer to the visualization manager
+        // Own the Geant4 visualization manager
         std::unique_ptr<G4VisManager> vis_manager_g4_;
 
-        // sessions and params for the session
+        // Hold information about the session
         std::string session_param_;
         char* session_param_ptr_;
         std::unique_ptr<G4UIsession> gui_session_;

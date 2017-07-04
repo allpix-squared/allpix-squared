@@ -12,7 +12,7 @@ If the same type of messages is dispatched multiple times, it is combined and wr
 * `file_name` : Name of the data file (without the .root suffix) to create, relative to the output directory of the framework.
 
 #### Usage
-To create the default file (with the name *data.root*) an instantiation without arguments can be used as follows:
+To create the default file (with the name *data.root*) an instantiation without arguments can be placed at the end of the configuration:
 
 ```ini
 [ROOTObjectWriter]
