@@ -24,7 +24,7 @@ namespace allpix {
         /**
          * @brief Required virtual destructor
          */
-        ~Object() = default;
+        ~Object() override = default;
 
         /// @{
         /**
