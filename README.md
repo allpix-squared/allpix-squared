@@ -42,7 +42,7 @@ The User's Manual of allpix<sup>2</sup> can be created from source by executing
 ```
 $ make pdf
 ```
-After running the manual is available under `usermanual` in the build directory. A recent version of the documentation is also available online [here](https://gitlab.cern.ch/simonspa/allpix-squared/uploads/c94a3d3a4a2ff54ce136fdc5dedb1c12/allpix-manual.pdf). Several parts of the manual (especially the module documentation) are still mising, but most other sections are fairly complete.
+After running the manual is available under `usermanual` in the build directory. A recent version of the documentation is also available online [here](https://gitlab.cern.ch/simonspa/allpix-squared/uploads/98f61dbfb5e1337956e8a55d0c024653/allpix-manual.pdf). Some parts of the manual are still mising, but the majority of the sections are fairly complete.
 
 Doxygen reference of the core framework is available. The reference for the modules, tools and objects is currently incomplete and will be added later. To build the HTML version of the Doxygen reference, run the following command
 ```
