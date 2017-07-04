@@ -33,7 +33,7 @@ namespace allpix {
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
          * @param geo_manager Pointer to the geometry manager, containing the detectors
          */
-        VisualizationGeant4Module(Configuration config, Messenger*, GeometryManager*);
+        VisualizationGeant4Module(Configuration config, Messenger* messenger, GeometryManager* geo_manager);
         /**
          * @brief Destructor applies a workaround for some visualizaton drivers to prevent display during exception handling
          */

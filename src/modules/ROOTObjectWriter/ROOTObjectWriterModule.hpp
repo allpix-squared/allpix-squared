@@ -29,9 +29,9 @@ namespace allpix {
          * @brief Constructor for this unique module
          * @param config Configuration object for this module as retrieved from the steering file
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
-         * @param geo_manager Pointer to the geometry manager, containing the detectors
+         * @param geo_mgr Pointer to the geometry manager, containing the detectors
          */
-        ROOTObjectWriterModule(Configuration config, Messenger*, GeometryManager*);
+        ROOTObjectWriterModule(Configuration config, Messenger* messenger, GeometryManager* geo_mgr);
         /**
          * @brief Destructor deletes the internal objects used to build the ROOT Tree
          */

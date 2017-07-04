@@ -23,7 +23,7 @@ namespace allpix {
          * @param charge Total charge at position
          * @param event_time Total time after event start
          */
-        SensorCharge(ROOT::Math::XYZPoint position, unsigned int charge, double eventTime);
+        SensorCharge(ROOT::Math::XYZPoint position, unsigned int charge, double event_time);
 
         /**
          * @brief Get local position of set of charges in the sensor

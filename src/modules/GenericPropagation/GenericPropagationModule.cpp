@@ -451,9 +451,9 @@ void GenericPropagationModule::run(unsigned int event_num) {
  * velocity at every point with help of the electric field map of the detector. An Runge-Kutta integration is applied in
  * multiple steps, adding a random diffusion to the propagating charge every step.
  */
-std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& root_pos) {
+std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos) {
     // Create a runge kutta solver using the electric field as step function
-    Eigen::Vector3d position(root_pos.x(), root_pos.y(), root_pos.z());
+    Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
 
     // Define a lambda function to compute the electron mobility
     // NOTE This function is typically the most frequently executed part of the framework and therefore the bottleneck

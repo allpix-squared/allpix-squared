@@ -40,7 +40,7 @@ namespace allpix {
 
         /**
          * @brief Construct a Runge-Kutta integrator
-         * @param tableau One of the possible Runge-Kutta tables (usually \ref tableau::RK5 should be preferred)
+         * @param tableau One of the possible Runge-Kutta tables (see \ref allpix::tableau should be preferred)
          * @param function Step function to perform integration
          * @param step_size Time step of the integration
          * @param initial_y Start values of the vector to perform integration on
@@ -198,8 +198,8 @@ namespace allpix {
 
     /**
      * @brief Utility function to create RungeKutta class using template deduction
-     * @param tableau One of the possible Runge-Kutta tables (usually \ref tableau::RK5 should be preferred)
-     * @param args Other forwarded arguments to the \ref RungeKutta() constructor
+     * @param tableau One of the possible Runge-Kutta tableaus (see \ref allpix::tableau)
+     * @param args Other forwarded arguments to the \ref RungeKutta::RungeKutta constructor
      * @return Instantiation of \ref RungeKutta class with the forwarded arguments
      */
     template <typename T, int S, int D = 3, class... Args>

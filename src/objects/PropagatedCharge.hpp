@@ -21,7 +21,7 @@ namespace allpix {
          * @param position Local position of the propagated set of charges in the sensor
          * @param charge Total charge propagated
          * @param event_time Total time of propagation arrival after event start
-         * @param mc_particle Optional pointer to related deposited charge
+         * @param deposited_charge Optional pointer to related deposited charge
          */
         PropagatedCharge(ROOT::Math::XYZPoint position,
                          unsigned int charge,

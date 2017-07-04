@@ -25,7 +25,7 @@ namespace allpix {
     public:
         /**
          * @brief Constructs the generator action
-         * @param config Configuration of the \ref DepositionGeant4 module
+         * @param config Configuration of the \ref DepositionGeant4Module module
          */
         explicit GeneratorActionG4(const Configuration& config);
 

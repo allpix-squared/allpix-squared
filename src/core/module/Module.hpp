@@ -96,6 +96,7 @@ namespace allpix {
         int prio_{};
     };
 
+    class Messenger;
     /**
      * @brief Base class for all modules
      *
@@ -108,7 +109,6 @@ namespace allpix {
      * The module class also provides a few utility methods and stores internal data of instantations. The internal data is
      * used by the ModuleManager and the Messenger to work.
      */
-    class Messenger;
     class Module {
         friend class ModuleManager;
         friend class Messenger;

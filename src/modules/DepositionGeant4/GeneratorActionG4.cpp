@@ -41,7 +41,8 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     // FIXME keep number of particles always at one?
     single_source->SetNumberOfParticles(static_cast<int>(config.get<unsigned int>("particle_amount", 1)));
     single_source->SetParticleDefinition(particle);
-    single_source->SetParticleTime(0.0); // FIXME: what is this time
+    // FIXME What is this time
+    single_source->SetParticleTime(0.0);
 
     // Set position parameters
     single_source->GetPosDist()->SetPosDisType("Beam");
