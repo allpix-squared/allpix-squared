@@ -20,6 +20,7 @@ class G4VisManager;
 
 namespace allpix {
     /**
+     * @ingroup Modules
      * @brief Module that shows visualization of constructed Geant4 geometry
      *
      * Displays the geometry constructed in \ref GeometryBuilderGeant4Module. Allows passing a variety of options to

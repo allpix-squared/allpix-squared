@@ -21,6 +21,7 @@
 
 namespace allpix {
     /**
+     * @ingroup Modules
      * @brief Module to read data stored in ROOT file back to allpix messages
      *
      * Reads the tree of objects in the data format of the \ref ROOTObjectWriterModule. Converts all the stored objects that

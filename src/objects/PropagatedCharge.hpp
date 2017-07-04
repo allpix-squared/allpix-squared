@@ -12,6 +12,7 @@
 
 namespace allpix {
     /**
+     * @ingroup Objects
      * @brief Set of charges propagated through the sensor
      */
     class PropagatedCharge : public SensorCharge {

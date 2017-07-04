@@ -17,6 +17,7 @@
 
 namespace allpix {
     /**
+     * @ingroup Modules
      * @brief Module to read electric fields from INIT format or apply a linear electric field
      *
      * Read the model of the electric field from the config during initialization:

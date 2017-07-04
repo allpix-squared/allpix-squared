@@ -22,6 +22,7 @@ class G4RunManager;
 
 namespace allpix {
     /**
+     * @ingroup Modules
      * @brief Module to simulate the particle beam and generating the charge deposits in the sensor
      *
      * A beam is defined at a certain position that propagates a particular particle in a certain direction. When the beam

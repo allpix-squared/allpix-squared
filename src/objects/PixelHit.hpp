@@ -17,6 +17,7 @@
 
 namespace allpix {
     /**
+     * @ingroup Objects
      * @brief Pixel triggered in an event after digitization
      */
     class PixelHit : public Object {

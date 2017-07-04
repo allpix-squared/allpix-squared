@@ -19,6 +19,7 @@
 
 namespace allpix {
     /**
+     * @ingroup Modules
      * @brief Module that directly converts propagated charges to charges on a pixel
      *
      * This module does a simple direct mapping from propagated charges to the nearest pixel in the grid. It only considers

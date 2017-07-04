@@ -16,6 +16,7 @@
 
 namespace allpix {
     /**
+     * @ingroup Objects
      * @brief Set of charges at a pixel
      */
     class PixelCharge : public Object {

@@ -19,6 +19,7 @@ class G4RunManager;
 
 namespace allpix {
     /**
+     * @ingroup Modules
      * @brief Module to construct the Geant4 geometry from the internal geometry
      *
      * Creates the world from the information available from the \ref GeometryManager. Then continues with constructing every

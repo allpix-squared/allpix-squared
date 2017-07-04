@@ -21,7 +21,8 @@
 
 namespace allpix {
     /**
-     * @brief Module to do action
+     * @ingroup Modules
+     * @brief Module to do function
      *
      * More detailed explanation of module
      */

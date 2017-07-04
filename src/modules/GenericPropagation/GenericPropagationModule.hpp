@@ -22,6 +22,7 @@
 
 namespace allpix {
     /**
+     * @ingroup Modules
      * @brief Generic module for Runge-Kutta propagation of charge deposits in the sensitive device
      *
      * Splits the sets of deposited charge in several sets which are propagated individually. The propagation consist of a

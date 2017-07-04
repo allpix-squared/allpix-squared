@@ -4,6 +4,11 @@
  * @copyright MIT License
  */
 
+/**
+ * @defgroup Objects Objects
+ * @brief Collection of objects passed around between modules
+ */
+
 #ifndef ALLPIX_OBJECT_H
 #define ALLPIX_OBJECT_H
 
@@ -13,6 +18,7 @@ namespace allpix {
     template <typename T> class Message;
 
     /**
+     * @ingroup Objects
      * @brief Base class for internal objects
      */
     class Object : public TObject {

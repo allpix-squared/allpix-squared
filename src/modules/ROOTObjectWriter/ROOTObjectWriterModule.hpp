@@ -17,6 +17,7 @@
 
 namespace allpix {
     /**
+     * @ingroup Modules
      * @brief Module to write object data to ROOT trees in file for persistent storage
      *
      * Listens to all objects dispatched in the framework. Creates a tree as soon as a new type of object is encountered and

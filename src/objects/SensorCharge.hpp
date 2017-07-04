@@ -13,6 +13,7 @@
 
 namespace allpix {
     /**
+     * @ingroup Objects
      * @brief Base object for charge deposits and propagated charges in the sensor
      */
     class SensorCharge : public Object {

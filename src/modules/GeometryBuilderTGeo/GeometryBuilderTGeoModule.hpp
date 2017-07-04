@@ -44,6 +44,7 @@ TString Print(TGeoTranslation* trl);
 
 namespace allpix {
     /**
+     * @ingroup Modules
      * @brief Module to construct the TGeo from the internal geometry
      */
     class GeometryBuilderTGeoModule : public Module {

@@ -14,6 +14,7 @@
 
 namespace allpix {
     /**
+     * @ingroup Objects
      * @brief Charge deposit in sensor of detector
      */
     class DepositedCharge : public SensorCharge {

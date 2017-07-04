@@ -98,6 +98,10 @@ namespace allpix {
 
     class Messenger;
     /**
+     * @defgroup Modules Modules
+     * @brief Collection of modules included in the framework
+     */
+    /**
      * @brief Base class for all modules
      *
      * The module base is the core of the modular framework. All modules should be descendants of this class. The base class
