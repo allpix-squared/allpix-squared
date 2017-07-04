@@ -78,11 +78,10 @@ The type of module determines the kind of constructor used, the internal unique 
 \label{sec:module_files}
 Every module directory should at the minimum contain the following documents (with \texttt{ModuleName} replaced by the name of the module):
 \begin{itemize}
-\item \textbf{CMakeLists.txt}: The build script to load the dependencies and define the source files
-\item \textbf{README.md}: Short documentation of the module
-\item \textbf{\texttt{ModuleName}.tex}: Full documentation of the module for this Users Manual
-\item \textbf{\texttt{ModuleName}Module.hpp}: The header file of the module (note that another name can be used for this source file, but that is deprecated)
-\item \textbf{\texttt{ModuleName}Module.cpp}: The implementation file of the module
+\item \textbf{CMakeLists.txt}: The build script to load the dependencies and define the source files of the library.
+\item \textbf{README.md}: Full documentation of the module.
+\item \textbf{\texttt{ModuleName}Module.hpp}: The header file of the module (note that another name can be used for this source file, but that is deprecated).
+\item \textbf{\texttt{ModuleName}Module.cpp}: The implementation file of the module.
 \end{itemize}
 The files are discussed in more detail below. All modules that are added to the \textit{src/modules/} directory will be build automatically by CMake. This also means that all subdirectories in this module directory should contain a module with a \textit{CMakeLists.txt} to build the module.
 
@@ -128,10 +127,21 @@ ALLPIX_MODULE_INSTALL(${MODULE_NAME})
 \end{minted}
 
 \paragraph{README.md}
-\wip
+The README.md serves as the documentation for the module and should be written in the Markdown format. It is automatically converted to \LaTeX using Pandoc and included in the documentation in Section \ref{sec:modules}. It is also viewable online at the repository in the subfolder of the module. 
 
-\paragraph{\texttt{ModuleName}.tex}
-\wip
+The README.md should follow the structure of the DummyModule in \textit{src/modules/Dummy}. The documentation should contain at least the following sections:
+\begin{itemize}
+\item The H2-size header with the name of the module which contains at least the following required elements: the \textbf{Maintainer} and the \textbf{Status} of the module. If the module is working and recently tested the status of the module should be \textit{Functional}. The maintainer line should contain the name of the module maintainer and its email address between parentheses. An example for a minimal header is therefore
+\begin{verbatim}
+## ModuleName
+Maintainer: Example Author (example@example.org)
+Status: Functional
+\end{verbatim}
+Besides this an header could also have the \textbf{Input} and \textbf{Output} points, which contain the name of the objects that are respectively read and dispatched by the module.
+\item A H4-size section containing a short description of the module, named \textbf{Description}. 
+\item A H4-size section named \textbf{Parameters} with the parameters of the module. All parameters should be shortly explained in an itemized list with the name of the parameter in an inline code block.
+\item A H4-size section with the name \textbf{Usage} which should contain at least one single simple example of a valid configuration that can be used.
+\end{itemize}
 
 \paragraph{\texttt{ModuleName}Module.hpp and \texttt{ModuleName}Module.cpp}
 All modules should have both a header file and a source file. In the header file the module is defined together with all its method. Brief Doxygen documentation should be added to explain what every method does. The source file should provide the implementation of every method and also its more detailed Doxygen documentation. Not a single method should be defined in the header to keep the interface clean.
