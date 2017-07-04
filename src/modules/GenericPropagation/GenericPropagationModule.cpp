@@ -482,8 +482,8 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
     };
 
     // Define a lambda function to compute the electron velocity
-    auto electron_velocity = [&](double, Eigen::Vector3d pos) -> Eigen::Vector3d {
-        double* raw_field = detector_->getElectricFieldRaw(pos);
+    auto electron_velocity = [&](double, Eigen::Vector3d cur_pos) -> Eigen::Vector3d {
+        double* raw_field = detector_->getElectricFieldRaw(cur_pos);
         if(raw_field == nullptr) {
             // Return a zero electric field outside of the sensor
             return Eigen::Vector3d(0, 0, 0);
