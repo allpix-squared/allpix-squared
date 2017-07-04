@@ -1,5 +1,7 @@
 /**
- *  @author Koen Wolters <koen.wolters@cern.ch>
+ * @file
+ * @brief Utility to execute Runge-Kutta integration using Eigen
+ * @copyright MIT License
  */
 
 #ifndef ALLPIX_RUNGE_KUTTA_H
@@ -12,18 +14,38 @@
 
 namespace allpix {
 
+    /**
+     * @brief Class to perform arbitrary Runge-Kutta integration
+     *
+     * Class can be provided a Runge-Kutta tableau (optionally with an error function), together with the dimension of the
+     * equations and a step function to integrate a step of the equation. Both the result, error and timestep can be
+     * retrieved and changed during the integration.
+     */
     template <typename T, int S, int D = 3> class RungeKutta {
     public:
-        // FIXME: is this a good return type...
+        /**
+         * @brief Utility type to return both the value and the error at every step
+         */
+        // FIXME Is this a appropriate return type or should pairs be preferred
         class Step {
         public:
             Eigen::Matrix<T, D, 1> value;
             Eigen::Matrix<T, D, 1> error;
         };
 
+        /**
+         * @brief Stepping function to integrate a single step of the equations
+         */
         using StepFunction = std::function<Eigen::Matrix<T, D, 1>(T, Eigen::Matrix<T, D, 1>)>;
 
-        // constructor
+        /**
+         * @brief Construct a Runge-Kutta integrator
+         * @param tableau One of the possible Runge-Kutta tables (usually \ref tableau::RK5 should be preferred)
+         * @param function Step function to perform integration
+         * @param step_size Time step of the integration
+         * @param initial_y Start values of the vector to perform integration on
+         * @param initial_t Initial time at the start of the integration
+         */
         RungeKutta(Eigen::Matrix<T, S + 2, S> tableau,
                    StepFunction function,
                    T step_size,
@@ -34,27 +56,52 @@ namespace allpix {
             error_.setZero();
         }
 
-        // change parameters
+        /**
+         * @brief Changes the time step
+         * @param step_size New time step of the integration
+         */
         void setTimeStep(T step_size) { h_ = std::move(step_size); }
+        /**
+         * @brief Return the time step
+         * @return Current time step of the integration
+         */
         T getTimeStep() { return h_; }
 
-        // set value (if some extra operations are done)
+        /**
+         * @brief Changes the current value during integration
+         * @note Can be used to add additional processes during the integration
+         */
         void setValue(Eigen::Matrix<T, D, 1> y) { y_ = std::move(y); }
 
-        // get result
+        /**
+         * @brief Get the value to integrate
+         * @return Current value
+         */
         Eigen::Matrix<T, D, 1> getValue() { return y_; }
+        /**
+         * @brief Get the total integration error
+         * @return Total integrated error
+         */
         Eigen::Matrix<T, D, 1> getError() { return error_; }
+        /**
+         * @brief Get the time during integration
+         * @return Current time
+         */
         T getTime() { return t_; }
 
-        // execute runge kutta step
+        /**
+         * @brief Execute a single time step of the integration
+         * @return Combination of the current value and the error in this single step
+         */
         Step step() {
+            // Initialize values
             Step step;
             Eigen::Matrix<T, D, 1> ys;
             Eigen::Matrix<T, D, 1> error;
             ys.setZero();
             error.setZero();
 
-            // compute step
+            // Compute step
             Eigen::Matrix<T, S, D> k;
             for(int i = 0; i < S; ++i) {
                 Eigen::Matrix<T, D, 1> yt = y_;
@@ -69,17 +116,22 @@ namespace allpix {
                 error += h_ * (tableau_(S, i) - tableau_(S + 1, i)) * k.row(i);
             }
 
-            // update step
+            // Update values with new step
             y_ += ys;
             t_ += h_;
+            error_ += error;
 
-            // return step
+            // Return step information
             step.value = ys;
             step.error = error;
             return step;
         }
 
-        // FIXME: call this steps?
+        /**
+         * @brief Execute multiple time steps of the integration
+         * @param amount Number of steps to combine
+         * @return Combination of the current value and the total error in all the steps
+         */
         Step step(int amount) {
             Step result;
             result.value.setZero();
@@ -95,23 +147,33 @@ namespace allpix {
     private:
         const Eigen::Matrix<T, S + 2, S> tableau_;
         StepFunction function_;
-        T h_; // step size
+        // Step size
+        T h_;
 
-        Eigen::Matrix<T, D, 1> y_;     // vector that changes
-        Eigen::Matrix<T, D, 1> error_; // error vector
-        T t_;                          // time
+        // Vector to integrate
+        Eigen::Matrix<T, D, 1> y_;
+        // Total error vector
+        Eigen::Matrix<T, D, 1> error_;
+        // Current time
+        T t_;
     };
 
     // clang-format off
     namespace tableau {
-        // WARNING: no error function
+        /**
+         * @brief Kutta's third order method
+         * @warning Without error function
+         */
         static const auto RK3((Eigen::Matrix<double, 5, 3>() <<
             0, 0, 0,
             1.0/2, 0, 0,
             -1, 2, 0,
             1.0/6, 2.0/3, 1.0/6,
             0, 0, 0).finished());
-        // WARNING: no error function
+        /**
+         * @brief Classic original Runge-Kutta method
+         * @warning Without error function
+         */
         static const auto RK4((Eigen::Matrix<double, 6, 4>() <<
             0, 0, 0, 0,
             1.0/2, 0, 0, 0,
@@ -119,6 +181,9 @@ namespace allpix {
             0, 0, 1, 0,
             1.0/6, 1.0/3, 1.0/3, 1.0/6,
             0, 0, 0, 0).finished());
+        /**
+         * @brief Runge-Kutta-Fehlberg method
+         */
         static const auto RK5((Eigen::Matrix<double, 8, 6>() <<
             0, 0, 0, 0, 0, 0,
             1.0/4, 0, 0, 0, 0, 0,
@@ -131,15 +196,15 @@ namespace allpix {
     }
     // clang-format on
 
-    // FIXME: better name
-    template <typename T, int S, int D = 3>
-    RungeKutta<T, S, D> make_runge_kutta(Eigen::Matrix<T, S + 2, S> tableau,
-                                         typename RungeKutta<T, S, D>::StepFunction function,
-                                         T step_size,
-                                         Eigen::Matrix<T, D, 1> initial_y,
-                                         T initial_t = 0) {
-        return RungeKutta<T, S, D>(
-            std::move(tableau), std::move(function), std::move(step_size), std::move(initial_y), std::move(initial_t));
+    /**
+     * @brief Utility function to create RungeKutta class using template deduction
+     * @param tableau One of the possible Runge-Kutta tables (usually \ref tableau::RK5 should be preferred)
+     * @param args Other forwarded arguments to the \ref RungeKutta() constructor
+     * @return Instantiation of \ref RungeKutta class with the forwarded arguments
+     */
+    template <typename T, int S, int D = 3, class... Args>
+    RungeKutta<T, S, D> make_runge_kutta(Eigen::Matrix<T, S + 2, S> tableau, Args&&... args) {
+        return RungeKutta<T, S, D>(std::move(tableau), std::forward<Args>(args)...);
     }
 } // namespace allpix
 

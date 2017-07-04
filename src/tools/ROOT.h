@@ -1,8 +1,8 @@
 /**
- *  @author Koen Wolters <koen.wolters@cern.ch>
+ * @file
+ * @brief Set of ROOT utilities for framework integration
+ * @copyright MIT License
  */
-
-// set of Geant4 extensions for the AllPix core
 
 #ifndef ALLPIX_ROOT_H
 #define ALLPIX_ROOT_H
@@ -23,9 +23,10 @@
 #include "core/utils/type.h"
 
 namespace allpix {
-    /** Extend to string and from string methods for ROOT */
-
-    // 3D displacement vectors
+    /**
+     * @ingroup StringConversions
+     * @brief Enable support to convert string directly to ROOT 3D displacement vector while fetching configuration parameter
+     */
     template <typename T>
     inline ROOT::Math::DisplacementVector3D<T> from_string_impl(std::string str,
                                                                 type_tag<ROOT::Math::DisplacementVector3D<T>>) {
@@ -35,6 +36,10 @@ namespace allpix {
         }
         return ROOT::Math::DisplacementVector3D<T>(vec_split[0], vec_split[1], vec_split[2]);
     }
+    /**
+     * @ingroup StringConversions
+     * @brief Enable support to convert ROOT 3D displacement vector to string for storage in the configuration
+     */
     template <typename T> inline std::string to_string_impl(const ROOT::Math::DisplacementVector3D<T>& vec, empty_tag) {
         std::string res;
         res += std::to_string(vec.x());
@@ -45,7 +50,10 @@ namespace allpix {
         return res;
     }
 
-    // 2D displacement vectors
+    /**
+     * @ingroup StringConversions
+     * @brief Enable support to convert string directly to ROOT 2D displacement vector while fetching configuration parameter
+     */
     template <typename T>
     inline ROOT::Math::DisplacementVector2D<T> from_string_impl(std::string str,
                                                                 type_tag<ROOT::Math::DisplacementVector2D<T>>) {
@@ -55,6 +63,10 @@ namespace allpix {
         }
         return ROOT::Math::DisplacementVector2D<T>(vec_split[0], vec_split[1]);
     }
+    /**
+     * @ingroup StringConversions
+     * @brief Enable support to convert ROOT 2D displacement vector to string for storage in the configuration
+     */
     template <typename T> inline std::string to_string_impl(const ROOT::Math::DisplacementVector2D<T>& vec, empty_tag) {
         std::string res;
         res += std::to_string(vec.x());
@@ -63,7 +75,10 @@ namespace allpix {
         return res;
     }
 
-    // 3D position vectors
+    /**
+     * @ingroup StringConversions
+     * @brief Enable support to convert string directly to ROOT 3D position vector while fetching configuration parameter
+     */
     template <typename T>
     inline ROOT::Math::PositionVector3D<T> from_string_impl(std::string str, type_tag<ROOT::Math::PositionVector3D<T>>) {
         std::vector<typename T::Scalar> vec_split = allpix::split<typename T::Scalar>(std::move(str));
@@ -72,11 +87,18 @@ namespace allpix {
         }
         return ROOT::Math::PositionVector3D<T>(vec_split[0], vec_split[1], vec_split[2]);
     }
+    /**
+     * @ingroup StringConversions
+     * @brief Enable support to convert ROOT 3D position vector to string for storage in the configuration
+     */
     template <typename T> inline std::string to_string_impl(const ROOT::Math::PositionVector3D<T>& vec, empty_tag) {
         return to_string_impl(static_cast<ROOT::Math::DisplacementVector3D<T>>(vec), empty_tag());
     }
 
-    // 2D position vectors
+    /**
+     * @ingroup StringConversions
+     * @brief Enable support to convert string directly to ROOT 2D position vector while fetching configuration parameter
+     */
     template <typename T>
     inline ROOT::Math::PositionVector2D<T> from_string_impl(std::string str, type_tag<ROOT::Math::PositionVector2D<T>>) {
         std::vector<typename T::Scalar> vec_split = allpix::split<typename T::Scalar>(std::move(str));
@@ -85,11 +107,18 @@ namespace allpix {
         }
         return ROOT::Math::PositionVector2D<T>(vec_split[0], vec_split[1]);
     }
+    /**
+     * @ingroup StringConversions
+     * @brief Enable support to convert ROOT 2D position vector to string for storage in the configuration
+     */
     template <typename T> inline std::string to_string_impl(const ROOT::Math::PositionVector2D<T>& vec, empty_tag) {
         return to_string_impl(static_cast<ROOT::Math::DisplacementVector2D<T>>(vec), empty_tag());
     }
 
-    // Euler angles
+    /**
+     * @ingroup StringConversions
+     * @brief Enable support to convert string directly to  ROOT Euler angles vector while fetching configuration parameter
+     */
     inline ROOT::Math::EulerAngles from_string_impl(std::string str, type_tag<ROOT::Math::EulerAngles>) {
         std::vector<double> vec_split = allpix::split<double>(std::move(str));
         if(vec_split.size() != 3) {
@@ -97,6 +126,10 @@ namespace allpix {
         }
         return ROOT::Math::EulerAngles(vec_split[0], vec_split[1], vec_split[2]);
     }
+    /**
+     * @ingroup StringConversions
+     * @brief Enable support to convert ROOT Euler angles vector to string for storage in the configuration
+     */
     inline std::string to_string_impl(const ROOT::Math::EulerAngles& vec, allpix::empty_tag) {
         std::string res;
         res += std::to_string(vec.Phi());
@@ -107,27 +140,39 @@ namespace allpix {
         return res;
     }
 
-    /** Overload all ostream operator for vectors in ROOT to let them also work for integers etc. */
-    template <typename T, typename U>
-    inline std::ostream& operator<<(std::ostream& os, const ROOT::Math::PositionVector3D<T, U>& vec) {
-        return os << "(" << vec.x() << "," << vec.y() << "," << vec.z() << ")";
-    }
-    template <typename T, typename U>
-    inline std::ostream& operator<<(std::ostream& os, const ROOT::Math::PositionVector2D<T, U>& vec) {
-        return os << "(" << vec.x() << "," << vec.y() << ")";
-    }
+    /**
+     * @brief Overload output stream operator to display ROOT 3D displacement vector
+     */
     template <typename T, typename U>
     inline std::ostream& operator<<(std::ostream& os, const ROOT::Math::DisplacementVector3D<T, U>& vec) {
         return os << "(" << vec.x() << "," << vec.y() << "," << vec.z() << ")";
     }
+    /**
+     * @brief Overload output stream operator to display ROOT 2D displacement vector
+     */
     template <typename T, typename U>
     inline std::ostream& operator<<(std::ostream& os, const ROOT::Math::DisplacementVector2D<T, U>& vec) {
         return os << "(" << vec.x() << "," << vec.y() << ")";
     }
+    /**
+     * @brief Overload output stream operator to display ROOT 3D position vector
+     */
+    template <typename T, typename U>
+    inline std::ostream& operator<<(std::ostream& os, const ROOT::Math::PositionVector3D<T, U>& vec) {
+        return os << "(" << vec.x() << "," << vec.y() << "," << vec.z() << ")";
+    }
+    /**
+     * @brief Overload output stream operator to display ROOT 2D position vector
+     */
+    template <typename T, typename U>
+    inline std::ostream& operator<<(std::ostream& os, const ROOT::Math::PositionVector2D<T, U>& vec) {
+        return os << "(" << vec.x() << "," << vec.y() << ")";
+    }
 
-    /** Utility function for displaying ROOT vectors with units */
-
-    // TODO Should this function change name, be moved or put in another namespace?
+    /**
+     * @brief Utility function to display vector types with units
+     * @note Works for all vector types that can be converted to string using \ref StringConversions "the string utilities".
+     */
     template <typename T> inline std::string display_vector(T inp, std::initializer_list<std::string> units) {
         auto split = allpix::split<Units::UnitType>(allpix::to_string(inp));
         std::string ret_str = "(";
