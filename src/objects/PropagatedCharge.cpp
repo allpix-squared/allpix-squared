@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @brief Implementation of propagated charge object
+ * @copyright MIT License
+ */
+
 #include "PropagatedCharge.hpp"
 
 using namespace allpix;

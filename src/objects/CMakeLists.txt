@@ -1,4 +1,4 @@
-# include the standard dependencies
+# Include the standard dependencies
 INCLUDE_DIRECTORIES(SYSTEM ${ALLPIX_DEPS_INCLUDE_DIRS})
 
 # Load the generate dictionaries macro
@@ -19,6 +19,7 @@ ROOT_GENERATE_DICTIONARY(AllpixObjectsDictionary
     AllpixObjects
 )
 
+# Explicitly add all the dependent include dirs to the manual command
 FOREACH(dir IN ITEMS ${ALLPIX_DEPS_INCLUDE_DIRS})
     IF(NOT INCLUDE_DIR_ARGS)
         SET(INCLUDE_DIR_ARGS "-I${dir}")
@@ -28,7 +29,7 @@ FOREACH(dir IN ITEMS ${ALLPIX_DEPS_INCLUDE_DIRS})
 ENDFOREACH()
 
 # Compile the dictionary through a special target 
-# WARNING: this hack is necessary to prevent standard warnings and those in clang-tidy
+# WARNING This hack is necessary to prevent standard warnings and those in clang-tidy for use in the CI
 ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx.o COMMAND ${CMAKE_CXX_COMPILER} -fPIC -std=c++${CMAKE_CXX_STANDARD} -I${CMAKE_SOURCE_DIR}/src ${INCLUDE_DIR_ARGS} -o ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx.o -c ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx)
 
 # Define the library adding the object file created above

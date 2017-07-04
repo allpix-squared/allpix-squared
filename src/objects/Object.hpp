@@ -1,5 +1,7 @@
 /**
- * Main class for user-defined objects
+ * @file
+ * @brief Definition of Object base class
+ * @copyright MIT License
  */
 
 #ifndef ALLPIX_OBJECT_H
@@ -10,18 +12,39 @@
 namespace allpix {
     template <typename T> class Message;
 
-    // object definition
+    /**
+     * @brief Base class for internal objects
+     */
     class Object : public TObject {
     public:
-        Object();
-        ~Object() override;
+        /**
+         * @brief Required default constructor
+         */
+        Object() = default;
+        /**
+         * @brief Required virtual destructor
+         */
+        ~Object() = default;
 
+        /// @{
+        /**
+         * @brief Use default copy behaviour
+         */
         Object(const Object&);
         Object& operator=(const Object&);
+        /// @}
 
+        /// @{
+        /**
+         * @brief Use default move behaviour
+         */
         Object(Object&&);
         Object& operator=(Object&&);
+        /// @}
 
+        /**
+         * @brief ROOT class definition
+         */
         ClassDef(Object, 1);
     };
 } // namespace allpix

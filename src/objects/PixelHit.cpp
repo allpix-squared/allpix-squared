@@ -2,6 +2,12 @@
  * @author Koen Wolters <koen.wolters@cern.ch>
  */
 
+/**
+ * @file
+ * @brief Implementation of object with digitized pixel hit
+ * @copyright MIT License
+ */
+
 #include "PixelHit.hpp"
 
 #include <set>

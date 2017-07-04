@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @brief Implementation of deposited charge object
+ * @copyright MIT License
+ */
+
 #include "DepositedCharge.hpp"
 
 using namespace allpix;
@@ -10,6 +16,9 @@ DepositedCharge::DepositedCharge(ROOT::Math::XYZPoint position,
     setMCParticle(mc_particle);
 }
 
+/**
+ * Object is stored as TRef and can only be accessed if pointed object is in scope
+ */
 const MCParticle* DepositedCharge::getMCParticle() const {
     return dynamic_cast<MCParticle*>(mc_particle_.GetObject());
 }
