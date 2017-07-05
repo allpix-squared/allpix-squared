@@ -203,8 +203,8 @@ namespace allpix {
      * @return Instantiation of \ref RungeKutta class with the forwarded arguments
      */
     template <typename T, int S, int D = 3, class... Args>
-    RungeKutta<T, S, D> make_runge_kutta(Eigen::Matrix<T, S + 2, S> tableau, Args&&... args) {
-        return RungeKutta<T, S, D>(std::move(tableau), std::forward<Args>(args)...);
+    RungeKutta<T, S, D> make_runge_kutta(const Eigen::Matrix<T, S + 2, S>& tableau, Args&&... args) {
+        return RungeKutta<T, S, D>(tableau, std::forward<Args>(args)...);
     }
 } // namespace allpix
 

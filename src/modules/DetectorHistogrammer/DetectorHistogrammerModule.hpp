@@ -23,6 +23,7 @@
 
 namespace allpix {
     /**
+     * @ingroup Modules
      * @brief Module to plot the final digitized pixel data
      *
      * Generates a hitmap of all the produced pixel hits, together with a histogram of the cluster size
