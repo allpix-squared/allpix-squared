@@ -1,5 +1,7 @@
 /**
- * @author Koen Wolters <koen.wolters@cern.ch>
+ * @file
+ * @brief Implementation of Object base class
+ * @copyright MIT License
  */
 
 #include "Object.hpp"

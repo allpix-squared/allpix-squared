@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @brief Implementation of [Dummy] module
+ * @copyright MIT License
+ */
+
 #include "DummyModule.hpp"
 
 #include <string>

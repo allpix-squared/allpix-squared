@@ -127,7 +127,7 @@ ALLPIX_MODULE_INSTALL(${MODULE_NAME})
 \end{minted}
 
 \paragraph{README.md}
-The README.md serves as the documentation for the module and should be written in the Markdown format. It is automatically converted to \LaTeX using Pandoc and included in the documentation in Section \ref{sec:modules}. It is also viewable online at the repository in the subfolder of the module. 
+The README.md serves as the documentation for the module and should be written in the Markdown format. It is automatically converted to \LaTeX using Pandoc~\cite{pandoc} and included in the documentation in Section \ref{sec:modules}. It is also viewable online at the repository in the subfolder of the module. 
 
 The README.md should follow the structure of the DummyModule in \textit{src/modules/Dummy}. The documentation should contain at least the following sections:
 \begin{itemize}
@@ -231,11 +231,12 @@ This standard detector model can be extended to provide a more detailed geometry
 
 \todo{The exact parameters need to be specified here}
 
-To fetch a detector model as \texttt{HybridPixelDetectorModel}, the base class should be downcasted as follows (the downcast return a null pointer if it is not a HybridPixelDetectorModel).
+To fetch a detector model as \texttt{HybridPixelDetectorModel}, the base class should be downcasted as follows (the downcast return a null pointer if the class is not of the appropriate type).
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
 // Detector is a pointer to a Detector object
-std::shared_ptr<HybridPixelDetectorModel> model = std::dynamic_pointer_cast<HybridPixelDetectorModel>(detector->getModel());
-if(model != nullptr) {
+auto model = detector->getModel();
+auto hybrid_model = std::dynamic_pointer_cast<HybridPixelDetectorModel>(model);
+if(hybrid_model != nullptr) {
     // The model of this Detector is a HybridPixelDetectorModel
 }
 \end{minted}
@@ -253,9 +254,9 @@ For almost all purposes a specific model reader is not needed and all internal m
 
 \subsection{Passing Objects using Messages}
 \label{sec:objects_messages}
-Communication between modules happens through messages (only some internal information is shared through external detector objects and the dependencies like Geant4). Messages are templated instantiations of the \texttt{Message} class carrying a vector of objects. A typedef is typically added by the object to provide an alternative name for the message directly linking to the carried object. The message system has a dispatching part and a receiving part. 
+Communication between modules happens through messages (only some internal information is shared through external detector objects and the dependencies like Geant4). Messages are templated instantiations of the \texttt{Message} class carrying a vector of objects. The list of objects available in the \apsq objects library are discussed in Section \ref{sec:objects}. The messaging system has a dispatching part to send messages and a receiving part that fetches messages. 
 
-The dispatching module can specify an optional name, but most modules should not specify this directly. If the name is not directly given (or equal to \texttt{-}) the \textbf{output} parameter of the module is used to determine the name of the message, defaulting to an empty string. Dispatching the message to their receivers then goes by the following rules:
+The dispatching module can specify an optional name for the messages, but modules should normally not specify this name directly. If the name is not directly given (or equal to \texttt{-}) the \textbf{output} parameter of the module is used to determine the name of the message, defaulting to an empty string. Dispatching the message to their receivers then goes by the following rules:
 \begin{enumerate}
 \item The receiving module the will \underline{only} receive a message if it has the exact same type as the message dispatched (thus carrying the exact same object). If the receiver is however listening to the \texttt{BaseMessage} type it will receive all dispatched messages instead.
 \item The receiving module will \underline{only} receive messages with the exact same name as it is listening for. The module uses the \textbf{input} parameter to determine to which message names the module should listen. If the \textbf{input} parameter is equal to \texttt{*} the module should listen to all messages. Every module listens by default to messages with no name specified (thus receiving the messages of default dispatching modules).
@@ -324,17 +325,6 @@ Various flags can be added to the bind function and listening functions. The fla
 \item \textbf{ALLOW\_OVERWRITE}: By default an exception is automatically raised if a single bound message is overwritten (thus setting it multiple times instead of once). This flag prevents this behaviour. It is only used for variables to a single message.
 \item \textbf{IGNORE\_NAME}: If this flag is specified, the name of the dispatched message is not considered. Thus the \textbf{input} parameter is ignored and forced to the value \texttt{*}. 
 \end{itemize}
-
-\subsubsection{Object types}
-All supported objects that can be transferred between modules are shipped with the framework in the Objects library. This list of objects currently consists of the following:
-\begin{itemize}
-\item \textbf{DepositedCharge}: Set of charges at a specific position in the sensor of a detector. Deposited by an ionizing particle crossing the active material of the sensor.
-\item \textbf{PropagatedCharge}: Charge at a specific position after propagation.
-\item \textbf{PixelCharge}: Set of charges at a particular pixel in the pixel grid.
-\item \textbf{PixelHit}: Hit of a particular pixel after digitization.
-\end{itemize}
-
-\todo{this should be a separate section}
 
 \subsection{Logging and other Utilities}
 \label{sec:logging_utilities}
