@@ -15,6 +15,7 @@
 #include <cstring>
 #include <fstream>
 #include <limits>
+#include <random>
 #include <set>
 #include <stdexcept>
 #include <string>
@@ -46,7 +47,10 @@ ModuleManager::ModuleManager() : terminate_(false) {}
  * Loads the modules specified in the configuration file. Each module is contained within its own library which is loaded
  * automatically. After that the required modules are created from the configuration.
  */
-void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager) {
+void ModuleManager::load(Messenger* messenger,
+                         ConfigManager* conf_manager,
+                         GeometryManager* geo_manager,
+                         std::mt19937_64 seeder) {
     std::vector<Configuration> configs = conf_manager->getConfigurations();
     global_config_ = conf_manager->getGlobalConfiguration();
 
@@ -175,9 +179,10 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
         // Create the modules from the library depending on the module type
         std::vector<std::pair<ModuleIdentifier, Module*>> mod_list;
         if(unique) {
-            mod_list.emplace_back(create_unique_modules(loaded_libraries_[lib_name], config, messenger, geo_manager));
+            mod_list.emplace_back(
+                create_unique_modules(loaded_libraries_[lib_name], config, messenger, geo_manager, seeder));
         } else {
-            mod_list = create_detector_modules(loaded_libraries_[lib_name], config, messenger, geo_manager);
+            mod_list = create_detector_modules(loaded_libraries_[lib_name], config, messenger, geo_manager, seeder);
         }
 
         // Loop through all created instantiations
@@ -218,10 +223,8 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
 /**
  * For unique modules a single instance is created per section
  */
-std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* library,
-                                                                          Configuration config,
-                                                                          Messenger* messenger,
-                                                                          GeometryManager* geo_manager) {
+std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
+    void* library, Configuration config, Messenger* messenger, GeometryManager* geo_manager, std::mt19937_64& seeder) {
     // Make the vector to return
     std::string module_name = config.getName();
 
@@ -248,6 +251,7 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
 
     // Add internal module config
     config.set<std::string>("_unique_name", identifier.getUniqueName());
+    config.set<uint64_t>("_seed", seeder());
     std::string output_dir;
     output_dir = config.get<std::string>("_global_dir");
     output_dir += "/";
@@ -291,10 +295,8 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
  * For detector modules multiple instantiations may be created per section. An instantiation is created for every detector if
  * no selection parameters are provided. Otherwise instantiations are created for every linked detector name and type.
  */
-std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector_modules(void* library,
-                                                                                         Configuration config,
-                                                                                         Messenger* messenger,
-                                                                                         GeometryManager* geo_manager) {
+std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector_modules(
+    void* library, Configuration config, Messenger* messenger, GeometryManager* geo_manager, std::mt19937_64& seeder) {
     std::string module_name = config.getName();
     LOG(DEBUG) << "Creating instantions for detector module " << module_name;
 
@@ -371,6 +373,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
 
         // Add internal module config
         config.set<std::string>("_unique_name", instance.second.getUniqueName());
+        config.set<uint64_t>("_seed", seeder());
         std::string output_dir;
         output_dir = config.get<std::string>("_global_dir");
         output_dir += "/";

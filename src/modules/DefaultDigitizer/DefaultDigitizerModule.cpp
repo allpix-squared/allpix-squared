@@ -6,7 +6,6 @@
 
 #include "DefaultDigitizerModule.hpp"
 
-#include "core/utils/random.h"
 #include "core/utils/unit.h"
 #include "tools/ROOT.h"
 
@@ -27,7 +26,7 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration config,
     messenger_->bindSingle(this, &DefaultDigitizerModule::pixel_message_, MsgFlags::REQUIRED);
 
     // Seed the random generator with the global seed
-    random_generator_.seed(get_random_seed());
+    random_generator_.seed(getRandomSeed());
 
     // Set defaults for config variables
     config_.setDefault<int>("electronics_noise", Units::get(110, "e"));

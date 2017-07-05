@@ -12,6 +12,7 @@
 #include <map>
 #include <memory>
 #include <queue>
+#include <random>
 
 #include <TDirectory.h>
 #include <TFile.h>
@@ -69,8 +70,9 @@ namespace allpix {
          * @param messenger Pointer to the messenger
          * @param conf_manager Pointer to the configuration manager
          * @param geo_manager Pointer to the manager holding the geometry
+         * @param seeder PRNG to generate the seeds for the module instantiations
          */
-        void load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager);
+        void load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager, std::mt19937_64 seeder);
 
         /**
          * @brief Initialize all modules before the event sequence
@@ -105,7 +107,8 @@ namespace allpix {
          * @param geo_manager Pointer to the geometry manager
          * @return An unique module together with its identifier
          */
-        std::pair<ModuleIdentifier, Module*> create_unique_modules(void*, Configuration, Messenger*, GeometryManager*);
+        std::pair<ModuleIdentifier, Module*>
+        create_unique_modules(void*, Configuration, Messenger*, GeometryManager*, std::mt19937_64& seeder);
         /**
          * @brief Create detector modules
          * @param library Void pointer to the loaded library
@@ -115,7 +118,7 @@ namespace allpix {
          * @return A list of all created detector modules and their identifiers
          */
         std::vector<std::pair<ModuleIdentifier, Module*>>
-        create_detector_modules(void*, Configuration, Messenger*, GeometryManager*);
+        create_detector_modules(void*, Configuration, Messenger*, GeometryManager*, std::mt19937_64& seeder);
 
         /**
          * @brief Set module specific log setting before running init/run/finalize

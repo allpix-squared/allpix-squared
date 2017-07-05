@@ -177,6 +177,12 @@ namespace allpix {
         std::string getOutputPath(const std::string& path, bool global = false) const;
 
         /**
+         * @brief Get seed to initialize random generators
+         * @warning This should be the only method used by modules to seed random numbers to allow reproducing results
+         */
+        uint64_t getRandomSeed() const;
+
+        /**
          * @brief Get ROOT directory which should be used to output histograms et cetera
          * @return ROOT directory for storage
          */

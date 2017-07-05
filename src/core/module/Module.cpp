@@ -9,6 +9,7 @@
 
 #include <fstream>
 #include <memory>
+#include <random>
 #include <stdexcept>
 #include <utility>
 
@@ -25,7 +26,7 @@ Module::Module(Configuration config) : Module(std::move(config), nullptr) {}
 Module::Module(Configuration config, std::shared_ptr<Detector> detector)
     : config_(std::move(config)), detector_(std::move(detector)) {}
 /**
- * @note The remove_delegate can throw in theory, but this could never happen in practice
+ * @note The remove_delegate can throw in theory, but this should never happen in practice
  */
 Module::~Module() {
     // Remove delegates
@@ -97,6 +98,18 @@ std::string Module::getOutputPath(const std::string& path, bool global) const {
     }
 
     return file;
+}
+
+/**
+ * The framework will automatically create proper values for the seeds. Those are either generated from a predefined seed if
+ * results have to be reproduced or from a high-entropy source to ensure a good quality of randomness
+ */
+uint64_t Module::getRandomSeed() const {
+    auto seed = config_.get<uint64_t>("_seed");
+    static std::seed_seq seed_seq({seed});
+    static std::mt19937_64 random_generator(seed_seq);
+
+    return random_generator();
 }
 
 /**

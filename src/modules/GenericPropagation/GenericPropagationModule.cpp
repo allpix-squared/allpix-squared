@@ -31,7 +31,6 @@
 #include "core/messenger/Messenger.hpp"
 #include "core/utils/file.h"
 #include "core/utils/log.h"
-#include "core/utils/random.h"
 #include "core/utils/unit.h"
 #include "tools/ROOT.h"
 #include "tools/runge_kutta.h"
@@ -55,8 +54,8 @@ GenericPropagationModule::GenericPropagationModule(Configuration config,
     // Require deposits message for single detector
     messenger_->bindSingle(this, &GenericPropagationModule::deposits_message_, MsgFlags::REQUIRED);
 
-    // Seed the random generator with the framework seed
-    random_generator_.seed(get_random_seed());
+    // Seed the random generator with the module seed
+    random_generator_.seed(getRandomSeed());
 
     // Set default value for config variables
     config_.setDefault<double>("spatial_precision", Units::get(0.1, "nm"));

@@ -23,7 +23,6 @@
 #include "core/geometry/GeometryManager.hpp"
 #include "core/module/exceptions.h"
 #include "core/utils/log.h"
-#include "core/utils/random.h"
 #include "objects/DepositedCharge.hpp"
 #include "tools/ROOT.h"
 #include "tools/geant4.h"
@@ -130,9 +129,9 @@ void DepositionGeant4Module::init() {
     // Set the random seed for Geant4 generation
     // NOTE Assumes this is the only Geant4 module using random numbers
     std::string seed_command = "/random/setSeeds ";
-    seed_command += std::to_string(static_cast<uint32_t>(get_random_seed() % UINT_MAX));
+    seed_command += std::to_string(static_cast<uint32_t>(getRandomSeed() % UINT_MAX));
     seed_command += " ";
-    seed_command += std::to_string(static_cast<uint32_t>(get_random_seed() % UINT_MAX));
+    seed_command += std::to_string(static_cast<uint32_t>(getRandomSeed() % UINT_MAX));
     UI->ApplyCommand(seed_command);
 
     // Release the output stream

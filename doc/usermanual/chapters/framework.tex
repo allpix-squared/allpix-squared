@@ -18,7 +18,7 @@ The core is constructed as a light-weight framework that provides various subsys
 \item \textbf{Module}: Contain the base class of all the \apsq modules and the manager responsible for loading and running the modules (using the configuration system). This component is discussed in more detail in Section \ref{sec:module_manager}.
 \item \textbf{Geometry}: Supplies helpers for the simulation geometry. The manager instantiates all detectors from the detector configuration file. A detector has a certain position and orientation linked to an instantiation of a particular detector model. The detector model contains all parameters describing the geometry of the detector. More details about the geometry and detector models is provided in Section \ref{sec:models_geometry}.
 \item \textbf{Messenger}: The messenger is responsible for sending objects from one module to another. The messenger object is passed to every module and can be used to bind to messages to listen for. Messages with objects are also dispatched through the messenger to send data to the modules listening. Please refer to Section \ref{sec:objects_messages} for more details.
-\item \textbf{Utilities}: The framework provides a set of simple utilities for logging, file and directory access, random number seeding and unit conversion. An explanation how to use of these utilities can be found in Section \ref{sec:logging_utilities}. A set of C++ exceptions is also provided in the utilities, which are inherited and extended by the other components. Proper use of exceptions, together with logging informational messages and reporting errors, make the framework easier to use and debug. A few notes about the use and structure of exceptions are given in Section \ref{sec:error_reporting_exceptions}.
+\item \textbf{Utilities}: The framework provides a set of simple utilities for logging, file and directory access and unit conversion. An explanation how to use of these utilities can be found in Section \ref{sec:logging_utilities}. A set of C++ exceptions is also provided in the utilities, which are inherited and extended by the other components. Proper use of exceptions, together with logging informational messages and reporting errors, make the framework easier to use and debug. A few notes about the use and structure of exceptions are given in Section \ref{sec:error_reporting_exceptions}.
 \end{enumerate}
 
 \subsection{Configuration and Parameters}
@@ -331,7 +331,7 @@ Various flags can be added to the bind function and listening functions. The fla
 The \apsq framework provides a set of utilities that can be attributed to two types:
 \begin{itemize}
 \item Two utilities to improve the usability of the framework. One of these is a flexible and easy-to-use logging system, introduced below in Section \ref{sec:logger}. The other is an easy-to-use framework for units that supports converting arbitrary combinations of units to an independent number which can  be used transparently through the framework. It will be discussed in more detail in Section \ref{sec:unit_system}.
-\item A few utilities to extend the functionality provided by the C++ Standard Template Library (STL). These are provided either to simplify access to the STL (like the random seed generator utility) or to provide functionality the C++14 standard lacks (like filesystem support). The utilities are used internally in the framework and are only shortly discussed here. The utilities falling in this category are the random seed generator (see Section \ref{sec:random_generator}), the filesystem functions (see Section \ref{sec:filesystem}) and the string utilies (see Section \ref{sec:string_utilities}).
+\item A few utilities to extend the functionality provided by the C++ Standard Template Library (STL). These are provided to provide functionality the C++14 standard lacks (like filesystem support). The utilities are used internally in the framework and are only shortly discussed here. The utilities falling in this category are the filesystem functions (see Section \ref{sec:filesystem}) and the string utilies (see Section \ref{sec:string_utilities}).
 \end{itemize}
 
 \subsubsection{Logging system}
@@ -376,27 +376,6 @@ Provides functions to convert relative to absolute canonical paths, to iterate t
 \paragraph{String utilities}
 \label{sec:string_utilities}
 The STL only provides string conversions for standard types using \texttt{std::stringstream} and \texttt{std::to\_string}. It does not allow to parse strings encapsulated in pairs of \texttt{"} characters and neither does it allow to integrate different units. Furthermore it does not provide wide flexibility to add custom conversions for other external types in either way. The \apsq \texttt{to\_string} and \texttt{from\_string} do allow for these flexible conversions and it it extensively used in the configuration system. Conversions of numeric types with a unit attached are automatically resolved using the unit system discussed in Section \ref{sec:unit_system}. The \apsq tools system contain extensions to allow automatic conversions for ROOT and Geant4 types as explained in Section \ref{sec:root_and_geant4_utilities}. The string utilities also include trim and split strings functions as they are missing in the STL.
-
-\paragraph{Random seed generator}
-\label{sec:random_generator}
-Generating random number with a high level of entropy is very important for running Monte-Carlo processes in high-energy physics. Good random generators are already included in both the standard library and various external libraries. Seeding those random generators with enough entropy or seeding them with a predefined seed instead (to allow for reproducing a certain simulation) should however be a framework task to ensure that seeds are transferred in a well-defined way. This small utility library provides the required method to provide a seed to all random generators. With the STL random libraries it can be used as shown in the following example \texttt{init()} method:
-
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
-void init() {
-    // Create a standard 64 bit Mersene Twister 19937 generator
-    std::mt19937_64 random_generator;
-    
-    // Get a seed from the framework
-    uint64_t seed = get_random_seed();
-    
-    // Seed the generator with the random seed provided by the framework
-    random_generator.seed(seed);
-    
-    // Use the random generator to produce a gaussian distribution
-    std::normal_distribution<double> gauss_distribution(0, 1);
-    double gauss_number = gauss_distribution(random_generator);
-}
-\end{minted}
 
 \subsection{Error Reporting and Exceptions}
 \label{sec:error_reporting_exceptions}
