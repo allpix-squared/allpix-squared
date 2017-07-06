@@ -57,8 +57,7 @@ namespace allpix {
         Int_t trigger_time_;
         Bool_t invalid_;
 
-        // retrieved message containing collected charges per pixel for a specific detector
-        // std::vector<std::shared_ptr<PixelChargeMessage>> pixel_charge_messages_;
+        // retrieve message containing collected pixel hits for all detectors
         std::vector<std::shared_ptr<PixelHitMessage>> pixel_hit_messages_;
     };
 } // namespace allpix

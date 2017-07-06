@@ -17,8 +17,6 @@ using namespace allpix;
 
 RCEWriterModule::RCEWriterModule(Configuration config, Messenger* messenger, GeometryManager* geo_mgr)
     : Module(config), config_(std::move(config)), geo_mgr_(geo_mgr) {
-    // Bind to all messages
-    //  messenger->bindMulti(this, &RCEWriterModule::pixel_charge_messages_, MsgFlags::REQUIRED);
     messenger->bindMulti(this, &RCEWriterModule::pixel_hit_messages_);
 }
 RCEWriterModule::~RCEWriterModule() = default;
@@ -90,7 +88,6 @@ void RCEWriterModule::run(unsigned int event_id) {
     for(const auto& hit_msg : pixel_hit_messages_) {
 
         std::string detector_name = hit_msg->getDetector()->getName();
-        LOG(TRACE) << "Detector Name: " << detector_name;
         auto& sensor = sensors_[detector_name];
 
         // Loop over all the hits
@@ -106,9 +103,8 @@ void RCEWriterModule::run(unsigned int event_id) {
             sensor.timing_[i] = 0;         // NOLINT
             sensor.hit_in_cluster_[i] = 0; // NOLINT
 
-            LOG(TRACE) << "X: " << hit.getPixel().x();
-            LOG(TRACE) << "Y: " << hit.getPixel().y();
-            LOG(TRACE) << "Signal: " << hit.getSignal();
+            LOG(TRACE) << "Detector Name: " << detector_name << ", X: " << hit.getPixel().x() << ", Y:" << hit.getPixel().y()
+                       << ", Signal: " << hit.getSignal();
         }
     }
 
