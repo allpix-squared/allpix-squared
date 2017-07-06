@@ -100,19 +100,21 @@ void DepositionGeant4Module::init() {
         useful_deposition = true;
 
         // Get model of the sensitive device
-        // FIXME This has to be sensor_log instead of pixel_log
-        auto pixel_log = detector->getExternalObject<G4LogicalVolume>("pixel_log");
-        if(pixel_log == nullptr) {
-            throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
-        }
-
-        // Apply the user limits to this element
-        pixel_log->SetUserLimits(user_limits_.get());
-
-        // Add the sensitive detector action
+        std::vector<std::string> sensor_volumes = {"sensor_log", "pixel_log"};
         auto sensitive_detector_action = new SensitiveDetectorActionG4(this, detector, messenger_, charge_creation_energy);
-        pixel_log->SetSensitiveDetector(sensitive_detector_action);
-        sensors_.push_back(sensitive_detector_action);
+        for(auto& sensor_volume : sensor_volumes) {
+            auto logical_volume = detector->getExternalObject<G4LogicalVolume>(sensor_volume);
+            if(logical_volume == nullptr) {
+                throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
+            }
+
+            // Apply the user limits to this element
+            logical_volume->SetUserLimits(user_limits_.get());
+
+            // Add the sensitive detector action
+            logical_volume->SetSensitiveDetector(sensitive_detector_action);
+            sensors_.push_back(sensitive_detector_action);
+        }
     }
 
     if(!useful_deposition) {
