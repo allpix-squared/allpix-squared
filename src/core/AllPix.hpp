@@ -3,12 +3,10 @@
  *  @copyright MIT License
  */
 
-// GLOBAL DOXYGEN DEFINITIONS
 /**
  * @defgroup Managers Managers
  * @brief The global set of managers used in framework
  */
-// END DEFINITIONS
 
 #ifndef ALLPIX_ALLPIX_H
 #define ALLPIX_ALLPIX_H

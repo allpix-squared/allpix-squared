@@ -1,18 +1,16 @@
 /**
- * @author Koen Wolters <koen.wolters@cern.ch>
+ * @file
+ * @brief Implementation of Object base class
+ * @copyright MIT License
  */
 
 #include "Object.hpp"
 
 using namespace allpix;
 
-Object::Object() = default;
-Object::~Object() = default;
-
 Object::Object(const Object&) = default;
 Object& Object::operator=(const Object&) = default;
 
-// FIXME: check why this cannot be noexcept
 Object::Object(Object&&) = default;
 Object& Object::operator=(Object&&) = default;
 

@@ -1,11 +1,19 @@
+/**
+ * @file
+ * @brief Implementation of ROOT data file writer module
+ * @copyright MIT License
+ */
+
 #include "ROOTObjectWriterModule.hpp"
 
+#include <fstream>
 #include <string>
 #include <utility>
 
 #include <TBranchElement.h>
 #include <TClass.h>
 
+#include "core/config/ConfigReader.hpp"
 #include "core/utils/log.h"
 #include "core/utils/type.h"
 
@@ -14,14 +22,16 @@
 
 using namespace allpix;
 
-ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration config, Messenger* messenger, GeometryManager*)
-    : Module(config), config_(std::move(config)) {
+ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration config, Messenger* messenger, GeometryManager* geo_mgr)
+    : Module(config), config_(std::move(config)), geo_mgr_(geo_mgr) {
     // Bind to all messages
     messenger->registerListener(this, &ROOTObjectWriterModule::receive);
 }
+/**
+ * @note Objects cannot be stored in smart pointers due to internal ROOT logic
+ */
 ROOTObjectWriterModule::~ROOTObjectWriterModule() {
-    // Delete all pointers
-    // NOTE: cannot be smart pointers due to internal ROOT logic
+    // Delete all object pointers
     for(auto& index_data : write_list_) {
         delete index_data.second;
     }
@@ -127,14 +137,61 @@ void ROOTObjectWriterModule::run(unsigned int) {
 
 void ROOTObjectWriterModule::finalize() {
     LOG(TRACE) << "Writing objects to file";
+    output_file_->cd();
 
     int branch_count = 0;
     for(auto& tree : trees_) {
         // Update statistics
         branch_count += tree.second->GetListOfBranches()->GetEntries();
+    }
 
-        // Write every tree
-        tree.second->Write();
+    // Save the main configuration to the output file if possible
+    // FIXME This should be improved to write the information in a more flexible way
+    std::string path = config_.getFilePath();
+    if(!path.empty()) {
+        // Create main config directory
+        TDirectory* config_dir = output_file_->mkdir("config");
+        config_dir->cd();
+
+        // Read the configuration
+        std::fstream file(path);
+        ConfigReader full_config(file);
+
+        // Loop over all configurations
+        std::map<std::string, int> count_configs;
+        for(auto& config : full_config.getConfigurations()) {
+            // Create a new directory per section (adding a number to make every folder unique)
+            // FIXME Writing with the number is not a very good approach
+            TDirectory* section_dir =
+                config_dir->mkdir((config.getName() + "-" + std::to_string(count_configs[config.getName()])).c_str());
+            count_configs[config.getName()]++;
+
+            // Loop over all values in the section
+            for(auto& key_value : config.getAll()) {
+                section_dir->WriteObject(&key_value.second, key_value.first.c_str());
+            }
+        }
+    } else {
+        LOG(ERROR) << "Cannot save main configuration, because the ROOTObjectWriter is not loaded directly from the file";
+    }
+
+    // Save the detectors to the output file
+    // FIXME Possibly the format to save the geometry should be more flexible
+    TDirectory* detectors_dir = output_file_->mkdir("detectors");
+    detectors_dir->cd();
+    for(auto& detector : geo_mgr_->getDetectors()) {
+        TDirectory* detector_dir = detectors_dir->mkdir(detector->getName().c_str());
+
+        auto position = detector->getPosition();
+        detector_dir->WriteObject(&position, "position");
+        auto orientation = detector->getOrientation();
+        detector_dir->WriteObject(&orientation, "orientation");
+
+        TDirectory* model_dir = detector_dir->mkdir("model");
+        // FIXME This saves the model every time again also for models that appear multiple times
+        for(auto& key_value : detector->getModel()->getConfiguration().getAll()) {
+            model_dir->WriteObject(&key_value.second, key_value.first.c_str());
+        }
     }
 
     // Finish writing to output file

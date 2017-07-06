@@ -96,6 +96,11 @@ namespace allpix {
         int prio_{};
     };
 
+    class Messenger;
+    /**
+     * @defgroup Modules Modules
+     * @brief Collection of modules included in the framework
+     */
     /**
      * @brief Base class for all modules
      *
@@ -108,7 +113,6 @@ namespace allpix {
      * The module class also provides a few utility methods and stores internal data of instantations. The internal data is
      * used by the ModuleManager and the Messenger to work.
      */
-    class Messenger;
     class Module {
         friend class ModuleManager;
         friend class Messenger;
@@ -173,6 +177,12 @@ namespace allpix {
         std::string getOutputPath(const std::string& path, bool global = false) const;
 
         /**
+         * @brief Get seed to initialize random generators
+         * @warning This should be the only method used by modules to seed random numbers to allow reproducing results
+         */
+        uint64_t getRandomSeed() const;
+
+        /**
          * @brief Get ROOT directory which should be used to output histograms et cetera
          * @return ROOT directory for storage
          */
@@ -223,8 +233,8 @@ namespace allpix {
         Configuration config_;
 
         /**
-         * @brief Set the ROOT directory for output
-         * @param val ROOT directory for storage
+         * @brief Set the output ROOT directory for this module
+         * @param directory ROOT directory for storage
          */
         void set_ROOT_directory(TDirectory* directory);
         TDirectory* directory_{};

@@ -153,7 +153,7 @@ The framework has a variety of global parameters that allow to configure \apsq f
 \item \textbf{log\_file}: File where output should be written to besides standard output (usually the terminal). Only writes to standard output if this option is not provided. Another (additional) location to write to can be specified on the command line using the \texttt{-l} parameter.
 \item \textbf{output\_directory}: Directory to write all output files into. Extra directories are created for all the module instantiations. This directory also contains the \textbf{root\_file} parameter described after. Defaults to the current working directory with the subdirectory \textit{output/} attached.
 \item \textbf{root\_file}: Location relative to the \textbf{output\_directory}, where the ROOT output data of all modules will be written to. Default value is \textit{modules.root}. The directories will be created automatically for all the module instantiations in this ROOT file.
-\item \textbf{random\_seed}: Seed to use for the random seed generator (see Section \ref{sec:random_generator}). A random seed from multiple entropy sources will be generated if the parameter is not specified. Can be used to reproduce an earlier simulation run.
+\item \textbf{random\_seed}: Seed to use for the global random seed generator used to initialize the seeds for the module instantiations. A random seed from multiple entropy sources will be generated if the parameter is not specified. Can be used to reproduce an earlier simulation run.
 \item \textbf{library\_directories}: Additional directories to search for libraries, before searching the default paths. See Section \ref{sec:module_instantiation} for details.
 \item \textbf{model\_path}: Additional files or directories from which detector models should be read besides the standard search locations. Refer to Section \ref{sec:detector_models} for more information.
 \end{itemize}
@@ -295,8 +295,7 @@ An example electric field (which the name used above) can be found in the \texti
 
 \todo{This should be extended}
 
-\paragraph{Choosing the Propagation Modules}
-\wip
+% \paragraph{Choosing the Propagation Modules}
 
 \subsection{Logging and Verbosity Levels}
 \label{sec:logging_verbosity}

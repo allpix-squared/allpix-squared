@@ -1,5 +1,7 @@
 /**
- * @author Koen Wolters <koen.wolters@cern.ch>
+ * @file
+ * @brief Implementation of object with digitized pixel hit
+ * @copyright MIT License
  */
 
 #include "PixelHit.hpp"
@@ -20,10 +22,16 @@ PixelHit::Pixel PixelHit::getPixel() const {
     return pixel_;
 }
 
+/**
+ * Object is stored as TRef and can only be accessed if pointed object is in scope
+ */
 const PixelCharge* PixelHit::getPixelCharge() const {
     return dynamic_cast<PixelCharge*>(pixel_charge_.GetObject());
 }
 
+/**
+ * MCParticles can only be fetched if the full history of objects are in scope and stored
+ */
 std::vector<const MCParticle*> PixelHit::getMCParticles() const {
     auto pixel_charge = getPixelCharge();
     if(pixel_charge == nullptr) {

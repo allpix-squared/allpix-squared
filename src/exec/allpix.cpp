@@ -10,6 +10,11 @@
 #include "core/config/ConfigManager.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/utils/exceptions.h"
+/**
+ * @file
+ * @brief Executable running the framework
+ */
+
 #include "core/utils/log.h"
 
 using namespace allpix;
@@ -21,8 +26,10 @@ void interrupt_handler(int);
 std::unique_ptr<AllPix> apx;
 std::atomic<bool> apx_ready{false};
 
-// Handle user interrupt which should stop the framework immediately
-// NOTE: This handler is actually not fully reliable (but otherwise crashing is fine...)
+/**
+ * @brief Handle user abort (CTRL+\) which should stop the framework immediately
+ * @note This handler is actually not fully reliable (but otherwise crashing is okay...)
+ */
 void abort_handler(int) {
     // Output interrupt message and clean
     LOG(FATAL) << "Aborting!";
@@ -33,7 +40,9 @@ void abort_handler(int) {
     std::abort();
 }
 
-// Request termination as soon as possible while keeping the program flow valid
+/**
+ * @brief Handle termination request (CTRL+C) as soon as possible while keeping the program flow
+ */
 void interrupt_handler(int) {
     // Stop the framework if it is loaded
     if(apx_ready) {
@@ -42,7 +51,9 @@ void interrupt_handler(int) {
     }
 }
 
-// Clean environment
+/**
+ * @brief Clean the environment when closing application
+ */
 void clean() {
     Log::finish();
     if(apx_ready) {
@@ -50,6 +61,9 @@ void clean() {
     }
 }
 
+/**
+ * @brief Main function running the application
+ */
 int main(int argc, const char* argv[]) {
     // Add cout as the default logging stream
     Log::addStream(std::cout);

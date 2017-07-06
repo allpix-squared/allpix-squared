@@ -1,11 +1,7 @@
-########################
-# Allpix2 Dummy Module #
-########################
-
-# Define module and return the generated name as MODULE_NAME
+# Define module
 ALLPIX_DETECTOR_MODULE(MODULE_NAME)
 
-# Add library
+# Add source files to library
 ALLPIX_MODULE_SOURCES(${MODULE_NAME} 
     GenericPropagationModule.cpp
 )

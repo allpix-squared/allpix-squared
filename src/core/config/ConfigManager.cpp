@@ -48,7 +48,7 @@ void ConfigManager::addGlobalHeaderName(std::string name) {
 }
 
 /**
- * The global configuration is the combination of all sections with a global header
+ * The global configuration is the combination of all sections with a global header.
  */
 Configuration ConfigManager::getGlobalConfiguration() {
     Configuration global_config(global_default_name_, file_name_);

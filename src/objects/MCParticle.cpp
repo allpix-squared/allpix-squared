@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @brief Implementation of Monte-Carlo particle object
+ * @copyright MIT License
+ */
+
 #include "MCParticle.hpp"
 
 using namespace allpix;

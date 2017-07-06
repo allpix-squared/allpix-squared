@@ -1,0 +1,19 @@
+\section{Objects}
+\label{sec:objects}
+\apsq ships a set of objects that should be used to transfer data between modules. These objects can be send with the messaging system explained in Section \ref{sec:objects_messages}. A typedef is added to every object to provide an alternative name for the message directly linking to the carried object.
+
+Currently this list of supported objects are the following:
+\nlparagraph{MCParticle}
+The Monte-Carlo truth information about the particle passage through the sensor. Both the entry and the exit point are stored in the object, to approximate the track. The exact handling of non-linear tracks due to for example in-sensor nuclear interactions, is up to module. The MCParticle also stores an identifier of the particle type. The naming scheme is again up to the module, but it is recommended to use PDG codes~\cite{pdg}.
+
+\nlparagraph{DepositedCharge}
+Set of charges that are deposited by an ionizing particle crossing the active material of the sensor. The object stores both the \underline{local} position in the sensor together with the total number of deposited charges in elementary charge units. Also the time (in \textit{ns} the internal framework unit) of the deposition after the start of the event is stored.
+
+\nlparagraph{PropagatedCharge}
+Set of charges that are propagated through the silicon sensor due to drift and/or diffusion processes. The object should store the final \underline{local} position of the propagation. This is either on the pixel implant if the set of charges are ready to be collected, or on any other position in the sensor if the set of charges got stuck or lost in another process. Timing information about the total time to arrive at the final location, from the start of the event, can also be stored.
+
+\nlparagraph{PixelCharge}
+Set of charges that are collected at a single pixel. The pixel indices are stored in both the $x$ and $y$ direction, starting to count from zero from the first pixel. Only the total number of charges at a pixel is currently stored, the timing information of the individual charges can be retrieved from the related PropagatedCharge objects.
+
+\nlparagraph{PixelHit}
+Digitized hit of a pixel after digitization. The object allows to store both the time and a signal value. The time can be stored in an arbitrary unit used to timestamp the hits. The signal can also store different kind of information depending on the type of the digitizer used. Examples of the signal information is the 'true' charge, the number of ADC counts or the ToT (time-over-threshold).

@@ -1,5 +1,7 @@
 /**
- * @author Koen Wolters <koen.wolters@cern.ch>
+ * @file
+ * @brief Implementation of Geant4 geometry visualization module
+ * @copyright MIT License
  */
 
 #include "VisualizationGeant4Module.hpp"
@@ -48,19 +50,23 @@ VisualizationGeant4Module::VisualizationGeant4Module(Configuration config, Messe
         throw InvalidValueError(config_, "mode", "viewing mode should be 'gui', 'terminal' or 'none'");
     }
 }
+/**
+ * Without applying this workaround the visualization (sometimes without content) is also shown when an exception occurred in
+ * any other module.
+ */
 VisualizationGeant4Module::~VisualizationGeant4Module() {
-    // Add a driver
+    // Fetch the driver (ignoring errors)
     std::string driver;
     try {
         driver = config_.get<std::string>("driver", "");
     } catch(InvalidKeyError& e) {
+        driver = "";
     }
 
     // Invoke VRML2FILE workaround if necessary to prevent visualisation in case of exceptions
     if(!has_run_ && vis_manager_g4_ != nullptr && vis_manager_g4_->GetCurrentViewer() != nullptr && driver == "VRML2FILE") {
         LOG(TRACE) << "Invoking VRML workaround to prevent visualization under error conditions";
 
-        // FIXME: workaround to skip VRML visualization in case we stopped before reaching the run method
         auto str = getenv("G4VRMLFILE_VIEWER");
         if(str != nullptr) {
             setenv("G4VRMLFILE_VIEWER", "NONE", 1);
@@ -102,7 +108,7 @@ void VisualizationGeant4Module::init() {
     UI->ApplyCommand("/vis/viewer/set/autoRefresh false");
 
     // Set the visibility attributes for visualization
-    set_visibility_attributes();
+    set_visualization_attributes();
 
     // Initialize the session and the visualization manager
     LOG(TRACE) << "Initializing visualization";
@@ -156,7 +162,9 @@ void VisualizationGeant4Module::init() {
     RELEASE_STREAM(G4cout);
 }
 
-// Set default visualization settings
+/**
+ * Visualization settings are converted from internal configuration to Geant4 macro syntax
+ */
 void VisualizationGeant4Module::set_visualization_settings() {
     // Get the UI commander
     G4UImanager* UI = G4UImanager::GetUIpointer();
@@ -190,7 +198,7 @@ void VisualizationGeant4Module::set_visualization_settings() {
         }
 
         // Hide trajectories inside the detectors
-        auto hide_trajectories = config_.get<bool>("hide_trajectories", true);
+        auto hide_trajectories = config_.get<bool>("hidden_trajectories", true);
         if(hide_trajectories) {
             UI->ApplyCommand("/vis/viewer/set/hiddenEdge 1");
             UI->ApplyCommand("/vis/viewer/set/hiddenMarker 1");
@@ -278,8 +286,15 @@ void VisualizationGeant4Module::set_visualization_settings() {
     }
 }
 
-// Create all visualization attributes
-void VisualizationGeant4Module::set_visibility_attributes() {
+/**
+ * The default colors and visibility are as follows
+ * - Wrapper: Red (Invisible)
+ * - Support: Greenish
+ * - Chip: Blackish
+ * - Bumps: Grey
+ * - Sensor: Blackish
+ */
+void VisualizationGeant4Module::set_visualization_attributes() {
     // To add some transparency in the solids, set to 0.4. 0 means opaque.
     // Transparency can be switched off in the visualisation.
     auto alpha = config_.get<double>("transparency", 0.4);
@@ -291,7 +306,7 @@ void VisualizationGeant4Module::set_visibility_attributes() {
     G4VisAttributes wrapperVisAtt = G4VisAttributes(G4Color(1, 0, 0, 0.1)); // Red
     wrapperVisAtt.SetVisibility(false);
 
-    // support
+    // Support
     auto supportColor = G4Color(0.36, 0.66, 0.055, alpha); // Greenish
     G4VisAttributes supportVisAtt = G4VisAttributes(supportColor);
     supportVisAtt.SetLineWidth(1);
@@ -309,20 +324,16 @@ void VisualizationGeant4Module::set_visibility_attributes() {
 
     // The logical volume holding all the bumps
     G4VisAttributes BumpBoxVisAtt = G4VisAttributes(bumpColor);
-    // BumpBoxVisAtt.SetForceSolid(false);
+    BumpBoxVisAtt.SetForceSolid(false);
 
     // Sensors, ie pixels
     auto sensorColor = G4Color(0.18, 0.2, 0.21, alpha); // Blackish
     G4VisAttributes SensorVisAtt = G4VisAttributes(sensorColor);
     SensorVisAtt.SetForceSolid(false);
 
-    // Guard rings
-    G4VisAttributes guardRingsVisAtt = G4VisAttributes(sensorColor);
-    guardRingsVisAtt.SetForceSolid(false);
-
     // The box holding all the pixels
     G4VisAttributes BoxVisAtt = G4VisAttributes(sensorColor);
-    // BoxVisAtt.SetForceSolid(false);
+    BoxVisAtt.SetForceSolid(false);
 
     // In default simple view mode, pixels and bumps are set to invisible, not to be displayed.
     // The logical volumes holding them are instead displayed.
@@ -351,11 +362,6 @@ void VisualizationGeant4Module::set_visibility_attributes() {
             sensor_log->SetVisAttributes(BoxVisAtt);
         }
 
-        auto slice_log = detector->getExternalObject<G4LogicalVolume>("slice_log");
-        if(slice_log != nullptr) {
-            slice_log->SetVisAttributes(SensorVisAtt);
-        }
-
         auto pixel_log = detector->getExternalObject<G4LogicalVolume>("pixel_log");
         if(pixel_log != nullptr) {
             pixel_log->SetVisAttributes(SensorVisAtt);
@@ -369,11 +375,6 @@ void VisualizationGeant4Module::set_visibility_attributes() {
         auto bumps_cell_log = detector->getExternalObject<G4LogicalVolume>("bumps_cell_log");
         if(bumps_cell_log != nullptr) {
             bumps_cell_log->SetVisAttributes(BumpVisAtt);
-        }
-
-        auto guard_rings_log = detector->getExternalObject<G4LogicalVolume>("guard_rings_log");
-        if(guard_rings_log != nullptr) {
-            guard_rings_log->SetVisAttributes(guardRingsVisAtt);
         }
 
         auto chip_log = detector->getExternalObject<G4LogicalVolume>("chip_log");
@@ -398,6 +399,9 @@ void VisualizationGeant4Module::run(unsigned int) {
 
 static bool has_gui = false;
 static void (*prev_handler)(int) = nullptr;
+/**
+ * @brief Override interrupt handling to close the Qt application in GUI mode
+ */
 static void interrupt_handler(int signal) {
 // Exit the Qt application if it is used
 // FIXME: Is there a better way to trigger this?
@@ -411,7 +415,6 @@ static void interrupt_handler(int signal) {
     std::raise(signal);
 }
 
-// Display the visualization after all events have passed
 void VisualizationGeant4Module::finalize() {
     // Enable automatic refresh before showing view
     G4UImanager* UI = G4UImanager::GetUIpointer();

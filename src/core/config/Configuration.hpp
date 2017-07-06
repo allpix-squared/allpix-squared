@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "core/utils/string.h"
-
 #include "exceptions.h"
 
 namespace allpix {
@@ -154,6 +153,13 @@ namespace allpix {
          * @param other Configuration to merge this one with
          */
         void merge(const Configuration& other);
+
+        /**
+         * @brief Get all key value pairs
+         * @return List of all key value pairs
+         */
+        // FIXME Better name for this function
+        std::vector<std::pair<std::string, std::string>> getAll();
 
     private:
         /**

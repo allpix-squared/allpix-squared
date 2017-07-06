@@ -1,6 +1,8 @@
 /**
- *  @author John Idarraga <idarraga@cern.ch>
- *  @author Koen Wolters <koen.wolters@cern.ch>
+ * @file
+ * @brief Implements the particle generator
+ * @remark Based on code from John Idarraga
+ * @copyright MIT License
  */
 
 #include "GeneratorActionG4.hpp"
@@ -19,35 +21,35 @@
 
 using namespace allpix;
 
-// construct and destruct the generator
 GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     : particle_source_(std::make_unique<G4GeneralParticleSource>()) {
-    // set verbosity to zero
+    // Set verbosity of source to off
     particle_source_->SetVerbosity(0);
 
-    // get source specific parameters
+    // Get source specific parameters
     auto single_source = particle_source_->GetCurrentSource();
 
-    // find particle
+    // Find Geant4 particle
     G4ParticleDefinition* particle =
         G4ParticleTable::GetParticleTable()->FindParticle(config.get<std::string>("particle_type"));
     if(particle == nullptr) {
-        // FIXME: more information about available particle
+        // FIXME more information about available particle
         throw InvalidValueError(config, "particle_type", "particle type does not exist");
     }
 
-    // set global parameters
-    // FIXME: keep number of particles always at zero?
-    single_source->SetNumberOfParticles(static_cast<int>(config.get<unsigned int>("particle_amount")));
+    // Set global parameters of the source
+    // FIXME keep number of particles always at one?
+    single_source->SetNumberOfParticles(static_cast<int>(config.get<unsigned int>("particle_amount", 1)));
     single_source->SetParticleDefinition(particle);
-    single_source->SetParticleTime(0.0); // FIXME: what is this time
+    // FIXME What is this time
+    single_source->SetParticleTime(0.0);
 
-    // set position parameters
+    // Set position parameters
     single_source->GetPosDist()->SetPosDisType("Beam");
     single_source->GetPosDist()->SetBeamSigmaInR(config.get<double>("particle_radius_sigma", 0));
     single_source->GetPosDist()->SetCentreCoords(config.get<G4ThreeVector>("particle_position"));
 
-    // set distribution parameters
+    // Set distribution parameters
     single_source->GetAngDist()->SetAngDistType("planar");
     G4ThreeVector direction = config.get<G4ThreeVector>("particle_direction");
     if(fabs(direction.mag() - 1.0) > std::numeric_limits<double>::epsilon()) {
@@ -55,12 +57,14 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     }
     single_source->GetAngDist()->SetParticleMomentumDirection(direction);
 
-    // set energy parameters
+    // Set energy parameters
     single_source->GetEneDist()->SetEnergyDisType("Mono");
     single_source->GetEneDist()->SetMonoEnergy(config.get<double>("particle_energy"));
 }
 
-// generate the particles
+/**
+ * Called automatically for every event
+ */
 void GeneratorActionG4::GeneratePrimaries(G4Event* event) {
     particle_source_->GeneratePrimaryVertex(event);
 }

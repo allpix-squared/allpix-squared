@@ -1,17 +1,14 @@
-// stl include
-#include <string>
+/**
+ * @file
+ * @brief Implementation of default digitization module
+ * @copyright MIT License
+ */
 
-// module include
 #include "DefaultDigitizerModule.hpp"
 
-// framework includes
-#include "core/messenger/Messenger.hpp"
-#include "core/utils/log.h"
-#include "core/utils/random.h"
 #include "core/utils/unit.h"
 #include "tools/ROOT.h"
 
-// ROOT includes
 #include <TFile.h>
 #include <TH1D.h>
 #include <TProfile.h>
@@ -20,7 +17,6 @@
 
 using namespace allpix;
 
-// Constructor to load the module
 DefaultDigitizerModule::DefaultDigitizerModule(Configuration config,
                                                Messenger* messenger,
                                                std::shared_ptr<Detector> detector)
@@ -29,24 +25,22 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration config,
     // Require PixelCharge message for single detector
     messenger_->bindSingle(this, &DefaultDigitizerModule::pixel_message_, MsgFlags::REQUIRED);
 
-    // Seed the random generator
-    random_generator_.seed(get_random_seed());
+    // Seed the random generator with the global seed
+    random_generator_.seed(getRandomSeed());
 
     // Set defaults for config variables
     config_.setDefault<int>("electronics_noise", Units::get(110, "e"));
     config_.setDefault<int>("threshold", Units::get(600, "e"));
     config_.setDefault<int>("threshold_smearing", Units::get(30, "e"));
     config_.setDefault<int>("adc_smearing", Units::get(300, "e"));
-
     config_.setDefault<bool>("output_plots", false);
 }
 
-// Initialize output plots
 void DefaultDigitizerModule::init() {
     if(config_.get<bool>("output_plots")) {
         LOG(TRACE) << "Creating output plots";
 
-        // book histograms:
+        // Create histograms if needed
         h_pxq = new TH1D("pixelcharge", "raw pixel charge;pixel charge [ke];pixels", 100, 0, 10);
         h_pxq_noise = new TH1D("pixelcharge_noise_", "pixel charge w/ el. noise;pixel charge [ke];pixels", 100, 0, 10);
         h_thr = new TH1D("threshold", "applied threshold; threshold [ke];events", 100, 0, 10);
@@ -55,9 +49,7 @@ void DefaultDigitizerModule::init() {
     }
 }
 
-// run method fetching a message and outputting its own
 void DefaultDigitizerModule::run(unsigned int) {
-
     // Loop through all pixels with charges
     std::vector<PixelHit> hits;
     for(auto& pixel_charge : pixel_message_->getData()) {
@@ -115,7 +107,7 @@ void DefaultDigitizerModule::run(unsigned int) {
         // double crosstalk_neigubor_column = 0.00;
     }
 
-    // output summary and update statistics
+    // Output summary and update statistics
     LOG(INFO) << "Digitized " << hits.size() << " pixel hits";
     total_hits_ += hits.size();
 
@@ -126,7 +118,6 @@ void DefaultDigitizerModule::run(unsigned int) {
     }
 }
 
-// Create file and write the histograms to it if we have plots enabled
 void DefaultDigitizerModule::finalize() {
     if(config_.get<bool>("output_plots")) {
         // Write histograms

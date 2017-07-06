@@ -1,6 +1,8 @@
 /**
- * @author Koen Wolters <koen.wolters@cern.ch>
- * @author Mathieu Benoit <benoit@lal.in2p3.fr>
+ * @file
+ * @brief Implements the Geant4 geometry construction process
+ * @remarks Code is based on code from Mathieu Benoit
+ * @copyright MIT License
  */
 
 #include "GeometryConstructionG4.hpp"
@@ -33,22 +35,25 @@
 
 #include "Parameterization2DG4.hpp"
 
-using namespace CLHEP;
-using namespace std;
 using namespace allpix;
 
-// Constructor and destructor
-GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo, Configuration config)
-    : geo_manager_(geo), config_(std::move(config)) {}
-GeometryConstructionG4::~GeometryConstructionG4() = default;
+GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo_manager, Configuration config)
+    : geo_manager_(geo_manager), config_(std::move(config)) {}
 
-// Special version of std::make_shared that does not delete the pointer
-// NOTE: needed because some pointers are deleted by Geant4 internally
+/**
+ * @brief Version of std::make_shared that does not delete the pointer
+ *
+ * This version is needed because some pointers are deleted by Geant4 internally, but they are stored as std::shared_ptr in
+ * the framework.
+ */
 template <typename T, typename... Args> static std::shared_ptr<T> make_shared_no_delete(Args... args) {
     return std::shared_ptr<T>(new T(args...), [](T*) {});
 }
 
-// Build geometry
+/**
+ * First initializes all the materials. Then constructs the world from the internally calculated world size with a certain
+ * margin. Finally builds all the individual detectors.
+ */
 G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     // Initialize materials
     init_materials();
@@ -71,8 +76,8 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     half_world_size.SetZ(std::max(std::abs(min_coord.z()), std::abs(max_coord.z())));
 
     // Calculate and apply margins to world size
-    auto margin_percentage = config_.get<double>("margin_percentage", 0.1);
-    auto minimum_margin = config_.get<ROOT::Math::XYZPoint>("minimum_margin", {0, 0, 0});
+    auto margin_percentage = config_.get<double>("world_margin_percentage", 0.1);
+    auto minimum_margin = config_.get<ROOT::Math::XYZPoint>("world_minimum_margin", {0, 0, 0});
     double add_x = half_world_size.x() * margin_percentage;
     if(add_x < minimum_margin.x()) {
         add_x = minimum_margin.x();
@@ -103,18 +108,26 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     world_phys_ =
         std::make_unique<G4PVPlacement>(nullptr, G4ThreeVector(0., 0., 0.), world_log_.get(), "World", nullptr, false, 0);
 
-    // Build the pixel devices
-    build_pixel_devices();
+    // Build all the detectors in the world
+    build_detectors();
 
     return world_phys_.get();
 }
 
-// Initialize all required materials
+/**
+ * Initializes all the internal materials. The following materials are supported by this module:
+ * - vacuum
+ * - air
+ * - silicon
+ * - epoxy
+ * - kapton
+ * - solder
+ */
 void GeometryConstructionG4::init_materials() {
     G4NistManager* nistman = G4NistManager::Instance();
 
     // Add vacuum and air
-    materials_["vacuum"] = new G4Material("Vacuum", 1, 1.01 * g / mole, 0.0001 * g / cm3);
+    materials_["vacuum"] = new G4Material("Vacuum", 1, 1.01 * CLHEP::g / CLHEP::mole, 0.0001 * CLHEP::g / CLHEP::cm3);
     materials_["air"] = nistman->FindOrBuildMaterial("G4_AIR");
 
     // Build table of materials from database
@@ -123,31 +136,31 @@ void GeometryConstructionG4::init_materials() {
     materials_["kapton"] = nistman->FindOrBuildMaterial("G4_KAPTON");
 
     // Create solder element
-    G4Element* Sn = new G4Element("Tin", "Sn", 50., 118.710 * g / mole);
-    G4Element* Pb = new G4Element("Lead", "Pb", 82., 207.2 * g / mole);
-    G4Material* Solder = new G4Material("Solder", 8.4 * g / cm3, 2);
+    G4Element* Sn = new G4Element("Tin", "Sn", 50., 118.710 * CLHEP::g / CLHEP::mole);
+    G4Element* Pb = new G4Element("Lead", "Pb", 82., 207.2 * CLHEP::g / CLHEP::mole);
+    G4Material* Solder = new G4Material("Solder", 8.4 * CLHEP::g / CLHEP::cm3, 2);
     Solder->AddElement(Sn, 63);
     Solder->AddElement(Pb, 37);
 
     materials_["solder"] = Solder;
 }
 
-// Build all pixel detector models
-void GeometryConstructionG4::build_pixel_devices() {
+void GeometryConstructionG4::build_detectors() {
     /* NAMES
      * define the global names for all the elements in the setup
      */
-    pair<G4String, G4String> wrapperName = make_pair("wrapper", "");
-    pair<G4String, G4String> supportName = make_pair("support", "");
-    pair<G4String, G4String> BoxName = make_pair("Box", "");
-    pair<G4String, G4String> SliceName = make_pair("Slice", "");
-    pair<G4String, G4String> GuardRingsExtName = make_pair("GuardRingsExt", "");
-    pair<G4String, G4String> GuardRingsName = make_pair("GuardRings", "");
-    pair<G4String, G4String> PixelName = make_pair("Pixel", "");
-    pair<G4String, G4String> ChipName = make_pair("Chip", "");
-    pair<G4String, G4String> SDName = make_pair("BoxSD", "");
-    pair<G4String, G4String> BumpName = make_pair("Bump", "");
-    pair<G4String, G4String> BumpBoxName = make_pair("BumpBox", "");
+    // FIXME This can be simplified
+    std::pair<G4String, G4String> wrapperName = std::make_pair("wrapper", "");
+    std::pair<G4String, G4String> supportName = std::make_pair("support", "");
+    std::pair<G4String, G4String> BoxName = std::make_pair("Box", "");
+    std::pair<G4String, G4String> SliceName = std::make_pair("Slice", "");
+    std::pair<G4String, G4String> GuardRingsExtName = std::make_pair("GuardRingsExt", "");
+    std::pair<G4String, G4String> GuardRingsName = std::make_pair("GuardRings", "");
+    std::pair<G4String, G4String> PixelName = std::make_pair("Pixel", "");
+    std::pair<G4String, G4String> ChipName = std::make_pair("Chip", "");
+    std::pair<G4String, G4String> SDName = std::make_pair("BoxSD", "");
+    std::pair<G4String, G4String> BumpName = std::make_pair("Bump", "");
+    std::pair<G4String, G4String> BumpBoxName = std::make_pair("BumpBox", "");
 
     // Loop through all detectors to construct them
     std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
@@ -315,11 +328,11 @@ void GeometryConstructionG4::build_pixel_devices() {
             auto bump_sphere_radius = hybrid_model->getBumpSphereRadius();
             auto bump_cylinder_radius = hybrid_model->getBumpCylinderRadius();
 
-            auto bump_sphere =
-                std::make_shared<G4Sphere>(BumpName.first + "sphere", 0, bump_sphere_radius, 0, 360 * deg, 0, 360 * deg);
+            auto bump_sphere = std::make_shared<G4Sphere>(
+                BumpName.first + "sphere", 0, bump_sphere_radius, 0, 360 * CLHEP::deg, 0, 360 * CLHEP::deg);
             solids_.push_back(bump_sphere);
-            auto bump_tube =
-                std::make_shared<G4Tubs>(BumpName.first + "tube", 0., bump_cylinder_radius, bump_height / 2., 0., 360 * deg);
+            auto bump_tube = std::make_shared<G4Tubs>(
+                BumpName.first + "tube", 0., bump_cylinder_radius, bump_height / 2., 0., 360 * CLHEP::deg);
             solids_.push_back(bump_tube);
             auto bump = std::make_shared<G4UnionSolid>(BumpName.first, bump_sphere.get(), bump_tube.get());
             solids_.push_back(bump);

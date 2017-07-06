@@ -13,17 +13,41 @@
 \usepackage{siunitx}
 \usepackage{booktabs}
 \usepackage{xspace}
-\usepackage{color}
+\usepackage{xcolor}
 \usepackage{minted}
 \usepackage{a4wide}
 \usepackage{listings}
 \usepackage{graphicx}
-\usepackage{listings}
 \usepackage{seqsplit}
 \usepackage{multirow}
 \usepackage{enumitem}
-\usepackage{hyperref}
+\usepackage[unicode=true]{hyperref}
 \usepackage{microtype}
+\usepackage{pgf,pgffor}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} 
+\usepackage[utf8]{inputenc}
+\usepackage{eurosym}
+\usepackage{fancyvrb}
+\urlstyle{same}  
+\usepackage{longtable,booktabs}
+\usepackage[normalem]{ulem}
+\setlength{\emergencystretch}{3em}
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+  
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+\providecommand{\subtitle}[1]{}
 
 % Set paths
 \makeatletter
@@ -79,11 +103,16 @@
 \input{chapters/framework}
 \clearpage
 
+% core framework 
+\input{chapters/objects}
+\clearpage
+
 % modules
 \section{Modules}
 \label{sec:modules}
-\wip
-\todo{This section should be automatically build}
+\lstset{language=Ini}
+\includemodulesdoc
+\lstset{language=}
 \clearpage
 
 % development of new modules and detectors models

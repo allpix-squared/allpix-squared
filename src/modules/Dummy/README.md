@@ -1,5 +1,14 @@
-# Dummy Module for Allpix<sup>2</sup>
+## Dummy
+**Maintainer**: *NAME* (*EMAIL*)  
+**Status**: Functional  
+[**Input**: *INPUT_MESSAGE*]  
+[**Output**: *OUTPUT_MESSAGE*]  
 
-add description
+#### Description
+*Short description of this module*
 
-add list of parameters
+#### Parameters
+* `param`: *explanation with optional default*
+
+#### Usage
+*Example how to use this module*

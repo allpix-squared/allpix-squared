@@ -18,7 +18,7 @@ The core is constructed as a light-weight framework that provides various subsys
 \item \textbf{Module}: Contain the base class of all the \apsq modules and the manager responsible for loading and running the modules (using the configuration system). This component is discussed in more detail in Section \ref{sec:module_manager}.
 \item \textbf{Geometry}: Supplies helpers for the simulation geometry. The manager instantiates all detectors from the detector configuration file. A detector has a certain position and orientation linked to an instantiation of a particular detector model. The detector model contains all parameters describing the geometry of the detector. More details about the geometry and detector models is provided in Section \ref{sec:models_geometry}.
 \item \textbf{Messenger}: The messenger is responsible for sending objects from one module to another. The messenger object is passed to every module and can be used to bind to messages to listen for. Messages with objects are also dispatched through the messenger to send data to the modules listening. Please refer to Section \ref{sec:objects_messages} for more details.
-\item \textbf{Utilities}: The framework provides a set of simple utilities for logging, file and directory access, random number seeding and unit conversion. An explanation how to use of these utilities can be found in Section \ref{sec:logging_utilities}. A set of C++ exceptions is also provided in the utilities, which are inherited and extended by the other components. Proper use of exceptions, together with logging informational messages and reporting errors, make the framework easier to use and debug. A few notes about the use and structure of exceptions are given in Section \ref{sec:error_reporting_exceptions}.
+\item \textbf{Utilities}: The framework provides a set of simple utilities for logging, file and directory access and unit conversion. An explanation how to use of these utilities can be found in Section \ref{sec:logging_utilities}. A set of C++ exceptions is also provided in the utilities, which are inherited and extended by the other components. Proper use of exceptions, together with logging informational messages and reporting errors, make the framework easier to use and debug. A few notes about the use and structure of exceptions are given in Section \ref{sec:error_reporting_exceptions}.
 \end{enumerate}
 
 \subsection{Configuration and Parameters}
@@ -78,11 +78,10 @@ The type of module determines the kind of constructor used, the internal unique 
 \label{sec:module_files}
 Every module directory should at the minimum contain the following documents (with \texttt{ModuleName} replaced by the name of the module):
 \begin{itemize}
-\item \textbf{CMakeLists.txt}: The build script to load the dependencies and define the source files
-\item \textbf{README.md}: Short documentation of the module
-\item \textbf{\texttt{ModuleName}.tex}: Full documentation of the module for this Users Manual
-\item \textbf{\texttt{ModuleName}Module.hpp}: The header file of the module (note that another name can be used for this source file, but that is deprecated)
-\item \textbf{\texttt{ModuleName}Module.cpp}: The implementation file of the module
+\item \textbf{CMakeLists.txt}: The build script to load the dependencies and define the source files of the library.
+\item \textbf{README.md}: Full documentation of the module.
+\item \textbf{\texttt{ModuleName}Module.hpp}: The header file of the module (note that another name can be used for this source file, but that is deprecated).
+\item \textbf{\texttt{ModuleName}Module.cpp}: The implementation file of the module.
 \end{itemize}
 The files are discussed in more detail below. All modules that are added to the \textit{src/modules/} directory will be build automatically by CMake. This also means that all subdirectories in this module directory should contain a module with a \textit{CMakeLists.txt} to build the module.
 
@@ -128,10 +127,21 @@ ALLPIX_MODULE_INSTALL(${MODULE_NAME})
 \end{minted}
 
 \paragraph{README.md}
-\wip
+The README.md serves as the documentation for the module and should be written in the Markdown format. It is automatically converted to \LaTeX using Pandoc~\cite{pandoc} and included in the documentation in Section \ref{sec:modules}. It is also viewable online at the repository in the subfolder of the module. 
 
-\paragraph{\texttt{ModuleName}.tex}
-\wip
+The README.md should follow the structure of the DummyModule in \textit{src/modules/Dummy}. The documentation should contain at least the following sections:
+\begin{itemize}
+\item The H2-size header with the name of the module which contains at least the following required elements: the \textbf{Maintainer} and the \textbf{Status} of the module. If the module is working and recently tested the status of the module should be \textit{Functional}. The maintainer line should contain the name of the module maintainer and its email address between parentheses. An example for a minimal header is therefore
+\begin{verbatim}
+## ModuleName
+Maintainer: Example Author (example@example.org)
+Status: Functional
+\end{verbatim}
+Besides this an header could also have the \textbf{Input} and \textbf{Output} points, which contain the name of the objects that are respectively read and dispatched by the module.
+\item A H4-size section containing a short description of the module, named \textbf{Description}. 
+\item A H4-size section named \textbf{Parameters} with the parameters of the module. All parameters should be shortly explained in an itemized list with the name of the parameter in an inline code block.
+\item A H4-size section with the name \textbf{Usage} which should contain at least one single simple example of a valid configuration that can be used.
+\end{itemize}
 
 \paragraph{\texttt{ModuleName}Module.hpp and \texttt{ModuleName}Module.cpp}
 All modules should have both a header file and a source file. In the header file the module is defined together with all its method. Brief Doxygen documentation should be added to explain what every method does. The source file should provide the implementation of every method and also its more detailed Doxygen documentation. Not a single method should be defined in the header to keep the interface clean.
@@ -221,11 +231,12 @@ This standard detector model can be extended to provide a more detailed geometry
 
 \todo{The exact parameters need to be specified here}
 
-To fetch a detector model as \texttt{HybridPixelDetectorModel}, the base class should be downcasted as follows (the downcast return a null pointer if it is not a HybridPixelDetectorModel).
+To fetch a detector model as \texttt{HybridPixelDetectorModel}, the base class should be downcasted as follows (the downcast return a null pointer if the class is not of the appropriate type).
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
 // Detector is a pointer to a Detector object
-std::shared_ptr<HybridPixelDetectorModel> model = std::dynamic_pointer_cast<HybridPixelDetectorModel>(detector->getModel());
-if(model != nullptr) {
+auto model = detector->getModel();
+auto hybrid_model = std::dynamic_pointer_cast<HybridPixelDetectorModel>(model);
+if(hybrid_model != nullptr) {
     // The model of this Detector is a HybridPixelDetectorModel
 }
 \end{minted}
@@ -243,9 +254,9 @@ For almost all purposes a specific model reader is not needed and all internal m
 
 \subsection{Passing Objects using Messages}
 \label{sec:objects_messages}
-Communication between modules happens through messages (only some internal information is shared through external detector objects and the dependencies like Geant4). Messages are templated instantiations of the \texttt{Message} class carrying a vector of objects. A typedef is typically added by the object to provide an alternative name for the message directly linking to the carried object. The message system has a dispatching part and a receiving part. 
+Communication between modules happens through messages (only some internal information is shared through external detector objects and the dependencies like Geant4). Messages are templated instantiations of the \texttt{Message} class carrying a vector of objects. The list of objects available in the \apsq objects library are discussed in Section \ref{sec:objects}. The messaging system has a dispatching part to send messages and a receiving part that fetches messages. 
 
-The dispatching module can specify an optional name, but most modules should not specify this directly. If the name is not directly given (or equal to \texttt{-}) the \textbf{output} parameter of the module is used to determine the name of the message, defaulting to an empty string. Dispatching the message to their receivers then goes by the following rules:
+The dispatching module can specify an optional name for the messages, but modules should normally not specify this name directly. If the name is not directly given (or equal to \texttt{-}) the \textbf{output} parameter of the module is used to determine the name of the message, defaulting to an empty string. Dispatching the message to their receivers then goes by the following rules:
 \begin{enumerate}
 \item The receiving module the will \underline{only} receive a message if it has the exact same type as the message dispatched (thus carrying the exact same object). If the receiver is however listening to the \texttt{BaseMessage} type it will receive all dispatched messages instead.
 \item The receiving module will \underline{only} receive messages with the exact same name as it is listening for. The module uses the \textbf{input} parameter to determine to which message names the module should listen. If the \textbf{input} parameter is equal to \texttt{*} the module should listen to all messages. Every module listens by default to messages with no name specified (thus receiving the messages of default dispatching modules).
@@ -315,23 +326,12 @@ Various flags can be added to the bind function and listening functions. The fla
 \item \textbf{IGNORE\_NAME}: If this flag is specified, the name of the dispatched message is not considered. Thus the \textbf{input} parameter is ignored and forced to the value \texttt{*}. 
 \end{itemize}
 
-\subsubsection{Object types}
-All supported objects that can be transferred between modules are shipped with the framework in the Objects library. This list of objects currently consists of the following:
-\begin{itemize}
-\item \textbf{DepositedCharge}: Set of charges at a specific position in the sensor of a detector. Deposited by an ionizing particle crossing the active material of the sensor.
-\item \textbf{PropagatedCharge}: Charge at a specific position after propagation.
-\item \textbf{PixelCharge}: Set of charges at a particular pixel in the pixel grid.
-\item \textbf{PixelHit}: Hit of a particular pixel after digitization.
-\end{itemize}
-
-\todo{this should be a separate section}
-
 \subsection{Logging and other Utilities}
 \label{sec:logging_utilities}
 The \apsq framework provides a set of utilities that can be attributed to two types:
 \begin{itemize}
 \item Two utilities to improve the usability of the framework. One of these is a flexible and easy-to-use logging system, introduced below in Section \ref{sec:logger}. The other is an easy-to-use framework for units that supports converting arbitrary combinations of units to an independent number which can  be used transparently through the framework. It will be discussed in more detail in Section \ref{sec:unit_system}.
-\item A few utilities to extend the functionality provided by the C++ Standard Template Library (STL). These are provided either to simplify access to the STL (like the random seed generator utility) or to provide functionality the C++14 standard lacks (like filesystem support). The utilities are used internally in the framework and are only shortly discussed here. The utilities falling in this category are the random seed generator (see Section \ref{sec:random_generator}), the filesystem functions (see Section \ref{sec:filesystem}) and the string utilies (see Section \ref{sec:string_utilities}).
+\item A few utilities to extend the functionality provided by the C++ Standard Template Library (STL). These are provided to provide functionality the C++14 standard lacks (like filesystem support). The utilities are used internally in the framework and are only shortly discussed here. The utilities falling in this category are the filesystem functions (see Section \ref{sec:filesystem}) and the string utilies (see Section \ref{sec:string_utilities}).
 \end{itemize}
 
 \subsubsection{Logging system}
@@ -376,27 +376,6 @@ Provides functions to convert relative to absolute canonical paths, to iterate t
 \paragraph{String utilities}
 \label{sec:string_utilities}
 The STL only provides string conversions for standard types using \texttt{std::stringstream} and \texttt{std::to\_string}. It does not allow to parse strings encapsulated in pairs of \texttt{"} characters and neither does it allow to integrate different units. Furthermore it does not provide wide flexibility to add custom conversions for other external types in either way. The \apsq \texttt{to\_string} and \texttt{from\_string} do allow for these flexible conversions and it it extensively used in the configuration system. Conversions of numeric types with a unit attached are automatically resolved using the unit system discussed in Section \ref{sec:unit_system}. The \apsq tools system contain extensions to allow automatic conversions for ROOT and Geant4 types as explained in Section \ref{sec:root_and_geant4_utilities}. The string utilities also include trim and split strings functions as they are missing in the STL.
-
-\paragraph{Random seed generator}
-\label{sec:random_generator}
-Generating random number with a high level of entropy is very important for running Monte-Carlo processes in high-energy physics. Good random generators are already included in both the standard library and various external libraries. Seeding those random generators with enough entropy or seeding them with a predefined seed instead (to allow for reproducing a certain simulation) should however be a framework task to ensure that seeds are transferred in a well-defined way. This small utility library provides the required method to provide a seed to all random generators. With the STL random libraries it can be used as shown in the following example \texttt{init()} method:
-
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
-void init() {
-    // Create a standard 64 bit Mersene Twister 19937 generator
-    std::mt19937_64 random_generator;
-    
-    // Get a seed from the framework
-    uint64_t seed = get_random_seed();
-    
-    // Seed the generator with the random seed provided by the framework
-    random_generator.seed(seed);
-    
-    // Use the random generator to produce a gaussian distribution
-    std::normal_distribution<double> gauss_distribution(0, 1);
-    double gauss_number = gauss_distribution(random_generator);
-}
-\end{minted}
 
 \subsection{Error Reporting and Exceptions}
 \label{sec:error_reporting_exceptions}

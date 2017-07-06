@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @brief Implementation of simple charge transfer module
+ * @copyright MIT License
+ */
+
 #include "SimpleTransferModule.hpp"
 
 #include <fstream>
@@ -18,26 +24,24 @@
 
 using namespace allpix;
 
-// constructor to load the module
 SimpleTransferModule::SimpleTransferModule(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector)
     : Module(config, detector), config_(std::move(config)), messenger_(messenger), detector_(std::move(detector)) {
-    // require propagated deposits for single detector
+    // Require propagated deposits for single detector
     messenger->bindSingle(this, &SimpleTransferModule::propagated_message_, MsgFlags::REQUIRED);
 }
 
-// run method that does the main computations for the module
 void SimpleTransferModule::run(unsigned int) {
-    // get detector model
+    // Fetch detector model
     auto model = detector_->getModel();
 
-    // find pixels for all propagated charges
+    // Find corresponding pixels for all propagated charges
     LOG(TRACE) << "Transferring charges to pixels";
     unsigned int transferrred_charges_count = 0;
     std::map<PixelCharge::Pixel, std::vector<const PropagatedCharge*>, pixel_cmp> pixel_map;
     for(auto& propagated_charge : propagated_message_->getData()) {
         auto position = propagated_charge.getPosition();
-        // ignore if outside z range of implant
-        // FIXME: this logic should be extended
+        // Ignore if outside depth range of implant
+        // FIXME This logic should be improved
         if(std::fabs(position.z() - (model->getSensorCenter().z() + model->getSensorSize().z() / 2.0)) >
            config_.get<double>("max_depth_distance")) {
             LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
@@ -45,12 +49,12 @@ void SimpleTransferModule::run(unsigned int) {
             continue;
         }
 
-        // find the nearest pixel
+        // Find the nearest pixel
         auto xpixel = static_cast<int>(std::round(position.x() / model->getPixelSize().x()));
         auto ypixel = static_cast<int>(std::round(position.y() / model->getPixelSize().y()));
         PixelCharge::Pixel pixel(xpixel, ypixel);
 
-        // ignore if out of pixel grid
+        // Ignore if out of pixel grid
         if(xpixel < 0 || xpixel >= model->getNPixels().x() || ypixel < 0 || ypixel >= model->getNPixels().y()) {
             LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                        << propagated_charge.getPosition() << " because their nearest pixel " << pixel
@@ -58,18 +62,18 @@ void SimpleTransferModule::run(unsigned int) {
             continue;
         }
 
-        // update statistics
+        // Update statistics
         unique_pixels_.insert(pixel);
         transferrred_charges_count += propagated_charge.getCharge();
 
         LOG(DEBUG) << "Set of " << propagated_charge.getCharge() << " propagated charges at "
                    << propagated_charge.getPosition() << " brought to pixel " << pixel;
 
-        // add the pixel the list of hit pixels
+        // Add the pixel the list of hit pixels
         pixel_map[pixel].emplace_back(&propagated_charge);
     }
 
-    // create pixel charges
+    // Create pixel charges
     LOG(TRACE) << "Combining charges at same pixel";
     std::vector<PixelCharge> pixel_charges;
     for(auto& pixel : pixel_map) {
@@ -82,17 +86,17 @@ void SimpleTransferModule::run(unsigned int) {
         LOG(DEBUG) << "Set of " << charge << " charges combined at " << pixel.first;
     }
 
-    // writing summary and update statistics
+    // Writing summary and update statistics
     LOG(INFO) << "Transferred " << transferrred_charges_count << " charges to " << pixel_map.size() << " pixels";
     total_transferrred_charges_ += transferrred_charges_count;
 
-    // dispatch message
+    // Dispatch message of pixel charges
     auto pixel_message = std::make_shared<PixelChargeMessage>(pixel_charges, detector_);
     messenger_->dispatchMessage(this, pixel_message);
 }
 
-// print statistics
 void SimpleTransferModule::finalize() {
+    // Print statistics
     LOG(INFO) << "Transferred total of " << total_transferrred_charges_ << " charges to " << unique_pixels_.size()
               << " different pixels";
 }

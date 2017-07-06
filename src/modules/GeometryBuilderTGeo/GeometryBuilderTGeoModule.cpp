@@ -55,23 +55,25 @@ using namespace allpix;
 using namespace ROOT::Math;
 using namespace TMath;
 
-/* Create a TGeoTranslation from a ROOT::Math::XYZVector */
+/**
+ * @brief Create a TGeoTranslation from a ROOT::Math::XYZVector
+ */
 TGeoTranslation ToTGeoTranslation(const XYZPoint& pos) {
     return TGeoTranslation(pos.x(), pos.y(), pos.z());
 }
-/* Print out a TGeoTranslation as done in allpix for easy comparison. */
+/**
+ * @brief Print out a TGeoTranslation as done in allpix for easy comparison.
+ */
 TString Print(TGeoTranslation* trl) {
     const Double_t* par = trl->GetTranslation();
     return Form("(%f,%f,%f)", par[0], par[1], par[2]);
 }
 
-/// Constructor and destructor
 GeometryBuilderTGeoModule::GeometryBuilderTGeoModule(Configuration config, Messenger*, GeometryManager* geo_manager)
     : Module(config), m_config(std::move(config)), m_geoDscMng(geo_manager), m_fillingWorldMaterial(nullptr),
       m_userDefinedWorldMaterial("Air"), m_userDefinedGeoOutputFile(""), m_buildAppliancesFlag(false), m_Appliances_type(0),
       m_buildTestStructureFlag(false) {
-    // read the configuration
-    // FIXME: prefer to use std::string
+    // Read the configuration
     m_userDefinedWorldMaterial = m_config.get<std::string>("world_material");
     m_buildAppliancesFlag = m_config.get<bool>("build_appliances", false);
     if(m_buildAppliancesFlag) {
@@ -80,12 +82,7 @@ GeometryBuilderTGeoModule::GeometryBuilderTGeoModule(Configuration config, Messe
     m_buildTestStructureFlag = m_config.get<bool>("build_test_structures", false);
 }
 
-/// Run the detector construction.
 void GeometryBuilderTGeoModule::init() {
-    // Import and load external geometry
-    // TGeoManager::Import("MyGeom.root");
-    // Return
-
     /* Instantiate the TGeo geometry manager.
        It will remain persistant until gGeoManager is deleted.
     */
@@ -120,7 +117,7 @@ void GeometryBuilderTGeoModule::init() {
         LOG(DEBUG) << "Geometry saved in " << m_userDefinedGeoOutputFile;
     }
 
-    // Export geometry as GDML.
+    // Export geometry as GDML if required
     if(m_config.has("GDML_output_file")) {
 #ifndef ROOT_GDML
         std::string error = "You requested to export the geometry in GDML. ";
@@ -135,13 +132,8 @@ void GeometryBuilderTGeoModule::init() {
         gGeoManager->Export(GDML_output_file);
 #endif
     }
-
-    //
 }
 
-/*
- * The master function to construct the detector according to the user's wishes.
- */
 void GeometryBuilderTGeoModule::Construct() {
 
     // Solids will be builds in mm, same units as AllPix1, even if ROOT assumes cm.
@@ -156,7 +148,7 @@ void GeometryBuilderTGeoModule::Construct() {
        The size of the world does not seem to have any effect. Even if smaller than
        the built detectors, ROOT does not complain.
     */
-    const XYZVector halfworld = m_config.get("half_world", XYZVector(1000, 1000, 1000));
+    const XYZVector halfworld = m_config.get("world_size", XYZVector(1000, 1000, 1000)) / 2.0;
 
     m_fillingWorldMaterial = gGeoManager->GetMedium(m_userDefinedWorldMaterial);
     // If null, throw an exception and stop the construction !
@@ -612,9 +604,6 @@ void GeometryBuilderTGeoModule::BuildAppliances() {
 
 void GeometryBuilderTGeoModule::BuildTestStructure() {}
 
-/*
-  Create the materials and media.
-*/
 void GeometryBuilderTGeoModule::BuildMaterialsAndMedia() {
 
     /* Create the materials and mediums
@@ -707,89 +696,3 @@ void GeometryBuilderTGeoModule::BuildMaterialsAndMedia() {
     auto* Al_mat = new TGeoMaterial("Al", Al, density = 2.699);
     new TGeoMedium("Al", ++numed, Al_mat);
 }
-
-/******************* OLD STUFF ****************************/
-
-/*
-///////////////////////////////////////////////////////////////////////
-// vis attributes
-G4VisAttributes * pixelVisAtt= new G4VisAttributes(G4Color::Blue());
-pixelVisAtt->SetLineWidth(1);
-pixelVisAtt->SetForceSolid(true);
-//pixelVisAtt->SetForceWireframe(true);
-
-G4VisAttributes * BoxVisAtt= new G4VisAttributes(G4Color(0,1,1,1));//kCyan
-BoxVisAtt->SetLineWidth(2);
-BoxVisAtt->SetForceSolid(true);
-//BoxVisAtt->SetVisibility(false);
-
-G4VisAttributes * CoverlayerVisAtt= new G4VisAttributes(G4Color::White());
-CoverlayerVisAtt->SetLineWidth(2);
-CoverlayerVisAtt->SetForceSolid(true);
-
-G4VisAttributes * ChipVisAtt= new G4VisAttributes(G4Color::Gray());
-ChipVisAtt->SetLineWidth(2);
-ChipVisAtt->SetForceSolid(true);
-//BoxVisAtt->SetVisibility(false);
-
-G4VisAttributes * BumpBoxVisAtt = new G4VisAttributes(G4Color(0,1,0,1.0));//kGreen
-BumpBoxVisAtt->SetLineWidth(1);
-BumpBoxVisAtt->SetForceSolid(false);
-BumpBoxVisAtt->SetVisibility(true);
-
-G4VisAttributes * BumpVisAtt = new G4VisAttributes(G4Color::Yellow());
-BumpVisAtt->SetLineWidth(2);
-BumpVisAtt->SetForceSolid(true);
-//BumpVisAtt->SetVisibility(true);
-//BumpVisAtt->SetForceAuxEdgeVisible(true);
-
-G4VisAttributes * supportVisAtt = new G4VisAttributes(G4Color::Green());
-supportVisAtt->SetLineWidth(1);
-supportVisAtt->SetForceSolid(true);
-
-G4VisAttributes * guardRingsVisAtt = new G4VisAttributes(G4Color(0.5,0.5,0.5,1));
-guardRingsVisAtt->SetLineWidth(1);
-guardRingsVisAtt->SetForceSolid(true);
-
-G4VisAttributes * wrapperVisAtt = new G4VisAttributes(G4Color(1,0,0,0.9));
-wrapperVisAtt->SetLineWidth(1);
-wrapperVisAtt->SetForceSolid(false);
-wrapperVisAtt->SetVisibility(false);
-
-RGBA (red, green, blue, and alpha), alpha=opacity (d=1, opaque!)
-2 drawing styles :
-wireframe : only the edges of your detector are drawn and so the detector looks transparent.
-surfaces : detector looks opaque with shading effects.
-Equivalent in ROOT :
-Int_t ci = TColor::GetFreeColorIndex();
-TColor *color = new TColor(ci, 1.0, 0.65, 0.0,"",0.1 );
-myVolume->SetLineColor(kRed);
-myVolume->SetLineWith(2);
-myVolumeContainer->SetVisibility(kFALSE);
-There is the possibility to set the transparency or Alpha for every object. Check TColor.
-
-Rotation/translation with respect to its mother volume
-m_rotVector[id], posWrapper
-G4VPhysicalVolume* trackerPhys  = new G4PVPlacement(0,  // no rotation
-G4ThreeVector(pos_x, pos_y,pos_z), // translation position
-trackerLog,  // its logical volume
-"Tracker",   // its name
-worldLog,    // its mother (logical) volume
-false,       // no boolean operations
-0);          // its copy number
-/// ROOT ??
-TGeoVolume::AddNode(TGeoVolume *daughter,Int_t copy_No,TGeoMatrix *matr);
-Placement with respect to its mother volume
-TGeoTranslation *tr1 = new TGeoTranslation(20., 0, 0.);
-TGeoRotation   *rot1 = new TGeoRotation("rot1", 90., 0., 90., 270., 0., 0.);
-TGeoCombiTrans *combi1 = new TGeoCombiTrans(transl, rot1);
-
-// Rotation
-G4RotationMatrix -> TRotation
-// counter-clockwise rotations around the coordinate axes
-RotateX(),RotateY() and RotateZ()   // get radians
-a.Inverse();// b is inverse of a, a is unchanged
-b = a.Invert();// invert a and set b = a
-
-///////////////////////////////////////////////////////////////////////
-*/

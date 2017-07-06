@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @brief Implements 2D Geant4 parameterization grid of elements
+ * @copyright MIT License
+ */
+
 #include "Parameterization2DG4.hpp"
 
 #include <memory>

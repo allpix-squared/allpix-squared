@@ -5,10 +5,12 @@
 
 #include "AllPix.hpp"
 
+#include <chrono>
 #include <climits>
 #include <fstream>
 #include <memory>
 #include <stdexcept>
+#include <thread>
 #include <utility>
 
 #include <TROOT.h>
@@ -19,7 +21,6 @@
 #include "core/config/exceptions.h"
 #include "core/utils/file.h"
 #include "core/utils/log.h"
-#include "core/utils/random.h"
 #include "core/utils/unit.h"
 
 using namespace allpix;
@@ -102,19 +103,29 @@ void AllPix::load() {
     Configuration global_config = conf_mgr_->getGlobalConfiguration();
 
     // Initialize the random seeder
+    std::mt19937_64 seeder;
     uint64_t seed = 0;
     if(global_config.has("random_seed")) {
         // Use provided random seed
-        seed = random_init(global_config.get<uint64_t>("random_seed"));
+        seed = global_config.get<uint64_t>("random_seed");
+        seeder.seed(seed);
         LOG(STATUS) << "Initialized PRNG with configured seed " << seed;
     } else {
-        // Use entropy from the system
-        seed = random_init();
+        // Compute random entropy seed
+        // Use the clock
+        auto clock_seed = static_cast<uint64_t>(std::chrono::high_resolution_clock::now().time_since_epoch().count());
+        // Use memory location local variable
+        auto mem_seed = reinterpret_cast<uint64_t>(&seed); // NOLINT
+        // Use thread id
+        std::hash<std::thread::id> thrd_hasher;
+        auto thread_seed = thrd_hasher(std::this_thread::get_id());
+        seed = (clock_seed ^ mem_seed ^ thread_seed);
+        seeder.seed(seed);
         LOG(STATUS) << "Initialized PRNG with system entropy seed " << seed;
     }
 
     // Initialize ROOT random generator
-    gRandom->SetSeed(get_random_seed());
+    gRandom->SetSeed(seeder());
 
     // Get output directory
     LOG(TRACE) << "Switching to output directory";
@@ -147,7 +158,7 @@ void AllPix::load() {
 
     // Load the modules from the configuration
     if(!terminate_) {
-        mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get());
+        mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get(), seeder);
     } else {
         LOG(INFO) << "Skip loading modules because termination is requested";
     }

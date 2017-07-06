@@ -1,8 +1,4 @@
-##################################################
-# Geometry Builder Module, Geant4 Implementation #
-##################################################
-
-# Define module and return the generated name as MODULE_NAME
+# Define module
 ALLPIX_UNIQUE_MODULE(MODULE_NAME)
 
 # Geant4 is required
@@ -13,7 +9,6 @@ IF(NOT Geant4_FOUND)
 ENDIF(NOT Geant4_FOUND)
 
 # Print message if GDML support is not enabled in Geant4
-#IF(GEANT4_USE_GDML)
 IF(Geant4_gdml_FOUND)
   message(STATUS "Geometry export in GDML format is enabled.")
   ADD_DEFINITIONS(-DGeant4_GDML)
@@ -30,14 +25,14 @@ ELSEIF(CMAKE_BUILD_TYPE MATCHES RELEASE)
     SET(${CMAKE_CXX_FLAGS} "${Geant4_CXX_FLAGS_RELEASE} ${CMAKE_CXX_FLAGS}")
 ENDIF()
 
-# Add library
+# Add source files to library
 ALLPIX_MODULE_SOURCES(${MODULE_NAME}
     GeometryBuilderGeant4Module.cpp
     GeometryConstructionG4.cpp
     Parameterization2DG4.cpp
 )
 
-# Include Geant4 directories (WARNING: do not use the Geant4_USE_FILE!)
+# Include Geant4 directories (NOTE Geant4_USE_FILE is not used!)
 TARGET_INCLUDE_DIRECTORIES(${MODULE_NAME} SYSTEM PRIVATE ${Geant4_INCLUDE_DIRS})
 
 # Add Geant4 libraries

@@ -1,5 +1,7 @@
 /**
- * @author Koen Wolters <koen.wolters@cern.ch>
+ * @file
+ * @brief Defines the internal Geant4 geometry construction
+ * @copyright MIT License
  */
 
 #ifndef ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_DETECTOR_CONSTRUCTION_H
@@ -9,46 +11,48 @@
 #include <utility>
 
 #include "G4Material.hh"
-#include "G4ThreeVector.hh"
 #include "G4VSolid.hh"
 #include "G4VUserDetectorConstruction.hh"
 
 #include "core/geometry/GeometryManager.hpp"
 
-// FIXME: improve this later on
-
-class G4UserLimits;
-
 namespace allpix {
-
+    /**
+     * @brief Constructs the Geant4 geometry during Geant4 initialization
+     */
     class GeometryConstructionG4 : public G4VUserDetectorConstruction {
     public:
-        // Constructor and destructor
-        GeometryConstructionG4(GeometryManager* geo, Configuration config);
-        ~GeometryConstructionG4() override;
+        /**
+         * @brief Constructs geometry construction module
+         * @param geo_manager Pointer to the geometry manager, containing the detectors
+         * @param config Configuration object of the geometry builder module
+         */
+        GeometryConstructionG4(GeometryManager* geo_manager, Configuration config);
 
-        // Disallow copy
-        GeometryConstructionG4(const GeometryConstructionG4&) = delete;
-        GeometryConstructionG4& operator=(const GeometryConstructionG4&) = delete;
-
-        // Default move
-        GeometryConstructionG4(GeometryConstructionG4&&) = default;
-        GeometryConstructionG4& operator=(GeometryConstructionG4&&) = default;
-
-        // Construct the world
+        /**
+         * @brief Constructs the world geometry with all detectors
+         * @return Physical volume representing the world
+         */
         G4VPhysicalVolume* Construct() override;
 
     private:
-        void init_materials();
-        void build_pixel_devices();
-
         GeometryManager* geo_manager_;
         Configuration config_;
 
-        // all used materials
+        /**
+         * @brief Initializes the list of materials from the supported allpix materials
+         */
+        void init_materials();
+
+        /**
+         * @brief Build all the detectors
+         */
+        void build_detectors();
+
+        // List of all materials
         std::map<std::string, G4Material*> materials_;
 
-        // internal storage
+        // Storage of internal objects
         std::vector<std::shared_ptr<G4VSolid>> solids_;
         G4Material* world_material_{};
         std::unique_ptr<G4LogicalVolume> world_log_;

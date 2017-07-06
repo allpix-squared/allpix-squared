@@ -10,7 +10,7 @@ The core framework is separated from the individual modules and \apsq has theref
 
 For various modules additional dependencies are necessary. For details about the dependencies and their installation visit the module documentation in Section \ref{sec:modules}. The following dependencies are needed to compile the standard installation:
 \begin{itemize}
-\item Geant4~\cite{geant4}: Simulates the particle beam, depositing charges in the detectors with the help of the constructed geometry. See the instructions in \cite{geant4installation} for details on how to install the software. All the Geant4 datasets are required to run the modules succesfully. Also GDML support could be enabled to save the Geant4 geometry for later review. Finally it is very much recommended to enable Qt visualization. A good set of CMake build flags to start with is the following:
+\item Geant4~\cite{geant4}: Simulates the particle beam, depositing charges in the detectors with the help of the constructed geometry. See the instructions in \cite{geant4installation} for details on how to install the software. All the Geant4 datasets are required to run the modules succesfully. Also GDML support could be enabled to save the Geant4 geometry for later review. Finally it is recommended to enable Qt visualization. A useful set of CMake flags to build a functional Geant4 package would be:
 \begin{verbatim}
 -DGEANT4_INSTALL_DATA=ON
 -DGEANT4_BUILD_MULTITHREADED=ON

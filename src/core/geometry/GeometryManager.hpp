@@ -83,11 +83,11 @@ namespace allpix {
         /**
          * @brief Add a point to the geometry (used for the \ref GeometryManager::getMinimumCoordinate "minimum"
          *        and \ref GeometryManager::getMaximumCoordinate "maximum" coordinate)
-         * @param val Point that is part of the geometry
+         * @param point Point that should be included in the geometry
          * @warning Can only be used as long as the geometry is still open
          */
         // TODO: Add more details to the point and interaction with external geometry
-        void addPoint(ROOT::Math::XYZPoint);
+        void addPoint(ROOT::Math::XYZPoint point);
 
         /**
          * @brief Return if the model is currently in the list of required models

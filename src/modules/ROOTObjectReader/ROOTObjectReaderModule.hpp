@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @brief Definition of ROOT data file reader module
+ * @copyright MIT License
+ */
+
 #include <functional>
 #include <map>
 #include <string>
@@ -8,51 +14,79 @@
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
-
 #include "core/module/Module.hpp"
 
+// Contains tuple of all defined objects
 #include "objects/objects.h"
 
 namespace allpix {
+    /**
+     * @ingroup Modules
+     * @brief Module to read data stored in ROOT file back to allpix messages
+     *
+     * Reads the tree of objects in the data format of the \ref ROOTObjectWriterModule. Converts all the stored objects that
+     * are supported back to messages containing those objects and dispatches those messages.
+     */
     class ROOTObjectReaderModule : public Module {
     public:
-        ROOTObjectReaderModule(Configuration config, Messenger*, GeometryManager*);
-        ~ROOTObjectReaderModule() override;
-
-        // Receive single messages
-        void receive(std::shared_ptr<BaseMessage> message, std::string name);
-
-        // Open the ROOT file to write to
-        void init() override;
-
-        // Write current event messages to the output
-        void run(unsigned int) override;
-
-        // Finalize the reading
-        void finalize() override;
-
         using MessageCreatorMap =
             std::map<std::type_index,
                      std::function<std::shared_ptr<BaseMessage>(std::vector<Object*>, std::shared_ptr<Detector>)>>;
 
+        /**
+         * @brief Constructor for this unique module
+         * @param config Configuration object for this module as retrieved from the steering file
+         * @param messenger Pointer to the messenger object to allow binding to messages on the bus
+         * @param geo_mgr Pointer to the geometry manager, containing the detectors
+         */
+        ROOTObjectReaderModule(Configuration config, Messenger* messenger, GeometryManager* geo_mgr);
+        /**
+         * @brief Destructor deletes the internal objects read from ROOT Tree
+         */
+        ~ROOTObjectReaderModule() override;
+
+        /**
+         * @brief Open the ROOT file containing the stored output data
+         */
+        void init() override;
+
+        /**
+         * @brief Convert the objects stored for the current event to messages
+         */
+        void run(unsigned int) override;
+
+        /**
+         * @brief Output summary and close the ROOT file
+         */
+        void finalize() override;
+
     private:
+        Configuration config_;
+        Messenger* messenger_;
+        GeometryManager* geo_mgr_;
+
+        /**
+         * @brief Internal object storing objects and information to construct a message from tree
+         */
         struct message_info {
             std::vector<Object*>* objects;
             std::shared_ptr<Detector> detector;
             std::string name;
         };
 
-        Configuration config_;
-        Messenger* messenger_;
-        GeometryManager* geo_mgr_;
-
+        // File containing the objects
         std::unique_ptr<TFile> input_file_;
 
+        // Object trees in the file
         std::vector<TTree*> trees_;
 
+        // List of objects and message information converted from the trees
         std::list<message_info> message_info_array_;
+
+        // Statistics for total amount of objects stored
         unsigned long read_cnt_{};
 
+        // Internal map to construct an object from it's type index
         MessageCreatorMap message_creator_map_;
     };
 } // namespace allpix

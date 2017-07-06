@@ -1,8 +1,7 @@
-/*
- * Module to read electric fields in the INIT format
- * See https://github.com/simonspa/pixelav
- *
- * @author Koen Wolters <koen.wolters@cern.ch>
+/**
+ * @file
+ * @brief Definition of simple charge transfer module
+ * @copyright MIT License
  */
 
 #include <map>
@@ -19,20 +18,42 @@
 #include "objects/PropagatedCharge.hpp"
 
 namespace allpix {
-    // define the module inheriting from the module base class
+    /**
+     * @ingroup Modules
+     * @brief Module that directly converts propagated charges to charges on a pixel
+     *
+     * This module does a simple direct mapping from propagated charges to the nearest pixel in the grid. It only considers
+     * propagated charges within a certain distance from the implants and within the pixel grid, charges in the rest of the
+     * sensor are ignored. The module combines all the propagated charges to a set of charges at a specific pixel.
+     */
     class SimpleTransferModule : public Module {
     public:
-        // constructor of the module
-        SimpleTransferModule(Configuration config, Messenger*, std::shared_ptr<Detector>);
+        /**
+         * @brief Constructor for this detector-specific module
+         * @param config Configuration object for this module as retrieved from the steering file
+         * @param messenger Pointer to the messenger object to allow binding to messages on the bus
+         * @param detector Pointer to the detector for this module instance
+         */
+        SimpleTransferModule(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector);
 
-        // read the electric field and set it for the detectors
+        /**
+         * @brief Transfer the propagated charges to the pixels
+         */
         void run(unsigned int) override;
 
-        // print statistics
+        /**
+         * @brief Display statistical summary
+         */
         void finalize() override;
 
     private:
-        // compare two pixels for the pixel map
+        Configuration config_;
+        Messenger* messenger_;
+        std::shared_ptr<Detector> detector_;
+
+        /**
+         * @brief Compare two pixels, necessary to store them in the a std::map
+         */
         struct pixel_cmp {
             bool operator()(const PixelCharge::Pixel& p1, const PixelCharge::Pixel& p2) const {
                 if(p1.x() == p2.x()) {
@@ -42,19 +63,10 @@ namespace allpix {
             }
         };
 
-        // configuration for this reader
-        Configuration config_;
-
-        // pointer to the messenger
-        Messenger* messenger_;
-
-        // linked detector for this instantiation
-        std::shared_ptr<Detector> detector_;
-
-        // propagated deposits for a specific detector
+        // Message containing the propagated charges
         std::shared_ptr<PropagatedChargeMessage> propagated_message_;
 
-        // statistics
+        // Statistical information
         unsigned int total_transferrred_charges_{};
         std::set<PixelCharge::Pixel, pixel_cmp> unique_pixels_;
     };
