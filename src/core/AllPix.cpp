@@ -263,7 +263,10 @@ void AllPix::set_style() {
     gROOT->SetStyle("Plain");
     TStyle* style = gROOT->GetStyle("Plain");
 
-    // set backgrounds
+    // Prefer OpenGL if available
+    style->SetCanvasPreferGL(kTRUE);
+
+    // Set backgrounds
     style->SetCanvasColor(kWhite);
     style->SetFrameFillColor(kWhite);
     style->SetStatColor(kWhite);
@@ -275,25 +278,25 @@ void AllPix::set_style() {
     style->SetPaperSize(20, 26);
     // No yellow border around histogram
     style->SetDrawBorder(0);
-    // remove border of canvas*
+    // Remove border of canvas*
     style->SetCanvasBorderMode(0);
-    // remove border of pads
+    // Remove border of pads
     style->SetPadBorderMode(0);
     style->SetFrameBorderMode(0);
     style->SetLegendBorderSize(0);
 
-    // default text size
+    // Default text size
     style->SetTextSize(0.04f);
     style->SetTitleSize(0.04f, "xyz");
     style->SetLabelSize(0.03f, "xyz");
 
-    // title offset: distance between given text and axis
+    // Title offset: distance between given text and axis
     style->SetLabelOffset(0.01f, "xyz");
     style->SetTitleOffset(1.6f, "yz");
     style->SetTitleOffset(1.4f, "x");
 
-    // set font settings
-    short font = 42; // use a clear font
+    // Set font settings
+    short font = 42; // Use a clear font
     style->SetTitleFont(font);
     style->SetTitleFontSize(0.06f);
     style->SetStatFont(font);
@@ -304,26 +307,26 @@ void AllPix::set_style() {
     style->SetTitleBorderSize(0);
     style->SetStatBorderSize(1);
 
-    // set style for markers
+    // Set style for markers
     style->SetMarkerStyle(1);
     style->SetLineWidth(2);
     style->SetMarkerSize(1.2f);
 
-    // set palette in 2d histogram to nice and colorful one
+    // Set palette in 2d histogram to nice and colorful one
     style->SetPalette(1, nullptr);
 
-    // disable title by default for histograms
+    // Disable title by default for histograms
     style->SetOptTitle(0);
 
-    // set statistics
+    // Set statistics
     style->SetOptStat(0);
     style->SetOptFit(0);
 
-    // number of decimals used for errors
+    // Number of decimals used for errors
     style->SetEndErrorSize(5);
 
-    // set line width to 2 by default so that histograms are visible when printed small
-    // idea: emphasize the data, not the frame around
+    // Set line width to 2 by default so that histograms are visible when printed small
+    // Idea: emphasize the data, not the frame around
     style->SetHistLineWidth(2);
     style->SetFrameLineWidth(2);
     style->SetFuncWidth(2);
@@ -331,25 +334,25 @@ void AllPix::set_style() {
     style->SetFuncColor(kRed);
     style->SetLabelColor(kBlack, "xyz");
 
-    // set the margins
+    // Set the margins
     style->SetPadBottomMargin(0.18f);
     style->SetPadTopMargin(0.08f);
     style->SetPadRightMargin(0.18f);
     style->SetPadLeftMargin(0.17f);
 
-    // set the default number of divisions to show
+    // Set the default number of divisions to show
     style->SetNdivisions(506, "xy");
 
-    // turn off xy grids
+    // Turn off xy grids
     style->SetPadGridX(false);
     style->SetPadGridY(false);
 
-    // set the tick mark style
+    // Set the tick mark style
     style->SetPadTickX(1);
     style->SetPadTickY(1);
     style->SetCanvasDefW(800);
     style->SetCanvasDefH(700);
 
-    // force the style
+    // Force the style
     gROOT->ForceStyle();
 }
