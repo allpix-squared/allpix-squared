@@ -22,6 +22,22 @@ ConfigReader::ConfigReader(std::istream& stream, std::string file_name) : Config
     add(stream, std::move(file_name));
 }
 
+ConfigReader::ConfigReader(const ConfigReader& other) : conf_array_(other.conf_array_) {
+    copy_init_map();
+}
+ConfigReader& ConfigReader::operator=(const ConfigReader& other) {
+    conf_array_ = other.conf_array_;
+    copy_init_map();
+    return *this;
+}
+
+void ConfigReader::copy_init_map() {
+    conf_map_.clear();
+    for(auto iter = conf_array_.begin(); iter != conf_array_.end(); ++iter) {
+        conf_map_[iter->getName()].push_back(iter);
+    }
+}
+
 /**
  * @throws ConfigParseError If an error occurred during the parsing of the stream
  *
@@ -63,7 +79,7 @@ void ConfigReader::add(std::istream& stream, std::string file_name) {
             if(line[0] == '[' && line[line.length() - 1] == ']') {
                 // Ignore empty sections if they contain no configurations
                 if(!conf.getName().empty() || conf.countSettings() > 0) {
-                    // add previous section
+                    // Add previous section
                     conf_array_.push_back(conf);
                     conf_map_[section_name].push_back(--conf_array_.end());
                 }
@@ -117,6 +133,32 @@ unsigned int ConfigReader::countConfigurations(const std::string& name) const {
         return 0;
     }
     return static_cast<unsigned int>(conf_map_.at(name).size());
+}
+
+/**
+ * @warning This will have the file path of the first header section
+ * @note An empty configuration is returned if no empty section is found
+ */
+Configuration ConfigReader::getHeaderConfiguration() const {
+    // Get empty configurations
+    std::vector<Configuration> configurations = getConfigurations("");
+    if(configurations.empty()) {
+        // Use all configurations to find the file name if no empty
+        configurations = getConfigurations();
+        std::string file_name;
+        if(!configurations.empty()) {
+            file_name = configurations.at(0).getFilePath();
+        }
+        return Configuration("", file_name);
+    }
+
+    // Merge all configurations
+    Configuration header_config = configurations.at(0);
+    for(auto& config : configurations) {
+        // NOTE: Merging first configuration again has no effect
+        header_config.merge(config);
+    }
+    return header_config;
 }
 
 std::vector<Configuration> ConfigReader::getConfigurations(const std::string& name) const {

@@ -29,10 +29,13 @@ namespace allpix {
     public:
         /**
          * @brief Constructs the hybrid pixel detector model
-         * @param config Configuration description of the model
+         * @param type Name of the model type
+         * @param reader Configuration reader with description of the model
          */
-        explicit HybridPixelDetectorModel(const Configuration& config)
-            : DetectorModel(config), coverlayer_material_("Al"), has_coverlayer_(false) {
+        explicit HybridPixelDetectorModel(std::string type, const ConfigReader& reader)
+            : DetectorModel(std::move(type), reader), coverlayer_material_("Al"), has_coverlayer_(false) {
+            auto config = reader.getHeaderConfiguration();
+
             // Set bump parameters
             setBumpCylinderRadius(config.get<double>("bump_cylinder_radius"));
             setBumpHeight(config.get<double>("bump_height"));

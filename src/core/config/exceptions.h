@@ -57,8 +57,13 @@ namespace allpix {
                         const std::type_info& type,
                         const std::string& reason) {
             // FIXME: file and line number are missing
-            error_message_ = "Could not convert value '" + value + "' of key '" + key + "' in section '" + section +
-                             "' to type " + allpix::demangle(type.name());
+            std::string section_str = "in section '" + section + "'";
+            if(section.empty()) {
+                section_str = "in empty section";
+            }
+
+            error_message_ = "Could not convert value '" + value + "' of key '" + key + "' " + section_str + " to type " +
+                             allpix::demangle(type.name());
             if(!reason.empty()) {
                 error_message_ += ": " + reason;
             }
@@ -78,7 +83,11 @@ namespace allpix {
          */
         MissingKeyError(const std::string& key, const std::string& section) {
             // FIXME: file and line number are missing
-            error_message_ = "Key '" + key + "' in section '" + section + "' does not exist";
+            std::string section_str = "in section '" + section + "'";
+            if(section.empty()) {
+                section_str = "in empty section";
+            }
+            error_message_ = "Key '" + key + "' " + section_str + " does not exist";
         }
     };
 

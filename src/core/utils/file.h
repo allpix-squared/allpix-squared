@@ -15,6 +15,7 @@
 
 #include <dirent.h>
 #include <ftw.h>
+#include <libgen.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -159,6 +160,24 @@ namespace allpix {
         if(status != 0) {
             throw std::invalid_argument("path cannot be completely deleted");
         }
+    }
+
+    /**
+     * @brief Get the name of the file together with the extension
+     * @param path Absolute path to the file
+     * @return Pair of name of the file and the possible extension
+     */
+    inline std::pair<std::string, std::string> get_file_name_extension(const std::string& path) {
+        auto char_string = std::make_unique<char[]>(path.size() + 1);
+        std::copy(path.begin(), path.end(), char_string.get());
+        char_string[path.size()] = '\0';
+
+        std::string base_name = basename(char_string.get());
+        auto idx = base_name.find(".");
+        if(idx != std::string::npos) {
+            return std::make_pair(base_name.substr(0, idx), base_name.substr(idx));
+        }
+        return std::make_pair(base_name, "");
     }
 }
 

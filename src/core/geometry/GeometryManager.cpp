@@ -303,12 +303,10 @@ std::vector<std::shared_ptr<Detector>> GeometryManager::getDetectorsByType(const
 void GeometryManager::load_models() {
     LOG(TRACE) << "Loading remaining default models";
 
-    // Construct model reader
-    ConfigReader reader;
-
     // Get paths to read models from
     std::vector<std::string> paths = getModelsPath();
 
+    std::vector<std::pair<std::string, ConfigReader>> readers;
     LOG(TRACE) << "Reading model files";
     // Add all the paths to the reader
     for(auto& path : paths) {
@@ -316,47 +314,56 @@ void GeometryManager::load_models() {
         if(allpix::path_is_directory(path)) {
             std::vector<std::string> sub_paths = allpix::get_files_in_directory(path);
             for(auto& sub_path : sub_paths) {
+                auto name_ext = allpix::get_file_name_extension(sub_path);
+
                 // Accept only with correct model suffix
                 std::string suffix(ALLPIX_MODEL_SUFFIX);
-                if(sub_path.size() < suffix.size() || sub_path.substr(sub_path.size() - suffix.size()) != suffix) {
+                if(name_ext.second != suffix) {
                     continue;
                 }
 
                 // Add the sub directory path to the reader
                 LOG(TRACE) << "Reading model " << sub_path;
                 std::fstream file(sub_path);
-                reader.add(file, sub_path);
+
+                ConfigReader reader(file, sub_path);
+                readers.emplace_back(name_ext.first, reader);
             }
         } else {
             // Always a file because paths are already checked
             LOG(TRACE) << "Reading model " << path;
             std::fstream file(path);
-            reader.add(file, path);
+
+            ConfigReader reader(file, path);
+            auto name_ext = allpix::get_file_name_extension(path);
+            readers.emplace_back(name_ext.first, reader);
         }
     }
 
     // Loop through all configurations and parse them
     LOG(TRACE) << "Parsing models";
-    for(auto& model_config : reader.getConfigurations()) {
-        if(hasModel(model_config.getName())) {
+    for(auto& name_reader : readers) {
+        if(hasModel(name_reader.first)) {
             // Skip models that we already loaded earlier higher in the chain
-            LOG(DEBUG) << "Skipping overwritten model " + model_config.getName() << " in path "
-                       << model_config.getFilePath();
+            LOG(DEBUG) << "Skipping overwritten model " + name_reader.first << " in path "
+                       << name_reader.second.getHeaderConfiguration().getFilePath();
             continue;
         }
-        if(!needsModel(model_config.getName())) {
+        if(!needsModel(name_reader.first)) {
             // Also skip models that are not needed
-            LOG(TRACE) << "Skipping not required model " + model_config.getName() << " in path "
-                       << model_config.getFilePath();
+            LOG(TRACE) << "Skipping not required model " + name_reader.first << " in path "
+                       << name_reader.second.getHeaderConfiguration().getFilePath();
             continue;
         }
 
         // Parse configuration and add model to the config
-        addModel(parse_config(model_config));
+        addModel(parse_config(name_reader.first, name_reader.second));
     }
 }
 
-std::shared_ptr<DetectorModel> GeometryManager::parse_config(const Configuration& config) {
+std::shared_ptr<DetectorModel> GeometryManager::parse_config(const std::string& name, const ConfigReader& reader) {
+    Configuration config = reader.getHeaderConfiguration();
+
     if(!config.has("type")) {
         LOG(ERROR) << "Model file " << config.getFilePath() << " does not provide a type parameter";
     }
@@ -364,10 +371,10 @@ std::shared_ptr<DetectorModel> GeometryManager::parse_config(const Configuration
 
     // Instantiate the correct detector model
     if(type == "hybrid") {
-        return std::make_shared<HybridPixelDetectorModel>(config);
+        return std::make_shared<HybridPixelDetectorModel>(name, reader);
     }
     if(type == "monolithic") {
-        return std::make_shared<MonolithicPixelDetectorModel>(config);
+        return std::make_shared<MonolithicPixelDetectorModel>(name, reader);
     }
 
     LOG(ERROR) << "Model file " << config.getFilePath() << " type parameter is not valid";
