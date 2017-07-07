@@ -52,19 +52,32 @@ namespace allpix {
             ROOT::Math::XYZVector getSize() const { return size_; }
             std::string getMaterial() const { return material_; }
 
+            bool hasHole() { return hole_size_.x() > 1e-9 && hole_size_.y() > 1e-9; }
+            ROOT::Math::XYZPoint getHoleCenter() const {
+                return center_ + ROOT::Math::XYZVector(hole_offset_.x(), hole_offset_.y(), 0);
+            }
+            ROOT::Math::XYZVector getHoleSize() const { return hole_size_; }
+
         private:
             // Internal constructor for support layer
-            SupportLayer(ROOT::Math::XYZPoint size, ROOT::Math::XYVector offset, std::string material, std::string location)
-                : size_(std::move(size)), material_(std::move(material)), offset_(std::move(offset)),
-                  location_(std::move(location)) {}
+            SupportLayer(ROOT::Math::XYZVector size,
+                         ROOT::Math::XYVector offset,
+                         std::string material,
+                         std::string location,
+                         ROOT::Math::XYZVector hole_size,
+                         ROOT::Math::XYVector hole_offset)
+                : size_(std::move(size)), material_(std::move(material)), hole_size_(std::move(hole_size)),
+                  offset_(std::move(offset)), hole_offset_(std::move(hole_offset)), location_(std::move(location)) {}
 
             // Actual parameters returned
             ROOT::Math::XYZPoint center_;
             ROOT::Math::XYZVector size_;
             std::string material_;
+            ROOT::Math::XYZVector hole_size_;
 
             // Internal parameters to calculate return parameters
             ROOT::Math::XYVector offset_;
+            ROOT::Math::XYVector hole_offset_;
             std::string location_;
         };
 
@@ -111,7 +124,9 @@ namespace allpix {
                         support_config, "location", "location of the support should be 'chip' or 'sensor'");
                 }
                 auto material = support_config.get<std::string>("material", "epoxy");
-                addSupportLayer(size, thickness, offset, material, location);
+                auto hole_size = support_config.get<XYVector>("hole_size", {0, 0});
+                auto hole_offset = support_config.get<XYVector>("hole_offset", {0, 0});
+                addSupportLayer(size, thickness, offset, material, location, hole_size, hole_offset);
             }
         }
         /**
@@ -376,9 +391,12 @@ namespace allpix {
                              double thickness,
                              ROOT::Math::XYVector offset,
                              std::string material,
-                             std::string location) {
-            ROOT::Math::XYZPoint full_size(size.x(), size.y(), thickness);
-            support_layers_.push_back(SupportLayer(full_size, offset, material, location));
+                             std::string location,
+                             ROOT::Math::XYVector hole_size,
+                             ROOT::Math::XYVector hole_offset) {
+            ROOT::Math::XYZVector full_size(size.x(), size.y(), thickness);
+            ROOT::Math::XYZVector full_hole_size(hole_size.x(), hole_size.y(), thickness);
+            support_layers_.push_back(SupportLayer(full_size, offset, material, location, full_hole_size, hole_offset));
         }
 
     protected:

@@ -18,6 +18,7 @@
 #include <G4PVParameterised.hh>
 #include <G4PVPlacement.hh>
 #include <G4Sphere.hh>
+#include <G4StepLimiterPhysics.hh>
 #include <G4SubtractionSolid.hh>
 #include <G4ThreeVector.hh>
 #include <G4Tubs.hh>
@@ -25,7 +26,6 @@
 #include <G4UserLimits.hh>
 #include <G4VSolid.hh>
 #include <G4VisAttributes.hh>
-#include "G4StepLimiterPhysics.hh"
 
 #include "core/geometry/HybridPixelDetectorModel.hpp"
 #include "core/module/exceptions.h"
@@ -284,7 +284,6 @@ void GeometryConstructionG4::build_detectors() {
          * SUPPORT
          * optional layers of support
          */
-
         auto supports_log = std::make_shared<std::vector<std::shared_ptr<G4LogicalVolume>>>();
         auto supports_phys = std::make_shared<std::vector<std::shared_ptr<G4PVPlacement>>>();
         int support_idx = 0;
@@ -296,15 +295,33 @@ void GeometryConstructionG4::build_detectors() {
                                                        layer.getSize().z() / 2.0);
             solids_.push_back(support_box);
 
+            std::shared_ptr<G4VSolid> support_solid = support_box;
+            if(layer.hasHole()) {
+                // NOTE: Double the hole size in the z-direction to ensure no fake surfaces are created
+                auto hole_box = std::make_shared<G4Box>(supportName.second + "_hole_" + std::to_string(support_idx),
+                                                        layer.getHoleSize().x() / 2.0,
+                                                        layer.getHoleSize().y() / 2.0,
+                                                        layer.getHoleSize().z());
+                solids_.push_back(hole_box);
+
+                G4Transform3D transform(G4RotationMatrix(), toG4Vector(layer.getHoleCenter() - layer.getCenter()));
+                auto subtraction_solid =
+                    std::make_shared<G4SubtractionSolid>(supportName.second + "_subtraction_" + std::to_string(support_idx),
+                                                         support_box.get(),
+                                                         hole_box.get(),
+                                                         transform);
+                solids_.push_back(subtraction_solid);
+                support_solid = subtraction_solid;
+            }
+
             // Create the logical volume for the support
             auto support_material_iter = materials_.find(layer.getMaterial());
             if(support_material_iter == materials_.end()) {
                 throw ModuleError("Cannot construct a support layer of material '" + layer.getMaterial() + "'");
             }
             auto support_log = make_shared_no_delete<G4LogicalVolume>(
-                support_box.get(), materials_["epoxy"], supportName.second + "_log_" + std::to_string(support_idx));
+                support_solid.get(), materials_["epoxy"], supportName.second + "_log_" + std::to_string(support_idx));
             supports_log->push_back(support_log);
-            // detector->setExternalObject("support_log", support_log);
 
             // Place the support
             auto support_pos = toG4Vector(layer.getCenter() - model->getCenter());
@@ -318,7 +335,6 @@ void GeometryConstructionG4::build_detectors() {
                                                      false,
                                                      0,
                                                      true);
-            // detector->setExternalObject("support_phys", support_phys);
             supports_phys->push_back(support_phys);
 
             ++support_idx;

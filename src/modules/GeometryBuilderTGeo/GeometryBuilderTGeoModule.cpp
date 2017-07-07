@@ -406,6 +406,8 @@ void GeometryBuilderTGeoModule::BuildPixelDevices() {
         // The support is placed respect to the wrapper.
         // Needs to be pushed -half Si wafer in z direction
         for(auto& layer : dsc->getSupportLayers()) {
+            // ALERT holes are not supported
+
             // Retrieve Plexiglass
             TGeoMedium* plexiglass_med = gGeoManager->GetMedium("Plexiglass");
             // Create logical volume
