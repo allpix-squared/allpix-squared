@@ -102,9 +102,9 @@ namespace allpix {
 
             // Read support layers
             for(auto& support_config : reader_.getConfigurations("support")) {
-                auto thickness = support_config.get<double>("thickness", 0);
+                auto thickness = support_config.get<double>("thickness");
                 auto size = support_config.get<XYVector>("size");
-                auto offset = support_config.get<XYVector>("offset");
+                auto offset = support_config.get<XYVector>("offset", {0, 0});
                 auto location = support_config.get<std::string>("location", "chip");
                 if(location != "sensor" && location != "chip") {
                     throw InvalidValueError(
@@ -339,8 +339,8 @@ namespace allpix {
          * @brief Return all layers of support
          * @return Vector with the support layers
          *
-         * This method internally computes the correct center of all the supports by stacking them on both the chip and the
-         * sensor side
+         * This method internally computes the correct center of all the supports by stacking them in linear order on both
+         * the chip and the sensor side
          */
         virtual std::vector<SupportLayer> getSupportLayers() const {
             auto ret_layers = support_layers_;
