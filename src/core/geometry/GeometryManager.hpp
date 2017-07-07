@@ -190,7 +190,7 @@ namespace allpix {
         std::vector<std::shared_ptr<DetectorModel>> models_;
         std::set<std::string> model_names_;
 
-        std::map<std::string, std::vector<Detector*>> nonresolved_models_;
+        std::map<std::string, std::vector<std::pair<Configuration, Detector*>>> nonresolved_models_;
         std::vector<std::shared_ptr<Detector>> detectors_;
         std::set<std::string> detector_names_;
     };

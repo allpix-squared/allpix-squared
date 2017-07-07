@@ -51,7 +51,7 @@ void GeometryManager::load(const Configuration& global_config) {
         addDetector(detector);
 
         // Add a link to the detector to add the model later
-        nonresolved_models_[detector_section.get<std::string>("type")].push_back(detector.get());
+        nonresolved_models_[detector_section.get<std::string>("type")].emplace_back(detector_section, detector.get());
     }
 
     // Load the list of standard model paths
@@ -384,7 +384,8 @@ std::shared_ptr<DetectorModel> GeometryManager::parse_config(const std::string& 
 
 /*
  * After closing the geometry new parts of the geometry cannot be added anymore. All the models for the detectors in the
- * configuration are resolved to requested type (and an error is thrown if this is not possible)
+ * configuration are resolved to requested type (and an error is thrown if this is not possible). Also if the sensor and
+ * chip thickness are specified in the config a copy of the model is created with the specialized settings.
  */
 void GeometryManager::close_geometry() {
     LOG(TRACE) << "Starting geometry closing procedure";
@@ -394,8 +395,23 @@ void GeometryManager::close_geometry() {
 
     // Try to resolve the missing models
     for(auto& detectors_types : nonresolved_models_) {
-        for(auto& detector : detectors_types.second) {
-            detector->set_model(getModel(detectors_types.first));
+        for(auto& config_detector : detectors_types.second) {
+            // Create a new model if one of the core model parameters is changed in the detector configuration
+            auto config = config_detector.first;
+            auto model = getModel(detectors_types.first);
+
+            // FIXME The format to change these parameters has to be made a bit more flexible
+            if(config.has("sensor_thickness") || config.has("chip_thickness")) {
+                model = std::make_shared<DetectorModel>(*model);
+                if(config.has("sensor_thickness")) {
+                    model->setSensorThickness(config.get<double>("sensor_thickness"));
+                }
+                if(config.has("chip_thickness")) {
+                    model->setChipThickness(config.get<double>("chip_thickness"));
+                }
+            }
+
+            config_detector.second->set_model(model);
         }
     }
 
