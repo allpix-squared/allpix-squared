@@ -150,17 +150,13 @@ void GeometryConstructionG4::build_detectors() {
      * define the global names for all the elements in the setup
      */
     // FIXME This can be simplified
-    std::pair<G4String, G4String> wrapperName = std::make_pair("wrapper", "");
-    std::pair<G4String, G4String> supportName = std::make_pair("support", "");
-    std::pair<G4String, G4String> BoxName = std::make_pair("Box", "");
-    std::pair<G4String, G4String> SliceName = std::make_pair("Slice", "");
-    std::pair<G4String, G4String> GuardRingsExtName = std::make_pair("GuardRingsExt", "");
-    std::pair<G4String, G4String> GuardRingsName = std::make_pair("GuardRings", "");
-    std::pair<G4String, G4String> PixelName = std::make_pair("Pixel", "");
-    std::pair<G4String, G4String> ChipName = std::make_pair("Chip", "");
-    std::pair<G4String, G4String> SDName = std::make_pair("BoxSD", "");
-    std::pair<G4String, G4String> BumpName = std::make_pair("Bump", "");
-    std::pair<G4String, G4String> BumpBoxName = std::make_pair("BumpBox", "");
+    std::pair<std::string, std::string> wrapperName = std::make_pair("wrapper", "");
+    std::pair<std::string, std::string> supportName = std::make_pair("support", "");
+    std::pair<std::string, std::string> BoxName = std::make_pair("sensor", "");
+    std::pair<std::string, std::string> PixelName = std::make_pair("pixel", "");
+    std::pair<std::string, std::string> ChipName = std::make_pair("chip", "");
+    std::pair<std::string, std::string> BumpName = std::make_pair("bump", "");
+    std::pair<std::string, std::string> BumpBoxName = std::make_pair("bumpbox", "");
 
     // Loop through all detectors to construct them
     std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
@@ -179,12 +175,8 @@ void GeometryConstructionG4::build_detectors() {
         wrapperName.second = wrapperName.first + "_" + name;
         supportName.second = supportName.first + "_" + name;
         BoxName.second = BoxName.first + "_" + name;
-        GuardRingsExtName.second = GuardRingsExtName.first + "_" + name;
-        GuardRingsName.second = GuardRingsName.first + "_" + name;
-        SliceName.second = BoxName.first + "_" + name;
         PixelName.second = BoxName.first + "_" + name;
         ChipName.second = ChipName.first + "_" + name;
-        SDName.second = SDName.first + "_" + name;
         BumpName.second = BumpName.first + "_" + name;
         BumpBoxName.second = BumpBoxName.first + "_" + name;
 
@@ -287,34 +279,51 @@ void GeometryConstructionG4::build_detectors() {
             detector->setExternalObject("chip_phys", chip_phys);
         }
 
-        /* support
-         * global support chip
+        /*
+         * SUPPORT
+         * optional layers of support
          */
 
-        if(model->getSupportSize().z() > 1e-9) {
+        auto supports_log = std::make_shared<std::vector<std::shared_ptr<G4LogicalVolume>>>();
+        auto supports_phys = std::make_shared<std::vector<std::shared_ptr<G4PVPlacement>>>();
+        int support_idx = 0;
+        for(auto& layer : model->getSupportLayers()) {
             // Create the box containing the support
-            auto support_box = std::make_shared<G4Box>(supportName.second,
-                                                       model->getSupportSize().x() / 2.0,
-                                                       model->getSupportSize().y() / 2.0,
-                                                       model->getSupportSize().z() / 2.0);
+            auto support_box = std::make_shared<G4Box>(supportName.second + "_" + std::to_string(support_idx),
+                                                       layer.getSize().x() / 2.0,
+                                                       layer.getSize().y() / 2.0,
+                                                       layer.getSize().z() / 2.0);
             solids_.push_back(support_box);
 
             // Create the logical volume for the support
-            auto support_material_iter = materials_.find(model->getSupportMaterial());
+            auto support_material_iter = materials_.find(layer.getMaterial());
             if(support_material_iter == materials_.end()) {
-                throw ModuleError("Cannot construct a support layer of material '" + model->getSupportMaterial() + "'");
+                throw ModuleError("Cannot construct a support layer of material '" + layer.getMaterial() + "'");
             }
-            auto support_log =
-                make_shared_no_delete<G4LogicalVolume>(support_box.get(), materials_["epoxy"], supportName.second + "_log");
-            detector->setExternalObject("support_log", support_log);
+            auto support_log = make_shared_no_delete<G4LogicalVolume>(
+                support_box.get(), materials_["epoxy"], supportName.second + "_log_" + std::to_string(support_idx));
+            supports_log->push_back(support_log);
+            // detector->setExternalObject("support_log", support_log);
 
             // Place the support
-            auto support_pos = toG4Vector(model->getSupportCenter() - model->getCenter());
+            auto support_pos = toG4Vector(layer.getCenter() - model->getCenter());
             LOG(DEBUG) << "  - Support\t: " << display_vector(support_pos, {"mm", "um"});
-            auto support_phys = make_shared_no_delete<G4PVPlacement>(
-                nullptr, support_pos, support_log.get(), supportName.second + "_phys", wrapper_log.get(), false, 0, true);
-            detector->setExternalObject("support_phys", support_phys);
+            auto support_phys =
+                make_shared_no_delete<G4PVPlacement>(nullptr,
+                                                     support_pos,
+                                                     support_log.get(),
+                                                     supportName.second + "_phys_" + std::to_string(support_idx),
+                                                     wrapper_log.get(),
+                                                     false,
+                                                     0,
+                                                     true);
+            // detector->setExternalObject("support_phys", support_phys);
+            supports_phys->push_back(support_phys);
+
+            ++support_idx;
         }
+        detector->setExternalObject("supports_log", supports_log);
+        detector->setExternalObject("supports_phys", supports_phys);
 
         // Build the bump bonds only for hybrid pixel detectors
         auto hybrid_model = std::dynamic_pointer_cast<HybridPixelDetectorModel>(model);
