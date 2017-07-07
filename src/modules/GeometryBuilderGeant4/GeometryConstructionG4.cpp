@@ -134,6 +134,7 @@ void GeometryConstructionG4::init_materials() {
     materials_["silicon"] = nistman->FindOrBuildMaterial("G4_Si");
     materials_["epoxy"] = nistman->FindOrBuildMaterial("G4_PLEXIGLASS"); // FIXME: more exact material
     materials_["kapton"] = nistman->FindOrBuildMaterial("G4_KAPTON");
+    materials_["copper"] = nistman->FindOrBuildMaterial("G4_Cu");
 
     // Create solder element
     G4Element* Sn = new G4Element("Tin", "Sn", 50., 118.710 * CLHEP::g / CLHEP::mole);
