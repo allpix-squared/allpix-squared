@@ -55,20 +55,12 @@ namespace allpix {
         }
 
         /**
-         * @brief Get center of the support in local coordinates
-         * @return Center of the support
+         * @brief Return all layers of support
+         * @return List of all the support layers
          *
-         * The center of the chip as given by \ref DetectorModel::getSupportCenter() possibly with extra offset for bump
-         * bonds.
+         * The center of the support is adjusted to take the bump bonds into account
          */
-        /*virtual ROOT::Math::XYZPoint getSupportCenter() const override {
-            ROOT::Math::XYZVector offset(0, 0, 0);
-            if(support_location_ == "chip") {
-                offset.SetZ(getBumpHeight());
-            }
-            return DetectorModel::getSupportCenter() + offset;
-        }*/
-        virtual std::vector<SupportLayer> getSupportLayers() const {
+        virtual std::vector<SupportLayer> getSupportLayers() const override {
             auto ret_layers = DetectorModel::getSupportLayers();
 
             LOG(TRACE) << "TEST";

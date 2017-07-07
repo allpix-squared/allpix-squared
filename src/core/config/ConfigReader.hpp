@@ -46,10 +46,18 @@ namespace allpix {
 
         /// @{
         /**
-         * @brief Implement copy behaviour
+         * @brief Implement correct copy behaviour
          */
         ConfigReader(const ConfigReader&);
         ConfigReader& operator=(const ConfigReader&);
+        /// @}
+
+        /// @{
+        /**
+         * @brief Use default move behaviour
+         */
+        ConfigReader(ConfigReader&&) noexcept = default;
+        ConfigReader& operator=(ConfigReader&&) noexcept = default;
         /// @}
 
         /**

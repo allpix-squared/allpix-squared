@@ -352,10 +352,10 @@ namespace allpix {
         /* SUPPORT */
         /**
          * @brief Return all layers of support
-         * @return Vector with the support layers
+         * @return List of all the support layers
          *
          * This method internally computes the correct center of all the supports by stacking them in linear order on both
-         * the chip and the sensor side
+         * the chip and the sensor side.
          */
         virtual std::vector<SupportLayer> getSupportLayers() const {
             auto ret_layers = support_layers_;
@@ -387,16 +387,21 @@ namespace allpix {
          * @param location Location of the support (either 'sensor' or 'chip')
          */
         // FIXME: Location (and material) should probably be an enum instead
-        void addSupportLayer(ROOT::Math::XYVector size,
+        void addSupportLayer(const ROOT::Math::XYVector& size,
                              double thickness,
                              ROOT::Math::XYVector offset,
                              std::string material,
                              std::string location,
-                             ROOT::Math::XYVector hole_size,
+                             const ROOT::Math::XYVector& hole_size,
                              ROOT::Math::XYVector hole_offset) {
             ROOT::Math::XYZVector full_size(size.x(), size.y(), thickness);
             ROOT::Math::XYZVector full_hole_size(hole_size.x(), hole_size.y(), thickness);
-            support_layers_.push_back(SupportLayer(full_size, offset, material, location, full_hole_size, hole_offset));
+            support_layers_.push_back(SupportLayer(full_size,
+                                                   std::move(offset),
+                                                   std::move(material),
+                                                   std::move(location),
+                                                   full_hole_size,
+                                                   std::move(hole_offset)));
         }
 
     protected:
