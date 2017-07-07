@@ -63,8 +63,6 @@ namespace allpix {
         virtual std::vector<SupportLayer> getSupportLayers() const override {
             auto ret_layers = DetectorModel::getSupportLayers();
 
-            LOG(TRACE) << "TEST";
-
             for(auto& layer : ret_layers) {
                 if(layer.location_ == "chip") {
                     layer.center_.SetZ(layer.center_.z() + getBumpHeight());

@@ -162,7 +162,7 @@ void ROOTObjectWriterModule::finalize() {
         for(auto& config : full_config.getConfigurations()) {
             // Create a new directory per section (adding a number to make every folder unique)
             // FIXME Writing with the number is not a very good approach
-            TDirectory* section_dir =
+            auto section_dir =
                 config_dir->mkdir((config.getName() + "-" + std::to_string(count_configs[config.getName()])).c_str());
             count_configs[config.getName()]++;
 
@@ -177,20 +177,31 @@ void ROOTObjectWriterModule::finalize() {
 
     // Save the detectors to the output file
     // FIXME Possibly the format to save the geometry should be more flexible
-    TDirectory* detectors_dir = output_file_->mkdir("detectors");
+    auto detectors_dir = output_file_->mkdir("detectors");
     detectors_dir->cd();
     for(auto& detector : geo_mgr_->getDetectors()) {
-        TDirectory* detector_dir = detectors_dir->mkdir(detector->getName().c_str());
+        auto detector_dir = detectors_dir->mkdir(detector->getName().c_str());
 
         auto position = detector->getPosition();
         detector_dir->WriteObject(&position, "position");
         auto orientation = detector->getOrientation();
         detector_dir->WriteObject(&orientation, "orientation");
 
-        TDirectory* model_dir = detector_dir->mkdir("model");
+        auto model_dir = detector_dir->mkdir("model");
         // FIXME This saves the model every time again also for models that appear multiple times
-        for(auto& key_value : detector->getModel()->getConfiguration().getAll()) {
-            model_dir->WriteObject(&key_value.second, key_value.first.c_str());
+        auto model_configs = detector->getModel()->getConfigurations();
+        std::map<std::string, int> count_configs;
+        for(auto& model_config : model_configs) {
+            auto model_config_dir = model_dir;
+            if(!model_config.getName().empty()) {
+                model_config_dir = model_dir->mkdir(
+                    (model_config.getName() + "-" + std::to_string(count_configs[model_config.getName()])).c_str());
+                count_configs[model_config.getName()]++;
+            }
+
+            for(auto& key_value : model_config.getAll()) {
+                model_config_dir->WriteObject(&key_value.second, key_value.first.c_str());
+            }
         }
     }
 

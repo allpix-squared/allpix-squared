@@ -149,7 +149,7 @@ namespace allpix {
          * @brief Get the configuration associated with this model
          * @return Configuration used to construct the model
          */
-        Configuration getConfiguration() const { return reader_.getHeaderConfiguration(); }
+        std::vector<Configuration> getConfigurations() const { return reader_.getConfigurations(); }
 
         /**
          * @brief Get the type of the model
@@ -173,9 +173,8 @@ namespace allpix {
          * @return Size of the detector model
          *
          * All elements should be covered by a box with \ref DetectorModel::getCenter as center. This means that the size
-         * returned
-         * by this method is likely larger than the minimum possible size of a box around all elements. It will only return
-         * the minimum size if \ref DetectorModel::getCenter corresponds with the geometric center of the model.
+         * returned by this method is likely larger than the minimum possible size of a box around all elements. It will only
+         * return the minimum size if \ref DetectorModel::getCenter corresponds with the geometric center of the model.
          */
         virtual ROOT::Math::XYZVector getSize() const {
             ROOT::Math::XYZVector max(std::numeric_limits<double>::lowest(),
