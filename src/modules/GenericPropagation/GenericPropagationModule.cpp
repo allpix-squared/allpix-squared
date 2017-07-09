@@ -88,10 +88,6 @@ GenericPropagationModule::GenericPropagationModule(Configuration config,
 void GenericPropagationModule::create_output_plots(unsigned int event_num) {
     LOG(TRACE) << "Writing output plots";
 
-    // Enable prefererence for GL
-    // FIXME This should be in the AllPix default style
-    gStyle->SetCanvasPreferGL(kTRUE);
-
     // Convert to pixel units if necessary
     if(config_.get<bool>("output_plots_use_pixel_units")) {
         for(auto& deposit_points : output_plot_points_) {

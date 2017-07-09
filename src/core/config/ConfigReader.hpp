@@ -44,6 +44,22 @@ namespace allpix {
          */
         void add(std::istream&, std::string file_name = "");
 
+        /// @{
+        /**
+         * @brief Implement correct copy behaviour
+         */
+        ConfigReader(const ConfigReader&);
+        ConfigReader& operator=(const ConfigReader&);
+        /// @}
+
+        /// @{
+        /**
+         * @brief Use default move behaviour
+         */
+        ConfigReader(ConfigReader&&) noexcept = default;
+        ConfigReader& operator=(ConfigReader&&) noexcept = default;
+        /// @}
+
         /**
          * @brief Removes all streams and all configurations
          */
@@ -63,6 +79,13 @@ namespace allpix {
         unsigned int countConfigurations(const std::string& name) const;
 
         /**
+         * @brief Get cmobined configuration of all empty sections (usually the header)
+         * @note Typically this is only the section at the top of the file
+         * @return Configuration object for the empty section
+         */
+        Configuration getHeaderConfiguration() const;
+
+        /**
          * @brief Get all configurations with a particular header
          * @param name Header name of the configurations to return
          * @return List of configurations with the given name
@@ -76,6 +99,11 @@ namespace allpix {
         std::vector<Configuration> getConfigurations() const;
 
     private:
+        /**
+         * @brief Initialize the configuration map after copy of the class
+         */
+        void copy_init_map();
+
         std::map<std::string, std::vector<std::list<Configuration>::iterator>> conf_map_;
         std::list<Configuration> conf_array_;
     };

@@ -29,10 +29,13 @@ namespace allpix {
     public:
         /**
          * @brief Constructs the hybrid pixel detector model
-         * @param config Configuration description of the model
+         * @param type Name of the model type
+         * @param reader Configuration reader with description of the model
          */
-        explicit HybridPixelDetectorModel(const Configuration& config)
-            : DetectorModel(config), coverlayer_material_("Al"), has_coverlayer_(false) {
+        explicit HybridPixelDetectorModel(std::string type, const ConfigReader& reader)
+            : DetectorModel(std::move(type), reader), coverlayer_material_("Al"), has_coverlayer_(false) {
+            auto config = reader.getHeaderConfiguration();
+
             // Set bump parameters
             setBumpCylinderRadius(config.get<double>("bump_cylinder_radius"));
             setBumpHeight(config.get<double>("bump_height"));
@@ -52,18 +55,21 @@ namespace allpix {
         }
 
         /**
-         * @brief Get center of the support in local coordinates
-         * @return Center of the support
+         * @brief Return all layers of support
+         * @return List of all the support layers
          *
-         * The center of the chip as given by \ref DetectorModel::getSupportCenter() possibly with extra offset for bump
-         * bonds.
+         * The center of the support is adjusted to take the bump bonds into account
          */
-        virtual ROOT::Math::XYZPoint getSupportCenter() const override {
-            ROOT::Math::XYZVector offset(0, 0, 0);
-            if(support_location_ == "chip") {
-                offset.SetZ(getBumpHeight());
+        virtual std::vector<SupportLayer> getSupportLayers() const override {
+            auto ret_layers = DetectorModel::getSupportLayers();
+
+            for(auto& layer : ret_layers) {
+                if(layer.location_ == "chip") {
+                    layer.center_.SetZ(layer.center_.z() + getBumpHeight());
+                }
             }
-            return DetectorModel::getSupportCenter() + offset;
+
+            return ret_layers;
         }
 
         /**

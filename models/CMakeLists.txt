@@ -27,7 +27,7 @@ INSTALL(
     medipix3.conf
     mimosa26.conf
     fei3.conf
-    fei4.conf
+    ibl_planar.conf
     cmsp1.conf
     clicpix.conf
     clicpix2.conf

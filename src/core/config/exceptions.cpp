@@ -11,8 +11,11 @@
 using namespace allpix;
 
 InvalidValueError::InvalidValueError(const Configuration& config, const std::string& key, const std::string& reason) {
-    error_message_ =
-        "Value " + config.getText(key) + " of key '" + key + "' in section '" + config.getName() + "' is not valid";
+    std::string section_str = "in section '" + config.getName() + "'";
+    if(config.getName().empty()) {
+        section_str = "in empty section";
+    }
+    error_message_ = "Value " + config.getText(key) + " of key '" + key + "' " + section_str + " is not valid";
     if(!reason.empty()) {
         error_message_ += ": " + reason;
     }

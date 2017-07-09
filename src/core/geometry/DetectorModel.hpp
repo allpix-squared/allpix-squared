@@ -22,11 +22,10 @@
 #include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
 
-#include "core/config/Configuration.hpp"
+#include "core/config/ConfigReader.hpp"
 #include "core/config/exceptions.h"
-#include "tools/ROOT.h"
-
 #include "core/utils/log.h"
+#include "tools/ROOT.h"
 
 namespace allpix {
     /**
@@ -41,51 +40,94 @@ namespace allpix {
     class DetectorModel {
     public:
         /**
-         * @brief Constructs the base detector model
-         * @param config Configuration description of a model
+         * ALERT: DOCUMENT
          */
-        explicit DetectorModel(Configuration config) : type_(config.getName()), config_(std::move(config)) {
+        class SupportLayer {
+            friend class DetectorModel;
+            // FIXME Friending this class is broken
+            friend class HybridPixelDetectorModel;
+
+        public:
+            ROOT::Math::XYZPoint getCenter() const { return center_; }
+            ROOT::Math::XYZVector getSize() const { return size_; }
+            std::string getMaterial() const { return material_; }
+
+            bool hasHole() { return hole_size_.x() > 1e-9 && hole_size_.y() > 1e-9; }
+            ROOT::Math::XYZPoint getHoleCenter() const {
+                return center_ + ROOT::Math::XYZVector(hole_offset_.x(), hole_offset_.y(), 0);
+            }
+            ROOT::Math::XYZVector getHoleSize() const { return hole_size_; }
+
+        private:
+            // Internal constructor for support layer
+            SupportLayer(ROOT::Math::XYZVector size,
+                         ROOT::Math::XYVector offset,
+                         std::string material,
+                         std::string location,
+                         ROOT::Math::XYZVector hole_size,
+                         ROOT::Math::XYVector hole_offset)
+                : size_(std::move(size)), material_(std::move(material)), hole_size_(std::move(hole_size)),
+                  offset_(std::move(offset)), hole_offset_(std::move(hole_offset)), location_(std::move(location)) {}
+
+            // Actual parameters returned
+            ROOT::Math::XYZPoint center_;
+            ROOT::Math::XYZVector size_;
+            std::string material_;
+            ROOT::Math::XYZVector hole_size_;
+
+            // Internal parameters to calculate return parameters
+            ROOT::Math::XYVector offset_;
+            ROOT::Math::XYVector hole_offset_;
+            std::string location_;
+        };
+
+        /**
+         * @brief Constructs the base detector model
+         * @param type Name of the model type
+         * @param reader Configuration reader with description of the model
+         */
+        explicit DetectorModel(std::string type, ConfigReader reader) : type_(std::move(type)), reader_(std::move(reader)) {
             using namespace ROOT::Math;
+            auto config = reader_.getHeaderConfiguration();
 
             // Number of pixels
-            setNPixels(config_.get<DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels"));
+            setNPixels(config.get<DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels"));
             // Size of the pixels
-            setPixelSize(config_.get<XYVector>("pixel_size"));
+            setPixelSize(config.get<XYVector>("pixel_size"));
 
             // Sensor thickness
-            setSensorThickness(config_.get<double>("sensor_thickness"));
+            setSensorThickness(config.get<double>("sensor_thickness"));
             // Excess around the sensor from the pixel grid
-            auto default_sensor_excess = config_.get<double>("sensor_excess", 0);
-            setSensorExcessTop(config_.get<double>("sensor_excess_top", default_sensor_excess));
-            setSensorExcessBottom(config_.get<double>("sensor_excess_bottom", default_sensor_excess));
-            setSensorExcessLeft(config_.get<double>("sensor_excess_left", default_sensor_excess));
-            setSensorExcessRight(config_.get<double>("sensor_excess_right", default_sensor_excess));
+            auto default_sensor_excess = config.get<double>("sensor_excess", 0);
+            setSensorExcessTop(config.get<double>("sensor_excess_top", default_sensor_excess));
+            setSensorExcessBottom(config.get<double>("sensor_excess_bottom", default_sensor_excess));
+            setSensorExcessLeft(config.get<double>("sensor_excess_left", default_sensor_excess));
+            setSensorExcessRight(config.get<double>("sensor_excess_right", default_sensor_excess));
 
             // Chip thickness
-            setChipThickness(config_.get<double>("chip_thickness", 0));
+            setChipThickness(config.get<double>("chip_thickness", 0));
             // Excess around the chip from the pixel grid
-            auto default_chip_excess = config_.get<double>("chip_excess", 0);
-            setChipExcessTop(config_.get<double>("chip_excess_top", default_chip_excess));
-            setChipExcessBottom(config_.get<double>("chip_excess_bottom", default_chip_excess));
-            setChipExcessLeft(config_.get<double>("chip_excess_left", default_chip_excess));
-            setChipExcessRight(config_.get<double>("chip_excess_right", default_chip_excess));
+            auto default_chip_excess = config.get<double>("chip_excess", 0);
+            setChipExcessTop(config.get<double>("chip_excess_top", default_chip_excess));
+            setChipExcessBottom(config.get<double>("chip_excess_bottom", default_chip_excess));
+            setChipExcessLeft(config.get<double>("chip_excess_left", default_chip_excess));
+            setChipExcessRight(config.get<double>("chip_excess_right", default_chip_excess));
 
-            // Support thickness
-            setSupportThickness(config_.get<double>("support_thickness", 0));
-            // Excess around the support from the pixel grid
-            auto default_support_excess = config_.get<double>("support_excess", 0);
-            setSupportExcessTop(config_.get<double>("support_excess_top", default_support_excess));
-            setSupportExcessBottom(config_.get<double>("support_excess_bottom", default_support_excess));
-            setSupportExcessLeft(config_.get<double>("support_excess_left", default_support_excess));
-            setSupportExcessRight(config_.get<double>("support_excess_right", default_support_excess));
-            // Support location
-            auto support_location = config_.get<std::string>("support_location", "chip");
-            if(support_location != "sensor" && support_location != "chip") {
-                throw InvalidValueError(config_, "support_location", "location of the support should be 'chip' or 'sensor'");
+            // Read support layers
+            for(auto& support_config : reader_.getConfigurations("support")) {
+                auto thickness = support_config.get<double>("thickness");
+                auto size = support_config.get<XYVector>("size");
+                auto offset = support_config.get<XYVector>("offset", {0, 0});
+                auto location = support_config.get<std::string>("location", "chip");
+                if(location != "sensor" && location != "chip") {
+                    throw InvalidValueError(
+                        support_config, "location", "location of the support should be 'chip' or 'sensor'");
+                }
+                auto material = support_config.get<std::string>("material", "epoxy");
+                auto hole_size = support_config.get<XYVector>("hole_size", {0, 0});
+                auto hole_offset = support_config.get<XYVector>("hole_offset", {0, 0});
+                addSupportLayer(size, thickness, offset, material, location, hole_size, hole_offset);
             }
-            setSupportLocation(support_location);
-            // Support material
-            setSupportMaterial(config_.get<std::string>("support_material", "epoxy"));
         }
         /**
          * @brief Essential virtual destructor
@@ -107,7 +149,7 @@ namespace allpix {
          * @brief Get the configuration associated with this model
          * @return Configuration used to construct the model
          */
-        Configuration getConfiguration() const { return config_; }
+        std::vector<Configuration> getConfigurations() const { return reader_.getConfigurations(); }
 
         /**
          * @brief Get the type of the model
@@ -131,9 +173,8 @@ namespace allpix {
          * @return Size of the detector model
          *
          * All elements should be covered by a box with \ref DetectorModel::getCenter as center. This means that the size
-         * returned
-         * by this method is likely larger than the minimum possible size of a box around all elements. It will only return
-         * the minimum size if \ref DetectorModel::getCenter corresponds with the geometric center of the model.
+         * returned by this method is likely larger than the minimum possible size of a box around all elements. It will only
+         * return the minimum size if \ref DetectorModel::getCenter corresponds with the geometric center of the model.
          */
         virtual ROOT::Math::XYZVector getSize() const {
             ROOT::Math::XYZVector max(std::numeric_limits<double>::lowest(),
@@ -142,16 +183,27 @@ namespace allpix {
             ROOT::Math::XYZVector min(
                 std::numeric_limits<double>::max(), std::numeric_limits<double>::max(), std::numeric_limits<double>::max());
 
-            std::array<ROOT::Math::XYZPoint, 3> centers = {{getSensorCenter(), getChipCenter(), getSupportCenter()}};
-            std::array<ROOT::Math::XYZVector, 3> sizes = {{getSensorSize(), getChipSize(), getSupportSize()}};
+            std::array<ROOT::Math::XYZPoint, 2> centers = {{getSensorCenter(), getChipCenter()}};
+            std::array<ROOT::Math::XYZVector, 2> sizes = {{getSensorSize(), getChipSize()}};
 
-            for(size_t i = 0; i < 3; ++i) {
+            for(size_t i = 0; i < 2; ++i) {
                 max.SetX(std::max(max.x(), (centers.at(i) + sizes.at(i) / 2.0).x()));
                 max.SetY(std::max(max.y(), (centers.at(i) + sizes.at(i) / 2.0).y()));
                 max.SetZ(std::max(max.z(), (centers.at(i) + sizes.at(i) / 2.0).z()));
                 min.SetX(std::min(min.x(), (centers.at(i) - sizes.at(i) / 2.0).x()));
                 min.SetY(std::min(min.y(), (centers.at(i) - sizes.at(i) / 2.0).y()));
                 min.SetZ(std::max(min.z(), (centers.at(i) - sizes.at(i) / 2.0).z()));
+            }
+
+            for(auto& support_layer : getSupportLayers()) {
+                auto size = support_layer.getSize();
+                auto center = support_layer.getCenter();
+                max.SetX(std::max(max.x(), (center + size / 2.0).x()));
+                max.SetY(std::max(max.y(), (center + size / 2.0).y()));
+                max.SetZ(std::max(max.z(), (center + size / 2.0).z()));
+                min.SetX(std::min(min.x(), (center - size / 2.0).x()));
+                min.SetY(std::min(min.y(), (center - size / 2.0).y()));
+                min.SetZ(std::max(min.z(), (center - size / 2.0).z()));
             }
 
             ROOT::Math::XYZVector size;
@@ -205,8 +257,9 @@ namespace allpix {
          * Calculated from \ref DetectorModel::getGridSize "pixel grid size", sensor excess and sensor thickness
          */
         virtual ROOT::Math::XYZVector getSensorSize() const {
-            ROOT::Math::XYZVector excess_thickness(
-                (sensor_excess_[1] + sensor_excess_[3]), (sensor_excess_[0] + sensor_excess_[2]), sensor_thickness_);
+            ROOT::Math::XYZVector excess_thickness((sensor_excess_.at(1) + sensor_excess_.at(3)),
+                                                   (sensor_excess_.at(0) + sensor_excess_.at(2)),
+                                                   sensor_thickness_);
             return getGridSize() + excess_thickness;
         }
         /**
@@ -217,7 +270,7 @@ namespace allpix {
          */
         virtual ROOT::Math::XYZPoint getSensorCenter() const {
             ROOT::Math::XYZVector offset(
-                (sensor_excess_[1] - sensor_excess_[3]) / 2.0, (sensor_excess_[0] - sensor_excess_[2]) / 2.0, 0);
+                (sensor_excess_.at(1) - sensor_excess_.at(3)) / 2.0, (sensor_excess_.at(0) - sensor_excess_.at(2)) / 2.0, 0);
             return getCenter() + offset;
         }
         /**
@@ -229,22 +282,22 @@ namespace allpix {
          * @brief Set the excess at the top of the sensor (positive y-coordinate)
          * @param val Sensor top excess
          */
-        void setSensorExcessTop(double val) { sensor_excess_[0] = val; }
+        void setSensorExcessTop(double val) { sensor_excess_.at(0) = val; }
         /**
          * @brief Set the excess at the right of the sensor (positive x-coordinate)
          * @param val Sensor right excess
          */
-        void setSensorExcessRight(double val) { sensor_excess_[1] = val; }
+        void setSensorExcessRight(double val) { sensor_excess_.at(1) = val; }
         /**
          * @brief Set the excess at the bottom of the sensor (negative y-coordinate)
          * @param val Sensor bottom excess
          */
-        void setSensorExcessBottom(double val) { sensor_excess_[2] = val; }
+        void setSensorExcessBottom(double val) { sensor_excess_.at(2) = val; }
         /**
          * @brief Set the excess at the left of the sensor (negative x-coordinate)
          * @param val Sensor right excess
          */
-        void setSensorExcessLeft(double val) { sensor_excess_[3] = val; }
+        void setSensorExcessLeft(double val) { sensor_excess_.at(3) = val; }
 
         /* CHIP */
         /**
@@ -255,7 +308,7 @@ namespace allpix {
          */
         virtual ROOT::Math::XYZVector getChipSize() const {
             ROOT::Math::XYZVector excess_thickness(
-                (chip_excess_[1] + chip_excess_[3]), (chip_excess_[0] + chip_excess_[2]), chip_thickness_);
+                (chip_excess_.at(1) + chip_excess_.at(3)), (chip_excess_.at(0) + chip_excess_.at(2)), chip_thickness_);
             return getGridSize() + excess_thickness;
         }
         /**
@@ -265,8 +318,8 @@ namespace allpix {
          * Center of the chip calculcated from chip excess and sensor offset
          */
         virtual ROOT::Math::XYZPoint getChipCenter() const {
-            ROOT::Math::XYZVector offset((chip_excess_[1] - chip_excess_[3]) / 2.0,
-                                         (chip_excess_[0] - chip_excess_[2]) / 2.0,
+            ROOT::Math::XYZVector offset((chip_excess_.at(1) - chip_excess_.at(3)) / 2.0,
+                                         (chip_excess_.at(0) - chip_excess_.at(2)) / 2.0,
                                          getSensorSize().z() / 2.0 + getChipSize().z() / 2.0);
             return getCenter() + offset;
         }
@@ -279,92 +332,77 @@ namespace allpix {
          * @brief Set the excess at the top of the chip (positive y-coordinate)
          * @param val Chip top excess
          */
-        void setChipExcessTop(double val) { chip_excess_[0] = val; }
+        void setChipExcessTop(double val) { chip_excess_.at(0) = val; }
         /**
          * @brief Set the excess at the right of the chip (positive x-coordinate)
          * @param val Chip right excess
          */
-        void setChipExcessRight(double val) { chip_excess_[1] = val; }
+        void setChipExcessRight(double val) { chip_excess_.at(1) = val; }
         /**
          * @brief Set the excess at the bottom of the chip (negative y-coordinate)
          * @param val Chip bottom excess
          */
-        void setChipExcessBottom(double val) { chip_excess_[2] = val; }
+        void setChipExcessBottom(double val) { chip_excess_.at(2) = val; }
         /**
          * @brief Set the excess at the left of the chip (negative x-coordinate)
          * @param val Chip left excess
          */
-        void setChipExcessLeft(double val) { chip_excess_[3] = val; }
+        void setChipExcessLeft(double val) { chip_excess_.at(3) = val; }
 
         /* SUPPORT */
         /**
-         * @brief Get size of the support
-         * @return Size of the support
+         * @brief Return all layers of support
+         * @return List of all the support layers
          *
-         * Calculated from \ref DetectorModel::getGridSize "pixel grid size", chip excess and chip thickness
+         * This method internally computes the correct center of all the supports by stacking them in linear order on both
+         * the chip and the sensor side.
          */
-        virtual ROOT::Math::XYZVector getSupportSize() const {
-            ROOT::Math::XYZVector excess_thickness(
-                (support_excess_[1] + support_excess_[3]), (support_excess_[0] + support_excess_[2]), support_thickness_);
-            return getGridSize() + excess_thickness;
-        }
-        /**
-         * @brief Get center of the support in local coordinates
-         * @return Center of the support
-         *
-         * Center of the support calculcated from support excess, sensor and chip offsets
-         */
-        virtual ROOT::Math::XYZPoint getSupportCenter() const {
-            ROOT::Math::XYZVector offset(
-                (support_excess_[1] - support_excess_[3]) / 2.0, (support_excess_[0] - support_excess_[2]) / 2.0, 0);
-            if(support_location_ == "sensor") {
-                offset.SetZ(-getSensorSize().z() / 2.0 - getSupportSize().z() / 2.0);
-            } else if(support_location_ == "chip") {
-                offset.SetZ(getSensorSize().z() / 2.0 + getChipSize().z() + getSupportSize().z() / 2.0);
+        virtual std::vector<SupportLayer> getSupportLayers() const {
+            auto ret_layers = support_layers_;
+
+            auto sensor_offset = -getSensorSize().z() / 2.0;
+            auto chip_offset = getSensorSize().z() / 2.0 + getChipSize().z();
+            for(auto& layer : ret_layers) {
+                ROOT::Math::XYZVector offset(layer.offset_.x(), layer.offset_.y(), 0);
+                if(layer.location_ == "sensor") {
+                    offset.SetZ(sensor_offset - layer.size_.z() / 2.0);
+                    sensor_offset -= layer.size_.z();
+                } else if(layer.location_ == "chip") {
+                    offset.SetZ(chip_offset + layer.size_.z() / 2.0);
+                    chip_offset += layer.size_.z();
+                }
+
+                layer.center_ = getCenter() + offset;
             }
-            return getCenter() + offset;
+
+            return ret_layers;
         }
+
         /**
-         * @brief Set the thickness of the support
-         * @param val Thickness of the support
+         * @brief Add a new layer of support
+         * @param size Size of the support in the x,y-plane
+         * @param thickness Thickness of the support
+         * @param offset Offset of the support in the x,y-plane
+         * @param material Material of the support
+         * @param location Location of the support (either 'sensor' or 'chip')
          */
-        void setSupportThickness(double val) { support_thickness_ = val; }
-        /**
-         * @brief Set the excess at the top of the sensor (positive y-coordinate)
-         * @param val Support top excess
-         */
-        void setSupportExcessTop(double val) { support_excess_[0] = val; }
-        /**
-         * @brief Set the excess at the right of the support (positive x-coordinate)
-         * @param val Support right excess
-         */
-        void setSupportExcessRight(double val) { support_excess_[1] = val; }
-        /**
-         * @brief Set the excess at the bottom of the support (negative y-coordinate)
-         * @param val Support bottom excess
-         */
-        void setSupportExcessBottom(double val) { support_excess_[2] = val; }
-        /**
-         * @brief Set the excess at the left of the support (negative x-coordinate)
-         * @param val Support left excess
-         */
-        void setSupportExcessLeft(double val) { support_excess_[3] = val; }
-        /**
-         * @brief Set the location of the support (defaults to next to the chip)
-         * @param val Location of the support ('chip' or 'sensor')
-         */
-        void setSupportLocation(std::string val) { support_location_ = std::move(val); };
-        /**
-         * @brief Get the support material
-         * @return Name of the support material
-         */
-        std::string getSupportMaterial() { return support_material_; }
-        /**
-         * @brief Set the material of the support (defaults to epoxy)
-         * @param val Name of the support material ('epoxy' or 'kapton' common)
-         */
-        // FIXME: define the set of allowed values more strictly
-        void setSupportMaterial(std::string val) { support_material_ = std::move(val); };
+        // FIXME: Location (and material) should probably be an enum instead
+        void addSupportLayer(const ROOT::Math::XYVector& size,
+                             double thickness,
+                             ROOT::Math::XYVector offset,
+                             std::string material,
+                             std::string location,
+                             const ROOT::Math::XYVector& hole_size,
+                             ROOT::Math::XYVector hole_offset) {
+            ROOT::Math::XYZVector full_size(size.x(), size.y(), thickness);
+            ROOT::Math::XYZVector full_hole_size(hole_size.x(), hole_size.y(), thickness);
+            support_layers_.push_back(SupportLayer(full_size,
+                                                   std::move(offset),
+                                                   std::move(material),
+                                                   std::move(location),
+                                                   full_hole_size,
+                                                   std::move(hole_offset)));
+        }
 
     protected:
         std::string type_;
@@ -373,18 +411,15 @@ namespace allpix {
         ROOT::Math::XYVector pixel_size_;
 
         double sensor_thickness_{};
-        double sensor_excess_[4]{};
+        std::array<double, 4> sensor_excess_{};
 
         double chip_thickness_{};
-        double chip_excess_[4]{};
+        std::array<double, 4> chip_excess_{};
 
-        double support_thickness_{};
-        double support_excess_[4]{};
-        std::string support_location_;
-        std::string support_material_;
+        std::vector<SupportLayer> support_layers_;
 
     private:
-        Configuration config_;
+        ConfigReader reader_;
     };
 } // namespace allpix
 

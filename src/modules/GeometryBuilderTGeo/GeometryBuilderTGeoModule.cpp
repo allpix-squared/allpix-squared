@@ -405,31 +405,29 @@ void GeometryBuilderTGeoModule::BuildPixelDevices() {
         // support
         // The support is placed respect to the wrapper.
         // Needs to be pushed -half Si wafer in z direction
-        if(dsc->getSupportSize().z() / 2.0 != 0) {
+        for(auto& layer : dsc->getSupportLayers()) {
+            // ALERT holes are not supported
 
             // Retrieve Plexiglass
             TGeoMedium* plexiglass_med = gGeoManager->GetMedium("Plexiglass");
             // Create logical volume
             TGeoVolume* support_log = gGeoManager->MakeBox(supportName + id_s,
                                                            plexiglass_med,
-                                                           dsc->getSupportSize().x() / 2.0,
-                                                           dsc->getSupportSize().y() / 2.0,
-                                                           dsc->getSupportSize().z() / 2.0);
+                                                           layer.getSize().x() / 2.0,
+                                                           layer.getSize().y() / 2.0,
+                                                           layer.getSize().z() / 2.0);
             // G4Color::Green(), SetLineWidth(1), SetForceSolid(true)
             support_log->SetLineColor(kGreen);
 
             // Placement !
-            TGeoTranslation* possupport =
-                new TGeoTranslation("LocalsupportTranslation" + id_s,
-                                    0,
-                                    0,
-                                    -dsc->getSensorSize().z() / 2.0 - 2. * dsc->getCoverlayerHeight() / 2.0 - bump_height -
-                                        2. * dsc->getChipSize().z() / 2.0 - dsc->getSupportSize().z() / 2.0);
+            TGeoTranslation* possupport = new TGeoTranslation("LocalsupportTranslation" + id_s,
+                                                              layer.getCenter().x() - dsc->getCenter().x(),
+                                                              layer.getCenter().y() - dsc->getCenter().y(),
+                                                              layer.getCenter().z() - dsc->getCenter().z());
             possupport->Add(posDevice);
-            LOG(DEBUG) << " - support position         : " << Print(possupport);
+            LOG(DEBUG) << " - Support position         : " << Print(possupport);
             wrapper_log->AddNode(support_log, 1, possupport);
-
-        } // end if support
+        }
 
         ///////////////////////////////////////////////////////////
         // Coverlayer if requested (typically made of Al, but user configurable)

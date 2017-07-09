@@ -31,9 +31,10 @@ namespace allpix {
     public:
         /**
          * @brief Constructs the monolithic pixel detector model
-         * @param config Configuration description of the model
+         * @param type Name of the model type
+         * @param reader Configuration reader with description of the model
          */
-        explicit MonolithicPixelDetectorModel(const Configuration& config) : DetectorModel(config) {}
+        explicit MonolithicPixelDetectorModel(std::string type, const ConfigReader& reader) : DetectorModel(type, reader) {}
     };
 } // namespace allpix
 

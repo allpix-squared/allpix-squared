@@ -172,10 +172,11 @@ namespace allpix {
 
         /**
          * @brief Parse a configuration object and instantiate the corresponding model
-         * @param config Configuration for the model
+         * @param name Name of the model
+         * @param reader Reader with the configuration for this model
          * @return Detector model instantiated from the configuration
          */
-        std::shared_ptr<DetectorModel> parse_config(const Configuration&);
+        std::shared_ptr<DetectorModel> parse_config(const std::string& name, const ConfigReader&);
 
         /**
          * @brief Close the geometry after which changes to the detector geometry cannot be made anymore
@@ -189,7 +190,7 @@ namespace allpix {
         std::vector<std::shared_ptr<DetectorModel>> models_;
         std::set<std::string> model_names_;
 
-        std::map<std::string, std::vector<Detector*>> nonresolved_models_;
+        std::map<std::string, std::vector<std::pair<Configuration, Detector*>>> nonresolved_models_;
         std::vector<std::shared_ptr<Detector>> detectors_;
         std::set<std::string> detector_names_;
     };

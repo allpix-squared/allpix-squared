@@ -382,6 +382,11 @@ void VisualizationGeant4Module::set_visualization_attributes() {
             chip_log->SetVisAttributes(ChipVisAtt);
         }
 
+        auto supports_log = detector->getExternalObject<std::vector<std::shared_ptr<G4LogicalVolume>>>("supports_log");
+        for(auto& support_log : *supports_log) {
+            support_log->SetVisAttributes(supportVisAtt);
+        }
+
         auto support_log = detector->getExternalObject<G4LogicalVolume>("support_log");
         if(support_log != nullptr) {
             support_log->SetVisAttributes(supportVisAtt);
