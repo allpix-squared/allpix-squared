@@ -10,7 +10,6 @@
 #include "core/messenger/Messenger.hpp"
 
 #include "core/module/Module.hpp"
-#include "objects/PixelCharge.hpp"
 #include "objects/PixelHit.hpp"
 
 namespace allpix {
