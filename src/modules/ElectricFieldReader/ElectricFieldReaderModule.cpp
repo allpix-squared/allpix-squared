@@ -95,7 +95,7 @@ ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::read_init_field(
 void ElectricFieldReaderModule::create_output_plots() {
     LOG(TRACE) << "Creating output plots";
 
-    auto steps = config_.get<size_t>("output_plots_steps", 5000);
+    auto steps = config_.get<size_t>("output_plots_steps", 500);
     auto project = config_.get<char>("output_plots_project", 'x');
 
     if(project != 'x' && project != 'y' && project != 'z') {
@@ -103,6 +103,16 @@ void ElectricFieldReaderModule::create_output_plots() {
     }
 
     auto model = detector_->getModel();
+    if(config_.get<bool>("output_plots_single_pixel", false)) {
+        // If we need to plot a single pixel we change the model to fake the sensor to be a single pixel
+        // NOTE: This is a little hacky, but is the easiest approach
+        model = std::make_shared<DetectorModel>(*model);
+        model->setSensorExcessTop(0);
+        model->setSensorExcessBottom(0);
+        model->setSensorExcessLeft(0);
+        model->setSensorExcessRight(0);
+        model->setNPixels(ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>(1, 1));
+    }
 
     // Determine minimum and maximum index depending on projection axis
     double min1, max1;
@@ -275,7 +285,7 @@ ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::get_by_file_name
             file >> input;
 
             // Set the electric field at a position
-            (*field)[xind * ysize * zsize * 3 + yind * zsize * 3 + zind * 3 + j] = Units::get(-input, "V/cm");
+            (*field)[xind * ysize * zsize * 3 + yind * zsize * 3 + zind * 3 + j] = Units::get(input, "V/cm");
         }
     }
 
