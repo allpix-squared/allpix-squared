@@ -385,7 +385,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
         // Loop over all charges in the deposit
         unsigned int electrons_remaining = deposit.getCharge();
 
-        LOG(DEBUG) << "Set of charges on " << deposit.getPosition();
+        LOG(DEBUG) << "Set of charges on " << deposit.getLocalPosition();
 
         auto charge_per_step = config_.get<unsigned int>("charge_per_step");
         while(electrons_remaining > 0) {
@@ -396,12 +396,14 @@ void GenericPropagationModule::run(unsigned int event_num) {
             electrons_remaining -= charge_per_step;
 
             // Get position and propagate through sensor
-            auto position = deposit.getPosition(); // NOTE This is a local position
+            auto position = deposit.getLocalPosition();
 
             // Add point of deposition to the output plots if requested
             if(config_.get<bool>("output_plots")) {
-                output_plot_points_.emplace_back(PropagatedCharge(position, charge_per_step, deposit.getEventTime()),
-                                                 std::vector<ROOT::Math::XYZPoint>());
+                auto global_position = detector_->getGlobalPosition(position);
+                output_plot_points_.emplace_back(
+                    PropagatedCharge(position, global_position, charge_per_step, deposit.getEventTime()),
+                    std::vector<ROOT::Math::XYZPoint>());
             }
 
             // Propagate a single charge deposit
@@ -412,7 +414,9 @@ void GenericPropagationModule::run(unsigned int event_num) {
                        << Units::display(prop_pair.second, "ns") << " time";
 
             // Create a new propagated charge and add it to the list
-            propagated_charges.emplace_back(position, charge_per_step, deposit.getEventTime() + prop_pair.second, &deposit);
+            auto global_position = detector_->getGlobalPosition(position);
+            propagated_charges.emplace_back(
+                position, global_position, charge_per_step, deposit.getEventTime() + prop_pair.second, &deposit);
 
             // Update statistical information
             ++step_count;

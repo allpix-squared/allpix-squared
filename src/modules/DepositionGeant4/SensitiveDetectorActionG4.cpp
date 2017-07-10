@@ -88,7 +88,8 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
         return false;
     }
 
-    deposits_.emplace_back(deposit_position, charge, mid_time);
+    auto global_deposit_position = detector_->getGlobalPosition(deposit_position);
+    deposits_.emplace_back(deposit_position, global_deposit_position, charge, mid_time);
     deposit_ids_.emplace_back(step->GetTrack()->GetTrackID());
 
     LOG(DEBUG) << "Created deposit of " << charge << " charges at " << display_vector(mid_pos, {"mm", "um"})

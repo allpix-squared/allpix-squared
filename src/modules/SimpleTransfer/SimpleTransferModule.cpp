@@ -39,13 +39,13 @@ void SimpleTransferModule::run(unsigned int) {
     unsigned int transferrred_charges_count = 0;
     std::map<PixelCharge::Pixel, std::vector<const PropagatedCharge*>, pixel_cmp> pixel_map;
     for(auto& propagated_charge : propagated_message_->getData()) {
-        auto position = propagated_charge.getPosition();
+        auto position = propagated_charge.getLocalPosition();
         // Ignore if outside depth range of implant
         // FIXME This logic should be improved
         if(std::fabs(position.z() - (model->getSensorCenter().z() + model->getSensorSize().z() / 2.0)) >
            config_.get<double>("max_depth_distance")) {
             LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
-                       << propagated_charge.getPosition() << " because their local position is not in implant range";
+                       << propagated_charge.getLocalPosition() << " because their local position is not in implant range";
             continue;
         }
 
@@ -57,7 +57,7 @@ void SimpleTransferModule::run(unsigned int) {
         // Ignore if out of pixel grid
         if(xpixel < 0 || xpixel >= model->getNPixels().x() || ypixel < 0 || ypixel >= model->getNPixels().y()) {
             LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
-                       << propagated_charge.getPosition() << " because their nearest pixel " << pixel
+                       << propagated_charge.getLocalPosition() << " because their nearest pixel " << pixel
                        << " is outside the grid";
             continue;
         }
@@ -67,7 +67,7 @@ void SimpleTransferModule::run(unsigned int) {
         transferrred_charges_count += propagated_charge.getCharge();
 
         LOG(DEBUG) << "Set of " << propagated_charge.getCharge() << " propagated charges at "
-                   << propagated_charge.getPosition() << " brought to pixel " << pixel;
+                   << propagated_charge.getLocalPosition() << " brought to pixel " << pixel;
 
         // Add the pixel the list of hit pixels
         pixel_map[pixel].emplace_back(&propagated_charge);
