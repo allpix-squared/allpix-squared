@@ -489,7 +489,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         }
         // Compute the drift velocity
         auto efield = static_cast<Eigen::Map<Eigen::Vector3d>>(raw_field);
-        return electron_mobility(efield.norm()) * (efield);
+        return -electron_mobility(efield.norm()) * efield;
     };
 
     // Create the runge kutta solver with an RKF5 tableau

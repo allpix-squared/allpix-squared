@@ -62,7 +62,7 @@ ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::construct_linear
     auto field = std::make_shared<std::vector<double>>(3);
     (*field)[0] = 0;
     (*field)[1] = 0;
-    (*field)[2] = field_z;
+    (*field)[2] = -field_z;
 
     // Return the constructed field
     return ElectricFieldReaderModule::FieldData(field, {{1, 1, 1}});
