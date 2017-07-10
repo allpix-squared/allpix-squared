@@ -1,66 +1,71 @@
-#include <TTree.h>
-#include <TFile.h>
+#include <Math/DisplacementVector2D.h>
 #include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
-#include <Math/DisplacementVector2D.h>
+#include <TFile.h>
+#include <TTree.h>
 
 #include <memory>
 
 // FIXME: these includes should be absolute and provided with installation?
-#include "../../src/objects/PropagatedCharge.hpp"
 #include "../..//src/objects/PixelCharge.hpp"
-#include "../../src/objects/PixelHit.hpp"
 #include "../../src/objects/MCParticle.hpp"
+#include "../../src/objects/PixelHit.hpp"
+#include "../../src/objects/PropagatedCharge.hpp"
 
 // FIXME: pixel size should be available in the data
-std::shared_ptr<TTree> constructComparisonTree(TFile *file, std::string dut) {
+std::shared_ptr<TTree> constructComparisonTree(TFile* file, std::string dut) {
     // Read pixel hit output
-    TTree *pixel_hit_tree = static_cast<TTree*>(file->Get("PixelHit"));
-    TBranch *pixel_hit_branch = pixel_hit_tree->FindBranch(dut.c_str());
+    TTree* pixel_hit_tree = static_cast<TTree*>(file->Get("PixelHit"));
+    TBranch* pixel_hit_branch = pixel_hit_tree->FindBranch(dut.c_str());
     std::vector<allpix::PixelHit*> input_hits;
     pixel_hit_branch->SetObject(&input_hits);
-    
+
     // Read deposited and propagated charges for history
-    TTree *deposited_charge_tree = static_cast<TTree*>(file->Get("DepositedCharge"));
-    TTree *propagated_charge_tree = static_cast<TTree*>(file->Get("PropagatedCharge"));
-    
+    TTree* deposited_charge_tree = static_cast<TTree*>(file->Get("DepositedCharge"));
+    TTree* propagated_charge_tree = static_cast<TTree*>(file->Get("PropagatedCharge"));
+
     // Read pixel charge output
-    TTree *pixel_charge_tree = static_cast<TTree*>(file->Get("PixelCharge"));
-    TBranch *pixel_charge_branch = pixel_charge_tree->FindBranch(dut.c_str());
+    TTree* pixel_charge_tree = static_cast<TTree*>(file->Get("PixelCharge"));
+    TBranch* pixel_charge_branch = pixel_charge_tree->FindBranch(dut.c_str());
     std::vector<allpix::PixelCharge*> input_charges;
     pixel_charge_branch->SetObject(&input_charges);
-        
+
     // Read MC truth
-    TTree *mc_particle_tree = static_cast<TTree*>(file->Get("MCParticle"));
-    TBranch *mc_particle_branch = mc_particle_tree->FindBranch(dut.c_str());
+    TTree* mc_particle_tree = static_cast<TTree*>(file->Get("MCParticle"));
+    TBranch* mc_particle_branch = mc_particle_tree->FindBranch(dut.c_str());
     std::vector<allpix::MCParticle*> input_particles;
     mc_particle_branch->SetObject(&input_particles);
-    
+
     // Initialize output tree and branches
     auto output_tree = std::make_shared<TTree>("clusters", ("Cluster information for " + dut).c_str());
     int event_num;
     // Event number
     output_tree->Branch("eventNr", &event_num);
     // Cluster size
-    int output_cluster, output_cluster_x, output_cluster_y; double aspect_ratio;
+    int output_cluster, output_cluster_x, output_cluster_y;
+    double aspect_ratio;
     output_tree->Branch("size", &output_cluster);
     output_tree->Branch("sizeX", &output_cluster_x);
     output_tree->Branch("sizeY", &output_cluster_y);
     output_tree->Branch("aspectRatio", &aspect_ratio);
     // Charge info
-    int output_total_charge; std::vector<int> output_charge;
+    int output_total_charge;
+    std::vector<int> output_charge;
     output_tree->Branch("totalCharge", &output_total_charge);
     output_tree->Branch("charge", &output_charge);
     // Signal info
-    int output_total_signal; std::vector<int> output_signal;
+    int output_total_signal;
+    std::vector<int> output_signal;
     output_tree->Branch("totalSignal", &output_total_signal);
     output_tree->Branch("signal", &output_signal);
     // Single pixel row / col
-    std::vector<int> output_rows; std::vector<int> output_cols;
+    std::vector<int> output_rows;
+    std::vector<int> output_cols;
     output_tree->Branch("row", &output_rows);
     output_tree->Branch("col", &output_cols);
     // Real track information
-    int output_track_count; double output_track_x, output_track_y;
+    int output_track_count;
+    double output_track_x, output_track_y;
     output_tree->Branch("trackCount", &output_track_count); // FIXME: problems arise if not one
     output_tree->Branch("trackLocalX", &output_track_x);
     output_tree->Branch("trackLocalY", &output_track_y);
@@ -70,22 +75,23 @@ std::shared_ptr<TTree> constructComparisonTree(TFile *file, std::string dut) {
     output_tree->Branch("localY", &output_track_y);
     output_tree->Branch("resX", &output_res_x);
     output_tree->Branch("resY", &output_res_y);
-    
+
     // Convert tree for every event
-    for(int i = 0; i<pixel_hit_tree->GetEntries(); ++i) {
+    for(int i = 0; i < pixel_hit_tree->GetEntries(); ++i) {
         pixel_hit_tree->GetEntry(i);
         pixel_charge_tree->GetEntry(i);
         mc_particle_tree->GetEntry(i);
         deposited_charge_tree->GetEntry(i);
         propagated_charge_tree->GetEntry(i);
-        
-        // Skip all events with multiple particles 
+
+        // Skip all events with multiple particles
         // FIXME Needed until we handle the mc particle better
-        if(input_particles.size() > 1) continue;
-        
+        if(input_particles.size() > 1)
+            continue;
+
         // Set event number
-        event_num = i+1;
-        
+        event_num = i + 1;
+
         // Set cluster sizes
         output_cluster = input_hits.size();
         std::set<int> unique_x;
@@ -96,8 +102,8 @@ std::shared_ptr<TTree> constructComparisonTree(TFile *file, std::string dut) {
         }
         output_cluster_x = unique_x.size();
         output_cluster_y = unique_y.size();
-        aspect_ratio = static_cast<double>(output_cluster_y)/output_cluster_x;
-        
+        aspect_ratio = static_cast<double>(output_cluster_y) / output_cluster_x;
+
         // Set charge information
         output_charge.clear();
         output_total_charge = 0;
@@ -105,7 +111,7 @@ std::shared_ptr<TTree> constructComparisonTree(TFile *file, std::string dut) {
             output_charge.push_back(pixel_charge->getCharge());
             output_total_charge += pixel_charge->getCharge();
         }
-        
+
         // Set signal information
         output_signal.clear();
         output_total_signal = 0;
@@ -113,24 +119,24 @@ std::shared_ptr<TTree> constructComparisonTree(TFile *file, std::string dut) {
             output_signal.push_back(hit->getSignal());
             output_total_signal += hit->getSignal();
         }
-        
+
         // Set pixel position information
-        output_rows.clear(); 
+        output_rows.clear();
         output_cols.clear();
         for(auto& hit : input_hits) {
             // FIXME defined order
             output_rows.push_back(hit->getPixel().getIndex().y());
             output_cols.push_back(hit->getPixel().getIndex().x());
         }
-        
+
         // Get information about the actual track
         output_track_count = input_particles.size();
         for(auto& particle : input_particles) {
             // FIXME just use the middle position between the entry point and the exit as the track position
-            output_track_x = (particle->getEntryPoint().x() + particle->getExitPoint().x()) / 2.0;
-            output_track_y = (particle->getEntryPoint().y() + particle->getExitPoint().y()) / 2.0;
+            output_track_x = (particle->getLocalEntryPoint().x() + particle->getLocalExitPoint().x()) / 2.0;
+            output_track_y = (particle->getLocalEntryPoint().y() + particle->getLocalExitPoint().y()) / 2.0;
         }
-        
+
         // Calculate local x using a simple center of gravity fit
         // FIXME no corrections are applied
         ROOT::Math::XYZVector totalPixel;
@@ -145,9 +151,9 @@ std::shared_ptr<TTree> constructComparisonTree(TFile *file, std::string dut) {
         output_y = totalPixel.y();
         output_res_x = output_track_x - output_x;
         output_res_y = output_track_y - output_y;
-        
+
         output_tree->Fill();
     }
-    
+
     return output_tree;
 }

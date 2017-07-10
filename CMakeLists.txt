@@ -128,6 +128,7 @@ INCLUDE("cmake/allpix.cmake")
 FILE(GLOB_RECURSE
      CHECK_CXX_SOURCE_FILES
         src/*.[tch]pp src/*.h
+        tools/*.C tools/*.[tch]pp tools/*.h
      )
 INCLUDE("cmake/clang-cpp-checks.cmake")
 
