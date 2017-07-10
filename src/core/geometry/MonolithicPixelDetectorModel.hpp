@@ -34,7 +34,8 @@ namespace allpix {
          * @param type Name of the model type
          * @param reader Configuration reader with description of the model
          */
-        explicit MonolithicPixelDetectorModel(std::string type, const ConfigReader& reader) : DetectorModel(type, reader) {}
+        explicit MonolithicPixelDetectorModel(std::string type, const ConfigReader& reader)
+            : DetectorModel(std::move(type), reader) {}
     };
 } // namespace allpix
 

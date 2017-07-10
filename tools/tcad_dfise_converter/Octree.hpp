@@ -69,7 +69,7 @@ namespace unibn {
      * 3. sqr and sqrt of value to compute the correct radius if a comparison is performed using squared norms (see
      *L2Distance)...
      */
-    template <typename PointT> struct L1Distance {
+    template <typename PointT> class L1Distance {
         static inline double compute(const PointT& p, const PointT& q) {
             double diff1 = get<0>(p) - get<0>(q);
             double diff2 = get<1>(p) - get<1>(q);
@@ -85,7 +85,7 @@ namespace unibn {
         static inline double sqrt(double r) { return r; }
     };
 
-    template <typename PointT> struct L2Distance {
+    template <typename PointT> class L2Distance {
         static inline double compute(const PointT& p, const PointT& q) {
             double diff1 = get<0>(p) - get<0>(q);
             double diff2 = get<1>(p) - get<1>(q);
@@ -101,7 +101,7 @@ namespace unibn {
         static inline double sqrt(double r) { return std::sqrt(r); }
     };
 
-    template <typename PointT> struct MaxDistance {
+    template <typename PointT> class MaxDistance {
         static inline double compute(const PointT& p, const PointT& q) {
             double diff1 = std::abs(get<0>(p) - get<0>(q));
             double diff2 = std::abs(get<1>(p) - get<1>(q));
@@ -130,7 +130,7 @@ namespace unibn {
         static inline double sqrt(double r) { return r; }
     };
 
-    struct OctreeParams {
+    class OctreeParams {
     public:
         OctreeParams(uint32_t nbucketSize = 32, bool ncopyPoints = false, double nminExtent = 0.0)
             : bucketSize(nbucketSize), copyPoints(ncopyPoints), minExtent(nminExtent) {}
