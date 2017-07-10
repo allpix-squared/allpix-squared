@@ -29,4 +29,4 @@ ROOT::Math::XYVector Pixel::getSize() const {
     return size_;
 }
 
-ClassImp(Pixel);
+ClassImp(Pixel)

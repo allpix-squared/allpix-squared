@@ -156,6 +156,9 @@ ADD_SUBDIRECTORY(src/modules)
 # Build the executable 
 ADD_SUBDIRECTORY(src/exec)
 
+# Handle the included tools
+ADD_SUBDIRECTORY(tools)
+
 # Add targets for Doxygen code reference and LaTeX User manual
 ADD_SUBDIRECTORY(doc)
 
