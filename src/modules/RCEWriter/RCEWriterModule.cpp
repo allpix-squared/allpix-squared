@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @brief Implementation of RCE Writer Module
+ * @copyright MIT License
+ */
+
 #include "RCEWriterModule.hpp"
 
 #include <string>
@@ -17,6 +23,7 @@ using namespace allpix;
 
 RCEWriterModule::RCEWriterModule(Configuration config, Messenger* messenger, GeometryManager* geo_mgr)
     : Module(config), config_(std::move(config)), geo_mgr_(geo_mgr) {
+    // Bind to PixelHitMessage
     messenger->bindMulti(this, &RCEWriterModule::pixel_hit_messages_);
 }
 RCEWriterModule::~RCEWriterModule() = default;
@@ -75,6 +82,7 @@ void RCEWriterModule::run(unsigned int event_id) {
     invalid_ = false;
 
     LOG(TRACE) << "Writing new objects to the Events tree";
+    // Fill the events tree
     event_tree_->Fill();
 
     // Loop over all the detectors
@@ -94,7 +102,7 @@ void RCEWriterModule::run(unsigned int event_id) {
         for(const auto& hit : hit_msg->getData()) {
             int i = sensor.nhits_;
 
-            // Get the pixel charge
+            // Fill the tree with received messages
             sensor.nhits_ += 1;
             sensor.pix_x_[i] = hit.getPixel().x();                  // NOLINT
             sensor.pix_y_[i] = hit.getPixel().y();                  // NOLINT
@@ -108,7 +116,7 @@ void RCEWriterModule::run(unsigned int event_id) {
         }
     }
 
-    // Loop over all the detectors
+    // Loop over all the detectors to fill all corresponding sensor trees
     for(const auto& detector_name : detector_names_) {
         LOG(TRACE) << "Writing new objects to the Sensor Tree for " << detector_name;
         sensors_[detector_name].tree->Fill();
@@ -117,5 +125,6 @@ void RCEWriterModule::run(unsigned int event_id) {
 
 void RCEWriterModule::finalize() {
     LOG(TRACE) << "Writing objects to file";
+    // Finish writing to the output file
     output_file_->Write();
 }
