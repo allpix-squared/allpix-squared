@@ -729,7 +729,7 @@ namespace unibn {
                 const PointT& p = points[idx];
                 double dist = Distance::compute(query, p);
                 if(dist > sqrMinDistance && dist < sqrMaxDistance) {
-                    resultIndex = idx;
+                    resultIndex = static_cast<int32_t>(idx);
                     sqrMaxDistance = dist;
                 }
                 idx = successors_[idx];
