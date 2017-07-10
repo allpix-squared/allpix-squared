@@ -37,7 +37,7 @@ void SimpleTransferModule::run(unsigned int) {
     // Find corresponding pixels for all propagated charges
     LOG(TRACE) << "Transferring charges to pixels";
     unsigned int transferrred_charges_count = 0;
-    std::map<PixelCharge::Pixel, std::vector<const PropagatedCharge*>, pixel_cmp> pixel_map;
+    std::map<Pixel::Index, std::vector<const PropagatedCharge*>, pixel_cmp> pixel_map;
     for(auto& propagated_charge : propagated_message_->getData()) {
         auto position = propagated_charge.getLocalPosition();
         // Ignore if outside depth range of implant
@@ -52,38 +52,41 @@ void SimpleTransferModule::run(unsigned int) {
         // Find the nearest pixel
         auto xpixel = static_cast<int>(std::round(position.x() / model->getPixelSize().x()));
         auto ypixel = static_cast<int>(std::round(position.y() / model->getPixelSize().y()));
-        PixelCharge::Pixel pixel(xpixel, ypixel);
 
         // Ignore if out of pixel grid
         if(xpixel < 0 || xpixel >= model->getNPixels().x() || ypixel < 0 || ypixel >= model->getNPixels().y()) {
             LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
-                       << propagated_charge.getLocalPosition() << " because their nearest pixel " << pixel
-                       << " is outside the grid";
+                       << propagated_charge.getLocalPosition() << " because their nearest pixel (" << xpixel << "," << ypixel
+                       << ") is outside the grid";
             continue;
         }
+        Pixel::Index pixel_index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel));
 
         // Update statistics
-        unique_pixels_.insert(pixel);
+        unique_pixels_.insert(pixel_index);
         transferrred_charges_count += propagated_charge.getCharge();
 
         LOG(DEBUG) << "Set of " << propagated_charge.getCharge() << " propagated charges at "
-                   << propagated_charge.getLocalPosition() << " brought to pixel " << pixel;
+                   << propagated_charge.getLocalPosition() << " brought to pixel " << pixel_index;
 
         // Add the pixel the list of hit pixels
-        pixel_map[pixel].emplace_back(&propagated_charge);
+        pixel_map[pixel_index].emplace_back(&propagated_charge);
     }
 
     // Create pixel charges
     LOG(TRACE) << "Combining charges at same pixel";
     std::vector<PixelCharge> pixel_charges;
-    for(auto& pixel : pixel_map) {
+    for(auto& pixel_index_charge : pixel_map) {
         unsigned int charge = 0;
-        for(auto& propagated_charge : pixel.second) {
+        for(auto& propagated_charge : pixel_index_charge.second) {
             charge += propagated_charge->getCharge();
         }
-        pixel_charges.emplace_back(pixel.first, charge, pixel.second);
 
-        LOG(DEBUG) << "Set of " << charge << " charges combined at " << pixel.first;
+        // Get pixel object from detector
+        auto pixel = detector_->getPixel(pixel_index_charge.first.x(), pixel_index_charge.first.y());
+
+        pixel_charges.emplace_back(pixel, charge, pixel_index_charge.second);
+        LOG(DEBUG) << "Set of " << charge << " charges combined at " << pixel.getIndex();
     }
 
     // Writing summary and update statistics

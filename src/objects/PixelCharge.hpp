@@ -12,6 +12,7 @@
 #include <TRefArray.h>
 
 #include "Object.hpp"
+#include "Pixel.hpp"
 #include "PropagatedCharge.hpp"
 
 namespace allpix {
@@ -21,8 +22,6 @@ namespace allpix {
      */
     class PixelCharge : public Object {
     public:
-        using Pixel = ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>;
-
         /**
          * @brief Construct a set of charges at a pixel
          * @param pixel Location of the pixel holding the charges
@@ -37,7 +36,7 @@ namespace allpix {
          * @brief Get the pixel containing the charges
          * @return Pixel indices in the grid
          */
-        PixelCharge::Pixel getPixel() const;
+        Pixel getPixel() const;
         /**
          * @brief Get the charge at the pixel
          * @return Total charge stored
@@ -53,7 +52,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDef(PixelCharge, 1);
+        ClassDef(PixelCharge, 2);
         /**
          * @brief Default constructor for ROOT I/O
          */

@@ -1,6 +1,7 @@
 #include <TTree.h>
 #include <TFile.h>
 #include <Math/Vector2D.h>
+#include <Math/Vector3D.h>
 #include <Math/DisplacementVector2D.h>
 
 #include <memory>
@@ -12,7 +13,7 @@
 #include "../../src/objects/MCParticle.hpp"
 
 // FIXME: pixel size should be available in the data
-std::shared_ptr<TTree> constructComparisonTree(TFile *file, std::string dut, ROOT::Math::XYVector pixel_size) {
+std::shared_ptr<TTree> constructComparisonTree(TFile *file, std::string dut) {
     // Read pixel hit output
     TTree *pixel_hit_tree = static_cast<TTree*>(file->Get("PixelHit"));
     TBranch *pixel_hit_branch = pixel_hit_tree->FindBranch(dut.c_str());
@@ -79,7 +80,7 @@ std::shared_ptr<TTree> constructComparisonTree(TFile *file, std::string dut, ROO
         propagated_charge_tree->GetEntry(i);
         
         // Skip all events with multiple particles 
-        // FIXME: until we handle the mc particle better
+        // FIXME Needed until we handle the mc particle better
         if(input_particles.size() > 1) continue;
         
         // Set event number
@@ -90,8 +91,8 @@ std::shared_ptr<TTree> constructComparisonTree(TFile *file, std::string dut, ROO
         std::set<int> unique_x;
         std::set<int> unique_y;
         for(auto& hit : input_hits) {
-            unique_x.insert(hit->getPixel().x());
-            unique_y.insert(hit->getPixel().y());
+            unique_x.insert(hit->getPixel().getIndex().x());
+            unique_y.insert(hit->getPixel().getIndex().y());
         }
         output_cluster_x = unique_x.size();
         output_cluster_y = unique_y.size();
@@ -118,8 +119,8 @@ std::shared_ptr<TTree> constructComparisonTree(TFile *file, std::string dut, ROO
         output_cols.clear();
         for(auto& hit : input_hits) {
             // FIXME defined order
-            output_rows.push_back(hit->getPixel().y());
-            output_cols.push_back(hit->getPixel().x());
+            output_rows.push_back(hit->getPixel().getIndex().y());
+            output_cols.push_back(hit->getPixel().getIndex().x());
         }
         
         // Get information about the actual track
@@ -132,16 +133,16 @@ std::shared_ptr<TTree> constructComparisonTree(TFile *file, std::string dut, ROO
         
         // Calculate local x using a simple center of gravity fit
         // FIXME no corrections are applied
-        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<double>> totalPixel;
+        ROOT::Math::XYZVector totalPixel;
         double totalSignal = 0;
         for(auto& hit : input_hits) {
             // FIXME: should not use the row / column but their position
-            totalPixel += hit->getPixel() * hit->getSignal();
+            totalPixel += static_cast<ROOT::Math::XYZVector>(hit->getPixel().getLocalCenter()) * hit->getSignal();
             totalSignal += hit->getSignal();
         }
         totalPixel /= totalSignal;
-        output_x = totalPixel.x() * pixel_size.x();
-        output_y = totalPixel.y() * pixel_size.y();
+        output_x = totalPixel.x();
+        output_y = totalPixel.y();
         output_res_x = output_track_x - output_x;
         output_res_y = output_track_y - output_y;
         

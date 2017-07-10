@@ -106,6 +106,25 @@ bool Detector::isWithinSensor(const ROOT::Math::XYZPoint& local_pos) const {
 }
 
 /**
+ * The pixel has internal information about the size and location specific for this detector
+ */
+Pixel Detector::getPixel(unsigned int x, unsigned int y) {
+    Pixel::Index index(x, y);
+
+    auto size = model_->getPixelSize();
+
+    // WARNING This relies on the origin of the local coordinate system
+    auto local_x = size.x() * x;
+    auto local_y = size.y() * y;
+    auto local_z = model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0;
+
+    auto local_center = ROOT::Math::XYZPoint(local_x, local_y, local_z);
+    auto global_center = getGlobalPosition(local_center);
+
+    return Pixel(index, local_center, global_center, size);
+}
+
+/**
  * The electric field is replicated for all pixels and uses flipping at each boundary (side effects are not modeled in this
  * stage). Outside of the sensor the electric field is strictly zero by definition.
  */
@@ -135,6 +154,7 @@ double* Detector::get_electric_field_raw(double x, double y, double z) const {
     // FIXME: We need to revisit this to be faster and not too specific
 
     // Compute corresponding pixel indices
+    // WARNING This relies on the origin of the local coordinate system
     auto pixel_x = static_cast<int>(std::round(x / model_->getPixelSize().x()));
     auto pixel_y = static_cast<int>(std::round(y / model_->getPixelSize().y()));
 

@@ -4,17 +4,20 @@ INCLUDE_DIRECTORIES(SYSTEM ${ALLPIX_DEPS_INCLUDE_DIRS})
 # Load the generate dictionaries macro
 INCLUDE(${ROOT_USE_FILE}/../modules/RootNewMacros.cmake)
 
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+
 # Generate the ROOT dictionary
 ROOT_GENERATE_DICTIONARY(AllpixObjectsDictionary
-    ${CMAKE_CURRENT_SOURCE_DIR}/Object.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/SensorCharge.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/PropagatedCharge.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/DepositedCharge.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/PixelCharge.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/PixelHit.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/MCParticle.hpp
+    Object.hpp
+    SensorCharge.hpp
+    PropagatedCharge.hpp
+    DepositedCharge.hpp
+    PixelCharge.hpp
+    Pixel.hpp
+    PixelHit.hpp
+    MCParticle.hpp
     LINKDEF 
-    ${CMAKE_CURRENT_SOURCE_DIR}/Linkdef.h
+    Linkdef.h
     MODULE
     AllpixObjects
 )
@@ -35,6 +38,7 @@ ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cx
 # Define the library adding the object file created above
 ADD_LIBRARY(AllpixObjects SHARED
     Object.cpp
+    Pixel.cpp
     SensorCharge.cpp
     PixelCharge.cpp
     DepositedCharge.cpp

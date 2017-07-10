@@ -6,6 +6,7 @@
 
 #include "DepositedCharge.hpp"
 #include "MCParticle.hpp"
+#include "Pixel.hpp"
 #include "PixelCharge.hpp"
 #include "PixelHit.hpp"
 #include "PropagatedCharge.hpp"

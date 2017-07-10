@@ -15,6 +15,8 @@
 #include "Object.hpp"
 #include "PixelCharge.hpp"
 
+#include "Pixel.hpp"
+
 namespace allpix {
     /**
      * @ingroup Objects
@@ -22,8 +24,6 @@ namespace allpix {
      */
     class PixelHit : public Object {
     public:
-        using Pixel = ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>;
-
         /**
          * @brief Construct a digitized pixel hit
          * @param pixel Location of the pixel
@@ -37,7 +37,7 @@ namespace allpix {
          * @brief Get the pixel hit
          * @return Pixel indices in the grid
          */
-        PixelHit::Pixel getPixel() const;
+        Pixel getPixel() const;
         /**
          * @brief Get the timing data of the hit
          * @return Timestamp
@@ -63,7 +63,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDef(PixelHit, 1);
+        ClassDef(PixelHit, 2);
         /**
          * @brief Default constructor for ROOT I/O
          */

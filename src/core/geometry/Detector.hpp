@@ -23,6 +23,8 @@
 #include "Detector.hpp"
 #include "DetectorModel.hpp"
 
+#include "objects/Pixel.hpp"
+
 namespace allpix {
 
     /**
@@ -88,6 +90,12 @@ namespace allpix {
          * @return True if a local position is within the sensor, false otherwise
          */
         bool isWithinSensor(const ROOT::Math::XYZPoint& local_pos) const;
+
+        /**
+         * @brief Return a pixel object from the x- and y-index values
+         * @return Pixel object
+         */
+        Pixel getPixel(unsigned int x, unsigned int y);
 
         /**
          * @brief Returns if the detector has an electric field in the sensor

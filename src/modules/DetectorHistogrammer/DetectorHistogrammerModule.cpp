@@ -58,13 +58,13 @@ void DetectorHistogrammerModule::run(unsigned int) {
 
     // Fill 2D hitmap histogram
     for(auto& pixel_charge : pixels_message_->getData()) {
-        auto pixel = pixel_charge.getPixel();
+        auto pixel_idx = pixel_charge.getPixel().getIndex();
 
         // Add pixel
-        histogram->Fill(pixel.x(), pixel.y());
+        histogram->Fill(pixel_idx.x(), pixel_idx.y());
 
         // Update statistics
-        total_vector_ += pixel;
+        total_vector_ += pixel_idx;
         total_hits_ += 1;
     }
 

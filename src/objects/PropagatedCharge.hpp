@@ -40,7 +40,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDef(PropagatedCharge, 1);
+        ClassDef(PropagatedCharge, 2);
         /**
          * @brief Default constructor for ROOT I/O
          */

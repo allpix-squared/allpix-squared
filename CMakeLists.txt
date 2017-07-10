@@ -142,13 +142,13 @@ ADD_DEFINITIONS(-DALLPIX_MODEL_DIRECTORY="${MODEL_DIRECTORY}" -DALLPIX_MODEL_SUF
 # Always include sources from top directory
 INCLUDE_DIRECTORIES(src)
 
-# Build core allpix library
-ADD_SUBDIRECTORY(src/core)
-SET(ALLPIX_LIBRARIES ${ALLPIX_LIBRARIES} AllpixCore)
-
 # Build objects library
 ADD_SUBDIRECTORY(src/objects)
 SET(ALLPIX_LIBRARIES ${ALLPIX_LIBRARIES} AllpixObjects)
+
+# Build core allpix library
+ADD_SUBDIRECTORY(src/core)
+SET(ALLPIX_LIBRARIES ${ALLPIX_LIBRARIES} AllpixCore)
 
 # Build required modules
 ADD_SUBDIRECTORY(src/modules)

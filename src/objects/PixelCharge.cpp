@@ -15,7 +15,7 @@ PixelCharge::PixelCharge(Pixel pixel, unsigned int charge, std::vector<const Pro
     }
 }
 
-PixelCharge::Pixel PixelCharge::getPixel() const {
+Pixel PixelCharge::getPixel() const {
     return pixel_;
 }
 

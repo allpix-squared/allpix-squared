@@ -55,7 +55,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDef(SensorCharge, 1);
+        ClassDef(SensorCharge, 2);
         /**
          * @brief Default constructor for ROOT I/O
          */
