@@ -54,10 +54,11 @@ int main(int argc, char** argv) {
     }
 
     /*
-     * ALERT swap coordinates to match ap2 system
-     * FIXME has to be checked more carefully
+     * ALERT change coordinates to match ap2 system
+     * WARNING this will remove the right-handedness of the coordinate system!
      */
     for(size_t i = 0; i < points.size(); ++i) {
+        // swap the y with the z-axis (NOTE: changes handedness)
         std::swap(points[i].y, points[i].z);
         std::swap(field[i].y, field[i].z);
     }
@@ -73,6 +74,15 @@ int main(int argc, char** argv) {
         maxx = std::max(maxx, point.x);
         maxy = std::max(maxy, point.y);
         maxz = std::max(maxz, point.z);
+    }
+
+    /*
+     * ALERT invert the z-axis to match the ap2 system
+     * WARNING this will remove the right-handedness of the coordinate system!
+     */
+    for(size_t i = 0; i < points.size(); ++i) {
+        points[i].z = maxz - (points[i].z - minz);
+        field[i].z = -field[i].z;
     }
 
     // Initializing the Octree with points from point cloud.
