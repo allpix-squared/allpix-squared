@@ -72,7 +72,7 @@ namespace allpix {
          * @param geo_manager Pointer to the manager holding the geometry
          * @param seeder PRNG to generate the seeds for the module instantiations
          */
-        void load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager, std::mt19937_64 seeder);
+        void load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager, std::mt19937_64& seeder);
 
         /**
          * @brief Initialize all modules before the event sequence

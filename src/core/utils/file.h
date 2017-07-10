@@ -173,7 +173,7 @@ namespace allpix {
         char_string[path.size()] = '\0';
 
         std::string base_name = basename(char_string.get());
-        auto idx = base_name.find(".");
+        auto idx = base_name.find('.');
         if(idx != std::string::npos) {
             return std::make_pair(base_name.substr(0, idx), base_name.substr(idx));
         }

@@ -128,6 +128,7 @@ INCLUDE("cmake/allpix.cmake")
 FILE(GLOB_RECURSE
      CHECK_CXX_SOURCE_FILES
         src/*.[tch]pp src/*.h
+        tools/*.C tools/*.[tch]pp tools/*.h
      )
 INCLUDE("cmake/clang-cpp-checks.cmake")
 
@@ -142,19 +143,22 @@ ADD_DEFINITIONS(-DALLPIX_MODEL_DIRECTORY="${MODEL_DIRECTORY}" -DALLPIX_MODEL_SUF
 # Always include sources from top directory
 INCLUDE_DIRECTORIES(src)
 
-# Build core allpix library
-ADD_SUBDIRECTORY(src/core)
-SET(ALLPIX_LIBRARIES ${ALLPIX_LIBRARIES} AllpixCore)
-
 # Build objects library
 ADD_SUBDIRECTORY(src/objects)
 SET(ALLPIX_LIBRARIES ${ALLPIX_LIBRARIES} AllpixObjects)
+
+# Build core allpix library
+ADD_SUBDIRECTORY(src/core)
+SET(ALLPIX_LIBRARIES ${ALLPIX_LIBRARIES} AllpixCore)
 
 # Build required modules
 ADD_SUBDIRECTORY(src/modules)
 
 # Build the executable 
 ADD_SUBDIRECTORY(src/exec)
+
+# Handle the included tools
+ADD_SUBDIRECTORY(tools)
 
 # Add targets for Doxygen code reference and LaTeX User manual
 ADD_SUBDIRECTORY(doc)

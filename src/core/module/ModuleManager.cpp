@@ -50,7 +50,7 @@ ModuleManager::ModuleManager() : terminate_(false) {}
 void ModuleManager::load(Messenger* messenger,
                          ConfigManager* conf_manager,
                          GeometryManager* geo_manager,
-                         std::mt19937_64 seeder) {
+                         std::mt19937_64& seeder) {
     std::vector<Configuration> configs = conf_manager->getConfigurations();
     global_config_ = conf_manager->getGlobalConfiguration();
 

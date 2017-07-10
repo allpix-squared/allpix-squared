@@ -14,6 +14,7 @@
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 
+#include "objects/Pixel.hpp"
 #include "objects/PixelCharge.hpp"
 #include "objects/PropagatedCharge.hpp"
 
@@ -55,7 +56,7 @@ namespace allpix {
          * @brief Compare two pixels, necessary to store them in the a std::map
          */
         struct pixel_cmp {
-            bool operator()(const PixelCharge::Pixel& p1, const PixelCharge::Pixel& p2) const {
+            bool operator()(const Pixel::Index& p1, const Pixel::Index& p2) const {
                 if(p1.x() == p2.x()) {
                     return p1.y() < p2.y();
                 }
@@ -68,6 +69,6 @@ namespace allpix {
 
         // Statistical information
         unsigned int total_transferrred_charges_{};
-        std::set<PixelCharge::Pixel, pixel_cmp> unique_pixels_;
+        std::set<Pixel::Index, pixel_cmp> unique_pixels_;
     };
 } // namespace allpix

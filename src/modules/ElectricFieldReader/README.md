@@ -20,6 +20,7 @@ Furthermore the module can produce a plot the electric field profile on an proje
 * `output_plots_step` : Number of bins in both the X and Y direction in the 2D histogram used to plot the electric field in the detectors. Only used if `output_plots` is enabled.
 * `output_plots_project` : Axis to project the 3D electric field on to create the 2D histogram. Either **x**, **y** or **z**. Only used if `output_plots` is enabled.
 * `output_plots_projection_percentage` : Percentage on the projection axis to plot the electric field profile. For example if *output_plots_project* is **x** and this parameter is 0.5 the profile is plotted in the Y,Z-plane at the X-coordinate in the middle of the sensor.
+* `output_plots_single_pixel`: Determines if the whole sensor has to be plotted or only a single pixel. Defaults to false (plotting the whole sensor).
 
 #### Usage
 An example to add a linear field of 50 volt bias to all the detectors, apart from the detector with name 'dut' where a specific INIT field is added, is given below

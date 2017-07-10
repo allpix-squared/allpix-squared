@@ -20,17 +20,27 @@ namespace allpix {
     public:
         /**
          * @brief Construct a set of charges in a sensor
-         * @param position Local position of the set of charges in the sensor
+         * @param local_position Local position of the set of charges in the sensor
+         * @param global_position Global position of the set of charges in the sensor
          * @param charge Total charge at position
          * @param event_time Total time after event start
          */
-        SensorCharge(ROOT::Math::XYZPoint position, unsigned int charge, double event_time);
+        SensorCharge(ROOT::Math::XYZPoint local_position,
+                     ROOT::Math::XYZPoint global_position,
+                     unsigned int charge,
+                     double event_time);
 
         /**
-         * @brief Get local position of set of charges in the sensor
+         * @brief Get local position of the set of charges in the sensor
          * @return Local position of charges
          */
-        ROOT::Math::XYZPoint getPosition() const;
+        ROOT::Math::XYZPoint getLocalPosition() const;
+
+        /**
+         * @brief Get the global position of the set of charges in the sensor
+         */
+        ROOT::Math::XYZPoint getGlobalPosition() const;
+
         /**
          * @brief Get total amount of charges stored
          * @return Total charge stored
@@ -45,14 +55,16 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDef(SensorCharge, 1);
+        ClassDef(SensorCharge, 2);
         /**
          * @brief Default constructor for ROOT I/O
          */
         SensorCharge() = default;
 
     private:
-        ROOT::Math::XYZPoint position_;
+        ROOT::Math::XYZPoint local_position_;
+        ROOT::Math::XYZPoint global_position_;
+
         unsigned int charge_{};
         double event_time_{};
     };

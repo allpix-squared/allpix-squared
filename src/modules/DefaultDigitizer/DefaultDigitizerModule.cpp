@@ -54,9 +54,10 @@ void DefaultDigitizerModule::run(unsigned int) {
     std::vector<PixelHit> hits;
     for(auto& pixel_charge : pixel_message_->getData()) {
         auto pixel = pixel_charge.getPixel();
+        auto pixel_index = pixel.getIndex();
         auto charge = static_cast<double>(pixel_charge.getCharge());
 
-        LOG(DEBUG) << "Received pixel " << pixel << ", charge " << Units::display(charge, "e");
+        LOG(DEBUG) << "Received pixel " << pixel_index << ", charge " << Units::display(charge, "e");
         if(config_.get<bool>("output_plots")) {
             h_pxq->Fill(charge / 1e3);
         }

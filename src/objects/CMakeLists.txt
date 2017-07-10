@@ -11,6 +11,7 @@ ROOT_GENERATE_DICTIONARY(AllpixObjectsDictionary
     ${CMAKE_CURRENT_SOURCE_DIR}/PropagatedCharge.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/DepositedCharge.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/PixelCharge.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Pixel.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/PixelHit.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MCParticle.hpp
     LINKDEF 
@@ -35,6 +36,7 @@ ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cx
 # Define the library adding the object file created above
 ADD_LIBRARY(AllpixObjects SHARED
     Object.cpp
+    Pixel.cpp
     SensorCharge.cpp
     PixelCharge.cpp
     DepositedCharge.cpp

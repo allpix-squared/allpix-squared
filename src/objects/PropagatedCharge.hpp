@@ -19,12 +19,14 @@ namespace allpix {
     public:
         /**
          * @brief Construct a set of propagated charges
-         * @param position Local position of the propagated set of charges in the sensor
+         * @param local_position Local position of the propagated set of charges in the sensor
+         * @param global_position Global position of the propagated set of charges in the sensor
          * @param charge Total charge propagated
          * @param event_time Total time of propagation arrival after event start
          * @param deposited_charge Optional pointer to related deposited charge
          */
-        PropagatedCharge(ROOT::Math::XYZPoint position,
+        PropagatedCharge(ROOT::Math::XYZPoint local_position,
+                         ROOT::Math::XYZPoint global_position,
                          unsigned int charge,
                          double event_time,
                          const DepositedCharge* deposited_charge = nullptr);
@@ -38,7 +40,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDef(PropagatedCharge, 1);
+        ClassDef(PropagatedCharge, 2);
         /**
          * @brief Default constructor for ROOT I/O
          */
