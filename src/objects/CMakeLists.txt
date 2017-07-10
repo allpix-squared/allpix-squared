@@ -4,20 +4,18 @@ INCLUDE_DIRECTORIES(SYSTEM ${ALLPIX_DEPS_INCLUDE_DIRS})
 # Load the generate dictionaries macro
 INCLUDE(${ROOT_USE_FILE}/../modules/RootNewMacros.cmake)
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
-
 # Generate the ROOT dictionary
 ROOT_GENERATE_DICTIONARY(AllpixObjectsDictionary
-    Object.hpp
-    SensorCharge.hpp
-    PropagatedCharge.hpp
-    DepositedCharge.hpp
-    PixelCharge.hpp
-    Pixel.hpp
-    PixelHit.hpp
-    MCParticle.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Object.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/SensorCharge.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/PropagatedCharge.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/DepositedCharge.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/PixelCharge.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Pixel.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/PixelHit.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/MCParticle.hpp
     LINKDEF 
-    Linkdef.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Linkdef.h
     MODULE
     AllpixObjects
 )
