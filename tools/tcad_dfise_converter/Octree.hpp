@@ -21,24 +21,22 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
+//
+// UPDATED FROM THE ORIGINAL VERSION USING THE RESULTS OF CLANG-TIDY
+//
+
 #include <cassert>
 #include <cmath>
+#include <cstdint>
 #include <cstring> // memset.
 #include <limits>
-#include <stdint.h>
 #include <vector>
-
-// needed for gtest access to protected/private members ...
-namespace {
-    class OctreeTest;
-}
 
 namespace unibn {
 
     /**
      * Some traits to access coordinates regardless of the specific implementation of point
      * inspired by boost.geometry, which needs to be implemented by new points.
-     *
      */
     namespace traits {
 
@@ -67,9 +65,10 @@ namespace unibn {
      * 1. compute of two points p and q to compute and return the distance between two points, and
      * 2. norm of x,y,z coordinates to compute and return the norm of a point p = (x,y,z)
      * 3. sqr and sqrt of value to compute the correct radius if a comparison is performed using squared norms (see
-     *L2Distance)...
+     *    L2Distance)...
      */
     template <typename PointT> class L1Distance {
+    public:
         static inline double compute(const PointT& p, const PointT& q) {
             double diff1 = get<0>(p) - get<0>(q);
             double diff2 = get<1>(p) - get<1>(q);
@@ -86,6 +85,7 @@ namespace unibn {
     };
 
     template <typename PointT> class L2Distance {
+    public:
         static inline double compute(const PointT& p, const PointT& q) {
             double diff1 = get<0>(p) - get<0>(q);
             double diff2 = get<1>(p) - get<1>(q);
@@ -102,26 +102,31 @@ namespace unibn {
     };
 
     template <typename PointT> class MaxDistance {
+    public:
         static inline double compute(const PointT& p, const PointT& q) {
             double diff1 = std::abs(get<0>(p) - get<0>(q));
             double diff2 = std::abs(get<1>(p) - get<1>(q));
             double diff3 = std::abs(get<2>(p) - get<2>(q));
 
             double maximum = diff1;
-            if(diff2 > maximum)
+            if(diff2 > maximum) {
                 maximum = diff2;
-            if(diff3 > maximum)
+            }
+            if(diff3 > maximum) {
                 maximum = diff3;
+            }
 
             return maximum;
         }
 
         static inline double norm(double x, double y, double z) {
             double maximum = x;
-            if(y > maximum)
+            if(y > maximum) {
                 maximum = y;
-            if(z > maximum)
+            }
+            if(z > maximum) {
                 maximum = z;
+            }
             return maximum;
         }
 
@@ -132,14 +137,14 @@ namespace unibn {
 
     class OctreeParams {
     public:
-        OctreeParams(uint32_t nbucketSize = 32, bool ncopyPoints = false, double nminExtent = 0.0)
+        explicit OctreeParams(uint32_t nbucketSize = 32, bool ncopyPoints = false, double nminExtent = 0.0)
             : bucketSize(nbucketSize), copyPoints(ncopyPoints), minExtent(nminExtent) {}
         uint32_t bucketSize;
         bool copyPoints;
         double minExtent;
     };
 
-    /** \brief Index-based Octree implementation offering different queries and insertion/removal of points.
+    /** @brief Index-based Octree implementation offering different queries and insertion/removal of points.
      *
      * The index-based Octree uses a successor relation and a startIndex in each Octant to improve runtime
      * performance for radius queries. The efficient storage of the points by relinking list elements
@@ -163,9 +168,9 @@ namespace unibn {
      *
      * In future, we might add also other neighbor queries and implement the removal and adding of points.
      *
-     * \version 0.1-icra
+     * @version 0.1-icra
      *
-     * \author behley
+     * @author behley
      */
 
     template <typename PointT, typename ContainerT = std::vector<PointT>> class Octree {
@@ -173,29 +178,29 @@ namespace unibn {
         Octree();
         ~Octree();
 
-        /** \brief initialize octree with all points **/
+        /** @brief initialize octree with all points **/
         void initialize(const ContainerT& pts, const OctreeParams& params = OctreeParams());
 
-        /** \brief initialize octree only from pts that are inside indexes. **/
+        /** @brief initialize octree only from pts that are inside indexes. **/
         void
         initialize(const ContainerT& pts, const std::vector<uint32_t>& indexes, const OctreeParams& params = OctreeParams());
 
-        /** \brief remove all data inside the octree. **/
+        /** @brief remove all data inside the octree. **/
         void clear();
 
-        /** \brief radius neighbor queries where radius determines the maximal radius of reported indices of points in
+        /** @brief radius neighbor queries where radius determines the maximal radius of reported indices of points in
          * resultIndices **/
         template <typename Distance>
         void radiusNeighbors(const PointT& query, double radius, std::vector<uint32_t>& resultIndices) const;
 
-        /** \brief radius neighbor queries with explicit (squared) distance computation. **/
+        /** @brief radius neighbor queries with explicit (squared) distance computation. **/
         template <typename Distance>
         void radiusNeighbors(const PointT& query,
                              double radius,
                              std::vector<uint32_t>& resultIndices,
                              std::vector<double>& distances) const;
 
-        /** \brief nearest neighbor queries. Using minDistance >= 0, we explicitly disallow self-matches.
+        /** @brief nearest neighbor queries. Using minDistance >= 0, we explicitly disallow self-matches.
          * @return index of nearest neighbor n with Distance::compute(query, n) > minDistance and otherwise -1.
          **/
         template <typename Distance> int32_t findNeighbor(const PointT& query, double minDistance = -1) const;
@@ -206,14 +211,14 @@ namespace unibn {
             Octant();
             ~Octant();
 
-            bool isLeaf;
+            bool isLeaf{true};
 
             // bounding box of the octant needed for overlap and contains tests...
-            double x, y, z; // center
-            double extent;  // half of side-length
+            double x{0.0}, y{0.0}, z{0.0}; // center
+            double extent{0.0};            // half of side-length
 
-            uint32_t start, end; // start and end in succ_
-            uint32_t size;       // number of points
+            uint32_t start{0}, end{0}; // start and end in succ_
+            uint32_t size{0};          // number of points
 
             Octant* child[8];
         };
@@ -223,7 +228,7 @@ namespace unibn {
         Octree& operator=(const Octree& oct);
 
         /**
-         * \brief creation of an octant using the elements starting at startIdx.
+         * @brief creation of an octant using the elements starting at startIdx.
          *
          * The method reorders the index such that all points are correctly linked to successors belonging
          * to the same octant.
@@ -258,7 +263,7 @@ namespace unibn {
                              std::vector<uint32_t>& resultIndices,
                              std::vector<double>& distances) const;
 
-        /** \brief test if search ball S(q,r) overlaps with octant
+        /** @brief test if search ball S(q,r) overlaps with octant
          *
          * @param query   query point
          * @param radius  "squared" radius
@@ -269,7 +274,7 @@ namespace unibn {
         template <typename Distance>
         static bool overlaps(const PointT& query, double radius, double sqRadius, const Octant* o);
 
-        /** \brief test if search ball S(q,r) contains octant
+        /** @brief test if search ball S(q,r) contains octant
          *
          * @param query    query point
          * @param sqRadius "squared" radius
@@ -279,7 +284,7 @@ namespace unibn {
          */
         template <typename Distance> static bool contains(const PointT& query, double sqRadius, const Octant* octant);
 
-        /** \brief test if search ball S(q,r) is completely inside octant.
+        /** @brief test if search ball S(q,r) is completely inside octant.
          *
          * @param query   query point
          * @param radius  radius r
@@ -294,27 +299,25 @@ namespace unibn {
         const ContainerT* data_;
 
         std::vector<uint32_t> successors_; // single connected list of next point indices...
-
-        friend class ::OctreeTest;
     };
 
-    template <typename PointT, typename ContainerT>
-    Octree<PointT, ContainerT>::Octant::Octant()
-        : isLeaf(true), x(0.0), y(0.0), z(0.0), extent(0.0), start(0), end(0), size(0) {
+    template <typename PointT, typename ContainerT> Octree<PointT, ContainerT>::Octant::Octant() {
         memset(&child, 0, 8 * sizeof(Octant*));
     }
 
     template <typename PointT, typename ContainerT> Octree<PointT, ContainerT>::Octant::~Octant() {
-        for(uint32_t i = 0; i < 8; ++i)
-            delete child[i];
+        for(auto& i : child) {
+            delete i;
+        }
     }
 
     template <typename PointT, typename ContainerT> Octree<PointT, ContainerT>::Octree() : root_(nullptr), data_(nullptr) {}
 
     template <typename PointT, typename ContainerT> Octree<PointT, ContainerT>::~Octree() {
         delete root_;
-        if(params_.copyPoints)
+        if(params_.copyPoints) {
             delete data_;
+        }
     }
 
     template <typename PointT, typename ContainerT>
@@ -322,12 +325,13 @@ namespace unibn {
         clear();
         params_ = params;
 
-        if(params_.copyPoints)
+        if(params_.copyPoints) {
             data_ = new ContainerT(pts);
-        else
+        } else {
             data_ = &pts;
+        }
 
-        const uint32_t N = static_cast<uint32_t>(pts.size());
+        const auto N = static_cast<uint32_t>(pts.size());
         successors_ = std::vector<uint32_t>(N);
 
         // determine axis-aligned bounding box.
@@ -345,18 +349,24 @@ namespace unibn {
 
             const PointT& p = pts[i];
 
-            if(get<0>(p) < min[0])
+            if(get<0>(p) < min[0]) {
                 min[0] = get<0>(p);
-            if(get<1>(p) < min[1])
+            }
+            if(get<1>(p) < min[1]) {
                 min[1] = get<1>(p);
-            if(get<2>(p) < min[2])
+            }
+            if(get<2>(p) < min[2]) {
                 min[2] = get<2>(p);
-            if(get<0>(p) > max[0])
+            }
+            if(get<0>(p) > max[0]) {
                 max[0] = get<0>(p);
-            if(get<1>(p) > max[1])
+            }
+            if(get<1>(p) > max[1]) {
                 max[1] = get<1>(p);
-            if(get<2>(p) > max[2])
+            }
+            if(get<2>(p) > max[2]) {
                 max[2] = get<2>(p);
+            }
         }
 
         double ctr[3] = {min[0], min[1], min[2]};
@@ -366,8 +376,9 @@ namespace unibn {
         for(uint32_t i = 1; i < 3; ++i) {
             double extent = 0.5f * (max[i] - min[i]);
             ctr[i] += extent;
-            if(extent > maxextent)
+            if(extent > maxextent) {
                 maxextent = extent;
+            }
         }
 
         root_ = createOctant(ctr[0], ctr[1], ctr[2], maxextent, 0, N - 1, N);
@@ -380,16 +391,18 @@ namespace unibn {
         clear();
         params_ = params;
 
-        if(params_.copyPoints)
+        if(params_.copyPoints) {
             data_ = new ContainerT(pts);
-        else
+        } else {
             data_ = &pts;
+        }
 
         const uint32_t N = pts.size();
         successors_ = std::vector<uint32_t>(N);
 
-        if(indexes.size() == 0)
+        if(indexes.empty()) {
             return;
+        }
 
         // determine axis-aligned bounding box.
         uint32_t lastIdx = indexes[0];
@@ -408,18 +421,24 @@ namespace unibn {
 
             const PointT& p = pts[idx];
 
-            if(get<0>(p) < min[0])
+            if(get<0>(p) < min[0]) {
                 min[0] = get<0>(p);
-            if(get<1>(p) < min[1])
+            }
+            if(get<1>(p) < min[1]) {
                 min[1] = get<1>(p);
-            if(get<2>(p) < min[2])
+            }
+            if(get<2>(p) < min[2]) {
                 min[2] = get<2>(p);
-            if(get<0>(p) > max[0])
+            }
+            if(get<0>(p) > max[0]) {
                 max[0] = get<0>(p);
-            if(get<1>(p) > max[1])
+            }
+            if(get<1>(p) > max[1]) {
                 max[1] = get<1>(p);
-            if(get<2>(p) > max[2])
+            }
+            if(get<2>(p) > max[2]) {
                 max[2] = get<2>(p);
+            }
 
             lastIdx = idx;
         }
@@ -431,8 +450,9 @@ namespace unibn {
         for(uint32_t i = 1; i < 3; ++i) {
             double extent = 0.5f * (max[i] - min[i]);
             ctr[i] += extent;
-            if(extent > maxextent)
+            if(extent > maxextent) {
                 maxextent = extent;
+            }
         }
 
         root_ = createOctant(ctr[0], ctr[1], ctr[2], maxextent, indexes[0], lastIdx, indexes.size());
@@ -440,8 +460,9 @@ namespace unibn {
 
     template <typename PointT, typename ContainerT> void Octree<PointT, ContainerT>::clear() {
         delete root_;
-        if(params_.copyPoints)
+        if(params_.copyPoints) {
             delete data_;
+        }
         root_ = nullptr;
         data_ = nullptr;
         successors_.clear();
@@ -451,7 +472,7 @@ namespace unibn {
     typename Octree<PointT, ContainerT>::Octant* Octree<PointT, ContainerT>::createOctant(
         double x, double y, double z, double extent, uint32_t startIdx, uint32_t endIdx, uint32_t size) {
         // For a leaf we don't have to change anything; points are already correctly linked or correctly reordered.
-        Octant* octant = new Octant;
+        auto* octant = new Octant;
 
         octant->isLeaf = true;
 
@@ -483,18 +504,22 @@ namespace unibn {
 
                 // determine Morton code for each point...
                 uint32_t mortonCode = 0;
-                if(get<0>(p) > x)
+                if(get<0>(p) > x) {
                     mortonCode |= 1;
-                if(get<1>(p) > y)
+                }
+                if(get<1>(p) > y) {
                     mortonCode |= 2;
-                if(get<2>(p) > z)
+                }
+                if(get<2>(p) > z) {
                     mortonCode |= 4;
+                }
 
                 // set child starts and update successors...
-                if(childSizes[mortonCode] == 0)
+                if(childSizes[mortonCode] == 0) {
                     childStarts[mortonCode] = idx;
-                else
+                } else {
                     successors_[childEnds[mortonCode]] = idx;
+                }
                 childSizes[mortonCode] += 1;
 
                 childEnds[mortonCode] = idx;
@@ -506,8 +531,9 @@ namespace unibn {
             bool firsttime = true;
             uint32_t lastChildIdx = 0;
             for(uint32_t i = 0; i < 8; ++i) {
-                if(childSizes[i] == 0)
+                if(childSizes[i] == 0) {
                     continue;
+                }
 
                 double childX = x + factor[(i & 1) > 0] * extent;
                 double childY = y + factor[(i & 2) > 0] * extent;
@@ -516,11 +542,14 @@ namespace unibn {
                 octant->child[i] =
                     createOctant(childX, childY, childZ, childExtent, childStarts[i], childEnds[i], childSizes[i]);
 
-                if(firsttime)
+                if(firsttime) {
                     octant->start = octant->child[i]->start;
-                else
+                } else {
                     successors_[octant->child[lastChildIdx]->end] =
-                        octant->child[i]->start; // we have to ensure that also the child ends link to the next child start.
+                        octant->child[i]->start; // we have to ensure that also the
+                                                 // child ends link to the next
+                                                 // child start.
+                }
 
                 lastChildIdx = i;
                 octant->end = octant->child[i]->end;
@@ -556,8 +585,9 @@ namespace unibn {
             for(uint32_t i = 0; i < octant->size; ++i) {
                 const PointT& p = points[idx];
                 double dist = Distance::compute(query, p);
-                if(dist < sqrRadius)
+                if(dist < sqrRadius) {
                     resultIndices.push_back(idx);
+                }
                 idx = successors_[idx];
             }
 
@@ -566,10 +596,12 @@ namespace unibn {
 
         // check whether child nodes are in range.
         for(uint32_t c = 0; c < 8; ++c) {
-            if(octant->child[c] == nullptr)
+            if(octant->child[c] == nullptr) {
                 continue;
-            if(!overlaps<Distance>(query, radius, sqrRadius, octant->child[c]))
+            }
+            if(!overlaps<Distance>(query, radius, sqrRadius, octant->child[c])) {
                 continue;
+            }
             radiusNeighbors<Distance>(octant->child[c], query, radius, sqrRadius, resultIndices);
         }
     }
@@ -613,10 +645,12 @@ namespace unibn {
 
         // check whether child nodes are in range.
         for(uint32_t c = 0; c < 8; ++c) {
-            if(octant->child[c] == 0)
+            if(octant->child[c] == 0) {
                 continue;
-            if(!overlaps<Distance>(query, radius, sqrRadius, octant->child[c]))
+            }
+            if(!overlaps<Distance>(query, radius, sqrRadius, octant->child[c])) {
                 continue;
+            }
             radiusNeighbors<Distance>(octant->child[c], query, radius, sqrRadius, resultIndices, distances);
         }
     }
@@ -627,8 +661,9 @@ namespace unibn {
                                                      double radius,
                                                      std::vector<uint32_t>& resultIndices) const {
         resultIndices.clear();
-        if(root_ == nullptr)
+        if(root_ == nullptr) {
             return;
+        }
 
         double sqrRadius = Distance::sqr(radius); // "squared" radius
         radiusNeighbors<Distance>(root_, query, radius, sqrRadius, resultIndices);
@@ -642,8 +677,9 @@ namespace unibn {
                                                      std::vector<double>& distances) const {
         resultIndices.clear();
         distances.clear();
-        if(root_ == 0)
+        if(root_ == 0) {
             return;
+        }
 
         double sqrRadius = Distance::sqr(radius); // "squared" radius
         radiusNeighbors<Distance>(root_, query, radius, sqrRadius, resultIndices, distances);
@@ -665,16 +701,18 @@ namespace unibn {
         double maxdist = radius + o->extent;
 
         // Completely outside, since q' is outside the relevant area.
-        if(x > maxdist || y > maxdist || z > maxdist)
+        if(x > maxdist || y > maxdist || z > maxdist) {
             return false;
+        }
 
         int32_t num_less_extent = (x < o->extent) + (y < o->extent) + (z < o->extent);
 
         // Checking different cases:
 
         // a. inside the surface region of the octant.
-        if(num_less_extent > 1)
+        if(num_less_extent > 1) {
             return true;
+        }
 
         // b. checking the corner region && edge region.
         x = std::max(x - o->extent, 0.0);
@@ -741,16 +779,20 @@ namespace unibn {
 
         // determine Morton code for each point...
         uint32_t mortonCode = 0;
-        if(get<0>(query) > octant->x)
+        if(get<0>(query) > octant->x) {
             mortonCode |= 1;
-        if(get<1>(query) > octant->y)
+        }
+        if(get<1>(query) > octant->y) {
             mortonCode |= 2;
-        if(get<2>(query) > octant->z)
+        }
+        if(get<2>(query) > octant->z) {
             mortonCode |= 4;
+        }
 
         if(octant->child[mortonCode] != 0) {
-            if(findNeighbor<Distance>(octant->child[mortonCode], query, minDistance, maxDistance, resultIndex))
+            if(findNeighbor<Distance>(octant->child[mortonCode], query, minDistance, maxDistance, resultIndex)) {
                 return true;
+            }
         }
 
         // 2. if current best point completely inside, just return.
@@ -758,14 +800,18 @@ namespace unibn {
 
         // 3. check adjacent octants for overlap and check these if necessary.
         for(uint32_t c = 0; c < 8; ++c) {
-            if(c == mortonCode)
+            if(c == mortonCode) {
                 continue;
-            if(octant->child[c] == 0)
+            }
+            if(octant->child[c] == 0) {
                 continue;
-            if(!overlaps<Distance>(query, maxDistance, sqrMaxDistance, octant->child[c]))
+            }
+            if(!overlaps<Distance>(query, maxDistance, sqrMaxDistance, octant->child[c])) {
                 continue;
-            if(findNeighbor<Distance>(octant->child[c], query, minDistance, maxDistance, resultIndex))
+            }
+            if(findNeighbor<Distance>(octant->child[c], query, minDistance, maxDistance, resultIndex)) {
                 return true; // early pruning
+            }
         }
 
         // all children have been checked...check if point is inside the current octant...
@@ -785,12 +831,15 @@ namespace unibn {
         y = std::abs(y) + radius;
         z = std::abs(z) + radius;
 
-        if(x > octant->extent)
+        if(x > octant->extent) {
             return false;
-        if(y > octant->extent)
+        }
+        if(y > octant->extent) {
             return false;
-        if(z > octant->extent)
+        }
+        if(z > octant->extent) {
             return false;
+        }
 
         return true;
     }

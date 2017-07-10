@@ -24,16 +24,16 @@ enum class DFSection {
 // Simple point class to store data
 class Point {
 public:
-    Point() : x(0), y(0), z(0) {}
+    Point() = default;
     Point(double px, double py, double pz) : x(px), y(py), z(pz) {}
 
-    double x, y, z;
+    double x{0}, y{0}, z{0};
 };
 
 // Read the grid
-std::map<std::string, std::vector<Point>> read_grid(std::string file_name);
+std::map<std::string, std::vector<Point>> read_grid(const std::string& file_name);
 
 // Read the electric field
-std::map<std::string, std::vector<Point>> read_electric_field(std::string file_name);
+std::map<std::string, std::vector<Point>> read_electric_field(const std::string& file_name);
 
 #endif

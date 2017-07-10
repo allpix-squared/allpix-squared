@@ -84,9 +84,13 @@ int main(int argc, char** argv) {
     double xstep = (maxx - minx) / static_cast<double>(xdiv);
     double ystep = (maxy - miny) / static_cast<double>(ydiv);
     double zstep = (maxz - minz) / static_cast<double>(zdiv);
-    for(double x = minx + xstep / 2.0; x <= maxx; x += xstep) {
-        for(double y = miny + ystep / 2.0; y <= maxy; y += ystep) {
-            for(double z = minz + zstep / 2.0; z <= maxz; z += zstep) {
+
+    double x = minx + xstep / 2.0;
+    for(size_t i = 0; i < xdiv; ++i) {
+        double y = miny + ystep / 2.0;
+        for(size_t j = 0; j < ydiv; ++j) {
+            double z = minz + zstep / 2.0;
+            for(size_t k = 0; k < xdiv; ++k) {
                 Point q(x, y, z);
 
                 // Find nearest point
@@ -103,8 +107,12 @@ int main(int argc, char** argv) {
                 }
 
                 pts.push_back(field[results[0]]);
+
+                z += zstep;
             }
+            y += ystep;
         }
+        x += xstep;
     }
 
     // Write INIT file header

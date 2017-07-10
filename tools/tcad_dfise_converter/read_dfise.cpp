@@ -12,7 +12,7 @@
 // Include trim utility from allpix
 #include "core/utils/string.h"
 
-std::map<std::string, std::vector<Point>> read_grid(std::string file_name) {
+std::map<std::string, std::vector<Point>> read_grid(const std::string& file_name) {
     std::ifstream file(file_name);
     if(!file) {
         throw std::runtime_error("file cannot be accessed");
@@ -28,7 +28,7 @@ std::map<std::string, std::vector<Point>> read_grid(std::string file_name) {
 
     std::map<std::string, std::vector<long unsigned int>> regions_vertices;
 
-    std::string region = "";
+    std::string region;
     long unsigned int data_count = 0;
     bool in_data_block = false;
     while(!file.eof()) {
@@ -40,7 +40,7 @@ std::map<std::string, std::vector<Point>> read_grid(std::string file_name) {
         }
 
         // Check if line with begin of section
-        if(line.find("{") != std::string::npos) {
+        if(line.find('{') != std::string::npos) {
             // Search for new simple headers
             auto base_regex = std::regex("([a-zA-Z]+) \\{");
             std::smatch base_match;
@@ -98,7 +98,7 @@ std::map<std::string, std::vector<Point>> read_grid(std::string file_name) {
         }
 
         // Look for close of section
-        if(line.find("}") != std::string::npos) {
+        if(line.find('}') != std::string::npos) {
             switch(main_section) {
             case DFSection::VERTICES:
                 if(vertices.size() != data_count) {
@@ -265,8 +265,9 @@ std::map<std::string, std::vector<Point>> read_grid(std::string file_name) {
             break;
         }
         case DFSection::REGION: {
-            if(sub_section != DFSection::ELEMENTS)
+            if(sub_section != DFSection::ELEMENTS) {
                 continue;
+            }
             long unsigned int elem_idx;
             while(sstr >> elem_idx) {
                 if(elem_idx >= elements.size()) {
@@ -302,7 +303,7 @@ std::map<std::string, std::vector<Point>> read_grid(std::string file_name) {
     return ret_map;
 }
 
-std::map<std::string, std::vector<Point>> read_electric_field(std::string file_name) {
+std::map<std::string, std::vector<Point>> read_electric_field(const std::string& file_name) {
     std::ifstream file(file_name);
     if(!file) {
         throw std::runtime_error("file cannot be accessed");
@@ -326,7 +327,7 @@ std::map<std::string, std::vector<Point>> read_electric_field(std::string file_n
         }
 
         // Check if line with begin of section
-        if(line.find("{") != std::string::npos) {
+        if(line.find('{') != std::string::npos) {
             // Search for new simple headers
             auto base_regex = std::regex("([a-zA-Z]+) \\{");
             std::smatch base_match;
@@ -376,7 +377,7 @@ std::map<std::string, std::vector<Point>> read_electric_field(std::string file_n
         }
 
         // Look for close of section
-        if(line.find("}") != std::string::npos) {
+        if(line.find('}') != std::string::npos) {
             if(main_section == DFSection::ELECTRIC_FIELD && sub_section == DFSection::VALUES) {
                 if(data_count != region_electric_field_num.size()) {
                     throw std::runtime_error("incorrect number of electric field points");
@@ -386,7 +387,7 @@ std::map<std::string, std::vector<Point>> read_electric_field(std::string file_n
                     auto x = region_electric_field_num[i];
                     auto y = region_electric_field_num[i + 1];
                     auto z = region_electric_field_num[i + 2];
-                    region_electric_field_map[region].push_back(Point(x, y, z));
+                    region_electric_field_map[region].emplace_back(x, y, z);
                 }
 
                 region_electric_field_num.clear();
@@ -407,7 +408,7 @@ std::map<std::string, std::vector<Point>> read_electric_field(std::string file_n
         }
 
         // Look for key data pairs
-        if(line.find("=") != std::string::npos) {
+        if(line.find('=') != std::string::npos) {
             auto base_regex = std::regex("([a-zA-Z]+)\\s+=\\s+([\\S ]+)");
             std::smatch base_match;
             if(std::regex_match(line, base_match, base_regex) && base_match.ready()) {
