@@ -26,7 +26,7 @@ namespace allpix {
     public:
         /**
          * @brief Construct a digitized pixel hit
-         * @param pixel Location of the pixel
+         * @param pixel Object holding the information of the pixel
          * @param time Timing of the occurence of the hit
          * @param signal Signal data produced by the digitizer
          * @param pixel_charge Optional pointer to the related pixel charge

@@ -76,10 +76,13 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
        std::fabs(detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(postStepPoint->GetPosition())).z() -
                  (detector_->getModel()->getSensorCenter().z() + detector_->getModel()->getSensorSize().z() / 2.0)) < 1e-9) {
         // Add new MC particle track
+        auto local_entry = entry_points_[step->GetTrack()->GetTrackID()];
+        auto global_entry = detector_->getGlobalPosition(local_entry);
+        auto global_exit = static_cast<ROOT::Math::XYZPoint>(postStepPoint->GetPosition());
+        auto local_exit = detector_->getLocalPosition(global_exit);
+
         mc_particles_.emplace_back(
-            entry_points_[step->GetTrack()->GetTrackID()],
-            detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(postStepPoint->GetPosition())),
-            step->GetTrack()->GetDynamicParticle()->GetPDGcode());
+            local_entry, global_entry, local_exit, global_exit, step->GetTrack()->GetDynamicParticle()->GetPDGcode());
         id_to_particle_[step->GetTrack()->GetTrackID()] = static_cast<unsigned int>(mc_particles_.size() - 1);
     }
 

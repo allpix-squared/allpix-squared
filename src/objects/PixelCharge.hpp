@@ -24,7 +24,7 @@ namespace allpix {
     public:
         /**
          * @brief Construct a set of charges at a pixel
-         * @param pixel Location of the pixel holding the charges
+         * @param pixel Object holding the information of the pixel
          * @param charge Amount of charge stored at this pixel
          * @param propagated_charges Optional pointer to the related propagated charges
          */
