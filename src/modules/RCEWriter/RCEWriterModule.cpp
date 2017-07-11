@@ -104,15 +104,15 @@ void RCEWriterModule::run(unsigned int event_id) {
 
             // Fill the tree with received messages
             sensor.nhits_ += 1;
-            sensor.pix_x_[i] = hit.getPixel().x();                  // NOLINT
-            sensor.pix_y_[i] = hit.getPixel().y();                  // NOLINT
-            sensor.value_[i] = static_cast<Int_t>(hit.getSignal()); // NOLINT
+            sensor.pix_x_[i] = static_cast<Int_t>(hit.getPixel().getIndex().x()); // NOLINT
+            sensor.pix_y_[i] = static_cast<Int_t>(hit.getPixel().getIndex().y()); // NOLINT
+            sensor.value_[i] = static_cast<Int_t>(hit.getSignal());               // NOLINT
             // Set the  Timing and HitInCluster for each sesnor_tree (= 0 for now)
             sensor.timing_[i] = 0;         // NOLINT
             sensor.hit_in_cluster_[i] = 0; // NOLINT
 
-            LOG(TRACE) << "Detector Name: " << detector_name << ", X: " << hit.getPixel().x() << ", Y:" << hit.getPixel().y()
-                       << ", Signal: " << hit.getSignal();
+            LOG(TRACE) << "Detector Name: " << detector_name << ", X: " << hit.getPixel().getIndex().x()
+                       << ", Y:" << hit.getPixel().getIndex().y() << ", Signal: " << hit.getSignal();
         }
     }
 
