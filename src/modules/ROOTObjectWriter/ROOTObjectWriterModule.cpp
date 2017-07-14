@@ -209,5 +209,6 @@ void ROOTObjectWriterModule::finalize() {
     output_file_->Write();
 
     // Print statistics
-    LOG(INFO) << "Written " << write_cnt_ << " objects to " << branch_count << " branches";
+    LOG(STATUS) << "Wrote " << write_cnt_ << " objects to " << branch_count << " branches in file:" << std::endl
+                << getOutputPath(config_.get<std::string>("file_name", "data") + ".root", true);
 }
