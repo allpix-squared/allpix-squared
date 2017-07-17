@@ -36,12 +36,6 @@ ADD_DEFINITIONS(-DALLPIX_PROJECT_NAME="${CMAKE_PROJECT_NAME}" -DALLPIX_PROJECT_V
 # FIXME: this should be combined with the ADD_DEFINITIONS
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake.h" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
 
-#########################
-# allpix2 build options #
-#########################
-
-# OPTION(BUILD_spice  "Compile spice library interface?" OFF)
-
 ###############################
 # Setup the build environment #
 ###############################
