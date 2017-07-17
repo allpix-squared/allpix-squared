@@ -64,7 +64,7 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
         throw InvalidValueError(config_, "world_material", "material does not exists, use 'air' or 'vacuum'");
     }
 
-    world_material_ = materials_["vacuum"];
+    world_material_ = materials_[world_material];
     LOG(TRACE) << "Material of world is " << world_material_->GetName();
 
     // Calculate world size
