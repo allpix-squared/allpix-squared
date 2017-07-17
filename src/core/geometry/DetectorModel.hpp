@@ -174,7 +174,7 @@ namespace allpix {
          *
          * All elements should be covered by a box with \ref DetectorModel::getCenter as center. This means that the size
          * returned by this method is likely larger than the minimum possible size of a box around all elements. It will only
-         * return the minimum size if \ref DetectorModel::getCenter corresponds with the geometric center of the model.
+         * return the minimum size if \ref DetectorModel::getCenter corresponds to the geometric center of the model.
          */
         virtual ROOT::Math::XYZVector getSize() const {
             ROOT::Math::XYZVector max(std::numeric_limits<double>::lowest(),
@@ -192,7 +192,7 @@ namespace allpix {
                 max.SetZ(std::max(max.z(), (centers.at(i) + sizes.at(i) / 2.0).z()));
                 min.SetX(std::min(min.x(), (centers.at(i) - sizes.at(i) / 2.0).x()));
                 min.SetY(std::min(min.y(), (centers.at(i) - sizes.at(i) / 2.0).y()));
-                min.SetZ(std::max(min.z(), (centers.at(i) - sizes.at(i) / 2.0).z()));
+                min.SetZ(std::min(min.z(), (centers.at(i) - sizes.at(i) / 2.0).z()));
             }
 
             for(auto& support_layer : getSupportLayers()) {
@@ -203,7 +203,7 @@ namespace allpix {
                 max.SetZ(std::max(max.z(), (center + size / 2.0).z()));
                 min.SetX(std::min(min.x(), (center - size / 2.0).x()));
                 min.SetY(std::min(min.y(), (center - size / 2.0).y()));
-                min.SetZ(std::max(min.z(), (center - size / 2.0).z()));
+                min.SetZ(std::min(min.z(), (center - size / 2.0).z()));
             }
 
             ROOT::Math::XYZVector size;
