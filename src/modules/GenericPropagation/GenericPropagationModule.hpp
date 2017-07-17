@@ -82,6 +82,9 @@ namespace allpix {
         double electron_Ec_;
         double electron_Beta_;
 
+        // Precalculated value for Boltzmann constant:
+        double boltzmann_kT_;
+
         // Deposits for the bound detector in this event
         std::shared_ptr<DepositedChargeMessage> deposits_message_;
 

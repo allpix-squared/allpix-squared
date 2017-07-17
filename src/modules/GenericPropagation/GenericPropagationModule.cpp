@@ -83,6 +83,8 @@ GenericPropagationModule::GenericPropagationModule(Configuration config,
     electron_Vm_ = Units::get(1.53e9 * std::pow(temperature_, -0.87), "cm/s");
     electron_Ec_ = Units::get(1.01 * std::pow(temperature_, 1.55), "V/cm");
     electron_Beta_ = 2.57e-2 * std::pow(temperature_, 0.66);
+
+    boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * temperature_;
 }
 
 void GenericPropagationModule::create_output_plots(unsigned int event_num) {
@@ -464,11 +466,9 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
     };
 
     // Define a function to compute the diffusion
-    // FIXME This variable can be precomputed and stored
-    auto boltzmann_kT = Units::get(8.6173e-5, "eV/K") * temperature_;
     auto timestep = timestep_start_;
     auto electron_diffusion = [&](double efield_mag) -> Eigen::Vector3d {
-        double diffusion_constant = boltzmann_kT * electron_mobility(efield_mag);
+        double diffusion_constant = boltzmann_kT_ * electron_mobility(efield_mag);
         double diffusion_std_dev = std::sqrt(2. * diffusion_constant * timestep);
 
         // Compute the independent diffusion in three
