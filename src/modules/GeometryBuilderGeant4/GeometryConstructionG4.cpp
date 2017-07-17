@@ -152,9 +152,9 @@ void GeometryConstructionG4::init_materials() {
     materials_["epoxy"] = Epoxy;
 
     // Create Carbon Fiber material:
-    G4Material* CarbonFiber = new G4Material("CarbonFiber", 1.5 * CLHEP::g / CLHEP::cm3, 3);
-    CarbonFiber->AddElement(C, 0.6);
+    G4Material* CarbonFiber = new G4Material("CarbonFiber", 1.5 * CLHEP::g / CLHEP::cm3, 2);
     CarbonFiber->AddMaterial(Epoxy, 0.4);
+    CarbonFiber->AddElement(C, 0.6);
     materials_["carbonfiber"] = CarbonFiber;
 
     // Create PCB G-10 material
