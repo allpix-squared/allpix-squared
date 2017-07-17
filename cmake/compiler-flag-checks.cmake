@@ -27,3 +27,10 @@ ENDIF()
 IF(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
     SET ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-undefined,error")
 ENDIF()
+
+# Reduce Wstrict-overflow level for some GCC versions due to false positives:
+IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  IF(CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 5.4)
+     SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wstrict-overflow=2")
+  ENDIF()
+ENDIF()
