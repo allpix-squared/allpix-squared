@@ -105,9 +105,9 @@ compile-doxygen:
         - cmake -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - make reference
     artifacts:
-	paths:
-	    - reference/html
-	expire_in: 1 hour
+        paths:
+            - reference/html
+        expire_in: 1 hour
 
 # Automatically deploy the Doygen reference to the website:
 deploy-doxygen:
@@ -118,7 +118,7 @@ deploy-doxygen:
     # Docker image with tools to deploy to EOS
     image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
     script:
-	- deploy-eos
+        - deploy-eos
     # do not run any globally defined before_script or after_script for this step
     before_script: []
     after_script: []
