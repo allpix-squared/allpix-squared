@@ -100,7 +100,7 @@ FIND_PACKAGE(ROOT REQUIRED COMPONENTS Geom GenVector)
 IF(NOT ROOT_FOUND)
     MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
     "$ source YOUR_ROOT_DIR/bin/thisroot.sh")
-ENDIF(NOT ROOT_FOUND)
+ENDIF()
 
 # Check ROOT version
 IF (NOT ${ROOT_VERSION} VERSION_GREATER "6.0")
