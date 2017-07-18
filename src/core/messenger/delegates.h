@@ -246,12 +246,6 @@ namespace allpix {
          *          listener function
          */
         void process(std::shared_ptr<BaseMessage> msg, std::string name) override {
-#ifndef NDEBUG
-            // The type names should have been correctly resolved earlier
-            const BaseMessage* inst = msg.get();
-            assert(typeid(*inst) == typeid(R));
-#endif
-
             // Pass the message and mark as processed
             (this->obj_->*method_)(std::static_pointer_cast<BaseMessage>(msg), name);
             this->set_processed();
