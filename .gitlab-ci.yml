@@ -95,6 +95,8 @@ compile-doxygen:
     # Only run for new tags:
     only:
         - deploy-doxygen
+    tags:
+        - docker
     image: clicdp/cc7-base
     script:
         - export COMPILER_TYPE="gcc"
