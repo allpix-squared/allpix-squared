@@ -94,7 +94,7 @@ compile-doxygen:
     stage: compile
     # Only run for new tags:
     only:
-        - tags
+        - deploy-doxygen
     image: clicdp/cc7-base
     script:
         - export COMPILER_TYPE="gcc"
