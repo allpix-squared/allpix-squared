@@ -5,10 +5,6 @@
  *
  * Contains minimal dummy module to use as a start for the development of your own module
  *
- * To integrate your own module into the framework, follow the simple steps below
- * - Copy this module to a new directory [YourModuleName] in modules
- * - Modify CMakeLists.txt to build your new module
- *
  * Refer to the User's Manual for more details.
  */
 
