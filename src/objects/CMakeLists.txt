@@ -2,7 +2,8 @@
 INCLUDE_DIRECTORIES(SYSTEM ${ALLPIX_DEPS_INCLUDE_DIRS})
 
 # Load the generate dictionaries macro
-INCLUDE(${ROOT_USE_FILE}/../modules/RootNewMacros.cmake)
+GET_FILENAME_COMPONENT(ROOT_CMAKE_DIR ${ROOT_USE_FILE} DIRECTORY)
+INCLUDE(${ROOT_CMAKE_DIR}/modules/RootNewMacros.cmake)
 
 # Generate the ROOT dictionary
 ROOT_GENERATE_DICTIONARY(AllpixObjectsDictionary
