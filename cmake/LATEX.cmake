@@ -1708,6 +1708,7 @@ function(add_latex_targets_internal)
           "${HTLATEX_COMPILER_TEX4HT_POSTPROCESSOR_FLAGS}"
           "${HTLATEX_COMPILER_T4HT_POSTPROCESSOR_FLAGS}"
           ${HTLATEX_COMPILER_ARGS}
+	DEPENDS ${make_pdf_depends}
         VERBATIM
         )
       add_custom_target(${html_target}
