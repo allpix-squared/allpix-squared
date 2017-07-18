@@ -1698,18 +1698,7 @@ function(add_latex_targets_internal)
       set(default_build html)
     endif()
 
-    if(HTLATEX_COMPILER AND LATEX_MAIN_INPUT_SUBDIR)
-      message(STATUS
-        "Disabling HTML build for ${LATEX_TARGET_NAME}.tex because the main file is in subdirectory ${LATEX_MAIN_INPUT_SUBDIR}"
-        )
-      # The code below to run HTML assumes that LATEX_TARGET.tex is in the
-      # current directory. I have tried to specify that LATEX_TARGET.tex is
-      # in a subdirectory. That makes the build targets correct, but the
-      # HTML build still fails (at least for htlatex) because files are not
-      # generated where expected. I am getting around the problem by simply
-      # disabling HTML in this case. If someone really cares, they can fix
-      # this, but make sure it runs on many platforms and build programs.
-    elseif(HTLATEX_COMPILER)
+    if(HTLATEX_COMPILER)
       # htlatex places the output in a different location
       set(HTML_OUTPUT "${output_dir}/${LATEX_TARGET}.html")
       add_custom_command(OUTPUT ${HTML_OUTPUT}
@@ -1719,13 +1708,10 @@ function(add_latex_targets_internal)
           "${HTLATEX_COMPILER_TEX4HT_POSTPROCESSOR_FLAGS}"
           "${HTLATEX_COMPILER_T4HT_POSTPROCESSOR_FLAGS}"
           ${HTLATEX_COMPILER_ARGS}
-        DEPENDS
-          ${output_dir}/${LATEX_TARGET}.tex
-          ${output_dir}/${LATEX_TARGET}.dvi
         VERBATIM
         )
       add_custom_target(${html_target}
-        DEPENDS ${HTML_OUTPUT} ${dvi_target}
+        DEPENDS ${HTML_OUTPUT}
         SOURCES ${all_latex_sources}
         )
       if(NOT LATEX_EXCLUDE_FROM_DEFAULTS)
