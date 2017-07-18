@@ -54,7 +54,6 @@ ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::construct_linear
     LOG(TRACE) << "Constructing electric field from linear bias voltage";
 
     // Compute the electric field
-    LOG(DEBUG) << getDetector()->getModel()->getSensorSize().z();
     auto field_z = config_.get<double>("voltage") / getDetector()->getModel()->getSensorSize().z();
     LOG(INFO) << "Set linear electric field with magnitude " << Units::display(field_z, {"V/um", "V/mm"});
 
