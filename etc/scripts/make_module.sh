@@ -50,7 +50,7 @@ sed -e "s/Dummy/$MODNAME/g" \
     -e "s/\*NAME\*/$MYNAME/g" \
     -e "s/\*EMAIL\*/$MYMAIL/g" \
     -e "s/Functional/Immature/g" \
-    "$MODDIR/Dummy/README.md" > "$MODDIR/$MODNAME/README.md.txt"
+    "$MODDIR/Dummy/README.md" > "$MODDIR/$MODNAME/README.md"
 
 # Copy over source code skeleton:
 sed -e "s/Dummy/$MODNAME/g" "$MODDIR/Dummy/DummyModule.hpp" > "$MODDIR/$MODNAME/${MODNAME}Module.hpp" 
