@@ -106,10 +106,9 @@ compile-doxygen:
         - cd build
         - cmake -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - make reference
-        - ls -la reference
     artifacts:
         paths:
-            - reference/html/
+            - build/reference/html
         expire_in: 1 hour
 
 # Automatically deploy the Doygen reference to the website:
