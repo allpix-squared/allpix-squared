@@ -27,8 +27,8 @@ MESSAGE(STATUS "Building AllPix version ${ALLPIX_VERSION}.")
 
 # Define the project with the simple version
 STRING(REGEX MATCH "([0-9.]+)+" SIMPLE_VERSION "${ALLPIX_VERSION}")
-PROJECT(allpix VERSION ${SIMPLE_VERSION})
-
+# Set languages to NONE to allow the documentation to be built without CXX compiler:
+PROJECT(allpix VERSION ${SIMPLE_VERSION} LANGUAGES NONE)
 # Access the project name (for install locations) in the source
 ADD_DEFINITIONS(-DALLPIX_PROJECT_NAME="${CMAKE_PROJECT_NAME}" -DALLPIX_PROJECT_VERSION="${ALLPIX_VERSION}")
 
@@ -36,9 +36,26 @@ ADD_DEFINITIONS(-DALLPIX_PROJECT_NAME="${CMAKE_PROJECT_NAME}" -DALLPIX_PROJECT_V
 # FIXME: this should be combined with the ADD_DEFINITIONS
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake.h" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
 
+###############################################
+# Setup the environment for the documentation #
+###############################################
+
+OPTION(BUILD_DOCS_ONLY "Build documentation only" OFF)
+
+# Add targets for Doxygen code reference and LaTeX User manual
+ADD_SUBDIRECTORY(doc)
+
+# If only building docs, stop processing the rest of the CMake file:
+IF(BUILD_DOCS_ONLY)
+  RETURN()
+ENDIF()
+
 ###############################
 # Setup the build environment #
 ###############################
+
+# Enable CXX as project language to perform compiler checks:
+ENABLE_LANGUAGE(CXX)
 
 # Additional packages to be searched for by cmake
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
@@ -153,9 +170,6 @@ ADD_SUBDIRECTORY(src/exec)
 
 # Handle the included tools
 ADD_SUBDIRECTORY(tools)
-
-# Add targets for Doxygen code reference and LaTeX User manual
-ADD_SUBDIRECTORY(doc)
 
 ###################################
 # Setup tests for allpix          #
