@@ -137,3 +137,11 @@ export Eigen3_DIR=${Eigen_HOME}/share/eigen3/cmake/
 
 export Doxygen_HOME=${SFTREPO}/lcg/releases/doxygen/1.8.11-ae1d3/${BUILD_FLAVOUR}/bin/
 export PATH="$Doxygen_HOME:$PATH"
+
+#--------------------------------------------------------------------------------
+#     Git
+#--------------------------------------------------------------------------------
+
+export Git_HOME=${CLICREPO}/software/git/2.10.2/${BUILD_FLAVOUR}
+source ${Git_HOME}/setup.sh
+
