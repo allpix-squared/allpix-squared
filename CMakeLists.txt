@@ -95,7 +95,7 @@ ENDIF()
 # Define the libraries
 SET(ALLPIX_LIBRARIES "")
 
-# ROOT is required for vector etc
+# ROOT is required for vector and persistency etc
 FIND_PACKAGE(ROOT REQUIRED COMPONENTS Geom GenVector)
 IF(NOT ROOT_FOUND)
     MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
