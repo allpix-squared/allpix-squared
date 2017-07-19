@@ -37,55 +37,69 @@ Point barycentric_interpolation(Point query_point,
         throw "Baricentric interpolation without only 4 vertices!";
     }
 
-    if(tetra_volume > 0)
+    if(tetra_volume > 0) {
         volume_signal = true;
-    if(tetra_volume < 0)
+    }
+    if(tetra_volume < 0) {
         volume_signal = false;
+    }
 
     // Jacobi Matrix for volume calculation
     matrix_sub1 << 1, 1, 1, 1, query_point.x, tetra_vertices[1].x, tetra_vertices[2].x, tetra_vertices[3].x, query_point.y,
         tetra_vertices[1].y, tetra_vertices[2].y, tetra_vertices[3].y, query_point.z, tetra_vertices[1].z,
         tetra_vertices[2].z, tetra_vertices[3].z;
     tetra_subvol_1 = (matrix_sub1.determinant()) / 6;
-    if(tetra_subvol_1 > 0)
+    if(tetra_subvol_1 > 0) {
         sub_1_signal = true;
-    if(tetra_subvol_1 < 0)
+    }
+    if(tetra_subvol_1 < 0) {
         sub_1_signal = false;
-    if(tetra_subvol_1 == 0)
+    }
+    if(tetra_subvol_1 == 0) {
         sub_1_signal = volume_signal;
+    }
 
     matrix_sub2 << 1, 1, 1, 1, tetra_vertices[0].x, query_point.x, tetra_vertices[2].x, tetra_vertices[3].x,
         tetra_vertices[0].y, query_point.y, tetra_vertices[2].y, tetra_vertices[3].y, tetra_vertices[0].z, query_point.z,
         tetra_vertices[2].z, tetra_vertices[3].z;
     tetra_subvol_2 = (matrix_sub2.determinant()) / 6;
-    if(tetra_subvol_2 > 0)
+    if(tetra_subvol_2 > 0) {
         sub_2_signal = true;
-    if(tetra_subvol_2 < 0)
+    }
+    if(tetra_subvol_2 < 0) {
         sub_2_signal = false;
-    if(tetra_subvol_2 == 0)
+    }
+    if(tetra_subvol_2 == 0) {
         sub_2_signal = volume_signal;
+    }
 
     matrix_sub3 << 1, 1, 1, 1, tetra_vertices[0].x, tetra_vertices[1].x, query_point.x, tetra_vertices[3].x,
         tetra_vertices[0].y, tetra_vertices[1].y, query_point.y, tetra_vertices[3].y, tetra_vertices[0].z,
         tetra_vertices[1].z, query_point.z, tetra_vertices[3].z;
     tetra_subvol_3 = (matrix_sub3.determinant()) / 6;
-    if(tetra_subvol_3 > 0)
+    if(tetra_subvol_3 > 0) {
         sub_3_signal = true;
-    if(tetra_subvol_3 < 0)
+    }
+    if(tetra_subvol_3 < 0) {
         sub_3_signal = false;
-    if(tetra_subvol_3 == 0)
+    }
+    if(tetra_subvol_3 == 0) {
         sub_3_signal = volume_signal;
+    }
 
     matrix_sub1 << 1, 1, 1, 1, tetra_vertices[0].x, tetra_vertices[1].x, tetra_vertices[2].x, query_point.x,
         tetra_vertices[0].y, tetra_vertices[1].y, tetra_vertices[2].y, query_point.y, tetra_vertices[0].z,
         tetra_vertices[1].z, tetra_vertices[2].z, query_point.z;
     tetra_subvol_4 = (matrix_sub1.determinant()) / 6;
-    if(tetra_subvol_4 > 0)
+    if(tetra_subvol_4 > 0) {
         sub_4_signal = true;
-    if(tetra_subvol_4 < 0)
+    }
+    if(tetra_subvol_4 < 0) {
         sub_4_signal = false;
-    if(tetra_subvol_4 == 0)
+    }
+    if(tetra_subvol_4 == 0) {
         sub_4_signal = volume_signal;
+    }
 
     // Electric field interpolation
     efield_int.x = (tetra_subvol_1 * tetra_vertices_field[0].x + tetra_subvol_2 * tetra_vertices_field[1].x +
@@ -277,8 +291,9 @@ int main(int argc, char** argv) {
                                 vertex_index.push_back(i3);
                                 vertex_distance.push_back(unibn::L2Distance<Point>::compute(points[results[i3]], q));
                                 for(i4 = 3; i4 < results.size(); i4++) {
-                                    if(i1 == i2 || i1 == i3 || i1 == i4 || i2 == i3 || i2 == i4 || i3 == i4)
+                                    if(i1 == i2 || i1 == i3 || i1 == i4 || i2 == i3 || i2 == i4 || i3 == i4) {
                                         continue;
+                                    }
                                     matrix << 1, 1, 1, 1, points[results[i1]].x, points[results[i2]].x,
                                         points[results[i3]].x, points[results[i4]].x, points[results[i1]].y,
                                         points[results[i2]].y, points[results[i3]].y, points[results[i4]].y,
@@ -292,8 +307,10 @@ int main(int argc, char** argv) {
                                         vertex_distance.push_back(unibn::L2Distance<Point>::compute(points[results[i4]], q));
                                         try {
                                             e = barycentric_interpolation(q, tetra_vertices, tetra_vertices_field, volume);
-                                            // e = barycentric_interpolation(q, tetra_vertices, tetra_vertices_field,
-                                            // vertex_index, vertex_distance, volume, radius, results.size());
+                                            // e = barycentric_interpolation(q,
+                                            // tetra_vertices, tetra_vertices_field,
+                                            // vertex_index, vertex_distance, volume,
+                                            // radius, results.size());
                                         } catch(std::exception) {
                                             tetra_vertices.pop_back();
                                             tetra_vertices_field.pop_back();
@@ -310,8 +327,9 @@ int main(int argc, char** argv) {
                                     vertex_index.pop_back();
                                     vertex_distance.pop_back();
                                 }
-                                if(tetra_vertices.size() == 4)
+                                if(tetra_vertices.size() == 4) {
                                     break;
+                                }
                             } // end for 3
                             if(tetra_vertices.size() == 2) {
                                 tetra_vertices.pop_back();
@@ -319,8 +337,9 @@ int main(int argc, char** argv) {
                                 vertex_index.pop_back();
                                 vertex_distance.pop_back();
                             }
-                            if(tetra_vertices.size() == 4)
+                            if(tetra_vertices.size() == 4) {
                                 break;
+                            }
                         } // end for 2
                         if(tetra_vertices.size() == 1) {
                             tetra_vertices.pop_back();
@@ -328,12 +347,14 @@ int main(int argc, char** argv) {
                             vertex_index.pop_back();
                             vertex_distance.pop_back();
                         }
-                        if(tetra_vertices.size() == 4)
+                        if(tetra_vertices.size() == 4) {
                             break;
+                        }
                     } // end for 1
 
-                    if(tetra_vertices.size() == 4)
+                    if(tetra_vertices.size() == 4) {
                         break;
+                    }
                     radius = radius + 0.5f;
                 } // end while
 
