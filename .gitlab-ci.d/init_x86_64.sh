@@ -142,6 +142,6 @@ export PATH="$Doxygen_HOME:$PATH"
 #     Git
 #--------------------------------------------------------------------------------
 
-export Git_HOME=${CLICREPO}/software/git/2.10.2/${BUILD_FLAVOUR}
+export Git_HOME=${CLICREPO}/software/git/2.13.2/${BUILD_FLAVOUR}
 source ${Git_HOME}/setup.sh
 
