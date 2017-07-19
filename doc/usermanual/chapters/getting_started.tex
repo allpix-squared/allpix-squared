@@ -185,13 +185,13 @@ The simulation should then start. It should output similar output as the example
 
 If problems occur, please make sure you have an up-to-date and properly installed version of \apsq (see the installation instructions in Section \ref{sec:installation}). If modules and models fail to load, more information about loading problems can be found in the detailed framework description in Section \ref{sec:framework}.
 
-\subsubsection{Adding new modules}
+\subsection{Adding More Modules}
 Before going to more advanced configurations, a few simple modules are discussed which a user might want to add.
 
 \paragraph{Visualization}
 Displaying the geometry and the particle tracks helps a lot in both checking and interpreting the results. Visualization is fully supported through Geant4, supporting all the options provided by Geant4~\cite{geant4vis}. Using the Qt viewer with the OpenGL driver is however the recommended option as long as the installed version of Geant4 supports it.
 
-To add the visualization, the \texttt{VisualizationGeant4} section should be added at the end of the configuration file before running the simulation again. An example configuration with some useful configuration parameters is given below:
+To add the visualization, the \texttt{VisualizationGeant4} section should be added at the end of the configuration file before running the simulation again. An example configuration with some useful parameters is given below:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 [VisualizationGeant4]
 # Setup to use the Qt gui
@@ -228,23 +228,37 @@ simple_view = 1
 # See more parameters above
 \end{minted}
 
-\todo{This should be finalized after fixing the visualization}
+More information about all the possible configuration parameters can be found in the module documentation in Section \ref{sec:modules}.
 
-\paragraph{Linear Electric Field}
+\paragraph{Electric Fields}
 \label{sec:module_electric_field}
 The example configuration before already contained a module for adding a linear electric field to the sensitive detector. All detectors by default do not have any electric field. This will make the \texttt{GenericPropagation} module slow, because it will wait for the propagated charges to reach the end of the sensor, which can take a long time with diffusion solely. Therefore a simple linear electric field have been added to the sensors. The section below sets the electric field on every point in the pixel grid to the voltage divided by the thickness of the sensor.
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
-# Add a linear electric field
-[ElectricFieldInputLinear]
+# Add a electric field
+[ElectricFieldReader]
+# Set it to be linear
+model = "linear"
 # Bias voltage used to create the linear electric field
 voltage = 50V
 \end{minted}
-More complex electric fields from TCAD can also be added as explained in more detail in Section \ref{sec:tcad_electric_field_simulations}.
 
-\todo{This is already added to the example, because it is very slow otherwise}
+\todo{The issue with slow propagation should be fixed}
 
-\subsubsection{Advanced configuration}
-\paragraph{Redirect Module Inputs and Outputs}
+A fully specified electric field in the detectors can also be provided using the .init format. The init format is format used by the PixelAV software~\cite{swartz2002detailed,swartz2003cms} after conversions from internal TCAD formats. These fields can be attached to specific detectors using the standard syntax for detector binding. A possible configuration would be:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+[ElectricFieldReader]
+# Bind the electric field to the timepix sensor
+name = "tpx"
+# Specify the model is in the init format
+model = "init"
+# Name of the file containing the electric field
+file_name = "example_electric_field.init"
+\end{minted}
+An example electric field (which the name used above) can be found in the \textit{etc} directory of the \apsq repository. 
+
+To import the electric fields from TCAD into \apsq a converter tool is included in the framework. A detailed description on how this tool should be used and how it exactly works can be found in Section \ref{sec:tcad_electric_field_converter}.
+
+\subsection{Redirect Module Inputs and Outputs}
 \label{sec:redirect_module_input_outputs}
 By default it is not allowed to have the same type of module (linked to the same detector), but in several cases it may be useful to run the same module with different settings. The \apsq framework support this by allowing to redirect the input and output data of every module. A module sends it output by default to all modules listening to the type of object it dispatches. It is however possible to specify a certain name in addition to the type of the data.
 
@@ -281,27 +295,11 @@ input = "high_noise"
 
 \todo{Maybe we need an option to split the modules}
 
-\paragraph{Using TCAD Electric Field Simulations}
-\label{sec:tcad_electric_field_simulations}
-An electric field in the detectors can be specified using the .init format by using the ElectricFieldReaderInit module. The init format is format used by the PixelAV software~\cite{swartz2002detailed,swartz2003cms} after conversions from internal TCAD formats. These fields can be attached to specific detectors using the standard syntax for detector binding. An example would be:
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
-[ElectricFieldReaderInit]
-# Bind the electric field to the timepix sensor
-name = "tpx"
-# Name of the file containing the electric field
-file_name = "example_electric_field.init"
-\end{minted}
-An example electric field (which the name used above) can be found in the \textit{etc} directory of the \apsq repository.
-
-\todo{This should be extended}
-
-% \paragraph{Choosing the Propagation Modules}
-
 \subsection{Logging and Verbosity Levels}
 \label{sec:logging_verbosity}
 \apsq is designed to identify mistakes and implementation errors as early as possible and tries to give the user a clear indication about the problem. The amount of feedback can be controlled using different log levels. The global log level can be set using the global parameter \textbf{log\_level}. The log level can be overridden for a specific module by adding the \textbf{log\_level} parameter to that module. The following log levels are currently supported:
 \begin{itemize}
-\item \textbf{FATAL}: Indicates a fatal error that should and will lead to direct termination of the application. Typically only emitted in the main executable after catching exceptions, because exceptions are the preferred way of error handling as discussed in Section \ref{sec:error_reporting_exceptions}. An example of a fatal error is an invalid configuration parameter.
+\item \textbf{FATAL}: Indicates a fatal error that should and will lead to direct termination of the application. Typically only emitted in the main executable after catching exceptions, because exceptions are the preferred way of fatal error handling as discussed in Section \ref{sec:error_reporting_exceptions}. An example of a fatal error is an invalid configuration parameter.
 \item \textbf{STATUS}: Important informational messages about the status of the simulation. Should only be used for informational messages that have to be logged in every run (unless the user wants to only fetch fatal errors)
 \item \textbf{ERROR}: Severe error that should never happen during a normal well-configured simulation run. Frequently leads to a fatal error and can be used to provide extra information that may help in finding the reason of the problem. For example used to indicate the reason a dynamic library cannot be loaded.
 \item \textbf{WARNING}: Indicate conditions that should not happen normally and possibly lead to unexpected results. The framework can however typically continue without problems after a warning. Can for example indicate that a output message is not used and that a module may therefore do unnecessary work.
@@ -322,7 +320,7 @@ More details about the logging system and the procedure for reporting errors in 
 
 \subsection{Storing Output Data}
 \label{sec:storing_output_data}
-Saving the output to persistent storage is of primary importance for later review and analysis. \apsq primarily uses ROOT for storing output data, because it supports writing arbitrary objects and is a standard tool in High-Energy Physics. The \texttt{ROOTObjectWriter} automatically saves all the data objects written by the modules to a TTree~\cite{roottree} for more information about TTrees). The module stores all different object types to a separate tree, creating a branch for every combination of detector and the name given to the output as explained in Section \ref{sec:redirect_module_input_outputs}. For each event, values are added to the leafs of the branches containing the data of the objects. This allows for easy histogramming of the acquired data over the total run using the ROOT utilities.
+Saving the output to persistent storage is of primary importance for later review and analysis. \apsq primarily uses ROOT for storing output data, because it supports writing arbitrary objects and is a standard tool in High-Energy Physics. The \texttt{ROOTObjectWriter} automatically saves all the data objects written by the modules to a TTree~\cite{roottree} for more information about TTrees). The module stores all different object types to a separate tree, creating a branch for every combination of detector and the name given to the output as explained in Section \ref{sec:redirect_module_input_outputs}. For each event, values are added to the leafs of the branches containing the data of the objects. This allows for easy histogramming of the acquired data over the total run using the ROOT utilities. Relations between objects within a single event are internally stored as TRef allowing to fetch related objects as long as these are loaded in memory. An exception is thrown when trying to fetch an object that is not loaded.
 
 To save the output of all objects an \texttt{ROOTObjectWriter} has to be added with a \texttt{file\_name} parameter (without the root suffix) to specify the file location of the created ROOT file in the global output directory. The default file name is \texttt{data} which means that \textbf{data.root} is created in the output directory (next to the ROOT file which contain the output of the modules, having the name \textit{modules.root} by default). To replicate the default behaviour the following configuration can be used:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
