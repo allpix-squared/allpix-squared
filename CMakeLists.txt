@@ -5,13 +5,8 @@ IF(COMMAND CMAKE_POLICY)
   CMAKE_POLICY(SET CMP0048 NEW) # set project version
 ENDIF(COMMAND CMAKE_POLICY)
 
-# Include special AllPix CMake file if it is specified
-IF(DEFINED ENV{ALLPIX_CMAKE_INCLUDE_FILE})
-    INCLUDE($ENV{ALLPIX_CMAKE_INCLUDE_FILE})
-ENDIF()
-
 # Set default version
-SET(ALLPIX_VERSION "v0.1")
+SET(ALLPIX_VERSION "v0.2")
 
 # Set default build type
 IF(NOT CMAKE_BUILD_TYPE)
