@@ -151,7 +151,7 @@ int main(int argc, char** argv) {
     auto region = "bulk"; // Sensor bulk region name on DF-ISE file
     float radius = 1;     // Neighbour vertex search radius
 
-    int64_t begin, end;
+    clock_t begin, end;
     begin = clock();
 
     std::cerr << "Reading grid" << std::endl;
