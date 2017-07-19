@@ -129,6 +129,7 @@ deploy-doxygen:
 
 # Compile usermanual:
 compile-usermanual:
+    stage: compile
     tags:
       - docker
     image: clicdp/fedora-latex
