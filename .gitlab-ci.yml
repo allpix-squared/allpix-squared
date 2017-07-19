@@ -126,3 +126,25 @@ deploy-doxygen:
     # do not run any globally defined before_script or after_script for this step
     before_script: []
     after_script: []
+
+# Compile usermanual:
+compile-usermanual:
+    tags:
+      - docker
+    image: clicdp/fedora-latex
+    script:
+        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab-ci.d/load_deps.sh
+        - mkdir public
+        - mkdir build
+        - cd build
+        - cmake -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
+        - make pdf
+        - make html
+        - mv usermanual/allpix-manual.html ../public
+        - mv usermanual/allpix-manual.pdf ../public
+    artifacts:
+        paths:
+          - public
+        expire_in: 1 hour
+
