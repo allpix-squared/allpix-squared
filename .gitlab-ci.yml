@@ -116,7 +116,7 @@ deploy-doxygen:
     stage: deploy
     # Only run for new tags:
     only:
-        - tags
+        - deploy-doxygen
     # Docker image with tools to deploy to EOS
     image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
     script:
