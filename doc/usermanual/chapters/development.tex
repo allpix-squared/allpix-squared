@@ -3,14 +3,10 @@
 \label{sec:building_new_module}
 Before creating a module it is essential to read through the framework module manager documentation in Section \ref{sec:module_manager}, the information about the directory structure in Section \ref{sec:module_files} and the details of the module structure in Section \ref{sec:module_structure}. Thereafter the steps below should provide enough details for starting with a new module \texttt{ModuleName} (constantly replacing  \texttt{ModuleName} with the real name of the new module):
 \begin{enumerate}
-\item The whole directory contents of \textit{src/modules/DummyModule/} should copied to \textit{src/modules/\texttt{ModuleName}/}.
-\item The DummyModule.hpp should be renamed to \texttt{ModuleName}Module.hpp and the DummyModule.cpp to \texttt{ModuleName}Module.cpp.
-\item The CMakeLists.txt has to be modified depending on the module type. Depending on the type of the module the first line is different. If the new module is a unique module it should be ALLPIX\_UNIQUE\_MODULE(MODULE\_NAME), if it is a detector-specific module it should be ALLPIX\_DETECTOR\_MODULE(MODULE\_NAME). Next, the source file created in the previous step has to replace the original dummy source file.
-\item The header and source files have to be implemented following the constructor conventions for the specific type of module.
-\item The initial documentation in the README.md and the \LaTeX-file \texttt{ModuleName}.tex can already be started with before the module is implemented.
-\item Now the the initial parts of the constructor, and possibly the \texttt{init}, \texttt{run} and/or \texttt{finalize} methods can be written, depending on what the new module is supposed to do.
+\item Run the module initialization script at \textit{etc/scripts/make\_module.sh} in the repository. The script will ask for the name of the model and the type (unique or detector-specific). It creates the directory with a minimal example toe get started together with a setup of the documentation in \textit{README.md}.
+\item Before continuing to implement the module it is recommended to check and update the introductory documention in \textit{README.md}. Also the Doxygen documentation in \textit{\texttt{ModuleName}.hpp} can be extended to give a basic description of the module.
+\item Now the constructor, and possibly the \texttt{init}, \texttt{run} and/or \texttt{finalize} methods can be written, depending on what the new module needs.
 \end{enumerate}
-\todo{Part of the process above can be automized in a script}
 
 After this, it is up to the developer to implement all the required functionality in the module. Keep considering however that at some point it may be beneficial to split up modules to support the modular design of \apsq. Various sources which may be primarily useful during the development of the module include:
 \begin{itemize}
@@ -20,9 +16,16 @@ After this, it is up to the developer to implement all the required functionalit
 \item The latest version of the source code of all the modules (and the core itself). Freely available to copy and modify under the MIT license at \url{https://gitlab.cern.ch/simonspa/allpix-squared/tree/master}.
 \end{itemize}
 
-Any module that may be useful for other people can be contributed back to the main reposity. It is very much encouraged to send a merge-request at \url{https://gitlab.cern.ch/simonspa/allpix-squared/merge_requests}.
+Any module that may be useful for other people can be contributed back to the main repository. It is very much encouraged to send a merge-request at \url{https://gitlab.cern.ch/simonspa/allpix-squared/merge_requests}.
 
 \subsection{Adding a New Detector Model}
 \label{sec:adding_detector_model}
-\wip
-\todo{The format for the detector models should be discussed and approved before this section can be finished}
+Custom detector models can be easily added to the framework. Required information, before writing the model, is Section \label{sec:config_file_format} describing the file format, Section \label{sec:config_values} for information about the units used in \apsq and the full Section \ref{sec:models_geometry} describing the geometry and detector models. In particular Section \ref{sec:detector_models} explains all the parameters of the detector model. The default models shipped in \textit{models} could serve as examples. To write your own module follow the steps below:
+\begin{enumerate}
+\item Create a new file with the internal name of the model followed by the \textit{.conf} suffix (for example \texttt{your\_model.conf}).
+\item Add a configuration parameter \texttt{type} with the type of the model, at the moment either 'monolithic' or 'hybrid' for respectively monolithic sensors or hybrid models with bump bonds.
+\item Add all the required parameters and possibly other optional parameters explained in Section \ref{sec:detector_models}.
+\item Include the detector model in the search path of the framework by adding the \texttt{model\_path} parameter to the general setting of the main configuration (see Section \ref{sec:framework_parameters}) pointing to either directly to the detector model file or the detector containing it (note that files in this path overwrite models with the same name in the default model folder). 
+\end{enumerate}
+
+Models can be contributed to the repository to make them available to other users of the framework. To add the detector model to the framework the configuration file should be moved to the \textit{models} folder of the repository. Then the file should be added to the installation target in the \textit{CMakeLists.txt} file in the \textit{models} directory. Afterwards a merge-request can be created at \url{https://gitlab.cern.ch/simonspa/allpix-squared/merge_requests}.
