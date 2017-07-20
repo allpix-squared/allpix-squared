@@ -157,9 +157,9 @@ int main(int argc, char** argv) {
     }
     std::string filename = argv[1];
     if(argc > 2) {
-        xdiv = atoi(argv[2]); // New mesh X pitch
-        ydiv = atoi(argv[3]); // New mesh Y pitch
-        zdiv = atoi(argv[4]); // New mesh Z pitch
+        xdiv = static_cast<int>(strtod(argv[2], NULL)); // New mesh X pitch
+        ydiv = static_cast<int>(strtod(argv[3], NULL)); // New mesh Y pitch
+        zdiv = static_cast<int>(strtod(argv[4], NULL)); // New mesh Z pitch
     }
 
     auto region = "bulk"; // Sensor bulk region name on DF-ISE file
@@ -229,9 +229,16 @@ int main(int argc, char** argv) {
 
     // Creating a new mesh points cloud with a regular pitch
     std::vector<Point> e_field_new_mesh;
-    for(double x = minx + (maxx - minx) / (2.0 * xdiv); x <= maxx; x += (maxx - minx) / xdiv) {
-        for(double y = miny + (maxy - miny) / (2.0 * ydiv); y <= maxy; y += (maxy - miny) / ydiv) {
-            for(double z = minz + (maxz - minz) / (2.0 * zdiv); z <= maxz; z += (maxz - minz) / zdiv) {
+    double xstep = (maxx - minx) / static_cast<double>(xdiv);
+    double ystep = (maxy - miny) / static_cast<double>(ydiv);
+    double zstep = (maxz - minz) / static_cast<double>(zdiv);
+
+    double x = minx + xstep / 2.0;
+    for(int i = 0; i < xdiv; ++i) {
+        double y = miny + ystep / 2.0;
+        for(int j = 0; j < ydiv; ++j) {
+            double z = minz + zstep / 2.0;
+            for(int k = 0; k < xdiv; ++k) {
                 Point q(x, y, z); // New mesh vertex
                 Point e(x, y, z); // Corresponding, to be interpolated, electric field
 
@@ -359,8 +366,11 @@ int main(int argc, char** argv) {
                 } // end while
 
                 e_field_new_mesh.push_back(e);
+                z += zstep;
             }
+            y += ystep;
         }
+        x += xstep;
     }
 
     std::ofstream init_file;
