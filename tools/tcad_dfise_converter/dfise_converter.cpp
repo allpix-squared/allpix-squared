@@ -318,7 +318,7 @@ int main(int argc, char** argv) {
                                             // tetra_vertices, tetra_vertices_field,
                                             // vertex_index, vertex_distance, volume,
                                             // radius, results.size());
-                                        } catch(std::exception) {
+                                        } catch(std::exception&) {
                                             tetra_vertices.pop_back();
                                             tetra_vertices_field.pop_back();
                                             vertex_index.pop_back();
