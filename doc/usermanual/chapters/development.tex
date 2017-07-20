@@ -20,7 +20,7 @@ Any module that may be useful for other people can be contributed back to the ma
 
 \subsection{Adding a New Detector Model}
 \label{sec:adding_detector_model}
-Custom detector models can be easily added to the framework. Required information, before writing the model, is Section \label{sec:config_file_format} describing the file format, Section \label{sec:config_values} for information about the units used in \apsq and the full Section \ref{sec:models_geometry} describing the geometry and detector models. In particular Section \ref{sec:detector_models} explains all the parameters of the detector model. The default models shipped in \textit{models} could serve as examples. To write your own module follow the steps below:
+Custom detector models can be easily added to the framework. Required information, before writing the model, is Section \ref{sec:config_file_format} describing the file format, Section \ref{sec:config_values} for information about the units used in \apsq and the full Section \ref{sec:models_geometry} describing the geometry and detector models. In particular Section \ref{sec:detector_models} explains all the parameters of the detector model. The default models shipped in \textit{models} could serve as examples. To write your own module follow the steps below:
 \begin{enumerate}
 \item Create a new file with the internal name of the model followed by the \textit{.conf} suffix (for example \texttt{your\_model.conf}).
 \item Add a configuration parameter \texttt{type} with the type of the model, at the moment either 'monolithic' or 'hybrid' for respectively monolithic sensors or hybrid models with bump bonds.
