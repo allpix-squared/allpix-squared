@@ -43,5 +43,7 @@
 \newcommand{\version}{\lstinline|@ALLPIX_VERSION@|}
 \newcommand{\project}{@CMAKE_PROJECT_NAME@}
 
-% Use new lines in FAQ 
-\setlist[description]{style=nextline}
+% Use new lines in FAQ
+% FIXME this creates an issue when running htlatex for HTML output:
+% ! Argument of \enit@postlabel@i has an extra }.
+%\setlist[description]{style=nextline}
