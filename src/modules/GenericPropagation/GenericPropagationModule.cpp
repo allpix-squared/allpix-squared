@@ -62,6 +62,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration config,
     config_.setDefault<double>("timestep_start", Units::get(0.01, "ns"));
     config_.setDefault<double>("timestep_min", Units::get(0.0005, "ns"));
     config_.setDefault<double>("timestep_max", Units::get(0.1, "ns"));
+    config_.setDefault<double>("integration_time", Units::get(25, "ns"));
     config_.setDefault<unsigned int>("charge_per_step", 10);
 
     config_.setDefault<bool>("output_plots", false);
@@ -75,6 +76,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration config,
     timestep_min_ = config_.get<double>("timestep_min");
     timestep_max_ = config_.get<double>("timestep_max");
     timestep_start_ = config_.get<double>("timestep_start");
+    integration_time_ = config_.get<double>("integration_time");
     target_spatial_precision_ = config_.get<double>("spatial_precision");
     output_plots_ = config_.get<bool>("output_plots");
     output_plots_step_ = config_.get<double>("output_plots_step");
@@ -499,7 +501,8 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
     // FIXME: we need to determine what would be a good time to stop
     double zero_vec[] = {0, 0, 0};
     double last_time = std::numeric_limits<double>::lowest();
-    while(detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
+    while(detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position)) &&
+          runge_kutta.getTime() < integration_time_) {
         // Update output plots if necessary (depending on the plot step)
         if(output_plots_ && runge_kutta.getTime() - last_time > output_plots_step_) {
             output_plot_points_.back().second.push_back(static_cast<ROOT::Math::XYZPoint>(runge_kutta.getValue()));
