@@ -84,6 +84,7 @@ The detector configuration consist of a set of section headers describing the de
 \item The 3D \textbf{position} in the world frame in the order x, y, z. See Section \ref{sec:models_geometry} for details.
 \item The \textbf{orientation} specified as Z-X-Z extrinsic Euler angle. This means the detector is rotated first around the world's Z-axis, then around the world's X-axis and then again around the global Z-axis. See Section \ref{sec:models_geometry} for details.
 \end{itemize}
+Furthermore it is possible to specialize certain parameters of the detector models, which is explained in more detail in Section \ref{sec:detector_models}.
 
 An example configuration file of one test detector and two Timepix~\cite{timepix} models is given below. 
 \inputminted[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}{../../etc/manual_detector.conf}

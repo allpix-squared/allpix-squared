@@ -277,7 +277,7 @@ if(hybrid_model != nullptr) {
 \end{minted}
 
 \nlparagraph{Specializing detector models}
-A detector model contains default values for all the parameters. Some parameters like the sensor thickness can however vary between different detectors of the same general model. To allow for easy adjustment of these parameters, models can be specialized in the detector configuration file introduced in \ref{sec:detector_config}. Most of the model parameters (except critical parameters like the model type) can be changed by adding a parameter with the exact same key as the detector model file and the specialized value. The framework will then internally automatically create a copy of this model with the added change. 
+A detector model contains default values for all the parameters. Some parameters like the sensor thickness can however vary between different detectors of the same general model. To allow for easy adjustment of these parameters, models can be specialized in the detector configuration file introduced in \ref{sec:detector_config}. All of the model parameters, except the type parameter, in the header at the top (thus not the support layers) can be changed by adding a parameter with the exact same key to the detector model file with the specialized value. The framework will then internally automatically create a copy of this model with the requested change. 
 
 \nlparagraph{Search order for models}
 To support different detector models and storage locations the framework supports model readers. The core geometry manager does also read models and will read all remaining models, not parsed earlier, before the geometry is closed. The model readers and the core geometry manager should search for model files in the following order.
