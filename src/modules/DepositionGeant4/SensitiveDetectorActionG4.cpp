@@ -134,8 +134,6 @@ void SensitiveDetectorActionG4::EndOfEvent(G4HCofThisEvent*) {
             }
         }
 
-        deposits_[0].getMCParticle();
-
         // Create a new charge deposit message
         auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(deposits_), detector_);
 
