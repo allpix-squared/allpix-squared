@@ -70,6 +70,7 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
         }
         entry_points_[step->GetTrack()->GetTrackID()] = entry_position;
     }
+
     // Add MCParticle for the last step in the volume if it is at the edge of the sensor
     // FIXME Current method does not make sense if the incoming particle is not the same as the outgoing particle
     if(step->IsLastStepInVolume() &&
@@ -113,7 +114,6 @@ void SensitiveDetectorActionG4::EndOfEvent(G4HCofThisEvent*) {
 
     // Create new mc particle vector
     mc_particles_ = std::vector<MCParticle>();
-    id_to_particle_.clear();
 
     // Send a new message if we have any deposits
     if(!deposits_.empty()) {
@@ -134,6 +134,8 @@ void SensitiveDetectorActionG4::EndOfEvent(G4HCofThisEvent*) {
             }
         }
 
+        deposits_[0].getMCParticle();
+
         // Create a new charge deposit message
         auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(deposits_), detector_);
 
@@ -144,6 +146,7 @@ void SensitiveDetectorActionG4::EndOfEvent(G4HCofThisEvent*) {
         deposits_ = std::vector<DepositedCharge>();
         deposit_ids_.clear();
     }
+    id_to_particle_.clear();
 
     // Clear track parents and entry point list
     track_parents_.clear();
