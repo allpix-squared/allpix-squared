@@ -157,9 +157,9 @@ int main(int argc, char** argv) {
     }
     std::string filename = argv[1];
     if(argc > 2) {
-        xdiv = static_cast<int>(strtod(argv[2], NULL)); // New mesh X pitch
-        ydiv = static_cast<int>(strtod(argv[3], NULL)); // New mesh Y pitch
-        zdiv = static_cast<int>(strtod(argv[4], NULL)); // New mesh Z pitch
+        xdiv = static_cast<int>(strtod(argv[2], nullptr)); // New mesh X pitch
+        ydiv = static_cast<int>(strtod(argv[3], nullptr)); // New mesh Y pitch
+        zdiv = static_cast<int>(strtod(argv[4], nullptr)); // New mesh Z pitch
     }
 
     auto region = "bulk"; // Sensor bulk region name on DF-ISE file
