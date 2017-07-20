@@ -8,6 +8,7 @@
 #define ALLPIX_MODULE_H
 
 #include <memory>
+#include <random>
 #include <string>
 #include <vector>
 
@@ -180,7 +181,7 @@ namespace allpix {
          * @brief Get seed to initialize random generators
          * @warning This should be the only method used by modules to seed random numbers to allow reproducing results
          */
-        uint64_t getRandomSeed() const;
+        uint64_t getRandomSeed();
 
         /**
          * @brief Get ROOT directory which should be used to output histograms et cetera
@@ -254,6 +255,9 @@ namespace allpix {
          */
         bool check_delegates();
         std::vector<std::pair<Messenger*, BaseDelegate*>> delegates_;
+
+        bool initialized_random_generator_{false};
+        std::mt19937_64 random_generator_;
 
         std::shared_ptr<Detector> detector_;
     };
