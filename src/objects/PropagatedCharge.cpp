@@ -6,6 +6,8 @@
 
 #include "PropagatedCharge.hpp"
 
+#include "exceptions.h"
+
 using namespace allpix;
 
 PropagatedCharge::PropagatedCharge(ROOT::Math::XYZPoint local_position,
@@ -18,10 +20,16 @@ PropagatedCharge::PropagatedCharge(ROOT::Math::XYZPoint local_position,
 }
 
 /**
+ * @throws MissingReferenceException If the pointed object is not in scope
+ *
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const DepositedCharge* PropagatedCharge::getDepositedCharge() const {
-    return dynamic_cast<DepositedCharge*>(deposited_charge_.GetObject());
+    auto deposited_charge = dynamic_cast<DepositedCharge*>(deposited_charge_.GetObject());
+    if(deposited_charge == nullptr) {
+        throw MissingReferenceException(typeid(*this), typeid(DepositedCharge));
+    }
+    return deposited_charge;
 }
 
 ClassImp(PropagatedCharge)
