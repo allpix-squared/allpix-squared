@@ -81,6 +81,7 @@ export ROOTSYS=${CLICREPO}/software/ROOT/6.08.06/${BUILD_FLAVOUR}
 export PYTHONPATH="$ROOTSYS/lib:$PYTHONPATH"
 export PATH="$ROOTSYS/bin:$PATH"
 export LD_LIBRARY_PATH="$ROOTSYS/lib:$LD_LIBRARY_PATH"
+export CMAKE_PREFIX_PATH="$ROOTSYS:$CMAKE_PREFIX_PATH"
 
 #--------------------------------------------------------------------------------
 #     XercesC
@@ -98,11 +99,13 @@ export G4INSTALL=${CLICREPO}/software/Geant4/10.03.p01/${BUILD_FLAVOUR}
 export G4LIB=$G4INSTALL/lib64/Geant4-10.3.1/
 export G4ENV_INIT="${G4INSTALL}/bin/geant4.sh"
 export G4SYSTEM="Linux-g++"
+export CMAKE_PREFIX_PATH="$G4INSTALL:$CMAKE_PREFIX_PATH"
 
 #--------------------------------------------------------------------------------
 #     CLHEP
 #--------------------------------------------------------------------------------
 export CLHEP_ROOT_DIR=/lcg/releases/clhep/2.3.1.1-6ba0c/x86_64-slc6-gcc62-opt/
+export CMAKE_PREFIX_PATH="$CLHEP_ROOT_DIR:$CMAKE_PREFIX_PATH"
 
 #--------------------------------------------------------------------------------
 #     Boost
@@ -124,3 +127,4 @@ export PATH="$Ninja_HOME:$PATH"
 
 export Eigen_HOME=${CLICREPO}/software/Eigen/3.3.3/${BUILD_FLAVOUR}/
 export Eigen3_DIR=${Eigen_HOME}/share/eigen3/cmake/
+export CMAKE_PREFIX_PATH="$Eigen3_DIR:$CMAKE_PREFIX_PATH"

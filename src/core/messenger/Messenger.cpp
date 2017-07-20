@@ -25,7 +25,7 @@ Messenger::Messenger() = default;
 Messenger::~Messenger() = default;
 #else
 Messenger::~Messenger() {
-    assert(delegates_.empty() && delegate_to_iterator_.empty());
+    assert(delegate_to_iterator_.empty());
 }
 #endif
 
