@@ -14,7 +14,8 @@ source $ABSOLUTE_PATH/../../.gitlab-ci.d/init_x86_64.sh
 
 # Load different Geant for the moment, because CLICdp version does not have QT
 # FIXME: This should not be a fixed directory
-source /cvmfs/sft.cern.ch/lcg/releases/Geant4/10.02.p02-63aaa/x86_64-slc6-gcc62-opt/bin/geant4.sh
-
-# Set special CMake include file to set other options
-export ALLPIX_CMAKE_INCLUDE_FILE=$ABSOLUTE_PATH/lxplus.cmake
+export G4INSTALL=/cvmfs/sft.cern.ch/lcg/releases/Geant4/10.02.p02-63aaa/x86_64-slc6-gcc62-opt/
+source $G4INSTALL/bin/geant4.sh
+export CMAKE_PREFIX_PATH="$G4INSTALL:$CMAKE_PREFIX_PATH"
+# Point to corresponding CLHEP
+export CMAKE_PREFIX_PATH=/cvmfs/sft.cern.ch/lcg/releases/clhep/2.3.1.1-6ba0c/x86_64-slc6-gcc62-opt/

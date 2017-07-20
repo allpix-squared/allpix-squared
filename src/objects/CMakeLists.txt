@@ -6,7 +6,13 @@ GET_FILENAME_COMPONENT(ROOT_CMAKE_DIR ${ROOT_USE_FILE} DIRECTORY)
 FIND_FILE(ROOT_MACROS_FILE 
           NAMES RootNewMacros.cmake
           HINTS ${ROOT_CMAKE_DIR}/modules/ $ENV{ROOTSYS}/cmake/modules)
-INCLUDE(${ROOT_MACROS_FILE})
+          
+IF(NOT ROOT_MACROS_FILE)
+    MESSAGE(WARNING "Cannot find ROOT macros, including generic file as fallback.")
+    INCLUDE(${ROOT_USE_FILE})
+ELSE()
+    INCLUDE(${ROOT_MACROS_FILE})
+ENDIF()
 
 # Generate the ROOT dictionary
 ROOT_GENERATE_DICTIONARY(AllpixObjectsDictionary

@@ -5,13 +5,8 @@ IF(COMMAND CMAKE_POLICY)
   CMAKE_POLICY(SET CMP0048 NEW) # set project version
 ENDIF(COMMAND CMAKE_POLICY)
 
-# Include special AllPix CMake file if it is specified
-IF(DEFINED ENV{ALLPIX_CMAKE_INCLUDE_FILE})
-    INCLUDE($ENV{ALLPIX_CMAKE_INCLUDE_FILE})
-ENDIF()
-
 # Set default version
-SET(ALLPIX_VERSION "v0.1")
+SET(ALLPIX_VERSION "v0.2")
 
 # Set default build type
 IF(NOT CMAKE_BUILD_TYPE)
@@ -112,12 +107,12 @@ ENDIF()
 # Define the libraries
 SET(ALLPIX_LIBRARIES "")
 
-# ROOT is required for vector etc
+# ROOT is required for vector and persistency etc
 FIND_PACKAGE(ROOT REQUIRED COMPONENTS Geom GenVector)
 IF(NOT ROOT_FOUND)
     MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
     "$ source YOUR_ROOT_DIR/bin/thisroot.sh")
-ENDIF(NOT ROOT_FOUND)
+ENDIF()
 
 # Check ROOT version
 IF (NOT ${ROOT_VERSION} VERSION_GREATER "6.0")
