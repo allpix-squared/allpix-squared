@@ -65,7 +65,7 @@ namespace allpix {
         std::vector<std::string> detector_names_;
 
         // Struct to store tree and information for each detector
-        struct SensorData {
+        struct sensor_data {
             std::unique_ptr<TTree> tree;
             Int_t nhits_;
             Int_t pix_x_[1024];
@@ -81,8 +81,8 @@ namespace allpix {
         // The Event tree
         std::unique_ptr<TTree> event_tree_;
 
-        // The map from detector names to the respective SensorData struct
-        std::map<std::string, SensorData> sensors_;
+        // The map from detector names to the respective sensor_data struct
+        std::map<std::string, sensor_data> sensors_;
 
         /* Variable to temporarily store the name for the detector sub-directory
         in root */
