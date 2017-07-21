@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cfloat>
+#include <chrono>
 #include <climits>
 #include <cstdlib>
 #include <fstream>
@@ -17,12 +18,6 @@ Point barycentric_interpolation(Point query_point,
                                 std::vector<Point> tetra_vertices,
                                 std::vector<Point> tetra_vertices_field,
                                 double tetra_volume) {
-    /* DEBUGGING call with prints.
-    Point barycentric_interpolation(Point query_point, std::vector<Point>&tetra_vertices,
-                            std::vector<Point> tetra_vertices_field, std::vector<int> vertex_index,
-                    std::vector<double> vertex_distance, double tetra_volume,
-                    double search_radius, int number_of_vertices){
-    //*/
 
     // Algorithm variables
     bool volume_signal;
@@ -34,7 +29,7 @@ Point barycentric_interpolation(Point query_point,
 
     // Function must have tetra_vertices.size() = 4
     if(tetra_vertices.size() != 4) {
-        throw "Baricentric interpolation without only 4 vertices!";
+        throw std::invalid_argument("Baricentric interpolation without only 4 vertices!");
     }
 
     if(tetra_volume > 0) {
@@ -140,7 +135,7 @@ Point barycentric_interpolation(Point query_point,
     // Check if query point is outside tetrahedron
     if(sub_1_signal != volume_signal || sub_2_signal != volume_signal || sub_3_signal != volume_signal ||
        sub_4_signal != volume_signal) {
-        throw std::exception();
+        throw std::invalid_argument("Point outside tetrahedron");
     }
 
     return efield_int;
@@ -162,11 +157,12 @@ int main(int argc, char** argv) {
         zdiv = static_cast<int>(strtod(argv[4], nullptr)); // New mesh Z pitch
     }
 
-    auto region = "bulk"; // Sensor bulk region name on DF-ISE file
-    float radius = 1;     // Neighbour vertex search radius
+    auto region = "bulk";    // Sensor bulk region name on DF-ISE file
+    float radius = 1;        // Neighbour vertex search radius
+    float radius_step = 0.5; // Neighbour vertex search radius
+    float max_radius = 10;   // Neighbour vertex search radius
 
-    clock_t begin, end;
-    begin = clock();
+    auto start = std::chrono::system_clock::now();
 
     std::cerr << "Reading grid" << std::endl;
     std::string grid_file = filename + ".grd";
@@ -202,8 +198,6 @@ int main(int argc, char** argv) {
     for(unsigned int i = 0; i < points.size(); ++i) {
         std::swap(points[i].y, points[i].z);
         std::swap(field[i].y, field[i].z);
-
-        points[i].y -= 14;
     }
 
     // Find minimum and maximum from mesh coordinates
@@ -219,9 +213,19 @@ int main(int argc, char** argv) {
         maxz = std::max(maxz, point.z);
     }
 
-    end = clock();
-    double search_time = (static_cast<double>(end - begin) / CLOCKS_PER_SEC);
-    std::cerr << "Reading the files took " << search_time << " seconds." << std::endl;
+    /*
+     * ALERT invert the z-axis to match the ap2 system
+
+     * WARNING this will remove the right-handedness of the coordinate system!
+     */
+    for(size_t i = 0; i < points.size(); ++i) {
+        points[i].z = maxz - (points[i].z - minz);
+        field[i].z = -field[i].z;
+    }
+
+    auto end = std::chrono::system_clock::now();
+    auto elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
+    std::cerr << "Reading the files took " << elapsed_seconds << " seconds." << std::endl;
 
     // Initializing the Octree with points from mesh cloud.
     unibn::Octree<Point> octree;
@@ -246,7 +250,7 @@ int main(int argc, char** argv) {
                 std::vector<long unsigned int> results_size;
                 std::vector<unsigned int> results;
                 unsigned int ball = 0;
-                while(radius < 5.5f) {
+                while(radius < max_radius) {
                     // Calling octree neighbours search function and sorting the results list with the closest neighbours
                     // first
                     octree.radiusNeighbors<unibn::L2Distance<Point>>(q, radius, results);
@@ -255,9 +259,18 @@ int main(int argc, char** argv) {
                                unibn::L2Distance<Point>::compute(points[b], q);
                     });
 
-                    if(results.empty() || results.size() < 4) {
+                    if(results.empty()) {
                         std::cerr << "At vertex (" << x << ", " << y << ", " << z << ")" << std::endl;
                         std::cerr << "Radius too Small. No neighbours found for radius " << radius << std::endl;
+                        radius = radius + radius_step;
+
+                        continue;
+                    }
+
+                    if(results.size() < 4) {
+                        std::cerr << "At vertex (" << x << ", " << y << ", " << z << ")" << std::endl;
+                        std::cerr << "Incomplete mesh element found for radius " << radius << std::endl;
+                        radius = radius + radius_step;
                         continue;
                     }
 
@@ -314,10 +327,6 @@ int main(int argc, char** argv) {
                                         vertex_distance.push_back(unibn::L2Distance<Point>::compute(points[results[i4]], q));
                                         try {
                                             e = barycentric_interpolation(q, tetra_vertices, tetra_vertices_field, volume);
-                                            // e = barycentric_interpolation(q,
-                                            // tetra_vertices, tetra_vertices_field,
-                                            // vertex_index, vertex_distance, volume,
-                                            // radius, results.size());
                                         } catch(std::exception&) {
                                             tetra_vertices.pop_back();
                                             tetra_vertices_field.pop_back();
@@ -362,7 +371,7 @@ int main(int argc, char** argv) {
                     if(tetra_vertices.size() == 4) {
                         break;
                     }
-                    radius = radius + 0.5f;
+                    radius = radius + radius_step;
                 } // end while
 
                 e_field_new_mesh.push_back(e);
@@ -399,7 +408,7 @@ int main(int argc, char** argv) {
     }
     init_file.close();
 
-    end = clock();
-    search_time = (static_cast<double>(end - begin) / CLOCKS_PER_SEC);
-    std::cerr << "Running everything took " << search_time << " seconds." << std::endl;
+    end = std::chrono::system_clock::now();
+    elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
+    std::cerr << "Running everything took " << elapsed_seconds << " seconds." << std::endl;
 }
