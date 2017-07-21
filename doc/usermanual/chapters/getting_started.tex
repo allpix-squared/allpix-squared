@@ -84,12 +84,18 @@ The detector configuration consist of a set of section headers describing the de
 \item The 3D \textbf{position} in the world frame in the order x, y, z. See Section \ref{sec:models_geometry} for details.
 \item The \textbf{orientation} specified as Z-X-Z extrinsic Euler angle. This means the detector is rotated first around the world's Z-axis, then around the world's X-axis and then again around the global Z-axis. See Section \ref{sec:models_geometry} for details.
 \end{itemize}
+Furthermore it is possible to specialize certain parameters of the detector models, which is explained in more detail in Section \ref{sec:detector_models}.
 
-An example configuration file of one test detector and two Timepix~\cite{timepix} models is given below. 
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.6\textwidth]{telescope.png}
+  \caption{Particle passage through the telescope setup of the detector configuration file}
+  \label{fig:telescope}
+\end{figure}
+
+An example configuration file of one test detector and two Timepix~\cite{timepix} models is: 
 \inputminted[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}{../../etc/manual_detector.conf}
-\todo{The negative z-axis bug needs to be fixed and the test model should be more realistic}
-
-This configuration file is used in the rest of this chapter for explaining concepts. 
+Figure \ref{fig:telescope} shows the setup described in the file. This configuration is used in the rest of this chapter for explaining concepts.
 
 \subsubsection{Main configuration}
 \label{sec:main_config}
@@ -329,6 +335,7 @@ To save the output of all objects an \texttt{ROOTObjectWriter} has to be added w
 # specify the output path (can be omitted as it the default)
 file_name = "data.root"
 \end{minted}
+The generated output file can be further analyzed with ROOT macros. A simple macro for converting the results to a tree with standard branches for comparisons can be found in Section \ref{sec:root_analysis_macros}.
 
 Besides using the generated tree for analysis it is also possible to read all the object data back in, to propagate it to further modules. This can be used to split the execution of several parts of the simulation in multiple independent steps, which can be executed after each order. The tree data can be read using a \texttt{ROOTObjectReader} module, that automatically dispatches all objects to the right detector with the correct name in the same event, using the internal name of the stored data. An example of using this module is the following:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}

@@ -33,7 +33,7 @@ namespace allpix {
          * @param reader Configuration reader with description of the model
          */
         explicit HybridPixelDetectorModel(std::string type, const ConfigReader& reader)
-            : DetectorModel(std::move(type), reader), coverlayer_material_("Al"), has_coverlayer_(false) {
+            : DetectorModel(std::move(type), reader) {
             auto config = reader.getHeaderConfiguration();
 
             // Set bump parameters
@@ -120,45 +120,11 @@ namespace allpix {
          */
         void setBumpOffset(ROOT::Math::XYVector val) { bump_offset_ = std::move(val); }
 
-        // FIXME: Coverlayer will possibly be revised and is currently not supported
-        /**
-         * @brief Returns if this detector model has a cover layer
-         * @return If the model has a cover layer
-         */
-        bool hasCoverlayer() const { return has_coverlayer_; }
-        /**
-         * @brief Get the height of the cover layer
-         * @return Height of the cover layer
-         */
-        double getCoverlayerHeight() const { return coverlayer_height_; }
-        /**
-         * @brief Enables the cover layer and sets the height of the cover layer
-         * @param val Height of the cover layer
-         */
-        void setCoverlayerHeight(double val) {
-            coverlayer_height_ = val;
-            has_coverlayer_ = true;
-        }
-        /**
-         * @brief Get the material of the cover layer. Default is "Al", thus aluminium.
-         * @return Material of the cover layer
-         */
-        std::string getCoverlayerMaterial() const { return coverlayer_material_; }
-        /**
-         * @brief Set the material of the cover layer. Should represent element in periodic system.
-         * @param material Material of the cover layer
-         */
-        void setCoverlayerMaterial(std::string material) { coverlayer_material_ = std::move(material); }
-
     private:
         double bump_sphere_radius_{};
         double bump_height_{};
         ROOT::Math::XYVector bump_offset_;
         double bump_cylinder_radius_{};
-
-        double coverlayer_height_{};
-        std::string coverlayer_material_;
-        bool has_coverlayer_;
     };
 } // namespace allpix
 

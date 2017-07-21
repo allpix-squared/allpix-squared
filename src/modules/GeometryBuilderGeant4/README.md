@@ -5,7 +5,16 @@
 #### Description
 Constructs the Geant4 geometry from the internal geometry. First constructs the world geometry from the internal world size, with a certain margin, using a particular world material. Then continues to create all the detectors using their internal detector models.
 
-All the available detector models are fully supported, with almost all parameters. Only cover layers are not build (yet) for the hybrid pixel detector models.
+All the available detector models are fully supported. This builder can create extra support layers of the following materials (note that these should be specified in lowercase):
+
+* silicon
+* plexiglass
+* kapton
+* copper
+* epoxy
+* carbonfiber
+* g10
+* solder
 
 #### Parameters
 * `world_material` : Material of the world, should either be **air** or **vacuum**. Default to **air** if not specified.

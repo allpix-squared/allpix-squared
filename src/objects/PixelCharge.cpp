@@ -6,6 +6,8 @@
 
 #include "PixelCharge.hpp"
 
+#include "exceptions.h"
+
 using namespace allpix;
 
 PixelCharge::PixelCharge(Pixel pixel, unsigned int charge, std::vector<const PropagatedCharge*> propagated_charges)
@@ -24,6 +26,8 @@ unsigned int PixelCharge::getCharge() const {
 }
 
 /**
+ * @throws MissingReferenceException If the pointed object is not in scope
+ *
  * Objects are stored as TRefArray and can only be accessed if pointed objects are in scope
  */
 std::vector<const PropagatedCharge*> PixelCharge::getPropagatedCharges() const {
@@ -31,6 +35,9 @@ std::vector<const PropagatedCharge*> PixelCharge::getPropagatedCharges() const {
     std::vector<const PropagatedCharge*> propagated_charges;
     for(int i = 0; i < propagated_charges_.GetEntries(); ++i) {
         propagated_charges.emplace_back(dynamic_cast<PropagatedCharge*>(propagated_charges_[i]));
+        if(propagated_charges.back() == nullptr) {
+            throw MissingReferenceException(typeid(*this), typeid(PropagatedCharge));
+        }
     }
     return propagated_charges;
 }
