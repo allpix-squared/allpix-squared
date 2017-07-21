@@ -68,7 +68,7 @@ namespace allpix {
         std::shared_ptr<PropagatedChargeMessage> propagated_message_;
 
         // Statistical information
-        unsigned int total_transferrred_charges_{};
+        unsigned int total_transferred_charges_{};
         std::set<Pixel::Index, pixel_cmp> unique_pixels_;
     };
 } // namespace allpix
