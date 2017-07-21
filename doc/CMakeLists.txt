@@ -29,27 +29,52 @@ IF(LATEX_COMPILER)
     SET(LATEX_COMPILER_FLAGS "-shell-escape" "-interaction nonstopmode" "-halt-on-error" "-file-line-error" CACHE STRING "Flags passed to latex.")
     INCLUDE(${CMAKE_SOURCE_DIR}/cmake/LATEX.cmake)
     
-    # Check for pandoc to add module documentation
+    # Markdown files that should be included in the manual relative to the root of the repository
+    SET(DOC_README_FILES
+            tools/tcad_dfise_converter/README.md
+            tools/root_analysis_macros/README.md
+    )
+    
+    # Check for pandoc for markdown conversion
     INCLUDE(${CMAKE_SOURCE_DIR}/cmake/PANDOC.cmake)
     IF(PANDOC_EXECUTABLE)
         # Loop through all modules and fetch their README
         SET(module_dir ${CMAKE_SOURCE_DIR}/src/modules)
         FILE(GLOB subdirs RELATIVE ${module_dir} ${module_dir}/*)
         FOREACH(subdir ${subdirs})
-            IF(EXISTS ${module_dir}/${subdir}/README.md AND NOT ${subdir} STREQUAL "Dummy")
-                add_document(
+            IF(EXISTS ${module_dir}/${subdir}/README.md AND NOT ${subdir} STREQUAL "Dummy")            
+                ADD_PANDOC_DOCUMENT(
                     ${CMAKE_BINARY_DIR}/usermanual/modules/${subdir}.tex
-                    SOURCES               ${module_dir}/${subdir}/README.md
-                    PRODUCT_DIRECTORY    /usermanual/modules/
+                    SOURCES              ${module_dir}/${subdir}/README.md
+                    PRODUCT_DIRECTORY    usermanual/modules/
                     PANDOC_DIRECTIVES    -t latex --listings
                     NO_EXPORT_PRODUCT
                 )
                 SET(module_tex_files ${module_tex_files} ${CMAKE_BINARY_DIR}/usermanual/modules/${subdir}.tex)
             ENDIF()
         ENDFOREACH()
+        
+        # Generate other tex files from README we need and put them in the MD folder of the user manual
+        SET(other_tex_files "")
+        FOREACH(doc_readme_file ${DOC_README_FILES})
+            GET_FILENAME_COMPONENT(readme_full_dir ${doc_readme_file} DIRECTORY)
+            GET_FILENAME_COMPONENT(readme_parent_dir ${readme_full_dir} DIRECTORY)
+            GET_FILENAME_COMPONENT(readme_dir_name ${readme_full_dir} NAME)
+                        
+            ADD_PANDOC_DOCUMENT(
+                ${CMAKE_BINARY_DIR}/usermanual/md/${readme_parent_dir}/${readme_dir_name}.tex
+                SOURCES              ${CMAKE_SOURCE_DIR}/${doc_readme_file}
+                PRODUCT_DIRECTORY    usermanual/md/${readme_parent_dir}/
+                PANDOC_DIRECTIVES    -t latex --listings
+                NO_EXPORT_PRODUCT
+            )
+            
+            SET(other_tex_files ${other_tex_files} ${CMAKE_BINARY_DIR}/usermanual/md/${readme_parent_dir}/${readme_dir_name}.tex)
+        ENDFOREACH()
     ELSE()
         SET(module_tex_files)
-        MESSAGE(WARNING "No pandoc command, cannot add module documentation to user manual")
+        SET(other_tex_files "")
+        MESSAGE(WARNING "No pandoc command, cannot add Markdown documentation to user manual")
     ENDIF()
     
     # Build array of LaTex files to add to the documentation
@@ -76,6 +101,7 @@ IF(LATEX_COMPILER)
             USE_BIBLATEX
             IMAGES
             logo.png
+            usermanual/figures/telescope.png
             INPUTS
             usermanual/chapters/introduction.tex
             usermanual/chapters/quick_start.tex
@@ -93,7 +119,7 @@ IF(LATEX_COMPILER)
             CONFIGURE
             usermanual/config.tex
             EXCLUDE_FROM_ALL
-            DEPENDS ${module_tex_files})
+            DEPENDS ${module_tex_files} ${other_tex_files})
     ELSE()
         MESSAGE(WARNING "No biber command, cannot compile user manual.")
     ENDIF()
