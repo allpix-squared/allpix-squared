@@ -202,6 +202,9 @@ int main(int argc, char** argv) {
         std::cout << "\t -y <mesh_y_pitch>	new regular mesh Y pitch" << std::endl;
         std::cout << "\t -z <mesh_z_pitch>	new regular mesh Z pitch" << std::endl;
         std::cout << "\t -l <file>    		file to log to besides standard output" << std::endl;
+        std::cout << "\t -v <level>		verbosity level overwrites global level,\n"
+                  << "\t  		        but not the per-module configuration." << std::endl;
+
         allpix::Log::finish();
         return return_code;
     }
