@@ -133,12 +133,13 @@ compile-usermanual:
         expire_in: 1 hour
 
 
-# Automatically deploy documentation to the website:
+# Automatically deploy documentation to the website
+# Deployment job only executed for new tag pushs, not for every commit.
 deploy-documentation:
     stage: deploy
     # Only run for new tags:
     only:
-        - deploy-doxygen
+        - tags
     # Docker image with tools to deploy to EOS
     image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
     script:
