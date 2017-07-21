@@ -384,8 +384,8 @@ std::shared_ptr<DetectorModel> GeometryManager::parse_config(const std::string& 
 
 /*
  * After closing the geometry new parts of the geometry cannot be added anymore. All the models for the detectors in the
- * configuration are resolved to requested type (and an error is thrown if this is not possible). Also if the sensor and
- * chip thickness are specified in the config a copy of the model is created with the specialized settings.
+ * configuration are resolved to requested type (and an error is thrown if this is not possible). Also if a parameter is
+ * specialized in the detector config a copy of the model is created with those specialized settings.
  */
 void GeometryManager::close_geometry() {
     LOG(TRACE) << "Starting geometry closing procedure";
@@ -400,15 +400,32 @@ void GeometryManager::close_geometry() {
             auto config = config_detector.first;
             auto model = getModel(detectors_types.first);
 
-            // FIXME The format to change these parameters has to be made a bit more flexible
-            if(config.has("sensor_thickness") || config.has("chip_thickness")) {
-                model = std::make_shared<DetectorModel>(*model);
-                if(config.has("sensor_thickness")) {
-                    model->setSensorThickness(config.get<double>("sensor_thickness"));
+            // Get the configuration of the model
+            Configuration new_config("");
+            auto model_configs = model->getConfigurations();
+
+            // Add all non internal parameters to the config for a specialized model
+            for(auto& key_value : config.getAll()) {
+                auto key = key_value.first;
+                // Skip all internal parameters
+                if(key == "type" || key == "position" || key == "orientation") {
+                    continue;
                 }
-                if(config.has("chip_thickness")) {
-                    model->setChipThickness(config.get<double>("chip_thickness"));
+                // Add the extra parameter to the new overwritten config
+                new_config.setText(key, key_value.second);
+            }
+
+            // Create new model if needed
+            if(new_config.countSettings() != 0) {
+                ConfigReader reader;
+                // Add the new configuration first to overwrite
+                reader.addConfiguration(new_config);
+                // Then add the original configuration
+                for(auto& model_config : model_configs) {
+                    reader.addConfiguration(model_config);
                 }
+
+                model = parse_config(detectors_types.first, reader);
             }
 
             config_detector.second->set_model(model);

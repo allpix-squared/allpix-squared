@@ -119,6 +119,11 @@ void ConfigReader::add(std::istream& stream, std::string file_name) {
     conf_map_[section_name].push_back(--conf_array_.end());
 }
 
+void ConfigReader::addConfiguration(Configuration config) {
+    conf_array_.push_back(config);
+    conf_map_[config.getName()].push_back(--conf_array_.end());
+}
+
 void ConfigReader::clear() {
     conf_map_.clear();
     conf_array_.clear();
