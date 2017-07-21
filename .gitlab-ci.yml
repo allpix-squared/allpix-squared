@@ -134,8 +134,6 @@ compile-usermanual:
       - docker
     image: gitlab-registry.cern.ch/clicdp/publications/templates/custom_ci_worker:fedora-latex-latest
     script:
-        - source .gitlab-ci.d/init_x86_64.sh
-        - source .gitlab-ci.d/load_deps.sh
         - mkdir public
         - mkdir build
         - cd build
