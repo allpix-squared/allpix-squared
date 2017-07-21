@@ -126,9 +126,9 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
         double centerY = (minY + maxY) / 2.0;
         if(config_.get<bool>("output_plots_use_pixel_units")) {
             minX = centerX - model_->getSensorSize().z() / model_->getPixelSize().x() / 2.0;
-            maxX = centerX + model_->getSensorSize().z() / model_->getPixelSize().y() / 2.0;
+            maxX = centerX + model_->getSensorSize().z() / model_->getPixelSize().x() / 2.0;
 
-            minY = centerY - model_->getSensorSize().z() / model_->getPixelSize().x() / 2.0;
+            minY = centerY - model_->getSensorSize().z() / model_->getPixelSize().y() / 2.0;
             maxY = centerY + model_->getSensorSize().z() / model_->getPixelSize().y() / 2.0;
         } else {
             minX = centerX - model_->getSensorSize().z() / 2.0;
@@ -330,13 +330,13 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
                 switch(i) {
                 case 0 /* x */:
                     histogram_contour[i]->GetXaxis()->SetTitle(
-                        (std::string("x ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
+                        (std::string("y ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
                             .c_str());
                     histogram_contour[i]->GetYaxis()->SetTitle("z (mm)");
                     break;
                 case 1 /* y */:
                     histogram_contour[i]->GetXaxis()->SetTitle(
-                        (std::string("y ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
+                        (std::string("x ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
                             .c_str());
                     histogram_contour[i]->GetYaxis()->SetTitle("z (mm)");
                     break;
@@ -367,6 +367,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
         LOG_PROGRESS(DEBUG, getUniqueName() + "_OUTPUT_PLOTS")
             << "Written " << point_cnt << " of " << tot_point_cnt << " points";
     }
+    output_plot_points_.clear();
 }
 
 void GenericPropagationModule::run(unsigned int event_num) {
