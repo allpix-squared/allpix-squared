@@ -36,7 +36,7 @@ void SimpleTransferModule::run(unsigned int) {
 
     // Find corresponding pixels for all propagated charges
     LOG(TRACE) << "Transferring charges to pixels";
-    unsigned int transferrred_charges_count = 0;
+    unsigned int transferred_charges_count = 0;
     std::map<Pixel::Index, std::vector<const PropagatedCharge*>, pixel_cmp> pixel_map;
     for(auto& propagated_charge : propagated_message_->getData()) {
         auto position = propagated_charge.getLocalPosition();
@@ -64,7 +64,7 @@ void SimpleTransferModule::run(unsigned int) {
 
         // Update statistics
         unique_pixels_.insert(pixel_index);
-        transferrred_charges_count += propagated_charge.getCharge();
+        transferred_charges_count += propagated_charge.getCharge();
 
         LOG(DEBUG) << "Set of " << propagated_charge.getCharge() << " propagated charges at "
                    << propagated_charge.getLocalPosition() << " brought to pixel " << pixel_index;
@@ -90,8 +90,8 @@ void SimpleTransferModule::run(unsigned int) {
     }
 
     // Writing summary and update statistics
-    LOG(INFO) << "Transferred " << transferrred_charges_count << " charges to " << pixel_map.size() << " pixels";
-    total_transferrred_charges_ += transferrred_charges_count;
+    LOG(INFO) << "Transferred " << transferred_charges_count << " charges to " << pixel_map.size() << " pixels";
+    total_transferred_charges_ += transferred_charges_count;
 
     // Dispatch message of pixel charges
     auto pixel_message = std::make_shared<PixelChargeMessage>(pixel_charges, detector_);
@@ -100,6 +100,6 @@ void SimpleTransferModule::run(unsigned int) {
 
 void SimpleTransferModule::finalize() {
     // Print statistics
-    LOG(INFO) << "Transferred total of " << total_transferrred_charges_ << " charges to " << unique_pixels_.size()
+    LOG(INFO) << "Transferred total of " << total_transferred_charges_ << " charges to " << unique_pixels_.size()
               << " different pixels";
 }

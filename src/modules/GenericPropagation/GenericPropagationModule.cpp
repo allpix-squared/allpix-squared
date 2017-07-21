@@ -387,7 +387,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
         // Loop over all charges in the deposit
         unsigned int electrons_remaining = deposit.getCharge();
 
-        LOG(DEBUG) << "Set of charges on " << deposit.getLocalPosition();
+        LOG(DEBUG) << "Set of charges on " << display_vector(deposit.getLocalPosition(), {"mm", "um"});
 
         auto charge_per_step = config_.get<unsigned int>("charge_per_step");
         while(electrons_remaining > 0) {
