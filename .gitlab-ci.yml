@@ -142,8 +142,11 @@ compile-usermanual:
         - cmake -DBUILD_DOCS_ONLY=ON ..
         - make pdf
         - make html
-        - mv usermanual/allpix-manual.html ../public
-        - mv usermanual/allpix-manual.pdf ../public
+        - mkdir public/usermanual
+        - mv usermanual/allpix-manual.html ../public/usermanual
+        - mv usermanual/allpix-manual.css ../public/usermanual
+        - mv usermanual/logo.png ../public/usermanual
+        - mv usermanual/allpix-manual.pdf ../public/usermanual
     artifacts:
         paths:
           - public
