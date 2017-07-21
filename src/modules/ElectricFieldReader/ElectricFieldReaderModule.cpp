@@ -25,7 +25,9 @@
 using namespace allpix;
 
 ElectricFieldReaderModule::ElectricFieldReaderModule(Configuration config, Messenger*, std::shared_ptr<Detector> detector)
-    : Module(config, detector), config_(std::move(config)), detector_(std::move(detector)) {}
+    : Module(config, detector), config_(std::move(config)), detector_(std::move(detector)) {
+    config_.setDefault("depletion_depth", detector_->getModel()->getSensorSize().z());
+}
 
 void ElectricFieldReaderModule::init() {
     // Get type of electric field from model parameter
@@ -38,8 +40,17 @@ void ElectricFieldReaderModule::init() {
         throw InvalidValueError(config_, "model", "model should be 'linear' or 'init'");
     }
 
+    // Get the depletion depth default to full sensor size
+    auto model = detector_->getModel();
+    auto depletion_depth = config_.get<double>("depletion_depth");
+    if(depletion_depth - model->getSensorSize().z() > 1e-9) {
+        throw InvalidValueError(config_, "depletion_depth", "depletion depth can not be larger than the sensor thickness");
+    }
+
     // Set detector field
-    detector_->setElectricField(field_data.first, field_data.second);
+    auto sensor_min_z = model->getSensorCenter().z() - model->getSensorSize().z() / 2.0;
+    auto thickness_domain = std::make_pair(sensor_min_z, sensor_min_z + depletion_depth);
+    detector_->setElectricField(field_data.first, field_data.second, thickness_domain);
 
     // Produce histograms if needed
     if(config_.get<bool>("output_plots", false)) {
@@ -102,7 +113,7 @@ void ElectricFieldReaderModule::create_output_plots() {
     }
 
     auto model = detector_->getModel();
-    if(config_.get<bool>("output_plots_single_pixel", false)) {
+    if(config_.get<bool>("output_plots_single_pixel", true)) {
         // If we need to plot a single pixel we change the model to fake the sensor to be a single pixel
         // NOTE: This is a little hacky, but is the easiest approach
         model = std::make_shared<DetectorModel>(*model);
@@ -112,6 +123,12 @@ void ElectricFieldReaderModule::create_output_plots() {
         model->setSensorExcessRight(0);
         model->setNPixels(ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>(1, 1));
     }
+    // Use either full sensor axis or only depleted region
+    double z_min = model->getSensorCenter().z() - model->getSensorSize().z() / 2.0;
+    double z_max = model->getSensorCenter().z() + model->getSensorSize().z() / 2.0;
+    if(config_.get<bool>("output_plots_only_depleted", false)) {
+        z_max = z_min + config_.get<double>("depletion_depth");
+    }
 
     // Determine minimum and maximum index depending on projection axis
     double min1, max1;
@@ -119,13 +136,13 @@ void ElectricFieldReaderModule::create_output_plots() {
     if(project == 'x') {
         min1 = model->getSensorCenter().y() - model->getSensorSize().y() / 2.0;
         max1 = model->getSensorCenter().y() + model->getSensorSize().y() / 2.0;
-        min2 = model->getSensorCenter().z() - model->getSensorSize().z() / 2.0;
-        max2 = model->getSensorCenter().z() + model->getSensorSize().z() / 2.0;
+        min2 = z_min;
+        max2 = z_max;
     } else if(project == 'y') {
         min1 = model->getSensorCenter().x() - model->getSensorSize().x() / 2.0;
         max1 = model->getSensorCenter().x() + model->getSensorSize().x() / 2.0;
-        min2 = model->getSensorCenter().z() - model->getSensorSize().z() / 2.0;
-        max2 = model->getSensorCenter().z() + model->getSensorSize().z() / 2.0;
+        min2 = z_min;
+        max2 = z_max;
     } else {
         min1 = model->getSensorCenter().x() - model->getSensorSize().x() / 2.0;
         max1 = model->getSensorCenter().x() + model->getSensorSize().x() / 2.0;
@@ -152,8 +169,7 @@ void ElectricFieldReaderModule::create_output_plots() {
         y = model->getSensorCenter().y() - model->getSensorSize().y() / 2.0 +
             config_.get<double>("output_plots_projection_percentage", 0.5) * model->getSensorSize().y();
     } else {
-        z = model->getSensorCenter().z() - model->getSensorSize().z() / 2.0 +
-            config_.get<double>("output_plots_projection_percentage", 0.5) * model->getSensorSize().z();
+        z = z_min + config_.get<double>("output_plots_projection_percentage", 0.5) * (z_max - z_min);
     }
 
     // Find the electric field at every index
@@ -170,11 +186,9 @@ void ElectricFieldReaderModule::create_output_plots() {
         }
         for(size_t k = 0; k < steps; ++k) {
             if(project == 'x') {
-                z = model->getSensorCenter().z() - model->getSensorSize().z() / 2.0 +
-                    ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().z();
+                z = z_min + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * (z_max - z_min);
             } else if(project == 'y') {
-                z = model->getSensorCenter().z() - model->getSensorSize().z() / 2.0 +
-                    ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().z();
+                z = z_min + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * (z_max - z_min);
             } else {
                 y = model->getSensorCenter().y() - model->getSensorSize().y() / 2.0 +
                     ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().y();

@@ -16,11 +16,13 @@ Furthermore the module can produce a plot the electric field profile on an proje
 * `model` : Type of the electric field model, either **linear** or **init**.
 * `voltage` : Voltage over the whole sensor thickness. Used to calculate the electric field if the *model* parameter is equal to **linear**.
 * `file_name` : Location of file containing the electric field in the INIT format. Only used if the *model* parameter has the value **init**.
+* `depletion_depth` : Size of the depletion layer from the implant side, defaulting to the full sensor thickness. There is no electric field outside the depth of the depleted area.
 * `output_plots` : Determines if output plots should be generated (slows down simulation). Disabled by default.
 * `output_plots_step` : Number of bins in both the X and Y direction in the 2D histogram used to plot the electric field in the detectors. Only used if `output_plots` is enabled.
 * `output_plots_project` : Axis to project the 3D electric field on to create the 2D histogram. Either **x**, **y** or **z**. Only used if `output_plots` is enabled.
 * `output_plots_projection_percentage` : Percentage on the projection axis to plot the electric field profile. For example if *output_plots_project* is **x** and this parameter is 0.5 the profile is plotted in the Y,Z-plane at the X-coordinate in the middle of the sensor.
-* `output_plots_single_pixel`: Determines if the whole sensor has to be plotted or only a single pixel. Defaults to false (plotting the whole sensor).
+* `output_plots_single_pixel`: Determines if the whole sensor has to be plotted or only a single pixel. Defaults to true (plotting a single pixel).
+* `output_plots_only_depleted` : Determines if the full sensor thickness should be plotted or only the depleted region. Defaults to false (plotting the full sensor thickness)
 
 #### Usage
 An example to add a linear field of 50 volt bias to all the detectors, apart from the detector with name 'dut' where a specific INIT field is added, is given below

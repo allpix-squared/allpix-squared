@@ -83,7 +83,7 @@ namespace allpix {
 
         private:
             /**
-             * @brief Construct a support layer in \ref DetectorModel::addSupportLayer
+             * @brief Constructs a support layer, used in \ref DetectorModel::addSupportLayer
              * @param size Size of the support layer
              * @param offset Offset of the support layer from the center
              * @param material Material of the support layer

@@ -120,8 +120,11 @@ namespace allpix {
          * @brief Set the electric field in a single pixel in the detector
          * @param field Flat array of the field vectors (see detailed description)
          * @param sizes The dimensions of the flat electric field array
+         * @param thickness_domain Domain in local coordinates in the thickness direction where the field holds
          */
-        void setElectricField(std::shared_ptr<std::vector<double>> field, std::array<size_t, 3> sizes);
+        void setElectricField(std::shared_ptr<std::vector<double>> field,
+                              std::array<size_t, 3> sizes,
+                              std::pair<double, double> thickness_domain);
 
         /**
          * @brief Get the model of this detector
@@ -182,6 +185,7 @@ namespace allpix {
 
         std::array<size_t, 3> electric_field_sizes_;
         std::shared_ptr<std::vector<double>> electric_field_;
+        std::pair<double, double> electric_field_thickness_domain_;
 
         std::map<std::type_index, std::map<std::string, std::shared_ptr<void>>> external_objects_;
     };

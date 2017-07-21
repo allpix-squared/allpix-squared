@@ -175,10 +175,9 @@ double* Detector::get_electric_field_raw(double x, double y, double z) const {
                                              (x + model_->getPixelSize().x() / 2.0) / model_->getPixelSize().x()));
     auto y_ind = static_cast<int>(std::floor(static_cast<double>(electric_field_sizes_[1]) *
                                              (y + model_->getPixelSize().y() / 2.0) / model_->getPixelSize().y()));
-
-    auto z_min = model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0;
     auto z_ind = static_cast<int>(
-        std::floor(static_cast<double>(electric_field_sizes_[2]) * (z - z_min) / model_->getSensorSize().z()));
+        std::floor(static_cast<double>(electric_field_sizes_[2]) * (z - electric_field_thickness_domain_.first) /
+                   (electric_field_thickness_domain_.second - electric_field_thickness_domain_.first)));
 
     // Check for indices within the sensor
     if(x_ind < 0 || x_ind >= static_cast<int>(electric_field_sizes_[0]) || y_ind < 0 ||
@@ -194,16 +193,29 @@ double* Detector::get_electric_field_raw(double x, double y, double z) const {
 }
 
 /**
+ * @throws std::invalid_argument If the electric field sizes are incorrect or the thickness domain is outside the sensor
+ *
  * The electric field is stored as a large flat array. If the sizes are denoted as respectively X_SIZE, Y_ SIZE and Z_SIZE,
  * each position (x, y, z) has three indices:
  * - x*Y_SIZE*Z_SIZE*3+y*Z_SIZE*3+z*3: the x-component of the electric field
  * - x*Y_SIZE*Z_SIZE*3+y*Z_SIZE*3+z*3+1: the y-component of the electric field
  * - x*Y_SIZE*Z_SIZE*3+y*Z_SIZE*3+z*3+2: the z-component of the electric field
  */
-void Detector::setElectricField(std::shared_ptr<std::vector<double>> field, std::array<size_t, 3> sizes) {
+void Detector::setElectricField(std::shared_ptr<std::vector<double>> field,
+                                std::array<size_t, 3> sizes,
+                                std::pair<double, double> thickness_domain) {
     if(sizes[0] * sizes[1] * sizes[2] * 3 != field->size()) {
         throw std::invalid_argument("electric field does not match the given sizes");
     }
+    if(thickness_domain.first + 1e-9 < model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0 ||
+       model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0 < thickness_domain.second - 1e-9) {
+        throw std::invalid_argument("thickness domain is outside sensor dimensions");
+    }
+    if(thickness_domain.first >= thickness_domain.second) {
+        throw std::invalid_argument("end of thickness domain is before begin");
+    }
+
     electric_field_ = std::move(field);
-    electric_field_sizes_ = sizes;
+    electric_field_sizes_ = std::move(sizes);
+    electric_field_thickness_domain_ = std::move(thickness_domain);
 }
