@@ -19,6 +19,7 @@ Before going into depth on defining the required configuration files, first more
 The \apsq framework supports the use of a variety of types for all configuration values. The module specifies how the value type should be interpreted. An error will be raised if either the key is not specified in the configuration file, the conversion to the desired type is not possible, or if the given value is outside the domain of possible options. Please refer to the module documentation in Section \ref{sec:modules} for the list of module parameters and their types. Parsing the value roughly follows common-sense (more details can be found in Section \ref{sec:accessing_parameters}). A few special rules do apply:
 \begin{itemize}
 \item If the value is a \textbf{string} it may be enclosed by a single pair of double quotation marks (\texttt{"}), which are stripped before passing the value to the modules. If the string is not enclosed by the quotation marks all whitespace before and after the value is erased. If the value is an array of strings, the value is split at every whitespace or comma (\texttt{'}) that is not enclosed in quotation marks.
+\item If the value is a \textbf{boolean}, either numerical (\texttt{0}, \texttt{1}) or textual (\texttt{false}, \texttt{true}) representations are accepted.
 \item If the value is a \textbf{relative path} that path will be made absolute by adding the absolute path of the directory that contains the configuration file where the key is defined.
 \item If the value is an \textbf{arithmetic} type, it may have a suffix indicating the unit. The list of base units is shown in Table \ref{tab:units}. 
 \end{itemize}
@@ -73,7 +74,10 @@ acceleration_value = 1.0m/s/s
 random_quantity = 1.0deg*kV/m/s*K 
 # Relative paths are expanded to absolute 
 # Path below will be /home/user/test if the config file is in /home/user
-output_path = "test" 
+output_path = "test"
+# Booleans can be represented in numerical or textual style
+my_switch = true
+my_other_switch = 0
 \end{minted}
 
 \subsubsection{Detector configuration}
