@@ -216,6 +216,6 @@ void Detector::setElectricField(std::shared_ptr<std::vector<double>> field,
     }
 
     electric_field_ = std::move(field);
-    electric_field_sizes_ = std::move(sizes);
+    electric_field_sizes_ = sizes;
     electric_field_thickness_domain_ = std::move(thickness_domain);
 }
