@@ -89,12 +89,9 @@ mac1012-clang80:
         - cat output_check_performance.log 
 
 
-# Automatically deploy the Doygen reference to the website:
+# Compile Doxygen reference
 compile-doxygen:
     stage: compile
-    # Only run for new tags:
-    only:
-        - deploy-doxygen
     tags:
         - docker
     image: clicdp/cc7-base
@@ -113,21 +110,7 @@ compile-doxygen:
             - public
         expire_in: 1 hour
 
-# Automatically deploy the Doygen reference to the website:
-deploy-doxygen:
-    stage: deploy
-    # Only run for new tags:
-    only:
-        - deploy-doxygen
-    # Docker image with tools to deploy to EOS
-    image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
-    script:
-        - deploy-eos
-    # do not run any globally defined before_script or after_script for this step
-    before_script: []
-    after_script: []
-
-# Compile usermanual:
+# Compile LaTeX user manual:
 compile-usermanual:
     stage: compile
     tags:
@@ -150,3 +133,17 @@ compile-usermanual:
           - public
         expire_in: 1 hour
 
+
+# Automatically deploy documentation to the website:
+deploy-documentation:
+    stage: deploy
+    # Only run for new tags:
+    only:
+        - deploy-doxygen
+    # Docker image with tools to deploy to EOS
+    image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
+    script:
+        - deploy-eos
+    # do not run any globally defined before_script or after_script for this step
+    before_script: []
+    after_script: []
