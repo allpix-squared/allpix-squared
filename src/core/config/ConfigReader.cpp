@@ -120,8 +120,8 @@ void ConfigReader::add(std::istream& stream, std::string file_name) {
 }
 
 void ConfigReader::addConfiguration(Configuration config) {
-    conf_array_.push_back(config);
-    conf_map_[config.getName()].push_back(--conf_array_.end());
+    conf_array_.push_back(std::move(config));
+    conf_map_[conf_array_.back().getName()].push_back(--conf_array_.end());
 }
 
 void ConfigReader::clear() {
