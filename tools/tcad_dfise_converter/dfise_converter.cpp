@@ -388,9 +388,9 @@ int main(int argc, char** argv) {
                                                    << ", " << i4;
                                         try {
                                             e = barycentric_interpolation(q, tetra_vertices, tetra_vertices_field, volume);
-                                        } catch(std::invalid_argument& e) {
+                                        } catch(std::invalid_argument& exception) {
                                             LOG(WARNING) << "Failed to interpolate point";
-                                            LOG(WARNING) << "ERROR: " << e.what();
+                                            LOG(WARNING) << "ERROR: " << exception.what();
                                             tetra_vertices.pop_back();
                                             tetra_vertices_field.pop_back();
                                             vertex_index.pop_back();
