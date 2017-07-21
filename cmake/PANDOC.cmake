@@ -365,11 +365,6 @@ function(add_document target_name)
 
 endfunction(add_document)
 
-function(add_tex_document)
-    add_document(${ARGV} DIRECT_TEX_TO_PDF)
-endfunction()
-
-# LEGACY SUPPORT
 function(add_pandoc_document)
     add_document(${ARGV})
 endfunction()

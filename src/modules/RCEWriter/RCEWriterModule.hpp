@@ -81,7 +81,7 @@ namespace allpix {
         // The Event tree
         std::unique_ptr<TTree> event_tree_;
 
-        // The map from detector names to the respective SensorData struct
+        // The map from detector names to the respective sensor_data struct
         std::map<std::string, sensor_data> sensors_;
 
         /* Variable to temporarily store the name for the detector sub-directory

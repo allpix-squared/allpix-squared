@@ -86,8 +86,9 @@ std::shared_ptr<TTree> constructComparisonTree(TFile* file, std::string dut) {
 
         // Skip all events with multiple particles
         // FIXME Needed until we handle the mc particle better
-        if(input_particles.size() > 1)
+        if(input_particles.size() > 1) {
             continue;
+        }
 
         // Set event number
         event_num = i + 1;

@@ -40,7 +40,7 @@ namespace allpix {
     class DetectorModel {
     public:
         /**
-         * ALERT: DOCUMENT
+         * @brief Helper class to hold support layers for a detector model
          */
         class SupportLayer {
             friend class DetectorModel;
@@ -48,18 +48,49 @@ namespace allpix {
             friend class HybridPixelDetectorModel;
 
         public:
+            /**
+             * @brief Get the center of the support layer
+             * @return Center of the support layer
+             */
             ROOT::Math::XYZPoint getCenter() const { return center_; }
+            /**
+             * @brief Get the size of the support layer
+             * @return Size of the support layer
+             */
             ROOT::Math::XYZVector getSize() const { return size_; }
+            /**
+             * @brief Get the material of the support layer
+             * @return Support material
+             */
             std::string getMaterial() const { return material_; }
-
+            /**
+             * @brief Return if the support layer contains a hole
+             * @return True if the support layer has a hole, false otherwise
+             */
             bool hasHole() { return hole_size_.x() > 1e-9 && hole_size_.y() > 1e-9; }
+            /**
+             * @brief Get the center of the hole in the support layer
+             * @return Center of the hole
+             */
             ROOT::Math::XYZPoint getHoleCenter() const {
                 return center_ + ROOT::Math::XYZVector(hole_offset_.x(), hole_offset_.y(), 0);
             }
+            /**
+             * @brief Get the full size of the hole in the support layer
+             * @return Size of the hole
+             */
             ROOT::Math::XYZVector getHoleSize() const { return hole_size_; }
 
         private:
-            // Internal constructor for support layer
+            /**
+             * @brief Constructs a support layer, used in \ref DetectorModel::addSupportLayer
+             * @param size Size of the support layer
+             * @param offset Offset of the support layer from the center
+             * @param material Material of the support layer
+             * @param location Location of the support material
+             * @param hole_size Size of an optional hole (zero vector if no hole)
+             * @param hole_offset Offset of the optional hole from the center of the support layer
+             */
             SupportLayer(ROOT::Math::XYZVector size,
                          ROOT::Math::XYVector offset,
                          std::string material,

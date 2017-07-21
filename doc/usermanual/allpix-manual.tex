@@ -53,7 +53,6 @@
 \makeatletter
 \def\input@path{{usermanual/}}
 \makeatother
-\graphicspath{{images/}}
 
 % Load configuration
 \input{config}
@@ -69,6 +68,8 @@
 } % Author names
 
 \date{\today\\ \vspace{10pt} Version \version} % Date for the report
+
+\graphicspath{{usermanual/figures/}}
 
 \begin{document}
 
@@ -111,7 +112,7 @@
 \section{Modules}
 \label{sec:modules}
 \lstset{language=Ini}
-\includemodulesdoc
+\includemodulesmd
 \lstset{language=}
 \clearpage
 

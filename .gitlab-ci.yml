@@ -1,4 +1,12 @@
+variables:
+    EOS_PATH: "/eos/project/a/allpix-squared/www/"
+
+stages:
+    - compile
+    - deploy
+
 slc6-gcc62:
+    stage: compile
     tags:
         - docker
     image: clicdp/slc6-base
@@ -15,6 +23,7 @@ slc6-gcc62:
         - cat output_check_performance.log  
 
 slc6-llvm39:
+    stage: compile
     tags:
         - docker
     image: clicdp/slc6-base
@@ -31,6 +40,7 @@ slc6-llvm39:
 # skip tests because lint takes long
 
 centos7-gcc62:
+    stage: compile
     tags:
         - docker
     image: clicdp/cc7-base
@@ -47,6 +57,7 @@ centos7-gcc62:
         - cat output_check_performance.log 
 
 centos7-llvm39:
+    stage: compile
     tags:
         - docker
     image: clicdp/slc6-base
@@ -63,6 +74,7 @@ centos7-llvm39:
 # skip tests because lint takes long
 
 mac1012-clang80:
+    stage: compile
     tags:
         - mac
     script:
@@ -75,3 +87,63 @@ mac1012-clang80:
         - ninja install
         - ctest --output-on-failure -j4
         - cat output_check_performance.log 
+
+
+# Compile Doxygen reference
+compile-doxygen:
+    stage: compile
+    tags:
+        - docker
+    image: clicdp/cc7-base
+    script:
+        - export COMPILER_TYPE="gcc"
+        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab-ci.d/load_deps.sh
+        - mkdir public
+        - mkdir build
+        - cd build
+        - cmake -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
+        - make reference
+        - mv reference/html ../public/reference
+    artifacts:
+        paths:
+            - public
+        expire_in: 1 hour
+
+# Compile LaTeX user manual:
+compile-usermanual:
+    stage: compile
+    tags:
+      - docker
+    image: gitlab-registry.cern.ch/clicdp/publications/templates/custom_ci_worker:fedora-latex-latest
+    script:
+        - mkdir -p public/usermanual
+        - mkdir build
+        - cd build
+        - cmake -DBUILD_DOCS_ONLY=ON ..
+        - make pdf
+        - make html
+        - mv usermanual/allpix-manual.html ../public/usermanual
+        - mv usermanual/allpix-manual.css ../public/usermanual
+        - mv usermanual/logo.png ../public/usermanual
+        - mv usermanual/allpix-manual.pdf ../public/usermanual
+    artifacts:
+        paths:
+          - public
+        expire_in: 1 hour
+
+
+# Automatically deploy documentation to the website
+# Deployment job only executed for new tag pushs, not for every commit.
+deploy-documentation:
+    stage: deploy
+    # Only run for new tags:
+    only:
+        - tags
+    # Docker image with tools to deploy to EOS
+    image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
+    script:
+        - deploy-eos
+    # do not run any globally defined before_script or after_script for this step
+    before_script: []
+    after_script: []
