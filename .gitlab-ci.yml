@@ -117,13 +117,12 @@ compile-usermanual:
       - docker
     image: gitlab-registry.cern.ch/clicdp/publications/templates/custom_ci_worker:fedora-latex-latest
     script:
-        - mkdir public
+        - mkdir -p public/usermanual
         - mkdir build
         - cd build
         - cmake -DBUILD_DOCS_ONLY=ON ..
         - make pdf
         - make html
-        - mkdir public/usermanual
         - mv usermanual/allpix-manual.html ../public/usermanual
         - mv usermanual/allpix-manual.css ../public/usermanual
         - mv usermanual/logo.png ../public/usermanual
