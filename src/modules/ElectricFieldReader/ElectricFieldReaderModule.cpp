@@ -48,8 +48,8 @@ void ElectricFieldReaderModule::init() {
     }
 
     // Set detector field
-    auto sensor_min_z = model->getSensorCenter().z() - model->getSensorSize().z() / 2.0;
-    auto thickness_domain = std::make_pair(sensor_min_z, sensor_min_z + depletion_depth);
+    auto sensor_max_z = model->getSensorCenter().z() + model->getSensorSize().z() / 2.0;
+    auto thickness_domain = std::make_pair(sensor_max_z - depletion_depth, sensor_max_z);
     detector_->setElectricField(field_data.first, field_data.second, thickness_domain);
 
     // Produce histograms if needed
