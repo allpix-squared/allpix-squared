@@ -12,7 +12,19 @@
 
 #include <Eigen/Eigen>
 #include "Octree.hpp"
+#include "core/utils/log.h"
 #include "read_dfise.h"
+
+using namespace allpix;
+
+std::unique_ptr<AllPix> apx;
+std::atomic<bool> apx_ready{false};
+void clean() {
+    Log::finish();
+    if(apx_ready) {
+        apx.reset();
+    }
+}
 
 Point barycentric_interpolation(Point query_point,
                                 std::vector<Point> tetra_vertices,
@@ -142,30 +154,75 @@ Point barycentric_interpolation(Point query_point,
 }
 
 int main(int argc, char** argv) {
-    int xdiv = 100; // New mesh X pitch
-    int ydiv = 100; // New mesh Y pitch
-    int zdiv = 100; // New mesh Z pitch
-    if(argc < 2) {
-        std::cerr << "Usage: ./tcad_dfise_reader <data_file_prefix> [x_pitch y_pitch z_pitch]" << std::endl;
-        std::cerr << "If the pitch is not defined, default value = 100 will be used" << std::endl;
-        return -1;
-    }
-    std::string filename = argv[1];
-    if(argc > 2) {
-        xdiv = static_cast<int>(strtod(argv[2], nullptr)); // New mesh X pitch
-        ydiv = static_cast<int>(strtod(argv[3], nullptr)); // New mesh Y pitch
-        zdiv = static_cast<int>(strtod(argv[4], nullptr)); // New mesh Z pitch
+    // If no arguments are provided, print the help:
+    bool print_help = false;
+    int return_code = 0;
+    if(argc == 1) {
+        print_help = true;
+        return_code = 1;
     }
 
-    auto region = "bulk";    // Sensor bulk region name on DF-ISE file
-    float radius = 1;        // Neighbour vertex search radius
-    float radius_step = 0.5; // Neighbour vertex search radius
-    float max_radius = 10;   // Neighbour vertex search radius
+    Log::addStream(std::cout);
+
+    std::string file_prefix = "example_pixel";
+    int xdiv = 100;              // New mesh X pitch
+    int ydiv = 100;              // New mesh Y pitch
+    int zdiv = 100;              // New mesh Z pitch
+    std::string region = "bulk"; // Sensor bulk region name on DF-ISE file
+    float radius = 1;            // Neighbour vertex search radius
+    float radius_step = 0.5;     // Neighbour vertex search radius
+    float max_radius = 10;       // Neighbour vertex search radius
+
+    for(int i = 1; i < argc; i++) {
+        if(strcmp(argv[i], "-h") == 0) {
+            print_help = true;
+        } else if(strcmp(argv[i], "-v") == 0 && (i + 1 < argc)) {
+            try {
+                LogLevel log_level = Log::getLevelFromString(std::string(argv[++i]));
+                Log::setReportingLevel(log_level);
+            } catch(std::invalid_argument& e) {
+                LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
+            }
+        } else if(strcmp(argv[i], "-f") == 0 && (i + 1 < argc)) {
+            file_prefix = std::string(argv[++i]);
+        } else if(strcmp(argv[i], "-R") == 0 && (i + 1 < argc)) {
+            region = std::string(argv[++i]); // Region to be meshed
+        } else if(strcmp(argv[i], "-r") == 0 && (i + 1 < argc)) {
+            radius = static_cast<float>(strtod(argv[++i], nullptr)); // New mesh X pitch
+        } else if(strcmp(argv[i], "-rs") == 0 && (i + 1 < argc)) {
+            radius_step = static_cast<float>(strtod(argv[++i], nullptr)); // New mesh X pitch
+        } else if(strcmp(argv[i], "-mr") == 0 && (i + 1 < argc)) {
+            max_radius = static_cast<float>(strtod(argv[++i], nullptr)); // New mesh X pitch
+        } else if(strcmp(argv[i], "-x") == 0 && (i + 1 < argc)) {
+            xdiv = static_cast<int>(strtod(argv[++i], nullptr)); // New mesh X pitch
+        } else if(strcmp(argv[i], "-y") == 0 && (i + 1 < argc)) {
+            ydiv = static_cast<int>(strtod(argv[++i], nullptr)); // New mesh X pitch
+        } else if(strcmp(argv[i], "-z") == 0 && (i + 1 < argc)) {
+            zdiv = static_cast<int>(strtod(argv[++i], nullptr)); // New mesh X pitch
+        } else {
+            LOG(ERROR) << "Unrecognized command line argument \"" << argv[i] << "\"";
+        }
+    }
+
+    // Print help if requested or no arguments given
+    if(print_help) {
+        std::cerr << "Usage: ./tcad_dfise_reader -f <data_file_prefix> [<options>]" << std::endl;
+        std::cout << "\t -f <file_prefix>	DF-ISE files prefix" << std::endl;
+        std::cout << "\t -R <region>		region name to be meshed" << std::endl;
+        std::cout << "\t -r <radius>		initial node neighbors search radius" << std::endl;
+        std::cout << "\t -rs <radius_step>	radius step if no neighbor is found" << std::endl;
+        std::cout << "\t -ms <max_radius>	maximum search radius" << std::endl;
+        std::cout << "\t -x <mesh x_pitch>	new regular mesh X pitch" << std::endl;
+        std::cout << "\t -y <mesh_y_pitch>	new regular mesh Y pitch" << std::endl;
+        std::cout << "\t -z <mesh_z_pitch>	new regular mesh Z pitch" << std::endl;
+        clean();
+        return return_code;
+    }
 
     auto start = std::chrono::system_clock::now();
 
     std::cerr << "Reading grid" << std::endl;
-    std::string grid_file = filename + ".grd";
+    std::string grid_file = file_prefix + ".grd";
 
     std::vector<Point> points;
     try {
@@ -178,7 +235,7 @@ int main(int argc, char** argv) {
     }
 
     std::cerr << "Reading electric field" << std::endl;
-    std::string data_file = filename + ".dat";
+    std::string data_file = file_prefix + ".dat";
     std::vector<Point> field;
     try {
         auto region_fields = read_electric_field(data_file);
@@ -215,7 +272,6 @@ int main(int argc, char** argv) {
 
     /*
      * ALERT invert the z-axis to match the ap2 system
-
      * WARNING this will remove the right-handedness of the coordinate system!
      */
     for(size_t i = 0; i < points.size(); ++i) {
@@ -384,7 +440,7 @@ int main(int argc, char** argv) {
 
     std::ofstream init_file;
     std::stringstream init_file_name;
-    init_file_name << filename << "_" << xdiv << "x" << ydiv << "x" << zdiv << ".txt";
+    init_file_name << file_prefix << "_" << xdiv << "x" << ydiv << "x" << zdiv << ".txt";
     init_file.open(init_file_name.str());
     // Write INIT file h"eader
     init_file << "tcad_octree_writer" << std::endl;                                    // NAME
