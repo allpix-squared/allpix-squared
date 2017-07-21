@@ -11,25 +11,16 @@
 #include <string>
 
 #include <Eigen/Eigen>
+#include "../../src/core/utils/log.h"
 #include "Octree.hpp"
-#include "core/utils/log.h"
 #include "read_dfise.h"
-
-using namespace allpix;
-
-std::unique_ptr<AllPix> apx;
-std::atomic<bool> apx_ready{false};
-void clean() {
-    Log::finish();
-    if(apx_ready) {
-        apx.reset();
-    }
-}
 
 Point barycentric_interpolation(Point query_point,
                                 std::vector<Point> tetra_vertices,
                                 std::vector<Point> tetra_vertices_field,
                                 double tetra_volume) {
+
+    allpix::Log::addStream(std::cout);
 
     // Algorithm variables
     bool volume_signal;
@@ -119,30 +110,21 @@ Point barycentric_interpolation(Point query_point,
                     tetra_subvol_3 * tetra_vertices_field[2].z + tetra_subvol_4 * tetra_vertices_field[3].z) /
                    tetra_volume;
 
-    /* DEBUGGING prints (deactivate removing first slash)
-    std::cout << " ===> Interpolating point q(" << query_point.x << "," << query_point.y << "," << query_point.z << ")" <<
-    std::endl;
-    std::cout << "Search radius:	" << search_radius << std::endl;
-    std::cout << "Number of vertices:	" << number_of_vertices << std::endl;
-    std::cout << "Neighbor vertices:	" << tetra_vertices.size() << std::endl;
-    for (int i=0; i< tetra_vertices.size(); i++){
-        std::cout << "Vertex index:	" << vertex_index[i] <<
-            "	(" << tetra_vertices[i].x << ", " <<  tetra_vertices[i].y << ", " << tetra_vertices[i].z << ").	" <<
-            "	Distance: " << 		    vertex_distance[i] <<
-            "	Electric field:	(" <<
-            tetra_vertices_field[i].x << ", " <<  tetra_vertices_field[i].y << ", " << tetra_vertices_field[i].z << ")." <<
-    std::endl;
+    for(size_t i = 0; i < tetra_vertices.size(); i++) {
+        auto distance = unibn::L2Distance<Point>::compute(tetra_vertices[i], query_point);
+        LOG(DEBUG) << "Tetrahedron vertex "
+                   << "	(" << tetra_vertices[i].x << ", " << tetra_vertices[i].y << ", " << tetra_vertices[i].z << ").	"
+                   << "	Distance: " << distance << "	Electric field:	(" << tetra_vertices_field[i].x << ", "
+                   << tetra_vertices_field[i].y << ", " << tetra_vertices_field[i].z << ").";
     }
-    std::cout << "Tetra full volume:	 " << tetra_volume << std::endl;
-    std::cout << "Tetra sub volume 1:	 " << tetra_subvol_1 << std::endl;
-    std::cout << "Tetra sub volume 2:	 " << tetra_subvol_2 << std::endl;
-    std::cout << "Tetra sub volume 3:	 " << tetra_subvol_3 << std::endl;
-    std::cout << "Tetra sub volume 4:	 " << tetra_subvol_4 << std::endl;
-    std::cout << "Volume difference:	 " << tetra_volume - (tetra_subvol_1+tetra_subvol_2+tetra_subvol_3+tetra_subvol_4) <<
-    std::endl;
-    std::cout << " ===> Electric field:	" << efield_int.x << " x, " << efield_int.y << " y, " << efield_int.z << " z" <<
-    std::endl << std::endl;
-    //*/
+    LOG(DEBUG) << "Tetra full volume:	 " << tetra_volume;
+    LOG(DEBUG) << "Tetra sub volume 1:	 " << tetra_subvol_1;
+    LOG(DEBUG) << "Tetra sub volume 2:	 " << tetra_subvol_2;
+    LOG(DEBUG) << "Tetra sub volume 3:	 " << tetra_subvol_3;
+    LOG(DEBUG) << "Tetra sub volume 4:	 " << tetra_subvol_4;
+    LOG(DEBUG) << "Volume difference:	 "
+               << tetra_volume - (tetra_subvol_1 + tetra_subvol_2 + tetra_subvol_3 + tetra_subvol_4);
+    LOG(DEBUG) << " ===> Electric field:	" << efield_int.x << " x, " << efield_int.y << " y, " << efield_int.z << " z";
 
     // Check if query point is outside tetrahedron
     if(sub_1_signal != volume_signal || sub_2_signal != volume_signal || sub_3_signal != volume_signal ||
@@ -150,6 +132,7 @@ Point barycentric_interpolation(Point query_point,
         throw std::invalid_argument("Point outside tetrahedron");
     }
 
+    allpix::Log::finish();
     return efield_int;
 }
 
@@ -162,24 +145,25 @@ int main(int argc, char** argv) {
         return_code = 1;
     }
 
-    Log::addStream(std::cout);
+    allpix::Log::addStream(std::cout);
 
     std::string file_prefix = "example_pixel";
+    std::string log_file_name;
+    std::string region = "bulk"; // Sensor bulk region name on DF-ISE file
+    float radius_step = 0.5;     // Neighbour vertex search radius
+    float max_radius = 10;       // Neighbour vertex search radius
+    float radius = 1;            // Neighbour vertex search radius
     int xdiv = 100;              // New mesh X pitch
     int ydiv = 100;              // New mesh Y pitch
     int zdiv = 100;              // New mesh Z pitch
-    std::string region = "bulk"; // Sensor bulk region name on DF-ISE file
-    float radius = 1;            // Neighbour vertex search radius
-    float radius_step = 0.5;     // Neighbour vertex search radius
-    float max_radius = 10;       // Neighbour vertex search radius
 
     for(int i = 1; i < argc; i++) {
         if(strcmp(argv[i], "-h") == 0) {
             print_help = true;
         } else if(strcmp(argv[i], "-v") == 0 && (i + 1 < argc)) {
             try {
-                LogLevel log_level = Log::getLevelFromString(std::string(argv[++i]));
-                Log::setReportingLevel(log_level);
+                allpix::LogLevel log_level = allpix::Log::getLevelFromString(std::string(argv[++i]));
+                allpix::Log::setReportingLevel(log_level);
             } catch(std::invalid_argument& e) {
                 LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
             }
@@ -189,9 +173,9 @@ int main(int argc, char** argv) {
             region = std::string(argv[++i]); // Region to be meshed
         } else if(strcmp(argv[i], "-r") == 0 && (i + 1 < argc)) {
             radius = static_cast<float>(strtod(argv[++i], nullptr)); // New mesh X pitch
-        } else if(strcmp(argv[i], "-rs") == 0 && (i + 1 < argc)) {
+        } else if(strcmp(argv[i], "-s") == 0 && (i + 1 < argc)) {
             radius_step = static_cast<float>(strtod(argv[++i], nullptr)); // New mesh X pitch
-        } else if(strcmp(argv[i], "-mr") == 0 && (i + 1 < argc)) {
+        } else if(strcmp(argv[i], "-m") == 0 && (i + 1 < argc)) {
             max_radius = static_cast<float>(strtod(argv[++i], nullptr)); // New mesh X pitch
         } else if(strcmp(argv[i], "-x") == 0 && (i + 1 < argc)) {
             xdiv = static_cast<int>(strtod(argv[++i], nullptr)); // New mesh X pitch
@@ -199,6 +183,8 @@ int main(int argc, char** argv) {
             ydiv = static_cast<int>(strtod(argv[++i], nullptr)); // New mesh X pitch
         } else if(strcmp(argv[i], "-z") == 0 && (i + 1 < argc)) {
             zdiv = static_cast<int>(strtod(argv[++i], nullptr)); // New mesh X pitch
+        } else if(strcmp(argv[i], "-l") == 0 && (i + 1 < argc)) {
+            log_file_name = std::string(argv[++i]);
         } else {
             LOG(ERROR) << "Unrecognized command line argument \"" << argv[i] << "\"";
         }
@@ -210,18 +196,31 @@ int main(int argc, char** argv) {
         std::cout << "\t -f <file_prefix>	DF-ISE files prefix" << std::endl;
         std::cout << "\t -R <region>		region name to be meshed" << std::endl;
         std::cout << "\t -r <radius>		initial node neighbors search radius" << std::endl;
-        std::cout << "\t -rs <radius_step>	radius step if no neighbor is found" << std::endl;
-        std::cout << "\t -ms <max_radius>	maximum search radius" << std::endl;
+        std::cout << "\t -r <radius_step>	radius step if no neighbor is found" << std::endl;
+        std::cout << "\t -m <max_radius>	maximum search radius" << std::endl;
         std::cout << "\t -x <mesh x_pitch>	new regular mesh X pitch" << std::endl;
         std::cout << "\t -y <mesh_y_pitch>	new regular mesh Y pitch" << std::endl;
         std::cout << "\t -z <mesh_z_pitch>	new regular mesh Z pitch" << std::endl;
-        clean();
+        std::cout << "\t -l <file>    		file to log to besides standard output" << std::endl;
+        allpix::Log::finish();
         return return_code;
+    }
+
+    // NOTE: this stream should be available for the duration of the logging
+    std::ofstream log_file;
+    if(!log_file_name.empty()) {
+        log_file.open(log_file_name, std::ios_base::out | std::ios_base::trunc);
+        if(!log_file.good()) {
+            LOG(FATAL) << "Cannot write to provided log file! Check if permissions are sufficient.";
+            allpix::Log::finish();
+            return 1;
+        }
+        allpix::Log::addStream(log_file);
     }
 
     auto start = std::chrono::system_clock::now();
 
-    std::cerr << "Reading grid" << std::endl;
+    LOG(TRACE) << "Reading grid";
     std::string grid_file = file_prefix + ".grd";
 
     std::vector<Point> points;
@@ -229,25 +228,25 @@ int main(int argc, char** argv) {
         auto region_grid = read_grid(grid_file);
         points = region_grid[region];
     } catch(std::runtime_error& e) {
-        std::cerr << "Failed to parse grid file " << grid_file << std::endl;
-        std::cerr << "ERROR: " << e.what() << std::endl;
+        LOG(ERROR) << "Failed to parse grid file " << grid_file;
+        LOG(ERROR) << "ERROR: " << e.what();
         return 1;
     }
 
-    std::cerr << "Reading electric field" << std::endl;
+    LOG(TRACE) << "Reading electric field";
     std::string data_file = file_prefix + ".dat";
     std::vector<Point> field;
     try {
         auto region_fields = read_electric_field(data_file);
         field = region_fields[region];
     } catch(std::runtime_error& e) {
-        std::cerr << "Failed to parse data file " << data_file << std::endl;
-        std::cerr << "ERROR: " << e.what() << std::endl;
+        LOG(ERROR) << "Failed to parse data file " << data_file;
+        LOG(ERROR) << "ERROR: " << e.what();
         return 1;
     }
 
     if(points.size() != field.size()) {
-        std::cerr << "Field and grid do not match" << std::endl;
+        LOG(ERROR) << "Field and grid do not match";
         return 1;
     }
 
@@ -281,8 +280,9 @@ int main(int argc, char** argv) {
 
     auto end = std::chrono::system_clock::now();
     auto elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
-    std::cerr << "Reading the files took " << elapsed_seconds << " seconds." << std::endl;
+    LOG(INFO) << "Reading the files took " << elapsed_seconds << " seconds.";
 
+    LOG(TRACE) << "Starting meshing";
     // Initializing the Octree with points from mesh cloud.
     unibn::Octree<Point> octree;
     octree.initialize(points);
@@ -316,16 +316,15 @@ int main(int argc, char** argv) {
                     });
 
                     if(results.empty()) {
-                        std::cerr << "At vertex (" << x << ", " << y << ", " << z << ")" << std::endl;
-                        std::cerr << "Radius too Small. No neighbours found for radius " << radius << std::endl;
+                        LOG(WARNING) << "At vertex (" << x << ", " << y << ", " << z << ")";
+                        LOG(WARNING) << "Radius too Small. No neighbours found for radius " << radius;
                         radius = radius + radius_step;
-
                         continue;
                     }
 
                     if(results.size() < 4) {
-                        std::cerr << "At vertex (" << x << ", " << y << ", " << z << ")" << std::endl;
-                        std::cerr << "Incomplete mesh element found for radius " << radius << std::endl;
+                        LOG(WARNING) << "At vertex (" << x << ", " << y << ", " << z << ")";
+                        LOG(WARNING) << "Incomplete mesh element found for radius " << radius;
                         radius = radius + radius_step;
                         continue;
                     }
@@ -334,7 +333,7 @@ int main(int argc, char** argv) {
                     results_size.push_back(results.size());
                     if(results_size.size() > 1) {
                         if(results_size.at(ball) == results_size.at(ball - 1)) {
-                            std::cerr << "No new neighbour after radius step. Going to next step." << std::endl;
+                            LOG(WARNING) << "No new neighbour after radius step. Going to next step.";
                             ball++;
                             continue;
                         }
@@ -381,9 +380,17 @@ int main(int argc, char** argv) {
                                         tetra_vertices_field.push_back(field[results[i4]]);
                                         vertex_index.push_back(i4);
                                         vertex_distance.push_back(unibn::L2Distance<Point>::compute(points[results[i4]], q));
+                                        LOG(DEBUG)
+                                            << " ===> Interpolating point (" << q.x << "," << q.y << "," << q.z << ")";
+                                        LOG(DEBUG) << "Search radius:	" << radius;
+                                        LOG(DEBUG) << "Number of vertices found:	" << results.size();
+                                        LOG(DEBUG) << "Parsing neighbors [index]:	" << i1 << ", " << i2 << ", " << i3
+                                                   << ", " << i4;
                                         try {
                                             e = barycentric_interpolation(q, tetra_vertices, tetra_vertices_field, volume);
-                                        } catch(std::exception&) {
+                                        } catch(std::invalid_argument& e) {
+                                            LOG(WARNING) << "Failed to interpolate point";
+                                            LOG(WARNING) << "ERROR: " << e.what();
                                             tetra_vertices.pop_back();
                                             tetra_vertices_field.pop_back();
                                             vertex_index.pop_back();
@@ -466,5 +473,8 @@ int main(int argc, char** argv) {
 
     end = std::chrono::system_clock::now();
     elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
-    std::cerr << "Running everything took " << elapsed_seconds << " seconds." << std::endl;
+    LOG(INFO) << "Running everything took " << elapsed_seconds << " seconds.";
+
+    allpix::Log::finish();
+    return 1;
 }

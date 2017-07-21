@@ -2,6 +2,7 @@
 ADD_EXECUTABLE(tcad_dfise_converter 
     dfise_converter.cpp
     read_dfise.cpp
+    ../../src/core/utils/log.cpp
 )
 
 # Link the dependency libraries
