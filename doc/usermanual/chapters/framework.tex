@@ -190,7 +190,7 @@ The instantiation logic only allows a single instance for every unique name. If 
 Simulations are frequently run on a set of different detectors (such as as a beam telescope and a device under test). All these individual detectors together is what \apsq defines as the geometry. Every detector has a set of properties attached to it:
 \begin{itemize}
 \item A unique \textbf{name} to refer to the detector in the configuration.
-\item The \textbf{position} in the world frame. This is the position of the geometric center of the sensitive device (sensor) given in world coordinates as X, Y and Z (note that any additional components like the chip or the PCB are ignored when determining the geometric center).
+\item The \textbf{position} in the world frame. This is the position of the geometric center of the sensitive device (sensor) given in world coordinates as X, Y and Z (note that any additional components like the chip and possible support layers are ignored when determining the geometric center).
 \item The \textbf{orientation} given as Euler angles using the extrinsic Z-X-Z convention relative to the world frame (also known as the 1-3-1 or the "x-convention" and the most widely used definition of Euler angles~\cite{eulerangles}). 
 \item A \textbf{type} of a detector model. The model defines the geometry and parameters of the detector. Multiple detectors can share the same model (and this is in fact very common). Several ready-to-use models are shipped with the framework.
 \item An optional \textbf{electric field} in the sensitive device. An electric field can be added to a detector by a special module as shown in Section \ref{sec:module_electric_field}.
@@ -211,9 +211,9 @@ void run(unsigned int event_id) {
 \end{minted}
 
 \subsubsection{Coordinate systems}
-All detectors have a fixed position in the world frame which has an arbitrary origin. Every detector also has a local coordinate system attached to it. The origin of this local coordinate system does not necessarily correspond with the geometric center of the sensitive device, which is the center of rotation of the detector in the global frame. The origin of the local coordinate system is instead based on the pixel grid in the sensor. This allows for simpler calculations that are also easier to understand. 
+All detectors have a fixed position in the world frame which has an arbitrary origin. Every detector also has a local coordinate system attached to it. The origin of this local coordinate system does usually not correspond with the geometric center of the sensitive device, which is the center of rotation of the detector in the global frame. The origin of the local coordinate system is instead based on the pixel grid in the sensor. The origin of the local coordinate system is fixed to the center of the first pixel in the grid, which allows for simpler calculations through the framework that are also easier to understand. 
 
-While the origin of the local coordinate system depends on the type of the model, there are fixed rules for the orientation of the coordinate system. The positive z-axis should point in the direction the particle beam is supposed to enter the sensor, perpendicular to the 2D pixel grid. The x-axis should be in the plane that defines the pixel grid. It should be in horizontal direction perpendicular to the direction of the beam, if the sensor is placed unrotated in a horizontal beam. The y-axis should be normal to both the x- and the z-axis in such a way that a right-handed coordinate system is constructed. 
+While the actual origin of the local coordinate system depends on the type of the model, there are fixed rules for the orientation of the coordinate system. The positive z-axis should point in the direction the particle beam is supposed to enter the sensor, perpendicular to the 2D pixel grid. The x-axis should be in the plane that defines the pixel grid. It should be in horizontal direction perpendicular to the direction of the beam, if the sensor is placed unrotated in a horizontal beam. The y-axis should be normal to both the x- and the z-axis in such a way that a right-handed coordinate system is constructed. 
 
 \subsubsection{Detector models}
 \label{sec:detector_models}
@@ -222,16 +222,51 @@ Different types of detector models are already available and shipped with the fr
 \item The coordinate of the center in the local frame. This is the location of the local point which is defined as position in the global frame, and the rotation center for the specified orientation.
 \item The number of pixels in the sensor in both the x- and y-axis. Every pixel is an independent block replicated over the x,y-plane of the sensor. 
 \item The size of an individual pixel. The multiplication of the pixel size and the number of pixels is known as the pixel grid and goes over the full x,y-plane.
-\item The sensor with a center and a size. The sensor is at least as large as the pixel grid size and has a certain thickness. It can have excess length in the x,y-plane in each direction. The top, bottom, right and left direction are respectively the positive y-axis, the negative y-axis, the positive x-axis and the negative x-axis.
+\item The sensor with a center and a size. The sensor is at least as large as the pixel grid size and has a certain thickness. It can have excess length in the x,y-plane in each direction. 
 \item The readout chip with a center and a size. It is positioned directly after the sensor by default. The chip can also have an excess as described above for the sensor.
-\item The PCB with a center and a size. It is positioned directly after the sensor and the chip by default. The PCB can also have an excess as described above for the sensor.
+\item Possible support layers with a center and a size. It is positioned directly after the sensor and the chip by default. The support layer can be of various materials and possibly contain a cutout.
 \item Total size of the box with the local frame center in the middle that fit all elements of the model.
 \end{itemize}
-This standard detector model can be extended to provide a more detailed geometry if required by particular modules (most notably the Geant4 geometry). The position and size of all elements can be changed by these extending models. A model with only the standard elements described above is the \texttt{MonolithicPixelDetectorModel}. Currently the only more advanced detector model is the \texttt{HybridPixelDetectorModel}, which also include bump bonds between the sensor and the readout chip. 
+This standard detector model can be extended to provide a more detailed geometry if required by particular modules (most notably the Geant4 geometry builder). The position and size of all elements can be changed by these extending models. A model with only the standard elements described above is the \texttt{MonolithicPixelDetectorModel}. Currently the only extended detector model is the \texttt{HybridPixelDetectorModel}, which also include bump bonds between the sensor and the readout chip. 
 
-\todo{The exact parameters need to be specified here}
+\nlparagraph{Detector model parameters}
+\todo{This section should likely be moved to a separate chapter, but before that it should also be moved out of the core likely?}
+Models are defined in configuration files which are used to instatiate the actual model classes. These files for detector models can contain various types of parameters. Some are required for all models, other optional for all models and there are also parameters only supported by certain types of models. For more details about the steps to perform to add and use your own new model, Section \ref{sec:adding_detector_model} should be consulted.
 
-To fetch a detector model as \texttt{HybridPixelDetectorModel}, the base class should be downcasted as follows (the downcast return a null pointer if the class is not of the appropriate type).
+The set of base parameters supported by every models is provided below. These parameters should be given at the top of the file before opening any sections.
+\begin{itemize}
+\item \texttt{type}: A required parameter describing the type of the model. At the moment either \textbf{monolithic} or \textbf{hybrid}. This value determines any optional extra supported parameters discussed later.
+\item \texttt{number\_of\_pixels}: The number of pixels in the 2D pixel grid. Determines the base size of the sensor together with the \texttt{pixel\_size} parameter below.
+\item \texttt{pixel\_size}: The size of a single pixel in the pixel grid. Given in 2D as pixels do not have any direct thickness. This parameter is required for all models. 
+\item \texttt{sensor\_thickness}: Thickness of the active area of the detector model containing the individual pixels. This parameter is required for all models.
+\item \texttt{sensor\_excess}: Fallback for the excess width of the sensor in all four directions (top, bottom, left and right). Used if the specialized parameters described below are not given. Defaults to zero, thus having a sensor size equal to the number of pixels times the size of a single pixel.
+\item \texttt{sensor\_excess\_\textit{direction}}: With direction either \textit{top}, \textit{bottom}, \textit{left} or \textit{right}, where the top, bottom, right and left direction are respectively the positive y-axis, the negative y-axis, the positive x-axis and the negative x-axis. It specifies the extra excess length added to the sensor in the specific direction.
+\item \texttt{chip\_thickness}: Thickness of the readout chip, placed next to the sensor.
+\item \texttt{chip\_excess}: Fallback for the excess width of the chip, defaults to zero thus a chip equal to the size of the pixel grid. See the \texttt{sensor\_excess} parameter above.
+\item \texttt{chip\_excess\_\textit{direction}}: With direction either \textit{top}, \textit{bottom}, \textit{left} or \textit{right}. The chip excess in the specific direction, see the \texttt{sensor\_excess\_\textit{direction}} parameter above.
+\end{itemize}
+
+Besides these base parameters, several base layers of support can be added to detector models. Every layer of support should be given in its own section with the name \texttt{support}. By default there are no support layers. The support layers support the following parameters.
+\begin{itemize}
+\item \texttt{size}: Size of the support in 2D (the thickness is given separately below). This parameter is required for all support layers.
+\item \texttt{thickness}: Thickness of the support layers. This parameter is required for all support layers.
+\item \texttt{offset}: Every support layer is centered by default to the center of the pixel grid (the rotation center of the model). An optional 2D offset can be specified using this parameter, this is disabled by default. The position in the depth axis can be specified separately with the parameter \texttt{location}.
+\item \texttt{location}: Location of the support layer. Either \textit{sensor} to stick it to the sensor (on the opposite side of the chip) or \textit{chip} to add the support layer after the chip. Defaults to \textit{chip} if not given. Sensors are stacked in there respectively direction if multiple layers of support are given.
+\item \texttt{hole\_size}: Adds an optional cut-out hole to the support with the 2D size provided. The hole always covers the full support thickness. No hole will be added if this parameter is not given.
+\item \texttt{hole\_offset}: The hole is added by default to the center of the support layer. A 2D offset from this default center can be specified using this parameter.
+\item \texttt{material}: Material of the support to use, given as a lowercase string. There is no default set of materials and support for certain types of materials is up to the modules. Refer to Section \ref{sec:modules} for details about the materials supported by the geometry creator module. \todo{This should be standardized...}
+\end{itemize}
+
+The base parameters are the only set of parameters supported by the \textbf{monolithic} model. The \textbf{hybrid} model add bump bonds between the chip and the sensor while automatically making sure the chip and support layers are shifted appropriately. The set of extra parameters for the \textbf{hybrid} model are the following (these should be put in the empty start section):
+\begin{itemize}
+\item \texttt{bump\_height}: Height of the bump bonds (the separation distance between the chip and the sensor)
+\item \texttt{bump\_sphere\_radius}: The individual bump bonds are simulated as union solids of a sphere and a cylinder. This parameter set the radius of the sphere to use, which should generally be smaller than the height of the bump.
+\item \texttt{bump\_cylinder\_radius}: The radius of the cylinder part of the bump. The height of the cylinder is determined by the \texttt{bump\_height} parameter.
+\item \texttt{bump\_offset}: A 2D offset of the grid of bumps. The individual bumps are by default positioned at the center of all the single pixels in the grid.
+\end{itemize}
+
+\nlparagraph{Fetching specific models within the framework}
+Some modules are specific for a particular type of detector model. To fetch a specific detector model from the base class, the model should be downcasted. An example to try fetching an \texttt{HybridPixelDetectorModel} is the following (the downcast return a null pointer if the class is not of the appropriate type).
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
 // Detector is a pointer to a Detector object
 auto model = detector->getModel();
@@ -240,8 +275,11 @@ if(hybrid_model != nullptr) {
     // The model of this Detector is a HybridPixelDetectorModel
 }
 \end{minted}
-For more details about the different types models and how to add your own new model, Section \ref{sec:adding_detector_model} should be consulted.
 
+\nlparagraph{Specializing detector models}
+A detector model contains default values for all the parameters. Some parameters like the sensor thickness can however vary between different detectors of the same general model. To allow for easy adjustment of these parameters, models can be specialized in the detector configuration file introduced in \ref{sec:detector_config}. All of the model parameters, except the type parameter, in the header at the top (thus not the support layers) can be changed by adding a parameter with the exact same key to the detector model file with the specialized value. The framework will then internally automatically create a copy of this model with the requested change. 
+
+\nlparagraph{Search order for models}
 To support different detector models and storage locations the framework supports model readers. The core geometry manager does also read models and will read all remaining models, not parsed earlier, before the geometry is closed. The model readers and the core geometry manager should search for model files in the following order.
 \begin{enumerate}
 \item If defined, the paths in the \textit{models\_path} parameter provided to the model reader module or the global \textit{models\_path} parameter if no module-specific one is defined (the geometry manager only uses the global one). Files are read and parsed directly. If the path is a directory, all files in the directory are added (not recursing into subdirectories).
@@ -250,7 +288,7 @@ To support different detector models and storage locations the framework support
 \end{enumerate}
 For almost all purposes a specific model reader is not needed and all internal models can be read by the geometry manager.
 
-\todo{This should include more details about different model readers}
+\todo{This should include more details about other model readers or it should be removed}
 
 \subsection{Passing Objects using Messages}
 \label{sec:objects_messages}

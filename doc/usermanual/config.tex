@@ -28,13 +28,15 @@
     keywordstyle={\color{green}\bfseries}
 }
      
-% Set modules
-\newcommand{\includemodulesdoc}{\def\temp{@ALLPIX_MODULE_FILES@}\ifx\temp\empty
+% Command to add all modules
+\newcommand{\includemodulesmd}{\def\temp{@ALLPIX_MODULE_FILES@}\ifx\temp\empty
   \textit{Module documentation not added because Markdown to LaTex conversion was not possible}
 \else
   \foreach \n in @ALLPIX_MODULE_FILES@ {\input{\n}}
 \fi}
 
+% Command to add a single converted markdown file
+\newcommand{\inputmd}[1]{\input{md/#1}}
 
 % Set bibliography
 \addbibresource{usermanual/references.bib}
@@ -43,5 +45,7 @@
 \newcommand{\version}{\lstinline|@ALLPIX_VERSION@|}
 \newcommand{\project}{@CMAKE_PROJECT_NAME@}
 
-% Use new lines in FAQ 
-\setlist[description]{style=nextline}
+% Use new lines in FAQ
+% FIXME this creates an issue when running htlatex for HTML output:
+% ! Argument of \enit@postlabel@i has an extra }.
+%\setlist[description]{style=nextline}

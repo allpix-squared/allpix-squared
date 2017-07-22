@@ -4,7 +4,7 @@ After installing and loading the required dependencies, there are various option
 
 \subsection{Prerequisites}
 \label{sec:prerequisites}
-\apsq should be able to run without problems on Mac as well as any recent Linux distribution. Windows is not officially supported and will likely never be. It could however be theoretically possible to install \apsq using MinGW or Cygwin, but this has not been tested.
+\apsq should be able to run without problems on Mac as well as any recent Linux distribution. Windows is not officially supported and will likely never be. It could however be theoretically possible to install \apsq using MinGW or Cygwin, but this has not been tested. The prerequisites can be loaded automatically on CERN's LXPLUS service, please continue to \ref{sec:initialize_dependencies} for an installation on LXPLUS.
 
 The core framework is separated from the individual modules and \apsq has therefore only one required dependency: ROOT 6 (versions below 6 are not supported!)~\cite{root}. If the framework is run on a CERN cluster the default dependencies can be loaded from CVMFS as explained in Section \ref{sec:initialize_dependencies}. Otherwise all required dependencies need to be installed before building \apsq. Please refer to \cite{rootinstallation} for instructions on how to install ROOT. ROOT has several extra components and the GenVector package is required to run \apsq. This package is included in the default build.
 

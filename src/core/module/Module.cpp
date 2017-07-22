@@ -9,7 +9,6 @@
 
 #include <fstream>
 #include <memory>
-#include <random>
 #include <stdexcept>
 #include <utility>
 
@@ -104,12 +103,16 @@ std::string Module::getOutputPath(const std::string& path, bool global) const {
  * The framework will automatically create proper values for the seeds. Those are either generated from a predefined seed if
  * results have to be reproduced or from a high-entropy source to ensure a good quality of randomness
  */
-uint64_t Module::getRandomSeed() const {
-    auto seed = config_.get<uint64_t>("_seed");
-    static std::seed_seq seed_seq({seed});
-    static std::mt19937_64 random_generator(seed_seq);
+uint64_t Module::getRandomSeed() {
+    if(initialized_random_generator_ == false) {
+        auto seed = config_.get<uint64_t>("_seed");
+        std::seed_seq seed_seq({seed});
+        random_generator_.seed(seed_seq);
 
-    return random_generator();
+        initialized_random_generator_ = true;
+    }
+
+    return random_generator_();
 }
 
 /**

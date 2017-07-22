@@ -44,6 +44,12 @@ namespace allpix {
          */
         void add(std::istream&, std::string file_name = "");
 
+        /**
+         * @brief Directly add a configuration object to the reader
+         * @param config Configuration object to add
+         */
+        void addConfiguration(Configuration config);
+
         /// @{
         /**
          * @brief Implement correct copy behaviour
