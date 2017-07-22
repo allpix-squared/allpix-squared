@@ -5,6 +5,9 @@ ADD_EXECUTABLE(tcad_dfise_converter
     ../../src/core/utils/log.cpp
 )
 
+# Build the TCAD converter
+#ADD_SUBDIRECTORY(data)
+
 # Link the dependency libraries
 TARGET_LINK_LIBRARIES(tcad_dfise_converter ${ALLPIX_DEPS_LIBRARIES})
 

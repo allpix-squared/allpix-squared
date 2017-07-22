@@ -18,9 +18,15 @@
 Point barycentric_interpolation(Point query_point,
                                 std::vector<Point> tetra_vertices,
                                 std::vector<Point> tetra_vertices_field,
-                                double tetra_volume) {
+                                double tetra_volume,
+                                allpix::LogLevel log_level) {
 
     allpix::Log::addStream(std::cout);
+    try {
+        allpix::Log::setReportingLevel(log_level);
+    } catch(std::invalid_argument& e) {
+        LOG(ERROR) << "Invalid verbosity level parsed. Ignoring overwrite";
+    }
 
     // Algorithm variables
     bool volume_signal;
@@ -147,7 +153,7 @@ int main(int argc, char** argv) {
 
     allpix::Log::addStream(std::cout);
 
-    std::string file_prefix = "example_pixel";
+    std::string file_prefix = "../tools/tcad_dfise_converter/data/example_pixel";
     std::string log_file_name;
     std::string region = "bulk"; // Sensor bulk region name on DF-ISE file
     float radius_step = 0.5;     // Neighbour vertex search radius
@@ -157,12 +163,13 @@ int main(int argc, char** argv) {
     int ydiv = 100;              // New mesh Y pitch
     int zdiv = 100;              // New mesh Z pitch
 
+    allpix::LogLevel log_level;
     for(int i = 1; i < argc; i++) {
         if(strcmp(argv[i], "-h") == 0) {
             print_help = true;
         } else if(strcmp(argv[i], "-v") == 0 && (i + 1 < argc)) {
             try {
-                allpix::LogLevel log_level = allpix::Log::getLevelFromString(std::string(argv[++i]));
+                log_level = allpix::Log::getLevelFromString(std::string(argv[++i]));
                 allpix::Log::setReportingLevel(log_level);
             } catch(std::invalid_argument& e) {
                 LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
@@ -390,7 +397,8 @@ int main(int argc, char** argv) {
                                         LOG(DEBUG) << "Parsing neighbors [index]:	" << i1 << ", " << i2 << ", " << i3
                                                    << ", " << i4;
                                         try {
-                                            e = barycentric_interpolation(q, tetra_vertices, tetra_vertices_field, volume);
+                                            e = barycentric_interpolation(
+                                                q, tetra_vertices, tetra_vertices_field, volume, log_level);
                                         } catch(std::invalid_argument& exception) {
                                             LOG(WARNING) << "Failed to interpolate point";
                                             LOG(WARNING) << "ERROR: " << exception.what();

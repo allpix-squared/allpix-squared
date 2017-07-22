@@ -19,7 +19,7 @@ If the pitch is not defined, default value = 100 will be used
 Example data can be found in the data folder.
 To run the example, generating a .txt INIT file with the new mesh points, you should do:
 ```bash
-./tcad_dfise_converter data/example_pixel
+./tcad_dfise_converter -f data/example_pixel [<options>] [<arguments>]
 ```
 
 #### Octree
