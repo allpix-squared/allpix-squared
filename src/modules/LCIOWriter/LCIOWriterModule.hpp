@@ -15,6 +15,10 @@
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 
+#include "objects/PixelHit.hpp"
+
+
+
 namespace allpix {
     /**
      * @ingroup Modules
@@ -39,5 +43,7 @@ namespace allpix {
 
     private:
         Configuration config_;
+        std::shared_ptr<PixelHitMessage> pixels_message_;
+
     };
 } // namespace allpix
