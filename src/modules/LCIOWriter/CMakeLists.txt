@@ -5,7 +5,8 @@ IF(LCIO_FOUND)
 	# Define module and return the generated name as MODULE_NAME
 	ALLPIX_UNIQUE_MODULE(MODULE_NAME)
 
-
+	INCLUDE_DIRECTORIES(SYSTEM ${LCIO_INCLUDE_DIR} )
+        LINK_LIBRARIES( ${LCIO_LIBRARY} )
 
 	# Add source files to library
 	ALLPIX_MODULE_SOURCES(${MODULE_NAME} 
