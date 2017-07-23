@@ -18,15 +18,9 @@
 Point barycentric_interpolation(Point query_point,
                                 std::vector<Point> tetra_vertices,
                                 std::vector<Point> tetra_vertices_field,
-                                double tetra_volume,
-                                allpix::LogLevel log_level) {
+                                double tetra_volume) {
 
     allpix::Log::addStream(std::cout);
-    try {
-        allpix::Log::setReportingLevel(log_level);
-    } catch(std::invalid_argument& e) {
-        LOG(ERROR) << "Invalid verbosity level parsed. Ignoring overwrite";
-    }
 
     // Algorithm variables
     bool volume_signal;
@@ -115,23 +109,24 @@ Point barycentric_interpolation(Point query_point,
     efield_int.z = (tetra_subvol_1 * tetra_vertices_field[0].z + tetra_subvol_2 * tetra_vertices_field[1].z +
                     tetra_subvol_3 * tetra_vertices_field[2].z + tetra_subvol_4 * tetra_vertices_field[3].z) /
                    tetra_volume;
-
+    /*
     for(size_t i = 0; i < tetra_vertices.size(); i++) {
         auto distance = unibn::L2Distance<Point>::compute(tetra_vertices[i], query_point);
-        LOG(DEBUG) << "Tetrahedron vertex "
+        std::cerr< "Tetrahedron vertex "
                    << "	(" << tetra_vertices[i].x << ", " << tetra_vertices[i].y << ", " << tetra_vertices[i].z << ").	"
                    << "	Distance: " << distance << "	Electric field:	(" << tetra_vertices_field[i].x << ", "
-                   << tetra_vertices_field[i].y << ", " << tetra_vertices_field[i].z << ").";
+                   << tetra_vertices_field[i].y << ", " << tetra_vertices_field[i].z << ")." << std::endl;
     }
-    LOG(DEBUG) << "Tetra full volume:	 " << tetra_volume;
-    LOG(DEBUG) << "Tetra sub volume 1:	 " << tetra_subvol_1;
-    LOG(DEBUG) << "Tetra sub volume 2:	 " << tetra_subvol_2;
-    LOG(DEBUG) << "Tetra sub volume 3:	 " << tetra_subvol_3;
-    LOG(DEBUG) << "Tetra sub volume 4:	 " << tetra_subvol_4;
-    LOG(DEBUG) << "Volume difference:	 "
-               << tetra_volume - (tetra_subvol_1 + tetra_subvol_2 + tetra_subvol_3 + tetra_subvol_4);
-    LOG(DEBUG) << " ===> Electric field:	" << efield_int.x << " x, " << efield_int.y << " y, " << efield_int.z << " z";
-
+    //std::cerr << "Tetra full volume:	 " << tetra_volume << std::endl
+            << "Tetra sub volume 1:	 " << tetra_subvol_1 << std::endl
+            << "Tetra sub volume 2:	 " << tetra_subvol_2 << std::endl
+            << "Tetra sub volume 3:	 " << tetra_subvol_3 << std::endl
+            << "Tetra sub volume 4:	 " << tetra_subvol_4 << std::endl
+            << "Volume difference:	 " << tetra_volume - (tetra_subvol_1 + tetra_subvol_2 + tetra_subvol_3 +
+    tetra_subvol_4) << std::endl
+            << " ===> Electric field:	" << efield_int.x << " x, " << efield_int.y << " y, " << efield_int.z << " z" <<
+    std::endl;
+    */
     // Check if query point is outside tetrahedron
     if(sub_1_signal != volume_signal || sub_2_signal != volume_signal || sub_3_signal != volume_signal ||
        sub_4_signal != volume_signal) {
@@ -163,13 +158,12 @@ int main(int argc, char** argv) {
     int ydiv = 100;              // New mesh Y pitch
     int zdiv = 100;              // New mesh Z pitch
 
-    allpix::LogLevel log_level;
     for(int i = 1; i < argc; i++) {
         if(strcmp(argv[i], "-h") == 0) {
             print_help = true;
         } else if(strcmp(argv[i], "-v") == 0 && (i + 1 < argc)) {
             try {
-                log_level = allpix::Log::getLevelFromString(std::string(argv[++i]));
+                allpix::LogLevel log_level = allpix::Log::getLevelFromString(std::string(argv[++i]));
                 allpix::Log::setReportingLevel(log_level);
             } catch(std::invalid_argument& e) {
                 LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
@@ -309,16 +303,16 @@ int main(int argc, char** argv) {
         for(int j = 0; j < ydiv; ++j) {
             double z = minz + zstep / 2.0;
             for(int k = 0; k < xdiv; ++k) {
+                std::cerr << i << " " << j << " " << k << std::endl;
                 Point q(x, y, z); // New mesh vertex
                 Point e(x, y, z); // Corresponding, to be interpolated, electric field
 
-                // Finding the nearest neighbours points
                 std::vector<long unsigned int> results_size;
-                std::vector<unsigned int> results;
                 unsigned int ball = 0;
                 while(radius < max_radius) {
                     // Calling octree neighbours search function and sorting the results list with the closest neighbours
                     // first
+                    std::vector<unsigned int> results;
                     octree.radiusNeighbors<unibn::L2Distance<Point>>(q, radius, results);
                     std::sort(results.begin(), results.end(), [&](unsigned int a, unsigned int b) {
                         return unibn::L2Distance<Point>::compute(points[a], q) <
@@ -351,102 +345,61 @@ int main(int argc, char** argv) {
                     ball++;
 
                     // Finding tetrahedrons
-                    Eigen::Matrix4d matrix;
                     double volume;
+                    Eigen::Matrix4d matrix;
+                    size_t num_nodes_element = 4;
                     std::vector<Point> tetra_vertices;
                     std::vector<Point> tetra_vertices_field;
-                    std::vector<unsigned int> vertex_index;
-                    std::vector<double> vertex_distance;
 
-                    // Loop over possible combinations of tetrahedron points
-                    unsigned int i1 = 0, i2 = 0, i3 = 0, i4 = 0;
-                    for(i1 = 0; i1 < results.size(); i1++) {
-                        tetra_vertices.push_back(points[results[i1]]);
-                        tetra_vertices_field.push_back(field[results[i1]]);
-                        vertex_index.push_back(i1);
-                        vertex_distance.push_back(unibn::L2Distance<Point>::compute(points[results[i1]], q));
-                        for(i2 = 1; i2 < results.size(); i2++) {
-                            tetra_vertices.push_back(points[results[i2]]);
-                            tetra_vertices_field.push_back(field[results[i2]]);
-                            vertex_index.push_back(i2);
-                            vertex_distance.push_back(unibn::L2Distance<Point>::compute(points[results[i2]], q));
-                            for(i3 = 2; i3 < results.size(); i3++) {
-                                tetra_vertices.push_back(points[results[i3]]);
-                                tetra_vertices_field.push_back(field[results[i3]]);
-                                vertex_index.push_back(i3);
-                                vertex_distance.push_back(unibn::L2Distance<Point>::compute(points[results[i3]], q));
-                                for(i4 = 3; i4 < results.size(); i4++) {
-                                    if(i1 == i2 || i1 == i3 || i1 == i4 || i2 == i3 || i2 == i4 || i3 == i4) {
-                                        continue;
-                                    }
-                                    matrix << 1, 1, 1, 1, points[results[i1]].x, points[results[i2]].x,
-                                        points[results[i3]].x, points[results[i4]].x, points[results[i1]].y,
-                                        points[results[i2]].y, points[results[i3]].y, points[results[i4]].y,
-                                        points[results[i1]].z, points[results[i2]].z, points[results[i3]].z,
-                                        points[results[i4]].z;
-                                    volume = (matrix.determinant()) / 6;
-                                    if(std::abs(volume) > 0.00001) {
-                                        tetra_vertices.push_back(points[results[i4]]);
-                                        tetra_vertices_field.push_back(field[results[i4]]);
-                                        vertex_index.push_back(i4);
-                                        vertex_distance.push_back(unibn::L2Distance<Point>::compute(points[results[i4]], q));
-                                        LOG(DEBUG)
-                                            << " ===> Interpolating point (" << q.x << "," << q.y << "," << q.z << ")";
-                                        LOG(DEBUG) << "Search radius:	" << radius;
-                                        LOG(DEBUG) << "Number of vertices found:	" << results.size();
-                                        LOG(DEBUG) << "Parsing neighbors [index]:	" << i1 << ", " << i2 << ", " << i3
-                                                   << ", " << i4;
-                                        try {
-                                            e = barycentric_interpolation(
-                                                q, tetra_vertices, tetra_vertices_field, volume, log_level);
-                                        } catch(std::invalid_argument& exception) {
-                                            LOG(WARNING) << "Failed to interpolate point";
-                                            LOG(WARNING) << "ERROR: " << exception.what();
-                                            tetra_vertices.pop_back();
-                                            tetra_vertices_field.pop_back();
-                                            vertex_index.pop_back();
-                                            vertex_distance.pop_back();
-                                            continue;
-                                        }
-                                        break;
-                                    }
-                                } // end for 4
-                                if(tetra_vertices.size() == 3) {
-                                    tetra_vertices.pop_back();
-                                    tetra_vertices_field.pop_back();
-                                    vertex_index.pop_back();
-                                    vertex_distance.pop_back();
-                                }
-                                if(tetra_vertices.size() == 4) {
-                                    break;
-                                }
-                            } // end for 3
-                            if(tetra_vertices.size() == 2) {
-                                tetra_vertices.pop_back();
-                                tetra_vertices_field.pop_back();
-                                vertex_index.pop_back();
-                                vertex_distance.pop_back();
+                    std::string bitmask(num_nodes_element, 1); // K leading 1's
+                    bitmask.resize(results.size(), 0);         // N-K trailing 0's
+                    std::vector<size_t> index;
+
+                    do {
+                        index.clear();
+                        tetra_vertices.clear();
+                        tetra_vertices_field.clear();
+                        // print integers and permute bitmask
+                        for(size_t idk = 0; idk < results.size(); ++idk) {
+                            if(bitmask[idk]) {
+                                index.push_back(idk);
+                                tetra_vertices.push_back(points[results[idk]]);
+                                tetra_vertices_field.push_back(field[results[idk]]);
                             }
-                            if(tetra_vertices.size() == 4) {
+                            if(index.size() == 4)
                                 break;
-                            }
-                        } // end for 2
-                        if(tetra_vertices.size() == 1) {
-                            tetra_vertices.pop_back();
-                            tetra_vertices_field.pop_back();
-                            vertex_index.pop_back();
-                            vertex_distance.pop_back();
                         }
-                        if(tetra_vertices.size() == 4) {
+
+                        matrix << 1, 1, 1, 1, points[results[index[0]]].x, points[results[index[1]]].x,
+                            points[results[index[2]]].x, points[results[index[3]]].x, points[results[index[0]]].y,
+                            points[results[index[1]]].y, points[results[index[2]]].y, points[results[index[3]]].y,
+                            points[results[index[0]]].z, points[results[index[1]]].z, points[results[index[2]]].z,
+                            points[results[index[3]]].z;
+                        volume = (matrix.determinant()) / 6;
+                        if(std::abs(volume) > 0.00001) {
+                            // std::cerr << " ===> Interpolating point (" << q.x << "," << q.y << "," << q.z << ")" <<
+                            // std::endl
+                            //		<< "Search radius:	" << radius << std::endl
+                            //		<< "Number of vertices found:	" << results.size() << std::endl
+                            //		<< "Parsing neighbors [index]:	" << index[0] << ", " << index[1] << ", " << index[2] << ",
+                            //" << index[3] << std::endl;
+                            try {
+                                e = barycentric_interpolation(q, tetra_vertices, tetra_vertices_field, volume);
+                            } catch(std::invalid_argument& exception) {
+                                // LOG(WARNING) << "Failed to interpolate point";
+                                // LOG(WARNING) << "ERROR: " << exception.what();
+                                continue;
+                            }
                             break;
                         }
-                    } // end for 1
+                    } while(std::prev_permutation(bitmask.begin(), bitmask.end()));
 
                     if(tetra_vertices.size() == 4) {
                         break;
                     }
+
                     radius = radius + radius_step;
-                } // end while
+                }
 
                 e_field_new_mesh.push_back(e);
                 z += zstep;
