@@ -147,3 +147,15 @@ export PATH="$Doxygen_HOME:$PATH"
 
 export Git_HOME=${CLICREPO}/software/git/2.13.2/${BUILD_FLAVOUR}
 export PATH=${Git_HOME}/bin:${PATH}
+source ${Git_HOME}/setup.sh
+
+#--------------------------------------------------------------------------------
+#     LCIO
+#--------------------------------------------------------------------------------
+
+if [ ${COMPILER_TYPE} == "gcc" ]; then
+    export LCIO=${CLICREPO}/software/LCIO/2.8.0/x86_64-${OS}-gcc7-opt/
+fi
+if [ ${COMPILER_TYPE} == "llvm" ]; then
+    export LCIO=${CLICREPO}/software/LCIO/2.8.0/x86_64-${OS}-llvm40-opt/
+fi
