@@ -9,6 +9,7 @@
  */
 
 #include <string>
+#include <vector>
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
@@ -43,7 +44,7 @@ namespace allpix {
 
     private:
         Configuration config_;
-        std::shared_ptr<PixelHitMessage> pixels_message_;
+      std::vector<std::shared_ptr<PixelHitMessage>> pixel_messages_;
 
     };
 } // namespace allpix
