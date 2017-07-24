@@ -391,17 +391,17 @@ void GenericPropagationModule::run(unsigned int event_num) {
     long double total_time = 0;
     for(auto& deposit : deposits_message_->getData()) {
         // Loop over all charges in the deposit
-        unsigned int electrons_remaining = deposit.getCharge();
+        unsigned int charges_remaining = deposit.getCharge();
 
         LOG(DEBUG) << "Set of charges on " << display_vector(deposit.getLocalPosition(), {"mm", "um"});
 
         auto charge_per_step = config_.get<unsigned int>("charge_per_step");
-        while(electrons_remaining > 0) {
-            // Define number of charges to be propagated and remove electrons of this step from the total
-            if(charge_per_step > electrons_remaining) {
-                charge_per_step = electrons_remaining;
+        while(charges_remaining > 0) {
+            // Define number of charges to be propagated and remove charges of this step from the total
+            if(charge_per_step > charges_remaining) {
+                charge_per_step = charges_remaining;
             }
-            electrons_remaining -= charge_per_step;
+            charges_remaining -= charge_per_step;
 
             // Get position and propagate through sensor
             auto position = deposit.getLocalPosition();
