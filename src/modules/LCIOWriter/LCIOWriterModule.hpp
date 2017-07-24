@@ -18,7 +18,7 @@
 
 #include "objects/PixelHit.hpp"
 
-
+#include <IO/LCWriter.h>
 
 namespace allpix {
     /**
@@ -42,9 +42,14 @@ namespace allpix {
          */
         void run(unsigned int) override;
 
+        /**
+         * @brief Close the output file
+         */
+        void finalize() override;
+
     private:
         Configuration config_;
-      std::vector<std::shared_ptr<PixelHitMessage>> pixel_messages_;
-
+        std::vector<std::shared_ptr<PixelHitMessage>> pixel_messages_;
+        IO::LCWriter* lcWriter;
     };
 } // namespace allpix
