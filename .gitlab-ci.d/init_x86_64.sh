@@ -153,9 +153,5 @@ source ${Git_HOME}/setup.sh
 #     LCIO
 #--------------------------------------------------------------------------------
 
-if [ ${COMPILER_TYPE} == "gcc" ]; then
-    export LCIO=${CLICREPO}/software/LCIO/2.8.0/x86_64-${OS}-gcc7-opt/
-fi
-if [ ${COMPILER_TYPE} == "llvm" ]; then
-    export LCIO=${CLICREPO}/software/LCIO/2.8.0/x86_64-${OS}-llvm40-opt/
-fi
+export LCIO=${CLICREPO}/software/LCIO/2.8.0/${BUILD_FLAVOUR}/
+
