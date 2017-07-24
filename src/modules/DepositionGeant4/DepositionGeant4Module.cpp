@@ -42,6 +42,10 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration config, Messenger* 
     user_limits_ =
         std::make_unique<G4UserLimits>(config_.get<double>("max_step_length", std::numeric_limits<double>::max()));
 
+    // Set defaults for charge carrier creation:
+    config_.setDefault<bool>("deposit_electrons", true);
+    config_.setDefault<bool>("deposit_holes", false);
+
     // Add the particle source position to the geometry
     geo_manager_->addPoint(config_.get<ROOT::Math::XYZPoint>("particle_position"));
 }
@@ -103,7 +107,12 @@ void DepositionGeant4Module::init() {
 
         // Get model of the sensitive device
         std::vector<std::string> sensor_volumes = {"sensor_log", "pixel_log"};
-        auto sensitive_detector_action = new SensitiveDetectorActionG4(this, detector, messenger_, charge_creation_energy);
+        auto sensitive_detector_action = new SensitiveDetectorActionG4(this,
+                                                                       detector,
+                                                                       messenger_,
+                                                                       charge_creation_energy,
+                                                                       config_.get<double>("deposit_electrons"),
+                                                                       config_.get<double>("deposit_holes"));
         for(auto& sensor_volume : sensor_volumes) {
             auto logical_volume = detector->getExternalObject<G4LogicalVolume>(sensor_volume);
             if(logical_volume == nullptr) {
