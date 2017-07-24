@@ -28,8 +28,7 @@ using namespace lcio;
 
 LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, GeometryManager* geo)
     : Module(config), config_(std::move(config)) {
-    // ... Implement ... (Typically bounds the required messages and optionally sets configuration defaults)
-    LOG(TRACE) << "Initializing module " << getUniqueName();
+
     // Bind pixel hits message
     messenger->bindMulti(this, &LCIOWriterModule::pixel_messages_, MsgFlags::REQUIRED);
 
@@ -52,14 +51,9 @@ LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, G
     run->setDetectorName("telescope");
     lcWriter->writeRunHeader(run);
     delete run;
-    LOG(DEBUG) << "LCIO run header written";
 }
 
 void LCIOWriterModule::run(unsigned int eventNb) {
-
-    // ... Implement ... (Typically uses the configuration to execute function and outputs an message)
-    LOG(TRACE) << "Running module " << getUniqueName();
-    // LOG(DEBUG) << "Adding hits in " << pixels_message_->getData().size() << " pixels";
 
     LCEventImpl* evt = new LCEventImpl(); // create the event
     evt->setRunNumber(1);
@@ -109,7 +103,6 @@ void LCIOWriterModule::run(unsigned int eventNb) {
 }
 
 void LCIOWriterModule::finalize() {
-    LOG(TRACE) << "Finalizing module " << getUniqueName();
     lcWriter->close();
     delete lcWriter;
 }
