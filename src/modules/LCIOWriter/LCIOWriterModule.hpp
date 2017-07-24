@@ -2,10 +2,6 @@
  * @file
  * @brief Definition of [LCIOWriter] module
  * @copyright MIT License
- *
- *Write hit data to LCIO file
- *
- * Refer to the User's Manual for more details.
  */
 
 #include <string>
@@ -38,7 +34,7 @@ namespace allpix {
         LCIOWriterModule(Configuration config, Messenger* messenger, GeometryManager* geo_manager);
 
         /**
-         * @brief [Run the function of this module]
+         * @brief Receive pixel hit messages, create lcio event, add hit collection and write event to file.
          */
         void run(unsigned int) override;
 
