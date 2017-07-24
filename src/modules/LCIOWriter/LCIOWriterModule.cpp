@@ -20,17 +20,27 @@
 #include <IMPL/TrackerDataImpl.h>
 #include <IO/LCWriter.h>
 #include <IOIMPL/LCFactory.h>
+#include <UTIL/CellIDEncoder.h>
 #include <lcio.h>
 
 using namespace allpix;
 using namespace lcio;
 
-LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, GeometryManager*)
+LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, GeometryManager* geo)
     : Module(config), config_(std::move(config)) {
     // ... Implement ... (Typically bounds the required messages and optionally sets configuration defaults)
     LOG(TRACE) << "Initializing module " << getUniqueName();
     // Bind pixel hits message
     messenger->bindMulti(this, &LCIOWriterModule::pixel_messages_, MsgFlags::REQUIRED);
+
+    std::vector<std::shared_ptr<Detector>> detectors = geo->getDetectors();
+
+    unsigned int i = 0;
+    for(const auto& det : detectors) {
+        detectorIDs[det->getName()] = i;
+        LOG(DEBUG) << det->getName() << " has ID " << detectorIDs[det->getName()];
+        i++;
+    }
 
     lcWriter = LCFactory::getInstance()->createLCWriter();
     lcWriter->open("test.slcio", LCIO::WRITE_NEW);
@@ -39,11 +49,13 @@ LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, G
     run->setDetectorName("telescope");
     lcWriter->writeRunHeader(run);
     delete run;
-    // lcWriter->close();
-    LOG(STATUS) << "LCIO file writtencd";
+    LOG(DEBUG) << "LCIO run header written";
 }
 
 void LCIOWriterModule::run(unsigned int eventNb) {
+
+    int _pixelType = 2;
+
     // ... Implement ... (Typically uses the configuration to execute function and outputs an message)
     LOG(TRACE) << "Running module " << getUniqueName();
     // LOG(DEBUG) << "Adding hits in " << pixels_message_->getData().size() << " pixels";
@@ -52,27 +64,44 @@ void LCIOWriterModule::run(unsigned int eventNb) {
     evt->setRunNumber(1);
     evt->setEventNumber(static_cast<int>(eventNb)); // set the event attributes
 
-    LCCollectionVec* hitVec = new LCCollectionVec(LCIO::TRACKERDATA);
+    // std::vector<LCCollectionVec*> hitvecs;
+    std::vector<std::vector<float>> charges;
+    for(unsigned int i = 0; i < detectorIDs.size(); i++) {
+        // LCCollectionVec* hitVec = new LCCollectionVec(LCIO::TRACKERDATA);
+        // hitvecs.push_back(hitVec);
+        std::vector<float> charge;
+        charges.push_back(charge);
+    }
 
     for(const auto& hit_msg : pixel_messages_) {
         LOG(DEBUG) << hit_msg->getDetector()->getName();
         for(const auto& hitdata : hit_msg->getData()) {
-            LOG(DEBUG) << ", X: " << hitdata.getPixel().getIndex().x() << ", Y:" << hitdata.getPixel().getIndex().y()
+            LOG(DEBUG) << "X: " << hitdata.getPixel().getIndex().x() << ", Y:" << hitdata.getPixel().getIndex().y()
                        << ", Signal: " << hitdata.getSignal();
 
-            std::vector<float> charge;
-            charge.push_back(static_cast<float>(hitdata.getPixel().getIndex().x()));
-            charge.push_back(static_cast<float>(hitdata.getPixel().getIndex().y()));
-            charge.push_back(static_cast<float>(hitdata.getSignal()));
-            TrackerDataImpl* hit = new TrackerDataImpl();
-            hit->setChargeValues(charge);
-            hit->setCellID0(0);
-            hit->setCellID1(0);
-            hitVec->push_back(hit);
+            unsigned int detectorID = detectorIDs[hit_msg->getDetector()->getName()];
+
+            charges[detectorID].push_back(static_cast<float>(hitdata.getPixel().getIndex().x())); // x
+            charges[detectorID].push_back(static_cast<float>(hitdata.getPixel().getIndex().y())); // y
+            charges[detectorID].push_back(static_cast<float>(hitdata.getSignal()));               // signal
+            charges[detectorID].push_back(static_cast<float>(0));                                 // time
         }
     }
+
+    LCCollectionVec* hitVec = new LCCollectionVec(LCIO::TRACKERDATA);
+
+    for(unsigned int detectorID = 0; detectorID < detectorIDs.size(); detectorID++) {
+        TrackerDataImpl* hit = new TrackerDataImpl();
+        CellIDEncoder<TrackerDataImpl> sparseDataEncoder("sensorID:7,sparsePixelType:5", hitVec);
+        sparseDataEncoder["sensorID"] = detectorID;
+        sparseDataEncoder["sparsePixelType"] = static_cast<int>(_pixelType);
+        sparseDataEncoder.setCellID(hit);
+        hit->setChargeValues(charges[detectorID]);
+        hitVec->push_back(hit);
+    }
     evt->addCollection(hitVec, "original_zsdata"); // add the collection with a name
-    lcWriter->writeEvent(evt);                     // write the event to the file
+
+    lcWriter->writeEvent(evt); // write the event to the file
     delete evt;
 }
 
