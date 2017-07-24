@@ -14,6 +14,12 @@
 namespace allpix {
     /**
      * @ingroup Objects
+     * @brief Flags to distinguish between eletron and hole charge carriers
+     */
+    enum class CarrierType : int8_t { ELECTRON = -1, HOLE = 1 };
+
+    /**
+     * @ingroup Objects
      * @brief Base object for charge deposits and propagated charges in the sensor
      */
     class SensorCharge : public Object {
@@ -65,6 +71,7 @@ namespace allpix {
         ROOT::Math::XYZPoint local_position_;
         ROOT::Math::XYZPoint global_position_;
 
+        CarrierType type_{};
         unsigned int charge_{};
         double event_time_{};
     };
