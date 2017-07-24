@@ -4,4 +4,4 @@
 ADD_SUBDIRECTORY(tcad_dfise_converter)
 
 # Install the ROOT helper macro's for analysis
-ADD_SUBDIRECTORY(root_macros)
+ADD_SUBDIRECTORY(root_analysis_macros)

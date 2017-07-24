@@ -148,6 +148,33 @@ namespace allpix {
     }
 
     /**
+     * @ingroup StringConversions
+     * @brief Conversion handler for booleans
+     * @throws std::invalid_argument If the string cannot be converted to a boolean type
+     *
+     * Converts both numerical (0, 1) and textual representations ("false", "true") are supported. No enclosing quotation
+     * marks should be used.
+     */
+    inline bool from_string_impl(std::string str, type_tag<bool>) {
+        str = _from_string_helper(str);
+
+        std::istringstream sstream(str);
+        bool ret_value = false;
+        if(isalpha(str.back())) {
+            sstream >> std::boolalpha >> ret_value;
+        } else {
+            sstream >> ret_value;
+        }
+
+        // Check if the reading was succesfull and everything was read
+        if(sstream.fail() || sstream.peek() != EOF) {
+            throw std::invalid_argument("conversion not possible");
+        }
+
+        return ret_value;
+    }
+
+    /**
      * @brief Converts any type to a string
      * @note C-strings are not supported due to allocation issues
      *

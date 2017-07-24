@@ -335,11 +335,8 @@ void GeometryBuilderTGeoModule::BuildPixelDevices() {
             Bumps_log->SetLineColor(kGreen);
 
             // Placement of the volume containing the bumps
-            TGeoTranslation* posBumps = new TGeoTranslation("LocalBumpsTranslation" + id_s,
-                                                            0.,
-                                                            0.,
-                                                            -dsc->getSensorSize().z() / 2.0 -
-                                                                2 * dsc->getCoverlayerHeight() / 2.0 - (bump_height / 2));
+            TGeoTranslation* posBumps = new TGeoTranslation(
+                "LocalBumpsTranslation" + id_s, 0., 0., -dsc->getSensorSize().z() / 2.0 - (bump_height / 2));
             posBumps->Add(posDevice);
             LOG(DEBUG) << " - Bumps position       : " << Print(posBumps);
             wrapper_log->AddNode(Bumps_log, 1, posBumps);
@@ -394,8 +391,7 @@ void GeometryBuilderTGeoModule::BuildPixelDevices() {
                 new TGeoTranslation("LocalChipTranslation" + id_s,
                                     dsc->getChipCenter().x() - dsc->getCenter().x(),
                                     dsc->getChipCenter().y() - dsc->getCenter().y(),
-                                    -dsc->getSensorSize().z() / 2.0 - 2. * dsc->getCoverlayerHeight() / 2.0 - bump_height -
-                                        dsc->getChipSize().z() / 2.0);
+                                    -dsc->getSensorSize().z() / 2.0 - bump_height - dsc->getChipSize().z() / 2.0);
             posChip->Add(posDevice);
             LOG(DEBUG) << " - Chip position        : " << Print(posChip);
             wrapper_log->AddNode(Chip_log, 1, posChip);
@@ -428,47 +424,6 @@ void GeometryBuilderTGeoModule::BuildPixelDevices() {
             LOG(DEBUG) << " - Support position         : " << Print(possupport);
             wrapper_log->AddNode(support_log, 1, possupport);
         }
-
-        ///////////////////////////////////////////////////////////
-        // Coverlayer if requested (typically made of Al, but user configurable)
-        if(dsc->hasCoverlayer()) {
-
-            /*
-              Find out about the material that the user requested.
-              This material has to be defined in the BuildMaterialsAndMedia().
-              If not, as in AllPix1, a warning is issued and Aluminium is used.
-              ### Change that policy ?
-             */
-            TGeoMedium* Cover_med = gGeoManager->GetMedium(dsc->getCoverlayerMaterial().c_str());
-            if(Cover_med == nullptr) {
-                LOG(ERROR) << "Requested material for the coverlayer " << dsc->getCoverlayerMaterial()
-                           << " was not found in the material database. "
-                           << "Check the spelling or add it in BuildMaterialsAndMedia()."
-                           << "Going on with aluminum.";
-                Cover_med = gGeoManager->GetMedium("Al");
-            }
-
-            // Create logical volume
-            TGeoVolume* Cover_log = gGeoManager->MakeBox(CoverName + id_s,
-                                                         Cover_med,
-                                                         dsc->getSensorSize().x() / 2.0,
-                                                         dsc->getSensorSize().y() / 2.0,
-                                                         dsc->getCoverlayerHeight() / 2.0);
-            // G4Color::White() !!, SetLineWidth(2), SetForceSolid(true)
-            // ROOT background is withe by default. Change White into ...
-            Cover_log->SetLineWidth(2);
-
-            // Placement !
-            TGeoTranslation* posCover =
-                new TGeoTranslation("LocalCoverlayerTranslation" + id_s,
-                                    0.,
-                                    0.,
-                                    -dsc->getSensorSize().z() / 2.0 - dsc->getCoverlayerHeight() / 2.0);
-            posCover->Add(posDevice);
-            LOG(DEBUG) << " - Coverlayer position  : " << Print(posCover);
-            wrapper_log->AddNode(Cover_log, 1, posCover);
-
-        } // end if Coverlayer
 
         ///////////////////////////////////////////////////////////
         //  GuardRings and excess area
