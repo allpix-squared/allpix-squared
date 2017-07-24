@@ -415,7 +415,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
             }
 
             // Propagate a single charge deposit
-            auto prop_pair = propagate(position);
+            auto prop_pair = propagate(position, deposit.getType());
             position = prop_pair.first;
 
             LOG(DEBUG) << " Propagated " << charge_per_step << " to " << display_vector(position, {"mm", "um"}) << " in "
@@ -462,23 +462,30 @@ void GenericPropagationModule::run(unsigned int event_num) {
  * velocity at every point with help of the electric field map of the detector. An Runge-Kutta integration is applied in
  * multiple steps, adding a random diffusion to the propagating charge every step.
  */
-std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos) {
+std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
+                                                                            const CarrierType& type) {
     // Create a runge kutta solver using the electric field as step function
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
 
-    // Define a lambda function to compute the electron mobility
+    // Define a lambda function to compute the carrier mobility
     // NOTE This function is typically the most frequently executed part of the framework and therefore the bottleneck
-    auto electron_mobility = [&](double efield_mag) {
-        // Compute electron mobility from constants and electric field magnitude
-        double numerator = electron_Vm_ / electron_Ec_;
-        double denominator = std::pow(1. + std::pow(efield_mag / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_);
+    auto carrier_mobility = [&](double efield_mag) {
+        // Compute carrier mobility from constants and electric field magnitude
+        double numerator, denominator;
+        if(type == CarrierType::ELECTRON) {
+            numerator = electron_Vm_ / electron_Ec_;
+            denominator = std::pow(1. + std::pow(efield_mag / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_);
+        } else {
+            numerator = hole_Vm_ / hole_Ec_;
+            denominator = std::pow(1. + std::pow(efield_mag / hole_Ec_, hole_Beta_), 1.0 / hole_Beta_);
+        }
         return numerator / denominator;
     };
 
     // Define a function to compute the diffusion
     auto timestep = timestep_start_;
-    auto electron_diffusion = [&](double efield_mag) -> Eigen::Vector3d {
-        double diffusion_constant = boltzmann_kT_ * electron_mobility(efield_mag);
+    auto carrier_diffusion = [&](double efield_mag) -> Eigen::Vector3d {
+        double diffusion_constant = boltzmann_kT_ * carrier_mobility(efield_mag);
         double diffusion_std_dev = std::sqrt(2. * diffusion_constant * timestep);
 
         // Compute the independent diffusion in three
@@ -490,8 +497,8 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         return diffusion;
     };
 
-    // Define a lambda function to compute the electron velocity
-    auto electron_velocity = [&](double, Eigen::Vector3d cur_pos) -> Eigen::Vector3d {
+    // Define a lambda function to compute the carrier velocity
+    auto carrier_velocity = [&](double, Eigen::Vector3d cur_pos) -> Eigen::Vector3d {
         double* raw_field = detector_->getElectricFieldRaw(cur_pos);
         if(raw_field == nullptr) {
             // Return a zero electric field outside of the sensor
@@ -499,11 +506,11 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         }
         // Compute the drift velocity
         auto efield = static_cast<Eigen::Map<Eigen::Vector3d>>(raw_field);
-        return -electron_mobility(efield.norm()) * efield;
+        return -carrier_mobility(efield.norm()) * efield;
     };
 
     // Create the runge kutta solver with an RKF5 tableau
-    auto runge_kutta = make_runge_kutta(tableau::RK5, electron_velocity, timestep, position);
+    auto runge_kutta = make_runge_kutta(tableau::RK5, carrier_velocity, timestep, position);
 
     // Continue propagation until the deposit is outside the sensor
     // FIXME: we need to determine what would be a good time to stop
@@ -532,7 +539,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
 
         // Apply diffusion step
         auto efield = static_cast<Eigen::Map<Eigen::Vector3d>>(raw_field);
-        auto diffusion = electron_diffusion(efield.norm());
+        auto diffusion = carrier_diffusion(efield.norm());
         runge_kutta.setValue(position + diffusion);
 
         // Adapt step size to match target precision
