@@ -46,16 +46,15 @@ LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, G
     // Open LCIO file and write run header
         lcWriter_ = LCFactory::getInstance()->createLCWriter();
     lcWriter_->open(config_.get<std::string>("file_name", "output.slcio"), LCIO::WRITE_NEW);
-    LCRunHeaderImpl* run = new LCRunHeaderImpl();
+    std::unique_ptr<LCRunHeaderImpl> run(new LCRunHeaderImpl());
     run->setRunNumber(1);
     run->setDetectorName("telescope");
-    lcWriter_->writeRunHeader(run);
-    delete run;
+    lcWriter_->writeRunHeader(run.get());
 }
 
 void LCIOWriterModule::run(unsigned int eventNb) {
 
-    LCEventImpl* evt = new LCEventImpl(); // create the event
+    std::unique_ptr<LCEventImpl> evt(new LCEventImpl()); // create the event
     evt->setRunNumber(1);
     evt->setEventNumber(static_cast<int>(eventNb)); // set the event attributes
 
@@ -98,8 +97,7 @@ void LCIOWriterModule::run(unsigned int eventNb) {
 
     // Add collection to event and write event to LCIO file
     evt->addCollection(hitVec, "original_zsdata"); // add the collection with a name
-    lcWriter_->writeEvent(evt);                    // write the event to the file
-    delete evt;
+    lcWriter_->writeEvent(evt.get());              // write the event to the file
 }
 
 void LCIOWriterModule::finalize() {
