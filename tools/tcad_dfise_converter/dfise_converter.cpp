@@ -9,18 +9,17 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <utility>
 
 #include <Eigen/Eigen>
 #include "../../src/core/utils/log.h"
 #include "Octree.hpp"
 #include "read_dfise.h"
 
-Point barycentric_interpolation(Point query_point,
-                                std::vector<Point> tetra_vertices,
-                                std::vector<Point> tetra_vertices_field,
-                                double tetra_volume) {
-
-    allpix::Log::addStream(std::cout);
+std::pair<Point, bool> barycentric_interpolation(Point query_point,
+                                                 std::vector<Point> tetra_vertices,
+                                                 std::vector<Point> tetra_vertices_field,
+                                                 double tetra_volume) {
 
     // Algorithm variables
     bool volume_signal;
@@ -29,6 +28,8 @@ Point barycentric_interpolation(Point query_point,
     double tetra_subvol_1, tetra_subvol_2, tetra_subvol_3, tetra_subvol_4;
     // Return variable. Point(interpolated electric field x, (...) y, (...) z)
     Point efield_int;
+    bool flag = true;
+    std::pair<Point, bool> efield_valid;
 
     // Function must have tetra_vertices.size() = 4
     if(tetra_vertices.size() != 4) {
@@ -109,32 +110,35 @@ Point barycentric_interpolation(Point query_point,
     efield_int.z = (tetra_subvol_1 * tetra_vertices_field[0].z + tetra_subvol_2 * tetra_vertices_field[1].z +
                     tetra_subvol_3 * tetra_vertices_field[2].z + tetra_subvol_4 * tetra_vertices_field[3].z) /
                    tetra_volume;
-    /*
+
     for(size_t i = 0; i < tetra_vertices.size(); i++) {
         auto distance = unibn::L2Distance<Point>::compute(tetra_vertices[i], query_point);
-        std::cerr< "Tetrahedron vertex "
+        LOG(DEBUG) << "Tetrahedron vertex "
                    << "	(" << tetra_vertices[i].x << ", " << tetra_vertices[i].y << ", " << tetra_vertices[i].z << ").	"
                    << "	Distance: " << distance << "	Electric field:	(" << tetra_vertices_field[i].x << ", "
-                   << tetra_vertices_field[i].y << ", " << tetra_vertices_field[i].z << ")." << std::endl;
+                   << tetra_vertices_field[i].y << ", " << tetra_vertices_field[i].z << ").";
     }
-    //std::cerr << "Tetra full volume:	 " << tetra_volume << std::endl
-            << "Tetra sub volume 1:	 " << tetra_subvol_1 << std::endl
-            << "Tetra sub volume 2:	 " << tetra_subvol_2 << std::endl
-            << "Tetra sub volume 3:	 " << tetra_subvol_3 << std::endl
-            << "Tetra sub volume 4:	 " << tetra_subvol_4 << std::endl
-            << "Volume difference:	 " << tetra_volume - (tetra_subvol_1 + tetra_subvol_2 + tetra_subvol_3 +
-    tetra_subvol_4) << std::endl
-            << " ===> Electric field:	" << efield_int.x << " x, " << efield_int.y << " y, " << efield_int.z << " z" <<
-    std::endl;
-    */
+    LOG(DEBUG) << "Tetra full volume:	 " << tetra_volume << std::endl
+               << "Tetra sub volume 1:	 " << tetra_subvol_1 << std::endl
+               << "Tetra sub volume 2:	 " << tetra_subvol_2 << std::endl
+               << "Tetra sub volume 3:	 " << tetra_subvol_3 << std::endl
+               << "Tetra sub volume 4:	 " << tetra_subvol_4 << std::endl
+               << "Volume difference:	 "
+               << tetra_volume - (tetra_subvol_1 + tetra_subvol_2 + tetra_subvol_3 + tetra_subvol_4);
+
     // Check if query point is outside tetrahedron
     if(sub_1_signal != volume_signal || sub_2_signal != volume_signal || sub_3_signal != volume_signal ||
        sub_4_signal != volume_signal) {
-        throw std::invalid_argument("Point outside tetrahedron");
+        flag = false;
+        LOG(WARNING) << "Warning: Point outside tetrahedron";
+        // throw std::invalid_argument("Point outside tetrahedron");
+    } else {
+        LOG(DEBUG) << "Interpolated electric field:	" << efield_int.x << " x, " << efield_int.y << " y, " << efield_int.z
+                   << " z" << std::endl;
     }
 
-    allpix::Log::finish();
-    return efield_int;
+    efield_valid = std::make_pair(efield_int, flag);
+    return efield_valid;
 }
 
 int main(int argc, char** argv) {
@@ -148,7 +152,8 @@ int main(int argc, char** argv) {
 
     allpix::Log::addStream(std::cout);
 
-    std::string file_prefix = "../tools/tcad_dfise_converter/data/example_pixel";
+    std::string file_prefix;
+    std::string init_file_prefix;
     std::string log_file_name;
     std::string region = "bulk"; // Sensor bulk region name on DF-ISE file
     float radius_step = 0.5;     // Neighbour vertex search radius
@@ -170,6 +175,9 @@ int main(int argc, char** argv) {
             }
         } else if(strcmp(argv[i], "-f") == 0 && (i + 1 < argc)) {
             file_prefix = std::string(argv[++i]);
+            init_file_prefix = file_prefix;
+        } else if(strcmp(argv[i], "-o") == 0 && (i + 1 < argc)) {
+            init_file_prefix = std::string(argv[++i]);
         } else if(strcmp(argv[i], "-R") == 0 && (i + 1 < argc)) {
             region = std::string(argv[++i]); // Region to be meshed
         } else if(strcmp(argv[i], "-r") == 0 && (i + 1 < argc)) {
@@ -195,6 +203,7 @@ int main(int argc, char** argv) {
     if(print_help) {
         std::cerr << "Usage: ./tcad_dfise_reader -f <data_file_prefix> [<options>]" << std::endl;
         std::cout << "\t -f <file_prefix>	DF-ISE files prefix" << std::endl;
+        std::cout << "\t -o <file_prefix>	Init output file prefix" << std::endl;
         std::cout << "\t -R <region>		region name to be meshed" << std::endl;
         std::cout << "\t -r <radius>		initial node neighbors search radius" << std::endl;
         std::cout << "\t -r <radius_step>	radius step if no neighbor is found" << std::endl;
@@ -303,13 +312,17 @@ int main(int argc, char** argv) {
         for(int j = 0; j < ydiv; ++j) {
             double z = minz + zstep / 2.0;
             for(int k = 0; k < xdiv; ++k) {
-                std::cerr << i << " " << j << " " << k << std::endl;
                 Point q(x, y, z); // New mesh vertex
                 Point e(x, y, z); // Corresponding, to be interpolated, electric field
+                bool flag;
+                std::pair<Point, bool> return_interpolation;
 
                 std::vector<long unsigned int> results_size;
                 unsigned int ball = 0;
+                LOG(INFO) << "===> Interpolating point " << i << " " << j << " " << k << "	(" << q.x << "," << q.y << ","
+                          << q.z << ")";
                 while(radius < max_radius) {
+                    LOG(DEBUG) << "Search radius:	" << radius;
                     // Calling octree neighbours search function and sorting the results list with the closest neighbours
                     // first
                     std::vector<unsigned int> results;
@@ -318,6 +331,7 @@ int main(int argc, char** argv) {
                         return unibn::L2Distance<Point>::compute(points[a], q) <
                                unibn::L2Distance<Point>::compute(points[b], q);
                     });
+                    LOG(DEBUG) << "Number of vertices found:	" << results.size();
 
                     if(results.empty()) {
                         LOG(WARNING) << "At vertex (" << x << ", " << y << ", " << z << ")";
@@ -351,8 +365,8 @@ int main(int argc, char** argv) {
                     std::vector<Point> tetra_vertices;
                     std::vector<Point> tetra_vertices_field;
 
-                    std::string bitmask(num_nodes_element, 1); // K leading 1's
-                    bitmask.resize(results.size(), 0);         // N-K trailing 0's
+                    std::vector<int> bitmask(num_nodes_element, 1);
+                    bitmask.resize(results.size(), 0);
                     std::vector<size_t> index;
 
                     do {
@@ -369,6 +383,8 @@ int main(int argc, char** argv) {
                             if(index.size() == 4)
                                 break;
                         }
+                        LOG(DEBUG) << "Parsing neighbors [index]:	" << index[0] << ", " << index[1] << ", " << index[2]
+                                   << ", " << index[3];
 
                         matrix << 1, 1, 1, 1, points[results[index[0]]].x, points[results[index[1]]].x,
                             points[results[index[2]]].x, points[results[index[3]]].x, points[results[index[0]]].y,
@@ -376,18 +392,21 @@ int main(int argc, char** argv) {
                             points[results[index[0]]].z, points[results[index[1]]].z, points[results[index[2]]].z,
                             points[results[index[3]]].z;
                         volume = (matrix.determinant()) / 6;
-                        if(std::abs(volume) > 0.00001) {
-                            // std::cerr << " ===> Interpolating point (" << q.x << "," << q.y << "," << q.z << ")" <<
-                            // std::endl
-                            //		<< "Search radius:	" << radius << std::endl
-                            //		<< "Number of vertices found:	" << results.size() << std::endl
-                            //		<< "Parsing neighbors [index]:	" << index[0] << ", " << index[1] << ", " << index[2] << ",
-                            //" << index[3] << std::endl;
+
+                        if(volume == 0) {
+                            LOG(WARNING) << "Coplanar vertices. Going to the next vertex combination.";
+                            continue;
+                        } else {
                             try {
-                                e = barycentric_interpolation(q, tetra_vertices, tetra_vertices_field, volume);
+                                return_interpolation =
+                                    barycentric_interpolation(q, tetra_vertices, tetra_vertices_field, volume);
+                                e = return_interpolation.first;
+                                flag = return_interpolation.second;
                             } catch(std::invalid_argument& exception) {
-                                // LOG(WARNING) << "Failed to interpolate point";
-                                // LOG(WARNING) << "ERROR: " << exception.what();
+                                LOG(WARNING) << "Failed to interpolate point: " << exception.what();
+                                continue;
+                            }
+                            if(flag == false) {
                                 continue;
                             }
                             break;
@@ -411,7 +430,7 @@ int main(int argc, char** argv) {
 
     std::ofstream init_file;
     std::stringstream init_file_name;
-    init_file_name << file_prefix << "_" << xdiv << "x" << ydiv << "x" << zdiv << ".txt";
+    init_file_name << init_file_prefix << "_" << xdiv << "x" << ydiv << "x" << zdiv << ".init";
     init_file.open(init_file_name.str());
     // Write INIT file h"eader
     init_file << "tcad_octree_writer" << std::endl;                                    // NAME
