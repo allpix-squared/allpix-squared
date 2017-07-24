@@ -43,7 +43,7 @@ LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, G
     }
 
     lcWriter = LCFactory::getInstance()->createLCWriter();
-    lcWriter->open("test.slcio", LCIO::WRITE_NEW);
+    lcWriter->open(config_.get<std::string>("file_name", "output.slcio"), LCIO::WRITE_NEW);
     LCRunHeaderImpl* run = new LCRunHeaderImpl();
     run->setRunNumber(1);
     run->setDetectorName("telescope");
