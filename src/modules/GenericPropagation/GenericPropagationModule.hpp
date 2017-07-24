@@ -77,10 +77,13 @@ namespace allpix {
             target_spatial_precision_{}, output_plots_step_{};
         bool output_plots_{};
 
-        // Precalculated values for electron mobility
+        // Precalculated values for electron and hole mobility
         double electron_Vm_;
         double electron_Ec_;
         double electron_Beta_;
+        double hole_Vm_;
+        double hole_Ec_;
+        double hole_Beta_;
 
         // Precalculated value for Boltzmann constant:
         double boltzmann_kT_;
