@@ -33,8 +33,8 @@ LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, G
     // Bind pixel hits message
     messenger->bindMulti(this, &LCIOWriterModule::pixel_messages_, MsgFlags::REQUIRED);
 
+    // get all detector names and assign id.
     std::vector<std::shared_ptr<Detector>> detectors = geo->getDetectors();
-
     unsigned int i = 0;
     for(const auto& det : detectors) {
         detectorIDs[det->getName()] = i;
@@ -42,6 +42,7 @@ LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, G
         i++;
     }
 
+    // Open LCIO file and write run header
     lcWriter = LCFactory::getInstance()->createLCWriter();
     lcWriter->open(config_.get<std::string>("file_name", "output.slcio"), LCIO::WRITE_NEW);
     LCRunHeaderImpl* run = new LCRunHeaderImpl();
@@ -64,15 +65,14 @@ void LCIOWriterModule::run(unsigned int eventNb) {
     evt->setRunNumber(1);
     evt->setEventNumber(static_cast<int>(eventNb)); // set the event attributes
 
-    // std::vector<LCCollectionVec*> hitvecs;
+    // Prepare charge vectors
     std::vector<std::vector<float>> charges;
     for(unsigned int i = 0; i < detectorIDs.size(); i++) {
-        // LCCollectionVec* hitVec = new LCCollectionVec(LCIO::TRACKERDATA);
-        // hitvecs.push_back(hitVec);
         std::vector<float> charge;
         charges.push_back(charge);
     }
 
+    // Receive all pixel messages, fill charge vectors
     for(const auto& hit_msg : pixel_messages_) {
         LOG(DEBUG) << hit_msg->getDetector()->getName();
         for(const auto& hitdata : hit_msg->getData()) {
@@ -88,8 +88,10 @@ void LCIOWriterModule::run(unsigned int eventNb) {
         }
     }
 
+    // Prepare hitvector
     LCCollectionVec* hitVec = new LCCollectionVec(LCIO::TRACKERDATA);
 
+    // Fill hitvector with event data
     for(unsigned int detectorID = 0; detectorID < detectorIDs.size(); detectorID++) {
         TrackerDataImpl* hit = new TrackerDataImpl();
         CellIDEncoder<TrackerDataImpl> sparseDataEncoder("sensorID:7,sparsePixelType:5", hitVec);
@@ -99,9 +101,10 @@ void LCIOWriterModule::run(unsigned int eventNb) {
         hit->setChargeValues(charges[detectorID]);
         hitVec->push_back(hit);
     }
-    evt->addCollection(hitVec, "original_zsdata"); // add the collection with a name
 
-    lcWriter->writeEvent(evt); // write the event to the file
+    // Add collection to event and write event to LCIO file
+    evt->addCollection(hitVec, "original_zsdata"); // add the collection with a name
+    lcWriter->writeEvent(evt);                     // write the event to the file
     delete evt;
 }
 
