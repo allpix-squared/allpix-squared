@@ -42,8 +42,10 @@ LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, G
         i++;
     }
 
+    _pixelType = config_.get<int>("pixelType", 2),
+
     // Open LCIO file and write run header
-    lcWriter = LCFactory::getInstance()->createLCWriter();
+        lcWriter = LCFactory::getInstance()->createLCWriter();
     lcWriter->open(config_.get<std::string>("file_name", "output.slcio"), LCIO::WRITE_NEW);
     LCRunHeaderImpl* run = new LCRunHeaderImpl();
     run->setRunNumber(1);
@@ -54,8 +56,6 @@ LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, G
 }
 
 void LCIOWriterModule::run(unsigned int eventNb) {
-
-    int _pixelType = 2;
 
     // ... Implement ... (Typically uses the configuration to execute function and outputs an message)
     LOG(TRACE) << "Running module " << getUniqueName();
@@ -96,7 +96,7 @@ void LCIOWriterModule::run(unsigned int eventNb) {
         TrackerDataImpl* hit = new TrackerDataImpl();
         CellIDEncoder<TrackerDataImpl> sparseDataEncoder("sensorID:7,sparsePixelType:5", hitVec);
         sparseDataEncoder["sensorID"] = detectorID;
-        sparseDataEncoder["sparsePixelType"] = static_cast<int>(_pixelType);
+        sparseDataEncoder["sparsePixelType"] = _pixelType;
         sparseDataEncoder.setCellID(hit);
         hit->setChargeValues(charges[detectorID]);
         hitVec->push_back(hit);

@@ -9,6 +9,7 @@ Writes pixel hit data to LCIO file, compatible to EUTelescope analysis framework
 
 #### Parameters
 * `file_name`: LCIO file to write. Extension .slcio
+* `pixelType`: EUtelescope pixel type to create. Default is 2: EUTelGenericSparsePixel. Does not affect output file (yet).
 
 #### Usage
 ```ini

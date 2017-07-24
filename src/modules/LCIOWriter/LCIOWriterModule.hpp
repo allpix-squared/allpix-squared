@@ -52,5 +52,6 @@ namespace allpix {
         std::vector<std::shared_ptr<PixelHitMessage>> pixel_messages_;
         IO::LCWriter* lcWriter;
         std::map<std::string, unsigned int> detectorIDs;
+        int _pixelType;
     };
 } // namespace allpix
