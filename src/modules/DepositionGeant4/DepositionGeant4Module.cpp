@@ -67,6 +67,8 @@ void DepositionGeant4Module::init() {
         RELEASE_STREAM(G4cout);
         // FIXME More information about available lists
         throw InvalidValueError(config_, "physics_list", "specified physics list does not exists");
+    } else {
+        LOG(INFO) << "Using G4 physics list \"" << config_.get<std::string>("physics_list") << "\"";
     }
     // Register a step limiter (uses the user limits defined earlier)
     physicsList->RegisterPhysics(new G4StepLimiterPhysics());
