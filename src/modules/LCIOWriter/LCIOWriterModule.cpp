@@ -86,7 +86,7 @@ void LCIOWriterModule::run(unsigned int eventNb) {
 
     // Fill hitvector with event data
     for(unsigned int detectorID = 0; detectorID < detectorIDs_.size(); detectorID++) {
-        TrackerDataImpl* hit = new TrackerDataImpl();
+        auto hit = new TrackerDataImpl();
         CellIDEncoder<TrackerDataImpl> sparseDataEncoder("sensorID:7,sparsePixelType:5", hitVec);
         sparseDataEncoder["sensorID"] = detectorID;
         sparseDataEncoder["sparsePixelType"] = pixelType_;
