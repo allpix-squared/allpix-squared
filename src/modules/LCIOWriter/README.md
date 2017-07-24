@@ -1,14 +1,16 @@
 ## LCIOWriter
 **Maintainer**: Andreas Nurnberg (andreas.nurnberg@cern.ch)  
 **Status**: Immature  
-[**Input**: *INPUT_MESSAGE*]  
+**Input**: *PixelHitMessage*
 [**Output**: *OUTPUT_MESSAGE*]  
 
 #### Description
-*Short description of this module*
+Writes pixel hit data to LCIO file, compatible to EUTelescope analysis framework. Pixel class EUTelGenericSparsePixel hardcoded for now.
 
 #### Parameters
-* `param`: *explanation with optional default*
+* `file_name`: LCIO file to write. Extension .slcio
 
 #### Usage
-*Example how to use this module*
+```ini
+[LCIOWriter]
+```

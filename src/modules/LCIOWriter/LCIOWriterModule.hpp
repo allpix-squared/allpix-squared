@@ -3,7 +3,7 @@
  * @brief Definition of [LCIOWriter] module
  * @copyright MIT License
  *
- * Contains minimal dummy module to use as a start for the development of your own module
+ *Write hit data to LCIO file
  *
  * Refer to the User's Manual for more details.
  */
@@ -23,9 +23,9 @@
 namespace allpix {
     /**
      * @ingroup Modules
-     * @brief Module to do function
+     * @brief Module to write hit data to LCIO file
      *
-     * More detailed explanation of module
+     * Create LCIO file, compatible to EUTelescope analysis framework.
      */
     class LCIOWriterModule : public Module {
     public:
