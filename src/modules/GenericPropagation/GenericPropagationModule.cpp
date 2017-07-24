@@ -410,7 +410,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
             if(config_.get<bool>("output_plots")) {
                 auto global_position = detector_->getGlobalPosition(position);
                 output_plot_points_.emplace_back(
-                    PropagatedCharge(position, global_position, charge_per_step, deposit.getEventTime()),
+                    PropagatedCharge(position, global_position, deposit.getType(), charge_per_step, deposit.getEventTime()),
                     std::vector<ROOT::Math::XYZPoint>());
             }
 
@@ -423,8 +423,12 @@ void GenericPropagationModule::run(unsigned int event_num) {
 
             // Create a new propagated charge and add it to the list
             auto global_position = detector_->getGlobalPosition(position);
-            propagated_charges.emplace_back(
-                position, global_position, charge_per_step, deposit.getEventTime() + prop_pair.second, &deposit);
+            propagated_charges.emplace_back(position,
+                                            global_position,
+                                            deposit.getType(),
+                                            charge_per_step,
+                                            deposit.getEventTime() + prop_pair.second,
+                                            &deposit);
 
             // Update statistical information
             ++step_count;

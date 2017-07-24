@@ -27,6 +27,7 @@ namespace allpix {
          */
         PropagatedCharge(ROOT::Math::XYZPoint local_position,
                          ROOT::Math::XYZPoint global_position,
+                         CarrierType type,
                          unsigned int charge,
                          double event_time,
                          const DepositedCharge* deposited_charge = nullptr);

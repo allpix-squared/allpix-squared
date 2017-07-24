@@ -33,6 +33,7 @@ namespace allpix {
          */
         SensorCharge(ROOT::Math::XYZPoint local_position,
                      ROOT::Math::XYZPoint global_position,
+                     CarrierType type,
                      unsigned int charge,
                      double event_time);
 
@@ -47,6 +48,11 @@ namespace allpix {
          */
         ROOT::Math::XYZPoint getGlobalPosition() const;
 
+        /**
+         * @brief Get the type of charge carrier
+         * @return Type of charge carrier
+         */
+        CarrierType getType() const;
         /**
          * @brief Get total amount of charges stored
          * @return Total charge stored
