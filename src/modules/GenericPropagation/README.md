@@ -1,5 +1,5 @@
 ## GenericPropagation
-**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>)  
+**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>)  
 **Status**: Functional  
 **Input**: DepositedCharge  
 **Output**: PropagatedCharge  
