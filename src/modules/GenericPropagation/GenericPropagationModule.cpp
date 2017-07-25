@@ -66,6 +66,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration config,
     config_.setDefault<unsigned int>("charge_per_step", 10);
 
     config_.setDefault<bool>("output_plots", false);
+    config_.setDefault<bool>("output_animation", false);
     config_.setDefault<double>("output_plots_step", config_.get<double>("timestep_max"));
     config_.setDefault<bool>("output_plots_use_pixel_units", false);
     config_.setDefault<double>("output_plots_theta", 0.0f);
@@ -245,130 +246,133 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
     histogram_contour.push_back(new TH2F(
         ("contourZ_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(), "", 100, minX, maxX, 100, minY, maxY));
 
-    // Delete previous GIF output files
-    std::string file_name_anim = getOutputPath("animation" + std::to_string(event_num) + ".gif");
-    try {
-        remove_path(file_name_anim);
-        for(size_t i = 0; i < 3; ++i) {
-            remove_path(file_name_contour[i]);
-            histogram_contour[i]->SetStats(false);
-        }
-    } catch(std::invalid_argument&) {
-        throw ModuleError("Cannot overwite gif animation");
-    }
-
-    // Create animation of moving charges
-    auto animation_time =
-        static_cast<unsigned int>(std::round((Units::convert(config_.get<long double>("output_plots_step"), "ms") / 10.0) *
-                                             config_.get<long double>("output_plots_animation_time_scaling", 1e9)));
-    unsigned long plot_idx = 0;
-    unsigned int point_cnt = 0;
-    while(point_cnt < tot_point_cnt) {
-        std::vector<std::unique_ptr<TPolyMarker3D>> markers;
-        unsigned long min_idx_diff = std::numeric_limits<unsigned long>::max();
-
-        // Reset the canvas
-        canvas->Clear();
-        canvas->SetTheta(config_.get<float>("output_plots_theta") * 180.0f / ROOT::Math::Pi());
-        canvas->SetPhi(config_.get<float>("output_plots_phi") * 180.0f / ROOT::Math::Pi());
-        canvas->Draw();
-
-        // Reset the histogram frame
-        histogram_frame->SetTitle("Charge propagation in sensor");
-        histogram_frame->GetXaxis()->SetTitle(
-            (std::string("x ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)")).c_str());
-        histogram_frame->GetYaxis()->SetTitle(
-            (std::string("y ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)")).c_str());
-        histogram_frame->GetZaxis()->SetTitle("z (mm)");
-        histogram_frame->Draw();
-
-        // Plot all the required points
-        for(auto& deposit_points : output_plot_points_) {
-            auto points = deposit_points.second;
-
-            auto diff = static_cast<unsigned long>(std::round((deposit_points.first.getEventTime() - start_time) /
-                                                              config_.get<long double>("output_plots_step")));
-            if(static_cast<long>(plot_idx) - static_cast<long>(diff) < 0) {
-                min_idx_diff = std::min(min_idx_diff, diff - plot_idx);
-                continue;
-            }
-            auto idx = plot_idx - diff;
-            if(idx >= points.size()) {
-                continue;
-            }
-            min_idx_diff = 0;
-
-            auto marker = std::make_unique<TPolyMarker3D>();
-            marker->SetMarkerStyle(kFullCircle);
-            marker->SetMarkerSize(static_cast<float>(deposit_points.first.getCharge()) /
-                                  config_.get<float>("charge_per_step"));
-            marker->SetNextPoint(points[idx].x(), points[idx].y(), points[idx].z());
-            marker->Draw();
-            markers.push_back(std::move(marker));
-
-            histogram_contour[0]->Fill(points[idx].y(), points[idx].z(), deposit_points.first.getCharge());
-            histogram_contour[1]->Fill(points[idx].x(), points[idx].z(), deposit_points.first.getCharge());
-            histogram_contour[2]->Fill(points[idx].x(), points[idx].y(), deposit_points.first.getCharge());
-            ++point_cnt;
-        }
-
-        // Create a step in the animation
-        if(min_idx_diff != 0) {
-            canvas->Print((file_name_anim + "+100").c_str());
-            plot_idx += min_idx_diff;
-        } else {
-            // print animation
-            if(point_cnt < tot_point_cnt - 1) {
-                canvas->Print((file_name_anim + "+" + std::to_string(animation_time)).c_str());
-            } else {
-                canvas->Print((file_name_anim + "++100").c_str());
-            }
-
-            // Draw and print contour histograms
+    if(config_.get<bool>("output_animation")) {
+        // Delete previous GIF output files
+        std::string file_name_anim = getOutputPath("animation" + std::to_string(event_num) + ".gif");
+        try {
+            remove_path(file_name_anim);
             for(size_t i = 0; i < 3; ++i) {
-                canvas->Clear();
-                canvas->SetTitle(
-                    (std::string("Contour of charge propagation projected on the ") + static_cast<char>('X' + i) + "-axis")
-                        .c_str());
-                switch(i) {
-                case 0 /* x */:
-                    histogram_contour[i]->GetXaxis()->SetTitle(
-                        (std::string("y ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
-                            .c_str());
-                    histogram_contour[i]->GetYaxis()->SetTitle("z (mm)");
-                    break;
-                case 1 /* y */:
-                    histogram_contour[i]->GetXaxis()->SetTitle(
-                        (std::string("x ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
-                            .c_str());
-                    histogram_contour[i]->GetYaxis()->SetTitle("z (mm)");
-                    break;
-                case 2 /* z */:
-                    histogram_contour[i]->GetXaxis()->SetTitle(
-                        (std::string("x ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
-                            .c_str());
-                    histogram_contour[i]->GetYaxis()->SetTitle(
-                        (std::string("y ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
-                            .c_str());
-                    break;
-                default:;
-                }
-                histogram_contour[i]->SetMinimum(1);
-                histogram_contour[i]->SetMaximum(total_charge / config_.get<double>("output_plots_contour_max_scaling", 10));
-                histogram_contour[i]->Draw("CONTZ 0");
-                if(point_cnt < tot_point_cnt - 1) {
-                    canvas->Print((file_name_contour[i] + "+" + std::to_string(animation_time)).c_str());
-                } else {
-                    canvas->Print((file_name_contour[i] + "++100").c_str());
-                }
-                histogram_contour[i]->Reset();
+                remove_path(file_name_contour[i]);
+                histogram_contour[i]->SetStats(false);
             }
-            ++plot_idx;
+        } catch(std::invalid_argument&) {
+            throw ModuleError("Cannot overwite gif animation");
         }
-        markers.clear();
 
-        LOG_PROGRESS(DEBUG, getUniqueName() + "_OUTPUT_PLOTS")
-            << "Written " << point_cnt << " of " << tot_point_cnt << " points";
+        // Create animation of moving charges
+        auto animation_time = static_cast<unsigned int>(
+            std::round((Units::convert(config_.get<long double>("output_plots_step"), "ms") / 10.0) *
+                       config_.get<long double>("output_plots_animation_time_scaling", 1e9)));
+        unsigned long plot_idx = 0;
+        unsigned int point_cnt = 0;
+        while(point_cnt < tot_point_cnt) {
+            std::vector<std::unique_ptr<TPolyMarker3D>> markers;
+            unsigned long min_idx_diff = std::numeric_limits<unsigned long>::max();
+
+            // Reset the canvas
+            canvas->Clear();
+            canvas->SetTheta(config_.get<float>("output_plots_theta") * 180.0f / ROOT::Math::Pi());
+            canvas->SetPhi(config_.get<float>("output_plots_phi") * 180.0f / ROOT::Math::Pi());
+            canvas->Draw();
+
+            // Reset the histogram frame
+            histogram_frame->SetTitle("Charge propagation in sensor");
+            histogram_frame->GetXaxis()->SetTitle(
+                (std::string("x ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)")).c_str());
+            histogram_frame->GetYaxis()->SetTitle(
+                (std::string("y ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)")).c_str());
+            histogram_frame->GetZaxis()->SetTitle("z (mm)");
+            histogram_frame->Draw();
+
+            // Plot all the required points
+            for(auto& deposit_points : output_plot_points_) {
+                auto points = deposit_points.second;
+
+                auto diff = static_cast<unsigned long>(std::round((deposit_points.first.getEventTime() - start_time) /
+                                                                  config_.get<long double>("output_plots_step")));
+                if(static_cast<long>(plot_idx) - static_cast<long>(diff) < 0) {
+                    min_idx_diff = std::min(min_idx_diff, diff - plot_idx);
+                    continue;
+                }
+                auto idx = plot_idx - diff;
+                if(idx >= points.size()) {
+                    continue;
+                }
+                min_idx_diff = 0;
+
+                auto marker = std::make_unique<TPolyMarker3D>();
+                marker->SetMarkerStyle(kFullCircle);
+                marker->SetMarkerSize(static_cast<float>(deposit_points.first.getCharge()) /
+                                      config_.get<float>("charge_per_step"));
+                marker->SetNextPoint(points[idx].x(), points[idx].y(), points[idx].z());
+                marker->Draw();
+                markers.push_back(std::move(marker));
+
+                histogram_contour[0]->Fill(points[idx].y(), points[idx].z(), deposit_points.first.getCharge());
+                histogram_contour[1]->Fill(points[idx].x(), points[idx].z(), deposit_points.first.getCharge());
+                histogram_contour[2]->Fill(points[idx].x(), points[idx].y(), deposit_points.first.getCharge());
+                ++point_cnt;
+            }
+
+            // Create a step in the animation
+            if(min_idx_diff != 0) {
+                canvas->Print((file_name_anim + "+100").c_str());
+                plot_idx += min_idx_diff;
+            } else {
+                // print animation
+                if(point_cnt < tot_point_cnt - 1) {
+                    canvas->Print((file_name_anim + "+" + std::to_string(animation_time)).c_str());
+                } else {
+                    canvas->Print((file_name_anim + "++100").c_str());
+                }
+
+                // Draw and print contour histograms
+                for(size_t i = 0; i < 3; ++i) {
+                    canvas->Clear();
+                    canvas->SetTitle((std::string("Contour of charge propagation projected on the ") +
+                                      static_cast<char>('X' + i) + "-axis")
+                                         .c_str());
+                    switch(i) {
+                    case 0 /* x */:
+                        histogram_contour[i]->GetXaxis()->SetTitle(
+                            (std::string("y ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
+                                .c_str());
+                        histogram_contour[i]->GetYaxis()->SetTitle("z (mm)");
+                        break;
+                    case 1 /* y */:
+                        histogram_contour[i]->GetXaxis()->SetTitle(
+                            (std::string("x ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
+                                .c_str());
+                        histogram_contour[i]->GetYaxis()->SetTitle("z (mm)");
+                        break;
+                    case 2 /* z */:
+                        histogram_contour[i]->GetXaxis()->SetTitle(
+                            (std::string("x ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
+                                .c_str());
+                        histogram_contour[i]->GetYaxis()->SetTitle(
+                            (std::string("y ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
+                                .c_str());
+                        break;
+                    default:;
+                    }
+                    histogram_contour[i]->SetMinimum(1);
+                    histogram_contour[i]->SetMaximum(total_charge /
+                                                     config_.get<double>("output_plots_contour_max_scaling", 10));
+                    histogram_contour[i]->Draw("CONTZ 0");
+                    if(point_cnt < tot_point_cnt - 1) {
+                        canvas->Print((file_name_contour[i] + "+" + std::to_string(animation_time)).c_str());
+                    } else {
+                        canvas->Print((file_name_contour[i] + "++100").c_str());
+                    }
+                    histogram_contour[i]->Reset();
+                }
+                ++plot_idx;
+            }
+            markers.clear();
+
+            LOG_PROGRESS(DEBUG, getUniqueName() + "_OUTPUT_PLOTS")
+                << "Written " << point_cnt << " of " << tot_point_cnt << " points";
+        }
     }
     output_plot_points_.clear();
 }
