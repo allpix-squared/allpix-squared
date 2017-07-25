@@ -141,7 +141,7 @@ int main(int argc, char** argv) {
     std::string log_file_name;
     std::string region = "bulk";                          // Sensor bulk region name on DF-ISE file
     float volume_cut = std::numeric_limits<float>::min(); // Enclosing tetrahedron should have volume != 0
-    size_t index_cut;                                     // Permutation index initial cut
+    size_t index_cut = -1;                                // Permutation index initial cut
     bool index_cut_flag = false;
     float initial_radius = 1; // Neighbour vertex search radius
     float radius_step = 0.5;  // Search radius increment
@@ -198,7 +198,7 @@ int main(int argc, char** argv) {
         std::cout << "\t -o <output_file_prefix>	Init output file prefix" << std::endl;
         std::cout << "\t -R <region>			region name to be meshed" << std::endl;
         std::cout << "\t -r <radius>			initial node neighbors search radius" << std::endl;
-        std::cout << "\t -r <radius_step>		radius step if no neighbor is found" << std::endl;
+        std::cout << "\t -s <radius_step>		radius step if no neighbor is found" << std::endl;
         std::cout << "\t -m <max_radius>		maximum search radius" << std::endl;
         std::cout << "\t -i <index_cut>			index cut during permutation on vertex neighbours" << std::endl;
         std::cout << "\t -c <volume_cut>		minimum volume for tetrahedron (non-coplanar vertices)" << std::endl;
@@ -399,7 +399,7 @@ int main(int argc, char** argv) {
                                 points[results[index[3]]].z;
                             volume = (matrix.determinant()) / 6;
 
-                            if(abs(volume) <= volume_cut) {
+                            if(std::abs(volume) <= volume_cut) {
                                 LOG(WARNING) << "Coplanar vertices. Going to the next vertex combination.";
                                 continue;
                             } else {
