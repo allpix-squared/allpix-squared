@@ -186,7 +186,8 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
         if(line->GetN() >= 3) {
             line->SetLineColor(current_color);
             line->Draw("same");
-            current_color = static_cast<short>((static_cast<int>(current_color) + 10) % 101);
+            EColor plot_color = (deposit_points.first.getType() == CarrierType::ELECTRON ? EColor::kAzure : EColor::kOrange);
+            current_color = static_cast<short int>(plot_color - 9 + (static_cast<int>(current_color) + 1) % 19);
         }
         lines.push_back(std::move(line));
     }
@@ -389,7 +390,8 @@ void GenericPropagationModule::run(unsigned int event_num) {
         // Loop over all charges in the deposit
         unsigned int charges_remaining = deposit.getCharge();
 
-        LOG(DEBUG) << "Set of charges on " << display_vector(deposit.getLocalPosition(), {"mm", "um"});
+        LOG(DEBUG) << "Set of charge carriers (" << (deposit.getType() == CarrierType::ELECTRON ? "e" : "h") << ") on "
+                   << display_vector(deposit.getLocalPosition(), {"mm", "um"});
 
         auto charge_per_step = config_.get<unsigned int>("charge_per_step");
         while(charges_remaining > 0) {
