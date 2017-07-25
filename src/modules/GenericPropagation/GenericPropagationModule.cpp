@@ -72,6 +72,10 @@ GenericPropagationModule::GenericPropagationModule(Configuration config,
     config_.setDefault<double>("output_plots_theta", 0.0f);
     config_.setDefault<double>("output_plots_phi", 0.0f);
 
+    // Set defaults for charge carrier propagation:
+    config_.setDefault<bool>("propagate_electrons", true);
+    config_.setDefault<bool>("propagate_holes", false);
+
     // Copy some variables from configuration to avoid lookups:
     temperature_ = config_.get<double>("temperature");
     timestep_min_ = config_.get<double>("timestep_min");
@@ -392,6 +396,14 @@ void GenericPropagationModule::run(unsigned int event_num) {
     unsigned int step_count = 0;
     long double total_time = 0;
     for(auto& deposit : deposits_message_->getData()) {
+
+        if((deposit.getType() == CarrierType::ELECTRON && !config_.get<bool>("propagate_electrons")) ||
+           (deposit.getType() == CarrierType::HOLE && !config_.get<bool>("propagate_holes"))) {
+            LOG(DEBUG) << "Skipping charge carriers (" << (deposit.getType() == CarrierType::ELECTRON ? "e" : "h") << ") on "
+                       << display_vector(deposit.getLocalPosition(), {"mm", "um"});
+            continue;
+        }
+
         // Loop over all charges in the deposit
         unsigned int charges_remaining = deposit.getCharge();
 
