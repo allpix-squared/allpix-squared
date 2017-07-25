@@ -123,9 +123,9 @@ void ProjectionPropagationModule::run(unsigned int) {
 
         double projected_charge = 0;
         // Loop over Gaussian distribution (+-3 sigma) with configurable precision
-        for(double section_x = position.x() - 5 * diffusion_std_dev; section_x < position.x() + 5 * diffusion_std_dev;
+        for(double section_x = position.x() - 3 * diffusion_std_dev; section_x < position.x() + 3 * diffusion_std_dev;
             section_x += spatial_precision_) {
-            for(double section_y = position.y() - 5 * diffusion_std_dev; section_y < position.y() + 5 * diffusion_std_dev;
+            for(double section_y = position.y() - 3 * diffusion_std_dev; section_y < position.y() + 3 * diffusion_std_dev;
                 section_y += spatial_precision_) {
                 LOG(TRACE) << "Looking at position " << Units::display(section_x, "um") << " "
                            << Units::display(section_y, "um");
@@ -156,8 +156,8 @@ void ProjectionPropagationModule::run(unsigned int) {
         total_charge += projected_charge;
     }
 
-    LOG(DEBUG) << "Total charge: " << total_charge << " (lost: " << charge_lost << ", "
-               << (charge_lost / total_charge * 100.) << "%)";
+    LOG(INFO) << "Total charge: " << total_charge << " (lost: " << charge_lost << ", " << (charge_lost / total_charge * 100.)
+              << "%)";
     LOG(INFO) << "Total count of propagated charge carriers: " << propagated_charges.size();
 
     // Create a new message with propagated charges
