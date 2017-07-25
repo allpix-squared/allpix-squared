@@ -25,7 +25,7 @@ The propagation module also produces a variety of output plots for debugging and
 * `timestep_max` : Maximum step in time to use for the Runge-Kutta integration regardless of the spatial precision. Defaults to 0.1ns.
 * `integration_time` : Time within which charge carriers are propagated. After exceeding this time, no further propagation is performed for the respective carriers. Defaults to the LHC bunch crossing time of 25ns.
 * `propagate_electrons` : Select whether electron-type charge carriers should be propagated to the electrodes. Defaults to true.
--* `propagate_holes` :  Select whether hole-type charge carriers should be propagated to the electrodes. Defaults to true.
+* `propagate_holes` :  Select whether hole-type charge carriers should be propagated to the electrodes. Defaults to true.
 * `output_plots` : Determines if output plots should be generated for every event. This causes a very huge slow down of the simulation, it is not recommended to use this with a run of more than a single event. Disabled by default.
 * `output_animation` : In addition to the other output plots, also write a GIF animation of the charges drifting towards the electrodes. This is very slow and writing the animation takes a considerable amount of time.
 * `output_plots_step` : Timestep to use between two points that are plotted. Indirectly determines the amount of points plotted. Defaults to *timestep_max* if not explicitly specified.
