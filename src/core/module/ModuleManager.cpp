@@ -197,6 +197,8 @@ void ModuleManager::load(Messenger* messenger,
                 // Unique name exists, check if its needs to be replaced
                 if(identifier.getPriority() < iter->first.getPriority()) {
                     // Priority of new instance is higher, replace the instance
+                    LOG(TRACE) << "Replacing model instance " << iter->first.getUniqueName()
+                               << " with instance with higher priority.";
                     iter->second = modules_.erase(iter->second);
                     iter = id_to_module_.erase(iter);
                 } else {
