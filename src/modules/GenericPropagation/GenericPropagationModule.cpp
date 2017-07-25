@@ -85,9 +85,10 @@ GenericPropagationModule::GenericPropagationModule(Configuration config,
     electron_Vm_ = Units::get(1.53e9 * std::pow(temperature_, -0.87), "cm/s");
     electron_Ec_ = Units::get(1.01 * std::pow(temperature_, 1.55), "V/cm");
     electron_Beta_ = 2.57e-2 * std::pow(temperature_, 0.66);
+
     hole_Vm_ = Units::get(1.62e8 * std::pow(temperature_, -0.52), "cm/s");
     hole_Ec_ = Units::get(1.24 * std::pow(temperature_, 1.68), "V/cm");
-    hole_Beta_ = 0.46e-2 * std::pow(temperature_, 0.17);
+    hole_Beta_ = 0.46 * std::pow(temperature_, 0.17);
 
     boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * temperature_;
 }
