@@ -332,6 +332,7 @@ int main(int argc, char** argv) {
 
                 size_t prev_neighbours = 0;
                 float radius = initial_radius;
+                size_t index_cut_up;
                 while(radius < max_radius) {
                     LOG(DEBUG) << "Search radius:	" << radius;
                     // Calling octree neighbours search function and sorting the results list with the closest neighbours
@@ -385,7 +386,7 @@ int main(int argc, char** argv) {
                     if(!index_cut_flag) {
                         index_cut = results.size();
                     }
-                    size_t index_cut_up = index_cut;
+                    index_cut_up = index_cut;
                     while(index_cut_up <= results.size()) {
                         do {
                             index.clear();
@@ -393,7 +394,7 @@ int main(int argc, char** argv) {
                             tetra_vertices_field.clear();
                             // print integers and permute bitmask
                             for(size_t idk = 0; idk < results.size(); ++idk) {
-                                if(bitmask[idk]) {
+                                if(bitmask[idk] != 0) {
                                     index.push_back(idk);
                                     tetra_vertices.push_back(points[results[idk]]);
                                     tetra_vertices_field.push_back(field[results[idk]]);
@@ -421,21 +422,20 @@ int main(int argc, char** argv) {
                             if(std::abs(volume) <= volume_cut) {
                                 LOG(WARNING) << "Coplanar vertices. Going to the next vertex combination.";
                                 continue;
-                            } else {
-                                try {
-                                    return_interpolation =
-                                        barycentric_interpolation(q, tetra_vertices, tetra_vertices_field, volume);
-                                    e = return_interpolation.first;
-                                    flag = return_interpolation.second;
-                                } catch(std::invalid_argument& exception) {
-                                    LOG(WARNING) << "Failed to interpolate point: " << exception.what();
-                                    continue;
-                                }
-                                if(flag == false) {
-                                    continue;
-                                }
-                                break;
                             }
+                            try {
+                                return_interpolation =
+                                    barycentric_interpolation(q, tetra_vertices, tetra_vertices_field, volume);
+                                e = return_interpolation.first;
+                                flag = return_interpolation.second;
+                            } catch(std::invalid_argument& exception) {
+                                LOG(WARNING) << "Failed to interpolate point: " << exception.what();
+                                continue;
+                            }
+                            if(flag == false) {
+                                continue;
+                            }
+                            break;
                         } while(std::prev_permutation(bitmask.begin(), bitmask.end()));
 
                         if(tetra_vertices.size() == 4 && flag == true) {
@@ -452,7 +452,6 @@ int main(int argc, char** argv) {
                     }
 
                     LOG(WARNING) << "All combinations tried. Increasing the radius.";
-                    index_cut_up = index_cut;
                     radius = radius + radius_step;
                 }
 
