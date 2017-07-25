@@ -48,7 +48,6 @@ if [ -z ${BUILD_TYPE} ]; then
     BUILD_TYPE=opt
 fi
 
-
 # General variables
 CLICREPO=/cvmfs/clicdp.cern.ch
 SFTREPO=/cvmfs/sft.cern.ch
@@ -147,5 +146,4 @@ export PATH="$Doxygen_HOME:$PATH"
 #--------------------------------------------------------------------------------
 
 export Git_HOME=${CLICREPO}/software/git/2.13.2/${BUILD_FLAVOUR}
-source ${Git_HOME}/setup.sh
-
+export PATH=${Git_HOME}/bin:${PATH}

@@ -8,7 +8,7 @@ SET(ALLPIX_MODULE_LIBRARIES "" CACHE INTERNAL "Module libraries")
 FILE(GLOB subdirs RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/*)
 FOREACH(subdir ${subdirs})
     IF(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${subdir})
-        # Internally checks if the module is enabled
-        ALLPIX_BUILD_MODULE(${subdir})
+        # Internal macros check if the module is actually enabled
+        ADD_SUBDIRECTORY(${subdir})
     ENDIF()
 ENDFOREACH()

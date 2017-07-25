@@ -5,7 +5,7 @@ stages:
     - compile
     - deploy
 
-slc6-gcc62:
+slc6-gcc:
     stage: compile
     tags:
         - docker
@@ -16,13 +16,13 @@ slc6-gcc62:
         - source .gitlab-ci.d/load_deps.sh
         - mkdir build
         - cd build
-        - cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
+        - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - ninja
         - ninja install
         - ctest --output-on-failure -j4
         - cat output_check_performance.log  
 
-slc6-llvm39:
+slc6-llvm:
     stage: compile
     tags:
         - docker
@@ -32,14 +32,14 @@ slc6-llvm39:
         - source .gitlab-ci.d/init_x86_64.sh
         - mkdir build
         - cd build
-        - cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
+        - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - ninja
         - ninja check-format
         - ninja check-lint
         - ninja install
 # skip tests because lint takes long
 
-centos7-gcc62:
+centos7-gcc:
     stage: compile
     tags:
         - docker
@@ -50,30 +50,30 @@ centos7-gcc62:
         - source .gitlab-ci.d/load_deps.sh
         - mkdir build
         - cd build
-        - cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
+        - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - ninja
         - ninja install
         - ctest --output-on-failure -j4
         - cat output_check_performance.log 
 
-centos7-llvm39:
+centos7-llvm:
     stage: compile
     tags:
         - docker
-    image: clicdp/slc6-base
+    image: clicdp/cc7-base
     script:
         - export COMPILER_TYPE="llvm"
         - source .gitlab-ci.d/init_x86_64.sh
         - mkdir build
         - cd build
-        - cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
+        - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - ninja
         - ninja check-format
         - ninja check-lint
         - ninja install
 # skip tests because lint takes long
 
-mac1012-clang80:
+mac1012-clang:
     stage: compile
     tags:
         - mac
@@ -82,7 +82,7 @@ mac1012-clang80:
         - source .gitlab-ci.d/load_deps.sh
         - mkdir build
         - cd build
-        - cmake -GNinja -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
+        - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - ninja
         - ninja install
         - ctest --output-on-failure -j4
@@ -102,7 +102,7 @@ compile-doxygen:
         - mkdir public
         - mkdir build
         - cd build
-        - cmake -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
+        - cmake -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - make reference
         - mv reference/html ../public/reference
     artifacts:

@@ -6,7 +6,7 @@ FIND_PACKAGE(Geant4 REQUIRED vis_all ui_all)
 IF(NOT Geant4_FOUND)
     MESSAGE(FATAL_ERROR "Could not find Geant4, make sure to source the Geant4 environment\n"
     "$ source YOUR_GEANT4_DIR/bin/geant4.sh")
-ENDIF(NOT Geant4_FOUND)
+ENDIF()
 
 # Add Geant4 flags before our own flags 
 ADD_DEFINITIONS(${Geant4_DEFINITIONS})
