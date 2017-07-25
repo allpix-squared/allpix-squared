@@ -35,6 +35,9 @@
 
 #include "Parameterization2DG4.hpp"
 
+// Precision epsilon to fix volumes with shared boundary
+#define G4_EPSILON 1e-6
+
 using namespace allpix;
 
 GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo_manager, Configuration config)
@@ -230,7 +233,7 @@ void GeometryConstructionG4::build_detectors() {
         auto pixel_box = std::make_shared<G4Box>("pixel_" + name,
                                                  model->getPixelSize().x() / 2.0,
                                                  model->getPixelSize().y() / 2.0,
-                                                 model->getSensorSize().z() / 2.0);
+                                                 model->getSensorSize().z() / 2.0 - G4_EPSILON);
         solids_.push_back(pixel_box);
         auto pixel_log =
             make_shared_no_delete<G4LogicalVolume>(pixel_box.get(), materials_["silicon"], "pixel_" + name + "_log");
@@ -245,12 +248,13 @@ void GeometryConstructionG4::build_detectors() {
                                                                            0);
         detector->setExternalObject("pixel_param_internal", pixel_param_internal);
 
-        auto pixel_param = std::make_shared<G4PVParameterised>("pixel_" + name + "_param",
-                                                               pixel_log.get(),
-                                                               sensor_log.get(),
-                                                               kUndefined,
-                                                               model->getNPixels().x() * model->getNPixels().y(),
-                                                               pixel_param_internal.get());
+        auto pixel_param = std::make_shared<ParameterisedG4>("pixel_" + name + "_param",
+                                                             pixel_log.get(),
+                                                             sensor_log.get(),
+                                                             kUndefined,
+                                                             model->getNPixels().x() * model->getNPixels().y(),
+                                                             pixel_param_internal.get(),
+                                                             false);
         detector->setExternalObject("pixel_param", pixel_param);
 
         /* CHIP
@@ -406,12 +410,13 @@ void GeometryConstructionG4::build_detectors() {
             detector->setExternalObject("bumps_param", bumps_param_internal);
 
             auto bumps_param =
-                std::make_shared<G4PVParameterised>("bumps_" + name + "_phys",
-                                                    bumps_cell_log.get(),
-                                                    bumps_wrapper_log.get(),
-                                                    kUndefined,
-                                                    hybrid_model->getNPixels().x() * hybrid_model->getNPixels().y(),
-                                                    bumps_param_internal.get());
+                std::make_shared<ParameterisedG4>("bumps_" + name + "_phys",
+                                                  bumps_cell_log.get(),
+                                                  bumps_wrapper_log.get(),
+                                                  kUndefined,
+                                                  hybrid_model->getNPixels().x() * hybrid_model->getNPixels().y(),
+                                                  bumps_param_internal.get(),
+                                                  false);
             detector->setExternalObject("bumps_param", bumps_param);
         }
 
