@@ -19,3 +19,4 @@ source $G4INSTALL/bin/geant4.sh
 export CMAKE_PREFIX_PATH="$G4INSTALL:$CMAKE_PREFIX_PATH"
 # Point to corresponding CLHEP
 export CMAKE_PREFIX_PATH="/cvmfs/sft.cern.ch/lcg/releases/clhep/2.3.4.4-adaae/x86_64-slc6-gcc62-opt:$CMAKE_PREFIX_PATH"
+

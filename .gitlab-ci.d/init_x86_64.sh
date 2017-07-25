@@ -154,4 +154,5 @@ source ${Git_HOME}/setup.sh
 #--------------------------------------------------------------------------------
 
 export LCIO=${CLICREPO}/software/LCIO/2.8.0/${BUILD_FLAVOUR}/
+export CMAKE_PREFIX_PATH="$LCIO:$CMAKE_PREFIX_PATH"
 
