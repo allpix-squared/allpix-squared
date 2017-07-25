@@ -177,7 +177,6 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
     // Loop over all point sets created during propagation
     std::vector<std::unique_ptr<TPolyLine3D>> lines;
     short current_color = 1;
-    std::vector<short> colors;
     for(auto& deposit_points : output_plot_points_) {
         auto line = std::make_unique<TPolyLine3D>();
         for(auto& point : deposit_points.second) {
@@ -186,11 +185,8 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
         // Plot all lines with at least three points with different color
         if(line->GetN() >= 3) {
             line->SetLineColor(current_color);
-            colors.push_back(current_color);
             line->Draw("same");
             current_color = static_cast<short>((static_cast<int>(current_color) + 10) % 101);
-        } else {
-            colors.push_back(0);
         }
         lines.push_back(std::move(line));
     }
