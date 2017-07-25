@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include <G4PVParameterised.hh>
 #include <G4ThreeVector.hh>
 #include <G4VPVParameterisation.hh>
 #include <G4VPhysicalVolume.hh>
@@ -29,9 +30,15 @@ namespace allpix {
          * @param offset_x Offset of grid in the x-direction
          * @param offset_y Offset of grid in the y-direction
          * @param pos_z Position of the 2D parameterization in the z-axis
+         * @param check_overlaps If overlaps should be checked for this parameterization or not
          */
         Parameterization2DG4(int div_x, double size_x, double size_y, double offset_x, double offset_y, double pos_z);
 
+        /**
+         * @brief Place the physical volume at the correct place with the copy number
+         * @param copy_id Id of the volume on the grid
+         * @param phys_volume Physical volume to place on the grid
+         */
         void ComputeTransformation(int, G4VPhysicalVolume*) const override;
 
     private:
@@ -41,6 +48,29 @@ namespace allpix {
         double offset_x_;
         double offset_y_;
         double pos_z_;
+    };
+
+    /**
+     * @brief Class to construct parameterized physical volumes allowing to switch off overlap checking
+     * @warning This overload is needed to allow to disable overlap checking, because it can hang the deposition
+     */
+    class ParameterisedG4 : public G4PVParameterised {
+    public:
+        ParameterisedG4(const G4String& name,
+                        G4LogicalVolume* logical,
+                        G4LogicalVolume* mother,
+                        const EAxis axis,
+                        const int n_replicas,
+                        G4VPVParameterisation* param,
+                        bool check_overlaps);
+
+        /**
+         * @warning This method is overwritten to allow to disable it, because the overlap checking can hang the deposition
+         */
+        bool CheckOverlaps(int res, double tol, bool verbose, int max_err) override;
+
+    private:
+        bool check_overlaps_;
     };
 } // namespace allpix
 

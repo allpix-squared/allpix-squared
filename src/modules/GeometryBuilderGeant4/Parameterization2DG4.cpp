@@ -24,3 +24,22 @@ void Parameterization2DG4::ComputeTransformation(int copy_id, G4VPhysicalVolume*
     phys_volume->SetTranslation(G4ThreeVector(pos_x, pos_y, pos_z_));
     phys_volume->SetRotation(nullptr);
 }
+
+ParameterisedG4::ParameterisedG4(const G4String& name,
+                                 G4LogicalVolume* logical,
+                                 G4LogicalVolume* mother,
+                                 const EAxis axis,
+                                 const int n_replicas,
+                                 G4VPVParameterisation* param,
+                                 bool check_overlaps)
+    : G4PVParameterised(name, logical, mother, axis, n_replicas, param, check_overlaps), check_overlaps_(check_overlaps) {}
+
+/**
+ * @warning This method is overwritten to allow to disable it, because the overlap checking can hang the deposition
+ */
+bool ParameterisedG4::CheckOverlaps(int res, double tol, bool verbose, int max_err) {
+    if(check_overlaps_) {
+        G4PVParameterised::CheckOverlaps(res, tol, verbose, max_err);
+    }
+    return false;
+}
