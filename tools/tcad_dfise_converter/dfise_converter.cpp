@@ -32,57 +32,73 @@ std::pair<Point, bool> barycentric_interpolation(Point query_point,
     std::pair<Point, bool> efield_valid;
 
     // Function must have tetra_vertices.size() = 4
-    if(tetra_vertices.size() != 4)
+    if(tetra_vertices.size() != 4) {
         throw std::invalid_argument("Baricentric interpolation without only 4 vertices!");
-    if(tetra_volume > 0)
+        std::cout << "\t -p <plane>             plane to be ploted. xy, yz or zx" << std::endl;
+    }
+    if(tetra_volume > 0) {
         volume_signal = true;
-    if(tetra_volume < 0)
+    }
+    if(tetra_volume < 0) {
         volume_signal = false;
+    }
 
     // Jacobi Matrix for volume calculation for each tetrahedron with a vertex replaced by the query point
     matrix_sub1 << 1, 1, 1, 1, query_point.x, tetra_vertices[1].x, tetra_vertices[2].x, tetra_vertices[3].x, query_point.y,
         tetra_vertices[1].y, tetra_vertices[2].y, tetra_vertices[3].y, query_point.z, tetra_vertices[1].z,
         tetra_vertices[2].z, tetra_vertices[3].z;
     tetra_subvol_1 = (matrix_sub1.determinant()) / 6;
-    if(tetra_subvol_1 > 0)
+    if(tetra_subvol_1 > 0) {
         sub_1_signal = true;
-    if(tetra_subvol_1 < 0)
+    }
+    if(tetra_subvol_1 < 0) {
         sub_1_signal = false;
-    if(tetra_subvol_1 == 0)
+    }
+    if(tetra_subvol_1 == 0) {
         sub_1_signal = volume_signal;
+    }
 
     matrix_sub2 << 1, 1, 1, 1, tetra_vertices[0].x, query_point.x, tetra_vertices[2].x, tetra_vertices[3].x,
         tetra_vertices[0].y, query_point.y, tetra_vertices[2].y, tetra_vertices[3].y, tetra_vertices[0].z, query_point.z,
         tetra_vertices[2].z, tetra_vertices[3].z;
     tetra_subvol_2 = (matrix_sub2.determinant()) / 6;
-    if(tetra_subvol_2 > 0)
+    if(tetra_subvol_2 > 0) {
         sub_2_signal = true;
-    if(tetra_subvol_2 < 0)
+    }
+    if(tetra_subvol_2 < 0) {
         sub_2_signal = false;
-    if(tetra_subvol_2 == 0)
+    }
+    if(tetra_subvol_2 == 0) {
         sub_2_signal = volume_signal;
+    }
 
     matrix_sub3 << 1, 1, 1, 1, tetra_vertices[0].x, tetra_vertices[1].x, query_point.x, tetra_vertices[3].x,
         tetra_vertices[0].y, tetra_vertices[1].y, query_point.y, tetra_vertices[3].y, tetra_vertices[0].z,
         tetra_vertices[1].z, query_point.z, tetra_vertices[3].z;
     tetra_subvol_3 = (matrix_sub3.determinant()) / 6;
-    if(tetra_subvol_3 > 0)
+    if(tetra_subvol_3 > 0) {
         sub_3_signal = true;
-    if(tetra_subvol_3 < 0)
+    }
+    if(tetra_subvol_3 < 0) {
         sub_3_signal = false;
-    if(tetra_subvol_3 == 0)
+    }
+    if(tetra_subvol_3 == 0) {
         sub_3_signal = volume_signal;
+    }
 
-    matrix_sub1 << 1, 1, 1, 1, tetra_vertices[0].x, tetra_vertices[1].x, tetra_vertices[2].x, query_point.x,
+    matrix_sub4 << 1, 1, 1, 1, tetra_vertices[0].x, tetra_vertices[1].x, tetra_vertices[2].x, query_point.x,
         tetra_vertices[0].y, tetra_vertices[1].y, tetra_vertices[2].y, query_point.y, tetra_vertices[0].z,
         tetra_vertices[1].z, tetra_vertices[2].z, query_point.z;
-    tetra_subvol_4 = (matrix_sub1.determinant()) / 6;
-    if(tetra_subvol_4 > 0)
+    tetra_subvol_4 = (matrix_sub4.determinant()) / 6;
+    if(tetra_subvol_4 > 0) {
         sub_4_signal = true;
-    if(tetra_subvol_4 < 0)
+    }
+    if(tetra_subvol_4 < 0) {
         sub_4_signal = false;
-    if(tetra_subvol_4 == 0)
+    }
+    if(tetra_subvol_4 == 0) {
         sub_4_signal = volume_signal;
+    }
 
     // Electric field interpolation
     efield_int.x = (tetra_subvol_1 * tetra_vertices_field[0].x + tetra_subvol_2 * tetra_vertices_field[1].x +
@@ -366,8 +382,9 @@ int main(int argc, char** argv) {
                     bitmask.resize(results.size(), 0);
                     std::vector<size_t> index;
 
-                    if(!index_cut_flag)
+                    if(!index_cut_flag) {
                         index_cut = results.size();
+                    }
                     size_t index_cut_up = index_cut;
                     while(index_cut_up <= results.size()) {
                         do {
@@ -381,13 +398,15 @@ int main(int argc, char** argv) {
                                     tetra_vertices.push_back(points[results[idk]]);
                                     tetra_vertices_field.push_back(field[results[idk]]);
                                 }
-                                if(index.size() == 4)
+                                if(index.size() == 4) {
                                     break;
+                                }
                             }
 
                             if(index[0] > index_cut_up || index[1] > index_cut_up || index[2] > index_cut_up ||
-                               index[3] > index_cut_up)
+                               index[3] > index_cut_up) {
                                 continue;
+                            }
 
                             LOG(DEBUG) << "Parsing neighbors [index]:	" << index[0] << ", " << index[1] << ", " << index[2]
                                        << ", " << index[3];
@@ -412,22 +431,25 @@ int main(int argc, char** argv) {
                                     LOG(WARNING) << "Failed to interpolate point: " << exception.what();
                                     continue;
                                 }
-                                if(flag == false)
+                                if(flag == false) {
                                     continue;
+                                }
                                 break;
                             }
                         } while(std::prev_permutation(bitmask.begin(), bitmask.end()));
 
-                        if(tetra_vertices.size() == 4 && flag == true)
+                        if(tetra_vertices.size() == 4 && flag == true) {
                             break;
+                        }
 
                         LOG(WARNING) << "All combinations tried up to index " << index_cut_up
                                      << " done. Increasing the index cut.";
                         index_cut_up = index_cut_up + index_cut;
                     }
 
-                    if(tetra_vertices.size() == 4 && flag == true)
+                    if(tetra_vertices.size() == 4 && flag == true) {
                         break;
+                    }
 
                     LOG(WARNING) << "All combinations tried. Increasing the radius.";
                     index_cut_up = index_cut;

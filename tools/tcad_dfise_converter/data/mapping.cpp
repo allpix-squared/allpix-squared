@@ -1,8 +1,8 @@
+#include <cmath>
+#include <cstdio>
 #include <fstream>
 #include <iostream>
-#include <math.h>
 #include <sstream>
-#include <stdio.h>
 #include <vector>
 #include "TCanvas.h"
 #include "TH2.h"
@@ -69,9 +69,9 @@ int main(int argc, char** argv) {
 
     std::ifstream input_file;
     input_file.open((file_name.str()).c_str());
-    if(input_file.is_open() != 0)
+    if(input_file.is_open() != false) {
         std::cout << "	OK" << std::endl;
-    else {
+    } else {
         std::cout << "	FAILD" << std::endl;
         return -1;
     }
@@ -103,15 +103,18 @@ int main(int argc, char** argv) {
     }
 
     size_t data_index;
-    if(strcmp(data.c_str(), "x") == 0)
+    if(strcmp(data.c_str(), "x") == 0) {
         data_index = 3;
-    if(strcmp(data.c_str(), "y") == 0)
+    }
+    if(strcmp(data.c_str(), "y") == 0) {
         data_index = 4;
-    if(strcmp(data.c_str(), "z") == 0)
+    }
+    if(strcmp(data.c_str(), "z") == 0) {
         data_index = 5;
+    }
 
-    TH2D* efield_map = new TH2D("Electric Field", "Electric Field", x_bin, 0, x_bin, y_bin, 0, y_bin);
-    TCanvas* c1 = new TCanvas();
+    auto efield_map = new TH2D("Electric Field", "Electric Field", x_bin, 0, x_bin, y_bin, 0, y_bin);
+    auto c1 = new TCanvas();
 
     double dummy;
     double vector[6];
@@ -133,8 +136,9 @@ int main(int argc, char** argv) {
                 efield_map->Fill(vector[x_bin_index],
                                  vector[y_bin_index],
                                  sqrt(pow(vector[3], 2) + pow(vector[4], 2) + pow(vector[5], 2)));
-            } else
+            } else {
                 efield_map->Fill(vector[x_bin_index], vector[y_bin_index], vector[data_index]);
+            }
         }
         line++;
     }
