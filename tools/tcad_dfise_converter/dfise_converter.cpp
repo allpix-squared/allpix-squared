@@ -22,83 +22,67 @@ std::pair<Point, bool> barycentric_interpolation(Point query_point,
                                                  double tetra_volume) {
 
     // Algorithm variables
-    bool volume_signal;
+    bool volume_signal = true;
     bool sub_1_signal, sub_2_signal, sub_3_signal, sub_4_signal;
     Eigen::Matrix4d matrix_sub1, matrix_sub2, matrix_sub3, matrix_sub4;
     double tetra_subvol_1, tetra_subvol_2, tetra_subvol_3, tetra_subvol_4;
-    // Return variable. Point(interpolated electric field x, (...) y, (...) z)
+    // Return variable. Point(interpolated electric field x, y, z)
     Point efield_int;
     bool flag = true;
     std::pair<Point, bool> efield_valid;
 
     // Function must have tetra_vertices.size() = 4
-    if(tetra_vertices.size() != 4) {
+    if(tetra_vertices.size() != 4)
         throw std::invalid_argument("Baricentric interpolation without only 4 vertices!");
-    }
-
-    if(tetra_volume > 0) {
+    if(tetra_volume > 0)
         volume_signal = true;
-    }
-    if(tetra_volume < 0) {
+    if(tetra_volume < 0)
         volume_signal = false;
-    }
 
-    // Jacobi Matrix for volume calculation
+    // Jacobi Matrix for volume calculation for each tetrahedron with a vertex replaced by the query point
     matrix_sub1 << 1, 1, 1, 1, query_point.x, tetra_vertices[1].x, tetra_vertices[2].x, tetra_vertices[3].x, query_point.y,
         tetra_vertices[1].y, tetra_vertices[2].y, tetra_vertices[3].y, query_point.z, tetra_vertices[1].z,
         tetra_vertices[2].z, tetra_vertices[3].z;
     tetra_subvol_1 = (matrix_sub1.determinant()) / 6;
-    if(tetra_subvol_1 > 0) {
+    if(tetra_subvol_1 > 0)
         sub_1_signal = true;
-    }
-    if(tetra_subvol_1 < 0) {
+    if(tetra_subvol_1 < 0)
         sub_1_signal = false;
-    }
-    if(tetra_subvol_1 == 0) {
+    if(tetra_subvol_1 == 0)
         sub_1_signal = volume_signal;
-    }
 
     matrix_sub2 << 1, 1, 1, 1, tetra_vertices[0].x, query_point.x, tetra_vertices[2].x, tetra_vertices[3].x,
         tetra_vertices[0].y, query_point.y, tetra_vertices[2].y, tetra_vertices[3].y, tetra_vertices[0].z, query_point.z,
         tetra_vertices[2].z, tetra_vertices[3].z;
     tetra_subvol_2 = (matrix_sub2.determinant()) / 6;
-    if(tetra_subvol_2 > 0) {
+    if(tetra_subvol_2 > 0)
         sub_2_signal = true;
-    }
-    if(tetra_subvol_2 < 0) {
+    if(tetra_subvol_2 < 0)
         sub_2_signal = false;
-    }
-    if(tetra_subvol_2 == 0) {
+    if(tetra_subvol_2 == 0)
         sub_2_signal = volume_signal;
-    }
 
     matrix_sub3 << 1, 1, 1, 1, tetra_vertices[0].x, tetra_vertices[1].x, query_point.x, tetra_vertices[3].x,
         tetra_vertices[0].y, tetra_vertices[1].y, query_point.y, tetra_vertices[3].y, tetra_vertices[0].z,
         tetra_vertices[1].z, query_point.z, tetra_vertices[3].z;
     tetra_subvol_3 = (matrix_sub3.determinant()) / 6;
-    if(tetra_subvol_3 > 0) {
+    if(tetra_subvol_3 > 0)
         sub_3_signal = true;
-    }
-    if(tetra_subvol_3 < 0) {
+    if(tetra_subvol_3 < 0)
         sub_3_signal = false;
-    }
-    if(tetra_subvol_3 == 0) {
+    if(tetra_subvol_3 == 0)
         sub_3_signal = volume_signal;
-    }
 
     matrix_sub1 << 1, 1, 1, 1, tetra_vertices[0].x, tetra_vertices[1].x, tetra_vertices[2].x, query_point.x,
         tetra_vertices[0].y, tetra_vertices[1].y, tetra_vertices[2].y, query_point.y, tetra_vertices[0].z,
         tetra_vertices[1].z, tetra_vertices[2].z, query_point.z;
     tetra_subvol_4 = (matrix_sub1.determinant()) / 6;
-    if(tetra_subvol_4 > 0) {
+    if(tetra_subvol_4 > 0)
         sub_4_signal = true;
-    }
-    if(tetra_subvol_4 < 0) {
+    if(tetra_subvol_4 < 0)
         sub_4_signal = false;
-    }
-    if(tetra_subvol_4 == 0) {
+    if(tetra_subvol_4 == 0)
         sub_4_signal = volume_signal;
-    }
 
     // Electric field interpolation
     efield_int.x = (tetra_subvol_1 * tetra_vertices_field[0].x + tetra_subvol_2 * tetra_vertices_field[1].x +
@@ -110,6 +94,15 @@ std::pair<Point, bool> barycentric_interpolation(Point query_point,
     efield_int.z = (tetra_subvol_1 * tetra_vertices_field[0].z + tetra_subvol_2 * tetra_vertices_field[1].z +
                     tetra_subvol_3 * tetra_vertices_field[2].z + tetra_subvol_4 * tetra_vertices_field[3].z) /
                    tetra_volume;
+
+    // Check if query point is outside tetrahedron
+    if(sub_1_signal != volume_signal || sub_2_signal != volume_signal || sub_3_signal != volume_signal ||
+       sub_4_signal != volume_signal) {
+        flag = false;
+        LOG(WARNING) << "Warning: Point outside tetrahedron";
+        efield_valid = std::make_pair(efield_int, flag);
+        return efield_valid;
+    }
 
     for(size_t i = 0; i < tetra_vertices.size(); i++) {
         auto distance = unibn::L2Distance<Point>::compute(tetra_vertices[i], query_point);
@@ -125,18 +118,9 @@ std::pair<Point, bool> barycentric_interpolation(Point query_point,
                << "Tetra sub volume 4:	 " << tetra_subvol_4 << std::endl
                << "Volume difference:	 "
                << tetra_volume - (tetra_subvol_1 + tetra_subvol_2 + tetra_subvol_3 + tetra_subvol_4);
-
-    // Check if query point is outside tetrahedron
-    if(sub_1_signal != volume_signal || sub_2_signal != volume_signal || sub_3_signal != volume_signal ||
-       sub_4_signal != volume_signal) {
-        flag = false;
-        LOG(WARNING) << "Warning: Point outside tetrahedron";
-        efield_valid = std::make_pair(efield_int, flag);
-        return efield_valid;
-    }
-
     LOG(INFO) << "Interpolated electric field:	" << efield_int.x << " x, " << efield_int.y << " y, " << efield_int.z << " z"
               << std::endl;
+
     efield_valid = std::make_pair(efield_int, flag);
     return efield_valid;
 }
@@ -155,15 +139,16 @@ int main(int argc, char** argv) {
     std::string file_prefix;
     std::string init_file_prefix;
     std::string log_file_name;
-    std::string region = "bulk";                            // Sensor bulk region name on DF-ISE file
-    double volume_cut = std::numeric_limits<double>::min(); // Neighbour vertex search radius
-    size_t index_cut = std::numeric_limits<size_t>::max();
-    float radius_step = 0.5;    // Neighbour vertex search radius
-    float max_radius = 10;      // Neighbour vertex search radius
-    float initial_radius = 0.5; // Neighbour vertex search radius
-    int xdiv = 100;             // New mesh X pitch
-    int ydiv = 100;             // New mesh Y pitch
-    int zdiv = 100;             // New mesh Z pitch
+    std::string region = "bulk";                          // Sensor bulk region name on DF-ISE file
+    float volume_cut = std::numeric_limits<float>::min(); // Enclosing tetrahedron should have volume != 0
+    size_t index_cut;                                     // Permutation index initial cut
+    bool index_cut_flag = false;
+    float initial_radius = 1; // Neighbour vertex search radius
+    float radius_step = 0.5;  // Search radius increment
+    float max_radius = 10;    // Maximum search radiuss
+    int xdiv = 100;           // New mesh X pitch
+    int ydiv = 100;           // New mesh Y pitch
+    int zdiv = 100;           // New mesh Z pitch
 
     for(int i = 1; i < argc; i++) {
         if(strcmp(argv[i], "-h") == 0) {
@@ -181,23 +166,24 @@ int main(int argc, char** argv) {
         } else if(strcmp(argv[i], "-o") == 0 && (i + 1 < argc)) {
             init_file_prefix = std::string(argv[++i]);
         } else if(strcmp(argv[i], "-R") == 0 && (i + 1 < argc)) {
-            region = std::string(argv[++i]); // Region to be meshed
+            region = std::string(argv[++i]);
         } else if(strcmp(argv[i], "-r") == 0 && (i + 1 < argc)) {
-            initial_radius = static_cast<float>(strtod(argv[++i], nullptr)); // New mesh X pitch
+            initial_radius = static_cast<float>(strtod(argv[++i], nullptr));
         } else if(strcmp(argv[i], "-s") == 0 && (i + 1 < argc)) {
-            radius_step = static_cast<float>(strtod(argv[++i], nullptr)); // New mesh X pitch
+            radius_step = static_cast<float>(strtod(argv[++i], nullptr));
         } else if(strcmp(argv[i], "-m") == 0 && (i + 1 < argc)) {
-            max_radius = static_cast<float>(strtod(argv[++i], nullptr)); // New mesh X pitch
+            max_radius = static_cast<float>(strtod(argv[++i], nullptr));
         } else if(strcmp(argv[i], "-i") == 0 && (i + 1 < argc)) {
-            index_cut = static_cast<size_t>(strtod(argv[++i], nullptr)); // New mesh X pitch
+            index_cut = static_cast<size_t>(strtod(argv[++i], nullptr));
+            index_cut_flag = true;
         } else if(strcmp(argv[i], "-c") == 0 && (i + 1 < argc)) {
-            volume_cut = static_cast<float>(strtod(argv[++i], nullptr)); // New mesh X pitch
+            volume_cut = static_cast<float>(strtod(argv[++i], nullptr));
         } else if(strcmp(argv[i], "-x") == 0 && (i + 1 < argc)) {
-            xdiv = static_cast<int>(strtod(argv[++i], nullptr)); // New mesh X pitch
+            xdiv = static_cast<int>(strtod(argv[++i], nullptr));
         } else if(strcmp(argv[i], "-y") == 0 && (i + 1 < argc)) {
-            ydiv = static_cast<int>(strtod(argv[++i], nullptr)); // New mesh X pitch
+            ydiv = static_cast<int>(strtod(argv[++i], nullptr));
         } else if(strcmp(argv[i], "-z") == 0 && (i + 1 < argc)) {
-            zdiv = static_cast<int>(strtod(argv[++i], nullptr)); // New mesh X pitch
+            zdiv = static_cast<int>(strtod(argv[++i], nullptr));
         } else if(strcmp(argv[i], "-l") == 0 && (i + 1 < argc)) {
             log_file_name = std::string(argv[++i]);
         } else {
@@ -325,8 +311,8 @@ int main(int argc, char** argv) {
                 bool flag = false;
                 std::pair<Point, bool> return_interpolation;
 
-                LOG(INFO) << "===> Interpolating point " << i + 1 << " " << j + 1 << " " << k + 1 << "	(" << q.x << ","
-                          << q.y << "," << q.z << ")";
+                LOG(INFO) << "===> Interpolating point X=" << i + 1 << " Y=" << j + 1 << " Z=" << k + 1 << "	(" << q.x
+                          << "," << q.y << "," << q.z << ")";
 
                 size_t prev_neighbours = 0;
                 float radius = initial_radius;
@@ -340,6 +326,7 @@ int main(int argc, char** argv) {
                         return unibn::L2Distance<Point>::compute(points[a], q) <
                                unibn::L2Distance<Point>::compute(points[b], q);
                     });
+
                     LOG(DEBUG) << "Number of vertices found:	" << results.size();
 
                     if(results.empty()) {
@@ -379,60 +366,71 @@ int main(int argc, char** argv) {
                     bitmask.resize(results.size(), 0);
                     std::vector<size_t> index;
 
-                    do {
-                        index.clear();
-                        tetra_vertices.clear();
-                        tetra_vertices_field.clear();
-                        // print integers and permute bitmask
-                        for(size_t idk = 0; idk < results.size(); ++idk) {
-                            if(bitmask[idk]) {
-                                index.push_back(idk);
-                                tetra_vertices.push_back(points[results[idk]]);
-                                tetra_vertices_field.push_back(field[results[idk]]);
+                    if(!index_cut_flag)
+                        index_cut = results.size();
+                    size_t index_cut_up = index_cut;
+                    while(index_cut_up <= results.size()) {
+                        do {
+                            index.clear();
+                            tetra_vertices.clear();
+                            tetra_vertices_field.clear();
+                            // print integers and permute bitmask
+                            for(size_t idk = 0; idk < results.size(); ++idk) {
+                                if(bitmask[idk]) {
+                                    index.push_back(idk);
+                                    tetra_vertices.push_back(points[results[idk]]);
+                                    tetra_vertices_field.push_back(field[results[idk]]);
+                                }
+                                if(index.size() == 4)
+                                    break;
                             }
-                            if(index.size() == 4)
+
+                            if(index[0] > index_cut_up || index[1] > index_cut_up || index[2] > index_cut_up ||
+                               index[3] > index_cut_up)
+                                continue;
+
+                            LOG(DEBUG) << "Parsing neighbors [index]:	" << index[0] << ", " << index[1] << ", " << index[2]
+                                       << ", " << index[3];
+
+                            matrix << 1, 1, 1, 1, points[results[index[0]]].x, points[results[index[1]]].x,
+                                points[results[index[2]]].x, points[results[index[3]]].x, points[results[index[0]]].y,
+                                points[results[index[1]]].y, points[results[index[2]]].y, points[results[index[3]]].y,
+                                points[results[index[0]]].z, points[results[index[1]]].z, points[results[index[2]]].z,
+                                points[results[index[3]]].z;
+                            volume = (matrix.determinant()) / 6;
+
+                            if(abs(volume) <= volume_cut) {
+                                LOG(WARNING) << "Coplanar vertices. Going to the next vertex combination.";
+                                continue;
+                            } else {
+                                try {
+                                    return_interpolation =
+                                        barycentric_interpolation(q, tetra_vertices, tetra_vertices_field, volume);
+                                    e = return_interpolation.first;
+                                    flag = return_interpolation.second;
+                                } catch(std::invalid_argument& exception) {
+                                    LOG(WARNING) << "Failed to interpolate point: " << exception.what();
+                                    continue;
+                                }
+                                if(flag == false)
+                                    continue;
                                 break;
-                        }
-                        if(index[0] > index_cut || index[1] > index_cut || index[2] > index_cut || index[3] > index_cut) {
-                            LOG(WARNING) << "Applying index cut on the " << index_cut << "-nth neighbour on a total of "
-                                         << results.size();
-                            continue;
-                        }
-                        LOG(DEBUG) << "Parsing neighbors [index]:	" << index[0] << ", " << index[1] << ", " << index[2]
-                                   << ", " << index[3];
-
-                        matrix << 1, 1, 1, 1, points[results[index[0]]].x, points[results[index[1]]].x,
-                            points[results[index[2]]].x, points[results[index[3]]].x, points[results[index[0]]].y,
-                            points[results[index[1]]].y, points[results[index[2]]].y, points[results[index[3]]].y,
-                            points[results[index[0]]].z, points[results[index[1]]].z, points[results[index[2]]].z,
-                            points[results[index[3]]].z;
-                        volume = (matrix.determinant()) / 6;
-
-                        if(abs(volume) <= volume_cut) {
-                            LOG(WARNING) << "Coplanar vertices. Going to the next vertex combination.";
-                            continue;
-                        } else {
-                            try {
-                                return_interpolation =
-                                    barycentric_interpolation(q, tetra_vertices, tetra_vertices_field, volume);
-                                e = return_interpolation.first;
-                                flag = return_interpolation.second;
-                            } catch(std::invalid_argument& exception) {
-                                LOG(WARNING) << "Failed to interpolate point: " << exception.what();
-                                continue;
                             }
-                            if(flag == false) {
-                                continue;
-                            }
+                        } while(std::prev_permutation(bitmask.begin(), bitmask.end()));
+
+                        if(tetra_vertices.size() == 4 && flag == true)
                             break;
-                        }
-                    } while(std::prev_permutation(bitmask.begin(), bitmask.end()));
 
-                    if(tetra_vertices.size() == 4 && flag == true) {
-                        break;
+                        LOG(WARNING) << "All combinations tried up to index " << index_cut_up
+                                     << " done. Increasing the index cut.";
+                        index_cut_up = index_cut_up + index_cut;
                     }
 
+                    if(tetra_vertices.size() == 4 && flag == true)
+                        break;
+
                     LOG(WARNING) << "All combinations tried. Increasing the radius.";
+                    index_cut_up = index_cut;
                     radius = radius + radius_step;
                 }
 

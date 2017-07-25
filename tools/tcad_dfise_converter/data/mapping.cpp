@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
     std::string file_prefix = "example_pixel";
     std::string plane = "yz";
     int slice_index = 0;
-    int slice_cut = 50;
+    int slice_cut = 1;
     int xdiv = 100;
     int ydiv = 100;
     int zdiv = 100;
@@ -52,28 +52,23 @@ int main(int argc, char** argv) {
     if(print_help) {
         std::cerr << "Usage: ./tcad_dfise_reader -f <data_file_prefix> [<options>]" << std::endl;
         std::cout << "\t -f <file_prefix>       DF-ISE files prefix" << std::endl;
-        std::cout << "\t -R <region>            region name to be meshed" << std::endl;
-        std::cout << "\t -r <radius>            initial node neighbors search radius" << std::endl;
-        std::cout << "\t -r <radius_step>       radius step if no neighbor is found" << std::endl;
-        std::cout << "\t -m <max_radius>        maximum search radius" << std::endl;
+        std::cout << "\t -p <plane>             plane to be ploted. xy, yz or zx" << std::endl;
+        std::cout << "\t -c <cut>               define projection height" << std::endl;
         std::cout << "\t -x <mesh x_pitch>      new regular mesh X pitch" << std::endl;
         std::cout << "\t -y <mesh_y_pitch>      new regular mesh Y pitch" << std::endl;
         std::cout << "\t -z <mesh_z_pitch>      new regular mesh Z pitch" << std::endl;
-        std::cout << "\t -l <file>              file to log to besides standard output" << std::endl;
-        std::cout << "\t -v <level>             verbosity level overwrites global log level,\n"
-                  << "\t                        but not the per-module configuration." << std::endl;
         return return_code;
     }
 
-    file_name << file_prefix << "_" << xdiv << "x" << ydiv << "x" << zdiv << ".txt";
+    file_name << file_prefix << "_" << xdiv << "x" << ydiv << "x" << zdiv << ".init";
     std::cout << "Reading file: " << file_name.str();
 
     std::ifstream input_file;
     input_file.open((file_name.str()).c_str());
     if(input_file.is_open() != 0)
-        std::cout << "OK" << std::endl;
+        std::cout << "	OK" << std::endl;
     else {
-        std::cout << "FAILD" << std::endl;
+        std::cout << "	FAILD" << std::endl;
         return -1;
     }
 
@@ -112,16 +107,19 @@ int main(int argc, char** argv) {
     std::string file_line;
     while(getline(input_file, file_line)) {
         int p = 0;
-        if(line < 6)
+        if(line < 6) {
+            line++;
             continue;
+        }
         std::stringstream mystream(file_line);
         while(mystream >> dummy) {
             vector[p] = dummy;
             p++;
         }
-        if(vector[slice_index] == slice_cut)
+        if(vector[slice_index] == slice_cut) {
             efield_map->Fill(
                 vector[x_bin_index], vector[y_bin_index], sqrt(pow(vector[3], 2) + pow(vector[4], 2) + pow(vector[5], 2)));
+        }
         line++;
     }
     c1->cd();
