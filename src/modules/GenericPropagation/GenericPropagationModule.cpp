@@ -75,7 +75,12 @@ GenericPropagationModule::GenericPropagationModule(Configuration config,
     // Set defaults for charge carrier propagation:
     config_.setDefault<bool>("propagate_electrons", true);
     config_.setDefault<bool>("propagate_holes", false);
-
+    if(!config_.get<bool>("propagate_electrons") && !config_.get<bool>("propagate_holes")) {
+        throw InvalidValueError(
+            config_,
+            "propagate_electrons",
+            "No charge carriers selected for propagation, enable 'propagate_electrons' or 'propagate_holes'.");
+    }
     // Copy some variables from configuration to avoid lookups:
     temperature_ = config_.get<double>("temperature");
     timestep_min_ = config_.get<double>("timestep_min");
