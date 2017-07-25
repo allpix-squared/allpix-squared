@@ -181,6 +181,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
     histogram_frame->Draw();
 
     // Loop over all point sets created during propagation
+    // The vector of unique_pointers is required in order not to delete the objects before the canvas is drawn.
     std::vector<std::unique_ptr<TPolyLine3D>> lines;
     short current_color = 1;
     for(auto& deposit_points : output_plot_points_) {
@@ -188,17 +189,17 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
         for(auto& point : deposit_points.second) {
             line->SetNextPoint(point.x(), point.y(), point.z());
         }
-        // Plot all lines with at least three points with different color
+        // Plot lines with different color
         if(line->GetN() >= 3) {
-            line->SetLineColor(current_color);
-            line->Draw("same");
             EColor plot_color = (deposit_points.first.getType() == CarrierType::ELECTRON ? EColor::kAzure : EColor::kOrange);
             current_color = static_cast<short int>(plot_color - 9 + (static_cast<int>(current_color) + 1) % 19);
+            line->SetLineColor(current_color);
+            line->Draw("same");
         }
         lines.push_back(std::move(line));
     }
 
-    // Draw and write canvas to module output file
+    // Draw and write canvas to module output file, then clear the stored lines
     canvas->Draw();
     canvas->Write();
     lines.clear();
