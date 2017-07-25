@@ -21,6 +21,7 @@ int main(int argc, char** argv) {
 
     std::string file_prefix = "example_pixel";
     std::string plane = "yz";
+    std::string data = "n";
     int slice_index = 0;
     int slice_cut = 1;
     int xdiv = 100;
@@ -36,6 +37,8 @@ int main(int argc, char** argv) {
             file_prefix = std::string(argv[++i]);
         } else if(strcmp(argv[i], "-p") == 0 && (i + 1 < argc)) {
             plane = std::string(argv[++i]);
+        } else if(strcmp(argv[i], "-d") == 0 && (i + 1 < argc)) {
+            data = std::string(argv[++i]);
         } else if(strcmp(argv[i], "-c") == 0 && (i + 1 < argc)) {
             slice_cut = static_cast<int>(strtod(argv[++i], nullptr));
         } else if(strcmp(argv[i], "-x") == 0 && (i + 1 < argc)) {
@@ -53,6 +56,7 @@ int main(int argc, char** argv) {
         std::cerr << "Usage: ./tcad_dfise_reader -f <data_file_prefix> [<options>]" << std::endl;
         std::cout << "\t -f <file_prefix>       DF-ISE files prefix" << std::endl;
         std::cout << "\t -p <plane>             plane to be ploted. xy, yz or zx" << std::endl;
+        std::cout << "\t -d <data>              data to be read. Check read me file" << std::endl;
         std::cout << "\t -c <cut>               define projection height" << std::endl;
         std::cout << "\t -x <mesh x_pitch>      new regular mesh X pitch" << std::endl;
         std::cout << "\t -y <mesh_y_pitch>      new regular mesh Y pitch" << std::endl;
@@ -98,6 +102,14 @@ int main(int argc, char** argv) {
         slice_index = 1;
     }
 
+    size_t data_index;
+    if(strcmp(data.c_str(), "x") == 0)
+        data_index = 3;
+    if(strcmp(data.c_str(), "y") == 0)
+        data_index = 4;
+    if(strcmp(data.c_str(), "z") == 0)
+        data_index = 5;
+
     TH2D* efield_map = new TH2D("Electric Field", "Electric Field", x_bin, 0, x_bin, y_bin, 0, y_bin);
     TCanvas* c1 = new TCanvas();
 
@@ -117,8 +129,12 @@ int main(int argc, char** argv) {
             p++;
         }
         if(vector[slice_index] == slice_cut) {
-            efield_map->Fill(
-                vector[x_bin_index], vector[y_bin_index], sqrt(pow(vector[3], 2) + pow(vector[4], 2) + pow(vector[5], 2)));
+            if(strcmp(data.c_str(), "n") == 0) {
+                efield_map->Fill(vector[x_bin_index],
+                                 vector[y_bin_index],
+                                 sqrt(pow(vector[3], 2) + pow(vector[4], 2) + pow(vector[5], 2)));
+            } else
+                efield_map->Fill(vector[x_bin_index], vector[y_bin_index], vector[data_index]);
         }
         line++;
     }
