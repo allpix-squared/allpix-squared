@@ -34,9 +34,7 @@ namespace allpix {
         SensitiveDetectorActionG4(Module* module,
                                   const std::shared_ptr<Detector>& detector,
                                   Messenger* msg,
-                                  double charge_creation_energy,
-                                  bool deposit_electrons,
-                                  bool deposit_holes);
+                                  double charge_creation_energy);
 
         /**
          * @brief Get total of charges deposited in the sensitive device bound to this action
@@ -62,8 +60,6 @@ namespace allpix {
         Messenger* messenger_;
 
         double charge_creation_energy_;
-        bool deposit_electrons_;
-        bool deposit_holes_;
 
         // Statistics of total deposited charge
         unsigned int total_deposited_charge_{};

@@ -32,12 +32,9 @@ using namespace allpix;
 SensitiveDetectorActionG4::SensitiveDetectorActionG4(Module* module,
                                                      const std::shared_ptr<Detector>& detector,
                                                      Messenger* msg,
-                                                     double charge_creation_energy,
-                                                     bool deposit_electrons,
-                                                     bool deposit_holes)
+                                                     double charge_creation_energy)
     : G4VSensitiveDetector("SensitiveDetector_" + detector->getName()), module_(module), detector_(detector),
-      messenger_(msg), charge_creation_energy_(charge_creation_energy), deposit_electrons_(deposit_electrons),
-      deposit_holes_(deposit_holes) {
+      messenger_(msg), charge_creation_energy_(charge_creation_energy) {
 
     // Add the sensor to the internal sensitive detector manager
     G4SDManager* sd_man_g4 = G4SDManager::GetSDMpointer();
@@ -96,13 +93,11 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     }
 
     auto global_deposit_position = detector_->getGlobalPosition(deposit_position);
-    if(deposit_electrons_) {
-        deposits_.emplace_back(deposit_position, global_deposit_position, CarrierType::ELECTRON, charge, mid_time);
-    }
-    if(deposit_holes_) {
-        deposits_.emplace_back(deposit_position, global_deposit_position, CarrierType::HOLE, charge, mid_time);
-    }
+    deposits_.emplace_back(deposit_position, global_deposit_position, CarrierType::ELECTRON, charge, mid_time);
+    deposits_.emplace_back(deposit_position, global_deposit_position, CarrierType::HOLE, charge, mid_time);
+
     // FIXME how do we correlate them?
+    deposit_ids_.emplace_back(step->GetTrack()->GetTrackID());
     deposit_ids_.emplace_back(step->GetTrack()->GetTrackID());
 
     LOG(DEBUG) << "Created deposit of " << charge << " charges at " << display_vector(mid_pos, {"mm", "um"})
