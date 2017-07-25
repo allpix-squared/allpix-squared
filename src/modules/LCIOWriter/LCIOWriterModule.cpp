@@ -48,7 +48,7 @@ LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, G
     lcWriter_->open(config_.get<std::string>("file_name", "output.slcio"), LCIO::WRITE_NEW);
     std::unique_ptr<LCRunHeaderImpl> run(new LCRunHeaderImpl());
     run->setRunNumber(1);
-    run->setDetectorName("telescope");
+    run->setDetectorName("EUTelescope");
     lcWriter_->writeRunHeader(run.get());
 }
 
@@ -57,6 +57,7 @@ void LCIOWriterModule::run(unsigned int eventNb) {
     std::unique_ptr<LCEventImpl> evt(new LCEventImpl()); // create the event
     evt->setRunNumber(1);
     evt->setEventNumber(static_cast<int>(eventNb)); // set the event attributes
+    evt->parameters().setValue("EventType", 2);
 
     // Prepare charge vectors
     std::vector<std::vector<float>> charges;
@@ -96,8 +97,8 @@ void LCIOWriterModule::run(unsigned int eventNb) {
     }
 
     // Add collection to event and write event to LCIO file
-    evt->addCollection(hitVec, "original_zsdata"); // add the collection with a name
-    lcWriter_->writeEvent(evt.get());              // write the event to the file
+    evt->addCollection(hitVec, "zsdata_m26"); // add the collection with a name
+    lcWriter_->writeEvent(evt.get());         // write the event to the file
 }
 
 void LCIOWriterModule::finalize() {
