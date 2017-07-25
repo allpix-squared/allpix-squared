@@ -6,7 +6,7 @@ FIND_PACKAGE(Geant4 OPTIONAL_COMPONENTS gdml)
 IF(NOT Geant4_FOUND)
     MESSAGE(FATAL_ERROR "Could not find Geant4, make sure to source the Geant4 environment\n"
     "$ source YOUR_GEANT4_DIR/bin/geant4.sh")
-ENDIF(NOT Geant4_FOUND)
+ENDIF()
 
 # Print message if GDML support is not enabled in Geant4
 IF(Geant4_gdml_FOUND)
