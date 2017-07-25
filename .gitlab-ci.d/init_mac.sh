@@ -110,6 +110,6 @@ export Eigen3_DIR=${Eigen_HOME}/lib64/cmake/eigen3/
 #     LCIO
 #--------------------------------------------------------------------------------
 
-export LCIO=${CLICREPO}/software/LCIO/2.8.0/${BUILD_FLAVOUR}/
+export LCIO=${CLICREPO}/software/LCIO/2.7.3/${BUILD_FLAVOUR}/
 export CMAKE_PREFIX_PATH="$LCIO:$CMAKE_PREFIX_PATH"
 
