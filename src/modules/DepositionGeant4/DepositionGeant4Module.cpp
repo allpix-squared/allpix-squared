@@ -111,8 +111,8 @@ void DepositionGeant4Module::init() {
                                                                        detector,
                                                                        messenger_,
                                                                        charge_creation_energy,
-                                                                       config_.get<double>("deposit_electrons"),
-                                                                       config_.get<double>("deposit_holes"));
+                                                                       config_.get<bool>("deposit_electrons"),
+                                                                       config_.get<bool>("deposit_holes"));
         for(auto& sensor_volume : sensor_volumes) {
             auto logical_volume = detector->getExternalObject<G4LogicalVolume>(sensor_volume);
             if(logical_volume == nullptr) {
