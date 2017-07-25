@@ -131,12 +131,12 @@ std::pair<Point, bool> barycentric_interpolation(Point query_point,
        sub_4_signal != volume_signal) {
         flag = false;
         LOG(WARNING) << "Warning: Point outside tetrahedron";
-        // throw std::invalid_argument("Point outside tetrahedron");
-    } else {
-        LOG(DEBUG) << "Interpolated electric field:	" << efield_int.x << " x, " << efield_int.y << " y, " << efield_int.z
-                   << " z" << std::endl;
+        efield_valid = std::make_pair(efield_int, flag);
+        return efield_valid;
     }
 
+    LOG(INFO) << "Interpolated electric field:	" << efield_int.x << " x, " << efield_int.y << " y, " << efield_int.z << " z"
+              << std::endl;
     efield_valid = std::make_pair(efield_int, flag);
     return efield_valid;
 }
@@ -155,13 +155,15 @@ int main(int argc, char** argv) {
     std::string file_prefix;
     std::string init_file_prefix;
     std::string log_file_name;
-    std::string region = "bulk"; // Sensor bulk region name on DF-ISE file
-    float radius_step = 0.5;     // Neighbour vertex search radius
-    float max_radius = 10;       // Neighbour vertex search radius
-    float radius = 1;            // Neighbour vertex search radius
-    int xdiv = 100;              // New mesh X pitch
-    int ydiv = 100;              // New mesh Y pitch
-    int zdiv = 100;              // New mesh Z pitch
+    std::string region = "bulk";                            // Sensor bulk region name on DF-ISE file
+    double volume_cut = std::numeric_limits<double>::min(); // Neighbour vertex search radius
+    size_t index_cut = std::numeric_limits<size_t>::max();
+    float radius_step = 0.5;    // Neighbour vertex search radius
+    float max_radius = 10;      // Neighbour vertex search radius
+    float initial_radius = 0.5; // Neighbour vertex search radius
+    int xdiv = 100;             // New mesh X pitch
+    int ydiv = 100;             // New mesh Y pitch
+    int zdiv = 100;             // New mesh Z pitch
 
     for(int i = 1; i < argc; i++) {
         if(strcmp(argv[i], "-h") == 0) {
@@ -181,11 +183,15 @@ int main(int argc, char** argv) {
         } else if(strcmp(argv[i], "-R") == 0 && (i + 1 < argc)) {
             region = std::string(argv[++i]); // Region to be meshed
         } else if(strcmp(argv[i], "-r") == 0 && (i + 1 < argc)) {
-            radius = static_cast<float>(strtod(argv[++i], nullptr)); // New mesh X pitch
+            initial_radius = static_cast<float>(strtod(argv[++i], nullptr)); // New mesh X pitch
         } else if(strcmp(argv[i], "-s") == 0 && (i + 1 < argc)) {
             radius_step = static_cast<float>(strtod(argv[++i], nullptr)); // New mesh X pitch
         } else if(strcmp(argv[i], "-m") == 0 && (i + 1 < argc)) {
             max_radius = static_cast<float>(strtod(argv[++i], nullptr)); // New mesh X pitch
+        } else if(strcmp(argv[i], "-i") == 0 && (i + 1 < argc)) {
+            index_cut = static_cast<size_t>(strtod(argv[++i], nullptr)); // New mesh X pitch
+        } else if(strcmp(argv[i], "-c") == 0 && (i + 1 < argc)) {
+            volume_cut = static_cast<float>(strtod(argv[++i], nullptr)); // New mesh X pitch
         } else if(strcmp(argv[i], "-x") == 0 && (i + 1 < argc)) {
             xdiv = static_cast<int>(strtod(argv[++i], nullptr)); // New mesh X pitch
         } else if(strcmp(argv[i], "-y") == 0 && (i + 1 < argc)) {
@@ -202,18 +208,20 @@ int main(int argc, char** argv) {
     // Print help if requested or no arguments given
     if(print_help) {
         std::cerr << "Usage: ./tcad_dfise_reader -f <data_file_prefix> [<options>]" << std::endl;
-        std::cout << "\t -f <file_prefix>	DF-ISE files prefix" << std::endl;
-        std::cout << "\t -o <file_prefix>	Init output file prefix" << std::endl;
-        std::cout << "\t -R <region>		region name to be meshed" << std::endl;
-        std::cout << "\t -r <radius>		initial node neighbors search radius" << std::endl;
-        std::cout << "\t -r <radius_step>	radius step if no neighbor is found" << std::endl;
-        std::cout << "\t -m <max_radius>	maximum search radius" << std::endl;
-        std::cout << "\t -x <mesh x_pitch>	new regular mesh X pitch" << std::endl;
-        std::cout << "\t -y <mesh_y_pitch>	new regular mesh Y pitch" << std::endl;
-        std::cout << "\t -z <mesh_z_pitch>	new regular mesh Z pitch" << std::endl;
-        std::cout << "\t -l <file>    		file to log to besides standard output" << std::endl;
-        std::cout << "\t -v <level>		verbosity level overwrites global log level,\n"
-                  << "\t  		        but not the per-module configuration." << std::endl;
+        std::cout << "\t -f <file_prefix>		DF-ISE files prefix" << std::endl;
+        std::cout << "\t -o <output_file_prefix>	Init output file prefix" << std::endl;
+        std::cout << "\t -R <region>			region name to be meshed" << std::endl;
+        std::cout << "\t -r <radius>			initial node neighbors search radius" << std::endl;
+        std::cout << "\t -r <radius_step>		radius step if no neighbor is found" << std::endl;
+        std::cout << "\t -m <max_radius>		maximum search radius" << std::endl;
+        std::cout << "\t -i <index_cut>			index cut during permutation on vertex neighbours" << std::endl;
+        std::cout << "\t -c <volume_cut>		minimum volume for tetrahedron (non-coplanar vertices)" << std::endl;
+        std::cout << "\t -x <mesh x_pitch>		new regular mesh X pitch" << std::endl;
+        std::cout << "\t -y <mesh_y_pitch>		new regular mesh Y pitch" << std::endl;
+        std::cout << "\t -z <mesh_z_pitch>		new regular mesh Z pitch" << std::endl;
+        std::cout << "\t -l <file>    			file to log to besides standard output" << std::endl;
+        std::cout << "\t -v <level>			verbosity level overwrites global log level,\n"
+                  << "\t  			        but not the per-module configuration." << std::endl;
 
         allpix::Log::finish();
         return return_code;
@@ -293,7 +301,7 @@ int main(int argc, char** argv) {
 
     auto end = std::chrono::system_clock::now();
     auto elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
-    LOG(INFO) << "Reading the files took " << elapsed_seconds << " seconds.";
+    LOG(TRACE) << "Reading the files took " << elapsed_seconds << " seconds.";
 
     LOG(TRACE) << "Starting meshing";
     // Initializing the Octree with points from mesh cloud.
@@ -311,16 +319,17 @@ int main(int argc, char** argv) {
         double y = miny + ystep / 2.0;
         for(int j = 0; j < ydiv; ++j) {
             double z = minz + zstep / 2.0;
-            for(int k = 0; k < xdiv; ++k) {
+            for(int k = 0; k < zdiv; ++k) {
                 Point q(x, y, z); // New mesh vertex
                 Point e(x, y, z); // Corresponding, to be interpolated, electric field
-                bool flag;
+                bool flag = false;
                 std::pair<Point, bool> return_interpolation;
 
-                std::vector<long unsigned int> results_size;
-                unsigned int ball = 0;
-                LOG(INFO) << "===> Interpolating point " << i << " " << j << " " << k << "	(" << q.x << "," << q.y << ","
-                          << q.z << ")";
+                LOG(INFO) << "===> Interpolating point " << i + 1 << " " << j + 1 << " " << k + 1 << "	(" << q.x << ","
+                          << q.y << "," << q.z << ")";
+
+                size_t prev_neighbours = 0;
+                float radius = initial_radius;
                 while(radius < max_radius) {
                     LOG(DEBUG) << "Search radius:	" << radius;
                     // Calling octree neighbours search function and sorting the results list with the closest neighbours
@@ -334,29 +343,30 @@ int main(int argc, char** argv) {
                     LOG(DEBUG) << "Number of vertices found:	" << results.size();
 
                     if(results.empty()) {
-                        LOG(WARNING) << "At vertex (" << x << ", " << y << ", " << z << ")";
-                        LOG(WARNING) << "Radius too Small. No neighbours found for radius " << radius;
+                        LOG(WARNING) << "At vertex (" << x << ", " << y << ", " << z << ")" << std::endl
+                                     << "Radius too Small. No neighbours found for radius " << radius << std::endl
+                                     << "Increasing the readius";
                         radius = radius + radius_step;
                         continue;
                     }
 
                     if(results.size() < 4) {
-                        LOG(WARNING) << "At vertex (" << x << ", " << y << ", " << z << ")";
-                        LOG(WARNING) << "Incomplete mesh element found for radius " << radius;
+                        LOG(WARNING) << "At vertex (" << x << ", " << y << ", " << z << ")" << std::endl
+                                     << "Incomplete mesh element found for radius " << radius << std::endl
+                                     << "Increasing the readius";
                         radius = radius + radius_step;
                         continue;
                     }
 
                     // If after a radius step no new neighbours are found, go to the next radius step
-                    results_size.push_back(results.size());
-                    if(results_size.size() > 1) {
-                        if(results_size.at(ball) == results_size.at(ball - 1)) {
-                            LOG(WARNING) << "No new neighbour after radius step. Going to next step.";
-                            ball++;
-                            continue;
-                        }
+                    if(results.size() > prev_neighbours) {
+                        prev_neighbours = results.size();
+                    } else {
+                        LOG(WARNING) << "At vertex (" << x << ", " << y << ", " << z << ")" << std::endl
+                                     << "No new neighbour after radius step. Going to next step.";
+                        radius = radius + radius_step;
+                        continue;
                     }
-                    ball++;
 
                     // Finding tetrahedrons
                     double volume;
@@ -383,6 +393,11 @@ int main(int argc, char** argv) {
                             if(index.size() == 4)
                                 break;
                         }
+                        if(index[0] > index_cut || index[1] > index_cut || index[2] > index_cut || index[3] > index_cut) {
+                            LOG(WARNING) << "Applying index cut on the " << index_cut << "-nth neighbour on a total of "
+                                         << results.size();
+                            continue;
+                        }
                         LOG(DEBUG) << "Parsing neighbors [index]:	" << index[0] << ", " << index[1] << ", " << index[2]
                                    << ", " << index[3];
 
@@ -393,7 +408,7 @@ int main(int argc, char** argv) {
                             points[results[index[3]]].z;
                         volume = (matrix.determinant()) / 6;
 
-                        if(volume == 0) {
+                        if(abs(volume) <= volume_cut) {
                             LOG(WARNING) << "Coplanar vertices. Going to the next vertex combination.";
                             continue;
                         } else {
@@ -413,11 +428,17 @@ int main(int argc, char** argv) {
                         }
                     } while(std::prev_permutation(bitmask.begin(), bitmask.end()));
 
-                    if(tetra_vertices.size() == 4) {
+                    if(tetra_vertices.size() == 4 && flag == true) {
                         break;
                     }
 
+                    LOG(WARNING) << "All combinations tried. Increasing the radius.";
                     radius = radius + radius_step;
+                }
+
+                if(flag == false) {
+                    LOG(FATAL) << "Couldn't interpolate new mesh point. For now, let's stop the program and think a bit.";
+                    return -1;
                 }
 
                 e_field_new_mesh.push_back(e);
@@ -427,6 +448,10 @@ int main(int argc, char** argv) {
         }
         x += xstep;
     }
+
+    end = std::chrono::system_clock::now();
+    elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
+    LOG(TRACE) << "New mesh created in " << elapsed_seconds << " seconds.";
 
     std::ofstream init_file;
     std::stringstream init_file_name;
