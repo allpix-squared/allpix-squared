@@ -15,7 +15,6 @@
 #include <G4LogicalVolume.hh>
 #include <G4NistManager.hh>
 #include <G4PVDivision.hh>
-#include <G4PVParameterised.hh>
 #include <G4PVPlacement.hh>
 #include <G4Sphere.hh>
 #include <G4StepLimiterPhysics.hh>
@@ -239,23 +238,17 @@ void GeometryConstructionG4::build_detectors() {
             make_shared_no_delete<G4LogicalVolume>(pixel_box.get(), materials_["silicon"], "pixel_" + name + "_log");
         detector->setExternalObject("pixel_log", pixel_log);
 
-        // Place the pixel grid
-        auto pixel_param_internal = std::make_shared<Parameterization2DG4>(model->getNPixels().x(),
-                                                                           model->getPixelSize().x(),
-                                                                           model->getPixelSize().y(),
-                                                                           -model->getGridSize().x() / 2.0,
-                                                                           -model->getGridSize().y() / 2.0,
-                                                                           0);
-        detector->setExternalObject("pixel_param_internal", pixel_param_internal);
-
-        auto pixel_param = std::make_shared<ParameterisedG4>("pixel_" + name + "_param",
-                                                             pixel_log.get(),
-                                                             sensor_log.get(),
-                                                             kUndefined,
-                                                             model->getNPixels().x() * model->getNPixels().y(),
-                                                             pixel_param_internal.get(),
-                                                             false);
+        // Create the parameterization for the pixel grid
+        std::shared_ptr<G4VPVParameterisation> pixel_param =
+            std::make_shared<Parameterization2DG4>(model->getNPixels().x(),
+                                                   model->getPixelSize().x(),
+                                                   model->getPixelSize().y(),
+                                                   -model->getGridSize().x() / 2.0,
+                                                   -model->getGridSize().y() / 2.0,
+                                                   0);
         detector->setExternalObject("pixel_param", pixel_param);
+
+        // WARNING: do not place the actual parameterization, only use it if we need it
 
         /* CHIP
          * the chip connected to the bumps bond and the support
@@ -398,7 +391,7 @@ void GeometryConstructionG4::build_detectors() {
             detector->setExternalObject("bumps_cell_log", bumps_cell_log);
 
             // Place the bump bonds grid
-            auto bumps_param_internal = std::make_shared<Parameterization2DG4>(
+            std::shared_ptr<G4VPVParameterisation> bumps_param = std::make_shared<Parameterization2DG4>(
                 hybrid_model->getNPixels().x(),
                 hybrid_model->getPixelSize().x(),
                 hybrid_model->getPixelSize().y(),
@@ -407,17 +400,17 @@ void GeometryConstructionG4::build_detectors() {
                 -(hybrid_model->getNPixels().y() * hybrid_model->getPixelSize().y()) / 2.0 +
                     (hybrid_model->getBumpsCenter().y() - hybrid_model->getCenter().y()),
                 0);
-            detector->setExternalObject("bumps_param", bumps_param_internal);
+            detector->setExternalObject("bumps_param", bumps_param);
 
-            auto bumps_param =
+            std::shared_ptr<G4PVParameterised> bumps_param_phys =
                 std::make_shared<ParameterisedG4>("bumps_" + name + "_phys",
                                                   bumps_cell_log.get(),
                                                   bumps_wrapper_log.get(),
                                                   kUndefined,
                                                   hybrid_model->getNPixels().x() * hybrid_model->getNPixels().y(),
-                                                  bumps_param_internal.get(),
+                                                  bumps_param.get(),
                                                   false);
-            detector->setExternalObject("bumps_param", bumps_param);
+            detector->setExternalObject("bumps_param_phys", bumps_param_phys);
         }
 
         // ALERT: NO COVER LAYER YET

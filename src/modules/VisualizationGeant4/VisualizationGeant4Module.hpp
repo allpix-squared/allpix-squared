@@ -67,6 +67,10 @@ namespace allpix {
          * @brief Set the default visualization attributes of the different components
          */
         void set_visualization_attributes();
+        /**
+         * @brief Add visualization volumes, added at the end to prevent cluttering the geometry during deposition
+         */
+        void add_visualization_volumes();
 
         // Check if we did run succesfully, used to apply workaround in destructor if needed
         bool has_run_;

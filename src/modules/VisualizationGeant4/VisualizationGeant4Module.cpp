@@ -24,9 +24,11 @@
 #ifdef G4UI_USE_QT
 #include <G4UIQt.hh>
 #endif
+#include <G4PVParameterised.hh>
 #include <G4UImanager.hh>
 #include <G4UIsession.hh>
 #include <G4UIterminal.hh>
+#include <G4VPVParameterisation.hh>
 #include <G4VisAttributes.hh>
 #include <G4VisExecutive.hh>
 
@@ -43,6 +45,7 @@ VisualizationGeant4Module::VisualizationGeant4Module(Configuration config, Messe
 
     // Set to accumulate all hits and display at the end by default
     config_.setDefault("accumulate", true);
+    config_.setDefault("simple_view", true);
 
     // Check mode
     std::string mode = config_.get<std::string>("mode");
@@ -337,7 +340,7 @@ void VisualizationGeant4Module::set_visualization_attributes() {
 
     // In default simple view mode, pixels and bumps are set to invisible, not to be displayed.
     // The logical volumes holding them are instead displayed.
-    auto simple_view = config_.get<bool>("simple_view", true);
+    auto simple_view = config_.get<bool>("simple_view");
     if(simple_view) {
         SensorVisAtt.SetVisibility(false);
         BoxVisAtt.SetVisibility(true);
@@ -420,7 +423,38 @@ static void interrupt_handler(int signal) {
     std::raise(signal);
 }
 
+void VisualizationGeant4Module::add_visualization_volumes() {
+    // Only place the pixel matrix for the visualization if we have no simple view
+    if(!config_.get<bool>("simple_view")) {
+        // Loop through detectors
+        for(auto& detector : geo_manager_->getDetectors()) {
+            auto sensor_log = detector->getExternalObject<G4LogicalVolume>("sensor_log");
+            auto pixel_log = detector->getExternalObject<G4LogicalVolume>("pixel_log");
+            auto pixel_param = detector->getExternalObject<G4VPVParameterisation>("pixel_param");
+
+            // Continue if a required external object is missing
+            if(sensor_log == nullptr || pixel_log == nullptr || pixel_param == nullptr) {
+                continue;
+            }
+
+            // Place the pixels if all objects are available
+            std::shared_ptr<G4PVParameterised> pixel_param_phys = std::make_shared<G4PVParameterised>(
+                "pixel_" + detector->getName() + "_param",
+                pixel_log.get(),
+                sensor_log.get(),
+                kUndefined,
+                detector->getModel()->getNPixels().x() * detector->getModel()->getNPixels().y(),
+                pixel_param.get(),
+                false);
+            detector->setExternalObject("pixel_param_phys", pixel_param_phys);
+        }
+    }
+}
+
 void VisualizationGeant4Module::finalize() {
+    // Add volumes that are only used in the visualization
+    add_visualization_volumes();
+
     // Enable automatic refresh before showing view
     G4UImanager* UI = G4UImanager::GetUIpointer();
     UI->ApplyCommand("/vis/viewer/set/autoRefresh true");
