@@ -199,6 +199,8 @@ void ModuleManager::load(Messenger* messenger,
                     // Priority of new instance is higher, replace the instance
                     LOG(TRACE) << "Replacing model instance " << iter->first.getUniqueName()
                                << " with instance with higher priority.";
+
+                    module_execution_time_.erase(iter->second->get());
                     iter->second = modules_.erase(iter->second);
                     iter = id_to_module_.erase(iter);
                 } else {
