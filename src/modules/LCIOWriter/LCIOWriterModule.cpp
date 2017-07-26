@@ -41,10 +41,10 @@ LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, G
         i++;
     }
 
-    pixelType_ = config_.get<int>("pixelType", 2),
+    pixelType_ = config_.get<int>("pixelType", 2);
 
     // Open LCIO file and write run header
-        lcWriter_ = LCFactory::getInstance()->createLCWriter();
+    lcWriter_ = LCFactory::getInstance()->createLCWriter();
     lcWriter_->open(config_.get<std::string>("file_name", "output.slcio"), LCIO::WRITE_NEW);
     auto run = std::unique_ptr<LCRunHeaderImpl>(new LCRunHeaderImpl());
     run->setRunNumber(1);
