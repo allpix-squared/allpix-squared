@@ -147,3 +147,11 @@ export PATH="$Doxygen_HOME:$PATH"
 
 export Git_HOME=${CLICREPO}/software/git/2.13.2/${BUILD_FLAVOUR}
 export PATH=${Git_HOME}/bin:${PATH}
+
+#--------------------------------------------------------------------------------
+#     LCIO
+#--------------------------------------------------------------------------------
+
+export LCIO=${CLICREPO}/software/LCIO/2.8.0/${BUILD_FLAVOUR}/
+export CMAKE_PREFIX_PATH="$LCIO:$CMAKE_PREFIX_PATH"
+
