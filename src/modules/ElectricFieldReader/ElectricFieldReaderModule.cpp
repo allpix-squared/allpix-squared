@@ -64,6 +64,12 @@ void ElectricFieldReaderModule::init() {
 ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::construct_linear_field() {
     LOG(TRACE) << "Constructing electric field from linear bias voltage";
 
+    // Check for very high fields
+    if(config_.get<double>("voltage") > Units::get(5.0, "kV")) {
+        LOG(WARNING) << "Very high voltage of " << Units::display(config_.get<double>("voltage"), "kV")
+                     << " set, this will probably not be simulated correctly";
+    }
+
     // Compute the electric field
     auto field_z = config_.get<double>("voltage") / getDetector()->getModel()->getSensorSize().z();
     LOG(INFO) << "Set linear electric field with magnitude " << Units::display(field_z, {"V/um", "V/mm"});
