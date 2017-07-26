@@ -46,7 +46,7 @@ LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, G
     // Open LCIO file and write run header
     lcWriter_ = LCFactory::getInstance()->createLCWriter();
     lcWriter_->open(config_.get<std::string>("file_name", "output.slcio"), LCIO::WRITE_NEW);
-    auto run = std::unique_ptr<LCRunHeaderImpl>(new LCRunHeaderImpl());
+    auto run = std::make_unique<LCRunHeaderImpl>();
     run->setRunNumber(1);
     run->setDetectorName("EUTelescope");
     lcWriter_->writeRunHeader(run.get());
@@ -54,7 +54,7 @@ LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, G
 
 void LCIOWriterModule::run(unsigned int eventNb) {
 
-    auto evt = std::unique_ptr<LCEventImpl>(new LCEventImpl()); // create the event
+    auto evt = std::make_unique<LCEventImpl>(); // create the event
     evt->setRunNumber(1);
     evt->setEventNumber(static_cast<int>(eventNb)); // set the event attributes
     evt->parameters().setValue("EventType", 2);
