@@ -34,9 +34,6 @@
 
 #include "Parameterization2DG4.hpp"
 
-// Precision epsilon to fix volumes with shared boundary
-#define G4_EPSILON 1e-6
-
 using namespace allpix;
 
 GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo_manager, Configuration config)
@@ -232,7 +229,7 @@ void GeometryConstructionG4::build_detectors() {
         auto pixel_box = std::make_shared<G4Box>("pixel_" + name,
                                                  model->getPixelSize().x() / 2.0,
                                                  model->getPixelSize().y() / 2.0,
-                                                 model->getSensorSize().z() / 2.0 - G4_EPSILON);
+                                                 model->getSensorSize().z() / 2.0);
         solids_.push_back(pixel_box);
         auto pixel_log =
             make_shared_no_delete<G4LogicalVolume>(pixel_box.get(), materials_["silicon"], "pixel_" + name + "_log");
