@@ -1708,7 +1708,15 @@ function(add_latex_targets_internal)
           "${HTLATEX_COMPILER_TEX4HT_POSTPROCESSOR_FLAGS}"
           "${HTLATEX_COMPILER_T4HT_POSTPROCESSOR_FLAGS}"
           ${HTLATEX_COMPILER_ARGS}
-	DEPENDS ${make_pdf_depends}
+        COMMAND ${CMAKE_COMMAND} -E chdir ${output_dir}
+          ${bib_compiler} ${bib_compiler_flags} ${LATEX_TARGET}
+        COMMAND ${CMAKE_COMMAND} -E chdir ${output_dir}
+          ${HTLATEX_COMPILER} ${LATEX_MAIN_INPUT}
+          "${HTLATEX_COMPILER_TEX4HT_FLAGS}"
+          "${HTLATEX_COMPILER_TEX4HT_POSTPROCESSOR_FLAGS}"
+          "${HTLATEX_COMPILER_T4HT_POSTPROCESSOR_FLAGS}"
+          ${HTLATEX_COMPILER_ARGS}
+        DEPENDS ${make_pdf_depends}
         VERBATIM
         )
       add_custom_target(${html_target}

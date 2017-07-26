@@ -29,6 +29,10 @@ IF(LATEX_COMPILER)
     SET(LATEX_COMPILER_FLAGS "-shell-escape" "-interaction nonstopmode" "-halt-on-error" "-file-line-error" CACHE STRING "Flags passed to latex.")
     INCLUDE(${CMAKE_SOURCE_DIR}/cmake/LATEX.cmake)
     
+    SET(HTLATEX_COMPILER_TEX4HT_FLAGS "usermanual/html/allpix,charset=utf-8" CACHE STRING "TEST" FORCE)
+    SET(HTLATEX_COMPILER_TEX4HT_POSTPROCESSOR_FLAGS "-utf8" CACHE STRING "TEST2" FORCE)
+    SET(HTLATEX_COMPILER_T4HT_POSTPROCESSOR_FLAGS "" CACHE STRING "TEST3" FORCE)
+    
     # Markdown files that should be included in the manual relative to the root of the repository
     SET(DOC_README_FILES
             tools/tcad_dfise_converter/README.md
@@ -116,6 +120,12 @@ IF(LATEX_COMPILER)
             usermanual/appendices/design_notes.tex
             usermanual/appendices/example_output.tex
             usermanual/config.tex
+            
+            usermanual/html/allpix.cfg
+            usermanual/html/tools.sty
+            usermanual/html/js/fw.js
+            usermanual/html/js/sidebar.js
+            usermanual/html/css/scale.css
             CONFIGURE
             usermanual/config.tex
             EXCLUDE_FROM_ALL
