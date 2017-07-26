@@ -33,6 +33,8 @@ namespace allpix {
          */
         LCIOWriterModule(Configuration config, Messenger* messenger, GeometryManager* geo_manager);
 
+        ~LCIOWriterModule();
+
         /**
          * @brief Receive pixel hit messages, create lcio event, add hit collection and write event to file.
          */
@@ -46,7 +48,7 @@ namespace allpix {
     private:
         Configuration config_;
         std::vector<std::shared_ptr<PixelHitMessage>> pixel_messages_;
-        IO::LCWriter* lcWriter_;
+        IO::LCWriter* lcWriter_{};
         std::map<std::string, unsigned int> detectorIDs_;
         int pixelType_;
     };
