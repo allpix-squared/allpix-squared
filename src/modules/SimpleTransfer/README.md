@@ -5,7 +5,7 @@
 **Output**: PixelCharge  
 
 #### Description
-Combines individual sets of propagated charges together to a set of charges on the sensor pixels. The module does a simple direct mapping to the nearest pixel, ignoring propagated charges that are to far away from the implants or outside the pixel grid. Timing information for the pixel charges is currently not yet produced.
+Combines individual sets of propagated charges together to a set of charges on the sensor pixels. The module does a simple direct mapping to the nearest pixel, ignoring propagated charges that are too far away from the implants or outside the pixel grid. Timing information for the pixel charges is currently not yet produced, but can be fetched from the linked propagated charges.
 
 #### Parameters
 * `max_depth_distance` : Maximum distance in the depth direction (normal to the pixel grid) from the implant side for a propagated charge to be taken into account.
