@@ -230,7 +230,7 @@ int main(int argc, char** argv) {
 
     if(init_file_prefix.empty()) {
         init_file_prefix = file_prefix;
-        auto sep_idx = init_file_prefix.find_last_of("/");
+        auto sep_idx = init_file_prefix.find_last_of('/');
         if(sep_idx != std::string::npos) {
             init_file_prefix = init_file_prefix.substr(sep_idx + 1);
         }
