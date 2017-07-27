@@ -50,25 +50,27 @@ int main(int argc, char** argv) {
         } else if(strcmp(argv[i], "-z") == 0 && (i + 1 < argc)) {
             zdiv = std::atoi(argv[++i]);
         } else {
-            std::cout << "Unrecognized command line argument \"" << argv[i] << std::endl;
+            std::cout << "Unrecognized command line argument or missing value\"" << argv[i] << std::endl;
             print_help = true;
+            return_code = 1;
         }
     }
 
     if(file_name.empty()) {
         print_help = true;
+        return_code = 1;
     }
 
     if(print_help) {
-        std::cerr << "Usage: ./tcad_dfise_reader -f <data_file_prefix> [<options>]" << std::endl;
+        std::cerr << "Usage: ./tcad_dfise_reader -f <file_name> [<options>]" << std::endl;
         std::cout << "\t -f <file_name>         init file name" << std::endl;
-        std::cout << "\t -o <output_file_name>  optional name of the file to output (default is efield.png)" << std::endl;
-        std::cout << "\t -p <plane>             optional plane to be ploted. xy, yz or zx (default is xy)" << std::endl;
-        std::cout << "\t -d <data>              optional data to be read (default is n). See README file." << std::endl;
-        std::cout << "\t -c <cut>               optional projection height index (default is 1)" << std::endl;
-        std::cout << "\t -x <mesh x_pitch>      optional plot regular mesh X binning (default is 100)" << std::endl;
-        std::cout << "\t -y <mesh_y_pitch>      optional plot regular mesh Y binning (default is 100)" << std::endl;
-        std::cout << "\t -z <mesh_z_pitch>      optional plot regular mesh Z binning (default is 100)" << std::endl;
+        std::cout << "\t -o <output_file_name>  name of the file to output (default is efield.png)" << std::endl;
+        std::cout << "\t -p <plane>             plane to be ploted. xy, yz or zx (default is xy)" << std::endl;
+        std::cout << "\t -d <data>              data to be read (default is n). See README file." << std::endl;
+        std::cout << "\t -c <cut>               projection height index (default is 1)" << std::endl;
+        std::cout << "\t -x <mesh x_pitch>      plot regular mesh X binning (default is 100)" << std::endl;
+        std::cout << "\t -y <mesh_y_pitch>      plot regular mesh Y binning (default is 100)" << std::endl;
+        std::cout << "\t -z <mesh_z_pitch>      plot regular mesh Z binning (default is 100)" << std::endl;
         return return_code;
     }
 

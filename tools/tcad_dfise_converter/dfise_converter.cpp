@@ -4,6 +4,7 @@
 #include <cfloat>
 #include <chrono>
 #include <climits>
+#include <csignal>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -12,8 +13,11 @@
 #include <utility>
 
 #include <Eigen/Eigen>
+
 #include "../../src/core/utils/log.h"
+
 #include "Octree.hpp"
+
 #include "read_dfise.h"
 
 std::pair<Point, bool> barycentric_interpolation(Point query_point,
@@ -34,7 +38,6 @@ std::pair<Point, bool> barycentric_interpolation(Point query_point,
     // Function must have tetra_vertices.size() = 4
     if(tetra_vertices.size() != 4) {
         throw std::invalid_argument("Baricentric interpolation without only 4 vertices!");
-        std::cout << "\t -p <plane>             plane to be ploted. xy, yz or zx" << std::endl;
     }
     if(tetra_volume > 0) {
         volume_signal = true;
@@ -115,30 +118,35 @@ std::pair<Point, bool> barycentric_interpolation(Point query_point,
     if(sub_1_signal != volume_signal || sub_2_signal != volume_signal || sub_3_signal != volume_signal ||
        sub_4_signal != volume_signal) {
         flag = false;
-        LOG(WARNING) << "Warning: Point outside tetrahedron";
+        LOG(DEBUG) << "Warning: Point outside tetrahedron";
         efield_valid = std::make_pair(efield_int, flag);
         return efield_valid;
     }
 
     for(size_t i = 0; i < tetra_vertices.size(); i++) {
         auto distance = unibn::L2Distance<Point>::compute(tetra_vertices[i], query_point);
-        LOG(DEBUG) << "Tetrahedron vertex "
-                   << "	(" << tetra_vertices[i].x << ", " << tetra_vertices[i].y << ", " << tetra_vertices[i].z << ").	"
-                   << "	Distance: " << distance << "	Electric field:	(" << tetra_vertices_field[i].x << ", "
+        LOG(DEBUG) << "Tetrahedron vertex (" << tetra_vertices[i].x << ", " << tetra_vertices[i].y << ", "
+                   << tetra_vertices[i].z << ") - "
+                   << " Distance: " << distance << " - Electric field: (" << tetra_vertices_field[i].x << ", "
                    << tetra_vertices_field[i].y << ", " << tetra_vertices_field[i].z << ").";
     }
-    LOG(DEBUG) << "Tetra full volume:	 " << tetra_volume << std::endl
-               << "Tetra sub volume 1:	 " << tetra_subvol_1 << std::endl
-               << "Tetra sub volume 2:	 " << tetra_subvol_2 << std::endl
-               << "Tetra sub volume 3:	 " << tetra_subvol_3 << std::endl
-               << "Tetra sub volume 4:	 " << tetra_subvol_4 << std::endl
-               << "Volume difference:	 "
+    LOG(DEBUG) << "Tetra full volume: " << tetra_volume << std::endl
+               << "Tetra sub volume 1: " << tetra_subvol_1 << std::endl
+               << "Tetra sub volume 2: " << tetra_subvol_2 << std::endl
+               << "Tetra sub volume 3: " << tetra_subvol_3 << std::endl
+               << "Tetra sub volume 4: " << tetra_subvol_4 << std::endl
+               << "Volume difference: "
                << tetra_volume - (tetra_subvol_1 + tetra_subvol_2 + tetra_subvol_3 + tetra_subvol_4);
-    LOG(INFO) << "Interpolated electric field:	" << efield_int.x << " x, " << efield_int.y << " y, " << efield_int.z << " z"
-              << std::endl;
+    LOG(DEBUG) << "Interpolated electric field: (" << efield_int.x << "," << efield_int.y << "," << efield_int.z << ")";
 
     efield_valid = std::make_pair(efield_int, flag);
     return efield_valid;
+}
+
+void interrupt_handler(int) {
+    LOG(STATUS) << "Interrupted! Aborting conversion...";
+    allpix::Log::finish();
+    std::exit(0);
 }
 
 int main(int argc, char** argv) {
@@ -150,7 +158,13 @@ int main(int argc, char** argv) {
         return_code = 1;
     }
 
+    // Add stream and set default logging level
     allpix::Log::addStream(std::cout);
+    allpix::Log::setReportingLevel(allpix::LogLevel::INFO);
+
+    // Install abort handler (CTRL+\) and interrupt handler (CTRL+C)
+    std::signal(SIGQUIT, interrupt_handler);
+    std::signal(SIGINT, interrupt_handler);
 
     std::string file_prefix;
     std::string init_file_prefix;
@@ -175,10 +189,10 @@ int main(int argc, char** argv) {
                 allpix::Log::setReportingLevel(log_level);
             } catch(std::invalid_argument& e) {
                 LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
+                return_code = 1;
             }
         } else if(strcmp(argv[i], "-f") == 0 && (i + 1 < argc)) {
             file_prefix = std::string(argv[++i]);
-            init_file_prefix = file_prefix;
         } else if(strcmp(argv[i], "-o") == 0 && (i + 1 < argc)) {
             init_file_prefix = std::string(argv[++i]);
         } else if(strcmp(argv[i], "-R") == 0 && (i + 1 < argc)) {
@@ -203,27 +217,45 @@ int main(int argc, char** argv) {
         } else if(strcmp(argv[i], "-l") == 0 && (i + 1 < argc)) {
             log_file_name = std::string(argv[++i]);
         } else {
-            LOG(ERROR) << "Unrecognized command line argument \"" << argv[i] << "\"";
+            LOG(ERROR) << "Unrecognized command line argument or missing value \"" << argv[i] << "\"";
+            print_help = true;
+            return_code = 1;
+        }
+    }
+
+    if(file_prefix.empty()) {
+        print_help = true;
+        return_code = 1;
+    }
+
+    if(init_file_prefix.empty()) {
+        init_file_prefix = file_prefix;
+        auto sep_idx = init_file_prefix.find_last_of("/");
+        if(sep_idx != std::string::npos) {
+            init_file_prefix = init_file_prefix.substr(sep_idx + 1);
         }
     }
 
     // Print help if requested or no arguments given
     if(print_help) {
-        std::cerr << "Usage: ./tcad_dfise_reader -f <data_file_prefix> [<options>]" << std::endl;
-        std::cout << "\t -f <file_prefix>		DF-ISE files prefix" << std::endl;
-        std::cout << "\t -o <output_file_prefix>	Init output file prefix" << std::endl;
-        std::cout << "\t -R <region>			region name to be meshed" << std::endl;
-        std::cout << "\t -r <radius>			initial node neighbors search radius" << std::endl;
-        std::cout << "\t -s <radius_step>		radius step if no neighbor is found" << std::endl;
-        std::cout << "\t -m <max_radius>		maximum search radius" << std::endl;
-        std::cout << "\t -i <index_cut>			index cut during permutation on vertex neighbours" << std::endl;
-        std::cout << "\t -c <volume_cut>		minimum volume for tetrahedron (non-coplanar vertices)" << std::endl;
-        std::cout << "\t -x <mesh x_pitch>		new regular mesh X pitch" << std::endl;
-        std::cout << "\t -y <mesh_y_pitch>		new regular mesh Y pitch" << std::endl;
-        std::cout << "\t -z <mesh_z_pitch>		new regular mesh Z pitch" << std::endl;
-        std::cout << "\t -l <file>    			file to log to besides standard output" << std::endl;
-        std::cout << "\t -v <level>			verbosity level overwrites global log level,\n"
-                  << "\t  			        but not the per-module configuration." << std::endl;
+        std::cerr << "Usage: ./tcad_dfise_reader -f <file_name> [<options>]" << std::endl;
+        std::cout << "\t -f <file_prefix>       common prefix of DF-ISE grid (.grd) and data (.dat) files" << std::endl;
+        std::cout << "\t -o <init_file_prefix>  output file prefix without .init (defaults to file name of <file_prefix>)"
+                  << std::endl;
+        std::cout << "\t -R <region>            region name to be meshed (defaults to 'bulk')" << std::endl;
+        std::cout << "\t -r <radius>            initial node neighbors search radius in um (defaults to 1 um)" << std::endl;
+        std::cout << "\t -s <radius_step>       radius step if no neighbor is found (defaults to 0.5 um)" << std::endl;
+        std::cout << "\t -m <max_radius>        maximum search radius (default is 10 um)" << std::endl;
+        std::cout << "\t -i <index_cut>         index cut during permutation on vertex neighbours (disabled by default)"
+                  << std::endl;
+        std::cout << "\t -c <volume_cut>        minimum volume for tetrahedron for non-coplanar vertices (defaults to "
+                     "minimum float value)"
+                  << std::endl;
+        std::cout << "\t -x <mesh x_pitch>      new regular mesh X pitch (defaults to 100)" << std::endl;
+        std::cout << "\t -y <mesh_y_pitch>      new regular mesh Y pitch (defaults to 100)" << std::endl;
+        std::cout << "\t -z <mesh_z_pitch>      new regular mesh Z pitch (defaults to 100)" << std::endl;
+        std::cout << "\t -l <file>              file to log to besides standard output (disabled by default)" << std::endl;
+        std::cout << "\t -v <level>             verbosity level (default reporiting level is INFO)" << std::endl;
 
         allpix::Log::finish();
         return return_code;
@@ -243,7 +275,7 @@ int main(int argc, char** argv) {
 
     auto start = std::chrono::system_clock::now();
 
-    LOG(TRACE) << "Reading grid";
+    LOG(STATUS) << "Reading mesh grid from grid file";
     std::string grid_file = file_prefix + ".grd";
 
     std::vector<Point> points;
@@ -251,25 +283,28 @@ int main(int argc, char** argv) {
         auto region_grid = read_grid(grid_file);
         points = region_grid[region];
     } catch(std::runtime_error& e) {
-        LOG(ERROR) << "Failed to parse grid file " << grid_file;
-        LOG(ERROR) << "ERROR: " << e.what();
+        LOG(FATAL) << "Failed to parse grid file " << grid_file;
+        LOG(FATAL) << " " << e.what();
+        allpix::Log::finish();
         return 1;
     }
 
-    LOG(TRACE) << "Reading electric field";
+    LOG(STATUS) << "Reading electric field from data file";
     std::string data_file = file_prefix + ".dat";
     std::vector<Point> field;
     try {
         auto region_fields = read_electric_field(data_file);
         field = region_fields[region];
     } catch(std::runtime_error& e) {
-        LOG(ERROR) << "Failed to parse data file " << data_file;
-        LOG(ERROR) << "ERROR: " << e.what();
+        LOG(FATAL) << "Failed to parse data file " << data_file;
+        LOG(FATAL) << " " << e.what();
+        allpix::Log::finish();
         return 1;
     }
 
     if(points.size() != field.size()) {
-        LOG(ERROR) << "Field and grid do not match";
+        LOG(FATAL) << "Field and grid file do not match";
+        allpix::Log::finish();
         return 1;
     }
 
@@ -303,9 +338,9 @@ int main(int argc, char** argv) {
 
     auto end = std::chrono::system_clock::now();
     auto elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
-    LOG(TRACE) << "Reading the files took " << elapsed_seconds << " seconds.";
+    LOG(INFO) << "Reading the files took " << elapsed_seconds << " seconds.";
 
-    LOG(TRACE) << "Starting meshing";
+    LOG(STATUS) << "Starting regular grid interpolation";
     // Initializing the Octree with points from mesh cloud.
     unibn::Octree<Point> octree;
     octree.initialize(points);
@@ -327,16 +362,16 @@ int main(int argc, char** argv) {
                 bool flag = false;
                 std::pair<Point, bool> return_interpolation;
 
-                LOG(INFO) << "===> Interpolating point X=" << i + 1 << " Y=" << j + 1 << " Z=" << k + 1 << "	(" << q.x
-                          << "," << q.y << "," << q.z << ")";
+                LOG_PROGRESS(INFO, "POINT") << "Interpolating point X=" << i + 1 << " Y=" << j + 1 << " Z=" << k + 1 << " ("
+                                            << q.x << "," << q.y << "," << q.z << ")";
 
                 size_t prev_neighbours = 0;
                 float radius = initial_radius;
                 size_t index_cut_up;
                 while(radius < max_radius) {
-                    LOG(DEBUG) << "Search radius:	" << radius;
-                    // Calling octree neighbours search function and sorting the results list with the closest neighbours
-                    // first
+                    LOG(TRACE) << "Search radius: " << radius;
+
+                    // Calling octree neighbours search and sorting the results list with the closest neighbours first
                     std::vector<unsigned int> results;
                     octree.radiusNeighbors<unibn::L2Distance<Point>>(q, radius, results);
                     std::sort(results.begin(), results.end(), [&](unsigned int a, unsigned int b) {
@@ -344,12 +379,12 @@ int main(int argc, char** argv) {
                                unibn::L2Distance<Point>::compute(points[b], q);
                     });
 
-                    LOG(DEBUG) << "Number of vertices found:	" << results.size();
+                    LOG(TRACE) << "Number of vertices found: " << results.size();
 
                     if(results.empty()) {
                         LOG(WARNING) << "At vertex (" << x << ", " << y << ", " << z << ")" << std::endl
                                      << "Radius too Small. No neighbours found for radius " << radius << std::endl
-                                     << "Increasing the readius";
+                                     << "Increasing the readius (setting a higher initial radius may help)";
                         radius = radius + radius_step;
                         continue;
                     }
@@ -357,7 +392,7 @@ int main(int argc, char** argv) {
                     if(results.size() < 4) {
                         LOG(WARNING) << "At vertex (" << x << ", " << y << ", " << z << ")" << std::endl
                                      << "Incomplete mesh element found for radius " << radius << std::endl
-                                     << "Increasing the readius";
+                                     << "Increasing the readius (setting a higher initial radius may help)";
                         radius = radius + radius_step;
                         continue;
                     }
@@ -409,7 +444,7 @@ int main(int argc, char** argv) {
                                 continue;
                             }
 
-                            LOG(DEBUG) << "Parsing neighbors [index]:	" << index[0] << ", " << index[1] << ", " << index[2]
+                            LOG(TRACE) << "Parsing neighbors [index]: " << index[0] << ", " << index[1] << ", " << index[2]
                                        << ", " << index[3];
 
                             matrix << 1, 1, 1, 1, points[results[index[0]]].x, points[results[index[1]]].x,
@@ -420,7 +455,7 @@ int main(int argc, char** argv) {
                             volume = (matrix.determinant()) / 6;
 
                             if(std::abs(volume) <= volume_cut) {
-                                LOG(WARNING) << "Coplanar vertices. Going to the next vertex combination.";
+                                LOG(DEBUG) << "Coplanar vertices. Going to the next vertex combination.";
                                 continue;
                             }
                             try {
@@ -429,7 +464,7 @@ int main(int argc, char** argv) {
                                 e = return_interpolation.first;
                                 flag = return_interpolation.second;
                             } catch(std::invalid_argument& exception) {
-                                LOG(WARNING) << "Failed to interpolate point: " << exception.what();
+                                LOG(DEBUG) << "Failed to interpolate point: " << exception.what();
                                 continue;
                             }
                             if(flag == false) {
@@ -442,8 +477,8 @@ int main(int argc, char** argv) {
                             break;
                         }
 
-                        LOG(WARNING) << "All combinations tried up to index " << index_cut_up
-                                     << " done. Increasing the index cut.";
+                        LOG(DEBUG) << "All combinations tried up to index " << index_cut_up
+                                   << " done. Increasing the index cut.";
                         index_cut_up = index_cut_up + index_cut;
                     }
 
@@ -451,13 +486,13 @@ int main(int argc, char** argv) {
                         break;
                     }
 
-                    LOG(WARNING) << "All combinations tried. Increasing the radius.";
+                    LOG(DEBUG) << "All combinations tried. Increasing the radius.";
                     radius = radius + radius_step;
                 }
 
                 if(flag == false) {
-                    LOG(FATAL) << "Couldn't interpolate new mesh point. For now, let's stop the program and think a bit.";
-                    return -1;
+                    LOG(FATAL) << "Couldn't interpolate new mesh point, probably the grid is too irregular";
+                    return 1;
                 }
 
                 e_field_new_mesh.push_back(e);
@@ -470,12 +505,15 @@ int main(int argc, char** argv) {
 
     end = std::chrono::system_clock::now();
     elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
-    LOG(TRACE) << "New mesh created in " << elapsed_seconds << " seconds.";
+    LOG(INFO) << "New mesh created in " << elapsed_seconds << " seconds.";
+
+    LOG(STATUS) << "Writing INIT file";
 
     std::ofstream init_file;
     std::stringstream init_file_name;
-    init_file_name << init_file_prefix << "_" << xdiv << "x" << ydiv << "x" << zdiv << ".init";
+    init_file_name << init_file_prefix << ".init";
     init_file.open(init_file_name.str());
+
     // Write INIT file h"eader
     init_file << "tcad_octree_writer" << std::endl;                                    // NAME
     init_file << "##SEED## ##EVENTS##" << std::endl;                                   // UNUSED
@@ -483,8 +521,8 @@ int main(int argc, char** argv) {
     init_file << "0.0 0.0 0.0" << std::endl;                                           // MAGNETIC FIELD (UNUSED)
     init_file << (maxz - minz) << " " << (maxx - minx) << " " << (maxy - miny) << " "; // PIXEL DIMENSIONS
     init_file << "0.0 0.0 0.0 0.0 ";                                                   // UNUSED
-    init_file << xdiv << " " << ydiv << " " << zdiv << " ";
-    init_file << "0.0" << std::endl; // UNUSED
+    init_file << xdiv << " " << ydiv << " " << zdiv << " ";                            // GRID SIZE
+    init_file << "0.0" << std::endl;                                                   // UNUSED
 
     // Write INIT file data
     for(int i = 0; i < xdiv; ++i) {
@@ -500,7 +538,7 @@ int main(int argc, char** argv) {
 
     end = std::chrono::system_clock::now();
     elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
-    LOG(INFO) << "Running everything took " << elapsed_seconds << " seconds.";
+    LOG(STATUS) << "Conversion completed in " << elapsed_seconds << " seconds.";
 
     allpix::Log::finish();
     return 1;
