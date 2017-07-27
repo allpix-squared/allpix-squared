@@ -67,20 +67,23 @@ namespace allpix {
          * @param pos Position of the deposit in the sensor
          * @return Pair of the point where the deposit ended after propagation and the time the propagation took
          */
-        std::pair<ROOT::Math::XYZPoint, double> propagate(const ROOT::Math::XYZPoint& pos);
+        std::pair<ROOT::Math::XYZPoint, double> propagate(const ROOT::Math::XYZPoint& pos, const CarrierType& type);
 
         // Random generator for this module
         std::mt19937_64 random_generator_;
 
         // Local copies of configuration parameters to avoid costly lookup:
-        double temperature_{}, timestep_min_{}, timestep_max_{}, timestep_start_{}, target_spatial_precision_{},
-            output_plots_step_{};
+        double temperature_{}, timestep_min_{}, timestep_max_{}, timestep_start_{}, integration_time_{},
+            target_spatial_precision_{}, output_plots_step_{};
         bool output_plots_{};
 
-        // Precalculated values for electron mobility
+        // Precalculated values for electron and hole mobility
         double electron_Vm_;
         double electron_Ec_;
         double electron_Beta_;
+        double hole_Vm_;
+        double hole_Ec_;
+        double hole_Beta_;
 
         // Precalculated value for Boltzmann constant:
         double boltzmann_kT_;

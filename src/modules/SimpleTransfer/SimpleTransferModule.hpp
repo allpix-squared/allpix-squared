@@ -51,6 +51,7 @@ namespace allpix {
         Configuration config_;
         Messenger* messenger_;
         std::shared_ptr<Detector> detector_;
+        std::shared_ptr<DetectorModel> model_;
 
         /**
          * @brief Compare two pixels, necessary to store them in the a std::map
