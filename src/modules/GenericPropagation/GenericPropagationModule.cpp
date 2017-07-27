@@ -518,15 +518,15 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         return diffusion;
     };
 
-    // Define a lambda function to compute the carrier velocity
+    // Define a lambda function to compute the electron velocity
     auto carrier_velocity = [&](double, Eigen::Vector3d cur_pos) -> Eigen::Vector3d {
-        double* raw_field = detector_->getElectricFieldRaw(cur_pos);
-        if(raw_field == nullptr) {
+        std::vector<double> raw_field = detector_->getElectricFieldRaw(cur_pos);
+        if(raw_field.empty()) {
             // Return a zero electric field outside of the sensor
             return Eigen::Vector3d(0, 0, 0);
         }
         // Compute the drift velocity
-        auto efield = static_cast<Eigen::Map<Eigen::Vector3d>>(raw_field);
+        auto efield = static_cast<Eigen::Map<Eigen::Vector3d>>(raw_field.data());
         return static_cast<int>(type) * carrier_mobility(efield.norm()) * efield;
     };
 
@@ -535,7 +535,6 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
 
     // Continue propagation until the deposit is outside the sensor
     // FIXME: we need to determine what would be a good time to stop
-    double zero_vec[] = {0, 0, 0};
     double last_time = std::numeric_limits<double>::lowest();
     while(detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position)) &&
           runge_kutta.getTime() < integration_time_) {
@@ -553,13 +552,13 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         position = runge_kutta.getValue();
 
         // Get electric field at current position and fall back to empty field if it does not exist
-        double* raw_field = detector_->getElectricFieldRaw(position);
-        if(raw_field == nullptr) {
-            raw_field = zero_vec;
+        std::vector<double> raw_field = detector_->getElectricFieldRaw(position);
+        if(raw_field.empty()) {
+            raw_field = std::vector<double>(3, 0);
         }
 
         // Apply diffusion step
-        auto efield = static_cast<Eigen::Map<Eigen::Vector3d>>(raw_field);
+        auto efield = static_cast<Eigen::Map<Eigen::Vector3d>>(raw_field.data());
         auto diffusion = carrier_diffusion(efield.norm());
         runge_kutta.setValue(position + diffusion);
 

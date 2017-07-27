@@ -9,6 +9,7 @@
 #define ALLPIX_DETECTOR_H
 
 #include <array>
+#include <functional>
 #include <map>
 #include <memory>
 #include <string>
@@ -36,6 +37,8 @@ namespace allpix {
         GRID,     ///< Electric field supplied through a regularid grid
         CUSTOM,   ///< Custom electric field function
     };
+
+    using ElectricFieldFunction = std::function<ROOT::Math::XYZVector(const ROOT::Math::XYZPoint&)>;
 
     /**
      * @brief Instantiation of a detector model in the world
@@ -129,10 +132,10 @@ namespace allpix {
          * @return Pointer to an array containing the x, y, z components of the field
          *         (or a null pointer outside the sensor)
          */
-        template <typename T> double* getElectricFieldRaw(T) const;
+        template <typename T> std::vector<double> getElectricFieldRaw(T) const;
 
         /**
-         * @brief Set the electric field in a single pixel in the detector
+         * @brief Set the electric field in a single pixel in the detector using a grid
          * @param field Flat array of the field vectors (see detailed description)
          * @param sizes The dimensions of the flat electric field array
          * @param thickness_domain Domain in local coordinates in the thickness direction where the field holds
@@ -140,6 +143,15 @@ namespace allpix {
         void setElectricFieldGrid(std::shared_ptr<std::vector<double>> field,
                                   std::array<size_t, 3> sizes,
                                   std::pair<double, double> thickness_domain);
+        /**
+         * @brief Set the electric field in a single pixel using a function
+         * @param function Function used to retrieve the electric field
+         * @param type Type of the electric field function used
+         * @param thickness_domain Domain in local coordinates in the thickness direction where the field holds
+         */
+        void setElectricFieldFunction(ElectricFieldFunction function,
+                                      std::pair<double, double> thickness_domain,
+                                      ElectricFieldType type = ElectricFieldType::CUSTOM);
 
         /**
          * @brief Get the model of this detector
@@ -176,7 +188,7 @@ namespace allpix {
          * @param z Z-coordinate
          * @return Pointer to the electric field (or a null pointer if outside of the detector)
          */
-        double* get_electric_field_raw(double x, double y, double z) const;
+        std::vector<double> get_electric_field_raw(double x, double y, double z) const;
 
         /**
          * @brief Set the detector model (used by the \ref GeometryManager for lazy loading)
@@ -202,11 +214,12 @@ namespace allpix {
         std::shared_ptr<std::vector<double>> electric_field_;
         std::pair<double, double> electric_field_thickness_domain_;
         ElectricFieldType electric_field_type_{ElectricFieldType::NONE};
+        ElectricFieldFunction electric_field_function_;
 
         std::map<std::type_index, std::map<std::string, std::shared_ptr<void>>> external_objects_;
     };
 
-    template <typename T> double* Detector::getElectricFieldRaw(T pos) const {
+    template <typename T> std::vector<double> Detector::getElectricFieldRaw(T pos) const {
         return get_electric_field_raw(pos.x(), pos.y(), pos.z());
     }
 
