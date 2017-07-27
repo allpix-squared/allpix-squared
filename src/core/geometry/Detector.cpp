@@ -148,6 +148,16 @@ ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZPoint& pos
 }
 
 /**
+ * The type of the electric field is set depending on the function used to apply it.
+ */
+ElectricFieldType Detector::getElectricFieldType() const {
+    if(!hasElectricField()) {
+        return ElectricFieldType::NONE;
+    }
+    return electric_field_type_;
+}
+
+/**
  * The local position is first converted to pixel coordinates. The stored electric field if the index is odd.
  */
 double* Detector::get_electric_field_raw(double x, double y, double z) const {
@@ -201,9 +211,9 @@ double* Detector::get_electric_field_raw(double x, double y, double z) const {
  * - x*Y_SIZE*Z_SIZE*3+y*Z_SIZE*3+z*3+1: the y-component of the electric field
  * - x*Y_SIZE*Z_SIZE*3+y*Z_SIZE*3+z*3+2: the z-component of the electric field
  */
-void Detector::setElectricField(std::shared_ptr<std::vector<double>> field,
-                                std::array<size_t, 3> sizes,
-                                std::pair<double, double> thickness_domain) {
+void Detector::setElectricFieldGrid(std::shared_ptr<std::vector<double>> field,
+                                    std::array<size_t, 3> sizes,
+                                    std::pair<double, double> thickness_domain) {
     if(sizes[0] * sizes[1] * sizes[2] * 3 != field->size()) {
         throw std::invalid_argument("electric field does not match the given sizes");
     }
@@ -218,4 +228,5 @@ void Detector::setElectricField(std::shared_ptr<std::vector<double>> field,
     electric_field_ = std::move(field);
     electric_field_sizes_ = sizes;
     electric_field_thickness_domain_ = std::move(thickness_domain);
+    electric_field_type_ = ElectricFieldType::GRID;
 }

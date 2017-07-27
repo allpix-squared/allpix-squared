@@ -13,8 +13,8 @@ The reader does work with two models of electric field to read:
 Furthermore the module can produce a plot the electric field profile on an projection axis normal to the x,y or z-axis at a particular plane in the sensor.
 
 #### Parameters
-* `model` : Type of the electric field model, either **linear** or **init**.
-* `voltage` : Voltage over the whole sensor thickness. Used to calculate the electric field if the *model* parameter is equal to **linear**.
+* `model` : Type of the electric field model, either **linear**, **constant** or **init**.
+* `bias_voltage` : Voltage over the whole sensor thickness. Used to calculate the electric field if the *model* parameter is equal to **constant** or **linear**.
 * `file_name` : Location of file containing the electric field in the INIT format. Only used if the *model* parameter has the value **init**.
 * `depletion_depth` : Size of the depletion layer from the implant side, defaulting to the full sensor thickness. There is no electric field outside the depth of the depleted area.
 * `output_plots` : Determines if output plots should be generated (slows down simulation). Disabled by default.

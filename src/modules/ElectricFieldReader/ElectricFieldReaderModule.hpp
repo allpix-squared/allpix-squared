@@ -48,7 +48,7 @@ namespace allpix {
         /**
          * @brief Create and apply a linear field
          */
-        FieldData construct_linear_field();
+        FieldData construct_constant_field();
 
         /**
          * @brief Read field in the init format and apply it
