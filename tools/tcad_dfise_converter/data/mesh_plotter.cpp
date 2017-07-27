@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
     std::string plane = "yz";
     std::string data = "n";
     int slice_index = 0;
-    int slice_cut = 1;
+    int slice_cut = 0;
     int xdiv = 100;
     int ydiv = 100;
     int zdiv = 100;
@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
         std::cout << "\t -o <output_file_name>  name of the file to output (default is efield.png)" << std::endl;
         std::cout << "\t -p <plane>             plane to be ploted. xy, yz or zx (default is xy)" << std::endl;
         std::cout << "\t -d <data>              data to be read (default is n). See README file." << std::endl;
-        std::cout << "\t -c <cut>               projection height index (default is 1)" << std::endl;
+        std::cout << "\t -c <cut>               projection height index (default is mesh_pitch / 2)" << std::endl;
         std::cout << "\t -x <mesh x_pitch>      plot regular mesh X binning (default is 100)" << std::endl;
         std::cout << "\t -y <mesh_y_pitch>      plot regular mesh Y binning (default is 100)" << std::endl;
         std::cout << "\t -z <mesh_z_pitch>      plot regular mesh Z binning (default is 100)" << std::endl;
@@ -94,6 +94,7 @@ int main(int argc, char** argv) {
     if(strcmp(plane.c_str(), "xy") == 0) {
         x_bin = xdiv;
         y_bin = ydiv;
+        slice_cut = zdiv / 2;
         x_bin_index = 0;
         y_bin_index = 1;
         slice_index = 2;
@@ -101,6 +102,7 @@ int main(int argc, char** argv) {
     if(strcmp(plane.c_str(), "yz") == 0) {
         x_bin = ydiv;
         y_bin = zdiv;
+        slice_cut = xdiv / 2;
         x_bin_index = 1;
         y_bin_index = 2;
         slice_index = 0;
@@ -108,6 +110,7 @@ int main(int argc, char** argv) {
     if(strcmp(plane.c_str(), "zx") == 0) {
         x_bin = zdiv;
         y_bin = xdiv;
+        slice_cut = ydiv / 2;
         x_bin_index = 2;
         y_bin_index = 0;
         slice_index = 1;
