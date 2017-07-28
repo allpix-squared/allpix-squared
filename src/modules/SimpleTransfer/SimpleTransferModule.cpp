@@ -26,14 +26,14 @@ using namespace allpix;
 
 SimpleTransferModule::SimpleTransferModule(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector)
     : Module(config, detector), config_(std::move(config)), messenger_(messenger), detector_(std::move(detector)) {
+    // Save detector model
+    model_ = detector_->getModel();
+
     // Require propagated deposits for single detector
     messenger->bindSingle(this, &SimpleTransferModule::propagated_message_, MsgFlags::REQUIRED);
 }
 
 void SimpleTransferModule::run(unsigned int) {
-    // Fetch detector model
-    auto model = detector_->getModel();
-
     // Find corresponding pixels for all propagated charges
     LOG(TRACE) << "Transferring charges to pixels";
     unsigned int transferred_charges_count = 0;
@@ -42,7 +42,7 @@ void SimpleTransferModule::run(unsigned int) {
         auto position = propagated_charge.getLocalPosition();
         // Ignore if outside depth range of implant
         // FIXME This logic should be improved
-        if(std::fabs(position.z() - (model->getSensorCenter().z() + model->getSensorSize().z() / 2.0)) >
+        if(std::fabs(position.z() - (model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0)) >
            config_.get<double>("max_depth_distance")) {
             LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                        << propagated_charge.getLocalPosition() << " because their local position is not in implant range";
@@ -50,11 +50,11 @@ void SimpleTransferModule::run(unsigned int) {
         }
 
         // Find the nearest pixel
-        auto xpixel = static_cast<int>(std::round(position.x() / model->getPixelSize().x()));
-        auto ypixel = static_cast<int>(std::round(position.y() / model->getPixelSize().y()));
+        auto xpixel = static_cast<int>(std::round(position.x() / model_->getPixelSize().x()));
+        auto ypixel = static_cast<int>(std::round(position.y() / model_->getPixelSize().y()));
 
         // Ignore if out of pixel grid
-        if(xpixel < 0 || xpixel >= model->getNPixels().x() || ypixel < 0 || ypixel >= model->getNPixels().y()) {
+        if(xpixel < 0 || xpixel >= model_->getNPixels().x() || ypixel < 0 || ypixel >= model_->getNPixels().y()) {
             LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                        << propagated_charge.getLocalPosition() << " because their nearest pixel (" << xpixel << "," << ypixel
                        << ") is outside the grid";

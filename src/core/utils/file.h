@@ -10,8 +10,10 @@
 #include <climits>
 #include <cstdlib>
 #include <cstring>
+#include <memory>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 #include <dirent.h>
 #include <ftw.h>

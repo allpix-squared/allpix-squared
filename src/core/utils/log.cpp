@@ -133,6 +133,8 @@ void DefaultLogger::finish() {
             (*stream).flush();
         }
     }
+
+    get_streams().clear();
 }
 
 /**

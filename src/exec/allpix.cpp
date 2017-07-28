@@ -101,6 +101,8 @@ int main(int argc, const char* argv[]) {
             log_file_name = std::string(argv[++i]);
         } else {
             LOG(ERROR) << "Unrecognized command line argument \"" << argv[i] << "\"";
+            print_help = true;
+            return_code = 1;
         }
     }
 

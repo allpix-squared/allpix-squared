@@ -12,10 +12,11 @@ using namespace allpix;
 
 DepositedCharge::DepositedCharge(ROOT::Math::XYZPoint local_position,
                                  ROOT::Math::XYZPoint global_position,
+                                 CarrierType type,
                                  unsigned int charge,
                                  double event_time,
                                  const MCParticle* mc_particle)
-    : SensorCharge(std::move(local_position), std::move(global_position), charge, event_time) {
+    : SensorCharge(std::move(local_position), std::move(global_position), type, charge, event_time) {
     setMCParticle(mc_particle);
 }
 
