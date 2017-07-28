@@ -39,7 +39,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
 
     // Set global parameters of the source
     // FIXME keep number of particles always at one?
-    single_source->SetNumberOfParticles(static_cast<int>(config.get<unsigned int>("particle_amount", 1)));
+    single_source->SetNumberOfParticles(1);
     single_source->SetParticleDefinition(particle);
     // FIXME What is this time
     single_source->SetParticleTime(0.0);
