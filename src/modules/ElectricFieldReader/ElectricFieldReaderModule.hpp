@@ -46,11 +46,6 @@ namespace allpix {
         std::shared_ptr<Detector> detector_;
 
         /**
-         * @brief Create and apply a constant field
-         */
-        FieldData construct_constant_field();
-
-        /**
          * @brief Create and apply a linear field
          * @param thickness_domain Domain of the thickness where the field is defined
          */

@@ -33,6 +33,7 @@ namespace allpix {
      */
     enum class ElectricFieldType {
         NONE = 0, ///< No electric field is simulated
+        CONSTANT, ///< Constant electric field (mostly for testing)
         LINEAR,   ///< Linear electric field (linearity determined by function)
         GRID,     ///< Electric field supplied through a regularid grid
         CUSTOM,   ///< Custom electric field function

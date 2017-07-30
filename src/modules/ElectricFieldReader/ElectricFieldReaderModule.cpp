@@ -40,6 +40,14 @@ ElectricFieldReaderModule::ElectricFieldReaderModule(Configuration config, Messe
 void ElectricFieldReaderModule::init() {
     ElectricFieldType type = ElectricFieldType::GRID;
 
+    // Check field strength
+    auto field_model = config_.get<std::string>("model");
+    if((field_model == "constant" || field_model == "linear") &&
+       config_.get<double>("bias_voltage") > Units::get(5.0, "kV")) {
+        LOG(WARNING) << "Very high bias voltage of " << Units::display(config_.get<double>("bias_voltage"), "kV")
+                     << " set, this will probably not be simulated correctly";
+    }
+
     // Get the depletion depth default to full sensor size
     auto model = detector_->getModel();
     auto depletion_depth = config_.get<double>("depletion_depth");
@@ -52,17 +60,27 @@ void ElectricFieldReaderModule::init() {
     auto thickness_domain = std::make_pair(sensor_max_z - depletion_depth, sensor_max_z);
 
     // Calculate the field depending on the configuration
-    auto field_model = config_.get<std::string>("model");
-    if(field_model == "constant" || field_model == "init") {
+    if(field_model == "init") {
         ElectricFieldReaderModule::FieldData field_data;
-        if(field_model == "constant") {
-            field_data = construct_constant_field();
-        } else if(field_model == "init") {
-            field_data = read_init_field();
-        }
+        field_data = read_init_field();
         detector_->setElectricFieldGrid(field_data.first, field_data.second, thickness_domain);
+    } else if(field_model == "constant") {
+        LOG(TRACE) << "Adding constant electric field";
+        type = ElectricFieldType::CONSTANT;
+
+        auto field_z = config_.get<double>("bias_voltage") / getDetector()->getModel()->getSensorSize().z();
+        LOG(INFO) << "Set constant electric field with magnitude " << Units::display(field_z, {"V/um", "V/mm"});
+        ElectricFieldFunction function = [field_z](const ROOT::Math::XYZPoint&) {
+            return ROOT::Math::XYZVector(0, 0, -field_z);
+        };
+        detector_->setElectricFieldFunction(function, thickness_domain, type);
     } else if(field_model == "linear") {
+        LOG(TRACE) << "Adding linear electric field";
         type = ElectricFieldType::LINEAR;
+        LOG(INFO) << "Setting linear electric field from " << Units::display(config_.get<double>("bias_voltage"), "V")
+                  << " bias voltage, " << Units::display(config_.get<double>("depletion_voltage"), "V")
+                  << " depletion voltage and " << Units::display(config_.get<double>("depletion_depth"), {"mm", "um"})
+                  << " depletion depth";
         ElectricFieldFunction function = get_linear_field_function(thickness_domain);
         detector_->setElectricFieldFunction(function, thickness_domain, type);
     } else {
@@ -75,34 +93,7 @@ void ElectricFieldReaderModule::init() {
     }
 }
 
-/**
- * The linear field does not have a X or Y component and is constant over the whole thickness of the sensor.
- */
-ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::construct_constant_field() {
-    LOG(TRACE) << "Constructing electric field from linear bias voltage";
-
-    // Check for very high fields
-    if(config_.get<double>("bias_voltage") > Units::get(5.0, "kV")) {
-        LOG(WARNING) << "Very high voltage of " << Units::display(config_.get<double>("bias_voltage"), "kV")
-                     << " set, this will probably not be simulated correctly";
-    }
-
-    // Compute the electric field
-    auto field_z = config_.get<double>("bias_voltage") / getDetector()->getModel()->getSensorSize().z();
-    LOG(INFO) << "Set linear electric field with magnitude " << Units::display(field_z, {"V/um", "V/mm"});
-
-    // Create the field vector
-    auto field = std::make_shared<std::vector<double>>(3);
-    (*field)[0] = 0;
-    (*field)[1] = 0;
-    (*field)[2] = -field_z;
-
-    // Return the constructed field
-    return ElectricFieldReaderModule::FieldData(field, {{1, 1, 1}});
-}
-
 ElectricFieldFunction ElectricFieldReaderModule::get_linear_field_function(std::pair<double, double> thickness_domain) {
-    // ALERT: implement correct field here
     auto bias_voltage = config_.get<double>("bias_voltage");
     auto depletion_voltage = config_.get<double>("depletion_voltage");
     auto model = detector_->getModel();
@@ -111,15 +102,9 @@ ElectricFieldFunction ElectricFieldReaderModule::get_linear_field_function(std::
         double eff_thickness = thickness_domain.second - thickness_domain.first;
         double dep_voltage = depletion_voltage;
 
-        // Calculate effective thickness if bias voltage is below depletion voltage
-        if(bias_voltage < depletion_voltage) {
-            eff_thickness *= std::sqrt(bias_voltage / depletion_voltage);
-            dep_voltage = bias_voltage;
-        }
-        double field_z = std::max(0.0,
-                                  (bias_voltage - dep_voltage) / eff_thickness +
-                                      (2 * dep_voltage) / eff_thickness * (1 - z_rel / eff_thickness));
-        return ROOT::Math::XYZVector(0, 0, field_z);
+        double field_z = std::max(
+            0.0, (bias_voltage - dep_voltage) / eff_thickness + 2 * (dep_voltage / eff_thickness) * (z_rel / eff_thickness));
+        return ROOT::Math::XYZVector(0, 0, -field_z);
     };
 }
 
