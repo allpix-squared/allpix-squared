@@ -185,6 +185,7 @@ std::vector<double> Detector::get_electric_field_raw(double x, double y, double 
     }
 
     // Compute using the grid or a function depending on the setting
+    std::vector<double> ret_val(3, 0);
     if(electric_field_type_ == ElectricFieldType::GRID) {
         // Compute indices
         auto x_ind = static_cast<int>(std::floor(static_cast<double>(electric_field_sizes_[0]) *
@@ -206,15 +207,11 @@ std::vector<double> Detector::get_electric_field_raw(double x, double y, double 
         size_t tot_ind = static_cast<size_t>(x_ind) * electric_field_sizes_[1] * electric_field_sizes_[2] * 3 +
                          static_cast<size_t>(y_ind) * electric_field_sizes_[2] * 3 + static_cast<size_t>(z_ind) * 3;
 
-        std::vector<double> ret_val(3);
         ret_val.at(0) = (*electric_field_)[tot_ind];
         ret_val.at(1) = (*electric_field_)[tot_ind + 1];
         ret_val.at(2) = (*electric_field_)[tot_ind + 2];
-        return ret_val;
     } else {
         // FIXME This is not efficient...
-        std::vector<double> ret_val(3, 0);
-
         // Check if inside the thickness domain
         if(z < electric_field_thickness_domain_.first || electric_field_thickness_domain_.second < z) {
             return ret_val;
@@ -223,8 +220,8 @@ std::vector<double> Detector::get_electric_field_raw(double x, double y, double 
         // Calculate the electric field
         auto vector = electric_field_function_(ROOT::Math::XYZPoint(x, y, z));
         vector.GetCoordinates(ret_val.at(0), ret_val.at(1), ret_val.at(2));
-        return ret_val;
     }
+    return ret_val;
 }
 
 /**

@@ -32,7 +32,9 @@ ElectricFieldReaderModule::ElectricFieldReaderModule(Configuration config, Messe
     if(config_.has("voltage") && !config_.has("bias_voltage")) {
         config_.setText("bias_voltage", config_.getText("voltage"));
     }
-    config_.setDefault("depletion_voltage", config_.get<double>("bias_voltage"));
+    if(config_.has("bias_voltage")) {
+        config_.setDefault("depletion_voltage", config_.get<double>("bias_voltage"));
+    }
 }
 
 void ElectricFieldReaderModule::init() {
