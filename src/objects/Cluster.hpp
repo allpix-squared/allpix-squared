@@ -38,27 +38,27 @@ namespace allpix {
         double getClusterCharge() const { return clusterCharge_; }
 
         /**
-             * @brief Add PixelHit to the cluster
+         * @brief Add PixelHit to the cluster
          * @param pixelHit PixelHit to be added
-             */
-        void addPixelHit(const PixelHit* pixelHit);
+         */
+        bool addPixelHit(const PixelHit* pixelHit);
 
         /**
-             * @brief Get the cluster size
-             * @return cluster size
-             */
+         * @brief Get the cluster size
+         * @return cluster size
+         */
         unsigned long int getClusterSize() const { return pixelHits_.size(); }
 
         /**
-             * @brief Get the weighted mean cluster position
-             * @return weighted mean cluster position
-             */
+         * @brief Get the weighted mean cluster position
+         * @return weighted mean cluster position
+         */
         ROOT::Math::XYVectorD getClusterPosition();
 
         /**
-             * @brief Get the seed PixelHit
-             * @return Pointer to PixelHit
-             */
+         * @brief Get the seed PixelHit
+         * @return Pointer to PixelHit
+         */
         const PixelHit* getSeedPixelHit() const { return seedPixelHit_; }
 
         /**

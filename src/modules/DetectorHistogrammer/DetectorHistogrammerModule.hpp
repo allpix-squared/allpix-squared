@@ -56,20 +56,20 @@ namespace allpix {
         void finalize() override;
 
         /**
-             * @brief Perform a sparse clustering on the PixelHits
-             */
+         * @brief Perform a sparse clustering on the PixelHits
+         */
         void doClustering();
 
         /**
-             * @brief Checks for clusters containing this PixelHit
+         * @brief Checks for clusters containing this PixelHit
          * @param PixelHit to check
-             */
+         */
         bool isInCluster(const PixelHit*);
 
         /**
-             * @brief Checks the adjacent pixels for PixelHits
+         * @brief Checks the adjacent pixels for PixelHits
          * @param PixelHit to check
-             */
+         */
         bool checkAdjacentPixels(const PixelHit*);
 
     private:
