@@ -30,7 +30,7 @@ ElectricFieldReaderModule::ElectricFieldReaderModule(Configuration config, Messe
     config_.setDefault("depletion_depth", detector_->getModel()->getSensorSize().z());
     // NOTE use voltage as a synonym for bias voltage
     if(config_.has("voltage") && !config_.has("bias_voltage")) {
-        config_.setText("bias_voltage", config_.getText("voltage"));
+        config_.setSynonym("bias_voltage", "voltage");
     }
     if(config_.has("bias_voltage")) {
         config_.setDefault("depletion_voltage", config_.get<double>("bias_voltage"));

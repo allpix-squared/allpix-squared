@@ -103,6 +103,14 @@ void Configuration::setText(const std::string& key, const std::string& val) {
     config_[key] = val;
 }
 
+void Configuration::setSynonym(const std::string& new_key, const std::string& old_key) {
+    try {
+        config_[new_key] = config_.at(old_key);
+    } catch(std::out_of_range& e) {
+        throw MissingKeyError(old_key, getName());
+    }
+}
+
 unsigned int Configuration::countSettings() const {
     return static_cast<unsigned int>(config_.size());
 }
