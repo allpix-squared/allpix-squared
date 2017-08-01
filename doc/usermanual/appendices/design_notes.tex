@@ -1,8 +1,8 @@
 \section{Design Development Notes}
-This chapter serves as a short overview of the design goals of AllPix and the related implementation choices. Note that AllPix API is currently in a very early development stage and any implementation detail here is subject to change.
+This chapter serves as a short overview of the design goals of \apsq and the related implementation choices. Note that \apsq API is currently in a very early development stage and any implementation detail here is subject to change.
 
 \subsection{Goals}
-AllPix is developed with a few goals in mind. These are (listed from most important to least important) the following:
+\apsq is developed with a few goals in mind. These are (listed from most important to least important) the following:
 \begin{enumerate}
     \item Reflects the physics
     \begin{itemize}
@@ -28,12 +28,12 @@ AllPix is developed with a few goals in mind. These are (listed from most import
 \end{enumerate}
 
 \subsection{Setup}
-AllPix consists of four major components listed below:
+\apsq consists of four major components listed below:
 \begin{enumerate}
 \item \textbf{Core}: The core contains the internal logic to initiate all modules and to run the event sequence. The core should keep its dependencies to a minimum and remain separated from the components below. More info later.
 \item \textbf{Modules}: A set of methods that execute a subset of the simulation process. They are separate libraries, loaded dynamically by the core. Possible modules include one to (1) build the geometry, (2) deposit the charges in the detector, (3) propagate the charges in the detector, (4) transfer the charges to the readout chip (5) digitize the readings into a result. Furthermore there should be a set of file writer modules and (possibly) visualization modules to capture intermediate and final output. Finally there should be file input modules to simulate only a part instead of the full process.
 \item \textbf{Messages}: Messages are pointers to the data passed around between the modules. Modules can listen and bind to messages they wish to receive. A message is passed around by type, but it is possible to give a message a particular name to allow modules to handle different message names (the default name is empty and dispatches the message to all modules listening to that specific type of message). Messages are meant to be read-only and a copy of the data should be made if a module developer wishes to change the data. Exact definition of the core messages is not yet provided (current ideas follow later).
-\item \textbf{Tools}: AllPix will provide a simple interface to several widely used 'tools' a module wants to use. A possible example would be a runge-kutta solver.
+\item \textbf{Tools}: \apsq will provide a simple interface to several widely used 'tools' a module wants to use. A possible example would be a runge-kutta solver.
 \end{enumerate}
 
 Finally the implementation provides a executable which integrates the core, messages and tools together with the command-line handling into a single process.
@@ -53,7 +53,7 @@ The core is structured around one main object (AllPix) and a set of managers. Be
 \item Extra whitespace is ignored
 \item Comment lines starting with either a semicolon or a hash are ignored
 \item There are a set of special key-value pairs handled by the instantiation logic instead of the module itself (see below)
-\item Configurations are fixed during one run of AllPix
+\item Configurations are fixed during one run of \apsq
 \item Inheriting of values from similar configurations is not yet defined... (possibly we want to inherit higher level, see part about module identifier below)
 \end{itemize}
 \item \textbf{ModuleManager}: Instantiates the modules from the provided configuration. Fetches the linearly defined configurations defined in the config file from the config manager. The manager dynamically loads the modules from the name specified in the configuration header. The modules should use a factory builder that creates the appropriate amount of instances for the setup. Every instantiation has a single unique identifier that may only appear once in the configuration. An identifier consist of a eventual name and type (see below) together with a potential input and output name that defaults to none, but allows to run two module with the same identifier using different inputs or output names for their messages. There are two important factories:

@@ -404,7 +404,7 @@ Units::convert(1, "m/ns");
 Units::display(2e3, {"mm/ns", "m/ns"}); 
 \end{minted}
 
-More details about how the unit system is used within AllPix can be found in Section \ref{sec:config_values}.
+More details about how the unit system is used within \apsq can be found in Section \ref{sec:config_values}.
 
 \subsubsection{Internal utilities}
 \paragraph{Filesystem}
@@ -421,7 +421,7 @@ The STL only provides string conversions for standard types using \texttt{std::s
 
 For warnings and informational messages the logging should be used extensively. This helps in both following the progress of the simulation as well as for debugging problems. Care should however be taken to limit the amount of messages outside of the \texttt{DEBUG} and \texttt{TRACE} levels. More details about the log levels and their usage is given in Section \ref{sec:logging_verbosity}.
 
-The base exceptions in AllPix are available in the utilities. The most important exception base classes are the following:
+The base exceptions in \apsq are available in the utilities. The most important exception base classes are the following:
 \begin{itemize}
 \item \textbf{ConfigurationError}: All errors related to incorrect user configuration. Could be a non-existing configuration file, a missing key or an invalid parameter value.
 \item \textbf{RuntimeError}: All other errors arising at run-time. Could be related to incorrect configuration if messages are not correctly passed or non-existing detectors are specified. Could also be raised if errors arise while loading a library or running a module.
