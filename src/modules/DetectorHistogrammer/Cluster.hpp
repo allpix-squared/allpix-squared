@@ -65,7 +65,6 @@ namespace allpix {
 
         std::set<const PixelHit*> pixelHits_;
         double clusterCharge_{};
-        double clusterPosition_{};
     };
 }
 #endif
