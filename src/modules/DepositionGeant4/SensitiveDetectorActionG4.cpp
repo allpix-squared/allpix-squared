@@ -152,5 +152,5 @@ void SensitiveDetectorActionG4::dispatchDepositedChargeMessage() {
 
     // Clear track parents and entry point list
     track_parents_.clear();
-    entry_points_.clear();        
+    entry_points_.clear();
 }

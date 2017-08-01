@@ -159,7 +159,7 @@ void DepositionGeant4Module::run(unsigned int event_num) {
 
     // Dispatch the necessary messages
     for(auto& sensor : sensors_) {
-	sensor->dispatchDepositedChargeMessage();
+        sensor->dispatchDepositedChargeMessage();
     }
 }
 
