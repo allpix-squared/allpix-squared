@@ -123,6 +123,8 @@ void DetectorHistogrammerModule::run(unsigned int) {
     // Fill further histograms
     event_size->Fill(static_cast<double>(pixels_message_->getData().size()));
     n_cluster->Fill(static_cast<double>(clusters_.size()));
+
+    clusters_.clear();
 }
 
 void DetectorHistogrammerModule::finalize() {
