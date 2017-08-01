@@ -53,6 +53,27 @@ namespace allpix {
          */
         void finalize() override;
 
+<<<<<<< HEAD
+=======
+        /**
+         * @brief Perform a sparse clustering on the PixelHits
+         */
+        void doClustering();
+
+        /**
+         * @brief Checks for clusters containing this PixelHit
+         * @param PixelHit to check
+         */
+        bool isInCluster(const PixelHit*);
+
+        /**
+         * @brief Checks the adjacent pixels for PixelHits
+         * @param PixelHit to check
+         */
+        bool checkAdjacentPixels(const PixelHit*);
+
+>>>>>>> 4c311d6... Fix formatting issues
+
     private:
         Configuration config_;
         std::shared_ptr<Detector> detector_;
