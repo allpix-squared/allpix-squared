@@ -226,7 +226,10 @@ bool DetectorHistogrammerModule::checkAdjacentPixels(const PixelHit* pixel_hit) 
             auto disty = std::max(hit_idx.y(), other_idx.y()) - std::min(hit_idx.y(), other_idx.y());
             if(distx <= 1 and disty <= 1) {
                 LOG(DEBUG) << "Adding pixel to cluster: " << hit_idx;
-                clus->addPixelHit(pixel_hit);
+                bool ret = clus->addPixelHit(pixel_hit);
+                if(ret == false) {
+                    LOG(DEBUG) << "Hit has already been added to this cluster: " << hit_idx;
+                }
                 return true;
             }
         }

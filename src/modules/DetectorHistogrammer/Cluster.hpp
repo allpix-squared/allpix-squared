@@ -4,26 +4,19 @@
  * @copyright MIT License
  */
 
-#ifndef ALLPIX_CLUSTER_H
-#define ALLPIX_CLUSTER_H
+#ifndef ALLPIX_DETECTOR_HISTOGRAMMER_CLUSTER_H
+#define ALLPIX_DETECTOR_HISTOGRAMMER_CLUSTER_H
 
 #include <Math/DisplacementVector2D.h>
 
-#include <TRef.h>
-
 #include <set>
 
-#include "MCParticle.hpp"
-#include "Object.hpp"
-#include "Pixel.hpp"
-#include "PixelHit.hpp"
+#include "objects/Pixel.hpp"
+#include "objects/PixelHit.hpp"
 
 namespace allpix {
-    /**
-     * @ingroup Objects
-     * @brief Cluster of PixelHits
-     */
-    class Cluster : public Object {
+
+    class Cluster {
     public:
         /**
          * @brief Construct a cluster
@@ -67,16 +60,6 @@ namespace allpix {
          */
         std::set<const PixelHit*> getPixelHits() const { return pixelHits_; }
 
-        /**
-         * @brief ROOT class definition
-         */
-        ClassDef(Cluster, 2);
-
-        /**
-         * @brief Default constructor for ROOT I/O
-         */
-        Cluster() = default;
-
     private:
         const PixelHit* seedPixelHit_;
 
@@ -84,7 +67,5 @@ namespace allpix {
         double clusterCharge_{};
         double clusterPosition_{};
     };
-
-} // namespace allpix
-
+}
 #endif

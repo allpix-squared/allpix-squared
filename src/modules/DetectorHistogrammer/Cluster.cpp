@@ -9,7 +9,6 @@
 #include <set>
 
 #include "core/utils/log.h"
-#include "exceptions.h"
 
 using namespace allpix;
 
@@ -18,9 +17,13 @@ Cluster::Cluster(const PixelHit* seedPixelHit) : seedPixelHit_(seedPixelHit) {
     clusterCharge_ = seedPixelHit->getSignal();
 }
 
-void Cluster::addPixelHit(const PixelHit* pixelHit) {
-    pixelHits_.insert(pixelHit);
-    clusterCharge_ += pixelHit->getSignal();
+bool Cluster::addPixelHit(const PixelHit* pixelHit) {
+    auto ret = pixelHits_.insert(pixelHit);
+    if(ret.second == true) {
+        clusterCharge_ += pixelHit->getSignal();
+        return true;
+    }
+    return false;
 }
 
 ROOT::Math::XYVectorD Cluster::getClusterPosition() {
