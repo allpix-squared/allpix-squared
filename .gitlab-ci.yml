@@ -325,8 +325,7 @@ cmp:usermanual:
     tags:
       - docker
     image: gitlab-registry.cern.ch/clicdp/publications/templates/custom_ci_worker:fedora-latex-latest
-    dependencies:
-        -
+    dependencies: []
     script:
         - mkdir -p public/usermanual
         - mkdir build
