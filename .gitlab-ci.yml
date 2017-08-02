@@ -80,7 +80,7 @@ unittest:slc6-llvm-lint:
         - export COMPILER_TYPE="llvm"
         - source .gitlab-ci.d/init_x86_64.sh
         - cd build/
-	- ninja check-lint
+        - ninja check-lint
 
 
 compile:centos7-gcc:
