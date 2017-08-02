@@ -3,6 +3,7 @@ variables:
 
 stages:
     - compile
+    - format
     - unittest
     - documentation
     - deploy
@@ -113,6 +114,70 @@ cmp:mac1012-clang:
         expire_in: 1 hour
 
 
+
+############################
+# Format and Lint Checking #
+############################
+
+# SLC 6
+
+fmt:slc6-llvm-format:
+    stage: format
+    tags:
+        - docker
+    dependencies:
+        - cmp:slc6-llvm
+    image: clicdp/slc6-base
+    script:
+        - export COMPILER_TYPE="llvm"
+        - source .gitlab-ci.d/init_x86_64.sh
+        - cd build/
+        - ninja check-format
+
+fmt:slc6-llvm-lint:
+    stage: format
+    tags:
+        - docker
+    dependencies:
+        - cmp:slc6-llvm
+    image: clicdp/slc6-base
+    script:
+        - export COMPILER_TYPE="llvm"
+        - source .gitlab-ci.d/init_x86_64.sh
+        - cd build/
+        - ninja check-lint
+
+
+# CentOS 7
+
+fmt:centos7-llvm-format:
+    stage: format
+    tags:
+        - docker
+    dependencies:
+        - cmp:centos7-llvm
+    image: clicdp/cc7-base
+    script:
+        - export COMPILER_TYPE="llvm"
+        - source .gitlab-ci.d/init_x86_64.sh
+        - cd build/
+        - ninja check-format
+
+fmt:centos7-llvm-lint:
+    stage: format
+    tags:
+        - docker
+    dependencies:
+        - cmp:centos7-llvm
+    image: clicdp/cc7-base
+    script:
+        - export COMPILER_TYPE="llvm"
+        - source .gitlab-ci.d/init_x86_64.sh
+        - cd build/
+        - ninja check-lint
+
+
+
 ##############
 # Unit tests #
 ##############
@@ -146,32 +211,6 @@ ut:slc6-llvm:
         - ctest --output-on-failure -j4
         - cat output_check_performance.log  
 
-ut:slc6-llvm-format:
-    stage: unittest
-    tags:
-        - docker
-    dependencies:
-        - cmp:slc6-llvm
-    image: clicdp/slc6-base
-    script:
-        - export COMPILER_TYPE="llvm"
-        - source .gitlab-ci.d/init_x86_64.sh
-        - cd build/
-        - ninja check-format
-
-ut:slc6-llvm-lint:
-    stage: unittest
-    tags:
-        - docker
-    dependencies:
-        - cmp:slc6-llvm
-    image: clicdp/slc6-base
-    script:
-        - export COMPILER_TYPE="llvm"
-        - source .gitlab-ci.d/init_x86_64.sh
-        - cd build/
-        - ninja check-lint
-
 
 # CentOS 7
 
@@ -203,32 +242,6 @@ ut:centos7-llvm:
         - ctest --output-on-failure -j4
         - cat output_check_performance.log  
 
-ut:centos7-llvm-format:
-    stage: unittest
-    tags:
-        - docker
-    dependencies:
-        - cmp:centos7-llvm
-    image: clicdp/cc7-base
-    script:
-        - export COMPILER_TYPE="llvm"
-        - source .gitlab-ci.d/init_x86_64.sh
-        - cd build/
-        - ninja check-format
-
-ut:centos7-llvm-lint:
-    stage: unittest
-    tags:
-        - docker
-    dependencies:
-        - cmp:centos7-llvm
-    image: clicdp/cc7-base
-    script:
-        - export COMPILER_TYPE="llvm"
-        - source .gitlab-ci.d/init_x86_64.sh
-        - cd build/
-        - ninja check-lint
-
 
 # Mac OS X
 
@@ -244,6 +257,12 @@ ut:mac1012-clang:
         - cd build/
         - ctest --output-on-failure -j4
         - cat output_check_performance.log 
+
+
+
+#############################
+# Documentation Compilation #
+#############################
 
 
 # Compile Doxygen reference
@@ -294,6 +313,11 @@ cmp:usermanual:
           - public
         expire_in: 1 hour
 
+
+
+############################
+# Documentation Deployment #
+############################
 
 # Automatically deploy documentation to the website
 # Deployment job only executed for new tag pushs, not for every commit.
