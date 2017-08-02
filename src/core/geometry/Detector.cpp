@@ -129,7 +129,8 @@ Pixel Detector::getPixel(unsigned int x, unsigned int y) {
  * stage). Outside of the sensor the electric field is strictly zero by definition.
  */
 bool Detector::hasElectricField() const {
-    return electric_field_sizes_[0] != 0 && electric_field_sizes_[1] != 0 && electric_field_sizes_[2] != 0;
+    return electric_field_function_ ||
+           (electric_field_sizes_[0] != 0 && electric_field_sizes_[1] != 0 && electric_field_sizes_[2] != 0);
 }
 
 /**
@@ -137,23 +138,36 @@ bool Detector::hasElectricField() const {
  * stage). Outside of the sensor the electric field is strictly zero by definition.
  */
 ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZPoint& pos) const {
-    double* field = get_electric_field_raw(pos.x(), pos.y(), pos.z());
+    auto field = get_electric_field_raw(pos.x(), pos.y(), pos.z());
 
-    if(field == nullptr) {
+    if(field.empty()) {
         // FIXME: Determine what we should do if we have no external electric field...
         return ROOT::Math::XYZVector(0, 0, 0);
     }
 
-    return ROOT::Math::XYZVector(*(field), *(field + 1), *(field + 2));
+    return ROOT::Math::XYZVector(field.at(0), field.at(1), field.at(2));
+}
+
+/**
+ * The type of the electric field is set depending on the function used to apply it.
+ */
+ElectricFieldType Detector::getElectricFieldType() const {
+    if(!hasElectricField()) {
+        return ElectricFieldType::NONE;
+    }
+    return electric_field_type_;
 }
 
 /**
  * The local position is first converted to pixel coordinates. The stored electric field if the index is odd.
  */
-double* Detector::get_electric_field_raw(double x, double y, double z) const {
+std::vector<double> Detector::get_electric_field_raw(double x, double y, double z) const {
     // FIXME: We need to revisit this to be faster and not too specific
+    if(electric_field_type_ == ElectricFieldType::NONE) {
+        return std::vector<double>();
+    }
 
-    // Compute corresponding pixel indices
+    // Compute corresponding pixel coordinates
     // WARNING This relies on the origin of the local coordinate system
     auto pixel_x = static_cast<int>(std::round(x / model_->getPixelSize().x()));
     auto pixel_y = static_cast<int>(std::round(y / model_->getPixelSize().y()));
@@ -170,26 +184,44 @@ double* Detector::get_electric_field_raw(double x, double y, double z) const {
         y *= -1;
     }
 
-    // Compute indices
-    auto x_ind = static_cast<int>(std::floor(static_cast<double>(electric_field_sizes_[0]) *
-                                             (x + model_->getPixelSize().x() / 2.0) / model_->getPixelSize().x()));
-    auto y_ind = static_cast<int>(std::floor(static_cast<double>(electric_field_sizes_[1]) *
-                                             (y + model_->getPixelSize().y() / 2.0) / model_->getPixelSize().y()));
-    auto z_ind = static_cast<int>(
-        std::floor(static_cast<double>(electric_field_sizes_[2]) * (z - electric_field_thickness_domain_.first) /
-                   (electric_field_thickness_domain_.second - electric_field_thickness_domain_.first)));
+    // Compute using the grid or a function depending on the setting
+    std::vector<double> ret_val(3, 0);
+    if(electric_field_type_ == ElectricFieldType::GRID) {
+        // Compute indices
+        auto x_ind = static_cast<int>(std::floor(static_cast<double>(electric_field_sizes_[0]) *
+                                                 (x + model_->getPixelSize().x() / 2.0) / model_->getPixelSize().x()));
+        auto y_ind = static_cast<int>(std::floor(static_cast<double>(electric_field_sizes_[1]) *
+                                                 (y + model_->getPixelSize().y() / 2.0) / model_->getPixelSize().y()));
+        auto z_ind = static_cast<int>(
+            std::floor(static_cast<double>(electric_field_sizes_[2]) * (z - electric_field_thickness_domain_.first) /
+                       (electric_field_thickness_domain_.second - electric_field_thickness_domain_.first)));
 
-    // Check for indices within the sensor
-    if(x_ind < 0 || x_ind >= static_cast<int>(electric_field_sizes_[0]) || y_ind < 0 ||
-       y_ind >= static_cast<int>(electric_field_sizes_[1]) || z_ind < 0 ||
-       z_ind >= static_cast<int>(electric_field_sizes_[2])) {
-        return nullptr;
+        // Check for indices within the sensor
+        if(x_ind < 0 || x_ind >= static_cast<int>(electric_field_sizes_[0]) || y_ind < 0 ||
+           y_ind >= static_cast<int>(electric_field_sizes_[1]) || z_ind < 0 ||
+           z_ind >= static_cast<int>(electric_field_sizes_[2])) {
+            return std::vector<double>();
+        }
+
+        // Compute total index
+        size_t tot_ind = static_cast<size_t>(x_ind) * electric_field_sizes_[1] * electric_field_sizes_[2] * 3 +
+                         static_cast<size_t>(y_ind) * electric_field_sizes_[2] * 3 + static_cast<size_t>(z_ind) * 3;
+
+        ret_val.at(0) = (*electric_field_)[tot_ind];
+        ret_val.at(1) = (*electric_field_)[tot_ind + 1];
+        ret_val.at(2) = (*electric_field_)[tot_ind + 2];
+    } else {
+        // FIXME This is not efficient...
+        // Check if inside the thickness domain
+        if(z < electric_field_thickness_domain_.first || electric_field_thickness_domain_.second < z) {
+            return ret_val;
+        }
+
+        // Calculate the electric field
+        auto vector = electric_field_function_(ROOT::Math::XYZPoint(x, y, z));
+        vector.GetCoordinates(ret_val.at(0), ret_val.at(1), ret_val.at(2));
     }
-
-    // Compute total index
-    size_t tot_ind = static_cast<size_t>(x_ind) * electric_field_sizes_[1] * electric_field_sizes_[2] * 3 +
-                     static_cast<size_t>(y_ind) * electric_field_sizes_[2] * 3 + static_cast<size_t>(z_ind) * 3;
-    return &(*electric_field_)[tot_ind];
+    return ret_val;
 }
 
 /**
@@ -201,9 +233,9 @@ double* Detector::get_electric_field_raw(double x, double y, double z) const {
  * - x*Y_SIZE*Z_SIZE*3+y*Z_SIZE*3+z*3+1: the y-component of the electric field
  * - x*Y_SIZE*Z_SIZE*3+y*Z_SIZE*3+z*3+2: the z-component of the electric field
  */
-void Detector::setElectricField(std::shared_ptr<std::vector<double>> field,
-                                std::array<size_t, 3> sizes,
-                                std::pair<double, double> thickness_domain) {
+void Detector::setElectricFieldGrid(std::shared_ptr<std::vector<double>> field,
+                                    std::array<size_t, 3> sizes,
+                                    std::pair<double, double> thickness_domain) {
     if(sizes[0] * sizes[1] * sizes[2] * 3 != field->size()) {
         throw std::invalid_argument("electric field does not match the given sizes");
     }
@@ -218,4 +250,13 @@ void Detector::setElectricField(std::shared_ptr<std::vector<double>> field,
     electric_field_ = std::move(field);
     electric_field_sizes_ = sizes;
     electric_field_thickness_domain_ = std::move(thickness_domain);
+    electric_field_type_ = ElectricFieldType::GRID;
+}
+
+void Detector::setElectricFieldFunction(ElectricFieldFunction function,
+                                        std::pair<double, double> thickness_domain,
+                                        ElectricFieldType type) {
+    electric_field_thickness_domain_ = std::move(thickness_domain);
+    electric_field_function_ = std::move(function);
+    electric_field_type_ = type;
 }

@@ -14,6 +14,7 @@
 #include <iomanip>
 #include <iostream>
 #include <ostream>
+#include <regex>
 #include <string>
 #include <unistd.h>
 
@@ -98,6 +99,9 @@ DefaultLogger::~DefaultLogger() {
         }
     }
     out_no_special += out.substr(prev);
+
+    // Replace carriage return by newline:
+    out_no_special = std::regex_replace(out_no_special, std::regex("\\\r"), "\n");
 
     // Print output to streams
     for(auto stream : get_streams()) {

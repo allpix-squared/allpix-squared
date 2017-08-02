@@ -52,7 +52,7 @@ The main page of the reference can then be found at `reference/html/index.html` 
 
 ## Using the framework
 #### Setting up the configuration
-Before running AllPix<sup>2</sup> a configuration needs to be provided for both the modules and the detector setup. Also several files needs to be provided that contain the description of the detector models. The configuration format is a simplified version of the [TOML](https://github.com/toml-lang/toml) format (quite similar to .ini files).
+Before running Allpix<sup>2</sup> a configuration needs to be provided for both the modules and the detector setup. Also several files needs to be provided that contain the description of the detector models. The configuration format is a simplified version of the [TOML](https://github.com/toml-lang/toml) format (quite similar to .ini files).
 
 An example for the main configuration can be found in `etc/example.conf`. The configuration consist of several sections that describe the modules to instantiate and the configuration to use for those (more details can be found in the manual). The available modules are found in the *src/modules/* directory. 
 
