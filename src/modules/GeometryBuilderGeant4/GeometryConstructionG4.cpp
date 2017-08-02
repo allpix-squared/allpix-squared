@@ -185,9 +185,9 @@ void GeometryConstructionG4::build_detectors() {
 
         std::string name = detector->getName();
         LOG(DEBUG) << "Creating Geant4 model for " << name;
-
         LOG(DEBUG) << " Wrapper dimensions of model: " << display_vector(model->getSize(), {"mm", "um"});
-        LOG(DEBUG) << " Center of the geometry parts relative to the origin:";
+
+        LOG(DEBUG) << " Global position and orientation of the detector:";
 
         // Create the wrapper box and logical volume
         auto wrapper_box = std::make_shared<G4Box>(
@@ -197,9 +197,41 @@ void GeometryConstructionG4::build_detectors() {
             make_shared_no_delete<G4LogicalVolume>(wrapper_box.get(), world_material_, "wrapper_" + name + "_log");
         detector->setExternalObject("wrapper_log", wrapper_log);
 
+        // Calculate possible detector misalignment to be added
+        auto misalign_shift =
+            [&](ROOT::Math::XYZPoint residuals) -> const ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<double>> {
+            std::normal_distribution<double> res_x(0, residuals.x());
+            std::normal_distribution<double> res_y(0, residuals.y());
+            std::normal_distribution<double> res_z(0, residuals.z());
+            return ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<double>>(
+                res_x(random_generator_), res_y(random_generator_), res_z(random_generator_));
+        };
+
+        auto misalign_rotation = [&](ROOT::Math::EulerAngles residuals) {
+            std::normal_distribution<double> res_phi(0, residuals.Phi());
+            std::normal_distribution<double> res_theta(0, residuals.Theta());
+            std::normal_distribution<double> res_psi(0, residuals.Psi());
+            return ROOT::Math::EulerAngles(
+                res_phi(random_generator_), res_theta(random_generator_), res_psi(random_generator_));
+        };
+
+        LOG(DEBUG) << " - Position\t\t:\t" << display_vector(detector->getPosition(), {"mm", "um"});
+        LOG(DEBUG) << " - Orientation\t:\t" << display_vector(detector->getOrientation(), {"deg"});
         // Get position and orientation
-        G4ThreeVector posWrapper = toG4Vector(detector->getPosition());
-        ROOT::Math::EulerAngles angles = detector->getOrientation();
+        auto position = detector->getPosition() +
+                        misalign_shift(config_.get<ROOT::Math::XYZPoint>("alignment_precision", ROOT::Math::XYZPoint()));
+        ROOT::Math::EulerAngles angles =
+            detector->getOrientation() *
+            misalign_rotation(config_.get<ROOT::Math::EulerAngles>("alignment_prec_rot", ROOT::Math::EulerAngles()));
+
+        if(config_.has("alignment_precision")) {
+            LOG(DEBUG) << " - Misaligned pos.\t:\t" << display_vector(position, {"mm", "um"});
+        }
+        if(config_.has("alignment_prec_rot")) {
+            LOG(DEBUG) << " - Misaligned rot.\t:\t" << display_vector(angles, {"deg"});
+        }
+
+        G4ThreeVector posWrapper = toG4Vector(position);
         auto rotWrapper = std::make_shared<G4RotationMatrix>(angles.Phi(), angles.Theta(), angles.Psi());
         detector->setExternalObject("rotation_matrix", rotWrapper);
 
@@ -207,6 +239,8 @@ void GeometryConstructionG4::build_detectors() {
         auto wrapper_phys = make_shared_no_delete<G4PVPlacement>(
             rotWrapper.get(), posWrapper, wrapper_log.get(), "wrapper_" + name + "_phys", world_log_.get(), false, 0, true);
         detector->setExternalObject("wrapper_phys", wrapper_phys);
+
+        LOG(DEBUG) << " Center of the geometry parts relative to the origin:";
 
         /* SENSOR
          * the sensitive detector is the part that collects the deposits
@@ -322,7 +356,7 @@ void GeometryConstructionG4::build_detectors() {
 
             // Place the support
             auto support_pos = toG4Vector(layer.getCenter() - model->getCenter());
-            LOG(DEBUG) << "  - Support\t:\t" << display_vector(support_pos, {"mm", "um"});
+            LOG(DEBUG) << "  - Support\t\t:\t" << display_vector(support_pos, {"mm", "um"});
             auto support_phys =
                 make_shared_no_delete<G4PVPlacement>(nullptr,
                                                      support_pos,
