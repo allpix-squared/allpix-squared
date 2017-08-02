@@ -28,6 +28,8 @@ cmp:slc6-gcc:
     artifacts:
         paths:
             - build
+            - bin
+            - lib
         expire_in: 1 hour
 
 cmp:slc6-llvm:
@@ -46,6 +48,8 @@ cmp:slc6-llvm:
     artifacts:
         paths:
             - build
+            - bin
+            - lib
         expire_in: 1 hour
 
 cmp:centos7-gcc:
@@ -65,6 +69,8 @@ cmp:centos7-gcc:
     artifacts:
         paths:
             - build
+            - bin
+            - lib
         expire_in: 1 hour
 
 cmp:centos7-llvm:
@@ -83,6 +89,8 @@ cmp:centos7-llvm:
     artifacts:
         paths:
             - build
+            - bin
+            - lib
         expire_in: 1 hour
 
 cmp:mac1012-clang:
@@ -100,6 +108,8 @@ cmp:mac1012-clang:
     artifacts:
         paths:
             - build
+            - bin
+            - lib
         expire_in: 1 hour
 
 
@@ -294,6 +304,7 @@ deploy-documentation:
         - tags
     dependencies:
         - cmp:usermanual
+        - cmp:doxygen
     # Docker image with tools to deploy to EOS
     image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
     script:
