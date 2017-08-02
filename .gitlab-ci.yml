@@ -312,7 +312,7 @@ cmp:doxygen:
         - source .gitlab-ci.d/init_x86_64.sh
         - source .gitlab-ci.d/load_deps.sh
         - cd build/
-        - make reference
+        - make clean && make reference
         - mv reference/html ../public/reference
     artifacts:
         paths:
