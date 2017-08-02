@@ -36,8 +36,12 @@
 
 using namespace allpix;
 
-GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo_manager, Configuration config)
-    : geo_manager_(geo_manager), config_(std::move(config)) {}
+GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo_manager, Configuration config, uint64_t random_seed)
+    : geo_manager_(geo_manager), config_(std::move(config)) {
+
+    // Seed the random generator with the global seed
+    random_generator_.seed(random_seed);
+}
 
 /**
  * @brief Version of std::make_shared that does not delete the pointer
