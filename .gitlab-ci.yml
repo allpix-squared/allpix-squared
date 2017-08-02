@@ -305,14 +305,15 @@ cmp:doxygen:
     tags:
         - docker
     image: clicdp/cc7-base
-    dependencies:
-        - cmp:centos7-gcc
+    dependencies: []
     script:
-        - export COMPILER_TYPE="gcc"
         - source .gitlab-ci.d/init_x86_64.sh
         - source .gitlab-ci.d/load_deps.sh
-        - cd build/
-        - make clean && make reference
+        - mkdir -p public/usermanual
+        - mkdir build
+        - cd build
+        - cmake -DBUILD_DOCS_ONLY=ON ..
+        - make reference
         - mv reference/html ../public/reference
     artifacts:
         paths:
