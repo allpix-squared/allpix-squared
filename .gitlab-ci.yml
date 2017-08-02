@@ -3,9 +3,10 @@ variables:
 
 stages:
     - compile
+    - unittest
     - deploy
 
-slc6-gcc:
+compile:slc6-gcc:
     stage: compile
     tags:
         - docker
@@ -19,10 +20,25 @@ slc6-gcc:
         - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - ninja
         - ninja install
+    artifacts:
+        paths:
+            - build
+        expire_in: 1 hour
+
+unittest:slc6-gcc:
+    stage: unittest
+    tags:
+        - docker
+    dependencies:
+        - compile:slc6-gcc
+    image: clicdp/slc6-base
+    script:
+        - source .gitlab-ci.d/init_x86_64.sh
+        - cd build/
         - ctest --output-on-failure -j4
         - cat output_check_performance.log  
 
-slc6-llvm:
+compile:slc6-llvm:
     stage: compile
     tags:
         - docker
@@ -34,12 +50,40 @@ slc6-llvm:
         - cd build
         - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - ninja
-        - ninja check-format
-        - ninja check-lint
         - ninja install
-# skip tests because lint takes long
+    artifacts:
+        paths:
+            - build
+        expire_in: 1 hour
 
-centos7-gcc:
+unittest:slc6-llvm-format:
+    stage: unittest
+    tags:
+        - docker
+    dependencies:
+        - compile:slc6-llvm
+    image: clicdp/slc6-base
+    script:
+        - export COMPILER_TYPE="llvm"
+        - source .gitlab-ci.d/init_x86_64.sh
+        - cd build/
+        - ninja check-format
+
+unittest:slc6-llvm-lint:
+    stage: unittest
+    tags:
+        - docker
+    dependencies:
+        - compile:slc6-llvm
+    image: clicdp/slc6-base
+    script:
+        - export COMPILER_TYPE="llvm"
+        - source .gitlab-ci.d/init_x86_64.sh
+        - cd build/
+	- ninja check-lint
+
+
+compile:centos7-gcc:
     stage: compile
     tags:
         - docker
@@ -56,7 +100,7 @@ centos7-gcc:
         - ctest --output-on-failure -j4
         - cat output_check_performance.log 
 
-centos7-llvm:
+compile:centos7-llvm:
     stage: compile
     tags:
         - docker
@@ -73,7 +117,7 @@ centos7-llvm:
         - ninja install
 # skip tests because lint takes long
 
-mac1012-clang:
+compile:mac1012-clang:
     stage: compile
     tags:
         - mac
