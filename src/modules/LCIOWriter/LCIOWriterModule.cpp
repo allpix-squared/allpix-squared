@@ -42,13 +42,15 @@ LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, G
     }
 
     pixelType_ = config_.get<int>("pixelType", 2);
+    DetectorName_ = config_.get<std::string>("DetectorName", "EUTelescope");
+    OutputCollectionName_ = config_.get<std::string>("OutputCollectionName", "zsdata_m26");
 
     // Open LCIO file and write run header
     lcWriter_ = LCFactory::getInstance()->createLCWriter();
     lcWriter_->open(config_.get<std::string>("file_name", "output.slcio"), LCIO::WRITE_NEW);
     auto run = std::make_unique<LCRunHeaderImpl>();
     run->setRunNumber(1);
-    run->setDetectorName("EUTelescope");
+    run->setDetectorName(DetectorName_);
     lcWriter_->writeRunHeader(run.get());
 }
 
@@ -75,10 +77,28 @@ void LCIOWriterModule::run(unsigned int eventNb) {
 
             unsigned int detectorID = detectorIDs_[hit_msg->getDetector()->getName()];
 
-            charges[detectorID].push_back(static_cast<float>(hitdata.getPixel().getIndex().x())); // x
-            charges[detectorID].push_back(static_cast<float>(hitdata.getPixel().getIndex().y())); // y
-            charges[detectorID].push_back(static_cast<float>(hitdata.getSignal()));               // signal
-            charges[detectorID].push_back(static_cast<float>(0));                                 // time
+            switch(pixelType_) {
+            case 1: // EUTelSimpleSparsePixel
+                charges[detectorID].push_back(static_cast<float>(hitdata.getPixel().getIndex().x())); // x
+                charges[detectorID].push_back(static_cast<float>(hitdata.getPixel().getIndex().y())); // y
+                charges[detectorID].push_back(static_cast<float>(hitdata.getSignal()));               // signal
+                break;
+            case 2: // EUTelGenericSparsePixel
+                charges[detectorID].push_back(static_cast<float>(hitdata.getPixel().getIndex().x())); // x
+                charges[detectorID].push_back(static_cast<float>(hitdata.getPixel().getIndex().y())); // y
+                charges[detectorID].push_back(static_cast<float>(hitdata.getSignal()));               // signal
+                charges[detectorID].push_back(static_cast<float>(0));                                 // time
+                break;
+            case 5: // EUTelTimepix3SparsePixel
+                charges[detectorID].push_back(static_cast<float>(hitdata.getPixel().getIndex().x())); // x
+                charges[detectorID].push_back(static_cast<float>(hitdata.getPixel().getIndex().y())); // y
+                charges[detectorID].push_back(static_cast<float>(hitdata.getSignal()));               // signal
+                charges[detectorID].push_back(static_cast<float>(0));                                 // time
+                charges[detectorID].push_back(static_cast<float>(0));                                 // time
+                charges[detectorID].push_back(static_cast<float>(0));                                 // time
+                charges[detectorID].push_back(static_cast<float>(0));                                 // time
+                break;
+            }
         }
     }
 
@@ -97,8 +117,8 @@ void LCIOWriterModule::run(unsigned int eventNb) {
     }
 
     // Add collection to event and write event to LCIO file
-    evt->addCollection(hitVec, "zsdata_m26"); // add the collection with a name
-    lcWriter_->writeEvent(evt.get());         // write the event to the file
+    evt->addCollection(hitVec, OutputCollectionName_); // add the collection with a name
+    lcWriter_->writeEvent(evt.get());                  // write the event to the file
 }
 
 void LCIOWriterModule::finalize() {
