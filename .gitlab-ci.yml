@@ -305,14 +305,12 @@ cmp:doxygen:
     tags:
         - docker
     image: clicdp/cc7-base
+    dependencies:
+        - cmp:centos7-gcc
     script:
         - export COMPILER_TYPE="gcc"
         - source .gitlab-ci.d/init_x86_64.sh
         - source .gitlab-ci.d/load_deps.sh
-        - mkdir public
-        - mkdir build
-        - cd build
-        - cmake -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - make reference
         - mv reference/html ../public/reference
     artifacts:
@@ -326,6 +324,7 @@ cmp:usermanual:
     tags:
       - docker
     image: gitlab-registry.cern.ch/clicdp/publications/templates/custom_ci_worker:fedora-latex-latest
+    dependencies:
     script:
         - mkdir -p public/usermanual
         - mkdir build
