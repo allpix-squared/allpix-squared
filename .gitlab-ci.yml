@@ -53,6 +53,27 @@ cmp:slc6-llvm:
             - lib
         expire_in: 1 hour
 
+# Ensure that our LXP:LUS setup script is functional:
+cmp:lxplus-gcc:
+    stage: compile
+    tags:
+        - docker
+    image: clicdp/slc6-base
+    script:
+        - export COMPILER_TYPE="gcc"
+        - source etc/scripts/setup_lxplus.sh
+        - mkdir build
+        - cd build
+        - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
+        - ninja
+        - ninja install
+    artifacts:
+        paths:
+            - build
+            - bin
+            - lib
+        expire_in: 1 hour
+
 cmp:centos7-gcc:
     stage: compile
     tags:
@@ -196,6 +217,19 @@ ut:slc6-gcc:
         - cd build/
         - ctest --output-on-failure -j4
         - cat output_check_performance.log  
+
+ut:lxplus-gcc:
+    stage: unittest
+    tags:
+        - docker
+    dependencies:
+        - cmp:lxplus-gcc
+    image: clicdp/slc6-base
+    script:
+        - source etc/scripts/setup_lxplus.sh
+        - cd build/
+        - ctest --output-on-failure -j4
+        - cat output_check_performance.log
 
 ut:slc6-llvm:
     stage: unittest
