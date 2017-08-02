@@ -16,7 +16,7 @@ All the available detector models are fully supported. This builder can create e
 * g10
 * solder
 
-This module also allows to simulate misalignments of the setup. By setting one or both of the variables `alignment_precision` and `alignment_precision_rot`, detector misalignments are drawn from a normal distribution with a width given by the configured precision. This is performed for each detector and for each of the three Cartesian coorinates and Euler angles individually. The simulation of misalignments can be omitted by either not specifying the variables or setting all three components of the variable to zero.
+This module also allows to simulate misalignments of the setup. By setting one or both of the variables `alignment_precision` and `alignment_precision_rot`, detector misalignments are drawn from a normal distribution with a width given by the configured precision. This is performed for each detector and for each of the three Cartesian coordinates and Euler angles individually. The simulation of misalignments can be omitted by either not specifying the variables or setting all three components of the variable to zero.
 
 #### Parameters
 * `world_material` : Material of the world, should either be **air** or **vacuum**. Default to **air** if not specified.
