@@ -222,12 +222,12 @@ void GeometryConstructionG4::build_detectors() {
                         misalign_shift(config_.get<ROOT::Math::XYZPoint>("alignment_precision", ROOT::Math::XYZPoint()));
         ROOT::Math::EulerAngles angles =
             detector->getOrientation() *
-            misalign_rotation(config_.get<ROOT::Math::EulerAngles>("alignment_prec_rot", ROOT::Math::EulerAngles()));
+            misalign_rotation(config_.get<ROOT::Math::EulerAngles>("alignment_precision_rot", ROOT::Math::EulerAngles()));
 
         if(config_.has("alignment_precision")) {
             LOG(DEBUG) << " - Misaligned pos.\t:\t" << display_vector(position, {"mm", "um"});
         }
-        if(config_.has("alignment_prec_rot")) {
+        if(config_.has("alignment_precision_rot")) {
             LOG(DEBUG) << " - Misaligned rot.\t:\t" << display_vector(angles, {"deg"});
         }
 

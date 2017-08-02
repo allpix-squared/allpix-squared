@@ -16,10 +16,14 @@ All the available detector models are fully supported. This builder can create e
 * g10
 * solder
 
+This module also allows to simulate misalignments of the setup. By setting one or both of the variables `alignment_precision` and `alignment_precision_rot`, detector misalignments are drawn from a normal distribution with a width given by the configured precision. This is performed for each detector and for each of the three Cartesian coorinates and Euler angles individually. The simulation of misalignments can be omitted by either not specifying the variables or setting all three components of the variable to zero.
+
 #### Parameters
 * `world_material` : Material of the world, should either be **air** or **vacuum**. Default to **air** if not specified.
 * `world_margin_percentage` : Percentage of the world size to add extra compared to the internally calculated minimum world size. Defaults to 0.1, thus 10%.
 * `world_minimum_margin` : Minimum absolute margin to add to all sides of the internally calculated minimum world size. Defaults to zero for all axis, thus not having any minimum margin.
+* `alignment_precision` : Alignment precision of the detector setup in the three cartesian coordinates. If this variable is set, a random misalignment is applied to the detector position.
+* `alignment_precision_rot` : Alignment precision of the detector setup in the three Euler angles. If this variable is set, a random misalignment is applied to the detector orientation.
 * `GDML_output_file` : Optional file to write the geometry to in GDML format. Can only be used if this Geant4 version has GDML support (will throw an error otherwise). Otherwise also likely produces an error due to incomplete GDML implementation in Geant4.
 
 #### Usage
