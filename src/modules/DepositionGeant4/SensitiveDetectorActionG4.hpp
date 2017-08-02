@@ -49,8 +49,8 @@ namespace allpix {
         G4bool ProcessHits(G4Step* step, G4TouchableHistory* history) override;
 
         /**
-         * @brief Send the DepositedCharge Message
-         */
+             * @brief Send the DepositedCharge Message
+             */
         void dispatchDepositedChargeMessage();
 
     private:
