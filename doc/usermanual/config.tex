@@ -29,7 +29,18 @@
     otherkeywords={},
     keywordstyle={\color{green}\bfseries}
 }
-     
+
+% Warning box
+\newsavebox{\warningbox}
+\newenvironment{warning}
+  {\newcommand\colboxcolor{pink}%
+   \begin{lrbox}{\warningbox}%
+   \begin{minipage}{\dimexpr\columnwidth-2\fboxsep\relax}}
+  {\end{minipage}\end{lrbox}%
+   \begin{center}
+     \colorbox{\colboxcolor}{\usebox{\warningbox}}
+  \end{center}}
+
 % Command to add all modules
 \newcommand{\includemodulesmd}{\def\temp{@ALLPIX_MODULE_FILES@}\ifx\temp\empty
   \textit{Module documentation not added because Markdown to LaTex conversion was not possible}
