@@ -3,12 +3,12 @@
 This Getting Started guide is written with a default installation in mind, meaning that some parts may not apply if a custom installation was used.
 When the \textit{allpix} binary is used, this refers to the executable installed in \text{bin/allpix} in your installation path.
 Remember that before running any \apsq simulation, ROOT and likely Geant4 should be initialized.
-Refer to Section \ref{sec:initialize_dependencies} on instructions how to load these libraries.
+Refer to Section~\ref{sec:initialize_dependencies} on instructions how to load these libraries.
 
 \subsection{Configuration Files}
 \label{sec:configuration_files}
 The framework is configured with simple human-readable configuration files.
-The configuration format is described in detail in Section \ref{sec:config_file_format}.
+The configuration format is described in detail in Section~\ref{sec:config_file_format}.
 The configuration consists of several section headers within $[$ and $]$ brackets and a section without header at the start.
 Every section contain a set of key/value pairs separated by the \texttt{=} character.
 Comments are indicated using the has symbol (\texttt{\#}).
@@ -18,39 +18,48 @@ The framework has the following three required layers of configuration files:
 \item The \textbf{main} configuration: The most important configuration file and the file that is passed directly to the binary.
 Contains both the global framework configuration and the list of modules to instantiate together with their configuration.
 An example can be found in the repository at \textit{etc/example.conf}.
-More details and a more thorough example are found in Section \ref{sec:main_config}.
+More details and a more thorough example are found in Section~\ref{sec:main_config}.
 \item The \textbf{detector} configuration passed to the framework to determine the geometry.
 Describes the detector setup, containing the position, orientation and model type of all detectors.
 An example is available in the repository at \textit{etc/example\_detector.conf}.
-Introduced in Section \ref{sec:detector_config}.
+Introduced in Section~\ref{sec:detector_config}.
 \item The detector \textbf{models} configuration.
 Contain the parameters describing a particular type of detector.
 Several models are already provided by the framework, but new types of detectors can easily be added.
 See \textit{models/test.conf} in the repository for an example.
-Please refer to Section \ref{sec:adding_detector_model} for more details about adding new models.
+Please refer to Section~\ref{sec:adding_detector_model} for more details about adding new models.
 \end{itemize}
 
-Before going into depth on defining the required configuration files, first more detailed information about the configuration values is provided in the next paragraphs.
+In the following paragraphs, the available types and the unit system are explained and an introduction to the different configuration files is given.
 
 \subsubsection{Parsing types and units}
 \label{sec:config_values}
 The \apsq framework supports the use of a variety of types for all configuration values.
 The module specifies how the value type should be interpreted.
 An error will be raised if either the key is not specified in the configuration file, the conversion to the desired type is not possible, or if the given value is outside the domain of possible options.
-Please refer to the module documentation in Section \ref{sec:modules} for the list of module parameters and their types.
-Parsing the value roughly follows common-sense (more details can be found in Section \ref{sec:accessing_parameters}).
+Please refer to the module documentation in Section~\ref{sec:modules} for the list of module parameters and their types.
+Parsing the value roughly follows common-sense (more details can be found in Section~\ref{sec:accessing_parameters}).
 A few special rules do apply:
 \begin{itemize}
-\item If the value is a \textbf{string} it may be enclosed by a single pair of double quotation marks (\texttt{"}), which are stripped before passing the value to the modules.
-If the string is not enclosed by the quotation marks all whitespace before and after the value is erased.
+\item If the value is a \textbf{string}, it may be enclosed by a single pair of double quotation marks (\texttt{"}), which are stripped before passing the value to the modules.
+If the string is not enclosed by quotation marks, all whitespace before and after the value is erased.
 If the value is an array of strings, the value is split at every whitespace or comma (\texttt{'}) that is not enclosed in quotation marks.
 \item If the value is a \textbf{boolean}, either numerical (\texttt{0}, \texttt{1}) or textual (\texttt{false}, \texttt{true}) representations are accepted.
-\item If the value is a \textbf{relative path} that path will be made absolute by adding the absolute path of the directory that contains the configuration file where the key is defined.
+\item If the value is a \textbf{relative path}, that path will be made absolute by adding the absolute path of the directory that contains the configuration file where the key is defined.
 \item If the value is an \textbf{arithmetic} type, it may have a suffix indicating the unit.
-The list of base units is shown in Table \ref{tab:units}. 
+The list of base units is shown in Table~\ref{tab:units}. 
 \end{itemize}
 
-\begin{table}[h]
+\begin{warning}
+  If no units are specified, values will always be interpreted in the base units of the framework.
+  In some cases this can lead to unexpected results.
+  E.g. specifying a bias voltage as \texttt{bias\_voltage = 50} results in an applied voltage of \SI{50}{\mega\volt}.
+  Therefore it is \textbf{strongly recommended} to always specify units in the configuration files.
+\end{warning}
+
+The internal base units of the framework are not chosen for user convenience but for maximum precision of the calculations and in order to avoid the necessity of conversions in the code.
+
+\begin{table}[tbp]
 \centering
 \caption{List of units supported by \apsq}
 \label{tab:units}
@@ -79,18 +88,18 @@ The list of base units is shown in Table \ref{tab:units}.
 \end{table}
 
 Combinations of base units can be specified by using the multiplication sign \texttt{*} and the division sign \texttt{/} that are parsed in linear order (thus $\frac{V m}{s^2}$ should be specified as $V*m/s/s$).
-The framework assumes the default units (as given in Table \ref{tab:units}) if the unit is not explicitly specified.
+The framework assumes the default units (as given in Table~\ref{tab:units}) if the unit is not explicitly specified.
 It is recommended to always specify the unit explicitly for all parameters that are not dimensionless as well as for angles.
 
-Examples of specifying key/values pairs of various types are given below
+Examples of specifying key/values pairs of various types are given below:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 # All whitespace at the front and back is removed
 first_string =   string_without_quotation  
-# All whitespace within the quotation marks is kept
+# All whitespace within the quotation marks is preserved
 second_string = "  string with quotation marks  "
 # Keys are split on whitespace and commas
 string_array = "first element" "second element","third element"
-# Integer and floats can be given in standard formats
+# Integer and floats can be specified in standard formats
 int_value = 42
 float_value = 123.456e9
 # Units can be passed to arithmetic type
@@ -110,42 +119,44 @@ my_other_switch = 0
 
 \subsubsection{Main configuration}
 \label{sec:main_config}
-The main configuration consists of a set of section header that specify the modules used.
-All modules are executed in the \underline{linear} order in which they are defined.
-There are a few section names that have a special meaning in the main configuration, which are the following:
+The main configuration consists of a set of sections specifying the modules used.
+All modules are executed in the \emph{linear} order in which they are defined.
+There are a few section names which have a special meaning in the main configuration, namely the following:
 \begin{itemize}
-\item The \textbf{global} (framework) header sections: These are all the zero-length section headers (including the one at the start) and all with the header \texttt{AllPix} (case-sensitive).
-These are combined and accessed together as the global configuration, which contain all the parameters of the framework (see Section \ref{sec:framework_parameters} for details).
+\item The \textbf{global} (framework) header sections: These are all zero-length section headers (including the one at the beginning of the file) and all sections marked with the header \texttt{[AllPix]} (case-sensitive).
+These are combined and accessed together as the global configuration, which contain all parameters of the framework itself (see Section~\ref{sec:framework_parameters} for details).
 All key-value pairs defined in this section are also inherited by all individual configurations as long the key is not defined in the module configuration itself.
-\item The \textbf{ignore} header sections: All sections with name \texttt{Ignore} are ignored.
-Key-value pairs defined in the section as well as the section itself are redundant.
-These sections are useful for quickly enabling and disabling for debugging.
+\item The \textbf{ignore} header sections: All sections with name \texttt{[Ignore]} are ignored.
+Key-value pairs defined in the section as well as the section itself are being discarded by the parser.
+These section headers are useful for quickly enabling and disabling individual modules by replaing their actual name by an ignore section header.
 \end{itemize}
-All other section headers are used to instantiate the modules.
+
+All other section headers are used to instantiate modules.
 Installed modules are loaded automatically.
-If problems arise please review the loading rules described in Section \ref{sec:module_instantiation}.
+If problems arise please review the loading rules described in Section~\ref{sec:module_instantiation}.
 
 Modules can be specified multiple times in the configuration files, but it depends on their type and configuration if this allowed.
 The type of the module determines how the module is instantiated:
 \begin{itemize}
 \item If the module is \textbf{unique}, it is instantiated only a single time irrespective of the amount of detectors.
-These kind of modules should only appear once in the whole configuration file unless a different inputs and outputs are used as explained in Section \ref{sec:redirect_module_input_outputs}.
-\item If the module is \textbf{detector}-specific, it is run on every detector it is configured to run on.
-By default an instantiation is created for all detectors defined in the detector configuration file (see Section \ref{sec:detector_config}) unless one or both of the following parameters are specified.
+These kind of modules should only appear once in the whole configuration file unless a different inputs and outputs are used as explained in Section~\ref{sec:redirect_module_input_outputs}.
+\item If the module is \textbf{detector}-specific, it is instantiated once for every detector it is configured to run on.
+By default, an instantiation is created for all detectors defined in the detector configuration file (see Section~\ref{sec:detector_config}, lowest priority) unless one or both of the following parameters are specified:
 \begin{itemize}
-\item \textbf{name}: An array of detector names where the module should run on.
-Replaces all global and type-specific modules of the same kind.
-\item \textbf{type}: An array of detector type where the module should run on.
+\item \textbf{name}: An array of detector names the module should be executed for.
+Replaces all global and type-specific modules of the same kind (highest priority).
+\item \textbf{type}: An array of detector type the module should be executed for.
 Instantiated after considering all detectors specified by the name parameter above.
-Replaces all global modules of the same kind. 
+Replaces all global modules of the same kind (medium priority).
 \end{itemize}
+Within the same module, the order of the individual instances in the configuration file is irrelevant.
 \end{itemize}
 
 A valid example configuration using the detector configuration above could be:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
-# Key is part of the empty section and therefore the global sections
+# Key is part of the empty section and therefore the global configuration
 string_value = "example1"
-# The location of the detector configuration should be a global parameter
+# The location of the detector configuration is a global parameter
 detectors_file = "manual_detector.conf"
 # The AllPix section is also considered global and merged with the above
 [AllPix]
@@ -156,7 +167,7 @@ another_random_string = "example2"
 # This module takes no parameters
 # [MyUniqueModule] cannot be instantiated another time
 
-# Then run some detector modules on different detectors 
+# Then run detector modules on different detectors 
 # First run a module on the detector of type Timepix
 [MyDetectorModule]
 type = "timepix"
@@ -166,124 +177,121 @@ int_value = 1
 [MyDetectorModule]
 name = "dut"
 int_value = 2
-# Runs the module on the remaining unspecified detector `telescope1`
+# Run the module on the remaining unspecified detector (`telescope1`)
 [MyDetectorModule]
 # int_value is not specified, so it uses the default value
 \end{minted}
 
 This configuration can however not be executed in practice because MyUniqueModule and MyDetectorModule do not exist.
-In the next paragraphs an useful configuration file with valid configuration is presented.
-Before turning to the module parameters the global framework parameters are introduced first.
-
+In the following paragraphs, a fully functional albeit simple configuration file with valid configuration including a detector configuration is presented.
 
 \subsubsection{Detector configuration}
 \label{sec:detector_config}
-The detector configuration consist of a set of section headers describing the detectors in the setup.
-The section header describes the names used to identify the detectors.
-All names should be unique, thus using the same name multiple times is not possible.
+The detector configuration consist of a set of sections describing the detectors in the setup.
+Each section starts with a header describing the name used to identify the detector.
+All names have to be unique, thus using the same detector name multiple times is not possible.
 Every detector should contain all of the following parameters:
 \begin{itemize}
 \item A string referring to the \textbf{type} of the detector model.
-The model should exist in the search path described in Section \ref{sec:detector_models}.
+The model should exist in the search path described in Section~\ref{sec:detector_models}.
 \item The 3D \textbf{position} in the world frame in the order x, y, z.
-See Section \ref{sec:models_geometry} for details.
+See Section~\ref{sec:models_geometry} for details.
 \item The \textbf{orientation} specified as Z-X-Z extrinsic Euler angle.
 This means the detector is rotated first around the world's Z-axis, then around the world's X-axis and then again around the global Z-axis.
-See Section \ref{sec:models_geometry} for details.
+See Section~\ref{sec:models_geometry} for details.
 \end{itemize}
-Furthermore it is possible to specialize certain parameters of the detector models, which is explained in more detail in Section \ref{sec:detector_models}.
+Furthermore it is possible to specialize certain parameters of the detector models, which is explained in more detail in Section~\ref{sec:detector_models}.
+This allows to quickly adapt e.g. the sensor thickness of a certain detector without altering the actual detector model file.
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.6\textwidth]{telescope.png}
-  \caption{Particle passage through the telescope setup of the detector configuration file}
+  \caption{Visualization of a particle passing through the telescope setup defined in the detector configuration file}
   \label{fig:telescope}
 \end{figure}
 
 An example configuration file of one test detector and two Timepix~\cite{timepix} models is: 
 \inputminted[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}{../../etc/manual_detector.conf}
-Figure \ref{fig:telescope} shows the setup described in the file.
+Figure~\ref{fig:telescope} shows a visualization of the setup described in the file.
 This configuration is used in the rest of this chapter for explaining concepts.
 
 
 \subsection{Framework parameters}
 \label{sec:framework_parameters}
-The framework has a variety of global parameters that allow to configure \apsq for different kind of simulations:
+The \apsq framework provides a set of global parameters which contol and alter its behavior:
 \begin{itemize}
-\item \textbf{detectors\_file}: Location of the file describing the detector configuration (introduced in Section \ref{sec:detector_config}).
+\item \textbf{\texttt{detectors\_file}}: Location of the file describing the detector configuration (introduced in Section~\ref{sec:detector_config}).
 The only \underline{required} global parameter: the framework will fail if it is not specified.
-\item \textbf{number\_of\_events}: Determines the total number of events the framework should simulate.
+\item \textbf{\texttt{number\_of\_events}}: Determines the total number of events the framework should simulate.
 Equivalent to the amount of times the modules are run.
 Defaults to one (simulating a single event).
-\item \textbf{log\_level}: Specifies the minimum log level which should be written.
-Possible values include \texttt{FATAL}, \texttt{STATUS}, \texttt{ERROR}, \texttt{WARNING}, \texttt{INFO} and \texttt{DEBUG}, where all options are case-insensitive.
+\item \textbf{\texttt{root\_file}}: Location relative to the \textbf{\texttt{output\_directory}} where the ROOT output data of all modules will be written to.
+Default value is \textit{modules.root}.
+Directories within the ROOT file will be created automatically for all module instantiations.
+\item \textbf{\texttt{log\_level}}: Specifies the lowest log level which should be reported.
+Possible values are \texttt{FATAL}, \texttt{STATUS}, \texttt{ERROR}, \texttt{WARNING}, \texttt{INFO} and \texttt{DEBUG}, where all options are case-insensitive.
 Defaults to the \texttt{INFO} level.
-More details and information about the log levels and changing it for a particular module can be found in Section \ref{sec:logging_verbosity}.
+More details and information about the log levels and how to change them for a particular module can be found in Section~\ref{sec:logging_verbosity}.
 Can be overwritten by the \texttt{-v} parameter on the command line.
-\item \textbf{log\_format}: Determines the format to display.
-Possible options include \texttt{SHORT}, \texttt{DEFAULT} and \texttt{LONG}, where all options are case-insensitive.
-More information again in Section \ref{sec:logging_verbosity}.
-\item \textbf{log\_file}: File where output should be written to besides standard output (usually the terminal).
+\item \textbf{\texttt{log\_format}}: Determines the format to display.
+Possible options are \texttt{SHORT}, \texttt{DEFAULT} and \texttt{LONG}, where all options are case-insensitive.
+More information can be found in Section~\ref{sec:logging_verbosity}.
+\item \textbf{\texttt{log\_file}}: File where the log output should be written to in addition to printing to the standard output (usually the terminal).
 Only writes to standard output if this option is not provided.
 Another (additional) location to write to can be specified on the command line using the \texttt{-l} parameter.
-\item \textbf{output\_directory}: Directory to write all output files into.
-Extra directories are created for all the module instantiations.
-This directory also contains the \textbf{root\_file} parameter described after.
+\item \textbf{\texttt{output\_directory}}: Directory to write all output files into.
+Subdirectories are created automatically for all module instantiations.
+This directory will also contain the \textbf{\texttt{root\_file}} specified via the parameter described above.
 Defaults to the current working directory with the subdirectory \textit{output/} attached.
-\item \textbf{root\_file}: Location relative to the \textbf{output\_directory}, where the ROOT output data of all modules will be written to.
-Default value is \textit{modules.root}.
-The directories will be created automatically for all the module instantiations in this ROOT file.
-\item \textbf{random\_seed}: Seed to use for the global random seed generator used to initialize the seeds for the module instantiations.
+\item \textbf{\texttt{random\_seed}}: Seed for the global random seed generator used to initialize seeds for module instantiations.
 A random seed from multiple entropy sources will be generated if the parameter is not specified.
 Can be used to reproduce an earlier simulation run.
-\item \textbf{library\_directories}: Additional directories to search for libraries, before searching the default paths.
-See Section \ref{sec:module_instantiation} for details.
-\item \textbf{model\_path}: Additional files or directories from which detector models should be read besides the standard search locations.
-Refer to Section \ref{sec:detector_models} for more information.
+\item \textbf{\texttt{library\_directories}}: Additional directories to search for module libraries, before searching the default paths.
+See Section~\ref{sec:module_instantiation} for details.
+\item \textbf{\texttt{model\_path}}: Additional files or directories from which detector models should be read besides the standard search locations.
+Refer to Section~\ref{sec:detector_models} for more information.
 \end{itemize}
-
-With this information in mind it is time to setup a real simulation.
-Module parameters are shortly introduced when they are first used.
-For more details about these parameters the module documentation in Section \ref{sec:modules} should be consulted.
 
 \subsection{Setting up the Simulation Chain}
 \label{sec:setting_up_simulation_chain}
-Below a simple, but complete simulation is described.
+
+In the following, the framework parameters are used to set up a fully functional simulation.
+Module parameters are shortly introduced when they are first used.
+For more details about these parameters, the respective module documentation in Section~\ref{sec:modules} should be consulted.
 A typical simulation in \apsq contains at least the following components.
 \begin{itemize}
 
 \item The \textbf{geometry builder}, responsible for creating the external Geant4 geometry from the internal geometry.
-In this document internal geometry refers to the parameters containing the geometry description in \apsq, while external geometry refers to the constructed Geant4 geometry used for deposition (and possibly visualization).
+In this document, \emph{internal geometry} refers to the detector parameters used by \apsq for coordinate transformations and conversions throughout the simulation, while \emph{external geometry} refers to the constructed Geant4 geometry used for charge carrier deposition (and possibly visualization) only.
 \item The \textbf{deposition} module that simulates the particle beam that deposits charge carriers in the detectors using the provided physics list (containing a description of the simulated interactions) and the geometry created above.
 \item A \textbf{propagation} module that propagates the charges through the sensor.
-\item A \textbf{transfer} module that transfers the charges from the sensor and assigns them to a pixel.
+\item A \textbf{transfer} module that transfers the charges from the sensor and assigns them to a pixel of the readout electronics.
 \item A \textbf{digitizer} module which converts the charges in the pixel to a detector hit, simulating the frontend electronics response.
 \item An \textbf{output} module, saving the data of the simulation.
-At the moment output can be written as ROOT TTree as explained in more detail in Section \ref{sec:storing_output_data}.
+The \apsq standard file format is a ROOT TTree as will be detailed in Section~\ref{sec:storing_output_data}.
 \end{itemize}
 
-In the example charges will be deposited in the three sensors from the detector configuration file in Section \ref{sec:detector_config}.
-Only the charges in the Timepix models are going to be propagated and digitized.
-The final results of hits in the device under test (dut) will be written to a ROOT histogram.
-A configuration file that implements this description is as follows:
+In this example, charge carriers will be deposited in the three sensors defined in the detector configuration file in Section~\ref{sec:detector_config}.
+Only the charge carriers deposited in the sensors of the Timepix detector models are going to be propagated and digitized.
+Finally, some detector histograms for the device under test (DUT) will be recorded as ROOT histograms and all simulated objects (including the Monte Carlo truth) are stored to the \apsq ROOT file.
+A configuration file implementing this could look like this:
 \inputminted[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}{../../etc/manual.conf}
 
-The configuration above is available as \textit{etc/manual.conf}.
-The detector configuration file in Section \ref{sec:detector_config} can be found in \textit{etc/manual\_detector.conf}.
-The total simulation can then be executed by passing the configuration to the allpix binary as follows:
+This configuration is available in the repository at \textit{etc/manual.conf}.
+The detector configuration file from Section~\ref{sec:detector_config} can be found at \textit{etc/manual\_detector.conf}.
 
+The simulation can be executed by passing the main configuration to the \texttt{allpix} binary as follows:
 \begin{verbatim}
 $ allpix -c etc/manual.conf
 \end{verbatim}
-The simulation should then start.
-It should output similar output as the example found in Appendix \ref{sec:example_output}.
-The final histogram of the hits will then be availabe in the ROOT file \textit{output/modules.root} as the local file \textit{DetectorHistogrammer/histogram}.
+The output should look similar to the sample log provided in Appendix~\ref{sec:example_output}.
+The detector histograms such as the hit map are stored in the ROOT file \textit{output/modules.root} in the TDirectory \textit{DetectorHistogrammer/}.
 
-If problems occur, please make sure you have an up-to-date and properly installed version of \apsq (see the installation instructions in Section \ref{sec:installation}).
-If modules and models fail to load, more information about loading problems can be found in the detailed framework description in Section \ref{sec:framework}.
+If problems occur when exercising this example, it should be made sure that an up-to-date and properly installed version of \apsq is used (see the installation instructions in Section~\ref{sec:installation}).
+If modules and models fail to load, more information about potential issues with the library loading can be found in the detailed framework description in Section~\ref{sec:framework}.
 
 \subsection{Adding More Modules}
-Before going to more advanced configurations, a few simple modules are discussed which a user might want to add.
+In the following, a few basic modules are discussed which might be of use for a very first simulation.
 
 \paragraph{Visualization}
 Displaying the geometry and the particle tracks helps a lot in both checking and interpreting the results.
@@ -331,7 +339,7 @@ simple_view = 1
 # See more parameters above
 \end{minted}
 
-More information about all the possible configuration parameters can be found in the module documentation in Section \ref{sec:modules}.
+More information about all the possible configuration parameters can be found in the module documentation in Section~\ref{sec:modules}.
 
 \paragraph{Electric Fields}
 \label{sec:module_electric_field}
@@ -367,7 +375,7 @@ file_name = "example_electric_field.init"
 An example electric field (which the name used above) can be found in the \textit{etc} directory of the \apsq repository. 
 
 To import the electric fields from TCAD into \apsq a converter tool is included in the framework.
-A detailed description on how this tool should be used and how it exactly works can be found in Section \ref{sec:tcad_electric_field_converter}.
+A detailed description on how this tool should be used and how it exactly works can be found in Section~\ref{sec:tcad_electric_field_converter}.
 
 \subsection{Redirect Module Inputs and Outputs}
 \label{sec:redirect_module_input_outputs}
@@ -421,7 +429,7 @@ The log level can be overridden for a specific module by adding the \textbf{log\
 The following log levels are currently supported:
 \begin{itemize}
 \item \textbf{FATAL}: Indicates a fatal error that should and will lead to direct termination of the application.
-Typically only emitted in the main executable after catching exceptions, because exceptions are the preferred way of fatal error handling as discussed in Section \ref{sec:error_reporting_exceptions}.
+Typically only emitted in the main executable after catching exceptions, because exceptions are the preferred way of fatal error handling as discussed in Section~\ref{sec:error_reporting_exceptions}.
 An example of a fatal error is an invalid configuration parameter.
 \item \textbf{STATUS}: Important informational messages about the status of the simulation.
 Should only be used for informational messages that have to be logged in every run (unless the user wants to only fetch fatal errors)
@@ -454,14 +462,14 @@ Besides the information above, it also shows the file and line where the log mes
 This can help in debugging modules.
 \end{itemize}
 
-More details about the logging system and the procedure for reporting errors in the code can be found in Section \ref{sec:logger} and \ref{sec:error_reporting_exceptions}.
+More details about the logging system and the procedure for reporting errors in the code can be found in Section~\ref{sec:logger} and~\ref{sec:error_reporting_exceptions}.
 
 \subsection{Storing Output Data}
 \label{sec:storing_output_data}
 Saving the output to persistent storage is of primary importance for later review and analysis.
 \apsq primarily uses ROOT for storing output data, because it supports writing arbitrary objects and is a standard tool in High-Energy Physics.
 The \texttt{ROOTObjectWriter} automatically saves all the data objects written by the modules to a TTree~\cite{roottree} for more information about TTrees).
-The module stores all different object types to a separate tree, creating a branch for every combination of detector and the name given to the output as explained in Section \ref{sec:redirect_module_input_outputs}.
+The module stores all different object types to a separate tree, creating a branch for every combination of detector and the name given to the output as explained in Section~\ref{sec:redirect_module_input_outputs}.
 For each event, values are added to the leafs of the branches containing the data of the objects.
 This allows for easy histogramming of the acquired data over the total run using the ROOT utilities.
 Relations between objects within a single event are internally stored as TRef allowing to fetch related objects as long as these are loaded in memory.
@@ -477,7 +485,7 @@ To replicate the default behaviour the following configuration can be used:
 file_name = "data.root"
 \end{minted}
 The generated output file can be further analyzed with ROOT macros.
-A simple macro for converting the results to a tree with standard branches for comparisons can be found in Section \ref{sec:root_analysis_macros}.
+A simple macro for converting the results to a tree with standard branches for comparisons can be found in Section~\ref{sec:root_analysis_macros}.
 
 Besides using the generated tree for analysis it is also possible to read all the object data back in, to propagate it to further modules.
 This can be used to split the execution of several parts of the simulation in multiple independent steps, which can be executed after each order.
