@@ -31,7 +31,7 @@ cmp:slc6-gcc:
             - build
             - bin
             - lib
-        expire_in: 1 hour
+        expire_in: 3 hour
 
 cmp:slc6-llvm:
     stage: compile
@@ -51,7 +51,7 @@ cmp:slc6-llvm:
             - build
             - bin
             - lib
-        expire_in: 1 hour
+        expire_in: 3 hour
 
 # Ensure that our LXP:LUS setup script is functional:
 cmp:lxplus-gcc:
@@ -72,7 +72,7 @@ cmp:lxplus-gcc:
             - build
             - bin
             - lib
-        expire_in: 1 hour
+        expire_in: 3 hour
 
 cmp:centos7-gcc:
     stage: compile
@@ -93,7 +93,7 @@ cmp:centos7-gcc:
             - build
             - bin
             - lib
-        expire_in: 1 hour
+        expire_in: 3 hour
 
 cmp:centos7-llvm:
     stage: compile
@@ -113,7 +113,7 @@ cmp:centos7-llvm:
             - build
             - bin
             - lib
-        expire_in: 1 hour
+        expire_in: 3 hour
 
 cmp:mac1012-clang:
     stage: compile
@@ -132,7 +132,7 @@ cmp:mac1012-clang:
             - build
             - bin
             - lib
-        expire_in: 1 hour
+        expire_in: 3 hour
 
 
 
@@ -318,7 +318,7 @@ cmp:doxygen:
     artifacts:
         paths:
             - public
-        expire_in: 1 hour
+        expire_in: 3 hour
 
 # Compile LaTeX user manual:
 cmp:usermanual:
@@ -346,7 +346,7 @@ cmp:usermanual:
     artifacts:
         paths:
           - public
-        expire_in: 1 hour
+        expire_in: 3 hour
 
 
 
