@@ -193,6 +193,10 @@ void ElectricFieldReaderModule::create_output_plots() {
                               min2,
                               max2);
 
+    // Create 1D histogram
+    auto histogram1D =
+        new TH1F("field1d", ("Electric field for " + detector_->getName()).c_str(), static_cast<int>(steps), min2, max2);
+
     // Determine the coordinate to use for projection
     double x = 0, y = 0, z = 0;
     if(project == 'x') {
@@ -235,16 +239,26 @@ void ElectricFieldReaderModule::create_output_plots() {
             // Fill the histogram
             if(project == 'x') {
                 histogram->Fill(y, z, static_cast<double>(field_strength));
+                if(j == 0) {
+                    histogram1D->Fill(z, static_cast<double>(field_strength));
+                }
             } else if(project == 'y') {
                 histogram->Fill(x, z, static_cast<double>(field_strength));
+                if(j == 0) {
+                    histogram1D->Fill(z, static_cast<double>(field_strength));
+                }
             } else {
                 histogram->Fill(x, y, static_cast<double>(field_strength));
+                if(j == 0) {
+                    histogram1D->Fill(y, static_cast<double>(field_strength));
+                }
             }
         }
     }
 
     // Write the histogram to module file
     histogram->Write();
+    histogram1D->Write();
 }
 
 /**
