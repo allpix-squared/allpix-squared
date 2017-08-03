@@ -311,7 +311,7 @@ void run(unsigned int event_id) {
     std::shared_ptr<Message<Object>> message = std::make_shared<Message<Object>>(data, "dut");
     
     // Send the message using the Messenger object
-    messenger->dispatchMessage(message);
+    messenger->dispatchMessage(this, message);
 }
 \end{minted}
 
