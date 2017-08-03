@@ -43,6 +43,12 @@ namespace allpix {
         unsigned long int getClusterSize() const { return pixelHits_.size(); }
 
         /**
+         * @brief Get the cluster sizes in x and y
+         * @return pair of cluster size x and y
+         */
+        std::pair<unsigned int, unsigned int> getClusterSizeXY();
+
+        /**
          * @brief Get the weighted mean cluster position
          * @return weighted mean cluster position
          */
@@ -65,6 +71,8 @@ namespace allpix {
 
         std::set<const PixelHit*> pixelHits_;
         double clusterCharge_{};
+
+        unsigned int minX_, minY_, maxX_, maxY_;
     };
 }
 #endif

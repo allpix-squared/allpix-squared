@@ -91,6 +91,8 @@ namespace allpix {
         TH2I* cluster_map;
         TH1I* event_size;
         TH1I* cluster_size;
+        TH1I* cluster_size_x;
+        TH1I* cluster_size_y;
         TH1I* n_cluster;
         TH1D* cluster_charge;
     };

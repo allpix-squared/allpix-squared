@@ -56,7 +56,7 @@ void DetectorHistogrammerModule::init() {
                            -0.5,
                            model->getNPixels().y() - 0.5);
 
-    // Create cluster size plot
+    // Create cluster size plots
     std::string cluster_size_name = "cluster_size";
     std::string cluster_size_title = "Cluster size for " + detector_->getName() + ";size;number";
     cluster_size = new TH1I(cluster_size_name.c_str(),
@@ -64,6 +64,22 @@ void DetectorHistogrammerModule::init() {
                             model->getNPixels().x() * model->getNPixels().y(),
                             0.5,
                             model->getNPixels().x() * model->getNPixels().y() + 0.5);
+
+    std::string cluster_size_x_name = "cluster_size_x";
+    std::string cluster_size_x_title = "Cluster size X for " + detector_->getName() + ";size;number";
+    cluster_size_x = new TH1I(cluster_size_x_name.c_str(),
+                              cluster_size_x_title.c_str(),
+                              model->getNPixels().x(),
+                              0.5,
+                              model->getNPixels().x() + 0.5);
+
+    std::string cluster_size_y_name = "cluster_size_y";
+    std::string cluster_size_y_title = "Cluster size Y for " + detector_->getName() + ";size;number";
+    cluster_size_y = new TH1I(cluster_size_y_name.c_str(),
+                              cluster_size_y_title.c_str(),
+                              model->getNPixels().y(),
+                              0.5,
+                              model->getNPixels().y() + 0.5);
 
     // Create event size plot
     std::string event_size_name = "event_size";
@@ -115,6 +131,10 @@ void DetectorHistogrammerModule::run(unsigned int) {
         }
         // Fill cluster histograms
         cluster_size->Fill(static_cast<double>(clus->getClusterSize()));
+        auto clusSizesXY = clus->getClusterSizeXY();
+        cluster_size_x->Fill(clusSizesXY.first);
+        cluster_size_y->Fill(clusSizesXY.second);
+
         auto clusPos = clus->getClusterPosition();
         cluster_map->Fill(clusPos.x(), clusPos.y());
         cluster_charge->Fill(clus->getClusterCharge() * 1.e-3);
@@ -142,6 +162,20 @@ void DetectorHistogrammerModule::finalize() {
     // Set cluster size axis spacing
     if(static_cast<int>(xmax) < 10) {
         cluster_size->GetXaxis()->SetNdivisions(static_cast<int>(xmax) + 1, 0, 0, true);
+    }
+
+    xmax = std::ceil(cluster_size_x->GetBinCenter(cluster_size_x->FindLastBinAbove()) + 1);
+    cluster_size_x->GetXaxis()->SetRangeUser(0, xmax);
+    // Set cluster size_x axis spacing
+    if(static_cast<int>(xmax) < 10) {
+        cluster_size_x->GetXaxis()->SetNdivisions(static_cast<int>(xmax) + 1, 0, 0, true);
+    }
+
+    xmax = std::ceil(cluster_size_y->GetBinCenter(cluster_size_y->FindLastBinAbove()) + 1);
+    cluster_size_y->GetXaxis()->SetRangeUser(0, xmax);
+    // Set cluster size_y axis spacing
+    if(static_cast<int>(xmax) < 10) {
+        cluster_size_y->GetXaxis()->SetNdivisions(static_cast<int>(xmax) + 1, 0, 0, true);
     }
 
     // FIXME Set more useful spacing maximum for event size histogram
@@ -192,6 +226,8 @@ void DetectorHistogrammerModule::finalize() {
     hit_map->Write();
     cluster_map->Write();
     cluster_size->Write();
+    cluster_size_x->Write();
+    cluster_size_y->Write();
     event_size->Write();
     n_cluster->Write();
     cluster_charge->Write();
