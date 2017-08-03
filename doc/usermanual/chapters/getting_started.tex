@@ -294,20 +294,18 @@ If modules and models fail to load, more information about potential issues with
 In the following, a few basic modules are discussed which might be of use for a very first simulation.
 
 \paragraph{Visualization}
-Displaying the geometry and the particle tracks helps a lot in both checking and interpreting the results.
+Displaying the geometry and the particle tracks helps both in checking and interpreting the results of a simulation.
 Visualization is fully supported through Geant4, supporting all the options provided by Geant4~\cite{geant4vis}.
-Using the Qt viewer with the OpenGL driver is however the recommended option as long as the installed version of Geant4 supports it.
+Using the Qt viewer with the OpenGL driver is the recommended option as long as the installed version of Geant4 is built with Qt support enabled.
 
-To add the visualization, the \texttt{VisualizationGeant4} section should be added at the end of the configuration file before running the simulation again.
+To add the visualization, the \texttt{VisualizationGeant4} section should be added at the end of the configuration file.
 An example configuration with some useful parameters is given below:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 [VisualizationGeant4]
-# Setup to use the Qt gui
+# Use the Qt gui
 mode = "gui"
-# Use simple visualization for huge speedup
-simple_view = 1
 
-# Set transparency percentage
+# Set transparency of the detector models (in percent)
 transparency = 0.4
 # Set viewing style (alternative is 'wireframe')
 view_style = "surface"
@@ -318,14 +316,14 @@ trajectories_color_positive = "blue"
 trajectories_color_neutral = "green"
 trajectories_color_negative = "red"
 \end{minted}
-If it gives an error about Qt not being available the VRML viewer can be used as a replacement, but it is recommended to reinstall Geant4 with the Qt viewer included.
-To use the VRML viewer instead, follow the steps below:
+If Qt is not available, a VRML viewer can be used as an alternative, however it is recommended to reinstall Geant4 with the Qt viewer included.
+The following steps are necessary in order to use a VRML viewer:
 \begin{itemize}
-\item The VRML viewer should be installed on your operating system.
-Good options are for example FreeWRL and OpenVRML.
-\item Subsequently two environmental parameters should be exported to inform Geant4 of the configuration.
-These include \texttt{G4VRMLFILE\_VIEWER} which should point to the location of the viewer and \texttt{G4VRMLFILE\_MAX\_FILE\_NUM} which should typically be set to 1 to prevent too many files from being created.
-\item Finally the example section below should be added at the end of the configuration file before running the simulation again:
+\item A VRML viewer should be installed on the operating system.
+Good options are for example FreeWRL or OpenVRML.
+\item Subsequently, two environmental parameters have to be exported to the shell environment to inform Geant4 about the configuration:
+\texttt{G4VRMLFILE\_VIEWER} should point to the location of the viewer executable and \texttt{G4VRMLFILE\_MAX\_FILE\_NUM} should typically be set to 1 to prevent too many files from being created.
+\item Finally, the configuration section of the visualization module should be altered as follows:
 \end{itemize}
 
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
@@ -334,62 +332,60 @@ These include \texttt{G4VRMLFILE\_VIEWER} which should point to the location of 
 mode = "none"
 # Use the VRML driver
 driver = "VRML2FILE"
-# Use simple visualization for huge speedup
-simple_view = 1
-# See more parameters above
 \end{minted}
 
-More information about all the possible configuration parameters can be found in the module documentation in Section~\ref{sec:modules}.
+More information about all possible configuration parameters can be found in the module documentation in Section~\ref{sec:modules}.
 
 \paragraph{Electric Fields}
 \label{sec:module_electric_field}
-The example configuration before already contained a module for adding a linear electric field to the sensitive detector.
-All detectors by default do not have any electric field.
-This will make the \texttt{GenericPropagation} module slow, because it will wait for the propagated charges to reach the end of the sensor, which can take a long time with diffusion solely.
-Therefore a simple linear electric field have been added to the sensors.
-The section below sets the electric field on every point in the pixel grid to the voltage divided by the thickness of the sensor.
+The example configuration before already contained a module for adding a linear electric field to the detectors.
+By default, detectors do not have any electric field and no bias voltage is applied.
+
+The section below calculates a linear electric field for every point in active sensor volume based on the depletion voltage of the sensor and the actually applied bias voltage.
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
-# Add a electric field
+# Add an electric field
 [ElectricFieldReader]
-# Set it to be linear
+# Set the field type to `linear`
 model = "linear"
-# Bias voltage used to create the linear electric field
-voltage = 50V
+# Applied bias voltage to calculate the electric field from
+bias_voltage = 50V
+# Depletion voltage at which the given sensor is fully depleted
+depletion_voltage = 10V
 \end{minted}
 
-\todo{The issue with slow propagation should be fixed}
-
-A fully specified electric field in the detectors can also be provided using the .init format.
-The init format is format used by the PixelAV software~\cite{swartz2002detailed,swartz2003cms} after conversions from internal TCAD formats.
-These fields can be attached to specific detectors using the standard syntax for detector binding.
+Electric fields can be attached to a specific detectors using the standard syntax for detector binding.
 A possible configuration would be:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 [ElectricFieldReader]
-# Bind the electric field to the timepix sensor
-name = "tpx"
-# Specify the model is in the init format
+# Bind the electric field to the detector named `dut`
+name = "dut"
+# Specify the model is in the init electrif field map format
 model = "init"
 # Name of the file containing the electric field
 file_name = "example_electric_field.init"
 \end{minted}
-An example electric field (which the name used above) can be found in the \textit{etc} directory of the \apsq repository. 
 
-To import the electric fields from TCAD into \apsq a converter tool is included in the framework.
-A detailed description on how this tool should be used and how it exactly works can be found in Section~\ref{sec:tcad_electric_field_converter}.
+
+\apsq also provides the possibility to utilize a full electrostatic TCAD simulation for the description of the electric field.
+In order to speed up the lookup of the electric field values at different positions in the sensor, the adaptive TCAD mesh has to be interpolated and transformed into a regular grid with configurable feature size before using it.
+\apsq comes with a converter tool which reads TCAD DF-ISE files from the sensor simulation, interpolates the field and writes it out in the appropriate format.
+A more detailed description of the tool can be found in Section~\ref{sec:tcad_electric_field_converter}.
+An example electric field (which the file name used in the example above) can be found in the \textit{etc} directory of the \apsq repository.
+
 
 \subsection{Redirect Module Inputs and Outputs}
 \label{sec:redirect_module_input_outputs}
-By default it is not allowed to have the same type of module (linked to the same detector), but in several cases it may be useful to run the same module with different settings.
-The \apsq framework support this by allowing to redirect the input and output data of every module.
-A module sends it output by default to all modules listening to the type of object it dispatches.
-It is however possible to specify a certain name in addition to the type of the data.
+In the \apsq framework, modules by default exchange messages based on their in- and output message types and the detector type.
+It is, however, possible to specify a name for the incoming and outgoing message of every module in the simulation.
+This module will then only receive messages dispatched with the name provided and send named messages out to other modules listening for messages with a specific name.
+This enables running the same module several times for the same detector, e.g.\ to test different parameter settings.
 
-The output name of a module can be changed by setting the \textbf{output} parameter of the module to a unique value.
-The output of this module is then not sent anymore to modules without a configured input, because the default input listens only to data without a name.
+The message output name of a module can be changed by setting the \textbf{output} parameter of the module to a unique value.
+The output of this module is then not sent to modules without a configured input, because the default input listens only to data without a name.
 The \textbf{input} parameter of a particular receiving module should therefore be set to match the value of the \textbf{output} parameter.
-In addition it is allowed to set the \textbf{input} parameter to the special value \texttt{*} to indicate that it should listen to all messages irrespective of their name.
+In addition it is allowed to set the \textbf{input} parameter to the special value \texttt{*} to indicate that the module should listen to all messages irrespective of their name.
 
-An example of a configuration with two settings for digitization is shown below:
+An example of a configuration with two different settings for the digitization module is shown below:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 # Digitize the propagated charges with low noise levels
 [DefaultDigitizer]
