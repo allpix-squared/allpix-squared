@@ -234,8 +234,6 @@ void ElectricFieldReaderModule::create_output_plots() {
             // Get field strength from detector
             auto field_strength = Units::convert(
                 std::sqrt(detector_->getElectricField(ROOT::Math::XYZPoint(x, y, z)).Mag2()), "V/cm"); // magnitude
-            // auto field_strength = Units::convert( detector_->getElectricField(ROOT::Math::XYZPoint(x, y, z)).Z(), "V/cm");
-            // //z-component
             // Fill the histogram
             if(project == 'x') {
                 histogram->Fill(y, z, static_cast<double>(field_strength));
