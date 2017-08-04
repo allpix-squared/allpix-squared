@@ -12,8 +12,8 @@ Writes pixel hit data to LCIO file, compatible to EUTelescope analysis framework
   - EUTelSimpleSparsePixelDefault 1
   - EUTelGenericSparsePixel 2
   - EUTelTimepix3SparsePixel 5
-* DetectorName
-* OutputCollectionName
+* `DetectorName`: Detector name written to the run header. Default: "EUTelescope"
+* `OutputCollectionName`: Name of the LCIO collection containing the pixel data. Default: "zsdata_m26"
 
 #### Usage
 ```ini
