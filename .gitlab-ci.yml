@@ -124,7 +124,7 @@ cmp:mac1012-clang:
         - source .gitlab-ci.d/load_deps.sh
         - mkdir build
         - cd build
-        - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
+        - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR CMAKE_SKIP_BUILD_RPATH=TRUE ..
         - ninja
         - ninja install
     artifacts:
@@ -289,6 +289,7 @@ ut:mac1012-clang:
         - source .gitlab-ci.d/init_mac.sh
         - source .gitlab-ci.d/load_deps.sh
         - cd build/
+        - cmake ..
         - ctest --output-on-failure -j4
         - cat output_check_performance.log 
 
