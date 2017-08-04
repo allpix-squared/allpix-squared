@@ -83,7 +83,8 @@ void LCIOWriterModule::run(unsigned int eventNb) {
                 charges[detectorID].push_back(static_cast<float>(hitdata.getPixel().getIndex().y())); // y
                 charges[detectorID].push_back(static_cast<float>(hitdata.getSignal()));               // signal
                 break;
-            case 2: // EUTelGenericSparsePixel
+            case 2:  // EUTelGenericSparsePixel
+            default: // EUTelGenericSparsePixel is default
                 charges[detectorID].push_back(static_cast<float>(hitdata.getPixel().getIndex().x())); // x
                 charges[detectorID].push_back(static_cast<float>(hitdata.getPixel().getIndex().y())); // y
                 charges[detectorID].push_back(static_cast<float>(hitdata.getSignal()));               // signal
