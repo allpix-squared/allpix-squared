@@ -51,5 +51,7 @@ namespace allpix {
         IO::LCWriter* lcWriter_{};
         std::map<std::string, unsigned int> detectorIDs_;
         int pixelType_;
+        std::string OutputCollectionName_;
+        std::string DetectorName_;
     };
 } // namespace allpix
