@@ -111,7 +111,7 @@ unsigned int SensitiveDetectorActionG4::getTotalDepositedCharge() {
     return total_deposited_charge_;
 }
 
-void SensitiveDetectorActionG4::EndOfEvent(G4HCofThisEvent*) {
+void SensitiveDetectorActionG4::dispatchDepositedChargeMessage() {
     // Always send the track information
     auto mc_particle_message = std::make_shared<MCParticleMessage>(std::move(mc_particles_), detector_);
     messenger_->dispatchMessage(module_, mc_particle_message);

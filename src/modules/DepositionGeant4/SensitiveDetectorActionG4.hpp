@@ -49,9 +49,9 @@ namespace allpix {
         G4bool ProcessHits(G4Step* step, G4TouchableHistory* history) override;
 
         /**
-         * @brief Handle the end of the event and dispatch the deposited charges and MC particles
+         * @brief Send the DepositedCharge Message
          */
-        void EndOfEvent(G4HCofThisEvent*) override;
+        void dispatchDepositedChargeMessage();
 
     private:
         // Instantatiation of the deposition module

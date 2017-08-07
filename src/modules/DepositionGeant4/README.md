@@ -12,10 +12,10 @@ Module that creates the deposits in the sensitive devices, wrapper around the Ge
 * `max_step_length` : Maximum length of a simulation step in every sensitive device.
 * `particle_position` : Position of the particle source in the world geometry.
 * `particle_type` : Type of the Geant4 particle to use in the source. Refer to [this](http://geant4.cern.ch/G4UsersDocuments/UsersGuides/ForApplicationDeveloper/html/TrackingAndPhysics/particle.html) page for information about the available types of particles.
-* `particle_amount` : Number of particles to generate in a single event. Defaults to one particle.
 * `particle_radius_sigma` : Standard deviation of the radius from the particle source.
 * `particle_direction` : Direction of the particle as a unit vector.
 * `particle_energy` : Energy of the generated particle.
+* `number_of_particles` : Number of particles to generate in a single event. Defaults to one particle.
 
 #### Usage
 A solid default configuration to use, simulating a test beam of 120 GeV pions, is the following:
