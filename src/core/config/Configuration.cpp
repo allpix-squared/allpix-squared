@@ -103,7 +103,13 @@ void Configuration::setText(const std::string& key, const std::string& val) {
     config_[key] = val;
 }
 
-void Configuration::setSynonym(const std::string& new_key, const std::string& old_key) {
+/**
+ *  The alias is only used if new key does not exist but old key does
+ */
+void Configuration::setAlias(const std::string& new_key, const std::string& old_key) {
+    if(!has(old_key) || has(new_key)) {
+        return;
+    }
     try {
         config_[new_key] = config_.at(old_key);
     } catch(std::out_of_range& e) {

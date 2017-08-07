@@ -130,11 +130,11 @@ namespace allpix {
         void setText(const std::string& key, const std::string& val);
 
         /**
-           * @brief Set synonym name for an already existing key
-           * @param new_key New synonym to be created
-           * @param old_key Key the synonym is created for
+           * @brief Set alias name for an already existing key
+           * @param new_key New alias to be created
+           * @param old_key Key the alias is created for
            */
-        void setSynonym(const std::string& new_key, const std::string& old_key);
+        void setAlias(const std::string& new_key, const std::string& old_key);
 
         /**
          * @brief Return total number of key / value pairs
