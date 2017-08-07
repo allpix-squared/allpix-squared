@@ -135,22 +135,22 @@ Strings can thus also be provided with or without quotation marks.
 
 \subsection{Modules and the Module Manager}
 \label{sec:module_manager}
-\apsq is a modular framework, the core idea is to separate functionality in various independent modules.
+\apsq is a modular framework and one of its core ideas is to partition functionality in independent modules.
 The modules are defined in the subdirectory \textit{src/modules/} in the repository.
 The name of the directory is the unique name of the module.
-The suggested naming scheme is CamelCase, thus an example module would be \textit{GenericPropagation}.
+The suggested naming scheme is CamelCase, thus an exemplary module name would be \textit{GenericPropagation}.
 There are two different kind of modules which can be defined:
 \begin{itemize}
-\item \textbf{Unique}: Modules for which always a single instance runs irrespective of the number of detectors.
-\item \textbf{Detector}: Modules that are specific to a single detector.
+\item \textbf{Unique}: Modules for which always only one single instance runs irrespective of the number of detectors.
+\item \textbf{Detector}: Modules which are specific to a single detector.
 They are replicated for all required detectors.
 \end{itemize}
-The type of module determines the kind of constructor used, the internal unique name and the supported configuration parameters.
-More details about the instantiation logic for the different kind of modules can be found in~\ref{sec:module_instantiation}.
+The type of module determines the constructor used, the internal unique name and the supported configuration parameters.
+More details about the instantiation logic for the different types of modules can be found in Section~\ref{sec:module_instantiation}.
 
 \subsubsection{Files of a Module}
 \label{sec:module_files}
-Every module directory should at the minimum contain the following documents (with \texttt{ModuleName} replaced by the name of the module):
+Every module directory should at minimum contain the following documents (with \texttt{ModuleName} replaced by the name of the module):
 \begin{itemize}
 \item \textbf{CMakeLists.txt}: The build script to load the dependencies and define the source files of the library.
 \item \textbf{README.md}: Full documentation of the module.
@@ -158,26 +158,31 @@ Every module directory should at the minimum contain the following documents (wi
 \item \textbf{\texttt{ModuleName}Module.cpp}: The implementation file of the module.
 \end{itemize}
 The files are discussed in more detail below.
-All modules that are added to the \textit{src/modules/} directory will be build automatically by CMake.
-This also means that all subdirectories in this module directory should contain a module with a \textit{CMakeLists.txt} to build the module.
+By default, all modules are added to the \textit{src/modules/} directory will be build automatically by CMake.
+This means that all subdirectories should feature a module with a \textit{CMakeLists.txt} containing instructions on how to build the respective module.
 
-More information about constructing new modules can be found in Section~\ref{sec:building_new_module}.
+If a module depends on additional packages which not every user might have installed, one can consider adding the following line to the top of the module's \textit{CMakeLists.txt} (see below):
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{cmake}
+ALLPIX_ENABLE_DEFAULT(OFF)
+\end{minted}
+Whether or not this is necessary for a given module will be decided on a case-by-case basis.
+
+General guidelines and instructions for implementing new modules are provided in Section~\ref{sec:building_new_module}.
 
 \paragraph{CMakeLists.txt}
 Contains the build description of the module with the following components:
 \begin{enumerate}
 \item On the first line either ALLPIX\_DETECTOR\_MODULE(MODULE\_NAME) or \\ ALLPIX\_UNIQUE\_MODULE(MODULE\_NAME) depending on the type of the module defined.
-The internal name of the module is saved to the \$\{MODULE\_NAME\} variable which should be used as argument to the other functions.
-Another name can be used as well, but below we exclusively use \$\{MODULE\_NAME\}
-\item The next lines should contain the logic to load the dependencies of the module (below is an example to load Geant4).
+The internal name of the module is automatically saved in the variable \$\{MODULE\_NAME\} which should be used as argument to other functions.
+Another name can be used by overwriting the variable content, but in the examples below, \$\{MODULE\_NAME\} is used exclusively.
+\item The following lines should contain the logic to load possible dependencies of the module (below is an example to load Geant4).
 Only ROOT is automatically included and linked to the module.
-\item A line with ALLPIX\_MODULE\_SOURCES(\$\{MODULE\_NAME\} \texttt{sources}) where \texttt{sources} should be replaced by all the source files of this module
-\item Possibly lines to include the directories and link the libraries for all the dependencies loaded earlier as explained in point~2.
-See below for an example.
-\item A line containing ALLPIX\_MODULE\_INSTALL(\$\{MODULE\_NAME\}) to setup the required target for the module to be installed to.
+\item A line with ALLPIX\_MODULE\_SOURCES(\$\{MODULE\_NAME\} \texttt{sources}) defines the module source files. Here, \texttt{sources} should be replaced by a list of all source files relevant to this module.
+\item Possibly lines to include additional directories and to link libraries for dependencies loaded earlier.
+\item A line containing ALLPIX\_MODULE\_INSTALL(\$\{MODULE\_NAME\}) to set up the required target for the module to be installed to.
 \end{enumerate}
 
-An example of a simple CMakeLists.txt of a module named \texttt{Test} which requires Geant4 is the following
+A simple CMakeLists.txt for a module named \texttt{Test} which requires Geant4 is provided below as an example.
 \vspace{5pt}
 
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{cmake}
@@ -199,7 +204,7 @@ ALLPIX_MODULE_SOURCES(${MODULE_NAME}
 # Add Geant4 to the include directories
 TARGET_INCLUDE_DIRECTORIES(${MODULE_NAME} SYSTEM PRIVATE ${Geant4_INCLUDE_DIRS})
 
-# Link the Geant4 libraries to the library
+# Link the Geant4 libraries to the module library
 TARGET_LINK_LIBRARIES(${MODULE_NAME} ${Geant4_LIBRARIES})
 
 # Provide standard install target
@@ -207,63 +212,62 @@ ALLPIX_MODULE_INSTALL(${MODULE_NAME})
 \end{minted}
 
 \paragraph{README.md}
-The README.md serves as the documentation for the module and should be written in the Markdown format.
-It is automatically converted to \LaTeX using Pandoc~\cite{pandoc} and included in the documentation in Section~\ref{sec:modules}.
-It is also viewable online at the repository in the subfolder of the module.
+The README.md serves as the documentation for the module and should be written in the Markdown format~\cite{markdown}.
+It is automatically converted to \LaTeX using Pandoc~\cite{pandoc} and included in this user manual in Section~\ref{sec:modules}.
+By documenting the module functionality in Markdown, the information as also viewable with a web browser at the repository in the module subfolder.
 
-The README.md should follow the structure of the DummyModule in \textit{src/modules/Dummy}.
+The README.md should follow the structure indicated in the README file of the DummyModule in \textit{src/modules/Dummy}.
 The documentation should contain at least the following sections:
 \begin{itemize}
-\item The H2-size header with the name of the module which contains at least the following required elements: the \textbf{Maintainer} and the \textbf{Status} of the module.
-If the module is working and recently tested the status of the module should be \textit{Functional}.
-The maintainer line should contain the name of the module maintainer and its email address between parentheses.
+\item The H2-size header with the name of the module and at least the following required elements: the \textbf{Maintainer} and the \textbf{Status} of the module.
+If the module is working and well-tested, the status of the module should be \textit{Functional}.
+By default, new modules are given the status \textbf{Immature}.
+The maintainer entry should mention both the full name and email address of the module maintainer between parentheses.
 An example for a minimal header is therefore
 \begin{verbatim}
 ## ModuleName
-Maintainer: Example Author (example@example.org)
+Maintainer: Example Author (<example@example.org>)
 Status: Functional
 \end{verbatim}
-Besides this an header could also have the \textbf{Input} and \textbf{Output} points, which contain the name of the objects that are respectively read and dispatched by the module.
-\item A H4-size section containing a short description of the module, named \textbf{Description}.
-\item A H4-size section named \textbf{Parameters} with the parameters of the module.
-All parameters should be shortly explained in an itemized list with the name of the parameter in an inline code block.
-\item A H4-size section with the name \textbf{Usage} which should contain at least one single simple example of a valid configuration that can be used.
+In addition, the \textbf{Input} and \textbf{Output} objects consumed and dispatched by the module should be mentioned.
+\item A H4-size section named \textbf{Description}, containing a short description of the module.
+\item A H4-size section named \textbf{Parameters} with all available configuration parameters of the module.
+The parameters should be briefly explained in an itemized list with the name of the parameter set as inline code block.
+\item A H4-size section with the title \textbf{Usage} which should contain at least one simple example of a valid configuration for the module.
 \end{itemize}
 
 \paragraph{\texttt{ModuleName}Module.hpp and \texttt{ModuleName}Module.cpp}
-All modules should have both a header file and a source file.
-In the header file the module is defined together with all its method.
+All modules should consist of both a header file and a source file.
+In the header file, the module is defined together with all its methods.
 Brief Doxygen documentation should be added to explain what every method does.
 The source file should provide the implementation of every method and also its more detailed Doxygen documentation.
-Not a single method should be defined in the header to keep the interface clean.
+Method shall only be declared in the header and only defined in the source file to keep the interface clean.
 
 \subsubsection{Module structure}
 \label{sec:module_structure}
-All modules should inherit from the \texttt{Module} base class which can be found in \textit{src/core/module/Module.hpp}.
+All modules have to inherit from the \texttt{Module} base class which can be found in \textit{src/core/module/Module.hpp}.
 The module base class provides two base constructors, a few convenient methods and several methods to override.
-Every module should provide a constructor taking a fixed set of arguments defined by the framework.
+Every module should provide a constructor consuming a fixed set of arguments defined by the framework.
 This particular constructor is always called during construction by the module instantiation logic.
 The arguments for the constructor differs for unique and detector modules.
-For unique modules the constructor for a \texttt{TestModule} should be:
+For unique modules, the constructor for a \texttt{TestModule} should be:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
 TestModule(Configuration config, Messenger* messenger, GeometryManager* geo_manager): Module(config) {}
 \end{minted}
-It is clear that the configuration object should be forwarded to the base module.
+It should be noted that the configuration object has to be forwarded to the base module.
 
-For unique modules the first two arguments are the same, but the last argument is a \texttt{std::shared\_ptr} to the linked detector instead.
-It should always forward this provided detector to the base class, besides the configuration.
-Thus a constructor of a detector module should be:
+For detector modules, the first two arguments are the same, but the last argument is a \texttt{std::shared\_ptr} to the linked detector instead.
+It should always forward this detector to the base class together with the configuration object.
+Thus, the constructor of a detector module is:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
 TestModule(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector): Module(config, detector) {}
 \end{minted}
 
-All modules receive the Configuration object holding the config parameters for that specific object, which can be accessed as explained in Section~\ref{sec:accessing_parameters}.
-Furthermore, a pointer to the Messenger is passed which can be used to both bind variables to receive and dispatch messages as explained in~\ref{sec:objects_messages}.
-Finally either a pointer to the GeometryManager is passed, which can be used to fetch all detectors, or a instance of the specifically linked detector.
-The constructor should normally be used to bind the required messages and set configuration defaults.
-In case of failure an exception can be thrown from the constructor.
+The pointer to the Messenger can be used to bind variables to either receive or dispatch messages as explained in~\ref{sec:objects_messages}.
+The constructor should be used to bind required messages, set configuration defaults and to throw exceptions in case of failures.
+Unique modules can access the GeometryManager to fetch all detector descriptions, while detector modules directly receive the object of their respective detector.
 
-In addition to the constructor every module can override the following methods:
+In addition to the constructor, every module can override the following methods:
 \begin{itemize}
 \item \texttt{init()}: Called after loading and constructing all modules and before starting the event loop.
 This method can for example be used to initialize histograms.
@@ -279,36 +283,36 @@ Any exceptions should be thrown from here instead of the destructor.
 The modules are dynamically loaded and instantiated by the Module Manager.
 Modules are constructed, initialized, executed and finalized in the linear order they are defined in the configuration file.
 Thus the configuration file should follow the order of the real process.
-For every non-special section in the main configuration file (see~\ref{sec:config_parameters} for more details) a corresponding library is searched which contains the module.
-A module has the name \textbf{libAllPixModule\texttt{ModuleName}} reflecting the \texttt{ModuleName} of a defined module.
+For every non-special section in the main configuration file (see~\ref{sec:config_parameters} for more details), a corresponding library is searched for which contains the module.
+Module library are always named following the scheme \textbf{libAllpixModule\texttt{ModuleName}} reflecting the \texttt{ModuleName} configured via CMake.
 The module search order is as follows:
 \begin{enumerate}
-\item The modules already loaded before from an earlier section header
+\item Modules already loaded before from an earlier section header
 \item All directories in the global configuration parameter \textit{library\_directories} in the provided order if this parameter exists
 \item The internal library paths of the executable, that should automatically point to the libraries that are build and installed together with the executable.
 These library paths are stored in RPATH on Linux, see the next point for more information.
 \item The other standard locations to search for libraries depending on the operating system.
-Details about the procedure Linux follows are found in~\cite{linuxld}.
+Details about the procedure Linux follows can be found in~\cite{linuxld}.
 \end{enumerate}
 
-If the module definition is successful it is checked if the module is an unique or a detector module.
-The instantiation logic determines an unique name and priority, where a lower number indicates a higher priority, for every instantiation.
-The name and priority for the instantation are determined differently for the two types of modules:
+If the loading of the module library is successful, it is checked if the module is an unique or a detector module.
+The instantiation logic determines a unique name and priority, where a lower number indicates a higher priority, for every instantiation.
+The name and priority for the instantiation are determined differently for the two types of modules:
 \begin{itemize}
 \item \textbf{Unique}: Combination of the name of the module and the \textbf{input} and \textbf{output} parameter (both defaulting to an empty string).
 The priority is always zero.
-\item \textbf{Detector}: Combination of the name of the module, the \textbf{input} and \textbf{output} parameter (both defaulting to an empty string) and the name of detector this module runs on.
-If the name of the detector is specified directly by the \textbf{name} parameter the priority is zero.
-If the detector is only matched by the \textbf{type} parameter the priority is one.
-If the \textbf{name} and \textbf{type} are both not specified and the module is instantiated for all detectors there priority is two.
+\item \textbf{Detector}: Combination of the name of the module, the \textbf{input} and \textbf{output} parameter (both defaulting to an empty string) and the name of detector this module is executed for.
+If the name of the detector is specified directly by the \textbf{name} parameter, the priority is \emph{high}.
+If the detector is only matched by the \textbf{type} parameter, the priority is \emph{medium}.
+If the \textbf{name} and \textbf{type} are both unspecified and the module is instantiated for all detectors, the priority is \emph{low}.
 \end{itemize}
 The instantiation logic only allows a single instance for every unique name.
-If there are multiple instantiations with the same unique name the instantiation with the highest priority is kept (thus the one with the lowest number).
-Otherwise if there are multiple instantiations with the same name and the same priority an exception is raised.
+If there are multiple instantiations with the same unique name, the instantiation with the highest priority is kept.
+If multiple instantiations with the same unique name and the same priority exist, an exception is raised.
 
 \subsection{Geometry and Detectors}
 \label{sec:models_geometry}
-Simulations are frequently run on a set of different detectors (such as as a beam telescope and a device under test).
+Simulations are frequently performed on a set of different detectors (such as a beam telescope and a device under test).
 All these individual detectors together is what \apsq defines as the geometry.
 Every detector has a set of properties attached to it:
 \begin{itemize}
