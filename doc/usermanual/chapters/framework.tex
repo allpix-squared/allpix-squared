@@ -312,41 +312,35 @@ If multiple instantiations with the same unique name and the same priority exist
 
 \subsection{Geometry and Detectors}
 \label{sec:models_geometry}
-Simulations are frequently performed on a set of different detectors (such as a beam telescope and a device under test).
+Simulations are frequently performed for a set of different detectors (such as a beam telescope and a device under test).
 All these individual detectors together is what \apsq defines as the geometry.
 Every detector has a set of properties attached to it:
 \begin{itemize}
-\item A unique \textbf{name} to refer to the detector in the configuration.
+\item A unique \textbf{detector name} to refer to the detector in the configuration.
 \item The \textbf{position} in the world frame.
 This is the position of the geometric center of the sensitive device (sensor) given in world coordinates as X, Y and Z (note that any additional components like the chip and possible support layers are ignored when determining the geometric center).
 \item The \textbf{orientation} given as Euler angles using the extrinsic Z-X-Z convention relative to the world frame (also known as the 1-3-1 or the "x-convention" and the most widely used definition of Euler angles~\cite{eulerangles}).
-\item A \textbf{type} of a detector model.
+\item A \textbf{type} of a detector model such as \emph{hybrid} or \emph{monolithic}.
 The model defines the geometry and parameters of the detector.
-Multiple detectors can share the same model (and this is in fact very common).
+Multiple detectors can share the same model.
 Several ready-to-use models are shipped with the framework.
 \item An optional \textbf{electric field} in the sensitive device.
-An electric field can be added to a detector by a special module as shown in Section~\ref{sec:module_electric_field}.
+An electric field can be added to a detector by a special module as demonstrated in Section~\ref{sec:module_electric_field}.
 \end{itemize}
-The detector configuration is provided in the special detector configuration which is explained in Section~\ref{sec:detector_config}.
+The detector configuration is provided in the detector configuration file as is explained in Section~\ref{sec:detector_config}.
 
 \subsubsection{Changing and accessing the geometry}
-The geometry is needed early on because it determines the number of detector instantiations as explained in Section~\ref{sec:module_instantiation}.
-It is unfortunately not possible to determine the exact time the first detector instantation is created or the geometry is accessed in any other way.
-In the framework it is however very important to have a fixed geometry that does not change between modules.
-To allow special modules to change the geometry before accessing it, the geometry manager uses the concept of lazy geometry closing.
-This means that the geometry will be closed as soon as a method is called which accesses the geometry (usually the \texttt{getDetectors} method).
-Detectors and models can only be added before the geometry is closed.
-At the point of closing all remaining detector models are loaded and linked to the detectors without models.
-The procedure of finding the detector models is explained in more detail in Section~\ref{sec:detector_models}.
+The geometry is needed at a very early stage because it determines the number of detector module instantiations as explained in Section~\ref{sec:module_instantiation}.
+The procedure of finding and loading the appropriate detector models is explained in more detail in Section~\ref{sec:detector_models}.
 
-Geometry is typically directly added from the detector configuration file described in Section~\ref{sec:detector_config}.
+The geometry is directly added from the detector configuration file described in Section~\ref{sec:detector_config}.
 The geometry manager parses this file on construction, the detector models are loaded and linked later during geometry closing as described above.
 It is also possible to add additional models and detectors directly using \texttt{addModel} and \texttt{addDetector} (before the geometry is closed).
 Furthermore it is possible to add additional points which should be part of the world geometry using \texttt{addPoint}.
 This can for example be used to add the beam source to the world geometry.
 
-The detectors and models can be accessed by name and type through the geometry manager using respectively \texttt{getDetector} and \texttt{getModel}.
-Typically however all detectors are fetched at once using the \texttt{getDetectors} method.
+The detectors and models can be accessed by name and type through the geometry manager using \texttt{getDetector} and \texttt{getModel}, respectively.
+All detectors can be fetched at once using the \texttt{getDetectors} method.
 If the module is a detector-specific module its related Detector can be accessed through the \texttt{getDetector} method of the module base class instead (returns a null pointer for unique modules) as follows:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
 void run(unsigned int event_id) {
