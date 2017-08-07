@@ -53,7 +53,7 @@ cmp:slc6-llvm:
             - lib
         expire_in: 3 hour
 
-# Ensure that our LXP:LUS setup script is functional:
+# Ensure that our LXPLUS setup script is functional:
 cmp:lxplus-gcc:
     stage: compile
     tags:
@@ -124,7 +124,7 @@ cmp:mac1012-clang:
         - source .gitlab-ci.d/load_deps.sh
         - mkdir build
         - cd build
-        - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -DCMAKE_SKIP_BUILD_RPATH=TRUE ..
+        - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -DCMAKE_USE_RELATIVE_PATHS=TRUE ..
         - ninja
         - ninja install
     artifacts:
@@ -216,7 +216,7 @@ ut:slc6-gcc:
         - source .gitlab-ci.d/init_x86_64.sh
         - cd build/
         - ctest --output-on-failure -j4
-        - cat output_check_performance.log  
+        - cat output_check_performance.log
 
 ut:lxplus-gcc:
     stage: unittest
@@ -243,7 +243,7 @@ ut:slc6-llvm:
         - source .gitlab-ci.d/init_x86_64.sh
         - cd build/
         - ctest --output-on-failure -j4
-        - cat output_check_performance.log  
+        - cat output_check_performance.log
 
 
 # CentOS 7
@@ -260,7 +260,7 @@ ut:centos7-gcc:
         - source .gitlab-ci.d/load_deps.sh
         - cd build/
         - ctest --output-on-failure -j4
-        - cat output_check_performance.log  
+        - cat output_check_performance.log
 
 ut:centos7-llvm:
     stage: unittest
@@ -274,7 +274,7 @@ ut:centos7-llvm:
         - source .gitlab-ci.d/init_x86_64.sh
         - cd build/
         - ctest --output-on-failure -j4
-        - cat output_check_performance.log  
+        - cat output_check_performance.log
 
 
 # Mac OS X
@@ -291,7 +291,7 @@ ut:mac1012-clang:
         - cd build/
         - cmake ..
         - ctest --output-on-failure -j4
-        - cat output_check_performance.log 
+        - cat output_check_performance.log
 
 
 
