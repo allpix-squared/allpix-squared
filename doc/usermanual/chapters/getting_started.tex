@@ -47,7 +47,7 @@ If the value is an array of strings, the value is split at every whitespace or c
 \item If the value is a \textbf{boolean}, either numerical (\texttt{0}, \texttt{1}) or textual (\texttt{false}, \texttt{true}) representations are accepted.
 \item If the value is a \textbf{relative path}, that path will be made absolute by adding the absolute path of the directory that contains the configuration file where the key is defined.
 \item If the value is an \textbf{arithmetic} type, it may have a suffix indicating the unit.
-The list of base units is shown in Table~\ref{tab:units}. 
+The list of base units is shown in Table~\ref{tab:units}.
 \end{itemize}
 
 \begin{warning}
@@ -66,22 +66,22 @@ The internal base units of the framework are not chosen for user convenience but
 \begin{tabular}{|l|l|l|}
 \hline
 \textbf{Quantity}                 & \textbf{Default unit}                   & \textbf{Auxiliary units} \\ \hline
-\multirow{6}{*}{\textit{Length}}  & \multirow{6}{*}{mm (millimeter)}        & nm (nanometer)           \\ \cline{3-3} 
-                                  &                                         & um (micrometer)          \\ \cline{3-3} 
-                                  &                                         & cm (centimeter)          \\ \cline{3-3} 
-                                  &                                         & dm (decimeter)           \\ \cline{3-3} 
-                                  &                                         & m (meter)                \\ \cline{3-3} 
+\multirow{6}{*}{\textit{Length}}  & \multirow{6}{*}{mm (millimeter)}        & nm (nanometer)           \\ \cline{3-3}
+                                  &                                         & um (micrometer)          \\ \cline{3-3}
+                                  &                                         & cm (centimeter)          \\ \cline{3-3}
+                                  &                                         & dm (decimeter)           \\ \cline{3-3}
+                                  &                                         & m (meter)                \\ \cline{3-3}
                                   &                                         & km (kilometer)           \\ \hline
-\multirow{4}{*}{\textit{Time}}    & \multirow{4}{*}{ns (nanosecond)}        & ps (picosecond)          \\ \cline{3-3} 
-                                  &                                         & us (microsecond)         \\ \cline{3-3} 
-                                  &                                         & ms (millisecond)         \\ \cline{3-3} 
+\multirow{4}{*}{\textit{Time}}    & \multirow{4}{*}{ns (nanosecond)}        & ps (picosecond)          \\ \cline{3-3}
+                                  &                                         & us (microsecond)         \\ \cline{3-3}
+                                  &                                         & ms (millisecond)         \\ \cline{3-3}
                                   &                                         & s (second)               \\ \hline
-\multirow{4}{*}{\textit{Energy}}  & \multirow{4}{*}{MeV (megaelectronvolt)} & eV (electronvolt)        \\ \cline{3-3} 
-                                  &                                         & keV (kiloelectronvolt)   \\ \cline{3-3} 
+\multirow{4}{*}{\textit{Energy}}  & \multirow{4}{*}{MeV (megaelectronvolt)} & eV (electronvolt)        \\ \cline{3-3}
+                                  &                                         & keV (kiloelectronvolt)   \\ \cline{3-3}
                                   &                                         & GeV (gigaelectronvolt)   \\ \hline
 \textit{Temperature}              & K (kelvin)                              &                          \\ \hline
 \textit{Charge}                   & e (elementary charge)                   & C (coulomb)              \\ \hline
-\multirow{2}{*}{\textit{Voltage}} & \multirow{2}{*}{MV (megavolt)}          & V (volt)                 \\ \cline{3-3} 
+\multirow{2}{*}{\textit{Voltage}} & \multirow{2}{*}{MV (megavolt)}          & V (volt)                 \\ \cline{3-3}
                                   &                                         & kV (kilovolt)            \\ \hline
 \textit{Angle}                    & rad (radian)                            & deg (degree)             \\ \hline
 \end{tabular}
@@ -94,7 +94,7 @@ It is recommended to always specify the unit explicitly for all parameters that 
 Examples of specifying key/values pairs of various types are given below:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 # All whitespace at the front and back is removed
-first_string =   string_without_quotation  
+first_string =   string_without_quotation
 # All whitespace within the quotation marks is preserved
 second_string = "  string with quotation marks  "
 # Keys are split on whitespace and commas
@@ -108,8 +108,8 @@ time_value = 42ns
 # Units are combined in linear order
 acceleration_value = 1.0m/s/s
 # Thus the quantity below is the same as 1.0deg*kV*K/m/s
-random_quantity = 1.0deg*kV/m/s*K 
-# Relative paths are expanded to absolute 
+random_quantity = 1.0deg*kV/m/s*K
+# Relative paths are expanded to absolute
 # Path below will be /home/user/test if the config file is in /home/user
 output_path = "test"
 # Booleans can be represented in numerical or textual style
@@ -167,12 +167,12 @@ another_random_string = "example2"
 # This module takes no parameters
 # [MyUniqueModule] cannot be instantiated another time
 
-# Then run detector modules on different detectors 
+# Then run detector modules on different detectors
 # First run a module on the detector of type Timepix
 [MyDetectorModule]
 type = "timepix"
 int_value = 1
-# Replace the module above for `dut` with a specialized version 
+# Replace the module above for `dut` with a specialized version
 #   this does not inherit any parameters from earlier modules
 [MyDetectorModule]
 name = "dut"
@@ -210,7 +210,7 @@ This allows to quickly adapt e.g. the sensor thickness of a certain detector wit
   \label{fig:telescope}
 \end{figure}
 
-An example configuration file of one test detector and two Timepix~\cite{timepix} models is: 
+An example configuration file of one test detector and two Timepix~\cite{timepix} models is:
 \inputminted[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}{../../etc/manual_detector.conf}
 Figure~\ref{fig:telescope} shows a visualization of the setup described in the file.
 This configuration is used in the rest of this chapter for explaining concepts.
@@ -218,7 +218,7 @@ This configuration is used in the rest of this chapter for explaining concepts.
 
 \subsection{Framework parameters}
 \label{sec:framework_parameters}
-The \apsq framework provides a set of global parameters which contol and alter its behavior:
+The \apsq framework provides a set of global parameters which control and alter its behavior:
 \begin{itemize}
 \item \textbf{\texttt{detectors\_file}}: Location of the file describing the detector configuration (introduced in Section~\ref{sec:detector_config}).
 The only \underline{required} global parameter: the framework will fail if it is not specified.
@@ -266,7 +266,7 @@ In this document, \emph{internal geometry} refers to the detector parameters use
 \item The \textbf{deposition} module that simulates the particle beam that deposits charge carriers in the detectors using the provided physics list (containing a description of the simulated interactions) and the geometry created above.
 \item A \textbf{propagation} module that propagates the charges through the sensor.
 \item A \textbf{transfer} module that transfers the charges from the sensor and assigns them to a pixel of the readout electronics.
-\item A \textbf{digitizer} module which converts the charges in the pixel to a detector hit, simulating the frontend electronics response.
+\item A \textbf{digitizer} module which converts the charges in the pixel to a detector hit, simulating the front-end electronics response.
 \item An \textbf{output} module, saving the data of the simulation.
 The \apsq standard file format is a ROOT TTree as will be detailed in Section~\ref{sec:storing_output_data}.
 \end{itemize}
@@ -359,7 +359,7 @@ A possible configuration would be:
 [ElectricFieldReader]
 # Bind the electric field to the detector named `dut`
 name = "dut"
-# Specify the model is in the init electrif field map format
+# Specify that the model is provided in the `init` electric field map format
 model = "init"
 # Name of the file containing the electric field
 file_name = "example_electric_field.init"
@@ -389,7 +389,7 @@ An example of a configuration with two different settings for the digitization m
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 # Digitize the propagated charges with low noise levels
 [DefaultDigitizer]
-# Specify an output identifier 
+# Specify an output identifier
 output = "low_noise"
 # Low amount of noise added by the electronics
 electronics_noise = 100e
@@ -405,12 +405,12 @@ electronics_noise = 500e
 
 # Save histogram for 'low_noise' digitized charges
 [DetectorHistogrammer]
-# Specify input identifier 
+# Specify input identifier
 input = "low_noise"
 
 # Save histogram for 'high_noise' digitized charges
 [DetectorHistogrammer]
-# Specify input identifier 
+# Specify input identifier
 input = "high_noise"
 \end{minted}
 
@@ -418,43 +418,47 @@ input = "high_noise"
 
 \subsection{Logging and Verbosity Levels}
 \label{sec:logging_verbosity}
-\apsq is designed to identify mistakes and implementation errors as early as possible and tries to give the user a clear indication about the problem.
+\apsq is designed to identify mistakes and implementation errors as early as possible and tries to provide the user with clear indications about the problem.
 The amount of feedback can be controlled using different log levels.
 The global log level can be set using the global parameter \textbf{log\_level}.
-The log level can be overridden for a specific module by adding the \textbf{log\_level} parameter to that module.
-The following log levels are currently supported:
+The log level can be overridden for a specific module by adding the \textbf{log\_level} parameter to the respective configuration section.
+The following log levels are supported:
 \begin{itemize}
-\item \textbf{FATAL}: Indicates a fatal error that should and will lead to direct termination of the application.
-Typically only emitted in the main executable after catching exceptions, because exceptions are the preferred way of fatal error handling as discussed in Section~\ref{sec:error_reporting_exceptions}.
-An example of a fatal error is an invalid configuration parameter.
+\item \textbf{FATAL}: Indicates a fatal error that will lead to direct termination of the application.
+Typically only emitted in the main executable after catching exceptions as they are the preferred way of fatal error handling as discussed in Section~\ref{sec:error_reporting_exceptions}.
+An example for a fatal error is an invalid configuration parameter.
 \item \textbf{STATUS}: Important informational messages about the status of the simulation.
-Should only be used for informational messages that have to be logged in every run (unless the user wants to only fetch fatal errors)
-\item \textbf{ERROR}: Severe error that should never happen during a normal well-configured simulation run.
+Is only used for informational messages which have to be logged in every run such as the global seed for pseudo-random number generators and the cuurent progress of the run.
+\item \textbf{ERROR}: Severe error that should not occur during a normal well-configured simulation run.
 Frequently leads to a fatal error and can be used to provide extra information that may help in finding the reason of the problem.
 For example used to indicate the reason a dynamic library cannot be loaded.
-\item \textbf{WARNING}: Indicate conditions that should not happen normally and possibly lead to unexpected results.
-The framework can however typically continue without problems after a warning.
-Can for example indicate that a output message is not used and that a module may therefore do unnecessary work.
-\item \textbf{INFO}: Informatic messages about the physics process of the simulation.
+\item \textbf{WARNING}: Indicate conditions that should not occur normally and possibly lead to unexpected results.
+The framework will however continue without problems after a warning.
+A warning is for example issued to indicate that a output message is not used and that a module may therefore do unnecessary work.
+\item \textbf{INFO}: Informational messages about the physics process of the simulation.
 Contains summaries about the simulation details of every event and for the overall simulation.
-Should typically produce maximum one line of output per event.
-\item \textbf{DEBUG}: In-depth details about the progress of the framework and all the physical details of the simulation.
-Produces large volumes of output per event usually and this level is therefore normally only used for  debugging the physics simulation of the modules.
+Should typically produce maximum one line of output per event and module.
+\item \textbf{DEBUG}: In-depth details about the progress of the simulation and all physics details of the simulation.
+Produces large volumes of output per event should therefore only be used for  debugging the physics simulation of the modules.
 \item \textbf{TRACE}: Messages to trace what the framework or a module is currently doing.
-Does not contain any direct information unlike the \textbf{DEBUG} level above, but only indicates which part of the module or framework is currently running.
-Mostly used for software debugging or determining the speed bottleneck in simulations.
+Unlike the \textbf{DEBUG} level, it does not contain any direct information about the physics of the simulation but rather indicates which part of the module or framework is currently running.
+Mostly used for software debugging or determining performance bottlenecks in the simulations.
 \end{itemize}
-It is not recommended to set the \textbf{log\_level} higher than \textbf{WARNING} in a typical simulation as important messages could be missed.
+
+\begin{warning}
+    It is not recommended to set the \textbf{log\_level} higher than \textbf{WARNING} in a typical simulation as important messages could be missed.
+    Setting too low logging levels should also be avoided since printing many log messages will significantly slow down the simulation.
+\end{warning}
 
 The logging system does also support a few different formats to display the log messages.
-The following formats are supported for the global parameter \textbf{log\_format} and for the module parameter with the same name that overwrites it:
+The following formats are supported via the global parameter \textbf{log\_format} or the individual module parameter with the same name:
 \begin{itemize}
 \item \textbf{SHORT}: Displays the data in a short form.
-Includes only the first character of the log level followed by the section header and the message.
+Includes only the first character of the log level followed by the configuration section header and the message.
 \item \textbf{DEFAULT}: The default format.
-Displays the date, log level, section header and the message itself.
+Displays system time, log level, section header and the message itself.
 \item \textbf{LONG}: Detailed logging format.
-Besides the information above, it also shows the file and line where the log message was produced.
+Displays all of the above but also indicates source code file and line where the log message was produced.
 This can help in debugging modules.
 \end{itemize}
 
@@ -464,34 +468,35 @@ More details about the logging system and the procedure for reporting errors in 
 \label{sec:storing_output_data}
 Saving the output to persistent storage is of primary importance for later review and analysis.
 \apsq primarily uses ROOT for storing output data, because it supports writing arbitrary objects and is a standard tool in High-Energy Physics.
-The \texttt{ROOTObjectWriter} automatically saves all the data objects written by the modules to a TTree~\cite{roottree} for more information about TTrees).
-The module stores all different object types to a separate tree, creating a branch for every combination of detector and the name given to the output as explained in Section~\ref{sec:redirect_module_input_outputs}.
+The \texttt{ROOTObjectWriter} automatically saves all objects created by the modules to a TTree~\cite{roottree}.
+It stores separate trees for all object types and creates branches for every unique message name, a combination of the detector, the module and the message output name as described in Section~\ref{sec:redirect_module_input_outputs}.
 For each event, values are added to the leafs of the branches containing the data of the objects.
-This allows for easy histogramming of the acquired data over the total run using the ROOT utilities.
+This allows for easy histogramming of the acquired data over the total run using standard ROOT utilities.
 Relations between objects within a single event are internally stored as TRef allowing to fetch related objects as long as these are loaded in memory.
-An exception is thrown when trying to fetch an object that is not loaded.
+An exception is thrown when trying to fetch an object which is not loaded.
 
-To save the output of all objects an \texttt{ROOTObjectWriter} has to be added with a \texttt{file\_name} parameter (without the root suffix) to specify the file location of the created ROOT file in the global output directory.
-The default file name is \texttt{data} which means that \textbf{data.root} is created in the output directory (next to the ROOT file which contain the output of the modules, having the name \textit{modules.root} by default).
+In order to save all objects of the simulation, a \texttt{ROOTObjectWriter} module has to be added with a \texttt{file\_name} parameter (without the ``.root'' suffix) to specify the file location of the created ROOT file in the global output directory.
+The default file name is \texttt{data}, i.e.\ the file \textbf{data.root} is created in the output directory.
 To replicate the default behaviour the following configuration can be used:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 # The object writer listens to all output data
 [ROOTObjectWriter]
-# specify the output path (can be omitted as it the default)
-file_name = "data.root"
+# specify the output file (default file name is used if omitted)
+file_name = "data"
 \end{minted}
-The generated output file can be further analyzed with ROOT macros.
-A simple macro for converting the results to a tree with standard branches for comparisons can be found in Section~\ref{sec:root_analysis_macros}.
+The generated output file can be analyzed using ROOT macros.
+A simple macro for converting the results to a tree with standard branches for comparisons is described in Section~\ref{sec:root_analysis_macros}.
 
-Besides using the generated tree for analysis it is also possible to read all the object data back in, to propagate it to further modules.
-This can be used to split the execution of several parts of the simulation in multiple independent steps, which can be executed after each order.
-The tree data can be read using a \texttt{ROOTObjectReader} module, that automatically dispatches all objects to the right detector with the correct name in the same event, using the internal name of the stored data.
-An example of using this module is the following:
+It is also possible to read object data back in in order to dispatch them as messages to further modules.
+This feature is intended to allow splitting the execution of parts of the simulation into independent steps, which can be repeated multiple times.
+The tree data can be read using a \texttt{ROOTObjectReader} module, which automatically dispatches all objects to the correct module instances.
+An example configuration for using this module could be:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 # The object reader dispatches all objects in the tree
 [ROOTObjectReader]
-# path to the output data relative to the configuration file
+# path to the output data file, absolute or relative to the configuration file
 file_name = "../output/data.root"
 \end{minted}
 
-\todo{more output formats have to be added probably, or do we require the user to do this through ROOT}
+The \apsq framework comes with a few more output modules which allow storing data in different formats, such as the LCIO persistency event data model~\cite{lcio} or the native RCE file format~\cite{rce}.
+Detailed descriptions of these modules can be found in Section~\ref{sec:modules}.
