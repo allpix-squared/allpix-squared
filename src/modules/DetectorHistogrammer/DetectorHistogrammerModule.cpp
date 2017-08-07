@@ -58,7 +58,7 @@ void DetectorHistogrammerModule::init() {
 
     // Create cluster size plots
     std::string cluster_size_name = "cluster_size";
-    std::string cluster_size_title = "Cluster size for " + detector_->getName() + ";size;number";
+    std::string cluster_size_title = "Cluster size for " + detector_->getName() + ";cluster size [px];clusters";
     cluster_size = new TH1I(cluster_size_name.c_str(),
                             cluster_size_title.c_str(),
                             model->getNPixels().x() * model->getNPixels().y(),
@@ -66,7 +66,7 @@ void DetectorHistogrammerModule::init() {
                             model->getNPixels().x() * model->getNPixels().y() + 0.5);
 
     std::string cluster_size_x_name = "cluster_size_x";
-    std::string cluster_size_x_title = "Cluster size X for " + detector_->getName() + ";size;number";
+    std::string cluster_size_x_title = "Cluster size X for " + detector_->getName() + ";cluster size x [px];clusters";
     cluster_size_x = new TH1I(cluster_size_x_name.c_str(),
                               cluster_size_x_title.c_str(),
                               model->getNPixels().x(),
@@ -74,7 +74,7 @@ void DetectorHistogrammerModule::init() {
                               model->getNPixels().x() + 0.5);
 
     std::string cluster_size_y_name = "cluster_size_y";
-    std::string cluster_size_y_title = "Cluster size Y for " + detector_->getName() + ";size;number";
+    std::string cluster_size_y_title = "Cluster size Y for " + detector_->getName() + ";cluster size y [px];clusters";
     cluster_size_y = new TH1I(cluster_size_y_name.c_str(),
                               cluster_size_y_title.c_str(),
                               model->getNPixels().y(),
@@ -83,7 +83,7 @@ void DetectorHistogrammerModule::init() {
 
     // Create event size plot
     std::string event_size_name = "event_size";
-    std::string event_size_title = "Event size for " + detector_->getName() + ";size;number";
+    std::string event_size_title = "Event size for " + detector_->getName() + ";event size [px];events";
     event_size = new TH1I(event_size_name.c_str(),
                           event_size_title.c_str(),
                           model->getNPixels().x() * model->getNPixels().y(),
@@ -92,7 +92,7 @@ void DetectorHistogrammerModule::init() {
 
     // Create number of clusters plot
     std::string n_cluster_name = "n_cluster";
-    std::string n_cluster_title = "Number of clusters for " + detector_->getName() + ";size;number";
+    std::string n_cluster_title = "Number of clusters for " + detector_->getName() + ";size;clusters";
     n_cluster = new TH1I(n_cluster_name.c_str(),
                          n_cluster_title.c_str(),
                          model->getNPixels().x() * model->getNPixels().y(),
@@ -101,7 +101,7 @@ void DetectorHistogrammerModule::init() {
 
     // Create cluster charge plot
     std::string cluster_charge_name = "cluster_charge";
-    std::string cluster_charge_title = "Cluster charge for " + detector_->getName() + ";size;number";
+    std::string cluster_charge_title = "Cluster charge for " + detector_->getName() + ";cluster charge [ke];clusters";
     cluster_charge = new TH1D(cluster_charge_name.c_str(), cluster_charge_title.c_str(), 200, 0., 100.);
 }
 
