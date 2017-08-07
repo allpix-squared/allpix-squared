@@ -78,9 +78,8 @@ void ElectricFieldReaderModule::init() {
         LOG(TRACE) << "Adding linear electric field";
         type = ElectricFieldType::LINEAR;
         LOG(INFO) << "Setting linear electric field from " << Units::display(config_.get<double>("bias_voltage"), "V")
-                  << " bias voltage, " << Units::display(config_.get<double>("depletion_voltage"), "V")
-                  << " depletion voltage and " << Units::display(config_.get<double>("depletion_depth"), {"mm", "um"})
-                  << " depletion depth";
+                  << " bias voltage and " << Units::display(config_.get<double>("depletion_voltage"), "V")
+                  << " depletion voltage";
         ElectricFieldFunction function = get_linear_field_function(thickness_domain);
         detector_->setElectricFieldFunction(function, thickness_domain, type);
     } else {
@@ -98,13 +97,17 @@ ElectricFieldFunction ElectricFieldReaderModule::get_linear_field_function(std::
     auto depletion_voltage = config_.get<double>("depletion_voltage");
     auto model = detector_->getModel();
     return [bias_voltage, depletion_voltage, thickness_domain, model](const ROOT::Math::XYZPoint& pos) {
-        double z_rel = pos.z() - thickness_domain.first;
-        double eff_thickness = thickness_domain.second - thickness_domain.first;
+        double z_rel = thickness_domain.second - pos.z();
+        double eff_thickness = 2 * thickness_domain.second;
         double dep_voltage = depletion_voltage;
-
-        double field_z = std::max(
-            0.0, (bias_voltage - dep_voltage) / eff_thickness + 2 * (dep_voltage / eff_thickness) * (z_rel / eff_thickness));
-        return ROOT::Math::XYZVector(0, 0, -field_z);
+        if(bias_voltage < depletion_voltage) {
+            eff_thickness *= sqrt(bias_voltage / depletion_voltage);
+            dep_voltage = bias_voltage;
+        }
+        double field_z = std::max(0.0,
+                                  (bias_voltage - dep_voltage) / eff_thickness +
+                                      2 * (dep_voltage / eff_thickness) * (1 - z_rel / eff_thickness));
+        return ROOT::Math::XYZVector(0, 0, field_z);
     };
 }
 
@@ -190,6 +193,10 @@ void ElectricFieldReaderModule::create_output_plots() {
                               min2,
                               max2);
 
+    // Create 1D histogram
+    auto histogram1D =
+        new TH1F("field1d", ("Electric field for " + detector_->getName()).c_str(), static_cast<int>(steps), min2, max2);
+
     // Determine the coordinate to use for projection
     double x = 0, y = 0, z = 0;
     if(project == 'x') {
@@ -225,21 +232,31 @@ void ElectricFieldReaderModule::create_output_plots() {
             }
 
             // Get field strength from detector
-            auto field_strength = std::sqrt(detector_->getElectricField(ROOT::Math::XYZPoint(x, y, z)).Mag2());
-
+            auto field_strength = Units::convert(
+                std::sqrt(detector_->getElectricField(ROOT::Math::XYZPoint(x, y, z)).Mag2()), "V/cm"); // magnitude
             // Fill the histogram
             if(project == 'x') {
-                histogram->Fill(y, z, field_strength);
+                histogram->Fill(y, z, static_cast<double>(field_strength));
+                if(j == 0) {
+                    histogram1D->Fill(z, static_cast<double>(field_strength));
+                }
             } else if(project == 'y') {
-                histogram->Fill(x, z, field_strength);
+                histogram->Fill(x, z, static_cast<double>(field_strength));
+                if(j == 0) {
+                    histogram1D->Fill(z, static_cast<double>(field_strength));
+                }
             } else {
-                histogram->Fill(x, y, field_strength);
+                histogram->Fill(x, y, static_cast<double>(field_strength));
+                if(j == 0) {
+                    histogram1D->Fill(y, static_cast<double>(field_strength));
+                }
             }
         }
     }
 
     // Write the histogram to module file
     histogram->Write();
+    histogram1D->Write();
 }
 
 /**
