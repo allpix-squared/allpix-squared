@@ -225,17 +225,17 @@ void ElectricFieldReaderModule::create_output_plots() {
             // Fill the histogram
             if(project == 'x') {
                 histogram->Fill(y, z, static_cast<double>(field_strength));
-                if(j == 0) {
+                if(j == steps / 2) {
                     histogram1D->Fill(z, static_cast<double>(field_strength));
                 }
             } else if(project == 'y') {
                 histogram->Fill(x, z, static_cast<double>(field_strength));
-                if(j == 0) {
+                if(j == steps / 2) {
                     histogram1D->Fill(z, static_cast<double>(field_strength));
                 }
             } else {
                 histogram->Fill(x, y, static_cast<double>(field_strength));
-                if(j == 0) {
+                if(j == steps / 2) {
                     histogram1D->Fill(y, static_cast<double>(field_strength));
                 }
             }
