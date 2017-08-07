@@ -24,8 +24,8 @@ A solid default configuration to use, simulating a test beam of 120 GeV pions, i
 [DepositionGeant4]
 physics_list = QGSP_BERT
 particle_type = "pi+"
-particle_amount = 1 
 particle_energy = 120GeV
 particle_position = 0 0 -1mm
 particle_direction = 0 0 1
+number_of_particles = 1
 ```
