@@ -283,6 +283,8 @@ ut:mac1012-clang:
     stage: unittest
     tags:
         - mac
+    only:
+        - fix-ci
     dependencies:
         - cmp:mac1012-clang
     script:
