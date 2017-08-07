@@ -26,8 +26,6 @@ using namespace allpix;
 
 ElectricFieldReaderModule::ElectricFieldReaderModule(Configuration config, Messenger*, std::shared_ptr<Detector> detector)
     : Module(config, detector), config_(std::move(config)), detector_(std::move(detector)) {
-    // Set configuration defaults
-    config_.setDefault("depletion_depth", detector_->getModel()->getSensorSize().z());
     // NOTE use voltage as a synonym for bias voltage
     if(config_.has("voltage") && !config_.has("bias_voltage")) {
         config_.setSynonym("bias_voltage", "voltage");
@@ -48,16 +46,11 @@ void ElectricFieldReaderModule::init() {
                      << " set, this will probably not be simulated correctly";
     }
 
-    // Get the depletion depth default to full sensor size
-    auto model = detector_->getModel();
-    auto depletion_depth = config_.get<double>("depletion_depth");
-    if(depletion_depth - model->getSensorSize().z() > 1e-9) {
-        throw InvalidValueError(config_, "depletion_depth", "depletion depth can not be larger than the sensor thickness");
-    }
-
     // Calculate thickness domain
+    auto model = detector_->getModel();
+    auto sensor_min_z = model->getSensorCenter().z() - model->getSensorSize().z() / 2.0;
     auto sensor_max_z = model->getSensorCenter().z() + model->getSensorSize().z() / 2.0;
-    auto thickness_domain = std::make_pair(sensor_max_z - depletion_depth, sensor_max_z);
+    auto thickness_domain = std::make_pair(sensor_min_z, sensor_max_z);
 
     // Calculate the field depending on the configuration
     if(field_model == "init") {
@@ -98,7 +91,7 @@ ElectricFieldFunction ElectricFieldReaderModule::get_linear_field_function(std::
     auto model = detector_->getModel();
     return [bias_voltage, depletion_voltage, thickness_domain, model](const ROOT::Math::XYZPoint& pos) {
         double z_rel = thickness_domain.second - pos.z();
-        double eff_thickness = 2 * thickness_domain.second;
+        double eff_thickness = thickness_domain.second - thickness_domain.first;
         double dep_voltage = depletion_voltage;
         if(bias_voltage < depletion_voltage) {
             eff_thickness *= sqrt(bias_voltage / depletion_voltage);
@@ -159,9 +152,6 @@ void ElectricFieldReaderModule::create_output_plots() {
     // Use either full sensor axis or only depleted region
     double z_min = model->getSensorCenter().z() - model->getSensorSize().z() / 2.0;
     double z_max = model->getSensorCenter().z() + model->getSensorSize().z() / 2.0;
-    if(config_.get<bool>("output_plots_only_depleted", false)) {
-        z_max = z_min + config_.get<double>("depletion_depth");
-    }
 
     // Determine minimum and maximum index depending on projection axis
     double min1, max1;
