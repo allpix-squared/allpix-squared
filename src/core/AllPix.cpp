@@ -147,6 +147,9 @@ void AllPix::load() {
         }
     }
 
+    // Enable thread safety for ROOT
+    ROOT::EnableThreadSafety();
+
     // Set the default units to use
     add_units();
 
