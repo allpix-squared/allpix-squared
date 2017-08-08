@@ -148,12 +148,12 @@ std::map<std::string, std::vector<Point>> read_grid(const std::string& file_name
                 auto value = allpix::trim(base_match[2].str());
 
                 // Filter correct electric field type
-                if(main_section == DFSection::ELECTRIC_FIELD) {
+                if(main_section == DFSection::INFO) {
                     if(key == "dimension" && (std::stoul(value) != 3 || std::stoul(value) != 2)) {
                         main_section = DFSection::IGNORED;
                     }
                     if(key == "dimension" && (std::stoul(value) == 3 || std::stoul(value) == 2)) {
-                        dimension = static_cast<size_t>(std::stoul(value));
+                        dimension = std::stoul(value);
                     }
                 }
             }
@@ -470,7 +470,7 @@ std::map<std::string, std::vector<Point>> read_electric_field(const std::string&
                         main_section = DFSection::IGNORED;
                     }
                     if(key == "dimension" && (std::stoul(value) == 3 || std::stoul(value) == 2)) {
-                        dimension = static_cast<size_t>(std::stoul(value));
+                        dimension = std::stoul(value);
                     }
                     if(key == "dimension" && (std::stoul(value) != 3 || std::stoul(value) != 2)) {
                         main_section = DFSection::IGNORED;
