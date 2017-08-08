@@ -194,7 +194,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
         for(auto& point : deposit_points.second) {
             line->SetNextPoint(point.x(), point.y(), point.z());
         }
-        // Plot lines with different color
+        // Plot all lines with at least three points with different color
         if(line->GetN() >= 3) {
             EColor plot_color = (deposit_points.first.getType() == CarrierType::ELECTRON ? EColor::kAzure : EColor::kOrange);
             current_color = static_cast<short int>(plot_color - 9 + (static_cast<int>(current_color) + 1) % 19);
