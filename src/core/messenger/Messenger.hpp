@@ -49,10 +49,10 @@ namespace allpix {
 
         /// @{
         /**
-         * @brief Use default move behaviour
+         * @brief Disallow move because of mutex
          */
-        Messenger(Messenger&&) noexcept = default;
-        Messenger& operator=(Messenger&&) noexcept = default;
+        Messenger(Messenger&&) = delete;
+        Messenger& operator=(Messenger&&) = delete;
         /// @}
 
         /**
@@ -157,6 +157,8 @@ namespace allpix {
 
         DelegateMap delegates_;
         DelegateIteratorMap delegate_to_iterator_;
+
+        mutable std::mutex mutex_;
     };
 } // namespace allpix
 
