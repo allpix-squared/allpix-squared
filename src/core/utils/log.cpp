@@ -16,6 +16,7 @@
 #include <ostream>
 #include <regex>
 #include <string>
+#include <thread>
 #include <unistd.h>
 
 using namespace allpix;
@@ -24,6 +25,8 @@ using namespace allpix;
 std::string DefaultLogger::last_identifier_;
 // Last message send used to check if extra spaces are needed
 std::string DefaultLogger::last_message_;
+// Mutex to guard output writing
+std::mutex DefaultLogger::write_mutex_;
 
 /**
  * The logger will save the number of uncaught exceptions during construction to compare that with the number of exceptions
@@ -57,6 +60,9 @@ DefaultLogger::~DefaultLogger() {
             start_pos += spcs.length();
         } while((start_pos = out.find('\n', start_pos)) != std::string::npos);
     }
+
+    // Lock the mutex to guard last identifier usage
+    std::unique_lock<std::mutex> lock(write_mutex_);
 
     // Add extra spaces if necessary
     size_t extra_spaces = 0;
@@ -112,6 +118,7 @@ DefaultLogger::~DefaultLogger() {
         }
         (*stream).flush();
     }
+    lock.unlock();
 }
 
 /**
@@ -119,6 +126,9 @@ DefaultLogger::~DefaultLogger() {
  * @note Does not close the streams
  */
 void DefaultLogger::finish() {
+    // Lock the mutex to guard output writing
+    std::lock_guard<std::mutex> lock(write_mutex_);
+
     if(!last_identifier_.empty()) {
         // Flush final line if necessary
         for(auto stream : get_streams()) {
@@ -151,6 +161,13 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
     if(get_format() != LogFormat::SHORT) {
         os << "\x1B[1m"; // BOLD
         os << "|" << get_current_date() << "| ";
+        os << "\x1B[0m"; // RESET
+    }
+
+    // Add thread id only in long format
+    if(true || get_format() == LogFormat::LONG) {
+        os << "\x1B[1m"; // BOLD
+        os << "=" << std::this_thread::get_id() << "= ";
         os << "\x1B[0m"; // RESET
     }
 
@@ -226,7 +243,7 @@ std::ostringstream& DefaultLogger::getProcessStream(
 
 // Getter and setters for the reporting level
 LogLevel& DefaultLogger::get_reporting_level() {
-    static LogLevel reporting_level = LogLevel::NONE;
+    thread_local LogLevel reporting_level = LogLevel::NONE;
     return reporting_level;
 }
 void DefaultLogger::setReportingLevel(LogLevel level) {
@@ -238,8 +255,7 @@ LogLevel DefaultLogger::getReportingLevel() {
 
 // String to LogLevel conversions and vice versa
 std::string DefaultLogger::getStringFromLevel(LogLevel level) {
-    static const std::array<std::string, 8> type = {
-        {"FATAL", "STATUS", "ERROR", "WARNING", "INFO", "DEBUG", "NONE", "TRACE"}};
+    const std::array<std::string, 8> type = {{"FATAL", "STATUS", "ERROR", "WARNING", "INFO", "DEBUG", "NONE", "TRACE"}};
     return type.at(static_cast<decltype(type)::size_type>(level));
 }
 /**
@@ -273,7 +289,7 @@ LogLevel DefaultLogger::getLevelFromString(const std::string& level) {
 
 // Getter and setters for the format
 LogFormat& DefaultLogger::get_format() {
-    static LogFormat reporting_level = LogFormat::DEFAULT;
+    thread_local LogFormat reporting_level = LogFormat::DEFAULT;
     return reporting_level;
 }
 void DefaultLogger::setFormat(LogFormat level) {
@@ -285,7 +301,7 @@ LogFormat DefaultLogger::getFormat() {
 
 // Convert string to log format and vice versa
 std::string DefaultLogger::getStringFromFormat(LogFormat format) {
-    static const std::array<std::string, 3> type = {{"SHORT", "DEFAULT", "LONG"}};
+    const std::array<std::string, 3> type = {{"SHORT", "DEFAULT", "LONG"}};
     return type.at(static_cast<decltype(type)::size_type>(format));
 }
 /**
@@ -335,7 +351,7 @@ void DefaultLogger::addStream(std::ostream& stream) {
 
 // Getters and setters for the section header
 std::string& DefaultLogger::get_section() {
-    static std::string section;
+    thread_local std::string section;
     return section;
 }
 void DefaultLogger::setSection(std::string section) {
