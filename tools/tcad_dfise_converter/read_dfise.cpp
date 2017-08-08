@@ -149,12 +149,11 @@ std::map<std::string, std::vector<Point>> read_grid(const std::string& file_name
 
                 // Filter correct electric field type
                 if(main_section == DFSection::INFO) {
-                    if(key == "dimension" && (std::stoul(value) != 3 || std::stoul(value) != 2)) {
+                    if(key == "dimension" && (std::stoul(value) != 3 && std::stoul(value) != 2)) {
                         main_section = DFSection::IGNORED;
                     }
                     if(key == "dimension" && (std::stoul(value) == 3 || std::stoul(value) == 2)) {
                         dimension = std::stoul(value);
-                        std::cerr << "DIMENSION GRID" << dimension << std::endl;
                     }
                 }
             }
@@ -356,7 +355,6 @@ std::map<std::string, std::vector<Point>> read_electric_field(const std::string&
 
     std::string region;
     long unsigned int dimension = 1;
-    ;
     long unsigned int data_count = 0;
     bool in_data_block = false;
     while(!file.eof()) {
@@ -432,9 +430,8 @@ std::map<std::string, std::vector<Point>> read_electric_field(const std::string&
                     }
                     if(key == "dimension" && (std::stoul(value) == 3 || std::stoul(value) == 2)) {
                         dimension = std::stoul(value);
-                        std::cerr << "DIMENSION FIELD" << dimension << std::endl;
                     }
-                    if(key == "dimension" && (std::stoul(value) != 3 || std::stoul(value) != 2)) {
+                    if(key == "dimension" && (std::stoul(value) != 3 && std::stoul(value) != 2)) {
                         main_section = DFSection::IGNORED;
                     }
                     if(key == "location" && value != "vertex") {
