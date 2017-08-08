@@ -29,7 +29,7 @@ std::map<std::string, std::vector<Point>> read_grid(const std::string& file_name
     std::map<std::string, std::vector<long unsigned int>> regions_vertices;
 
     std::string region;
-    long unsigned int dimension = -1;
+    long unsigned int dimension = 1;
     long unsigned int data_count = 0;
     bool in_data_block = false;
     while(!file.eof()) {
@@ -355,7 +355,7 @@ std::map<std::string, std::vector<Point>> read_electric_field(const std::string&
     std::vector<double> region_electric_field_num;
 
     std::string region;
-    long unsigned int dimension = -1;
+    long unsigned int dimension = 1;
     ;
     long unsigned int data_count = 0;
     bool in_data_block = false;
