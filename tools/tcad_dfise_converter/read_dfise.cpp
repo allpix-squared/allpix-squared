@@ -154,6 +154,7 @@ std::map<std::string, std::vector<Point>> read_grid(const std::string& file_name
                     }
                     if(key == "dimension" && (std::stoul(value) == 3 || std::stoul(value) == 2)) {
                         dimension = std::stoul(value);
+                        std::cerr << "DIMENSION GRID" << dimension << std::endl;
                     }
                 }
             }
@@ -415,6 +416,43 @@ std::map<std::string, std::vector<Point>> read_electric_field(const std::string&
             continue;
         }
 
+        // Look for key data pairs
+        if(line.find('=') != std::string::npos) {
+            auto base_regex = std::regex("([a-zA-Z]+)\\s+=\\s+([\\S ]+)");
+            std::smatch base_match;
+            if(std::regex_match(line, base_match, base_regex) && base_match.ready()) {
+                auto key = base_match[1].str();
+                auto value = allpix::trim(base_match[2].str());
+
+                // Filter correct electric field type
+                if(main_section == DFSection::ELECTRIC_FIELD) {
+                    if(key == "type" && value != "vector") {
+                        main_section = DFSection::IGNORED;
+                    }
+                    if(key == "dimension" && (std::stoul(value) == 3 || std::stoul(value) == 2)) {
+                        dimension = std::stoul(value);
+                        std::cerr << "DIMENSION FIELD" << dimension << std::endl;
+                    }
+                    if(key == "dimension" && (std::stoul(value) != 3 || std::stoul(value) != 2)) {
+                        main_section = DFSection::IGNORED;
+                    }
+                    if(key == "location" && value != "vertex") {
+                        main_section = DFSection::IGNORED;
+                    }
+                    if(key == "validity") {
+                        // Ignore any electric field valid for multiple regions
+                        base_regex = std::regex("\\[\\s+\"(\\w+)\"\\s+\\]");
+                        if(std::regex_match(value, base_match, base_regex) && base_match.ready()) {
+                            region = base_match[1].str();
+                        } else {
+                            main_section = DFSection::IGNORED;
+                        }
+                    }
+                }
+            }
+            continue;
+        }
+
         // Look for close of section
         if(line.find('}') != std::string::npos) {
             if(main_section == DFSection::ELECTRIC_FIELD && sub_section == DFSection::VALUES) {
@@ -432,7 +470,7 @@ std::map<std::string, std::vector<Point>> read_electric_field(const std::string&
                 }
 
                 if(dimension == 2) {
-                    for(size_t i = 0; i < region_electric_field_num.size(); i += 3) {
+                    for(size_t i = 0; i < region_electric_field_num.size(); i += 2) {
                         auto x = region_electric_field_num[i];
                         auto y = region_electric_field_num[i + 1];
                         region_electric_field_map[region].emplace_back(x, y);
@@ -453,42 +491,6 @@ std::map<std::string, std::vector<Point>> read_electric_field(const std::string&
                 throw std::runtime_error("incorrect nesting of blocks");
             }
 
-            continue;
-        }
-
-        // Look for key data pairs
-        if(line.find('=') != std::string::npos) {
-            auto base_regex = std::regex("([a-zA-Z]+)\\s+=\\s+([\\S ]+)");
-            std::smatch base_match;
-            if(std::regex_match(line, base_match, base_regex) && base_match.ready()) {
-                auto key = base_match[1].str();
-                auto value = allpix::trim(base_match[2].str());
-
-                // Filter correct electric field type
-                if(main_section == DFSection::ELECTRIC_FIELD) {
-                    if(key == "type" && value != "vector") {
-                        main_section = DFSection::IGNORED;
-                    }
-                    if(key == "dimension" && (std::stoul(value) == 3 || std::stoul(value) == 2)) {
-                        dimension = std::stoul(value);
-                    }
-                    if(key == "dimension" && (std::stoul(value) != 3 || std::stoul(value) != 2)) {
-                        main_section = DFSection::IGNORED;
-                    }
-                    if(key == "location" && value != "vertex") {
-                        main_section = DFSection::IGNORED;
-                    }
-                    if(key == "validity") {
-                        // Ignore any electric field valid for multiple regions
-                        base_regex = std::regex("\\[\\s+\"(\\w+)\"\\s+\\]");
-                        if(std::regex_match(value, base_match, base_regex) && base_match.ready()) {
-                            region = base_match[1].str();
-                        } else {
-                            main_section = DFSection::IGNORED;
-                        }
-                    }
-                }
-            }
             continue;
         }
 

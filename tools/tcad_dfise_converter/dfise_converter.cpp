@@ -288,6 +288,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+    std::cerr << "Points size " << points.size() << " and field size " << field.size() << std::endl;
     if(points.size() != field.size()) {
         LOG(FATAL) << "Field and grid file do not match";
         allpix::Log::finish();
