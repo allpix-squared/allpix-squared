@@ -25,6 +25,7 @@ enum class DFSection {
 class Point {
 public:
     Point() = default;
+    Point(double px, double py) : x(px), y(py) {}
     Point(double px, double py, double pz) : x(px), y(py), z(pz) {}
 
     double x{0}, y{0}, z{0};

@@ -29,6 +29,7 @@ std::map<std::string, std::vector<Point>> read_grid(const std::string& file_name
     std::map<std::string, std::vector<long unsigned int>> regions_vertices;
 
     std::string region;
+    long unsigned int dimension;
     long unsigned int data_count = 0;
     bool in_data_block = false;
     while(!file.eof()) {
@@ -138,6 +139,27 @@ std::map<std::string, std::vector<Point>> read_grid(const std::string& file_name
             continue;
         }
 
+        // Look for key data pairs
+        if(line.find('=') != std::string::npos) {
+            auto base_regex = std::regex("([a-zA-Z]+)\\s+=\\s+([\\S ]+)");
+            std::smatch base_match;
+            if(std::regex_match(line, base_match, base_regex) && base_match.ready()) {
+                auto key = base_match[1].str();
+                auto value = allpix::trim(base_match[2].str());
+
+                // Filter correct electric field type
+                if(main_section == DFSection::ELECTRIC_FIELD) {
+                    if(key == "dimension" && (std::stoul(value) != 3 || std::stoul(value) != 2)) {
+                        main_section = DFSection::IGNORED;
+                    }
+                    if(key == "dimension" && (std::stoul(value) == 3 || std::stoul(value) == 2)) {
+                        dimension = static_cast<size_t>(std::stoul(value));
+                    }
+                }
+            }
+            continue;
+        }
+
         // Handle data
         std::stringstream sstr(line);
         switch(main_section) {
@@ -149,11 +171,18 @@ std::map<std::string, std::vector<Point>> read_grid(const std::string& file_name
             break;
         case DFSection::VERTICES: {
             // Read vertex points
-            Point point;
-            while(sstr >> point.x >> point.y >> point.z) {
-                vertices.push_back(point);
+            if(dimension == 3) {
+                Point point(-1.0, -1.0, -1.0);
+                while(sstr >> point.x >> point.y >> point.z) {
+                    vertices.push_back(point);
+                }
             }
-
+            if(dimension == 2) {
+                Point point(-1.0, -1.0);
+                while(sstr >> point.x >> point.y) {
+                    vertices.push_back(point);
+                }
+            }
         } break;
         case DFSection::EDGES: {
             // Read edges
@@ -239,26 +268,35 @@ std::map<std::string, std::vector<Point>> read_grid(const std::string& file_name
             }
 
             for(size_t i = 0; i < size; ++i) {
-                long face_idx;
-                sstr >> face_idx;
+                long element_idx;
+                sstr >> element_idx;
 
                 bool reverse = false;
-                if(face_idx < 0) {
+                if(element_idx < 0) {
                     reverse = true;
-                    face_idx = -face_idx - 1;
+                    element_idx = -element_idx - 1;
                 }
 
-                if(face_idx >= static_cast<long>(faces.size())) {
-                    throw std::runtime_error("face index is higher than number of faces");
+                if(size == 3) {
+                    if(element_idx >= static_cast<long>(edges.size())) {
+                        throw std::runtime_error("edge index is higher than number of faces");
+                    }
+                    auto edge = edges[static_cast<size_t>(element_idx)];
+                    if(reverse) {
+                        std::swap(edge.first, edge.second);
+                    }
+                    element.insert(element.end(), edge.first, edge.second);
                 }
-
-                auto face = faces[static_cast<size_t>(face_idx)];
-
-                if(reverse) {
-                    std::reverse(face.begin() + 1, face.end());
+                if(size == 4) {
+                    if(element_idx >= static_cast<long>(faces.size())) {
+                        throw std::runtime_error("face index is higher than number of faces");
+                    }
+                    auto face = faces[static_cast<size_t>(element_idx)];
+                    if(reverse) {
+                        std::reverse(face.begin() + 1, face.end());
+                    }
+                    element.insert(element.end(), face.begin(), face.end());
                 }
-
-                element.insert(element.end(), face.begin(), face.end());
             }
 
             elements.push_back(element);
@@ -316,6 +354,7 @@ std::map<std::string, std::vector<Point>> read_electric_field(const std::string&
     std::vector<double> region_electric_field_num;
 
     std::string region;
+    long unsigned int dimension;
     long unsigned int data_count = 0;
     bool in_data_block = false;
     while(!file.eof()) {
@@ -383,11 +422,21 @@ std::map<std::string, std::vector<Point>> read_electric_field(const std::string&
                     throw std::runtime_error("incorrect number of electric field points");
                 }
 
-                for(size_t i = 0; i < region_electric_field_num.size(); i += 3) {
-                    auto x = region_electric_field_num[i];
-                    auto y = region_electric_field_num[i + 1];
-                    auto z = region_electric_field_num[i + 2];
-                    region_electric_field_map[region].emplace_back(x, y, z);
+                if(dimension == 3) {
+                    for(size_t i = 0; i < region_electric_field_num.size(); i += 3) {
+                        auto x = region_electric_field_num[i];
+                        auto y = region_electric_field_num[i + 1];
+                        auto z = region_electric_field_num[i + 2];
+                        region_electric_field_map[region].emplace_back(x, y, z);
+                    }
+                }
+
+                if(dimension == 2) {
+                    for(size_t i = 0; i < region_electric_field_num.size(); i += 3) {
+                        auto x = region_electric_field_num[i];
+                        auto y = region_electric_field_num[i + 1];
+                        region_electric_field_map[region].emplace_back(x, y);
+                    }
                 }
 
                 region_electric_field_num.clear();
@@ -420,7 +469,10 @@ std::map<std::string, std::vector<Point>> read_electric_field(const std::string&
                     if(key == "type" && value != "vector") {
                         main_section = DFSection::IGNORED;
                     }
-                    if(key == "dimension" && std::stoul(value) != 3) {
+                    if(key == "dimension" && (std::stoul(value) == 3 || std::stoul(value) == 2)) {
+                        dimension = static_cast<size_t>(std::stoul(value));
+                    }
+                    if(key == "dimension" && (std::stoul(value) != 3 || std::stoul(value) != 2)) {
                         main_section = DFSection::IGNORED;
                     }
                     if(key == "location" && value != "vertex") {
