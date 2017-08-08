@@ -98,7 +98,7 @@ ElectricFieldFunction ElectricFieldReaderModule::get_linear_field_function(std::
         double field_z = std::max(0.0,
                                   (bias_voltage - dep_voltage) / eff_thickness +
                                       2 * (dep_voltage / eff_thickness) * (1 - z_rel / eff_thickness));
-        return ROOT::Math::XYZVector(0, 0, field_z);
+        return ROOT::Math::XYZVector(0, 0, -field_z);
     };
 }
 
