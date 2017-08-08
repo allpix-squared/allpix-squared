@@ -166,6 +166,7 @@ The framework has a variety of global parameters that allow to configure \apsq f
 \item \textbf{random\_seed}: Seed to use for the global random seed generator used to initialize the seeds for the module instantiations. A random seed from multiple entropy sources will be generated if the parameter is not specified. Can be used to reproduce an earlier simulation run.
 \item \textbf{library\_directories}: Additional directories to search for libraries, before searching the default paths. See Section \ref{sec:module_instantiation} for details.
 \item \textbf{model\_path}: Additional files or directories from which detector models should be read besides the standard search locations. Refer to Section \ref{sec:detector_models} for more information.
+\item \textbf{workers}: Number of worker threads to use for parallel execution (including the main thread, thus should always be strictly more than zero). Defaults to the hardware concurrency of the machine if available or one otherwise.
 \end{itemize}
 
 With this information in mind it is time to setup a real simulation. Module parameters are shortly introduced when they are first used. For more details about these parameters the module documentation in Section \ref{sec:modules} should be consulted.
