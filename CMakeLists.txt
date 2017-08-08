@@ -86,7 +86,7 @@ SET(CMAKE_CXX_STANDARD 14)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
 
-# Include Threads (not used yet)
+# Include Threads
 FIND_PACKAGE(Threads REQUIRED)
 
 INCLUDE("cmake/compiler-flag-checks.cmake")
@@ -121,7 +121,7 @@ ENDIF()
 
 # Set the dependencies
 SET(ALLPIX_DEPS_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS})
-SET(ALLPIX_DEPS_LIBRARIES ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES})
+SET(ALLPIX_DEPS_LIBRARIES ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES} Threads::Threads)
 
 # Include allpix cmake functions
 INCLUDE("cmake/allpix.cmake")

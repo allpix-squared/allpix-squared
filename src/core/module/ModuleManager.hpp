@@ -18,6 +18,7 @@
 #include <TFile.h>
 
 #include "Module.hpp"
+#include "ThreadPool.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/utils/log.h"
 
@@ -138,6 +139,7 @@ namespace allpix {
         std::unique_ptr<TFile> modules_file_;
 
         std::map<Module*, long double> module_execution_time_;
+        long double total_time_{};
 
         Configuration global_config_;
 

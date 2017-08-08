@@ -14,6 +14,7 @@
 
 #include <TDirectory.h>
 
+#include "ThreadPool.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
 #include "core/messenger/delegates.h"
@@ -184,6 +185,11 @@ namespace allpix {
         uint64_t getRandomSeed();
 
         /**
+         * @brief Get thread pool to submit asynchronous tasks to
+         */
+        ThreadPool& getThreadPool();
+
+        /**
          * @brief Get ROOT directory which should be used to output histograms et cetera
          * @return ROOT directory for storage
          */
@@ -232,6 +238,13 @@ namespace allpix {
          */
         Configuration& get_configuration();
         Configuration config_;
+
+        /**
+         * @brief Set the thread pool for parallel execution
+         * @return Thread pool (or null pointer to disable it)
+         */
+        void set_thread_pool(std::shared_ptr<ThreadPool> thread_pool);
+        std::shared_ptr<ThreadPool> thread_pool_;
 
         /**
          * @brief Set the output ROOT directory for this module
