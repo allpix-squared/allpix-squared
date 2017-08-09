@@ -41,7 +41,7 @@ void ElectricFieldReaderModule::init() {
     if((field_model == "constant" || field_model == "linear") &&
        config_.get<double>("bias_voltage") > Units::get(5.0, "kV")) {
         LOG(WARNING) << "Very high bias voltage of " << Units::display(config_.get<double>("bias_voltage"), "kV")
-                     << " set, this will probably not be simulated correctly";
+                     << " set, this is most likely not desired.";
     }
 
     // Calculate thickness domain
@@ -84,20 +84,21 @@ void ElectricFieldReaderModule::init() {
 }
 
 ElectricFieldFunction ElectricFieldReaderModule::get_linear_field_function(std::pair<double, double> thickness_domain) {
+    LOG(TRACE) << "Calculating function for the linear electric field.";
     auto bias_voltage = config_.get<double>("bias_voltage");
     auto depletion_voltage = config_.get<double>("depletion_voltage");
-    auto model = detector_->getModel();
-    return [bias_voltage, depletion_voltage, thickness_domain, model](const ROOT::Math::XYZPoint& pos) {
+    double eff_thickness = thickness_domain.second - thickness_domain.first;
+    // Reduce the effective thickness of the sensor if voltage is below full depletion
+    if(std::fabs(bias_voltage) < std::fabs(depletion_voltage)) {
+        eff_thickness *= sqrt(std::fabs(bias_voltage / depletion_voltage));
+        depletion_voltage = bias_voltage;
+    }
+    LOG(TRACE) << "Effective thickness of the electric field: " << Units::display(eff_thickness, {"um", "mm"});
+    return [bias_voltage, depletion_voltage, eff_thickness, thickness_domain](const ROOT::Math::XYZPoint& pos) {
         double z_rel = thickness_domain.second - pos.z();
-        double eff_thickness = thickness_domain.second - thickness_domain.first;
-        double dep_voltage = depletion_voltage;
-        if(bias_voltage < depletion_voltage) {
-            eff_thickness *= sqrt(bias_voltage / depletion_voltage);
-            dep_voltage = bias_voltage;
-        }
         double field_z = std::max(0.0,
-                                  (bias_voltage - dep_voltage) / eff_thickness +
-                                      2 * (dep_voltage / eff_thickness) * (1 - z_rel / eff_thickness));
+                                  (bias_voltage - depletion_voltage) / eff_thickness +
+                                      2 * (depletion_voltage / eff_thickness) * (1 - z_rel / eff_thickness));
         return ROOT::Math::XYZVector(0, 0, -field_z);
     };
 }
