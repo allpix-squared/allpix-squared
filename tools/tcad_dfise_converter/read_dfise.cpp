@@ -245,6 +245,12 @@ std::map<std::string, std::vector<Point>> read_grid(const std::string& file_name
 
             size_t size = 0;
             switch(k) {
+            case 0: /* vertex */
+                size = 1;
+                break;
+            case 1: /* Segment */
+                size = 2;
+                break;
             case 2: /* triangle */
                 size = 3;
                 break;
@@ -267,6 +273,7 @@ std::map<std::string, std::vector<Point>> read_grid(const std::string& file_name
                 throw std::runtime_error("element type " + std::to_string(k) + " is not supported");
             }
 
+            std::cerr << line << std::endl;
             for(size_t i = 0; i < size; ++i) {
                 long element_idx;
                 sstr >> element_idx;
@@ -277,7 +284,7 @@ std::map<std::string, std::vector<Point>> read_grid(const std::string& file_name
                     element_idx = -element_idx - 1;
                 }
 
-                if(size == 3) {
+                if(size == 3 || size == 2) {
                     if(element_idx >= static_cast<long>(edges.size())) {
                         throw std::runtime_error("edge index is higher than number of faces");
                     }
