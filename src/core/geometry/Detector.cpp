@@ -221,6 +221,15 @@ std::vector<double> Detector::get_electric_field_raw(double x, double y, double 
         auto vector = electric_field_function_(ROOT::Math::XYZPoint(x, y, z));
         vector.GetCoordinates(ret_val.at(0), ret_val.at(1), ret_val.at(2));
     }
+
+    // Flip vector if necessary
+    if((pixel_x % 2) == 1) {
+        ret_val.at(0) *= -1;
+    }
+    if((pixel_y % 2) == 1) {
+        ret_val.at(1) *= -1;
+    }
+
     return ret_val;
 }
 
