@@ -137,12 +137,6 @@ namespace allpix {
 
             // Chip thickness
             setChipThickness(config.get<double>("chip_thickness", 0));
-            // Excess around the chip from the pixel grid
-            auto default_chip_excess = config.get<double>("chip_excess", 0);
-            setChipExcessTop(config.get<double>("chip_excess_top", default_chip_excess));
-            setChipExcessBottom(config.get<double>("chip_excess_bottom", default_chip_excess));
-            setChipExcessLeft(config.get<double>("chip_excess_left", default_chip_excess));
-            setChipExcessRight(config.get<double>("chip_excess_right", default_chip_excess));
 
             // Read support layers
             for(auto& support_config : reader_.getConfigurations("support")) {
@@ -335,11 +329,12 @@ namespace allpix {
          * @brief Get size of the chip
          * @return Size of the chip
          *
-         * Calculated from \ref DetectorModel::getGridSize "pixel grid size", chip excess and chip thickness
+         * Calculated from \ref DetectorModel::getGridSize "pixel grid size", sensor excess and chip thickness
          */
         virtual ROOT::Math::XYZVector getChipSize() const {
-            ROOT::Math::XYZVector excess_thickness(
-                (chip_excess_.at(1) + chip_excess_.at(3)), (chip_excess_.at(0) + chip_excess_.at(2)), chip_thickness_);
+            ROOT::Math::XYZVector excess_thickness((sensor_excess_.at(1) + sensor_excess_.at(3)),
+                                                   (sensor_excess_.at(0) + sensor_excess_.at(2)),
+                                                   chip_thickness_);
             return getGridSize() + excess_thickness;
         }
         /**
@@ -349,8 +344,8 @@ namespace allpix {
          * Center of the chip calculcated from chip excess and sensor offset
          */
         virtual ROOT::Math::XYZPoint getChipCenter() const {
-            ROOT::Math::XYZVector offset((chip_excess_.at(1) - chip_excess_.at(3)) / 2.0,
-                                         (chip_excess_.at(0) - chip_excess_.at(2)) / 2.0,
+            ROOT::Math::XYZVector offset((sensor_excess_.at(1) - sensor_excess_.at(3)) / 2.0,
+                                         (sensor_excess_.at(0) - sensor_excess_.at(2)) / 2.0,
                                          getSensorSize().z() / 2.0 + getChipSize().z() / 2.0);
             return getCenter() + offset;
         }
@@ -359,26 +354,6 @@ namespace allpix {
          * @param val Thickness of the sensor
          */
         void setChipThickness(double val) { chip_thickness_ = val; }
-        /**
-         * @brief Set the excess at the top of the chip (positive y-coordinate)
-         * @param val Chip top excess
-         */
-        void setChipExcessTop(double val) { chip_excess_.at(0) = val; }
-        /**
-         * @brief Set the excess at the right of the chip (positive x-coordinate)
-         * @param val Chip right excess
-         */
-        void setChipExcessRight(double val) { chip_excess_.at(1) = val; }
-        /**
-         * @brief Set the excess at the bottom of the chip (negative y-coordinate)
-         * @param val Chip bottom excess
-         */
-        void setChipExcessBottom(double val) { chip_excess_.at(2) = val; }
-        /**
-         * @brief Set the excess at the left of the chip (negative x-coordinate)
-         * @param val Chip left excess
-         */
-        void setChipExcessLeft(double val) { chip_excess_.at(3) = val; }
 
         /* SUPPORT */
         /**
@@ -445,7 +420,6 @@ namespace allpix {
         std::array<double, 4> sensor_excess_{};
 
         double chip_thickness_{};
-        std::array<double, 4> chip_excess_{};
 
         std::vector<SupportLayer> support_layers_;
 
