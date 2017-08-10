@@ -7,7 +7,7 @@
 #### Description
 Simulates generic propagation of electrons (ignoring the corresponding holes) through the sensitive devices of every detector. Splits up the set of deposited charges in multiple smaller sets of charges (containing multiple charges) that are propagated together. The propagation process is fully independent, the individual sets of propagated charges do not influence each other. The maximum size of the set of propagated charges and the accuracy of the propagation can be controlled.
 
-The propagation consists of a combination of drift and diffusion simulation. The drift is calculated using the charge carrier velocity derived from the electron mobility parameterization by C. Jacobini et al. in (A review of some charge transport properties of silicon)[https://doi.org/10.1016/0038-1101(77)90054-5]. The correct mobility for either electrons or holes is automatically chosen, based on the type of the charge carrier under consideration. Thus, also input with both electrons and holes is treated properly.
+The propagation consists of a combination of drift and diffusion simulation. The drift is calculated using the charge carrier velocity derived from the electron mobility parameterization by C. Jacobini et al. in [A review of some charge transport properties of silicon](https://doi.org/10.1016/0038-1101(77)90054-5). The correct mobility for either electrons or holes is automatically chosen, based on the type of the charge carrier under consideration. Thus, also input with both electrons and holes is treated properly.
 
 The two parameters `propagate_electrons` and `propagate_holes` allow to control, which type of charge carrier is propagated to the electrodes. Either one of the carrier types can be selected, or both can be propagated. It should be noted that this will slow down the simulation considerably since twice as many carriers have to be handled and it should only be used where sensible.
 
@@ -25,12 +25,12 @@ The propagation module also produces a variety of output plots for debugging and
 * `timestep_max` : Maximum step in time to use for the Runge-Kutta integration regardless of the spatial precision. Defaults to 0.1ns.
 * `integration_time` : Time within which charge carriers are propagated. After exceeding this time, no further propagation is performed for the respective carriers. Defaults to the LHC bunch crossing time of 25ns.
 * `propagate_electrons` : Select whether electron-type charge carriers should be propagated to the electrodes. Defaults to true.
-* `propagate_holes` :  Select whether hole-type charge carriers should be propagated to the electrodes. Defaults to true.
+* `propagate_holes` :  Select whether hole-type charge carriers should be propagated to the electrodes. Defaults to false.
 * `output_plots` : Determines if output plots should be generated for every event. This causes a very huge slow down of the simulation, it is not recommended to use this with a run of more than a single event. Disabled by default.
 * `output_animation` : In addition to the other output plots, also write a GIF animation of the charges drifting towards the electrodes. This is very slow and writing the animation takes a considerable amount of time.
 * `output_plots_step` : Timestep to use between two points that are plotted. Indirectly determines the amount of points plotted. Defaults to *timestep_max* if not explicitly specified.
-* `output_plots_theta` : Viewpoint angle of the 3D animation and the 3D line graph around the world Z-axis. Defaults to zero.
-* `output_plots_phi` : Viewpoint angle of the 3D animation and the 3D line graph around the world X-axis. Defaults to zero.
+* `output_plots_theta` : Viewpoint angle of the 3D animation and the 3D line graph around the world X-axis. Defaults to zero.
+* `output_plots_phi` : Viewpoint angle of the 3D animation and the 3D line graph around the world Z-axis. Defaults to zero.
 * `output_plots_use_pixel_units` : Determines if the plots should use pixels as unit instead of metric length scales. Defaults to false (thus using the metric system).
 * `output_plots_use_equal_scaling` : Determines if the plots should be produced with equal distance scales on every axis (also if this implies that some points will fall out of the graph). Defaults to true.
 * `output_plots_animation_time_scaling` : Scaling for the animation to use to convert the actual simulation time to the time step in the animation. Defaults to 1.0e9, meaning that every nanosecond is equal to an animation step of a single second.

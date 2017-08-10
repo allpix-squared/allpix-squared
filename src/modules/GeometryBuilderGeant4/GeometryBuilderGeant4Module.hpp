@@ -37,7 +37,7 @@ namespace allpix {
         GeometryBuilderGeant4Module(Configuration config, Messenger* messenger, GeometryManager* geo_manager);
 
         /**
-         * @brief Initializes Geant4 and construct the Geant4 geometry from the internal AllPix geometry
+         * @brief Initializes Geant4 and construct the Geant4 geometry from the internal geometry
          */
         void init() override;
 
