@@ -92,7 +92,7 @@ namespace allpix {
              * @param hole_offset Offset of the optional hole from the center of the support layer
              */
             SupportLayer(ROOT::Math::XYZVector size,
-                         ROOT::Math::XYVector offset,
+                         ROOT::Math::XYZVector offset,
                          std::string material,
                          std::string location,
                          ROOT::Math::XYZVector hole_size,
@@ -107,7 +107,7 @@ namespace allpix {
             ROOT::Math::XYZVector hole_size_;
 
             // Internal parameters to calculate return parameters
-            ROOT::Math::XYVector offset_;
+            ROOT::Math::XYZVector offset_;
             ROOT::Math::XYVector hole_offset_;
             std::string location_;
         };
@@ -142,12 +142,19 @@ namespace allpix {
             for(auto& support_config : reader_.getConfigurations("support")) {
                 auto thickness = support_config.get<double>("thickness");
                 auto size = support_config.get<XYVector>("size");
-                auto offset = support_config.get<XYVector>("offset", {0, 0});
                 auto location = support_config.get<std::string>("location", "chip");
-                if(location != "sensor" && location != "chip") {
+                if(location != "sensor" && location != "chip" && location != "absolute") {
                     throw InvalidValueError(
-                        support_config, "location", "location of the support should be 'chip' or 'sensor'");
+                        support_config, "location", "location of the support should be 'chip', 'sensor' or 'absolute'");
                 }
+                XYZVector offset;
+                if(location == "absolute") {
+                    offset = support_config.get<XYZVector>("offset");
+                } else {
+                    auto xy_offset = support_config.get<XYVector>("offset", {0, 0});
+                    offset = XYZVector(xy_offset.x(), xy_offset.y(), 0);
+                }
+
                 auto material = support_config.get<std::string>("material", "epoxy");
                 auto hole_size = support_config.get<XYVector>("hole_size", {0, 0});
                 auto hole_offset = support_config.get<XYVector>("hole_offset", {0, 0});
@@ -369,7 +376,7 @@ namespace allpix {
             auto sensor_offset = -getSensorSize().z() / 2.0;
             auto chip_offset = getSensorSize().z() / 2.0 + getChipSize().z();
             for(auto& layer : ret_layers) {
-                ROOT::Math::XYZVector offset(layer.offset_.x(), layer.offset_.y(), 0);
+                ROOT::Math::XYZVector offset = layer.offset_;
                 if(layer.location_ == "sensor") {
                     offset.SetZ(sensor_offset - layer.size_.z() / 2.0);
                     sensor_offset -= layer.size_.z();
@@ -395,7 +402,7 @@ namespace allpix {
         // FIXME: Location (and material) should probably be an enum instead
         void addSupportLayer(const ROOT::Math::XYVector& size,
                              double thickness,
-                             ROOT::Math::XYVector offset,
+                             ROOT::Math::XYZVector offset,
                              std::string material,
                              std::string location,
                              const ROOT::Math::XYVector& hole_size,
