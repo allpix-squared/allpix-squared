@@ -1,5 +1,5 @@
 ## DetectorHistogrammer
-**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>), Paul Schuetze (<paul.schuetze@desy.de>)
+**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>), Paul Schuetze (<paul.schuetze@desy.de>)   
 **Status**: Functional   
 **Input**: PixelHit
 
