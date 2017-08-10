@@ -1,9 +1,14 @@
 \section{Quick Start}
-This chapter serves as a swift introduction to \apsq for users who prefer to start quickly and learn the details while simulating. The typical user should skip the next paragraphs and continue to Section \ref{sec:introduction} instead. 
+This chapter serves as a swift introduction to \apsq for users who prefer to start quickly and learn the details while simulating.
+The typical user should skip the next paragraphs and continue reading Section \ref{sec:introduction} instead. 
 
-\apsq is a generic simulation framework for pixel detectors. It provides a modular, flexible and user-friendly structure for the simulation of independent detectors in the geometry. The framework currently relies on the Geant4~\cite{geant4}, ROOT~\cite{root} and Eigen3~\cite{eigen3} libraries, that need to be installed and loaded before using \apsq.
+\apsq is a generic simulation framework for pixel detectors.
+It provides a modular, flexible and user-friendly structure for the simulation of independent detectors in the geometry.
+The framework currently relies on the Geant4~\cite{geant4}, ROOT~\cite{root} and Eigen3~\cite{eigen3} libraries which need to be installed and loaded before using \apsq.
 
-The minimal, default installation can be installed by executing the commands below. More detailed installation instructions are found in Section \ref{sec:installation}.
+The minimal, default installation can be installed by executing the commands below.
+More detailed installation instructions can be found in Section \ref{sec:installation}.
+
 \begin{verbatim}
 $ git clone https://gitlab.cern.ch/simonspa/allpix-squared
 $ cd allpix-squared
@@ -12,11 +17,15 @@ $ cmake ..
 $ make install
 $ cd ..
 \end{verbatim}
-The binary can then be executed with the example configuration file as follows:
+The binary can then be executed with the provided example configuration file as follows:
 \begin{verbatim}
 $ bin/allpix -c etc/example.conf
 \end{verbatim}
 
-Hereafter, the example configuration can be copied and adjusted to the needs of the user. This example contains a simple setup of two test detectors. It simulates the whole process from the passage of the beam, the deposition of charges in the detectors, the particle propagation and the conversion of the collected charges to digitized pixel hits. All the generated data is finally stored on disk for later analysis.
+Hereafter, the example configuration can be copied and adjusted to the needs of the user.
+This example contains a simple setup of two test detectors.
+It simulates the whole process, starting from the passage of the beam, the deposition of charges in the detectors, the particle propagation and the conversion of the collected charges to digitized pixel hits.
+All generated data is finally stored on disk on ROOT TTrees for later analysis.
 
-After this quick start it is very much recommended to read the other sections in more detail as well. For quickly solving common issues the Frequently Asked Questions in Section \ref{sec:faq} may be particularly useful.
+After this quick start it is very much recommended to proceed to the other sections of this user manual.
+For quickly resolving common issues, the \nameref{sec:faq} in Section \ref{sec:faq} may be particularly useful.
