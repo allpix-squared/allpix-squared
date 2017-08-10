@@ -12,7 +12,9 @@
 #include "../../src/objects/PixelHit.hpp"
 #include "../../src/objects/PropagatedCharge.hpp"
 
-// FIXME: pixel size should be available in the data
+/**
+ * Construct a ROOT TTree from the data objects that can be used for comparison
+ */
 std::shared_ptr<TTree> constructComparisonTree(TFile* file, std::string dut) {
     // Read pixel hit output
     TTree* pixel_hit_tree = static_cast<TTree*>(file->Get("PixelHit"));

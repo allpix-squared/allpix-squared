@@ -431,10 +431,13 @@ The support layers support the following parameters.
 This parameter is required for all support layers.
 \item \texttt{thickness}: Thickness of the support layers.
 This parameter is required for all support layers.
-\item \texttt{offset}: Every support layer is centered by default to the center of the pixel grid (the rotation center of the model).
-An optional 2D offset can be specified using this parameter, this is disabled by default.
-The position in the depth axis can be specified separately with the parameter \texttt{location}.
-\item \texttt{location}: Location of the support layer.
+\item \texttt{location}: Location of the support layer. 
+Either \textit{sensor} to attach it to the sensor (on the opposite side of the chip), \textit{chip} to add the support layer after the chip or \textit{absolute} to specify the offset in the z-direction manually. 
+Defaults to \textit{chip} if not given. If the parameter is equal to \textit{sensor} or \textit{chip}, the support layers are stacked in there respective direction when multiple layers of support are specified.
+\item \texttt{offset}: When the parameter \texttt{location} is equal to 'sensor' or 'chip', an optional 2D offset can be specified using this parameter, the offset in the z-direction is then automatically determined. 
+These support layers are centered by default to the middle of the pixel grid (the rotation center of the model). 
+If the \texttt{location} is set to absolute, the offset is a required parameter and given as a 3D vector with respect to the center of the model (thus the center of the active sensor). 
+Care should be taken to ensure that these support layers and the rest of the model do not overlap.
 Either \textit{sensor} to stick it to the sensor (on the opposite side of the chip) or \textit{chip} to add the support layer after the chip.
 Defaults to \textit{chip} if not given.
 Sensors are stacked in there respectively direction if multiple layers of support are given.

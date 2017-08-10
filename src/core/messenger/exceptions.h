@@ -50,7 +50,7 @@ namespace allpix {
         explicit MessageWithoutObjectException(const std::type_info& message) {
             error_message_ = "Message ";
             error_message_ += allpix::demangle(message.name());
-            error_message_ += " does not contain an AllPix object";
+            error_message_ += " does not contain a valid object";
         }
     };
 } // namespace allpix

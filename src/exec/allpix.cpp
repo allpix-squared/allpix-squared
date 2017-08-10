@@ -6,7 +6,7 @@
 #include <string>
 #include <utility>
 
-#include "core/AllPix.hpp"
+#include "core/Allpix.hpp"
 #include "core/config/ConfigManager.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/utils/exceptions.h"
@@ -23,7 +23,7 @@ void clean();
 void abort_handler(int);
 void interrupt_handler(int);
 
-std::unique_ptr<AllPix> apx;
+std::unique_ptr<Allpix> apx;
 std::atomic<bool> apx_ready{false};
 
 /**
@@ -140,8 +140,8 @@ int main(int argc, const char* argv[]) {
     }
 
     try {
-        // Construct main AllPix object
-        apx = std::make_unique<AllPix>(config_file_name);
+        // Construct main Allpix object
+        apx = std::make_unique<Allpix>(config_file_name);
         apx_ready = true;
 
         // Load modules

@@ -145,7 +145,7 @@ void ModuleManager::load(Messenger* messenger,
             } else {
                 LOG(ERROR) << "Library could not be loaded: it is not available" << std::endl
                            << " - Did you enable the library during building? " << std::endl
-                           << " - Did you spell the library name correctly? ";
+                           << " - Did you spell the library name correctly (case-sensitive)? ";
                 if(lib_error != nullptr) {
                     LOG(DEBUG) << "Detailed error: " << lib_error;
                 }
