@@ -15,7 +15,7 @@ ADD_LIBRARY(AllpixCore SHARED
     config/ConfigManager.cpp
     geometry/Detector.cpp
     geometry/GeometryManager.cpp
-    AllPix.cpp
+    Allpix.cpp
 )
 
 # Link the dependencies

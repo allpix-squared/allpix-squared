@@ -30,7 +30,7 @@
  */
 const TString WrapperName = "Wrapper";
 const TString supportName = "support";
-const TString WaferName = "Wafer"; // Box in AllPix1
+const TString WaferName = "Wafer"; // Box in Allpix1
 const TString CoverName = "Coverlayer";
 const TString SliceName = "Slice";
 const TString PixelName = "Pixel";

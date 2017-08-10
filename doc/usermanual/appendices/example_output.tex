@@ -3,96 +3,98 @@
 Possible output for the example simulation in Section \ref{sec:setting_up_simulation_chain} is given below:
 
 \begin{lstlisting}[breaklines]
-(S) Welcome to AllPix v0.3alpha3+46^g5ec02fc
-(S) Initialized PRNG with system entropy seed 18103434008225088751
-(S) Loading module GeometryBuilderGeant4
-(S) Loading module DepositionGeant4     
-(S) Loading module ElectricFieldReader
-(S) Loading module GenericPropagation  
-(S) Loading module SimpleTransfer     
-(S) Loading module DefaultDigitizer
-(S) Loading module DetectorHistogrammer
-(S) Loading module VisualizationGeant4  
-(S) Loaded 8 modules                   
-(S) Initializing 15 module instantiations
+(S) Welcome to Allpix^2 v0.3alpha5+14^g44961d2
+(S) Initialized PRNG with system entropy seed 2756271465933902033
+(S) Loaded 7 modules                    
+(S) Initializing 14 module instantiations
+(I) [I:DepositionGeant4] Using G4 physics list "QGSP_BERT"
 (I) [I:DepositionGeant4] Not depositing charges in telescope1 because there is no listener for its output
-(I) [I:ElectricFieldReader:telescope1] Set linear electric field with magnitude 125V/mm
-(I) [I:ElectricFieldReader:dut] Set linear electric field with magnitude 166.667V/mm
-(I) [I:ElectricFieldReader:telescope2] Set linear electric field with magnitude 166.667V/mm
-(S) Initialized 15 module instantiations
+(I) [I:ElectricFieldReader:telescope1] Setting linear electric field from 50V bias voltage and 50V depletion voltage
+(I) [I:ElectricFieldReader:dut] Setting linear electric field from 50V bias voltage and 50V depletion voltage
+(I) [I:ElectricFieldReader:telescope2] Setting linear electric field from 50V bias voltage and 50V depletion voltage
+(S) Initialized 14 module instantiations
 (S) Running event 1 of 5
 (W) [R:DepositionGeant4] Dispatched message Message<allpix::MCParticle> from DepositionGeant4 has no receivers!
-(I) [R:DepositionGeant4] Deposited 64446 charges in sensor of detector dut
+(I) [R:DepositionGeant4] Deposited 182856 charges in sensor of detector dut
 (W) [R:DepositionGeant4] Dispatched message Message<allpix::MCParticle> from DepositionGeant4 has no receivers!
-(I) [R:DepositionGeant4] Deposited 29457 charges in sensor of detector telescope2
-(I) [R:GenericPropagation:dut] Propagated 64446 charges in 1291 steps in average time of 8.9313ns
-(I) [R:GenericPropagation:telescope2] Propagated 29457 charges in 590 steps in average time of 6.70671ns
-(I) [R:SimpleTransfer:dut] Transferred 64446 charges to 5 pixels
-(I) [R:SimpleTransfer:telescope2] Transferred 29457 charges to 4 pixels
-(I) [R:DefaultDigitizer:dut] Digitized 3 pixel hits
+(W) [R:DepositionGeant4] Dispatched message Message<allpix::MCParticle> from DepositionGeant4 has no receivers!
+(I) [R:DepositionGeant4] Deposited 191740 charges in sensor of detector telescope2
+(W) [R:DepositionGeant4] Dispatched message Message<allpix::MCParticle> from DepositionGeant4 has no receivers!
+(I) [R:GenericPropagation:dut] Propagated 91428 charges in 1829 steps in average time of 5.04796ns
+(I) [R:GenericPropagation:telescope2] Propagated 95870 charges in 1918 steps in average time of 5.04183ns
+(I) [R:SimpleTransfer:dut] Transferred 91428 charges to 4 pixels
+(I) [R:SimpleTransfer:telescope2] Transferred 95870 charges to 4 pixels
+(I) [R:DefaultDigitizer:dut] Digitized 4 pixel hits
 (I) [R:DefaultDigitizer:telescope2] Digitized 4 pixel hits
 (W) [R:DefaultDigitizer:telescope2] Dispatched message Message<allpix::PixelHit> from DefaultDigitizer:telescope2 has no receivers!
 (S) Running event 2 of 5
 (W) [R:DepositionGeant4] Dispatched message Message<allpix::MCParticle> from DepositionGeant4 has no receivers!
-(I) [R:DepositionGeant4] Deposited 41587 charges in sensor of detector dut
+(I) [R:DepositionGeant4] Deposited 56190 charges in sensor of detector dut
 (W) [R:DepositionGeant4] Dispatched message Message<allpix::MCParticle> from DepositionGeant4 has no receivers!
-(I) [R:DepositionGeant4] Deposited 24972 charges in sensor of detector telescope2
-(I) [R:GenericPropagation:dut] Propagated 41587 charges in 834 steps in average time of 4.85424ns
-(I) [R:GenericPropagation:telescope2] Propagated 24972 charges in 500 steps in average time of 6.70781ns
-(I) [R:SimpleTransfer:dut] Transferred 41587 charges to 5 pixels
-(I) [R:SimpleTransfer:telescope2] Transferred 24972 charges to 4 pixels
-(I) [R:DefaultDigitizer:dut] Digitized 5 pixel hits
-(I) [R:DefaultDigitizer:telescope2] Digitized 4 pixel hits
+(W) [R:DepositionGeant4] Dispatched message Message<allpix::MCParticle> from DepositionGeant4 has no receivers!
+(I) [R:DepositionGeant4] Deposited 328756 charges in sensor of detector telescope2
+(W) [R:DepositionGeant4] Dispatched message Message<allpix::MCParticle> from DepositionGeant4 has no receivers!
+(I) [R:GenericPropagation:dut] Propagated 28095 charges in 562 steps in average time of 5.04909ns
+(I) [R:GenericPropagation:telescope2] Propagated 164378 charges in 3293 steps in average time of 4.37604ns
+(I) [R:SimpleTransfer:dut] Transferred 28095 charges to 4 pixels
+(I) [R:SimpleTransfer:telescope2] Transferred 164378 charges to 12 pixels
+(I) [R:DefaultDigitizer:dut] Digitized 3 pixel hits
+(I) [R:DefaultDigitizer:telescope2] Digitized 11 pixel hits
 (W) [R:DefaultDigitizer:telescope2] Dispatched message Message<allpix::PixelHit> from DefaultDigitizer:telescope2 has no receivers!
 (S) Running event 3 of 5
 (W) [R:DepositionGeant4] Dispatched message Message<allpix::MCParticle> from DepositionGeant4 has no receivers!
-(I) [R:DepositionGeant4] Deposited 23107 charges in sensor of detector dut
+(I) [R:DepositionGeant4] Deposited 53386 charges in sensor of detector dut
 (W) [R:DepositionGeant4] Dispatched message Message<allpix::MCParticle> from DepositionGeant4 has no receivers!
-(I) [R:DepositionGeant4] Deposited 48352 charges in sensor of detector telescope2
-(I) [R:GenericPropagation:dut] Propagated 23107 charges in 464 steps in average time of 6.55353ns
-(I) [R:GenericPropagation:telescope2] Propagated 48352 charges in 968 steps in average time of 6.7221ns
-(I) [R:SimpleTransfer:dut] Transferred 23107 charges to 5 pixels
-(I) [R:SimpleTransfer:telescope2] Transferred 48352 charges to 4 pixels
-(I) [R:DefaultDigitizer:dut] Digitized 4 pixel hits
+(W) [R:DepositionGeant4] Dispatched message Message<allpix::MCParticle> from DepositionGeant4 has no receivers!
+(I) [R:DepositionGeant4] Deposited 42496 charges in sensor of detector telescope2
+(W) [R:DepositionGeant4] Dispatched message Message<allpix::MCParticle> from DepositionGeant4 has no receivers!
+(I) [R:GenericPropagation:dut] Propagated 26693 charges in 534 steps in average time of 5.04742ns
+(I) [R:GenericPropagation:telescope2] Propagated 21248 charges in 425 steps in average time of 5.03504ns
+(I) [R:SimpleTransfer:dut] Transferred 26693 charges to 4 pixels
+(I) [R:SimpleTransfer:telescope2] Transferred 21248 charges to 4 pixels
+(I) [R:DefaultDigitizer:dut] Digitized 3 pixel hits
 (I) [R:DefaultDigitizer:telescope2] Digitized 4 pixel hits
 (W) [R:DefaultDigitizer:telescope2] Dispatched message Message<allpix::PixelHit> from DefaultDigitizer:telescope2 has no receivers!
 (S) Running event 4 of 5
 (W) [R:DepositionGeant4] Dispatched message Message<allpix::MCParticle> from DepositionGeant4 has no receivers!
-(I) [R:DepositionGeant4] Deposited 96395 charges in sensor of detector dut
+(I) [R:DepositionGeant4] Deposited 43632 charges in sensor of detector dut
 (W) [R:DepositionGeant4] Dispatched message Message<allpix::MCParticle> from DepositionGeant4 has no receivers!
-(I) [R:DepositionGeant4] Deposited 32394 charges in sensor of detector telescope2
-(I) [R:GenericPropagation:dut] Propagated 96395 charges in 1933 steps in average time of 7.78803ns
-(I) [R:GenericPropagation:telescope2] Propagated 32394 charges in 648 steps in average time of 6.71757ns
-(I) [R:SimpleTransfer:dut] Transferred 96395 charges to 9 pixels
-(I) [R:SimpleTransfer:telescope2] Transferred 32394 charges to 4 pixels
-(I) [R:DefaultDigitizer:dut] Digitized 7 pixel hits
+(W) [R:DepositionGeant4] Dispatched message Message<allpix::MCParticle> from DepositionGeant4 has no receivers!
+(I) [R:DepositionGeant4] Deposited 48516 charges in sensor of detector telescope2
+(W) [R:DepositionGeant4] Dispatched message Message<allpix::MCParticle> from DepositionGeant4 has no receivers!
+(I) [R:GenericPropagation:dut] Propagated 21816 charges in 437 steps in average time of 5.03719ns
+(I) [R:GenericPropagation:telescope2] Propagated 24258 charges in 486 steps in average time of 5.06338ns
+(I) [R:SimpleTransfer:dut] Transferred 21816 charges to 4 pixels
+(I) [R:SimpleTransfer:telescope2] Transferred 24258 charges to 4 pixels
+(I) [R:DefaultDigitizer:dut] Digitized 2 pixel hits
 (I) [R:DefaultDigitizer:telescope2] Digitized 4 pixel hits
 (W) [R:DefaultDigitizer:telescope2] Dispatched message Message<allpix::PixelHit> from DefaultDigitizer:telescope2 has no receivers!
 (S) Running event 5 of 5
 (W) [R:DepositionGeant4] Dispatched message Message<allpix::MCParticle> from DepositionGeant4 has no receivers!
-(I) [R:DepositionGeant4] Deposited 24758 charges in sensor of detector dut
+(I) [R:DepositionGeant4] Deposited 40924 charges in sensor of detector dut
 (W) [R:DepositionGeant4] Dispatched message Message<allpix::MCParticle> from DepositionGeant4 has no receivers!
-(I) [R:DepositionGeant4] Deposited 26760 charges in sensor of detector telescope2
-(I) [R:GenericPropagation:dut] Propagated 24758 charges in 496 steps in average time of 7.10464ns
-(I) [R:GenericPropagation:telescope2] Propagated 26760 charges in 536 steps in average time of 6.68743ns
-(I) [R:SimpleTransfer:dut] Transferred 24758 charges to 5 pixels
-(I) [R:SimpleTransfer:telescope2] Transferred 26760 charges to 4 pixels
+(W) [R:DepositionGeant4] Dispatched message Message<allpix::MCParticle> from DepositionGeant4 has no receivers!
+(I) [R:DepositionGeant4] Deposited 63184 charges in sensor of detector telescope2
+(W) [R:DepositionGeant4] Dispatched message Message<allpix::MCParticle> from DepositionGeant4 has no receivers!
+(I) [R:GenericPropagation:dut] Propagated 20462 charges in 410 steps in average time of 5.06975ns
+(I) [R:GenericPropagation:telescope2] Propagated 31592 charges in 632 steps in average time of 5.03731ns
+(I) [R:SimpleTransfer:dut] Transferred 20462 charges to 4 pixels
+(I) [R:SimpleTransfer:telescope2] Transferred 31592 charges to 4 pixels
 (I) [R:DefaultDigitizer:dut] Digitized 3 pixel hits
 (I) [R:DefaultDigitizer:telescope2] Digitized 4 pixel hits
 (W) [R:DefaultDigitizer:telescope2] Dispatched message Message<allpix::PixelHit> from DefaultDigitizer:telescope2 has no receivers!
 (S) Finished run of 5 events
-(I) [F:DepositionGeant4] Deposited total of 824456 charges in 4 sensor(s) (average of 41222 per sensor for every event)
-(I) [F:GenericPropagation:dut] Propagated total of 250293 charges in 5018 steps in average time of 7.41286ns
-(I) [F:GenericPropagation:telescope2] Propagated total of 161935 charges in 3242 steps in average time of 6.71046ns
+(I) [F:DepositionGeant4] Deposited total of 2103360 charges in 4 sensor(s) (average of 105168 per sensor for every event)
+(I) [F:GenericPropagation:dut] Propagated total of 188494 charges in 3772 steps in average time of 5.04917ns
+(I) [F:GenericPropagation:telescope2] Propagated total of 337346 charges in 6754 steps in average time of 4.71792ns
 (I) [F:SimpleTransfer:telescope1] Transferred total of 0 charges to 0 different pixels
-(I) [F:SimpleTransfer:dut] Transferred total of 250293 charges to 9 different pixels
-(I) [F:SimpleTransfer:telescope2] Transferred total of 161935 charges to 4 different pixels
+(I) [F:SimpleTransfer:dut] Transferred total of 188494 charges to 4 different pixels
+(I) [F:SimpleTransfer:telescope2] Transferred total of 337346 charges to 12 different pixels
 (I) [F:DefaultDigitizer:telescope1] Digitized 0 pixel hits in total
-(I) [F:DefaultDigitizer:dut] Digitized 22 pixel hits in total
-(I) [F:DefaultDigitizer:telescope2] Digitized 20 pixel hits in total
-(I) [F:DetectorHistogrammer:dut] Plotted 22 hits in total, mean position is (125.773,125.318)
-(I) [F:VisualizationGeant4] Starting visualization session
+(I) [F:DefaultDigitizer:dut] Digitized 15 pixel hits in total
+(I) [F:DefaultDigitizer:telescope2] Digitized 27 pixel hits in total
+(I) [F:DetectorHistogrammer:dut] Plotted 15 hits in total, mean position is (125.667,125.6)
 (S) Finalization completed
-(S) Executed 15 instantiations in 5 seconds, spending 52% of time in slowest instantiation VisualizationGeant4
-(S) Average processing time is 1060 ms/event, event generation at 1 Hz
+(S) Executed 14 instantiations in 2 seconds, spending 41% of time in slowest instantiation DepositionGeant4
+(S) Average processing time is 401 ms/event, event generation at 2 Hz
 \end{lstlisting}

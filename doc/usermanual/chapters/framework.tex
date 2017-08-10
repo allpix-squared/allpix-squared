@@ -170,7 +170,7 @@ In addition to the constructor every module can override the following methods:
 
 \subsubsection{Module instantiation}
 \label{sec:module_instantiation}
-The modules are dynamically loaded and instantiated by the Module Manager. Modules are constructed, initialized, executed and finalized in the linear order they are defined in the configuration file. Thus the configuration file should follow the order of the real process. For every non-special section in the main configuration file (see \ref{sec:config_parameters} for more details) a corresponding library is searched which contains the module. A module has the name \textbf{libAllPixModule\texttt{ModuleName}} reflecting the \texttt{ModuleName} of a defined module. The module search order is as follows:
+The modules are dynamically loaded and instantiated by the Module Manager. Modules are constructed, initialized, executed and finalized in the linear order they are defined in the configuration file. Thus the configuration file should follow the order of the real process. For every non-special section in the main configuration file (see \ref{sec:config_parameters} for more details) a corresponding library is searched which contains the module. A module has the name \textbf{libAllpixModule\texttt{ModuleName}} reflecting the \texttt{ModuleName} of a defined module. The module search order is as follows:
 \begin{enumerate}
 \item The modules already loaded before from an earlier section header
 \item All directories in the global configuration parameter \textit{library\_directories} in the provided order if this parameter exists
