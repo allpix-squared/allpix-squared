@@ -9,7 +9,7 @@ To construct a comparison tree using this macro follow these steps:
 2. Load the current library of objects with `.L path/to/libAllpixObjects.so`
 3. Build the macro with `.L path/to/constructComparisonTree.C++`
 4. Run the macro with `auto tree = constructComparisonTree(_file0, "name_of_dut")`
-5. Open a new file with `auto file = new TFile("output.root", "RECREATE")
+5. Open a new file with `auto file = new TFile("output.root", "RECREATE")`
 6. Write the tree with `tree->Write()`
 
 ### Remake project
