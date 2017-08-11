@@ -1,7 +1,7 @@
 ## LCIOWriter
-**Maintainer**: Andreas Nurnberg (<andreas.nurnberg@cern.ch>)  
-**Status**: Functional  
-**Input**: *PixelHitMessage*
+**Maintainer**: Andreas Nurnberg (<andreas.nurnberg@cern.ch>)   
+**Status**: Functional   
+**Input**: PixelHit
 
 #### Description
 Writes pixel hit data to LCIO file, compatible to EUTelescope analysis framework.
