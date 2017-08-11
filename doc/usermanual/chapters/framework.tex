@@ -251,7 +251,7 @@ Every module should provide a constructor consuming a fixed set of arguments def
 This particular constructor is always called during construction by the module instantiation logic.
 The arguments for the constructor differs for unique and detector modules.
 For unique modules, the constructor for a \texttt{TestModule} should be:
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,lineos]{c++}
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 TestModule(Configuration config, Messenger* messenger, GeometryManager* geo_manager): Module(config) {}
 \end{minted}
 It should be noted that the configuration object has to be forwarded to the base module.
@@ -259,7 +259,7 @@ It should be noted that the configuration object has to be forwarded to the base
 For detector modules, the first two arguments are the same, but the last argument is a \texttt{std::shared\_ptr} to the linked detector instead.
 It should always forward this detector to the base class together with the configuration object.
 Thus, the constructor of a detector module is:
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,lineos]{c++}
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 TestModule(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector): Module(config, detector) {}
 \end{minted}
 
@@ -342,7 +342,7 @@ This can for example be used to add the beam source to the world geometry.
 The detectors and models can be accessed by name and type through the geometry manager using \texttt{getDetector} and \texttt{getModel}, respectively.
 All detectors can be fetched at once using the \texttt{getDetectors} method.
 If the module is a detector-specific module its related Detector can be accessed through the \texttt{getDetector} method of the module base class instead (returns a null pointer for unique modules) as follows:
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,lineos]{c++}
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 void run(unsigned int event_id) {
     // Returns the linked detector
     std::shared_ptr<Detector> detector = this->getDetector();
@@ -469,7 +469,7 @@ The individual bumps are by default positioned at the center of all the single p
 Some modules are specific for a particular type of detector model.
 To fetch a specific detector model from the base class, the model should be downcasted.
 An example to try fetching an \texttt{HybridPixelDetectorModel} is the following (the downcast return a null pointer if the class is not of the appropriate type).
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,lineos]{c++}
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 // Detector is a pointer to a Detector object
 auto model = detector->getModel();
 auto hybrid_model = std::dynamic_pointer_cast<HybridPixelDetectorModel>(model);
@@ -522,7 +522,7 @@ Every module listens by default to messages with no name specified (thus receivi
 \end{enumerate}
 
 An example how to dispatch, in the \texttt{run} function of a module, a message containing an array of \texttt{Object} types bound to a detector named \texttt{dut} is provided here:
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,lineos]{c++}
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 void run(unsigned int event_id) {
     std::vector<Object> data;
     // ..fill the data vector with objects ...
@@ -543,7 +543,7 @@ The options are:
 \item Bind a \textbf{single message} to a variable.
 This should usually be the preferred method as most modules only expect one message to arrive per event (as a module should typically send only one message containing the list of all the objects it should send).
 An example of how to bind a message containing an array of \textbf{Object} types in the constructor of a detector \texttt{TestModule} would be:
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,lineos]{c++}
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 TestModule(Configuration, Messenger* messenger, std::shared_ptr<Detector>) {
     messenger->bindSingle(this,
                           /* Pointer to the message variable */
@@ -556,7 +556,7 @@ std::shared_ptr<Message<Object>> message;
 \item Bind a \textbf{set of messages} to an vector variable.
 This method should be used it the module can (and expects to) receive the same message multiple times (possibly because it wants to receive the same type of message for all detectors).
 An example to bind multiple messages containing an array of \textbf{Object} types in the constructor of a detector \texttt{TestModule} would be:
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,lineos]{c++}
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 TestModule(Configuration, Messenger* messenger, std::shared_ptr<Detector>) {
     messenger->bindMulti(this,
                           /* Pointer to the message vector */
@@ -571,7 +571,7 @@ Can be used for more advanced strategies for fetching messages.
 Note that this method can lead to surprising behaviour because the listener function is executed during the run of the dispatching module (leading to log messages with incorrect section headers at the minimum).
 The listening module should \underline{not} do any heavy work in the listening function as this is supposed to take place in their \texttt{run} method instead.
 An example of using this to listen to a message containing an array of \texttt{Object} types in a detector \texttt{TestModule} would be:
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,lineos]{c++}
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 TestModule(Configuration, Messenger* messenger, std::shared_ptr<Detector>) {
     messenger->registerListener(this,
                                 /* Pointer to the listener method */
