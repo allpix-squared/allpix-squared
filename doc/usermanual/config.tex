@@ -1,6 +1,6 @@
 % Add command to display allpix squared
-\newcommand{\apsq}{\texorpdfstring{\ensuremath{\mathrm{Allpix}^2}}{Allpix\textasciicircum 2}\xspace}
-\newcommand{\apsqbold}{\texorpdfstring{\ensuremath{\mathbf{Allpix}^2}}{Allpix\textasciicircum 2}\xspace}
+\newcommand{\apsq}{Allpix\textsuperscript{2}\xspace}
+\newcommand{\apsqbold}{\textbf{Allpix\textsuperscript{2}}\xspace}
 
 % Temporary TODO commands
 % \newcommand{\comment}[1]{#1} % DRAFT
@@ -58,7 +58,8 @@
 \newcommand{\version}{\lstinline|@ALLPIX_VERSION@|}
 \newcommand{\project}{@CMAKE_PROJECT_NAME@}
 
-% Use new lines in FAQ
-% FIXME this creates an issue when running htlatex for HTML output:
-% ! Argument of \enit@postlabel@i has an extra }.
-%\setlist[description]{style=nextline}
+% Create addreferences command (overwritten for HTML in config)
+\newcommand{\addreferencesline}{\addcontentsline{toc}{section}{References}}
+
+% Use new lines in FAQ (fixed for HTML in config)
+\setlist[description]{style=nextline}
