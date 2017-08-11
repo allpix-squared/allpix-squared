@@ -15,95 +15,79 @@
 #include <Eigen/Eigen>
 
 #include "../../src/core/utils/log.h"
-
 #include "Octree.hpp"
-
 #include "read_dfise.h"
+
+#define EPS 1e-6
 
 std::pair<Point, bool> barycentric_interpolation(Point query_point,
                                                  std::vector<Point> tetra_vertices,
                                                  std::vector<Point> tetra_vertices_field,
                                                  double tetra_volume) {
-
-    // Algorithm variables
-    bool volume_signal = true;
-    bool sub_1_signal, sub_2_signal, sub_3_signal, sub_4_signal;
-    Eigen::Matrix4d matrix_sub1, matrix_sub2, matrix_sub3, matrix_sub4;
-    double tetra_subvol_1, tetra_subvol_2, tetra_subvol_3, tetra_subvol_4;
-    // Return variable. Point(interpolated electric field x, y, z)
-    Point efield_int;
-    bool flag = true;
-    std::pair<Point, bool> efield_valid;
-
     // Function must have tetra_vertices.size() = 4
     if(tetra_vertices.size() != 4) {
         throw std::invalid_argument("Baricentric interpolation without only 4 vertices!");
     }
+    bool volume_signal = false;
     if(tetra_volume > 0) {
         volume_signal = true;
     }
-    if(tetra_volume < 0) {
-        volume_signal = false;
-    }
 
     // Jacobi Matrix for volume calculation for each tetrahedron with a vertex replaced by the query point
+    Eigen::Matrix4d matrix_sub1;
     matrix_sub1 << 1, 1, 1, 1, query_point.x, tetra_vertices[1].x, tetra_vertices[2].x, tetra_vertices[3].x, query_point.y,
         tetra_vertices[1].y, tetra_vertices[2].y, tetra_vertices[3].y, query_point.z, tetra_vertices[1].z,
         tetra_vertices[2].z, tetra_vertices[3].z;
-    tetra_subvol_1 = (matrix_sub1.determinant()) / 6;
+    double tetra_subvol_1 = (matrix_sub1.determinant()) / 6;
+    bool sub_1_signal = false;
     if(tetra_subvol_1 > 0) {
         sub_1_signal = true;
     }
-    if(tetra_subvol_1 < 0) {
-        sub_1_signal = false;
-    }
-    if(tetra_subvol_1 == 0) {
+    if(std::fabs(tetra_subvol_1) < EPS) {
         sub_1_signal = volume_signal;
     }
 
+    Eigen::Matrix4d matrix_sub2;
     matrix_sub2 << 1, 1, 1, 1, tetra_vertices[0].x, query_point.x, tetra_vertices[2].x, tetra_vertices[3].x,
         tetra_vertices[0].y, query_point.y, tetra_vertices[2].y, tetra_vertices[3].y, tetra_vertices[0].z, query_point.z,
         tetra_vertices[2].z, tetra_vertices[3].z;
-    tetra_subvol_2 = (matrix_sub2.determinant()) / 6;
+    double tetra_subvol_2 = (matrix_sub2.determinant()) / 6;
+    bool sub_2_signal = false;
     if(tetra_subvol_2 > 0) {
         sub_2_signal = true;
     }
-    if(tetra_subvol_2 < 0) {
-        sub_2_signal = false;
-    }
-    if(tetra_subvol_2 == 0) {
+    if(std::fabs(tetra_subvol_2) < EPS) {
         sub_2_signal = volume_signal;
     }
 
+    Eigen::Matrix4d matrix_sub3;
     matrix_sub3 << 1, 1, 1, 1, tetra_vertices[0].x, tetra_vertices[1].x, query_point.x, tetra_vertices[3].x,
         tetra_vertices[0].y, tetra_vertices[1].y, query_point.y, tetra_vertices[3].y, tetra_vertices[0].z,
         tetra_vertices[1].z, query_point.z, tetra_vertices[3].z;
-    tetra_subvol_3 = (matrix_sub3.determinant()) / 6;
+    double tetra_subvol_3 = (matrix_sub3.determinant()) / 6;
+    bool sub_3_signal = false;
     if(tetra_subvol_3 > 0) {
         sub_3_signal = true;
     }
-    if(tetra_subvol_3 < 0) {
-        sub_3_signal = false;
-    }
-    if(tetra_subvol_3 == 0) {
+    if(std::fabs(tetra_subvol_3) < EPS) {
         sub_3_signal = volume_signal;
     }
 
+    Eigen::Matrix4d matrix_sub4;
     matrix_sub4 << 1, 1, 1, 1, tetra_vertices[0].x, tetra_vertices[1].x, tetra_vertices[2].x, query_point.x,
         tetra_vertices[0].y, tetra_vertices[1].y, tetra_vertices[2].y, query_point.y, tetra_vertices[0].z,
         tetra_vertices[1].z, tetra_vertices[2].z, query_point.z;
-    tetra_subvol_4 = (matrix_sub4.determinant()) / 6;
+    double tetra_subvol_4 = (matrix_sub4.determinant()) / 6;
+    bool sub_4_signal = false;
     if(tetra_subvol_4 > 0) {
         sub_4_signal = true;
     }
-    if(tetra_subvol_4 < 0) {
-        sub_4_signal = false;
-    }
-    if(tetra_subvol_4 == 0) {
+    if(std::fabs(tetra_subvol_4) < EPS) {
         sub_4_signal = volume_signal;
     }
 
     // Electric field interpolation
+    Point efield_int;
     efield_int.x = (tetra_subvol_1 * tetra_vertices_field[0].x + tetra_subvol_2 * tetra_vertices_field[1].x +
                     tetra_subvol_3 * tetra_vertices_field[2].x + tetra_subvol_4 * tetra_vertices_field[3].x) /
                    tetra_volume;
@@ -115,12 +99,13 @@ std::pair<Point, bool> barycentric_interpolation(Point query_point,
                    tetra_volume;
 
     // Check if query point is outside tetrahedron
+    bool flag = true;
     if(sub_1_signal != volume_signal || sub_2_signal != volume_signal || sub_3_signal != volume_signal ||
        sub_4_signal != volume_signal) {
         flag = false;
         LOG(DEBUG) << "Warning: Point outside tetrahedron";
-        efield_valid = std::make_pair(efield_int, flag);
-        return efield_valid;
+        return std::make_pair(efield_int, flag);
+        ;
     }
 
     for(size_t i = 0; i < tetra_vertices.size(); i++) {
@@ -139,8 +124,7 @@ std::pair<Point, bool> barycentric_interpolation(Point query_point,
                << tetra_volume - (tetra_subvol_1 + tetra_subvol_2 + tetra_subvol_3 + tetra_subvol_4);
     LOG(DEBUG) << "Interpolated electric field: (" << efield_int.x << "," << efield_int.y << "," << efield_int.z << ")";
 
-    efield_valid = std::make_pair(efield_int, flag);
-    return efield_valid;
+    return std::make_pair(efield_int, flag);
 }
 
 void interrupt_handler(int) {
