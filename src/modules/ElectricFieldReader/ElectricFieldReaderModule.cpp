@@ -173,7 +173,7 @@ void ElectricFieldReaderModule::create_output_plots() {
     }
 
     // Create 2D histogram
-    auto histogram = new TH2F("field",
+    auto histogram = new TH2F("field_magnitude",
                               ("Electric field for " + detector_->getName()).c_str(),
                               static_cast<int>(steps),
                               min1,
@@ -184,7 +184,7 @@ void ElectricFieldReaderModule::create_output_plots() {
 
     // Create 1D histogram
     auto histogram1D =
-        new TH1F("field1d", ("Electric field for " + detector_->getName()).c_str(), static_cast<int>(steps), min2, max2);
+        new TH1F("field1d_z", ("Electric field for " + detector_->getName()).c_str(), static_cast<int>(steps), min2, max2);
 
     // Determine the coordinate to use for projection
     double x = 0, y = 0, z = 0;
@@ -221,24 +221,20 @@ void ElectricFieldReaderModule::create_output_plots() {
             }
 
             // Get field strength from detector
-            auto field_strength = Units::convert(
-                std::sqrt(detector_->getElectricField(ROOT::Math::XYZPoint(x, y, z)).Mag2()), "V/cm"); // magnitude
-            // Fill the histogram
+            auto field = detector_->getElectricField(ROOT::Math::XYZPoint(x, y, z));
+            auto field_strength = Units::convert(std::sqrt(field.Mag2()), "V/cm");
+            auto field_z_strength = Units::convert(field.z(), "V/cm");
+            // Fill the main histogram
             if(project == 'x') {
                 histogram->Fill(y, z, static_cast<double>(field_strength));
-                if(j == steps / 2) {
-                    histogram1D->Fill(z, static_cast<double>(field_strength));
-                }
             } else if(project == 'y') {
                 histogram->Fill(x, z, static_cast<double>(field_strength));
-                if(j == steps / 2) {
-                    histogram1D->Fill(z, static_cast<double>(field_strength));
-                }
             } else {
                 histogram->Fill(x, y, static_cast<double>(field_strength));
-                if(j == steps / 2) {
-                    histogram1D->Fill(y, static_cast<double>(field_strength));
-                }
+            }
+            // Fill the 1d histogram
+            if(j == steps / 2) {
+                histogram1D->Fill(z, static_cast<double>(field_z_strength));
             }
         }
     }
