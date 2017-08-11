@@ -61,16 +61,10 @@ namespace allpix {
         void doClustering();
 
         /**
-         * @brief Checks for clusters containing this PixelHit
-         * @param PixelHit to check
-         */
-        bool isInCluster(const PixelHit*);
-
-        /**
          * @brief Checks the adjacent pixels for PixelHits
          * @param PixelHit to check
          */
-        bool checkAdjacentPixels(const PixelHit*);
+        unsigned int checkAdjacentPixels(const PixelHit*);
 
     private:
         Configuration config_;
