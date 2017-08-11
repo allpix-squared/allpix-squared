@@ -66,6 +66,12 @@ namespace allpix {
          */
         std::set<const PixelHit*> getPixelHits() const { return pixelHits_; }
 
+        /**
+         * @brief Add all pixels from another cluster and delete it
+         * @param otherCluster cluster to be merged
+         */
+        void eatCluster(Cluster* otherCluster);
+
     private:
         const PixelHit* seedPixelHit_;
 

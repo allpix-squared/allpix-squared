@@ -1,5 +1,5 @@
 ## LCIOWriter
-**Maintainer**: Andreas Nurnberg (andreas.nurnberg@cern.ch)  
+**Maintainer**: Andreas Nurnberg (<andreas.nurnberg@cern.ch>)  
 **Status**: Functional  
 **Input**: *PixelHitMessage*
 

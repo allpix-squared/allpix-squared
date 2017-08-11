@@ -234,9 +234,10 @@ void DetectorHistogrammerModule::finalize() {
 }
 
 void DetectorHistogrammerModule::doClustering() {
+
     for(auto& pixel_hit : pixels_message_->getData()) {
         Cluster* clus;
-        if(not checkAdjacentPixels(&pixel_hit)) {
+        if(checkAdjacentPixels(&pixel_hit) == 0) {
             LOG(DEBUG) << "Creating new cluster: " << pixel_hit.getPixel().getIndex();
             clus = new Cluster(&pixel_hit);
             clusters_.push_back(clus);
@@ -244,33 +245,41 @@ void DetectorHistogrammerModule::doClustering() {
     }
 }
 
-bool DetectorHistogrammerModule::isInCluster(const PixelHit* pixel_hit) {
-    for(auto clus : clusters_) {
-        for(auto& hit : clus->getPixelHits()) {
-            if(pixel_hit == hit) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-bool DetectorHistogrammerModule::checkAdjacentPixels(const PixelHit* pixel_hit) {
+unsigned int DetectorHistogrammerModule::checkAdjacentPixels(const PixelHit* pixel_hit) {
     auto hit_idx = pixel_hit->getPixel().getIndex();
-    for(auto clus : clusters_) {
-        for(auto& pixel_other : clus->getPixelHits()) {
-            auto other_idx = pixel_other->getPixel().getIndex();
-            auto distx = std::max(hit_idx.x(), other_idx.x()) - std::min(hit_idx.x(), other_idx.x());
-            auto disty = std::max(hit_idx.y(), other_idx.y()) - std::min(hit_idx.y(), other_idx.y());
-            if(distx <= 1 and disty <= 1) {
-                LOG(DEBUG) << "Adding pixel to cluster: " << hit_idx;
-                bool ret = clus->addPixelHit(pixel_hit);
-                if(ret == false) {
-                    LOG(DEBUG) << "Hit has already been added to this cluster: " << hit_idx;
+    unsigned int adjacentClusters = 0;
+    if(clusters_.empty()) {
+        LOG(DEBUG) << "No clusters to check.";
+    } else {
+        LOG(DEBUG) << "Check for clusters with adjacent pixels to " << hit_idx;
+        Cluster* firstFoundCluster = clusters_.front();
+        for(auto it = clusters_.begin(); it < clusters_.end();) {
+            bool mergedCluster = false;
+            Cluster* clus = *it;
+            for(auto& pixel_other : clus->getPixelHits()) {
+                auto other_idx = pixel_other->getPixel().getIndex();
+                auto distx = std::max(hit_idx.x(), other_idx.x()) - std::min(hit_idx.x(), other_idx.x());
+                auto disty = std::max(hit_idx.y(), other_idx.y()) - std::min(hit_idx.y(), other_idx.y());
+                if(distx <= 1 and disty <= 1) {
+                    adjacentClusters++;
+                    if(adjacentClusters == 1) {
+                        LOG(DEBUG) << "Found first adjacent cluster (with pixel " << other_idx << "). Add pixel.";
+                        clus->addPixelHit(pixel_hit);
+                        firstFoundCluster = clus;
+                    } else if(adjacentClusters == 2) {
+                        LOG(DEBUG) << "Found another adjacent cluster. Merging clusters.";
+                        firstFoundCluster->eatCluster(clus);
+                        adjacentClusters--;
+                        it = clusters_.erase(it);
+                        mergedCluster = true;
+                    }
+                    break;
                 }
-                return true;
+            }
+            if(!mergedCluster) {
+                ++it;
             }
         }
     }
-    return false;
+    return adjacentClusters;
 }
