@@ -66,7 +66,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration config,
     config_.setDefault<unsigned int>("charge_per_step", 10);
 
     config_.setDefault<bool>("output_plots", false);
-    config_.setDefault<bool>("output_animation", false);
+    config_.setDefault<bool>("output_animations", false);
     config_.setDefault<double>("output_plots_step", config_.get<double>("timestep_max"));
     config_.setDefault<bool>("output_plots_use_pixel_units", false);
     config_.setDefault<double>("output_plots_theta", 0.0f);
@@ -256,7 +256,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
     histogram_contour.push_back(new TH2F(
         ("contourZ_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(), "", 100, minX, maxX, 100, minY, maxY));
 
-    if(config_.get<bool>("output_animation")) {
+    if(config_.get<bool>("output_animations")) {
         // Delete previous GIF output files
         std::string file_name_anim = getOutputPath("animation" + std::to_string(event_num) + ".gif");
         try {
@@ -272,7 +272,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
         // Create animation of moving charges
         auto animation_time = static_cast<unsigned int>(
             std::round((Units::convert(config_.get<long double>("output_plots_step"), "ms") / 10.0) *
-                       config_.get<long double>("output_plots_animation_time_scaling", 1e9)));
+                       config_.get<long double>("output_animations_time_scaling", 1e9)));
         unsigned long plot_idx = 0;
         unsigned int point_cnt = 0;
         while(point_cnt < tot_point_cnt) {
