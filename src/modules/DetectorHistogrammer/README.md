@@ -6,7 +6,7 @@
 #### Description
 This module should only give an overview of the produced simulation data for a quick inspection and simple checks. For more sophisticated analyses the output from one of the output writers should be used to produce the necessary information.
 
-Within the module, a simple clustering is performed. Looping over the PixelHits, hits being adjacent to an existing cluster, are added to this cluster. If not, a new cluster is created.
+Within the module, a clustering is performed. Looping over the PixelHits, hits being adjacent to an existing cluster are added to this cluster. Clusters are merged if there are multiple adjacent clusters. If the PixelHit is free-standing, a new cluster is created.
 
 The module creates the following histograms:
 
