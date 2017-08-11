@@ -125,7 +125,7 @@ IF(LATEX_COMPILER)
             usermanual/html/tools.sty
             usermanual/html/js/fw.js
             usermanual/html/js/sidebar.js
-            usermanual/html/css/scale.css
+            usermanual/html/css/custom.css
             CONFIGURE
             usermanual/config.tex
             EXCLUDE_FROM_ALL
