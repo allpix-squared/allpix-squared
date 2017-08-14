@@ -193,39 +193,11 @@ void GeometryConstructionG4::build_detectors() {
             make_shared_no_delete<G4LogicalVolume>(wrapper_box.get(), world_material_, "wrapper_" + name + "_log");
         detector->setExternalObject("wrapper_log", wrapper_log);
 
-        // Calculate possible detector misalignment to be added
-        auto misalign_shift =
-            [&](ROOT::Math::XYZPoint residuals) -> const ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<double>> {
-            std::normal_distribution<double> res_x(0, residuals.x());
-            std::normal_distribution<double> res_y(0, residuals.y());
-            std::normal_distribution<double> res_z(0, residuals.z());
-            return ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<double>>(
-                res_x(random_generator_), res_y(random_generator_), res_z(random_generator_));
-        };
-
-        auto misalign_rotation = [&](ROOT::Math::EulerAngles residuals) {
-            std::normal_distribution<double> res_phi(0, residuals.Phi());
-            std::normal_distribution<double> res_theta(0, residuals.Theta());
-            std::normal_distribution<double> res_psi(0, residuals.Psi());
-            return ROOT::Math::EulerAngles(
-                res_phi(random_generator_), res_theta(random_generator_), res_psi(random_generator_));
-        };
-
-        LOG(DEBUG) << " - Position\t\t:\t" << display_vector(detector->getPosition(), {"mm", "um"});
-        LOG(DEBUG) << " - Orientation\t:\t" << display_vector(detector->getOrientation(), {"deg"});
         // Get position and orientation
-        auto position = detector->getPosition() +
-                        misalign_shift(config_.get<ROOT::Math::XYZPoint>("alignment_precision", ROOT::Math::XYZPoint()));
-        ROOT::Math::EulerAngles angles =
-            detector->getOrientation() *
-            misalign_rotation(config_.get<ROOT::Math::EulerAngles>("alignment_precision_rot", ROOT::Math::EulerAngles()));
-
-        if(config_.has("alignment_precision")) {
-            LOG(DEBUG) << " - Misaligned pos.\t:\t" << display_vector(position, {"mm", "um"});
-        }
-        if(config_.has("alignment_precision_rot")) {
-            LOG(DEBUG) << " - Misaligned rot.\t:\t" << display_vector(angles, {"deg"});
-        }
+        auto position = detector->getPosition();
+        ROOT::Math::EulerAngles angles = detector->getOrientation();
+        LOG(DEBUG) << " - Position\t\t:\t" << display_vector(position, {"mm", "um"});
+        LOG(DEBUG) << " - Orientation\t:\t" << display_vector(angles, {"deg"});
 
         G4ThreeVector posWrapper = toG4Vector(position);
         auto rotWrapper = std::make_shared<G4RotationMatrix>(angles.Phi(), angles.Theta(), angles.Psi());
