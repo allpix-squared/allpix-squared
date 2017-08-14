@@ -83,7 +83,7 @@ void GeometryBuilderGeant4Module::init() {
     RELEASE_STREAM(std::cout);
 
     // Set the geometry construction to use
-    auto geometry_construction = new GeometryConstructionG4(geo_manager_, config_, getRandomSeed());
+    auto geometry_construction = new GeometryConstructionG4(geo_manager_, config_);
     run_manager_g4_->SetUserInitialization(geometry_construction);
 
     // Run the geometry construct function in GeometryConstructionG4

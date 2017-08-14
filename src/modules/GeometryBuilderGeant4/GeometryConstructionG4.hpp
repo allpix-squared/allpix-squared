@@ -8,7 +8,6 @@
 #define ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_DETECTOR_CONSTRUCTION_H
 
 #include <memory>
-#include <random>
 #include <utility>
 
 #include "G4Material.hh"
@@ -28,7 +27,7 @@ namespace allpix {
          * @param geo_manager Pointer to the geometry manager, containing the detectors
          * @param config Configuration object of the geometry builder module
          */
-        GeometryConstructionG4(GeometryManager* geo_manager, Configuration config, uint64_t random_seed);
+        GeometryConstructionG4(GeometryManager* geo_manager, Configuration config);
 
         /**
          * @brief Constructs the world geometry with all detectors
@@ -39,7 +38,6 @@ namespace allpix {
     private:
         GeometryManager* geo_manager_;
         Configuration config_;
-        std::mt19937_64 random_generator_;
 
         /**
          * @brief Initializes the list of materials from the supported allpix materials
