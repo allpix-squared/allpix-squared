@@ -342,16 +342,23 @@ The example configuration before already contained a module for adding a linear 
 By default, detectors do not have any electric field and no bias voltage is applied.
 
 The section below calculates a linear electric field for every point in active sensor volume based on the depletion voltage of the sensor and the actually applied bias voltage.
+The sensor is always depleted from the implant side, the direction of the electric field depends on the sign of the bias voltage as described in the module description in Section~\ref{sec:modules}.
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 # Add an electric field
 [ElectricFieldReader]
 # Set the field type to `linear`
 model = "linear"
 # Applied bias voltage to calculate the electric field from
-bias_voltage = 50V
+bias_voltage = -50V
 # Depletion voltage at which the given sensor is fully depleted
-depletion_voltage = 10V
+depletion_voltage = -10V
 \end{minted}
+
+\apsq also provides the possibility to utilize a full electrostatic TCAD simulation for the description of the electric field.
+In order to speed up the lookup of the electric field values at different positions in the sensor, the adaptive TCAD mesh has to be interpolated and transformed into a regular grid with configurable feature size before using it.
+\apsq comes with a converter tool which reads TCAD DF-ISE files from the sensor simulation, interpolates the field and writes it out in the appropriate format.
+A more detailed description of the tool can be found in Section~\ref{sec:tcad_electric_field_converter}.
+An example electric field (which the file name used in the example above) can be found in the \textit{etc} directory of the \apsq repository.
 
 Electric fields can be attached to a specific detectors using the standard syntax for detector binding.
 A possible configuration would be:
@@ -359,18 +366,11 @@ A possible configuration would be:
 [ElectricFieldReader]
 # Bind the electric field to the detector named `dut`
 name = "dut"
-# Specify that the model is provided in the `init` electric field map format
+# Specify that the model is provided in the `init` electric field map format converted from TCAD
 model = "init"
 # Name of the file containing the electric field
 file_name = "example_electric_field.init"
 \end{minted}
-
-
-\apsq also provides the possibility to utilize a full electrostatic TCAD simulation for the description of the electric field.
-In order to speed up the lookup of the electric field values at different positions in the sensor, the adaptive TCAD mesh has to be interpolated and transformed into a regular grid with configurable feature size before using it.
-\apsq comes with a converter tool which reads TCAD DF-ISE files from the sensor simulation, interpolates the field and writes it out in the appropriate format.
-A more detailed description of the tool can be found in Section~\ref{sec:tcad_electric_field_converter}.
-An example electric field (which the file name used in the example above) can be found in the \textit{etc} directory of the \apsq repository.
 
 
 \subsection{Redirect Module Inputs and Outputs}

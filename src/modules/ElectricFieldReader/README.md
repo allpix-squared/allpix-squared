@@ -1,6 +1,6 @@
 ## ElectricFieldReader
-**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>)  
-**Status**: Functional  
+**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>)   
+**Status**: Functional
 
 #### Description
 Adds an electric field to the detector from the standard supported sources. By default every detector has no electric field in the sensitive device.
@@ -8,7 +8,7 @@ Adds an electric field to the detector from the standard supported sources. By d
 The reader does work with two models of electric field to read:
 
 * For *constant* electric fields it add a constant electric field in the z-direction towards the pixel implants.
-* For *linear* electric fields the field has a constant slope determined by the bias_voltage, the depletion_voltage and the depletion depth.
+* For *linear* electric fields the field has a constant slope determined by the bias voltage and the depletion voltage. The sensor is always depleted from the implant side, the direction of the electric field depends on the sign of the bias voltage (with negative bias voltage the electric field vector points towards the backplane and vice versa).
 * For electric fields in the *INIT* format it parses a file the INIT format used in the PixelAV software. An example of a electric field in this format can be found in *etc/example_electric_field.init* in the repository. An explanation of the format is available in the source code of this module.
 
 Furthermore the module can produce a plot the electric field profile on an projection axis normal to the x,y or z-axis at a particular plane in the sensor.

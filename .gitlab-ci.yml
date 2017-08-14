@@ -364,6 +364,7 @@ deploy-documentation:
     # Only run for new tags:
     only:
         - tags
+        - test-deploy
     dependencies:
         - cmp:usermanual
         - cmp:doxygen
