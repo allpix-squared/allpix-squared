@@ -133,9 +133,9 @@ void DepositionGeant4Module::init() {
     // Set the random seed for Geant4 generation
     // NOTE Assumes this is the only Geant4 module using random numbers
     std::string seed_command = "/random/setSeeds ";
-    seed_command += std::to_string(static_cast<uint32_t>(getRandomSeed() % UINT_MAX));
+    seed_command += std::to_string(static_cast<uint32_t>(getRandomSeed() % INT_MAX));
     seed_command += " ";
-    seed_command += std::to_string(static_cast<uint32_t>(getRandomSeed() % UINT_MAX));
+    seed_command += std::to_string(static_cast<uint32_t>(getRandomSeed() % INT_MAX));
     UI->ApplyCommand(seed_command);
 
     // Release the output stream
