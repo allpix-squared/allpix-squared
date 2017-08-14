@@ -137,8 +137,9 @@ void DepositionGeant4Module::init() {
     std::string seed_command = "/random/setSeeds ";
     for(int i = 0; i < G4_NUM_SEEDS; ++i) {
         seed_command += std::to_string(static_cast<uint32_t>(getRandomSeed() % INT_MAX));
-        if(i != G4_NUM_SEEDS - 1)
+        if(i != G4_NUM_SEEDS - 1) {
             seed_command += " ";
+        }
     }
     UI->ApplyCommand(seed_command);
 
