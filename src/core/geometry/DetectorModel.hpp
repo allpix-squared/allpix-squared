@@ -143,6 +143,7 @@ namespace allpix {
                 auto thickness = support_config.get<double>("thickness");
                 auto size = support_config.get<XYVector>("size");
                 auto location = support_config.get<std::string>("location", "chip");
+                std::transform(location.begin(), location.end(), location.begin(), ::tolower);
                 if(location != "sensor" && location != "chip" && location != "absolute") {
                     throw InvalidValueError(
                         support_config, "location", "location of the support should be 'chip', 'sensor' or 'absolute'");
@@ -156,6 +157,7 @@ namespace allpix {
                 }
 
                 auto material = support_config.get<std::string>("material", "g10");
+                std::transform(material.begin(), material.end(), material.begin(), ::tolower);
                 auto hole_size = support_config.get<XYVector>("hole_size", {0, 0});
                 auto hole_offset = support_config.get<XYVector>("hole_offset", {0, 0});
                 addSupportLayer(size, thickness, offset, material, location, hole_size, hole_offset);
