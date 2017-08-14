@@ -8,6 +8,7 @@
 #define ALLPIX_GEOMETRY_MANAGER_H
 
 #include <memory>
+#include <random>
 #include <set>
 #include <string>
 #include <vector>
@@ -59,7 +60,7 @@ namespace allpix {
          * @param global_config Global configuration for the framework
          * @warning Has to be the first function called after the constructor
          */
-        void load(const Configuration& global_config);
+        void load(const Configuration& global_config, std::mt19937_64& seeder);
 
         /**
          * @brief Returns the list of standard paths where models should be searched in

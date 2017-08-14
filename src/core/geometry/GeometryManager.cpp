@@ -32,8 +32,12 @@ GeometryManager::GeometryManager() : closed_{false} {}
 /**
  * Loads the geometry by parsing the configuration file
  */
-void GeometryManager::load(const Configuration& global_config) {
+void GeometryManager::load(const Configuration& global_config, std::mt19937_64& seeder) {
     LOG(TRACE) << "Reading geometry";
+
+    // Set up a random number generator and seed it with the global seed:
+    std::mt19937_64 random_generator;
+    random_generator.seed(seeder());
 
     std::string detector_file_name = global_config.getPath("detectors_file", true);
     std::fstream file(detector_file_name);

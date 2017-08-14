@@ -154,7 +154,7 @@ void Allpix::load() {
     set_style();
 
     // Load the geometry
-    geo_mgr_->load(global_config);
+    geo_mgr_->load(global_config, seeder);
 
     // Load the modules from the configuration
     if(!terminate_) {
