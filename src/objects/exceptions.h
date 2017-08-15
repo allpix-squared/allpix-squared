@@ -22,7 +22,8 @@ namespace allpix {
     public:
         /**
          * @brief Constructs an error for a object with missing reference
-         * @param message Type of the received message
+         * @param source Type of the object from which the reference was requested
+         * @param reference Type of the non-existing reference
          */
         explicit MissingReferenceException(const std::type_info& source, const std::type_info& reference) {
             error_message_ = "Object ";

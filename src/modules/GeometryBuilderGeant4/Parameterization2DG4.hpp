@@ -30,7 +30,6 @@ namespace allpix {
          * @param offset_x Offset of grid in the x-direction
          * @param offset_y Offset of grid in the y-direction
          * @param pos_z Position of the 2D parameterization in the z-axis
-         * @param check_overlaps If overlaps should be checked for this parameterization or not
          */
         Parameterization2DG4(int div_x, double size_x, double size_y, double offset_x, double offset_y, double pos_z);
 

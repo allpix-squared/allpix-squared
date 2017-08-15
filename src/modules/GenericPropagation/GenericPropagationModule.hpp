@@ -70,6 +70,7 @@ namespace allpix {
         /**
          * @brief Propagate a single set of charges through the sensor
          * @param pos Position of the deposit in the sensor
+         * @param type Type of the carrier to propagate
          * @return Pair of the point where the deposit ended after propagation and the time the propagation took
          */
         std::pair<ROOT::Math::XYZPoint, double> propagate(const ROOT::Math::XYZPoint& pos, const CarrierType& type);
