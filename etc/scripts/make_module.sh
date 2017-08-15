@@ -19,8 +19,9 @@ echo "Creating directory and files..."
 
 echo 
 # Try to find the modules directory:
-DIRECTORIES[0]="../src/modules"
-DIRECTORIES[1]="src/modules"
+DIRECTORIES[0]="../../src/modules"
+DIRECTORIES[1]="../src/modules"
+DIRECTORIES[2]="src/modules"
 
 MODDIR=""
 for DIR in "${DIRECTORIES[@]}"; do
@@ -58,6 +59,18 @@ sed -e "s/Dummy/$MODNAME/g" "$MODDIR/Dummy/DummyModule.cpp" > "$MODDIR/$MODNAME/
 
 # Change to detetcor module type if necessary:
 if [ "$type" == 2 ]; then
+  platform=`uname`
+  if [ "$platform" == "Darwin" ]; then
+    sed -i "" "s/_UNIQUE_/_DETECTOR_/g" "$MODDIR/$MODNAME/CMakeLists.txt"
+    sed -i "" -e "s/ unique / detector-specific /g" \
+        -e "s/param geo_manager.*/detector Pointer to the detector for this module instance/g" \
+        -e "s/GeometryManager\* geo\_manager/std::shared\_ptr\<Detector\> detector/g" \
+        -e "s/GeometryManager/DetectorModel/g" \
+        "$MODDIR/$MODNAME/${MODNAME}Module.hpp"
+    sed -i "" -e "s/GeometryManager\*/std::shared\_ptr\<Detector\> detector/g" \
+        -e "s/Module(config)/Module\(config\, detector\)/g" \
+         "$MODDIR/$MODNAME/${MODNAME}Module.cpp"
+  else
     sed -i -e "s/_UNIQUE_/_DETECTOR_/g" "$MODDIR/$MODNAME/CMakeLists.txt"
     sed -i -e "s/ unique / detector-specific /g" \
 	-e "/param geo/c\         \* \@param detector Pointer to the detector for this module instance" \
@@ -67,6 +80,7 @@ if [ "$type" == 2 ]; then
     sed -i -e "s/GeometryManager\*/std::shared\_ptr\<Detector\> detector/g" \
 	-e "s/Module(config)/Module\(config\, detector\)/g" \
 	"$MODDIR/$MODNAME/${MODNAME}Module.cpp"
+  fi
 fi
 
 echo "Name:   $MODNAME"
