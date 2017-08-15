@@ -62,8 +62,9 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     single_source->GetAngDist()->SetParticleMomentumDirection(direction);
 
     // Set energy parameters
-    single_source->GetEneDist()->SetEnergyDisType("Mono");
+    single_source->GetEneDist()->SetEnergyDisType("Gauss");
     single_source->GetEneDist()->SetMonoEnergy(config.get<double>("particle_energy"));
+    single_source->GetEneDist()->SetBeamSigmaInE(config.get<double>("particle_energy_spread", 0.));
 }
 
 /**
