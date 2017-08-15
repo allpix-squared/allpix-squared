@@ -63,7 +63,7 @@ if [ "$type" == 2 ]; then
   if [ "$platform" == "Darwin" ]; then
     sed -i "" "s/_UNIQUE_/_DETECTOR_/g" "$MODDIR/$MODNAME/CMakeLists.txt"
     sed -i "" -e "s/ unique / detector-specific /g" \
-        -e "s/param geo_manager.*/detector Pointer to the detector for this module instance/g" \
+        -e "s/param geo_manager.*/param detector Pointer to the detector for this module instance/g" \
         -e "s/GeometryManager\* geo\_manager/std::shared\_ptr\<Detector\> detector/g" \
         -e "s/GeometryManager/DetectorModel/g" \
         "$MODDIR/$MODNAME/${MODNAME}Module.hpp"
