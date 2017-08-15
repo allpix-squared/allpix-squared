@@ -3,7 +3,7 @@
  *  @copyright MIT License
  */
 
-#include "AllPix.hpp"
+#include "Allpix.hpp"
 
 #include <chrono>
 #include <climits>
@@ -31,14 +31,14 @@ using namespace allpix;
  * - Set the log level and log format as requested.
  * - Load the detector configuration and parse it
  */
-AllPix::AllPix(std::string config_file_name)
+Allpix::Allpix(std::string config_file_name)
     : terminate_(false), has_run_(false), msg_(std::make_unique<Messenger>()), mod_mgr_(std::make_unique<ModuleManager>()),
       geo_mgr_(std::make_unique<GeometryManager>()) {
     // Load the global configuration
     conf_mgr_ = std::make_unique<ConfigManager>(std::move(config_file_name));
 
     // Configure the standard special sections
-    conf_mgr_->setGlobalHeaderName("AllPix");
+    conf_mgr_->setGlobalHeaderName("Allpix");
     conf_mgr_->addGlobalHeaderName("");
     conf_mgr_->addIgnoreHeaderName("Ignore");
 
@@ -93,11 +93,11 @@ AllPix::AllPix(std::string config_file_name)
  * - Include all the defined units
  * - Load the modules from the configuration
  */
-void AllPix::load() {
-    LOG(TRACE) << "Loading AllPix";
+void Allpix::load() {
+    LOG(TRACE) << "Loading Allpix";
 
     // Put welcome message
-    LOG(STATUS) << "Welcome to AllPix " << ALLPIX_PROJECT_VERSION;
+    LOG(STATUS) << "Welcome to Allpix^2 " << ALLPIX_PROJECT_VERSION;
 
     // Fetch the global configuration
     Configuration global_config = conf_mgr_->getGlobalConfiguration();
@@ -167,9 +167,9 @@ void AllPix::load() {
 /**
  * Runs the Module::init() method linearly for every module
  */
-void AllPix::init() {
+void Allpix::init() {
     if(!terminate_) {
-        LOG(TRACE) << "Initializing AllPix";
+        LOG(TRACE) << "Initializing Allpix";
         mod_mgr_->init();
     } else {
         LOG(INFO) << "Skip initializing modules because termination is requested";
@@ -178,9 +178,9 @@ void AllPix::init() {
 /**
  * Runs every modules Module::run() method linearly for the number of events
  */
-void AllPix::run() {
+void Allpix::run() {
     if(!terminate_) {
-        LOG(TRACE) << "Running AllPix";
+        LOG(TRACE) << "Running Allpix";
         mod_mgr_->run();
 
         // Set that we have run and want to finalize as well
@@ -192,9 +192,9 @@ void AllPix::run() {
 /**
  * Runs all modules Module::finalize() method linearly for every module
  */
-void AllPix::finalize() {
+void Allpix::finalize() {
     if(has_run_) {
-        LOG(TRACE) << "Finalizing AllPix";
+        LOG(TRACE) << "Finalizing Allpix";
         mod_mgr_->finalize();
     } else {
         LOG(INFO) << "Skip finalizing modules because no module did run";
@@ -205,12 +205,12 @@ void AllPix::finalize() {
  * This function can be called safely from any signal handler. Time between the request to terminate
  * and the actual termination is not always negigible.
  */
-void AllPix::terminate() {
+void Allpix::terminate() {
     terminate_ = true;
     mod_mgr_->terminate();
 }
 
-void AllPix::add_units() {
+void Allpix::add_units() {
     LOG(TRACE) << "Adding physical units";
 
     // LENGTH
@@ -256,7 +256,7 @@ void AllPix::add_units() {
 /**
  * This style is inspired by the CLICdp plot style
  */
-void AllPix::set_style() {
+void Allpix::set_style() {
     LOG(TRACE) << "Setting ROOT plotting style";
 
     // use plain style as base

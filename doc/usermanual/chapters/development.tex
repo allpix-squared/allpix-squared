@@ -1,6 +1,8 @@
 \section{Module \& Detector Development}
 \subsection{Implementing a New Module}
 \label{sec:building_new_module}
+
+\todo{add description of what should be a module and what not (aka analysis)}
 Before creating a module it is essential to read through the framework module manager documentation in Section \ref{sec:module_manager}, the information about the directory structure in Section \ref{sec:module_files} and the details of the module structure in Section \ref{sec:module_structure}. Thereafter the steps below should provide enough details for starting with a new module \texttt{ModuleName} (constantly replacing  \texttt{ModuleName} with the real name of the new module):
 \begin{enumerate}
 \item Run the module initialization script at \textit{etc/scripts/make\_module.sh} in the repository. The script will ask for the name of the model and the type (unique or detector-specific). It creates the directory with a minimal example toe get started together with a setup of the documentation in \textit{README.md}.
@@ -25,7 +27,7 @@ Custom detector models can be easily added to the framework. Required informatio
 \item Create a new file with the internal name of the model followed by the \textit{.conf} suffix (for example \texttt{your\_model.conf}).
 \item Add a configuration parameter \texttt{type} with the type of the model, at the moment either 'monolithic' or 'hybrid' for respectively monolithic sensors or hybrid models with bump bonds.
 \item Add all the required parameters and possibly other optional parameters explained in Section \ref{sec:detector_models}.
-\item Include the detector model in the search path of the framework by adding the \texttt{model\_path} parameter to the general setting of the main configuration (see Section \ref{sec:framework_parameters}) pointing to either directly to the detector model file or the detector containing it (note that files in this path overwrite models with the same name in the default model folder). 
+\item Include the detector model in the search path of the framework by adding the \texttt{model\_path} parameter to the general setting of the main configuration (see Section \ref{sec:framework_parameters}) pointing to either directly to the detector model file or the detector containing it (note that files in this path overwrite models with the same name in the default model folder).
 \end{enumerate}
 
 Models can be contributed to the repository to make them available to other users of the framework. To add the detector model to the framework the configuration file should be moved to the \textit{models} folder of the repository. Then the file should be added to the installation target in the \textit{CMakeLists.txt} file in the \textit{models} directory. Afterwards a merge-request can be created at \url{https://gitlab.cern.ch/simonspa/allpix-squared/merge_requests}.

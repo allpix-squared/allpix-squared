@@ -1,6 +1,6 @@
 ## ElectricFieldReader
-**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>)  
-**Status**: Functional  
+**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>)   
+**Status**: Functional
 
 #### Description
 Adds an electric field to the detector from the standard supported sources. By default every detector has no electric field in the sensitive device.
@@ -8,7 +8,7 @@ Adds an electric field to the detector from the standard supported sources. By d
 The reader does work with two models of electric field to read:
 
 * For *constant* electric fields it add a constant electric field in the z-direction towards the pixel implants.
-* For *linear* electric fields the field has a constant slope determined by the bias_voltage, the depletion_voltage and the depletion depth.
+* For *linear* electric fields the field has a constant slope determined by the bias voltage and the depletion voltage. The sensor is always depleted from the implant side, the direction of the electric field depends on the sign of the bias voltage (with negative bias voltage the electric field vector points towards the backplane and vice versa).
 * For electric fields in the *INIT* format it parses a file the INIT format used in the PixelAV software. An example of a electric field in this format can be found in *etc/example_electric_field.init* in the repository. An explanation of the format is available in the source code of this module.
 
 Furthermore the module can produce a plot the electric field profile on an projection axis normal to the x,y or z-axis at a particular plane in the sensor.
@@ -20,7 +20,7 @@ Furthermore the module can produce a plot the electric field profile on an proje
 * `output_plots` : Determines if output plots should be generated (slows down simulation). Disabled by default.
 * `output_plots_steps` : Number of bins in both the X and Y direction in the 2D histogram used to plot the electric field in the detectors. Only used if `output_plots` is enabled.
 * `output_plots_project` : Axis to project the 3D electric field on to create the 2D histogram. Either **x**, **y** or **z**. Only used if `output_plots` is enabled.
-* `output_plots_projection_percentage` : Percentage on the projection axis to plot the electric field profile. For example if *output_plots_project* is **x** and this parameter is 0.5 the profile is plotted in the Y,Z-plane at the X-coordinate in the middle of the sensor.
+* `output_plots_projection_percentage` : Percentage on the projection axis to plot the electric field profile. For example if *output_plots_project* is **x** and this parameter is 0.5 the profile is plotted in the Y,Z-plane at the X-coordinate in the middle of the sensor. Default is 0.5.
 * `output_plots_single_pixel`: Determines if the whole sensor has to be plotted or only a single pixel. Defaults to true (plotting a single pixel).
 
 #### Usage

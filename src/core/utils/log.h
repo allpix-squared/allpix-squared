@@ -96,7 +96,7 @@ namespace allpix {
          * @param line The line number of the log message
          * @return A C++ stream to write to
          */
-        std::ostringstream& getProcessStream(const std::string& identifier,
+        std::ostringstream& getProcessStream(std::string identifier,
                                              LogLevel level = LogLevel::INFO,
                                              const std::string& file = "",
                                              const std::string& function = "",

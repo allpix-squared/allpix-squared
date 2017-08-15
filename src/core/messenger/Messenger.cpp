@@ -93,12 +93,11 @@ void Messenger::dispatch_message(Module* source, const std::shared_ptr<BaseMessa
     // Send to generic listeners
     send = dispatch_message(source, message, name, "*") || send;
 
-    // Display a warning if the message is send to no receiver
-    // FIXME: Check better if this is a real problem (or do this always only in the module)
+    // Display a TRACE log message if the message is send to no receiver
     if(!send) {
         const BaseMessage* inst = message.get();
-        LOG(WARNING) << "Dispatched message " << allpix::demangle(typeid(*inst).name()) << " from "
-                     << source->getUniqueName() << " has no receivers!";
+        LOG(TRACE) << "Dispatched message " << allpix::demangle(typeid(*inst).name()) << " from " << source->getUniqueName()
+                   << " has no receivers!";
     }
 }
 

@@ -18,7 +18,7 @@ INCLUDE("cmake/tools.cmake")
 GET_VERSION(ALLPIX_VERSION)
 
 # Print version
-MESSAGE(STATUS "Building AllPix version ${ALLPIX_VERSION}.")
+MESSAGE(STATUS "Building Allpix^2 version ${ALLPIX_VERSION}.")
 
 # Define the project with the simple version
 STRING(REGEX MATCH "([0-9.]+)+" SIMPLE_VERSION "${ALLPIX_VERSION}")

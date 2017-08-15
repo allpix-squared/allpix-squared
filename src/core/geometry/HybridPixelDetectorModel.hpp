@@ -36,6 +36,13 @@ namespace allpix {
             : DetectorModel(std::move(type), reader) {
             auto config = reader.getHeaderConfiguration();
 
+            // Excess around the chip from the pixel grid
+            auto default_chip_excess = config.get<double>("chip_excess", 0);
+            setChipExcessTop(config.get<double>("chip_excess_top", default_chip_excess));
+            setChipExcessBottom(config.get<double>("chip_excess_bottom", default_chip_excess));
+            setChipExcessLeft(config.get<double>("chip_excess_left", default_chip_excess));
+            setChipExcessRight(config.get<double>("chip_excess_right", default_chip_excess));
+
             // Set bump parameters
             setBumpCylinderRadius(config.get<double>("bump_cylinder_radius"));
             setBumpHeight(config.get<double>("bump_height"));
@@ -44,15 +51,49 @@ namespace allpix {
         }
 
         /**
+         * @brief Get size of the chip
+         * @return Size of the chip
+         *
+         * Calculated from \ref DetectorModel::getGridSize "pixel grid size", chip excess and chip thickness
+         */
+        ROOT::Math::XYZVector getChipSize() const override {
+            ROOT::Math::XYZVector excess_thickness(
+                (chip_excess_.at(1) + chip_excess_.at(3)), (chip_excess_.at(0) + chip_excess_.at(2)), chip_thickness_);
+            return getGridSize() + excess_thickness;
+        }
+        /**
          * @brief Get center of the chip in local coordinates
          * @return Center of the chip
          *
          * The center of the chip as given by \ref DetectorModel::getChipCenter() with extra offset for bump bonds.
          */
         ROOT::Math::XYZPoint getChipCenter() const override {
-            ROOT::Math::XYZVector offset(0, 0, getBumpHeight());
-            return DetectorModel::getChipCenter() + offset;
+            ROOT::Math::XYZVector offset((chip_excess_.at(1) - chip_excess_.at(3)) / 2.0,
+                                         (chip_excess_.at(0) - chip_excess_.at(2)) / 2.0,
+                                         getSensorSize().z() / 2.0 + getChipSize().z() / 2.0 + getBumpHeight());
+            return getCenter() + offset;
         }
+
+        /**
+         * @brief Set the excess at the top of the chip (positive y-coordinate)
+         * @param val Chip top excess
+         */
+        void setChipExcessTop(double val) { chip_excess_.at(0) = val; }
+        /**
+         * @brief Set the excess at the right of the chip (positive x-coordinate)
+         * @param val Chip right excess
+         */
+        void setChipExcessRight(double val) { chip_excess_.at(1) = val; }
+        /**
+         * @brief Set the excess at the bottom of the chip (negative y-coordinate)
+         * @param val Chip bottom excess
+         */
+        void setChipExcessBottom(double val) { chip_excess_.at(2) = val; }
+        /**
+         * @brief Set the excess at the left of the chip (negative x-coordinate)
+         * @param val Chip left excess
+         */
+        void setChipExcessLeft(double val) { chip_excess_.at(3) = val; }
 
         /**
          * @brief Return all layers of support
@@ -121,6 +162,8 @@ namespace allpix {
         void setBumpOffset(ROOT::Math::XYVector val) { bump_offset_ = std::move(val); }
 
     private:
+        std::array<double, 4> chip_excess_{};
+
         double bump_sphere_radius_{};
         double bump_height_{};
         ROOT::Math::XYVector bump_offset_;
