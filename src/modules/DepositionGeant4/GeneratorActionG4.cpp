@@ -52,8 +52,9 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     // Set angle distribution parameters
     single_source->GetAngDist()->SetAngDistType("beam2d");
     single_source->GetAngDist()->DefineAngRefAxes("angref1", G4ThreeVector(-1., 0, 0));
-    single_source->GetAngDist()->SetBeamSigmaInAngX(config.get<double>("particle_divergence_x", 0));
-    single_source->GetAngDist()->SetBeamSigmaInAngY(config.get<double>("particle_divergence_y", 0));
+    G4TwoVector divergence = config.get<G4TwoVector>("particle_divergence_xy", G4TwoVector(0., 0.));
+    single_source->GetAngDist()->SetBeamSigmaInAngX(divergence.x());
+    single_source->GetAngDist()->SetBeamSigmaInAngY(divergence.y());
     G4ThreeVector direction = config.get<G4ThreeVector>("particle_direction");
     if(fabs(direction.mag() - 1.0) > std::numeric_limits<double>::epsilon()) {
         LOG(WARNING) << "Momentum direction is not a unit vector: magnitude is ignored";
