@@ -61,7 +61,7 @@ namespace allpix {
         Detector(std::string name,
                  std::shared_ptr<DetectorModel> model,
                  ROOT::Math::XYZPoint position,
-                 ROOT::Math::Rotation3D orientation);
+                 const ROOT::Math::Rotation3D& orientation);
 
         /**
          * @brief Get name of the detector
@@ -173,7 +173,7 @@ namespace allpix {
          * @param position Position in the world frame
          * @param orientation Orientation in Z-X-Z extrinsic Euler angles
          */
-        Detector(std::string name, ROOT::Math::XYZPoint position, ROOT::Math::Rotation3D orientation);
+        Detector(std::string name, ROOT::Math::XYZPoint position, const ROOT::Math::Rotation3D& orientation);
 
         /**
          * @brief Set the detector model (used by the \ref GeometryManager for lazy loading)
