@@ -11,7 +11,9 @@
 #include <utility>
 #include <vector>
 
-#include <Math/EulerAngles.h>
+#include <Math/RotationX.h>
+#include <Math/RotationY.h>
+#include <Math/RotationZ.h>
 #include <Math/Vector3D.h>
 
 #include "GeometryManager.hpp"
@@ -43,7 +45,10 @@ void GeometryManager::load(const Configuration& global_config) {
     for(auto& detector_section : reader.getConfigurations()) {
         // Get the position and orientation
         auto position = detector_section.get<ROOT::Math::XYZPoint>("position", ROOT::Math::XYZPoint());
-        auto orientation = detector_section.get<ROOT::Math::EulerAngles>("orientation", ROOT::Math::EulerAngles());
+        auto orient_vec = detector_section.get<ROOT::Math::XYZVector>("orientation", ROOT::Math::XYZVector());
+
+        ROOT::Math::Rotation3D orientation = ROOT::Math::RotationZ(orient_vec.z()) * ROOT::Math::RotationY(orient_vec.y()) *
+                                             ROOT::Math::RotationX(orient_vec.x());
 
         // Create the detector and add it without model
         // NOTE: cannot use make_shared here due to the private constructor
