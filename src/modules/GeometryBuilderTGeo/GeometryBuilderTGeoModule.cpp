@@ -41,7 +41,7 @@
 #include <TMath.h>
 #include <TROOT.h>
 
-// AllPix includes
+// Allpix includes
 #include "core/config/ConfigReader.hpp"
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
@@ -86,7 +86,7 @@ void GeometryBuilderTGeoModule::init() {
     /* Instantiate the TGeo geometry manager.
        It will remain persistant until gGeoManager is deleted.
     */
-    gGeoManager = new TGeoManager("AllPix2", "Detector geometry");
+    gGeoManager = new TGeoManager("Allpix2", "Detector geometry");
     /* Set Verbosity according to the framework. Verbose only in debug mode.
        ROOT : 0=mute, 1=verbose
        LogLevel { QUIET = 0, CRITICAL, ERROR, WARNING, INFO, DEBUG }; */
@@ -136,7 +136,7 @@ void GeometryBuilderTGeoModule::init() {
 
 void GeometryBuilderTGeoModule::Construct() {
 
-    // Solids will be builds in mm, same units as AllPix1, even if ROOT assumes cm.
+    // Solids will be builds in mm, same units as Allpix1, even if ROOT assumes cm.
     // Beware when computing shape capacity or volume weight.
 
     LOG(TRACE) << "Starting construction of the detector geometry.";
@@ -297,7 +297,7 @@ void GeometryBuilderTGeoModule::BuildPixelDevices() {
         ///////////////////////////////////////////////////////////
         // Bumps
         // Bump = Bump_Sphere + Bump_Tube
-        // Naming AllPix Allpix2
+        // Naming Allpix Allpix2
         // Bump_Box     -> None
         // m_Bumps_log  -> Bumps_log
         // m_Bumps_phys -> None
@@ -579,7 +579,7 @@ void GeometryBuilderTGeoModule::BuildMaterialsAndMedia() {
     new TGeoMedium("Vacuum", 1, vacuum_mat);
 
     // Air
-    /* AllPix1 uses "G4_AIR"
+    /* Allpix1 uses "G4_AIR"
        Material:   G4_AIR    density:  1.205 mg/cm3  RadL: 303.921 m    Nucl.Int.Length: 710.095 m
        Imean:  85.700 eV   temperature: 293.15 K  pressure:   1.00 atm
 
@@ -617,7 +617,7 @@ void GeometryBuilderTGeoModule::BuildMaterialsAndMedia() {
     new TGeoMedium("Air", ++numed, air_mat);
 
     /* Silicon
-       AllPix1 uses "G4_Si"
+       Allpix1 uses "G4_Si"
     */
     TGeoElementTable* table = gGeoManager->GetElementTable();
     TGeoElement* Si = table->FindElement("Si");
@@ -625,7 +625,7 @@ void GeometryBuilderTGeoModule::BuildMaterialsAndMedia() {
     new TGeoMedium("Si", ++numed, Si_mat);
 
     /* Epoxy
-       AllPix1 uses G4_PLEXIGLASS
+       Allpix1 uses G4_PLEXIGLASS
     */
     TGeoElement* H = table->FindElement("H");
     auto* plexiglass_mat = new TGeoMixture("Plexiglass", 3, density = 1.19);
@@ -643,7 +643,7 @@ void GeometryBuilderTGeoModule::BuildMaterialsAndMedia() {
     new TGeoMedium("Solder", ++numed, solder_mat);
 
     /* Aluminum
-       AllPix1 uses G4_Al
+       Allpix1 uses G4_Al
     */
     TGeoElement* Al = table->FindElement("Al");
     auto* Al_mat = new TGeoMaterial("Al", Al, density = 2.699);

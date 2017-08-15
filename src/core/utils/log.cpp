@@ -107,7 +107,10 @@ DefaultLogger::~DefaultLogger() {
     out_no_special += out.substr(prev);
 
     // Replace carriage return by newline:
-    out_no_special = std::regex_replace(out_no_special, std::regex("\\\r"), "\n");
+    try {
+        out_no_special = std::regex_replace(out_no_special, std::regex("\\\r"), "\n");
+    } catch(std::regex_error&) {
+    }
 
     // Print output to streams
     for(auto stream : get_streams()) {
@@ -223,20 +226,19 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
 }
 
 /**
- * @throws std::invalid_argument If an empty identifier is provided
- *
- * This method is typically automatically called by the \ref LOG_PROGRESS macro.
+ * This method is typically automatically called by the \ref LOG_PROGRESS macro. An empty identifier is the same as
+ * underscore.
  */
 std::ostringstream& DefaultLogger::getProcessStream(
-    const std::string& identifier, LogLevel level, const std::string& file, const std::string& function, uint32_t line) {
+    std::string identifier, LogLevel level, const std::string& file, const std::string& function, uint32_t line) {
     // Get the standard process stream
     std::ostringstream& stream = getStream(level, file, function, line);
 
-    // Save the identifier to indicate a progress log
+    // Replace empty identifier with underscore because empty is already used for check
     if(identifier.empty()) {
-        throw std::invalid_argument("the process log identifier cannot be empty");
+        identifier = "_";
     }
-    identifier_ = identifier;
+    identifier_ = std::move(identifier);
 
     return stream;
 }

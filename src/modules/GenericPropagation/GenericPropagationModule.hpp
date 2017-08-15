@@ -41,6 +41,11 @@ namespace allpix {
         GenericPropagationModule(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector);
 
         /**
+         * @brief Initialize the module and check field configuration
+         */
+        void init() override;
+
+        /**
          * @brief Propagate all deposited charges through the sensor
          */
         void run(unsigned int event_num) override;
