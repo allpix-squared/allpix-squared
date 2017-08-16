@@ -590,43 +590,38 @@ Thus, the \textbf{input} parameter is ignored and forced to the value \texttt{*}
 
 \subsection{Logging and other Utilities}
 \label{sec:logging_utilities}
-The \apsq framework provides a set of utilities that can be attributed to two types:
-\begin{itemize}
-\item Two utilities to improve the usability of the framework.
-One of these is a flexible and easy-to-use logging system, introduced below in Section~\ref{sec:logger}.
-The other is an easy-to-use framework for units that supports converting arbitrary combinations of units to an independent number which can  be used transparently through the framework.
-It will be discussed in more detail in Section~\ref{sec:unit_system}.
-\item A few utilities to extend the functionality provided by the C++ Standard Template Library (STL).
-These are provided to provide functionality the C++14 standard lacks (like filesystem support).
-The utilities are used internally in the framework and are only shortly discussed here.
-The utilities falling in this category are the filesystem functions (see Section~\ref{sec:filesystem}) and the string utilies (see Section~\ref{sec:string_utilities}).
-\end{itemize}
+The \apsq framework provides a set of utilities which improve the usability of the framework and extend the functionality provided by the C++ Standard Template Library (STL).
+The former include a flexible and easy-to-use logging system, introduced in Section~\ref{sec:logger} and an easy-to-use framework for units that supports converting arbitrary combinations of units to common base units which can  be used transparently through the framework and which will be discussed in more detail in Section~\ref{sec:unit_system}.
+The latter comprise tools which provide functionality the C++14 standard does not contain.
+These utilities are used internally in the framework and are only shortly discussed in Section~\ref{sec:filesystem} (file system support) and Section~\ref{sec:string_utilities} (string utilities).
 
 \subsubsection{Logging system}
 \label{sec:logger}
-The logging system is build to handle input/output in the same way as \texttt{std::cin} and \texttt{std::cout}.
+The logging system is build to handle input/output the same way as \texttt{std::cin} and \texttt{std::cout} do.
 This approach is both very flexible and easy to read.
-The system is globally configured, thus there exists only one logger, and no special local versions.
-To send a message to the logging system at a level of \textbf{LEVEL}, the following can be used:
+The system is globally configured, thus only one logger instance exists.
+In order to send a message to the logging system at a level of \textbf{LEVEL}, the following can be used:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 LOG(LEVEL) << "this is an example message with an integer and a double " << 1 << 2.0;
 \end{minted}
 A newline is added at the end of every log message.
-Multi-line log messages can also be used: the logging system will automatically align every new line under the previous message and will leave the header space empty on the new lines.
+Multi-line log messages can also be used: the logging system will automatically align every new line under the previous message and will leave the header space empty on new lines.
 
-The system also allows for producing a message which is updated on the same line for simple progress bar like functionality.
-It is enabled using the \texttt{LOG\_PROCESS(LEVEL, IDENTIFIER)} macro (where the \texttt{IDENTIFIER} is a special string to determine if the output should be written to the same line or not).
+The system also allows for producing a message which is updated on the same line for simple progressbar-like functionality.
+It is enabled using the \texttt{LOG\_PROCESS(LEVEL, IDENTIFIER)} command.
+Here, the \texttt{IDENTIFIER} is a unique string identifying this output stream in order not to mix different progress reports.
+
 If the output is a terminal screen the logging output will be colored to make it prettier to read.
-This will be disabled automatically for all devices that are not terminals.
+This will be disabled automatically for all non-terminal outputs.
 
-More details about the various logging levels can be found in Section~\ref{sec:logging_verbosity}.
+More details about the logging levels and formats can be found in Section~\ref{sec:logging_verbosity}.
 
 \subsubsection{Unit system}
 \label{sec:unit_system}
 Correctly handling units and conversions is of paramount importance.
 Having a separate C++ type for all different kind of units would however be too cumbersome for a lot of operations.
-Therefore the units are stored in standard C++ floating point types in a default unit which all the code in the framework uses for calculations.
-In configuration files as well as for logging it is however very useful to provide quantities in a different unit.
+Therefore, the units are stored in standard C++ floating point types in a default unit which all code in the framework should use for calculations.
+In configuration files as well as for logging it is however very useful to provide quantities in different units.
 
 The unit system allows adding, retrieving, converting and displaying units.
 It is a global system transparently used throughout the framework.
@@ -637,32 +632,31 @@ Units::add("mm", 1);
 Units::add("m", 1e3);
 // Define the standard time unit
 Units::add("ns", 1);
-// Get the units given in m/ns in the defined framework unit mm/ns
+// Get the units given in m/ns in the defined framework unit (mm/ns)
 Units::get(1, "m/ns");
-// Get the framework unit of mm/ns in m/ns
+// Get the framework unit (mm/ns) in m/ns
 Units::convert(1, "m/ns");
-// Give the unit in the best type (lowest number above one) as string
-//   input is default unit 2000mm/ns and 'best' output is 2m/ns (string)
+// Return the unit in the best type (lowest number larger than one) as string.
+// The input is in default units 2000mm/ns and the 'best' output is 2m/ns (string)
 Units::display(2e3, {"mm/ns", "m/ns"});
 \end{minted}
 
 More details about how the unit system is used within \apsq can be found in Section~\ref{sec:config_values}.
 
 \subsubsection{Internal utilities}
-\paragraph{Filesystem}
 \label{sec:filesystem}
-Provides functions to convert relative to absolute canonical paths, to iterate through all files in a directory and to create new directories.
+The \textbf{filesystem} utilities provide functions to convert relative to absolute canonical paths, to iterate through all files in a directory and to create new directories.
 These functions should be replaced by the C++17 file system API~\cite{cppfilesystem} as soon as the framework minimum standard is updated to C++17.
 
-\paragraph{String utilities}
 \label{sec:string_utilities}
-The STL only provides string conversions for standard types using \texttt{std::stringstream} and \texttt{std::to\_string}.
-It does not allow to parse strings encapsulated in pairs of \texttt{"} characters and neither does it allow to integrate different units.
+The STL only provides string conversions for standard types using \texttt{std::stringstream} and \texttt{std::to\_string} which do not allow to parse strings encapsulated in pairs of double quote (\texttt{"}) characters and neither does it allow to integrate different units.
 Furthermore it does not provide wide flexibility to add custom conversions for other external types in either way.
-The \apsq \texttt{to\_string} and \texttt{from\_string} do allow for these flexible conversions and it it extensively used in the configuration system.
+
+The \apsq \texttt{to\_string} and \texttt{from\_string} methods provied by its \textbf{string utilities} do allow for these flexible conversions and are extensively used in the configuration system.
 Conversions of numeric types with a unit attached are automatically resolved using the unit system discussed in Section~\ref{sec:unit_system}.
-The \apsq tools system contain extensions to allow automatic conversions for ROOT and Geant4 types as explained in Section~\ref{sec:root_and_geant4_utilities}.
 The string utilities also include trim and split strings functions as they are missing in the STL.
+
+Furthermore, the \apsq tool system contains extensions to allow automatic conversions for ROOT and Geant4 types as explained in Section~\ref{sec:root_and_geant4_utilities}.
 
 \subsection{Error Reporting and Exceptions}
 \label{sec:error_reporting_exceptions}
