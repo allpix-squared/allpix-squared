@@ -545,13 +545,10 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
 
     // Define a lambda function to compute the electron velocity
     auto carrier_velocity = [&](double, Eigen::Vector3d cur_pos) -> Eigen::Vector3d {
-        std::vector<double> raw_field = detector_->getElectricFieldRaw(cur_pos);
-        if(raw_field.empty()) {
-            // Return a zero electric field outside of the sensor
-            return Eigen::Vector3d(0, 0, 0);
-        }
+        auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
         // Compute the drift velocity
-        auto efield = static_cast<Eigen::Map<Eigen::Vector3d>>(raw_field.data());
+        Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
+
         return static_cast<int>(type) * carrier_mobility(efield.norm()) * efield;
     };
 
@@ -577,14 +574,10 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         position = runge_kutta.getValue();
 
         // Get electric field at current position and fall back to empty field if it does not exist
-        std::vector<double> raw_field = detector_->getElectricFieldRaw(position);
-        if(raw_field.empty()) {
-            raw_field = std::vector<double>(3, 0);
-        }
+        auto efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(position));
 
         // Apply diffusion step
-        auto efield = static_cast<Eigen::Map<Eigen::Vector3d>>(raw_field.data());
-        auto diffusion = carrier_diffusion(efield.norm());
+        auto diffusion = carrier_diffusion(std::sqrt(efield.Mag2()));
         runge_kutta.setValue(position + diffusion);
 
         // Adapt step size to match target precision
