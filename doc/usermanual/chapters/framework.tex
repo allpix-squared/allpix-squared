@@ -214,7 +214,7 @@ ALLPIX_MODULE_INSTALL(${MODULE_NAME})
 \paragraph{README.md}
 The README.md serves as the documentation for the module and should be written in the Markdown format~\cite{markdown}.
 It is automatically converted to \LaTeX using Pandoc~\cite{pandoc} and included in this user manual in Section~\ref{sec:modules}.
-By documenting the module functionality in Markdown, the information as also viewable with a web browser at the repository in the module subfolder.
+By documenting the module functionality in Markdown, the information as also viewable with a web browser at the repository in the module sub-folder.
 
 The README.md should follow the structure indicated in the README file of the DummyModule in \textit{src/modules/Dummy}.
 The documentation should contain at least the following sections:
@@ -358,7 +358,7 @@ Rotations of the individual devices are performed around the geometrical center 
 Also the local coordinate systems are right-handed Cartesian systems, with the x- and y-axes defining the sensor plane.
 The beam is entering along the positive z-axis.
 The origin of the coordinate system is the center of the lower left pixel in the grid, i.e.\ the pixel with the indices (0,0).
-This simpilfies calculations in the local coordinate system as all positions can either be stated in absolute numbers or in fractions of the pixel pitch.
+This simplifies calculations in the local coordinate system as all positions can either be stated in absolute numbers or in fractions of the pixel pitch.
 
 \subsubsection{Detector models}
 \label{sec:detector_models}
@@ -380,7 +380,7 @@ This base detector model can be extended to provide a more detailed geometry.
 Currently implemented derived models are the \texttt{MonolithicPixelDetectorModel}, which describes a monolithic detector with all electronics directly implemented in the same silicon wafer as the sensor, and the \texttt{HybridPixelDetectorModel}, which in addition to the features described above also includes a separate readout chip with configurable size and bump bonds between the sensor and the readout chip.
 
 \nlparagraph{Detector model parameters}
-Models are defined in configuration files which are used to instatiate the actual model classes.
+Models are defined in configuration files which are used to instantiate the actual model classes.
 These files for detector models can contain various types of parameters.
 Some are required for all models, others are optional or only supported by certain types of models.
 For more details about the steps to perform in order to add and use a new detector model, Section~\ref{sec:adding_detector_model} should be consulted.
@@ -454,7 +454,7 @@ The individual bumps are by default positioned at the center of all the single p
 
 \nlparagraph{Accessing specific detector models within the framework}
 Some modules are written specific to a particular type of detector model.
-In order to ensure receiving a specific detector model from the base class, the model should be downcasted.
+In order to ensure receiving a specific detector model from the base class, the model should be downcast.
  The downcast returns a null pointer if the class is not of the appropriate type.
 An example for fetching an \texttt{HybridPixelDetectorModel} is the following:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
@@ -509,7 +509,7 @@ Every module by default listens to messages with no name specified (thus receivi
 \end{enumerate}
 
 An example how to dispatch a message containing an array of \texttt{Object} types bound to a detector named \texttt{dut} is provided below.
-As usual, the message is dispathed at the end of the \texttt{run} function of the module.
+As usual, the message is dispatched at the end of the \texttt{run} function of the module.
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 void run(unsigned int event_id) {
     std::vector<Object> data;
@@ -555,7 +555,7 @@ std::vector<std::shared_ptr<Message<Object>>> messages;
 \end{minted}
 \item Listen to a particular message type and execute a \textbf{listener function} as soon as an object is received.
 Can be used for more advanced strategies of retrieving messages.
-Note that this method can lead to unexpected behaviour because the listener function is executed during the run method of the dispatching module.
+Note that this method can lead to unexpected behavior because the listener function is executed during the run method of the dispatching module.
 The listening module should \underline{not} do any heavy work in the listening function as this is supposed to take place in their \texttt{run} method instead.
 Listening to a message containing an array of objects in a detector \texttt{TestModule} could be performed as follows:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
@@ -579,7 +579,7 @@ Flags can be added to the bind and listening methods which enable a particular b
 If the particular type of message is not received before it is time to execute the module's run function, the execution of the method is automatically skipped by the framework for the current event.
 This can be used to ignore modules which cannot perform any action without received messages, for example charge carrier propagation without any deposited charge carriers.
 \item \textbf{NO\_RESET}: Messages are by default automatically reset after the \texttt{run} function has been executed to prevent older messages from previous events to reappear.
-This behaviour can be disabled by setting this flag (this does not have any effect for listening functions).
+This behavior can be disabled by setting this flag (this does not have any effect for listening functions).
 Setting this flag for single bound messages (without ALLOW\_OVERWRITE, see below) would cause an exception to be raised if the message is overwritten in a later event.
 \item \textbf{ALLOW\_OVERWRITE}: By default an exception is automatically raised if a single bound message is overwritten (thus receiving it multiple times instead of once).
 This flag prevents this behavior.
@@ -654,40 +654,42 @@ Furthermore it does not provide wide flexibility to add custom conversions for o
 
 The \apsq \texttt{to\_string} and \texttt{from\_string} methods provied by its \textbf{string utilities} do allow for these flexible conversions and are extensively used in the configuration system.
 Conversions of numeric types with a unit attached are automatically resolved using the unit system discussed in Section~\ref{sec:unit_system}.
-The string utilities also include trim and split strings functions as they are missing in the STL.
+The string utilities also include trim and split strings functions missing in the STL.
 
 Furthermore, the \apsq tool system contains extensions to allow automatic conversions for ROOT and Geant4 types as explained in Section~\ref{sec:root_and_geant4_utilities}.
 
+
 \subsection{Error Reporting and Exceptions}
 \label{sec:error_reporting_exceptions}
-\apsq generally follows the principle to throw exceptions in all cases where something is definitely wrong, it should never try to circumvent problems.
-Also error codes are not supposed to be returned, only exceptions should be used to report fatal errors.
+\apsq generally follows the principle of throwing exceptions in all cases something is definitely wrong.
 Exceptions are also thrown to signal for errors in the user configuration.
-The asset of this method is that configuration and code is more likely to do what they are supposed to do.
+It does not attempt to circumvent problems or correct configuration mistakes.
+Error return codes should not be used at all.
+The asset of this method is that errors cannot easily be ignored and the code is more predictable in general.
 
-For warnings and informational messages the logging should be used extensively.
-This helps in both following the progress of the simulation as well as for debugging problems.
-Care should however be taken to limit the amount of messages outside of the \texttt{DEBUG} and \texttt{TRACE} levels.
-More details about the log levels and their usage is given in Section~\ref{sec:logging_verbosity}.
+For warnings and informational messages, the logging should be used extensively.
+This helps both in following the progress of the simulation and in debugging problems.
+Care should however be taken to limit the amount of messages in levels higher than \texttt{DEBUG} or \texttt{TRACE}.
+More details about the logging levels and their usage can be found in Section~\ref{sec:logging_verbosity}.
 
-The base exceptions in \apsq are available in the utilities.
+The base exceptions in \apsq are available via the utilities.
 The most important exception base classes are the following:
 \begin{itemize}
 \item \textbf{ConfigurationError}: All errors related to incorrect user configuration.
-Could be a non-existing configuration file, a missing key or an invalid parameter value.
+This could indicate a non-existing configuration file, a missing key or an invalid parameter value.
 \item \textbf{RuntimeError}: All other errors arising at run-time.
 Could be related to incorrect configuration if messages are not correctly passed or non-existing detectors are specified.
-Could also be raised if errors arise while loading a library or running a module.
-\item \textbf{LogicError}: Problems related to modules that do not properly follow the specifications, for example if a detector module fails to pass the detector to the constructor.
-These methods should never be raised for a well-behaving module and should therefore not be triggerable by users.
-Reporting these type of errors can help developers during their development of new modules.
+Could also be raised if errors arise while loading a library or executing a module.
+\item \textbf{LogicError}: Problems related to modules which do not properly follow the specifications, for example if a detector module fails to pass the detector to the constructor.
+These methods should never be raised for correctly implemented modules and should therefore not be triggerable by users.
+Reporting this type of errors can help developers during their development of new modules.
 \end{itemize}
 
-Outside of the core framework, exceptions can also be used directly by the modules.
+Outside the core framework, exceptions can also be used directly by the modules.
 There are only two exceptions which should be used by typical modules to indicate errors:
 \begin{itemize}
-\item \textbf{InvalidValueError}: Available under the subset of configuration exceptions.
-Signals any problem with the value of a configuration parameter that is not related to either the parsing or the conversion to the required type.
+\item \textbf{InvalidValueError}: Derived from configuration exceptions.
+Signals any problem with the value of a configuration parameter not related to parsing or conversion to the required type.
 Can for example be used for parameters where the possible valid values are limited, like the set of logging levels, or for paths that do not exist.
 An example is shown below:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
@@ -698,15 +700,14 @@ void run(unsigned int event_id) {
     // Check if it is a 'valid' value
     if(value != 'A' && value != "B") {
         // Raise an error if it the value is not valid
-        //   provide configuration object, key and an explanation
+        //   provide the configuration object, key and an explanation
         throw InvalidValueError(config, "key", "A and B are the only allowed values");
     }
 }
 \end{minted}
-\item \textbf{ModuleError}: Available under the subset of module exceptions.
-Should be used to indicate any runtime error in a module that is not directly caused by an invalid configuration value.
-For example if it is not possible to write an output.
-A reason should be given to indicate what the problem is.
+\item \textbf{ModuleError}: Derived from module exceptions.
+Should be used to indicate any runtime error in a module not directly caused by an invalid configuration value, for example that it is not possible to write an output file.
+A reason should be given to indicate what the source of problem is.
 \todo{The module class should be passed as well, so the module name can be displayed in the error message}
 \end{itemize}
 
