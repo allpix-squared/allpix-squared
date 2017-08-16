@@ -26,7 +26,7 @@ using namespace allpix;
 Detector::Detector(std::string name,
                    std::shared_ptr<DetectorModel> model,
                    ROOT::Math::XYZPoint position,
-                   const ROOT::Math::Rotation3D& orientation)
+                   ROOT::Math::EulerAngles orientation)
     : Detector(std::move(name), std::move(position), orientation) {
     model_ = std::move(model);
     // Check if valid model is supplied
@@ -44,7 +44,7 @@ Detector::Detector(std::string name,
  * that these detectors can never be accessed by modules before the detector
  * model is added.
  */
-Detector::Detector(std::string name, ROOT::Math::XYZPoint position, const ROOT::Math::Rotation3D& orientation)
+Detector::Detector(std::string name, ROOT::Math::XYZPoint position, ROOT::Math::EulerAngles orientation)
     : name_(std::move(name)), position_(std::move(position)), orientation_(orientation), electric_field_sizes_{{0, 0, 0}},
       electric_field_(nullptr) {}
 void Detector::set_model(std::shared_ptr<DetectorModel> model) {
@@ -77,7 +77,7 @@ const std::shared_ptr<DetectorModel> Detector::getModel() const {
 ROOT::Math::XYZPoint Detector::getPosition() const {
     return position_;
 }
-ROOT::Math::Rotation3D Detector::getOrientation() const {
+ROOT::Math::EulerAngles Detector::getOrientation() const {
     return orientation_;
 }
 
