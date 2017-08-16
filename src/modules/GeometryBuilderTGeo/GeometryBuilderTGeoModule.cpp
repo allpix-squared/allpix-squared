@@ -235,11 +235,11 @@ void GeometryBuilderTGeoModule::BuildPixelDevices() {
         // Apply wrapper enhancement
         posWrapper.Add(&wrapperEnhancementTransl);
         // Retrieve orientation given by the user.
-        Rotation3D orientation = (*detItr)->getOrientation();
-        TGeoRotation orWrapper = TGeoRotation("DetPlacement" + id_s);
-        std::vector<double> copy_vec(9);
-        orientation.GetComponents(copy_vec.begin(), copy_vec.end());
-        orWrapper.SetMatrix(copy_vec.data());
+        EulerAngles angles = (*detItr)->getOrientation();
+        const double phi = angles.Phi() * RadToDeg();
+        const double theta = angles.Theta() * RadToDeg();
+        const double psi = angles.Psi() * RadToDeg();
+        TGeoRotation orWrapper = TGeoRotation("DetPlacement" + id_s, phi, theta, psi);
         // And create a transformation.
         auto* det_tr = new TGeoCombiTrans(posWrapper, orWrapper);
         det_tr->SetName("DetPlacement" + id_s);
@@ -247,6 +247,7 @@ void GeometryBuilderTGeoModule::BuildPixelDevices() {
         // Print out ! The wrapper will just be called "detector".
         LOG(DEBUG) << " Detector placement relative to the World : ";
         LOG(DEBUG) << " - Position             : " << Print(&posWrapper);
+        LOG(DEBUG) << " - Orientation          : " << TString::Format("%3.1f %3.1f %3.1f", phi, theta, psi);
         LOG(DEBUG) << " - Wrapper Dimensions   : " << TString::Format("%3.3f %3.3f %3.3f", wrapperHX, wrapperHY, wrapperHZ);
 
         TGeoVolume* expHall_log = gGeoManager->GetTopVolume();
