@@ -25,6 +25,8 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration config,
     // Save detector model
     model_ = detector_->getModel();
 
+    random_generator_.seed(getRandomSeed());
+
     // Require deposits message for single detector
     messenger_->bindSingle(this, &ProjectionPropagationModule::deposits_message_, MsgFlags::REQUIRED);
 
@@ -53,6 +55,7 @@ void ProjectionPropagationModule::run(unsigned int) {
 
     double charge_lost = 0;
     double total_charge = 0;
+    double total_projected_charge = 0;
 
     // Loop over all deposits for propagation
     for(auto& deposit : deposits_message_->getData()) {
@@ -109,52 +112,47 @@ void ProjectionPropagationModule::run(unsigned int) {
         double diffusion_std_dev = std::sqrt(2. * diffusion_constant * drift_time);
         LOG(TRACE) << "Diffusion width is " << Units::display(diffusion_std_dev, "um");
 
-        auto integrate_gauss = [&](double xhit, double yhit, double x1, double x2, double y1, double y2) {
-            LOG(TRACE) << "Calculating integral for square " << x1 << "-" << x2 << ", " << y1 << "-" << y2
-                       << " for charge at " << xhit << ", " << yhit;
-            double integral = (-std::erf((x1 - xhit) / (std::sqrt(2.) * diffusion_std_dev)) +
-                               std::erf((x2 - xhit) / (std::sqrt(2.) * diffusion_std_dev))) *
-                              (-std::erf((y1 - yhit) / (std::sqrt(2.) * diffusion_std_dev)) +
-                               std::erf((y2 - yhit) / (std::sqrt(2.) * diffusion_std_dev))) /
-                              4;
-            LOG(TRACE) << "Integral is " << integral / 4.;
-            return integral;
-        };
-
         double projected_charge = 0;
-        // Loop over Gaussian distribution (+-3 sigma) with configurable precision
-        for(double section_x = position.x() - 3 * diffusion_std_dev; section_x < position.x() + 3 * diffusion_std_dev;
-            section_x += spatial_precision_) {
-            for(double section_y = position.y() - 3 * diffusion_std_dev; section_y < position.y() + 3 * diffusion_std_dev;
-                section_y += spatial_precision_) {
-                LOG(TRACE) << "Looking at position " << Units::display(section_x, "um") << " "
-                           << Units::display(section_y, "um");
 
-                // calculate part integral of gaussian smeared charge cloud:
-                double charge = deposit.getCharge() * integrate_gauss(position.x(),
-                                                                      position.y(),
-                                                                      section_x - spatial_precision_ / 2.,
-                                                                      section_x + spatial_precision_ / 2.,
-                                                                      section_y - spatial_precision_ / 2.,
-                                                                      section_y + spatial_precision_ / 2.);
-                projected_charge += charge;
+        unsigned int charges_remaining = deposit.getCharge();
+        total_charge += charges_remaining;
 
-                // Only add if within sensor volume:
-                auto local_position = ROOT::Math::XYZPoint(section_x, section_y, model->getSensorSize().z() / 2.);
-                if(!detector_->isWithinSensor(local_position)) {
-                    continue;
-                }
-
-                auto global_position = detector_->getGlobalPosition(local_position);
-                // Produce charge carrier at this position
-                propagated_charges.emplace_back(
-                    position, global_position, deposit.getType(), charge, deposit.getEventTime(), &deposit);
+        auto charge_per_step = config_.get<unsigned int>("charge_per_step");
+        while(charges_remaining > 0) {
+            if(charge_per_step > charges_remaining) {
+                charge_per_step = charges_remaining;
             }
+            charges_remaining -= charge_per_step;
+
+            std::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
+            double diffusion_x = gauss_distribution(random_generator_);
+            double diffusion_y = gauss_distribution(random_generator_);
+
+            auto projected_position = ROOT::Math::XYZPoint(
+                position.x() + diffusion_x, position.y() + diffusion_y, model->getSensorSize().z() / 2.);
+
+            // Only add if within sensor volume:
+            auto local_position =
+                ROOT::Math::XYZPoint(projected_position.x(), projected_position.y(), model->getSensorSize().z() / 2.);
+            if(!detector_->isWithinSensor(local_position)) {
+                continue;
+            }
+
+            auto global_position = detector_->getGlobalPosition(local_position);
+
+            // Produce charge carrier at this position
+            propagated_charges.emplace_back(
+                projected_position, global_position, deposit.getType(), charge_per_step, deposit.getEventTime(), &deposit);
+
+            LOG(DEBUG) << "Propagated " << charge_per_step << " charge carriers ("
+                       << (type == CarrierType::ELECTRON ? "e" : "h") << ") to "
+                       << display_vector(projected_position, {"mm", "um"});
+
+            projected_charge += charge_per_step;
         }
-        LOG(DEBUG) << "Charge after projection: " << projected_charge << " (vs " << deposit.getCharge() << " before)";
-        charge_lost += std::fabs(deposit.getCharge() - projected_charge);
-        total_charge += projected_charge;
+        total_projected_charge += projected_charge;
     }
+    charge_lost = total_charge - total_projected_charge;
 
     LOG(INFO) << "Total charge: " << total_charge << " (lost: " << charge_lost << ", " << (charge_lost / total_charge * 100.)
               << "%)";

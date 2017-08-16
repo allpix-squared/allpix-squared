@@ -8,6 +8,7 @@
  * Refer to the User's Manual for more details.
  */
 
+#include <random>
 #include <string>
 
 #include "core/config/Configuration.hpp"
@@ -45,6 +46,9 @@ namespace allpix {
         Messenger* messenger_;
         std::shared_ptr<const Detector> detector_;
         std::shared_ptr<DetectorModel> model_;
+
+        // Random generator for diffusion calculation
+        std::mt19937_64 random_generator_;
 
         // Precalculated values for electron and hole mobility
         double electron_Vm_;
