@@ -17,8 +17,8 @@
 #include <typeindex>
 #include <vector>
 
-#include <Math/EulerAngles.h>
 #include <Math/Point3D.h>
+#include <Math/Rotation3D.h>
 #include <Math/Transform3D.h>
 
 #include "Detector.hpp"
@@ -56,12 +56,12 @@ namespace allpix {
          * @param name Unique name of the detector
          * @param model Model of the detector
          * @param position Position in the world frame
-         * @param orientation Orientation in Z-X-Z extrinsic Euler angles
+         * @param orientation Rotation matrix representing the orientation
          */
         Detector(std::string name,
                  std::shared_ptr<DetectorModel> model,
                  ROOT::Math::XYZPoint position,
-                 ROOT::Math::EulerAngles orientation);
+                 const ROOT::Math::Rotation3D& orientation);
 
         /**
          * @brief Get name of the detector
@@ -84,7 +84,7 @@ namespace allpix {
          * @brief Get orientation in the world
          * @return Orientation in Z-X-Z extrinsic Euler angles
          */
-        ROOT::Math::EulerAngles getOrientation() const;
+        ROOT::Math::Rotation3D getOrientation() const;
 
         /**
          * @brief Convert a global position to a position in the detector frame
@@ -180,7 +180,7 @@ namespace allpix {
          * @param position Position in the world frame
          * @param orientation Orientation in Z-X-Z extrinsic Euler angles
          */
-        Detector(std::string name, ROOT::Math::XYZPoint position, ROOT::Math::EulerAngles orientation);
+        Detector(std::string name, ROOT::Math::XYZPoint position, const ROOT::Math::Rotation3D& orientation);
 
         /**
          * @brief Get the electric field at a position
@@ -206,7 +206,7 @@ namespace allpix {
         std::shared_ptr<DetectorModel> model_;
 
         ROOT::Math::XYZPoint position_;
-        ROOT::Math::EulerAngles orientation_;
+        ROOT::Math::Rotation3D orientation_;
 
         // Transform matrix from global to local coordinates
         ROOT::Math::Transform3D transform_;
