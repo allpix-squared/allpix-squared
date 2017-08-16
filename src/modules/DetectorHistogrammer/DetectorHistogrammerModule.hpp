@@ -62,7 +62,7 @@ namespace allpix {
 
         /**
          * @brief Checks the adjacent pixels for PixelHits
-         * @param PixelHit to check
+         * @param pixel_hit Hit to check
          */
         unsigned int checkAdjacentPixels(const PixelHit*);
 
