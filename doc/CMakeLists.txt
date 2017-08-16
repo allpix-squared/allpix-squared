@@ -113,6 +113,7 @@ IF(LATEX_COMPILER)
             usermanual/chapters/framework.tex
             usermanual/chapters/getting_started.tex
             usermanual/chapters/objects.tex
+            usermanual/chapters/modules.tex
             usermanual/chapters/development.tex
             usermanual/chapters/faq.tex
             usermanual/chapters/additional.tex
