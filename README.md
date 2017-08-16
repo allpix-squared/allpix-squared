@@ -56,6 +56,6 @@ $ make reference
 The main page of the reference can then be found at `reference/html/index.html` in the build folder.
 
 ## Contributing
-All type of minor and major contributions are very welcome. Please refer to our [contributing guidelines](CONTRIBUTING.md) for a description on how to get started.
+All type of minor and major contributions are very welcome. Please refer to our [contribution guidelines](CONTRIBUTING.md) for a description on how to get started.
 
-Before adding changes it is very much recommended to carefully read through the documentation first.
+Before adding changes it is very much recommended to carefully read through the documentation in the User's Manual first.
