@@ -251,6 +251,7 @@ void Allpix::add_units() {
     // NOTE: these are fake units
     Units::add("deg", 0.01745329252);
     Units::add("rad", 1);
+    Units::add("mrad", 1e-3);
 }
 
 /**
