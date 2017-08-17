@@ -19,7 +19,8 @@ echo "Creating directory and files..."
 
 echo 
 # Try to find the modules directory:
-DIRECTORIES[0]="../../src/modules"
+BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )"
+DIRECTORIES[0]="${BASEDIR}/../../src/modules"
 DIRECTORIES[1]="../src/modules"
 DIRECTORIES[2]="src/modules"
 
@@ -35,7 +36,7 @@ done
 mkdir "$MODDIR/$MODNAME"
 
 # Copy over CMake file and sources from Dummy:
-sed -e "s/Dummy/$MODNAME/g" "$MODDIR/Dummy/CMakeLists.txt" > "$MODDIR/$MODNAME/CMakeLists.txt" 
+sed -e "s/Dummy/$MODNAME/g" $MODDIR/Dummy/CMakeLists.txt > $MODDIR/$MODNAME/CMakeLists.txt
 
 # Copy over the README, setting current git username/email as author
 # If this fails, use system username and hostname
@@ -59,28 +60,25 @@ sed -e "s/Dummy/$MODNAME/g" "$MODDIR/Dummy/DummyModule.cpp" > "$MODDIR/$MODNAME/
 
 # Change to detetcor module type if necessary:
 if [ "$type" == 2 ]; then
+
+  # Options for sed vary slightly between mac and linux
+  opt=-i
   platform=`uname`
-  if [ "$platform" == "Darwin" ]; then
-    sed -i "" "s/_UNIQUE_/_DETECTOR_/g" "$MODDIR/$MODNAME/CMakeLists.txt"
-    sed -i "" -e "s/ unique / detector-specific /g" \
-        -e "s/param geo_manager.*/param detector Pointer to the detector for this module instance/g" \
-        -e "s/GeometryManager\* geo\_manager/std::shared\_ptr\<Detector\> detector/g" \
-        -e "s/GeometryManager/DetectorModel/g" \
-        "$MODDIR/$MODNAME/${MODNAME}Module.hpp"
-    sed -i "" -e "s/GeometryManager\*/std::shared\_ptr\<Detector\> detector/g" \
-        -e "s/Module(config)/Module\(config\, detector\)/g" \
-         "$MODDIR/$MODNAME/${MODNAME}Module.cpp"
-  else
-    sed -i -e "s/_UNIQUE_/_DETECTOR_/g" "$MODDIR/$MODNAME/CMakeLists.txt"
-    sed -i -e "s/ unique / detector-specific /g" \
-	-e "/param geo/c\         \* \@param detector Pointer to the detector for this module instance" \
-	-e "s/GeometryManager\* geo\_manager/std::shared\_ptr\<Detector\> detector/g" \
-	-e "s/GeometryManager/DetectorModel/g" \
-	"$MODDIR/$MODNAME/${MODNAME}Module.hpp"
-    sed -i -e "s/GeometryManager\*/std::shared\_ptr\<Detector\> detector/g" \
-	-e "s/Module(config)/Module\(config\, detector\)/g" \
-	"$MODDIR/$MODNAME/${MODNAME}Module.cpp"
-  fi
+  if [ "$platform" == "Darwin" ]; then opt="-i \"\""; fi
+  
+  # Prepare sed commands to change to per detector module    
+  command="sed $opt 's/_UNIQUE_/_DETECTOR_/g' $MODDIR/$MODNAME/CMakeLists.txt"
+  eval $command
+  command="sed ${opt} -e 's/ unique / detector-specific /g' \
+      -e 's/param geo_manager.*/param detector Pointer to the detector for this module instance/g' \
+      -e 's/GeometryManager\* geo\_manager/std::shared\_ptr\<Detector\> detector/g' \
+      -e 's/GeometryManager/DetectorModel/g' \
+         $MODDIR/$MODNAME/${MODNAME}Module.hpp"
+  eval $command
+  command="sed ${opt} -e 's/GeometryManager\*/std::shared\_ptr\<Detector\> detector/g' \
+      -e 's/Module(config)/Module\(config\, detector\)/g' \
+         $MODDIR/$MODNAME/${MODNAME}Module.cpp" 
+  eval $command
 fi
 
 echo "Name:   $MODNAME"
