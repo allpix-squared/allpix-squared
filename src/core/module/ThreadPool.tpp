@@ -54,12 +54,12 @@ namespace allpix {
 
     template <typename T> bool ThreadPool::SafeQueue<T>::empty() const {
         std::lock_guard<std::mutex> lock{mutex_};
-        return queue_.empty();
+        return !valid_ || queue_.empty();
     }
 
     /*
-    * Used to ensure no conditions are being waited for in pop when a thread or the application is trying to exit. The queue
-    * is invalid after calling this method and it is an error to continue using a queue after this method has been called.
+     * Used to ensure no conditions are being waited for in pop when a thread or the application is trying to exit. The queue
+     * is invalid after calling this method and it is an error to continue using a queue after this method has been called.
     */
     template <typename T> void ThreadPool::SafeQueue<T>::invalidate() {
         std::lock_guard<std::mutex> lock{mutex_};

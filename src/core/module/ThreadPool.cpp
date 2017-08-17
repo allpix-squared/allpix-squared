@@ -44,6 +44,7 @@ ThreadPool::~ThreadPool() {
 
 /**
  * @warning This function does not wait for the all the running tasks to finish
+ * @warning The module running this function is responsible for handling exceptions in the function called
  *
  * Should always be run by the thread spawning tasks, to ensure the task can be completed when there are no other threads
  * available to execute them.
@@ -52,14 +53,18 @@ bool ThreadPool::execute(Module* module) {
     // Run tasks until the queue is empty
     Task task{nullptr};
     while(task_queues_.at(module).pop(task, false)) {
+        // Execute task
         (*task)();
+        // Fetch the future to propagate exceptions
+        task->get_future().get();
     }
     return task_queues_.at(module).isValid();
 }
 
 /**
  * Run by the \ref ModuleManager to ensure all tasks and modules are completed before moving to the next instantiations.
- * Besides waiting for the queue to empty this will also wait for all the tasks to be completed.
+ * Besides waiting for the queue to empty this will also wait for all the tasks to be completed. If an exception is
+ * thrown by another thread, the exception will be propagated to the main thread by this function.
  */
 bool ThreadPool::execute_all() {
     while(true) {
@@ -68,7 +73,20 @@ bool ThreadPool::execute_all() {
         while(all_queue_.pop(queue_ptr, false)) {
             Task task{nullptr};
             if(queue_ptr->pop(task, false)) {
-                (*task)();
+                try {
+                    // Execute task
+                    (*task)();
+                    // Fetch the future to propagate exceptions
+                    task->get_future().get();
+                } catch(...) {
+                    // Check if the first exception thrown
+                    if(has_exception_.test_and_set()) {
+                        // Check if the first exception thrown
+                        exception_ptr_ = std::current_exception();
+                        // Invalidate the queue to terminate other threads
+                        all_queue_.invalidate();
+                    }
+                }
             }
         }
 
@@ -82,9 +100,19 @@ bool ThreadPool::execute_all() {
         }
     }
 
+    // If exception has been thrown, destroy pool and propagate it
+    if(exception_ptr_) {
+        destroy();
+        Log::setSection("");
+        std::rethrow_exception(exception_ptr_);
+    }
+
     return all_queue_.isValid();
 }
 
+/**
+ * If an exception is thrown by a module, the first exception is saved to propagate in the main thread
+ */
 void ThreadPool::worker(std::function<void()> init_function) {
     // Initialize the worker
     init_function();
@@ -97,7 +125,21 @@ void ThreadPool::worker(std::function<void()> init_function) {
         SafeQueue<Task>* queue_ptr;
         Task task{nullptr};
         if(all_queue_.pop(queue_ptr) && queue_ptr->pop(task, false, increase_run_cnt_func)) {
-            (*task)();
+            // Try to run task
+            try {
+                // Execute task
+                (*task)();
+                // Fetch the future to propagate exceptions
+                task->get_future().get();
+            } catch(...) {
+                // Check if the first exception thrown
+                if(has_exception_.test_and_set()) {
+                    // Save first exception
+                    exception_ptr_ = std::current_exception();
+                    // Invalidate the queue to terminate other threads
+                    all_queue_.invalidate();
+                }
+            }
 
             // Propagate that the task has been finished
             std::lock_guard<std::mutex> lock{run_mutex_};

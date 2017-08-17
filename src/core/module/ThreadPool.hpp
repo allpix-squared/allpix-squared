@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <atomic>
 #include <cstdint>
+#include <exception>
 #include <functional>
 #include <future>
 #include <map>
@@ -166,6 +167,9 @@ namespace allpix {
         mutable std::mutex run_mutex_;
         std::condition_variable run_condition_;
         std::vector<std::thread> threads_;
+
+        std::atomic_flag has_exception_;
+        std::exception_ptr exception_ptr_{nullptr};
     };
 }
 

@@ -623,8 +623,8 @@ void ModuleManager::run() {
                 // Set module specific settings
                 auto old_settings = set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
                 // Change to our ROOT directory
-                if(multithreading_enabled) {
-                    // ALERT: This can possibly break current modules
+                if(!multithreading_enabled) {
+                    // ALERT: Removing this from multithreading can possibly break modules
                     module->getROOTDirectory()->cd();
                 }
                 // Run module
