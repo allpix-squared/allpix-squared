@@ -23,6 +23,15 @@ ROOT_GENERATE_DICTIONARY(CorryvreckanObjectsDictionary
     CorryvreckanObjects
 )
 
+# Explicitly add all the dependent include dirs to the manual command
+FOREACH(dir IN ITEMS ${ALLPIX_DEPS_INCLUDE_DIRS})
+    IF(NOT INCLUDE_DIR_ARGS)
+        SET(INCLUDE_DIR_ARGS "-I${dir}")
+    ELSE()
+        SET(INCLUDE_DIR_ARGS "${INCLUDE_DIR_ARGS} -I${dir}")
+    ENDIF()
+ENDFOREACH()
+
 # Compile the dictionary through a special target 
 # WARNING This hack is necessary to prevent standard warnings and those in clang-tidy for use in the CI
 ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDictionary.cxx.o COMMAND ${CMAKE_CXX_COMPILER} -fPIC -std=c++${CMAKE_CXX_STANDARD} -I${CMAKE_SOURCE_DIR}/src ${INCLUDE_DIR_ARGS} -o ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDictionary.cxx.o -c ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDictionary.cxx DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDictionary.cxx)
