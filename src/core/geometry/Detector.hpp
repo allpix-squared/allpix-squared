@@ -127,13 +127,6 @@ namespace allpix {
          * @return Vector of the field at the queried point
          */
         ROOT::Math::XYZVector getElectricField(const ROOT::Math::XYZPoint& local_pos) const;
-        /**
-         * @brief Get the raw electric field array at a local position
-         * @param pos Position in a vector type having x(), y() and z() members
-         * @return Pointer to an array containing the x, y, z components of the field
-         *         (or a null pointer outside the sensor)
-         */
-        template <typename T> std::vector<double> getElectricFieldRaw(T) const;
 
         /**
          * @brief Set the electric field in a single pixel in the detector using a grid
@@ -183,15 +176,6 @@ namespace allpix {
         Detector(std::string name, ROOT::Math::XYZPoint position, ROOT::Math::EulerAngles orientation);
 
         /**
-         * @brief Get the electric field at a position
-         * @param x X-coordinate
-         * @param y Y-coordinate
-         * @param z Z-coordinate
-         * @return Pointer to the electric field (or a null pointer if outside of the detector)
-         */
-        std::vector<double> get_electric_field_raw(double x, double y, double z) const;
-
-        /**
          * @brief Set the detector model (used by the \ref GeometryManager for lazy loading)
          * @param model Detector model to attach
          */
@@ -219,10 +203,6 @@ namespace allpix {
 
         std::map<std::type_index, std::map<std::string, std::shared_ptr<void>>> external_objects_;
     };
-
-    template <typename T> std::vector<double> Detector::getElectricFieldRaw(T pos) const {
-        return get_electric_field_raw(pos.x(), pos.y(), pos.z());
-    }
 
     /**
      * If the returned object is not a null pointer it is guaranteed to be of the correct type

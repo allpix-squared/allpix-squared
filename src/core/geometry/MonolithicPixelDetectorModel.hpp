@@ -23,9 +23,10 @@ namespace allpix {
 
     /**
      * @ingroup DetectorModels
-     * @brief Model of a monolithic pixel detector. This a model where the sensor is directly connected to the chip.
+     * @brief Model of a monolithic pixel detector. This a model where sensor and readout electronics are placed within the
+     * same silicon wafer.
      *
-     * This model is basically already fully implemented in the \ref DetectorModel base class.
+     * This model is already fully implemented in the \ref DetectorModel base class.
      */
     class MonolithicPixelDetectorModel : public DetectorModel {
     public:

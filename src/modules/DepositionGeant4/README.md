@@ -4,28 +4,32 @@
 **Output**: DepositedCharge, MCParticle  
 
 #### Description
-Module that creates the deposits in the sensitive devices, wrapper around the Geant4 logic. Depends on a geometry construction in the GeometryBuilderGeant4 module. Initializes the physical processes to simulate and create a particle source that will generate particles in every event. This particle source can be called with various parameters as seen below, in order to set the particle type and the beam position, energy, energy spread, width and divergence.
+Module which deposits charge carriers in the active volume of all detectors. It acts as wrapper around the Geant4 logic and depends on the global geometry constructed by the GeometryBuilderGeant4 module. It initializes the physical processes to simulate a particle source that will in every event generate a particle beam with certain parameters as seen below.
 
-The particle type can be set via a string (particle_type) or by the regarding PDG code (particle_code). Refer to [this](http://geant4.cern.ch/G4UsersDocuments/UsersGuides/ForApplicationDeveloper/html/TrackingAndPhysics/particle.html) page for information about the available types of particles and [this](http://pdg.lbl.gov/2002/montecarlorpp.pdf) pdf for a list of the particles and PDG codes.
+The particle type can be set via a string (particle_type) or by the regarding PDG code (particle_code). Refer to [the Geant4 webpage](http://geant4.cern.ch/G4UsersDocuments/UsersGuides/ForApplicationDeveloper/html/TrackingAndPhysics/particle.html) for information about the available types of particles and [this pdf](http://pdg.lbl.gov/2002/montecarlorpp.pdf) for a list of the particles and PDG codes.
 
-For all particles passing the detectors in the geometry, the energy loss is converted into charge deposits for all steps (of customizable size) in the sensor. The information about the truth particle passage is also made available for later modules.
+For all particles passing the detectors in the geometry, the energy loss is converted into charge carrier deposited in every steps of the Geant4 simulation of the passage (of customizable size). The information about the truth particle passage is also made available.
+
+#### Dependencies
+
+This module requires an installation Geant4.
 
 #### Parameters
-* `physics_list`: Internal Geant4 list of physical processes to simulate. More information about possible physics list and recommendations for default is available [here](http://geant4.cern.ch/support/proc_mod_catalog/physics_lists/referencePL.shtml).
+* `physics_list`: Geant4-internal list of physical processes to simulate. More information about possible physics list and recommendations for default is available [on the Geant4 website](http://geant4.cern.ch/support/proc_mod_catalog/physics_lists/referencePL.shtml).
 * `charge_creation_energy` : Energy needed to create a charge deposit. Defaults to the energy needed to create an electron-hole pair in silicon (3.64 eV).
 * `max_step_length` : Maximum length of a simulation step in every sensitive device.
 * `particle_type` : Type of the Geant4 particle to use in the source (string).
 * `particle_code` : PDG code of the Geant4 particle to use in the source.
-* `beam_energy` : Mean energy of the generated particle.
+* `beam_energy` : Mean energy of the generated particles.
 * `beam_energy_spread` : Energy spread of the generated particle beam.
 * `beam_position` : Position of the particle beam/source in the world geometry.
-* `beam_size` : Standard deviation of the radius from the particle beam.
+* `beam_size` : Width of the Gaussian beam profile.
 * `beam_divergence` : Standard deviation of the particle angles in x and y from the particle beam
 * `beam_direction` : Direction of the particle as a unit vector.
 * `number_of_particles` : Number of particles to generate in a single event. Defaults to one particle.
 
 #### Usage
-A solid default configuration to use, simulating a test beam of 120 GeV pions with a divergence in x, is the following:
+A possible default configuration to use, simulating a beam of 120 GeV pions with a divergence in x, is the following:
 
 ```ini
 [DepositionGeant4]
