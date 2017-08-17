@@ -50,10 +50,10 @@ namespace allpix {
 
         /// @{
         /**
-         * @brief Use default move behaviour
+         * @brief Disallow move because of atomic boolean
          */
-        GeometryManager(GeometryManager&&) noexcept = default;
-        GeometryManager& operator=(GeometryManager&&) noexcept = default;
+        GeometryManager(GeometryManager&&) = delete;
+        GeometryManager& operator=(GeometryManager&&) = delete;
         /// @}
 
         /**
