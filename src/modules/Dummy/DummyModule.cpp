@@ -17,8 +17,6 @@ DummyModule::DummyModule(Configuration config, Messenger* messenger, GeometryMan
     : Module(config), geo_manager_(geo_manager), config_(std::move(config)), messenger_(messenger) {
 
     // ... Implement ... (Typically bounds the required messages and optionally sets configuration defaults)
-    LOG(TRACE) << "Initializing module " << getUniqueName();
-
     // Input required by this module
     messenger_->bindMulti(this, &DummyModule::messages_, MsgFlags::REQUIRED);
 }
