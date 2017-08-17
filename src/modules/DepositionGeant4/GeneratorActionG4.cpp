@@ -30,12 +30,37 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     auto single_source = particle_source_->GetCurrentSource();
 
     // Find Geant4 particle
-    G4ParticleDefinition* particle =
-        G4ParticleTable::GetParticleTable()->FindParticle(config.get<std::string>("particle_type"));
-    if(particle == nullptr) {
-        // FIXME more information about available particle
-        throw InvalidValueError(config, "particle_type", "particle type does not exist");
+    auto pdg_table = G4ParticleTable::GetParticleTable();
+    auto particle_type = config.get<std::string>("particle_type", "");
+    auto particle_code = config.get<int>("particle_code", 0);
+    G4ParticleDefinition* particle = nullptr;
+
+    if(!particle_type.empty() && particle_code) {
+        if(pdg_table->FindParticle(particle_type) == pdg_table->FindParticle(particle_code)) {
+            LOG(WARNING) << "particle_type and particle_code given. Continuing because they match.";
+            particle = pdg_table->FindParticle(particle_code);
+            if(particle == nullptr) {
+                throw InvalidValueError(config, "particle_code", "particle code does not exist.");
+            }
+        } else {
+            throw InvalidValueError(
+                config, "particle_type", "Given particle_type does not match particle_code. Please remove one of them.");
+        }
+    } else if(particle_type.empty() && !particle_code) {
+        throw InvalidValueError(config, "particle_code", "Please set particle_code or particle_type.");
+    } else if(particle_code) {
+        particle = pdg_table->FindParticle(particle_code);
+        if(particle == nullptr) {
+            throw InvalidValueError(config, "particle_code", "particle code does not exist.");
+        }
+    } else {
+        particle = pdg_table->FindParticle(particle_type);
+        if(particle == nullptr) {
+            throw InvalidValueError(config, "particle_type", "particle type does not exist.");
+        }
     }
+
+    LOG(DEBUG) << "Using particle " << particle->GetParticleName() << " (ID " << particle->GetPDGEncoding() << ").";
 
     // Set global parameters of the source
     // FIXME keep number of particles always at one?
