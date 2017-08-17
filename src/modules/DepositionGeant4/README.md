@@ -1,6 +1,6 @@
 ## DepositionGeant4
-**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>)
-**Status**: Functional
+**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>)  
+**Status**: Functional  
 **Output**: DepositedCharge, MCParticle
 
 #### Description
