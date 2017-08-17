@@ -113,7 +113,7 @@ bool ThreadPool::execute_all() {
 /**
  * If an exception is thrown by a module, the first exception is saved to propagate in the main thread
  */
-void ThreadPool::worker(std::function<void()> init_function) {
+void ThreadPool::worker(const std::function<void()>& init_function) {
     // Initialize the worker
     init_function();
 

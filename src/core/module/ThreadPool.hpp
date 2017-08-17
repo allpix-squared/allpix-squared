@@ -148,7 +148,7 @@ namespace allpix {
          * @brief Constantly running internal function each thread uses to acquire work items from the queue.
          * @param init_function Function to initialize the relevant thread_local variables
          */
-        void worker(std::function<void()> init_function);
+        void worker(const std::function<void()>& init_function);
 
         /**
          * @brief Invalidate all queues and joins all running threads when the pool is destroyed.
