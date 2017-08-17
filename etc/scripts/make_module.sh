@@ -67,17 +67,32 @@ if [ "$type" == 2 ]; then
   if [ "$platform" == "Darwin" ]; then opt="-i \"\""; fi
   
   # Prepare sed commands to change to per detector module    
+  # Change module type in CMakeLists
   command="sed $opt 's/_UNIQUE_/_DETECTOR_/g' $MODDIR/$MODNAME/CMakeLists.txt"
   eval $command
-  command="sed ${opt} -e 's/ unique / detector-specific /g' \
+  # Change header file
+  command="sed ${opt} \
+      -e 's/ unique / detector-specific /g' \
       -e 's/param geo_manager.*/param detector Pointer to the detector for this module instance/g' \
       -e 's/GeometryManager\* geo\_manager/std::shared\_ptr\<Detector\> detector/g' \
       -e 's/GeometryManager/DetectorModel/g' \
-         $MODDIR/$MODNAME/${MODNAME}Module.hpp"
+      -e 's/std::vector<std::shared_ptr<PixelHitMessage>> messages_/std::shared_ptr<PixelHitMessage> message_/g' \
+      $MODDIR/$MODNAME/${MODNAME}Module.hpp"
   eval $command
-  command="sed ${opt} -e 's/GeometryManager\*/std::shared\_ptr\<Detector\> detector/g' \
+  # Change implementation file
+  command="sed ${opt} \
+      -e 's/GeometryManager\* geo_manager/std::shared\_ptr\<Detector\> detector/g' \
       -e 's/Module(config)/Module\(config\, detector\)/g' \
-         $MODDIR/$MODNAME/${MODNAME}Module.cpp" 
+      -e 's/bindMulti/bindSingle/g' \
+      -e 's/messages_/message_/g' \
+      -e '/for(auto/d' \
+      -e 's/message->get/message_->get/g' \
+      -e 's/geo_manager_(geo_manager)/detector_(detector)/g' \
+      -e '/geo_manager_/d' \
+      -e 's/detector->get/detector_->get/g' \
+      -e '/    }/d' \
+      -e '/Loop/d' \
+      $MODDIR/$MODNAME/${MODNAME}Module.cpp" 
   eval $command
 fi
 
