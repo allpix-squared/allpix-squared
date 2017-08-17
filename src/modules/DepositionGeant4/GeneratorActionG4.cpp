@@ -46,16 +46,16 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
 
     // Set position parameters
     single_source->GetPosDist()->SetPosDisType("Beam");
-    single_source->GetPosDist()->SetBeamSigmaInR(config.get<double>("particle_radius_sigma", 0));
-    single_source->GetPosDist()->SetCentreCoords(config.get<G4ThreeVector>("particle_position"));
+    single_source->GetPosDist()->SetBeamSigmaInR(config.get<double>("beam_size", 0));
+    single_source->GetPosDist()->SetCentreCoords(config.get<G4ThreeVector>("beam_position"));
 
     // Set angle distribution parameters
     single_source->GetAngDist()->SetAngDistType("beam2d");
     single_source->GetAngDist()->DefineAngRefAxes("angref1", G4ThreeVector(-1., 0, 0));
-    G4TwoVector divergence = config.get<G4TwoVector>("particle_divergence_xy", G4TwoVector(0., 0.));
+    G4TwoVector divergence = config.get<G4TwoVector>("beam_divergence", G4TwoVector(0., 0.));
     single_source->GetAngDist()->SetBeamSigmaInAngX(divergence.x());
     single_source->GetAngDist()->SetBeamSigmaInAngY(divergence.y());
-    G4ThreeVector direction = config.get<G4ThreeVector>("particle_direction");
+    G4ThreeVector direction = config.get<G4ThreeVector>("beam_direction");
     if(fabs(direction.mag() - 1.0) > std::numeric_limits<double>::epsilon()) {
         LOG(WARNING) << "Momentum direction is not a unit vector: magnitude is ignored";
     }
@@ -64,7 +64,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     // Set energy parameters
     single_source->GetEneDist()->SetEnergyDisType("Gauss");
     single_source->GetEneDist()->SetMonoEnergy(config.get<double>("particle_energy"));
-    single_source->GetEneDist()->SetBeamSigmaInE(config.get<double>("particle_energy_spread", 0.));
+    single_source->GetEneDist()->SetBeamSigmaInE(config.get<double>("energy_spread", 0.));
 }
 
 /**
