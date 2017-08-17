@@ -111,7 +111,7 @@ void CorryvreckanOutputModule::finalize() {
 
         // Clean up the tree and remove object pointer
         delete outputTrees_[objectID];
-        treePixels_[objectID] = 0;
+        treePixels_[objectID] = nullptr;
     }
 
     outputFile_->Close();
