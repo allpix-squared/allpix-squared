@@ -6,7 +6,7 @@
 #### Description
 Module which deposits charge carriers in the active volume of all detectors. It acts as wrapper around the Geant4 logic and depends on the global geometry constructed by the GeometryBuilderGeant4 module. It initializes the physical processes to simulate a particle source that will in every event generate a particle beam with certain parameters as explained below.
 
-The particle type can be set via a string (particle_type) or by the respective PDG code (particle_code). Refer to [the Geant4 webpage](http://geant4.cern.ch/G4UsersDocuments/UsersGuides/ForApplicationDeveloper/html/TrackingAndPhysics/particle.html) for information about the available types of particles and [this pdf](http://pdg.lbl.gov/2002/montecarlorpp.pdf) for a list of the particles and PDG codes.
+The particle type can be set via a string (particle_type) or by the respective PDG code (particle_code). Refer to the Geant4 webpage [@g4particles] for information about the available types of particles and the PDG particle code definition [@pdg] for a list of the available particles and PDG codes.
 
 For all particles passing the detectors in the geometry, the energy loss is converted into charge carriers deposited in every steps of the Geant4 simulation of the passage (of customizable size). The information about the truth particle passage is also made available.
 
@@ -44,3 +44,4 @@ number_of_particles = 1
 
 [@g4physicslists]: http://geant4.cern.ch/support/proc_mod_catalog/physics_lists/referencePL.shtml
 [@g4particles]: http://geant4.cern.ch/G4UsersDocuments/UsersGuides/ForApplicationDeveloper/html/TrackingAndPhysics/particle.html
+[@pdg]: http://hepdata.cedar.ac.uk/lbl/2016/reviews/rpp2016-rev-monte-carlo-numbering.pdf

@@ -4,7 +4,7 @@
 **Input**: PixelHit
 
 #### Description
-Writes pixel hit data to LCIO file, compatible with the [EUTelescope analysis framework](http://eutelescope.web.cern.ch/).
+Writes pixel hit data to LCIO file, compatible with the EUTelescope analysis framework [@eutelescope].
 
 #### Parameters
 * `file_name`: name of the LCIO file to write, relative to the output directory of the framework. The extension **.slcio** should be added. Defaults to `output.slcio`.
@@ -17,3 +17,5 @@ Writes pixel hit data to LCIO file, compatible with the [EUTelescope analysis fr
 [LCIOWriter]
 file_name = "run000123-converter.slcio"
 ```
+
+[@eutelescope]: http://eutelescope.web.cern.ch/
