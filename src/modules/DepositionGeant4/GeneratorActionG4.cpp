@@ -63,8 +63,8 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
 
     // Set energy parameters
     single_source->GetEneDist()->SetEnergyDisType("Gauss");
-    single_source->GetEneDist()->SetMonoEnergy(config.get<double>("particle_energy"));
-    single_source->GetEneDist()->SetBeamSigmaInE(config.get<double>("energy_spread", 0.));
+    single_source->GetEneDist()->SetMonoEnergy(config.get<double>("beam_energy"));
+    single_source->GetEneDist()->SetBeamSigmaInE(config.get<double>("beam_energy_spread", 0.));
 }
 
 /**

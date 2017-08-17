@@ -13,8 +13,8 @@ For all particles passing the detectors in the geometry, the energy loss is conv
 * `charge_creation_energy` : Energy needed to create a charge deposit. Defaults to the energy needed to create an electron-hole pair in silicon (3.64 eV).
 * `max_step_length` : Maximum length of a simulation step in every sensitive device.
 * `particle_type` : Type of the Geant4 particle to use in the source. Refer to [this](http://geant4.cern.ch/G4UsersDocuments/UsersGuides/ForApplicationDeveloper/html/TrackingAndPhysics/particle.html) page for information about the available types of particles.
-* `particle_energy` : Mean energy of the generated particle.
-* `energy_spread` : Energy spread of the generated particle beam.
+* `beam_energy` : Mean energy of the generated particle.
+* `beam_energy_spread` : Energy spread of the generated particle beam.
 * `beam_position` : Position of the particle beam/source in the world geometry.
 * `beam_size` : Standard deviation of the radius from the particle beam.
 * `beam_divergence` : Standard deviation of the particle angles in x and y from the particle beam
@@ -28,7 +28,7 @@ A solid default configuration to use, simulating a test beam of 120 GeV pions wi
 [DepositionGeant4]
 physics_list = QGSP_BERT
 particle_type = "pi+"
-particle_energy = 120GeV
+beam_energy = 120GeV
 beam_position = 0 0 -1mm
 beam_direction = 0 0 1
 beam_divergence = 3mrad 0mrad
