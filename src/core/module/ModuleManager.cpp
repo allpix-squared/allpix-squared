@@ -735,7 +735,7 @@ void ModuleManager::finalize() {
                 << std::round((100 * slowest_time) / std::max(1.0l, total_time_)) << "% of time in slowest instantiation "
                 << slowest_module;
     for(auto& module_time : module_execution_time_) {
-        LOG(DEBUG) << " Module " << module_time.first->getUniqueName() << " took " << module_time.second << " seconds";
+        LOG(INFO) << " Module " << module_time.first->getUniqueName() << " took " << module_time.second << " seconds";
     }
     long double processing_time = 0;
     if(global_config_.get<unsigned int>("number_of_events") > 0) {
