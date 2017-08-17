@@ -35,7 +35,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     auto particle_code = config.get<int>("particle_code", 0);
     G4ParticleDefinition* particle = nullptr;
 
-    if(!particle_type.empty() && particle_code) {
+    if(!particle_type.empty() && particle_code != 0) {
         if(pdg_table->FindParticle(particle_type) == pdg_table->FindParticle(particle_code)) {
             LOG(WARNING) << "particle_type and particle_code given. Continuing because they match.";
             particle = pdg_table->FindParticle(particle_code);
@@ -46,9 +46,9 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             throw InvalidValueError(
                 config, "particle_type", "Given particle_type does not match particle_code. Please remove one of them.");
         }
-    } else if(particle_type.empty() && !particle_code) {
+    } else if(particle_type.empty() && particle_code == 0) {
         throw InvalidValueError(config, "particle_code", "Please set particle_code or particle_type.");
-    } else if(particle_code) {
+    } else if(particle_code != 0) {
         particle = pdg_table->FindParticle(particle_code);
         if(particle == nullptr) {
             throw InvalidValueError(config, "particle_code", "particle code does not exist.");
