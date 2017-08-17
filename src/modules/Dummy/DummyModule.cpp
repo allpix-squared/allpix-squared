@@ -20,7 +20,7 @@ DummyModule::DummyModule(Configuration config, Messenger* messenger, GeometryMan
     LOG(TRACE) << "Initializing module " << getUniqueName();
 
     // Input required by this module
-    messenger_->bindMulti(this, &DummyModule::pixel_messages_, MsgFlags::REQUIRED);
+    messenger_->bindMulti(this, &DummyModule::messages_, MsgFlags::REQUIRED);
 }
 
 void DummyModule::init() {
@@ -43,7 +43,7 @@ void DummyModule::run(unsigned int) {
     for(unsigned int messageNumber = 0; messageNumber < nMessages; messageNumber++) {
 
         // Get the message
-        std::shared_ptr<PixelHitMessage> message = pixel_messages_[messageNumber];
+        std::shared_ptr<PixelHitMessage> message = messages_[messageNumber];
         std::string detectorName = message->getDetector()->getName();
         LOG(DEBUG) << "Picked up " << message->getData().size() << " messages from detector " << detectorName << std::endl;
     }

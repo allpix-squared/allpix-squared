@@ -49,6 +49,6 @@ namespace allpix {
         GeometryManager* geometryManager_;
         Configuration config_;
         Messenger* messenger_;
-        std::vector<std::shared_ptr<PixelHitMessage>> pixel_messages_;
+        std::vector<std::shared_ptr<PixelHitMessage>> messages_;
     };
 } // namespace allpix
