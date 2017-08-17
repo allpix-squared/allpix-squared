@@ -20,7 +20,7 @@ In addition, a 3D GIF animation for the drift of all individual sets of charges 
 It should be noted that generating the animations is very time-consuming and should be switched off even when investigating drift behavior.
 
 #### Parameters
-* `temperature` : Temperature in the sensitive device, used to estimate the diffusion constant and therefore the strength of the diffusion.
+* `temperature` : Temperature of the sensitive device, used to estimate the diffusion constant and therefore the strength of the diffusion. Defaults to room temperature (293.15K).
 * `charge_per_step` : Maximum number of charges to propagate together. Divides the total deposited charge at a specific point in sets of this number of charges and a set with the remaining amount of charges. A value of 10 charges per step is used if this value is not specified.
 * `spatial_precision` : Spatial precision to aim for. The timestep of the Runge-Kutta propagation is adjusted to reach this spatial precision after calculating the error from the fifth-order error method. Defaults to 0.1nm.
 * `timestep_start` : Timestep to initialize the Runge-Kutta integration with. Better initialization of this parameter reduces the time to optimize the timestep to the *spatial_precision* parameter. Default value is 0.01ns.
