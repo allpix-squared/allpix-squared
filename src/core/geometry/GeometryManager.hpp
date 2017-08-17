@@ -25,7 +25,9 @@ namespace allpix {
      * @brief Manager responsible for the global geometry
      *
      * The framework defines the geometry as a set of independent instances of a \ref Detector "detector". Each independent
-     * detector has a \ref DetectorModel "detector model".
+     * detector has a \ref DetectorModel "detector model". Detector and models can be added before the manager closes. The
+     * manager closes as soon as \ref GeometryManager::getDetectors() or a similar method is called. Afterwards the geometry
+     * is constant and cannot be changed anymore.
      */
     class GeometryManager {
     public:
@@ -182,7 +184,7 @@ namespace allpix {
          * @brief Close the geometry after which changes to the detector geometry cannot be made anymore
          */
         void close_geometry();
-        bool closed_;
+        std::atomic_bool closed_;
 
         std::vector<ROOT::Math::XYZPoint> points_;
 
