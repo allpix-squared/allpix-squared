@@ -51,7 +51,7 @@ IF(LATEX_COMPILER)
                     ${CMAKE_BINARY_DIR}/usermanual/modules/${subdir}.tex
                     SOURCES              ${module_dir}/${subdir}/README.md
                     PRODUCT_DIRECTORY    usermanual/modules/
-                    PANDOC_DIRECTIVES    -t latex --listings
+                    PANDOC_DIRECTIVES    -t latex --listings --biblatex
                     NO_EXPORT_PRODUCT
                 )
                 SET(module_tex_files ${module_tex_files} ${CMAKE_BINARY_DIR}/usermanual/modules/${subdir}.tex)
