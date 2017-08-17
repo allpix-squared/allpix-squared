@@ -6,7 +6,7 @@ echo -e "\nPreparing code basis for a new module:\n"
 read -p "Name of the module? " MODNAME
 
 # Ask for module type:
-echo "Type of the module?"
+echo -e "Type of the module?\n"
 type=0
 select yn in "unique" "detector"; do
     case $yn in
@@ -14,6 +14,19 @@ select yn in "unique" "detector"; do
         detector ) type=2; break;;
     esac
 done
+
+# Ask for the message type to run over
+echo ""
+read -p "Input message type? " MESSAGETYPE
+
+# Check that message type exists
+OBJDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )"
+OBJDIR=$OBJDIR/../../src/objects
+if [ ! -e ${OBJDIR}/${MESSAGETYPE}.hpp ]
+then
+  echo -e "\nMessage type ${MESSAGETYPE} does not exist. \nPlease see the message types in ${OBJDIR}\n" 
+  exit
+fi
 
 echo "Creating directory and files..."
 
@@ -77,6 +90,7 @@ if [ "$type" == 2 ]; then
       -e 's/GeometryManager\* geo\_manager/std::shared\_ptr\<Detector\> detector/g' \
       -e 's/GeometryManager/DetectorModel/g' \
       -e 's/std::vector<std::shared_ptr<PixelHitMessage>> messages_/std::shared_ptr<PixelHitMessage> message_/g' \
+      -e 's/PixelHit/${MESSAGETYPE}/g' \
       $MODDIR/$MODNAME/${MODNAME}Module.hpp"
   eval $command
   # Change implementation file
