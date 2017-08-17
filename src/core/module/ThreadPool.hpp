@@ -91,9 +91,12 @@ namespace allpix {
          * @brief Construct thread pool with provided number of threads
          * @param num_thread Number of threads in the pool
          * @param modules List of module instantiations to create a task queue for
+         * @param worker_init_function Function run by all the workers to initialize
          * @warning Only module instantiations that are registered in this constructor can spawn tasks
          */
-        explicit ThreadPool(unsigned int num_threads, std::vector<Module*> modules);
+        explicit ThreadPool(unsigned int num_threads,
+                            std::vector<Module*> modules,
+                            std::function<void()> worker_init_function);
 
         /// @{
         /**
@@ -142,11 +145,12 @@ namespace allpix {
 
         /**
          * @brief Constantly running internal function each thread uses to acquire work items from the queue.
+         * @param init_function Function to initialize the relevant thread_local variables
          */
-        void worker();
+        void worker(std::function<void()> init_function);
 
         /**
-         * @brief Invalidate all queues and joins all running threads when the pool is destroyed
+         * @brief Invalidate all queues and joins all running threads when the pool is destroyed.
          */
         void destroy();
 

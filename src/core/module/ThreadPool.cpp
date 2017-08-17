@@ -13,11 +13,11 @@ using namespace allpix;
 /**
  * The threads are created in an exception-safe way and all will be destroyed when creating them fails
  */
-ThreadPool::ThreadPool(unsigned int num_threads, std::vector<Module*> modules) {
+ThreadPool::ThreadPool(unsigned int num_threads, std::vector<Module*> modules, std::function<void()> worker_init_function) {
     // Create threads
     try {
         for(unsigned int i = 0u; i < num_threads; ++i) {
-            threads_.emplace_back(&ThreadPool::worker, this);
+            threads_.emplace_back(&ThreadPool::worker, this, worker_init_function);
         }
     } catch(...) {
         destroy();
@@ -85,10 +85,9 @@ bool ThreadPool::execute_all() {
     return all_queue_.isValid();
 }
 
-void ThreadPool::worker() {
-    // FIXME: use proper initialization
-    // ALERT : temporarily set default log level to INFO
-    Log::setReportingLevel(LogLevel::INFO);
+void ThreadPool::worker(std::function<void()> init_function) {
+    // Initialize the worker
+    init_function();
 
     // Safe lambda to increase the atomic run count
     auto increase_run_cnt_func = [this]() { ++run_cnt_; };

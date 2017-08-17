@@ -552,7 +552,12 @@ void ModuleManager::run() {
     for(auto& module : modules_) {
         module_list.emplace_back(module.get());
     }
-    std::shared_ptr<ThreadPool> thread_pool = std::make_shared<ThreadPool>(threads_num, module_list);
+    auto init_function = [ log_level = Log::getReportingLevel(), log_format = Log::getFormat() ]() {
+        // Initialize the threads to the same log level and format as the master setting
+        Log::setReportingLevel(log_level);
+        Log::setFormat(log_format);
+    };
+    std::shared_ptr<ThreadPool> thread_pool = std::make_shared<ThreadPool>(threads_num, module_list, init_function);
     for(auto& module : modules_) {
         module->set_thread_pool(thread_pool);
     }
