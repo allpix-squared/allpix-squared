@@ -196,6 +196,12 @@ namespace allpix {
         TDirectory* getROOTDirectory() const;
 
         /**
+         * @brief Returns if parallelization of this module is enabled
+         * @return True if parallelization is enabled, false otherwise (the default)
+         */
+        bool canParallelize();
+
+        /**
          * @brief Initialize the module before the event sequence
          *
          * Does nothing if not overloaded.
@@ -218,6 +224,12 @@ namespace allpix {
          * Does nothing if not overloaded.
          */
         virtual void finalize() {}
+
+    protected:
+        /**
+         * @brief Enable parallelization for this module
+         */
+        void enable_parallelization();
 
     private:
         /**
@@ -273,6 +285,8 @@ namespace allpix {
         std::mt19937_64 random_generator_;
 
         std::shared_ptr<Detector> detector_;
+
+        bool parallelize_{false};
     };
 
 } // namespace allpix

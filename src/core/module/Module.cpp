@@ -152,6 +152,13 @@ void Module::set_ROOT_directory(TDirectory* directory) {
     directory_ = directory;
 }
 
+bool Module::canParallelize() {
+    return parallelize_;
+}
+void Module::enable_parallelization() {
+    parallelize_ = true;
+}
+
 Configuration& Module::get_configuration() {
     return config_;
 }

@@ -640,7 +640,7 @@ void ModuleManager::run() {
                 module_execution_time_[module] += static_cast<std::chrono::duration<long double>>(end - start).count();
             };
 
-            if(module->get_identifier().getName() == "GenericPropagation") {
+            if(module->canParallelize()) {
                 // Submit the module function
                 thread_pool->submit_module_function(execute_module);
             } else {
