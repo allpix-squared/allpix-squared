@@ -541,12 +541,22 @@ void ModuleManager::init() {
  * initialization
  */
 void ModuleManager::run() {
-    // Creates the thread pool
-    auto threads_num = global_config_.get<unsigned int>("workers", std::max(std::thread::hardware_concurrency(), 1u));
-    if(threads_num == 0) {
-        throw InvalidValueError(global_config_, "workers", "number of workers should be strictly more than zero");
+    global_config_.setDefault("experimental_multithreading", false);
+    unsigned int threads_num;
+
+    if(global_config_.get<bool>("experimental_multithreading")) {
+        // Try to fetch a suitable number of workers if multithreading is enabled
+        threads_num = global_config_.get<unsigned int>("workers", std::max(std::thread::hardware_concurrency(), 1u));
+        if(threads_num == 0) {
+            throw InvalidValueError(global_config_, "workers", "number of workers should be strictly more than zero");
+        }
+        --threads_num;
+    } else {
+        // Default to no additional thread without multithreading
+        threads_num = 0;
     }
-    --threads_num;
+
+    // Creates the thread pool
     LOG(DEBUG) << "Initializing thread pool with " << threads_num << " additional thread(s)";
     std::vector<Module*> module_list;
     for(auto& module : modules_) {
@@ -598,7 +608,9 @@ void ModuleManager::run() {
                 continue;
             }
 
-            auto execute_module = [ module = module.get(), event_num = i + 1, this, number_of_events ]() {
+            auto multithreading_enabled = global_config_.get<bool>("experimental_multithreading");
+            auto execute_module =
+                [ module = module.get(), event_num = i + 1, this, number_of_events, multithreading_enabled ]() {
                 LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << event_num << " of " << number_of_events << " ["
                                                   << module->get_identifier().getUniqueName() << "]";
                 // Get current time
@@ -611,8 +623,10 @@ void ModuleManager::run() {
                 // Set module specific settings
                 auto old_settings = set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
                 // Change to our ROOT directory
-                // ALERT: THIS SHOULD BE REMOVED AS IT IS NOT THREAD SAFE
-                // module->getROOTDirectory()->cd();
+                if(multithreading_enabled) {
+                    // ALERT: This can possibly break current modules
+                    module->getROOTDirectory()->cd();
+                }
                 // Run module
                 module->run(event_num);
                 // Resetting delegates

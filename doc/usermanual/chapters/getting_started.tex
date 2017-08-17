@@ -250,6 +250,8 @@ Can be used to reproduce an earlier simulation run.
 See Section~\ref{sec:module_instantiation} for details.
 \item \textbf{\texttt{model\_path}}: Additional files or directories from which detector models should be read besides the standard search locations.
 Refer to Section~\ref{sec:detector_models} for more information.
+\item \textbf{\texttt{experimental_multithreading}}: Enable EXPERIMENTAL multithreading for the framework. This can largely speed up simulations of multiple detectors. Currently multithreading is still in beta, use at your own risk!
+\item \textbf{\texttt{workers}}: Specify the amount of workers to use in total, should be strictly larger than zero. Only used if \texttt{experimental_multithreading} is set to true. Defaults to the number of native threads available on your system if this can be determined. 
 \end{itemize}
 
 \subsection{Setting up the Simulation Chain}
