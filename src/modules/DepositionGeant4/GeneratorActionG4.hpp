@@ -13,6 +13,7 @@
 #include <G4ParticleDefinition.hh>
 #include <G4SDManager.hh>
 #include <G4ThreeVector.hh>
+#include <G4TwoVector.hh>
 #include <G4VUserPrimaryGeneratorAction.hh>
 
 #include "core/config/Configuration.hpp"
