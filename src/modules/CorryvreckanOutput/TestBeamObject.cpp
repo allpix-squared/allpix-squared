@@ -2,4 +2,4 @@
 #include "TestBeamObject.h"
 #include "Pixel.h"
 
-ClassImp(Corryvreckan::TestBeamObject)
+ClassImp(corryvreckan::TestBeamObject)

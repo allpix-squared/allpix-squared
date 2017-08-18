@@ -69,6 +69,6 @@ namespace allpix {
         std::unique_ptr<TFile> outputFile_;                      // Output file
         long long int time_;                                     // Event time being written
         std::map<std::string, TTree*> outputTrees_;              // Output trees
-        std::map<std::string, Corryvreckan::Pixel*> treePixels_; // Objects attached to trees for writing
+        std::map<std::string, corryvreckan::Pixel*> treePixels_; // Objects attached to trees for writing
     };
 } // namespace allpix

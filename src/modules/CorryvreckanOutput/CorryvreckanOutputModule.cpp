@@ -46,7 +46,7 @@ void CorryvreckanOutputModule::init() {
         outputTrees_[objectID]->Branch("time", &time_);
 
         // Map the pixel object to the tree
-        treePixels_[objectID] = new Corryvreckan::Pixel();
+        treePixels_[objectID] = new corryvreckan::Pixel();
         outputTrees_[objectID]->Branch("pixels", &treePixels_[objectID]);
     }
 
@@ -74,7 +74,7 @@ void CorryvreckanOutputModule::run(unsigned int) {
             unsigned int pixelX = allpix_pixel.getPixel().getIndex().X();
             unsigned int pixelY = allpix_pixel.getPixel().getIndex().Y();
             unsigned int adc = allpix_pixel.getPixel().getIndex().Y();
-            Corryvreckan::Pixel* outputPixel = new Corryvreckan::Pixel(detectorID, int(pixelX), int(pixelY), int(adc));
+            corryvreckan::Pixel* outputPixel = new corryvreckan::Pixel(detectorID, int(pixelX), int(pixelY), int(adc));
 
             // Map the pixel to the output tree and write it
             treePixels_[objectID] = outputPixel;
