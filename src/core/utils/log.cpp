@@ -168,7 +168,7 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
     }
 
     // Add thread id only in long format
-    if(true || get_format() == LogFormat::LONG) {
+    if(get_format() == LogFormat::LONG) {
         os << "\x1B[1m"; // BOLD
         os << "=" << std::this_thread::get_id() << "= ";
         os << "\x1B[0m"; // RESET
