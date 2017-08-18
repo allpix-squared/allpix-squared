@@ -28,6 +28,7 @@ namespace allpix {
          * @brief Construct a set of charges in a sensor
          * @param local_position Local position of the set of charges in the sensor
          * @param global_position Global position of the set of charges in the sensor
+         * @param type Type of the carrier
          * @param charge Total charge at position
          * @param event_time Total time after event start
          */

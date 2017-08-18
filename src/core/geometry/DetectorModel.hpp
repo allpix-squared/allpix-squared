@@ -400,6 +400,8 @@ namespace allpix {
          * @param offset Offset of the support in the x,y-plane
          * @param material Material of the support
          * @param location Location of the support (either 'sensor' or 'chip')
+         * @param hole_size Size of the optional hole in the support
+         * @param hole_offset Offset of the hole from its default position
          */
         // FIXME: Location (and material) should probably be an enum instead
         void addSupportLayer(const ROOT::Math::XYVector& size,
