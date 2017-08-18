@@ -100,10 +100,6 @@ void CorryvreckanOutputModule::finalize() {
         std::string detectorID = detector->getName();
         std::string objectID = detectorID + "_pixels";
 
-        // If there is no output tree then do nothing
-        if(!outputTrees_[objectID])
-            continue;
-
         // Move to the write output file
         outputFile_->cd();
         outputFile_->cd("pixels");
