@@ -310,6 +310,19 @@ The instantiation logic only allows a single instance for every unique name.
 If there are multiple instantiations with the same unique name, the instantiation with the highest priority is kept.
 If multiple instantiations with the same unique name and the same priority exist, an exception is raised.
 
+\subsubsection{Parallel execution of modules}
+\label{sec:multithreading}
+The framework has experimental support for running several modules in parallel. This feature is disabled by default, it has to supported by both the module and it has to enabled by the user (see Section \ref{sec:framework_parameters}.  A significant speed up can be achieved if the simulation contains multiple detectors or simulates the same module using different parameters.
+
+The framework currently only allows to parallelize the execution phase of the same type of module if these would otherwise be executed directly after each other in the linear order. Thus as long as the name of the module remains the same, while going through the execution order of all the \texttt{run()} methods, all instances are added to a work queue. The instances are then distributed to a set of worker threads as specified in the configuration which will execute the individual modules. The module manager will wait for all the jobs to finish, before it will continue to handle the next type of module.
+
+To enable parallelization for a module, the following line of code has to be added to the constructor of a module:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+// Enable parallelization of this module if multithreading is enabled
+enable_parallelization();
+\end{minted}
+By adding this, the module promises that it will work correctly if the run-method is executed multiple times in parallel in separate instantiations. This means in particular that the module will safely handle access to shared (for example static) variables and it will properly bind ROOT histograms to their directory before the \texttt{run()}-method. Access to constant operations in the GeometryManager, Detector and DetectorModel is safe between various threads. Also sending and receiving messages is guarenteed to be thread-safe.
+
 \subsection{Geometry and Detectors}
 \label{sec:models_geometry}
 Simulations are frequently performed for a set of different detectors (such as a beam telescope and a device under test).
