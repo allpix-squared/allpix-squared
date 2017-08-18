@@ -608,9 +608,7 @@ void ModuleManager::run() {
                 continue;
             }
 
-            auto multithreading_enabled = global_config_.get<bool>("experimental_multithreading");
-            auto execute_module =
-                [ module = module.get(), event_num = i + 1, this, number_of_events, multithreading_enabled ]() {
+            auto execute_module = [ module = module.get(), event_num = i + 1, this, number_of_events ]() {
                 LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << event_num << " of " << number_of_events << " ["
                                                   << module->get_identifier().getUniqueName() << "]";
                 // Get current time
@@ -622,9 +620,9 @@ void ModuleManager::run() {
                 Log::setSection(section_name);
                 // Set module specific settings
                 auto old_settings = set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
-                // Change to our ROOT directory
-                if(!multithreading_enabled) {
-                    // ALERT: Removing this from multithreading can possibly break modules
+                // Change to ROOT directory is not thread safe, only do this for module without parallelization support
+                if(!module->canParallelize()) {
+                    // DEPRECATED: Switching to the directory should be removed, but can break current modules
                     module->getROOTDirectory()->cd();
                 }
                 // Run module
