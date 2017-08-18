@@ -57,8 +57,6 @@ void CorryvreckanOutputModule::init() {
 // Make instantiations of Corryvreckan pixels, and store these in the trees during run time
 void CorryvreckanOutputModule::run(unsigned int) {
 
-    LOG(TRACE) << "Running module " << getUniqueName();
-
     // Loop through all receieved messages
     for(auto& message : pixel_messages_) {
 
@@ -89,8 +87,6 @@ void CorryvreckanOutputModule::run(unsigned int) {
 // Save the output trees to file
 // Set up the output trees
 void CorryvreckanOutputModule::finalize() {
-
-    LOG(TRACE) << "Finalising module " << getUniqueName();
 
     // Loop over all detectors and store the trees
     std::vector<std::shared_ptr<Detector>> detectors = geometryManager_->getDetectors();
