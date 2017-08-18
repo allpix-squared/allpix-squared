@@ -19,7 +19,7 @@ namespace corryvreckan {
             m_timestamp = 0;
         }
         Pixel(std::string detectorID, int row, int col, int tot, long long int timestamp) {
-            m_detectorID = detectorID;
+            m_detectorID = std::move(detectorID);
             m_row = row;
             m_column = col;
             m_adc = tot;

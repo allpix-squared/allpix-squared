@@ -29,7 +29,7 @@ namespace corryvreckan {
         void timestamp(long long int time) { m_timestamp = time; }
 
         // Methods to set member variables
-        void setDetectorID(std::string detectorID) { m_detectorID = detectorID; }
+        void setDetectorID(std::string detectorID) { m_detectorID = std::move(detectorID); }
 
         // Member variables
         std::string m_detectorID;
