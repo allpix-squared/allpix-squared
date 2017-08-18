@@ -30,6 +30,8 @@
 #include "GeneratorActionG4.hpp"
 #include "SensitiveDetectorActionG4.hpp"
 
+#define G4_NUM_SEEDS 10
+
 using namespace allpix;
 
 /**
@@ -43,7 +45,7 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration config, Messenger* 
         std::make_unique<G4UserLimits>(config_.get<double>("max_step_length", std::numeric_limits<double>::max()));
 
     // Add the particle source position to the geometry
-    geo_manager_->addPoint(config_.get<ROOT::Math::XYZPoint>("particle_position"));
+    geo_manager_->addPoint(config_.get<ROOT::Math::XYZPoint>("beam_position"));
 }
 
 /**
@@ -133,9 +135,12 @@ void DepositionGeant4Module::init() {
     // Set the random seed for Geant4 generation
     // NOTE Assumes this is the only Geant4 module using random numbers
     std::string seed_command = "/random/setSeeds ";
-    seed_command += std::to_string(static_cast<uint32_t>(getRandomSeed() % UINT_MAX));
-    seed_command += " ";
-    seed_command += std::to_string(static_cast<uint32_t>(getRandomSeed() % UINT_MAX));
+    for(int i = 0; i < G4_NUM_SEEDS; ++i) {
+        seed_command += std::to_string(static_cast<uint32_t>(getRandomSeed() % INT_MAX));
+        if(i != G4_NUM_SEEDS - 1) {
+            seed_command += " ";
+        }
+    }
     UI->ApplyCommand(seed_command);
 
     // Release the output stream

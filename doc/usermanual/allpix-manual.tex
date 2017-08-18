@@ -5,7 +5,7 @@
 \documentclass[fontsize=12pt, parskip=half]{scrartcl}
 
 \usepackage[backend=biber,
-            autocite=superscript,
+            autocite=plain,
             sorting=none,
             url=false
             ]{biblatex}
@@ -61,7 +61,7 @@
 %   DOCUMENT INFORMATION
 %----------------------------------------------------------------------------------------
 \titlehead{\centering\includegraphics[width=8cm]{logo.png}}
-\title{\apsq User Manual} % Title
+\title{\apsqbold User Manual} % Title
 
 \author{Koen Wolters (\href{mailto:koen.wolters@cern.ch}{koen.wolters@cern.ch})\\
   Simon Spannagel (\href{mailto:simon.spannagel@cern.ch}{simon.spannagel@cern.ch})
@@ -111,6 +111,7 @@
 % modules
 \section{Modules}
 \label{sec:modules}
+\input{chapters/modules}
 \lstset{language=Ini}
 \includemodulesmd
 \lstset{language=}
@@ -141,8 +142,7 @@
 
 \clearpage
 \phantomsection
-\addcontentsline{toc}{section}{References}
+\addreferencesline
 \printbibliography
-
 
 \end{document}

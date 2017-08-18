@@ -15,6 +15,8 @@
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 
+#include "objects/PixelHit.hpp"
+
 namespace allpix {
     /**
      * @ingroup Modules
@@ -33,11 +35,20 @@ namespace allpix {
         DummyModule(Configuration config, Messenger* messenger, GeometryManager* geo_manager);
 
         /**
+         * @brief [Initialise this module]
+         */
+        void init() override;
+
+        /**
          * @brief [Run the function of this module]
          */
         void run(unsigned int) override;
 
     private:
+        // General module members
+        GeometryManager* geo_manager_;
         Configuration config_;
+        Messenger* messenger_;
+        std::vector<std::shared_ptr<PixelHitMessage>> messages_;
     };
 } // namespace allpix

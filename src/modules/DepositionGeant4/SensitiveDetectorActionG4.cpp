@@ -121,14 +121,12 @@ void SensitiveDetectorActionG4::dispatchDepositedChargeMessage() {
 
     // Send a new message if we have any deposits
     if(!deposits_.empty()) {
-        IFLOG(INFO) {
-            unsigned int charges = 0;
-            for(auto& ch : deposits_) {
-                charges += ch.getCharge();
-                total_deposited_charge_ += ch.getCharge();
-            }
-            LOG(INFO) << "Deposited " << charges << " charges in sensor of detector " << detector_->getName();
+        unsigned int charges = 0;
+        for(auto& ch : deposits_) {
+            charges += ch.getCharge();
+            total_deposited_charge_ += ch.getCharge();
         }
+        LOG(INFO) << "Deposited " << charges << " charges in sensor of detector " << detector_->getName();
 
         // Match deposit with mc particle if possible
         for(size_t i = 0; i < deposits_.size(); ++i) {

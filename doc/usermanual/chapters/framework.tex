@@ -1,109 +1,194 @@
 \section{The \apsq Framework}
 \label{sec:framework}
-The framework is split up in the following four main components that together form \apsq:
+This section details the technical implementation of the \apsq framework and is mostly intended to provide insight into the gearbox to potential developers and interested users.
+The framework consists of the following four main components that together form \apsq:
 \begin{enumerate}
-\item \textbf{Core}: The core contains the internal logic to initiate the modules, provide the geometry, facilitate module communication and run the event sequence. The core keeps its dependencies to a minimum (it only relies on ROOT) and remains separated from the other components as far as possible. It is the main component discussed in this section.
-\item \textbf{Modules}: A set of methods that execute a part of the simulation chain. These are build as separate libraries, loaded dynamically by the core. The available modules and their parameters are discussed in more detail in Section \ref{sec:modules}.
-\item \textbf{Objects}: Objects are the data passed around between modules using the message framework provided by the core. Modules can listen and bind to messages with objects they wish to receive. Messages are identified by the object type they are carrying, but they can also be named to allow redirecting data to specific modules facilitating more sophisticated simulations. Messages are meant to be read-only and a copy of the data should be made if a module wishes to change the data. All objects are contained into a separate library, automatically linked to every module. More information about the messaging system and the supported objects can be found in Section \ref{sec:objects_messages}.
-\item \textbf{Tools}: \apsq provides a set of header-only 'tools' that provide access to common logic shared by various modules. An example is a Eigen Runge-Kutta solver and a set of template specializations for ROOT and Geant4 configuration. More information about these can be found in Section \ref{sec:additional_tools_resources}. This set of tools is different from the set of core utilities the framework provides by itself, which are part of the core and explained in \ref{sec:logging_utilities}
+\item \textbf{Core}: The core contains the internal logic to initiate the modules, to provide the geometry, to facilitate module communication and to run the event sequence.
+The core keeps its dependencies to a minimum (it only relies on ROOT) and remains independent from the other components as far as possible.
+It is the main component discussed in this section.
+\item \textbf{Modules}: A module is a set of methods which execute a part of the simulation chain.
+Modules are build as separate libraries and loaded dynamically on demand by the core.
+The available modules and their parameters are discussed in detail in Section~\ref{sec:modules}.
+\item \textbf{Objects}: Objects form the data passed around between modules using the message framework provided by the core.
+Modules can listen and bind to messages with objects they wish to receive.
+Messages are identified by the object type they are carrying, but they can also be named to allow redirecting data to specific modules facilitating more sophisticated simulation setups.
+Messages are meant to be read-only and a copy of the data should be made if a module wishes to change the data.
+All objects are compiled into a separate library which is automatically linked to every module.
+More information about the messaging system and the supported objects can be found in Section~\ref{sec:objects_messages}.
+\item \textbf{Tools}: \apsq provides a set of header-only 'tools' providing access to common logic shared by various modules.
+Examples are the Runge-Kutta solver implemented using the Eigen3 library and the set of template specializations for ROOT and Geant4 configurations.
+More information about the tools can be found in Section~\ref{sec:additional_tools_resources}.
+This set of tools is different from the set of core utilities the framework provides itself, which is part of the core and explained in Section~\ref{sec:logging_utilities}
 \end{enumerate}
-Finally \apsq provides an executable which instantiates the core, passes the configuration and runs the simulation chain.
+Finally, \apsq provides an executable which instantiates the core of the framework, receives and distributes the configuration object and runs the simulation chain.
 
-In this chapter, first an overview of the architectural setup of the core is given and how it interacts with the total \apsq framework. Afterwards, the different subcomponents are discussed and explained in more detail. Some C++ code will be provided in the text, but readers not interested may skip the technical details.
+This section is structured as follows.
+Section~\ref{sec:arch} provides an overview of the architectural design of the core and describes its interaction with the rest of the \apsq framework.
+The different subcomponents such as configuration, modules and messages are discussed in Sections~\ref{sec:config_parameters} to ~\ref{sec:objects_messages}.
+Finally, the section closes with a description of the available framework tools in Section~\ref{sec:logging_utilities}.
+Some C++ code will be provided in the text, but readers not interested may skip the technical details.
 
 \subsection{Architecture of the Core}
-The core is constructed as a light-weight framework that provides various subsystems to the modules. It also contains the part responsible for instantiating and running the modules from the supplied configuration file. The core is structured around five subsystems of which four are centered around a manager and the fifth contain a set of simple general utilities. The systems provided are:
+\label{sec:arch}
+The core is constructed as a light-weight framework which provides various subsystems to the modules.
+It also contains the part responsible for instantiating and running the modules from the supplied configuration file.
+The core is structured around five subsystems of which four are centered around a manager and the fifth contain a set of simple general utilities.
+The systems provided are:
 \begin{enumerate}
-\item \textbf{Configuration}: Provides a general configuration object from which data can be retrieved or stored, together with a TOML-like~\cite{tomlgit} file parser to instantiate the configurations. Also provides a general \apsq configuration manager providing access to the main configuration file and its sections. It is used by the module manager system to find the required instantiations and access the global configuration. More information is given in Section \ref{sec:config_parameters}.
-\item \textbf{Module}: Contain the base class of all the \apsq modules and the manager responsible for loading and running the modules (using the configuration system). This component is discussed in more detail in Section \ref{sec:module_manager}.
-\item \textbf{Geometry}: Supplies helpers for the simulation geometry. The manager instantiates all detectors from the detector configuration file. A detector has a certain position and orientation linked to an instantiation of a particular detector model. The detector model contains all parameters describing the geometry of the detector. More details about the geometry and detector models is provided in Section \ref{sec:models_geometry}.
-\item \textbf{Messenger}: The messenger is responsible for sending objects from one module to another. The messenger object is passed to every module and can be used to bind to messages to listen for. Messages with objects are also dispatched through the messenger to send data to the modules listening. Please refer to Section \ref{sec:objects_messages} for more details.
-\item \textbf{Utilities}: The framework provides a set of simple utilities for logging, file and directory access and unit conversion. An explanation how to use of these utilities can be found in Section \ref{sec:logging_utilities}. A set of C++ exceptions is also provided in the utilities, which are inherited and extended by the other components. Proper use of exceptions, together with logging informational messages and reporting errors, make the framework easier to use and debug. A few notes about the use and structure of exceptions are given in Section \ref{sec:error_reporting_exceptions}.
+\item \textbf{Configuration}: The configuration subsystem provides a configuration object from which data can be retrieved or stored, together with a TOML-like~\cite{tomlgit} parser to read configuration files.
+It also contains the \apsq configuration manager which provides access to the main configuration file and its sections.
+It is used by the module manager system to find the required instantiations and access the global configuration.
+More information is given in Section~\ref{sec:config_parameters}.
+\item \textbf{Module}: The module subsystem contains the base class of all \apsq modules as well as the manager responsible for loading and executing the modules (using the configuration system).
+This component is discussed in more detail in Section~\ref{sec:module_manager}.
+\item \textbf{Geometry}: The geometry subsystem supplies helpers for the simulation geometry.
+The manager instantiates all detectors from the detector configuration file.
+A detector object contains the position and orientation linked to an instantiation of a particular detector model.
+The detector model contains all parameters describing the geometry of the detector.
+More details about geometry and detector models is provided in Section~\ref{sec:models_geometry}.
+\item \textbf{Messenger}: The messenger is responsible for sending objects from one module to another.
+The messenger object is passed to every module and can be used to bind to messages to listen for.
+Messages with objects are also dispatched through the messenger as described in Section~\ref{sec:objects_messages}.
+\item \textbf{Utilities}: The framework provides a set of utilities for logging, file and directory access, and unit conversion.
+An explanation on how to use of these utilities can be found in Section~\ref{sec:logging_utilities}.
+A set of C++ exceptions is also provided in the utilities, which are inherited and extended by the other components.
+Proper use of exceptions, together with logging informational messages and reporting errors, make the framework easier to use and debug.
+A few notes about the use and structure of exceptions are provided in Section~\ref{sec:error_reporting_exceptions}.
 \end{enumerate}
 
 \subsection{Configuration and Parameters}
 \label{sec:config_parameters}
-Modules and the framework are configured through configuration files. An explanation how to use the various configuration files together with several examples are provided in Section \ref{sec:configuration_files}. All configuration files follow the same format, but the way their input is interpreted differs per configuration file.
+Individual modules as well as the framework itself are configured through configuration files.
+Explanations on how to use the various configuration files together with several examples have been provided in Section~\ref{sec:configuration_files}.
+All configuration files follow the same format, but the way their input is interpreted differs per configuration file.
 
 \subsubsection{File format}
 \label{sec:config_file_format}
-Throughout the framework a standard format is used for the configuration files, a simplified version of TOML~\cite{tomlgit}. The rules for this format are as follows:
+Throughout the framework, a simplified version of TOML~\cite{tomlgit} is used as standard format for configuration files.
+The format is defined as follows:
 \begin{enumerate}
-\item All whitespace at the beginning or end of a line should be stripped by the parser. Empty lines should be ignored.
-\item Every non-empty line should start with either \texttt{\#}, \texttt{[} or an alphanumeric character. Every other character should lead to an immediate parse error.
-\item If the line starts with \texttt{\#}, it is interpreted as comment and all other content on the same line is ignored
-\item If the line starts with \texttt{[}, the line indicates a section header (also known as configuration header). The line should contain an alphanumeric string indicating the header name followed by \texttt{]} to end the header (a missing \texttt{]} should raise an exception). Multiple section header with the same name are allowed. All key-value pairs following this section header are part of this section until a new section header is started. After any number of ignored whitespace characters there may be a \texttt{\#} character. If that is the case, the rest of the line is handled as specified in point~3.
-\item If the line starts with an alphanumeric character, the line should indicate a key-value pair. The beginning of the line should contain an string of alphabetic characters, numbers and underscores, but it may not start with an underscore. This string indicates the 'key'. After a optional number of ignored whitespace, the key should be followed by an \texttt{$=$}. Any text between the \texttt{$=$} and the first \texttt{\#} character not enclosed within a pair of \texttt{"} characters is known as the non-stripped 'value'. Any character from the \texttt{\#} is handled as specified in point 3. If the line does not contain any non-enclosed \texttt{\#} character the value ends at the end of the line instead. The 'value' of the key-value pair is the non-stripped 'value' with all whitespace in front and the end stripped.
-\item The value can either be accessed as a single value or an array. If the value is accessed as an array, the string is split at every whitespace or \texttt{,} character not enclosed in a pair of \texttt{"} characters. All empty entities are not considered. All other entities are treated as single values in the array.
-\item All single values are stored as a string containing at least one character. The conversion to the actual type is executed when accessing the value.
-\item All key-value pairs defined before the first section header are part of a zero-length empty section header
+\item All whitespace at the beginning or end of a line should be stripped by the parser.
+Empty lines should be ignored.
+\item Every non-empty line should start with either \texttt{\#}, \texttt{[} or an alphanumeric character.
+Every other character should lead to an immediate parsing error.
+\item If the line starts with a hash character (\texttt{\#}), it is interpreted as comment and all other content on the same line is ignored.
+\item If the line starts with an open square bracket (\texttt{[}), it indicates a section header (also known as configuration header).
+The line should contain an alphanumeric string indicating the header name followed by a closing square bracket (\texttt{]}) to end the header (a missing \texttt{]} should raise an exception).
+Multiple section header with the same name are allowed.
+All key-value pairs following this section header are part of this section until a new section header is started.
+After any number of ignored whitespace characters there may be a \texttt{\#} character.
+If this is the case, the rest of the line is handled as specified in point~3.
+\item If the line starts with an alphanumeric character, the line should indicate a key-value pair.
+The beginning of the line should contain an string of alphabetic characters, numbers and underscores, but it may not start with an underscore.
+This string indicates the 'key'.
+After a optional number of ignored whitespace, the key should be followed by an equality sign (\texttt{$=$}).
+Any text between the \texttt{$=$} and the first \texttt{\#} character not enclosed within a pair of double quotes (\texttt{"}) is known as the non-stripped string.
+Any character after the \texttt{\#} is handled as specified in point 3.
+If the line does not contain any non-enclosed \texttt{\#} character, the value ends at the end of the line instead.
+The 'value' of the key-value pair is the non-stripped string with all whitespace in front and at the end stripped.
+\item The value can either be accessed as a single value or an array.
+If the value is accessed as an array, the string is split at every whitespace or comma character (\texttt{,}) not enclosed in a pair of \texttt{"} characters.
+All empty entities are not considered.
+All other entities are treated as single values in the array.
+\item All single values are stored as a string containing at least one character.
+The conversion to the actual type is performed when accessing the value.
+\item All key-value pairs defined before the first section header are part of a zero-length empty section header.
 \end{enumerate}
 
 \subsubsection{Accessing parameters}
 \label{sec:accessing_parameters}
-All values are accessed via the configuration object. In the following example the key is a string called \textbf{key}, the object is named \textbf{config} and the type \textbf{TYPE} is a valid C++ type that the value should represent. The values can be accessed via the following methods:
+Values are accessed via the configuration object.
+In the following example, the key is a string called \textbf{key}, the object is named \textbf{config} and the type \textbf{TYPE} is a valid C++ type the value should represent.
+The values can be accessed via the following methods:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 // Returns true if the key exists and false otherwise
-config.has("key") 
-// Returns the value in the given type, throws an exception if not existing
-config.get<TYPE>("key") 
+config.has("key")
+// Returns the value in the given type, throws an exception if not existing or a conversion to TYPE is not possible
+config.get<TYPE>("key")
 // Returns the value in the given type or the provided default value if it does not exist
-config.get<TYPE>("key", default_value) 
-// Returns an array of single values of the given type; throws if the key does not exist
+config.get<TYPE>("key", default_value)
+// Returns an array of single values of the given type; throws an exception if the key does not exist or a conversion is not possible
 config.getArray<TYPE>("key")
 // Returns an absolute (canonical if it should exist) path to a file
 config.getPath("key", true /* check if path exists */)
 // Return an array of absolute paths
-config.getPathArray("key", false /* check if paths exists */)
-// Returns the key as literal text including possible quotation marks
-config.getText("key") 
+config.getPathArray("key", false /* do not check if paths exists */)
+// Returns the value as literal text including possible quotation marks
+config.getText("key")
 // Set the value of key to the default value if the key is not defined
-config.setDefault("key", default_value) 
-// Set the value of the key to the defaults array if key is not defined
+config.setDefault("key", default_value)
+// Set the value of the key to the default array if key is not defined
 config.setDefaultArray<TYPE>("key", vector_of_default_values)
+// Create an alias named new_key for the already existing old_key. Throws an exception if the old_key does not exist
+config.setAlias("new_key", "old_key")
 \end{minted}
 
-The conversions to the type are using the \texttt{from\_string} and \texttt{to\_string} methods provided by the string utility library described in Section \ref{sec:string_utilities}. These conversions largely follows the standard C++ parsing, with one important exception. If (and only if) the value is retrieved as any C/C++ string type and the string is fully enclosed by a pair of \texttt{"} characters, they are stripped before returning the value (and strings can thus also be given without quotation marks).
+Conversions to the requested type are using the \texttt{from\_string} and \texttt{to\_string} methods provided by the string utility library described in Section~\ref{sec:string_utilities}.
+These conversions largely follow the standard C++ parsing, with one important exception.
+If (and only if) the value is retrieved as any C/C++ string type and the string is fully enclosed by a pair of \texttt{"} characters, they are stripped before returning the value.
+Strings can thus also be provided with or without quotation marks.
+
+\begin{warning}
+    It should be noted that a conversion from string to the requested type is a comparatively heavy operation.
+    For performance-critical sections of the code, one should consider fetching the configuration value once and caching it in a local variable.
+\end{warning}
 
 \subsection{Modules and the Module Manager}
 \label{sec:module_manager}
-\apsq is a modular framework, the core idea is to separate functionality in various independent modules. The modules are defined in the subdirectory \textit{src/modules/} in the repository. The name of the directory is the unique name of the module. The suggested naming scheme is CamelCase, thus an example module would be \textit{GenericPropagation}. There are two different kind of modules which can be defined:
+\apsq is a modular framework and one of its core ideas is to partition functionality in independent modules.
+The modules are defined in the subdirectory \textit{src/modules/} in the repository.
+The name of the directory is the unique name of the module.
+The suggested naming scheme is CamelCase, thus an exemplary module name would be \textit{GenericPropagation}.
+There are two different kind of modules which can be defined:
 \begin{itemize}
-\item \textbf{Unique}: Modules for which always a single instance runs irrespective of the number of detectors.
-\item \textbf{Detector}: Modules that are specific to a single detector. They are replicated for all required detectors.
+\item \textbf{Unique}: Modules for which always only one single instance runs irrespective of the number of detectors.
+\item \textbf{Detector}: Modules which are specific to a single detector.
+They are replicated for all required detectors.
 \end{itemize}
-The type of module determines the kind of constructor used, the internal unique name and the supported configuration parameters. More details about the instantiation logic for the different kind of modules can be found in \ref{sec:module_instantiation}.
+The type of module determines the constructor used, the internal unique name and the supported configuration parameters.
+More details about the instantiation logic for the different types of modules can be found in Section~\ref{sec:module_instantiation}.
 
 \subsubsection{Files of a Module}
 \label{sec:module_files}
-Every module directory should at the minimum contain the following documents (with \texttt{ModuleName} replaced by the name of the module):
+Every module directory should at minimum contain the following documents (with \texttt{ModuleName} replaced by the name of the module):
 \begin{itemize}
 \item \textbf{CMakeLists.txt}: The build script to load the dependencies and define the source files of the library.
 \item \textbf{README.md}: Full documentation of the module.
 \item \textbf{\texttt{ModuleName}Module.hpp}: The header file of the module (note that another name can be used for this source file, but that is deprecated).
 \item \textbf{\texttt{ModuleName}Module.cpp}: The implementation file of the module.
 \end{itemize}
-The files are discussed in more detail below. All modules that are added to the \textit{src/modules/} directory will be build automatically by CMake. This also means that all subdirectories in this module directory should contain a module with a \textit{CMakeLists.txt} to build the module.
+The files are discussed in more detail below.
+By default, all modules are added to the \textit{src/modules/} directory will be build automatically by CMake.
+This means that all subdirectories should feature a module with a \textit{CMakeLists.txt} containing instructions on how to build the respective module.
 
-More information about constructing new modules can be found in Section \ref{sec:building_new_module}.
+If a module depends on additional packages which not every user might have installed, one can consider adding the following line to the top of the module's \textit{CMakeLists.txt} (see below):
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{cmake}
+ALLPIX_ENABLE_DEFAULT(OFF)
+\end{minted}
+Whether or not this is necessary for a given module will be decided on a case-by-case basis.
+
+General guidelines and instructions for implementing new modules are provided in Section~\ref{sec:building_new_module}.
 
 \paragraph{CMakeLists.txt}
 Contains the build description of the module with the following components:
 \begin{enumerate}
-\item On the first line either ALLPIX\_DETECTOR\_MODULE(MODULE\_NAME) or \\ ALLPIX\_UNIQUE\_MODULE(MODULE\_NAME) depending on the type of the module defined. The internal name of the module is saved to the \$\{MODULE\_NAME\} variable which should be used as argument to the other functions. Another name can be used as well, but below we exclusively use \$\{MODULE\_NAME\}
-\item The next lines should contain the logic to load the dependencies of the module (below is an example to load Geant4). Only ROOT is automatically included and linked to the module.
-\item A line with ALLPIX\_MODULE\_SOURCES(\$\{MODULE\_NAME\} \texttt{sources}) where \texttt{sources} should be replaced by all the source files of this module
-\item Possibly lines to include the directories and link the libraries for all the dependencies loaded earlier as explained in point~2. See below for an example.
-\item A line containing ALLPIX\_MODULE\_INSTALL(\$\{MODULE\_NAME\}) to setup the required target for the module to be installed to.
+\item On the first line either ALLPIX\_DETECTOR\_MODULE(MODULE\_NAME) or \\ ALLPIX\_UNIQUE\_MODULE(MODULE\_NAME) depending on the type of the module defined.
+The internal name of the module is automatically saved in the variable \$\{MODULE\_NAME\} which should be used as argument to other functions.
+Another name can be used by overwriting the variable content, but in the examples below, \$\{MODULE\_NAME\} is used exclusively.
+\item The following lines should contain the logic to load possible dependencies of the module (below is an example to load Geant4).
+Only ROOT is automatically included and linked to the module.
+\item A line with ALLPIX\_MODULE\_SOURCES(\$\{MODULE\_NAME\} \texttt{sources}) defines the module source files. Here, \texttt{sources} should be replaced by a list of all source files relevant to this module.
+\item Possibly lines to include additional directories and to link libraries for dependencies loaded earlier.
+\item A line containing ALLPIX\_MODULE\_INSTALL(\$\{MODULE\_NAME\}) to set up the required target for the module to be installed to.
 \end{enumerate}
 
-An example of a simple CMakeLists.txt of a module named \texttt{Test} which requires Geant4 is the following
+A simple CMakeLists.txt for a module named \texttt{Test} which requires Geant4 is provided below as an example.
 \vspace{5pt}
 
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{cmake}
 # Define module and save name to MODULE_NAME
 # Replace by ALLPIX_DETECTOR_MODULE(MODULE_NAME) to define a detector module
-ALLPIX_UNIQUE_MODULE(MODULE_NAME) 
+ALLPIX_UNIQUE_MODULE(MODULE_NAME)
 
 # Load Geant4
 FIND_PACKAGE(Geant4)
@@ -112,14 +197,14 @@ IF(NOT Geant4_FOUND)
 ENDIF()
 
 # Add the sources for this module
-ALLPIX_MODULE_SOURCES(${MODULE_NAME} 
+ALLPIX_MODULE_SOURCES(${MODULE_NAME}
     TestModule.cpp
 )
 
 # Add Geant4 to the include directories
 TARGET_INCLUDE_DIRECTORIES(${MODULE_NAME} SYSTEM PRIVATE ${Geant4_INCLUDE_DIRS})
 
-# Link the Geant4 libraries to the library
+# Link the Geant4 libraries to the module library
 TARGET_LINK_LIBRARIES(${MODULE_NAME} ${Geant4_LIBRARIES})
 
 # Provide standard install target
@@ -127,83 +212,137 @@ ALLPIX_MODULE_INSTALL(${MODULE_NAME})
 \end{minted}
 
 \paragraph{README.md}
-The README.md serves as the documentation for the module and should be written in the Markdown format. It is automatically converted to \LaTeX using Pandoc~\cite{pandoc} and included in the documentation in Section \ref{sec:modules}. It is also viewable online at the repository in the subfolder of the module. 
+The README.md serves as the documentation for the module and should be written in the Markdown format~\cite{markdown}.
+It is automatically converted to \LaTeX using Pandoc~\cite{pandoc} and included in this user manual in Section~\ref{sec:modules}.
+By documenting the module functionality in Markdown, the information as also viewable with a web browser at the repository in the module sub-folder.
 
-The README.md should follow the structure of the DummyModule in \textit{src/modules/Dummy}. The documentation should contain at least the following sections:
+The README.md should follow the structure indicated in the README file of the DummyModule in \textit{src/modules/Dummy}.
+The documentation should contain at least the following sections:
 \begin{itemize}
-\item The H2-size header with the name of the module which contains at least the following required elements: the \textbf{Maintainer} and the \textbf{Status} of the module. If the module is working and recently tested the status of the module should be \textit{Functional}. The maintainer line should contain the name of the module maintainer and its email address between parentheses. An example for a minimal header is therefore
+\item The H2-size header with the name of the module and at least the following required elements: the \textbf{Maintainer} and the \textbf{Status} of the module.
+If the module is working and well-tested, the status of the module should be \textit{Functional}.
+By default, new modules are given the status \textbf{Immature}.
+The maintainer entry should mention both the full name and email address of the module maintainer between parentheses.
+An example for a minimal header is therefore
 \begin{verbatim}
 ## ModuleName
-Maintainer: Example Author (example@example.org)
+Maintainer: Example Author (<example@example.org>)
 Status: Functional
 \end{verbatim}
-Besides this an header could also have the \textbf{Input} and \textbf{Output} points, which contain the name of the objects that are respectively read and dispatched by the module.
-\item A H4-size section containing a short description of the module, named \textbf{Description}. 
-\item A H4-size section named \textbf{Parameters} with the parameters of the module. All parameters should be shortly explained in an itemized list with the name of the parameter in an inline code block.
-\item A H4-size section with the name \textbf{Usage} which should contain at least one single simple example of a valid configuration that can be used.
+In addition, the \textbf{Input} and \textbf{Output} objects consumed and dispatched by the module should be mentioned.
+\item A H4-size section named \textbf{Description}, containing a short description of the module.
+\item A H4-size section named \textbf{Parameters} with all available configuration parameters of the module.
+The parameters should be briefly explained in an itemized list with the name of the parameter set as inline code block.
+\item A H4-size section with the title \textbf{Usage} which should contain at least one simple example of a valid configuration for the module.
 \end{itemize}
 
 \paragraph{\texttt{ModuleName}Module.hpp and \texttt{ModuleName}Module.cpp}
-All modules should have both a header file and a source file. In the header file the module is defined together with all its method. Brief Doxygen documentation should be added to explain what every method does. The source file should provide the implementation of every method and also its more detailed Doxygen documentation. Not a single method should be defined in the header to keep the interface clean.
+All modules should consist of both a header file and a source file.
+In the header file, the module is defined together with all its methods.
+Brief Doxygen documentation should be added to explain what every method does.
+The source file should provide the implementation of every method and also its more detailed Doxygen documentation.
+Method shall only be declared in the header and only defined in the source file to keep the interface clean.
 
 \subsubsection{Module structure}
 \label{sec:module_structure}
-All modules should inherit from the \texttt{Module} base class which can be found in \textit{src/core/module/Module.hpp}. The module base class provides two base constructors, a few convenient methods and several methods to override. Every module should provide a constructor taking a fixed set of arguments defined by the framework. This particular constructor is always called during construction by the module instantiation logic. The arguments for the constructor differs for unique and detector modules. For unique modules the constructor for a \texttt{TestModule} should be:
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
+All modules have to inherit from the \texttt{Module} base class which can be found in \textit{src/core/module/Module.hpp}.
+The module base class provides two base constructors, a few convenient methods and several methods to override.
+Every module should provide a constructor consuming a fixed set of arguments defined by the framework.
+This particular constructor is always called during construction by the module instantiation logic.
+The arguments for the constructor differs for unique and detector modules.
+For unique modules, the constructor for a \texttt{TestModule} should be:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 TestModule(Configuration config, Messenger* messenger, GeometryManager* geo_manager): Module(config) {}
 \end{minted}
-It is clear that the configuration object should be forwarded to the base module.
+It should be noted that the configuration object has to be forwarded to the base module.
 
-For unique modules the first two arguments are the same, but the last argument is a \texttt{std::shared\_ptr} to the linked detector instead. It should always forward this provided detector to the base class, besides the configuration. Thus a constructor of a detector module should be:
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
+For detector modules, the first two arguments are the same, but the last argument is a \texttt{std::shared\_ptr} to the linked detector instead.
+It should always forward this detector to the base class together with the configuration object.
+Thus, the constructor of a detector module is:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 TestModule(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector): Module(config, detector) {}
 \end{minted}
 
-All modules receive the Configuration object holding the config parameters for that specific object, which can be accessed as explained in Section \ref{sec:accessing_parameters}. Furthermore, a pointer to the Messenger is passed which can be used to both bind variables to receive and dispatch messages as explained in \ref{sec:objects_messages}. Finally either a pointer to the GeometryManager is passed, which can be used to fetch all detectors, or a instance of the specifically linked detector. The constructor should normally be used to bind the required messages and set configuration defaults. In case of failure an exception can be thrown from the constructor. 
+The pointer to the Messenger can be used to bind variables to either receive or dispatch messages as explained in~\ref{sec:objects_messages}.
+The constructor should be used to bind required messages, set configuration defaults and to throw exceptions in case of failures.
+Unique modules can access the GeometryManager to fetch all detector descriptions, while detector modules directly receive the object of their respective detector.
 
-In addition to the constructor every module can override the following methods:
+In addition to the constructor, every module can override the following methods:
 \begin{itemize}
-\item \texttt{init()}: Called after loading and constructing all modules and before starting the event loop. This method can for example be used to initialize histograms.
-\item \texttt{run(unsigned int event\_number)}: Called for every event in the simulation run with the event number (starting from one). An exception should be thrown for every serious error, otherwise an warning should be logged.
-\item \texttt{finalize()}: Called after processing all events in the run and before destructing the module. Typically used to save the output data (like histograms). Any exceptions should be thrown from here instead of the destructor.
+\item \texttt{init()}: Called after loading and constructing all modules and before starting the event loop.
+This method can for example be used to initialize histograms.
+\item \texttt{run(unsigned int event\_number)}: Called for every event in the simulation run with the event number (starting from one).
+An exception should be thrown for every serious error, otherwise an warning should be logged.
+\item \texttt{finalize()}: Called after processing all events in the run and before destructing the module.
+Typically used to save the output data (like histograms).
+Any exceptions should be thrown from here instead of the destructor.
 \end{itemize}
 
 \subsubsection{Module instantiation}
 \label{sec:module_instantiation}
-The modules are dynamically loaded and instantiated by the Module Manager. Modules are constructed, initialized, executed and finalized in the linear order they are defined in the configuration file. Thus the configuration file should follow the order of the real process. For every non-special section in the main configuration file (see \ref{sec:config_parameters} for more details) a corresponding library is searched which contains the module. A module has the name \textbf{libAllPixModule\texttt{ModuleName}} reflecting the \texttt{ModuleName} of a defined module. The module search order is as follows:
+The modules are dynamically loaded and instantiated by the Module Manager.
+Modules are constructed, initialized, executed and finalized in the linear order they are defined in the configuration file.
+Thus the configuration file should follow the order of the real process.
+For every non-special section in the main configuration file (see~\ref{sec:config_parameters} for more details), a corresponding library is searched for which contains the module.
+Module library are always named following the scheme \textbf{libAllpixModule\texttt{ModuleName}} reflecting the \texttt{ModuleName} configured via CMake.
+The module search order is as follows:
 \begin{enumerate}
-\item The modules already loaded before from an earlier section header
+\item Modules already loaded before from an earlier section header
 \item All directories in the global configuration parameter \textit{library\_directories} in the provided order if this parameter exists
-\item The internal library paths of the executable, that should automatically point to the libraries that are build and installed together with the executable. These library paths are stored in RPATH on Linux, see the next point for more information.
-\item The other standard locations to search for libraries depending on the operating system. Details about the procedure Linux follows are found in \cite{linuxld}.
+\item The internal library paths of the executable, that should automatically point to the libraries that are build and installed together with the executable.
+These library paths are stored in RPATH on Linux, see the next point for more information.
+\item The other standard locations to search for libraries depending on the operating system.
+Details about the procedure Linux follows can be found in~\cite{linuxld}.
 \end{enumerate}
 
-If the module definition is successful it is checked if the module is an unique or a detector module. The instantiation logic determines an unique name and priority, where a lower number indicates a higher priority, for every instantiation. The name and priority for the instantation are determined differently for the two types of modules:
+If the loading of the module library is successful, it is checked if the module is an unique or a detector module.
+The instantiation logic determines a unique name and priority, where a lower number indicates a higher priority, for every instantiation.
+The name and priority for the instantiation are determined differently for the two types of modules:
 \begin{itemize}
-\item \textbf{Unique}: Combination of the name of the module and the \textbf{input} and \textbf{output} parameter (both defaulting to an empty string). The priority is always zero.
-\item \textbf{Detector}: Combination of the name of the module, the \textbf{input} and \textbf{output} parameter (both defaulting to an empty string) and the name of detector this module runs on. If the name of the detector is specified directly by the \textbf{name} parameter the priority is zero. If the detector is only matched by the \textbf{type} parameter the priority is one. If the \textbf{name} and \textbf{type} are both not specified and the module is instantiated for all detectors there priority is two.
+\item \textbf{Unique}: Combination of the name of the module and the \textbf{input} and \textbf{output} parameter (both defaulting to an empty string).
+The priority is always zero.
+\item \textbf{Detector}: Combination of the name of the module, the \textbf{input} and \textbf{output} parameter (both defaulting to an empty string) and the name of detector this module is executed for.
+If the name of the detector is specified directly by the \textbf{name} parameter, the priority is \emph{high}.
+If the detector is only matched by the \textbf{type} parameter, the priority is \emph{medium}.
+If the \textbf{name} and \textbf{type} are both unspecified and the module is instantiated for all detectors, the priority is \emph{low}.
 \end{itemize}
-The instantiation logic only allows a single instance for every unique name. If there are multiple instantiations with the same unique name the instantiation with the highest priority is kept (thus the one with the lowest number). Otherwise if there are multiple instantiations with the same name and the same priority an exception is raised.
+The instantiation logic only allows a single instance for every unique name.
+If there are multiple instantiations with the same unique name, the instantiation with the highest priority is kept.
+If multiple instantiations with the same unique name and the same priority exist, an exception is raised.
 
 \subsection{Geometry and Detectors}
 \label{sec:models_geometry}
-Simulations are frequently run on a set of different detectors (such as as a beam telescope and a device under test). All these individual detectors together is what \apsq defines as the geometry. Every detector has a set of properties attached to it:
+Simulations are frequently performed for a set of different detectors (such as a beam telescope and a device under test).
+All these individual detectors together is what \apsq defines as the geometry.
+Every detector has a set of properties attached to it:
 \begin{itemize}
-\item A unique \textbf{name} to refer to the detector in the configuration.
-\item The \textbf{position} in the world frame. This is the position of the geometric center of the sensitive device (sensor) given in world coordinates as X, Y and Z (note that any additional components like the chip and possible support layers are ignored when determining the geometric center).
-\item The \textbf{orientation} given as Euler angles using the extrinsic Z-X-Z convention relative to the world frame (also known as the 1-3-1 or the "x-convention" and the most widely used definition of Euler angles~\cite{eulerangles}). 
-\item A \textbf{type} of a detector model. The model defines the geometry and parameters of the detector. Multiple detectors can share the same model (and this is in fact very common). Several ready-to-use models are shipped with the framework.
-\item An optional \textbf{electric field} in the sensitive device. An electric field can be added to a detector by a special module as shown in Section \ref{sec:module_electric_field}.
+\item A unique \textbf{detector name} to refer to the detector in the configuration.
+\item The \textbf{position} in the world frame.
+This is the position of the geometric center of the sensitive device (sensor) given in world coordinates as X, Y and Z (note that any additional components like the chip and possible support layers are ignored when determining the geometric center).
+\item The \textbf{orientation} given as Euler angles using the extrinsic Z-X-Z convention relative to the world frame (also known as the 1-3-1 or the "x-convention" and the most widely used definition of Euler angles~\cite{eulerangles}).
+\item A \textbf{type} of a detector model such as \emph{hybrid} or \emph{monolithic}.
+The model defines the geometry and parameters of the detector.
+Multiple detectors can share the same model.
+Several ready-to-use models are shipped with the framework.
+\item An optional \textbf{electric field} in the sensitive device.
+An electric field can be added to a detector by a special module as demonstrated in Section~\ref{sec:module_electric_field}.
 \end{itemize}
-The detector configuration is provided in the special detector configuration which is explained in Section \ref{sec:detector_config}.
+The detector configuration is provided in the detector configuration file as is explained in Section~\ref{sec:detector_config}.
 
 \subsubsection{Changing and accessing the geometry}
-The geometry is needed early on because it determines the number of detector instantiations as explained in Section \ref{sec:module_instantiation}. It is unfortunately not possible to determine the exact time the first detector instantation is created or the geometry is accessed in any other way. In the framework it is however very important to have a fixed geometry that does not change between modules. To allow special modules to change the geometry before accessing it, the geometry manager uses the concept of lazy geometry closing. This means that the geometry will be closed as soon as a method is called which accesses the geometry (usually the \texttt{getDetectors} method). Detectors and models can only be added before the geometry is closed. At the point of closing all remaining detector models are loaded and linked to the detectors without models. The procedure of finding the detector models is explained in more detail in Section \ref{sec:detector_models}.
+The geometry is needed at a very early stage because it determines the number of detector module instantiations as explained in Section~\ref{sec:module_instantiation}.
+The procedure of finding and loading the appropriate detector models is explained in more detail in Section~\ref{sec:detector_models}.
 
-Geometry is typically directly added from the detector configuration file described in Section \ref{sec:detector_config}. The geometry manager parses this file on construction, the detector models are loaded and linked later during geometry closing as described above. It is also possible to add additional models and detectors directly using \texttt{addModel} and \texttt{addDetector} (before the geometry is closed). Furthermore it is possible to add additional points which should be part of the world geometry using \texttt{addPoint}. This can for example be used to add the beam source to the world geometry.
+The geometry is directly added from the detector configuration file described in Section~\ref{sec:detector_config}.
+The geometry manager parses this file on construction, the detector models are loaded and linked later during geometry closing as described above.
+It is also possible to add additional models and detectors directly using \texttt{addModel} and \texttt{addDetector} (before the geometry is closed).
+Furthermore it is possible to add additional points which should be part of the world geometry using \texttt{addPoint}.
+This can for example be used to add the beam source to the world geometry.
 
-The detectors and models can be accessed by name and type through the geometry manager using respectively \texttt{getDetector} and \texttt{getModel}. Typically however all detectors are fetched at once using the \texttt{getDetectors} method. If the module is a detector-specific module its related Detector can be accessed through the \texttt{getDetector} method of the module base class instead (returns a null pointer for unique modules) as follows:
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
+The detectors and models can be accessed by name and type through the geometry manager using \texttt{getDetector} and \texttt{getModel}, respectively.
+All detectors can be fetched at once using the \texttt{getDetectors} method.
+If the module is a detector-specific module its related Detector can be accessed through the \texttt{getDetector} method of the module base class instead (returns a null pointer for unique modules) as follows:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 void run(unsigned int event_id) {
     // Returns the linked detector
     std::shared_ptr<Detector> detector = this->getDetector();
@@ -211,64 +350,115 @@ void run(unsigned int event_id) {
 \end{minted}
 
 \subsubsection{Coordinate systems}
-All detectors have a fixed position in the world frame which has an arbitrary origin. Every detector also has a local coordinate system attached to it. The origin of this local coordinate system does usually not correspond with the geometric center of the sensitive device, which is the center of rotation of the detector in the global frame. The origin of the local coordinate system is instead based on the pixel grid in the sensor. The origin of the local coordinate system is fixed to the center of the first pixel in the grid, which allows for simpler calculations through the framework that are also easier to understand. 
 
-While the actual origin of the local coordinate system depends on the type of the model, there are fixed rules for the orientation of the coordinate system. The positive z-axis should point in the direction the particle beam is supposed to enter the sensor, perpendicular to the 2D pixel grid. The x-axis should be in the plane that defines the pixel grid. It should be in horizontal direction perpendicular to the direction of the beam, if the sensor is placed unrotated in a horizontal beam. The y-axis should be normal to both the x- and the z-axis in such a way that a right-handed coordinate system is constructed. 
+Local coordinate systems for each detector and a global frame of reference for the full setup are defined.
+The global coordinate system is chosen as a right-handed Cartesian system with the particle beam along the positive z-axis.
+Rotations of the individual devices are performed around the geometrical center of their sensor.
+
+Also the local coordinate systems are right-handed Cartesian systems, with the x- and y-axes defining the sensor plane.
+The beam is entering along the positive z-axis.
+The origin of the coordinate system is the center of the lower left pixel in the grid, i.e.\ the pixel with the indices (0,0).
+This simplifies calculations in the local coordinate system as all positions can either be stated in absolute numbers or in fractions of the pixel pitch.
 
 \subsubsection{Detector models}
 \label{sec:detector_models}
-Different types of detector models are already available and shipped with the framework. The configuration for these standard models use the configuration format introduced in Section \ref{sec:config_file_format} and can be found in the \textit{models} directory in the repository. Every models extends from the \texttt{DetectorModel} base class which defines the minimum parameter of a detector model in the framework:
-\begin{itemize}
-\item The coordinate of the center in the local frame. This is the location of the local point which is defined as position in the global frame, and the rotation center for the specified orientation.
-\item The number of pixels in the sensor in both the x- and y-axis. Every pixel is an independent block replicated over the x,y-plane of the sensor. 
-\item The size of an individual pixel. The multiplication of the pixel size and the number of pixels is known as the pixel grid and goes over the full x,y-plane.
-\item The sensor with a center and a size. The sensor is at least as large as the pixel grid size and has a certain thickness. It can have excess length in the x,y-plane in each direction. 
-\item The readout chip with a center and a size. It is positioned directly after the sensor by default. The chip can also have an excess as described above for the sensor.
-\item Possible support layers with a center and a size. It is positioned directly after the sensor and the chip by default. The support layer can be of various materials and possibly contain a cutout.
-\item Total size of the box with the local frame center in the middle that fit all elements of the model.
-\end{itemize}
-This standard detector model can be extended to provide a more detailed geometry if required by particular modules (most notably the Geant4 geometry builder). The position and size of all elements can be changed by these extending models. A model with only the standard elements described above is the \texttt{MonolithicPixelDetectorModel}. Currently the only extended detector model is the \texttt{HybridPixelDetectorModel}, which also include bump bonds between the sensor and the readout chip. 
+Different types of detector models are already available and distributed together with the framework.
+These models use the configuration format introduced in Section~\ref{sec:config_file_format} and can be found in the \textit{models} directory of the repository.
+Every model extends from the \texttt{DetectorModel} base class which defines the minimum required parameters of a detector model in the framework.
+The coordinates place the detector in the global coordinate system. The reference point here is the geometric center of the active sensor.
+The number of pixels in the sensor in both x- and y-direction define the active pixel matrix.
+The pitch of the individual pixels defines its size and also, together with the number of pixels, the total size of the pixel matrix.
+Outside the active pixel matrix, the sensor can feature excess material in all directions in the x-y-plane.
+A detector of base class type does not feature a separate readout chip, thus only the thickness of an additional, inactive silicon layer can be specified.
+Derived models allow for separate readout chips, possibly connected with bump bonds.
+
+Furthermore, multiple layers of support material can be added to the detector description.
+It is possible to place support layers at arbitrary positions relative to the sensor, while the default position is behind the readout chip (or inactive silicon layer).
+The support material can be chosen from a set of predefined materials, including PCB and Kapton.
+
+This base detector model can be extended to provide a more detailed geometry.
+Currently implemented derived models are the \texttt{MonolithicPixelDetectorModel}, which describes a monolithic detector with all electronics directly implemented in the same silicon wafer as the sensor, and the \texttt{HybridPixelDetectorModel}, which in addition to the features described above also includes a separate readout chip with configurable size and bump bonds between the sensor and the readout chip.
 
 \nlparagraph{Detector model parameters}
-\todo{This section should likely be moved to a separate chapter, but before that it should also be moved out of the core likely?}
-Models are defined in configuration files which are used to instatiate the actual model classes. These files for detector models can contain various types of parameters. Some are required for all models, other optional for all models and there are also parameters only supported by certain types of models. For more details about the steps to perform to add and use your own new model, Section \ref{sec:adding_detector_model} should be consulted.
+Models are defined in configuration files which are used to instantiate the actual model classes.
+These files for detector models can contain various types of parameters.
+Some are required for all models, others are optional or only supported by certain types of models.
+For more details about the steps to perform in order to add and use a new detector model, Section~\ref{sec:adding_detector_model} should be consulted.
 
-The set of base parameters supported by every models is provided below. These parameters should be given at the top of the file before opening any sections.
+The set of base parameters supported by every models is provided below.
+These parameters should be given at the top of the file before opening any sections.
 \begin{itemize}
-\item \texttt{type}: A required parameter describing the type of the model. At the moment either \textbf{monolithic} or \textbf{hybrid}. This value determines any optional extra supported parameters discussed later.
-\item \texttt{number\_of\_pixels}: The number of pixels in the 2D pixel grid. Determines the base size of the sensor together with the \texttt{pixel\_size} parameter below.
-\item \texttt{pixel\_size}: The size of a single pixel in the pixel grid. Given in 2D as pixels do not have any direct thickness. This parameter is required for all models. 
-\item \texttt{sensor\_thickness}: Thickness of the active area of the detector model containing the individual pixels. This parameter is required for all models.
-\item \texttt{sensor\_excess}: Fallback for the excess width of the sensor in all four directions (top, bottom, left and right). Used if the specialized parameters described below are not given. Defaults to zero, thus having a sensor size equal to the number of pixels times the size of a single pixel.
-\item \texttt{sensor\_excess\_\textit{direction}}: With direction either \textit{top}, \textit{bottom}, \textit{left} or \textit{right}, where the top, bottom, right and left direction are respectively the positive y-axis, the negative y-axis, the positive x-axis and the negative x-axis. It specifies the extra excess length added to the sensor in the specific direction.
+\item \texttt{type}: A required parameter describing the type of the model.
+At the moment either \textbf{monolithic} or \textbf{hybrid}.
+This value determines the supported parameters as discussed later.
+\item \texttt{number\_of\_pixels}: The number of pixels in the 2D pixel matrix.
+Determines the base size of the sensor together with the \texttt{pixel\_size} parameter below.
+\item \texttt{pixel\_size}: The pitch of a single pixel in the pixel matrix.
+Provided as 2D parameter in the x-y-plane.
+This parameter is required for all models.
+\item \texttt{sensor\_thickness}: Thickness of the active area of the detector model containing the individual pixels.
+This parameter is required for all models.
+\item \texttt{sensor\_excess\_\textit{direction}}: With direction either \textit{top}, \textit{bottom}, \textit{left} or \textit{right}, where the top, bottom, right and left direction are the positive y-axis, the negative y-axis, the positive x-axis and the negative x-axis, respectively.
+Specifies the extra material added to the sensor outside the active pixel matrix in the given direction.
+\item \texttt{sensor\_excess}: Fallback for the excess width of the sensor in all four directions (top, bottom, left and right).
+Used if the specialized parameters described below are not given.
+Defaults to zero, thus having a sensor size equal to the number of pixels times the pixel pitch.
 \item \texttt{chip\_thickness}: Thickness of the readout chip, placed next to the sensor.
-\item \texttt{chip\_excess}: Fallback for the excess width of the chip, defaults to zero thus a chip equal to the size of the pixel grid. See the \texttt{sensor\_excess} parameter above.
-\item \texttt{chip\_excess\_\textit{direction}}: With direction either \textit{top}, \textit{bottom}, \textit{left} or \textit{right}. The chip excess in the specific direction, see the \texttt{sensor\_excess\_\textit{direction}} parameter above.
 \end{itemize}
 
-Besides these base parameters, several base layers of support can be added to detector models. Every layer of support should be given in its own section with the name \texttt{support}. By default there are no support layers. The support layers support the following parameters.
+In addition, multiple layers of support can be added to the detector model.
+Every support layer should be defined in its own section headed with the name \texttt{[support]}.
+By default, no support layers are added.
+Support layers allow for the following parameters.
 \begin{itemize}
-\item \texttt{size}: Size of the support in 2D (the thickness is given separately below). This parameter is required for all support layers.
-\item \texttt{thickness}: Thickness of the support layers. This parameter is required for all support layers.
-\item \texttt{offset}: Every support layer is centered by default to the center of the pixel grid (the rotation center of the model). An optional 2D offset can be specified using this parameter, this is disabled by default. The position in the depth axis can be specified separately with the parameter \texttt{location}.
-\item \texttt{location}: Location of the support layer. Either \textit{sensor} to stick it to the sensor (on the opposite side of the chip) or \textit{chip} to add the support layer after the chip. Defaults to \textit{chip} if not given. Sensors are stacked in there respectively direction if multiple layers of support are given.
-\item \texttt{hole\_size}: Adds an optional cut-out hole to the support with the 2D size provided. The hole always covers the full support thickness. No hole will be added if this parameter is not given.
-\item \texttt{hole\_offset}: The hole is added by default to the center of the support layer. A 2D offset from this default center can be specified using this parameter.
-\item \texttt{material}: Material of the support to use, given as a lowercase string. There is no default set of materials and support for certain types of materials is up to the modules. Refer to Section \ref{sec:modules} for details about the materials supported by the geometry creator module. \todo{This should be standardized...}
+\item \texttt{size}: Size of the support in 2D (the thickness is given separately below).
+This parameter is required for all support layers.
+\item \texttt{thickness}: Thickness of the support layers.
+This parameter is required for all support layers.
+\item \texttt{location}: Location of the support layer.
+Either \textit{sensor} to attach it to the sensor (opposite to the readout chip/inactive silicon layer), \textit{chip} to add the support layer behind the chip/inactive layer or \textit{absolute} to specify the offset in the z-direction manually.
+Defaults to \textit{chip} if not specified.
+If the parameter is equal to \textit{sensor} or \textit{chip}, the support layers are stacked in the respective direction when multiple layers of support are specified.
+\item \texttt{offset}: If the parameter \texttt{location} is equal to \textit{sensor} or \textit{chip}, an optional 2D offset can be specified using this parameter, the offset in the z-direction is then automatically determined.
+These support layers are by default centered around the middle of the pixel matrix (the rotation center of the model).
+If the \texttt{location} is set to \textit{absolute}, the offset is a required parameter and should be provided as a 3D vector with respect to the center of the model (thus the center of the active sensor).
+Care should be taken to ensure that these support layers and the rest of the model do not overlap.
+\item \texttt{hole\_size}: Adds an optional cut-out hole to the support with the 2D size provided.
+The hole always cuts through the full support thickness.
+No hole will be added if this parameter is not present.
+\item \texttt{hole\_offset}: If present, the hole is by default placed at the center of the support layer.
+A 2D offset with respect to its default position can be specified using this parameter.
+\item \texttt{material}: Material of the support. \apsq does not provide a set of materials to choose from, but it is up to the modules using the parameter to implement the materials such that they can use it.
+Section~\ref{sec:modules} provides details about the materials currently supported by the geometry builder module (\texttt{GeometryBuilderGeant4}).
+\todo{This should be standardized...}
 \end{itemize}
 
-The base parameters are the only set of parameters supported by the \textbf{monolithic} model. The \textbf{hybrid} model add bump bonds between the chip and the sensor while automatically making sure the chip and support layers are shifted appropriately. The set of extra parameters for the \textbf{hybrid} model are the following (these should be put in the empty start section):
+The base parameters described above are the only set of parameters supported by the \textbf{monolithic} model.
+
+The \textbf{hybrid} model adds bump bonds between the chip and the sensor while automatically making sure the chip and support layers are shifted appropriately.
+Furthermore, it allows to specify the chip dimensions independently from the sensor size, as the readout chip is treated as separate entity.
+The additional parameters for the \textbf{hybrid} model are the following:
 \begin{itemize}
+\item \texttt{chip\_excess\_\textit{direction}}: With direction either \textit{top}, \textit{bottom}, \textit{left} or \textit{right}.
+The chip excess in the specific direction, similar to the \texttt{sensor\_excess\_\textit{direction}} parameter described above.
+\item \texttt{chip\_excess}: Fallback for the excess width of the chip, defaults to zero and thus to a chip size equal to the dimensions of the pixel matrix.
+See the \texttt{sensor\_excess} parameter above.
 \item \texttt{bump\_height}: Height of the bump bonds (the separation distance between the chip and the sensor)
-\item \texttt{bump\_sphere\_radius}: The individual bump bonds are simulated as union solids of a sphere and a cylinder. This parameter set the radius of the sphere to use, which should generally be smaller than the height of the bump.
-\item \texttt{bump\_cylinder\_radius}: The radius of the cylinder part of the bump. The height of the cylinder is determined by the \texttt{bump\_height} parameter.
-\item \texttt{bump\_offset}: A 2D offset of the grid of bumps. The individual bumps are by default positioned at the center of all the single pixels in the grid.
+\item \texttt{bump\_sphere\_radius}: The individual bump bonds are simulated as union solids of a sphere and a cylinder.
+This parameter sets the radius of the sphere to use.
+\item \texttt{bump\_cylinder\_radius}: The radius of the cylinder part of the bump.
+The height of the cylinder is determined by the \texttt{bump\_height} parameter.
+\item \texttt{bump\_offset}: A 2D offset of the grid of bumps.
+The individual bumps are by default positioned at the center of all the single pixels in the grid.
 \end{itemize}
 
-\nlparagraph{Fetching specific models within the framework}
-Some modules are specific for a particular type of detector model. To fetch a specific detector model from the base class, the model should be downcasted. An example to try fetching an \texttt{HybridPixelDetectorModel} is the following (the downcast return a null pointer if the class is not of the appropriate type).
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
-// Detector is a pointer to a Detector object
+\nlparagraph{Accessing specific detector models within the framework}
+Some modules are written specific to a particular type of detector model.
+In order to ensure receiving a specific detector model from the base class, the model should be downcast.
+ The downcast returns a null pointer if the class is not of the appropriate type.
+An example for fetching an \texttt{HybridPixelDetectorModel} is the following:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+// "detector" is a pointer to a Detector object
 auto model = detector->getModel();
 auto hybrid_model = std::dynamic_pointer_cast<HybridPixelDetectorModel>(model);
 if(hybrid_model != nullptr) {
@@ -277,51 +467,72 @@ if(hybrid_model != nullptr) {
 \end{minted}
 
 \nlparagraph{Specializing detector models}
-A detector model contains default values for all the parameters. Some parameters like the sensor thickness can however vary between different detectors of the same general model. To allow for easy adjustment of these parameters, models can be specialized in the detector configuration file introduced in \ref{sec:detector_config}. All of the model parameters, except the type parameter, in the header at the top (thus not the support layers) can be changed by adding a parameter with the exact same key to the detector model file with the specialized value. The framework will then internally automatically create a copy of this model with the requested change. 
+A detector model contains default values for all parameters.
+Some parameters like the sensor thickness can however vary between different detectors of the same model.
+To allow for easy adjustment of these parameters, models can be specialized in the detector configuration file introduced in~\ref{sec:detector_config}.
+All model parameters, except the type parameter and the support layers, can be changed by adding a parameter with the exact same key and the updated value to the detector configuration.
+The framework will then automatically create a copy of this model with the requested change.
+
+\begin{warning}
+Before re-implementing models, it should be checked if the desired change can be achieved using the detector model specialization. For most cases this provides a quick and flexible way to adapt detectors to different needs and setups.
+\end{warning}
 
 \nlparagraph{Search order for models}
-To support different detector models and storage locations the framework supports model readers. The core geometry manager does also read models and will read all remaining models, not parsed earlier, before the geometry is closed. The model readers and the core geometry manager should search for model files in the following order.
+To support different detector models and storage locations, the framework searches different paths for model files in the following order:
 \begin{enumerate}
-\item If defined, the paths in the \textit{models\_path} parameter provided to the model reader module or the global \textit{models\_path} parameter if no module-specific one is defined (the geometry manager only uses the global one). Files are read and parsed directly. If the path is a directory, all files in the directory are added (not recursing into subdirectories).
-\item The location where the models are installed to (see the MODEL\_DIRECTORY variable in Section \ref{sec:cmake_config}). 
-\item The standard data paths on the system as given by the environmental variable \$XDG\_DATA\_DIRS with the \project-directory appended. The \$XDG\_DATA\_DIRS variable defaults to \textit{/usr/local/share/} (thus effectively \textit{/usr/local/share/\project}) followed by \textit{/usr/share/} (effectively \textit{/usr/share/\project}).
+\item If defined, the paths provided in the global \textit{models\_path} parameter are searched first.
+Files are read and parsed directly.
+If the path is a directory, all files in the directory are added (not recursing into subdirectories).
+\item The location where the models are installed to (refer to the description of the MODEL\_DIRECTORY variable in Section~\ref{sec:cmake_config}).
+\item The standard data paths on the system as given by the environmental variable \$XDG\_DATA\_DIRS with ``\project'' appended.
+The \$XDG\_DATA\_DIRS variable defaults to \textit{/usr/local/share/} (thus effectively \textit{/usr/local/share/\project}) followed by \textit{/usr/share/} (effectively \textit{/usr/share/\project}).
 \end{enumerate}
-For almost all purposes a specific model reader is not needed and all internal models can be read by the geometry manager.
-
-\todo{This should include more details about other model readers or it should be removed}
 
 \subsection{Passing Objects using Messages}
 \label{sec:objects_messages}
-Communication between modules happens through messages (only some internal information is shared through external detector objects and the dependencies like Geant4). Messages are templated instantiations of the \texttt{Message} class carrying a vector of objects. The list of objects available in the \apsq objects library are discussed in Section \ref{sec:objects}. The messaging system has a dispatching part to send messages and a receiving part that fetches messages. 
+Communication between modules is established through messages.
+Messages are templated instantiations of the \texttt{Message} class carrying a vector of objects.
+The list of objects available in the \apsq objects library are discussed in Section~\ref{sec:objects}.
+The messaging system has a dispatching mechanism to send messages and a receiving part that fetches incoming messages.
 
-The dispatching module can specify an optional name for the messages, but modules should normally not specify this name directly. If the name is not directly given (or equal to \texttt{-}) the \textbf{output} parameter of the module is used to determine the name of the message, defaulting to an empty string. Dispatching the message to their receivers then goes by the following rules:
+The dispatching module can specify an optional name for the messages, but modules should normally not specify this name directly.
+If the name is not given (or equal to \texttt{-}) the \textbf{output} parameter of the module is used to determine the name of the message, defaulting to an empty string.
+Dispatching the message to their receivers is then performed following these rules:
 \begin{enumerate}
-\item The receiving module the will \underline{only} receive a message if it has the exact same type as the message dispatched (thus carrying the exact same object). If the receiver is however listening to the \texttt{BaseMessage} type it will receive all dispatched messages instead.
-\item The receiving module will \underline{only} receive messages with the exact same name as it is listening for. The module uses the \textbf{input} parameter to determine to which message names the module should listen. If the \textbf{input} parameter is equal to \texttt{*} the module should listen to all messages. Every module listens by default to messages with no name specified (thus receiving the messages of default dispatching modules).
-\item If the receiving module is a detector module it will \underline{only} receive messages that are bound to that specific detector \underline{or} messages that are not bound to any detector.
+\item The receiving module the will \underline{only} receive a message if it has the exact same type as the message dispatched (thus carrying the same objects).
+If the receiver is however listening to the \texttt{BaseMessage} type which does not specify the type of objects it is carrying, it will receive all dispatched messages instead.
+\item The receiving module will \underline{only} receive messages with the exact name it is listening for.
+The module uses the \textbf{input} parameter to determine to which message names the module should listen.
+If the \textbf{input} parameter is equal to \texttt{*} the module should listen to all messages.
+Every module by default listens to messages with no name specified (thus receiving the messages of dispatching modules without output name specified).
+\item If the receiving module is a detector module, it will \underline{only} receive messages bound to that specific detector \underline{or} messages that are not bound to any detector.
 \end{enumerate}
 
-An example how to dispatch, in the \texttt{run} function of a module, a message containing an array of \texttt{Object} types bound to a detector named \texttt{dut} is provided here:
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
+An example how to dispatch a message containing an array of \texttt{Object} types bound to a detector named \texttt{dut} is provided below.
+As usual, the message is dispatched at the end of the \texttt{run} function of the module.
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 void run(unsigned int event_id) {
     std::vector<Object> data;
-    // .. fill the data vector with objects ...
-    
-    // The message is dispatched only for 'dut' detector
-    std::shared_ptr<Message<Object>> message = std::make_shared<Message<Object>>(data, "dut");
-    
+    // ..fill the data vector with objects ...
+
+    // The message is dispatched only for the module's detector, stored in "detector_"
+    auto message = std::make_shared<Message<Object>>(data, detector_);
+
     // Send the message using the Messenger object
-    messenger->dispatchMessage(message);
+    messenger->dispatchMessage(this, message);
 }
 \end{minted}
 
 \subsubsection{Methods to process messages}
-The message system has multiple methods to process received messages. The first two are the most common methods and the third should only be used if necessary. The options are:
+The message system has multiple methods to process received messages.
+The first two are the most common methods and the third should only be used if necessary.
 \begin{enumerate}
-\item Bind a \textbf{single message} to a variable. This should usually be the preferred method as most modules only expect one message to arrive per event (as a module should typically send only one message containing the list of all the objects it should send). An example of how to bind a message containing an array of \textbf{Object} types in the constructor of a detector \texttt{TestModule} would be:
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
+\item Bind a \textbf{single message} to a variable.
+This should usually be the preferred method as most modules only expect one message to arrive per event, as a module should typically send only one message containing the list of all relevant objects.
+The following example binds to a message containing an array of object and is placed in the constructor of a detector-type \texttt{TestModule}:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 TestModule(Configuration, Messenger* messenger, std::shared_ptr<Detector>) {
-    messenger->bindSingle(this, 
+    messenger->bindSingle(this,
                           /* Pointer to the message variable */
                           &TestModule::message,
                           /* No special messenger flags */
@@ -329,9 +540,11 @@ TestModule(Configuration, Messenger* messenger, std::shared_ptr<Detector>) {
 }
 std::shared_ptr<Message<Object>> message;
 \end{minted}
-\item Bind a \textbf{set of messages} to an vector variable. This method should be used it the module can (and expects to) receive the same message multiple times (possibly because it wants to receive the same type of message for all detectors). An example to bind multiple messages containing an array of \textbf{Object} types in the constructor of a detector \texttt{TestModule} would be:
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
-TestModule(Configuration, Messenger* messenger, std::shared_ptr<Detector>) {
+\item Bind a \textbf{set of messages} to an vector variable.
+This method should be used it the module can (and expects to) receive the same message multiple times (possibly because it wants to receive the same type of message for all detectors).
+An example to bind multiple messages containing an array of objects in the constructor of a unique-type \texttt{TestModule} would be:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+TestModule(Configuration, Messenger* messenger, GeometryManager* geo_manager) {
     messenger->bindMulti(this,
                           /* Pointer to the message vector */
                           &TestModule::messages,
@@ -340,8 +553,12 @@ TestModule(Configuration, Messenger* messenger, std::shared_ptr<Detector>) {
 }
 std::vector<std::shared_ptr<Message<Object>>> messages;
 \end{minted}
-\item Listen to a particular message type and execute a \textbf{listener function} as soon as an object is received. Can be used for more advanced strategies for fetching messages. Note that this method can lead to surprising behaviour because the listener function is executed during the run of the dispatching module (leading to log messages with incorrect section headers at the minimum). The listening module should \underline{not} do any heavy work in the listening function as this is supposed to take place in their \texttt{run} method instead. An example of using this to listen to a message containing an array of \texttt{Object} types in a detector \texttt{TestModule} would be:
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2]{c++}
+\item Listen to a particular message type and execute a \textbf{listener function} as soon as an object is received.
+Can be used for more advanced strategies of retrieving messages.
+Note that this method can lead to unexpected behavior because the listener function is executed during the run method of the dispatching module.
+The listening module should \underline{not} do any heavy work in the listening function as this is supposed to take place in their \texttt{run} method instead.
+Listening to a message containing an array of objects in a detector \texttt{TestModule} could be performed as follows:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 TestModule(Configuration, Messenger* messenger, std::shared_ptr<Detector>) {
     messenger->registerListener(this,
                                 /* Pointer to the listener method */
@@ -350,101 +567,148 @@ TestModule(Configuration, Messenger* messenger, std::shared_ptr<Detector>) {
                                 MsgFlags::NONE);
 }
 void listener(std::shared_ptr<Message<Object>> message) {
-    // Do something with received message ...
+    // Do something with the received message ...
 }
 \end{minted}
 \end{enumerate}
 
 \subsubsection{Message flags}
-Various flags can be added to the bind function and listening functions. The flags enable a particular behaviour of the framework (if the particular type of method supports the flag).
+Flags can be added to the bind and listening methods which enable a particular behavior of the framework.
 \begin{itemize}
-\item \textbf{REQUIRED}: Specify that this message is required to be received. If the particular type of message is not received before it is time to execute the run function, the run is automatically skipped by the framework. This can be used to ignore modules that cannot do any action without received messages, for example propagation without any deposited charges.
-\item \textbf{NO\_RESET}: Messages are by default automatically reset after the \texttt{run} function executes to prevent older messages from previous runs to appear again. This behaviour can be disabled by setting this flag (this does not have any effect for listening functions). Setting this flag for single bound messages (without ALLOW\_OVERWRITE) would cause an exception to be raised if the message is overwritten in a later event.
-\item \textbf{ALLOW\_OVERWRITE}: By default an exception is automatically raised if a single bound message is overwritten (thus setting it multiple times instead of once). This flag prevents this behaviour. It is only used for variables to a single message.
-\item \textbf{IGNORE\_NAME}: If this flag is specified, the name of the dispatched message is not considered. Thus the \textbf{input} parameter is ignored and forced to the value \texttt{*}. 
+\item \textbf{REQUIRED}: Specifies that this message is required to be received.
+If the particular type of message is not received before it is time to execute the module's run function, the execution of the method is automatically skipped by the framework for the current event.
+This can be used to ignore modules which cannot perform any action without received messages, for example charge carrier propagation without any deposited charge carriers.
+\item \textbf{NO\_RESET}: Messages are by default automatically reset after the \texttt{run} function has been executed to prevent older messages from previous events to reappear.
+This behavior can be disabled by setting this flag (this does not have any effect for listening functions).
+Setting this flag for single bound messages (without ALLOW\_OVERWRITE, see below) would cause an exception to be raised if the message is overwritten in a later event.
+\item \textbf{ALLOW\_OVERWRITE}: By default an exception is automatically raised if a single bound message is overwritten (thus receiving it multiple times instead of once).
+This flag prevents this behavior.
+It can only be used for variables bound to a single message.
+\item \textbf{IGNORE\_NAME}: If this flag is specified, the name of the dispatched message is not considered.
+Thus, the \textbf{input} parameter is ignored and forced to the value \texttt{*}.
 \end{itemize}
 
 \subsection{Logging and other Utilities}
 \label{sec:logging_utilities}
-The \apsq framework provides a set of utilities that can be attributed to two types:
-\begin{itemize}
-\item Two utilities to improve the usability of the framework. One of these is a flexible and easy-to-use logging system, introduced below in Section \ref{sec:logger}. The other is an easy-to-use framework for units that supports converting arbitrary combinations of units to an independent number which can  be used transparently through the framework. It will be discussed in more detail in Section \ref{sec:unit_system}.
-\item A few utilities to extend the functionality provided by the C++ Standard Template Library (STL). These are provided to provide functionality the C++14 standard lacks (like filesystem support). The utilities are used internally in the framework and are only shortly discussed here. The utilities falling in this category are the filesystem functions (see Section \ref{sec:filesystem}) and the string utilies (see Section \ref{sec:string_utilities}).
-\end{itemize}
+The \apsq framework provides a set of utilities which improve the usability of the framework and extend the functionality provided by the C++ Standard Template Library (STL).
+The former include a flexible and easy-to-use logging system, introduced in Section~\ref{sec:logger} and an easy-to-use framework for units that supports converting arbitrary combinations of units to common base units which can  be used transparently through the framework and which will be discussed in more detail in Section~\ref{sec:unit_system}.
+The latter comprise tools which provide functionality the C++14 standard does not contain.
+These utilities are used internally in the framework and are only shortly discussed in Section~\ref{sec:filesystem} (file system support) and Section~\ref{sec:string_utilities} (string utilities).
 
 \subsubsection{Logging system}
 \label{sec:logger}
-The logging system is build to handle input/output in the same way as \texttt{std::cin} and \texttt{std::cout}. This approach is both very flexible and easy to read. The system is globally configured, thus there exists only one logger, and no special local versions. To send a message to the logging system at a level of \textbf{LEVEL}, the following can be used:
+The logging system is build to handle input/output the same way as \texttt{std::cin} and \texttt{std::cout} do.
+This approach is both very flexible and easy to read.
+The system is globally configured, thus only one logger instance exists.
+In order to send a message to the logging system at a level of \textbf{LEVEL}, the following can be used:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 LOG(LEVEL) << "this is an example message with an integer and a double " << 1 << 2.0;
 \end{minted}
-A newline is added at the end of every log message. Multi-line log messages can also be used: the logging system will automatically align every new line under the previous message and will leave the header space empty on the new lines. 
+A newline is added at the end of every log message.
+Multi-line log messages can also be used: the logging system will automatically align every new line under the previous message and will leave the header space empty on new lines.
 
-The system also allows for producing a message which is updated on the same line for simple progress bar like functionality. It is enabled using the \texttt{LOG\_PROCESS(LEVEL, IDENTIFIER)} macro (where the \texttt{IDENTIFIER} is a special string to determine if the output should be written to the same line or not). If the output is a terminal screen the logging output will be colored to make it prettier to read. This will be disabled automatically for all devices that are not terminals.
+The system also allows for producing a message which is updated on the same line for simple progressbar-like functionality.
+It is enabled using the \texttt{LOG\_PROCESS(LEVEL, IDENTIFIER)} command.
+Here, the \texttt{IDENTIFIER} is a unique string identifying this output stream in order not to mix different progress reports.
 
-More details about the various logging levels can be found in Section \ref{sec:logging_verbosity}.
+If the output is a terminal screen the logging output will be colored to make it prettier to read.
+This will be disabled automatically for all non-terminal outputs.
+
+More details about the logging levels and formats can be found in Section~\ref{sec:logging_verbosity}.
 
 \subsubsection{Unit system}
 \label{sec:unit_system}
-Correctly handling units and conversions is of paramount importance. Having a separate C++ type for all different kind of units would however be too cumbersome for a lot of operations. Therefore the units are stored in standard C++ floating point types in a default unit which all the code in the framework uses for calculations. In configuration files as well as for logging it is however very useful to provide quantities in a different unit.
+Correctly handling units and conversions is of paramount importance.
+Having a separate C++ type for all different kind of units would however be too cumbersome for a lot of operations.
+Therefore, the units are stored in standard C++ floating point types in a default unit which all code in the framework should use for calculations.
+In configuration files as well as for logging it is however very useful to provide quantities in different units.
 
-The unit system allows adding, retrieving, converting and displaying units. It is a global system transparently used throughout the framework. Examples of using the unit system are given below:
+The unit system allows adding, retrieving, converting and displaying units.
+It is a global system transparently used throughout the framework.
+Examples of using the unit system are given below:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 // Define the standard length unit and an auxiliary unit
-Units::add("mm", 1); 
-Units::add("m", 1e3); 
+Units::add("mm", 1);
+Units::add("m", 1e3);
 // Define the standard time unit
-Units::add("ns", 1); 
-// Get the units given in m/ns in the defined framework unit mm/ns
-Units::get(1, "m/ns"); 
-// Get the framework unit of mm/ns in m/ns 
+Units::add("ns", 1);
+// Get the units given in m/ns in the defined framework unit (mm/ns)
+Units::get(1, "m/ns");
+// Get the framework unit (mm/ns) in m/ns
 Units::convert(1, "m/ns");
-// Give the unit in the best type (lowest number above one) as string 
-//   input is default unit 2000mm/ns and 'best' output is 2m/ns (string)
-Units::display(2e3, {"mm/ns", "m/ns"}); 
+// Return the unit in the best type (lowest number larger than one) as string.
+// The input is in default units 2000mm/ns and the 'best' output is 2m/ns (string)
+Units::display(2e3, {"mm/ns", "m/ns"});
 \end{minted}
 
-More details about how the unit system is used within \apsq can be found in Section \ref{sec:config_values}.
+More details about how the unit system is used within \apsq can be found in Section~\ref{sec:config_values}.
 
 \subsubsection{Internal utilities}
-\paragraph{Filesystem}
 \label{sec:filesystem}
-Provides functions to convert relative to absolute canonical paths, to iterate through all files in a directory and to create new directories. These functions should be replaced by the C++17 filesystem API~\cite{cppfilesystem} as soon as the framework minimum standard is updated to C++17.
+The \textbf{filesystem} utilities provide functions to convert relative to absolute canonical paths, to iterate through all files in a directory and to create new directories.
+These functions should be replaced by the C++17 file system API~\cite{cppfilesystem} as soon as the framework minimum standard is updated to C++17.
 
-\paragraph{String utilities}
 \label{sec:string_utilities}
-The STL only provides string conversions for standard types using \texttt{std::stringstream} and \texttt{std::to\_string}. It does not allow to parse strings encapsulated in pairs of \texttt{"} characters and neither does it allow to integrate different units. Furthermore it does not provide wide flexibility to add custom conversions for other external types in either way. The \apsq \texttt{to\_string} and \texttt{from\_string} do allow for these flexible conversions and it it extensively used in the configuration system. Conversions of numeric types with a unit attached are automatically resolved using the unit system discussed in Section \ref{sec:unit_system}. The \apsq tools system contain extensions to allow automatic conversions for ROOT and Geant4 types as explained in Section \ref{sec:root_and_geant4_utilities}. The string utilities also include trim and split strings functions as they are missing in the STL.
+The STL only provides string conversions for standard types using \texttt{std::stringstream} and \texttt{std::to\_string} which do not allow to parse strings encapsulated in pairs of double quote (\texttt{"}) characters and neither does it allow to integrate different units.
+Furthermore it does not provide wide flexibility to add custom conversions for other external types in either way.
+
+The \apsq \texttt{to\_string} and \texttt{from\_string} methods provied by its \textbf{string utilities} do allow for these flexible conversions and are extensively used in the configuration system.
+Conversions of numeric types with a unit attached are automatically resolved using the unit system discussed in Section~\ref{sec:unit_system}.
+The string utilities also include trim and split strings functions missing in the STL.
+
+Furthermore, the \apsq tool system contains extensions to allow automatic conversions for ROOT and Geant4 types as explained in Section~\ref{sec:root_and_geant4_utilities}.
+
 
 \subsection{Error Reporting and Exceptions}
 \label{sec:error_reporting_exceptions}
-\apsq generally follows the principle to throw exceptions in all cases where something is definitely wrong, it should never try to circumvent problems. Also error codes are not supposed to be returned, only exceptions should be used to report fatal errors. Exceptions are also thrown to signal for errors in the user configuration. The asset of this method is that configuration and code is more likely to do what they are supposed to do.
+\apsq generally follows the principle of throwing exceptions in all cases something is definitely wrong.
+Exceptions are also thrown to signal for errors in the user configuration.
+It does not attempt to circumvent problems or correct configuration mistakes.
+Error return codes should not be used at all.
+The asset of this method is that errors cannot easily be ignored and the code is more predictable in general.
 
-For warnings and informational messages the logging should be used extensively. This helps in both following the progress of the simulation as well as for debugging problems. Care should however be taken to limit the amount of messages outside of the \texttt{DEBUG} and \texttt{TRACE} levels. More details about the log levels and their usage is given in Section \ref{sec:logging_verbosity}.
+For warnings and informational messages, the logging should be used extensively.
+This helps both in following the progress of the simulation and in debugging problems.
+Care should however be taken to limit the amount of messages in levels higher than \texttt{DEBUG} or \texttt{TRACE}.
+More details about the logging levels and their usage can be found in Section~\ref{sec:logging_verbosity}.
 
-The base exceptions in \apsq are available in the utilities. The most important exception base classes are the following:
+The base exceptions in \apsq are available via the utilities.
+The most important exception base classes are the following:
 \begin{itemize}
-\item \textbf{ConfigurationError}: All errors related to incorrect user configuration. Could be a non-existing configuration file, a missing key or an invalid parameter value.
-\item \textbf{RuntimeError}: All other errors arising at run-time. Could be related to incorrect configuration if messages are not correctly passed or non-existing detectors are specified. Could also be raised if errors arise while loading a library or running a module.
-\item \textbf{LogicError}: Problems related to modules that do not properly follow the specifications, for example if a detector module fails to pass the detector to the constructor. These methods should never be raised for a well-behaving module and should therefore not be triggerable by users. Reporting these type of errors can help developers during their development of new modules.
+\item \textbf{ConfigurationError}: All errors related to incorrect user configuration.
+This could indicate a non-existing configuration file, a missing key or an invalid parameter value.
+\item \textbf{RuntimeError}: All other errors arising at run-time.
+Could be related to incorrect configuration if messages are not correctly passed or non-existing detectors are specified.
+Could also be raised if errors arise while loading a library or executing a module.
+\item \textbf{LogicError}: Problems related to modules which do not properly follow the specifications, for example if a detector module fails to pass the detector to the constructor.
+These methods should never be raised for correctly implemented modules and should therefore not be triggerable by users.
+Reporting this type of errors can help developers during their development of new modules.
 \end{itemize}
 
-Outside of the core framework, exceptions can also be used directly by the modules. There are only two exceptions which should be used by typical modules to indicate errors:
+Outside the core framework, exceptions can also be used directly by the modules.
+There are only two exceptions which should be used by typical modules to indicate errors:
 \begin{itemize}
-\item \textbf{InvalidValueError}: Available under the subset of configuration exceptions. Signals any problem with the value of a configuration parameter that is not related to either the parsing or the conversion to the required type. Can for example be used for parameters where the possible valid values are limited, like the set of logging levels, or for paths that do not exist. An example is shown below:
+\item \textbf{InvalidValueError}: Derived from configuration exceptions.
+Signals any problem with the value of a configuration parameter not related to parsing or conversion to the required type.
+Can for example be used for parameters where the possible valid values are limited, like the set of logging levels, or for paths that do not exist.
+An example is shown below:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 void run(unsigned int event_id) {
     // Fetch a key from the configuration
     std::string value = config.get("key");
-    
+
     // Check if it is a 'valid' value
     if(value != 'A' && value != "B") {
         // Raise an error if it the value is not valid
-        //   provide configuration object, key and an explanation
+        //   provide the configuration object, key and an explanation
         throw InvalidValueError(config, "key", "A and B are the only allowed values");
     }
 }
 \end{minted}
-\item \textbf{ModuleError}: Available under the subset of module exceptions. Should be used to indicate any runtime error in a module that is not directly caused by an invalid configuration value. For example if it is not possible to write an output. A reason should be given to indicate what the problem is. \todo{The module class should be passed as well, so the module name can be displayed in the error message}
+\item \textbf{ModuleError}: Derived from module exceptions.
+Should be used to indicate any runtime error in a module not directly caused by an invalid configuration value, for example that it is not possible to write an output file.
+A reason should be given to indicate what the source of problem is.
+\todo{The module class should be passed as well, so the module name can be displayed in the error message}
 \end{itemize}
 
 \todo{add more info about error reporting style?}

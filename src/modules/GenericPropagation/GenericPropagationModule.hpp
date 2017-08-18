@@ -41,6 +41,11 @@ namespace allpix {
         GenericPropagationModule(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector);
 
         /**
+         * @brief Initialize the module and check field configuration
+         */
+        void init() override;
+
+        /**
          * @brief Propagate all deposited charges through the sensor
          */
         void run(unsigned int event_num) override;
@@ -65,6 +70,7 @@ namespace allpix {
         /**
          * @brief Propagate a single set of charges through the sensor
          * @param pos Position of the deposit in the sensor
+         * @param type Type of the carrier to propagate
          * @return Pair of the point where the deposit ended after propagation and the time the propagation took
          */
         std::pair<ROOT::Math::XYZPoint, double> propagate(const ROOT::Math::XYZPoint& pos, const CarrierType& type);

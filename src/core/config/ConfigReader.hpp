@@ -76,13 +76,13 @@ namespace allpix {
          * @param name Name of a configuration header to search for
          * @return True if at least a single configuration with this name exists, false otherwise
          */
-        bool hasConfiguration(const std::string& name) const;
+        bool hasConfiguration(std::string name) const;
         /**
          * @brief Count the number of configurations with a particular name
          * @param name Name of a configuration header
          * @return The number of configurations with the given name
          */
-        unsigned int countConfigurations(const std::string& name) const;
+        unsigned int countConfigurations(std::string name) const;
 
         /**
          * @brief Get cmobined configuration of all empty sections (usually the header)
@@ -96,7 +96,7 @@ namespace allpix {
          * @param name Header name of the configurations to return
          * @return List of configurations with the given name
          */
-        std::vector<Configuration> getConfigurations(const std::string& name) const;
+        std::vector<Configuration> getConfigurations(std::string name) const;
 
         /**
          * @brief Get all configurations

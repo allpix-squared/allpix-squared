@@ -23,6 +23,8 @@ before_install:
   - sudo cvmfs_config setup
   - sudo mkdir -p /cvmfs/clicdp.cern.ch
   - sudo mount -t cvmfs clicdp.cern.ch /cvmfs/clicdp.cern.ch
+  - sudo mkdir -p /cvmfs/sft.cern.ch
+  - sudo mount -t cvmfs sft.cern.ch /cvmfs/sft.cern.ch
 
 # command to install dependencies
 install:
@@ -37,7 +39,7 @@ install:
 
 # command to run tests
 script:
-  - docker run -it --name CI_container -v $PKGDIR:/Package -e COMPILER=$COMPILER -v /cvmfs/clicdp.cern.ch:/cvmfs/clicdp.cern.ch -d clicdp/slc6-build /bin/bash
+  - docker run -it --name CI_container -v $PKGDIR:/Package -e COMPILER=$COMPILER -v /cvmfs/clicdp.cern.ch:/cvmfs/clicdp.cern.ch -v /cvmfs/sft.cern.ch:/cvmfs/sft.cern.ch -d clicdp/slc6-build /bin/bash
   - docker exec -it CI_container /bin/bash -c "./Package/.travis-ci.d/coverity_scan.sh";
   - curl --form token=${COVERITY_SCAN_TOKEN} --form email=noreply@cern.ch --form file=@${PKGDIR}/build/myproject.tgz --form version="${TRAVIS_COMMIT}" --form description="${DESCRIPTION}" https://scan.coverity.com/builds?project=${COVERITY_REPO} ;
 

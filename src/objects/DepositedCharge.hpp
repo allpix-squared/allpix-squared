@@ -23,6 +23,7 @@ namespace allpix {
          * @brief Construct a charge deposit
          * @param local_position Local position of the deposit in the sensor
          * @param global_position Global position of the propagated set of charges in the sensor
+         * @param type Type of the carrier
          * @param charge Total charge of the deposit
          * @param event_time Time of deposition after event start
          * @param mc_particle Optional pointer to related MC particle

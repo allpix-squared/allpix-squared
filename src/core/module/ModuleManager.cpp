@@ -145,7 +145,7 @@ void ModuleManager::load(Messenger* messenger,
             } else {
                 LOG(ERROR) << "Library could not be loaded: it is not available" << std::endl
                            << " - Did you enable the library during building? " << std::endl
-                           << " - Did you spell the library name correctly? ";
+                           << " - Did you spell the library name correctly (case-sensitive)? ";
                 if(lib_error != nullptr) {
                     LOG(DEBUG) << "Detailed error: " << lib_error;
                 }
@@ -664,7 +664,7 @@ void ModuleManager::finalize() {
                 << std::round((100 * slowest_time) / std::max(1.0l, total_time)) << "% of time in slowest instantiation "
                 << slowest_module;
     for(auto& module_time : module_execution_time_) {
-        LOG(DEBUG) << " Module " << module_time.first->getUniqueName() << " took " << module_time.second << " seconds";
+        LOG(INFO) << " Module " << module_time.first->getUniqueName() << " took " << module_time.second << " seconds";
     }
     long double processing_time = 0;
     if(global_config_.get<unsigned int>("number_of_events") > 0) {

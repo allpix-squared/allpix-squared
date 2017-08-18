@@ -40,7 +40,8 @@ $ make install
 For more detailed installation instructions, please refer to the documentation below.
 
 ## Documentation
-A recent version of the User's Manual is available online [here](https://project-allpix-squared.web.cern.ch/project-allpix-squared/usermanual/allpix-manual.pdf). Some parts of the manual are still mising, but the fast majority of the sections are fairly complete. The Doxygen reference can also be viewed [online](https://project-allpix-squared.web.cern.ch/project-allpix-squared/reference/html/). 
+The most recently published version of the User's Manual is available online [here](https://project-allpix-squared.web.cern.ch/project-allpix-squared/usermanual/allpix-manual.pdf). 
+The Doxygen reference can be viewed [online](https://project-allpix-squared.web.cern.ch/project-allpix-squared/reference/html/). 
 
 The latest PDF version of the User's Manual can also be created from source by executing 
 ```
@@ -55,6 +56,6 @@ $ make reference
 The main page of the reference can then be found at `reference/html/index.html` in the build folder.
 
 ## Contributing
-All type of minor and major contributions are very welcome. Please refer to our [contributing guidelines](CONTRIBUTING.md) for a description on how to get started.
+All type of minor and major contributions are very welcome. Please refer to our [contribution guidelines](CONTRIBUTING.md) for a description on how to get started.
 
-Before adding changes it is very much recommended to carefully read through the documentation first.
+Before adding changes it is very much recommended to carefully read through the documentation in the User's Manual first.

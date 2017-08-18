@@ -6,6 +6,7 @@
 
 #include "ConfigReader.hpp"
 
+#include <algorithm>
 #include <cstdlib>
 #include <fstream>
 #include <string>
@@ -80,8 +81,7 @@ void ConfigReader::add(std::istream& stream, std::string file_name) {
                 // Ignore empty sections if they contain no configurations
                 if(!conf.getName().empty() || conf.countSettings() > 0) {
                     // Add previous section
-                    conf_array_.push_back(conf);
-                    conf_map_[section_name].push_back(--conf_array_.end());
+                    addConfiguration(conf);
                 }
 
                 // Begin new section
@@ -115,13 +115,15 @@ void ConfigReader::add(std::istream& stream, std::string file_name) {
         }
     }
     // Add last section
-    conf_array_.push_back(conf);
-    conf_map_[section_name].push_back(--conf_array_.end());
+    addConfiguration(conf);
 }
 
 void ConfigReader::addConfiguration(Configuration config) {
     conf_array_.push_back(std::move(config));
-    conf_map_[conf_array_.back().getName()].push_back(--conf_array_.end());
+
+    std::string section_name = conf_array_.back().getName();
+    std::transform(section_name.begin(), section_name.end(), section_name.begin(), ::tolower);
+    conf_map_[section_name].push_back(--conf_array_.end());
 }
 
 void ConfigReader::clear() {
@@ -129,11 +131,13 @@ void ConfigReader::clear() {
     conf_array_.clear();
 }
 
-bool ConfigReader::hasConfiguration(const std::string& name) const {
+bool ConfigReader::hasConfiguration(std::string name) const {
+    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
     return conf_map_.find(name) != conf_map_.end();
 }
 
-unsigned int ConfigReader::countConfigurations(const std::string& name) const {
+unsigned int ConfigReader::countConfigurations(std::string name) const {
+    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
     if(!hasConfiguration(name)) {
         return 0;
     }
@@ -166,7 +170,8 @@ Configuration ConfigReader::getHeaderConfiguration() const {
     return header_config;
 }
 
-std::vector<Configuration> ConfigReader::getConfigurations(const std::string& name) const {
+std::vector<Configuration> ConfigReader::getConfigurations(std::string name) const {
+    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
     if(!hasConfiguration(name)) {
         return std::vector<Configuration>();
     }
