@@ -1,3 +1,4 @@
+ALLPIX_ENABLE_DEFAULT(OFF)
 #First make the root library for the pixel class, then make the module library
 
 # Find the RootNewMacros.cmake file and include it
