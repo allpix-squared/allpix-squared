@@ -601,16 +601,16 @@ void ModuleManager::run() {
                 thread_pool->execute_all();
             }
 
-            // Check if module is satisfied to run
-            if(!module->check_delegates()) {
-                LOG(TRACE) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
-                           << ", skipping module!";
-                continue;
-            }
-
             auto execute_module = [ module = module.get(), event_num = i + 1, this, number_of_events ]() {
                 LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << event_num << " of " << number_of_events << " ["
                                                   << module->get_identifier().getUniqueName() << "]";
+                // Check if module is satisfied to run
+                if(!module->check_delegates()) {
+                    LOG(TRACE) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
+                               << ", skipping module!";
+                    return;
+                }
+
                 // Get current time
                 auto start = std::chrono::steady_clock::now();
                 // Set run module section header
