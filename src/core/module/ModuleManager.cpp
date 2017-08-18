@@ -642,6 +642,9 @@ void ModuleManager::run() {
                 // Submit the module function
                 thread_pool->submit_module_function(execute_module);
             } else {
+                // Finish thread pool
+                thread_pool->execute_all();
+                // Execute current module
                 execute_module();
             }
         }
