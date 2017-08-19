@@ -1,4 +1,9 @@
+# Disable default build
 ALLPIX_ENABLE_DEFAULT(OFF)
+
+# Define module and return the generated name as MODULE_NAME
+ALLPIX_UNIQUE_MODULE(MODULE_NAME)
+
 #First make the root library for the pixel class, then make the module library
 
 # Find the RootNewMacros.cmake file and include it
@@ -57,15 +62,9 @@ INSTALL(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/libCorryvreckanObjects.rootmap
     DESTINATION lib)
 
-# Now create the Corryvreckan output module
-
-# Define module and return the generated name as MODULE_NAME
-ALLPIX_UNIQUE_MODULE(MODULE_NAME)
-
-# Add source files to library
+# Add source files to module library
 ALLPIX_MODULE_SOURCES(${MODULE_NAME} 
     CorryvreckanOutputModule.cpp
-    # ADD SOURCE FILES HERE...
 )
 
 TARGET_LINK_LIBRARIES(${MODULE_NAME} CorryvreckanObjects)
