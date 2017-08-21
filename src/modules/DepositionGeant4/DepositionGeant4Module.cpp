@@ -101,8 +101,9 @@ void DepositionGeant4Module::init() {
         message += " with optional suffixes for electromagnetic lists ";
         std::vector<G4String> em_lists = physListFactory.AvailablePhysListsEM();
         for(auto& em_list : em_lists) {
-            if(em_list.empty())
+            if(em_list.empty()) {
                 continue;
+            }
             message += em_list;
             message += ", ";
         }
