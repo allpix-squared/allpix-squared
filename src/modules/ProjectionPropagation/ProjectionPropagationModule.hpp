@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Definition of [ProjectionPropagation] module
+ * @brief Definition of ProjectionPropagation module
  * @copyright MIT License
  *
  * Contains minimal dummy module to use as a start for the development of your own module
@@ -24,9 +24,11 @@
 namespace allpix {
     /**
      * @ingroup Modules
-     * @brief Module to do function
+     * @brief Module to project created electrons onto the sensor surface including diffusion
      *
-     * More detailed explanation of module
+     * The electrons from the deposition message are projected onto the sensor surface as a simple propagation method.
+     * Diffusion is added by approximating the drift time and drawing a random number from a 2D gaussian distribution of the
+     * calculated width.
      */
     class ProjectionPropagationModule : public Module {
     public:
