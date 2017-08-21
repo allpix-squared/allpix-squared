@@ -11,6 +11,8 @@
 #include <random>
 #include <string>
 
+#include <TH1D.h>
+
 #include "core/config/Configuration.hpp"
 #include "core/geometry/DetectorModel.hpp"
 #include "core/messenger/Messenger.hpp"
@@ -46,6 +48,11 @@ namespace allpix {
          */
         void run(unsigned int) override;
 
+        /**
+         * @brief Write plots if needed
+         */
+        void finalize() override;
+
     private:
         Configuration config_;
         Messenger* messenger_;
@@ -65,6 +72,9 @@ namespace allpix {
 
         // Precalculated value for Boltzmann constant:
         double boltzmann_kT_;
+
+        // Output plot for drift time
+        TH1D* drift_time_histo;
 
         // Deposits for the bound detector in this event
         std::shared_ptr<DepositedChargeMessage> deposits_message_;
