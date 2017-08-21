@@ -61,3 +61,17 @@ div.lstlisting {
         display: none;
     }
 }
+
+#license-text {
+    display: inline-block; 
+    position: relative; 
+    left: 10px; 
+    top: -5px; 
+    max-width: 350px;
+}
+@media only screen and (max-width: 481px) {
+    #license-text {
+        top: 10px;
+        left: 0;
+    }
+}

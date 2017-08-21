@@ -104,6 +104,7 @@ IF(LATEX_COMPILER)
             USE_BIBLATEX
             IMAGES
             logo.png
+            cc-by.png
             usermanual/figures/telescope.png
             INPUTS
             usermanual/chapters/introduction.tex
