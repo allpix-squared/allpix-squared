@@ -11,6 +11,7 @@
 #include <string>
 #include <utility>
 
+#include <G4EmParameters.hh>
 #include <G4HadronicProcessStore.hh>
 #include <G4LogicalVolume.hh>
 #include <G4PhysListFactory.hh>
@@ -61,12 +62,34 @@ void DepositionGeant4Module::init() {
     // Suppress all output from G4
     SUPPRESS_STREAM(G4cout);
 
+    // Get UI manager for sending commands
+    G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
+
+    // Apply optional PAI model
+    if(config_.get<bool>("pai_model", false)) {
+        LOG(TRACE) << "Enabling PAI model on all detectors";
+        G4EmParameters::Instance();
+
+        for(auto& detector : geo_manager_->getDetectors()) {
+            // Get logical volume
+            auto logical_volume = detector->getExternalObject<G4LogicalVolume>("sensor_log");
+            if(logical_volume == nullptr) {
+                throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
+            }
+            // Create region
+            G4Region* region = new G4Region(detector->getName() + "_sensor_region");
+            region->AddRootLogicalVolume(logical_volume.get());
+
+            // TODO can also be PAIphoton
+            ui_g4->ApplyCommand("/process/em/AddPAIRegion all " + region->GetName() + " pai");
+        }
+    }
+
     // Find the physics list
     // FIXME Set a good default physics list
     G4PhysListFactory physListFactory;
     G4VModularPhysicsList* physicsList = physListFactory.GetReferencePhysList(config_.get<std::string>("physics_list"));
     if(physicsList == nullptr) {
-        RELEASE_STREAM(G4cout);
         std::string message = "specified physics list does not exists";
         std::vector<G4String> base_lists = physListFactory.AvailablePhysLists();
         message += " (available base lists are ";
@@ -141,10 +164,9 @@ void DepositionGeant4Module::init() {
     }
 
     // Disable verbose messages from processes
-    G4UImanager* UI = G4UImanager::GetUIpointer();
-    UI->ApplyCommand("/process/verbose 0");
-    UI->ApplyCommand("/process/em/verbose 0");
-    UI->ApplyCommand("/process/eLoss/verbose 0");
+    ui_g4->ApplyCommand("/process/verbose 0");
+    ui_g4->ApplyCommand("/process/em/verbose 0");
+    ui_g4->ApplyCommand("/process/eLoss/verbose 0");
     G4HadronicProcessStore::Instance()->SetVerbose(0);
 
     // Set the random seed for Geant4 generation
@@ -156,7 +178,7 @@ void DepositionGeant4Module::init() {
             seed_command += " ";
         }
     }
-    UI->ApplyCommand(seed_command);
+    ui_g4->ApplyCommand(seed_command);
 
     // Release the output stream
     RELEASE_STREAM(G4cout);
