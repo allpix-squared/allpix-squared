@@ -67,8 +67,26 @@ void DepositionGeant4Module::init() {
     G4VModularPhysicsList* physicsList = physListFactory.GetReferencePhysList(config_.get<std::string>("physics_list"));
     if(physicsList == nullptr) {
         RELEASE_STREAM(G4cout);
-        // FIXME More information about available lists
-        throw InvalidValueError(config_, "physics_list", "specified physics list does not exists");
+        std::string message = "specified physics list does not exists";
+        std::vector<G4String> base_lists = physListFactory.AvailablePhysLists();
+        message += " (available base lists are ";
+        for(auto& base_list : base_lists) {
+            message += base_list;
+            message += ", ";
+        }
+        message = message.substr(0, message.size() - 2);
+        message += " with optional suffixes for electromagnetic lists ";
+        std::vector<G4String> em_lists = physListFactory.AvailablePhysListsEM();
+        for(auto& em_list : em_lists) {
+            if(em_list.empty())
+                continue;
+            message += em_list;
+            message += ", ";
+        }
+        message = message.substr(0, message.size() - 2);
+        message += ")";
+
+        throw InvalidValueError(config_, "physics_list", message);
     } else {
         LOG(INFO) << "Using G4 physics list \"" << config_.get<std::string>("physics_list") << "\"";
     }
