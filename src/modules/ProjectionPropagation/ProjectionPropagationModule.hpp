@@ -37,7 +37,12 @@ namespace allpix {
         ProjectionPropagationModule(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector);
 
         /**
-         * @brief [Run the function of this module]
+         * @brief Initialize - create plots if needed
+         */
+        void init() override;
+
+        /**
+         * @brief Projection of the electrons to the surface
          */
         void run(unsigned int) override;
 
@@ -54,12 +59,9 @@ namespace allpix {
         double electron_Vm_;
         double electron_Ec_;
         double electron_Beta_;
-        double hole_Vm_;
-        double hole_Ec_;
-        double hole_Beta_;
 
-        // Local copies of configuration parameters to avoid costly lookup:
-        double spatial_precision_{};
+        // Calculated slope of the electric field
+        double slope_efield_;
 
         // Precalculated value for Boltzmann constant:
         double boltzmann_kT_;

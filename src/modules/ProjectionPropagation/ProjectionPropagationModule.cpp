@@ -39,12 +39,13 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration config,
     electron_Ec_ = Units::get(1.01 * std::pow(temperature, 1.55), "V/cm");
     electron_Beta_ = 2.57e-2 * std::pow(temperature, 0.66);
 
-    hole_Vm_ = Units::get(1.62e8 * std::pow(temperature, -0.52), "cm/s");
-    hole_Ec_ = Units::get(1.24 * std::pow(temperature, 1.68), "V/cm");
-    hole_Beta_ = 0.46 * std::pow(temperature, 0.17);
-
-    spatial_precision_ = config_.get<double>("spatial_precision");
     boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * temperature;
+}
+
+void ProjectionPropagationModule::init() {
+    if(detector_->getElectricFieldType() != ElectricFieldType::LINEAR) {
+        throw ModuleError("This module should only be used with linear electric fields.");
+    }
 }
 
 void ProjectionPropagationModule::run(unsigned int) {
@@ -75,14 +76,33 @@ void ProjectionPropagationModule::run(unsigned int) {
         auto carrier_mobility = [&](double efield_mag) {
             // Compute carrier mobility from constants and electric field magnitude
             double numerator, denominator;
-            if(type == CarrierType::ELECTRON) {
-                numerator = electron_Vm_ / electron_Ec_;
-                denominator = std::pow(1. + std::pow(efield_mag / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_);
-            } else {
-                numerator = hole_Vm_ / hole_Ec_;
-                denominator = std::pow(1. + std::pow(efield_mag / hole_Ec_, hole_Beta_), 1.0 / hole_Beta_);
-            }
+            numerator = electron_Vm_ / electron_Ec_;
+            denominator = std::pow(1. + std::pow(efield_mag / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_);
             return numerator / denominator;
+        };
+
+        auto efield_top = detector_->getElectricField(ROOT::Math::XYZPoint(0., 0., model->getSensorSize().z() / 2.));
+        double efield_mag_top = std::sqrt(efield_top.Mag2());
+        auto efield_bot = detector_->getElectricField(ROOT::Math::XYZPoint(0., 0., -model->getSensorSize().z() / 2.));
+        double efield_mag_bot = std::sqrt(efield_bot.Mag2());
+
+        LOG(TRACE) << "Electric field at top / bottom: " << Units::display(efield_mag_top, "V/cm") << " , "
+                   << Units::display(efield_mag_bot, "V/cm");
+
+        slope_efield_ = (efield_mag_top - efield_mag_bot) / model->getSensorSize().z();
+
+        // Calculate the drift time
+        auto calc_drift_time = [&]() {
+            auto integral_funct = [&](double z) {
+                // Increase z by the half sensor, because z is used for the calculation of the e-field.
+                z += model->getSensorSize().z() / 2.;
+                return (log(z) / slope_efield_ + z / electron_Ec_);
+            };
+            double zero_mobility = electron_Vm_ / electron_Ec_;
+
+            double drift_time =
+                (integral_funct(model->getSensorSize().z() / 2.) - integral_funct(position.z())) / zero_mobility;
+            return drift_time;
         };
 
         // Get the electric field at the position of the deposited charge:
@@ -97,16 +117,10 @@ void ProjectionPropagationModule::run(unsigned int) {
 
         LOG(TRACE) << "Electric field is " << Units::display(efield_mag, "V/cm");
 
-        // Assume constant electric field over the sensor:
-        double diffusion_constant = boltzmann_kT_ * carrier_mobility(efield_mag);
+        // Assume linear electric field over the sensor:
+        double diffusion_constant = boltzmann_kT_ * (carrier_mobility(efield_mag) + carrier_mobility(efield_mag_top)) / 2.;
 
-        double drift_distance = model->getSensorSize().z() / 2. - position.z();
-        LOG(TRACE) << "Drift distance is " << Units::display(drift_distance, "um");
-
-        double drift_velocity = carrier_mobility(efield_mag) * efield_mag;
-        LOG(TRACE) << "Drift velocity is " << Units::display(drift_velocity, "um/ns");
-
-        double drift_time = drift_distance / drift_velocity;
+        double drift_time = calc_drift_time();
         LOG(TRACE) << "Drift time is " << Units::display(drift_time, "ns");
 
         double diffusion_std_dev = std::sqrt(2. * diffusion_constant * drift_time);
