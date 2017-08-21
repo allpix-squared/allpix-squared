@@ -31,7 +31,7 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration config,
     messenger_->bindSingle(this, &ProjectionPropagationModule::deposits_message_, MsgFlags::REQUIRED);
 
     // Set default value for config variables
-    config_.setDefault<double>("spatial_precision", Units::get(1.0, "um"));
+    config_.setDefault<int>("charge_per_step", 10);
 
     // Parameterization variables from https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2)
     auto temperature = config_.get<double>("temperature");
