@@ -46,6 +46,6 @@ The data to be plotted can be selected with the -d option, the arguments are *ex
 J. Behley, V. Steinhage, A.B. Cremers. *Efficient Radius Neighbor Search in Three-dimensional Point Clouds*, Proc. of the IEEE International Conference on Robotics and Automation (ICRA), 2015 [@octree].
 
 Copyright 2015 Jens Behley, University of Bonn.
-This project is free software made available under the MIT License. For details see the OCTREE LICENSE file.
+This project is free software made available under the MIT License. For details see the LICENSE.md file.
 
 [@octree]: http://jbehley.github.io/papers/behley2015icra.pdf
