@@ -197,9 +197,9 @@ Every detector should contain all of the following parameters:
 The model should exist in the search path described in Section~\ref{sec:detector_models}.
 \item The 3D \textbf{position} in the world frame in the order x, y, z.
 See Section~\ref{sec:models_geometry} for details.
-\item The \textbf{orientation} specified as Z-X-Z extrinsic Euler angle.
-This means the detector is rotated first around the world's Z-axis, then around the world's X-axis and then again around the global Z-axis.
-See Section~\ref{sec:models_geometry} for details.
+\item The \textbf{orientation} specified as X-Y-Z extrinsic Euler angle.
+This means the detector is rotated first around the X-axis, then around the world's Y-axis and then around the world's Z-axis.
+Alternatively the orientation can be set in an X-Z-X extrinsic Euler angle, refer to Section~\ref{sec:models_geometry} for details.
 \end{itemize}
 Furthermore it is possible to specialize certain parameters of the detector models, which is explained in more detail in Section~\ref{sec:detector_models}.
 This allows to quickly adapt e.g. the sensor thickness of a certain detector without altering the actual detector model file.
