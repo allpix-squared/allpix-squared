@@ -150,6 +150,7 @@ namespace allpix {
      * @brief Recursively removes a path from the file system
      * @param path Path to the top directory to remove
      * @throws std::invalid_argument If the path cannot be removed
+     * @warning This method is not thread-safe
      *
      * All the required directories are deleted recursively from the top-directory (use this with caution).
      */
