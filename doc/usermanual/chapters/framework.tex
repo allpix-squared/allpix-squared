@@ -549,7 +549,7 @@ void run(unsigned int event_id) {
 
 \subsubsection{Methods to process messages}
 The message system has multiple methods to process received messages.
-The first two are the most common methods and the third should only be used if necessary.
+The first three are the most common methods and the fourth should only be used if necessary.
 \begin{enumerate}
 \item Bind a \textbf{single message} to a variable.
 This should usually be the preferred method as most modules only expect one message to arrive per event, as a module should typically send only one message containing the list of all relevant objects.
@@ -564,7 +564,7 @@ TestModule(Configuration, Messenger* messenger, std::shared_ptr<Detector>) {
 }
 std::shared_ptr<Message<Object>> message;
 \end{minted}
-\item Bind a \textbf{set of messages} to an vector variable.
+\item Bind a \textbf{set of messages} to a \texttt{std::vector} variable.
 This method should be used it the module can (and expects to) receive the same message multiple times (possibly because it wants to receive the same type of message for all detectors).
 An example to bind multiple messages containing an array of objects in the constructor of a unique-type \texttt{TestModule} would be:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
@@ -577,12 +577,24 @@ TestModule(Configuration, Messenger* messenger, GeometryManager* geo_manager) {
 }
 std::vector<std::shared_ptr<Message<Object>>> messages;
 \end{minted}
+\item Add a dependency to keep messages in memory for fetching history.
+Several objects have related objects which can be retrieved as explained in Section \ref{sec:objhistory}.
+Those related objects can however only be retrieved (during the same event) if these source objects remain in memory.
+Modules should explicitly mark objects that are fetched indirectly through history, to ensure these objects are not deleted.
+This method can be used as follows in a detector-specific \texttt{TestModule}, to keep \texttt{PixelHitMessage}s in memory without having direct acces to them (\texttt{PixelHitMessage} can be replaced here with any other type of message):
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+TestModule(Configuration, Messenger* messenger, std::shared_ptr<Detector>) {
+    messenger->addDependency<PixelHit>(this,
+                                       /* No special message flags */
+                                       MsgFlags::NONE);
+}
+\end{minted}
 \item Listen to a particular message type and execute a \textbf{listener function} as soon as an object is received.
 Can be used for more advanced strategies of retrieving messages, but the other method should be preferred when possible.
 The listening module should \underline{not} do any heavy work in the listening function as this is supposed to take place in their \texttt{run} method instead.
 Using a listener function can lead to unexpected behavior because the function is executed during the run method of the dispatching module.
 This means that logging is performed at the level of the dispatching module and that the listener method can be accessed from multiple threads if the dispatching module is parallelized.
-Listening to a message containing an array of objects in a detector \texttt{TestModule} could be performed as follows:
+Listening to a message containing an array of objects in a detector-specific \texttt{TestModule} could be performed as follows:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 TestModule(Configuration, Messenger* messenger, std::shared_ptr<Detector>) {
     messenger->registerListener(this,
