@@ -123,21 +123,23 @@ void ThreadPool::worker(const std::function<void()>& init_function) {
     // Continue running until the thread pool is finished
     while(!done_) {
         SafeQueue<Task>* queue_ptr;
-        Task task{nullptr};
-        if(all_queue_.pop(queue_ptr) && queue_ptr->pop(task, false, increase_run_cnt_func)) {
-            // Try to run task
-            try {
-                // Execute task
-                (*task)();
-                // Fetch the future to propagate exceptions
-                task->get_future().get();
-            } catch(...) {
-                // Check if the first exception thrown
-                if(has_exception_.test_and_set()) {
-                    // Save first exception
-                    exception_ptr_ = std::current_exception();
-                    // Invalidate the queue to terminate other threads
-                    all_queue_.invalidate();
+        if(all_queue_.pop(queue_ptr, true, increase_run_cnt_func)) {
+            Task task{nullptr};
+            if(queue_ptr->pop(task, false)) {
+                // Try to run task
+                try {
+                    // Execute task
+                    (*task)();
+                    // Fetch the future to propagate exceptions
+                    task->get_future().get();
+                } catch(...) {
+                    // Check if the first exception thrown
+                    if(has_exception_.test_and_set()) {
+                        // Save first exception
+                        exception_ptr_ = std::current_exception();
+                        // Invalidate the queue to terminate other threads
+                        all_queue_.invalidate();
+                    }
                 }
             }
 
