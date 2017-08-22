@@ -152,8 +152,6 @@ void DetectorHistogrammerModule::finalize() {
     if(total_hits_ != 0) {
         LOG(INFO) << "Plotted " << total_hits_ << " hits in total, mean position is "
                   << total_vector_ / static_cast<double>(total_hits_);
-    } else {
-        LOG(WARNING) << "No hits plotted";
     }
 
     // FIXME Set more useful spacing maximum for cluster size histogram
