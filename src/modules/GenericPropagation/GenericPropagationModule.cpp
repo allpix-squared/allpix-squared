@@ -385,6 +385,8 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
         }
     }
     output_plot_points_.clear();
+
+    drift_time_histo->Write();
 }
 
 void GenericPropagationModule::init() {
@@ -414,7 +416,7 @@ void GenericPropagationModule::init() {
             LOG(WARNING) << "Electric field indicates hole collection at implants, but holes are not propagated!";
         }
     }
-    if(config_.get<bool>("output_plots")) {
+    if(output_plots_) {
         drift_time_histo = new TH1D("drift_time_histo", "Drift time;t[ns];particles", 50, 0., 20.);
     }
 }
@@ -456,7 +458,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
             auto position = deposit.getLocalPosition();
 
             // Add point of deposition to the output plots if requested
-            if(config_.get<bool>("output_plots")) {
+            if(output_plots_) {
                 auto global_position = detector_->getGlobalPosition(position);
                 output_plot_points_.emplace_back(
                     PropagatedCharge(position, global_position, deposit.getType(), charge_per_step, deposit.getEventTime()),
@@ -485,7 +487,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
             total_time += prop_pair.second;
 
             // Fill plot for drift time
-            if(config_.get<bool>("output_plots")) {
+            if(output_plots_) {
                 drift_time_histo->SetBinContent(
                     drift_time_histo->FindBin(prop_pair.second),
                     drift_time_histo->GetBinContent(drift_time_histo->FindBin(prop_pair.second)) + charge_per_step);
@@ -494,7 +496,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
     }
 
     // Output plots if required
-    if(config_.get<bool>("output_plots")) {
+    if(output_plots_) {
         create_output_plots(event_num);
     }
 
@@ -620,6 +622,4 @@ void GenericPropagationModule::finalize() {
     long double average_time = total_time_ / std::max(1u, total_steps_);
     LOG(INFO) << "Propagated total of " << total_propagated_charges_ << " charges in " << total_steps_
               << " steps in average time of " << Units::display(average_time, "ns");
-
-    drift_time_histo->Write();
 }
