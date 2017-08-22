@@ -287,7 +287,7 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
     module_execution_time_[module] += static_cast<std::chrono::duration<long double>>(end - start).count();
 
     // Set the module directory afterwards to catch invalid access in constructor
-    module->get_configuration().set<std::string>("_output_dir", output_dir);
+    module->getConfiguration().set<std::string>("_output_dir", output_dir);
 
     // Store the module and return it to the Module Manager
     return std::make_pair(identifier, module);
@@ -402,7 +402,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         module_execution_time_[module] += static_cast<std::chrono::duration<long double>>(end - start).count();
 
         // Set the module directory afterwards to catch invalid access in constructor
-        module->get_configuration().set<std::string>("_output_dir", output_dir);
+        module->getConfiguration().set<std::string>("_output_dir", output_dir);
 
         // Check if the module called the correct base class constructor
         if(module->getDetector().get() != instance.first.get()) {
@@ -483,7 +483,7 @@ void ModuleManager::init() {
 
         LOG(TRACE) << "Creating and accessing ROOT directory";
         // Create main ROOT directory for this module class if it does not exists yet
-        std::string module_name = module->get_configuration().getName();
+        std::string module_name = module->getConfiguration().getName();
         auto directory = modules_file_->GetDirectory(module_name.c_str());
         if(directory == nullptr) {
             directory = modules_file_->mkdir(module_name.c_str());
@@ -516,7 +516,7 @@ void ModuleManager::init() {
         section_name += module->get_identifier().getUniqueName();
         Log::setSection(section_name);
         // Set module specific settings
-        auto old_settings = set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
+        auto old_settings = set_module_before(module->get_identifier().getUniqueName(), module->getConfiguration());
         // Change to our ROOT directory
         module->getROOTDirectory()->cd();
         // Init module
@@ -620,7 +620,7 @@ void ModuleManager::run() {
                 section_name += module->get_identifier().getUniqueName();
                 Log::setSection(section_name);
                 // Set module specific settings
-                auto old_settings = set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
+                auto old_settings = set_module_before(module->get_identifier().getUniqueName(), module->getConfiguration());
                 // Change to ROOT directory is not thread safe, only do this for module without parallelization support
                 if(!module->canParallelize()) {
                     // DEPRECATED: Switching to the directory should be removed, but can break current modules
@@ -708,7 +708,7 @@ void ModuleManager::finalize() {
         section_name += module->get_identifier().getUniqueName();
         Log::setSection(section_name);
         // Set module specific settings
-        auto old_settings = set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
+        auto old_settings = set_module_before(module->get_identifier().getUniqueName(), module->getConfiguration());
         // Change to our ROOT directory
         module->getROOTDirectory()->cd();
         // Finalize module

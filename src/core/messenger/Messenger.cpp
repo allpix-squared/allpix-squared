@@ -48,7 +48,7 @@ bool Messenger::hasReceiver(Module* source, const std::shared_ptr<BaseMessage>& 
     std::type_index type_idx = typeid(*inst);
 
     // Get the name of the output message
-    std::string name = source->get_configuration().get<std::string>("output");
+    std::string name = source->getConfiguration().get<std::string>("output");
 
     // Check if a normal specific listener exists
     for(auto& delegate : delegates_[type_idx][name]) {
@@ -86,7 +86,7 @@ void Messenger::dispatch_message(Module* source, const std::shared_ptr<BaseMessa
 
     // Get the name of the output message
     if(name == "-") {
-        name = source->get_configuration().get<std::string>("output");
+        name = source->getConfiguration().get<std::string>("output");
     }
 
     bool send = false;
@@ -150,7 +150,7 @@ void Messenger::add_delegate(const std::type_info& message_type, Module* module,
     if((delegate->getFlags() & MsgFlags::IGNORE_NAME) != MsgFlags::NONE) {
         message_name = "*";
     } else {
-        message_name = module->get_configuration().get<std::string>("input");
+        message_name = module->getConfiguration().get<std::string>("input");
     }
 
     // Register delegate internally
