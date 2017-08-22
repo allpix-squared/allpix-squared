@@ -231,6 +231,13 @@ namespace allpix {
          */
         void enable_parallelization();
 
+        /**
+         * @brief Get the module configuration for internal use
+         * @return Configuration of the module
+         */
+        Configuration& get_configuration();
+        Configuration config_;
+
     private:
         /**
          * @brief Set the module identifier for internal use
@@ -243,13 +250,6 @@ namespace allpix {
          */
         ModuleIdentifier get_identifier() const;
         ModuleIdentifier identifier_;
-
-        /**
-         * @brief Get the module configuration for internal use
-         * @return Configuration of the module
-         */
-        Configuration& get_configuration();
-        Configuration config_;
 
         /**
          * @brief Set the thread pool for parallel execution
