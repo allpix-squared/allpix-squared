@@ -81,8 +81,7 @@ namespace allpix {
          * @param message Rvalue reference to the message
          * @param flags Message configuration flags
          */
-        template <typename T, typename R>
-        void registerDependency(T* receiver, std::shared_ptr<R>&& message, MsgFlags flags = MsgFlags::NONE);
+        template <typename R, typename T> void addDependency(T* receiver, MsgFlags flags = MsgFlags::NONE);
 
         /**
          * @brief Binds a pointer to a single message
