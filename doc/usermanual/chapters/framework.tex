@@ -310,6 +310,26 @@ The instantiation logic only allows a single instance for every unique name.
 If there are multiple instantiations with the same unique name, the instantiation with the highest priority is kept.
 If multiple instantiations with the same unique name and the same priority exist, an exception is raised.
 
+\subsubsection{Parallel execution of modules}
+\label{sec:multithreading}
+The framework has experimental support for running several modules in parallel.
+This feature is disabled by default, it has to supported by the module and it has to enabled by the user as described in Section \ref{sec:framework_parameters}.
+A significant speed up can be achieved if the simulation contains multiple detectors or simulates the same module using different parameters.
+
+The framework allows to parallelize the execution of the same type of module, if these would otherwise be executed directly after each other in the linear order.
+Thus, as long as the name of the module remains the same, while going through the execution order of all \texttt{run()} methods, all instances are added to a work queue.
+The instances are then distributed to a set of worker threads as specified in the configuration or determined from system parameters, which will execute the individual modules.
+The module manager will wait for all jobs to finish, before it will continue to handle the next type of module.
+
+To enable parallelization for a module, the following line of code has to be added to the constructor of a module:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+// Enable parallelization of this module if multithreading is enabled
+enable_parallelization();
+\end{minted}
+By adding this, the module promises that it will work correctly if the run-method is executed multiple times in parallel in separate instantiations.
+This means in particular that the module will safely handle access to shared (for example static) variables and it will properly bind ROOT histograms to their directory before the \texttt{run()}-method.
+Access to constant operations in the GeometryManager, Detector and DetectorModel is always valid between various threads. Also sending and receiving messages is thread-safe.
+
 \subsection{Geometry and Detectors}
 \label{sec:models_geometry}
 Simulations are frequently performed for a set of different detectors (such as a beam telescope and a device under test).
@@ -433,7 +453,7 @@ No hole will be added if this parameter is not present.
 \item \texttt{hole\_offset}: If present, the hole is by default placed at the center of the support layer.
 A 2D offset with respect to its default position can be specified using this parameter.
 \item \texttt{material}: Material of the support. \apsq does not provide a set of materials to choose from, but it is up to the modules using the parameter to implement the materials such that they can use it.
-Section~\ref{sec:modules} provides details about the materials currently supported by the geometry builder module (\texttt{GeometryBuilderGeant4}).
+Section~\ref{sec:modules} provides details about the materials supported by the geometry builder module (\texttt{GeometryBuilderGeant4}).
 \todo{This should be standardized...}
 \end{itemize}
 
@@ -558,9 +578,10 @@ TestModule(Configuration, Messenger* messenger, GeometryManager* geo_manager) {
 std::vector<std::shared_ptr<Message<Object>>> messages;
 \end{minted}
 \item Listen to a particular message type and execute a \textbf{listener function} as soon as an object is received.
-Can be used for more advanced strategies of retrieving messages.
-Note that this method can lead to unexpected behavior because the listener function is executed during the run method of the dispatching module.
+Can be used for more advanced strategies of retrieving messages, but the other method should be preferred when possible.
 The listening module should \underline{not} do any heavy work in the listening function as this is supposed to take place in their \texttt{run} method instead.
+Using a listener function can lead to unexpected behavior because the function is executed during the run method of the dispatching module.
+This means that logging is performed at the level of the dispatching module and that the listener method can be accessed from multiple threads if the dispatching module is parallelized.
 Listening to a message containing an array of objects in a detector \texttt{TestModule} could be performed as follows:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 TestModule(Configuration, Messenger* messenger, std::shared_ptr<Detector>) {

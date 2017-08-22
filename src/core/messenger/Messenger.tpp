@@ -12,7 +12,6 @@ namespace allpix {
         static_assert(std::is_base_of<Module, T>::value, "Receiver should have Module as a base class");
         auto delegate = std::make_unique<FunctionAllDelegate<T>>(flags, receiver, method);
         add_delegate(typeid(BaseMessage), receiver, std::move(delegate));
-        ;
     }
 
     template <typename T, typename R>

@@ -12,6 +12,7 @@
 #endif
 
 #include <cstring>
+#include <mutex>
 #include <ostream>
 #include <sstream>
 #include <string>
@@ -218,6 +219,8 @@ namespace allpix {
         std::string identifier_{};
         static std::string last_message_;
         static std::string last_identifier_;
+
+        static std::mutex write_mutex_;
     };
 
     using Log = DefaultLogger;

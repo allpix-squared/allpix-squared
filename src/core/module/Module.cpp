@@ -116,6 +116,25 @@ uint64_t Module::getRandomSeed() {
 }
 
 /**
+ * @throws InvalidModuleActionException If the thread pool is accessed outside the run-method
+ * @warning Any multithreaded task should be carefully checked to ensure it is thread-safe
+ *
+ * The thread pool is only available during the run-phase of every module. If no error is thrown by thrown, the threadpool
+ * should be safe to use.
+ */
+ThreadPool& Module::getThreadPool() {
+    // The thread pool will only be set when the run-method is executed
+    if(thread_pool_ == nullptr) {
+        throw InvalidModuleActionException("Cannot access thread pool outside the run method");
+    }
+
+    return *thread_pool_;
+}
+void Module::set_thread_pool(std::shared_ptr<ThreadPool> thread_pool) {
+    thread_pool_ = std::move(thread_pool);
+}
+
+/**
  * @throws InvalidModuleActionException If this method is called from the constructor or destructor
  * @warning Cannot be used from the constructor, because the instantiation logic has not finished yet
  * @warning This method should not be accessed from the destructor (the file is then already closed)
@@ -131,6 +150,13 @@ TDirectory* Module::getROOTDirectory() const {
 }
 void Module::set_ROOT_directory(TDirectory* directory) {
     directory_ = directory;
+}
+
+bool Module::canParallelize() {
+    return parallelize_;
+}
+void Module::enable_parallelization() {
+    parallelize_ = true;
 }
 
 Configuration& Module::get_configuration() {
