@@ -73,8 +73,8 @@ std::shared_ptr<TTree> constructComparisonTree(TFile* file, std::string dut) {
     output_tree->Branch("trackLocalY", &output_track_y);
     // Calculated track information and residuals
     double output_x, output_y, output_res_x, output_res_y;
-    output_tree->Branch("localX", &output_track_x);
-    output_tree->Branch("localY", &output_track_y);
+    output_tree->Branch("localX", &output_x);
+    output_tree->Branch("localY", &output_y);
     output_tree->Branch("resX", &output_res_x);
     output_tree->Branch("resY", &output_res_y);
 
