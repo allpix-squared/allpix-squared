@@ -159,7 +159,7 @@ void Module::enable_parallelization() {
     parallelize_ = true;
 }
 
-Configuration& Module::getConfiguration() {
+Configuration& Module::get_configuration() {
     return config_;
 }
 

@@ -170,12 +170,6 @@ namespace allpix {
         std::string getUniqueName() const;
 
         /**
-         * @brief Get the module configuration
-         * @return Reference to the configuration of the module
-         */
-        Configuration& getConfiguration();
-
-        /**
          * @brief Get an absolute path to be used for output from a relative path
          * @param path Relative path to add after the main output directory
          * @param global True if the global output directory should be used instead of the module-specific version
@@ -250,6 +244,11 @@ namespace allpix {
         ModuleIdentifier get_identifier() const;
         ModuleIdentifier identifier_;
 
+        /**
+         * @brief Get the module configuration for internal use
+         * @return Configuration of the module
+         */
+        Configuration& get_configuration();
         Configuration config_;
 
         /**
