@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Definition of [CorryvreckanOutput] module
+ * @brief Definition of CorryvreckanWriter module
  * @copyright MIT License
  *
  * Contains minimal dummy module to use as a start for the development of your own module
@@ -32,7 +32,7 @@ namespace allpix {
      * More detailed explanation of module
      */
 
-    class CorryvreckanOutputModule : public Module {
+    class CorryvreckanWriterModule : public Module {
     public:
         /**
          * @brief Constructor for this unique module
@@ -40,7 +40,7 @@ namespace allpix {
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
          * @param geo_manager Pointer to the geometry manager, containing the detectors
          */
-        CorryvreckanOutputModule(Configuration config, Messenger* messenger, GeometryManager* geo_manager);
+        CorryvreckanWriterModule(Configuration config, Messenger* messenger, GeometryManager* geo_manager);
 
         /**
          * @brief Set up output file and ntuple for filewriting

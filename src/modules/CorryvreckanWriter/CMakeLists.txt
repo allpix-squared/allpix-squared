@@ -8,7 +8,7 @@ ALLPIX_UNIQUE_MODULE(MODULE_NAME)
 
 # Find the RootNewMacros.cmake file and include it
 GET_FILENAME_COMPONENT(ROOT_CMAKE_DIR ${ROOT_USE_FILE} DIRECTORY)
-FIND_FILE(ROOT_MACROS_FILE 
+FIND_FILE(ROOT_MACROS_FILE
           NAMES RootNewMacros.cmake
           HINTS ${ROOT_CMAKE_DIR}/modules/ $ENV{ROOTSYS}/cmake/modules)
 
@@ -23,7 +23,7 @@ ENDIF()
 ROOT_GENERATE_DICTIONARY(CorryvreckanObjectsDictionary
     ${CMAKE_CURRENT_SOURCE_DIR}/TestBeamObject.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Pixel.h
-    LINKDEF 
+    LINKDEF
     ${CMAKE_CURRENT_SOURCE_DIR}/Linkdef.h
     MODULE
     CorryvreckanObjects
@@ -38,7 +38,7 @@ FOREACH(dir IN ITEMS ${ALLPIX_DEPS_INCLUDE_DIRS})
     ENDIF()
 ENDFOREACH()
 
-# Compile the dictionary through a special target 
+# Compile the dictionary through a special target
 # WARNING This hack is necessary to prevent standard warnings and those in clang-tidy for use in the CI
 ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDictionary.cxx.o COMMAND ${CMAKE_CXX_COMPILER} -fPIC -std=c++${CMAKE_CXX_STANDARD} -I${CMAKE_SOURCE_DIR}/src ${INCLUDE_DIR_ARGS} -o ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDictionary.cxx.o -c ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDictionary.cxx DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDictionary.cxx)
 
@@ -63,8 +63,8 @@ INSTALL(FILES
     DESTINATION lib)
 
 # Add source files to module library
-ALLPIX_MODULE_SOURCES(${MODULE_NAME} 
-    CorryvreckanOutputModule.cpp
+ALLPIX_MODULE_SOURCES(${MODULE_NAME}
+    CorryvreckanWriterModule.cpp
 )
 
 TARGET_LINK_LIBRARIES(${MODULE_NAME} CorryvreckanObjects)
