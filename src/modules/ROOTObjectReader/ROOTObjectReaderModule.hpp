@@ -74,6 +74,10 @@ namespace allpix {
             std::string name;
         };
 
+        // Object names to include or exclude from reading
+        std::set<std::string> include_;
+        std::set<std::string> exclude_;
+
         // File containing the objects
         std::unique_ptr<TFile> input_file_;
 
