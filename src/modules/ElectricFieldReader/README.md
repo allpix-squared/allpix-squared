@@ -8,14 +8,8 @@ Adds an electric field to the detector from one of the supported sources. By def
 The reader provides the following models for electric fields:
 
 * For *constant* electric fields it add a constant electric field in the z-direction towards the pixel implants. This is not very physical but might aid in developing and testing new charge propagation algorithms.
-* For *linear* electric fields, the field has a constant slope determined by the bias voltage and the depletion voltage. The sensor is always depleted from the implant side, the direction of the electric field depends on the sign of the bias voltage (with negative bias voltage the electric field vector points towards the backplane and vice versa). The electric field is calculated using the formula
-
-```math
-E(z) = \frac{U_{bias} - U_{depl}}{d} + 2 \frac{U_{depl}}{d}\left( 1- \frac{z}{d} \right)
-```
-
-   where d is the thickness of the sensor, and U_depl, U_bias the depletion and bias voltages, respectively.
-* For electric fields in the *INIT* format it parses a file containing an electric field map in the INIT format also used by the [PixelAV software](https://cds.cern.ch/record/687440). An example of a electric field in this format can be found in *etc/example_electric_field.init* in the repository. An explanation of the format is available in the source code of this module, a converter tool for electric fields from adaptive TCAD meshes is provided with the framework.
+* For *linear* electric fields, the field has a constant slope determined by the bias voltage and the depletion voltage. The sensor is always depleted from the implant side, the direction of the electric field depends on the sign of the bias voltage (with negative bias voltage the electric field vector points towards the backplane and vice versa). The electric field is calculated using the formula $`E(z) = \frac{U_{bias} - U_{depl}}{d} + 2 \frac{U_{depl}}{d}\left( 1- \frac{z}{d} \right)`$, where d is the thickness of the sensor, and $`U_{depl}`$, $`U_{bias}`$ are the depletion and bias voltages, respectively.
+* For electric fields in the *INIT* format it parses a file containing an electric field map in the INIT format also used by the PixelAV software [@pixelav]. An example of a electric field in this format can be found in *etc/example_electric_field.init* in the repository. An explanation of the format is available in the source code of this module, a converter tool for electric fields from adaptive TCAD meshes is provided with the framework.
 
 Furthermore the module can produce a plot the electric field profile on an projection axis normal to the x,y or z-axis at a particular plane in the sensor.
 
@@ -45,3 +39,5 @@ model = "init"
 # Should point to the example electric field in the repositories etc directory
 file_name = "example_electric_field.init"
 ```
+
+[@pixelav]: https://cds.cern.ch/record/687440

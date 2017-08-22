@@ -64,6 +64,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration config,
     config_.setDefault<double>("timestep_max", Units::get(0.1, "ns"));
     config_.setDefault<double>("integration_time", Units::get(25, "ns"));
     config_.setDefault<unsigned int>("charge_per_step", 10);
+    config_.setDefault<double>("temperature", 293.15);
 
     config_.setDefault<bool>("output_plots", false);
     config_.setDefault<bool>("output_animations", false);
