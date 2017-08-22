@@ -5,21 +5,21 @@
 \label{sec:objhistory}
 
 Objects can carry the history that was used to create them. 
-For example, a \texttt{PropagatedCharge} object could hold a link to the \texttt{DepositedCharge} object that started the propagation.
+For example, a \texttt{PropagatedCharge} object could hold a link to the \texttt{DepositedCharge} object at which the propagation started.
 Modules are not required, but recommended, to bind the history of their created objects.
 
 Object history is implemented using the ROOT TRef class~\cite{roottref}, which acts as a special reference. 
-On construction every object get an unique identifier assigned, that can be stored in other linked objects.
+On construction, every object gets a unique identifier assigned, that can be stored in other linked objects.
 This identifier can be used to retrieve the history, even after the objects are written out to ROOT TTrees ~\cite{roottree}.
-TRef objects are however not automatically fetched and can only be retrieved if their linked objects are available in memory, which should be done explicitly.
-Outside the framework this means the relevant tree containing the linked objects should be fetched and loaded at the same entry as the object that request the history.
+TRef objects are however not automatically fetched and can only be retrieved if their linked objects are available in memory, which has to be ensured explicitly.
+Outside the framework this means that the relevant tree containing the linked objects should be retrieved and loaded at the same entry as the object that request the history.
 Inside the framework an explicit dependency should be added for all modules that use object history, as explained in section \ref{sec:objects_messages}.
-Whenever the related object is not in memory (either because it is not available or not fetched) an \texttt{MissingReferenceException} will be thrown. 
+Whenever the related object is not in memory (either because it is not available or not fetched) a \texttt{MissingReferenceException} will be thrown. 
 
 \begin{warning}
     If no explicit dependency is added to a linked object in history, the module could misbehave depending on other modules. 
     Also take note that \underline{all} intermediate objects need an explicit dependency to fetch deeper history (like the \texttt{MCParticle}s from an \texttt{PixelHit}). 
-    Finally, the \texttt{MissingReferenceException} should be properly catched by modules to handle instances where the history is not available or incomplete.
+    Finally, the \texttt{MissingReferenceException} should be properly caught by modules to handle instances where the history is not available or incomplete.
 \end{warning}
 
 \subsection{Object Types}

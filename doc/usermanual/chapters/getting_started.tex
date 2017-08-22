@@ -476,8 +476,8 @@ It stores separate trees for all object types and creates branches for every uni
 For each event, values are added to the leafs of the branches containing the data of the objects.
 This allows for easy histogramming of the acquired data over the total run using standard ROOT utilities.
 
-Relations between objects within a single event are internally stored as ROOT TRefs~\cite{roottref} allowing to fetch related objects as long as these are loaded in memory.
-An exception will be thrown when trying to fetch an object that is not in memory.
+Relations between objects within a single event are internally stored as ROOT TRefs~\cite{roottref} allowing to retrieve related objects as long as these are loaded in memory.
+An exception will be thrown when trying to access an object which is not in memory.
 Refer to Section \ref{sec:objhistory} for more information about object history.
 
 In order to save all objects of the simulation, a \texttt{ROOTObjectWriter} module has to be added with a \texttt{file\_name} parameter (without the ``.root'' suffix) to specify the file location of the created ROOT file in the global output directory.

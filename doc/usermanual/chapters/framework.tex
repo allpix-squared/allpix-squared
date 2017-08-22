@@ -577,10 +577,10 @@ TestModule(Configuration, Messenger* messenger, GeometryManager* geo_manager) {
 }
 std::vector<std::shared_ptr<Message<Object>>> messages;
 \end{minted}
-\item Add a dependency to keep messages in memory for fetching history.
+\item Add a dependency to keep messages in memory for retrieving objects from the history.
 Several objects have related objects which can be retrieved as explained in Section \ref{sec:objhistory}.
-Those related objects can however only be retrieved (during the same event) if these source objects remain in memory.
-Modules should explicitly mark objects that are fetched indirectly through history, to ensure these objects are not deleted.
+Linked objects can only be retrieved (during the same event) if the respective source objects remain in memory.
+Modules should explicitly mark objects that are accessed indirectly through the history of the messages, to ensure these objects are not deleted.
 This method can be used as follows in a detector-specific \texttt{TestModule}, to keep \texttt{PixelHitMessage}s in memory without having direct acces to them (\texttt{PixelHitMessage} can be replaced here with any other type of message):
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 TestModule(Configuration, Messenger* messenger, std::shared_ptr<Detector>) {
