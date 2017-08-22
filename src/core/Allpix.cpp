@@ -128,23 +128,24 @@ void Allpix::load() {
     gRandom->SetSeed(seeder());
 
     // Get output directory
-    LOG(TRACE) << "Switching to output directory";
     std::string directory = gSystem->pwd();
     directory += "/output";
     if(global_config.has("output_directory")) {
         // Use config specified one if available
         directory = global_config.getPath("output_directory");
     }
-    // Set output directory (create if not exists)
-    if(!gSystem->ChangeDirectory(directory.c_str())) {
-        LOG(DEBUG) << "Creating output directory because it does not exists";
-        try {
-            allpix::create_directories(directory);
-            gSystem->ChangeDirectory(directory.c_str());
-        } catch(std::invalid_argument& e) {
-            LOG(ERROR) << "Cannot create output directory " << directory << ": " << e.what()
-                       << ". Using current directory instead!";
-        }
+    // Delete previous output directory if it exists
+    if(allpix::path_is_directory(directory.c_str())) {
+        LOG(DEBUG) << "Deleting previous output directory";
+        allpix::remove_path(directory.c_str());
+    }
+    // Create the output directory
+    try {
+        allpix::create_directories(directory);
+        gSystem->ChangeDirectory(directory.c_str());
+    } catch(std::invalid_argument& e) {
+        LOG(ERROR) << "Cannot create output directory " << directory << ": " << e.what()
+                   << ". Using current directory instead!";
     }
 
     // Enable relevant multithreading if needed (disabled by default)
