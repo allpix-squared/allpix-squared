@@ -135,9 +135,9 @@ void Allpix::load() {
         directory = global_config.getPath("output_directory");
     }
     // Delete previous output directory if it exists
-    if(allpix::path_is_directory(directory.c_str())) {
+    if(allpix::path_is_directory(directory)) {
         LOG(DEBUG) << "Deleting previous output directory";
-        allpix::remove_path(directory.c_str());
+        allpix::remove_path(directory);
     }
     // Create the output directory
     try {
