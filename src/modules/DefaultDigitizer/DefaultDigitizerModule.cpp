@@ -20,7 +20,7 @@ using namespace allpix;
 DefaultDigitizerModule::DefaultDigitizerModule(Configuration config,
                                                Messenger* messenger,
                                                std::shared_ptr<Detector> detector)
-    : Module(config, std::move(detector)), config_(std::move(config)), messenger_(messenger), pixel_message_(nullptr) {
+    : Module(std::move(config), std::move(detector)), messenger_(messenger), pixel_message_(nullptr) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
@@ -31,15 +31,15 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration config,
     random_generator_.seed(getRandomSeed());
 
     // Set defaults for config variables
-    config_.setDefault<int>("electronics_noise", Units::get(110, "e"));
-    config_.setDefault<int>("threshold", Units::get(600, "e"));
-    config_.setDefault<int>("threshold_smearing", Units::get(30, "e"));
-    config_.setDefault<int>("adc_smearing", Units::get(300, "e"));
-    config_.setDefault<bool>("output_plots", false);
+    getConfiguration().setDefault<int>("electronics_noise", Units::get(110, "e"));
+    getConfiguration().setDefault<int>("threshold", Units::get(600, "e"));
+    getConfiguration().setDefault<int>("threshold_smearing", Units::get(30, "e"));
+    getConfiguration().setDefault<int>("adc_smearing", Units::get(300, "e"));
+    getConfiguration().setDefault<bool>("output_plots", false);
 }
 
 void DefaultDigitizerModule::init() {
-    if(config_.get<bool>("output_plots")) {
+    if(getConfiguration().get<bool>("output_plots")) {
         LOG(TRACE) << "Creating output plots";
 
         // Create histograms if needed
@@ -60,26 +60,26 @@ void DefaultDigitizerModule::run(unsigned int) {
         auto charge = static_cast<double>(pixel_charge.getCharge());
 
         LOG(DEBUG) << "Received pixel " << pixel_index << ", charge " << Units::display(charge, "e");
-        if(config_.get<bool>("output_plots")) {
+        if(getConfiguration().get<bool>("output_plots")) {
             h_pxq->Fill(charge / 1e3);
         }
 
         // Add electronics noise from Gaussian:
-        std::normal_distribution<double> el_noise(0, config_.get<unsigned int>("electronics_noise"));
+        std::normal_distribution<double> el_noise(0, getConfiguration().get<unsigned int>("electronics_noise"));
         charge += el_noise(random_generator_);
 
         LOG(DEBUG) << "Charge with noise: " << Units::display(charge, "e");
-        if(config_.get<bool>("output_plots")) {
+        if(getConfiguration().get<bool>("output_plots")) {
             h_pxq_noise->Fill(charge / 1e3);
         }
 
         // FIXME Simulate gain / gain smearing
 
         // Smear the threshold, Gaussian distribution around "threshold" with width "threshold_smearing"
-        std::normal_distribution<double> thr_smearing(config_.get<unsigned int>("threshold"),
-                                                      config_.get<unsigned int>("threshold_smearing"));
+        std::normal_distribution<double> thr_smearing(getConfiguration().get<unsigned int>("threshold"),
+                                                      getConfiguration().get<unsigned int>("threshold_smearing"));
         double threshold = thr_smearing(random_generator_);
-        if(config_.get<bool>("output_plots")) {
+        if(getConfiguration().get<bool>("output_plots")) {
             h_thr->Fill(threshold / 1e3);
         }
 
@@ -91,14 +91,14 @@ void DefaultDigitizerModule::run(unsigned int) {
         }
 
         LOG(DEBUG) << "Passed threshold: " << Units::display(charge, "e") << " > " << Units::display(threshold, "e");
-        if(config_.get<bool>("output_plots")) {
+        if(getConfiguration().get<bool>("output_plots")) {
             h_pxq_thr->Fill(charge / 1e3);
         }
 
         // Add ADC smearing:
-        std::normal_distribution<double> adc_smearing(0, config_.get<unsigned int>("adc_smearing"));
+        std::normal_distribution<double> adc_smearing(0, getConfiguration().get<unsigned int>("adc_smearing"));
         charge += adc_smearing(random_generator_);
-        if(config_.get<bool>("output_plots")) {
+        if(getConfiguration().get<bool>("output_plots")) {
             h_pxq_adc->Fill(charge / 1e3);
         }
 
@@ -122,7 +122,7 @@ void DefaultDigitizerModule::run(unsigned int) {
 }
 
 void DefaultDigitizerModule::finalize() {
-    if(config_.get<bool>("output_plots")) {
+    if(getConfiguration().get<bool>("output_plots")) {
         // Write histograms
         LOG(TRACE) << "Writing output plots to file";
         h_pxq->Write();
