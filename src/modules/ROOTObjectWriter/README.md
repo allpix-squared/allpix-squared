@@ -10,12 +10,13 @@ In addition to the objects, both the configuration and the geometry setup are wr
 
 #### Parameters
 * `file_name` : Name of the data file (without the .root suffix) to create, relative to the output directory of the framework.
-* `include` : Array of object names to write to the ROOT trees, all other object names are ignored (cannot be used together simulateneously with the *exclude* parameter).
-* `exclude`: Array of object names that are not written to the ROOT trees (cannot be used together simulateneously with the *include* parameter).
+* `include` : Array of object names (without the allpix prefix) to write to the ROOT trees, all other object names are ignored (cannot be used together simulateneously with the *exclude* parameter).
+* `exclude`: Array of object names (without the allpix prefix) that are not written to the ROOT trees (cannot be used together simulateneously with the *include* parameter).
 
 #### Usage
-To create the default file (with the name *data.root*) an instantiation without arguments can be placed at the end of the configuration:
+To create the default file (with the name *data.root*) with a tree for every object except for the PropagatedCharges, the following configuration can be used:
 
 ```ini
 [ROOTObjectWriter]
+exclude = "PropagatedCharge"
 ```

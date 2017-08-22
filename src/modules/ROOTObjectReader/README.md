@@ -8,13 +8,14 @@ Converts all the object data stored in the ROOT data file produced by ROOTObject
 
 #### Parameters
 * `file_name` : Location of the ROOT file containing the trees with the object data.
-* `include` : Array of object names to read from the ROOT trees, all other object names are ignored (cannot be used together simulateneously with the *exclude* parameter).
-* `exclude`: Array of object names that are not read from the ROOT trees (cannot be used together simulateneously with the *include* parameter).
+* `include` : Array of object names (without the allpix prefix) to read from the ROOT trees, all other object names are ignored (cannot be used together simulateneously with the *exclude* parameter).
+* `exclude`: Array of object names (without the allpix prefix) that are not read from the ROOT trees (cannot be used together simulateneously with the *include* parameter).
 
 #### Usage
-This module should be at the beginning of the main configuration. An example to read the objects from the file *data.root* is:
+This module should be put at the beginning of the main configuration. An example to read only the PixelCharge and the PixelHit objects from the file *data.root* is given below:
 
 ```ini
 [ROOTObjectReader]
 file_name = "data.root"
+include = "PixelCharge", "PixelHit"
 ```
