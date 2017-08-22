@@ -1,10 +1,10 @@
 /**
  * @file
- * @brief Implementation of [CorryvreckanOutput] module
+ * @brief Implementation of CorryvreckanWriter module
  * @copyright MIT License
  */
 
-#include "CorryvreckanOutputModule.hpp"
+#include "CorryvreckanWriterModule.hpp"
 
 #include <string>
 #include <utility>
@@ -13,16 +13,16 @@
 
 using namespace allpix;
 
-CorryvreckanOutputModule::CorryvreckanOutputModule(Configuration config, Messenger* messenger, GeometryManager* geoManager)
+CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration config, Messenger* messenger, GeometryManager* geoManager)
     : Module(config), messenger_(messenger), config_(std::move(config)), geometryManager_(geoManager) {
     // ... Implement ... (Typically bounds the required messages and optionally sets configuration defaults)
     LOG(TRACE) << "Initializing module " << getUniqueName();
     // Require PixelCharge messages for single detector
-    messenger_->bindMulti(this, &CorryvreckanOutputModule::pixel_messages_, MsgFlags::REQUIRED);
+    messenger_->bindMulti(this, &CorryvreckanWriterModule::pixel_messages_, MsgFlags::REQUIRED);
 }
 
 // Set up the output trees
-void CorryvreckanOutputModule::init() {
+void CorryvreckanWriterModule::init() {
 
     LOG(TRACE) << "Initialising module " << getUniqueName();
 
@@ -55,7 +55,7 @@ void CorryvreckanOutputModule::init() {
 }
 
 // Make instantiations of Corryvreckan pixels, and store these in the trees during run time
-void CorryvreckanOutputModule::run(unsigned int) {
+void CorryvreckanWriterModule::run(unsigned int) {
 
     // Loop through all receieved messages
     for(auto& message : pixel_messages_) {
@@ -86,7 +86,7 @@ void CorryvreckanOutputModule::run(unsigned int) {
 
 // Save the output trees to file
 // Set up the output trees
-void CorryvreckanOutputModule::finalize() {
+void CorryvreckanWriterModule::finalize() {
 
     // Loop over all detectors and store the trees
     std::vector<std::shared_ptr<Detector>> detectors = geometryManager_->getDetectors();
