@@ -170,6 +170,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
                                      10,
                                      model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0,
                                      model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0);
+    histogram_frame->SetDirectory(getROOTDirectory());
 
     // Create the canvas for the line plot and set orientation
     auto canvas = std::make_unique<TCanvas>(("line_plot_" + std::to_string(event_num)).c_str(),
@@ -209,7 +210,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
 
     // Draw and write canvas to module output file, then clear the stored lines
     canvas->Draw();
-    canvas->Write();
+    getROOTDirectory()->WriteTObject(canvas.get());
     lines.clear();
 
     // Create canvas for GIF animition of process
@@ -246,6 +247,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
                                          100,
                                          model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0,
                                          model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0));
+    histogram_contour.back()->SetDirectory(getROOTDirectory());
     file_name_contour.push_back(getOutputPath("contourY" + std::to_string(event_num) + ".gif"));
     histogram_contour.push_back(new TH2F(("contourY_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
                                          "",
@@ -255,21 +257,17 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
                                          100,
                                          model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0,
                                          model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0));
+    histogram_contour.back()->SetDirectory(getROOTDirectory());
     file_name_contour.push_back(getOutputPath("contourZ" + std::to_string(event_num) + ".gif"));
     histogram_contour.push_back(new TH2F(
         ("contourZ_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(), "", 100, minX, maxX, 100, minY, maxY));
+    histogram_contour.back()->SetDirectory(getROOTDirectory());
 
     if(config_.get<bool>("output_animations")) {
-        // Delete previous GIF output files
+        // Create file and disable statistics for histogram
         std::string file_name_anim = getOutputPath("animation" + std::to_string(event_num) + ".gif");
-        try {
-            remove_path(file_name_anim);
-            for(size_t i = 0; i < 3; ++i) {
-                remove_path(file_name_contour[i]);
-                histogram_contour[i]->SetStats(false);
-            }
-        } catch(std::invalid_argument&) {
-            throw ModuleError("Cannot overwite gif animation");
+        for(size_t i = 0; i < 3; ++i) {
+            histogram_contour[i]->SetStats(false);
         }
 
         // Create animation of moving charges
