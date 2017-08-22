@@ -550,6 +550,7 @@ void ModuleManager::run() {
         if(threads_num == 0) {
             throw InvalidValueError(global_config_, "workers", "number of workers should be strictly more than zero");
         }
+        LOG(WARNING) << "Experimental multithreading enabled - using " << threads_num << " worker threads.";
         --threads_num;
     } else {
         // Default to no additional thread without multithreading
