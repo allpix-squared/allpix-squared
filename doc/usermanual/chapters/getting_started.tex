@@ -475,8 +475,10 @@ The \texttt{ROOTObjectWriter} automatically saves all objects created by the mod
 It stores separate trees for all object types and creates branches for every unique message name, a combination of the detector, the module and the message output name as described in Section~\ref{sec:redirect_module_input_outputs}.
 For each event, values are added to the leafs of the branches containing the data of the objects.
 This allows for easy histogramming of the acquired data over the total run using standard ROOT utilities.
-Relations between objects within a single event are internally stored as TRef allowing to fetch related objects as long as these are loaded in memory.
-An exception is thrown when trying to fetch an object which is not loaded.
+
+Relations between objects within a single event are internally stored as ROOT TRefs~\cite{roottref} allowing to fetch related objects as long as these are loaded in memory.
+An exception will be thrown when trying to fetch an object that is not in memory.
+Refer to Section \ref{sec:objhistory} for more information about object history.
 
 In order to save all objects of the simulation, a \texttt{ROOTObjectWriter} module has to be added with a \texttt{file\_name} parameter (without the ``.root'' suffix) to specify the file location of the created ROOT file in the global output directory.
 The default file name is \texttt{data}, i.e.\ the file \textbf{data.root} is created in the output directory.
