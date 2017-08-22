@@ -414,6 +414,9 @@ void GenericPropagationModule::init() {
             LOG(WARNING) << "Electric field indicates hole collection at implants, but holes are not propagated!";
         }
     }
+    if(config_.get<bool>("output_plots")) {
+        drift_time_histo = new TH1D("drift_time_histo", "Drift time;t[ns];particles", 50, 0., 20.);
+    }
 }
 
 void GenericPropagationModule::run(unsigned int event_num) {
@@ -480,6 +483,13 @@ void GenericPropagationModule::run(unsigned int event_num) {
             ++step_count;
             propagated_charges_count += charge_per_step;
             total_time += prop_pair.second;
+
+            // Fill plot for drift time
+            if(config_.get<bool>("output_plots")) {
+                drift_time_histo->SetBinContent(
+                    drift_time_histo->FindBin(prop_pair.second),
+                    drift_time_histo->GetBinContent(drift_time_histo->FindBin(prop_pair.second)) + charge_per_step);
+            }
         }
     }
 
@@ -610,4 +620,6 @@ void GenericPropagationModule::finalize() {
     long double average_time = total_time_ / std::max(1u, total_steps_);
     LOG(INFO) << "Propagated total of " << total_propagated_charges_ << " charges in " << total_steps_
               << " steps in average time of " << Units::display(average_time, "ns");
+
+    drift_time_histo->Write();
 }
