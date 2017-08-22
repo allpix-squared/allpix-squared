@@ -23,7 +23,7 @@ If support layers should be changed, or new support layers are needed, a new mod
 \item[How do I access the history of a particular object?]
 Many objects can include an internal link to related other objects (for example \texttt{getPropagatedCharges} in the \texttt{PixelCharge} object), containing the history of the object (thus the objects that were used to construct the current object).
 These referenced objects are stored as special ROOT pointers inside the object, which can only be accessed if the referenced object is available in memory.
-In \apsq this requirement can be automatically fullfilled by also binding the history object of interest in a module.
+In \apsq this requirement can be automatically fulfilled by also binding the history object of interest in a module.
 During analysis, the tree holding the referenced object should be loaded and pointing to the same event entry as the object that requests the reference.
 If the referenced object can not be loaded, an exception is thrown by the retrieving method.
 \item[How do I access the Monte Carlo truth of a specific PixelHit?]
