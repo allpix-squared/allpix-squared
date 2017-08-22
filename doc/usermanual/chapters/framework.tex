@@ -319,8 +319,12 @@ Every detector has a set of properties attached to it:
 \item A unique \textbf{detector name} to refer to the detector in the configuration.
 \item The \textbf{position} in the world frame.
 This is the position of the geometric center of the sensitive device (sensor) given in world coordinates as X, Y and Z (note that any additional components like the chip and possible support layers are ignored when determining the geometric center).
-\item The \textbf{orientation} given as Euler angles using the extrinsic Z-X-Z convention relative to the world frame (also known as the 1-3-1 or the "x-convention" and the most widely used definition of Euler angles~\cite{eulerangles}).
-\item A \textbf{type} of a detector model such as \emph{hybrid} or \emph{monolithic}.
+\item An \textbf{orientation\_mode} that determines the way the orientation is applied.
+It can be either \texttt{xyz} or \texttt{zxz}, where \texttt{xyz} is used if the parameter is not specified.
+The \texttt{xyz} option uses extrinsic Euler angles to apply an rotation around the X-axis, followed by an rotation around the original global Y-axis and finally an rotation around the global Z-axis.
+The \texttt{zxz} uses the extrinsic Z-X-Z convention for Euler angles instead (this option is also known as the 3-1-3 or the "x-convention" and the most widely used definition of Euler angles overall~\cite{eulerangles}).
+\item The \textbf{orientation} to specify the Euler angles in logical order, interpreted using the method above (or with the \texttt{xyz} method if the \textbf{orientation\_mode} is not specified).
+\item A \textbf{type} of a detector model, for example \emph{hybrid} or \emph{monolithic}.
 The model defines the geometry and parameters of the detector.
 Multiple detectors can share the same model.
 Several ready-to-use models are shipped with the framework.
