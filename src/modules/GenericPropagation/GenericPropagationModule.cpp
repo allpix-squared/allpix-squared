@@ -71,6 +71,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration config,
 
     config_.setDefault<bool>("output_plots", false);
     config_.setDefault<bool>("output_animations", false);
+    config_.setDefault<bool>("output_animations_color_markers", false);
     config_.setDefault<double>("output_plots_step", config_.get<double>("timestep_max"));
     config_.setDefault<bool>("output_plots_use_pixel_units", false);
     config_.setDefault<bool>("output_plots_align_pixels", false);
@@ -304,6 +305,13 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
             remove(file_name_contour[i].c_str());
         }
 
+        // Create color table
+        TColor* colors[80];
+        for(int i = 20; i < 100; ++i) {
+            auto color_idx = TColor::GetFreeColorIndex();
+            colors[i - 20] = new TColor(color_idx, i / 100.0f - 0.2f, i / 100.0f - 0.2f, i / 100.0f - 0.2f);
+        }
+
         // Create animation of moving charges
         auto animation_time = static_cast<unsigned int>(
             std::round((Units::convert(config_.get<long double>("output_plots_step"), "ms") / 10.0) *
@@ -350,6 +358,12 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
                 marker->SetMarkerStyle(kFullCircle);
                 marker->SetMarkerSize(static_cast<float>(deposit_points.first.getCharge()) /
                                       config_.get<float>("charge_per_step"));
+                auto initial_z_perc = static_cast<int>(
+                    ((points[0].z() + model_->getSensorSize().z() / 2.0) / model_->getSensorSize().z()) * 80);
+                initial_z_perc = std::max(std::min(79, initial_z_perc), 0);
+                if(config_.get<bool>("output_animations_color_markers")) {
+                    marker->SetMarkerColor(static_cast<Color_t>(colors[initial_z_perc]->GetNumber()));
+                }
                 marker->SetNextPoint(points[idx].x(), points[idx].y(), points[idx].z());
                 marker->Draw();
                 markers.push_back(std::move(marker));
