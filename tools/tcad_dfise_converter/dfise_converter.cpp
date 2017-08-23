@@ -148,18 +148,18 @@ int main(int argc, char** argv) {
     std::string file_prefix;
     std::string init_file_prefix;
     std::string log_file_name;
-    std::string region = "bulk";                          // Sensor bulk region name on DF-ISE file
-    float volume_cut = std::numeric_limits<float>::min(); // Enclosing tetrahedron should have volume != 0
-    size_t index_cut = 10000000;                          // Permutation index initial cut
+    std::string region = "bulk"; // Sensor bulk region name on DF-ISE file
+    double volume_cut = 1e-9;    // Enclosing tetrahedron should have volume != 0
+    size_t index_cut = 10000000; // Permutation index initial cut
     bool index_cut_flag = false;
-    float initial_radius = 1;   // Neighbour vertex search radius
-    float radius_threshold = 0; // Neighbour vertex search radius
+    double initial_radius = 1;   // Neighbour vertex search radius
+    double radius_threshold = 0; // Neighbour vertex search radius
     bool threshold_flag = false;
-    float radius_step = 0.5; // Search radius increment
-    float max_radius = 10;   // Maximum search radiuss
-    int xdiv = 100;          // New mesh X pitch
-    int ydiv = 100;          // New mesh Y pitch
-    int zdiv = 100;          // New mesh Z pitch
+    double radius_step = 0.5; // Search radius increment
+    double max_radius = 10;   // Maximum search radiuss
+    int xdiv = 100;           // New mesh X pitch
+    int ydiv = 100;           // New mesh Y pitch
+    int zdiv = 100;           // New mesh Z pitch
 
     for(int i = 1; i < argc; i++) {
         if(strcmp(argv[i], "-h") == 0) {
@@ -179,19 +179,19 @@ int main(int argc, char** argv) {
         } else if(strcmp(argv[i], "-R") == 0 && (i + 1 < argc)) {
             region = std::string(argv[++i]);
         } else if(strcmp(argv[i], "-r") == 0 && (i + 1 < argc)) {
-            initial_radius = static_cast<float>(strtod(argv[++i], nullptr));
+            initial_radius = static_cast<double>(strtod(argv[++i], nullptr));
         } else if(strcmp(argv[i], "-t") == 0 && (i + 1 < argc)) {
-            radius_threshold = static_cast<float>(strtod(argv[++i], nullptr));
+            radius_threshold = static_cast<double>(strtod(argv[++i], nullptr));
             threshold_flag = true;
         } else if(strcmp(argv[i], "-s") == 0 && (i + 1 < argc)) {
-            radius_step = static_cast<float>(strtod(argv[++i], nullptr));
+            radius_step = static_cast<double>(strtod(argv[++i], nullptr));
         } else if(strcmp(argv[i], "-m") == 0 && (i + 1 < argc)) {
-            max_radius = static_cast<float>(strtod(argv[++i], nullptr));
+            max_radius = static_cast<double>(strtod(argv[++i], nullptr));
         } else if(strcmp(argv[i], "-i") == 0 && (i + 1 < argc)) {
             index_cut = static_cast<size_t>(strtod(argv[++i], nullptr));
             index_cut_flag = true;
         } else if(strcmp(argv[i], "-c") == 0 && (i + 1 < argc)) {
-            volume_cut = static_cast<float>(strtod(argv[++i], nullptr));
+            volume_cut = static_cast<double>(strtod(argv[++i], nullptr));
         } else if(strcmp(argv[i], "-x") == 0 && (i + 1 < argc)) {
             xdiv = static_cast<int>(strtod(argv[++i], nullptr));
         } else if(strcmp(argv[i], "-y") == 0 && (i + 1 < argc)) {
@@ -235,7 +235,7 @@ int main(int argc, char** argv) {
         std::cout << "\t -i <index_cut>         index cut during permutation on vertex neighbours (disabled by default)"
                   << std::endl;
         std::cout << "\t -c <volume_cut>        minimum volume for tetrahedron for non-coplanar vertices (defaults to "
-                     "minimum float value)"
+                     "minimum double value)"
                   << std::endl;
         std::cout << "\t -x <mesh x_pitch>      new regular mesh X pitch (defaults to 100)" << std::endl;
         std::cout << "\t -y <mesh_y_pitch>      new regular mesh Y pitch (defaults to 100)" << std::endl;
@@ -356,7 +356,7 @@ int main(int argc, char** argv) {
                                             << q.x << "," << q.y << "," << q.z << ")";
 
                 size_t prev_neighbours = 0;
-                float radius = initial_radius;
+                double radius = initial_radius;
                 size_t index_cut_up;
                 while(radius < max_radius) {
                     LOG(DEBUG) << "Search radius: " << radius;
