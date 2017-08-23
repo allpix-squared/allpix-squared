@@ -435,7 +435,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
 
         if((deposit.getType() == CarrierType::ELECTRON && !config_.get<bool>("propagate_electrons")) ||
            (deposit.getType() == CarrierType::HOLE && !config_.get<bool>("propagate_holes"))) {
-            LOG(DEBUG) << "Skipping charge carriers (" << (deposit.getType() == CarrierType::ELECTRON ? "e" : "h") << ") on "
+            LOG(DEBUG) << "Skipping charge carriers (" << deposit.getType() << ") on "
                        << display_vector(deposit.getLocalPosition(), {"mm", "um"});
             continue;
         }
@@ -443,7 +443,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
         // Loop over all charges in the deposit
         unsigned int charges_remaining = deposit.getCharge();
 
-        LOG(DEBUG) << "Set of charge carriers (" << (deposit.getType() == CarrierType::ELECTRON ? "e" : "h") << ") on "
+        LOG(DEBUG) << "Set of charge carriers (" << deposit.getType() << ") on "
                    << display_vector(deposit.getLocalPosition(), {"mm", "um"});
 
         auto charge_per_step = config_.get<unsigned int>("charge_per_step");
