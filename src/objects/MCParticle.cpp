@@ -35,4 +35,15 @@ int MCParticle::getParticleID() const {
     return particle_id_;
 }
 
+/**
+ * Object is stored as TRef and can only be accessed if pointed object is in scope
+ */
+const MCParticle* MCParticle::getParent() const {
+    return dynamic_cast<MCParticle*>(parent_.GetObject());
+}
+
+void MCParticle::setParent(const MCParticle* mc_particle) {
+    parent_ = const_cast<MCParticle*>(mc_particle); // NOLINT
+}
+
 ClassImp(MCParticle)

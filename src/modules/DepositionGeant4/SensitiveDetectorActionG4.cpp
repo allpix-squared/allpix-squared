@@ -98,7 +98,6 @@ void SensitiveDetectorActionG4::dispatchMessages() {
     // Create the mc particles
     std::vector<MCParticle> mc_particles;
     for(auto& track_id_point : track_begin_) {
-
         auto track_id = track_id_point.first;
         auto local_begin = track_id_point.second;
 
@@ -110,6 +109,19 @@ void SensitiveDetectorActionG4::dispatchMessages() {
         auto global_end = detector_->getGlobalPosition(local_end);
         mc_particles.emplace_back(local_begin, global_begin, local_end, global_end, pdg_code);
         id_to_particle_[track_id] = mc_particles.size() - 1;
+    }
+
+    // Link mc particles to parents
+    for(auto& track_parent : track_parents_) {
+        auto track_id = track_parent.first;
+        auto parent_id = track_parent.second;
+        if(parent_id == 0) {
+            // Skip tracks without parents
+            continue;
+        }
+        auto track_idx = id_to_particle_.at(track_id);
+        auto parent_idx = id_to_particle_.at(parent_id);
+        mc_particles.at(track_idx).setParent(&mc_particles.at(parent_idx));
     }
 
     // Send the mc particle information

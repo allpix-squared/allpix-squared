@@ -44,8 +44,7 @@ namespace allpix {
         /**
          * @brief Set the Monte-Carlo particle
          * @param mc_particle The Monte-Carlo particle
-         * @warning Special method because MCParticle is only known after deposit creation, should not be used to replace the
-         * particle later
+         * @warning Special method because MCParticle is only known after deposit creation, should not be replaced later.
          */
         void setMCParticle(const MCParticle* mc_particle);
 
