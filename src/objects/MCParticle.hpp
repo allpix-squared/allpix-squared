@@ -35,23 +35,23 @@ namespace allpix {
          * @brief Get the entry point of the particle in local coordinates
          * @return Particle entry point
          */
-        ROOT::Math::XYZPoint getLocalEntryPoint() const;
+        ROOT::Math::XYZPoint getLocalBeginPoint() const;
         /**
          * @brief Get the entry point of the particle in global coordinates
          * @return Particle entry point
          */
-        ROOT::Math::XYZPoint getGlobalEntryPoint() const;
+        ROOT::Math::XYZPoint getGlobalBeginPoint() const;
 
         /**
          * @brief Get the exit point of the particle in local coordinates
          * @return Particle exit point
          */
-        ROOT::Math::XYZPoint getLocalExitPoint() const;
+        ROOT::Math::XYZPoint getLocalEndPoint() const;
         /**
          * @brief Get the entry point of the particle in global coordinates
          * @return Particle entry point
          */
-        ROOT::Math::XYZPoint getGlobalExitPoint() const;
+        ROOT::Math::XYZPoint getGlobalEndPoint() const;
 
         /**
          * @brief Get particle identifier
@@ -62,17 +62,17 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDef(MCParticle, 1);
+        ClassDef(MCParticle, 3);
         /**
          * @brief Default constructor for ROOT I/O
          */
         MCParticle() = default;
 
     private:
-        ROOT::Math::XYZPoint local_entry_point_{};
-        ROOT::Math::XYZPoint global_entry_point_{};
-        ROOT::Math::XYZPoint local_exit_point_{};
-        ROOT::Math::XYZPoint global_exit_point_{};
+        ROOT::Math::XYZPoint local_begin_point_{};
+        ROOT::Math::XYZPoint global_begin_point_{};
+        ROOT::Math::XYZPoint local_end_point_{};
+        ROOT::Math::XYZPoint global_end_point_{};
 
         int particle_id_{};
     };

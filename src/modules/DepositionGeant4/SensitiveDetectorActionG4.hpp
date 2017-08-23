@@ -66,18 +66,20 @@ namespace allpix {
 
         // Set of deposited charges in this event
         std::vector<DepositedCharge> deposits_;
-        // List of ids for every deposit
-        std::vector<int> deposit_ids_;
 
-        // List of entry points for all tracks
-        std::map<int, ROOT::Math::XYZPoint> entry_points_;
-        // Parent of all tracks
+        // List of begin points for tracks
+        std::map<int, ROOT::Math::XYZPoint> track_begin_;
+        // List of end points for tracks
+        std::map<int, ROOT::Math::XYZPoint> track_end_;
+        // Parent of all mc tracks
         std::map<int, int> track_parents_;
+        // PDG code of the tracks
+        std::map<int, int> track_pdg_;
 
-        // List of all MC particles
-        std::vector<MCParticle> mc_particles_;
-        // Conversions from id to particle index
-        std::map<int, unsigned int> id_to_particle_;
+        // Map from deposit index to track id
+        std::vector<int> deposit_to_id_;
+        // Map from track id to mc particle index
+        std::map<int, size_t> id_to_particle_;
     };
 } // namespace allpix
 

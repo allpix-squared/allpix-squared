@@ -55,36 +55,18 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     auto deposit_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(mid_pos));
     auto charge = static_cast<unsigned int>(edep / charge_creation_energy_);
 
-    // Save entry point for all first steps in volume
+    // Save begin point for all first steps in volume
     if(step->IsFirstStepInVolume()) {
-        track_parents_[step->GetTrack()->GetTrackID()] = step->GetTrack()->GetParentID();
-
-        // Search for the entry at the start of the sensor
-        auto track_id = step->GetTrack()->GetTrackID();
-        auto entry_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(preStepPoint->GetPosition()));
-        while(track_parents_[track_id] != 0 &&
-              std::fabs(entry_position.z() - (detector_->getModel()->getSensorCenter().z() -
-                                              detector_->getModel()->getSensorSize().z() / 2.0)) > 1e-9) {
-            track_id = track_parents_[track_id];
-            entry_position = entry_points_[track_id];
-        }
-        entry_points_[step->GetTrack()->GetTrackID()] = entry_position;
+        track_parents_.emplace(step->GetTrack()->GetTrackID(), step->GetTrack()->GetParentID());
+        auto start_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(preStepPoint->GetPosition()));
+        track_begin_.emplace(step->GetTrack()->GetTrackID(), start_position);
     }
 
-    // Add MCParticle for the last step in the volume if it is at the edge of the sensor
-    // FIXME Current method does not make sense if the incoming particle is not the same as the outgoing particle
-    if(step->IsLastStepInVolume() &&
-       std::fabs(detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(postStepPoint->GetPosition())).z() -
-                 (detector_->getModel()->getSensorCenter().z() + detector_->getModel()->getSensorSize().z() / 2.0)) < 1e-9) {
-        // Add new MC particle track
-        auto local_entry = entry_points_[step->GetTrack()->GetTrackID()];
-        auto global_entry = detector_->getGlobalPosition(local_entry);
-        auto global_exit = static_cast<ROOT::Math::XYZPoint>(postStepPoint->GetPosition());
-        auto local_exit = detector_->getLocalPosition(global_exit);
-
-        mc_particles_.emplace_back(
-            local_entry, global_entry, local_exit, global_exit, step->GetTrack()->GetDynamicParticle()->GetPDGcode());
-        id_to_particle_[step->GetTrack()->GetTrackID()] = static_cast<unsigned int>(mc_particles_.size() - 1);
+    // Save end point for all last steps in volume
+    if(step->IsLastStepInVolume()) {
+        auto end_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(postStepPoint->GetPosition()));
+        track_end_.emplace(step->GetTrack()->GetTrackID(), end_position);
+        track_pdg_.emplace(step->GetTrack()->GetTrackID(), step->GetTrack()->GetDynamicParticle()->GetPDGcode());
     }
 
     // Add new deposit if the charge is more than zero
@@ -93,12 +75,14 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     }
 
     auto global_deposit_position = detector_->getGlobalPosition(deposit_position);
-    deposits_.emplace_back(deposit_position, global_deposit_position, CarrierType::ELECTRON, charge, mid_time);
-    deposits_.emplace_back(deposit_position, global_deposit_position, CarrierType::HOLE, charge, mid_time);
 
-    // FIXME how do we correlate them?
-    deposit_ids_.emplace_back(step->GetTrack()->GetTrackID());
-    deposit_ids_.emplace_back(step->GetTrack()->GetTrackID());
+    // Deposit electron
+    deposits_.emplace_back(deposit_position, global_deposit_position, CarrierType::ELECTRON, charge, mid_time);
+    deposit_to_id_.push_back(step->GetTrack()->GetTrackID());
+
+    // Deposit hole
+    deposits_.emplace_back(deposit_position, global_deposit_position, CarrierType::HOLE, charge, mid_time);
+    deposit_to_id_.push_back(step->GetTrack()->GetTrackID());
 
     LOG(DEBUG) << "Created deposit of " << charge << " charges at " << display_vector(mid_pos, {"mm", "um"})
                << " locally on " << display_vector(deposit_position, {"mm", "um"}) << " in " << detector_->getName()
@@ -112,14 +96,38 @@ unsigned int SensitiveDetectorActionG4::getTotalDepositedCharge() {
 }
 
 void SensitiveDetectorActionG4::dispatchDepositedChargeMessage() {
-    // Always send the track information
-    auto mc_particle_message = std::make_shared<MCParticleMessage>(std::move(mc_particles_), detector_);
+    // Create the mc particles
+    std::vector<MCParticle> mc_particles;
+    for(auto& track_id_point : track_begin_) {
+        auto track_id = track_id_point.first;
+        auto local_begin = track_id_point.second;
+
+        ROOT::Math::XYZPoint end_point;
+        auto end_iter = track_end_.find(track_id);
+        if(end_iter == track_end_.end()) {
+            // This should never happen in theory when Geant4 handles particles correctly
+            throw ModuleError("Track without an end point, MCParticle cannot be constructed");
+        }
+        auto local_end = end_iter->second;
+        auto pdg_code = track_pdg_.at(track_id);
+
+        auto global_begin = detector_->getGlobalPosition(local_begin);
+        auto global_end = detector_->getGlobalPosition(local_end);
+        mc_particles.emplace_back(local_begin, global_begin, local_end, global_end, pdg_code);
+        id_to_particle_[track_id] = mc_particles.size() - 1;
+    }
+
+    // Send the mc particle information
+    auto mc_particle_message = std::make_shared<MCParticleMessage>(std::move(mc_particles), detector_);
     messenger_->dispatchMessage(module_, mc_particle_message);
 
-    // Create new mc particle vector
-    mc_particles_ = std::vector<MCParticle>();
+    // Clear track data for the next event
+    track_parents_.clear();
+    track_begin_.clear();
+    track_end_.clear();
+    track_pdg_.clear();
 
-    // Send a new message if we have any deposits
+    // Send a deposit message if we have any deposits
     if(!deposits_.empty()) {
         unsigned int charges = 0;
         for(auto& ch : deposits_) {
@@ -130,10 +138,8 @@ void SensitiveDetectorActionG4::dispatchDepositedChargeMessage() {
 
         // Match deposit with mc particle if possible
         for(size_t i = 0; i < deposits_.size(); ++i) {
-            auto iter = id_to_particle_.find(deposit_ids_.at(i));
-            if(iter != id_to_particle_.end()) {
-                deposits_.at(i).setMCParticle(&mc_particle_message->getData().at(iter->second));
-            }
+            auto track_id = deposit_to_id_.at(i);
+            deposits_.at(i).setMCParticle(&mc_particle_message->getData().at(id_to_particle_.at(track_id)));
         }
 
         // Create a new charge deposit message
@@ -141,14 +147,12 @@ void SensitiveDetectorActionG4::dispatchDepositedChargeMessage() {
 
         // Dispatch the message
         messenger_->dispatchMessage(module_, deposit_message);
-
-        // Make a new empty vector of deposits
-        deposits_ = std::vector<DepositedCharge>();
-        deposit_ids_.clear();
     }
-    id_to_particle_.clear();
 
-    // Clear track parents and entry point list
-    track_parents_.clear();
-    entry_points_.clear();
+    // Clear deposits for next event
+    deposits_ = std::vector<DepositedCharge>();
+
+    // Clear link tables for next event
+    deposit_to_id_.clear();
+    id_to_particle_.clear();
 }
