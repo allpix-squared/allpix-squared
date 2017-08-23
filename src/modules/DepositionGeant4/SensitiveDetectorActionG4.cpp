@@ -55,19 +55,18 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     auto deposit_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(mid_pos));
     auto charge = static_cast<unsigned int>(edep / charge_creation_energy_);
 
-    // Save begin point for all first steps in volume
-    if(step->IsFirstStepInVolume()) {
-        track_parents_.emplace(step->GetTrack()->GetTrackID(), step->GetTrack()->GetParentID());
+    // Save begin point when track is seen for the first time
+    if(track_begin_.find(step->GetTrack()->GetTrackID()) == track_begin_.end()) {
         auto start_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(preStepPoint->GetPosition()));
         track_begin_.emplace(step->GetTrack()->GetTrackID(), start_position);
-    }
 
-    // Save end point for all last steps in volume
-    if(step->IsLastStepInVolume()) {
-        auto end_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(postStepPoint->GetPosition()));
-        track_end_.emplace(step->GetTrack()->GetTrackID(), end_position);
+        track_parents_.emplace(step->GetTrack()->GetTrackID(), step->GetTrack()->GetParentID());
         track_pdg_.emplace(step->GetTrack()->GetTrackID(), step->GetTrack()->GetDynamicParticle()->GetPDGcode());
     }
+
+    // Update current end point with the current last step
+    auto end_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(postStepPoint->GetPosition()));
+    track_end_[step->GetTrack()->GetTrackID()] = end_position;
 
     // Add new deposit if the charge is more than zero
     if(charge == 0) {
@@ -99,16 +98,12 @@ void SensitiveDetectorActionG4::dispatchMessages() {
     // Create the mc particles
     std::vector<MCParticle> mc_particles;
     for(auto& track_id_point : track_begin_) {
+
         auto track_id = track_id_point.first;
         auto local_begin = track_id_point.second;
 
         ROOT::Math::XYZPoint end_point;
-        auto end_iter = track_end_.find(track_id);
-        if(end_iter == track_end_.end()) {
-            // This should never happen in theory when Geant4 handles particles correctly
-            throw ModuleError("Track without an end point, MCParticle cannot be constructed");
-        }
-        auto local_end = end_iter->second;
+        auto local_end = track_end_.at(track_id);
         auto pdg_code = track_pdg_.at(track_id);
 
         auto global_begin = detector_->getGlobalPosition(local_begin);
