@@ -29,9 +29,8 @@ IF(LATEX_COMPILER)
     SET(LATEX_COMPILER_FLAGS "-shell-escape" "-interaction nonstopmode" "-halt-on-error" "-file-line-error" CACHE STRING "Flags passed to latex.")
     INCLUDE(${CMAKE_SOURCE_DIR}/cmake/LATEX.cmake)
 
-    SET(HTLATEX_COMPILER_TEX4HT_FLAGS "usermanual/html/allpix,charset=utf-8" CACHE STRING "TEST" FORCE)
-    SET(HTLATEX_COMPILER_TEX4HT_POSTPROCESSOR_FLAGS "-utf8" CACHE STRING "TEST2" FORCE)
-    SET(HTLATEX_COMPILER_T4HT_POSTPROCESSOR_FLAGS "" CACHE STRING "TEST3" FORCE)
+    SET(HTLATEX_COMPILER_TEX4HT_FLAGS "usermanual/html/allpix,charset=utf-8" CACHE STRING "Flags passed to Tex4HT" FORCE)
+    SET(HTLATEX_COMPILER_TEX4HT_POSTPROCESSOR_FLAGS "-utf8 -cunihtf" CACHE STRING "Flags passed to the postprocessor of Tex4HT" FORCE)
 
     # Markdown files that should be included in the manual relative to the root of the repository
     SET(DOC_README_FILES
