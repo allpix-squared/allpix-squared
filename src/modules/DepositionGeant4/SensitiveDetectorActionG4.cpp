@@ -95,7 +95,7 @@ unsigned int SensitiveDetectorActionG4::getTotalDepositedCharge() {
     return total_deposited_charge_;
 }
 
-void SensitiveDetectorActionG4::dispatchDepositedChargeMessage() {
+void SensitiveDetectorActionG4::dispatchMessages() {
     // Create the mc particles
     std::vector<MCParticle> mc_particles;
     for(auto& track_id_point : track_begin_) {
