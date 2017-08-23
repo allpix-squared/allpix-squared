@@ -236,39 +236,51 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
     // Draw frame on canvas
     histogram_frame->Draw();
 
-    // Create the contour histogram
-    std::vector<std::string> file_name_contour;
-    std::vector<TH2F*> histogram_contour;
-    file_name_contour.push_back(getOutputPath("contourX" + std::to_string(event_num) + ".gif"));
-    histogram_contour.push_back(new TH2F(("contourX_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
-                                         "",
-                                         100,
-                                         minY,
-                                         maxY,
-                                         100,
-                                         model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0,
-                                         model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0));
-    histogram_contour.back()->SetDirectory(getROOTDirectory());
-    file_name_contour.push_back(getOutputPath("contourY" + std::to_string(event_num) + ".gif"));
-    histogram_contour.push_back(new TH2F(("contourY_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
-                                         "",
-                                         100,
-                                         minX,
-                                         maxX,
-                                         100,
-                                         model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0,
-                                         model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0));
-    histogram_contour.back()->SetDirectory(getROOTDirectory());
-    file_name_contour.push_back(getOutputPath("contourZ" + std::to_string(event_num) + ".gif"));
-    histogram_contour.push_back(new TH2F(
-        ("contourZ_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(), "", 100, minX, maxX, 100, minY, maxY));
-    histogram_contour.back()->SetDirectory(getROOTDirectory());
-
     if(config_.get<bool>("output_animations")) {
+        // Create the contour histogram
+        std::vector<std::string> file_name_contour;
+        std::vector<TH2F*> histogram_contour;
+        file_name_contour.push_back(getOutputPath("contourX" + std::to_string(event_num) + ".gif"));
+        histogram_contour.push_back(new TH2F(("contourX_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
+                                             "",
+                                             100,
+                                             minY,
+                                             maxY,
+                                             100,
+                                             model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0,
+                                             model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0));
+        histogram_contour.back()->SetDirectory(getROOTDirectory());
+        file_name_contour.push_back(getOutputPath("contourY" + std::to_string(event_num) + ".gif"));
+        histogram_contour.push_back(new TH2F(("contourY_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
+                                             "",
+                                             100,
+                                             minX,
+                                             maxX,
+                                             100,
+                                             model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0,
+                                             model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0));
+        histogram_contour.back()->SetDirectory(getROOTDirectory());
+        file_name_contour.push_back(getOutputPath("contourZ" + std::to_string(event_num) + ".gif"));
+        histogram_contour.push_back(new TH2F(("contourZ_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
+                                             "",
+                                             100,
+                                             minX,
+                                             maxX,
+                                             100,
+                                             minY,
+                                             maxY));
+        histogram_contour.back()->SetDirectory(getROOTDirectory());
+
         // Create file and disable statistics for histogram
         std::string file_name_anim = getOutputPath("animation" + std::to_string(event_num) + ".gif");
         for(size_t i = 0; i < 3; ++i) {
             histogram_contour[i]->SetStats(false);
+        }
+
+        // Remove temporary created files
+        remove(file_name_anim.c_str());
+        for(size_t i = 0; i < 3; ++i) {
+            remove(file_name_contour[i].c_str());
         }
 
         // Create animation of moving charges
@@ -382,8 +394,8 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
             }
             markers.clear();
 
-            LOG_PROGRESS(DEBUG, getUniqueName() + "_OUTPUT_PLOTS")
-                << "Written " << point_cnt << " of " << tot_point_cnt << " points";
+            LOG_PROGRESS(INFO, getUniqueName() + "_OUTPUT_PLOTS")
+                << "Written " << point_cnt << " of " << tot_point_cnt << " points for animation";
         }
     }
     output_plot_points_.clear();
