@@ -48,6 +48,9 @@ GenericPropagationModule::GenericPropagationModule(Configuration config,
                                                    Messenger* messenger,
                                                    std::shared_ptr<Detector> detector)
     : Module(config, detector), config_(std::move(config)), messenger_(messenger), detector_(std::move(detector)) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+
     // Save detector model
     model_ = detector_->getModel();
 
@@ -64,6 +67,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration config,
     config_.setDefault<double>("timestep_max", Units::get(0.1, "ns"));
     config_.setDefault<double>("integration_time", Units::get(25, "ns"));
     config_.setDefault<unsigned int>("charge_per_step", 10);
+    config_.setDefault<double>("temperature", 293.15);
 
     config_.setDefault<bool>("output_plots", false);
     config_.setDefault<bool>("output_animations", false);
@@ -167,6 +171,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
                                      10,
                                      model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0,
                                      model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0);
+    histogram_frame->SetDirectory(getROOTDirectory());
 
     // Create the canvas for the line plot and set orientation
     auto canvas = std::make_unique<TCanvas>(("line_plot_" + std::to_string(event_num)).c_str(),
@@ -194,7 +199,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
         for(auto& point : deposit_points.second) {
             line->SetNextPoint(point.x(), point.y(), point.z());
         }
-        // Plot lines with different color
+        // Plot all lines with at least three points with different color
         if(line->GetN() >= 3) {
             EColor plot_color = (deposit_points.first.getType() == CarrierType::ELECTRON ? EColor::kAzure : EColor::kOrange);
             current_color = static_cast<short int>(plot_color - 9 + (static_cast<int>(current_color) + 1) % 19);
@@ -206,7 +211,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
 
     // Draw and write canvas to module output file, then clear the stored lines
     canvas->Draw();
-    canvas->Write();
+    getROOTDirectory()->WriteTObject(canvas.get());
     lines.clear();
 
     // Create canvas for GIF animition of process
@@ -243,6 +248,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
                                          100,
                                          model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0,
                                          model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0));
+    histogram_contour.back()->SetDirectory(getROOTDirectory());
     file_name_contour.push_back(getOutputPath("contourY" + std::to_string(event_num) + ".gif"));
     histogram_contour.push_back(new TH2F(("contourY_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
                                          "",
@@ -252,21 +258,17 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
                                          100,
                                          model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0,
                                          model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0));
+    histogram_contour.back()->SetDirectory(getROOTDirectory());
     file_name_contour.push_back(getOutputPath("contourZ" + std::to_string(event_num) + ".gif"));
     histogram_contour.push_back(new TH2F(
         ("contourZ_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(), "", 100, minX, maxX, 100, minY, maxY));
+    histogram_contour.back()->SetDirectory(getROOTDirectory());
 
     if(config_.get<bool>("output_animations")) {
-        // Delete previous GIF output files
+        // Create file and disable statistics for histogram
         std::string file_name_anim = getOutputPath("animation" + std::to_string(event_num) + ".gif");
-        try {
-            remove_path(file_name_anim);
-            for(size_t i = 0; i < 3; ++i) {
-                remove_path(file_name_contour[i]);
-                histogram_contour[i]->SetStats(false);
-            }
-        } catch(std::invalid_argument&) {
-            throw ModuleError("Cannot overwite gif animation");
+        for(size_t i = 0; i < 3; ++i) {
+            histogram_contour[i]->SetStats(false);
         }
 
         // Create animation of moving charges
@@ -414,6 +416,9 @@ void GenericPropagationModule::init() {
             LOG(WARNING) << "Electric field indicates hole collection at implants, but holes are not propagated!";
         }
     }
+    if(output_plots_) {
+        drift_time_histo = new TH1D("drift_time_histo", "Drift time;t[ns];particles", 50, 0., 20.);
+    }
 }
 
 void GenericPropagationModule::run(unsigned int event_num) {
@@ -453,7 +458,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
             auto position = deposit.getLocalPosition();
 
             // Add point of deposition to the output plots if requested
-            if(config_.get<bool>("output_plots")) {
+            if(output_plots_) {
                 auto global_position = detector_->getGlobalPosition(position);
                 output_plot_points_.emplace_back(
                     PropagatedCharge(position, global_position, deposit.getType(), charge_per_step, deposit.getEventTime()),
@@ -480,11 +485,18 @@ void GenericPropagationModule::run(unsigned int event_num) {
             ++step_count;
             propagated_charges_count += charge_per_step;
             total_time += prop_pair.second;
+
+            // Fill plot for drift time
+            if(output_plots_) {
+                drift_time_histo->SetBinContent(
+                    drift_time_histo->FindBin(prop_pair.second),
+                    drift_time_histo->GetBinContent(drift_time_histo->FindBin(prop_pair.second)) + charge_per_step);
+            }
         }
     }
 
     // Output plots if required
-    if(config_.get<bool>("output_plots")) {
+    if(output_plots_) {
         create_output_plots(event_num);
     }
 
@@ -610,4 +622,8 @@ void GenericPropagationModule::finalize() {
     long double average_time = total_time_ / std::max(1u, total_steps_);
     LOG(INFO) << "Propagated total of " << total_propagated_charges_ << " charges in " << total_steps_
               << " steps in average time of " << Units::display(average_time, "ns");
+
+    if(output_plots_) {
+        drift_time_histo->Write();
+    }
 }

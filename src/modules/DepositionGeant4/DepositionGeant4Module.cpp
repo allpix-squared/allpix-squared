@@ -45,7 +45,7 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration config, Messenger* 
         std::make_unique<G4UserLimits>(config_.get<double>("max_step_length", std::numeric_limits<double>::max()));
 
     // Add the particle source position to the geometry
-    geo_manager_->addPoint(config_.get<ROOT::Math::XYZPoint>("particle_position"));
+    geo_manager_->addPoint(config_.get<ROOT::Math::XYZPoint>("beam_position"));
 }
 
 /**

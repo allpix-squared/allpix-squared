@@ -3,31 +3,27 @@
 **Status**: Functional  
 
 #### Description
-Constructs the Geant4 geometry from the internal geometry. First constructs the world geometry from the internal world size, with a certain margin, using a particular world material. Then continues to create all the detectors using their internal detector models.
+Constructs the Geant4 geometry from the internal geometry description. First constructs the world frame with a configurable margin and material. Then continues to create all the detectors using their internal detector models and to place them within the world frame.
 
-All the available detector models are fully supported. This builder can create extra support layers of the following materials (note that these should be specified in lowercase):
+All available detector models are fully supported. This builder can create extra support layers of the following materials:
 
-* silicon
-* plexiglass
-* kapton
-* copper
-* epoxy
-* carbonfiber
-* g10
-* solder
-
-This module also allows to simulate misalignments of the setup. By setting one or both of the variables `alignment_precision` and `alignment_precision_rot`, detector misalignments are drawn from a normal distribution with a width given by the configured precision. This is performed for each detector and for each of the three Cartesian coordinates and Euler angles individually. The simulation of misalignments can be omitted by either not specifying the variables or setting all three components of the variable to zero.
+* Silicon
+* Plexiglass
+* Kapton (using the G4_KAPTON definition)
+* Copper
+* Epoxy
+* Carbonfiber (a mixture of carbon and epoxy)
+* G10 (PCB material)
+* Solder (a mixture of tin and lead)
 
 #### Parameters
-* `world_material` : Material of the world, should either be **air** or **vacuum**. Default to **air** if not specified.
-* `world_margin_percentage` : Percentage of the world size to add extra compared to the internally calculated minimum world size. Defaults to 0.1, thus 10%.
-* `world_minimum_margin` : Minimum absolute margin to add to all sides of the internally calculated minimum world size. Defaults to zero for all axis, thus not having any minimum margin.
-* `alignment_precision` : Alignment precision of the detector setup in the three cartesian coordinates. If this variable is set, a random misalignment is applied to the detector position.
-* `alignment_precision_rot` : Alignment precision of the detector setup in the three Euler angles. If this variable is set, a random misalignment is applied to the detector orientation.
-* `GDML_output_file` : Optional file to write the geometry to in GDML format. Can only be used if this Geant4 version has GDML support (will throw an error otherwise). Otherwise also likely produces an error due to incomplete GDML implementation in Geant4.
+* `world_material` : Material of the world, should either be **air** or **vacuum**. Defaults to **air** if not specified.
+* `world_margin_percentage` : Percentage of the world size to add to every dimension compared to the internally calculated minimum world size. Defaults to 0.1, thus 10%.
+* `world_minimum_margin` : Minimum absolute margin to add to all sides of the internally calculated minimum world size. Defaults to zero for all axis, thus not requiring any minimum margin.
+* `GDML_output_file` : Optional file to write the geometry to in GDML format. Can only be used if this Geant4 version is built with GDML support enabled and will throw an error otherwise. This feature is to be considered experimental as the GDML implementation of Geant4 is incomplete.
 
 #### Usage
-To create a Geant4 geometry using vacuum as world material and with always exactly one meter added to the minimum world size on every side, the following configuration can be used.
+To create a Geant4 geometry using vacuum as world material and with always exactly one meter added to the minimum world size in every dimension, the following configuration could be used:
 
 ```ini
 [GeometryBuilderGeant4]

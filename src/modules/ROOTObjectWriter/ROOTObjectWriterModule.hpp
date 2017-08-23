@@ -65,6 +65,10 @@ namespace allpix {
         Configuration config_;
         GeometryManager* geo_mgr_;
 
+        // Object names to include or exclude from writing
+        std::set<std::string> include_;
+        std::set<std::string> exclude_;
+
         // Output data file to write
         std::unique_ptr<TFile> output_file_;
 

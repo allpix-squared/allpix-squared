@@ -196,12 +196,15 @@ void GeometryConstructionG4::build_detectors() {
 
         // Get position and orientation
         auto position = detector->getPosition();
-        ROOT::Math::EulerAngles angles = detector->getOrientation();
+        ROOT::Math::Rotation3D orientation = detector->getOrientation();
+        std::vector<double> copy_vec(9);
+        orientation.GetComponents(copy_vec.begin(), copy_vec.end());
+
         LOG(DEBUG) << " - Position\t\t:\t" << display_vector(position, {"mm", "um"});
-        LOG(DEBUG) << " - Orientation\t:\t" << display_vector(angles, {"deg"});
+        LOG(DEBUG) << " - Orientation\t:\t" << display_vector(copy_vec, {"deg"});
 
         G4ThreeVector posWrapper = toG4Vector(position);
-        auto rotWrapper = std::make_shared<G4RotationMatrix>(angles.Phi(), angles.Theta(), angles.Psi());
+        auto rotWrapper = std::make_shared<G4RotationMatrix>(copy_vec.data());
         detector->setExternalObject("rotation_matrix", rotWrapper);
 
         // Place the wrapper
