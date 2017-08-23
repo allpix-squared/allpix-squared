@@ -179,25 +179,25 @@ int main(int argc, char** argv) {
         } else if(strcmp(argv[i], "-R") == 0 && (i + 1 < argc)) {
             region = std::string(argv[++i]);
         } else if(strcmp(argv[i], "-r") == 0 && (i + 1 < argc)) {
-            initial_radius = static_cast<double>(strtod(argv[++i], nullptr));
+            initial_radius = strtod(argv[++i], nullptr);
         } else if(strcmp(argv[i], "-t") == 0 && (i + 1 < argc)) {
-            radius_threshold = static_cast<double>(strtod(argv[++i], nullptr));
+            radius_threshold = strtod(argv[++i], nullptr);
             threshold_flag = true;
         } else if(strcmp(argv[i], "-s") == 0 && (i + 1 < argc)) {
-            radius_step = static_cast<double>(strtod(argv[++i], nullptr));
+            radius_step = strtod(argv[++i], nullptr);
         } else if(strcmp(argv[i], "-m") == 0 && (i + 1 < argc)) {
-            max_radius = static_cast<double>(strtod(argv[++i], nullptr));
+            max_radius = strtod(argv[++i], nullptr);
         } else if(strcmp(argv[i], "-i") == 0 && (i + 1 < argc)) {
-            index_cut = static_cast<size_t>(strtod(argv[++i], nullptr));
+            index_cut = static_cast<size_t>(strtol(argv[++i], nullptr, 10));
             index_cut_flag = true;
         } else if(strcmp(argv[i], "-c") == 0 && (i + 1 < argc)) {
-            volume_cut = static_cast<double>(strtod(argv[++i], nullptr));
+            volume_cut = strtod(argv[++i], nullptr);
         } else if(strcmp(argv[i], "-x") == 0 && (i + 1 < argc)) {
-            xdiv = static_cast<int>(strtod(argv[++i], nullptr));
+            xdiv = static_cast<int>(strtol(argv[++i], nullptr, 10));
         } else if(strcmp(argv[i], "-y") == 0 && (i + 1 < argc)) {
-            ydiv = static_cast<int>(strtod(argv[++i], nullptr));
+            ydiv = static_cast<int>(strtol(argv[++i], nullptr, 10));
         } else if(strcmp(argv[i], "-z") == 0 && (i + 1 < argc)) {
-            zdiv = static_cast<int>(strtod(argv[++i], nullptr));
+            zdiv = static_cast<int>(strtol(argv[++i], nullptr, 10));
         } else if(strcmp(argv[i], "-l") == 0 && (i + 1 < argc)) {
             log_file_name = std::string(argv[++i]);
         } else {
