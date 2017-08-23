@@ -73,6 +73,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration config,
     config_.setDefault<bool>("output_animations", false);
     config_.setDefault<double>("output_plots_step", config_.get<double>("timestep_max"));
     config_.setDefault<bool>("output_plots_use_pixel_units", false);
+    config_.setDefault<bool>("output_plots_align_pixels", false);
     config_.setDefault<double>("output_plots_theta", 0.0f);
     config_.setDefault<double>("output_plots_phi", 0.0f);
 
@@ -156,6 +157,26 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
 
             minY = centerY - model_->getSensorSize().z() / 2.0;
             maxY = centerY + model_->getSensorSize().z() / 2.0;
+        }
+    }
+
+    // Align on pixels if requested
+    if(config_.get<bool>("output_plots_align_pixels")) {
+        if(config_.get<bool>("output_plots_use_pixel_units")) {
+            minX = std::floor(minX - 0.5) + 0.5;
+            minY = std::floor(minY + 0.5) - 0.5;
+            maxX = std::ceil(maxX - 0.5) + 0.5;
+            maxY = std::ceil(maxY + 0.5) - 0.5;
+        } else {
+            double div;
+            div = minX / model_->getPixelSize().x();
+            minX = (std::floor(div - 0.5) + 0.5) * model_->getPixelSize().x();
+            div = minY / model_->getPixelSize().y();
+            minY = (std::floor(div - 0.5) + 0.5) * model_->getPixelSize().y();
+            div = maxX / model_->getPixelSize().x();
+            maxX = (std::ceil(div + 0.5) - 0.5) * model_->getPixelSize().x();
+            div = maxY / model_->getPixelSize().y();
+            maxY = (std::ceil(div + 0.5) - 0.5) * model_->getPixelSize().y();
         }
     }
 
@@ -289,6 +310,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
                        config_.get<long double>("output_animations_time_scaling", 1e9)));
         unsigned long plot_idx = 0;
         unsigned int point_cnt = 0;
+        LOG_PROGRESS(INFO, getUniqueName() + "_OUTPUT_PLOTS") << "Written 0 of " << tot_point_cnt << " points for animation";
         while(point_cnt < tot_point_cnt) {
             std::vector<std::unique_ptr<TPolyMarker3D>> markers;
             unsigned long min_idx_diff = std::numeric_limits<unsigned long>::max();
