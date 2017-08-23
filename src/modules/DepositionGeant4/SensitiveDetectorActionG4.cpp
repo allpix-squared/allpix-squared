@@ -115,8 +115,9 @@ void SensitiveDetectorActionG4::dispatchMessages() {
     for(auto& track_parent : track_parents_) {
         auto track_id = track_parent.first;
         auto parent_id = track_parent.second;
-        if(parent_id == 0) {
-            // Skip tracks without parents
+        if(id_to_particle_.find(parent_id) == id_to_particle_.end()) {
+            // Skip tracks without direct parents with deposits
+            // FIXME: Geant4 does not allow for an easy way retrieve the whole hierarchy
             continue;
         }
         auto track_idx = id_to_particle_.at(track_id);
