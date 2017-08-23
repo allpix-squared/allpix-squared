@@ -19,8 +19,12 @@ PixelHit::PixelHit(Pixel pixel, double time, double signal, const PixelCharge* p
     pixel_charge_ = const_cast<PixelCharge*>(pixel_charge); // NOLINT
 }
 
-Pixel PixelHit::getPixel() const {
+const Pixel& PixelHit::getPixel() const {
     return pixel_;
+}
+
+Pixel::Index PixelHit::getIndex() const {
+    return getPixel().getIndex();
 }
 
 /**
