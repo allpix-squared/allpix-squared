@@ -309,7 +309,10 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
         TColor* colors[80];
         for(int i = 20; i < 100; ++i) {
             auto color_idx = TColor::GetFreeColorIndex();
-            colors[i - 20] = new TColor(color_idx, i / 100.0f - 0.2f, i / 100.0f - 0.2f, i / 100.0f - 0.2f);
+            colors[i - 20] = new TColor(color_idx,
+                                        static_cast<float>(i) / 100.0f - 0.2f,
+                                        static_cast<float>(i) / 100.0f - 0.2f,
+                                        static_cast<float>(i) / 100.0f - 0.2f);
         }
 
         // Create animation of moving charges
