@@ -20,28 +20,28 @@ namespace allpix {
     public:
         /**
          * @brief Construct a Monte-Carlo particle
-         * @param local_entry_point Entry point of the particle in the sensor in local coordinates
-         * @param global_entry_point Entry point of the particle in the sensor in global coordinates
-         * @param local_exit_point Exit point of the particle in the sensor in local coordinates
-         * @param global_exit_point Exit point of the particle in the sensor in global coordinates
+         * @param local_start_point Entry point of the particle in the sensor in local coordinates
+         * @param global_start_point Entry point of the particle in the sensor in global coordinates
+         * @param local_end_point Exit point of the particle in the sensor in local coordinates
+         * @param global_end_point Exit point of the particle in the sensor in global coordinates
          * @param particle_id Identifier for the particle type
          */
-        MCParticle(ROOT::Math::XYZPoint local_entry_point,
-                   ROOT::Math::XYZPoint global_entry_point,
-                   ROOT::Math::XYZPoint local_exit_point,
-                   ROOT::Math::XYZPoint global_exit_point,
+        MCParticle(ROOT::Math::XYZPoint local_start_point,
+                   ROOT::Math::XYZPoint global_start_point,
+                   ROOT::Math::XYZPoint local_end_point,
+                   ROOT::Math::XYZPoint global_end_point,
                    int particle_id);
 
         /**
          * @brief Get the entry point of the particle in local coordinates
          * @return Particle entry point
          */
-        ROOT::Math::XYZPoint getLocalBeginPoint() const;
+        ROOT::Math::XYZPoint getLocalStartPoint() const;
         /**
          * @brief Get the entry point of the particle in global coordinates
          * @return Particle entry point
          */
-        ROOT::Math::XYZPoint getGlobalBeginPoint() const;
+        ROOT::Math::XYZPoint getGlobalStartPoint() const;
 
         /**
          * @brief Get the exit point of the particle in local coordinates
@@ -83,8 +83,8 @@ namespace allpix {
         MCParticle() = default;
 
     private:
-        ROOT::Math::XYZPoint local_begin_point_{};
-        ROOT::Math::XYZPoint global_begin_point_{};
+        ROOT::Math::XYZPoint local_start_point_{};
+        ROOT::Math::XYZPoint global_start_point_{};
         ROOT::Math::XYZPoint local_end_point_{};
         ROOT::Math::XYZPoint global_end_point_{};
 
