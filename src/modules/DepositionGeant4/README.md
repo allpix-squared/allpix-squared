@@ -19,7 +19,7 @@ This module requires an installation Geant4.
 * `enable_pai`: Determines if the Photoabsorption Ionization model is enabled in the sensors of all detectors. Defaults to false.
 * 'pai_model': Model can be **pai** for the normal Photoabsorption Ionization model or **paiphoton** for the photon model. Default is **pai**. Only used if *enable_pai* is set to true.
 * `charge_creation_energy` : Energy needed to create a charge deposit. Defaults to the energy needed to create an electron-hole pair in silicon (3.64 eV).
-* `max_step_length` : Maximum length of a simulation step in every sensitive device.
+* `max_step_length` : Maximum length of a simulation step in every sensitive device. Defaults to 1um.
 * `particle_type` : Type of the Geant4 particle to use in the source (string). Refer to the Geant4 documentation [@g4particles] for information about the available types of particles.
 * `particle_code` : PDG code of the Geant4 particle to use in the source.
 * `beam_energy` : Mean energy of the generated particles.
