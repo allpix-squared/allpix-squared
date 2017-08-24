@@ -595,8 +595,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
     };
 
     // Define a function to compute the diffusion
-    auto timestep = timestep_start_;
-    auto carrier_diffusion = [&](double efield_mag) -> Eigen::Vector3d {
+    auto carrier_diffusion = [&](double efield_mag, double timestep) -> Eigen::Vector3d {
         double diffusion_constant = boltzmann_kT_ * carrier_mobility(efield_mag);
         double diffusion_std_dev = std::sqrt(2. * diffusion_constant * timestep);
 
@@ -619,7 +618,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
     };
 
     // Create the runge kutta solver with an RKF5 tableau
-    auto runge_kutta = make_runge_kutta(tableau::RK5, carrier_velocity, timestep, position);
+    auto runge_kutta = make_runge_kutta(tableau::RK5, carrier_velocity, timestep_start_, position);
 
     // Continue propagation until the deposit is outside the sensor
     Eigen::Vector3d last_position = position;
@@ -643,14 +642,14 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         auto step = runge_kutta.step();
 
         // Get the current result and timestep
-        timestep = runge_kutta.getTimeStep();
+        auto timestep = runge_kutta.getTimeStep();
         position = runge_kutta.getValue();
 
         // Get electric field at current position and fall back to empty field if it does not exist
         auto efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(position));
 
         // Apply diffusion step
-        auto diffusion = carrier_diffusion(std::sqrt(efield.Mag2()));
+        auto diffusion = carrier_diffusion(std::sqrt(efield.Mag2()), timestep);
         position += diffusion;
         runge_kutta.setValue(position);
 
