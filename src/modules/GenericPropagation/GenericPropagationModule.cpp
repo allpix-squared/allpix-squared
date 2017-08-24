@@ -538,7 +538,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
             // Update statistical information
             ++step_count;
             propagated_charges_count += charge_per_step;
-            total_time += prop_pair.second;
+            total_time += charge_per_step * prop_pair.second;
 
             // Fill plot for drift time
             if(output_plots_) {
@@ -555,7 +555,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
     }
 
     // Write summary and update statistics
-    long double average_time = total_time / std::max(1u, step_count);
+    long double average_time = total_time / std::max(1u, propagated_charges_count);
     LOG(INFO) << "Propagated " << propagated_charges_count << " charges in " << step_count << " steps in average time of "
               << Units::display(average_time, "ns");
     total_propagated_charges_ += propagated_charges_count;
@@ -700,7 +700,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
 }
 
 void GenericPropagationModule::finalize() {
-    long double average_time = total_time_ / std::max(1u, total_steps_);
+    long double average_time = total_time_ / std::max(1u, total_propagated_charges_);
     LOG(INFO) << "Propagated total of " << total_propagated_charges_ << " charges in " << total_steps_
               << " steps in average time of " << Units::display(average_time, "ns");
 
