@@ -622,18 +622,20 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
     auto runge_kutta = make_runge_kutta(tableau::RK5, carrier_velocity, timestep, position);
 
     // Continue propagation until the deposit is outside the sensor
-    // FIXME: we need to determine what would be a good time to stop
     Eigen::Vector3d last_position = position;
-    double last_time = std::numeric_limits<double>::lowest();
+    size_t next_idx = 0;
     while(detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position)) &&
           runge_kutta.getTime() < integration_time_) {
         // Update output plots if necessary (depending on the plot step)
-        if(output_plots_ && runge_kutta.getTime() - last_time > output_plots_step_) {
-            output_plot_points_.back().second.push_back(static_cast<ROOT::Math::XYZPoint>(runge_kutta.getValue()));
-            last_time = runge_kutta.getTime();
+        if(output_plots_) {
+            auto time_idx = static_cast<size_t>(runge_kutta.getTime() / output_plots_step_);
+            while(next_idx <= time_idx) {
+                output_plot_points_.back().second.push_back(static_cast<ROOT::Math::XYZPoint>(position));
+                next_idx = output_plot_points_.back().second.size();
+            }
         }
 
-        // Save previous position
+        // Save previous position and time
         last_position = position;
 
         // Execute a Runge Kutta step
