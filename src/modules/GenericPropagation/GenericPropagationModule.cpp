@@ -623,6 +623,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
 
     // Continue propagation until the deposit is outside the sensor
     Eigen::Vector3d last_position = position;
+    double last_time = 0;
     size_t next_idx = 0;
     while(detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position)) &&
           runge_kutta.getTime() < integration_time_) {
@@ -650,7 +651,8 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
 
         // Apply diffusion step
         auto diffusion = carrier_diffusion(std::sqrt(efield.Mag2()));
-        runge_kutta.setValue(position + diffusion);
+        position += diffusion;
+        runge_kutta.setValue(position);
 
         // Adapt step size to match target precision
         double uncertainty = step.error.norm();
@@ -675,7 +677,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
     }
 
     // Find proper final position in the sensor
-    position = runge_kutta.getValue();
+    auto time = runge_kutta.getTime();
     if(!detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
         auto check_position = position;
         check_position.z() = last_position.z();
@@ -685,14 +687,16 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
             auto z_last_border = std::fabs(model_->getSensorSize().z() / 2.0 - last_position.z());
             auto z_total = z_cur_border + z_last_border;
             position = (z_last_border / z_total) * position + (z_cur_border / z_total) * last_position;
+            time = (z_last_border / z_total) * time + (z_cur_border / z_total) * last_time;
         } else {
             // Carrier left sensor on any order border, use last position inside instead
             position = last_position;
+            time = last_time;
         }
     }
 
     // Return the final position of the propagated charge
-    return std::make_pair(static_cast<ROOT::Math::XYZPoint>(position), runge_kutta.getTime());
+    return std::make_pair(static_cast<ROOT::Math::XYZPoint>(position), time);
 }
 
 void GenericPropagationModule::finalize() {
