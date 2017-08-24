@@ -61,10 +61,10 @@ GenericPropagationModule::GenericPropagationModule(Configuration config,
     random_generator_.seed(getRandomSeed());
 
     // Set default value for config variables
-    config_.setDefault<double>("spatial_precision", Units::get(0.1, "nm"));
+    config_.setDefault<double>("spatial_precision", Units::get(0.00025, "um"));
     config_.setDefault<double>("timestep_start", Units::get(0.01, "ns"));
-    config_.setDefault<double>("timestep_min", Units::get(0.0005, "ns"));
-    config_.setDefault<double>("timestep_max", Units::get(0.1, "ns"));
+    config_.setDefault<double>("timestep_min", Units::get(0.001, "ns"));
+    config_.setDefault<double>("timestep_max", Units::get(1.0, "ns"));
     config_.setDefault<double>("integration_time", Units::get(25, "ns"));
     config_.setDefault<unsigned int>("charge_per_step", 10);
     config_.setDefault<double>("temperature", 293.15);
@@ -648,6 +648,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
 
         // Adapt step size to match target precision
         double uncertainty = step.error.norm();
+
         // Lower timestep when reaching the sensor edge
         if(model_->getSensorSize().z() - position.z() < step.value.z() * 1.2) {
             timestep *= 0.7;
