@@ -45,6 +45,9 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration config, Messenger* 
     user_limits_ =
         std::make_unique<G4UserLimits>(config_.get<double>("max_step_length", std::numeric_limits<double>::max()));
 
+    // Set default physics list
+    config_.setDefault("physics_list", "FTFP_BERT_LIV");
+
     // Add the particle source position to the geometry
     geo_manager_->addPoint(config_.get<ROOT::Math::XYZPoint>("beam_position"));
 }
@@ -96,7 +99,6 @@ void DepositionGeant4Module::init() {
     }
 
     // Find the physics list
-    // FIXME Set a good default physics list
     G4PhysListFactory physListFactory;
     G4VModularPhysicsList* physicsList = physListFactory.GetReferencePhysList(config_.get<std::string>("physics_list"));
     if(physicsList == nullptr) {

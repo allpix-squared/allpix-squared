@@ -15,7 +15,9 @@ For all particles passing the sensitive device of the detectors, the energy loss
 This module requires an installation Geant4.
 
 #### Parameters
-* `physics_list`: Geant4-internal list of physical processes to simulate. More information about possible physics list and recommendations for default is available on the Geant4 website [@g4physicslists].
+* `physics_list`: Geant4-internal list of physical processes to simulate, defaults to FTFP_BERT_LIV. More information about possible physics list and recommendations for defaults are available on the Geant4 website [@g4physicslists].
+* `enable_pai`: Determines if the Photoabsorption Ionization model is enabled in the sensors of all detectors. Defaults to false.
+* 'pai_model': Model can be **pai** for the normal Photoabsorption Ionization model or **paiphoton** for the photon model. Default is **pai**. Only used if *enable_pai* is set to true.
 * `charge_creation_energy` : Energy needed to create a charge deposit. Defaults to the energy needed to create an electron-hole pair in silicon (3.64 eV).
 * `max_step_length` : Maximum length of a simulation step in every sensitive device.
 * `particle_type` : Type of the Geant4 particle to use in the source (string). Refer to the Geant4 documentation [@g4particles] for information about the available types of particles.
@@ -33,7 +35,7 @@ A possible default configuration to use, simulating a beam of 120 GeV pions with
 
 ```ini
 [DepositionGeant4]
-physics_list = QGSP_BERT
+physics_list = FTFP_BERT_LIV
 particle_type = "pi+"
 beam_energy = 120GeV
 beam_position = 0 0 -1mm
