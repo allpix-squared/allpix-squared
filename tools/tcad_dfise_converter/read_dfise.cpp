@@ -273,7 +273,6 @@ std::map<std::string, std::vector<Point>> read_grid(const std::string& file_name
                 throw std::runtime_error("element type " + std::to_string(k) + " is not supported");
             }
 
-            std::cerr << line << std::endl;
             for(size_t i = 0; i < size; ++i) {
                 long element_idx;
                 sstr >> element_idx;
@@ -292,7 +291,8 @@ std::map<std::string, std::vector<Point>> read_grid(const std::string& file_name
                     if(reverse) {
                         std::swap(edge.first, edge.second);
                     }
-                    element.insert(element.end(), edge.first, edge.second);
+                    element.push_back(edge.first);
+                    element.push_back(edge.second);
                 }
                 if(size == 4) {
                     if(element_idx >= static_cast<long>(faces.size())) {
