@@ -623,6 +623,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
 
     // Continue propagation until the deposit is outside the sensor
     // FIXME: we need to determine what would be a good time to stop
+    Eigen::Vector3d last_position = position;
     double last_time = std::numeric_limits<double>::lowest();
     while(detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position)) &&
           runge_kutta.getTime() < integration_time_) {
@@ -631,6 +632,9 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
             output_plot_points_.back().second.push_back(static_cast<ROOT::Math::XYZPoint>(runge_kutta.getValue()));
             last_time = runge_kutta.getTime();
         }
+
+        // Save previous position
+        last_position = position;
 
         // Execute a Runge Kutta step
         auto step = runge_kutta.step();
@@ -650,12 +654,12 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         double uncertainty = step.error.norm();
 
         // Lower timestep when reaching the sensor edge
-        if(model_->getSensorSize().z() - position.z() < step.value.z() * 1.2) {
+        if(std::fabs(model_->getSensorSize().z() / 2.0 - position.z()) < 2 * step.value.z()) {
             timestep *= 0.7;
         } else {
             if(uncertainty > target_spatial_precision_) {
                 timestep *= 0.7;
-            } else if(uncertainty < 0.5 * target_spatial_precision_) {
+            } else if(2 * uncertainty < target_spatial_precision_) {
                 timestep *= 2;
             }
         }
@@ -668,8 +672,24 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         runge_kutta.setTimeStep(timestep);
     }
 
-    // Return the final position of the propagated charge
+    // Find proper final position in the sensor
     position = runge_kutta.getValue();
+    if(!detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
+        auto check_position = position;
+        check_position.z() = last_position.z();
+        if(position.z() > 0 && detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(check_position))) {
+            // Carrier left sensor on the side of the pixel grid, interpolate end point on surface
+            auto z_cur_border = std::fabs(position.z() - model_->getSensorSize().z() / 2.0);
+            auto z_last_border = std::fabs(model_->getSensorSize().z() / 2.0 - last_position.z());
+            auto z_total = z_cur_border + z_last_border;
+            position = (z_last_border / z_total) * position + (z_cur_border / z_total) * last_position;
+        } else {
+            // Carrier left sensor on any order border, use last position inside instead
+            position = last_position;
+        }
+    }
+
+    // Return the final position of the propagated charge
     return std::make_pair(static_cast<ROOT::Math::XYZPoint>(position), runge_kutta.getTime());
 }
 
