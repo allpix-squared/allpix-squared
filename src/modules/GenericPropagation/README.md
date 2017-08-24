@@ -22,6 +22,10 @@ The propagation module also produces a variety of output plots. These include a 
 In addition, a 3D GIF animation for the drift of all individual sets of charges (with the size of the point proportional to the number of charges in the set) can be produced. Finally, the module produces 2D contour animations in all the planes normal to the X, Y and Z axis, showing the concentration flow in the sensor.
 It should be noted that generating the animations is very time-consuming and should be switched off even when investigating drift behavior.
 
+#### Dependencies
+
+This module requires an installation of Eigen3.
+
 #### Parameters
 * `temperature` : Temperature of the sensitive device, used to estimate the diffusion constant and therefore the strength of the diffusion. Defaults to room temperature (293.15K).
 * `charge_per_step` : Maximum number of charge carriers to propagate together. Divides the total number of deposited charge carriers at a specific point into sets of this number of charge carriers and a set with the remaining charge carriers. A value of 10 charges per step is used by default if this value is not specified.
