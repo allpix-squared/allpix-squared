@@ -637,6 +637,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
 
         // Save previous position and time
         last_position = position;
+        last_time = runge_kutta.getTime();
 
         // Execute a Runge Kutta step
         auto step = runge_kutta.step();
@@ -658,12 +659,12 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
 
         // Lower timestep when reaching the sensor edge
         if(std::fabs(model_->getSensorSize().z() / 2.0 - position.z()) < 2 * step.value.z()) {
-            timestep *= 0.7;
+            timestep *= 0.75;
         } else {
             if(uncertainty > target_spatial_precision_) {
-                timestep *= 0.7;
+                timestep *= 0.75;
             } else if(2 * uncertainty < target_spatial_precision_) {
-                timestep *= 2;
+                timestep *= 1.5;
             }
         }
         // Limit the timestep to certain minimum and maximum step sizes
