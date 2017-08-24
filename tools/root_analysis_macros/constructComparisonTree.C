@@ -136,8 +136,8 @@ std::shared_ptr<TTree> constructComparisonTree(TFile* file, std::string dut) {
         output_track_count = input_particles.size();
         for(auto& particle : input_particles) {
             // FIXME just use the middle position between the entry point and the exit as the track position
-            output_track_x = (particle->getLocalEntryPoint().x() + particle->getLocalExitPoint().x()) / 2.0;
-            output_track_y = (particle->getLocalEntryPoint().y() + particle->getLocalExitPoint().y()) / 2.0;
+            output_track_x = (particle->getLocalStartPoint().x() + particle->getLocalEndPoint().x()) / 2.0;
+            output_track_y = (particle->getLocalStartPoint().y() + particle->getLocalEndPoint().y()) / 2.0;
         }
 
         // Calculate local x using a simple center of gravity fit
