@@ -66,7 +66,7 @@ void DepositionGeant4Module::init() {
     G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
 
     // Apply optional PAI model
-    if(config_.get<bool>("pai_model", false)) {
+    if(config_.get<bool>("enable_pai", false)) {
         LOG(TRACE) << "Enabling PAI model on all detectors";
         G4EmParameters::Instance();
 
@@ -80,8 +80,18 @@ void DepositionGeant4Module::init() {
             G4Region* region = new G4Region(detector->getName() + "_sensor_region");
             region->AddRootLogicalVolume(logical_volume.get());
 
-            // TODO can also be PAIphoton
-            ui_g4->ApplyCommand("/process/em/AddPAIRegion all " + region->GetName() + " pai");
+            auto pai_model = config_.get<std::string>("pai_model", "pai");
+            auto lcase_model = pai_model;
+            std::transform(lcase_model.begin(), lcase_model.end(), lcase_model.begin(), ::tolower);
+            if(lcase_model == "pai") {
+                pai_model = "PAI";
+            } else if(lcase_model == "paiphoton") {
+                pai_model = "PAIphoton";
+            } else {
+                throw InvalidValueError(config_, "pai_model", "model has to be either 'pai' or 'paiphoton'");
+            }
+
+            ui_g4->ApplyCommand("/process/em/AddPAIRegion all " + region->GetName() + " " + pai_model);
         }
     }
 
