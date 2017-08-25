@@ -120,7 +120,7 @@ void ProjectionPropagationModule::run(unsigned int) {
 
         // Calculate the drift time
         auto calc_drift_time = [&]() {
-            double Ec = (type == CarrierType::ELECTRON ? electron_Ec_ : Ec = hole_Ec_);
+            double Ec = (type == CarrierType::ELECTRON ? electron_Ec_ : hole_Ec_);
             double zero_mobility = (type == CarrierType::ELECTRON ? electron_Vm_ / electron_Ec_ : hole_Vm_ / hole_Ec_);
 
             return ((log(efield_mag_top) - log(efield_mag)) / slope_efield_ +
