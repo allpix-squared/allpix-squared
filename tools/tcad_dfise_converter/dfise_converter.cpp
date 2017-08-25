@@ -15,122 +15,117 @@
 #include <Eigen/Eigen>
 
 #include "../../src/core/utils/log.h"
+
 #include "Octree.hpp"
+
 #include "read_dfise.h"
-
-#define EPS 1e-6
-
-std::pair<Point, bool> barycentric_interpolation(Point query_point,
-                                                 std::vector<Point> tetra_vertices,
-                                                 std::vector<Point> tetra_vertices_field,
-                                                 double tetra_volume) {
-    // Function must have tetra_vertices.size() = 4
-    if(tetra_vertices.size() != 4) {
-        throw std::invalid_argument("Baricentric interpolation without only 4 vertices!");
-    }
-    bool volume_signal = false;
-    if(tetra_volume > 0) {
-        volume_signal = true;
-    }
-
-    // Jacobi Matrix for volume calculation for each tetrahedron with a vertex replaced by the query point
-    Eigen::Matrix4d matrix_sub1;
-    matrix_sub1 << 1, 1, 1, 1, query_point.x, tetra_vertices[1].x, tetra_vertices[2].x, tetra_vertices[3].x, query_point.y,
-        tetra_vertices[1].y, tetra_vertices[2].y, tetra_vertices[3].y, query_point.z, tetra_vertices[1].z,
-        tetra_vertices[2].z, tetra_vertices[3].z;
-    double tetra_subvol_1 = (matrix_sub1.determinant()) / 6;
-    bool sub_1_signal = false;
-    if(tetra_subvol_1 > 0) {
-        sub_1_signal = true;
-    }
-    if(std::fabs(tetra_subvol_1) < EPS) {
-        sub_1_signal = volume_signal;
-    }
-
-    Eigen::Matrix4d matrix_sub2;
-    matrix_sub2 << 1, 1, 1, 1, tetra_vertices[0].x, query_point.x, tetra_vertices[2].x, tetra_vertices[3].x,
-        tetra_vertices[0].y, query_point.y, tetra_vertices[2].y, tetra_vertices[3].y, tetra_vertices[0].z, query_point.z,
-        tetra_vertices[2].z, tetra_vertices[3].z;
-    double tetra_subvol_2 = (matrix_sub2.determinant()) / 6;
-    bool sub_2_signal = false;
-    if(tetra_subvol_2 > 0) {
-        sub_2_signal = true;
-    }
-    if(std::fabs(tetra_subvol_2) < EPS) {
-        sub_2_signal = volume_signal;
-    }
-
-    Eigen::Matrix4d matrix_sub3;
-    matrix_sub3 << 1, 1, 1, 1, tetra_vertices[0].x, tetra_vertices[1].x, query_point.x, tetra_vertices[3].x,
-        tetra_vertices[0].y, tetra_vertices[1].y, query_point.y, tetra_vertices[3].y, tetra_vertices[0].z,
-        tetra_vertices[1].z, query_point.z, tetra_vertices[3].z;
-    double tetra_subvol_3 = (matrix_sub3.determinant()) / 6;
-    bool sub_3_signal = false;
-    if(tetra_subvol_3 > 0) {
-        sub_3_signal = true;
-    }
-    if(std::fabs(tetra_subvol_3) < EPS) {
-        sub_3_signal = volume_signal;
-    }
-
-    Eigen::Matrix4d matrix_sub4;
-    matrix_sub4 << 1, 1, 1, 1, tetra_vertices[0].x, tetra_vertices[1].x, tetra_vertices[2].x, query_point.x,
-        tetra_vertices[0].y, tetra_vertices[1].y, tetra_vertices[2].y, query_point.y, tetra_vertices[0].z,
-        tetra_vertices[1].z, tetra_vertices[2].z, query_point.z;
-    double tetra_subvol_4 = (matrix_sub4.determinant()) / 6;
-    bool sub_4_signal = false;
-    if(tetra_subvol_4 > 0) {
-        sub_4_signal = true;
-    }
-    if(std::fabs(tetra_subvol_4) < EPS) {
-        sub_4_signal = volume_signal;
-    }
-
-    // Electric field interpolation
-    Point efield_int;
-    efield_int.x = (tetra_subvol_1 * tetra_vertices_field[0].x + tetra_subvol_2 * tetra_vertices_field[1].x +
-                    tetra_subvol_3 * tetra_vertices_field[2].x + tetra_subvol_4 * tetra_vertices_field[3].x) /
-                   tetra_volume;
-    efield_int.y = (tetra_subvol_1 * tetra_vertices_field[0].y + tetra_subvol_2 * tetra_vertices_field[1].y +
-                    tetra_subvol_3 * tetra_vertices_field[2].y + tetra_subvol_4 * tetra_vertices_field[3].y) /
-                   tetra_volume;
-    efield_int.z = (tetra_subvol_1 * tetra_vertices_field[0].z + tetra_subvol_2 * tetra_vertices_field[1].z +
-                    tetra_subvol_3 * tetra_vertices_field[2].z + tetra_subvol_4 * tetra_vertices_field[3].z) /
-                   tetra_volume;
-
-    // Check if query point is outside tetrahedron
-    bool flag = true;
-    if(sub_1_signal != volume_signal || sub_2_signal != volume_signal || sub_3_signal != volume_signal ||
-       sub_4_signal != volume_signal) {
-        flag = false;
-        LOG(DEBUG) << "Warning: Point outside tetrahedron";
-        return std::make_pair(efield_int, flag);
-        ;
-    }
-
-    for(size_t i = 0; i < tetra_vertices.size(); i++) {
-        auto distance = unibn::L2Distance<Point>::compute(tetra_vertices[i], query_point);
-        LOG(DEBUG) << "Tetrahedron vertex (" << tetra_vertices[i].x << ", " << tetra_vertices[i].y << ", "
-                   << tetra_vertices[i].z << ") - "
-                   << " Distance: " << distance << " - Electric field: (" << tetra_vertices_field[i].x << ", "
-                   << tetra_vertices_field[i].y << ", " << tetra_vertices_field[i].z << ").";
-    }
-    LOG(DEBUG) << "Tetra full volume: " << tetra_volume << std::endl
-               << "Tetra sub volume 1: " << tetra_subvol_1 << std::endl
-               << "Tetra sub volume 2: " << tetra_subvol_2 << std::endl
-               << "Tetra sub volume 3: " << tetra_subvol_3 << std::endl
-               << "Tetra sub volume 4: " << tetra_subvol_4 << std::endl
-               << "Volume difference: "
-               << tetra_volume - (tetra_subvol_1 + tetra_subvol_2 + tetra_subvol_3 + tetra_subvol_4);
-    LOG(DEBUG) << "Interpolated electric field: (" << efield_int.x << "," << efield_int.y << "," << efield_int.z << ")";
-
-    return std::make_pair(efield_int, flag);
-}
 
 void interrupt_handler(int) {
     LOG(STATUS) << "Interrupted! Aborting conversion...";
     allpix::Log::finish();
     std::exit(0);
+}
+
+void Tetrahedron::setVertices(std::vector<Point> new_vertices) {
+    if(vertices.size() != new_vertices.size()) {
+        LOG(ERROR) << "Invalid vertices vector";
+        return;
+    }
+    for(size_t index = 0; index < new_vertices.size(); index++) {
+        vertices[index] = new_vertices[index];
+    }
+}
+
+void Tetrahedron::setVertex(size_t index, Point new_vertice) {
+    vertices[index] = new_vertice;
+}
+
+Point Tetrahedron::getVertex(size_t index) {
+    return vertices[index];
+}
+
+void Tetrahedron::setVerticesField(std::vector<Point> new_e_field) {
+    if(vertices.size() != new_e_field.size()) {
+        LOG(ERROR) << "Invalid field vector";
+        return;
+    }
+    for(size_t index = 0; index < 4; index++) {
+        e_field[index] = new_e_field[index];
+    }
+}
+
+void Tetrahedron::setVertexField(size_t index, Point new_e_field) {
+    e_field[index] = new_e_field;
+}
+
+Point Tetrahedron::getVertexProperty(size_t index) {
+    return e_field[index];
+}
+
+double Tetrahedron::getVolume() {
+    Eigen::Matrix4d tetra_matrix;
+    tetra_matrix << 1, 1, 1, 1, vertices[0].x, vertices[1].x, vertices[2].x, vertices[3].x, vertices[0].y, vertices[1].y,
+        vertices[2].y, vertices[3].y, vertices[0].z, vertices[1].z, vertices[2].z, vertices[3].z;
+    return (tetra_matrix.determinant()) / 6;
+}
+
+double Tetrahedron::getDistance(size_t index, Point qp) {
+    return unibn::L2Distance<Point>::compute(vertices[index], qp);
+}
+
+bool Tetrahedron::validTetrahedron(double volume_cut, Point qp) {
+    if(this->getVolume() == 0) {
+        LOG(TRACE) << "Invalid tetrahedron with coplanar vertices.";
+        return false;
+    }
+    if(std::abs(this->getVolume()) <= volume_cut) {
+        LOG(TRACE) << "Tetrahedron volume smaller than volume cut.";
+        return false;
+    }
+
+    Eigen::Matrix4d sub_tetra_matrix;
+    for(size_t i = 0; i < 4; i++) {
+        std::vector<Point> sub_vertices = vertices;
+        sub_vertices[i] = qp;
+        Tetrahedron sub_tetrahedron(sub_vertices);
+        double tetra_volume = sub_tetrahedron.getVolume();
+        if(this->getVolume() * tetra_volume >= 0) {
+            continue;
+        }
+        if(this->getVolume() * tetra_volume < 0) {
+            LOG(TRACE) << "New mesh Point outside found tetrahedron.";
+            return false;
+        }
+    }
+    return true;
+}
+
+Point Tetrahedron::getField(Point qp) {
+    Point new_e_field;
+    Eigen::Matrix4d sub_tetra_matrix;
+    for(size_t index = 0; index < 4; index++) {
+        auto sub_vertices = vertices;
+        sub_vertices[index] = qp;
+        Tetrahedron sub_tetrahedron(sub_vertices);
+        double sub_volume = sub_tetrahedron.getVolume();
+        LOG(DEBUG) << "Sub volume " << index << ": " << sub_volume;
+        new_e_field.x = new_e_field.x + (sub_volume * e_field[index].x) / this->getVolume();
+        new_e_field.y = new_e_field.y + (sub_volume * e_field[index].y) / this->getVolume();
+        new_e_field.z = new_e_field.z + (sub_volume * e_field[index].z) / this->getVolume();
+    }
+    LOG(DEBUG) << "Interpolated electric field: (" << new_e_field.x << "," << new_e_field.y << "," << new_e_field.z << ")"
+               << std::endl;
+    return new_e_field;
+}
+
+void Tetrahedron::printTetrahedron(Point qp) {
+    for(size_t index = 0; index < 4; index++) {
+        LOG(DEBUG) << "Tetrahedron vertex " << index_vec[index] << " (" << vertices[index].x << ", " << vertices[index].y
+                   << ", " << vertices[index].z << ") - "
+                   << " Distance: " << this->getDistance(index, qp) << " - Electric field: (" << e_field[index].x << ", "
+                   << e_field[index].y << ", " << e_field[index].z << ")";
+    }
+    LOG(DEBUG) << "Volume: " << this->getVolume();
 }
 
 int main(int argc, char** argv) {
@@ -153,13 +148,15 @@ int main(int argc, char** argv) {
     std::string file_prefix;
     std::string init_file_prefix;
     std::string log_file_name;
-    std::string region = "bulk";                          // Sensor bulk region name on DF-ISE file
-    float volume_cut = std::numeric_limits<float>::min(); // Enclosing tetrahedron should have volume != 0
-    size_t index_cut = 10000000;                          // Permutation index initial cut
+    std::string region = "bulk"; // Sensor bulk region name on DF-ISE file
+    double volume_cut = 1e-9;    // Enclosing tetrahedron should have volume != 0
+    size_t index_cut = 10000000; // Permutation index initial cut
     bool index_cut_flag = false;
-    float initial_radius = 1; // Neighbour vertex search radius
-    float radius_step = 0.5;  // Search radius increment
-    float max_radius = 10;    // Maximum search radiuss
+    double initial_radius = 1;   // Neighbour vertex search radius
+    double radius_threshold = 0; // Neighbour vertex search radius
+    bool threshold_flag = false;
+    double radius_step = 0.5; // Search radius increment
+    double max_radius = 10;   // Maximum search radiuss
     int xdiv = 100;           // New mesh X pitch
     int ydiv = 100;           // New mesh Y pitch
     int zdiv = 100;           // New mesh Z pitch
@@ -182,22 +179,25 @@ int main(int argc, char** argv) {
         } else if(strcmp(argv[i], "-R") == 0 && (i + 1 < argc)) {
             region = std::string(argv[++i]);
         } else if(strcmp(argv[i], "-r") == 0 && (i + 1 < argc)) {
-            initial_radius = static_cast<float>(strtod(argv[++i], nullptr));
+            initial_radius = strtod(argv[++i], nullptr);
+        } else if(strcmp(argv[i], "-t") == 0 && (i + 1 < argc)) {
+            radius_threshold = strtod(argv[++i], nullptr);
+            threshold_flag = true;
         } else if(strcmp(argv[i], "-s") == 0 && (i + 1 < argc)) {
-            radius_step = static_cast<float>(strtod(argv[++i], nullptr));
+            radius_step = strtod(argv[++i], nullptr);
         } else if(strcmp(argv[i], "-m") == 0 && (i + 1 < argc)) {
-            max_radius = static_cast<float>(strtod(argv[++i], nullptr));
+            max_radius = strtod(argv[++i], nullptr);
         } else if(strcmp(argv[i], "-i") == 0 && (i + 1 < argc)) {
-            index_cut = static_cast<size_t>(strtod(argv[++i], nullptr));
+            index_cut = static_cast<size_t>(strtol(argv[++i], nullptr, 10));
             index_cut_flag = true;
         } else if(strcmp(argv[i], "-c") == 0 && (i + 1 < argc)) {
-            volume_cut = static_cast<float>(strtod(argv[++i], nullptr));
+            volume_cut = strtod(argv[++i], nullptr);
         } else if(strcmp(argv[i], "-x") == 0 && (i + 1 < argc)) {
-            xdiv = static_cast<int>(strtod(argv[++i], nullptr));
+            xdiv = static_cast<int>(strtol(argv[++i], nullptr, 10));
         } else if(strcmp(argv[i], "-y") == 0 && (i + 1 < argc)) {
-            ydiv = static_cast<int>(strtod(argv[++i], nullptr));
+            ydiv = static_cast<int>(strtol(argv[++i], nullptr, 10));
         } else if(strcmp(argv[i], "-z") == 0 && (i + 1 < argc)) {
-            zdiv = static_cast<int>(strtod(argv[++i], nullptr));
+            zdiv = static_cast<int>(strtol(argv[++i], nullptr, 10));
         } else if(strcmp(argv[i], "-l") == 0 && (i + 1 < argc)) {
             log_file_name = std::string(argv[++i]);
         } else {
@@ -228,12 +228,14 @@ int main(int argc, char** argv) {
                   << std::endl;
         std::cout << "\t -R <region>            region name to be meshed (defaults to 'bulk')" << std::endl;
         std::cout << "\t -r <radius>            initial node neighbors search radius in um (defaults to 1 um)" << std::endl;
+        std::cout << "\t -t <radius_threshold>  minimum distance from node to new mesh point (defaults to 0 um)"
+                  << std::endl;
         std::cout << "\t -s <radius_step>       radius step if no neighbor is found (defaults to 0.5 um)" << std::endl;
         std::cout << "\t -m <max_radius>        maximum search radius (default is 10 um)" << std::endl;
         std::cout << "\t -i <index_cut>         index cut during permutation on vertex neighbours (disabled by default)"
                   << std::endl;
         std::cout << "\t -c <volume_cut>        minimum volume for tetrahedron for non-coplanar vertices (defaults to "
-                     "minimum float value)"
+                     "minimum double value)"
                   << std::endl;
         std::cout << "\t -x <mesh x_pitch>      new regular mesh X pitch (defaults to 100)" << std::endl;
         std::cout << "\t -y <mesh_y_pitch>      new regular mesh Y pitch (defaults to 100)" << std::endl;
@@ -311,6 +313,16 @@ int main(int argc, char** argv) {
         maxz = std::max(maxz, point.z);
     }
 
+    // Creating a new mesh points cloud with a regular pitch
+    double xstep = (maxx - minx) / static_cast<double>(xdiv);
+    double ystep = (maxy - miny) / static_cast<double>(ydiv);
+    double zstep = (maxz - minz) / static_cast<double>(zdiv);
+    double cell_volume = xstep * ystep * zstep;
+
+    LOG(STATUS) << "Mesh dimensions: " << maxx - minx << " x " << maxy - miny << " x " << maxz - minz << std::endl
+                << "New mesh element dimension: " << xstep << " x " << ystep << " x " << zstep
+                << ". Volume = " << cell_volume;
+
     /*
      * ALERT invert the z-axis to match the ap2 system
      * WARNING this will remove the right-handedness of the coordinate system!
@@ -328,12 +340,7 @@ int main(int argc, char** argv) {
     // Initializing the Octree with points from mesh cloud.
     unibn::Octree<Point> octree;
     octree.initialize(points);
-
-    // Creating a new mesh points cloud with a regular pitch
     std::vector<Point> e_field_new_mesh;
-    double xstep = (maxx - minx) / static_cast<double>(xdiv);
-    double ystep = (maxy - miny) / static_cast<double>(ydiv);
-    double zstep = (maxz - minz) / static_cast<double>(zdiv);
 
     double x = minx + xstep / 2.0;
     for(int i = 0; i < xdiv; ++i) {
@@ -343,56 +350,61 @@ int main(int argc, char** argv) {
             for(int k = 0; k < zdiv; ++k) {
                 Point q(x, y, z); // New mesh vertex
                 Point e(x, y, z); // Corresponding, to be interpolated, electric field
-                bool flag = false;
-                std::pair<Point, bool> return_interpolation;
+                bool valid = false;
 
                 LOG_PROGRESS(INFO, "POINT") << "Interpolating point X=" << i + 1 << " Y=" << j + 1 << " Z=" << k + 1 << " ("
                                             << q.x << "," << q.y << "," << q.z << ")";
 
                 size_t prev_neighbours = 0;
-                float radius = initial_radius;
+                double radius = initial_radius;
                 size_t index_cut_up;
                 while(radius < max_radius) {
-                    LOG(TRACE) << "Search radius: " << radius;
-
+                    LOG(DEBUG) << "Search radius: " << radius;
                     // Calling octree neighbours search and sorting the results list with the closest neighbours first
                     std::vector<unsigned int> results;
-                    octree.radiusNeighbors<unibn::L2Distance<Point>>(q, radius, results);
-                    std::sort(results.begin(), results.end(), [&](unsigned int a, unsigned int b) {
+                    std::vector<unsigned int> results_high;
+                    octree.radiusNeighbors<unibn::L2Distance<Point>>(q, radius, results_high);
+                    std::sort(results_high.begin(), results_high.end(), [&](unsigned int a, unsigned int b) {
                         return unibn::L2Distance<Point>::compute(points[a], q) <
                                unibn::L2Distance<Point>::compute(points[b], q);
                     });
 
-                    LOG(TRACE) << "Number of vertices found: " << results.size();
+                    if(threshold_flag) {
+                        size_t results_size = results_high.size();
+                        int count = 0;
+                        for(size_t index = 0; index < results_size; index++) {
+                            if(unibn::L2Distance<Point>::compute(points[results_high[index]], q) < radius_threshold) {
+                                count++;
+                                continue;
+                            }
+                            results.push_back(results_high[index]);
+                        }
+                        LOG(DEBUG) << "Applying radius threshold of " << radius_threshold << std::endl
+                                   << "Removing " << count << " of " << results_size;
+                    } else {
+                        results = results_high;
+                    }
 
-                    if(results.empty()) {
-                        LOG(WARNING) << "At vertex (" << x << ", " << y << ", " << z << ")" << std::endl
-                                     << "Radius too Small. No neighbours found for radius " << radius << std::endl
-                                     << "Increasing the readius (setting a higher initial radius may help)";
+                    // If after a radius step no new neighbours are found, go to the next radius step
+                    if(results.size() > prev_neighbours || results.empty()) {
+                        prev_neighbours = results.size();
+                    } else {
+                        LOG(WARNING) << "No (new) neighbour found with radius " << radius << ". Increasing search radius."
+                                     << std::endl;
                         radius = radius + radius_step;
                         continue;
                     }
 
                     if(results.size() < 4) {
-                        LOG(WARNING) << "At vertex (" << x << ", " << y << ", " << z << ")" << std::endl
-                                     << "Incomplete mesh element found for radius " << radius << std::endl
+                        LOG(WARNING) << "Incomplete mesh element found for radius " << radius << std::endl
                                      << "Increasing the readius (setting a higher initial radius may help)";
                         radius = radius + radius_step;
                         continue;
                     }
 
-                    // If after a radius step no new neighbours are found, go to the next radius step
-                    if(results.size() > prev_neighbours) {
-                        prev_neighbours = results.size();
-                    } else {
-                        LOG(WARNING) << "At vertex (" << x << ", " << y << ", " << z << ")" << std::endl
-                                     << "No new neighbour after radius step. Going to next step.";
-                        radius = radius + radius_step;
-                        continue;
-                    }
+                    LOG(DEBUG) << "Number of vertices found: " << results.size();
 
                     // Finding tetrahedrons
-                    double volume;
                     Eigen::Matrix4d matrix;
                     size_t num_nodes_element = 4;
                     std::vector<Point> tetra_vertices;
@@ -408,6 +420,7 @@ int main(int argc, char** argv) {
                     index_cut_up = index_cut;
                     while(index_cut_up <= results.size()) {
                         do {
+                            valid = false;
                             index.clear();
                             tetra_vertices.clear();
                             tetra_vertices_field.clear();
@@ -431,33 +444,17 @@ int main(int argc, char** argv) {
                             LOG(TRACE) << "Parsing neighbors [index]: " << index[0] << ", " << index[1] << ", " << index[2]
                                        << ", " << index[3];
 
-                            matrix << 1, 1, 1, 1, points[results[index[0]]].x, points[results[index[1]]].x,
-                                points[results[index[2]]].x, points[results[index[3]]].x, points[results[index[0]]].y,
-                                points[results[index[1]]].y, points[results[index[2]]].y, points[results[index[3]]].y,
-                                points[results[index[0]]].z, points[results[index[1]]].z, points[results[index[2]]].z,
-                                points[results[index[3]]].z;
-                            volume = (matrix.determinant()) / 6;
-
-                            if(std::abs(volume) <= volume_cut) {
-                                LOG(DEBUG) << "Coplanar vertices. Going to the next vertex combination.";
+                            Tetrahedron tetrahedron(index, tetra_vertices, tetra_vertices_field);
+                            valid = tetrahedron.validTetrahedron(volume_cut, q);
+                            if(!valid) {
                                 continue;
                             }
-                            try {
-                                return_interpolation =
-                                    barycentric_interpolation(q, tetra_vertices, tetra_vertices_field, volume);
-                                e = return_interpolation.first;
-                                flag = return_interpolation.second;
-                            } catch(std::invalid_argument& exception) {
-                                LOG(DEBUG) << "Failed to interpolate point: " << exception.what();
-                                continue;
-                            }
-                            if(flag == false) {
-                                continue;
-                            }
+                            tetrahedron.printTetrahedron(q);
+                            e = tetrahedron.getField(q);
                             break;
                         } while(std::prev_permutation(bitmask.begin(), bitmask.end()));
 
-                        if(tetra_vertices.size() == 4 && flag == true) {
+                        if(valid) {
                             break;
                         }
 
@@ -466,7 +463,7 @@ int main(int argc, char** argv) {
                         index_cut_up = index_cut_up + index_cut;
                     }
 
-                    if(tetra_vertices.size() == 4 && flag == true) {
+                    if(valid) {
                         break;
                     }
 
@@ -474,7 +471,7 @@ int main(int argc, char** argv) {
                     radius = radius + radius_step;
                 }
 
-                if(flag == false) {
+                if(!valid) {
                     LOG(FATAL) << "Couldn't interpolate new mesh point, probably the grid is too irregular";
                     return 1;
                 }

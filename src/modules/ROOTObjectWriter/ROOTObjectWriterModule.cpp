@@ -42,6 +42,17 @@ void ROOTObjectWriterModule::init() {
     std::string file_name = getOutputPath(config_.get<std::string>("file_name", "data") + ".root", true);
     output_file_ = std::make_unique<TFile>(file_name.c_str(), "RECREATE");
     output_file_->cd();
+
+    // Read include and exclude list
+    if(config_.has("include") && config_.has("exclude")) {
+        throw InvalidValueError(config_, "exclude", "include and exclude parameter are mutually exclusive");
+    } else if(config_.has("include")) {
+        auto inc_arr = config_.getArray<std::string>("include");
+        include_.insert(inc_arr.begin(), inc_arr.end());
+    } else if(config_.has("exclude")) {
+        auto exc_arr = config_.getArray<std::string>("exclude");
+        exclude_.insert(exc_arr.begin(), exc_arr.end());
+    }
 }
 
 void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::string message_name) { // NOLINT
@@ -70,10 +81,8 @@ void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::
             // Create a new branch of the correct type if this message was not received before
             auto index_tuple = std::make_tuple(type_idx, detector_name, message_name);
             if(write_list_.find(index_tuple) == write_list_.end()) {
-                write_list_[index_tuple] = new std::vector<Object*>();
 
                 auto* cls = TClass::GetClass(typeid(first_object));
-                auto addr = &write_list_[index_tuple];
 
                 // Remove the allpix prefix
                 std::string class_name = cls->GetName();
@@ -82,6 +91,18 @@ void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::
                 if(ap_idx != std::string::npos) {
                     class_name.replace(ap_idx, apx_namespace.size(), "");
                 }
+
+                // Check if this message should be kept
+                if((!include_.empty() && include_.find(class_name) == include_.end()) ||
+                   (!exclude_.empty() && exclude_.find(class_name) != exclude_.end())) {
+                    LOG(TRACE) << "ROOT object writer ignored message with object " << allpix::demangle(typeid(*inst).name())
+                               << " because it has been excluded or not explicitly included";
+                    return;
+                }
+
+                // Add vector of objects to write to the write list
+                write_list_[index_tuple] = new std::vector<Object*>();
+                auto addr = &write_list_[index_tuple];
 
                 if(trees_.find(class_name) == trees_.end()) {
                     // Create new tree

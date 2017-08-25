@@ -48,6 +48,9 @@ GenericPropagationModule::GenericPropagationModule(Configuration config,
                                                    Messenger* messenger,
                                                    std::shared_ptr<Detector> detector)
     : Module(config, detector), config_(std::move(config)), messenger_(messenger), detector_(std::move(detector)) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+
     // Save detector model
     model_ = detector_->getModel();
 
@@ -64,11 +67,14 @@ GenericPropagationModule::GenericPropagationModule(Configuration config,
     config_.setDefault<double>("timestep_max", Units::get(0.1, "ns"));
     config_.setDefault<double>("integration_time", Units::get(25, "ns"));
     config_.setDefault<unsigned int>("charge_per_step", 10);
+    config_.setDefault<double>("temperature", 293.15);
 
     config_.setDefault<bool>("output_plots", false);
     config_.setDefault<bool>("output_animations", false);
+    config_.setDefault<bool>("output_animations_color_markers", false);
     config_.setDefault<double>("output_plots_step", config_.get<double>("timestep_max"));
     config_.setDefault<bool>("output_plots_use_pixel_units", false);
+    config_.setDefault<bool>("output_plots_align_pixels", false);
     config_.setDefault<double>("output_plots_theta", 0.0f);
     config_.setDefault<double>("output_plots_phi", 0.0f);
 
@@ -155,6 +161,26 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
         }
     }
 
+    // Align on pixels if requested
+    if(config_.get<bool>("output_plots_align_pixels")) {
+        if(config_.get<bool>("output_plots_use_pixel_units")) {
+            minX = std::floor(minX - 0.5) + 0.5;
+            minY = std::floor(minY + 0.5) - 0.5;
+            maxX = std::ceil(maxX - 0.5) + 0.5;
+            maxY = std::ceil(maxY + 0.5) - 0.5;
+        } else {
+            double div;
+            div = minX / model_->getPixelSize().x();
+            minX = (std::floor(div - 0.5) + 0.5) * model_->getPixelSize().x();
+            div = minY / model_->getPixelSize().y();
+            minY = (std::floor(div - 0.5) + 0.5) * model_->getPixelSize().y();
+            div = maxX / model_->getPixelSize().x();
+            maxX = (std::ceil(div + 0.5) - 0.5) * model_->getPixelSize().x();
+            div = maxY / model_->getPixelSize().y();
+            maxY = (std::ceil(div + 0.5) - 0.5) * model_->getPixelSize().y();
+        }
+    }
+
     // Use a histogram to create the underlying frame
     auto* histogram_frame = new TH3F(("frame_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
                                      "",
@@ -167,6 +193,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
                                      10,
                                      model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0,
                                      model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0);
+    histogram_frame->SetDirectory(getROOTDirectory());
 
     // Create the canvas for the line plot and set orientation
     auto canvas = std::make_unique<TCanvas>(("line_plot_" + std::to_string(event_num)).c_str(),
@@ -194,7 +221,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
         for(auto& point : deposit_points.second) {
             line->SetNextPoint(point.x(), point.y(), point.z());
         }
-        // Plot lines with different color
+        // Plot all lines with at least three points with different color
         if(line->GetN() >= 3) {
             EColor plot_color = (deposit_points.first.getType() == CarrierType::ELECTRON ? EColor::kAzure : EColor::kOrange);
             current_color = static_cast<short int>(plot_color - 9 + (static_cast<int>(current_color) + 1) % 19);
@@ -206,7 +233,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
 
     // Draw and write canvas to module output file, then clear the stored lines
     canvas->Draw();
-    canvas->Write();
+    getROOTDirectory()->WriteTObject(canvas.get());
     lines.clear();
 
     // Create canvas for GIF animition of process
@@ -231,42 +258,61 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
     // Draw frame on canvas
     histogram_frame->Draw();
 
-    // Create the contour histogram
-    std::vector<std::string> file_name_contour;
-    std::vector<TH2F*> histogram_contour;
-    file_name_contour.push_back(getOutputPath("contourX" + std::to_string(event_num) + ".gif"));
-    histogram_contour.push_back(new TH2F(("contourX_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
-                                         "",
-                                         100,
-                                         minY,
-                                         maxY,
-                                         100,
-                                         model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0,
-                                         model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0));
-    file_name_contour.push_back(getOutputPath("contourY" + std::to_string(event_num) + ".gif"));
-    histogram_contour.push_back(new TH2F(("contourY_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
-                                         "",
-                                         100,
-                                         minX,
-                                         maxX,
-                                         100,
-                                         model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0,
-                                         model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0));
-    file_name_contour.push_back(getOutputPath("contourZ" + std::to_string(event_num) + ".gif"));
-    histogram_contour.push_back(new TH2F(
-        ("contourZ_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(), "", 100, minX, maxX, 100, minY, maxY));
-
     if(config_.get<bool>("output_animations")) {
-        // Delete previous GIF output files
+        // Create the contour histogram
+        std::vector<std::string> file_name_contour;
+        std::vector<TH2F*> histogram_contour;
+        file_name_contour.push_back(getOutputPath("contourX" + std::to_string(event_num) + ".gif"));
+        histogram_contour.push_back(new TH2F(("contourX_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
+                                             "",
+                                             100,
+                                             minY,
+                                             maxY,
+                                             100,
+                                             model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0,
+                                             model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0));
+        histogram_contour.back()->SetDirectory(getROOTDirectory());
+        file_name_contour.push_back(getOutputPath("contourY" + std::to_string(event_num) + ".gif"));
+        histogram_contour.push_back(new TH2F(("contourY_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
+                                             "",
+                                             100,
+                                             minX,
+                                             maxX,
+                                             100,
+                                             model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0,
+                                             model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0));
+        histogram_contour.back()->SetDirectory(getROOTDirectory());
+        file_name_contour.push_back(getOutputPath("contourZ" + std::to_string(event_num) + ".gif"));
+        histogram_contour.push_back(new TH2F(("contourZ_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
+                                             "",
+                                             100,
+                                             minX,
+                                             maxX,
+                                             100,
+                                             minY,
+                                             maxY));
+        histogram_contour.back()->SetDirectory(getROOTDirectory());
+
+        // Create file and disable statistics for histogram
         std::string file_name_anim = getOutputPath("animation" + std::to_string(event_num) + ".gif");
-        try {
-            remove_path(file_name_anim);
-            for(size_t i = 0; i < 3; ++i) {
-                remove_path(file_name_contour[i]);
-                histogram_contour[i]->SetStats(false);
-            }
-        } catch(std::invalid_argument&) {
-            throw ModuleError("Cannot overwite gif animation");
+        for(size_t i = 0; i < 3; ++i) {
+            histogram_contour[i]->SetStats(false);
+        }
+
+        // Remove temporary created files
+        remove(file_name_anim.c_str());
+        for(size_t i = 0; i < 3; ++i) {
+            remove(file_name_contour[i].c_str());
+        }
+
+        // Create color table
+        TColor* colors[80];
+        for(int i = 20; i < 100; ++i) {
+            auto color_idx = TColor::GetFreeColorIndex();
+            colors[i - 20] = new TColor(color_idx,
+                                        static_cast<float>(i) / 100.0f - 0.2f,
+                                        static_cast<float>(i) / 100.0f - 0.2f,
+                                        static_cast<float>(i) / 100.0f - 0.2f);
         }
 
         // Create animation of moving charges
@@ -275,6 +321,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
                        config_.get<long double>("output_animations_time_scaling", 1e9)));
         unsigned long plot_idx = 0;
         unsigned int point_cnt = 0;
+        LOG_PROGRESS(INFO, getUniqueName() + "_OUTPUT_PLOTS") << "Written 0 of " << tot_point_cnt << " points for animation";
         while(point_cnt < tot_point_cnt) {
             std::vector<std::unique_ptr<TPolyMarker3D>> markers;
             unsigned long min_idx_diff = std::numeric_limits<unsigned long>::max();
@@ -314,6 +361,12 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
                 marker->SetMarkerStyle(kFullCircle);
                 marker->SetMarkerSize(static_cast<float>(deposit_points.first.getCharge()) /
                                       config_.get<float>("charge_per_step"));
+                auto initial_z_perc = static_cast<int>(
+                    ((points[0].z() + model_->getSensorSize().z() / 2.0) / model_->getSensorSize().z()) * 80);
+                initial_z_perc = std::max(std::min(79, initial_z_perc), 0);
+                if(config_.get<bool>("output_animations_color_markers")) {
+                    marker->SetMarkerColor(static_cast<Color_t>(colors[initial_z_perc]->GetNumber()));
+                }
                 marker->SetNextPoint(points[idx].x(), points[idx].y(), points[idx].z());
                 marker->Draw();
                 markers.push_back(std::move(marker));
@@ -380,8 +433,8 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
             }
             markers.clear();
 
-            LOG_PROGRESS(DEBUG, getUniqueName() + "_OUTPUT_PLOTS")
-                << "Written " << point_cnt << " of " << tot_point_cnt << " points";
+            LOG_PROGRESS(INFO, getUniqueName() + "_OUTPUT_PLOTS")
+                << "Written " << point_cnt << " of " << tot_point_cnt << " points for animation";
         }
     }
     output_plot_points_.clear();
@@ -414,6 +467,9 @@ void GenericPropagationModule::init() {
             LOG(WARNING) << "Electric field indicates hole collection at implants, but holes are not propagated!";
         }
     }
+    if(output_plots_) {
+        drift_time_histo = new TH1D("drift_time_histo", "Drift time;t[ns];particles", 50, 0., 20.);
+    }
 }
 
 void GenericPropagationModule::run(unsigned int event_num) {
@@ -430,7 +486,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
 
         if((deposit.getType() == CarrierType::ELECTRON && !config_.get<bool>("propagate_electrons")) ||
            (deposit.getType() == CarrierType::HOLE && !config_.get<bool>("propagate_holes"))) {
-            LOG(DEBUG) << "Skipping charge carriers (" << (deposit.getType() == CarrierType::ELECTRON ? "e" : "h") << ") on "
+            LOG(DEBUG) << "Skipping charge carriers (" << deposit.getType() << ") on "
                        << display_vector(deposit.getLocalPosition(), {"mm", "um"});
             continue;
         }
@@ -438,7 +494,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
         // Loop over all charges in the deposit
         unsigned int charges_remaining = deposit.getCharge();
 
-        LOG(DEBUG) << "Set of charge carriers (" << (deposit.getType() == CarrierType::ELECTRON ? "e" : "h") << ") on "
+        LOG(DEBUG) << "Set of charge carriers (" << deposit.getType() << ") on "
                    << display_vector(deposit.getLocalPosition(), {"mm", "um"});
 
         auto charge_per_step = config_.get<unsigned int>("charge_per_step");
@@ -453,7 +509,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
             auto position = deposit.getLocalPosition();
 
             // Add point of deposition to the output plots if requested
-            if(config_.get<bool>("output_plots")) {
+            if(output_plots_) {
                 auto global_position = detector_->getGlobalPosition(position);
                 output_plot_points_.emplace_back(
                     PropagatedCharge(position, global_position, deposit.getType(), charge_per_step, deposit.getEventTime()),
@@ -480,11 +536,18 @@ void GenericPropagationModule::run(unsigned int event_num) {
             ++step_count;
             propagated_charges_count += charge_per_step;
             total_time += prop_pair.second;
+
+            // Fill plot for drift time
+            if(output_plots_) {
+                drift_time_histo->SetBinContent(
+                    drift_time_histo->FindBin(prop_pair.second),
+                    drift_time_histo->GetBinContent(drift_time_histo->FindBin(prop_pair.second)) + charge_per_step);
+            }
         }
     }
 
     // Output plots if required
-    if(config_.get<bool>("output_plots")) {
+    if(output_plots_) {
         create_output_plots(event_num);
     }
 
@@ -610,4 +673,8 @@ void GenericPropagationModule::finalize() {
     long double average_time = total_time_ / std::max(1u, total_steps_);
     LOG(INFO) << "Propagated total of " << total_propagated_charges_ << " charges in " << total_steps_
               << " steps in average time of " << Units::display(average_time, "ns");
+
+    if(output_plots_) {
+        drift_time_histo->Write();
+    }
 }

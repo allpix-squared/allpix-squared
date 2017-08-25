@@ -16,7 +16,6 @@
 #include <G4UIterminal.hh>
 #include <G4VisManager.hh>
 
-#include <Math/EulerAngles.h>
 #include <Math/Vector3D.h>
 
 #include "GeometryConstructionG4.hpp"

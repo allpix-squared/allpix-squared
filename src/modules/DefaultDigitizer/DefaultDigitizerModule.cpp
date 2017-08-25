@@ -21,6 +21,8 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration config,
                                                Messenger* messenger,
                                                std::shared_ptr<Detector> detector)
     : Module(config, std::move(detector)), config_(std::move(config)), messenger_(messenger), pixel_message_(nullptr) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
 
     // Require PixelCharge message for single detector
     messenger_->bindSingle(this, &DefaultDigitizerModule::pixel_message_, MsgFlags::REQUIRED);

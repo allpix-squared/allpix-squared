@@ -104,21 +104,18 @@ void DepositionGeant4Module::init() {
         useful_deposition = true;
 
         // Get model of the sensitive device
-        std::vector<std::string> sensor_volumes = {"sensor_log", "pixel_log"};
         auto sensitive_detector_action = new SensitiveDetectorActionG4(this, detector, messenger_, charge_creation_energy);
-        for(auto& sensor_volume : sensor_volumes) {
-            auto logical_volume = detector->getExternalObject<G4LogicalVolume>(sensor_volume);
-            if(logical_volume == nullptr) {
-                throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
-            }
-
-            // Apply the user limits to this element
-            logical_volume->SetUserLimits(user_limits_.get());
-
-            // Add the sensitive detector action
-            logical_volume->SetSensitiveDetector(sensitive_detector_action);
-            sensors_.push_back(sensitive_detector_action);
+        auto logical_volume = detector->getExternalObject<G4LogicalVolume>("sensor_log");
+        if(logical_volume == nullptr) {
+            throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
         }
+
+        // Apply the user limits to this element
+        logical_volume->SetUserLimits(user_limits_.get());
+
+        // Add the sensitive detector action
+        logical_volume->SetSensitiveDetector(sensitive_detector_action);
+        sensors_.push_back(sensitive_detector_action);
     }
 
     if(!useful_deposition) {
@@ -164,7 +161,7 @@ void DepositionGeant4Module::run(unsigned int event_num) {
 
     // Dispatch the necessary messages
     for(auto& sensor : sensors_) {
-        sensor->dispatchDepositedChargeMessage();
+        sensor->dispatchMessages();
     }
 }
 

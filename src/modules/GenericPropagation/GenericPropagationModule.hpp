@@ -11,6 +11,7 @@
 
 #include <Math/Point3D.h>
 #include <TFile.h>
+#include <TH1D.h>
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/DetectorModel.hpp"
@@ -24,6 +25,7 @@ namespace allpix {
     /**
      * @ingroup Modules
      * @brief Generic module for Runge-Kutta propagation of charge deposits in the sensitive device
+     * @note This module supports parallelization
      *
      * Splits the sets of deposited charge in several sets which are propagated individually. The propagation consist of a
      * combination of drift from a charge mobility parameterization and diffusion using a Gaussian random walk process.
@@ -101,6 +103,9 @@ namespace allpix {
         unsigned int total_propagated_charges_{};
         unsigned int total_steps_{};
         long double total_time_{};
+
+        // Output plot for drift time
+        TH1D* drift_time_histo;
 
         // List of points to plot to plot for output plots
         std::vector<std::pair<PropagatedCharge, std::vector<ROOT::Math::XYZPoint>>> output_plot_points_;

@@ -17,8 +17,12 @@ PixelCharge::PixelCharge(Pixel pixel, unsigned int charge, std::vector<const Pro
     }
 }
 
-Pixel PixelCharge::getPixel() const {
+const Pixel& PixelCharge::getPixel() const {
     return pixel_;
+}
+
+Pixel::Index PixelCharge::getIndex() const {
+    return getPixel().getIndex();
 }
 
 unsigned int PixelCharge::getCharge() const {

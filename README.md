@@ -41,7 +41,7 @@ For more detailed installation instructions, please refer to the documentation b
 
 ## Documentation
 The most recently published version of the User's Manual is available online [here](https://project-allpix-squared.web.cern.ch/project-allpix-squared/usermanual/allpix-manual.pdf). 
-The Doxygen reference can be viewed [online](https://project-allpix-squared.web.cern.ch/project-allpix-squared/reference/html/). 
+The Doxygen reference is published [online](https://project-allpix-squared.web.cern.ch/project-allpix-squared/reference/html/) too. 
 
 The latest PDF version of the User's Manual can also be created from source by executing 
 ```
@@ -59,3 +59,13 @@ The main page of the reference can then be found at `reference/html/index.html` 
 All type of minor and major contributions are very welcome. Please refer to our [contribution guidelines](CONTRIBUTING.md) for a description on how to get started.
 
 Before adding changes it is very much recommended to carefully read through the documentation in the User's Manual first.
+
+## Licenses
+This software is distributed under the terms of the MIT license. A copy of this license can be found in [LICENSE.md](LICENSE.md).
+
+The documentation is distributed under the terms of the CC-BY-4.0 license. This license can be found in [doc/COPYING.md](doc/COPYING.md).
+
+The LaTeX and Pandoc CMake modules used by Allpix<sup>2</sup> are licensed under the BSD 3-Clause License. 
+
+The octree library of the TCAD DF-ISE converter is made available under the MIT license, more information [here](tools/tcad_dfise_converter/README.md).
+
