@@ -2,9 +2,8 @@
 ALLPIX_DETECTOR_MODULE(MODULE_NAME)
 
 # Add source files to library
-ALLPIX_MODULE_SOURCES(${MODULE_NAME} 
+ALLPIX_MODULE_SOURCES(${MODULE_NAME}
     ProjectionPropagationModule.cpp
-    # ADD SOURCE FILES HERE...
 )
 
 # Provide standard install target
