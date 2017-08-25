@@ -34,6 +34,8 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration config,
     config_.setDefault<int>("charge_per_step", 10);
     config_.setDefault<bool>("output_plots", false);
 
+    output_plots_ = config_.get<bool>("output_plots");
+
     // Parameterization variables from https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2)
     auto temperature = config_.get<double>("temperature");
     electron_Vm_ = Units::get(1.53e9 * std::pow(temperature, -0.87), "cm/s");
@@ -48,7 +50,7 @@ void ProjectionPropagationModule::init() {
         throw ModuleError("This module should only be used with linear electric fields.");
     }
 
-    if(config_.get<bool>("output_plots")) {
+    if(output_plots_) {
         // Initialize output plot
         drift_time_histo = new TH1D("drift_time_histo", "Drift time;t[ns];particles", 50, 0., 15.);
     }
@@ -129,7 +131,7 @@ void ProjectionPropagationModule::run(unsigned int) {
         double drift_time = calc_drift_time();
         LOG(TRACE) << "Drift time is " << Units::display(drift_time, "ns");
 
-        if(config_.get<bool>("output_plots")) {
+        if(output_plots_) {
             drift_time_histo->SetBinContent(drift_time_histo->FindBin(drift_time),
                                             drift_time_histo->GetBinContent(drift_time_histo->FindBin(drift_time)) +
                                                 deposit.getCharge());
@@ -191,7 +193,7 @@ void ProjectionPropagationModule::run(unsigned int) {
 }
 
 void ProjectionPropagationModule::finalize() {
-    if(config_.get<bool>("output_plots")) {
+    if(output_plots_) {
         // Write output plot
         drift_time_histo->Write();
     }

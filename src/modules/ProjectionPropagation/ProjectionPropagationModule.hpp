@@ -64,6 +64,9 @@ namespace allpix {
         // Random generator for diffusion calculation
         std::mt19937_64 random_generator_;
 
+        // Check whether plots should be generated
+        bool output_plots_;
+
         // Precalculated values for electron and hole mobility
         double electron_Vm_;
         double electron_Ec_;
