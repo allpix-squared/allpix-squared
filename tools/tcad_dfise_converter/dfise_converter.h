@@ -60,10 +60,11 @@ public:
     * @param efield_vertices_tetrahedron std::vector<Points> containing 4 Points with the component of the electric field at
     * the mesh node
     */
-    Tetrahedron(std::vector<size_t> index,
+    Tetrahedron(int dimension,
+                std::vector<size_t> index,
                 std::vector<Point> vertices_tetrahedron,
                 std::vector<Point> efield_vertices_tetrahedron)
-        : index_vec(std::move(index)), vertices(std::move(vertices_tetrahedron)),
+        : _dimension(dimension), index_vec(std::move(index)), vertices(std::move(vertices_tetrahedron)),
           e_field(std::move(efield_vertices_tetrahedron)) {}
 
     /**
@@ -105,6 +106,16 @@ public:
     Point getVertexProperty(size_t index);
 
     /**
+    * @brief Get dimension of the element
+    */
+    int getDimension();
+
+    /**
+    * @brief Set dimension of the element
+    */
+    void setDimension(int dimension);
+
+    /**
     * @brief Get the volume of the tetrahedron
     */
     double getVolume();
@@ -121,7 +132,7 @@ public:
     * @param volume_cut Threshold for the minimum tetrahedron volume
     * @param qp Desired Point for the interpolation
     */
-    bool validTetrahedron(double volume_cut, Point qp);
+    bool validElement(double volume_cut, Point qp);
 
     /**
     * @brief Barycentric interpolation implementation
@@ -132,8 +143,9 @@ public:
     /**
     * @brief Print tetrahedron created for debugging
     */
-    void printTetrahedron(Point qp);
+    void printElement(Point qp);
 
+    int _dimension;
     std::vector<size_t> index_vec;
     std::vector<Point> vertices;
     std::vector<Point> e_field;

@@ -62,20 +62,37 @@ Point Tetrahedron::getVertexProperty(size_t index) {
     return e_field[index];
 }
 
+void Tetrahedron::setDimension(int dimension) {
+    _dimension = dimension;
+}
+
+int Tetrahedron::getDimension() {
+    return _dimension;
+}
+
 double Tetrahedron::getVolume() {
-    Eigen::Matrix4d tetra_matrix;
-    tetra_matrix << 1, 1, 1, 1, vertices[0].x, vertices[1].x, vertices[2].x, vertices[3].x, vertices[0].y, vertices[1].y,
-        vertices[2].y, vertices[3].y, vertices[0].z, vertices[1].z, vertices[2].z, vertices[3].z;
-    return (tetra_matrix.determinant()) / 6;
+    double volume;
+    if(this->getDimension() == 3) {
+        Eigen::Matrix4d element_matrix;
+        element_matrix << 1, 1, 1, 1, vertices[0].x, vertices[1].x, vertices[2].x, vertices[3].x, vertices[0].y,
+            vertices[1].y, vertices[2].y, vertices[3].y, vertices[0].z, vertices[1].z, vertices[2].z, vertices[3].z;
+        volume = (element_matrix.determinant()) / 6;
+    }
+    if(this->getDimension() == 2) {
+        Eigen::Matrix3d element_matrix;
+        element_matrix << 1, 1, 1, vertices[0].y, vertices[1].y, vertices[2].y, vertices[0].z, vertices[1].z, vertices[2].z;
+        volume = (element_matrix.determinant()) / 2;
+    }
+    return volume;
 }
 
 double Tetrahedron::getDistance(size_t index, Point qp) {
     return unibn::L2Distance<Point>::compute(vertices[index], qp);
 }
 
-bool Tetrahedron::validTetrahedron(double volume_cut, Point qp) {
+bool Tetrahedron::validElement(double volume_cut, Point qp) {
     if(this->getVolume() == 0) {
-        LOG(TRACE) << "Invalid tetrahedron with coplanar vertices.";
+        LOG(TRACE) << "Invalid tetrahedron with coplanar(3D)/colinear(2D) vertices.";
         return false;
     }
     if(std::abs(this->getVolume()) <= volume_cut) {
@@ -84,16 +101,17 @@ bool Tetrahedron::validTetrahedron(double volume_cut, Point qp) {
     }
 
     Eigen::Matrix4d sub_tetra_matrix;
-    for(size_t i = 0; i < 4; i++) {
+    for(size_t i = 0; i < static_cast<size_t>(this->getDimension()) + 1; i++) {
         std::vector<Point> sub_vertices = vertices;
         sub_vertices[i] = qp;
         Tetrahedron sub_tetrahedron(sub_vertices);
+        sub_tetrahedron.setDimension(this->getDimension());
         double tetra_volume = sub_tetrahedron.getVolume();
         if(this->getVolume() * tetra_volume >= 0) {
             continue;
         }
         if(this->getVolume() * tetra_volume < 0) {
-            LOG(TRACE) << "New mesh Point outside found tetrahedron.";
+            LOG(TRACE) << "New mesh Point outside found element.";
             return false;
         }
     }
@@ -103,10 +121,11 @@ bool Tetrahedron::validTetrahedron(double volume_cut, Point qp) {
 Point Tetrahedron::getField(Point qp) {
     Point new_e_field;
     Eigen::Matrix4d sub_tetra_matrix;
-    for(size_t index = 0; index < 4; index++) {
+    for(size_t index = 0; index < static_cast<size_t>(this->getDimension()) + 1; index++) {
         auto sub_vertices = vertices;
         sub_vertices[index] = qp;
         Tetrahedron sub_tetrahedron(sub_vertices);
+        sub_tetrahedron.setDimension(this->getDimension());
         double sub_volume = sub_tetrahedron.getVolume();
         LOG(DEBUG) << "Sub volume " << index << ": " << sub_volume;
         new_e_field.x = new_e_field.x + (sub_volume * e_field[index].x) / this->getVolume();
@@ -118,8 +137,8 @@ Point Tetrahedron::getField(Point qp) {
     return new_e_field;
 }
 
-void Tetrahedron::printTetrahedron(Point qp) {
-    for(size_t index = 0; index < 4; index++) {
+void Tetrahedron::printElement(Point qp) {
+    for(size_t index = 0; index < static_cast<size_t>(this->getDimension()) + 1; index++) {
         LOG(DEBUG) << "Tetrahedron vertex " << index_vec[index] << " (" << vertices[index].x << ", " << vertices[index].y
                    << ", " << vertices[index].z << ") - "
                    << " Distance: " << this->getDistance(index, qp) << " - Electric field: (" << e_field[index].x << ", "
@@ -157,9 +176,10 @@ int main(int argc, char** argv) {
     bool threshold_flag = false;
     double radius_step = 0.5; // Search radius increment
     double max_radius = 10;   // Maximum search radiuss
-    int xdiv = 100;           // New mesh X pitch
-    int ydiv = 100;           // New mesh Y pitch
-    int zdiv = 100;           // New mesh Z pitch
+    int dimension = 3;
+    int xdiv = 100; // New mesh X pitch
+    int ydiv = 100; // New mesh Y pitch
+    int zdiv = 100; // New mesh Z pitch
 
     for(int i = 1; i < argc; i++) {
         if(strcmp(argv[i], "-h") == 0) {
@@ -198,6 +218,9 @@ int main(int argc, char** argv) {
             ydiv = static_cast<int>(strtol(argv[++i], nullptr, 10));
         } else if(strcmp(argv[i], "-z") == 0 && (i + 1 < argc)) {
             zdiv = static_cast<int>(strtol(argv[++i], nullptr, 10));
+        } else if(strcmp(argv[i], "-d") == 0 && (i + 1 < argc)) {
+            dimension = static_cast<int>(strtol(argv[++i], nullptr, 10));
+            xdiv = 1;
         } else if(strcmp(argv[i], "-l") == 0 && (i + 1 < argc)) {
             log_file_name = std::string(argv[++i]);
         } else {
@@ -240,6 +263,7 @@ int main(int argc, char** argv) {
         std::cout << "\t -x <mesh x_pitch>      new regular mesh X pitch (defaults to 100)" << std::endl;
         std::cout << "\t -y <mesh_y_pitch>      new regular mesh Y pitch (defaults to 100)" << std::endl;
         std::cout << "\t -z <mesh_z_pitch>      new regular mesh Z pitch (defaults to 100)" << std::endl;
+        std::cout << "\t -d <mesh_dimension>    specify mesh dimensionality (defaults to 3)" << std::endl;
         std::cout << "\t -l <file>              file to log to besides standard output (disabled by default)" << std::endl;
         std::cout << "\t -v <level>             verbosity level (default reporiting level is INFO)" << std::endl;
 
@@ -295,22 +319,34 @@ int main(int argc, char** argv) {
     }
 
     /* ALERT fix coordinates */
-    for(unsigned int i = 0; i < points.size(); ++i) {
-        std::swap(points[i].y, points[i].z);
-        std::swap(field[i].y, field[i].z);
+    if(dimension == 3) {
+        for(unsigned int i = 0; i < points.size(); ++i) {
+            std::swap(points[i].y, points[i].z);
+            std::swap(field[i].y, field[i].z);
+        }
     }
 
     // Find minimum and maximum from mesh coordinates
     double minx = DBL_MAX, miny = DBL_MAX, minz = DBL_MAX;
     double maxx = DBL_MIN, maxy = DBL_MIN, maxz = DBL_MIN;
     for(auto& point : points) {
-        minx = std::min(minx, point.x);
-        miny = std::min(miny, point.y);
-        minz = std::min(minz, point.z);
+        if(dimension == 2) {
+            maxx = 1;
+            minx = 0;
+            maxy = std::max(maxy, point.y);
+            maxz = std::max(maxz, point.z);
+            miny = std::min(miny, point.y);
+            minz = std::min(minz, point.z);
+        }
 
-        maxx = std::max(maxx, point.x);
-        maxy = std::max(maxy, point.y);
-        maxz = std::max(maxz, point.z);
+        if(dimension == 3) {
+            maxx = std::max(maxx, point.x);
+            maxy = std::max(maxy, point.y);
+            maxz = std::max(maxz, point.z);
+            minx = std::min(minx, point.x);
+            miny = std::min(miny, point.y);
+            minz = std::min(minz, point.z);
+        }
     }
 
     // Creating a new mesh points cloud with a regular pitch
@@ -319,9 +355,11 @@ int main(int argc, char** argv) {
     double zstep = (maxz - minz) / static_cast<double>(zdiv);
     double cell_volume = xstep * ystep * zstep;
 
+    LOG(STATUS) << maxx << " " << minx << " x " << maxy << " " << miny << " x " << maxz << " " << minz << std::endl;
+
     LOG(STATUS) << "Mesh dimensions: " << maxx - minx << " x " << maxy - miny << " x " << maxz - minz << std::endl
                 << "New mesh element dimension: " << xstep << " x " << ystep << " x " << zstep
-                << ". Volume = " << cell_volume;
+                << " ==>  Volume = " << cell_volume;
 
     /*
      * ALERT invert the z-axis to match the ap2 system
@@ -348,8 +386,22 @@ int main(int argc, char** argv) {
         for(int j = 0; j < ydiv; ++j) {
             double z = minz + zstep / 2.0;
             for(int k = 0; k < zdiv; ++k) {
-                Point q(x, y, z); // New mesh vertex
-                Point e(x, y, z); // Corresponding, to be interpolated, electric field
+                Point q, e;
+                if(dimension == 2) {
+                    q.x = -1;
+                    q.y = y;
+                    q.z = z; // New mesh vertex
+                    e.x = -1;
+                    e.y = y;
+                    e.z = z;
+                } else {
+                    q.x = x;
+                    q.y = y;
+                    q.z = z; // New mesh vertex
+                    e.x = x;
+                    e.y = y;
+                    e.z = z; // Corresponding, to be interpolated, electric field
+                }
                 bool valid = false;
 
                 LOG_PROGRESS(INFO, "POINT") << "Interpolating point X=" << i + 1 << " Y=" << j + 1 << " Z=" << k + 1 << " ("
@@ -386,9 +438,8 @@ int main(int argc, char** argv) {
                     }
 
                     // If after a radius step no new neighbours are found, go to the next radius step
-                    if(results.size() > prev_neighbours || results.empty()) {
+                    if(results.size() <= prev_neighbours || results.empty()) {
                         prev_neighbours = results.size();
-                    } else {
                         LOG(WARNING) << "No (new) neighbour found with radius " << radius << ". Increasing search radius."
                                      << std::endl;
                         radius = radius + radius_step;
@@ -406,9 +457,13 @@ int main(int argc, char** argv) {
 
                     // Finding tetrahedrons
                     Eigen::Matrix4d matrix;
-                    size_t num_nodes_element = 4;
-                    std::vector<Point> tetra_vertices;
-                    std::vector<Point> tetra_vertices_field;
+                    size_t num_nodes_element;
+                    if(dimension == 3)
+                        num_nodes_element = 4;
+                    if(dimension == 2)
+                        num_nodes_element = 3;
+                    std::vector<Point> element_vertices;
+                    std::vector<Point> element_vertices_field;
 
                     std::vector<int> bitmask(num_nodes_element, 1);
                     bitmask.resize(results.size(), 0);
@@ -422,35 +477,46 @@ int main(int argc, char** argv) {
                         do {
                             valid = false;
                             index.clear();
-                            tetra_vertices.clear();
-                            tetra_vertices_field.clear();
+                            element_vertices.clear();
+                            element_vertices_field.clear();
                             // print integers and permute bitmask
                             for(size_t idk = 0; idk < results.size(); ++idk) {
                                 if(bitmask[idk] != 0) {
                                     index.push_back(idk);
-                                    tetra_vertices.push_back(points[results[idk]]);
-                                    tetra_vertices_field.push_back(field[results[idk]]);
+                                    element_vertices.push_back(points[results[idk]]);
+                                    element_vertices_field.push_back(field[results[idk]]);
                                 }
-                                if(index.size() == 4) {
+                                if(index.size() == num_nodes_element) {
                                     break;
                                 }
                             }
 
-                            if(index[0] > index_cut_up || index[1] > index_cut_up || index[2] > index_cut_up ||
-                               index[3] > index_cut_up) {
+                            bool index_flag = false;
+                            for(size_t ttt = 0; ttt < num_nodes_element; ttt++) {
+                                if(index[ttt] > index_cut_up) {
+                                    index_flag = true;
+                                    break;
+                                }
+                            }
+                            if(index_flag)
                                 continue;
+
+                            if(dimension == 3) {
+                                LOG(TRACE) << "Parsing neighbors [index]: " << index[0] << ", " << index[1] << ", "
+                                           << index[2] << ", " << index[3];
+                            }
+                            if(dimension == 2) {
+                                LOG(TRACE)
+                                    << "Parsing neighbors [index]: " << index[0] << ", " << index[1] << ", " << index[2];
                             }
 
-                            LOG(TRACE) << "Parsing neighbors [index]: " << index[0] << ", " << index[1] << ", " << index[2]
-                                       << ", " << index[3];
-
-                            Tetrahedron tetrahedron(index, tetra_vertices, tetra_vertices_field);
-                            valid = tetrahedron.validTetrahedron(volume_cut, q);
+                            Tetrahedron element(dimension, index, element_vertices, element_vertices_field);
+                            valid = element.validElement(volume_cut, q);
                             if(!valid) {
                                 continue;
                             }
-                            tetrahedron.printTetrahedron(q);
-                            e = tetrahedron.getField(q);
+                            element.printElement(q);
+                            e = element.getField(q);
                             break;
                         } while(std::prev_permutation(bitmask.begin(), bitmask.end()));
 

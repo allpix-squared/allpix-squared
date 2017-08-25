@@ -178,8 +178,8 @@ std::map<std::string, std::vector<Point>> read_grid(const std::string& file_name
                 }
             }
             if(dimension == 2) {
-                Point point(-1.0, -1.0);
-                while(sstr >> point.x >> point.y) {
+                Point point(-1.0, -1.0, -1.0);
+                while(sstr >> point.y >> point.z) {
                     vertices.push_back(point);
                 }
             }
