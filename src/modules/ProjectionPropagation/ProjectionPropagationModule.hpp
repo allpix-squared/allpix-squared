@@ -64,10 +64,15 @@ namespace allpix {
         // Random generator for diffusion calculation
         std::mt19937_64 random_generator_;
 
-        // Check whether plots should be generated
+        // Config parameters: Check whether plots should be generated and which particles should be propagated
         bool output_plots_;
+        bool propagate_holes_;
+        CarrierType propagate_type_;
 
         // Precalculated values for electron and hole mobility
+        double hole_Vm_;
+        double hole_Ec_;
+        double hole_Beta_;
         double electron_Vm_;
         double electron_Ec_;
         double electron_Beta_;
