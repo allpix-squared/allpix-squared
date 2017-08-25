@@ -36,10 +36,9 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration config,
 
     output_plots_ = config_.get<bool>("output_plots");
 
-    // Set defaults for charge carrier propagation:
+    // Set default for charge carrier propagation:
     config_.setDefault<bool>("propagate_holes", false);
-    propagate_holes_ = config_.get<bool>("propagate_holes");
-    if(propagate_holes_) {
+    if(config_.get<bool>("propagate_holes")) {
         propagate_type_ = CarrierType::HOLE;
         LOG(INFO) << "Holes are chosen for propagation. Electrons are therefore not propagated.";
     } else {
