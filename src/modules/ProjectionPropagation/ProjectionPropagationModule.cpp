@@ -120,24 +120,12 @@ void ProjectionPropagationModule::run(unsigned int) {
 
         // Calculate the drift time
         auto calc_drift_time = [&]() {
-            double Ec;
-            if(type == CarrierType::ELECTRON) {
-                Ec = electron_Ec_;
-            } else {
-                Ec = hole_Ec_;
-            }
+            double Ec = (type == CarrierType::ELECTRON ? electron_Ec_ : Ec = hole_Ec_);
+            double zero_mobility = (type == CarrierType::ELECTRON ? electron_Vm_ / electron_Ec_ : hole_Vm_ / hole_Ec_);
 
-            double zero_mobility;
-            if(type == CarrierType::ELECTRON) {
-                zero_mobility = electron_Vm_ / electron_Ec_;
-            } else {
-                zero_mobility = hole_Vm_ / hole_Ec_;
-            }
-
-            double drift_time = ((log(efield_mag_top) - log(efield_mag)) / slope_efield_ +
-                                 (model->getSensorSize().z() / 2. - position.z()) / Ec) /
-                                zero_mobility;
-            return drift_time;
+            return ((log(efield_mag_top) - log(efield_mag)) / slope_efield_ +
+                    (model->getSensorSize().z() / 2. - position.z()) / Ec) /
+                   zero_mobility;
         };
 
         // Only project if within the depleted region (i.e. efield not zero)
