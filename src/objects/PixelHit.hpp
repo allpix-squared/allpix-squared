@@ -37,7 +37,12 @@ namespace allpix {
          * @brief Get the pixel hit
          * @return Pixel indices in the grid
          */
-        Pixel getPixel() const;
+        const Pixel& getPixel() const;
+        /**
+         * @brief Shortcut to retrieve the pixel indices
+         * @return Index of the pixel
+         */
+        Pixel::Index getIndex() const;
         /**
          * @brief Get the timing data of the hit
          * @return Timestamp

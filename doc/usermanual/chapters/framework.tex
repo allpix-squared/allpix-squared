@@ -310,6 +310,26 @@ The instantiation logic only allows a single instance for every unique name.
 If there are multiple instantiations with the same unique name, the instantiation with the highest priority is kept.
 If multiple instantiations with the same unique name and the same priority exist, an exception is raised.
 
+\subsubsection{Parallel execution of modules}
+\label{sec:multithreading}
+The framework has experimental support for running several modules in parallel.
+This feature is disabled by default, it has to supported by the module and it has to enabled by the user as described in Section \ref{sec:framework_parameters}.
+A significant speed up can be achieved if the simulation contains multiple detectors or simulates the same module using different parameters.
+
+The framework allows to parallelize the execution of the same type of module, if these would otherwise be executed directly after each other in the linear order.
+Thus, as long as the name of the module remains the same, while going through the execution order of all \texttt{run()} methods, all instances are added to a work queue.
+The instances are then distributed to a set of worker threads as specified in the configuration or determined from system parameters, which will execute the individual modules.
+The module manager will wait for all jobs to finish, before it will continue to handle the next type of module.
+
+To enable parallelization for a module, the following line of code has to be added to the constructor of a module:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+// Enable parallelization of this module if multithreading is enabled
+enable_parallelization();
+\end{minted}
+By adding this, the module promises that it will work correctly if the run-method is executed multiple times in parallel in separate instantiations.
+This means in particular that the module will safely handle access to shared (for example static) variables and it will properly bind ROOT histograms to their directory before the \texttt{run()}-method.
+Access to constant operations in the GeometryManager, Detector and DetectorModel is always valid between various threads. Also sending and receiving messages is thread-safe.
+
 \subsection{Geometry and Detectors}
 \label{sec:models_geometry}
 Simulations are frequently performed for a set of different detectors (such as a beam telescope and a device under test).
@@ -319,8 +339,12 @@ Every detector has a set of properties attached to it:
 \item A unique \textbf{detector name} to refer to the detector in the configuration.
 \item The \textbf{position} in the world frame.
 This is the position of the geometric center of the sensitive device (sensor) given in world coordinates as X, Y and Z (note that any additional components like the chip and possible support layers are ignored when determining the geometric center).
-\item The \textbf{orientation} given as Euler angles using the extrinsic Z-X-Z convention relative to the world frame (also known as the 1-3-1 or the "x-convention" and the most widely used definition of Euler angles~\cite{eulerangles}).
-\item A \textbf{type} of a detector model such as \emph{hybrid} or \emph{monolithic}.
+\item An \textbf{orientation\_mode} that determines the way the orientation is applied.
+It can be either \texttt{xyz} or \texttt{zxz}, where \texttt{xyz} is used if the parameter is not specified.
+The \texttt{xyz} option uses extrinsic Euler angles to apply an rotation around the X-axis, followed by an rotation around the original global Y-axis and finally an rotation around the global Z-axis.
+The \texttt{zxz} uses the extrinsic Z-X-Z convention for Euler angles instead (this option is also known as the 3-1-3 or the "x-convention" and the most widely used definition of Euler angles overall~\cite{eulerangles}).
+\item The \textbf{orientation} to specify the Euler angles in logical order, interpreted using the method above (or with the \texttt{xyz} method if the \textbf{orientation\_mode} is not specified).
+\item A \textbf{type} of a detector model, for example \emph{hybrid} or \emph{monolithic}.
 The model defines the geometry and parameters of the detector.
 Multiple detectors can share the same model.
 Several ready-to-use models are shipped with the framework.
@@ -429,7 +453,7 @@ No hole will be added if this parameter is not present.
 \item \texttt{hole\_offset}: If present, the hole is by default placed at the center of the support layer.
 A 2D offset with respect to its default position can be specified using this parameter.
 \item \texttt{material}: Material of the support. \apsq does not provide a set of materials to choose from, but it is up to the modules using the parameter to implement the materials such that they can use it.
-Section~\ref{sec:modules} provides details about the materials currently supported by the geometry builder module (\texttt{GeometryBuilderGeant4}).
+Section~\ref{sec:modules} provides details about the materials supported by the geometry builder module (\texttt{GeometryBuilderGeant4}).
 \todo{This should be standardized...}
 \end{itemize}
 
@@ -525,7 +549,7 @@ void run(unsigned int event_id) {
 
 \subsubsection{Methods to process messages}
 The message system has multiple methods to process received messages.
-The first two are the most common methods and the third should only be used if necessary.
+The first three are the most common methods and the fourth should only be used if necessary.
 \begin{enumerate}
 \item Bind a \textbf{single message} to a variable.
 This should usually be the preferred method as most modules only expect one message to arrive per event, as a module should typically send only one message containing the list of all relevant objects.
@@ -540,7 +564,7 @@ TestModule(Configuration, Messenger* messenger, std::shared_ptr<Detector>) {
 }
 std::shared_ptr<Message<Object>> message;
 \end{minted}
-\item Bind a \textbf{set of messages} to an vector variable.
+\item Bind a \textbf{set of messages} to a \texttt{std::vector} variable.
 This method should be used it the module can (and expects to) receive the same message multiple times (possibly because it wants to receive the same type of message for all detectors).
 An example to bind multiple messages containing an array of objects in the constructor of a unique-type \texttt{TestModule} would be:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
@@ -553,11 +577,24 @@ TestModule(Configuration, Messenger* messenger, GeometryManager* geo_manager) {
 }
 std::vector<std::shared_ptr<Message<Object>>> messages;
 \end{minted}
+\item Add a dependency to keep messages in memory for retrieving objects from the history.
+Several objects have related objects which can be retrieved as explained in Section \ref{sec:objhistory}.
+Linked objects can only be retrieved (during the same event) if the respective source objects remain in memory.
+Modules should explicitly mark objects that are accessed indirectly through the history of the messages, to ensure these objects are not deleted.
+This method can be used as follows in a detector-specific \texttt{TestModule}, to keep \texttt{PixelHitMessage}s in memory without having direct acces to them (\texttt{PixelHitMessage} can be replaced here with any other type of message):
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+TestModule(Configuration, Messenger* messenger, std::shared_ptr<Detector>) {
+    messenger->addDependency<PixelHit>(this,
+                                       /* No special message flags */
+                                       MsgFlags::NONE);
+}
+\end{minted}
 \item Listen to a particular message type and execute a \textbf{listener function} as soon as an object is received.
-Can be used for more advanced strategies of retrieving messages.
-Note that this method can lead to unexpected behavior because the listener function is executed during the run method of the dispatching module.
+Can be used for more advanced strategies of retrieving messages, but the other method should be preferred when possible.
 The listening module should \underline{not} do any heavy work in the listening function as this is supposed to take place in their \texttt{run} method instead.
-Listening to a message containing an array of objects in a detector \texttt{TestModule} could be performed as follows:
+Using a listener function can lead to unexpected behavior because the function is executed during the run method of the dispatching module.
+This means that logging is performed at the level of the dispatching module and that the listener method can be accessed from multiple threads if the dispatching module is parallelized.
+Listening to a message containing an array of objects in a detector-specific \texttt{TestModule} could be performed as follows:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 TestModule(Configuration, Messenger* messenger, std::shared_ptr<Detector>) {
     messenger->registerListener(this,

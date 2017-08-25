@@ -76,6 +76,17 @@ template <typename T> static ROOTObjectReaderModule::MessageCreatorMap gen_creat
 }
 
 void ROOTObjectReaderModule::init() {
+    // Read include and exclude list
+    if(config_.has("include") && config_.has("exclude")) {
+        throw InvalidValueError(config_, "exclude", "include and exclude parameter are mutually exclusive");
+    } else if(config_.has("include")) {
+        auto inc_arr = config_.getArray<std::string>("include");
+        include_.insert(inc_arr.begin(), inc_arr.end());
+    } else if(config_.has("exclude")) {
+        auto exc_arr = config_.getArray<std::string>("exclude");
+        exclude_.insert(exc_arr.begin(), exc_arr.end());
+    }
+
     // Initialize the call map from the tuple of available objects
     message_creator_map_ = gen_creator_map<allpix::OBJECTS>();
 
@@ -97,6 +108,14 @@ void ROOTObjectReaderModule::init() {
 
     // Loop over all found trees
     for(auto& tree : trees_) {
+        // Check if this tree should be used
+        if((!include_.empty() && include_.find(tree->GetName()) == include_.end()) ||
+           (!exclude_.empty() && exclude_.find(tree->GetName()) != exclude_.end())) {
+            LOG(TRACE) << "Ignoring tree with " << tree->GetName()
+                       << " objects because it has been excluded or not explicitly included";
+            continue;
+        }
+
         // Loop over the list of branches and create the set of receiver objects
         TObjArray* branches = tree->GetListOfBranches();
         for(int i = 0; i < branches->GetEntries(); i++) {
@@ -127,9 +146,19 @@ void ROOTObjectReaderModule::init() {
                 name_idx = INT_MAX;
             }
 
+            // Check tree structure and if object type matches name
             auto split_type = allpix::split<std::string>(branch->GetClassName(), "<>");
-            if(expected_size != split.size() || split_type.size() != 2) {
+            if(expected_size != split.size() || split_type.size() != 2 || split_type[1].size() <= 2) {
                 throw ModuleError("Tree is malformed and cannot be used for creating messages");
+            }
+            std::string class_name = split_type[1].substr(0, split_type[1].size() - 1);
+            std::string apx_namespace = "allpix::";
+            size_t ap_idx = class_name.find(apx_namespace);
+            if(ap_idx != std::string::npos) {
+                class_name.replace(ap_idx, apx_namespace.size(), "");
+            }
+            if(class_name != tree->GetName()) {
+                throw ModuleError("Tree contains objects of the wrong type");
             }
 
             std::string message_name;

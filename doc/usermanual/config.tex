@@ -61,5 +61,22 @@
 % Create addreferences command (overwritten for HTML in config)
 \newcommand{\addreferencesline}{\addcontentsline{toc}{section}{References}}
 
+% Command to add the license (overwritten for HTML in config)
+\newcommand{\addlicense}{
+\begin{table}
+\centering
+\begin{tabular}{|p{.7\textwidth}|}
+ \hline
+ \vspace{2pt}
+ This manual is licensed under the Creative Commons Attribution 4.0 International License. To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/.
+ \vspace{5pt}
+ \begin{center}
+ \includegraphics[scale=1]{cc-by.png}
+ \end{center}\\
+ \hline
+\end{tabular}
+\end{table}
+}
+
 % Use new lines in FAQ (fixed for HTML in config)
 \setlist[description]{style=nextline}

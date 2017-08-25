@@ -42,6 +42,8 @@ static bool check_send(BaseMessage* message, BaseDelegate* delegate) {
  * Messages should be bound during construction, so this function only gives useful information outside the constructor
  */
 bool Messenger::hasReceiver(Module* source, const std::shared_ptr<BaseMessage>& message) {
+    std::lock_guard<std::mutex> lock(mutex_);
+
     const BaseMessage* inst = message.get();
     std::type_index type_idx = typeid(*inst);
 
@@ -80,6 +82,8 @@ bool Messenger::hasReceiver(Module* source, const std::shared_ptr<BaseMessage>& 
  * Send messages to all specific listeners and also to all generic listeners (listening to all incoming messages)
  */
 void Messenger::dispatch_message(Module* source, const std::shared_ptr<BaseMessage>& message, std::string name) {
+    std::lock_guard<std::mutex> lock(mutex_);
+
     // Get the name of the output message
     if(name == "-") {
         name = source->get_configuration().get<std::string>("output");
@@ -139,6 +143,8 @@ bool Messenger::dispatch_message(Module* source,
 }
 
 void Messenger::add_delegate(const std::type_info& message_type, Module* module, std::unique_ptr<BaseDelegate> delegate) {
+    std::lock_guard<std::mutex> lock(mutex_);
+
     // Register generic or specific delegate depending on flag
     std::string message_name;
     if((delegate->getFlags() & MsgFlags::IGNORE_NAME) != MsgFlags::NONE) {
@@ -161,6 +167,8 @@ void Messenger::add_delegate(const std::type_info& message_type, Module* module,
  * @throws std::out_of_range If a delegate is removed which is never registered
  */
 void Messenger::remove_delegate(BaseDelegate* delegate) {
+    std::lock_guard<std::mutex> lock(mutex_);
+
     auto iter = delegate_to_iterator_.find(delegate);
     if(iter == delegate_to_iterator_.end()) {
         throw std::out_of_range("delegate not found in listeners");
