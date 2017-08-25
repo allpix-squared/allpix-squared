@@ -121,17 +121,13 @@ void ProjectionPropagationModule::run(unsigned int) {
 
         // Calculate the drift time
         auto calc_drift_time = [&]() {
-            auto integral_funct = [&](double z) {
-                // Increase z by the half sensor, because z is used for the calculation of the e-field.
-                z += model->getSensorSize().z() / 2.;
-                double Ec;
-                if(type == CarrierType::ELECTRON) {
-                    Ec = electron_Ec_;
-                } else {
-                    Ec = hole_Ec_;
-                }
-                return (log(z) / slope_efield_ + z / Ec);
-            };
+            double Ec;
+            if(type == CarrierType::ELECTRON) {
+                Ec = electron_Ec_;
+            } else {
+                Ec = hole_Ec_;
+            }
+
             double zero_mobility;
             if(type == CarrierType::ELECTRON) {
                 zero_mobility = electron_Vm_ / electron_Ec_;
@@ -139,8 +135,9 @@ void ProjectionPropagationModule::run(unsigned int) {
                 zero_mobility = hole_Vm_ / hole_Ec_;
             }
 
-            double drift_time =
-                (integral_funct(model->getSensorSize().z() / 2.) - integral_funct(position.z())) / zero_mobility;
+            double drift_time = ((log(efield_mag_top) - log(efield_mag)) / slope_efield_ +
+                                 (model->getSensorSize().z() / 2. - position.z()) / Ec) /
+                                zero_mobility;
             return drift_time;
         };
 
