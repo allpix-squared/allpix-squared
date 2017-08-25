@@ -170,8 +170,7 @@ void ProjectionPropagationModule::run(unsigned int) {
             propagated_charges.emplace_back(
                 projected_position, global_position, deposit.getType(), charge_per_step, deposit.getEventTime(), &deposit);
 
-            LOG(DEBUG) << "Propagated " << charge_per_step << " charge carriers ("
-                       << (type == CarrierType::ELECTRON ? "e" : "h") << ") to "
+            LOG(DEBUG) << "Propagated " << charge_per_step << " charge carriers (" << type << ") to "
                        << display_vector(projected_position, {"mm", "um"});
 
             projected_charge += charge_per_step;
