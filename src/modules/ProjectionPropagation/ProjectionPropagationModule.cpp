@@ -89,15 +89,16 @@ void ProjectionPropagationModule::run(unsigned int) {
             return numerator / denominator;
         };
 
+        // Get the electric field at the position of the deposited charge and the top of the sensor:
+        auto efield = detector_->getElectricField(position);
+        double efield_mag = std::sqrt(efield.Mag2());
         auto efield_top = detector_->getElectricField(ROOT::Math::XYZPoint(0., 0., model->getSensorSize().z() / 2.));
         double efield_mag_top = std::sqrt(efield_top.Mag2());
-        auto efield_bot = detector_->getElectricField(ROOT::Math::XYZPoint(0., 0., -model->getSensorSize().z() / 2.));
-        double efield_mag_bot = std::sqrt(efield_bot.Mag2());
 
-        LOG(TRACE) << "Electric field at top / bottom: " << Units::display(efield_mag_top, "V/cm") << " , "
-                   << Units::display(efield_mag_bot, "V/cm");
+        LOG(TRACE) << "Electric field at carrier position / top of the sensor: " << Units::display(efield_mag_top, "V/cm")
+                   << " , " << Units::display(efield_mag, "V/cm");
 
-        slope_efield_ = (efield_mag_top - efield_mag_bot) / model->getSensorSize().z();
+        slope_efield_ = (efield_mag_top - efield_mag) / (model->getSensorSize().z() / 2. - position.z());
 
         // Calculate the drift time
         auto calc_drift_time = [&]() {
@@ -112,10 +113,6 @@ void ProjectionPropagationModule::run(unsigned int) {
                 (integral_funct(model->getSensorSize().z() / 2.) - integral_funct(position.z())) / zero_mobility;
             return drift_time;
         };
-
-        // Get the electric field at the position of the deposited charge:
-        auto efield = detector_->getElectricField(position);
-        double efield_mag = std::sqrt(efield.Mag2());
 
         // Only project if within the depleted region (i.e. efield not zero)
         if(efield_mag < std::numeric_limits<double>::epsilon()) {
