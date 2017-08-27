@@ -177,7 +177,7 @@ void ElectricFieldReaderModule::create_output_plots() {
 
     // Create 2D histogram
     auto histogram = new TH2F("field_magnitude",
-                              ("Electric field for " + detector_->getName()).c_str(),
+                              "electric field magnitude",
                               static_cast<int>(steps),
                               min1,
                               max1,
@@ -186,8 +186,8 @@ void ElectricFieldReaderModule::create_output_plots() {
                               max2);
 
     // Create 1D histogram
-    auto histogram1D =
-        new TH1F("field1d_z", ("Electric field for " + detector_->getName()).c_str(), static_cast<int>(steps), min2, max2);
+    auto histogram1D = new TH1F(
+        "field1d_z", "electric field (z-component);z (mm);field strength (V/cm)", static_cast<int>(steps), min2, max2);
 
     // Determine the coordinate to use for projection
     double x = 0, y = 0, z = 0;
@@ -206,21 +206,27 @@ void ElectricFieldReaderModule::create_output_plots() {
         if(project == 'x') {
             y = model->getSensorCenter().y() - model->getSensorSize().y() / 2.0 +
                 ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().y();
+            histogram->GetXaxis()->SetTitle("y (mm)");
         } else if(project == 'y') {
             x = model->getSensorCenter().x() - model->getSensorSize().x() / 2.0 +
                 ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().x();
+            histogram->GetXaxis()->SetTitle("x (mm)");
         } else {
             x = model->getSensorCenter().x() - model->getSensorSize().x() / 2.0 +
                 ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().x();
+            histogram->GetXaxis()->SetTitle("x (mm)");
         }
         for(size_t k = 0; k < steps; ++k) {
             if(project == 'x') {
                 z = z_min + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * (z_max - z_min);
+                histogram->GetYaxis()->SetTitle("z (mm)");
             } else if(project == 'y') {
                 z = z_min + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * (z_max - z_min);
+                histogram->GetYaxis()->SetTitle("z (mm)");
             } else {
                 y = model->getSensorCenter().y() - model->getSensorSize().y() / 2.0 +
                     ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().y();
+                histogram->GetYaxis()->SetTitle("y (mm)");
             }
 
             // Get field strength from detector
