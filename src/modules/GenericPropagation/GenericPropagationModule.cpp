@@ -128,6 +128,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
     unsigned long tot_point_cnt = 0;
     double start_time = std::numeric_limits<double>::max();
     unsigned int total_charge = 0;
+    unsigned int max_charge = 0;
     for(auto& deposit_points : output_plot_points_) {
         for(auto& point : deposit_points.second) {
             minX = std::min(minX, point.x());
@@ -138,6 +139,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
         }
         start_time = std::min(start_time, deposit_points.first.getEventTime());
         total_charge += deposit_points.first.getCharge();
+        max_charge = std::max(max_charge, deposit_points.first.getCharge());
 
         tot_point_cnt += deposit_points.second.size();
     }
@@ -359,8 +361,9 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
 
                 auto marker = std::make_unique<TPolyMarker3D>();
                 marker->SetMarkerStyle(kFullCircle);
-                marker->SetMarkerSize(static_cast<float>(deposit_points.first.getCharge()) /
-                                      config_.get<float>("charge_per_step"));
+                marker->SetMarkerSize(static_cast<float>(deposit_points.first.getCharge() *
+                                                         config_.get<unsigned int>("output_animations_marker_size", 1)) /
+                                      static_cast<float>(max_charge));
                 auto initial_z_perc = static_cast<int>(
                     ((points[0].z() + model_->getSensorSize().z() / 2.0) / model_->getSensorSize().z()) * 80);
                 initial_z_perc = std::max(std::min(79, initial_z_perc), 0);
