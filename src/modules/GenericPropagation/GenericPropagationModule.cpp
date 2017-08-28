@@ -61,10 +61,10 @@ GenericPropagationModule::GenericPropagationModule(Configuration config,
     random_generator_.seed(getRandomSeed());
 
     // Set default value for config variables
-    config_.setDefault<double>("spatial_precision", Units::get(0.1, "nm"));
+    config_.setDefault<double>("spatial_precision", Units::get(0.25, "nm"));
     config_.setDefault<double>("timestep_start", Units::get(0.01, "ns"));
-    config_.setDefault<double>("timestep_min", Units::get(0.0005, "ns"));
-    config_.setDefault<double>("timestep_max", Units::get(0.1, "ns"));
+    config_.setDefault<double>("timestep_min", Units::get(0.001, "ns"));
+    config_.setDefault<double>("timestep_max", Units::get(0.5, "ns"));
     config_.setDefault<double>("integration_time", Units::get(25, "ns"));
     config_.setDefault<unsigned int>("charge_per_step", 10);
     config_.setDefault<double>("temperature", 293.15);
@@ -128,6 +128,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
     unsigned long tot_point_cnt = 0;
     double start_time = std::numeric_limits<double>::max();
     unsigned int total_charge = 0;
+    unsigned int max_charge = 0;
     for(auto& deposit_points : output_plot_points_) {
         for(auto& point : deposit_points.second) {
             minX = std::min(minX, point.x());
@@ -138,6 +139,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
         }
         start_time = std::min(start_time, deposit_points.first.getEventTime());
         total_charge += deposit_points.first.getCharge();
+        max_charge = std::max(max_charge, deposit_points.first.getCharge());
 
         tot_point_cnt += deposit_points.second.size();
     }
@@ -359,8 +361,9 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
 
                 auto marker = std::make_unique<TPolyMarker3D>();
                 marker->SetMarkerStyle(kFullCircle);
-                marker->SetMarkerSize(static_cast<float>(deposit_points.first.getCharge()) /
-                                      config_.get<float>("charge_per_step"));
+                marker->SetMarkerSize(static_cast<float>(deposit_points.first.getCharge() *
+                                                         config_.get<unsigned int>("output_animations_marker_size", 1)) /
+                                      static_cast<float>(max_charge));
                 auto initial_z_perc = static_cast<int>(
                     ((points[0].z() + model_->getSensorSize().z() / 2.0) / model_->getSensorSize().z()) * 80);
                 initial_z_perc = std::max(std::min(79, initial_z_perc), 0);
@@ -535,7 +538,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
             // Update statistical information
             ++step_count;
             propagated_charges_count += charge_per_step;
-            total_time += prop_pair.second;
+            total_time += charge_per_step * prop_pair.second;
 
             // Fill plot for drift time
             if(output_plots_) {
@@ -552,7 +555,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
     }
 
     // Write summary and update statistics
-    long double average_time = total_time / std::max(1u, step_count);
+    long double average_time = total_time / std::max(1u, propagated_charges_count);
     LOG(INFO) << "Propagated " << propagated_charges_count << " charges in " << step_count << " steps in average time of "
               << Units::display(average_time, "ns");
     total_propagated_charges_ += propagated_charges_count;
@@ -592,8 +595,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
     };
 
     // Define a function to compute the diffusion
-    auto timestep = timestep_start_;
-    auto carrier_diffusion = [&](double efield_mag) -> Eigen::Vector3d {
+    auto carrier_diffusion = [&](double efield_mag, double timestep) -> Eigen::Vector3d {
         double diffusion_constant = boltzmann_kT_ * carrier_mobility(efield_mag);
         double diffusion_std_dev = std::sqrt(2. * diffusion_constant * timestep);
 
@@ -616,43 +618,53 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
     };
 
     // Create the runge kutta solver with an RKF5 tableau
-    auto runge_kutta = make_runge_kutta(tableau::RK5, carrier_velocity, timestep, position);
+    auto runge_kutta = make_runge_kutta(tableau::RK5, carrier_velocity, timestep_start_, position);
 
     // Continue propagation until the deposit is outside the sensor
-    // FIXME: we need to determine what would be a good time to stop
-    double last_time = std::numeric_limits<double>::lowest();
+    Eigen::Vector3d last_position = position;
+    double last_time = 0;
+    size_t next_idx = 0;
     while(detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position)) &&
           runge_kutta.getTime() < integration_time_) {
         // Update output plots if necessary (depending on the plot step)
-        if(output_plots_ && runge_kutta.getTime() - last_time > output_plots_step_) {
-            output_plot_points_.back().second.push_back(static_cast<ROOT::Math::XYZPoint>(runge_kutta.getValue()));
-            last_time = runge_kutta.getTime();
+        if(output_plots_) {
+            auto time_idx = static_cast<size_t>(runge_kutta.getTime() / output_plots_step_);
+            while(next_idx <= time_idx) {
+                output_plot_points_.back().second.push_back(static_cast<ROOT::Math::XYZPoint>(position));
+                next_idx = output_plot_points_.back().second.size();
+            }
         }
+
+        // Save previous position and time
+        last_position = position;
+        last_time = runge_kutta.getTime();
 
         // Execute a Runge Kutta step
         auto step = runge_kutta.step();
 
         // Get the current result and timestep
-        timestep = runge_kutta.getTimeStep();
+        auto timestep = runge_kutta.getTimeStep();
         position = runge_kutta.getValue();
 
         // Get electric field at current position and fall back to empty field if it does not exist
         auto efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(position));
 
         // Apply diffusion step
-        auto diffusion = carrier_diffusion(std::sqrt(efield.Mag2()));
-        runge_kutta.setValue(position + diffusion);
+        auto diffusion = carrier_diffusion(std::sqrt(efield.Mag2()), timestep);
+        position += diffusion;
+        runge_kutta.setValue(position);
 
         // Adapt step size to match target precision
         double uncertainty = step.error.norm();
+
         // Lower timestep when reaching the sensor edge
-        if(model_->getSensorSize().z() - position.z() < step.value.z() * 1.2) {
-            timestep *= 0.7;
+        if(std::fabs(model_->getSensorSize().z() / 2.0 - position.z()) < 2 * step.value.z()) {
+            timestep *= 0.75;
         } else {
             if(uncertainty > target_spatial_precision_) {
-                timestep *= 0.7;
-            } else if(uncertainty < 0.5 * target_spatial_precision_) {
-                timestep *= 2;
+                timestep *= 0.75;
+            } else if(2 * uncertainty < target_spatial_precision_) {
+                timestep *= 1.5;
             }
         }
         // Limit the timestep to certain minimum and maximum step sizes
@@ -664,13 +676,31 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         runge_kutta.setTimeStep(timestep);
     }
 
+    // Find proper final position in the sensor
+    auto time = runge_kutta.getTime();
+    if(!detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
+        auto check_position = position;
+        check_position.z() = last_position.z();
+        if(position.z() > 0 && detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(check_position))) {
+            // Carrier left sensor on the side of the pixel grid, interpolate end point on surface
+            auto z_cur_border = std::fabs(position.z() - model_->getSensorSize().z() / 2.0);
+            auto z_last_border = std::fabs(model_->getSensorSize().z() / 2.0 - last_position.z());
+            auto z_total = z_cur_border + z_last_border;
+            position = (z_last_border / z_total) * position + (z_cur_border / z_total) * last_position;
+            time = (z_last_border / z_total) * time + (z_cur_border / z_total) * last_time;
+        } else {
+            // Carrier left sensor on any order border, use last position inside instead
+            position = last_position;
+            time = last_time;
+        }
+    }
+
     // Return the final position of the propagated charge
-    position = runge_kutta.getValue();
-    return std::make_pair(static_cast<ROOT::Math::XYZPoint>(position), runge_kutta.getTime());
+    return std::make_pair(static_cast<ROOT::Math::XYZPoint>(position), time);
 }
 
 void GenericPropagationModule::finalize() {
-    long double average_time = total_time_ / std::max(1u, total_steps_);
+    long double average_time = total_time_ / std::max(1u, total_propagated_charges_);
     LOG(INFO) << "Propagated total of " << total_propagated_charges_ << " charges in " << total_steps_
               << " steps in average time of " << Units::display(average_time, "ns");
 

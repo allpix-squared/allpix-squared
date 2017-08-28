@@ -86,12 +86,6 @@ std::shared_ptr<TTree> constructComparisonTree(TFile* file, std::string dut) {
         deposited_charge_tree->GetEntry(i);
         propagated_charge_tree->GetEntry(i);
 
-        // Skip all events with multiple particles
-        // FIXME Needed until we handle the mc particle better
-        if(input_particles.size() > 1) {
-            continue;
-        }
-
         // Set event number
         event_num = i + 1;
 
@@ -134,18 +128,21 @@ std::shared_ptr<TTree> constructComparisonTree(TFile* file, std::string dut) {
 
         // Get information about the actual track
         output_track_count = input_particles.size();
+        output_track_x = 0;
+        output_track_y = 0;
+        // FIXME: guess the truth position from the average of start and end points
         for(auto& particle : input_particles) {
-            // FIXME just use the middle position between the entry point and the exit as the track position
-            output_track_x = (particle->getLocalStartPoint().x() + particle->getLocalEndPoint().x()) / 2.0;
-            output_track_y = (particle->getLocalStartPoint().y() + particle->getLocalEndPoint().y()) / 2.0;
+            output_track_x += (particle->getLocalStartPoint().x() + particle->getLocalEndPoint().x()) / 2.0;
+            output_track_y += (particle->getLocalStartPoint().y() + particle->getLocalEndPoint().y()) / 2.0;
         }
+        output_track_x /= input_particles.size();
+        output_track_y /= input_particles.size();
 
         // Calculate local x using a simple center of gravity fit
         // FIXME no corrections are applied
         ROOT::Math::XYZVector totalPixel;
         double totalSignal = 0;
         for(auto& hit : input_hits) {
-            // FIXME: should not use the row / column but their position
             totalPixel += static_cast<ROOT::Math::XYZVector>(hit->getPixel().getLocalCenter()) * hit->getSignal();
             totalSignal += hit->getSignal();
         }
