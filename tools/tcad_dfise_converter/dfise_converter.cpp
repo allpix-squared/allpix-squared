@@ -71,7 +71,7 @@ int Tetrahedron::getDimension() {
 }
 
 double Tetrahedron::getVolume() {
-    double volume;
+    double volume = 0;
     if(this->getDimension() == 3) {
         Eigen::Matrix4d element_matrix;
         element_matrix << 1, 1, 1, 1, vertices[0].x, vertices[1].x, vertices[2].x, vertices[3].x, vertices[0].y,
@@ -461,7 +461,7 @@ int main(int argc, char** argv) {
 
                     // Finding tetrahedrons
                     Eigen::Matrix4d matrix;
-                    size_t num_nodes_element;
+                    size_t num_nodes_element = 0;
                     if(dimension == 3)
                         num_nodes_element = 4;
                     if(dimension == 2)
