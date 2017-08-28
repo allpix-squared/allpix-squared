@@ -56,12 +56,12 @@ void DefaultDigitizerModule::init() {
     }
 
     // Conversion to ADC units requested:
-    if(config_.get<int>("adc_resolution") > 63) {
-        throw InvalidValueError(config_, "adc_resolution", "precision higher than 64bit is not possible");
+    if(config_.get<int>("adc_resolution") > 31) {
+        throw InvalidValueError(config_, "adc_resolution", "precision higher than 31bit is not possible");
     }
     if(config_.get<int>("adc_resolution") > 0) {
         LOG(INFO) << "Converting charge to ADC units, ADC resolution: " << config_.get<int>("adc_resolution")
-                  << "bit, max. value " << ((1ll << config_.get<int>("adc_resolution")) - 1);
+                  << "bit, max. value " << ((1 << config_.get<int>("adc_resolution")) - 1);
     }
 }
 
@@ -120,10 +120,10 @@ void DefaultDigitizerModule::run(unsigned int) {
             LOG(DEBUG) << "Smeared for simulating limited ADC sensitivity: " << Units::display(charge, "e");
 
             // Convert to ADC units and precision:
-            charge = static_cast<double>(std::max(std::min(static_cast<long long>(config_.get<double>("adc_offset") +
-                                                                                  charge / config_.get<double>("adc_slope")),
-                                                           (1ll << config_.get<int>("adc_resolution")) - 1),
-                                                  0ll));
+            charge = static_cast<double>(std::max(
+                std::min(static_cast<int>(config_.get<double>("adc_offset") + charge / config_.get<double>("adc_slope")),
+                         (1 << config_.get<int>("adc_resolution")) - 1),
+                0));
             LOG(DEBUG) << "Charge converted to ADC units: " << charge;
         }
 
