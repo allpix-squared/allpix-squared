@@ -56,6 +56,9 @@ void DefaultDigitizerModule::init() {
     }
 
     // Conversion to ADC units requested:
+    if(config_.get<int>("adc_resolution") > 63) {
+        throw InvalidValueError(config_, "adc_resolution", "precision higher than 64bit is not possible");
+    }
     if(config_.get<int>("adc_resolution") > 0) {
         LOG(INFO) << "Converting charge to ADC units, ADC resolution: " << config_.get<int>("adc_resolution")
                   << "bit, max. value " << ((1 << config_.get<int>("adc_resolution")) - 1);
