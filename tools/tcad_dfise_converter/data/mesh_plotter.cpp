@@ -76,8 +76,8 @@ int main(int argc, char** argv) {
     // Read file
     std::cout << "Reading file: " << file_name;
 
-    size_t firstindex = file_name.find_last_of("_");
-    size_t lastindex = file_name.find(".");
+    size_t firstindex = file_name.find_last_of('_');
+    size_t lastindex = file_name.find('.');
     output_file_name = file_name.substr(0, lastindex);
     output_file_name += ".png";
 
