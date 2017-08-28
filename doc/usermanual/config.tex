@@ -65,15 +65,9 @@
 \newcommand{\addlicense}{
 \begin{table}
 \centering
-\begin{tabular}{|p{.7\textwidth}|}
- \hline
- \vspace{2pt}
- This manual is licensed under the Creative Commons Attribution 4.0 International License. To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/.
- \vspace{5pt}
- \begin{center}
- \includegraphics[scale=1]{cc-by.png}
- \end{center}\\
- \hline
+\renewcommand{\arraystretch}{1.5}% Spread rows out...
+\begin{tabular}{>{\centering\arraybackslash}m{.10\textwidth}>{\raggedright\arraybackslash}m{.90\textwidth}}
+ \Large{\ccLogo \ccAttribution} & \footnotesize{This manual is licensed under the Creative Commons Attribution 4.0 International License.\newline To view a copy of this license, visit \url{http://creativecommons.org/licenses/by/4.0/}.} \\
 \end{tabular}
 \end{table}
 }
