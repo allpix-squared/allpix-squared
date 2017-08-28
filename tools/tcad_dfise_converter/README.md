@@ -25,6 +25,7 @@ Default values are assumed for the options not used. Possible options are:
 ```
 -R <region> 		= "bulk"
 -O <observable>		= "ElectricField"
+-d <dimensions>		= 3
 -r <search radius>	= 1 um
 -r <radius step>	= 0.5 um
 -m <max radius>		= 10 um
