@@ -32,6 +32,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     // Find Geant4 particle
     auto pdg_table = G4ParticleTable::GetParticleTable();
     auto particle_type = config.get<std::string>("particle_type", "");
+    std::transform(particle_type.begin(), particle_type.end(), particle_type.begin(), ::tolower);
     auto particle_code = config.get<int>("particle_code", 0);
     G4ParticleDefinition* particle = nullptr;
 
