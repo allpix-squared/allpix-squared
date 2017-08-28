@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
 
     // Read parameters
     std::string file_name;
-    std::string output_file_name = "efield.png";
+    std::string output_file_name;
     std::string plane = "yz";
     int slice_index = 0;
     bool flag_cut = false;
@@ -76,6 +76,10 @@ int main(int argc, char** argv) {
     // Read file
     std::cout << "Reading file: " << file_name;
 
+    size_t lastindex = file_name.find_last_of(".");
+    output_file_name = file_name.substr(0, lastindex);
+    output_file_name += ".png";
+
     std::ifstream input_file;
     input_file.open(file_name);
     if(input_file.is_open() != false) {
@@ -122,10 +126,10 @@ int main(int argc, char** argv) {
     }
 
     // Create and fill histogram
-    auto efield_map = new TH2D("Electric Field", "Electric Field", x_bin, 0, x_bin, y_bin, 0, y_bin);
-    auto exfield_map = new TH2D("Electric Field X", "Electric Field X", x_bin, 0, x_bin, y_bin, 0, y_bin);
-    auto eyfield_map = new TH2D("Electric Field Y", "Electric Field Y", x_bin, 0, x_bin, y_bin, 0, y_bin);
-    auto ezfield_map = new TH2D("Electric Field Z", "Electric Field Z", x_bin, 0, x_bin, y_bin, 0, y_bin);
+    auto efield_map = new TH2D("Observable", "Observable", x_bin, 0, x_bin, y_bin, 0, y_bin);
+    auto exfield_map = new TH2D("Observable X", "Observable X", x_bin, 0, x_bin, y_bin, 0, y_bin);
+    auto eyfield_map = new TH2D("Observable Y", "Observable Y", x_bin, 0, x_bin, y_bin, 0, y_bin);
+    auto ezfield_map = new TH2D("Observable Z", "Observable Z", x_bin, 0, x_bin, y_bin, 0, y_bin);
     auto c1 = new TCanvas();
 
     double dummy;
@@ -134,7 +138,7 @@ int main(int argc, char** argv) {
     std::string file_line;
     while(getline(input_file, file_line)) {
         int p = 0;
-        if(line < 6) {
+        if(line < 7) {
             line++;
             continue;
         }
@@ -152,11 +156,13 @@ int main(int argc, char** argv) {
         }
         line++;
     }
-    auto* tf = new TFile("efield_plots.root", "RECREATE");
+    std::string root_file_name = file_name.substr(0, lastindex);
+    root_file_name += "_Interpolation_plots.root";
+    auto* tf = new TFile(root_file_name.c_str(), "RECREATE");
     efield_map->Write("Norm");
-    exfield_map->Write("Ex");
-    eyfield_map->Write("Ey");
-    ezfield_map->Write("Ez");
+    exfield_map->Write("X component");
+    eyfield_map->Write("Y component");
+    ezfield_map->Write("Z component");
     c1->cd();
     efield_map->Draw("colz");
     c1->SaveAs(output_file_name.c_str());

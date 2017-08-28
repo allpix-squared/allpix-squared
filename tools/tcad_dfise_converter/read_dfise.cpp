@@ -408,6 +408,12 @@ std::map<std::string, std::map<std::string, std::vector<Point>>> read_electric_f
                         main_section = DFSection::ELECTRIC_FIELD;
                     } else if(data_type == "ElectrostaticPotential") {
                         main_section = DFSection::ELECTROSTATIC_POTENTIAL;
+                    } else if(data_type == "DopingConcentration") {
+                        main_section = DFSection::DOPING_CONCENTRATION;
+                    } else if(data_type == "DonorConcentration") {
+                        main_section = DFSection::DONOR_CONCENTRATION;
+                    } else if(data_type == "AcceptorConcentration") {
+                        main_section = DFSection::ACCEPTOR_CONCENTRATION;
                     } else {
                         main_section = DFSection::IGNORED;
                     }
@@ -435,6 +441,32 @@ std::map<std::string, std::map<std::string, std::vector<Point>>> read_electric_f
                 auto value = allpix::trim(base_match[2].str());
 
                 // Filter correct electric field type
+                if(main_section == DFSection::ELECTRIC_FIELD) {
+                    observable = "ElectricField";
+                    if(key == "type" && value != "vector") {
+                        main_section = DFSection::IGNORED;
+                    }
+                    if(key == "dimension" && (std::stoul(value) == 3 || std::stoul(value) == 2)) {
+                        dimension = std::stoul(value);
+                    }
+                    if(key == "dimension" && (std::stoul(value) != 3 && std::stoul(value) != 2)) {
+                        main_section = DFSection::IGNORED;
+                    }
+                    if(key == "location" && value != "vertex") {
+                        main_section = DFSection::IGNORED;
+                    }
+                    if(key == "validity") {
+                        // Ignore any electric field valid for multiple regions
+                        base_regex = std::regex("\\[\\s+\"(\\w+)\"\\s+\\]");
+                        if(std::regex_match(value, base_match, base_regex) && base_match.ready()) {
+                            region = base_match[1].str();
+                        } else {
+                            main_section = DFSection::IGNORED;
+                        }
+                    }
+                }
+
+                // Filter correct electric field type
                 if(main_section == DFSection::ELECTROSTATIC_POTENTIAL) {
                     observable = "ElectrostaticPotential";
                     if(key == "type" && value != "scalar") {
@@ -459,17 +491,68 @@ std::map<std::string, std::map<std::string, std::vector<Point>>> read_electric_f
                         }
                     }
                 }
-
                 // Filter correct electric field type
-                if(main_section == DFSection::ELECTRIC_FIELD) {
-                    observable = "ElectricField";
-                    if(key == "type" && value != "vector") {
+                if(main_section == DFSection::DOPING_CONCENTRATION) {
+                    observable = "DopingConcentration";
+                    if(key == "type" && value != "scalar") {
                         main_section = DFSection::IGNORED;
                     }
-                    if(key == "dimension" && (std::stoul(value) == 3 || std::stoul(value) == 2)) {
+                    if(key == "dimension" && std::stoul(value) == 1) {
                         dimension = std::stoul(value);
                     }
-                    if(key == "dimension" && (std::stoul(value) != 3 && std::stoul(value) != 2)) {
+                    if(key == "dimension" && std::stoul(value) != 1) {
+                        main_section = DFSection::IGNORED;
+                    }
+                    if(key == "location" && value != "vertex") {
+                        main_section = DFSection::IGNORED;
+                    }
+                    if(key == "validity") {
+                        // Ignore any electric field valid for multiple regions
+                        base_regex = std::regex("\\[\\s+\"(\\w+)\"\\s+\\]");
+                        if(std::regex_match(value, base_match, base_regex) && base_match.ready()) {
+                            region = base_match[1].str();
+                        } else {
+                            main_section = DFSection::IGNORED;
+                        }
+                    }
+                }
+
+                // Filter correct electric field type
+                if(main_section == DFSection::DONOR_CONCENTRATION) {
+                    observable = "DonorConcentration";
+                    if(key == "type" && value != "scalar") {
+                        main_section = DFSection::IGNORED;
+                    }
+                    if(key == "dimension" && std::stoul(value) == 1) {
+                        dimension = std::stoul(value);
+                    }
+                    if(key == "dimension" && std::stoul(value) != 1) {
+                        main_section = DFSection::IGNORED;
+                    }
+                    if(key == "location" && value != "vertex") {
+                        main_section = DFSection::IGNORED;
+                    }
+                    if(key == "validity") {
+                        // Ignore any electric field valid for multiple regions
+                        base_regex = std::regex("\\[\\s+\"(\\w+)\"\\s+\\]");
+                        if(std::regex_match(value, base_match, base_regex) && base_match.ready()) {
+                            region = base_match[1].str();
+                        } else {
+                            main_section = DFSection::IGNORED;
+                        }
+                    }
+                }
+
+                // Filter correct electric field type
+                if(main_section == DFSection::ACCEPTOR_CONCENTRATION) {
+                    observable = "AcceptorConcentration";
+                    if(key == "type" && value != "scalar") {
+                        main_section = DFSection::IGNORED;
+                    }
+                    if(key == "dimension" && std::stoul(value) == 1) {
+                        dimension = std::stoul(value);
+                    }
+                    if(key == "dimension" && std::stoul(value) != 1) {
                         main_section = DFSection::IGNORED;
                     }
                     if(key == "location" && value != "vertex") {
@@ -529,6 +612,45 @@ std::map<std::string, std::map<std::string, std::vector<Point>>> read_electric_f
                 region_electric_field_num.clear();
             }
 
+            if(main_section == DFSection::DOPING_CONCENTRATION && sub_section == DFSection::VALUES) {
+                if(data_count != region_electric_field_num.size()) {
+                    throw std::runtime_error("incorrect number of points");
+                }
+
+                for(size_t i = 0; i < region_electric_field_num.size(); i += 1) {
+                    auto x = region_electric_field_num[i];
+                    region_electric_field_map[region][observable].emplace_back(x, 0, 0);
+                }
+
+                region_electric_field_num.clear();
+            }
+
+            if(main_section == DFSection::DONOR_CONCENTRATION && sub_section == DFSection::VALUES) {
+                if(data_count != region_electric_field_num.size()) {
+                    throw std::runtime_error("incorrect number of points");
+                }
+
+                for(size_t i = 0; i < region_electric_field_num.size(); i += 1) {
+                    auto x = region_electric_field_num[i];
+                    region_electric_field_map[region][observable].emplace_back(x, 0, 0);
+                }
+
+                region_electric_field_num.clear();
+            }
+
+            if(main_section == DFSection::ACCEPTOR_CONCENTRATION && sub_section == DFSection::VALUES) {
+                if(data_count != region_electric_field_num.size()) {
+                    throw std::runtime_error("incorrect number of points");
+                }
+
+                for(size_t i = 0; i < region_electric_field_num.size(); i += 1) {
+                    auto x = region_electric_field_num[i];
+                    region_electric_field_map[region][observable].emplace_back(x, 0, 0);
+                }
+
+                region_electric_field_num.clear();
+            }
+
             // Close section
             if(sub_section != DFSection::NONE) {
                 sub_section = DFSection::NONE;
@@ -544,7 +666,9 @@ std::map<std::string, std::map<std::string, std::vector<Point>>> read_electric_f
         }
 
         // Handle data
-        if((main_section == DFSection::ELECTRIC_FIELD || main_section == DFSection::ELECTROSTATIC_POTENTIAL) &&
+        if((main_section == DFSection::ELECTRIC_FIELD || main_section == DFSection::ELECTROSTATIC_POTENTIAL ||
+            main_section == DFSection::DOPING_CONCENTRATION || main_section == DFSection::DONOR_CONCENTRATION ||
+            main_section == DFSection::ACCEPTOR_CONCENTRATION) &&
            sub_section == DFSection::VALUES) {
             std::stringstream sstr(line);
             double num;

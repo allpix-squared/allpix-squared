@@ -359,8 +359,6 @@ int main(int argc, char** argv) {
     double zstep = (maxz - minz) / static_cast<double>(zdiv);
     double cell_volume = xstep * ystep * zstep;
 
-    LOG(STATUS) << maxx << " " << minx << " x " << maxy << " " << miny << " x " << maxz << " " << minz;
-
     LOG(STATUS) << "Mesh dimensions: " << maxx - minx << " x " << maxy - miny << " x " << maxz - minz << std::endl
                 << "New mesh element dimension: " << xstep << " x " << ystep << " x " << zstep
                 << " ==>  Volume = " << cell_volume;
@@ -565,11 +563,12 @@ int main(int argc, char** argv) {
 
     std::ofstream init_file;
     std::stringstream init_file_name;
-    init_file_name << init_file_prefix << ".init";
+    init_file_name << init_file_prefix << "_" << observable << ".init";
     init_file.open(init_file_name.str());
 
     // Write INIT file h"eader
-    init_file << "tcad_octree_writer" << std::endl;                                    // NAME
+    init_file << "tcad_dfise_converter" << std::endl;                                  // NAME
+    init_file << "#Observable: " << observable << std::endl;                           // OBSERVABLE INTERPOLATED
     init_file << "##SEED## ##EVENTS##" << std::endl;                                   // UNUSED
     init_file << "##TURN## ##TILT## 1.0" << std::endl;                                 // UNUSED
     init_file << "0.0 0.0 0.0" << std::endl;                                           // MAGNETIC FIELD (UNUSED)
