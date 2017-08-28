@@ -37,7 +37,7 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration config,
 
     config_.setDefault<int>("adc_resolution", 0);
     config_.setDefault<int>("adc_smearing", Units::get(300, "e"));
-    config_.setDefault<int>("adc_offset", Units::get(0, "e"));
+    config_.setDefault<double>("adc_offset", Units::get(0, "e"));
     config_.setDefault<double>("adc_slope", Units::get(10, "e"));
 
     config_.setDefault<bool>("output_plots", false);
@@ -61,7 +61,7 @@ void DefaultDigitizerModule::init() {
     }
     if(config_.get<int>("adc_resolution") > 0) {
         LOG(INFO) << "Converting charge to ADC units, ADC resolution: " << config_.get<int>("adc_resolution")
-                  << "bit, max. value " << ((1 << config_.get<int>("adc_resolution")) - 1);
+                  << "bit, max. value " << ((1ll << config_.get<int>("adc_resolution")) - 1);
     }
 }
 
@@ -120,10 +120,10 @@ void DefaultDigitizerModule::run(unsigned int) {
             LOG(DEBUG) << "Smeared for simulating limited ADC sensitivity: " << Units::display(charge, "e");
 
             // Convert to ADC units and precision:
-            charge = std::max(
-                std::min(static_cast<int>(config_.get<int>("adc_offset") + charge / config_.get<double>("adc_slope")),
-                         (1 << config_.get<int>("adc_resolution")) - 1),
-                0);
+            charge = static_cast<double>(std::max(std::min(static_cast<long long>(config_.get<double>("adc_offset") +
+                                                                                  charge / config_.get<double>("adc_slope")),
+                                                           (1ll << config_.get<int>("adc_resolution")) - 1),
+                                                  0ll));
             LOG(DEBUG) << "Charge converted to ADC units: " << charge;
         }
 
