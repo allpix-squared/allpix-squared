@@ -11,7 +11,7 @@
 CLANG_FORMAT=$(which clang-format)
 
 # set file extensions to handle
-FILE_EXTS=".c .h .cpp .hpp .cc .hh .cxx .tpp"
+FILE_EXTS=".c .h .cpp .hpp .cc .hh .cxx .tpp .C"
 
 # if true also displays the changes and inform if no changes have to be made
 VERBOSE=0
