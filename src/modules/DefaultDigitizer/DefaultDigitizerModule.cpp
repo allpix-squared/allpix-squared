@@ -41,6 +41,7 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration config,
     config_.setDefault<double>("adc_slope", Units::get(10, "e"));
 
     config_.setDefault<bool>("output_plots", false);
+    config_.setDefault<int>("output_plots_scale", Units::get(30, "ke"));
 }
 
 void DefaultDigitizerModule::init() {
@@ -56,20 +57,25 @@ void DefaultDigitizerModule::init() {
     if(config_.get<bool>("output_plots")) {
         LOG(TRACE) << "Creating output plots";
 
+        // Plot axis are in kilo electrons - convert from framework units!
+        int maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
+        int nbins = 10 * maximum;
+
         // Create histograms if needed
-        h_pxq = new TH1D("pixelcharge", "raw pixel charge;pixel charge [ke];pixels", 100, 0, 10);
-        h_pxq_noise = new TH1D("pixelcharge_noise", "pixel charge w/ el. noise;pixel charge [ke];pixels", 100, 0, 10);
-        h_thr = new TH1D("threshold", "applied threshold; threshold [ke];events", 100, 0, 10);
-        h_pxq_thr = new TH1D("pixelcharge_threshold", "pixel charge above threshold;pixel charge [ke];pixels", 100, 0, 10);
-        h_pxq_adc_smear =
-            new TH1D("pixelcharge_adc_smeared", "pixel charge after ADC smearing;pixel charge [ke];pixels", 100, 0, 10);
+        h_pxq = new TH1D("pixelcharge", "raw pixel charge;pixel charge [ke];pixels", nbins, 0, maximum);
+        h_pxq_noise = new TH1D("pixelcharge_noise", "pixel charge w/ el. noise;pixel charge [ke];pixels", nbins, 0, maximum);
+        h_thr = new TH1D("threshold", "applied threshold; threshold [ke];events", nbins, 0, maximum);
+        h_pxq_thr =
+            new TH1D("pixelcharge_threshold", "pixel charge above threshold;pixel charge [ke];pixels", nbins, 0, maximum);
+        h_pxq_adc_smear = new TH1D(
+            "pixelcharge_adc_smeared", "pixel charge after ADC smearing;pixel charge [ke];pixels", nbins, 0, maximum);
 
         // Create final pixel charge plot with different axis, depending on whether ADC simulation is enabled or not
         if(config_.get<int>("adc_resolution") > 0) {
-            int bins = ((1 << config_.get<int>("adc_resolution")) - 1);
-            h_pxq_adc = new TH1D("pixelcharge_adc", "pixel charge after ADC;pixel charge [ADC];pixels", bins, 0, bins);
+            int adcbins = ((1 << config_.get<int>("adc_resolution")) - 1);
+            h_pxq_adc = new TH1D("pixelcharge_adc", "pixel charge after ADC;pixel charge [ADC];pixels", adcbins, 0, adcbins);
         } else {
-            h_pxq_adc = new TH1D("pixelcharge_adc", "final pixel charge;pixel charge [ke];pixels", 100, 0, 10);
+            h_pxq_adc = new TH1D("pixelcharge_adc", "final pixel charge;pixel charge [ke];pixels", nbins, 0, maximum);
         }
     }
 }
@@ -164,6 +170,7 @@ void DefaultDigitizerModule::finalize() {
         h_pxq_noise->Write();
         h_thr->Write();
         h_pxq_thr->Write();
+        h_pxq_adc_smear->Write();
         h_pxq_adc->Write();
     }
 
