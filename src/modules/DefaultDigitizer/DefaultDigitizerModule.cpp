@@ -44,17 +44,6 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration config,
 }
 
 void DefaultDigitizerModule::init() {
-    if(config_.get<bool>("output_plots")) {
-        LOG(TRACE) << "Creating output plots";
-
-        // Create histograms if needed
-        h_pxq = new TH1D("pixelcharge", "raw pixel charge;pixel charge [ke];pixels", 100, 0, 10);
-        h_pxq_noise = new TH1D("pixelcharge_noise_", "pixel charge w/ el. noise;pixel charge [ke];pixels", 100, 0, 10);
-        h_thr = new TH1D("threshold", "applied threshold; threshold [ke];events", 100, 0, 10);
-        h_pxq_thr = new TH1D("pixelcharge_threshold_", "pixel charge above threshold;pixel charge [ke];pixels", 100, 0, 10);
-        h_pxq_adc = new TH1D("pixelcharge_adc", "pixel charge after ADC;pixel charge [ke];pixels", 100, 0, 10);
-    }
-
     // Conversion to ADC units requested:
     if(config_.get<int>("adc_resolution") > 31) {
         throw InvalidValueError(config_, "adc_resolution", "precision higher than 31bit is not possible");
@@ -62,6 +51,26 @@ void DefaultDigitizerModule::init() {
     if(config_.get<int>("adc_resolution") > 0) {
         LOG(INFO) << "Converting charge to ADC units, ADC resolution: " << config_.get<int>("adc_resolution")
                   << "bit, max. value " << ((1 << config_.get<int>("adc_resolution")) - 1);
+    }
+
+    if(config_.get<bool>("output_plots")) {
+        LOG(TRACE) << "Creating output plots";
+
+        // Create histograms if needed
+        h_pxq = new TH1D("pixelcharge", "raw pixel charge;pixel charge [ke];pixels", 100, 0, 10);
+        h_pxq_noise = new TH1D("pixelcharge_noise", "pixel charge w/ el. noise;pixel charge [ke];pixels", 100, 0, 10);
+        h_thr = new TH1D("threshold", "applied threshold; threshold [ke];events", 100, 0, 10);
+        h_pxq_thr = new TH1D("pixelcharge_threshold", "pixel charge above threshold;pixel charge [ke];pixels", 100, 0, 10);
+        h_pxq_adc_smear =
+            new TH1D("pixelcharge_adc_smeared", "pixel charge after ADC smearing;pixel charge [ke];pixels", 100, 0, 10);
+
+        // Create final pixel charge plot with different axis, depending on whether ADC simulation is enabled or not
+        if(config_.get<int>("adc_resolution") > 0) {
+            int bins = ((1 << config_.get<int>("adc_resolution")) - 1);
+            h_pxq_adc = new TH1D("pixelcharge_adc", "pixel charge after ADC;pixel charge [ADC];pixels", bins, 0, bins);
+        } else {
+            h_pxq_adc = new TH1D("pixelcharge_adc", "final pixel charge;pixel charge [ke];pixels", 100, 0, 10);
+        }
     }
 }
 
@@ -115,7 +124,7 @@ void DefaultDigitizerModule::run(unsigned int) {
             std::normal_distribution<double> adc_smearing(0, config_.get<unsigned int>("adc_smearing"));
             charge += adc_smearing(random_generator_);
             if(config_.get<bool>("output_plots")) {
-                h_pxq_adc->Fill(charge / 1e3);
+                h_pxq_adc_smear->Fill(charge / 1e3);
             }
             LOG(DEBUG) << "Smeared for simulating limited ADC sensitivity: " << Units::display(charge, "e");
 
@@ -125,6 +134,11 @@ void DefaultDigitizerModule::run(unsigned int) {
                          (1 << config_.get<int>("adc_resolution")) - 1),
                 0));
             LOG(DEBUG) << "Charge converted to ADC units: " << charge;
+        }
+
+        // Fill the final pixel charge
+        if(config_.get<bool>("output_plots")) {
+            h_pxq_adc->Fill(charge);
         }
 
         // Add the hit to the hitmap
