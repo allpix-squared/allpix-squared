@@ -138,7 +138,7 @@ public:
     * @brief Barycentric interpolation implementation
     * @param qp Point where the interpolation is being done
     */
-    Point getField(Point qp);
+    Point getObservable(Point qp);
 
     /**
     * @brief Print tetrahedron created for debugging
