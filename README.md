@@ -59,7 +59,7 @@ The main page of the reference can then be found at `reference/html/index.html` 
 
 Allpix<sup>2</sup> has been developed and is maintained by
 
-* Koen Walters, CERN, @kwolters
+* Koen Wolters, CERN, @kwolters
 * Daniel Hynds, CERN, @dhynds
 * Simon Spannagel, CERN, @simonspa
 
