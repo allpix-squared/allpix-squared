@@ -18,6 +18,7 @@ enum class DFSection {
     ELEMENTS,
 
     ELECTRIC_FIELD,
+    ELECTROSTATIC_POTENTIAL,
     VALUES
 };
 
@@ -35,6 +36,6 @@ public:
 std::map<std::string, std::vector<Point>> read_grid(const std::string& file_name);
 
 // Read the electric field
-std::map<std::string, std::vector<Point>> read_electric_field(const std::string& file_name);
+std::map<std::string, std::map<std::string, std::vector<Point>>> read_electric_field(const std::string& file_name);
 
 #endif

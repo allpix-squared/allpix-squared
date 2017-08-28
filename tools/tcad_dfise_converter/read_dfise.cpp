@@ -348,7 +348,7 @@ std::map<std::string, std::vector<Point>> read_grid(const std::string& file_name
     return ret_map;
 }
 
-std::map<std::string, std::vector<Point>> read_electric_field(const std::string& file_name) {
+std::map<std::string, std::map<std::string, std::vector<Point>>> read_electric_field(const std::string& file_name) {
     std::ifstream file(file_name);
     if(!file) {
         throw std::runtime_error("file cannot be accessed");
@@ -357,10 +357,12 @@ std::map<std::string, std::vector<Point>> read_electric_field(const std::string&
     DFSection main_section = DFSection::HEADER;
     DFSection sub_section = DFSection::NONE;
 
-    std::map<std::string, std::vector<Point>> region_electric_field_map;
+    // std::map<std::string, std::vector<Point>> region_electric_field_map;
+    std::map<std::string, std::map<std::string, std::vector<Point>>> region_electric_field_map;
     std::vector<double> region_electric_field_num;
 
     std::string region;
+    std::string observable;
     long unsigned int dimension = 1;
     long unsigned int data_count = 0;
     bool in_data_block = false;
@@ -404,6 +406,8 @@ std::map<std::string, std::vector<Point>> read_electric_field(const std::string&
 
                     if(data_type == "ElectricField") {
                         main_section = DFSection::ELECTRIC_FIELD;
+                    } else if(data_type == "ElectrostaticPotential") {
+                        main_section = DFSection::ELECTROSTATIC_POTENTIAL;
                     } else {
                         main_section = DFSection::IGNORED;
                     }
@@ -431,7 +435,34 @@ std::map<std::string, std::vector<Point>> read_electric_field(const std::string&
                 auto value = allpix::trim(base_match[2].str());
 
                 // Filter correct electric field type
+                if(main_section == DFSection::ELECTROSTATIC_POTENTIAL) {
+                    observable = "ElectrostaticPotential";
+                    if(key == "type" && value != "scalar") {
+                        main_section = DFSection::IGNORED;
+                    }
+                    if(key == "dimension" && std::stoul(value) == 1) {
+                        dimension = std::stoul(value);
+                    }
+                    if(key == "dimension" && std::stoul(value) != 1) {
+                        main_section = DFSection::IGNORED;
+                    }
+                    if(key == "location" && value != "vertex") {
+                        main_section = DFSection::IGNORED;
+                    }
+                    if(key == "validity") {
+                        // Ignore any electric field valid for multiple regions
+                        base_regex = std::regex("\\[\\s+\"(\\w+)\"\\s+\\]");
+                        if(std::regex_match(value, base_match, base_regex) && base_match.ready()) {
+                            region = base_match[1].str();
+                        } else {
+                            main_section = DFSection::IGNORED;
+                        }
+                    }
+                }
+
+                // Filter correct electric field type
                 if(main_section == DFSection::ELECTRIC_FIELD) {
+                    observable = "ElectricField";
                     if(key == "type" && value != "vector") {
                         main_section = DFSection::IGNORED;
                     }
@@ -460,6 +491,19 @@ std::map<std::string, std::vector<Point>> read_electric_field(const std::string&
 
         // Look for close of section
         if(line.find('}') != std::string::npos) {
+            if(main_section == DFSection::ELECTROSTATIC_POTENTIAL && sub_section == DFSection::VALUES) {
+                if(data_count != region_electric_field_num.size()) {
+                    throw std::runtime_error("incorrect number of electric field points");
+                }
+
+                for(size_t i = 0; i < region_electric_field_num.size(); i += 1) {
+                    auto x = region_electric_field_num[i];
+                    region_electric_field_map[region][observable].emplace_back(x, 0, 0);
+                }
+
+                region_electric_field_num.clear();
+            }
+
             if(main_section == DFSection::ELECTRIC_FIELD && sub_section == DFSection::VALUES) {
                 if(data_count != region_electric_field_num.size()) {
                     throw std::runtime_error("incorrect number of electric field points");
@@ -470,7 +514,7 @@ std::map<std::string, std::vector<Point>> read_electric_field(const std::string&
                         auto x = region_electric_field_num[i];
                         auto y = region_electric_field_num[i + 1];
                         auto z = region_electric_field_num[i + 2];
-                        region_electric_field_map[region].emplace_back(x, y, z);
+                        region_electric_field_map[region][observable].emplace_back(x, y, z);
                     }
                 }
 
@@ -478,7 +522,7 @@ std::map<std::string, std::vector<Point>> read_electric_field(const std::string&
                     for(size_t i = 0; i < region_electric_field_num.size(); i += 2) {
                         auto x = region_electric_field_num[i];
                         auto y = region_electric_field_num[i + 1];
-                        region_electric_field_map[region].emplace_back(x, y);
+                        region_electric_field_map[region][observable].emplace_back(x, y);
                     }
                 }
 
@@ -500,7 +544,8 @@ std::map<std::string, std::vector<Point>> read_electric_field(const std::string&
         }
 
         // Handle data
-        if(main_section == DFSection::ELECTRIC_FIELD && sub_section == DFSection::VALUES) {
+        if((main_section == DFSection::ELECTRIC_FIELD || main_section == DFSection::ELECTROSTATIC_POTENTIAL) &&
+           sub_section == DFSection::VALUES) {
             std::stringstream sstr(line);
             double num;
             while(sstr >> num) {

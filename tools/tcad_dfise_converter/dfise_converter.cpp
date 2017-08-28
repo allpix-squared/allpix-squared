@@ -44,18 +44,18 @@ Point Tetrahedron::getVertex(size_t index) {
     return vertices[index];
 }
 
-void Tetrahedron::setVerticesField(std::vector<Point> new_e_field) {
-    if(vertices.size() != new_e_field.size()) {
+void Tetrahedron::setVerticesField(std::vector<Point> new_observable) {
+    if(vertices.size() != new_observable.size()) {
         LOG(ERROR) << "Invalid field vector";
         return;
     }
     for(size_t index = 0; index < 4; index++) {
-        e_field[index] = new_e_field[index];
+        e_field[index] = new_observable[index];
     }
 }
 
-void Tetrahedron::setVertexField(size_t index, Point new_e_field) {
-    e_field[index] = new_e_field;
+void Tetrahedron::setVertexField(size_t index, Point new_observable) {
+    e_field[index] = new_observable;
 }
 
 Point Tetrahedron::getVertexProperty(size_t index) {
@@ -118,8 +118,8 @@ bool Tetrahedron::validElement(double volume_cut, Point qp) {
     return true;
 }
 
-Point Tetrahedron::getField(Point qp) {
-    Point new_e_field;
+Point Tetrahedron::getObservable(Point qp) {
+    Point new_observable;
     Eigen::Matrix4d sub_tetra_matrix;
     for(size_t index = 0; index < static_cast<size_t>(this->getDimension()) + 1; index++) {
         auto sub_vertices = vertices;
@@ -128,13 +128,13 @@ Point Tetrahedron::getField(Point qp) {
         sub_tetrahedron.setDimension(this->getDimension());
         double sub_volume = sub_tetrahedron.getVolume();
         LOG(DEBUG) << "Sub volume " << index << ": " << sub_volume;
-        new_e_field.x = new_e_field.x + (sub_volume * e_field[index].x) / this->getVolume();
-        new_e_field.y = new_e_field.y + (sub_volume * e_field[index].y) / this->getVolume();
-        new_e_field.z = new_e_field.z + (sub_volume * e_field[index].z) / this->getVolume();
+        new_observable.x = new_observable.x + (sub_volume * e_field[index].x) / this->getVolume();
+        new_observable.y = new_observable.y + (sub_volume * e_field[index].y) / this->getVolume();
+        new_observable.z = new_observable.z + (sub_volume * e_field[index].z) / this->getVolume();
     }
-    LOG(DEBUG) << "Interpolated electric field: (" << new_e_field.x << "," << new_e_field.y << "," << new_e_field.z << ")"
-               << std::endl;
-    return new_e_field;
+    LOG(DEBUG) << "Interpolated electric field: (" << new_observable.x << "," << new_observable.y << "," << new_observable.z
+               << ")" << std::endl;
+    return new_observable;
 }
 
 void Tetrahedron::printElement(Point qp) {
@@ -167,9 +167,10 @@ int main(int argc, char** argv) {
     std::string file_prefix;
     std::string init_file_prefix;
     std::string log_file_name;
-    std::string region = "bulk"; // Sensor bulk region name on DF-ISE file
-    double volume_cut = 1e-9;    // Enclosing tetrahedron should have volume != 0
-    size_t index_cut = 10000000; // Permutation index initial cut
+    std::string region = "bulk";              // Sensor bulk region name on DF-ISE file
+    std::string observable = "ElectricField"; // Sensor bulk region name on DF-ISE file
+    double volume_cut = 1e-9;                 // Enclosing tetrahedron should have volume != 0
+    size_t index_cut = 10000000;              // Permutation index initial cut
     bool index_cut_flag = false;
     double initial_radius = 1;   // Neighbour vertex search radius
     double radius_threshold = 0; // Neighbour vertex search radius
@@ -198,6 +199,8 @@ int main(int argc, char** argv) {
             init_file_prefix = std::string(argv[++i]);
         } else if(strcmp(argv[i], "-R") == 0 && (i + 1 < argc)) {
             region = std::string(argv[++i]);
+        } else if(strcmp(argv[i], "-O") == 0 && (i + 1 < argc)) {
+            observable = std::string(argv[++i]);
         } else if(strcmp(argv[i], "-r") == 0 && (i + 1 < argc)) {
             initial_radius = strtod(argv[++i], nullptr);
         } else if(strcmp(argv[i], "-t") == 0 && (i + 1 < argc)) {
@@ -250,6 +253,7 @@ int main(int argc, char** argv) {
         std::cout << "\t -o <init_file_prefix>  output file prefix without .init (defaults to file name of <file_prefix>)"
                   << std::endl;
         std::cout << "\t -R <region>            region name to be meshed (defaults to 'bulk')" << std::endl;
+        std::cout << "\t -O <observable>        observable to be interpolated (defaults Electric Field)" << std::endl;
         std::cout << "\t -r <radius>            initial node neighbors search radius in um (defaults to 1 um)" << std::endl;
         std::cout << "\t -t <radius_threshold>  minimum distance from node to new mesh point (defaults to 0 um)"
                   << std::endl;
@@ -304,7 +308,7 @@ int main(int argc, char** argv) {
     std::vector<Point> field;
     try {
         auto region_fields = read_electric_field(data_file);
-        field = region_fields[region];
+        field = region_fields[region][observable];
     } catch(std::runtime_error& e) {
         LOG(FATAL) << "Failed to parse data file " << data_file;
         LOG(FATAL) << " " << e.what();
@@ -355,7 +359,7 @@ int main(int argc, char** argv) {
     double zstep = (maxz - minz) / static_cast<double>(zdiv);
     double cell_volume = xstep * ystep * zstep;
 
-    LOG(STATUS) << maxx << " " << minx << " x " << maxy << " " << miny << " x " << maxz << " " << minz << std::endl;
+    LOG(STATUS) << maxx << " " << minx << " x " << maxy << " " << miny << " x " << maxz << " " << minz;
 
     LOG(STATUS) << "Mesh dimensions: " << maxx - minx << " x " << maxy - miny << " x " << maxz - minz << std::endl
                 << "New mesh element dimension: " << xstep << " x " << ystep << " x " << zstep
@@ -516,7 +520,7 @@ int main(int argc, char** argv) {
                                 continue;
                             }
                             element.printElement(q);
-                            e = element.getField(q);
+                            e = element.getObservable(q);
                             break;
                         } while(std::prev_permutation(bitmask.begin(), bitmask.end()));
 
