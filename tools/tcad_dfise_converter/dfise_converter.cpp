@@ -462,10 +462,12 @@ int main(int argc, char** argv) {
                     // Finding tetrahedrons
                     Eigen::Matrix4d matrix;
                     size_t num_nodes_element = 0;
-                    if(dimension == 3)
+                    if(dimension == 3) {
                         num_nodes_element = 4;
-                    if(dimension == 2)
+                    }
+                    if(dimension == 2) {
                         num_nodes_element = 3;
+                    }
                     std::vector<Point> element_vertices;
                     std::vector<Point> element_vertices_field;
 
@@ -502,8 +504,9 @@ int main(int argc, char** argv) {
                                     break;
                                 }
                             }
-                            if(index_flag)
+                            if(index_flag) {
                                 continue;
+                            }
 
                             if(dimension == 3) {
                                 LOG(TRACE) << "Parsing neighbors [index]: " << index[0] << ", " << index[1] << ", "
