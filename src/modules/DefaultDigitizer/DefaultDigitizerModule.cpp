@@ -64,7 +64,7 @@ void DefaultDigitizerModule::init() {
         // Create histograms if needed
         h_pxq = new TH1D("pixelcharge", "raw pixel charge;pixel charge [ke];pixels", nbins, 0, maximum);
         h_pxq_noise = new TH1D("pixelcharge_noise", "pixel charge w/ el. noise;pixel charge [ke];pixels", nbins, 0, maximum);
-        h_thr = new TH1D("threshold", "applied threshold; threshold [ke];events", nbins, 0, maximum);
+        h_thr = new TH1D("threshold", "applied threshold; threshold [ke];events", maximum, 0, maximum / 10);
         h_pxq_thr =
             new TH1D("pixelcharge_threshold", "pixel charge above threshold;pixel charge [ke];pixels", nbins, 0, maximum);
         h_pxq_adc_smear = new TH1D(
