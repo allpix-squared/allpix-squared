@@ -98,10 +98,30 @@ void ROOTObjectReaderModule::init() {
 
     // Read all the trees in the file
     TList* keys = input_file_->GetListOfKeys();
+    std::set<std::string> tree_names;
+
     for(auto&& object : *keys) {
         auto& key = dynamic_cast<TKey&>(*object);
         if(std::string(key.GetClassName()) == "TTree") {
-            trees_.push_back(static_cast<TTree*>(key.ReadObjectAny(nullptr)));
+            auto tree = static_cast<TTree*>(key.ReadObjectAny(nullptr));
+
+            // Check if a version of this tree has already been read
+            if(tree_names.find(tree->GetName()) != tree_names.end()) {
+                LOG(TRACE) << "Skipping copy of tree with name " << tree->GetName()
+                           << " because one with identical name has already been processed";
+                continue;
+            }
+            tree_names.insert(tree->GetName());
+
+            // Check if this tree should be used
+            if((!include_.empty() && include_.find(tree->GetName()) == include_.end()) ||
+               (!exclude_.empty() && exclude_.find(tree->GetName()) != exclude_.end())) {
+                LOG(TRACE) << "Ignoring tree with " << tree->GetName()
+                           << " objects because it has been excluded or not explicitly included";
+                continue;
+            }
+
+            trees_.push_back(tree);
         }
     }
 
@@ -111,14 +131,6 @@ void ROOTObjectReaderModule::init() {
 
     // Loop over all found trees
     for(auto& tree : trees_) {
-        // Check if this tree should be used
-        if((!include_.empty() && include_.find(tree->GetName()) == include_.end()) ||
-           (!exclude_.empty() && exclude_.find(tree->GetName()) != exclude_.end())) {
-            LOG(TRACE) << "Ignoring tree with " << tree->GetName()
-                       << " objects because it has been excluded or not explicitly included";
-            continue;
-        }
-
         // Loop over the list of branches and create the set of receiver objects
         TObjArray* branches = tree->GetListOfBranches();
         for(int i = 0; i < branches->GetEntries(); i++) {
