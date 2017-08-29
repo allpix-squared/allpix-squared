@@ -348,12 +348,12 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
             histogram_frame->GetZaxis()->SetTitle("z (mm)");
             histogram_frame->Draw();
 
-            TPaveText* text = new TPaveText(-0.75, -0.75, -0.60, -0.65);
+            auto text = std::make_unique<TPaveText>(-0.75, -0.75, -0.60, -0.65);
             auto time_ns = Units::convert(plot_idx * config_.get<long double>("output_plots_step"), "ns");
             std::stringstream sstr;
             sstr << std::fixed << std::setprecision(2) << time_ns << "ns";
-            std::string time_str = sstr.str();
-            time_str = std::string(8 - time_str.size(), ' ') + time_str;
+            auto time_str = std::string(8 - sstr.str().size(), ' ');
+            time_str += sstr.str();
             text->AddText(time_str.c_str());
             text->Draw();
 
