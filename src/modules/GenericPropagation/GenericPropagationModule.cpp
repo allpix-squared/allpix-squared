@@ -15,6 +15,7 @@
 #include <map>
 #include <memory>
 #include <random>
+#include <sstream>
 #include <string>
 #include <utility>
 
@@ -26,6 +27,7 @@
 #include <TFile.h>
 #include <TH2F.h>
 #include <TH3F.h>
+#include <TPaveText.h>
 #include <TPolyLine3D.h>
 #include <TPolyMarker3D.h>
 #include <TStyle.h>
@@ -345,6 +347,15 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
                 (std::string("y ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)")).c_str());
             histogram_frame->GetZaxis()->SetTitle("z (mm)");
             histogram_frame->Draw();
+
+            TPaveText* text = new TPaveText(-0.75, -0.75, -0.60, -0.65);
+            auto time_ns = Units::convert(plot_idx * config_.get<long double>("output_plots_step"), "ns");
+            std::stringstream sstr;
+            sstr << std::fixed << std::setprecision(2) << time_ns << "ns";
+            std::string time_str = sstr.str();
+            time_str = std::string(8 - time_str.size(), ' ') + time_str;
+            text->AddText(time_str.c_str());
+            text->Draw();
 
             // Plot all the required points
             for(auto& deposit_points : output_plot_points_) {

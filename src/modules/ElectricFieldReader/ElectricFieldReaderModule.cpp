@@ -187,6 +187,7 @@ void ElectricFieldReaderModule::create_output_plots() {
                               static_cast<int>(steps),
                               min2,
                               max2);
+    histogram->SetMinimum(0);
 
     // Create 1D histogram
     auto histogram1D = new TH1F(
