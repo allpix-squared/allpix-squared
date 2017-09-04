@@ -97,7 +97,7 @@ void CapacitiveTransferModule::run(unsigned int) {
                 }
 
                 // Add the pixel the list of hit pixels
-                pixel_map[pixel_index].first += neighbor_charge;
+                pixel_map[pixel_index].first += neighbour_charge;
                 pixel_map[pixel_index].second.emplace_back(&propagated_charge);
             }
         }
@@ -107,7 +107,7 @@ void CapacitiveTransferModule::run(unsigned int) {
     LOG(TRACE) << "Combining charges at same pixel";
     std::vector<PixelCharge> pixel_charges;
     for(auto& pixel_index_charge : pixel_map) {
-        unsigned int charge = pixel_index_charge.second.first;
+        double charge = pixel_index_charge.second.first;
 
         // Get pixel object from detector
         auto pixel = detector_->getPixel(pixel_index_charge.first.x(), pixel_index_charge.first.y());
