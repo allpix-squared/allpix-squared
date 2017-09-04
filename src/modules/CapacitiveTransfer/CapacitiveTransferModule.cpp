@@ -39,7 +39,7 @@ void CapacitiveTransferModule::run(unsigned int) {
     // Find corresponding pixels for all propagated charges
     LOG(TRACE) << "Transferring charges to pixels";
     unsigned int transferred_charges_count = 0;
-    std::map<Pixel::Index, double, pixel_cmp> pixel_map;
+    std::map<Pixel::Index, std::pair<double, std::vector<const PropagatedCharge*>>, pixel_cmp> pixel_map;
     for(auto& propagated_charge : propagated_message_->getData()) {
         auto position = propagated_charge.getLocalPosition();
         // Ignore if outside depth range of implant
@@ -97,7 +97,8 @@ void CapacitiveTransferModule::run(unsigned int) {
                 }
 
                 // Add the pixel the list of hit pixels
-                pixel_map[pixel_index] += neighbour_charge;
+                pixel_map[pixel_index].first += neighbor_charge;
+                pixel_map[pixel_index].second.emplace_back(&propagated_charge);
             }
         }
     }
@@ -106,12 +107,12 @@ void CapacitiveTransferModule::run(unsigned int) {
     LOG(TRACE) << "Combining charges at same pixel";
     std::vector<PixelCharge> pixel_charges;
     for(auto& pixel_index_charge : pixel_map) {
+        unsigned int charge = pixel_index_charge.second.first;
 
         // Get pixel object from detector
         auto pixel = detector_->getPixel(pixel_index_charge.first.x(), pixel_index_charge.first.y());
-
-        pixel_charges.emplace_back(pixel, pixel_index_charge.second);
-        LOG(DEBUG) << "Set of " << pixel_index_charge.second << " charges combined at " << pixel.getIndex();
+        pixel_charges.emplace_back(pixel, charge, pixel_index_charge.second.second);
+        LOG(DEBUG) << "Set of " << charge << " charges combined at " << pixel.getIndex();
     }
 
     // Writing summary and update statistics
