@@ -84,7 +84,7 @@ void CapacitiveTransferModule::run(unsigned int) {
                 // Update statistics
                 unique_pixels_.insert(pixel_index);
 
-                transferred_charges_count += std::round(propagated_charge.getCharge() * rel_cap[col][row]);
+                transferred_charges_count += static_cast<unsigned int>(propagated_charge.getCharge() * rel_cap[col][row]);
                 double neighbour_charge = propagated_charge.getCharge() * rel_cap[col][row];
 
                 if(col == 1 && row == 1) {
