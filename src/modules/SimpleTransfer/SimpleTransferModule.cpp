@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief Implementation of simple charge transfer module
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #include "SimpleTransferModule.hpp"
@@ -26,6 +29,12 @@ using namespace allpix;
 
 SimpleTransferModule::SimpleTransferModule(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector)
     : Module(config, detector), config_(std::move(config)), messenger_(messenger), detector_(std::move(detector)) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+
+    // Set default value for the maximum depth distance to transfer
+    config_.setDefault("max_depth_distance", Units::get(5.0, "um"));
+
     // Save detector model
     model_ = detector_->getModel();
 

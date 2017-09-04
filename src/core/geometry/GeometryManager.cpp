@@ -2,7 +2,10 @@
  * @file
  * @brief Implementation of geometry manager
  *
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #include <fstream>
@@ -11,7 +14,9 @@
 #include <utility>
 #include <vector>
 
-#include <Math/EulerAngles.h>
+#include <Math/RotationX.h>
+#include <Math/RotationY.h>
+#include <Math/RotationZ.h>
 #include <Math/Vector3D.h>
 
 #include "GeometryManager.hpp"
@@ -43,7 +48,20 @@ void GeometryManager::load(const Configuration& global_config) {
     for(auto& detector_section : reader.getConfigurations()) {
         // Get the position and orientation
         auto position = detector_section.get<ROOT::Math::XYZPoint>("position", ROOT::Math::XYZPoint());
-        auto orientation = detector_section.get<ROOT::Math::EulerAngles>("orientation", ROOT::Math::EulerAngles());
+        auto orient_vec = detector_section.get<ROOT::Math::XYZVector>("orientation", ROOT::Math::XYZVector());
+
+        auto orientation_type = detector_section.get<std::string>("orientation_type", "xyz");
+        ROOT::Math::Rotation3D orientation;
+
+        if(orientation_type == "xyz") {
+            orientation = ROOT::Math::RotationZ(orient_vec.z()) * ROOT::Math::RotationY(orient_vec.y()) *
+                          ROOT::Math::RotationX(orient_vec.x());
+        } else if(orientation_type == "zxz") {
+            orientation = ROOT::Math::EulerAngles(orient_vec.x(), orient_vec.y(), orient_vec.z());
+        } else {
+            throw InvalidValueError(
+                detector_section, "orientation_type", "orientation_mode should be either 'xyz' or 'zxz'");
+        }
 
         // Create the detector and add it without model
         // NOTE: cannot use make_shared here due to the private constructor
@@ -408,7 +426,7 @@ void GeometryManager::close_geometry() {
             for(auto& key_value : config.getAll()) {
                 auto key = key_value.first;
                 // Skip all internal parameters
-                if(key == "type" || key == "position" || key == "orientation") {
+                if(key == "type" || key == "position" || key == "orientation_type" || key == "orientation") {
                     continue;
                 }
                 // Add the extra parameter to the new overwritten config

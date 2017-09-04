@@ -1,38 +1,54 @@
 /**
  * @file
  * @brief Implementation of Monte-Carlo particle object
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #include "MCParticle.hpp"
 
 using namespace allpix;
 
-MCParticle::MCParticle(ROOT::Math::XYZPoint local_entry_point,
-                       ROOT::Math::XYZPoint global_entry_point,
-                       ROOT::Math::XYZPoint local_exit_point,
-                       ROOT::Math::XYZPoint global_exit_point,
+MCParticle::MCParticle(ROOT::Math::XYZPoint local_start_point,
+                       ROOT::Math::XYZPoint global_start_point,
+                       ROOT::Math::XYZPoint local_end_point,
+                       ROOT::Math::XYZPoint global_end_point,
                        int particle_id)
-    : local_entry_point_(std::move(local_entry_point)), global_entry_point_(std::move(global_entry_point)),
-      local_exit_point_(std::move(local_exit_point)), global_exit_point_(std::move(global_exit_point)),
-      particle_id_(particle_id) {}
-
-ROOT::Math::XYZPoint MCParticle::getLocalEntryPoint() const {
-    return local_entry_point_;
-}
-ROOT::Math::XYZPoint MCParticle::getGlobalEntryPoint() const {
-    return global_entry_point_;
+    : local_start_point_(std::move(local_start_point)), global_start_point_(std::move(global_start_point)),
+      local_end_point_(std::move(local_end_point)), global_end_point_(std::move(global_end_point)),
+      particle_id_(particle_id) {
+    setParent(nullptr);
 }
 
-ROOT::Math::XYZPoint MCParticle::getLocalExitPoint() const {
-    return local_exit_point_;
+ROOT::Math::XYZPoint MCParticle::getLocalStartPoint() const {
+    return local_start_point_;
 }
-ROOT::Math::XYZPoint MCParticle::getGlobalExitPoint() const {
-    return global_exit_point_;
+ROOT::Math::XYZPoint MCParticle::getGlobalStartPoint() const {
+    return global_start_point_;
+}
+
+ROOT::Math::XYZPoint MCParticle::getLocalEndPoint() const {
+    return local_end_point_;
+}
+ROOT::Math::XYZPoint MCParticle::getGlobalEndPoint() const {
+    return global_end_point_;
 }
 
 int MCParticle::getParticleID() const {
     return particle_id_;
+}
+
+/**
+ * Object is stored as TRef and can only be accessed if pointed object is in scope
+ */
+const MCParticle* MCParticle::getParent() const {
+    return dynamic_cast<MCParticle*>(parent_.GetObject());
+}
+
+void MCParticle::setParent(const MCParticle* mc_particle) {
+    parent_ = const_cast<MCParticle*>(mc_particle); // NOLINT
 }
 
 ClassImp(MCParticle)

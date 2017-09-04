@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief Implementation of object for charges in sensor
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #ifndef ALLPIX_SENSOR_CHARGE_H
@@ -18,6 +21,11 @@ namespace allpix {
      */
     enum class CarrierType : int8_t { ELECTRON = -1, HOLE = 1 };
 
+    inline std::ostream& operator<<(std::ostream& os, const CarrierType type) {
+        os << (type == CarrierType::ELECTRON ? "\"e\"" : "\"h\"");
+        return os;
+    }
+
     /**
      * @ingroup Objects
      * @brief Base object for charge deposits and propagated charges in the sensor
@@ -28,6 +36,7 @@ namespace allpix {
          * @brief Construct a set of charges in a sensor
          * @param local_position Local position of the set of charges in the sensor
          * @param global_position Global position of the set of charges in the sensor
+         * @param type Type of the carrier
          * @param charge Total charge at position
          * @param event_time Total time after event start
          */

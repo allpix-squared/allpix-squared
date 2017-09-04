@@ -2,7 +2,10 @@
  * @file
  * @brief Implements the Geant4 geometry construction process
  * @remarks Code is based on code from Mathieu Benoit
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #include "GeometryConstructionG4.hpp"
@@ -59,6 +62,7 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
 
     // Set world material
     std::string world_material = config_.get<std::string>("world_material", "air");
+    std::transform(world_material.begin(), world_material.end(), world_material.begin(), ::tolower);
     if(materials_.find(world_material) == materials_.end()) {
         throw InvalidValueError(config_, "world_material", "material does not exists, use 'air' or 'vacuum'");
     }
@@ -195,8 +199,10 @@ void GeometryConstructionG4::build_detectors() {
 
         // Get position and orientation
         G4ThreeVector posWrapper = toG4Vector(detector->getPosition());
-        ROOT::Math::EulerAngles angles = detector->getOrientation();
-        auto rotWrapper = std::make_shared<G4RotationMatrix>(angles.Phi(), angles.Theta(), angles.Psi());
+        ROOT::Math::Rotation3D orientation = detector->getOrientation();
+        std::vector<double> copy_vec(9);
+        orientation.GetComponents(copy_vec.begin(), copy_vec.end());
+        auto rotWrapper = std::make_shared<G4RotationMatrix>(copy_vec.data());
         detector->setExternalObject("rotation_matrix", rotWrapper);
 
         // Place the wrapper

@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief Definition of default digitization module
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #ifndef ALLPIX_DEFAULT_DIGITIZER_MODULE_H
@@ -23,6 +26,7 @@ namespace allpix {
     /**
      * @ingroup Modules
      * @brief Module to simulate digitization of collected charges
+     * @note This module supports parallelization
      *
      * This module provides a relatively simple simulation of the frontend electronics behavior. It simulates the
      * propagation of the signal of collected charges through the amplifier, comparator and ADC while adding electronics
@@ -66,7 +70,7 @@ namespace allpix {
         unsigned long long total_hits_{};
 
         // Output histograms
-        TH1D *h_pxq, *h_pxq_noise, *h_thr, *h_pxq_thr, *h_pxq_adc;
+        TH1D *h_pxq, *h_pxq_noise, *h_thr, *h_pxq_thr, *h_pxq_adc_smear, *h_pxq_adc;
     };
 } // namespace allpix
 

@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief Defines 2D Geant4 parameterization grid of elements
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #ifndef ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_PARAMETERIZATION_2D_HH_
@@ -30,7 +33,6 @@ namespace allpix {
          * @param offset_x Offset of grid in the x-direction
          * @param offset_y Offset of grid in the y-direction
          * @param pos_z Position of the 2D parameterization in the z-axis
-         * @param check_overlaps If overlaps should be checked for this parameterization or not
          */
         Parameterization2DG4(int div_x, double size_x, double size_y, double offset_x, double offset_y, double pos_z);
 

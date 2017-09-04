@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief Definition of ROOT data file writer module
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #include <map>
@@ -64,6 +67,10 @@ namespace allpix {
     private:
         Configuration config_;
         GeometryManager* geo_mgr_;
+
+        // Object names to include or exclude from writing
+        std::set<std::string> include_;
+        std::set<std::string> exclude_;
 
         // Output data file to write
         std::unique_ptr<TFile> output_file_;

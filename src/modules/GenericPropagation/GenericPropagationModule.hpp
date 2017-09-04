@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief Definition of generic charge propagation module
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #include <memory>
@@ -11,6 +14,7 @@
 
 #include <Math/Point3D.h>
 #include <TFile.h>
+#include <TH1D.h>
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/DetectorModel.hpp"
@@ -24,6 +28,7 @@ namespace allpix {
     /**
      * @ingroup Modules
      * @brief Generic module for Runge-Kutta propagation of charge deposits in the sensitive device
+     * @note This module supports parallelization
      *
      * Splits the sets of deposited charge in several sets which are propagated individually. The propagation consist of a
      * combination of drift from a charge mobility parameterization and diffusion using a Gaussian random walk process.
@@ -39,6 +44,11 @@ namespace allpix {
          * @param detector Pointer to the detector for this module instance
          */
         GenericPropagationModule(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector);
+
+        /**
+         * @brief Initialize the module and check field configuration
+         */
+        void init() override;
 
         /**
          * @brief Propagate all deposited charges through the sensor
@@ -65,6 +75,7 @@ namespace allpix {
         /**
          * @brief Propagate a single set of charges through the sensor
          * @param pos Position of the deposit in the sensor
+         * @param type Type of the carrier to propagate
          * @return Pair of the point where the deposit ended after propagation and the time the propagation took
          */
         std::pair<ROOT::Math::XYZPoint, double> propagate(const ROOT::Math::XYZPoint& pos, const CarrierType& type);
@@ -95,6 +106,9 @@ namespace allpix {
         unsigned int total_propagated_charges_{};
         unsigned int total_steps_{};
         long double total_time_{};
+
+        // Output plot for drift time
+        TH1D* drift_time_histo;
 
         // List of points to plot to plot for output plots
         std::vector<std::pair<PropagatedCharge, std::vector<ROOT::Math::XYZPoint>>> output_plot_points_;

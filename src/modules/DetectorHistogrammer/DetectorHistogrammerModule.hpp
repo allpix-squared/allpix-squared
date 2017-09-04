@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief Definition of detector histogramming module
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #ifndef ALLPIX_MODULE_DETECTOR_HISTOGRAMMER_H
@@ -10,6 +13,7 @@
 #include <memory>
 
 #include <string>
+#include <vector>
 
 #include <TH1I.h>
 #include <TH2I.h>
@@ -19,6 +23,7 @@
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 
+#include "Cluster.hpp"
 #include "objects/PixelHit.hpp"
 
 namespace allpix {
@@ -53,6 +58,17 @@ namespace allpix {
          */
         void finalize() override;
 
+        /**
+         * @brief Perform a sparse clustering on the PixelHits
+         */
+        void doClustering();
+
+        /**
+         * @brief Checks the adjacent pixels for PixelHits
+         * @param pixel_hit Hit to check
+         */
+        unsigned int checkAdjacentPixels(const PixelHit*);
+
     private:
         Configuration config_;
         std::shared_ptr<Detector> detector_;
@@ -64,9 +80,18 @@ namespace allpix {
         ROOT::Math::XYVector total_vector_{};
         unsigned long total_hits_{};
 
+        // Forming clusters
+        std::vector<Cluster*> clusters_;
+
         // Histograms to output
-        TH2I* histogram; // FIXME: bad name
+        TH2I* hit_map;
+        TH2I* cluster_map;
+        TH1I* event_size;
         TH1I* cluster_size;
+        TH1I* cluster_size_x;
+        TH1I* cluster_size_y;
+        TH1I* n_cluster;
+        TH1D* cluster_charge;
     };
 } // namespace allpix
 

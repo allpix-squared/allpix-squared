@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief Send objects between modules using a messenger
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #ifndef ALLPIX_MESSENGER_H
@@ -49,10 +52,10 @@ namespace allpix {
 
         /// @{
         /**
-         * @brief Use default move behaviour
+         * @brief Disallow move because of mutex
          */
-        Messenger(Messenger&&) noexcept = default;
-        Messenger& operator=(Messenger&&) noexcept = default;
+        Messenger(Messenger&&) = delete;
+        Messenger& operator=(Messenger&&) = delete;
         /// @}
 
         /**
@@ -74,6 +77,14 @@ namespace allpix {
          */
         template <typename T, typename R>
         void registerListener(T* receiver, void (T::*method)(std::shared_ptr<R>), MsgFlags flags = MsgFlags::NONE);
+
+        /**
+         * @brief Register a dependency on a message for the history to guarantee it to be stored until the module runs.
+         * @param receiver Module to store the received message for
+         * @param message Rvalue reference to the message
+         * @param flags Message configuration flags
+         */
+        template <typename R, typename T> void addDependency(T* receiver, MsgFlags flags = MsgFlags::NONE);
 
         /**
          * @brief Binds a pointer to a single message
@@ -157,6 +168,8 @@ namespace allpix {
 
         DelegateMap delegates_;
         DelegateIteratorMap delegate_to_iterator_;
+
+        mutable std::mutex mutex_;
     };
 } // namespace allpix
 

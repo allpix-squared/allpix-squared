@@ -1,6 +1,9 @@
 /** @file
  *  @brief Interface to the core framework
- *  @copyright MIT License
+ *  @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 /**
@@ -29,35 +32,35 @@ namespace allpix {
      * should be used to load, initialize, run and finalize all the modules.
      */
 
-    class AllPix {
+    class Allpix {
     public:
         /**
-         * @brief Constructs AllPix and initialize all managers
+         * @brief Constructs Allpix and initialize all managers
          * @param config_file_name Path of the main configuration file
          */
-        explicit AllPix(std::string config_file_name);
+        explicit Allpix(std::string config_file_name);
 
         /**
          * @brief Load modules from the main configuration and construct them
-         * @warning Should be called after the \ref AllPix() "constructor"
+         * @warning Should be called after the \ref Allpix() "constructor"
          */
         void load();
 
         /**
          * @brief Initialize all modules (pre-run)
-         * @warning Should be called after the \ref AllPix::load "load function"
+         * @warning Should be called after the \ref Allpix::load "load function"
          */
         void init();
 
         /**
          * @brief Run all modules for the number of events (run)
-         * @warning Should be called after the \ref AllPix::init "init function"
+         * @warning Should be called after the \ref Allpix::init "init function"
          */
         void run();
 
         /**
          * @brief Finalize all modules (post-run)
-         * @warning Should be called after the \ref AllPix::run "run function"
+         * @warning Should be called after the \ref Allpix::run "run function"
          */
         void finalize();
 

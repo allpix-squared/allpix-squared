@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief System to support units in the framework
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #ifndef ALLPIX_UNIT_H
@@ -19,7 +22,7 @@ namespace allpix {
 
     /**
      * @brief Static class to access units
-     * @see The list of framework units defined in \ref AllPix::add_units
+     * @see The list of framework units defined in \ref Allpix::add_units
      *
      * Units are short, unique and case-insensitive strings that indicate a particular multiplication factor from the base
      * unit in the framework. The unit system can convert external types to the system units and vise-versa for displaying

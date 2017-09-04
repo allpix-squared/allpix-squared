@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief Definition of simple charge transfer module
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #include <map>
@@ -22,6 +25,7 @@ namespace allpix {
     /**
      * @ingroup Modules
      * @brief Module that directly converts propagated charges to charges on a pixel
+     * @note This module supports parallelization
      *
      * This module does a simple direct mapping from propagated charges to the nearest pixel in the grid. It only considers
      * propagated charges within a certain distance from the implants and within the pixel grid, charges in the rest of the

@@ -18,12 +18,12 @@ INCLUDE("cmake/tools.cmake")
 GET_VERSION(ALLPIX_VERSION)
 
 # Print version
-MESSAGE(STATUS "Building AllPix version ${ALLPIX_VERSION}.")
+MESSAGE(STATUS "Building Allpix^2 version ${ALLPIX_VERSION}.")
 
 # Define the project with the simple version
 STRING(REGEX MATCH "([0-9.]+)+" SIMPLE_VERSION "${ALLPIX_VERSION}")
 # Set languages to NONE to allow the documentation to be built without CXX compiler:
-PROJECT(allpix VERSION ${SIMPLE_VERSION} LANGUAGES NONE)
+PROJECT(Allpix VERSION ${SIMPLE_VERSION} LANGUAGES NONE)
 # Access the project name (for install locations) in the source
 ADD_DEFINITIONS(-DALLPIX_PROJECT_NAME="${CMAKE_PROJECT_NAME}" -DALLPIX_PROJECT_VERSION="${ALLPIX_VERSION}")
 
@@ -86,7 +86,7 @@ SET(CMAKE_CXX_STANDARD 14)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
 
-# Include Threads (not used yet)
+# Include Threads
 FIND_PACKAGE(Threads REQUIRED)
 
 INCLUDE("cmake/compiler-flag-checks.cmake")
@@ -121,7 +121,7 @@ ENDIF()
 
 # Set the dependencies
 SET(ALLPIX_DEPS_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS})
-SET(ALLPIX_DEPS_LIBRARIES ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES})
+SET(ALLPIX_DEPS_LIBRARIES ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES} Threads::Threads)
 
 # Include allpix cmake functions
 INCLUDE("cmake/allpix.cmake")

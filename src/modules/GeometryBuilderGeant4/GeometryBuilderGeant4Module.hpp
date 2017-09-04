@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief Definition of Geant4 geometry construction module
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #ifndef ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_H
@@ -37,7 +40,7 @@ namespace allpix {
         GeometryBuilderGeant4Module(Configuration config, Messenger* messenger, GeometryManager* geo_manager);
 
         /**
-         * @brief Initializes Geant4 and construct the Geant4 geometry from the internal AllPix geometry
+         * @brief Initializes Geant4 and construct the Geant4 geometry from the internal geometry
          */
         void init() override;
 

@@ -2,7 +2,10 @@
  * @file
  * @brief Implementation of generic charge propagation module
  * @remarks Based on code from Paul Schuetze
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #include "GenericPropagationModule.hpp"
@@ -12,6 +15,7 @@
 #include <map>
 #include <memory>
 #include <random>
+#include <sstream>
 #include <string>
 #include <utility>
 
@@ -23,6 +27,7 @@
 #include <TFile.h>
 #include <TH2F.h>
 #include <TH3F.h>
+#include <TPaveText.h>
 #include <TPolyLine3D.h>
 #include <TPolyMarker3D.h>
 #include <TStyle.h>
@@ -48,6 +53,9 @@ GenericPropagationModule::GenericPropagationModule(Configuration config,
                                                    Messenger* messenger,
                                                    std::shared_ptr<Detector> detector)
     : Module(config, detector), config_(std::move(config)), messenger_(messenger), detector_(std::move(detector)) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+
     // Save detector model
     model_ = detector_->getModel();
 
@@ -58,17 +66,20 @@ GenericPropagationModule::GenericPropagationModule(Configuration config,
     random_generator_.seed(getRandomSeed());
 
     // Set default value for config variables
-    config_.setDefault<double>("spatial_precision", Units::get(0.1, "nm"));
+    config_.setDefault<double>("spatial_precision", Units::get(0.25, "nm"));
     config_.setDefault<double>("timestep_start", Units::get(0.01, "ns"));
-    config_.setDefault<double>("timestep_min", Units::get(0.0005, "ns"));
-    config_.setDefault<double>("timestep_max", Units::get(0.1, "ns"));
+    config_.setDefault<double>("timestep_min", Units::get(0.001, "ns"));
+    config_.setDefault<double>("timestep_max", Units::get(0.5, "ns"));
     config_.setDefault<double>("integration_time", Units::get(25, "ns"));
     config_.setDefault<unsigned int>("charge_per_step", 10);
+    config_.setDefault<double>("temperature", 293.15);
 
     config_.setDefault<bool>("output_plots", false);
-    config_.setDefault<bool>("output_animation", false);
+    config_.setDefault<bool>("output_animations", false);
+    config_.setDefault<bool>("output_animations_color_markers", false);
     config_.setDefault<double>("output_plots_step", config_.get<double>("timestep_max"));
     config_.setDefault<bool>("output_plots_use_pixel_units", false);
+    config_.setDefault<bool>("output_plots_align_pixels", false);
     config_.setDefault<double>("output_plots_theta", 0.0f);
     config_.setDefault<double>("output_plots_phi", 0.0f);
 
@@ -122,6 +133,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
     unsigned long tot_point_cnt = 0;
     double start_time = std::numeric_limits<double>::max();
     unsigned int total_charge = 0;
+    unsigned int max_charge = 0;
     for(auto& deposit_points : output_plot_points_) {
         for(auto& point : deposit_points.second) {
             minX = std::min(minX, point.x());
@@ -132,6 +144,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
         }
         start_time = std::min(start_time, deposit_points.first.getEventTime());
         total_charge += deposit_points.first.getCharge();
+        max_charge = std::max(max_charge, deposit_points.first.getCharge());
 
         tot_point_cnt += deposit_points.second.size();
     }
@@ -155,6 +168,26 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
         }
     }
 
+    // Align on pixels if requested
+    if(config_.get<bool>("output_plots_align_pixels")) {
+        if(config_.get<bool>("output_plots_use_pixel_units")) {
+            minX = std::floor(minX - 0.5) + 0.5;
+            minY = std::floor(minY + 0.5) - 0.5;
+            maxX = std::ceil(maxX - 0.5) + 0.5;
+            maxY = std::ceil(maxY + 0.5) - 0.5;
+        } else {
+            double div;
+            div = minX / model_->getPixelSize().x();
+            minX = (std::floor(div - 0.5) + 0.5) * model_->getPixelSize().x();
+            div = minY / model_->getPixelSize().y();
+            minY = (std::floor(div - 0.5) + 0.5) * model_->getPixelSize().y();
+            div = maxX / model_->getPixelSize().x();
+            maxX = (std::ceil(div + 0.5) - 0.5) * model_->getPixelSize().x();
+            div = maxY / model_->getPixelSize().y();
+            maxY = (std::ceil(div + 0.5) - 0.5) * model_->getPixelSize().y();
+        }
+    }
+
     // Use a histogram to create the underlying frame
     auto* histogram_frame = new TH3F(("frame_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
                                      "",
@@ -167,6 +200,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
                                      10,
                                      model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0,
                                      model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0);
+    histogram_frame->SetDirectory(getROOTDirectory());
 
     // Create the canvas for the line plot and set orientation
     auto canvas = std::make_unique<TCanvas>(("line_plot_" + std::to_string(event_num)).c_str(),
@@ -194,7 +228,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
         for(auto& point : deposit_points.second) {
             line->SetNextPoint(point.x(), point.y(), point.z());
         }
-        // Plot lines with different color
+        // Plot all lines with at least three points with different color
         if(line->GetN() >= 3) {
             EColor plot_color = (deposit_points.first.getType() == CarrierType::ELECTRON ? EColor::kAzure : EColor::kOrange);
             current_color = static_cast<short int>(plot_color - 9 + (static_cast<int>(current_color) + 1) % 19);
@@ -206,7 +240,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
 
     // Draw and write canvas to module output file, then clear the stored lines
     canvas->Draw();
-    canvas->Write();
+    getROOTDirectory()->WriteTObject(canvas.get());
     lines.clear();
 
     // Create canvas for GIF animition of process
@@ -231,50 +265,70 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
     // Draw frame on canvas
     histogram_frame->Draw();
 
-    // Create the contour histogram
-    std::vector<std::string> file_name_contour;
-    std::vector<TH2F*> histogram_contour;
-    file_name_contour.push_back(getOutputPath("contourX" + std::to_string(event_num) + ".gif"));
-    histogram_contour.push_back(new TH2F(("contourX_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
-                                         "",
-                                         100,
-                                         minY,
-                                         maxY,
-                                         100,
-                                         model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0,
-                                         model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0));
-    file_name_contour.push_back(getOutputPath("contourY" + std::to_string(event_num) + ".gif"));
-    histogram_contour.push_back(new TH2F(("contourY_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
-                                         "",
-                                         100,
-                                         minX,
-                                         maxX,
-                                         100,
-                                         model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0,
-                                         model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0));
-    file_name_contour.push_back(getOutputPath("contourZ" + std::to_string(event_num) + ".gif"));
-    histogram_contour.push_back(new TH2F(
-        ("contourZ_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(), "", 100, minX, maxX, 100, minY, maxY));
+    if(config_.get<bool>("output_animations")) {
+        // Create the contour histogram
+        std::vector<std::string> file_name_contour;
+        std::vector<TH2F*> histogram_contour;
+        file_name_contour.push_back(getOutputPath("contourX" + std::to_string(event_num) + ".gif"));
+        histogram_contour.push_back(new TH2F(("contourX_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
+                                             "",
+                                             100,
+                                             minY,
+                                             maxY,
+                                             100,
+                                             model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0,
+                                             model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0));
+        histogram_contour.back()->SetDirectory(getROOTDirectory());
+        file_name_contour.push_back(getOutputPath("contourY" + std::to_string(event_num) + ".gif"));
+        histogram_contour.push_back(new TH2F(("contourY_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
+                                             "",
+                                             100,
+                                             minX,
+                                             maxX,
+                                             100,
+                                             model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0,
+                                             model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0));
+        histogram_contour.back()->SetDirectory(getROOTDirectory());
+        file_name_contour.push_back(getOutputPath("contourZ" + std::to_string(event_num) + ".gif"));
+        histogram_contour.push_back(new TH2F(("contourZ_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
+                                             "",
+                                             100,
+                                             minX,
+                                             maxX,
+                                             100,
+                                             minY,
+                                             maxY));
+        histogram_contour.back()->SetDirectory(getROOTDirectory());
 
-    if(config_.get<bool>("output_animation")) {
-        // Delete previous GIF output files
+        // Create file and disable statistics for histogram
         std::string file_name_anim = getOutputPath("animation" + std::to_string(event_num) + ".gif");
-        try {
-            remove_path(file_name_anim);
-            for(size_t i = 0; i < 3; ++i) {
-                remove_path(file_name_contour[i]);
-                histogram_contour[i]->SetStats(false);
-            }
-        } catch(std::invalid_argument&) {
-            throw ModuleError("Cannot overwite gif animation");
+        for(size_t i = 0; i < 3; ++i) {
+            histogram_contour[i]->SetStats(false);
+        }
+
+        // Remove temporary created files
+        remove(file_name_anim.c_str());
+        for(size_t i = 0; i < 3; ++i) {
+            remove(file_name_contour[i].c_str());
+        }
+
+        // Create color table
+        TColor* colors[80];
+        for(int i = 20; i < 100; ++i) {
+            auto color_idx = TColor::GetFreeColorIndex();
+            colors[i - 20] = new TColor(color_idx,
+                                        static_cast<float>(i) / 100.0f - 0.2f,
+                                        static_cast<float>(i) / 100.0f - 0.2f,
+                                        static_cast<float>(i) / 100.0f - 0.2f);
         }
 
         // Create animation of moving charges
         auto animation_time = static_cast<unsigned int>(
             std::round((Units::convert(config_.get<long double>("output_plots_step"), "ms") / 10.0) *
-                       config_.get<long double>("output_plots_animation_time_scaling", 1e9)));
+                       config_.get<long double>("output_animations_time_scaling", 1e9)));
         unsigned long plot_idx = 0;
         unsigned int point_cnt = 0;
+        LOG_PROGRESS(INFO, getUniqueName() + "_OUTPUT_PLOTS") << "Written 0 of " << tot_point_cnt << " points for animation";
         while(point_cnt < tot_point_cnt) {
             std::vector<std::unique_ptr<TPolyMarker3D>> markers;
             unsigned long min_idx_diff = std::numeric_limits<unsigned long>::max();
@@ -294,6 +348,15 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
             histogram_frame->GetZaxis()->SetTitle("z (mm)");
             histogram_frame->Draw();
 
+            auto text = std::make_unique<TPaveText>(-0.75, -0.75, -0.60, -0.65);
+            auto time_ns = Units::convert(plot_idx * config_.get<long double>("output_plots_step"), "ns");
+            std::stringstream sstr;
+            sstr << std::fixed << std::setprecision(2) << time_ns << "ns";
+            auto time_str = std::string(8 - sstr.str().size(), ' ');
+            time_str += sstr.str();
+            text->AddText(time_str.c_str());
+            text->Draw();
+
             // Plot all the required points
             for(auto& deposit_points : output_plot_points_) {
                 auto points = deposit_points.second;
@@ -312,8 +375,15 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
 
                 auto marker = std::make_unique<TPolyMarker3D>();
                 marker->SetMarkerStyle(kFullCircle);
-                marker->SetMarkerSize(static_cast<float>(deposit_points.first.getCharge()) /
-                                      config_.get<float>("charge_per_step"));
+                marker->SetMarkerSize(static_cast<float>(deposit_points.first.getCharge() *
+                                                         config_.get<unsigned int>("output_animations_marker_size", 1)) /
+                                      static_cast<float>(max_charge));
+                auto initial_z_perc = static_cast<int>(
+                    ((points[0].z() + model_->getSensorSize().z() / 2.0) / model_->getSensorSize().z()) * 80);
+                initial_z_perc = std::max(std::min(79, initial_z_perc), 0);
+                if(config_.get<bool>("output_animations_color_markers")) {
+                    marker->SetMarkerColor(static_cast<Color_t>(colors[initial_z_perc]->GetNumber()));
+                }
                 marker->SetNextPoint(points[idx].x(), points[idx].y(), points[idx].z());
                 marker->Draw();
                 markers.push_back(std::move(marker));
@@ -380,18 +450,46 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
             }
             markers.clear();
 
-            LOG_PROGRESS(DEBUG, getUniqueName() + "_OUTPUT_PLOTS")
-                << "Written " << point_cnt << " of " << tot_point_cnt << " points";
+            LOG_PROGRESS(INFO, getUniqueName() + "_OUTPUT_PLOTS")
+                << "Written " << point_cnt << " of " << tot_point_cnt << " points for animation";
         }
     }
     output_plot_points_.clear();
 }
 
-void GenericPropagationModule::run(unsigned int event_num) {
+void GenericPropagationModule::init() {
+
+    auto detector = getDetector();
+
     // Check for electric field and output warning for slow propagation if not defined
-    if(!getDetector()->hasElectricField()) {
-        LOG(WARNING) << "Running this module without an electric field is not recommmended and can be very slow!";
+    if(!detector->hasElectricField()) {
+        LOG(WARNING) << "This detector does not have an electric field.";
     }
+
+    // For linear fields we can in addition check if the correct carriers are propagated
+    if(detector->getElectricFieldType() == ElectricFieldType::LINEAR) {
+        auto model = detector_->getModel();
+        auto probe_point = ROOT::Math::XYZPoint(model->getSensorCenter().x(),
+                                                model->getSensorCenter().y(),
+                                                model->getSensorCenter().z() + model->getSensorSize().z() / 2.01);
+
+        // Get the field close to the implants and check its sign:
+        auto efield = detector->getElectricField(probe_point);
+        auto direction = std::signbit(efield.z());
+        // Compare with propagated carrier type:
+        if(direction && !config_.get<bool>("propagate_electrons")) {
+            LOG(WARNING) << "Electric field indicates electron collection at implants, but electrons are not propagated!";
+        }
+        if(!direction && !config_.get<bool>("propagate_holes")) {
+            LOG(WARNING) << "Electric field indicates hole collection at implants, but holes are not propagated!";
+        }
+    }
+    if(output_plots_) {
+        drift_time_histo = new TH1D("drift_time_histo", "Drift time;t[ns];particles", 50, 0., 20.);
+    }
+}
+
+void GenericPropagationModule::run(unsigned int event_num) {
 
     // Create vector of propagated charges to output
     std::vector<PropagatedCharge> propagated_charges;
@@ -405,7 +503,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
 
         if((deposit.getType() == CarrierType::ELECTRON && !config_.get<bool>("propagate_electrons")) ||
            (deposit.getType() == CarrierType::HOLE && !config_.get<bool>("propagate_holes"))) {
-            LOG(DEBUG) << "Skipping charge carriers (" << (deposit.getType() == CarrierType::ELECTRON ? "e" : "h") << ") on "
+            LOG(DEBUG) << "Skipping charge carriers (" << deposit.getType() << ") on "
                        << display_vector(deposit.getLocalPosition(), {"mm", "um"});
             continue;
         }
@@ -413,7 +511,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
         // Loop over all charges in the deposit
         unsigned int charges_remaining = deposit.getCharge();
 
-        LOG(DEBUG) << "Set of charge carriers (" << (deposit.getType() == CarrierType::ELECTRON ? "e" : "h") << ") on "
+        LOG(DEBUG) << "Set of charge carriers (" << deposit.getType() << ") on "
                    << display_vector(deposit.getLocalPosition(), {"mm", "um"});
 
         auto charge_per_step = config_.get<unsigned int>("charge_per_step");
@@ -428,7 +526,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
             auto position = deposit.getLocalPosition();
 
             // Add point of deposition to the output plots if requested
-            if(config_.get<bool>("output_plots")) {
+            if(output_plots_) {
                 auto global_position = detector_->getGlobalPosition(position);
                 output_plot_points_.emplace_back(
                     PropagatedCharge(position, global_position, deposit.getType(), charge_per_step, deposit.getEventTime()),
@@ -454,17 +552,24 @@ void GenericPropagationModule::run(unsigned int event_num) {
             // Update statistical information
             ++step_count;
             propagated_charges_count += charge_per_step;
-            total_time += prop_pair.second;
+            total_time += charge_per_step * prop_pair.second;
+
+            // Fill plot for drift time
+            if(output_plots_) {
+                drift_time_histo->SetBinContent(
+                    drift_time_histo->FindBin(prop_pair.second),
+                    drift_time_histo->GetBinContent(drift_time_histo->FindBin(prop_pair.second)) + charge_per_step);
+            }
         }
     }
 
     // Output plots if required
-    if(config_.get<bool>("output_plots")) {
+    if(output_plots_) {
         create_output_plots(event_num);
     }
 
     // Write summary and update statistics
-    long double average_time = total_time / std::max(1u, step_count);
+    long double average_time = total_time / std::max(1u, propagated_charges_count);
     LOG(INFO) << "Propagated " << propagated_charges_count << " charges in " << step_count << " steps in average time of "
               << Units::display(average_time, "ns");
     total_propagated_charges_ += propagated_charges_count;
@@ -504,8 +609,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
     };
 
     // Define a function to compute the diffusion
-    auto timestep = timestep_start_;
-    auto carrier_diffusion = [&](double efield_mag) -> Eigen::Vector3d {
+    auto carrier_diffusion = [&](double efield_mag, double timestep) -> Eigen::Vector3d {
         double diffusion_constant = boltzmann_kT_ * carrier_mobility(efield_mag);
         double diffusion_std_dev = std::sqrt(2. * diffusion_constant * timestep);
 
@@ -520,58 +624,61 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
 
     // Define a lambda function to compute the electron velocity
     auto carrier_velocity = [&](double, Eigen::Vector3d cur_pos) -> Eigen::Vector3d {
-        std::vector<double> raw_field = detector_->getElectricFieldRaw(cur_pos);
-        if(raw_field.empty()) {
-            // Return a zero electric field outside of the sensor
-            return Eigen::Vector3d(0, 0, 0);
-        }
+        auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
         // Compute the drift velocity
-        auto efield = static_cast<Eigen::Map<Eigen::Vector3d>>(raw_field.data());
+        Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
+
         return static_cast<int>(type) * carrier_mobility(efield.norm()) * efield;
     };
 
     // Create the runge kutta solver with an RKF5 tableau
-    auto runge_kutta = make_runge_kutta(tableau::RK5, carrier_velocity, timestep, position);
+    auto runge_kutta = make_runge_kutta(tableau::RK5, carrier_velocity, timestep_start_, position);
 
     // Continue propagation until the deposit is outside the sensor
-    // FIXME: we need to determine what would be a good time to stop
-    double last_time = std::numeric_limits<double>::lowest();
+    Eigen::Vector3d last_position = position;
+    double last_time = 0;
+    size_t next_idx = 0;
     while(detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position)) &&
           runge_kutta.getTime() < integration_time_) {
         // Update output plots if necessary (depending on the plot step)
-        if(output_plots_ && runge_kutta.getTime() - last_time > output_plots_step_) {
-            output_plot_points_.back().second.push_back(static_cast<ROOT::Math::XYZPoint>(runge_kutta.getValue()));
-            last_time = runge_kutta.getTime();
+        if(output_plots_) {
+            auto time_idx = static_cast<size_t>(runge_kutta.getTime() / output_plots_step_);
+            while(next_idx <= time_idx) {
+                output_plot_points_.back().second.push_back(static_cast<ROOT::Math::XYZPoint>(position));
+                next_idx = output_plot_points_.back().second.size();
+            }
         }
+
+        // Save previous position and time
+        last_position = position;
+        last_time = runge_kutta.getTime();
 
         // Execute a Runge Kutta step
         auto step = runge_kutta.step();
 
         // Get the current result and timestep
-        timestep = runge_kutta.getTimeStep();
+        auto timestep = runge_kutta.getTimeStep();
         position = runge_kutta.getValue();
 
         // Get electric field at current position and fall back to empty field if it does not exist
-        std::vector<double> raw_field = detector_->getElectricFieldRaw(position);
-        if(raw_field.empty()) {
-            raw_field = std::vector<double>(3, 0);
-        }
+        auto efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(position));
 
         // Apply diffusion step
-        auto efield = static_cast<Eigen::Map<Eigen::Vector3d>>(raw_field.data());
-        auto diffusion = carrier_diffusion(efield.norm());
-        runge_kutta.setValue(position + diffusion);
+        auto diffusion = carrier_diffusion(std::sqrt(efield.Mag2()), timestep);
+        position += diffusion;
+        runge_kutta.setValue(position);
 
         // Adapt step size to match target precision
         double uncertainty = step.error.norm();
+
         // Lower timestep when reaching the sensor edge
-        if(model_->getSensorSize().z() - position.z() < step.value.z() * 1.2) {
-            timestep *= 0.7;
+        if(std::fabs(model_->getSensorSize().z() / 2.0 - position.z()) < 2 * step.value.z()) {
+            timestep *= 0.75;
         } else {
             if(uncertainty > target_spatial_precision_) {
-                timestep *= 0.7;
-            } else if(uncertainty < 0.5 * target_spatial_precision_) {
-                timestep *= 2;
+                timestep *= 0.75;
+            } else if(2 * uncertainty < target_spatial_precision_) {
+                timestep *= 1.5;
             }
         }
         // Limit the timestep to certain minimum and maximum step sizes
@@ -583,13 +690,35 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         runge_kutta.setTimeStep(timestep);
     }
 
+    // Find proper final position in the sensor
+    auto time = runge_kutta.getTime();
+    if(!detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
+        auto check_position = position;
+        check_position.z() = last_position.z();
+        if(position.z() > 0 && detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(check_position))) {
+            // Carrier left sensor on the side of the pixel grid, interpolate end point on surface
+            auto z_cur_border = std::fabs(position.z() - model_->getSensorSize().z() / 2.0);
+            auto z_last_border = std::fabs(model_->getSensorSize().z() / 2.0 - last_position.z());
+            auto z_total = z_cur_border + z_last_border;
+            position = (z_last_border / z_total) * position + (z_cur_border / z_total) * last_position;
+            time = (z_last_border / z_total) * time + (z_cur_border / z_total) * last_time;
+        } else {
+            // Carrier left sensor on any order border, use last position inside instead
+            position = last_position;
+            time = last_time;
+        }
+    }
+
     // Return the final position of the propagated charge
-    position = runge_kutta.getValue();
-    return std::make_pair(static_cast<ROOT::Math::XYZPoint>(position), runge_kutta.getTime());
+    return std::make_pair(static_cast<ROOT::Math::XYZPoint>(position), time);
 }
 
 void GenericPropagationModule::finalize() {
-    long double average_time = total_time_ / std::max(1u, total_steps_);
+    long double average_time = total_time_ / std::max(1u, total_propagated_charges_);
     LOG(INFO) << "Propagated total of " << total_propagated_charges_ << " charges in " << total_steps_
               << " steps in average time of " << Units::display(average_time, "ns");
+
+    if(output_plots_) {
+        drift_time_histo->Write();
+    }
 }

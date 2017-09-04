@@ -12,7 +12,6 @@ namespace allpix {
         static_assert(std::is_base_of<Module, T>::value, "Receiver should have Module as a base class");
         auto delegate = std::make_unique<FunctionAllDelegate<T>>(flags, receiver, method);
         add_delegate(typeid(BaseMessage), receiver, std::move(delegate));
-        ;
     }
 
     template <typename T, typename R>
@@ -23,6 +22,14 @@ namespace allpix {
             "Notifier method should take a shared pointer to a message derived from the Message class as argument");
 
         auto delegate = std::make_unique<FunctionDelegate<T, R>>(flags, receiver, method);
+        add_delegate(typeid(R), receiver, std::move(delegate));
+    }
+
+    template <typename R, typename T> void Messenger::addDependency(T* receiver, MsgFlags flags) {
+        static_assert(std::is_base_of<Module, T>::value, "Receiver should have Module as a base class");
+        static_assert(std::is_base_of<BaseMessage, R>::value,
+                      "Bound variable should be a shared pointer to a message derived from the Message class");
+        auto delegate = std::make_unique<StoreDelegate<T>>(flags, receiver);
         add_delegate(typeid(R), receiver, std::move(delegate));
     }
 

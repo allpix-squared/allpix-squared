@@ -7,6 +7,7 @@ ADD_LIBRARY(AllpixCore SHARED
     utils/unit.cpp
     module/Module.cpp
     module/ModuleManager.cpp
+    module/ThreadPool.cpp
     messenger/Messenger.cpp
     messenger/Message.cpp
     config/exceptions.cpp
@@ -15,7 +16,7 @@ ADD_LIBRARY(AllpixCore SHARED
     config/ConfigManager.cpp
     geometry/Detector.cpp
     geometry/GeometryManager.cpp
-    AllPix.cpp
+    Allpix.cpp
 )
 
 # Link the dependencies

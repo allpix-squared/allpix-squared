@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief Definition of object with digitized pixel hit
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #ifndef ALLPIX_PIXEL_HIT_H
@@ -37,7 +40,12 @@ namespace allpix {
          * @brief Get the pixel hit
          * @return Pixel indices in the grid
          */
-        Pixel getPixel() const;
+        const Pixel& getPixel() const;
+        /**
+         * @brief Shortcut to retrieve the pixel indices
+         * @return Index of the pixel
+         */
+        Pixel::Index getIndex() const;
         /**
          * @brief Get the timing data of the hit
          * @return Timestamp

@@ -12,7 +12,9 @@
 #include "../../src/objects/PixelHit.hpp"
 #include "../../src/objects/PropagatedCharge.hpp"
 
-// FIXME: pixel size should be available in the data
+/**
+ * Construct a ROOT TTree from the data objects that can be used for comparison
+ */
 std::shared_ptr<TTree> constructComparisonTree(TFile* file, std::string dut) {
     // Read pixel hit output
     TTree* pixel_hit_tree = static_cast<TTree*>(file->Get("PixelHit"));
@@ -71,8 +73,8 @@ std::shared_ptr<TTree> constructComparisonTree(TFile* file, std::string dut) {
     output_tree->Branch("trackLocalY", &output_track_y);
     // Calculated track information and residuals
     double output_x, output_y, output_res_x, output_res_y;
-    output_tree->Branch("localX", &output_track_x);
-    output_tree->Branch("localY", &output_track_y);
+    output_tree->Branch("localX", &output_x);
+    output_tree->Branch("localY", &output_y);
     output_tree->Branch("resX", &output_res_x);
     output_tree->Branch("resY", &output_res_y);
 
@@ -83,12 +85,6 @@ std::shared_ptr<TTree> constructComparisonTree(TFile* file, std::string dut) {
         mc_particle_tree->GetEntry(i);
         deposited_charge_tree->GetEntry(i);
         propagated_charge_tree->GetEntry(i);
-
-        // Skip all events with multiple particles
-        // FIXME Needed until we handle the mc particle better
-        if(input_particles.size() > 1) {
-            continue;
-        }
 
         // Set event number
         event_num = i + 1;
@@ -132,18 +128,21 @@ std::shared_ptr<TTree> constructComparisonTree(TFile* file, std::string dut) {
 
         // Get information about the actual track
         output_track_count = input_particles.size();
+        output_track_x = 0;
+        output_track_y = 0;
+        // FIXME: guess the truth position from the average of start and end points
         for(auto& particle : input_particles) {
-            // FIXME just use the middle position between the entry point and the exit as the track position
-            output_track_x = (particle->getLocalEntryPoint().x() + particle->getLocalExitPoint().x()) / 2.0;
-            output_track_y = (particle->getLocalEntryPoint().y() + particle->getLocalExitPoint().y()) / 2.0;
+            output_track_x += (particle->getLocalStartPoint().x() + particle->getLocalEndPoint().x()) / 2.0;
+            output_track_y += (particle->getLocalStartPoint().y() + particle->getLocalEndPoint().y()) / 2.0;
         }
+        output_track_x /= input_particles.size();
+        output_track_y /= input_particles.size();
 
         // Calculate local x using a simple center of gravity fit
         // FIXME no corrections are applied
         ROOT::Math::XYZVector totalPixel;
         double totalSignal = 0;
         for(auto& hit : input_hits) {
-            // FIXME: should not use the row / column but their position
             totalPixel += static_cast<ROOT::Math::XYZVector>(hit->getPixel().getLocalCenter()) * hit->getSignal();
             totalSignal += hit->getSignal();
         }

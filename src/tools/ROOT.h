@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief Set of ROOT utilities for framework integration
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #ifndef ALLPIX_ROOT_H
@@ -113,31 +116,6 @@ namespace allpix {
      */
     template <typename T> inline std::string to_string_impl(const ROOT::Math::PositionVector2D<T>& vec, empty_tag) {
         return to_string_impl(static_cast<ROOT::Math::DisplacementVector2D<T>>(vec), empty_tag());
-    }
-
-    /**
-     * @ingroup StringConversions
-     * @brief Enable support to convert string directly to  ROOT Euler angles vector while fetching configuration parameter
-     */
-    inline ROOT::Math::EulerAngles from_string_impl(std::string str, type_tag<ROOT::Math::EulerAngles>) {
-        std::vector<double> vec_split = allpix::split<double>(std::move(str));
-        if(vec_split.size() != 3) {
-            throw std::invalid_argument("array should contain exactly three elements");
-        }
-        return ROOT::Math::EulerAngles(vec_split[0], vec_split[1], vec_split[2]);
-    }
-    /**
-     * @ingroup StringConversions
-     * @brief Enable support to convert ROOT Euler angles vector to string for storage in the configuration
-     */
-    inline std::string to_string_impl(const ROOT::Math::EulerAngles& vec, allpix::empty_tag) {
-        std::string res;
-        res += std::to_string(vec.Phi());
-        res += ",";
-        res += std::to_string(vec.Theta());
-        res += ",";
-        res += std::to_string(vec.Psi());
-        return res;
     }
 
     /**

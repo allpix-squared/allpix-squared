@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief Implementation of object with set of particles at pixel
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #include "PixelCharge.hpp"
@@ -17,8 +20,12 @@ PixelCharge::PixelCharge(Pixel pixel, unsigned int charge, std::vector<const Pro
     }
 }
 
-Pixel PixelCharge::getPixel() const {
+const Pixel& PixelCharge::getPixel() const {
     return pixel_;
+}
+
+Pixel::Index PixelCharge::getIndex() const {
+    return getPixel().getIndex();
 }
 
 unsigned int PixelCharge::getCharge() const {

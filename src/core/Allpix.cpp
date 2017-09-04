@@ -1,9 +1,12 @@
 /** @file
  *  @brief Implementation of interface to the core framework
- *  @copyright MIT License
+ *  @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#include "AllPix.hpp"
+#include "Allpix.hpp"
 
 #include <chrono>
 #include <climits>
@@ -31,14 +34,14 @@ using namespace allpix;
  * - Set the log level and log format as requested.
  * - Load the detector configuration and parse it
  */
-AllPix::AllPix(std::string config_file_name)
+Allpix::Allpix(std::string config_file_name)
     : terminate_(false), has_run_(false), msg_(std::make_unique<Messenger>()), mod_mgr_(std::make_unique<ModuleManager>()),
       geo_mgr_(std::make_unique<GeometryManager>()) {
     // Load the global configuration
     conf_mgr_ = std::make_unique<ConfigManager>(std::move(config_file_name));
 
     // Configure the standard special sections
-    conf_mgr_->setGlobalHeaderName("AllPix");
+    conf_mgr_->setGlobalHeaderName("Allpix");
     conf_mgr_->addGlobalHeaderName("");
     conf_mgr_->addIgnoreHeaderName("Ignore");
 
@@ -93,11 +96,11 @@ AllPix::AllPix(std::string config_file_name)
  * - Include all the defined units
  * - Load the modules from the configuration
  */
-void AllPix::load() {
-    LOG(TRACE) << "Loading AllPix";
+void Allpix::load() {
+    LOG(TRACE) << "Loading Allpix";
 
     // Put welcome message
-    LOG(STATUS) << "Welcome to AllPix " << ALLPIX_PROJECT_VERSION;
+    LOG(STATUS) << "Welcome to Allpix^2 " << ALLPIX_PROJECT_VERSION;
 
     // Fetch the global configuration
     Configuration global_config = conf_mgr_->getGlobalConfiguration();
@@ -128,23 +131,30 @@ void AllPix::load() {
     gRandom->SetSeed(seeder());
 
     // Get output directory
-    LOG(TRACE) << "Switching to output directory";
     std::string directory = gSystem->pwd();
     directory += "/output";
     if(global_config.has("output_directory")) {
         // Use config specified one if available
         directory = global_config.getPath("output_directory");
     }
-    // Set output directory (create if not exists)
-    if(!gSystem->ChangeDirectory(directory.c_str())) {
-        LOG(DEBUG) << "Creating output directory because it does not exists";
-        try {
-            allpix::create_directories(directory);
-            gSystem->ChangeDirectory(directory.c_str());
-        } catch(std::invalid_argument& e) {
-            LOG(ERROR) << "Cannot create output directory " << directory << ": " << e.what()
-                       << ". Using current directory instead!";
-        }
+    // Delete previous output directory if it exists
+    if(allpix::path_is_directory(directory)) {
+        LOG(DEBUG) << "Deleting previous output directory";
+        allpix::remove_path(directory);
+    }
+    // Create the output directory
+    try {
+        allpix::create_directories(directory);
+        gSystem->ChangeDirectory(directory.c_str());
+    } catch(std::invalid_argument& e) {
+        LOG(ERROR) << "Cannot create output directory " << directory << ": " << e.what()
+                   << ". Using current directory instead!";
+    }
+
+    // Enable relevant multithreading if needed (disabled by default)
+    if(global_config.get<bool>("experimental_multithreading", false)) {
+        // Enable thread safety for ROOT
+        ROOT::EnableThreadSafety();
     }
 
     // Set the default units to use
@@ -167,9 +177,9 @@ void AllPix::load() {
 /**
  * Runs the Module::init() method linearly for every module
  */
-void AllPix::init() {
+void Allpix::init() {
     if(!terminate_) {
-        LOG(TRACE) << "Initializing AllPix";
+        LOG(TRACE) << "Initializing Allpix";
         mod_mgr_->init();
     } else {
         LOG(INFO) << "Skip initializing modules because termination is requested";
@@ -178,9 +188,9 @@ void AllPix::init() {
 /**
  * Runs every modules Module::run() method linearly for the number of events
  */
-void AllPix::run() {
+void Allpix::run() {
     if(!terminate_) {
-        LOG(TRACE) << "Running AllPix";
+        LOG(TRACE) << "Running Allpix";
         mod_mgr_->run();
 
         // Set that we have run and want to finalize as well
@@ -192,9 +202,9 @@ void AllPix::run() {
 /**
  * Runs all modules Module::finalize() method linearly for every module
  */
-void AllPix::finalize() {
+void Allpix::finalize() {
     if(has_run_) {
-        LOG(TRACE) << "Finalizing AllPix";
+        LOG(TRACE) << "Finalizing Allpix";
         mod_mgr_->finalize();
     } else {
         LOG(INFO) << "Skip finalizing modules because no module did run";
@@ -205,12 +215,12 @@ void AllPix::finalize() {
  * This function can be called safely from any signal handler. Time between the request to terminate
  * and the actual termination is not always negigible.
  */
-void AllPix::terminate() {
+void Allpix::terminate() {
     terminate_ = true;
     mod_mgr_->terminate();
 }
 
-void AllPix::add_units() {
+void Allpix::add_units() {
     LOG(TRACE) << "Adding physical units";
 
     // LENGTH
@@ -240,6 +250,7 @@ void AllPix::add_units() {
 
     // CHARGE
     Units::add("e", 1);
+    Units::add("ke", 1e3);
     Units::add("C", 1.6021766208e-19);
 
     // VOLTAGE
@@ -251,12 +262,13 @@ void AllPix::add_units() {
     // NOTE: these are fake units
     Units::add("deg", 0.01745329252);
     Units::add("rad", 1);
+    Units::add("mrad", 1e-3);
 }
 
 /**
  * This style is inspired by the CLICdp plot style
  */
-void AllPix::set_style() {
+void Allpix::set_style() {
     LOG(TRACE) << "Setting ROOT plotting style";
 
     // use plain style as base

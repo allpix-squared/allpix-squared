@@ -1,11 +1,15 @@
 /**
  * @file
  * @brief Implementation of config manager
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #include "ConfigManager.hpp"
 
+#include <algorithm>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -37,13 +41,15 @@ ConfigManager::ConfigManager(std::string file_name) : file_name_(std::move(file_
 }
 
 /**
- * @warning Only one header can be added in this way to define its name
+ * @warning Only one header can be added in this way to define its main name
  */
 void ConfigManager::setGlobalHeaderName(std::string name) {
-    global_names_.emplace(name);
-    global_default_name_ = std::move(name);
+    global_default_name_ = name;
+    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+    global_names_.emplace(std::move(name));
 }
 void ConfigManager::addGlobalHeaderName(std::string name) {
+    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
     global_names_.emplace(std::move(name));
 }
 
@@ -61,6 +67,7 @@ Configuration ConfigManager::getGlobalConfiguration() {
     return global_config;
 }
 void ConfigManager::addIgnoreHeaderName(std::string name) {
+    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
     ignore_names_.emplace(std::move(name));
 }
 
@@ -76,8 +83,10 @@ std::vector<Configuration> ConfigManager::getConfigurations() const {
     std::vector<Configuration> result;
     for(auto& config : reader_.getConfigurations()) {
         // ignore all global and ignores names
-        if(global_names_.find(config.getName()) != global_names_.end() ||
-           ignore_names_.find(config.getName()) != ignore_names_.end()) {
+        std::string config_name = config.getName();
+        std::transform(config_name.begin(), config_name.end(), config_name.begin(), ::tolower);
+        if(global_names_.find(config_name) != global_names_.end() ||
+           ignore_names_.find(config_name) != ignore_names_.end()) {
             continue;
         }
         result.push_back(config);

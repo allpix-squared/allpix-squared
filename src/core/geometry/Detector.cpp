@@ -2,7 +2,10 @@
  * @file
  * @brief Implementation of detector
  *
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #include <memory>
@@ -26,7 +29,7 @@ using namespace allpix;
 Detector::Detector(std::string name,
                    std::shared_ptr<DetectorModel> model,
                    ROOT::Math::XYZPoint position,
-                   ROOT::Math::EulerAngles orientation)
+                   const ROOT::Math::Rotation3D& orientation)
     : Detector(std::move(name), std::move(position), orientation) {
     model_ = std::move(model);
     // Check if valid model is supplied
@@ -44,7 +47,7 @@ Detector::Detector(std::string name,
  * that these detectors can never be accessed by modules before the detector
  * model is added.
  */
-Detector::Detector(std::string name, ROOT::Math::XYZPoint position, ROOT::Math::EulerAngles orientation)
+Detector::Detector(std::string name, ROOT::Math::XYZPoint position, const ROOT::Math::Rotation3D& orientation)
     : name_(std::move(name)), position_(std::move(position)), orientation_(orientation), electric_field_sizes_{{0, 0, 0}},
       electric_field_(nullptr) {}
 void Detector::set_model(std::shared_ptr<DetectorModel> model) {
@@ -77,7 +80,7 @@ const std::shared_ptr<DetectorModel> Detector::getModel() const {
 ROOT::Math::XYZPoint Detector::getPosition() const {
     return position_;
 }
-ROOT::Math::EulerAngles Detector::getOrientation() const {
+ROOT::Math::Rotation3D Detector::getOrientation() const {
     return orientation_;
 }
 
@@ -138,34 +141,14 @@ bool Detector::hasElectricField() const {
  * stage). Outside of the sensor the electric field is strictly zero by definition.
  */
 ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZPoint& pos) const {
-    auto field = get_electric_field_raw(pos.x(), pos.y(), pos.z());
-
-    if(field.empty()) {
-        // FIXME: Determine what we should do if we have no external electric field...
+    // FIXME: We need to revisit this to be faster and not too specific
+    if(electric_field_type_ == ElectricFieldType::NONE) {
         return ROOT::Math::XYZVector(0, 0, 0);
     }
 
-    return ROOT::Math::XYZVector(field.at(0), field.at(1), field.at(2));
-}
-
-/**
- * The type of the electric field is set depending on the function used to apply it.
- */
-ElectricFieldType Detector::getElectricFieldType() const {
-    if(!hasElectricField()) {
-        return ElectricFieldType::NONE;
-    }
-    return electric_field_type_;
-}
-
-/**
- * The local position is first converted to pixel coordinates. The stored electric field if the index is odd.
- */
-std::vector<double> Detector::get_electric_field_raw(double x, double y, double z) const {
-    // FIXME: We need to revisit this to be faster and not too specific
-    if(electric_field_type_ == ElectricFieldType::NONE) {
-        return std::vector<double>();
-    }
+    auto x = pos.x();
+    auto y = pos.y();
+    auto z = pos.z();
 
     // Compute corresponding pixel coordinates
     // WARNING This relies on the origin of the local coordinate system
@@ -185,7 +168,7 @@ std::vector<double> Detector::get_electric_field_raw(double x, double y, double 
     }
 
     // Compute using the grid or a function depending on the setting
-    std::vector<double> ret_val(3, 0);
+    ROOT::Math::XYZVector ret_val;
     if(electric_field_type_ == ElectricFieldType::GRID) {
         // Compute indices
         auto x_ind = static_cast<int>(std::floor(static_cast<double>(electric_field_sizes_[0]) *
@@ -200,28 +183,44 @@ std::vector<double> Detector::get_electric_field_raw(double x, double y, double 
         if(x_ind < 0 || x_ind >= static_cast<int>(electric_field_sizes_[0]) || y_ind < 0 ||
            y_ind >= static_cast<int>(electric_field_sizes_[1]) || z_ind < 0 ||
            z_ind >= static_cast<int>(electric_field_sizes_[2])) {
-            return std::vector<double>();
+            return ROOT::Math::XYZVector(0, 0, 0);
         }
 
         // Compute total index
         size_t tot_ind = static_cast<size_t>(x_ind) * electric_field_sizes_[1] * electric_field_sizes_[2] * 3 +
                          static_cast<size_t>(y_ind) * electric_field_sizes_[2] * 3 + static_cast<size_t>(z_ind) * 3;
 
-        ret_val.at(0) = (*electric_field_)[tot_ind];
-        ret_val.at(1) = (*electric_field_)[tot_ind + 1];
-        ret_val.at(2) = (*electric_field_)[tot_ind + 2];
+        ret_val = ROOT::Math::XYZVector(
+            (*electric_field_)[tot_ind], (*electric_field_)[tot_ind + 1], (*electric_field_)[tot_ind + 2]);
     } else {
-        // FIXME This is not efficient...
         // Check if inside the thickness domain
         if(z < electric_field_thickness_domain_.first || electric_field_thickness_domain_.second < z) {
-            return ret_val;
+            return ROOT::Math::XYZVector(0, 0, 0);
         }
 
         // Calculate the electric field
-        auto vector = electric_field_function_(ROOT::Math::XYZPoint(x, y, z));
-        vector.GetCoordinates(ret_val.at(0), ret_val.at(1), ret_val.at(2));
+        ret_val = electric_field_function_(ROOT::Math::XYZPoint(x, y, z));
     }
+
+    // Flip vector if necessary
+    if((pixel_x % 2) == 1) {
+        ret_val.SetX(-ret_val.x());
+    }
+    if((pixel_y % 2) == 1) {
+        ret_val.SetY(-ret_val.y());
+    }
+
     return ret_val;
+}
+
+/**
+ * The type of the electric field is set depending on the function used to apply it.
+ */
+ElectricFieldType Detector::getElectricFieldType() const {
+    if(!hasElectricField()) {
+        return ElectricFieldType::NONE;
+    }
+    return electric_field_type_;
 }
 
 /**

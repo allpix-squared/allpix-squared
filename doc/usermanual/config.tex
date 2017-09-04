@@ -1,5 +1,6 @@
 % Add command to display allpix squared
-\newcommand{\apsq}{\texorpdfstring{\ensuremath{\mathrm{Allpix}^2}}{Allpix\textasciicircum 2}\xspace}
+\newcommand{\apsq}{Allpix\textsuperscript{2}\xspace}
+\newcommand{\apsqbold}{\textbf{Allpix\textsuperscript{2}}\xspace}
 
 % Temporary TODO commands
 % \newcommand{\comment}[1]{#1} % DRAFT
@@ -28,7 +29,18 @@
     otherkeywords={},
     keywordstyle={\color{green}\bfseries}
 }
-     
+
+% Warning box
+\newsavebox{\warningbox}
+\newenvironment{warning}
+  {\newcommand\colboxcolor{pink}%
+   \begin{lrbox}{\warningbox}%
+   \begin{minipage}{\dimexpr\columnwidth-2\fboxsep\relax}}
+  {\end{minipage}\end{lrbox}%
+   \begin{center}
+     \colorbox{\colboxcolor}{\usebox{\warningbox}}
+  \end{center}}
+
 % Command to add all modules
 \newcommand{\includemodulesmd}{\def\temp{@ALLPIX_MODULE_FILES@}\ifx\temp\empty
   \textit{Module documentation not added because Markdown to LaTex conversion was not possible}
@@ -46,7 +58,19 @@
 \newcommand{\version}{\lstinline|@ALLPIX_VERSION@|}
 \newcommand{\project}{@CMAKE_PROJECT_NAME@}
 
-% Use new lines in FAQ
-% FIXME this creates an issue when running htlatex for HTML output:
-% ! Argument of \enit@postlabel@i has an extra }.
-%\setlist[description]{style=nextline}
+% Create addreferences command (overwritten for HTML in config)
+\newcommand{\addreferencesline}{\addcontentsline{toc}{section}{References}}
+
+% Command to add the license (overwritten for HTML in config)
+\newcommand{\addlicense}{
+\begin{table}
+\centering
+\renewcommand{\arraystretch}{1.5}% Spread rows out...
+\begin{tabular}{>{\centering\arraybackslash}m{.10\textwidth}>{\raggedright\arraybackslash}m{.90\textwidth}}
+ \Large{\ccLogo \ccAttribution} & \footnotesize{This manual is licensed under the Creative Commons Attribution 4.0 International License.\newline To view a copy of this license, visit \url{http://creativecommons.org/licenses/by/4.0/}.} \\
+\end{tabular}
+\end{table}
+}
+
+% Use new lines in FAQ (fixed for HTML in config)
+\setlist[description]{style=nextline}

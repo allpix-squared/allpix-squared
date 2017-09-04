@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief Definition of deposited charge object
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #ifndef ALLPIX_DEPOSITED_CHARGE_H
@@ -23,6 +26,7 @@ namespace allpix {
          * @brief Construct a charge deposit
          * @param local_position Local position of the deposit in the sensor
          * @param global_position Global position of the propagated set of charges in the sensor
+         * @param type Type of the carrier
          * @param charge Total charge of the deposit
          * @param event_time Time of deposition after event start
          * @param mc_particle Optional pointer to related MC particle
@@ -43,8 +47,7 @@ namespace allpix {
         /**
          * @brief Set the Monte-Carlo particle
          * @param mc_particle The Monte-Carlo particle
-         * @warning Special method because MCParticle is only known after deposit creation, should not be used to replace the
-         * particle later
+         * @warning Special method because MCParticle is only known after deposit creation, should not be replaced later.
          */
         void setMCParticle(const MCParticle* mc_particle);
 

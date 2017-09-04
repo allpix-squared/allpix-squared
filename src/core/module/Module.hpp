@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief Base for the module implementation
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #ifndef ALLPIX_MODULE_H
@@ -14,6 +17,7 @@
 
 #include <TDirectory.h>
 
+#include "ThreadPool.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
 #include "core/messenger/delegates.h"
@@ -184,10 +188,21 @@ namespace allpix {
         uint64_t getRandomSeed();
 
         /**
+         * @brief Get thread pool to submit asynchronous tasks to
+         */
+        ThreadPool& getThreadPool();
+
+        /**
          * @brief Get ROOT directory which should be used to output histograms et cetera
          * @return ROOT directory for storage
          */
         TDirectory* getROOTDirectory() const;
+
+        /**
+         * @brief Returns if parallelization of this module is enabled
+         * @return True if parallelization is enabled, false otherwise (the default)
+         */
+        bool canParallelize();
 
         /**
          * @brief Initialize the module before the event sequence
@@ -213,6 +228,12 @@ namespace allpix {
          */
         virtual void finalize() {}
 
+    protected:
+        /**
+         * @brief Enable parallelization for this module
+         */
+        void enable_parallelization();
+
     private:
         /**
          * @brief Set the module identifier for internal use
@@ -232,6 +253,13 @@ namespace allpix {
          */
         Configuration& get_configuration();
         Configuration config_;
+
+        /**
+         * @brief Set the thread pool for parallel execution
+         * @return Thread pool (or null pointer to disable it)
+         */
+        void set_thread_pool(std::shared_ptr<ThreadPool> thread_pool);
+        std::shared_ptr<ThreadPool> thread_pool_;
 
         /**
          * @brief Set the output ROOT directory for this module
@@ -260,6 +288,8 @@ namespace allpix {
         std::mt19937_64 random_generator_;
 
         std::shared_ptr<Detector> detector_;
+
+        bool parallelize_{false};
     };
 
 } // namespace allpix

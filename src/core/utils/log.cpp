@@ -2,7 +2,10 @@
  * @file
  * @brief Implementation of logger
  *
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #include "log.h"
@@ -16,6 +19,7 @@
 #include <ostream>
 #include <regex>
 #include <string>
+#include <thread>
 #include <unistd.h>
 
 using namespace allpix;
@@ -24,6 +28,8 @@ using namespace allpix;
 std::string DefaultLogger::last_identifier_;
 // Last message send used to check if extra spaces are needed
 std::string DefaultLogger::last_message_;
+// Mutex to guard output writing
+std::mutex DefaultLogger::write_mutex_;
 
 /**
  * The logger will save the number of uncaught exceptions during construction to compare that with the number of exceptions
@@ -57,6 +63,9 @@ DefaultLogger::~DefaultLogger() {
             start_pos += spcs.length();
         } while((start_pos = out.find('\n', start_pos)) != std::string::npos);
     }
+
+    // Lock the mutex to guard last identifier usage
+    std::unique_lock<std::mutex> lock(write_mutex_);
 
     // Add extra spaces if necessary
     size_t extra_spaces = 0;
@@ -101,7 +110,10 @@ DefaultLogger::~DefaultLogger() {
     out_no_special += out.substr(prev);
 
     // Replace carriage return by newline:
-    out_no_special = std::regex_replace(out_no_special, std::regex("\\\r"), "\n");
+    try {
+        out_no_special = std::regex_replace(out_no_special, std::regex("\\\r"), "\n");
+    } catch(std::regex_error&) {
+    }
 
     // Print output to streams
     for(auto stream : get_streams()) {
@@ -112,6 +124,7 @@ DefaultLogger::~DefaultLogger() {
         }
         (*stream).flush();
     }
+    lock.unlock();
 }
 
 /**
@@ -119,6 +132,9 @@ DefaultLogger::~DefaultLogger() {
  * @note Does not close the streams
  */
 void DefaultLogger::finish() {
+    // Lock the mutex to guard output writing
+    std::lock_guard<std::mutex> lock(write_mutex_);
+
     if(!last_identifier_.empty()) {
         // Flush final line if necessary
         for(auto stream : get_streams()) {
@@ -151,6 +167,13 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
     if(get_format() != LogFormat::SHORT) {
         os << "\x1B[1m"; // BOLD
         os << "|" << get_current_date() << "| ";
+        os << "\x1B[0m"; // RESET
+    }
+
+    // Add thread id only in long format
+    if(get_format() == LogFormat::LONG) {
+        os << "\x1B[1m"; // BOLD
+        os << "=" << std::this_thread::get_id() << "= ";
         os << "\x1B[0m"; // RESET
     }
 
@@ -206,27 +229,26 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
 }
 
 /**
- * @throws std::invalid_argument If an empty identifier is provided
- *
- * This method is typically automatically called by the \ref LOG_PROGRESS macro.
+ * This method is typically automatically called by the \ref LOG_PROGRESS macro. An empty identifier is the same as
+ * underscore.
  */
 std::ostringstream& DefaultLogger::getProcessStream(
-    const std::string& identifier, LogLevel level, const std::string& file, const std::string& function, uint32_t line) {
+    std::string identifier, LogLevel level, const std::string& file, const std::string& function, uint32_t line) {
     // Get the standard process stream
     std::ostringstream& stream = getStream(level, file, function, line);
 
-    // Save the identifier to indicate a progress log
+    // Replace empty identifier with underscore because empty is already used for check
     if(identifier.empty()) {
-        throw std::invalid_argument("the process log identifier cannot be empty");
+        identifier = "_";
     }
-    identifier_ = identifier;
+    identifier_ = std::move(identifier);
 
     return stream;
 }
 
 // Getter and setters for the reporting level
 LogLevel& DefaultLogger::get_reporting_level() {
-    static LogLevel reporting_level = LogLevel::NONE;
+    thread_local LogLevel reporting_level = LogLevel::NONE;
     return reporting_level;
 }
 void DefaultLogger::setReportingLevel(LogLevel level) {
@@ -238,8 +260,7 @@ LogLevel DefaultLogger::getReportingLevel() {
 
 // String to LogLevel conversions and vice versa
 std::string DefaultLogger::getStringFromLevel(LogLevel level) {
-    static const std::array<std::string, 8> type = {
-        {"FATAL", "STATUS", "ERROR", "WARNING", "INFO", "DEBUG", "NONE", "TRACE"}};
+    const std::array<std::string, 8> type = {{"FATAL", "STATUS", "ERROR", "WARNING", "INFO", "DEBUG", "NONE", "TRACE"}};
     return type.at(static_cast<decltype(type)::size_type>(level));
 }
 /**
@@ -273,7 +294,7 @@ LogLevel DefaultLogger::getLevelFromString(const std::string& level) {
 
 // Getter and setters for the format
 LogFormat& DefaultLogger::get_format() {
-    static LogFormat reporting_level = LogFormat::DEFAULT;
+    thread_local LogFormat reporting_level = LogFormat::DEFAULT;
     return reporting_level;
 }
 void DefaultLogger::setFormat(LogFormat level) {
@@ -285,7 +306,7 @@ LogFormat DefaultLogger::getFormat() {
 
 // Convert string to log format and vice versa
 std::string DefaultLogger::getStringFromFormat(LogFormat format) {
-    static const std::array<std::string, 3> type = {{"SHORT", "DEFAULT", "LONG"}};
+    const std::array<std::string, 3> type = {{"SHORT", "DEFAULT", "LONG"}};
     return type.at(static_cast<decltype(type)::size_type>(format));
 }
 /**
@@ -335,7 +356,7 @@ void DefaultLogger::addStream(std::ostream& stream) {
 
 // Getters and setters for the section header
 std::string& DefaultLogger::get_section() {
-    static std::string section;
+    thread_local std::string section;
     return section;
 }
 void DefaultLogger::setSection(std::string section) {

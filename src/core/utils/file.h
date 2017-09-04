@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief Collection of simple file system utilities
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #ifndef ALLPIX_FILE_H
@@ -150,6 +153,7 @@ namespace allpix {
      * @brief Recursively removes a path from the file system
      * @param path Path to the top directory to remove
      * @throws std::invalid_argument If the path cannot be removed
+     * @warning This method is not thread-safe
      *
      * All the required directories are deleted recursively from the top-directory (use this with caution).
      */

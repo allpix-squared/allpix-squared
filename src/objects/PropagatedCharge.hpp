@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief Definition of propagated charge object
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #ifndef ALLPIX_PROPAGATED_CHARGE_H
@@ -21,6 +24,7 @@ namespace allpix {
          * @brief Construct a set of propagated charges
          * @param local_position Local position of the propagated set of charges in the sensor
          * @param global_position Global position of the propagated set of charges in the sensor
+         * @param type Type of the carrier to propagate
          * @param charge Total charge propagated
          * @param event_time Total time of propagation arrival after event start
          * @param deposited_charge Optional pointer to related deposited charge

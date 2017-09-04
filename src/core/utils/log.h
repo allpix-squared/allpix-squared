@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief Provides a logger and macros for convenient access
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #ifndef ALLPIX_LOG_H
@@ -12,6 +15,7 @@
 #endif
 
 #include <cstring>
+#include <mutex>
 #include <ostream>
 #include <sstream>
 #include <string>
@@ -96,7 +100,7 @@ namespace allpix {
          * @param line The line number of the log message
          * @return A C++ stream to write to
          */
-        std::ostringstream& getProcessStream(const std::string& identifier,
+        std::ostringstream& getProcessStream(std::string identifier,
                                              LogLevel level = LogLevel::INFO,
                                              const std::string& file = "",
                                              const std::string& function = "",
@@ -218,6 +222,8 @@ namespace allpix {
         std::string identifier_{};
         static std::string last_message_;
         static std::string last_identifier_;
+
+        static std::mutex write_mutex_;
     };
 
     using Log = DefaultLogger;

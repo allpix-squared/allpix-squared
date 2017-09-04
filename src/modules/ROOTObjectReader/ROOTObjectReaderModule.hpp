@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief Definition of ROOT data file reader module
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #include <functional>
@@ -73,6 +76,10 @@ namespace allpix {
             std::shared_ptr<Detector> detector;
             std::string name;
         };
+
+        // Object names to include or exclude from reading
+        std::set<std::string> include_;
+        std::set<std::string> exclude_;
 
         // File containing the objects
         std::unique_ptr<TFile> input_file_;

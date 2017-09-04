@@ -2,7 +2,10 @@
  * @file
  * @brief Collection of all object exceptions
  *
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #ifndef ALLPIX_OBJECT_EXCEPTIONS_H
@@ -22,7 +25,8 @@ namespace allpix {
     public:
         /**
          * @brief Constructs an error for a object with missing reference
-         * @param message Type of the received message
+         * @param source Type of the object from which the reference was requested
+         * @param reference Type of the non-existing reference
          */
         explicit MissingReferenceException(const std::type_info& source, const std::type_info& reference) {
             error_message_ = "Object ";

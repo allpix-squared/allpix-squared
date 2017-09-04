@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief Loading and execution of all modules
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #ifndef ALLPIX_MODULE_MANAGER_H
@@ -18,6 +21,7 @@
 #include <TFile.h>
 
 #include "Module.hpp"
+#include "ThreadPool.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/utils/log.h"
 
@@ -76,19 +80,19 @@ namespace allpix {
 
         /**
          * @brief Initialize all modules before the event sequence
-         * @warning Should be called after the \ref AllPix::load "load function"
+         * @warning Should be called after the \ref Allpix::load "load function"
          */
         void init();
 
         /**
          * @brief Run all modules for the number of events
-         * @warning Should be called after the \ref AllPix::init "init function"
+         * @warning Should be called after the \ref Allpix::init "init function"
          */
         void run();
 
         /**
          * @brief Finalize all modules after the event sequence
-         * @warning Should be called after the \ref AllPix::init "run function"
+         * @warning Should be called after the \ref Allpix::init "run function"
          */
         void finalize();
 
@@ -105,6 +109,7 @@ namespace allpix {
          * @param config Configuration of the module
          * @param messenger Pointer to the messenger
          * @param geo_manager Pointer to the geometry manager
+         * @param seeder Seeder used to construct the PRNG of the modules
          * @return An unique module together with its identifier
          */
         std::pair<ModuleIdentifier, Module*>
@@ -115,6 +120,7 @@ namespace allpix {
          * @param config Configuration of the module
          * @param messenger Pointer to the messenger
          * @param geo_manager Pointer to the geometry manager
+         * @param seeder Seeder used to construct the PRNG of the modules
          * @return A list of all created detector modules and their identifiers
          */
         std::vector<std::pair<ModuleIdentifier, Module*>>
@@ -138,6 +144,7 @@ namespace allpix {
         std::unique_ptr<TFile> modules_file_;
 
         std::map<Module*, long double> module_execution_time_;
+        long double total_time_{};
 
         Configuration global_config_;
 

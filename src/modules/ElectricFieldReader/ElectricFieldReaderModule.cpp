@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief Implementation of module to read electric fields
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #include "ElectricFieldReaderModule.hpp"
@@ -41,7 +44,7 @@ void ElectricFieldReaderModule::init() {
     if((field_model == "constant" || field_model == "linear") &&
        config_.get<double>("bias_voltage") > Units::get(5.0, "kV")) {
         LOG(WARNING) << "Very high bias voltage of " << Units::display(config_.get<double>("bias_voltage"), "kV")
-                     << " set, this will probably not be simulated correctly";
+                     << " set, this is most likely not desired.";
     }
 
     // Calculate thickness domain
@@ -84,21 +87,25 @@ void ElectricFieldReaderModule::init() {
 }
 
 ElectricFieldFunction ElectricFieldReaderModule::get_linear_field_function(std::pair<double, double> thickness_domain) {
-    auto bias_voltage = config_.get<double>("bias_voltage");
-    auto depletion_voltage = config_.get<double>("depletion_voltage");
-    auto model = detector_->getModel();
-    return [bias_voltage, depletion_voltage, thickness_domain, model](const ROOT::Math::XYZPoint& pos) {
+    LOG(TRACE) << "Calculating function for the linear electric field.";
+    // We always deplete from the implants:
+    auto bias_voltage = std::fabs(config_.get<double>("bias_voltage"));
+    auto depletion_voltage = std::fabs(config_.get<double>("depletion_voltage"));
+    // But the direction of the field depends on the applied voltage:
+    auto direction = std::signbit(config_.get<double>("bias_voltage"));
+    double eff_thickness = thickness_domain.second - thickness_domain.first;
+    // Reduce the effective thickness of the sensor if voltage is below full depletion
+    if(bias_voltage < depletion_voltage) {
+        eff_thickness *= sqrt(bias_voltage / depletion_voltage);
+        depletion_voltage = bias_voltage;
+    }
+    LOG(TRACE) << "Effective thickness of the electric field: " << Units::display(eff_thickness, {"um", "mm"});
+    return [bias_voltage, depletion_voltage, direction, eff_thickness, thickness_domain](const ROOT::Math::XYZPoint& pos) {
         double z_rel = thickness_domain.second - pos.z();
-        double eff_thickness = thickness_domain.second - thickness_domain.first;
-        double dep_voltage = depletion_voltage;
-        if(bias_voltage < depletion_voltage) {
-            eff_thickness *= sqrt(bias_voltage / depletion_voltage);
-            dep_voltage = bias_voltage;
-        }
         double field_z = std::max(0.0,
-                                  (bias_voltage - dep_voltage) / eff_thickness +
-                                      2 * (dep_voltage / eff_thickness) * (1 - z_rel / eff_thickness));
-        return ROOT::Math::XYZVector(0, 0, -field_z);
+                                  (bias_voltage - depletion_voltage) / eff_thickness +
+                                      2 * (depletion_voltage / eff_thickness) * (1 - z_rel / eff_thickness));
+        return ROOT::Math::XYZVector(0, 0, (direction ? -1 : 1) * field_z);
     };
 }
 
@@ -172,18 +179,19 @@ void ElectricFieldReaderModule::create_output_plots() {
     }
 
     // Create 2D histogram
-    auto histogram = new TH2F("field",
-                              ("Electric field for " + detector_->getName()).c_str(),
+    auto histogram = new TH2F("field_magnitude",
+                              "electric field magnitude",
                               static_cast<int>(steps),
                               min1,
                               max1,
                               static_cast<int>(steps),
                               min2,
                               max2);
+    histogram->SetMinimum(0);
 
     // Create 1D histogram
-    auto histogram1D =
-        new TH1F("field1d", ("Electric field for " + detector_->getName()).c_str(), static_cast<int>(steps), min2, max2);
+    auto histogram1D = new TH1F(
+        "field1d_z", "electric field (z-component);z (mm);field strength (V/cm)", static_cast<int>(steps), min2, max2);
 
     // Determine the coordinate to use for projection
     double x = 0, y = 0, z = 0;
@@ -202,42 +210,44 @@ void ElectricFieldReaderModule::create_output_plots() {
         if(project == 'x') {
             y = model->getSensorCenter().y() - model->getSensorSize().y() / 2.0 +
                 ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().y();
+            histogram->GetXaxis()->SetTitle("y (mm)");
         } else if(project == 'y') {
             x = model->getSensorCenter().x() - model->getSensorSize().x() / 2.0 +
                 ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().x();
+            histogram->GetXaxis()->SetTitle("x (mm)");
         } else {
             x = model->getSensorCenter().x() - model->getSensorSize().x() / 2.0 +
                 ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().x();
+            histogram->GetXaxis()->SetTitle("x (mm)");
         }
         for(size_t k = 0; k < steps; ++k) {
             if(project == 'x') {
                 z = z_min + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * (z_max - z_min);
+                histogram->GetYaxis()->SetTitle("z (mm)");
             } else if(project == 'y') {
                 z = z_min + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * (z_max - z_min);
+                histogram->GetYaxis()->SetTitle("z (mm)");
             } else {
                 y = model->getSensorCenter().y() - model->getSensorSize().y() / 2.0 +
                     ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().y();
+                histogram->GetYaxis()->SetTitle("y (mm)");
             }
 
             // Get field strength from detector
-            auto field_strength = Units::convert(
-                std::sqrt(detector_->getElectricField(ROOT::Math::XYZPoint(x, y, z)).Mag2()), "V/cm"); // magnitude
-            // Fill the histogram
+            auto field = detector_->getElectricField(ROOT::Math::XYZPoint(x, y, z));
+            auto field_strength = Units::convert(std::sqrt(field.Mag2()), "V/cm");
+            auto field_z_strength = Units::convert(field.z(), "V/cm");
+            // Fill the main histogram
             if(project == 'x') {
                 histogram->Fill(y, z, static_cast<double>(field_strength));
-                if(j == steps / 2) {
-                    histogram1D->Fill(z, static_cast<double>(field_strength));
-                }
             } else if(project == 'y') {
                 histogram->Fill(x, z, static_cast<double>(field_strength));
-                if(j == steps / 2) {
-                    histogram1D->Fill(z, static_cast<double>(field_strength));
-                }
             } else {
                 histogram->Fill(x, y, static_cast<double>(field_strength));
-                if(j == steps / 2) {
-                    histogram1D->Fill(y, static_cast<double>(field_strength));
-                }
+            }
+            // Fill the 1d histogram
+            if(j == steps / 2) {
+                histogram1D->Fill(z, static_cast<double>(field_z_strength));
             }
         }
     }

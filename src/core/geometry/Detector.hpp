@@ -2,7 +2,10 @@
  * @file
  * @brief Base of detector implementation
  *
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #ifndef ALLPIX_DETECTOR_H
@@ -17,8 +20,8 @@
 #include <typeindex>
 #include <vector>
 
-#include <Math/EulerAngles.h>
 #include <Math/Point3D.h>
+#include <Math/Rotation3D.h>
 #include <Math/Transform3D.h>
 
 #include "Detector.hpp"
@@ -56,12 +59,12 @@ namespace allpix {
          * @param name Unique name of the detector
          * @param model Model of the detector
          * @param position Position in the world frame
-         * @param orientation Orientation in Z-X-Z extrinsic Euler angles
+         * @param orientation Rotation matrix representing the orientation
          */
         Detector(std::string name,
                  std::shared_ptr<DetectorModel> model,
                  ROOT::Math::XYZPoint position,
-                 ROOT::Math::EulerAngles orientation);
+                 const ROOT::Math::Rotation3D& orientation);
 
         /**
          * @brief Get name of the detector
@@ -84,7 +87,7 @@ namespace allpix {
          * @brief Get orientation in the world
          * @return Orientation in Z-X-Z extrinsic Euler angles
          */
-        ROOT::Math::EulerAngles getOrientation() const;
+        ROOT::Math::Rotation3D getOrientation() const;
 
         /**
          * @brief Convert a global position to a position in the detector frame
@@ -127,13 +130,6 @@ namespace allpix {
          * @return Vector of the field at the queried point
          */
         ROOT::Math::XYZVector getElectricField(const ROOT::Math::XYZPoint& local_pos) const;
-        /**
-         * @brief Get the raw electric field array at a local position
-         * @param pos Position in a vector type having x(), y() and z() members
-         * @return Pointer to an array containing the x, y, z components of the field
-         *         (or a null pointer outside the sensor)
-         */
-        template <typename T> std::vector<double> getElectricFieldRaw(T) const;
 
         /**
          * @brief Set the electric field in a single pixel in the detector using a grid
@@ -180,16 +176,7 @@ namespace allpix {
          * @param position Position in the world frame
          * @param orientation Orientation in Z-X-Z extrinsic Euler angles
          */
-        Detector(std::string name, ROOT::Math::XYZPoint position, ROOT::Math::EulerAngles orientation);
-
-        /**
-         * @brief Get the electric field at a position
-         * @param x X-coordinate
-         * @param y Y-coordinate
-         * @param z Z-coordinate
-         * @return Pointer to the electric field (or a null pointer if outside of the detector)
-         */
-        std::vector<double> get_electric_field_raw(double x, double y, double z) const;
+        Detector(std::string name, ROOT::Math::XYZPoint position, const ROOT::Math::Rotation3D& orientation);
 
         /**
          * @brief Set the detector model (used by the \ref GeometryManager for lazy loading)
@@ -206,7 +193,7 @@ namespace allpix {
         std::shared_ptr<DetectorModel> model_;
 
         ROOT::Math::XYZPoint position_;
-        ROOT::Math::EulerAngles orientation_;
+        ROOT::Math::Rotation3D orientation_;
 
         // Transform matrix from global to local coordinates
         ROOT::Math::Transform3D transform_;
@@ -219,10 +206,6 @@ namespace allpix {
 
         std::map<std::type_index, std::map<std::string, std::shared_ptr<void>>> external_objects_;
     };
-
-    template <typename T> std::vector<double> Detector::getElectricFieldRaw(T pos) const {
-        return get_electric_field_raw(pos.x(), pos.y(), pos.z());
-    }
 
     /**
      * If the returned object is not a null pointer it is guaranteed to be of the correct type
