@@ -65,7 +65,7 @@ namespace allpix {
     static std::string _from_string_helper(std::string str) {
         // Check if string is not empty
         str = trim(str);
-        if(str == "") {
+        if(str.empty()) {
             throw std::invalid_argument("string is empty");
         }
 
