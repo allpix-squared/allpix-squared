@@ -235,6 +235,14 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
     // Make the vector to return
     std::string module_name = config.getName();
 
+    // Return error if user tried to specialize the unique module:
+    if(config.has("name")) {
+        throw InvalidValueError(config, "name", "unique modules cannot be specialized using the \"name\" keyword.");
+    }
+    if(config.has("type")) {
+        throw InvalidValueError(config, "type", "unique modules cannot be specialized using the \"type\" keyword.");
+    }
+
     // Create the identifier
     std::string identifier_str;
     if(!config.get<std::string>("input").empty()) {
