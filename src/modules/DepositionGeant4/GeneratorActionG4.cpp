@@ -67,10 +67,9 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     LOG(DEBUG) << "Using particle " << particle->GetParticleName() << " (ID " << particle->GetPDGEncoding() << ").";
 
     // Set global parameters of the source
-    // FIXME keep number of particles always at one?
     single_source->SetNumberOfParticles(1);
     single_source->SetParticleDefinition(particle);
-    // FIXME What is this time
+    // Set the primary track's start time in for the current event to zero:
     single_source->SetParticleTime(0.0);
 
     // Set position parameters
