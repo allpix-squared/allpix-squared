@@ -8,7 +8,11 @@
 
 #include "../../src/core/utils/log.h"
 
+// Interrupt handler
+void interrupt_handler(int);
+
 namespace mesh_converter {
+
     /**
      * @brief Tetrahedron class for the 3D barycentric interpolation
      */
