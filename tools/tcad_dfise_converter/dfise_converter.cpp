@@ -20,13 +20,15 @@
 
 #include "read_dfise.h"
 
+using namespace mesh_converter;
+
 void interrupt_handler(int) {
     LOG(STATUS) << "Interrupted! Aborting conversion...";
     allpix::Log::finish();
     std::exit(0);
 }
 
-void Tetrahedron::setVertices(std::vector<Point> new_vertices) {
+void MeshElement::setVertices(std::vector<Point> new_vertices) {
     if(vertices.size() != new_vertices.size()) {
         LOG(ERROR) << "Invalid vertices vector";
         return;
@@ -36,15 +38,15 @@ void Tetrahedron::setVertices(std::vector<Point> new_vertices) {
     }
 }
 
-void Tetrahedron::setVertex(size_t index, Point new_vertice) {
+void MeshElement::setVertex(size_t index, Point new_vertice) {
     vertices[index] = new_vertice;
 }
 
-Point Tetrahedron::getVertex(size_t index) {
+Point MeshElement::getVertex(size_t index) {
     return vertices[index];
 }
 
-void Tetrahedron::setVerticesField(std::vector<Point> new_observable) {
+void MeshElement::setVerticesField(std::vector<Point> new_observable) {
     if(vertices.size() != new_observable.size()) {
         LOG(ERROR) << "Invalid field vector";
         return;
@@ -54,23 +56,23 @@ void Tetrahedron::setVerticesField(std::vector<Point> new_observable) {
     }
 }
 
-void Tetrahedron::setVertexField(size_t index, Point new_observable) {
+void MeshElement::setVertexField(size_t index, Point new_observable) {
     e_field[index] = new_observable;
 }
 
-Point Tetrahedron::getVertexProperty(size_t index) {
+Point MeshElement::getVertexProperty(size_t index) {
     return e_field[index];
 }
 
-void Tetrahedron::setDimension(int dimension) {
+void MeshElement::setDimension(int dimension) {
     _dimension = dimension;
 }
 
-int Tetrahedron::getDimension() {
+int MeshElement::getDimension() {
     return _dimension;
 }
 
-double Tetrahedron::getVolume() {
+double MeshElement::getVolume() {
     double volume = 0;
     if(this->getDimension() == 3) {
         Eigen::Matrix4d element_matrix;
@@ -86,11 +88,11 @@ double Tetrahedron::getVolume() {
     return volume;
 }
 
-double Tetrahedron::getDistance(size_t index, Point qp) {
+double MeshElement::getDistance(size_t index, Point qp) {
     return unibn::L2Distance<Point>::compute(vertices[index], qp);
 }
 
-bool Tetrahedron::validElement(double volume_cut, Point qp) {
+bool MeshElement::validElement(double volume_cut, Point qp) {
     if(this->getVolume() == 0) {
         LOG(TRACE) << "Invalid tetrahedron with coplanar(3D)/colinear(2D) vertices.";
         return false;
@@ -104,7 +106,7 @@ bool Tetrahedron::validElement(double volume_cut, Point qp) {
     for(size_t i = 0; i < static_cast<size_t>(this->getDimension()) + 1; i++) {
         std::vector<Point> sub_vertices = vertices;
         sub_vertices[i] = qp;
-        Tetrahedron sub_tetrahedron(sub_vertices);
+        MeshElement sub_tetrahedron(sub_vertices);
         sub_tetrahedron.setDimension(this->getDimension());
         double tetra_volume = sub_tetrahedron.getVolume();
         if(this->getVolume() * tetra_volume >= 0) {
@@ -118,13 +120,13 @@ bool Tetrahedron::validElement(double volume_cut, Point qp) {
     return true;
 }
 
-Point Tetrahedron::getObservable(Point qp) {
+Point MeshElement::getObservable(Point qp) {
     Point new_observable;
     Eigen::Matrix4d sub_tetra_matrix;
     for(size_t index = 0; index < static_cast<size_t>(this->getDimension()) + 1; index++) {
         auto sub_vertices = vertices;
         sub_vertices[index] = qp;
-        Tetrahedron sub_tetrahedron(sub_vertices);
+        MeshElement sub_tetrahedron(sub_vertices);
         sub_tetrahedron.setDimension(this->getDimension());
         double sub_volume = sub_tetrahedron.getVolume();
         LOG(DEBUG) << "Sub volume " << index << ": " << sub_volume;
@@ -137,7 +139,7 @@ Point Tetrahedron::getObservable(Point qp) {
     return new_observable;
 }
 
-void Tetrahedron::printElement(Point qp) {
+void MeshElement::printElement(Point qp) {
     for(size_t index = 0; index < static_cast<size_t>(this->getDimension()) + 1; index++) {
         LOG(DEBUG) << "Tetrahedron vertex " << index_vec[index] << " (" << vertices[index].x << ", " << vertices[index].y
                    << ", " << vertices[index].z << ") - "
@@ -515,7 +517,7 @@ int main(int argc, char** argv) {
                                     << "Parsing neighbors [index]: " << index[0] << ", " << index[1] << ", " << index[2];
                             }
 
-                            Tetrahedron element(dimension, index, element_vertices, element_vertices_field);
+                            MeshElement element(dimension, index, element_vertices, element_vertices_field);
                             valid = element.validElement(volume_cut, q);
                             if(!valid) {
                                 continue;

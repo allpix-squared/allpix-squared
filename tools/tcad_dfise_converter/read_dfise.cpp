@@ -12,7 +12,9 @@
 // Include trim utility from allpix
 #include "core/utils/string.h"
 
-std::map<std::string, std::vector<Point>> read_grid(const std::string& file_name) {
+using namespace mesh_converter;
+
+std::map<std::string, std::vector<Point>> mesh_converter::read_grid(const std::string& file_name) {
     std::ifstream file(file_name);
     if(!file) {
         throw std::runtime_error("file cannot be accessed");
@@ -348,7 +350,8 @@ std::map<std::string, std::vector<Point>> read_grid(const std::string& file_name
     return ret_map;
 }
 
-std::map<std::string, std::map<std::string, std::vector<Point>>> read_electric_field(const std::string& file_name) {
+std::map<std::string, std::map<std::string, std::vector<Point>>>
+mesh_converter::read_electric_field(const std::string& file_name) {
     std::ifstream file(file_name);
     if(!file) {
         throw std::runtime_error("file cannot be accessed");
