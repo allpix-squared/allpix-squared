@@ -1,7 +1,7 @@
 [![](doc/logo_small.png)](https://cern.ch/allpix-squared)
 
 # Allpix<sup>2</sup>
-Generic simulation framework for pixel detectors based on [AllPix](https://github.com/AllPix/allpix). 
+### Generic Pixel Detector Simulation Framework
 
 For more details about the project please have a look at the website at https://cern.ch/allpix-squared.
 
@@ -14,7 +14,7 @@ For more details about the project please have a look at the website at https://
 * [Eigen3](http://eigen.tuxfamily.org/index.php?title=Main_Page) (optional, but required for typical purposes)
 
 ## Installation
-The CMake build system is used for compilation and installation. The install directory can be specified by adding `-DCMAKE_INSTALL_PREFIX=<prefix>` as argument to the CMake command below. Other configuration options are explained in the manual (see the documentation section below). 
+The CMake build system is used for compilation and installation. The install directory can be specified by adding `-DCMAKE_INSTALL_PREFIX=<prefix>` as argument to the CMake command below. Other configuration options are explained in the manual (see the documentation section below).
 
 The dependencies need to be initialized for the build to succeed. Currently there are two methods to load these:
 
@@ -40,14 +40,14 @@ $ make install
 For more detailed installation instructions, please refer to the documentation below.
 
 ## Documentation
-The most recently published version of the User's Manual is available online [here](https://project-allpix-squared.web.cern.ch/project-allpix-squared/usermanual/allpix-manual.pdf). 
-The Doxygen reference is published [online](https://project-allpix-squared.web.cern.ch/project-allpix-squared/reference/html/) too. 
+The most recently published version of the User Manual is available online [here](https://project-allpix-squared.web.cern.ch/project-allpix-squared/usermanual/allpix-manual.pdf).
+The Doxygen reference is published [online](https://project-allpix-squared.web.cern.ch/project-allpix-squared/reference/html/) too.
 
-The latest PDF version of the User's Manual can also be created from source by executing 
+The latest PDF version of the User Manual can also be created from source by executing
 ```
 $ make pdf
 ```
-After running the manual is available under `usermanual/allpix-manual.pdf` in the build directory. 
+After running the manual is available under `usermanual/allpix-manual.pdf` in the build directory.
 
 To build the HTML version of the latest Doxygen reference, run the following command
 ```
@@ -55,17 +55,37 @@ $ make reference
 ```
 The main page of the reference can then be found at `reference/html/index.html` in the build folder.
 
-## Contributing
-All type of minor and major contributions are very welcome. Please refer to our [contribution guidelines](CONTRIBUTING.md) for a description on how to get started.
+## Development of Allpix<sup>2</sup>
 
-Before adding changes it is very much recommended to carefully read through the documentation in the User's Manual first.
+Allpix<sup>2</sup> has been developed and is maintained by
+
+* Koen Wolters, CERN, @kwolters
+* Daniel Hynds, CERN, @dhynds
+* Simon Spannagel, CERN, @simonspa
+
+The following authors, in alphabetical order, have contributed to Allpix<sup>2</sup>:
+
+* Neal Gauvin, Université de Genève, @ngauvin
+* Moritz Kiehn, Université de Genève, @msmk
+* Salman Maqbool, CERN Summer Student, @smaqbool
+* Andreas Matthias Nürnberg, CERN, @nurnberg
+* Marko Petric, CERN, @mpetric
+* Edoardo Rossi, DESY, @edrossi
+* Paul Schütze, DESY, @pschutze
+* Mateus Vicente Barreto Pinto, Université de Genève, @mvicente
+
+The authors would also like to express their thanks to the developers of [AllPix](https://twiki.cern.ch/twiki/bin/view/Main/AllPix).
+
+## Contributing
+All types of contributions, being it minor and major, are very welcome. Please refer to our [contribution guidelines](CONTRIBUTING.md) for a description on how to get started.
+
+Before adding changes it is very much recommended to carefully read through the documentation in the User Manual first.
 
 ## Licenses
 This software is distributed under the terms of the MIT license. A copy of this license can be found in [LICENSE.md](LICENSE.md).
 
 The documentation is distributed under the terms of the CC-BY-4.0 license. This license can be found in [doc/COPYING.md](doc/COPYING.md).
 
-The LaTeX and Pandoc CMake modules used by Allpix<sup>2</sup> are licensed under the BSD 3-Clause License. 
+The LaTeX and Pandoc CMake modules used by Allpix<sup>2</sup> are licensed under the BSD 3-Clause License.
 
 The octree library of the TCAD DF-ISE converter is made available under the MIT license, more information [here](tools/tcad_dfise_converter/README.md).
-

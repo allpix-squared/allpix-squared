@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief Implementation of detector histogramming module
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #include "DetectorHistogrammerModule.hpp"
@@ -102,7 +105,7 @@ void DetectorHistogrammerModule::init() {
     // Create cluster charge plot
     std::string cluster_charge_name = "cluster_charge";
     std::string cluster_charge_title = "Cluster charge for " + detector_->getName() + ";cluster charge [ke];clusters";
-    cluster_charge = new TH1D(cluster_charge_name.c_str(), cluster_charge_title.c_str(), 200, 0., 100.);
+    cluster_charge = new TH1D(cluster_charge_name.c_str(), cluster_charge_title.c_str(), 1000, 0., 50.);
 }
 
 void DetectorHistogrammerModule::run(unsigned int) {

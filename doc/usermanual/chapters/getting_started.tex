@@ -124,7 +124,7 @@ The main configuration consists of a set of sections specifying the modules used
 All modules are executed in the \emph{linear} order in which they are defined.
 There are a few section names which have a special meaning in the main configuration, namely the following:
 \begin{itemize}
-\item The \textbf{global} (framework) header sections: These are all zero-length section headers (including the one at the beginning of the file) and all sections marked with the header \texttt{[AllPix]} (case-sensitive).
+\item The \textbf{global} (framework) header sections: These are all zero-length section headers (including the one at the beginning of the file) and all sections marked with the header \texttt{[Allpix]} (case-insensitive).
 These are combined and accessed together as the global configuration, which contain all parameters of the framework itself (see Section~\ref{sec:framework_parameters} for details).
 All key-value pairs defined in this section are also inherited by all individual configurations as long the key is not defined in the module configuration itself.
 \item The \textbf{ignore} header sections: All sections with name \texttt{[Ignore]} are ignored.
@@ -159,8 +159,8 @@ A valid example configuration using the detector configuration above could be:
 string_value = "example1"
 # The location of the detector configuration is a global parameter
 detectors_file = "manual_detector.conf"
-# The AllPix section is also considered global and merged with the above
-[AllPix]
+# The Allpix section is also considered global and merged with the above
+[Allpix]
 another_random_string = "example2"
 
 # First run a unique module

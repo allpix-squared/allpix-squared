@@ -39,7 +39,7 @@ This chapter serves as a short overview of the design goals of \apsq and the rel
 Finally the implementation provides a executable which integrates the core, messages and tools together with the command-line handling into a single process.
 
 \subsection{Core}
-The core is structured around one main object (AllPix) and a set of managers. Besides this it contains a few utilities for logging, some string operations and a set of exceptions that could happen during the execution of a single event. A manager is an unique object bound to AllPix that should not be copyable. The set of managers and their uses follows hereafter.
+The core is structured around one main object (Allpix) and a set of managers. Besides this it contains a few utilities for logging, some string operations and a set of exceptions that could happen during the execution of a single event. A manager is an unique object bound to Allpix that should not be copyable. The set of managers and their uses follows hereafter.
 
 \begin{enumerate}
 \item \textbf{ConfigManager}: Loads the main configuration files and provides a set of configurations (sections) that should be converted to a set of instantiations later. The config manager should be able to provide the set of configurations in the order as they are defined in the configuration file and also allow to fetch a configuration by header. The structure of the current configuration is inspired by a simple version of \href{https://github.com/toml-lang/toml}{TOML}. The most important rules are:
