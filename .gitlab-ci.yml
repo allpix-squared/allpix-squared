@@ -302,6 +302,7 @@ perf:slc6-gcc:
         - cd build/
         - ctest -R test_performance --output-on-failure -j4
     allow_failure: true
+    retry: 1
 
 perf:lxplus-gcc:
     stage: unittest
@@ -315,6 +316,7 @@ perf:lxplus-gcc:
         - cd build/
         - ctest -R test_performance --output-on-failure -j4
     allow_failure: true
+    retry: 1
 
 perf:slc6-llvm:
     stage: unittest
@@ -329,6 +331,7 @@ perf:slc6-llvm:
         - cd build/
         - ctest -R test_performance --output-on-failure -j4
     allow_failure: true
+    retry: 1
 
 
 # CentOS 7
@@ -346,6 +349,7 @@ perf:cc7-gcc:
         - cd build/
         - ctest -R test_performance --output-on-failure -j4
     allow_failure: true
+    retry: 1
 
 perf:cc7-llvm:
     stage: unittest
@@ -360,6 +364,7 @@ perf:cc7-llvm:
         - cd build/
         - ctest -R test_performance --output-on-failure -j4
     allow_failure: true
+    retry: 1
 
 
 # Mac OS X
@@ -377,7 +382,7 @@ perf:mac1012-clang:
         - cmake -DTEST_MODULES=OFF ..
         - ctest -R test_performance --output-on-failure -j4
     allow_failure: true
-
+    retry: 1
 
 
 #############################
