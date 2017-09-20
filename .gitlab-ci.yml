@@ -301,6 +301,7 @@ perf:slc6-gcc:
         - source .gitlab-ci.d/init_x86_64.sh
         - cd build/
         - ctest -R test_performance --output-on-failure -j4
+    allow_failure: true
 
 perf:lxplus-gcc:
     stage: unittest
@@ -313,6 +314,7 @@ perf:lxplus-gcc:
         - source etc/scripts/setup_lxplus.sh
         - cd build/
         - ctest -R test_performance --output-on-failure -j4
+    allow_failure: true
 
 perf:slc6-llvm:
     stage: unittest
@@ -326,6 +328,7 @@ perf:slc6-llvm:
         - source .gitlab-ci.d/init_x86_64.sh
         - cd build/
         - ctest -R test_performance --output-on-failure -j4
+    allow_failure: true
 
 
 # CentOS 7
@@ -342,6 +345,7 @@ perf:cc7-gcc:
         - source .gitlab-ci.d/load_deps.sh
         - cd build/
         - ctest -R test_performance --output-on-failure -j4
+    allow_failure: true
 
 perf:cc7-llvm:
     stage: unittest
@@ -355,6 +359,7 @@ perf:cc7-llvm:
         - source .gitlab-ci.d/init_x86_64.sh
         - cd build/
         - ctest -R test_performance --output-on-failure -j4
+    allow_failure: true
 
 
 # Mac OS X
@@ -371,6 +376,7 @@ perf:mac1012-clang:
         - cd build/
         - cmake -DTEST_MODULES=OFF ..
         - ctest -R test_performance --output-on-failure -j4
+    allow_failure: true
 
 
 
