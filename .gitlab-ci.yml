@@ -289,7 +289,7 @@ ut:mac1012-clang:
         - source .gitlab-ci.d/init_mac.sh
         - source .gitlab-ci.d/load_deps.sh
         - cd build/
-        - cmake ..
+        - cmake -DTEST_MODULES=OFF ..
         - ctest --output-on-failure -j4
         - cat output_check_performance.log
 
