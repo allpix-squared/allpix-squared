@@ -13,12 +13,12 @@ ADD_TEST(NAME manual
 # Module functionality tests #
 ##############################
 
-FILE(GLOB TEST_MODULES test_modules/test_*)
+FILE(GLOB TEST_MODULES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test_modules/test_*)
 LIST(LENGTH TEST_MODULES NUM_TEST_MODULES)
 MESSAGE(STATUS "Unit tests: ${NUM_TEST_MODULES} module functionality tests")
 FOREACH(TEST ${TEST_MODULES})
     ADD_TEST(NAME ${TEST}
-        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/run_directory.sh "test_modules " "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${TEST}"
+        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/run_directory.sh "test_modules " "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_CURRENT_SOURCE_DIR}/${TEST}"
     )
     FILE(STRINGS ${TEST} EXPRESSIONS REGEX "# ")
 
