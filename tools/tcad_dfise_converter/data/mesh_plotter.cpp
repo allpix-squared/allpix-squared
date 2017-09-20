@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
 
     // Read parameters
     std::string file_name;
-    std::string output_file_name = "efield.png";
+    std::string output_file_name;
     std::string plane = "yz";
     int slice_index = 0;
     bool flag_cut = false;
@@ -76,6 +76,13 @@ int main(int argc, char** argv) {
     // Read file
     std::cout << "Reading file: " << file_name;
 
+    size_t firstindex = file_name.find_last_of('_');
+    size_t lastindex = file_name.find('.');
+    output_file_name = file_name.substr(0, lastindex);
+    output_file_name += ".png";
+
+    std::string observable = file_name.substr(firstindex + 1, lastindex - (firstindex + 1));
+
     std::ifstream input_file;
     input_file.open(file_name);
     if(input_file.is_open() != false) {
@@ -122,10 +129,32 @@ int main(int argc, char** argv) {
     }
 
     // Create and fill histogram
-    auto efield_map = new TH2D("Electric Field", "Electric Field", x_bin, 0, x_bin, y_bin, 0, y_bin);
-    auto exfield_map = new TH2D("Electric Field X", "Electric Field X", x_bin, 0, x_bin, y_bin, 0, y_bin);
-    auto eyfield_map = new TH2D("Electric Field Y", "Electric Field Y", x_bin, 0, x_bin, y_bin, 0, y_bin);
-    auto ezfield_map = new TH2D("Electric Field Z", "Electric Field Z", x_bin, 0, x_bin, y_bin, 0, y_bin);
+    auto efield_map =
+        new TH2D(Form("%s", observable.c_str()), Form("%s", observable.c_str()), x_bin, 0, x_bin, y_bin, 0, y_bin);
+    auto exfield_map = new TH2D(Form("%s X component", observable.c_str()),
+                                Form("%s X component", observable.c_str()),
+                                x_bin,
+                                0,
+                                x_bin,
+                                y_bin,
+                                0,
+                                y_bin);
+    auto eyfield_map = new TH2D(Form("%s Y component", observable.c_str()),
+                                Form("%s Y component", observable.c_str()),
+                                x_bin,
+                                0,
+                                x_bin,
+                                y_bin,
+                                0,
+                                y_bin);
+    auto ezfield_map = new TH2D(Form("%s Z component", observable.c_str()),
+                                Form("%s Z component", observable.c_str()),
+                                x_bin,
+                                0,
+                                x_bin,
+                                y_bin,
+                                0,
+                                y_bin);
     auto c1 = new TCanvas();
 
     double dummy;
@@ -134,7 +163,7 @@ int main(int argc, char** argv) {
     std::string file_line;
     while(getline(input_file, file_line)) {
         int p = 0;
-        if(line < 6) {
+        if(line < 7) {
             line++;
             continue;
         }
@@ -152,11 +181,13 @@ int main(int argc, char** argv) {
         }
         line++;
     }
-    auto* tf = new TFile("efield_plots.root", "RECREATE");
-    efield_map->Write("Norm");
-    exfield_map->Write("Ex");
-    eyfield_map->Write("Ey");
-    ezfield_map->Write("Ez");
+    std::string root_file_name = file_name.substr(0, lastindex);
+    root_file_name += "_Interpolation_plots.root";
+    auto* tf = new TFile(root_file_name.c_str(), "RECREATE");
+    exfield_map->Write(Form("%s X component", observable.c_str()));
+    eyfield_map->Write(Form("%s Y component", observable.c_str()));
+    ezfield_map->Write(Form("%s Z component", observable.c_str()));
+    efield_map->Write(Form("%s Norm", observable.c_str()));
     c1->cd();
     efield_map->Draw("colz");
     c1->SaveAs(output_file_name.c_str());
