@@ -1,4 +1,4 @@
-ABSOLUTE_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ABSOLUTE_PATH="$( cd "$( dirname "${BASH_SOURCE}" )" && pwd )"
 
 # Load dependencies if run by the CI
 # FIXME: This is needed because of broken RPATH on Mac
@@ -13,6 +13,6 @@ fi
 
 # Run the second argument in the directory created from the first argument
 rm -rf $1
-mkdir $1
+mkdir -p $1
 cd $1
 exec $2
