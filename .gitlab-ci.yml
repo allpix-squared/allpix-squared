@@ -3,8 +3,8 @@ variables:
 
 stages:
     - compile
-    - format
     - unittest
+    - format
     - documentation
     - deploy
 
