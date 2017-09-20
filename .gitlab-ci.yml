@@ -74,7 +74,7 @@ cmp:lxplus-gcc:
             - lib
         expire_in: 3 hour
 
-cmp:centos7-gcc:
+cmp:cc7-gcc:
     stage: compile
     tags:
         - docker
@@ -95,7 +95,7 @@ cmp:centos7-gcc:
             - lib
         expire_in: 3 hour
 
-cmp:centos7-llvm:
+cmp:cc7-llvm:
     stage: compile
     tags:
         - docker
@@ -171,12 +171,12 @@ fmt:slc6-llvm-lint:
 
 # CentOS 7
 
-fmt:centos7-llvm-format:
+fmt:cc7-llvm-format:
     stage: format
     tags:
         - docker
     dependencies:
-        - cmp:centos7-llvm
+        - cmp:cc7-llvm
     image: clicdp/cc7-base
     script:
         - export COMPILER_TYPE="llvm"
@@ -184,12 +184,12 @@ fmt:centos7-llvm-format:
         - cd build/
         - ninja check-format
 
-fmt:centos7-llvm-lint:
+fmt:cc7-llvm-lint:
     stage: format
     tags:
         - docker
     dependencies:
-        - cmp:centos7-llvm
+        - cmp:cc7-llvm
     image: clicdp/cc7-base
     script:
         - export COMPILER_TYPE="llvm"
@@ -205,7 +205,7 @@ fmt:centos7-llvm-lint:
 
 # SLC 6
 
-ut:slc6-gcc:
+mod:slc6-gcc:
     stage: unittest
     tags:
         - docker
@@ -215,9 +215,9 @@ ut:slc6-gcc:
     script:
         - source .gitlab-ci.d/init_x86_64.sh
         - cd build/
-        - ctest --output-on-failure -j4
+        - ctest -R test_modules --output-on-failure -j4
 
-ut:lxplus-gcc:
+mod:lxplus-gcc:
     stage: unittest
     tags:
         - docker
@@ -227,9 +227,9 @@ ut:lxplus-gcc:
     script:
         - source etc/scripts/setup_lxplus.sh
         - cd build/
-        - ctest --output-on-failure -j4
+        - ctest -R test_modules --output-on-failure -j4
 
-ut:slc6-llvm:
+mod:slc6-llvm:
     stage: unittest
     tags:
         - docker
@@ -240,41 +240,41 @@ ut:slc6-llvm:
         - export COMPILER_TYPE="llvm"
         - source .gitlab-ci.d/init_x86_64.sh
         - cd build/
-        - ctest --output-on-failure -j4
+        - ctest -R test_modules --output-on-failure -j4
 
 
 # CentOS 7
 
-ut:centos7-gcc:
+mod:cc7-gcc:
     stage: unittest
     tags:
         - docker
     dependencies:
-        - cmp:centos7-gcc
+        - cmp:cc7-gcc
     image: clicdp/cc7-base
     script:
         - source .gitlab-ci.d/init_x86_64.sh
         - source .gitlab-ci.d/load_deps.sh
         - cd build/
-        - ctest --output-on-failure -j4
+        - ctest -R test_modules --output-on-failure -j4
 
-ut:centos7-llvm:
+mod:cc7-llvm:
     stage: unittest
     tags:
         - docker
     dependencies:
-        - cmp:centos7-llvm
+        - cmp:cc7-llvm
     image: clicdp/cc7-base
     script:
         - export COMPILER_TYPE="llvm"
         - source .gitlab-ci.d/init_x86_64.sh
         - cd build/
-        - ctest --output-on-failure -j4
+        - ctest -R test_modules --output-on-failure -j4
 
 
 # Mac OS X
 
-ut:mac1012-clang:
+mod:mac1012-clang:
     stage: unittest
     tags:
         - mac
@@ -285,7 +285,92 @@ ut:mac1012-clang:
         - source .gitlab-ci.d/load_deps.sh
         - cd build/
         - cmake -DTEST_MODULES=OFF ..
-        - ctest --output-on-failure -j4
+        - ctest -R test_modules --output-on-failure -j4
+
+
+# SLC 6
+
+perf:slc6-gcc:
+    stage: unittest
+    tags:
+        - docker
+    dependencies:
+        - cmp:slc6-gcc
+    image: clicdp/slc6-base
+    script:
+        - source .gitlab-ci.d/init_x86_64.sh
+        - cd build/
+        - ctest -R test_performance --output-on-failure -j4
+
+perf:lxplus-gcc:
+    stage: unittest
+    tags:
+        - docker
+    dependencies:
+        - cmp:lxplus-gcc
+    image: clicdp/slc6-base
+    script:
+        - source etc/scripts/setup_lxplus.sh
+        - cd build/
+        - ctest -R test_performance --output-on-failure -j4
+
+perf:slc6-llvm:
+    stage: unittest
+    tags:
+        - docker
+    dependencies:
+        - cmp:slc6-gcc
+    image: clicdp/slc6-base
+    script:
+        - export COMPILER_TYPE="llvm"
+        - source .gitlab-ci.d/init_x86_64.sh
+        - cd build/
+        - ctest -R test_performance --output-on-failure -j4
+
+
+# CentOS 7
+
+perf:cc7-gcc:
+    stage: unittest
+    tags:
+        - docker
+    dependencies:
+        - cmp:cc7-gcc
+    image: clicdp/cc7-base
+    script:
+        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab-ci.d/load_deps.sh
+        - cd build/
+        - ctest -R test_performance --output-on-failure -j4
+
+perf:cc7-llvm:
+    stage: unittest
+    tags:
+        - docker
+    dependencies:
+        - cmp:cc7-llvm
+    image: clicdp/cc7-base
+    script:
+        - export COMPILER_TYPE="llvm"
+        - source .gitlab-ci.d/init_x86_64.sh
+        - cd build/
+        - ctest -R test_performance --output-on-failure -j4
+
+
+# Mac OS X
+
+perf:mac1012-clang:
+    stage: unittest
+    tags:
+        - mac
+    dependencies:
+        - cmp:mac1012-clang
+    script:
+        - source .gitlab-ci.d/init_mac.sh
+        - source .gitlab-ci.d/load_deps.sh
+        - cd build/
+        - cmake -DTEST_MODULES=OFF ..
+        - ctest -R test_performance --output-on-failure -j4
 
 
 
