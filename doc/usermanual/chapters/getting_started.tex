@@ -249,7 +249,7 @@ A random seed from multiple entropy sources will be generated if the parameter i
 Can be used to reproduce an earlier simulation run.
 \item \textbf{\texttt{library\_directories}}: Additional directories to search for module libraries, before searching the default paths.
 See Section~\ref{sec:module_instantiation} for details.
-\item \textbf{\texttt{model\_path}}: Additional files or directories from which detector models should be read besides the standard search locations.
+\item \textbf{\texttt{model\_paths}}: Additional files or directories from which detector models should be read besides the standard search locations.
 Refer to Section~\ref{sec:detector_models} for more information.
 \item \textbf{\texttt{experimental\_multithreading}}: Enable EXPERIMENTAL multithreading for the framework. This can speed up simulations of multiple detectors significantly. More information about the multithreading in Section \ref{sec:multithreading}.
 \item \textbf{\texttt{workers}}: Specify the number of workers to use in total, should be strictly larger than zero. Only used if \texttt{experimental\_multithreading} is set to true. Defaults to the number of native threads available on the system if this can be determined.
