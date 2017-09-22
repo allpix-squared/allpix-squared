@@ -37,6 +37,40 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration config,
 }
 
 void CapacitiveTransferModule::run(unsigned int) {
+
+    std::vector<std::vector<double>> rel_cap(3, vector<double>(3));
+
+    if(config_.has("matrix_file")) {
+        std::ifstream input_file(config_.get<std::string>("matrix_file"), std::ifstream::in);
+        std::string file_line;
+        LOG(TRACE) << "Reading cross-coupling from file " << matrix_file;
+
+        input_file.open(matrix_file);
+        int line = 0;
+        while(getline(input_file, file_line)) {
+            int p = 0;
+            stringstream mystream(file_line);
+            while(mystream >> dummy) {
+                rel_cap[line][p] = dummy;
+                p++;
+            }
+            line++;
+        }
+        input_file.close();
+
+    } else if(config_.has("cap_matrix")) {
+        rel_cap = config_.get<std::vector<std::vector<double>>>("cap_matrix")
+    } else {
+        rel_cap[0][0] = 0.001;
+        rel_cap[1][0] = 0.037;
+        rel_cap[2][0] = 0.001;
+        rel_cap[0][1] = 0.006;
+        rel_cap[1][1] = 1;
+        rel_cap[2][1] = 0.006;
+        rel_cap[0][2] = 0;
+        rel_cap[1][2] = 0.023;
+        rel_cap[2][2] = 0;
+    }
     // Find corresponding pixels for all propagated charges
     LOG(TRACE) << "Transferring charges to pixels";
     unsigned int transferred_charges_count = 0;
@@ -56,16 +90,6 @@ void CapacitiveTransferModule::run(unsigned int) {
         auto xpixel = static_cast<int>(std::round(position.x() / model_->getPixelSize().x()));
         auto ypixel = static_cast<int>(std::round(position.y() / model_->getPixelSize().y()));
 
-        double rel_cap[3][3];
-        rel_cap[0][0] = 0.001;
-        rel_cap[1][0] = 0.037;
-        rel_cap[2][0] = 0.001;
-        rel_cap[0][1] = 0.006;
-        rel_cap[1][1] = 1;
-        rel_cap[2][1] = 0.006;
-        rel_cap[0][2] = 0;
-        rel_cap[1][2] = 0.023;
-        rel_cap[2][2] = 0;
         for(size_t row = 0; row < 3; row++) {
             for(size_t col = 0; col < 3; col++) {
 
