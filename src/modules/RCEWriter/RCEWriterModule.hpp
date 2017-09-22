@@ -96,7 +96,7 @@ namespace allpix {
         ULong64_t frame_number_;
         Int_t trigger_offset_;
         Int_t trigger_info_;
-        Int_t trigger_time_;
+        ULong64_t trigger_time_;
         Bool_t invalid_;
 
         // retrieve message containing collected pixel hits for all detectors

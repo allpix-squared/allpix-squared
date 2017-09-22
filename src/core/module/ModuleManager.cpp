@@ -235,6 +235,14 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
     // Make the vector to return
     std::string module_name = config.getName();
 
+    // Return error if user tried to specialize the unique module:
+    if(config.has("name")) {
+        throw InvalidValueError(config, "name", "unique modules cannot be specialized using the \"name\" keyword.");
+    }
+    if(config.has("type")) {
+        throw InvalidValueError(config, "type", "unique modules cannot be specialized using the \"type\" keyword.");
+    }
+
     // Create the identifier
     std::string identifier_str;
     if(!config.get<std::string>("input").empty()) {
@@ -329,7 +337,8 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
     auto module_generator =
         reinterpret_cast<Module* (*)(Configuration, Messenger*, std::shared_ptr<Detector>)>(generator); // NOLINT
 
-    // FIXME: Handle empty type and name arrays (or disallow them)
+    // Handle empty type and name arrays:
+    bool instances_created = false;
     std::vector<std::pair<std::shared_ptr<Detector>, ModuleIdentifier>> instantiations;
 
     // Create all names first with highest priority
@@ -343,6 +352,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
             // Save the name (to not instantiate it again later)
             module_names.insert(name);
         }
+        instances_created = !names.empty();
     }
 
     // Then create all types that are not yet name instantiated
@@ -360,10 +370,11 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
                 instantiations.emplace_back(det, ModuleIdentifier(module_name, det->getName() + identifier, 1));
             }
         }
+        instances_created = !types.empty();
     }
 
     // Create for all detectors if no name / type provided
-    if(!config.has("type") && !config.has("name")) {
+    if(!instances_created) {
         auto detectors = geo_manager->getDetectors();
 
         for(auto& det : detectors) {

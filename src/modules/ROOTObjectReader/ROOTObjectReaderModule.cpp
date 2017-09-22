@@ -60,8 +60,8 @@ template <typename T> static void add_creator(ROOTObjectReaderModule::MessageCre
 }
 
 /**
- * Uses SFINAE trick to call the add_creator function for all template arguments of a container class. Used to add creater
- * for every object in tuple of objects.
+ * Uses SFINAE trick to call the add_creator function for all template arguments of a container class. Used to add creators
+ * for every object in a tuple of objects.
  */
 template <template <typename...> class T, typename... Args>
 static void gen_creator_map_from_tag(ROOTObjectReaderModule::MessageCreatorMap& map, type_tag<T<Args...>>) {

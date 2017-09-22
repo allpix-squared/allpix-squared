@@ -15,8 +15,8 @@
 #include "core/module/Module.hpp"
 
 // Local includes
-#include "Pixel.h"
-#include "TestBeamObject.h"
+#include "corryvreckan/Pixel.h"
+#include "corryvreckan/TestBeamObject.h"
 #include "objects/PixelHit.hpp"
 
 // ROOT includes
