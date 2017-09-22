@@ -38,18 +38,21 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration config,
 
 void CapacitiveTransferModule::run(unsigned int) {
 
-    std::vector<std::vector<double>> rel_cap(3, vector<double>(3));
+    std::vector<std::vector<double>> rel_cap(3, std::vector<double>(3));
 
     if(config_.has("matrix_file")) {
-        std::ifstream input_file(config_.get<std::string>("matrix_file"), std::ifstream::in);
-        std::string file_line;
-        LOG(TRACE) << "Reading cross-coupling from file " << matrix_file;
+        LOG(TRACE) << "Reading cross-coupling matrix file " << config_.get<std::string>("matrix_file");
+        std::ifstream input_file(config_.getPath("matrix_file", true), std::ifstream::in);
+        if(!input_file.good()) {
+            LOG(ERROR) << "File not found";
+        }
 
-        input_file.open(matrix_file);
-        int line = 0;
+        size_t line = 0;
+        double dummy = -1;
+        std::string file_line;
         while(getline(input_file, file_line)) {
-            int p = 0;
-            stringstream mystream(file_line);
+            size_t p = 0;
+            std::stringstream mystream(file_line);
             while(mystream >> dummy) {
                 rel_cap[line][p] = dummy;
                 p++;
@@ -57,10 +60,11 @@ void CapacitiveTransferModule::run(unsigned int) {
             line++;
         }
         input_file.close();
-
-    } else if(config_.has("cap_matrix")) {
-        rel_cap = config_.get<std::vector<std::vector<double>>>("cap_matrix")
-    } else {
+    }
+    //} else if(config_.has("cap_matrix")) {
+    //    rel_cap = config_.get<std::vector<std::vector<double>>>("cap_matrix");
+    //}
+    else {
         rel_cap[0][0] = 0.001;
         rel_cap[1][0] = 0.037;
         rel_cap[2][0] = 0.001;
@@ -118,7 +122,7 @@ void CapacitiveTransferModule::run(unsigned int) {
                 } else {
                     LOG(DEBUG) << "Set of " << propagated_charge.getCharge() * rel_cap[col][row] << " propagated charges at "
                                << propagated_charge.getLocalPosition() << " brought to neighbour " << col << "," << row
-                               << "  pixel " << pixel_index;
+                               << "  pixel " << pixel_index << "with cross-coupling of " << rel_cap[col][row] * 100 << "%";
                 }
 
                 // Add the pixel the list of hit pixels
