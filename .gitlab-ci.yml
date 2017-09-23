@@ -310,7 +310,7 @@ perf:mac1012-clang:
         - source .gitlab-ci.d/load_deps.sh
         - cd build/
         - cmake -DTEST_MODULES=OFF ..
-        - ctest -R test_performance --output-on-failure -j4
+        - ctest -R test_performance --output-on-failure
     allow_failure: true
 
 
