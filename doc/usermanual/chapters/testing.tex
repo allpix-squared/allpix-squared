@@ -37,6 +37,9 @@ CMake automatically searches for all configurations found in the \texttt{test\_m
 The regular expressions to search for are also stored in the configuration file.
 Every line containing such an expression should start with \texttt{\#REGEX} and will be picked up by CMake automatically.
 
+Dependencies between tests can be indicated using the \texttt{\#DEPENDS} keyword in the configuration file.
+Module test 09 implements such a dependency as it uses the output of module test 08-1 to read data from an \apsq data file.
+
 Currently implemented tests comprise:
 
 \begin{description}
@@ -53,9 +56,6 @@ Currently implemented tests comprise:
     \item[test\_09\_reader\_root.conf] tests the capability of the framework to read data back in and to dispatch messages for all objects found in the input tree. The monitored output comprises the total number of objects read from all branches as well as the correct path and recipient of the dispatched messages.
 \end{description}
 
-Dependencies between tests can be indicated using the \texttt{\#DEPENDS} keyword in the configuration file.
-Module test 09 implements such a dependency as it uses the output of module test 08-1 to read data from an \apsq data file.
-
 \paragraph{Performance Tests}
 
 Similar to the module test implementation described above, performance tests use configurations prepared such, that one particular module takes most of the load (dubbed the ``slowest instantiation'' by \apsq), and a few of thousand events are simulated starting from a fixed seed for the pseudo-random number generator.
@@ -71,8 +71,8 @@ These tests should be checked manually before merging the code under review.
 Current performance tests comprise:
 
 \begin{description}
-    \item[test\_01\_deposition.conf]
-    \item[test\_02-1\_propagation\_generic.conf]
-    \item[test\_02-2\_propagation\_project.conf]
-    \item[test\_02-3\_propagation\_generic\_multithread.conf]
+    \item[test\_01\_deposition.conf] tests the performance of charge carrier deposition in the sensitive sensor volume using Geant4~\cite{geant4}. A stepping length of \SI{1.0}{\um} is chosen, and \num{10000} events are simulated. The addition of an electric field and the subsequent projection of the charges are necessary since \apsq would otherwise detect that there are no recipients for the deposited charge carriers and skip the deposition entirely.
+    \item[test\_02-1\_propagation\_generic.conf] tests the very critical performance of the drift-diffusion propagation of charge carriers, as this is the most computing-intense module of the framework. Charge carriers are deposited and a propagation with 10 charge carriers per step and a fine spatial and temporal resolution is performed. The simulation comprises \num{500} events.
+    \item[test\_02-2\_propagation\_project.conf] tests the projection of charge carriers onto the implants, taking into account the diffusion only. Since this module is less computing-intense, a total of \num{5000} events are simulated, and charge carriers are propagated one-by-one.
+    \item[test\_02-3\_propagation\_generic\_multithread.conf] tests the performance of multi-threaded simulation. It utilizes the very same configuration as performance test 02-1 but in addition enables multithreading with four worker threads.
 \end{description}
