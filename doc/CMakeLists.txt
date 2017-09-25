@@ -110,6 +110,7 @@ IF(LATEX_COMPILER)
             usermanual/chapters/introduction.tex
             usermanual/chapters/quick_start.tex
             usermanual/chapters/installation.tex
+            usermanual/chapters/testing.tex
             usermanual/chapters/framework.tex
             usermanual/chapters/getting_started.tex
             usermanual/chapters/objects.tex
