@@ -2,18 +2,18 @@ variables:
     EOS_PATH: "/eos/project/a/allpix-squared/www/"
 
 stages:
-    - compile
-    - unittest
-    - format
+    - compilation
+    - testing
+    - formatting
     - documentation
-    - deploy
+    - deployment
 
 #######################
 # Compilation targets #
 #######################
 
 cmp:slc6-gcc:
-    stage: compile
+    stage: compilation
     tags:
         - docker
     image: clicdp/slc6-base
@@ -34,7 +34,7 @@ cmp:slc6-gcc:
         expire_in: 3 hour
 
 cmp:slc6-llvm:
-    stage: compile
+    stage: compilation
     tags:
         - docker
     image: clicdp/slc6-base
@@ -55,7 +55,7 @@ cmp:slc6-llvm:
 
 # Ensure that our LXPLUS setup script is functional:
 cmp:lxplus-gcc:
-    stage: compile
+    stage: compilation
     tags:
         - docker
     image: clicdp/slc6-base
@@ -75,7 +75,7 @@ cmp:lxplus-gcc:
         expire_in: 3 hour
 
 cmp:cc7-gcc:
-    stage: compile
+    stage: compilation
     tags:
         - docker
     image: clicdp/cc7-base
@@ -96,7 +96,7 @@ cmp:cc7-gcc:
         expire_in: 3 hour
 
 cmp:cc7-llvm:
-    stage: compile
+    stage: compilation
     tags:
         - docker
     image: clicdp/cc7-base
@@ -116,7 +116,7 @@ cmp:cc7-llvm:
         expire_in: 3 hour
 
 cmp:mac1012-clang:
-    stage: compile
+    stage: compilation
     tags:
         - mac
     script:
@@ -143,7 +143,7 @@ cmp:mac1012-clang:
 # SLC 6
 
 fmt:slc6-llvm-format:
-    stage: format
+    stage: formatting
     tags:
         - docker
     dependencies:
@@ -156,7 +156,7 @@ fmt:slc6-llvm-format:
         - ninja check-format
 
 fmt:slc6-llvm-lint:
-    stage: format
+    stage: formatting
     tags:
         - docker
     dependencies:
@@ -172,7 +172,7 @@ fmt:slc6-llvm-lint:
 # CentOS 7
 
 fmt:cc7-llvm-format:
-    stage: format
+    stage: formatting
     tags:
         - docker
     dependencies:
@@ -185,7 +185,7 @@ fmt:cc7-llvm-format:
         - ninja check-format
 
 fmt:cc7-llvm-lint:
-    stage: format
+    stage: formatting
     tags:
         - docker
     dependencies:
@@ -206,7 +206,7 @@ fmt:cc7-llvm-lint:
 # SLC 6
 
 mod:slc6-gcc:
-    stage: unittest
+    stage: testing
     tags:
         - docker
     dependencies:
@@ -218,7 +218,7 @@ mod:slc6-gcc:
         - ctest -R test_modules --output-on-failure -j4
 
 mod:lxplus-gcc:
-    stage: unittest
+    stage: testing
     tags:
         - docker
     dependencies:
@@ -230,7 +230,7 @@ mod:lxplus-gcc:
         - ctest -R test_modules --output-on-failure -j4
 
 mod:slc6-llvm:
-    stage: unittest
+    stage: testing
     tags:
         - docker
     dependencies:
@@ -246,7 +246,7 @@ mod:slc6-llvm:
 # CentOS 7
 
 mod:cc7-gcc:
-    stage: unittest
+    stage: testing
     tags:
         - docker
     dependencies:
@@ -259,7 +259,7 @@ mod:cc7-gcc:
         - ctest -R test_modules --output-on-failure -j4
 
 mod:cc7-llvm:
-    stage: unittest
+    stage: testing
     tags:
         - docker
     dependencies:
@@ -275,7 +275,7 @@ mod:cc7-llvm:
 # Mac OS X
 
 mod:mac1012-clang:
-    stage: unittest
+    stage: testing
     tags:
         - mac
     dependencies:
@@ -300,7 +300,7 @@ mod:mac1012-clang:
 # Mac OS X
 
 perf:mac1012-clang:
-    stage: unittest
+    stage: testing
     tags:
         - mac
     dependencies:
@@ -378,7 +378,7 @@ cmp:usermanual:
 # Automatically deploy documentation to the website
 # Deployment job only executed for new tag pushs, not for every commit.
 deploy-documentation:
-    stage: deploy
+    stage: deployment
     tags:
       - docker
     # Only run for new tags:
