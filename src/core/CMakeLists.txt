@@ -1,7 +1,7 @@
 # Include the dependencies
 INCLUDE_DIRECTORIES(SYSTEM ${ALLPIX_DEPS_INCLUDE_DIRS})
 
-# Create core library 
+# Create core library
 ADD_LIBRARY(AllpixCore SHARED
     utils/log.cpp
     utils/unit.cpp

@@ -1,5 +1,5 @@
-# Add TCAD dfise converter executable 
-ADD_EXECUTABLE(dfise_converter 
+# Add TCAD dfise converter executable
+ADD_EXECUTABLE(dfise_converter
     dfise_converter.cpp
     read_dfise.cpp
     ../../src/core/utils/log.cpp
