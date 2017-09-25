@@ -30,5 +30,6 @@ TARGET_LINK_LIBRARIES(AllpixCore ${CMAKE_DL_LIBS})
 
 # Create standard install target
 INSTALL(TARGETS AllpixCore
-  RUNTIME DESTINATION bin
-  LIBRARY DESTINATION lib)
+    COMPONENT application
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib)

@@ -96,6 +96,7 @@ ENDMACRO()
 # Provide default install target for the module
 MACRO(allpix_module_install name)
     INSTALL(TARGETS ${name}
+        COMPONENT modules
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)

@@ -5,5 +5,6 @@ ADD_EXECUTABLE(mesh_plotter mesh_plotter.cpp)
 TARGET_LINK_LIBRARIES(mesh_plotter ${ALLPIX_DEPS_LIBRARIES})
 INCLUDE_DIRECTORIES(SYSTEM ${ALLPIX_DEPS_INCLUDE_DIRS})
 
-INSTALL(TARGETS mesh_plotter 
+INSTALL(TARGETS mesh_plotter
+    COMPONENT tools
     RUNTIME DESTINATION bin/tcad_dfise_converter)

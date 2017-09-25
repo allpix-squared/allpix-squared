@@ -53,6 +53,7 @@ TARGET_LINK_LIBRARIES(CorryvreckanObjects ${ALLPIX_DEPS_LIBRARIES})
 
 # Specify install for the messages
 INSTALL(TARGETS CorryvreckanObjects
+    COMPONENT modules
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib)
 
@@ -60,6 +61,7 @@ INSTALL(TARGETS CorryvreckanObjects
 INSTALL(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/libCorryvreckanObjects_rdict.pcm
     ${CMAKE_CURRENT_BINARY_DIR}/libCorryvreckanObjects.rootmap
+    COMPONENT modules
     DESTINATION lib)
 
 # Add source files to module library
