@@ -106,6 +106,7 @@ IF(LATEX_COMPILER)
             logo.png
             cc-by.png
             usermanual/figures/telescope.png
+            usermanual/figures/ci.png
             INPUTS
             usermanual/chapters/introduction.tex
             usermanual/chapters/quick_start.tex
