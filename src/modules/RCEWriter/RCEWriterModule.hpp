@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief Definition of RCE Writer Module
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #include <map>
@@ -93,7 +96,7 @@ namespace allpix {
         ULong64_t frame_number_;
         Int_t trigger_offset_;
         Int_t trigger_info_;
-        Int_t trigger_time_;
+        ULong64_t trigger_time_;
         Bool_t invalid_;
 
         // retrieve message containing collected pixel hits for all detectors

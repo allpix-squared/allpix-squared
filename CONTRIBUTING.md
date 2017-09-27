@@ -1,7 +1,9 @@
 # How to contribute
-First off all, thanks for considering to contribute to Allpix<sup>2</sup>. We appreciate any type of merge request, ranging from small bugfixes, improvements to the documentation to entirely new functionality. We, the maintainers, will try to our best to look carefully at every merge request. If you only want to submit an issue, that is also very welcome, please continue directly to the [issue tracker](https://gitlab.cern.ch/simonspa/allpix-squared/issues) to open a ticket.
+First off all, thanks for considering to contribute to Allpix<sup>2</sup>. Any type of merge request, ranging from small bugfixes, improvements to the documentation to entirely new functionality, is much appreciated. We, the maintainers, will try to our best to look carefully at every merge request.
 
-The following is a set of guidelines that will help both you as submitter as well as us maintainers to make it as easy as possible to contribute changes.
+If you only want to submit an issue, that is also very welcome, please continue directly to the [issue tracker](https://gitlab.cern.ch/simonspa/allpix-squared/issues) to open a ticket. 
+
+The following is a set of guidelines that will help both you as submitter as well as us maintainers to make it as easy as possible to contribute changes. 
 
 ## Core and modules
 Allpix<sup>2</sup> is split up in a slim core, providing base functionality as configuration, detector geometry, management of modules, messaging as well as various utilities. The actual chain of simulation is developed in independent modules. Please try to separate any merge request for improvements or changes to the core from the implementation and updates of modules. Generally any kind of separable simulation functionality should be implemented in its own module and submitted as a individual merge request. Also try to submit individual merge request for independent changes to allow us to review them separately.
@@ -27,7 +29,7 @@ Now you can start making changes and adding new functionality to the code.
 5. Push the code to your local mirror using `git push --set-upstream origin`.
 6. Retrieve the latest changes to the upstream master every now and then. To do this add the upstream version to your remotes using `git remote add upstream https://gitlab.cern.ch/simonspa/allpix-squared.git` (or the SSH or KRB5 version if preferred). This only has to be done once, the first time after cloning the repository. Afterwards you fetch the changes using `git fetch upstream`. Then you can add the change preferably using rebase with `git rebase upstream master`. If that causes problems you can use merge with `git merge upstream master`.
 
-# Submitting a pull request
+## Submitting a pull request
 As soon as there exists something in your branch, a merge request can be opened on the main repository. Do not forget that it is not a problem to open a merge request for incomplete implementations.
 
 1. Retrieve the latest changes from the upstream version as explained above.

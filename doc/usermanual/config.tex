@@ -61,5 +61,16 @@
 % Create addreferences command (overwritten for HTML in config)
 \newcommand{\addreferencesline}{\addcontentsline{toc}{section}{References}}
 
+% Command to add the license (overwritten for HTML in config)
+\newcommand{\addlicense}{
+\begin{table}
+\centering
+\renewcommand{\arraystretch}{1.5}% Spread rows out...
+\begin{tabular}{>{\centering\arraybackslash}m{.10\textwidth}>{\raggedright\arraybackslash}m{.90\textwidth}}
+ \Large{\ccLogo \ccAttribution} & \footnotesize{This manual is licensed under the Creative Commons Attribution 4.0 International License.\newline To view a copy of this license, visit \url{http://creativecommons.org/licenses/by/4.0/}.} \\
+\end{tabular}
+\end{table}
+}
+
 % Use new lines in FAQ (fixed for HTML in config)
 \setlist[description]{style=nextline}

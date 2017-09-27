@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief Implementation of Geant4 geometry visualization module
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #include "VisualizationGeant4Module.hpp"
@@ -27,6 +30,7 @@
 #include <G4PVParameterised.hh>
 #include <G4UImanager.hh>
 #include <G4UIsession.hh>
+#include <G4UItcsh.hh>
 #include <G4UIterminal.hh>
 #include <G4VPVParameterisation.hh>
 #include <G4VisAttributes.hh>
@@ -193,7 +197,7 @@ void VisualizationGeant4Module::set_visualization_settings() {
     auto display_trajectories = config_.get<bool>("display_trajectories", true);
     if(display_trajectories) {
         // Add smooth trajectories
-        UI->ApplyCommand("/vis/scene/add/trajectories rich smooth");
+        UI->ApplyCommand("/vis/scene/add/trajectories smooth rich");
 
         // Store trajectories if accumulating
         if(accumulate) {
@@ -471,7 +475,8 @@ void VisualizationGeant4Module::finalize() {
         gui_session_->SessionStart();
     } else if(config_.get<std::string>("mode") == "terminal") {
         LOG(INFO) << "Starting terminal session";
-        std::unique_ptr<G4UIsession> session = std::make_unique<G4UIterminal>();
+        Log::finish();
+        std::unique_ptr<G4UIsession> session = std::make_unique<G4UIterminal>(new G4UItcsh);
         session->SessionStart();
     } else {
         LOG(INFO) << "Starting viewer";

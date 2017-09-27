@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief Implementation of object for charges in sensor
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #ifndef ALLPIX_SENSOR_CHARGE_H
@@ -17,6 +20,11 @@ namespace allpix {
      * @brief Flags to distinguish between eletron and hole charge carriers
      */
     enum class CarrierType : int8_t { ELECTRON = -1, HOLE = 1 };
+
+    inline std::ostream& operator<<(std::ostream& os, const CarrierType type) {
+        os << (type == CarrierType::ELECTRON ? "\"e\"" : "\"h\"");
+        return os;
+    }
 
     /**
      * @ingroup Objects

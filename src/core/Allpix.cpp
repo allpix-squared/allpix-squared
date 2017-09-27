@@ -1,6 +1,9 @@
 /** @file
  *  @brief Implementation of interface to the core framework
- *  @copyright MIT License
+ *  @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #include "Allpix.hpp"
@@ -247,6 +250,7 @@ void Allpix::add_units() {
 
     // CHARGE
     Units::add("e", 1);
+    Units::add("ke", 1e3);
     Units::add("C", 1.6021766208e-19);
 
     // VOLTAGE

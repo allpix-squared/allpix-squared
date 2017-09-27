@@ -16,6 +16,10 @@ All available detector models are fully supported. This builder can create extra
 * G10 (PCB material)
 * Solder (a mixture of tin and lead)
 
+#### Dependencies
+
+This module requires an installation Geant4.
+
 #### Parameters
 * `world_material` : Material of the world, should either be **air** or **vacuum**. Defaults to **air** if not specified.
 * `world_margin_percentage` : Percentage of the world size to add to every dimension compared to the internally calculated minimum world size. Defaults to 0.1, thus 10%.
