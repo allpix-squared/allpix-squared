@@ -6,7 +6,7 @@ IF(COMMAND CMAKE_POLICY)
 ENDIF(COMMAND CMAKE_POLICY)
 
 # Set default version
-SET(ALLPIX_VERSION "v0.2")
+SET(ALLPIX_VERSION "v1.0")
 
 # Set default build type
 IF(NOT CMAKE_BUILD_TYPE)
@@ -30,6 +30,12 @@ ADD_DEFINITIONS(-DALLPIX_PROJECT_NAME="${CMAKE_PROJECT_NAME}" -DALLPIX_PROJECT_V
 # Include a generated configuration file
 # FIXME: this should be combined with the ADD_DEFINITIONS
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake.h" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
+
+INCLUDE(cmake/CPackConfig.cmake)
+include(cmake/TargetArch.cmake)
+target_architecture(MYARCH)
+MESSAGE(STATUS "ARCH: ${MYARCH}")
+INCLUDE(CPack)
 
 ###############################################
 # Setup the environment for the documentation #
