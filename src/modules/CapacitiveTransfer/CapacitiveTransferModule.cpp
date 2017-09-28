@@ -36,45 +36,64 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration config,
     messenger->bindSingle(this, &CapacitiveTransferModule::propagated_message_, MsgFlags::REQUIRED);
 }
 
-void CapacitiveTransferModule::run(unsigned int) {
+void CapacitiveTransferModule::init() {
 
-    std::vector<std::vector<double>> rel_cap(3, std::vector<double>(3));
-
+    // Reading file with coupling matrix
     if(config_.has("matrix_file")) {
         LOG(TRACE) << "Reading cross-coupling matrix file " << config_.get<std::string>("matrix_file");
         std::ifstream input_file(config_.getPath("matrix_file", true), std::ifstream::in);
         if(!input_file.good()) {
-            LOG(ERROR) << "File not found";
+            LOG(ERROR) << "Matrix file not found";
         }
 
-        size_t line = 0;
         double dummy = -1;
         std::string file_line;
         while(getline(input_file, file_line)) {
-            size_t p = 0;
             std::stringstream mystream(file_line);
+            matrix_cols = 0;
             while(mystream >> dummy) {
-                rel_cap[line][p] = dummy;
-                p++;
+                matrix_cols++;
             }
-            line++;
+            matrix_rows++;
+        }
+        input_file.clear();
+        input_file.seekg(0, std::ios::beg);
+
+        relative_coupling.resize(matrix_rows);
+        for(std::vector<std::vector<double>>::iterator it = relative_coupling.begin(); it != relative_coupling.end(); ++it) {
+            it->resize(matrix_cols);
+        }
+
+        size_t row = 0, col = 0;
+        while(getline(input_file, file_line)) {
+            std::stringstream mystream(file_line);
+            col = 0;
+            while(mystream >> dummy) {
+                relative_coupling[row][col] = dummy;
+                col++;
+            }
+            row++;
         }
         input_file.close();
     }
-    //} else if(config_.has("cap_matrix")) {
-    //    rel_cap = config_.get<std::vector<std::vector<double>>>("cap_matrix");
-    //}
-    else {
-        rel_cap[0][0] = 0.001;
-        rel_cap[1][0] = 0.037;
-        rel_cap[2][0] = 0.001;
-        rel_cap[0][1] = 0.006;
-        rel_cap[1][1] = 1;
-        rel_cap[2][1] = 0.006;
-        rel_cap[0][2] = 0;
-        rel_cap[1][2] = 0.023;
-        rel_cap[2][2] = 0;
+    // Reading coupling matrix from config file
+    if(config_.has("coupling_matrix")) {
+        // TODO
+        // relative_coupling = config_.get<Matrix>("coupling_matrix");
     }
+    // If no coupling matrix is provided
+    if(!config_.has("matrix_file") && !config_.has("coupling_matrix")) {
+        LOG(ERROR)
+            << "Cross-coupling was not defined. Provide a coupling matrix file or a coupling matrix in the config file.";
+    }
+
+    LOG(DEBUG) << matrix_cols << "x" << matrix_rows << " Capacitance matrix imported";
+    // TODO
+    // LOG(DEBUG) << relaive_coupling;;
+}
+
+void CapacitiveTransferModule::run(unsigned int) {
+
     // Find corresponding pixels for all propagated charges
     LOG(TRACE) << "Transferring charges to pixels";
     unsigned int transferred_charges_count = 0;
@@ -93,36 +112,40 @@ void CapacitiveTransferModule::run(unsigned int) {
         // Find the nearest pixel
         auto xpixel = static_cast<int>(std::round(position.x() / model_->getPixelSize().x()));
         auto ypixel = static_cast<int>(std::round(position.y() / model_->getPixelSize().y()));
+        LOG(DEBUG) << "Hit at pixel " << xpixel << ", " << ypixel;
 
-        for(size_t row = 0; row < 3; row++) {
-            for(size_t col = 0; col < 3; col++) {
+        for(size_t row = 0; row < matrix_rows; row++) {
+            for(size_t col = 0; col < matrix_cols; col++) {
 
                 // Ignore if out of pixel grid
-                if((xpixel + static_cast<int>(col - 1)) < 0 ||
-                   (xpixel + static_cast<int>(col - 1)) >= model_->getNPixels().x() ||
-                   (ypixel + static_cast<int>(row - 1)) < 0 ||
-                   (ypixel + static_cast<int>(row - 1)) >= model_->getNPixels().y()) {
-                    LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() * rel_cap[col][row]
+                if((xpixel + static_cast<int>(col - std::floor(matrix_cols / 2))) < 0 ||
+                   (xpixel + static_cast<int>(col - std::floor(matrix_cols / 2))) >= model_->getNPixels().x() ||
+                   (ypixel + static_cast<int>(row - std::floor(matrix_rows / 2))) < 0 ||
+                   (ypixel + static_cast<int>(row - std::floor(matrix_rows / 2))) >= model_->getNPixels().y()) {
+                    LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() * relative_coupling[col][row]
                                << " propagated charges at " << propagated_charge.getLocalPosition()
-                               << " because their nearest pixel (" << xpixel << "," << ypixel << ") is outside the grid";
+                               << " because their nearest pixel (" << xpixel << "," << ypixel
+                               << ") is outside the pixel matrix";
                     continue;
                 }
-                Pixel::Index pixel_index(static_cast<unsigned int>(xpixel + static_cast<int>(col) - 1),
-                                         static_cast<unsigned int>(ypixel + static_cast<int>(row) - 1));
+                Pixel::Index pixel_index(
+                    static_cast<unsigned int>(xpixel + static_cast<int>(col) - std::floor(matrix_cols / 2)),
+                    static_cast<unsigned int>(ypixel + static_cast<int>(row) - std::floor(matrix_rows / 2)));
 
                 // Update statistics
                 unique_pixels_.insert(pixel_index);
 
-                transferred_charges_count += static_cast<unsigned int>(propagated_charge.getCharge() * rel_cap[col][row]);
-                double neighbour_charge = propagated_charge.getCharge() * rel_cap[col][row];
+                transferred_charges_count +=
+                    static_cast<unsigned int>(propagated_charge.getCharge() * relative_coupling[col][row]);
+                double neighbour_charge = propagated_charge.getCharge() * relative_coupling[col][row];
 
-                if(col == 1 && row == 1) {
-                    LOG(DEBUG) << "Set of " << propagated_charge.getCharge() * rel_cap[col][row] << " propagated charges at "
-                               << propagated_charge.getLocalPosition() << " brought to pixel " << pixel_index;
+                if(col == std::floor(matrix_cols / 2) && row == std::floor(matrix_rows / 2)) {
+                    LOG(DEBUG) << "Set of " << propagated_charge.getCharge() * relative_coupling[col][row]
+                               << " charges brought to pixel " << pixel_index;
                 } else {
-                    LOG(DEBUG) << "Set of " << propagated_charge.getCharge() * rel_cap[col][row] << " propagated charges at "
-                               << propagated_charge.getLocalPosition() << " brought to neighbour " << col << "," << row
-                               << "  pixel " << pixel_index << "with cross-coupling of " << rel_cap[col][row] * 100 << "%";
+                    LOG(DEBUG) << "Set of " << propagated_charge.getCharge() * relative_coupling[col][row]
+                               << " charges brought to neighbour " << col << "," << row << " pixel " << pixel_index
+                               << "with cross-coupling of " << relative_coupling[col][row] * 100 << "%";
                 }
 
                 // Add the pixel the list of hit pixels

@@ -22,12 +22,16 @@
 namespace allpix {
     /**
      * @ingroup Modules
-     * @brief Module that directly converts propagated charges to charges on a pixel
-     *
-     * This module does a simple direct mapping from propagated charges to the nearest pixel in the grid. It only considers
-     * propagated charges within a certain distance from the implants and within the pixel grid, charges in the rest of the
-     * sensor are ignored. The module combines all the propagated charges to a set of charges at a specific pixel.
+     * @brief Module that directly converts propagated charges to charges on a pixel and its neighbours (simulating the
+     * cross-coupling in CCPDs)
+     * This module is based on the SimpleTransferModule. It does a mapping of the propagated charges to the nearest pixel in
+     * the grid and copies this propageted charge, scaled by the cross-coupling matrix, to the neighbouring pixels.
+     * The coupling matrix must be provided in the configuration file as a Matrix or as a matrix file.
+     * Like the SimpleTransferModule, it only considers propagated charges within a certain distance from the implants and
+     * within the pixel grid, charges in the rest of the sensor are ignored.
+     * The cross hit created in the neighbouring pixels keeps the history, saving from where the original charge came from.
      */
+
     class CapacitiveTransferModule : public Module {
     public:
         /**
@@ -39,7 +43,12 @@ namespace allpix {
         CapacitiveTransferModule(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector);
 
         /**
-         * @brief Transfer the propagated charges to the pixels
+         * @brief Initialize the module, creating the cross-coupling matrixs
+         */
+        void init() override;
+
+        /**
+         * @brief Transfer the propagated charges to the pixels and its neighbours
          */
         void run(unsigned int) override;
 
@@ -72,5 +81,10 @@ namespace allpix {
         // Statistical information
         unsigned int total_transferred_charges_{};
         std::set<Pixel::Index, pixel_cmp> unique_pixels_;
+
+        // Matrix to store cross-coupling values
+        std::vector<std::vector<double>> relative_coupling;
+        unsigned int matrix_rows = 0;
+        unsigned int matrix_cols = 0;
     };
 } // namespace allpix
