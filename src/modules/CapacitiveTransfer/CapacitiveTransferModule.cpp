@@ -119,9 +119,11 @@ void CapacitiveTransferModule::run(unsigned int) {
 
                 // Ignore if out of pixel grid
                 if((xpixel + static_cast<int>(col - static_cast<size_t>(std::floor(matrix_cols / 2)))) < 0 ||
-                   (xpixel + static_cast<int>(col - std::floor(matrix_cols / 2))) >= model_->getNPixels().x() ||
-                   (ypixel + static_cast<int>(row - std::floor(matrix_rows / 2))) < 0 ||
-                   (ypixel + static_cast<int>(row - std::floor(matrix_rows / 2))) >= model_->getNPixels().y()) {
+                   (xpixel + static_cast<int>(col - static_cast<size_t>(std::floor(matrix_cols / 2)))) >=
+                       model_->getNPixels().x() ||
+                   (ypixel + static_cast<int>(row - static_cast<size_t>(std::floor(matrix_rows / 2)))) < 0 ||
+                   (ypixel + static_cast<int>(row - static_cast<size_t>(std::floor(matrix_rows / 2)))) >=
+                       model_->getNPixels().y()) {
                     LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() * relative_coupling[col][row]
                                << " propagated charges at " << propagated_charge.getLocalPosition()
                                << " because their nearest pixel (" << xpixel << "," << ypixel
@@ -129,8 +131,8 @@ void CapacitiveTransferModule::run(unsigned int) {
                     continue;
                 }
                 Pixel::Index pixel_index(
-                    static_cast<unsigned int>(xpixel + static_cast<int>(col) - (matrix_cols / 2 - 0.5)),
-                    static_cast<unsigned int>(ypixel + static_cast<int>(row) - (matrix_rows / 2 - 0.5)));
+                    static_cast<unsigned int>(xpixel + static_cast<int>(col) - std::floor(matrix_cols / 2)),
+                    static_cast<unsigned int>(ypixel + static_cast<int>(row) - std::floor(matrix_rows / 2)));
 
                 // Update statistics
                 unique_pixels_.insert(pixel_index);
@@ -139,7 +141,8 @@ void CapacitiveTransferModule::run(unsigned int) {
                     static_cast<unsigned int>(propagated_charge.getCharge() * relative_coupling[col][row]);
                 double neighbour_charge = propagated_charge.getCharge() * relative_coupling[col][row];
 
-                if(col == std::floor(matrix_cols / 2) && row == std::floor(matrix_rows / 2)) {
+                if(col == static_cast<size_t>(std::floor(matrix_cols / 2)) &&
+                   row == static_cast<size_t>(std::floor(matrix_rows / 2))) {
                     LOG(DEBUG) << "Set of " << propagated_charge.getCharge() * relative_coupling[col][row]
                                << " charges brought to pixel " << pixel_index;
                 } else {
