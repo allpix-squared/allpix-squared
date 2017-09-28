@@ -129,8 +129,8 @@ void CapacitiveTransferModule::run(unsigned int) {
                     continue;
                 }
                 Pixel::Index pixel_index(
-                    static_cast<unsigned int>(xpixel + static_cast<int>(col) - std::floor(matrix_cols / 2)),
-                    static_cast<unsigned int>(ypixel + static_cast<int>(row) - std::floor(matrix_rows / 2)));
+                    static_cast<unsigned int>(xpixel + static_cast<int>(col) - (matrix_cols / 2 - 0.5)),
+                    static_cast<unsigned int>(ypixel + static_cast<int>(row) - (matrix_rows / 2 - 0.5)));
 
                 // Update statistics
                 unique_pixels_.insert(pixel_index);
