@@ -97,6 +97,7 @@ Currently implemented tests comprise:
     \item[test\_06\_digitization.conf] digitizes the transferred charges to simulate the front-end electronics. The monitored output of this test comprises the total charge per pixel including noise contributions, the smeared threshold value and the total number of digitized pixel hits.
     \item[test\_07\_histogramming.conf] tests the detector histogramming module and its clustering algorithm. The monitored output comprises the total number of clusters and their mean position.
     \item[test\_08-1\_writer\_root.conf] ensures proper functionality of the ROOT file writer module. It monitors the total number of objects and branches written to the output ROOT trees.
+    \item[test\_08-2\_writer\_rce.conf] ensures proper functionality of the RCE file writer module. Currently the module debug output is very sparse, thus only the correct creation of branches is monitored by the test's regular expressions.
     \item[test\_09\_reader\_root.conf] tests the capability of the framework to read data back in and to dispatch messages for all objects found in the input tree. The monitored output comprises the total number of objects read from all branches as well as the correct path and recipient of the dispatched messages.
 \end{description}
 
