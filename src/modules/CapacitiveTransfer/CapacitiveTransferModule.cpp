@@ -118,7 +118,7 @@ void CapacitiveTransferModule::run(unsigned int) {
             for(size_t col = 0; col < matrix_cols; col++) {
 
                 // Ignore if out of pixel grid
-                if((xpixel + static_cast<int>(col - (matrix_cols / 2 - 0.5))) < 0 ||
+                if((xpixel + static_cast<int>(col - static_cast<size_t>(std::floor(matrix_cols / 2)))) < 0 ||
                    (xpixel + static_cast<int>(col - std::floor(matrix_cols / 2))) >= model_->getNPixels().x() ||
                    (ypixel + static_cast<int>(row - std::floor(matrix_rows / 2))) < 0 ||
                    (ypixel + static_cast<int>(row - std::floor(matrix_rows / 2))) >= model_->getNPixels().y()) {
