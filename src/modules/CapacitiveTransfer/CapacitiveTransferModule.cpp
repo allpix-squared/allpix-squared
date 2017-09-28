@@ -60,8 +60,8 @@ void CapacitiveTransferModule::init() {
         input_file.seekg(0, std::ios::beg);
 
         relative_coupling.resize(matrix_rows);
-        for(std::vector<std::vector<double>>::iterator it = relative_coupling.begin(); it != relative_coupling.end(); ++it) {
-            it->resize(matrix_cols);
+        for(auto& el : relative_coupling) {
+            el.resize(matrix_cols);
         }
 
         size_t row = 0, col = 0;
