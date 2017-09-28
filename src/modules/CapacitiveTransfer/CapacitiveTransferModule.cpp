@@ -64,15 +64,15 @@ void CapacitiveTransferModule::init() {
             el.resize(matrix_cols);
         }
 
-        size_t row = 0, col = 0;
+        size_t row = matrix_rows - 1, col = 0;
         while(getline(input_file, file_line)) {
             std::stringstream mystream(file_line);
             col = 0;
             while(mystream >> dummy) {
-                relative_coupling[row][col] = dummy;
+                relative_coupling[col][row] = dummy;
                 col++;
             }
-            row++;
+            row--;
         }
         input_file.close();
     }
