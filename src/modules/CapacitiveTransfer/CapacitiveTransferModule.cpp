@@ -21,6 +21,9 @@
 #include "core/utils/unit.h"
 #include "tools/ROOT.h"
 
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+
 #include "objects/PixelCharge.hpp"
 
 using namespace allpix;
@@ -37,6 +40,9 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration config,
 }
 
 void CapacitiveTransferModule::init() {
+    // if(output_plots_) {
+    // gap_distribution = new TH1D("gap_distribution", "Drift time;t[ns];particles", 50, 0., 20.);
+    //}
 
     // Reading file with coupling matrix
     if(config_.has("matrix_file")) {
@@ -92,6 +98,41 @@ void CapacitiveTransferModule::init() {
     // LOG(DEBUG) << relaive_coupling;;
 }
 
+double CapacitiveTransferModule::gap(int xpixel, int ypixel) {
+    int center[2] = {0, 0};
+    double angles[2] = {0, 0};
+    double gap = 1;
+
+    if(config_.has("chip_angle")) {
+        // angles = config_.getArray<double>("chip_angle");
+        angles[0] = config_.get<double>("x");
+        angles[1] = config_.get<double>("y");
+        if(config_.has("gradient_center")) {
+            // center = config_.getArray<int>("gradient_center");
+        }
+
+        Eigen::Quaternion<double> quaternion =
+            Eigen::AngleAxisd(angles[0], Eigen::Vector3d::UnitX()) * Eigen::AngleAxisd(angles[1], Eigen::Vector3d::UnitY());
+        quaternion.w() = 0;
+        Eigen::Matrix3d rotation = quaternion.toRotationMatrix();
+
+        Eigen::Vector3d pixel_point(xpixel * 10 ^ -6, ypixel * 10 ^ -6, 0);
+        Eigen::Vector3d origin(center[0], center[1], 0);
+        Eigen::Vector3d normal(0, 0, 1);
+        Eigen::Vector3d rotated_normal = rotation * normal;
+
+        Eigen::Hyperplane<double, 3> plane(rotated_normal, origin);
+        Eigen::Vector3d point_plane = plane.projection(pixel_point);
+        gap = point_plane[2];
+    }
+    LOG(DEBUG) << "===> GAP	" << gap;
+    // if(output_plots_) {
+    //	    gap_distribution->Fill(gap);
+    //    }
+
+    return gap;
+}
+
 void CapacitiveTransferModule::run(unsigned int) {
 
     // Find corresponding pixels for all propagated charges
@@ -136,6 +177,8 @@ void CapacitiveTransferModule::run(unsigned int) {
 
                 // Update statistics
                 unique_pixels_.insert(pixel_index);
+
+                gap(xpixel, ypixel);
 
                 transferred_charges_count +=
                     static_cast<unsigned int>(propagated_charge.getCharge() * relative_coupling[col][row]);
@@ -183,4 +226,8 @@ void CapacitiveTransferModule::finalize() {
     // Print statistics
     LOG(INFO) << "Transferred total of " << total_transferred_charges_ << " charges to " << unique_pixels_.size()
               << " different pixels";
+
+    //    if(output_plots_) {
+    //        gap_distribution->Write();
+    //    }
 }

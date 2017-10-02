@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 
+#include <TH1D.h>
+
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
@@ -48,6 +50,11 @@ namespace allpix {
         void init() override;
 
         /**
+         * @brief Calculate the gap between chips to simulate bad parallelism on the assemblyI
+         */
+        double gap(int xpixel, int ypixel);
+
+        /**
          * @brief Transfer the propagated charges to the pixels and its neighbours
          */
         void run(unsigned int) override;
@@ -75,6 +82,8 @@ namespace allpix {
             }
         };
 
+        // bool output_plots_{};
+
         // Message containing the propagated charges
         std::shared_ptr<PropagatedChargeMessage> propagated_message_;
 
@@ -86,5 +95,7 @@ namespace allpix {
         std::vector<std::vector<double>> relative_coupling;
         unsigned int matrix_rows = 0;
         unsigned int matrix_cols = 0;
+
+        // TH1D* gap_distribution;
     };
 } // namespace allpix
