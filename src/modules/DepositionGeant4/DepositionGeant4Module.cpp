@@ -2,7 +2,10 @@
  * @file
  * @brief Implementation of Geant4 deposition module
  * @remarks Based on code from Mathieu Benoit
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #include "DepositionGeant4Module.hpp"
@@ -11,6 +14,7 @@
 #include <string>
 #include <utility>
 
+#include <G4EmParameters.hh>
 #include <G4HadronicProcessStore.hh>
 #include <G4LogicalVolume.hh>
 #include <G4PhysListFactory.hh>
@@ -41,8 +45,10 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration config, Messenger* 
     : Module(config), config_(std::move(config)), messenger_(messenger), geo_manager_(geo_manager), last_event_num_(1),
       run_manager_g4_(nullptr) {
     // Create user limits for maximum step length in the sensor
-    user_limits_ =
-        std::make_unique<G4UserLimits>(config_.get<double>("max_step_length", std::numeric_limits<double>::max()));
+    user_limits_ = std::make_unique<G4UserLimits>(config_.get<double>("max_step_length", Units::get(1.0, "um")));
+
+    // Set default physics list
+    config_.setDefault("physics_list", "FTFP_BERT_LIV");
 
     // Add the particle source position to the geometry
     geo_manager_->addPoint(config_.get<ROOT::Math::XYZPoint>("beam_position"));
@@ -61,14 +67,64 @@ void DepositionGeant4Module::init() {
     // Suppress all output from G4
     SUPPRESS_STREAM(G4cout);
 
+    // Get UI manager for sending commands
+    G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
+
+    // Apply optional PAI model
+    if(config_.get<bool>("enable_pai", false)) {
+        LOG(TRACE) << "Enabling PAI model on all detectors";
+        G4EmParameters::Instance();
+
+        for(auto& detector : geo_manager_->getDetectors()) {
+            // Get logical volume
+            auto logical_volume = detector->getExternalObject<G4LogicalVolume>("sensor_log");
+            if(logical_volume == nullptr) {
+                throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
+            }
+            // Create region
+            G4Region* region = new G4Region(detector->getName() + "_sensor_region");
+            region->AddRootLogicalVolume(logical_volume.get());
+
+            auto pai_model = config_.get<std::string>("pai_model", "pai");
+            auto lcase_model = pai_model;
+            std::transform(lcase_model.begin(), lcase_model.end(), lcase_model.begin(), ::tolower);
+            if(lcase_model == "pai") {
+                pai_model = "PAI";
+            } else if(lcase_model == "paiphoton") {
+                pai_model = "PAIphoton";
+            } else {
+                throw InvalidValueError(config_, "pai_model", "model has to be either 'pai' or 'paiphoton'");
+            }
+
+            ui_g4->ApplyCommand("/process/em/AddPAIRegion all " + region->GetName() + " " + pai_model);
+        }
+    }
+
     // Find the physics list
-    // FIXME Set a good default physics list
     G4PhysListFactory physListFactory;
     G4VModularPhysicsList* physicsList = physListFactory.GetReferencePhysList(config_.get<std::string>("physics_list"));
     if(physicsList == nullptr) {
-        RELEASE_STREAM(G4cout);
-        // FIXME More information about available lists
-        throw InvalidValueError(config_, "physics_list", "specified physics list does not exists");
+        std::string message = "specified physics list does not exists";
+        std::vector<G4String> base_lists = physListFactory.AvailablePhysLists();
+        message += " (available base lists are ";
+        for(auto& base_list : base_lists) {
+            message += base_list;
+            message += ", ";
+        }
+        message = message.substr(0, message.size() - 2);
+        message += " with optional suffixes for electromagnetic lists ";
+        std::vector<G4String> em_lists = physListFactory.AvailablePhysListsEM();
+        for(auto& em_list : em_lists) {
+            if(em_list.empty()) {
+                continue;
+            }
+            message += em_list;
+            message += ", ";
+        }
+        message = message.substr(0, message.size() - 2);
+        message += ")";
+
+        throw InvalidValueError(config_, "physics_list", message);
     } else {
         LOG(INFO) << "Using G4 physics list \"" << config_.get<std::string>("physics_list") << "\"";
     }
@@ -104,21 +160,18 @@ void DepositionGeant4Module::init() {
         useful_deposition = true;
 
         // Get model of the sensitive device
-        std::vector<std::string> sensor_volumes = {"sensor_log", "pixel_log"};
         auto sensitive_detector_action = new SensitiveDetectorActionG4(this, detector, messenger_, charge_creation_energy);
-        for(auto& sensor_volume : sensor_volumes) {
-            auto logical_volume = detector->getExternalObject<G4LogicalVolume>(sensor_volume);
-            if(logical_volume == nullptr) {
-                throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
-            }
-
-            // Apply the user limits to this element
-            logical_volume->SetUserLimits(user_limits_.get());
-
-            // Add the sensitive detector action
-            logical_volume->SetSensitiveDetector(sensitive_detector_action);
-            sensors_.push_back(sensitive_detector_action);
+        auto logical_volume = detector->getExternalObject<G4LogicalVolume>("sensor_log");
+        if(logical_volume == nullptr) {
+            throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
         }
+
+        // Apply the user limits to this element
+        logical_volume->SetUserLimits(user_limits_.get());
+
+        // Add the sensitive detector action
+        logical_volume->SetSensitiveDetector(sensitive_detector_action);
+        sensors_.push_back(sensitive_detector_action);
     }
 
     if(!useful_deposition) {
@@ -126,10 +179,9 @@ void DepositionGeant4Module::init() {
     }
 
     // Disable verbose messages from processes
-    G4UImanager* UI = G4UImanager::GetUIpointer();
-    UI->ApplyCommand("/process/verbose 0");
-    UI->ApplyCommand("/process/em/verbose 0");
-    UI->ApplyCommand("/process/eLoss/verbose 0");
+    ui_g4->ApplyCommand("/process/verbose 0");
+    ui_g4->ApplyCommand("/process/em/verbose 0");
+    ui_g4->ApplyCommand("/process/eLoss/verbose 0");
     G4HadronicProcessStore::Instance()->SetVerbose(0);
 
     // Set the random seed for Geant4 generation
@@ -141,7 +193,7 @@ void DepositionGeant4Module::init() {
             seed_command += " ";
         }
     }
-    UI->ApplyCommand(seed_command);
+    ui_g4->ApplyCommand(seed_command);
 
     // Release the output stream
     RELEASE_STREAM(G4cout);
@@ -164,7 +216,7 @@ void DepositionGeant4Module::run(unsigned int event_num) {
 
     // Dispatch the necessary messages
     for(auto& sensor : sensors_) {
-        sensor->dispatchDepositedChargeMessage();
+        sensor->dispatchMessages();
     }
 }
 

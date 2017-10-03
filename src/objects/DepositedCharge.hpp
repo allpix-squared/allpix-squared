@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief Definition of deposited charge object
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #ifndef ALLPIX_DEPOSITED_CHARGE_H
@@ -44,8 +47,7 @@ namespace allpix {
         /**
          * @brief Set the Monte-Carlo particle
          * @param mc_particle The Monte-Carlo particle
-         * @warning Special method because MCParticle is only known after deposit creation, should not be used to replace the
-         * particle later
+         * @warning Special method because MCParticle is only known after deposit creation, should not be replaced later.
          */
         void setMCParticle(const MCParticle* mc_particle);
 

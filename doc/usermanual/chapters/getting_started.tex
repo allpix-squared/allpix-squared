@@ -124,7 +124,7 @@ The main configuration consists of a set of sections specifying the modules used
 All modules are executed in the \emph{linear} order in which they are defined.
 There are a few section names which have a special meaning in the main configuration, namely the following:
 \begin{itemize}
-\item The \textbf{global} (framework) header sections: These are all zero-length section headers (including the one at the beginning of the file) and all sections marked with the header \texttt{[AllPix]} (case-sensitive).
+\item The \textbf{global} (framework) header sections: These are all zero-length section headers (including the one at the beginning of the file) and all sections marked with the header \texttt{[Allpix]} (case-insensitive).
 These are combined and accessed together as the global configuration, which contain all parameters of the framework itself (see Section~\ref{sec:framework_parameters} for details).
 All key-value pairs defined in this section are also inherited by all individual configurations as long the key is not defined in the module configuration itself.
 \item The \textbf{ignore} header sections: All sections with name \texttt{[Ignore]} are ignored.
@@ -159,8 +159,8 @@ A valid example configuration using the detector configuration above could be:
 string_value = "example1"
 # The location of the detector configuration is a global parameter
 detectors_file = "manual_detector.conf"
-# The AllPix section is also considered global and merged with the above
-[AllPix]
+# The Allpix section is also considered global and merged with the above
+[Allpix]
 another_random_string = "example2"
 
 # First run a unique module
@@ -249,7 +249,7 @@ A random seed from multiple entropy sources will be generated if the parameter i
 Can be used to reproduce an earlier simulation run.
 \item \textbf{\texttt{library\_directories}}: Additional directories to search for module libraries, before searching the default paths.
 See Section~\ref{sec:module_instantiation} for details.
-\item \textbf{\texttt{model\_path}}: Additional files or directories from which detector models should be read besides the standard search locations.
+\item \textbf{\texttt{model\_paths}}: Additional files or directories from which detector models should be read besides the standard search locations.
 Refer to Section~\ref{sec:detector_models} for more information.
 \item \textbf{\texttt{experimental\_multithreading}}: Enable EXPERIMENTAL multithreading for the framework. This can speed up simulations of multiple detectors significantly. More information about the multithreading in Section \ref{sec:multithreading}.
 \item \textbf{\texttt{workers}}: Specify the number of workers to use in total, should be strictly larger than zero. Only used if \texttt{experimental\_multithreading} is set to true. Defaults to the number of native threads available on the system if this can be determined.
@@ -475,8 +475,10 @@ The \texttt{ROOTObjectWriter} automatically saves all objects created by the mod
 It stores separate trees for all object types and creates branches for every unique message name, a combination of the detector, the module and the message output name as described in Section~\ref{sec:redirect_module_input_outputs}.
 For each event, values are added to the leafs of the branches containing the data of the objects.
 This allows for easy histogramming of the acquired data over the total run using standard ROOT utilities.
-Relations between objects within a single event are internally stored as TRef allowing to fetch related objects as long as these are loaded in memory.
-An exception is thrown when trying to fetch an object which is not loaded.
+
+Relations between objects within a single event are internally stored as ROOT TRefs~\cite{roottref} allowing to retrieve related objects as long as these are loaded in memory.
+An exception will be thrown when trying to access an object which is not in memory.
+Refer to Section \ref{sec:objhistory} for more information about object history.
 
 In order to save all objects of the simulation, a \texttt{ROOTObjectWriter} module has to be added with a \texttt{file\_name} parameter (without the ``.root'' suffix) to specify the file location of the created ROOT file in the global output directory.
 The default file name is \texttt{data}, i.e.\ the file \textbf{data.root} is created in the output directory.

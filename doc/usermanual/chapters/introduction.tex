@@ -1,7 +1,6 @@
 \section{Introduction}
 \label{sec:introduction}
 \apsq is a generic simulation framework for silicon tracker and vertex detectors written in modern C++.
-It is the successor of a previously developed simulation framework called AllPix~\cite{ap1wiki,ap1git}.
 The goal of the \apsq framework is to provide and easy-to-use package for simulating the performance of Silicon detectors, starting with the passage of ionizing radiation through the sensor and finishing with the the digitization of hits in the readout chip.
 
 The framework builds upon other packages to perform tasks in the simulation chain, most notably Geant4~\cite{geant4} for the deposition of charge carriers in the sensor and ROOT~\cite{root} for producing histograms and storing the produced data.
@@ -32,29 +31,22 @@ Besides modularity, the \apsq framework was designed with the following main des
     \end{itemize}
 \end{enumerate}
 
-\subsection{Historical Summary}
-Development of AllPix (the original version) started around 2012 as a generic simulation framework for pixel detectors.
-It has been succesfully used for simulating a variety of different detector setups through the years.
-Originally written as a Geant4 user application, the framework has grown `organically` as new features continued to be added.
-Around 2016, discussions between collaborators started, favoring a rewrite of the software from scratch.
-The envisaged improvements included better modularity, more extensive configuration options and an easier geometry setup.
-
-Early development of \apsq started in end of 2016, but most of the initial rework in modern C++ has been carried out in the framework of a technical student project between January and July 2017.
-The core of the framework, its utilities and functions as well as an intial set of simulation modules have been implemented and are available in the first published release.
+\apsq has been designed following some ideas previously implemented in the AllPix~\cite{ap1wiki,ap1git} project.
+Originally written as a Geant4 user application, it has been successfully used for simulating a variety of different detector setups through the years.
 
 \subsection{Scope of this Manual}
 This document is meant to be the primary User's Guide for \apsq.
-It contains both an extensive description of the user inteface and configuration possiblities and a detailed indtroduction to the code base for potential developers.
+It contains both an extensive description of the user interface and configuration possibilities and a detailed introduction to the code base for potential developers.
 This manual is designed to:
 \begin{itemize}
-\item Guide all new users through the installation 
+\item Guide all new users through the installation
 \item Introduce new users to the toolkit for the purpose of running their own simulations
 \item Explain the structure of the core framework and the components it provides to the simulation modules
 \item Provide detailed information about all modules and how to use and configure them
 \item Describe the required steps for adding new detector models and implementing new simulation modules
 \end{itemize}
 
-Within the scope of this document, only an overview of the framework can be provided and more detailed information on the code itself can be found in the Doxygen reference manual~\cite{doxygen} available online.
+Within the scope of this document, only an overview of the framework can be provided and more detailed information on the code itself can be found in the Doxygen reference manual~\cite{ap2-doxygen} available online.
 No programming experience is required from novice users, but knowledge of (modern) C++ will be useful in the later chapters and might contribute to the overall understanding of the mechanisms.
 
 \subsection{Support and Reporting Issues}
@@ -69,4 +61,4 @@ These should preferably be brought up on the issues tracker of the project which
 We encourage users to discuss their needs either via the issue tracker of the repository~\cite{ap2-issue-tracker} or the developer's mailing list to receive ideas and guidance on how to implement a specific feature.
 Getting in touch with other developers early in the development cycle prevents from spending time on features which already exist or are currently developed by someone else.
 
-The repository contains a few tools to facilitate contributions. 
+The repository contains a few tools to facilitate contributions.

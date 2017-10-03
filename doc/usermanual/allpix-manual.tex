@@ -10,8 +10,10 @@
             url=false
             ]{biblatex}
 \usepackage[T1]{fontenc}
-\usepackage{enumitem}
+\usepackage[shortlabels]{enumitem}
 \usepackage{siunitx}
+\usepackage{array}
+\usepackage{ccicons}
 \usepackage{booktabs}
 \usepackage{xspace}
 \usepackage{xcolor}
@@ -27,17 +29,18 @@
 \usepackage{lmodern}
 \usepackage{amssymb,amsmath}
 \usepackage{ifxetex,ifluatex}
-\usepackage{fixltx2e} 
+\usepackage{fixltx2e}
 \usepackage[utf8]{inputenc}
 \usepackage{eurosym}
 \usepackage{fancyvrb}
-\urlstyle{same}  
+\urlstyle{same}
 \usepackage{longtable,booktabs}
 \usepackage[normalem]{ulem}
+
 \setlength{\emergencystretch}{3em}
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
-  
+
 \ifx\paragraph\undefined\else
 \let\oldparagraph\paragraph
 \renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
@@ -60,11 +63,12 @@
 %----------------------------------------------------------------------------------------
 %   DOCUMENT INFORMATION
 %----------------------------------------------------------------------------------------
-\titlehead{\centering\includegraphics[width=8cm]{logo.png}}
+\titlehead{\centering\includegraphics[width=7cm]{logo.png}}
 \title{\apsqbold User Manual} % Title
 
 \author{Koen Wolters (\href{mailto:koen.wolters@cern.ch}{koen.wolters@cern.ch})\\
-  Simon Spannagel (\href{mailto:simon.spannagel@cern.ch}{simon.spannagel@cern.ch})
+  Simon Spannagel (\href{mailto:simon.spannagel@cern.ch}{simon.spannagel@cern.ch})\\
+  Daniel Hynds (\href{mailto:daniel.hynds@cern.ch}{daniel.hynds@cern.ch})
 } % Author names
 
 \date{\today\\ \vspace{10pt} Version \version} % Date for the report
@@ -72,11 +76,11 @@
 \graphicspath{{usermanual/figures/}}
 
 \begin{document}
-
+\begin{titlepage}
 \maketitle % Insert the title, author and date
 
-\begin{abstract}
-\end{abstract}
+\addlicense
+\end{titlepage}
 
 \clearpage
 % Table Of Contents
@@ -92,6 +96,9 @@
 \input{chapters/introduction}
 \clearpage
 
+\input{chapters/testing}
+\clearpage
+
 % installation
 \input{chapters/installation}
 \clearpage
@@ -100,11 +107,11 @@
 \input{chapters/getting_started}
 \clearpage
 
-% core framework 
+% core framework
 \input{chapters/framework}
 \clearpage
 
-% core framework 
+% core framework
 \input{chapters/objects}
 \clearpage
 

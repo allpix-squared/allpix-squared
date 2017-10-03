@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief Collection of string utilities
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  *
  * Used extensively for parsing the configuration in the \ref allpix::ConfigReader.
  */
@@ -62,7 +65,7 @@ namespace allpix {
     static std::string _from_string_helper(std::string str) {
         // Check if string is not empty
         str = trim(str);
-        if(str == "") {
+        if(str.empty()) {
             throw std::invalid_argument("string is empty");
         }
 

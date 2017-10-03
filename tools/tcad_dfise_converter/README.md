@@ -5,7 +5,7 @@ A new regular mesh is created by scanning the model volume in regular X Y and Z 
 
 The output .init file (with the same name as the .grd and .dat files) can be imported into Allpix Squared. The INIT file has a header followed by a list of columns organized as
 ```bash
-node.x	node.y	node.z	e-field.x	e-field.y	e-field.z
+node.x	node.y	node.z	observable.x	observable.y	observable.z
 ```
 
 #### Features
@@ -24,14 +24,17 @@ The list with options can be accessed using the -h option.
 Default values are assumed for the options not used. Possible options are:
 ```
 -R <region> 		= "bulk"
+-O <observable>		= "ElectricField"
+-d <dimensions>		= 3
 -r <search radius>	= 1 um
 -r <radius step>	= 0.5 um
 -m <max radius>		= 10 um
--c <volume cut>		= std::numeric_limits<double>::min()
+-c <volume cut>		= 10e-9 um^3
 -x,y,z <mesh binning>	= 100 (option should be set using -x, -y and -z)
 ```
 
-The output INIT file will be saved with the same *file_name_prefix* as the .grd and .dat files.
+Observables currently implemented for interpolation are: *ElectrostaticPotential*, *ElectricField*, *DopingConcentration*, *DonorConcentration* and *AcceptorConcentration*.
+The output INIT file will be saved with the same *file_name_prefix* as the .grd and .dat files, +*_observable_interpolated.init*.
 
 The *mesh_plotter* tool can be used from the installation folder as follows:
 ```bash
@@ -46,6 +49,6 @@ The data to be plotted can be selected with the -d option, the arguments are *ex
 J. Behley, V. Steinhage, A.B. Cremers. *Efficient Radius Neighbor Search in Three-dimensional Point Clouds*, Proc. of the IEEE International Conference on Robotics and Automation (ICRA), 2015 [@octree].
 
 Copyright 2015 Jens Behley, University of Bonn.
-This project is free software made available under the MIT License. For details see the OCTREE LICENSE file.
+This project is free software made available under the MIT License. For details see the LICENSE.md file.
 
 [@octree]: http://jbehley.github.io/papers/behley2015icra.pdf

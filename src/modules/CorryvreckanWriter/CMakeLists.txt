@@ -21,10 +21,10 @@ ENDIF()
 
 # Generate the ROOT dictionary
 ROOT_GENERATE_DICTIONARY(CorryvreckanObjectsDictionary
-    ${CMAKE_CURRENT_SOURCE_DIR}/TestBeamObject.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Pixel.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/corryvreckan/TestBeamObject.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/corryvreckan/Pixel.h
     LINKDEF
-    ${CMAKE_CURRENT_SOURCE_DIR}/Linkdef.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/corryvreckan/Linkdef.h
     MODULE
     CorryvreckanObjects
 )
@@ -44,7 +44,7 @@ ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDiction
 
 # Define the library adding the object file created above
 ADD_LIBRARY(CorryvreckanObjects SHARED
-    TestBeamObject.cpp
+    corryvreckan/TestBeamObject.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDictionary.cxx.o
 )
 

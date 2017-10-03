@@ -1,7 +1,10 @@
 /**
  * @file
  * @brief Utility to execute Runge-Kutta integration using Eigen
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #ifndef ALLPIX_RUNGE_KUTTA_H
@@ -97,9 +100,9 @@ namespace allpix {
             // Initialize values
             Step step;
             Eigen::Matrix<T, D, 1> ys;
-            Eigen::Matrix<T, D, 1> error;
+            Eigen::Matrix<T, D, 1> yse;
             ys.setZero();
-            error.setZero();
+            yse.setZero();
 
             // Compute step
             Eigen::Matrix<T, S, D> k;
@@ -113,17 +116,17 @@ namespace allpix {
                 k.row(i) = function_(tt, yt);
 
                 ys += h_ * tableau_(S, i) * k.row(i);
-                error += h_ * (tableau_(S, i) - tableau_(S + 1, i)) * k.row(i);
+                yse += h_ * tableau_(S + 1, i) * k.row(i);
             }
 
             // Update values with new step
             y_ += ys;
             t_ += h_;
-            error_ += error;
+            error_ += ys - yse;
 
             // Return step information
             step.value = ys;
-            step.error = error;
+            step.error = ys - yse;
             return step;
         }
 

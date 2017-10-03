@@ -2,7 +2,10 @@
  * @file
  * @brief Implements the particle generator
  * @remark Based on code from John Idarraga
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #include "GeneratorActionG4.hpp"
@@ -32,6 +35,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     // Find Geant4 particle
     auto pdg_table = G4ParticleTable::GetParticleTable();
     auto particle_type = config.get<std::string>("particle_type", "");
+    std::transform(particle_type.begin(), particle_type.end(), particle_type.begin(), ::tolower);
     auto particle_code = config.get<int>("particle_code", 0);
     G4ParticleDefinition* particle = nullptr;
 
@@ -63,10 +67,9 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     LOG(DEBUG) << "Using particle " << particle->GetParticleName() << " (ID " << particle->GetPDGEncoding() << ").";
 
     // Set global parameters of the source
-    // FIXME keep number of particles always at one?
     single_source->SetNumberOfParticles(1);
     single_source->SetParticleDefinition(particle);
-    // FIXME What is this time
+    // Set the primary track's start time in for the current event to zero:
     single_source->SetParticleTime(0.0);
 
     // Set position parameters

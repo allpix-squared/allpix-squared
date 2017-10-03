@@ -7,6 +7,10 @@ Constructs a visualization viewer to display the constructed Geant4 geometry. Th
 
 The module allows for changing a variety of parameters to control the output visualization both for the different detector components and the particle beam.
 
+#### Dependencies
+
+This module requires an installation Geant4.
+
 #### Parameters
 * `mode` : Determines the mode of visualization. Options are **gui** which starts a Qt visualization window containing the driver (as long as the chosen driver supports it), **terminal** starts both the visualization viewer and a Geant4 terminal or **none** which only starts the driver itself (and directly closes it if the driver is asynchronous). Defaults to **gui**.
 * `driver` : Geant4 driver used to visualize the geometry. All the supported options can be found online [@g4drivers] and depend on the build options of the Geant4 version used. The default **OGL** should normally be used with the **gui** option if the visualization should be accumulated, otherwise **terminal** is the better option. Other than this, only the **VRML2FILE** driver has been tested. This driver should be used with *mode* equal to **none**. Defaults to the OpenGL driver **OGL**.

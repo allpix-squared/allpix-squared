@@ -4,36 +4,44 @@
 #include <map>
 #include <vector>
 
-// Sections to read in DF-ISE file
-enum class DFSection {
-    NONE = 0,
-    IGNORED,
-    HEADER,
-    INFO,
-    REGION,
-    COORDINATES,
-    VERTICES,
-    EDGES,
-    FACES,
-    ELEMENTS,
+namespace mesh_converter {
 
-    ELECTRIC_FIELD,
-    VALUES
-};
+    // Sections to read in DF-ISE file
+    enum class DFSection {
+        NONE = 0,
+        IGNORED,
+        HEADER,
+        INFO,
+        REGION,
+        COORDINATES,
+        VERTICES,
+        EDGES,
+        FACES,
+        ELEMENTS,
 
-// Simple point class to store data
-class Point {
-public:
-    Point() = default;
-    Point(double px, double py, double pz) : x(px), y(py), z(pz) {}
+        DONOR_CONCENTRATION,
+        DOPING_CONCENTRATION,
+        ACCEPTOR_CONCENTRATION,
+        ELECTRIC_FIELD,
+        ELECTROSTATIC_POTENTIAL,
+        VALUES
+    };
 
-    double x{0}, y{0}, z{0};
-};
+    // Simple point class to store data
+    class Point {
+    public:
+        Point() = default;
+        Point(double px, double py) : x(px), y(py) {}
+        Point(double px, double py, double pz) : x(px), y(py), z(pz) {}
 
-// Read the grid
-std::map<std::string, std::vector<Point>> read_grid(const std::string& file_name);
+        double x{0}, y{0}, z{0};
+    };
 
-// Read the electric field
-std::map<std::string, std::vector<Point>> read_electric_field(const std::string& file_name);
+    // Read the grid
+    std::map<std::string, std::vector<Point>> read_grid(const std::string& file_name);
+
+    // Read the electric field
+    std::map<std::string, std::map<std::string, std::vector<Point>>> read_electric_field(const std::string& file_name);
+}
 
 #endif

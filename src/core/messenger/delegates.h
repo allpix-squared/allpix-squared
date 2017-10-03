@@ -2,7 +2,10 @@
  * @file
  * @brief List of internal messenger delegates
  *
- * @copyright MIT License
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 /**
@@ -181,6 +184,50 @@ namespace allpix {
 
     protected:
         T* obj_;
+    };
+
+    /**
+     * @ingroup Delegates
+     * @brief Delegate to store the message in memory for fetching the history
+     */
+    template <typename T> class StoreDelegate : public ModuleDelegate<T> {
+    public:
+        /**
+         * @brief Construct a function delegate for the given module
+         * @param flags Messenger flags (note that REQUIRED does not mean all related objects are fetched)
+         * @param obj Module object this delegate should store the message for
+         */
+        StoreDelegate(MsgFlags flags, T* obj) : ModuleDelegate<T>(flags, obj) {}
+
+        /**
+         * @brief Stores the received message in the delegate until the end of the event
+         * @param msg Message to store
+         */
+        void process(std::shared_ptr<BaseMessage> msg, std::string) override {
+            // Store the message and mark as processed
+            messages_.push_back(msg);
+            this->set_processed();
+        }
+
+        /**
+         * @brief Reset the delegate by clearing the list of stored messages
+         *
+         * Always calls the BaseDelegate::reset first. Clears the storage of the messages unless the \ref MsgFlags::NO_RESET
+         * "NO_RESET" flag is passed to the delegate (note that all messages are kept in memory for the whole run if this
+         * flag is passed)
+         */
+        void reset() override {
+            // Always do base reset
+            BaseDelegate::reset();
+
+            // Clear if needed
+            if((this->getFlags() & MsgFlags::NO_RESET) == MsgFlags::NONE) {
+                messages_.clear();
+            };
+        }
+
+    private:
+        std::vector<std::shared_ptr<BaseMessage>> messages_;
     };
 
     /**
