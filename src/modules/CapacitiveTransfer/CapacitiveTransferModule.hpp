@@ -52,11 +52,6 @@ namespace allpix {
         void init() override;
 
         /**
-         * @brief Calculate the gap between chips to simulate bad parallelism on the assemblyI
-         */
-        double gap(int xpixel, int ypixel);
-
-        /**
          * @brief Transfer the propagated charges to the pixels and its neighbours
          */
         void run(unsigned int) override;
@@ -84,6 +79,11 @@ namespace allpix {
             }
         };
 
+        /**
+         * @brief Calculate the gap between pixels in tilted chip assembliesy
+         */
+        double gap(Pixel::Index pixel);
+
         // Message containing the propagated charges
         std::shared_ptr<PropagatedChargeMessage> propagated_message_;
 
@@ -100,6 +100,5 @@ namespace allpix {
 
         TH1D* gap_distribution;
         TH2D* gap_map;
-        TFile* gap_root_file;
     };
 } // namespace allpix

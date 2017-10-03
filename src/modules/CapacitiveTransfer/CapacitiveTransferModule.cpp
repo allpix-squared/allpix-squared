@@ -40,12 +40,14 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration config,
 }
 
 void CapacitiveTransferModule::init() {
-    gap_distribution = new TH1D("gap_distribution", "Gap;Gap[nn];#Entries", 50, -50., 50.);
-    gap_map = new TH2D("gap_map", "Gap;pixel x;pixel y", 64, 0, 63, 64, 0, 63);
-    gap_root_file = new TFile("gap_map.root", "RECREATE");
 
+    // Reading coupling matrix from config file
+    if(config_.has("coupling_matrix")) {
+        // TODO
+        // relative_coupling = config_.get<Matrix>("coupling_matrix");
+    }
     // Reading file with coupling matrix
-    if(config_.has("matrix_file")) {
+    else if(config_.has("matrix_file")) {
         LOG(TRACE) << "Reading cross-coupling matrix file " << config_.get<std::string>("matrix_file");
         std::ifstream input_file(config_.getPath("matrix_file", true), std::ifstream::in);
         if(!input_file.good()) {
@@ -82,13 +84,8 @@ void CapacitiveTransferModule::init() {
         }
         input_file.close();
     }
-    // Reading coupling matrix from config file
-    if(config_.has("coupling_matrix")) {
-        // TODO
-        // relative_coupling = config_.get<Matrix>("coupling_matrix");
-    }
     // If no coupling matrix is provided
-    if(!config_.has("matrix_file") && !config_.has("coupling_matrix")) {
+    else {
         LOG(ERROR)
             << "Cross-coupling was not defined. Provide a coupling matrix file or a coupling matrix in the config file.";
     }
@@ -96,11 +93,30 @@ void CapacitiveTransferModule::init() {
     LOG(DEBUG) << matrix_cols << "x" << matrix_rows << " Capacitance matrix imported";
     // TODO
     // LOG(DEBUG) << relaive_coupling;;
+    //
+
+    if(config_.get<bool>("output_plots")) {
+        LOG(TRACE) << "Creating output plots";
+
+        // Create histograms if needed
+        auto pixel_grid = model_->getNPixels();
+        gap_distribution = new TH1D("gap_distribution", "Gap;Gap[nn];#Entries", 50, -50., 50.);
+        gap_map = new TH2D("gap_map",
+                           "Gap;pixel x;pixel y",
+                           pixel_grid.x(),
+                           -0.5,
+                           pixel_grid.x() - 0.5,
+                           pixel_grid.y(),
+                           -0.5,
+                           pixel_grid.y() - 0.5);
+    }
 }
 
-double CapacitiveTransferModule::gap(int xpixel, int ypixel) {
+double CapacitiveTransferModule::gap(Pixel::Index pixel) {
     int center[2] = {0, 0};
     double angles[2] = {0.0, 0.0};
+
+    ROOT::Math::XYVector pixel_pitch = model_->getPixelSize();
 
     if(config_.has("chip_angle")) {
         auto angles_temp = config_.get<ROOT::Math::XYPoint>("chip_angle");
@@ -117,8 +133,11 @@ double CapacitiveTransferModule::gap(int xpixel, int ypixel) {
         quaternion.w() = 0;
         Eigen::Matrix3d rotation = quaternion.toRotationMatrix();
 
-        Eigen::Vector3d pixel_point(xpixel * 25 * 10 ^ -6, ypixel * 25 * 10 ^ -6, 0);
-        Eigen::Vector3d origin(center[0] * 25 * 10 ^ -6, center[1] * 25 * 10 ^ -6, 0);
+        auto local_x = pixel.x() * pixel_pitch.x();
+        auto local_y = pixel.y() * pixel_pitch.y();
+
+        Eigen::Vector3d pixel_point(local_x, local_y, 0);
+        Eigen::Vector3d origin(center[0] * pixel_pitch.x(), center[1] * pixel_pitch.y(), 0);
         Eigen::Vector3d normal(0, 0, 1);
         Eigen::Vector3d rotated_normal = rotation * normal;
 
@@ -127,7 +146,7 @@ double CapacitiveTransferModule::gap(int xpixel, int ypixel) {
         pixel_gap = point_plane[2];
     }
     gap_distribution->Fill(pixel_gap);
-    gap_map->SetBinContent(xpixel, ypixel, pixel_gap);
+    gap_map->SetBinContent(static_cast<int>(pixel.x()), static_cast<int>(pixel.y()), pixel_gap);
 
     return pixel_gap;
 }
@@ -177,12 +196,10 @@ void CapacitiveTransferModule::run(unsigned int) {
                 // Update statistics
                 unique_pixels_.insert(pixel_index);
 
-                gap(xpixel, ypixel);
-
                 transferred_charges_count +=
                     static_cast<unsigned int>(propagated_charge.getCharge() * relative_coupling[col][row]);
                 double neighbour_charge = propagated_charge.getCharge() * relative_coupling[col][row];
-                neighbour_charge += neighbour_charge * gap(xpixel, ypixel) / 100;
+                neighbour_charge += neighbour_charge * gap(pixel_index) / 100;
 
                 if(col == static_cast<size_t>(std::floor(matrix_cols / 2)) &&
                    row == static_cast<size_t>(std::floor(matrix_rows / 2))) {
@@ -227,7 +244,8 @@ void CapacitiveTransferModule::finalize() {
     LOG(INFO) << "Transferred total of " << total_transferred_charges_ << " charges to " << unique_pixels_.size()
               << " different pixels";
 
-    gap_root_file->cd();
-    gap_distribution->Write();
-    gap_map->Write();
+    if(config_.get<bool>("output_plots")) {
+        gap_distribution->Write();
+        gap_map->Write();
+    }
 }
