@@ -118,8 +118,8 @@ double CapacitiveTransferModule::gap(int xpixel, int ypixel) {
         quaternion.w() = 0;
         Eigen::Matrix3d rotation = quaternion.toRotationMatrix();
 
-        Eigen::Vector3d pixel_point(xpixel * 10 ^ -6, ypixel * 10 ^ -6, 0);
-        Eigen::Vector3d origin(center[0] * 10 ^ -6, center[1] * 10 ^ -6, 0);
+        Eigen::Vector3d pixel_point(xpixel * 25e-6, ypixel * 25e-6, 0);
+        Eigen::Vector3d origin(center[0] * 25e-6, center[1] * 25e-6, 0);
         Eigen::Vector3d normal(0, 0, 1);
         Eigen::Vector3d rotated_normal = rotation * normal;
 
