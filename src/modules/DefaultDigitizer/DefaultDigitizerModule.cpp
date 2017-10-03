@@ -139,7 +139,7 @@ void DefaultDigitizerModule::run(unsigned int) {
 
             // Convert to ADC units and precision:
             charge = static_cast<double>(std::max(
-                std::min(static_cast<int>(config_.get<double>("adc_offset") + charge / config_.get<double>("adc_slope")),
+                std::min(static_cast<int>((config_.get<double>("adc_offset") + charge) / config_.get<double>("adc_slope")),
                          (1 << config_.get<int>("adc_resolution")) - 1),
                 0));
             LOG(DEBUG) << "Charge converted to ADC units: " << charge;
