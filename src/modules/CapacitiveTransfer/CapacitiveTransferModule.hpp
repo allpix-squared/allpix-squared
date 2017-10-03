@@ -10,7 +10,9 @@
 #include <string>
 #include <vector>
 
+#include <TFile.h>
 #include <TH1D.h>
+#include <TH2D.h>
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
@@ -82,8 +84,6 @@ namespace allpix {
             }
         };
 
-        // bool output_plots_{};
-
         // Message containing the propagated charges
         std::shared_ptr<PropagatedChargeMessage> propagated_message_;
 
@@ -96,6 +96,8 @@ namespace allpix {
         unsigned int matrix_rows = 0;
         unsigned int matrix_cols = 0;
 
-        // TH1D* gap_distribution;
+        TH1D* gap_distribution;
+        TH2D* gap_map;
+        TFile* gap_root_file;
     };
 } // namespace allpix

@@ -40,9 +40,9 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration config,
 }
 
 void CapacitiveTransferModule::init() {
-    // if(output_plots_) {
-    // gap_distribution = new TH1D("gap_distribution", "Drift time;t[ns];particles", 50, 0., 20.);
-    //}
+    gap_distribution = new TH1D("gap_distribution", "Gap;Gap[nn];#Entries", 50, -50., 50.);
+    gap_map = new TH2D("gap_map", "Gap;pixel x;pixel y", 64, 0, 63, 64, 0, 63);
+    gap_root_file = new TFile("gap_map.root", "RECREATE");
 
     // Reading file with coupling matrix
     if(config_.has("matrix_file")) {
@@ -119,7 +119,7 @@ double CapacitiveTransferModule::gap(int xpixel, int ypixel) {
         Eigen::Matrix3d rotation = quaternion.toRotationMatrix();
 
         Eigen::Vector3d pixel_point(xpixel * 10 ^ -6, ypixel * 10 ^ -6, 0);
-        Eigen::Vector3d origin(center[0], center[1], 0);
+        Eigen::Vector3d origin(center[0] * 10 ^ -6, center[1] * 10 ^ -6, 0);
         Eigen::Vector3d normal(0, 0, 1);
         Eigen::Vector3d rotated_normal = rotation * normal;
 
@@ -128,9 +128,8 @@ double CapacitiveTransferModule::gap(int xpixel, int ypixel) {
         gap = point_plane[2] * 1000;
     }
     LOG(DEBUG) << "===> GAP: " << gap << " nm";
-    // if(output_plots_) {
-    //	    gap_distribution->Fill(gap);
-    //    }
+    gap_distribution->Fill(gap);
+    gap_map->SetBinContent(xpixel, ypixel, gap);
 
     return gap;
 }
@@ -229,7 +228,7 @@ void CapacitiveTransferModule::finalize() {
     LOG(INFO) << "Transferred total of " << total_transferred_charges_ << " charges to " << unique_pixels_.size()
               << " different pixels";
 
-    //    if(output_plots_) {
-    //        gap_distribution->Write();
-    //    }
+    gap_root_file->cd();
+    gap_distribution->Write();
+    gap_map->Write();
 }
