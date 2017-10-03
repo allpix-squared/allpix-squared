@@ -96,6 +96,8 @@ namespace allpix {
         unsigned int matrix_rows = 0;
         unsigned int matrix_cols = 0;
 
+        double pixel_gap = 1.0;
+
         TH1D* gap_distribution;
         TH2D* gap_map;
         TFile* gap_root_file;

@@ -101,7 +101,6 @@ void CapacitiveTransferModule::init() {
 double CapacitiveTransferModule::gap(int xpixel, int ypixel) {
     int center[2] = {0, 0};
     double angles[2] = {0.0, 0.0};
-    double gap = 1;
 
     if(config_.has("chip_angle")) {
         auto angles_temp = config_.get<ROOT::Math::XYPoint>("chip_angle");
@@ -118,20 +117,19 @@ double CapacitiveTransferModule::gap(int xpixel, int ypixel) {
         quaternion.w() = 0;
         Eigen::Matrix3d rotation = quaternion.toRotationMatrix();
 
-        Eigen::Vector3d pixel_point(xpixel * 25e-6, ypixel * 25e-6, 0);
-        Eigen::Vector3d origin(center[0] * 25e-6, center[1] * 25e-6, 0);
+        Eigen::Vector3d pixel_point(xpixel * 25 * 10 ^ -6, ypixel * 25 * 10 ^ -6, 0);
+        Eigen::Vector3d origin(center[0] * 25 * 10 ^ -6, center[1] * 25 * 10 ^ -6, 0);
         Eigen::Vector3d normal(0, 0, 1);
         Eigen::Vector3d rotated_normal = rotation * normal;
 
         Eigen::Hyperplane<double, 3> plane(rotated_normal, origin);
         Eigen::Vector3d point_plane = plane.projection(pixel_point);
-        gap = point_plane[2] * 1000;
+        pixel_gap = point_plane[2];
     }
-    LOG(DEBUG) << "===> GAP: " << gap << " nm";
-    gap_distribution->Fill(gap);
-    gap_map->SetBinContent(xpixel, ypixel, gap);
+    gap_distribution->Fill(pixel_gap);
+    gap_map->SetBinContent(xpixel, ypixel, pixel_gap);
 
-    return gap;
+    return pixel_gap;
 }
 
 void CapacitiveTransferModule::run(unsigned int) {
@@ -184,6 +182,7 @@ void CapacitiveTransferModule::run(unsigned int) {
                 transferred_charges_count +=
                     static_cast<unsigned int>(propagated_charge.getCharge() * relative_coupling[col][row]);
                 double neighbour_charge = propagated_charge.getCharge() * relative_coupling[col][row];
+                neighbour_charge += neighbour_charge * gap(xpixel, ypixel) / 100;
 
                 if(col == static_cast<size_t>(std::floor(matrix_cols / 2)) &&
                    row == static_cast<size_t>(std::floor(matrix_rows / 2))) {
