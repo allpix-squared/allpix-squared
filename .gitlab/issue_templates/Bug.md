@@ -26,10 +26,6 @@
 
 (Please use code blocks (```) to format console output, logs, and code as it's very hard to read otherwise.)
 
-### Output of checks
-
-(If you are reporting a bug on GitLab.com, write: This bug happens on GitLab.com)
-
 #### Build environment information
 
 <details>
