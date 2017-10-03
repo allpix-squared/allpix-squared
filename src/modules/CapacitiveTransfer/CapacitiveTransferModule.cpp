@@ -100,15 +100,17 @@ void CapacitiveTransferModule::init() {
 
 double CapacitiveTransferModule::gap(int xpixel, int ypixel) {
     int center[2] = {0, 0};
-    double angles[2] = {0, 0};
+    double angles[2] = {0.0, 0.0};
     double gap = 1;
 
     if(config_.has("chip_angle")) {
-        // angles = config_.getArray<double>("chip_angle");
-        angles[0] = config_.get<double>("x");
-        angles[1] = config_.get<double>("y");
+        auto angles_temp = config_.get<ROOT::Math::XYPoint>("chip_angle");
+        angles[0] = angles_temp.x();
+        angles[1] = angles_temp.y();
         if(config_.has("gradient_center")) {
-            // center = config_.getArray<int>("gradient_center");
+            auto center_temp = config_.get<ROOT::Math::XYPoint>("gradient_center");
+            center[0] = static_cast<int>(center_temp.x());
+            center[1] = static_cast<int>(center_temp.y());
         }
 
         Eigen::Quaternion<double> quaternion =
@@ -123,9 +125,9 @@ double CapacitiveTransferModule::gap(int xpixel, int ypixel) {
 
         Eigen::Hyperplane<double, 3> plane(rotated_normal, origin);
         Eigen::Vector3d point_plane = plane.projection(pixel_point);
-        gap = point_plane[2];
+        gap = point_plane[2] * 1000;
     }
-    LOG(DEBUG) << "===> GAP	" << gap;
+    LOG(DEBUG) << "===> GAP: " << gap << " nm";
     // if(output_plots_) {
     //	    gap_distribution->Fill(gap);
     //    }
