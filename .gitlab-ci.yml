@@ -307,7 +307,8 @@ perf:cc7-gcc:
         - source .gitlab-ci.d/init_x86_64.sh
         - source .gitlab-ci.d/load_deps.sh
         - cd build/
-        - ctest -R test_performance --output-on-failure -j4
+        - cmake -DTEST_MODULES=OFF ..
+        - ctest -R test_performance --output-on-failure
 
 perf:cc7-llvm:
     stage: testing
@@ -320,7 +321,8 @@ perf:cc7-llvm:
         - export COMPILER_TYPE="llvm"
         - source .gitlab-ci.d/init_x86_64.sh
         - cd build/
-        - ctest -R test_performance --output-on-failure -j4
+        - cmake -DTEST_MODULES=OFF ..
+        - ctest -R test_performance --output-on-failure
 
 # Mac OS X
 
