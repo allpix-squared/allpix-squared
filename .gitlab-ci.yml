@@ -309,6 +309,8 @@ perf:cc7-gcc:
         - cd build/
         - cmake -DTEST_MODULES=OFF ..
         - ctest -R test_performance --output-on-failure
+    allow_failure: true
+    retry: 1
 
 perf:cc7-llvm:
     stage: testing
@@ -323,6 +325,8 @@ perf:cc7-llvm:
         - cd build/
         - cmake -DTEST_MODULES=OFF ..
         - ctest -R test_performance --output-on-failure
+    allow_failure: true
+    retry: 1
 
 # Mac OS X
 
@@ -339,7 +343,7 @@ perf:mac1012-clang:
         - cmake -DTEST_MODULES=OFF ..
         - ctest -R test_performance --output-on-failure
     allow_failure: true
-
+    retry: 1
 
 
 #############################
