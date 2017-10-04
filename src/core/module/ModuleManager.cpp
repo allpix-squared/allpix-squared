@@ -710,6 +710,16 @@ static std::string seconds_to_time(long double seconds) {
  * after finalization. No method will be called after finalizing the module (except the destructor).
  */
 void ModuleManager::finalize() {
+
+    // Collect the modules' configurations as used during the simulation:
+    LOG(TRACE) << "Collecting module configurations...";
+    ConfigReader final_configurations;
+    for(auto& module : modules_) {
+        auto config = module->config_;
+        config.setName(module->getUniqueName());
+        final_configurations.addConfiguration(config);
+    }
+
     LOG_PROGRESS(TRACE, "FINALIZE_LOOP") << "Finalizing module instantiations";
     for(auto& module : modules_) {
         LOG_PROGRESS(TRACE, "FINALIZE_LOOP") << "Finalizing " << module->get_identifier().getUniqueName();
