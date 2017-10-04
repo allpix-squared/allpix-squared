@@ -296,6 +296,31 @@ mod:mac1012-clang:
 # about how many CI jobs are performed on the same machine in parallel via the hypervisor.
 
 # For now, CentOS7 is removed until the specially tagged CI runner is available.
+perf:cc7-gcc:
+    stage: testing
+    tags:
+        - benchmark
+    dependencies:
+        - cmp:cc7-gcc
+    image: clicdp/cc7-base
+    script:
+        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab-ci.d/load_deps.sh
+        - cd build/
+        - ctest -R test_performance --output-on-failure -j4
+
+perf:cc7-llvm:
+    stage: testing
+    tags:
+        - benchmark
+    dependencies:
+        - cmp:cc7-llvm
+    image: clicdp/cc7-base
+    script:
+        - export COMPILER_TYPE="llvm"
+        - source .gitlab-ci.d/init_x86_64.sh
+        - cd build/
+        - ctest -R test_performance --output-on-failure -j4
 
 # Mac OS X
 
