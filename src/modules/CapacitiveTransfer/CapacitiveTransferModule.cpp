@@ -22,7 +22,6 @@
 #include "tools/ROOT.h"
 
 #include <Eigen/Core>
-#include <Eigen/Geometry>
 
 #include "objects/PixelCharge.hpp"
 
@@ -110,43 +109,59 @@ void CapacitiveTransferModule::init() {
                            -0.5,
                            pixel_grid.y() - 0.5);
     }
+
+    double nominal_gap = 0.0;
+    if(config_.has("nominal_gap")) {
+        nominal_gap = config_.get<double>("nominal_gap"); // nominal gap is in um
+    }
+    Eigen::Vector3d origin(0, 0, nominal_gap);
+
+    if(config_.has("gradient_center")) {
+        center[0] = config_.get<ROOT::Math::XYPoint>("gradient_center").x() * model_->getPixelSize().x() *
+                    10e3; // pixel_pitch comes in mm
+        center[1] = config_.get<ROOT::Math::XYPoint>("gradient_center").y() * model_->getPixelSize().y() * 10e3;
+        origin = Eigen::Vector3d(center[0], center[1], nominal_gap);
+    }
+
+    Eigen::Vector3d rotated_normal(0, 0, 1);
+    if(config_.has("chip_angle")) {
+        angles[0] = config_.get<ROOT::Math::XYPoint>("chip_angle").x();
+        angles[1] = config_.get<ROOT::Math::XYPoint>("chip_angle").y();
+
+        LOG(INFO) << "Normal:	" << std::endl << rotated_normal;
+        if(angles[0] != 0.0) {
+            LOG(INFO) << "X rotation angle: " << angles[0];
+            auto rotation_x = Eigen::AngleAxisd(angles[0], Eigen::Vector3d::UnitX()).toRotationMatrix();
+            LOG(INFO) << "Rotation X:	" << std::endl << rotation_x;
+            rotated_normal = rotation_x * rotated_normal;
+            LOG(INFO) << "Rotated normal:	" << std::endl << rotated_normal;
+        }
+        if(angles[1] != 0.0) {
+            LOG(INFO) << "Y rotation angle: " << angles[1];
+            auto rotation_y = Eigen::AngleAxisd(angles[1], Eigen::Vector3d::UnitY()).toRotationMatrix();
+            LOG(INFO) << "Rotation Y:	" << std::endl << rotation_y;
+            rotated_normal = rotation_y * rotated_normal;
+            LOG(INFO) << "Rotated normal:	" << std::endl << rotated_normal;
+        }
+    }
+
+    plane = Eigen::Hyperplane<double, 3>(rotated_normal, origin);
 }
 
 double CapacitiveTransferModule::gap(Pixel::Index pixel) {
-    int center[2] = {0, 0};
-    double angles[2] = {0.0, 0.0};
 
-    ROOT::Math::XYVector pixel_pitch = model_->getPixelSize();
+    auto local_x = pixel.x() * model_->getPixelSize().x() * 10e3; // pixel_pitch comes in mm
+    auto local_y = pixel.y() * model_->getPixelSize().y() * 10e3;
 
-    if(config_.has("chip_angle")) {
-        auto angles_temp = config_.get<ROOT::Math::XYPoint>("chip_angle");
-        angles[0] = angles_temp.x();
-        angles[1] = angles_temp.y();
-        if(config_.has("gradient_center")) {
-            auto center_temp = config_.get<ROOT::Math::XYPoint>("gradient_center");
-            center[0] = static_cast<int>(center_temp.x());
-            center[1] = static_cast<int>(center_temp.y());
-        }
+    Eigen::Vector3d pixel_point(local_x, local_y, 0);
+    Eigen::Vector3d pixel_projection = plane.projection(pixel_point);
+    pixel_gap = pixel_projection[2];
 
-        Eigen::Quaternion<double> quaternion =
-            Eigen::AngleAxisd(angles[0], Eigen::Vector3d::UnitX()) * Eigen::AngleAxisd(angles[1], Eigen::Vector3d::UnitY());
-        quaternion.w() = 0;
-        Eigen::Matrix3d rotation = quaternion.toRotationMatrix();
-
-        auto local_x = pixel.x() * pixel_pitch.x();
-        auto local_y = pixel.y() * pixel_pitch.y();
-
-        Eigen::Vector3d pixel_point(local_x, local_y, 0);
-        Eigen::Vector3d origin(center[0] * pixel_pitch.x(), center[1] * pixel_pitch.y(), 0);
-        Eigen::Vector3d normal(0, 0, 1);
-        Eigen::Vector3d rotated_normal = rotation * normal;
-
-        Eigen::Hyperplane<double, 3> plane(rotated_normal, origin);
-        Eigen::Vector3d point_plane = plane.projection(pixel_point);
-        pixel_gap = point_plane[2];
-    }
     gap_distribution->Fill(pixel_gap);
     gap_map->SetBinContent(static_cast<int>(pixel.x()), static_cast<int>(pixel.y()), pixel_gap);
+
+    auto coefs = plane.coeffs();
+    LOG(DEBUG) << coefs[0];
 
     return pixel_gap;
 }

@@ -14,6 +14,8 @@
 #include <TH1D.h>
 #include <TH2D.h>
 
+#include <Eigen/Geometry>
+
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
@@ -79,11 +81,6 @@ namespace allpix {
             }
         };
 
-        /**
-         * @brief Calculate the gap between pixels in tilted chip assembliesy
-         */
-        double gap(Pixel::Index pixel);
-
         // Message containing the propagated charges
         std::shared_ptr<PropagatedChargeMessage> propagated_message_;
 
@@ -96,6 +93,15 @@ namespace allpix {
         unsigned int matrix_rows = 0;
         unsigned int matrix_cols = 0;
 
+        /**
+         * @brief Calculate the gap between pixels in tilted chip assembliesy
+         */
+        double gap(Pixel::Index pixel);
+
+        Eigen::Hyperplane<double, 3> plane;
+
+        double center[2] = {0.0, 0.0};
+        double angles[2] = {0.0, 0.0};
         double pixel_gap = 1.0;
 
         TH1D* gap_distribution;

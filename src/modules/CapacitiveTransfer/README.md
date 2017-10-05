@@ -12,10 +12,10 @@ It is also possible to simulate assemblies with tilted chip, with non-uniform co
 * max_depth_distance: Maximum distance in depth, i.e. normal to the sensor surface at the implant side, for a propagated charge to be taken into account. Defaults to 5um.
 * matrix_file: Path to the file containing the cross-couling matrix. The file must contain the relative capacitance to the central pixel (i.e. cross_capacitance / direct_capacitance).
 * coupling_matrix: Cross-coupling matrix with relative capacitances.
-* chip_angle: Tilt angle between chips. The first angle is the rotation along the rows and second is along the columns. It defaults to 0.0 radians (parallel chips). 
+* chip_angle: Tilt angle between chips. The first angle is the rotation along the columns axis,  and second is along the row axis. It defaults to 0.0 radians (parallel chips). 
 * gradient_center: Pixel position for the nominal coupling/distance.
 
-The cross-coupling matrix, to be parsed via the matrix file or via the configuration file, must  be square and organized in Row vs Col, such as:
+The cross-coupling matrix, to be parsed via the matrix file or via the configuration file, must be square and organized in Row vs Col, such as:
  ```ini
  cross_coupling_00    cross_coupling_01    cross_coupling_02
  cross_coupling_10    cross_coupling_11    cross_coupling_12
