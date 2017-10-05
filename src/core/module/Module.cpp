@@ -155,6 +155,18 @@ void Module::set_ROOT_directory(TDirectory* directory) {
     directory_ = directory;
 }
 
+const ConfigReader& Module::get_final_configuration() {
+    if(!initialized_final_configurations_) {
+        throw InvalidModuleActionException("Cannot access final module configurations outside the finalize() function.");
+    };
+    return final_configurations_;
+}
+
+void Module::set_final_configuration(const ConfigReader& config) {
+    initialized_final_configurations_ = true;
+    final_configurations_ = config;
+}
+
 bool Module::canParallelize() {
     return parallelize_;
 }

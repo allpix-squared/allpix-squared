@@ -18,6 +18,7 @@
 #include <TDirectory.h>
 
 #include "ThreadPool.hpp"
+#include "core/config/ConfigReader.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
 #include "core/messenger/delegates.h"
@@ -241,6 +242,13 @@ namespace allpix {
         Configuration& get_configuration();
         Configuration config_;
 
+        /**
+         * @brief Get the final configurations of all modules
+         * @return ConfigReader containing the final configurations for all modules
+         * @throws InvalidModuleActionException If the function is called outside the finalize method
+         */
+        const ConfigReader& get_final_configuration();
+
     private:
         /**
          * @brief Set the module identifier for internal use
@@ -267,6 +275,14 @@ namespace allpix {
          */
         void set_ROOT_directory(TDirectory* directory);
         TDirectory* directory_{};
+
+        /**
+         * @brief Set the final configuration from all modules in the finalize function
+         * @param config ConfigReader holding all configurations from module dsin this simulation
+         */
+        void set_final_configuration(const ConfigReader& config);
+        bool initialized_final_configurations_{false};
+        ConfigReader final_configurations_{};
 
         /**
          * @brief Add a messenger delegate to this instantiation
