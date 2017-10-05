@@ -64,7 +64,6 @@ namespace allpix {
         void finalize() override;
 
     private:
-        Configuration config_;
         Messenger* messenger_;
         GeometryManager* geo_mgr_;
 

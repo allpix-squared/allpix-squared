@@ -65,7 +65,6 @@ namespace allpix {
         void finalize() override;
 
     private:
-        Configuration config_;
         GeometryManager* geo_mgr_;
 
         // Object names to include or exclude from writing

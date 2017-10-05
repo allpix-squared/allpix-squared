@@ -25,7 +25,7 @@
 using namespace allpix;
 
 RCEWriterModule::RCEWriterModule(Configuration config, Messenger* messenger, GeometryManager* geo_mgr)
-    : Module(config), config_(std::move(config)), geo_mgr_(geo_mgr) {
+    : Module(std::move(config)), geo_mgr_(geo_mgr) {
     // Bind to PixelHitMessage
     messenger->bindMulti(this, &RCEWriterModule::pixel_hit_messages_);
 }
