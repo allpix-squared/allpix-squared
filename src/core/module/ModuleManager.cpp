@@ -733,6 +733,8 @@ void ModuleManager::finalize() {
         Log::setSection(section_name);
         // Set module specific settings
         auto old_settings = set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
+        // Supply final configurations to the module
+        module->set_final_configuration(final_configurations);
         // Change to our ROOT directory
         module->getROOTDirectory()->cd();
         // Finalize module
