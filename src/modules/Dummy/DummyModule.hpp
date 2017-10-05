@@ -50,7 +50,6 @@ namespace allpix {
     private:
         // General module members
         GeometryManager* geo_manager_;
-        Configuration config_;
         Messenger* messenger_;
         std::vector<std::shared_ptr<PixelHitMessage>> messages_;
     };
