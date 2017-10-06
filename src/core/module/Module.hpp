@@ -244,10 +244,10 @@ namespace allpix {
 
         /**
          * @brief Get the final configurations of all modules
-         * @return ConfigReader containing the final configurations for all modules
+         * @return Vector of Configuration objects containing the final configurations for all modules
          * @throws InvalidModuleActionException If the function is called outside the finalize method
          */
-        const ConfigReader& get_final_configuration();
+        std::vector<Configuration> get_final_configuration();
 
     private:
         /**
@@ -278,11 +278,11 @@ namespace allpix {
 
         /**
          * @brief Set the final configuration from all modules in the finalize function
-         * @param config ConfigReader holding all configurations from module dsin this simulation
+         * @param config ConfigReader holding all configurations from modules in this simulation
          */
         void set_final_configuration(const ConfigReader& config);
-        bool initialized_final_configurations_{false};
-        ConfigReader final_configurations_{};
+        bool initialized_final_configreader_{false};
+        ConfigReader final_configreader_{};
 
         /**
          * @brief Add a messenger delegate to this instantiation

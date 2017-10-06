@@ -174,7 +174,7 @@ void ROOTObjectWriterModule::finalize() {
     config_dir->cd();
 
     // Save the main configuration to the output file
-    for(auto& config : this->get_final_configuration().getConfigurations()) {
+    for(auto& config : this->get_final_configuration()) {
         // Create a new directory per section, using the unique module identifiers as names
         auto section_dir = config_dir->mkdir(config.getName().c_str());
         LOG(TRACE) << "Writing configuration for: " << config.getName();

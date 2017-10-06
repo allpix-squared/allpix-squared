@@ -155,16 +155,16 @@ void Module::set_ROOT_directory(TDirectory* directory) {
     directory_ = directory;
 }
 
-const ConfigReader& Module::get_final_configuration() {
-    if(!initialized_final_configurations_) {
+std::vector<Configuration> Module::get_final_configuration() {
+    if(!initialized_final_configreader_) {
         throw InvalidModuleActionException("Cannot access final module configurations outside the finalize() function.");
     };
-    return final_configurations_;
+    return final_configreader_.getConfigurations();
 }
 
 void Module::set_final_configuration(const ConfigReader& config) {
-    initialized_final_configurations_ = true;
-    final_configurations_ = config;
+    initialized_final_configreader_ = true;
+    final_configreader_ = config;
 }
 
 bool Module::canParallelize() {
