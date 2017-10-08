@@ -11,6 +11,7 @@
 #include <vector>
 
 #include <TFile.h>
+#include <TGraph.h>
 #include <TH1D.h>
 #include <TH2D.h>
 
@@ -98,6 +99,11 @@ namespace allpix {
          */
         double gap(Pixel::Index pixel);
 
+        double nominal_gap = 0.0;
+
+        void getCapacitanceScan(TFile* root_file);
+        TGraph* capacitances[9];
+
         Eigen::Hyperplane<double, 3> plane;
 
         double center[2] = {0.0, 0.0};
@@ -106,5 +112,6 @@ namespace allpix {
 
         TH1D* gap_distribution;
         TH2D* gap_map;
+        TH2D* capacitance_map;
     };
 } // namespace allpix

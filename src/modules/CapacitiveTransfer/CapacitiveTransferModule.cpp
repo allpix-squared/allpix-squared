@@ -94,7 +94,6 @@ void CapacitiveTransferModule::init() {
     // LOG(DEBUG) << relaive_coupling;;
     //
 
-    double nominal_gap = 0.0;
     if(config_.has("nominal_gap")) {
         nominal_gap = config_.get<double>("nominal_gap");
     }
@@ -104,6 +103,14 @@ void CapacitiveTransferModule::init() {
         center[0] = config_.get<ROOT::Math::XYPoint>("gradient_center").x() * model_->getPixelSize().x();
         center[1] = config_.get<ROOT::Math::XYPoint>("gradient_center").y() * model_->getPixelSize().y();
         origin = Eigen::Vector3d(center[0], center[1], nominal_gap);
+    }
+
+    if(config_.has("scan_file")) {
+        TFile* root_file = new TFile(config_.getPath("scan_file", true).c_str());
+        for(int i = 1; i < 10; i++) {
+            capacitances[i - 1] = static_cast<TGraph*>(root_file->Get(Form("Pixel_%i", i)));
+        }
+        root_file->Delete();
     }
 
     Eigen::Vector3d rotated_normal(0, 0, 1);
@@ -146,6 +153,14 @@ void CapacitiveTransferModule::init() {
                            pixel_grid.y(),
                            -0.5,
                            pixel_grid.y() - 0.5);
+        capacitance_map = new TH2D("capacitance_map",
+                                   "Gap;pixel x;pixel y",
+                                   pixel_grid.x(),
+                                   -0.5,
+                                   pixel_grid.x() - 0.5,
+                                   pixel_grid.y(),
+                                   -0.5,
+                                   pixel_grid.y() - 0.5);
     }
 }
 
@@ -161,6 +176,10 @@ double CapacitiveTransferModule::gap(Pixel::Index pixel) {
     gap_distribution->Fill(static_cast<double>(Units::convert(pixel_gap, "um")));
     gap_map->SetBinContent(
         static_cast<int>(pixel.x()), static_cast<int>(pixel.y()), static_cast<double>(Units::convert(pixel_gap, "um")));
+
+    // LOG(INFO) << capacitances[4]->Eval(pixel_gap,0,"S");
+    capacitance_map->SetBinContent(
+        static_cast<int>(pixel.x()), static_cast<int>(pixel.y()), capacitances[4]->Eval(pixel_gap, 0, "S"));
 
     return pixel_gap;
 }
@@ -210,19 +229,35 @@ void CapacitiveTransferModule::run(unsigned int) {
                 // Update statistics
                 unique_pixels_.insert(pixel_index);
 
-                transferred_charges_count +=
-                    static_cast<unsigned int>(propagated_charge.getCharge() * relative_coupling[col][row]);
-                double neighbour_charge = propagated_charge.getCharge() * relative_coupling[col][row];
-                neighbour_charge += neighbour_charge * gap(pixel_index) / 100;
-
-                if(col == static_cast<size_t>(std::floor(matrix_cols / 2)) &&
-                   row == static_cast<size_t>(std::floor(matrix_rows / 2))) {
-                    LOG(DEBUG) << "Set of " << propagated_charge.getCharge() * relative_coupling[col][row]
-                               << " charges brought to pixel " << pixel_index;
+                double neighbour_charge;
+                if(config_.has("scan_file")) {
+                    double relative_capacitance = capacitances[row * 3 + col]->Eval(gap(pixel_index), 0, "S") /
+                                                  capacitances[4]->Eval(nominal_gap, 0, "S");
+                    transferred_charges_count +=
+                        static_cast<unsigned int>(propagated_charge.getCharge() * relative_capacitance);
+                    neighbour_charge = propagated_charge.getCharge() * relative_capacitance;
+                    if(col == static_cast<size_t>(std::floor(matrix_cols / 2)) &&
+                       row == static_cast<size_t>(std::floor(matrix_rows / 2))) {
+                        LOG(DEBUG) << "Set of " << propagated_charge.getCharge() * relative_capacitance
+                                   << " charges brought to pixel " << pixel_index;
+                    } else {
+                        LOG(DEBUG) << "Set of " << propagated_charge.getCharge() * relative_capacitance
+                                   << " charges brought to neighbour " << col << "," << row << " pixel " << pixel_index
+                                   << "with cross-coupling of " << relative_coupling[col][row] * 100 << "%";
+                    }
                 } else {
-                    LOG(DEBUG) << "Set of " << propagated_charge.getCharge() * relative_coupling[col][row]
-                               << " charges brought to neighbour " << col << "," << row << " pixel " << pixel_index
-                               << "with cross-coupling of " << relative_coupling[col][row] * 100 << "%";
+                    transferred_charges_count +=
+                        static_cast<unsigned int>(propagated_charge.getCharge() * relative_coupling[col][row]);
+                    neighbour_charge = propagated_charge.getCharge() * relative_coupling[col][row];
+                    if(col == static_cast<size_t>(std::floor(matrix_cols / 2)) &&
+                       row == static_cast<size_t>(std::floor(matrix_rows / 2))) {
+                        LOG(DEBUG) << "Set of " << propagated_charge.getCharge() * relative_coupling[col][row]
+                                   << " charges brought to pixel " << pixel_index;
+                    } else {
+                        LOG(DEBUG) << "Set of " << propagated_charge.getCharge() * relative_coupling[col][row]
+                                   << " charges brought to neighbour " << col << "," << row << " pixel " << pixel_index
+                                   << "with cross-coupling of " << relative_coupling[col][row] * 100 << "%";
+                    }
                 }
 
                 // Add the pixel the list of hit pixels
@@ -261,5 +296,11 @@ void CapacitiveTransferModule::finalize() {
     if(config_.get<bool>("output_plots")) {
         gap_distribution->Write();
         gap_map->Write();
+        capacitance_map->Write();
+        if(config_.has("scan_file")) {
+            for(int i = 1; i < 10; i++) {
+                capacitances[i - 1]->Write(Form("Pixel_%i", i));
+            }
+        }
     }
 }
