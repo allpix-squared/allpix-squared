@@ -99,9 +99,9 @@ void CapacitiveTransferModule::init() {
     }
     Eigen::Vector3d origin(0, 0, nominal_gap);
 
-    if(config_.has("gradient_center")) {
-        center[0] = config_.get<ROOT::Math::XYPoint>("gradient_center").x() * model_->getPixelSize().x();
-        center[1] = config_.get<ROOT::Math::XYPoint>("gradient_center").y() * model_->getPixelSize().y();
+    if(config_.has("tilt_center")) {
+        center[0] = config_.get<ROOT::Math::XYPoint>("tilt_center").x() * model_->getPixelSize().x();
+        center[1] = config_.get<ROOT::Math::XYPoint>("tilt_center").y() * model_->getPixelSize().y();
         origin = Eigen::Vector3d(center[0], center[1], nominal_gap);
     }
 
@@ -177,7 +177,6 @@ double CapacitiveTransferModule::gap(Pixel::Index pixel) {
     gap_map->SetBinContent(
         static_cast<int>(pixel.x()), static_cast<int>(pixel.y()), static_cast<double>(Units::convert(pixel_gap, "um")));
 
-    // LOG(INFO) << capacitances[4]->Eval(pixel_gap,0,"S");
     capacitance_map->SetBinContent(
         static_cast<int>(pixel.x()), static_cast<int>(pixel.y()), capacitances[4]->Eval(pixel_gap, 0, "S"));
 
@@ -222,6 +221,7 @@ void CapacitiveTransferModule::run(unsigned int) {
                                << ") is outside the pixel matrix";
                     continue;
                 }
+
                 Pixel::Index pixel_index(
                     static_cast<unsigned int>(xpixel + static_cast<int>(col) - std::floor(matrix_cols / 2)),
                     static_cast<unsigned int>(ypixel + static_cast<int>(row) - std::floor(matrix_rows / 2)));
@@ -230,34 +230,24 @@ void CapacitiveTransferModule::run(unsigned int) {
                 unique_pixels_.insert(pixel_index);
 
                 double neighbour_charge;
+                double ccpd_factor;
                 if(config_.has("scan_file")) {
-                    double relative_capacitance = capacitances[row * 3 + col]->Eval(gap(pixel_index), 0, "S") /
-                                                  capacitances[4]->Eval(nominal_gap, 0, "S");
-                    transferred_charges_count +=
-                        static_cast<unsigned int>(propagated_charge.getCharge() * relative_capacitance);
-                    neighbour_charge = propagated_charge.getCharge() * relative_capacitance;
-                    if(col == static_cast<size_t>(std::floor(matrix_cols / 2)) &&
-                       row == static_cast<size_t>(std::floor(matrix_rows / 2))) {
-                        LOG(DEBUG) << "Set of " << propagated_charge.getCharge() * relative_capacitance
-                                   << " charges brought to pixel " << pixel_index;
-                    } else {
-                        LOG(DEBUG) << "Set of " << propagated_charge.getCharge() * relative_capacitance
-                                   << " charges brought to neighbour " << col << "," << row << " pixel " << pixel_index
-                                   << "with cross-coupling of " << relative_coupling[col][row] * 100 << "%";
-                    }
+                    ccpd_factor = capacitances[row * 3 + col]->Eval(gap(pixel_index), 0, "S") /
+                                  capacitances[4]->Eval(nominal_gap, 0, "S");
                 } else {
-                    transferred_charges_count +=
-                        static_cast<unsigned int>(propagated_charge.getCharge() * relative_coupling[col][row]);
-                    neighbour_charge = propagated_charge.getCharge() * relative_coupling[col][row];
-                    if(col == static_cast<size_t>(std::floor(matrix_cols / 2)) &&
-                       row == static_cast<size_t>(std::floor(matrix_rows / 2))) {
-                        LOG(DEBUG) << "Set of " << propagated_charge.getCharge() * relative_coupling[col][row]
-                                   << " charges brought to pixel " << pixel_index;
-                    } else {
-                        LOG(DEBUG) << "Set of " << propagated_charge.getCharge() * relative_coupling[col][row]
-                                   << " charges brought to neighbour " << col << "," << row << " pixel " << pixel_index
-                                   << "with cross-coupling of " << relative_coupling[col][row] * 100 << "%";
-                    }
+                    ccpd_factor = relative_coupling[col][row];
+                }
+
+                transferred_charges_count += static_cast<unsigned int>(propagated_charge.getCharge() * ccpd_factor);
+                neighbour_charge = propagated_charge.getCharge() * ccpd_factor;
+                if(col == static_cast<size_t>(std::floor(matrix_cols / 2)) &&
+                   row == static_cast<size_t>(std::floor(matrix_rows / 2))) {
+                    LOG(DEBUG) << "Set of " << propagated_charge.getCharge() * ccpd_factor << " charges brought to pixel "
+                               << pixel_index;
+                } else {
+                    LOG(DEBUG) << "Set of " << propagated_charge.getCharge() * ccpd_factor
+                               << " charges brought to neighbour " << col << "," << row << " pixel " << pixel_index
+                               << "with cross-coupling of " << ccpd_factor * 100 << "%";
                 }
 
                 // Add the pixel the list of hit pixels
