@@ -74,8 +74,11 @@ void CorryvreckanWriterModule::run(unsigned int) {
             // Make a new output pixel
             unsigned int pixelX = allpix_pixel.getPixel().getIndex().X();
             unsigned int pixelY = allpix_pixel.getPixel().getIndex().Y();
-            unsigned int adc = allpix_pixel.getPixel().getIndex().Y();
-            corryvreckan::Pixel* outputPixel = new corryvreckan::Pixel(detectorID, int(pixelX), int(pixelY), int(adc));
+            double adc = allpix_pixel.getSignal();
+            long long int time(time_);
+            corryvreckan::Pixel* outputPixel = new corryvreckan::Pixel(detectorID, int(pixelY), int(pixelX), int(adc), time);
+
+            LOG(WARNING) << "Pixel (" << pixelX << "," << pixelY << ") written to device " << detectorID;
 
             // Map the pixel to the output tree and write it
             treePixels_[objectID] = outputPixel;
@@ -84,7 +87,7 @@ void CorryvreckanWriterModule::run(unsigned int) {
     }
 
     // Increment the time till the next event
-    time_ += 1;
+    time_ += 10;
 }
 
 // Save the output trees to file
