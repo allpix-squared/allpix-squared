@@ -113,5 +113,6 @@ namespace allpix {
         TH1D* gap_distribution;
         TH2D* gap_map;
         TH2D* capacitance_map;
+        TH2D* relative_capacitance_map;
     };
 } // namespace allpix

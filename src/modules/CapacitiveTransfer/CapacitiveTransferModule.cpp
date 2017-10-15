@@ -44,6 +44,42 @@ void CapacitiveTransferModule::init() {
     if(config_.has("coupling_matrix")) {
         // TODO
         // relative_coupling = config_.get<Matrix>("coupling_matrix");
+    } else if(config_.has("scan_file")) {
+        TFile* root_file = new TFile(config_.getPath("scan_file", true).c_str());
+        for(int i = 1; i < 10; i++) {
+            capacitances[i - 1] = static_cast<TGraph*>(root_file->Get(Form("Pixel_%i", i)));
+        }
+        matrix_cols = 3;
+        matrix_rows = 3;
+        root_file->Delete();
+
+        if(config_.has("nominal_gap")) {
+            nominal_gap = config_.get<double>("nominal_gap");
+        }
+        Eigen::Vector3d origin(0, 0, nominal_gap);
+
+        if(config_.has("tilt_center")) {
+            center[0] = config_.get<ROOT::Math::XYPoint>("tilt_center").x() * model_->getPixelSize().x();
+            center[1] = config_.get<ROOT::Math::XYPoint>("tilt_center").y() * model_->getPixelSize().y();
+            origin = Eigen::Vector3d(center[0], center[1], nominal_gap);
+        }
+
+        Eigen::Vector3d rotated_normal(0, 0, 1);
+        if(config_.has("chip_angle")) {
+            angles[0] = config_.get<ROOT::Math::XYPoint>("chip_angle").x();
+            angles[1] = config_.get<ROOT::Math::XYPoint>("chip_angle").y();
+
+            if(angles[0] != 0.0) {
+                auto rotation_x = Eigen::AngleAxisd(angles[0], Eigen::Vector3d::UnitX()).toRotationMatrix();
+                rotated_normal = rotation_x * rotated_normal;
+            }
+            if(angles[1] != 0.0) {
+                auto rotation_y = Eigen::AngleAxisd(angles[1], Eigen::Vector3d::UnitY()).toRotationMatrix();
+                rotated_normal = rotation_y * rotated_normal;
+            }
+        }
+
+        plane = Eigen::Hyperplane<double, 3>(rotated_normal, origin);
     }
     // Reading file with coupling matrix
     else if(config_.has("matrix_file")) {
@@ -82,53 +118,13 @@ void CapacitiveTransferModule::init() {
             row--;
         }
         input_file.close();
+        LOG(DEBUG) << matrix_cols << "x" << matrix_rows << " Capacitance matrix imported";
     }
     // If no coupling matrix is provided
     else {
         LOG(ERROR)
             << "Cross-coupling was not defined. Provide a coupling matrix file or a coupling matrix in the config file.";
     }
-
-    LOG(DEBUG) << matrix_cols << "x" << matrix_rows << " Capacitance matrix imported";
-    // TODO
-    // LOG(DEBUG) << relaive_coupling;;
-    //
-
-    if(config_.has("nominal_gap")) {
-        nominal_gap = config_.get<double>("nominal_gap");
-    }
-    Eigen::Vector3d origin(0, 0, nominal_gap);
-
-    if(config_.has("tilt_center")) {
-        center[0] = config_.get<ROOT::Math::XYPoint>("tilt_center").x() * model_->getPixelSize().x();
-        center[1] = config_.get<ROOT::Math::XYPoint>("tilt_center").y() * model_->getPixelSize().y();
-        origin = Eigen::Vector3d(center[0], center[1], nominal_gap);
-    }
-
-    if(config_.has("scan_file")) {
-        TFile* root_file = new TFile(config_.getPath("scan_file", true).c_str());
-        for(int i = 1; i < 10; i++) {
-            capacitances[i - 1] = static_cast<TGraph*>(root_file->Get(Form("Pixel_%i", i)));
-        }
-        root_file->Delete();
-    }
-
-    Eigen::Vector3d rotated_normal(0, 0, 1);
-    if(config_.has("chip_angle")) {
-        angles[0] = config_.get<ROOT::Math::XYPoint>("chip_angle").x();
-        angles[1] = config_.get<ROOT::Math::XYPoint>("chip_angle").y();
-
-        if(angles[0] != 0.0) {
-            auto rotation_x = Eigen::AngleAxisd(angles[0], Eigen::Vector3d::UnitX()).toRotationMatrix();
-            rotated_normal = rotation_x * rotated_normal;
-        }
-        if(angles[1] != 0.0) {
-            auto rotation_y = Eigen::AngleAxisd(angles[1], Eigen::Vector3d::UnitY()).toRotationMatrix();
-            rotated_normal = rotation_y * rotated_normal;
-        }
-    }
-
-    plane = Eigen::Hyperplane<double, 3>(rotated_normal, origin);
 
     if(config_.get<bool>("output_plots")) {
         LOG(TRACE) << "Creating output plots";
@@ -153,14 +149,24 @@ void CapacitiveTransferModule::init() {
                            pixel_grid.y(),
                            -0.5,
                            pixel_grid.y() - 0.5);
+
         capacitance_map = new TH2D("capacitance_map",
-                                   "Gap;pixel x;pixel y",
+                                   "Capacitance;pixel x;pixel y",
                                    pixel_grid.x(),
                                    -0.5,
                                    pixel_grid.x() - 0.5,
                                    pixel_grid.y(),
                                    -0.5,
                                    pixel_grid.y() - 0.5);
+
+        relative_capacitance_map = new TH2D("relative_capacitance_map",
+                                            "Relative Capacitance;pixel x;pixel y",
+                                            pixel_grid.x(),
+                                            -0.5,
+                                            pixel_grid.x() - 0.5,
+                                            pixel_grid.y(),
+                                            -0.5,
+                                            pixel_grid.y() - 0.5);
     }
 }
 
@@ -177,10 +183,17 @@ double CapacitiveTransferModule::gap(Pixel::Index pixel) {
     gap_map->SetBinContent(
         static_cast<int>(pixel.x()), static_cast<int>(pixel.y()), static_cast<double>(Units::convert(pixel_gap, "um")));
 
-    capacitance_map->SetBinContent(
-        static_cast<int>(pixel.x()), static_cast<int>(pixel.y()), capacitances[4]->Eval(pixel_gap, 0, "S"));
+    capacitance_map->SetBinContent(static_cast<int>(pixel.x()),
+                                   static_cast<int>(pixel.y()),
+                                   capacitances[4]->Eval(static_cast<double>(Units::convert(pixel_gap, "um")), 0, "S"));
 
-    return pixel_gap;
+    relative_capacitance_map->SetBinContent(
+        static_cast<int>(pixel.x()),
+        static_cast<int>(pixel.y()),
+        capacitances[4]->Eval(static_cast<double>(Units::convert(pixel_gap, "um")), 0, "S") /
+            capacitances[4]->Eval(static_cast<double>(Units::convert(nominal_gap, "um")), 0, "S"));
+
+    return static_cast<double>(Units::convert(pixel_gap, "um"));
 }
 
 void CapacitiveTransferModule::run(unsigned int) {
@@ -215,8 +228,7 @@ void CapacitiveTransferModule::run(unsigned int) {
                    (ypixel + static_cast<int>(row - static_cast<size_t>(std::floor(matrix_rows / 2)))) < 0 ||
                    (ypixel + static_cast<int>(row - static_cast<size_t>(std::floor(matrix_rows / 2)))) >=
                        model_->getNPixels().y()) {
-                    LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() * relative_coupling[col][row]
-                               << " propagated charges at " << propagated_charge.getLocalPosition()
+                    LOG(DEBUG) << "Skipping set of propagated charges at " << propagated_charge.getLocalPosition()
                                << " because their nearest pixel (" << xpixel << "," << ypixel
                                << ") is outside the pixel matrix";
                     continue;
@@ -226,29 +238,27 @@ void CapacitiveTransferModule::run(unsigned int) {
                     static_cast<unsigned int>(xpixel + static_cast<int>(col) - std::floor(matrix_cols / 2)),
                     static_cast<unsigned int>(ypixel + static_cast<int>(row) - std::floor(matrix_rows / 2)));
 
-                // Update statistics
-                unique_pixels_.insert(pixel_index);
-
                 double neighbour_charge;
                 double ccpd_factor;
                 if(config_.has("scan_file")) {
-                    ccpd_factor = capacitances[row * 3 + col]->Eval(gap(pixel_index), 0, "S") /
-                                  capacitances[4]->Eval(nominal_gap, 0, "S");
-                } else {
+                    ccpd_factor = capacitances[row * 3 + col]->Eval(static_cast<double>(gap(pixel_index)), 0, "S") /
+                                  capacitances[4]->Eval(static_cast<double>(Units::convert(nominal_gap, "um")), 0, "S");
+                } else if(config_.has("capacitance_matrix") || config_.has("matrix_file")) {
                     ccpd_factor = relative_coupling[col][row];
+                } else {
+                    ccpd_factor = 1;
+                    LOG(ERROR) << "No coupling factor defined. Transferring 100% of detected charge";
                 }
+
+                // Update statistics
+                unique_pixels_.insert(pixel_index);
 
                 transferred_charges_count += static_cast<unsigned int>(propagated_charge.getCharge() * ccpd_factor);
                 neighbour_charge = propagated_charge.getCharge() * ccpd_factor;
-                if(col == static_cast<size_t>(std::floor(matrix_cols / 2)) &&
-                   row == static_cast<size_t>(std::floor(matrix_rows / 2))) {
-                    LOG(DEBUG) << "Set of " << propagated_charge.getCharge() * ccpd_factor << " charges brought to pixel "
-                               << pixel_index;
-                } else {
-                    LOG(DEBUG) << "Set of " << propagated_charge.getCharge() * ccpd_factor
-                               << " charges brought to neighbour " << col << "," << row << " pixel " << pixel_index
-                               << "with cross-coupling of " << ccpd_factor * 100 << "%";
-                }
+
+                LOG(DEBUG) << "Set of " << propagated_charge.getCharge() * ccpd_factor << " charges brought to neighbour "
+                           << col << "," << row << " pixel " << pixel_index << "with cross-coupling of " << ccpd_factor * 100
+                           << "%";
 
                 // Add the pixel the list of hit pixels
                 pixel_map[pixel_index].first += neighbour_charge;
@@ -287,6 +297,7 @@ void CapacitiveTransferModule::finalize() {
         gap_distribution->Write();
         gap_map->Write();
         capacitance_map->Write();
+        relative_capacitance_map->Write();
         if(config_.has("scan_file")) {
             for(int i = 1; i < 10; i++) {
                 capacitances[i - 1]->Write(Form("Pixel_%i", i));
