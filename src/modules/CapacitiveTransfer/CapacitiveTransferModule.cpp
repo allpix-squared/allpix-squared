@@ -48,6 +48,7 @@ void CapacitiveTransferModule::init() {
         TFile* root_file = new TFile(config_.getPath("scan_file", true).c_str());
         for(int i = 1; i < 10; i++) {
             capacitances[i - 1] = static_cast<TGraph*>(root_file->Get(Form("Pixel_%i", i)));
+            capacitances[i - 1]->SetBit(TGraph::kIsSortedX);
         }
         matrix_cols = 3;
         matrix_rows = 3;
