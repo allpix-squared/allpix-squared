@@ -250,17 +250,23 @@ The module base class provides two base constructors, a few convenient methods a
 Every module should provide a constructor consuming a fixed set of arguments defined by the framework.
 This particular constructor is always called during construction by the module instantiation logic.
 The arguments for the constructor differs for unique and detector modules.
+
+\begin{warning}
+For both module types, it is \textbf{important to forward the configuration object} to the base class \texttt{Module} using the C++ move semantics instead of creating a local copy.
+Otherwise, the framework is not able to retrieve the final and potentially updated configuration settings after finalizing the simulation.
+This final configuration is stored in the output data by some modules for later reference.
+\end{warning}
+
 For unique modules, the constructor for a \texttt{TestModule} should be:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
-TestModule(Configuration config, Messenger* messenger, GeometryManager* geo_manager): Module(config) {}
+TestModule(Configuration config, Messenger* messenger, GeometryManager* geo_manager): Module(std::move(config)) {}
 \end{minted}
-It should be noted that the configuration object has to be forwarded to the base module.
 
 For detector modules, the first two arguments are the same, but the last argument is a \texttt{std::shared\_ptr} to the linked detector instead.
 It should always forward this detector to the base class together with the configuration object.
 Thus, the constructor of a detector module is:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
-TestModule(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector): Module(config, detector) {}
+TestModule(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector): Module(std::move(config), std::move(detector)) {}
 \end{minted}
 
 The pointer to the Messenger can be used to bind variables to either receive or dispatch messages as explained in~\ref{sec:objects_messages}.
@@ -277,6 +283,10 @@ An exception should be thrown for every serious error, otherwise an warning shou
 Typically used to save the output data (like histograms).
 Any exceptions should be thrown from here instead of the destructor.
 \end{itemize}
+
+Within the \texttt{finalize()} method, every module has access to the full final framework configuration via the \texttt{get\_final\_configuration()} method.
+This allows to retrieve and e.g. store the configuration actually used for the simulation alongside the data.
+It is not possible to call this method outside the \texttt{finalize()} method.
 
 \subsubsection{Module instantiation}
 \label{sec:module_instantiation}
