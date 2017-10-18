@@ -178,7 +178,7 @@ void DepositionGeant4Module::init() {
 
         // If requested, prepare output plots
         if(config_.get<bool>("output_plots")) {
-            LOG(WARNING) << "Creating output plots";
+            LOG(TRACE) << "Creating output plots";
 
             // Plot axis are in kilo electrons - convert from framework units!
             int maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
