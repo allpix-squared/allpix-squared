@@ -7,7 +7,7 @@
 #include <memory>
 
 // FIXME: these includes should be absolute and provided with installation?
-#include "../..//src/objects/PixelCharge.hpp"
+#include "../../src/objects/PixelCharge.hpp"
 #include "../../src/objects/MCParticle.hpp"
 #include "../../src/objects/PixelHit.hpp"
 #include "../../src/objects/PropagatedCharge.hpp"
@@ -18,23 +18,50 @@
 std::shared_ptr<TTree> constructComparisonTree(TFile* file, std::string dut) {
     // Read pixel hit output
     TTree* pixel_hit_tree = static_cast<TTree*>(file->Get("PixelHit"));
+    if(!pixel_hit_tree) {
+        std::cout << "Could not read tree PixelHit, cannot continue." << std::endl;
+        return std::make_shared<TTree>();
+    }
+
     TBranch* pixel_hit_branch = pixel_hit_tree->FindBranch(dut.c_str());
+    if(!pixel_hit_branch) {
+        std::cout << "Could not find the DUT branch on tree PixelHit, cannot continue." << std::endl;
+        return std::make_shared<TTree>();
+    }
+
     std::vector<allpix::PixelHit*> input_hits;
     pixel_hit_branch->SetObject(&input_hits);
 
     // Read deposited and propagated charges for history
     TTree* deposited_charge_tree = static_cast<TTree*>(file->Get("DepositedCharge"));
+    if(!deposited_charge_tree) {
+        std::cout << "Could not read tree DepositedCharge" << std::endl;
+    }
     TTree* propagated_charge_tree = static_cast<TTree*>(file->Get("PropagatedCharge"));
+    if(!propagated_charge_tree) {
+        std::cout << "Could not read tree PropagatedCharge" << std::endl;
+    }
 
     // Read pixel charge output
     TTree* pixel_charge_tree = static_cast<TTree*>(file->Get("PixelCharge"));
+    if(!pixel_charge_tree) {
+        std::cout << "Could not read tree PixelCharge" << std::endl;
+    }
+
     TBranch* pixel_charge_branch = pixel_charge_tree->FindBranch(dut.c_str());
     std::vector<allpix::PixelCharge*> input_charges;
     pixel_charge_branch->SetObject(&input_charges);
 
     // Read MC truth
     TTree* mc_particle_tree = static_cast<TTree*>(file->Get("MCParticle"));
+    if(!mc_particle_tree) {
+        std::cout << "Could not read tree MCParticle" << std::endl;
+    }
     TBranch* mc_particle_branch = mc_particle_tree->FindBranch(dut.c_str());
+    if(!mc_particle_branch) {
+        std::cout << "Could not find the DUT branch on tree MCParticle" << std::endl;
+    }
+
     std::vector<allpix::MCParticle*> input_particles;
     mc_particle_branch->SetObject(&input_particles);
 
@@ -81,10 +108,10 @@ std::shared_ptr<TTree> constructComparisonTree(TFile* file, std::string dut) {
     // Convert tree for every event
     for(int i = 0; i < pixel_hit_tree->GetEntries(); ++i) {
         pixel_hit_tree->GetEntry(i);
-        pixel_charge_tree->GetEntry(i);
-        mc_particle_tree->GetEntry(i);
-        deposited_charge_tree->GetEntry(i);
-        propagated_charge_tree->GetEntry(i);
+        if(pixel_charge_tree) pixel_charge_tree->GetEntry(i);
+        if(mc_particle_tree) mc_particle_tree->GetEntry(i);
+        if(deposited_charge_tree) deposited_charge_tree->GetEntry(i);
+        if(propagated_charge_tree) propagated_charge_tree->GetEntry(i);
 
         // Set event number
         event_num = i + 1;
@@ -127,16 +154,19 @@ std::shared_ptr<TTree> constructComparisonTree(TFile* file, std::string dut) {
         }
 
         // Get information about the actual track
-        output_track_count = input_particles.size();
+        output_track_count = 1+ input_particles.size();
         output_track_x = 0;
         output_track_y = 0;
+
         // FIXME: guess the truth position from the average of start and end points
         for(auto& particle : input_particles) {
             output_track_x += (particle->getLocalStartPoint().x() + particle->getLocalEndPoint().x()) / 2.0;
             output_track_y += (particle->getLocalStartPoint().y() + particle->getLocalEndPoint().y()) / 2.0;
         }
-        output_track_x /= input_particles.size();
-        output_track_y /= input_particles.size();
+        if(!input_particles.empty()) {
+            output_track_x /= input_particles.size();
+            output_track_y /= input_particles.size();
+        }
 
         // Calculate local x using a simple center of gravity fit
         // FIXME no corrections are applied
