@@ -78,7 +78,7 @@ void CorryvreckanWriterModule::run(unsigned int) {
             long long int time(time_);
             corryvreckan::Pixel* outputPixel = new corryvreckan::Pixel(detectorID, int(pixelY), int(pixelX), int(adc), time);
 
-            LOG(WARNING) << "Pixel (" << pixelX << "," << pixelY << ") written to device " << detectorID;
+            LOG(DEBUG) << "Pixel (" << pixelX << "," << pixelY << ") written to device " << detectorID;
 
             // Map the pixel to the output tree and write it
             treePixels_[objectID] = outputPixel;
