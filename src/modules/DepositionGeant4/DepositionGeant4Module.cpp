@@ -251,7 +251,7 @@ void DepositionGeant4Module::finalize() {
 
     if(config_.get<bool>("output_plots")) {
         // Write histograms
-        LOG(WARNING) << "Writing output plots to file";
+        LOG(TRACE) << "Writing output plots to file";
         for(auto& plot : charge_per_event_) {
             plot.second->Write();
         }
