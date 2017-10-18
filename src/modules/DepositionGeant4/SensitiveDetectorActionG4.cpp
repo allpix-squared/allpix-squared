@@ -93,8 +93,16 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     return true;
 }
 
+std::string SensitiveDetectorActionG4::getName() {
+    return detector_->getName();
+}
+
 unsigned int SensitiveDetectorActionG4::getTotalDepositedCharge() {
     return total_deposited_charge_;
+}
+
+unsigned int SensitiveDetectorActionG4::getDepositedCharge() {
+    return deposited_charge_;
 }
 
 void SensitiveDetectorActionG4::dispatchMessages() {
@@ -146,6 +154,9 @@ void SensitiveDetectorActionG4::dispatchMessages() {
             total_deposited_charge_ += ch.getCharge();
         }
         LOG(INFO) << "Deposited " << charges << " charges in sensor of detector " << detector_->getName();
+
+        // Store the number of charge carriers:
+        deposited_charge_ = charges;
 
         // Match deposit with mc particle if possible
         for(size_t i = 0; i < deposits_.size(); ++i) {
