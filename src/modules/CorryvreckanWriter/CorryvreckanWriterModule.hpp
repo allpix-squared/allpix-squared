@@ -60,7 +60,6 @@ namespace allpix {
         // General module members
         std::vector<std::shared_ptr<PixelHitMessage>> pixel_messages_; // Receieved pixels
         Messenger* messenger_;
-        Configuration config_;
         GeometryManager* geometryManager_;
 
         // Parameters for output writing

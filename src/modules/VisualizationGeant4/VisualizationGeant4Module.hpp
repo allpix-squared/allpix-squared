@@ -59,7 +59,6 @@ namespace allpix {
         void finalize() override;
 
     private:
-        Configuration config_;
         GeometryManager* geo_manager_;
 
         /**

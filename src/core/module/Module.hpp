@@ -18,6 +18,7 @@
 #include <TDirectory.h>
 
 #include "ThreadPool.hpp"
+#include "core/config/ConfigReader.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
 #include "core/messenger/delegates.h"
@@ -234,6 +235,20 @@ namespace allpix {
          */
         void enable_parallelization();
 
+        /**
+         * @brief Get the module configuration for internal use
+         * @return Configuration of the module
+         */
+        Configuration& get_configuration();
+        Configuration config_;
+
+        /**
+         * @brief Get the final configurations of all modules
+         * @return Vector of Configuration objects containing the final configurations for all modules
+         * @throws InvalidModuleActionException If the function is called outside the finalize method
+         */
+        std::vector<Configuration> get_final_configuration();
+
     private:
         /**
          * @brief Set the module identifier for internal use
@@ -248,13 +263,6 @@ namespace allpix {
         ModuleIdentifier identifier_;
 
         /**
-         * @brief Get the module configuration for internal use
-         * @return Configuration of the module
-         */
-        Configuration& get_configuration();
-        Configuration config_;
-
-        /**
          * @brief Set the thread pool for parallel execution
          * @return Thread pool (or null pointer to disable it)
          */
@@ -267,6 +275,14 @@ namespace allpix {
          */
         void set_ROOT_directory(TDirectory* directory);
         TDirectory* directory_{};
+
+        /**
+         * @brief Set the final configuration from all modules in the finalize function
+         * @param config ConfigReader holding all configurations from modules in this simulation
+         */
+        void set_final_configuration(const ConfigReader& config);
+        bool initialized_final_configreader_{false};
+        ConfigReader final_configreader_{};
 
         /**
          * @brief Add a messenger delegate to this instantiation

@@ -60,7 +60,6 @@ namespace allpix {
     private:
         std::mt19937_64 random_generator_;
 
-        Configuration config_;
         Messenger* messenger_;
 
         // Input message with the charges on the pixels
