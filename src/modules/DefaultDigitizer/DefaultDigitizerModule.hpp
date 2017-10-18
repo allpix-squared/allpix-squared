@@ -21,6 +21,7 @@
 #include "objects/PixelCharge.hpp"
 
 #include <TH1D.h>
+#include <TH2D.h>
 
 namespace allpix {
     /**
@@ -69,7 +70,8 @@ namespace allpix {
         unsigned long long total_hits_{};
 
         // Output histograms
-        TH1D *h_pxq, *h_pxq_noise, *h_thr, *h_pxq_thr, *h_pxq_adc_smear, *h_pxq_adc;
+        TH1D *h_pxq{}, *h_pxq_noise{}, *h_thr{}, *h_pxq_thr{}, *h_pxq_adc_smear{}, *h_pxq_adc{};
+        TH2D* h_calibration{};
     };
 } // namespace allpix
 
