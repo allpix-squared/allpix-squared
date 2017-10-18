@@ -7,8 +7,8 @@
 #include <memory>
 
 // FIXME: these includes should be absolute and provided with installation?
-#include "../../src/objects/PixelCharge.hpp"
 #include "../../src/objects/MCParticle.hpp"
+#include "../../src/objects/PixelCharge.hpp"
 #include "../../src/objects/PixelHit.hpp"
 #include "../../src/objects/PropagatedCharge.hpp"
 
@@ -108,10 +108,14 @@ std::shared_ptr<TTree> constructComparisonTree(TFile* file, std::string dut) {
     // Convert tree for every event
     for(int i = 0; i < pixel_hit_tree->GetEntries(); ++i) {
         pixel_hit_tree->GetEntry(i);
-        if(pixel_charge_tree) pixel_charge_tree->GetEntry(i);
-        if(mc_particle_tree) mc_particle_tree->GetEntry(i);
-        if(deposited_charge_tree) deposited_charge_tree->GetEntry(i);
-        if(propagated_charge_tree) propagated_charge_tree->GetEntry(i);
+        if(pixel_charge_tree)
+            pixel_charge_tree->GetEntry(i);
+        if(mc_particle_tree)
+            mc_particle_tree->GetEntry(i);
+        if(deposited_charge_tree)
+            deposited_charge_tree->GetEntry(i);
+        if(propagated_charge_tree)
+            propagated_charge_tree->GetEntry(i);
 
         // Set event number
         event_num = i + 1;
@@ -154,7 +158,7 @@ std::shared_ptr<TTree> constructComparisonTree(TFile* file, std::string dut) {
         }
 
         // Get information about the actual track
-        output_track_count = 1+ input_particles.size();
+        output_track_count = 1 + input_particles.size();
         output_track_x = 0;
         output_track_y = 0;
 
