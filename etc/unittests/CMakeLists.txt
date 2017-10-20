@@ -1,3 +1,16 @@
+FUNCTION(ESCAPE_REGEX INP OUTPUT)
+    # Escape possible regex patterns in the expected output:
+    STRING(REPLACE "#REGEX " "" _TMP_STR "${INP}")
+    STRING(REPLACE "\\" "\\\\" _TMP_STR "${_TMP_STR}")
+    STRING(REPLACE "?" "\\?" _TMP_STR "${_TMP_STR}")
+    STRING(REPLACE "+" "\\+" _TMP_STR "${_TMP_STR}")
+    STRING(REPLACE "*" "\\*" _TMP_STR "${_TMP_STR}")
+    STRING(REPLACE "(" "\\\(" _TMP_STR "${_TMP_STR}")
+    STRING(REPLACE ")" "\\\)" _TMP_STR "${_TMP_STR}")
+    STRING(REPLACE "[" "\\\[" _TMP_STR "${_TMP_STR}")
+    STRING(REPLACE "]" "\\\]" _TMP_STR "${_TMP_STR}")
+    SET(${OUTPUT} "${_TMP_STR}" PARENT_SCOPE)
+ENDFUNCTION()
 
 ###########################################
 # Reference tests for configuration files #
@@ -27,16 +40,7 @@ IF(TEST_MODULES)
         FILE(STRINGS ${TEST} EXPRESSIONS REGEX "#REGEX ")
 
         # Escape possible regex patterns in the expected output:
-        STRING(REPLACE "#REGEX " "" EXPRESSIONS "${EXPRESSIONS}")
-        STRING(REPLACE "\\" "\\\\" EXPRESSIONS "${EXPRESSIONS}")
-        STRING(REPLACE "?" "\\?" EXPRESSIONS "${EXPRESSIONS}")
-        STRING(REPLACE "+" "\\+" EXPRESSIONS "${EXPRESSIONS}")
-        STRING(REPLACE "*" "\\*" EXPRESSIONS "${EXPRESSIONS}")
-        STRING(REPLACE "(" "\\\(" EXPRESSIONS "${EXPRESSIONS}")
-        STRING(REPLACE ")" "\\\)" EXPRESSIONS "${EXPRESSIONS}")
-        STRING(REPLACE "[" "\\\[" EXPRESSIONS "${EXPRESSIONS}")
-        STRING(REPLACE "]" "\\\]" EXPRESSIONS "${EXPRESSIONS}")
-
+        ESCAPE_REGEX("${EXPRESSIONS}" EXPRESSIONS)
         SET_TESTS_PROPERTIES(${TEST} PROPERTIES PASS_REGULAR_EXPRESSION "${EXPRESSIONS}")
 
         # Some tests might depend on others:
@@ -99,16 +103,7 @@ IF(TEST_CORE)
         FILE(STRINGS ${TEST} EXPRESSIONS REGEX "#REGEX ")
 
         # Escape possible regex patterns in the expected output:
-        STRING(REPLACE "#REGEX " "" EXPRESSIONS "${EXPRESSIONS}")
-        STRING(REPLACE "\\" "\\\\" EXPRESSIONS "${EXPRESSIONS}")
-        STRING(REPLACE "?" "\\?" EXPRESSIONS "${EXPRESSIONS}")
-        STRING(REPLACE "+" "\\+" EXPRESSIONS "${EXPRESSIONS}")
-        STRING(REPLACE "*" "\\*" EXPRESSIONS "${EXPRESSIONS}")
-        STRING(REPLACE "(" "\\\(" EXPRESSIONS "${EXPRESSIONS}")
-        STRING(REPLACE ")" "\\\)" EXPRESSIONS "${EXPRESSIONS}")
-        STRING(REPLACE "[" "\\\[" EXPRESSIONS "${EXPRESSIONS}")
-        STRING(REPLACE "]" "\\\]" EXPRESSIONS "${EXPRESSIONS}")
-
+        ESCAPE_REGEX("${EXPRESSIONS}" EXPRESSIONS)
         SET_TESTS_PROPERTIES(${TEST} PROPERTIES PASS_REGULAR_EXPRESSION "${EXPRESSIONS}")
     ENDFOREACH()
 ENDIF()
