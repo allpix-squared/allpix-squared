@@ -1,0 +1,25 @@
+|11:15:59.998|   (TRACE) Global log level is set to TRACE
+|11:15:59.998|   (TRACE) Global log format is set to DEFAULT
+|11:15:59.998|   (TRACE) Loading Allpix
+|11:15:59.998|  (STATUS) Welcome to Allpix^2 v1.0+122^g188832d
+|11:15:59.998|  (STATUS) Initialized PRNG with configured seed 0
+|11:15:59.998|   (TRACE) Adding physical units
+|11:15:59.998|   (TRACE) Setting ROOT plotting style
+|11:16:00.142|   (TRACE) Reading geometry
+|11:16:00.142|   (TRACE) Parsing configuration file /home/simonspa/software/allpix-squared/etc/unittests/test_core/detector_missing_model.conf
+|11:16:00.143|   (TRACE) Registering new detector mydetector
+|11:16:00.181|  (STATUS) Loaded 0 modules
+|11:16:00.181|   (TRACE) Initializing Allpix
+|11:16:00.181|  (STATUS) Initializing 0 module instantiations
+|11:16:00.181|  (STATUS) Initialized 0 module instantiations 
+|11:16:00.181|   (TRACE) Running Allpix
+|11:16:00.181|   (DEBUG) Initializing thread pool with 0 additional thread(s)
+|11:16:00.181|  (STATUS) Running event 1 of 1
+|11:16:00.182|  (STATUS) Finished run of 1 events
+|11:16:00.182|   (TRACE) Destroying thread pool
+|11:16:00.182|   (TRACE) Finalizing Allpix
+|11:16:00.182|   (TRACE) Collecting module configurations...
+|11:16:00.182|   (TRACE) Finalizing module instantiations
+|11:16:00.182|  (STATUS) Finalization completed        
+|11:16:00.182|  (STATUS) Executed 0 instantiations in 0 seconds, spending 0% of time in slowest instantiation 
+|11:16:00.182|  (STATUS) Average processing time is 0 ms/event, event generation at 8583 Hz

@@ -79,3 +79,36 @@ IF(TEST_PERFORMANCE)
 
     ENDFOREACH()
 ENDIF()
+
+
+######################################
+# Core framework functionality tests #
+######################################
+
+OPTION(TEST_CORE "Perform unit tests to ensure framework core functionality?" ON)
+
+IF(TEST_CORE)
+    FILE(GLOB TEST_LIST_CORE RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test_core/test_*)
+    LIST(LENGTH TEST_LIST_CORE NUM_TEST_CORE)
+    MESSAGE(STATUS "Unit tests: ${NUM_TEST_CORE} framework core functionality tests")
+    FOREACH(TEST ${TEST_LIST_CORE})
+        ADD_TEST(NAME ${TEST}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+            COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/run_directory.sh "output/${TEST}" "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_CURRENT_SOURCE_DIR}/${TEST}"
+        )
+        FILE(STRINGS ${TEST} EXPRESSIONS REGEX "#REGEX ")
+
+        # Escape possible regex patterns in the expected output:
+        STRING(REPLACE "#REGEX " "" EXPRESSIONS "${EXPRESSIONS}")
+        STRING(REPLACE "\\" "\\\\" EXPRESSIONS "${EXPRESSIONS}")
+        STRING(REPLACE "?" "\\?" EXPRESSIONS "${EXPRESSIONS}")
+        STRING(REPLACE "+" "\\+" EXPRESSIONS "${EXPRESSIONS}")
+        STRING(REPLACE "*" "\\*" EXPRESSIONS "${EXPRESSIONS}")
+        STRING(REPLACE "(" "\\\(" EXPRESSIONS "${EXPRESSIONS}")
+        STRING(REPLACE ")" "\\\)" EXPRESSIONS "${EXPRESSIONS}")
+        STRING(REPLACE "[" "\\\[" EXPRESSIONS "${EXPRESSIONS}")
+        STRING(REPLACE "]" "\\\]" EXPRESSIONS "${EXPRESSIONS}")
+
+        SET_TESTS_PROPERTIES(${TEST} PROPERTIES PASS_REGULAR_EXPRESSION "${EXPRESSIONS}")
+    ENDFOREACH()
+ENDIF()
