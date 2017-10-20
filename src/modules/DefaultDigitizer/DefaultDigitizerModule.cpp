@@ -189,10 +189,10 @@ void DefaultDigitizerModule::finalize() {
         h_pxq_noise->Write();
         h_thr->Write();
         h_pxq_thr->Write();
-        h_pxq_adc_smear->Write();
         h_pxq_adc->Write();
 
         if(config_.get<int>("adc_resolution") > 0) {
+            h_pxq_adc_smear->Write();
             h_calibration->Write();
         }
     }
