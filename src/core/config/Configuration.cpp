@@ -156,7 +156,8 @@ std::vector<std::pair<std::string, std::string>> Configuration::getAll() {
 }
 
 /**
- * Parse info ??
+ * String is recursively parsed for all pair of [ and ] brackets. All parts between single or double quotation marks are
+ * skipped.
  */
 std::unique_ptr<Configuration::parse_node> Configuration::parse_string(std::string str, int depth) {
     using parse_node = Configuration::parse_node;
@@ -185,10 +186,11 @@ std::unique_ptr<Configuration::parse_node> Configuration::parse_string(std::stri
             }
 
             // Handle brackets
-            if(str[i] == '[')
+            if(str[i] == '[') {
                 ++in_dpt;
-            else if(str[i] == ']')
+            } else if(str[i] == ']') {
                 --in_dpt;
+            }
 
             // Make subitems at the zero level
             if(in_dpt == 0 && str[i] == ',') {

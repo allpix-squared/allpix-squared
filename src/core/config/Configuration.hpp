@@ -194,14 +194,20 @@ namespace allpix {
          */
         std::string path_to_absolute(std::string path, bool canonicalize_path) const;
 
+        /**
+         * @brief Node in a parse tree
+         */
         struct parse_node {
             std::string value;
             std::vector<std::unique_ptr<parse_node>> children;
         };
         /**
          * @brief Generate parse tree from configuration string
+         * @param str String to parse
+         * @param depth Current depth of the parsing (starts at zero)
+         * @return Root node of the parsed tree
          */
-        static std::unique_ptr<parse_node> parse_string(std::string, int depth = 0);
+        static std::unique_ptr<parse_node> parse_string(std::string str, int depth = 0);
 
         std::string name_;
         std::string path_;
