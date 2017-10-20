@@ -45,6 +45,7 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration config,
 
     config_.setDefault<bool>("output_plots", false);
     config_.setDefault<int>("output_plots_scale", Units::get(30, "ke"));
+    config_.setDefault<int>("output_plots_bins", 100);
 }
 
 void DefaultDigitizerModule::init() {
@@ -62,7 +63,7 @@ void DefaultDigitizerModule::init() {
 
         // Plot axis are in kilo electrons - convert from framework units!
         int maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
-        int nbins = 10 * maximum;
+        int nbins = config_.get<int>("output_plots_bins");
 
         // Create histograms if needed
         h_pxq = new TH1D("pixelcharge", "raw pixel charge;pixel charge [ke];pixels", nbins, 0, maximum);
