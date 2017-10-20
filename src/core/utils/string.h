@@ -226,13 +226,11 @@ namespace allpix {
     ///@}
 
     /**
-     * @brief Splits string into substrings at delimiters not inside quotation marks
+     * @brief Splits string into substrings at delimiters
      * @param str String to split
      * @param delims Delimiters to split at
-     * @return List of all the substrings with all empty substrings removed
-     * @warning The string is not split at locations inside quotation marks
+     * @return List of all the substrings with all empty substrings ignored (thus removed)
      */
-    // TODO [doc] single quotiation marks should be removed
     template <typename T> std::vector<T> split(std::string str, std::string delims = " ,") {
         str = trim(str, delims);
 
@@ -244,28 +242,9 @@ namespace allpix {
         // Else we have data, clear the default elements and chop the string:
         std::vector<T> elems;
 
-        // Add the string identifiers as special delimiters
-        delims += "\'\"";
-
         // Loop through the string
-        std::size_t prev = 0, sprev = 0, pos;
-        char ins = 0;
-        while((pos = str.find_first_of(delims, sprev)) != std::string::npos) {
-            sprev = pos + 1;
-
-            // FIXME: handle escape
-            if(str[pos] == '\'' || str[pos] == '\"') {
-                if(!ins) {
-                    ins = str[pos];
-                } else if(ins == str[pos]) {
-                    ins = 0;
-                }
-                continue;
-            }
-            if(ins) {
-                continue;
-            }
-
+        std::size_t prev = 0, pos;
+        while((pos = str.find_first_of(delims, prev)) != std::string::npos) {
             if(pos > prev) {
                 elems.push_back(from_string<T>(str.substr(prev, pos - prev)));
             }
