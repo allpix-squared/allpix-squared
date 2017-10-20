@@ -137,7 +137,7 @@ void ConfigReader::add(std::istream& stream, std::string file_name) {
                 // Ignore empty sections if they contain no configurations
                 if(!conf.getName().empty() || conf.countSettings() > 0) {
                     // Add previous section
-                    addConfiguration(conf);
+                    addConfiguration(std::move(conf));
                 }
 
                 // Begin new section
@@ -165,7 +165,7 @@ void ConfigReader::add(std::istream& stream, std::string file_name) {
         }
     }
     // Add last section
-    addConfiguration(conf);
+    addConfiguration(std::move(conf));
 }
 
 void ConfigReader::addConfiguration(Configuration config) {
