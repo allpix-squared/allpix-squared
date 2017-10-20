@@ -104,19 +104,33 @@ void ConfigReader::add(std::istream& stream, std::string file_name) {
             if(equals_pos != std::string::npos) {
                 std::string key = trim(std::string(line, 0, equals_pos));
                 std::string value = trim(std::string(line, equals_pos + 1));
-                char ins = 0;
+                char last_quote = 0;
                 for(size_t i = 0; i < value.size(); ++i) {
                     if(value[i] == '\'' || value[i] == '\"') {
-                        if(ins == 0) {
-                            ins = value[i];
-                        } else if(ins == value[i]) {
-                            ins = 0;
+                        if(last_quote == 0) {
+                            last_quote = value[i];
+                        } else if(last_quote == value[i]) {
+                            last_quote = 0;
                         }
                     }
-                    if(ins == 0 && value[i] == '#') {
+                    if(last_quote == 0 && value[i] == '#') {
                         value = std::string(value, 0, i);
                         break;
                     }
+                }
+
+                // Check if key contains only alphanumeric or underscores
+                bool valid_key = true;
+                for(auto& ch : key) {
+                    if(!isalnum(ch) && ch != '_') {
+                        valid_key = false;
+                        break;
+                    }
+                }
+
+                // Check if value is not empty and key is valid
+                if(!valid_key || value.empty()) {
+                    throw ConfigParseError(file_name, line_num);
                 }
 
                 // Add the config key

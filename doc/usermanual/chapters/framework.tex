@@ -67,25 +67,30 @@ All configuration files follow the same format, but the way their input is inter
 Throughout the framework, a simplified version of TOML~\cite{tomlgit} is used as standard format for configuration files.
 The format is defined as follows:
 \begin{enumerate}
-\item All whitespace at the beginning or end of a line should be stripped by the parser.
-Empty lines should be ignored.
+\item All whitespace at the beginning or end of a line are stripped by the parser.
+In the rest of this format specification the \textit{line} refers to the line with this whitespace stripped.
+\item Empty lines are ignored.
 \item Every non-empty line should start with either \texttt{\#}, \texttt{[} or an alphanumeric character.
-Every other character should lead to an immediate parsing error.
+Every other character should lead to an immediate parse error.
 \item If the line starts with a hash character (\texttt{\#}), it is interpreted as comment and all other content on the same line is ignored.
 \item If the line starts with an open square bracket (\texttt{[}), it indicates a section header (also known as configuration header).
-The line should contain an alphanumeric string indicating the header name followed by a closing square bracket (\texttt{]}) to end the header (a missing \texttt{]} should raise an exception).
-Multiple section header with the same name are allowed.
-All key-value pairs following this section header are part of this section until a new section header is started.
-After any number of ignored whitespace characters there may be a \texttt{\#} character.
+The line should contain an alphanumeric string indicating the header name followed by a closing square bracket (\texttt{]}) to end the header.
+After any number of ignored whitespace characters there could be a \texttt{\#} character.
 If this is the case, the rest of the line is handled as specified in point~3.
+Otherwise there should not be any other character (except the whitespace) on the line.
+Any line that does not comply to these specifications should lead to an immediate parse error.
+Different section header are allowed to have the same name (unless specified otherwise in the particular configuration description).
+All key-value pairs following this section header are part of this section until a new section header is started.
 \item If the line starts with an alphanumeric character, the line should indicate a key-value pair.
 The beginning of the line should contain an string of alphabetic characters, numbers and underscores, but it may not start with an underscore.
 This string indicates the 'key'.
 After a optional number of ignored whitespace, the key should be followed by an equality sign (\texttt{$=$}).
-Any text between the \texttt{$=$} and the first \texttt{\#} character not enclosed within a pair of double quotes (\texttt{"}) is known as the non-stripped string.
+Any text between the \texttt{$=$} and the first \texttt{\#} character not enclosed within a pair of single double quotes (\texttt{'} or \texttt{"}) is known as the non-stripped string.
 Any character after the \texttt{\#} is handled as specified in point 3.
 If the line does not contain any non-enclosed \texttt{\#} character, the value ends at the end of the line instead.
-The 'value' of the key-value pair is the non-stripped string with all whitespace in front and at the end stripped.
+The 'value' of the key-value pair is the non-stripped string with all whitespace in front and at the end stripped. 
+The value may not be empty.
+Any line that does not comply to these specifications should lead to an immediate parse error.
 \item The value can either be accessed as a single value or an array.
 If the value is accessed as an array, the string is split at every whitespace or comma character (\texttt{,}) not enclosed in a pair of \texttt{"} characters.
 All empty entities are not considered.
