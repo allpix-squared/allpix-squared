@@ -86,10 +86,8 @@ namespace allpix {
 
                     array.push_back(allpix::from_string<T>(subchild->value));
                 }
-
-                // Add one-dimensional value to two dimensional matrix
                 if(!child->value.empty()) {
-                    array.push_back(allpix::from_string<T>(child->value));
+                    throw std::invalid_argument("matrix has less than two dimensions");
                 }
 
                 matrix.push_back(array);

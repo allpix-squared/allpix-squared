@@ -204,9 +204,5 @@ std::unique_ptr<Configuration::parse_node> Configuration::parse_string(std::stri
         node->value = str;
     }
 
-    // If only a single child, use the child instead
-    if(node->children.size() == 1) {
-        node = std::move(node->children[0]);
-    }
     return node;
 }
