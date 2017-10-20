@@ -69,18 +69,22 @@ void ConfigReader::add(std::istream& stream, std::string file_name) {
         std::getline(stream, line);
         ++line_num;
 
-        // Find equal sign
-        size_t equals_pos = line.find('=');
-        if(equals_pos == std::string::npos) {
-            line = allpix::trim(line);
+        // Ignore empty lines or comments
+        if(line.empty() || line[0] == '#') {
+            continue;
+        }
 
-            // Ignore empty lines or comments
-            if(line == "" || line[0] == '#') {
-                continue;
+        // Check if section header or key-value pair
+        if(line[0] == '[') {
+            // Line should be a section header with an alphanumeric name
+            size_t idx = 1;
+            for(; idx < line.length() - 1; ++idx) {
+                if(!isalnum(line[idx])) {
+                    break;
+                }
             }
-
-            // Parse new section
-            if(line[0] == '[' && line[line.length() - 1] == ']') {
+            std::string remain = allpix::trim(line.substr(idx + 1));
+            if(line[idx] == ']' && (remain.empty() || remain[0] == '#')) {
                 // Ignore empty sections if they contain no configurations
                 if(!conf.getName().empty() || conf.countSettings() > 0) {
                     // Add previous section
@@ -88,33 +92,42 @@ void ConfigReader::add(std::istream& stream, std::string file_name) {
                 }
 
                 // Begin new section
-                section_name = std::string(line, 1, line.length() - 2);
+                section_name = std::string(line, 1, idx - 1);
                 conf = Configuration(section_name, file_name);
             } else {
-                // FIXME: should be a bit more helpful...
+                // Section header is not valid
+                throw ConfigParseError(file_name, line_num);
+            }
+        } else if(isalpha(line[0])) {
+            // Line should be a key / value pair with an equal sign
+            size_t equals_pos = line.find('=');
+            if(equals_pos != std::string::npos) {
+                std::string key = trim(std::string(line, 0, equals_pos));
+                std::string value = trim(std::string(line, equals_pos + 1));
+                char ins = 0;
+                for(size_t i = 0; i < value.size(); ++i) {
+                    if(value[i] == '\'' || value[i] == '\"') {
+                        if(ins == 0) {
+                            ins = value[i];
+                        } else if(ins == value[i]) {
+                            ins = 0;
+                        }
+                    }
+                    if(ins == 0 && value[i] == '#') {
+                        value = std::string(value, 0, i);
+                        break;
+                    }
+                }
+
+                // Add the config key
+                conf.setText(key, trim(value));
+            } else {
+                // Key / value pair does not contain equal sign
                 throw ConfigParseError(file_name, line_num);
             }
         } else {
-            std::string key = trim(std::string(line, 0, equals_pos));
-
-            std::string value = trim(std::string(line, equals_pos + 1));
-            char ins = 0;
-            for(size_t i = 0; i < value.size(); ++i) {
-                if(value[i] == '\'' || value[i] == '\"') {
-                    if(ins == 0) {
-                        ins = value[i];
-                    } else if(ins == value[i]) {
-                        ins = 0;
-                    }
-                }
-                if(ins == 0 && value[i] == '#') {
-                    value = std::string(value, 0, i);
-                    break;
-                }
-            }
-
-            // Add the config key
-            conf.setText(key, trim(value));
+            // Line is not a comment, key/value pair or section header
+            throw ConfigParseError(file_name, line_num);
         }
     }
     // Add last section
