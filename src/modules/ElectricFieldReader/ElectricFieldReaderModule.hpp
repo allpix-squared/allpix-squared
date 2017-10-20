@@ -45,7 +45,6 @@ namespace allpix {
         void init() override;
 
     private:
-        Configuration config_;
         std::shared_ptr<Detector> detector_;
 
         /**

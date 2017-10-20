@@ -30,6 +30,9 @@ bool Configuration::has(const std::string& key) const {
 std::string Configuration::getName() const {
     return name_;
 }
+void Configuration::setName(const std::string& name) {
+    name_ = name;
+}
 std::string Configuration::getFilePath() const {
     return path_;
 }

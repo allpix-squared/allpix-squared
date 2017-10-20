@@ -17,7 +17,7 @@
 using namespace allpix;
 
 CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration config, Messenger* messenger, GeometryManager* geoManager)
-    : Module(config), messenger_(messenger), config_(std::move(config)), geometryManager_(geoManager) {
+    : Module(std::move(config)), messenger_(messenger), geometryManager_(geoManager) {
     // ... Implement ... (Typically bounds the required messages and optionally sets configuration defaults)
     LOG(TRACE) << "Initializing module " << getUniqueName();
     // Require PixelCharge messages for single detector
@@ -78,7 +78,7 @@ void CorryvreckanWriterModule::run(unsigned int) {
             long long int time(time_);
             corryvreckan::Pixel* outputPixel = new corryvreckan::Pixel(detectorID, int(pixelY), int(pixelX), int(adc), time);
 
-            LOG(WARNING) << "Pixel (" << pixelX << "," << pixelY << ") written to device " << detectorID;
+            LOG(DEBUG) << "Pixel (" << pixelX << "," << pixelY << ") written to device " << detectorID;
 
             // Map the pixel to the output tree and write it
             treePixels_[objectID] = outputPixel;

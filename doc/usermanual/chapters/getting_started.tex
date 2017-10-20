@@ -11,7 +11,7 @@ The framework is configured with simple human-readable configuration files.
 The configuration format is described in detail in Section~\ref{sec:config_file_format}.
 The configuration consists of several section headers within $[$ and $]$ brackets and a section without header at the start.
 Every section contain a set of key/value pairs separated by the \texttt{=} character.
-Comments are indicated using the has symbol (\texttt{\#}).
+Comments are indicated using the hash symbol (\texttt{\#}).
 
 The framework has the following three required layers of configuration files:
 \begin{itemize}
@@ -222,7 +222,7 @@ This configuration is used in the rest of this chapter for explaining concepts.
 The \apsq framework provides a set of global parameters which control and alter its behavior:
 \begin{itemize}
 \item \textbf{\texttt{detectors\_file}}: Location of the file describing the detector configuration (introduced in Section~\ref{sec:detector_config}).
-The only \underline{required} global parameter: the framework will fail if it is not specified.
+The only \underline{required} global parameter: the framework will fail to start if it is not specified.
 \item \textbf{\texttt{number\_of\_events}}: Determines the total number of events the framework should simulate.
 Equivalent to the amount of times the modules are run.
 Defaults to one (simulating a single event).

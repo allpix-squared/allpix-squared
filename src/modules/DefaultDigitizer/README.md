@@ -16,6 +16,7 @@ In detail, the following steps are performed for every pixel charge:
 The ADC implementation also allows to simulate ToT (time-over-threshold) devices by setting the `adc_offset` parameter to the negative `threshold`. Then, the ADC only converts charge above threshold.
 
 With the `output_plots` parameter activated, the module produces histograms of the charge distribution at the different stages of the simulation, i.e. before processing, with electronics noise, after threshold selection, and with ADC smearing applied.
+A 2D-histogram of the actual pixel charge in electrons and the converted charge in ADC units is provided if ADC simulation is enabled by setting `adc_resolution` to a value different from zero.
 In addition, the distribution of the actually applied threshold is provided as histogram.
 
 
@@ -29,6 +30,7 @@ In addition, the distribution of the actually applied threshold is provided as h
 * `adc_offset` : Offset of the ADC calibration in electrons. In order to simulate a ToT (time-over-threshold) device, this offset should be configured to the negative value of the threshold. Defaults to 0.
 * `output_plots` : Enables output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
 * `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 30ke.
+* `output_plots_bins` : Set the number of bins for the output plot histograms, defaults to 100.
 
 
 #### Usage

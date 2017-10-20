@@ -23,7 +23,7 @@ using namespace allpix;
 DefaultDigitizerModule::DefaultDigitizerModule(Configuration config,
                                                Messenger* messenger,
                                                std::shared_ptr<Detector> detector)
-    : Module(config, std::move(detector)), config_(std::move(config)), messenger_(messenger), pixel_message_(nullptr) {
+    : Module(std::move(config), std::move(detector)), messenger_(messenger), pixel_message_(nullptr) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
@@ -45,6 +45,7 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration config,
 
     config_.setDefault<bool>("output_plots", false);
     config_.setDefault<int>("output_plots_scale", Units::get(30, "ke"));
+    config_.setDefault<int>("output_plots_bins", 100);
 }
 
 void DefaultDigitizerModule::init() {
@@ -62,7 +63,7 @@ void DefaultDigitizerModule::init() {
 
         // Plot axis are in kilo electrons - convert from framework units!
         int maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
-        int nbins = 10 * maximum;
+        auto nbins = config_.get<int>("output_plots_bins");
 
         // Create histograms if needed
         h_pxq = new TH1D("pixelcharge", "raw pixel charge;pixel charge [ke];pixels", nbins, 0, maximum);
@@ -77,6 +78,14 @@ void DefaultDigitizerModule::init() {
         if(config_.get<int>("adc_resolution") > 0) {
             int adcbins = ((1 << config_.get<int>("adc_resolution")) - 1);
             h_pxq_adc = new TH1D("pixelcharge_adc", "pixel charge after ADC;pixel charge [ADC];pixels", adcbins, 0, adcbins);
+            h_calibration = new TH2D("charge_adc_calibration",
+                                     "calibration curve of pixel charge to ADC units;pixel charge [ke];pixel charge [ADC]",
+                                     nbins,
+                                     0,
+                                     maximum,
+                                     adcbins,
+                                     0,
+                                     adcbins);
         } else {
             h_pxq_adc = new TH1D("pixelcharge_adc", "final pixel charge;pixel charge [ke];pixels", nbins, 0, maximum);
         }
@@ -129,6 +138,9 @@ void DefaultDigitizerModule::run(unsigned int) {
 
         // Simulate ADC if resolution set to more than 0bit
         if(config_.get<int>("adc_resolution") > 0) {
+            // temporarily store old charge for histogramming:
+            auto original_charge = charge;
+
             // Add ADC smearing:
             std::normal_distribution<double> adc_smearing(0, config_.get<unsigned int>("adc_smearing"));
             charge += adc_smearing(random_generator_);
@@ -143,11 +155,16 @@ void DefaultDigitizerModule::run(unsigned int) {
                          (1 << config_.get<int>("adc_resolution")) - 1),
                 0));
             LOG(DEBUG) << "Charge converted to ADC units: " << charge;
-        }
 
-        // Fill the final pixel charge
-        if(config_.get<bool>("output_plots")) {
-            h_pxq_adc->Fill(charge);
+            if(config_.get<bool>("output_plots")) {
+                h_calibration->Fill(original_charge / 1e3, charge);
+                h_pxq_adc->Fill(charge);
+            }
+        } else {
+            // Fill the final pixel charge
+            if(config_.get<bool>("output_plots")) {
+                h_pxq_adc->Fill(charge / 1e3);
+            }
         }
 
         // Add the hit to the hitmap
@@ -173,8 +190,12 @@ void DefaultDigitizerModule::finalize() {
         h_pxq_noise->Write();
         h_thr->Write();
         h_pxq_thr->Write();
-        h_pxq_adc_smear->Write();
         h_pxq_adc->Write();
+
+        if(config_.get<int>("adc_resolution") > 0) {
+            h_pxq_adc_smear->Write();
+            h_calibration->Write();
+        }
     }
 
     LOG(INFO) << "Digitized " << total_hits_ << " pixel hits in total";
