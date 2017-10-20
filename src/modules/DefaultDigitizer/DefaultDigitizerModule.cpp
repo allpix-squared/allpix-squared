@@ -157,12 +157,13 @@ void DefaultDigitizerModule::run(unsigned int) {
 
             if(config_.get<bool>("output_plots")) {
                 h_calibration->Fill(original_charge / 1e3, charge);
+                h_pxq_adc->Fill(charge);
             }
-        }
-
-        // Fill the final pixel charge
-        if(config_.get<bool>("output_plots")) {
-            h_pxq_adc->Fill(charge);
+        } else {
+            // Fill the final pixel charge
+            if(config_.get<bool>("output_plots")) {
+                h_pxq_adc->Fill(charge / 1e3);
+            }
         }
 
         // Add the hit to the hitmap
