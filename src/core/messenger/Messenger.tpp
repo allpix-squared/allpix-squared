@@ -53,4 +53,4 @@ namespace allpix {
         auto delegate = std::make_unique<VectorBindDelegate<T, R>>(flags, receiver, member);
         add_delegate(typeid(R), receiver, std::move(delegate));
     }
-}
+} // namespace allpix

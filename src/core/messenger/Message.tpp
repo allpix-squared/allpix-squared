@@ -37,4 +37,4 @@ namespace allpix {
     Message<T>::get_object_array(typename std::enable_if<!std::is_base_of<Object, U>::value>::type*) {
         throw MessageWithoutObjectException(typeid(*this));
     }
-}
+} // namespace allpix

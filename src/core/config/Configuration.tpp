@@ -77,4 +77,4 @@ namespace allpix {
             setArray<T>(key, val);
         }
     }
-}
+} // namespace allpix

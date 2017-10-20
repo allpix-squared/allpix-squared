@@ -36,8 +36,8 @@ namespace allpix {
     class ModuleIdentifier {
     public:
         /**
-          * @brief Constructs an empty identifier
-          */
+         * @brief Constructs an empty identifier
+         */
         // TODO [doc] Is this method really necessary
         ModuleIdentifier() = default;
         /**

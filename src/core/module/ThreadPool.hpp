@@ -171,7 +171,7 @@ namespace allpix {
         std::atomic_flag has_exception_;
         std::exception_ptr exception_ptr_{nullptr};
     };
-}
+} // namespace allpix
 
 // Include template members
 #include "ThreadPool.tpp"

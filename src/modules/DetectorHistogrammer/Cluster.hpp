@@ -83,5 +83,5 @@ namespace allpix {
 
         unsigned int minX_, minY_, maxX_, maxY_;
     };
-}
+} // namespace allpix
 #endif
