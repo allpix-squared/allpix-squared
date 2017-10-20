@@ -21,6 +21,8 @@
 
 namespace allpix {
 
+    template <typename T> using Matrix = std::vector<std::vector<T>>;
+
     /**
      * @brief Generic configuration object storing keys
      *
@@ -66,6 +68,12 @@ namespace allpix {
          */
         // TODO [doc] Provide second template parameter to specify the vector type to return it in
         template <typename T> std::vector<T> getArray(const std::string& key) const;
+        /**
+         * @brief Get values for a key containing a 2D matrix
+         * @param key Key to get values of
+         * @return Matrix of values from the requested template parameter
+         */
+        template <typename T> Matrix<T> getMatrix(const std::string& key) const;
 
         /**
          * @brief Get literal value of a key as string

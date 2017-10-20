@@ -46,16 +46,55 @@ namespace allpix {
         try {
             std::string str = config_.at(key);
 
-            std::vector<T> result;
+            std::vector<T> array;
             auto node = parse_string(str);
             for(auto& child : node->children) {
                 if(!child->children.empty()) {
                     throw std::invalid_argument("array has more than one dimension");
                 }
 
-                result.push_back(allpix::from_string<T>(child->value));
+                array.push_back(allpix::from_string<T>(child->value));
             }
-            return result;
+            return array;
+        } catch(std::out_of_range& e) {
+            throw MissingKeyError(key, getName());
+        } catch(std::invalid_argument& e) {
+            throw InvalidKeyError(key, getName(), config_.at(key), typeid(T), e.what());
+        } catch(std::overflow_error& e) {
+            throw InvalidKeyError(key, getName(), config_.at(key), typeid(T), e.what());
+        }
+    }
+
+    /**
+     * @throws MissingKeyError If the requested key is not defined
+     * @throws InvalidKeyError If the conversion to the requested type did not succeed
+     * @throws InvalidKeyError If an overflow happened while converting the key
+     */
+    template <typename T> Matrix<T> Configuration::getMatrix(const std::string& key) const {
+        try {
+            std::string str = config_.at(key);
+
+            Matrix<T> matrix;
+            auto node = parse_string(str);
+            for(auto& child : node->children) {
+                std::vector<T> array;
+                // Create subarray of matrix
+                for(auto& subchild : child->children) {
+                    if(!subchild->children.empty()) {
+                        throw std::invalid_argument("matrix has more than two dimensions");
+                    }
+
+                    array.push_back(allpix::from_string<T>(subchild->value));
+                }
+
+                // Add one-dimensional value to two dimensional matrix
+                if(!child->value.empty()) {
+                    array.push_back(allpix::from_string<T>(child->value));
+                }
+
+                matrix.push_back(array);
+            }
+            return matrix;
         } catch(std::out_of_range& e) {
             throw MissingKeyError(key, getName());
         } catch(std::invalid_argument& e) {
