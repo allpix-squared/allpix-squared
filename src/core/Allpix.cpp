@@ -137,20 +137,30 @@ void Allpix::load() {
         // Use config specified one if available
         directory = global_config.getPath("output_directory");
     }
+
     // Use existing output directory if it exists
+    bool create_output_dir = true;
     if(allpix::path_is_directory(directory)) {
         LOG(DEBUG) << "Output directory " << directory << " already exists";
-    } else {
-        // Create the output directory
-        try {
-            allpix::create_directories(directory);
-        } catch(std::invalid_argument& e) {
-            LOG(ERROR) << "Cannot create output directory " << directory << ": " << e.what()
-                       << ". Using current directory instead!";
+        if(global_config.get<bool>("purge_output_directory", false)) {
+            LOG(DEBUG) << "Deleting previous output directory";
+            allpix::remove_path(directory);
+        } else {
+            create_output_dir = false;
         }
     }
-    // Change to the new/existing output directory
-    gSystem->ChangeDirectory(directory.c_str());
+    // Create the output directory
+    try {
+        if(create_output_dir) {
+            LOG(DEBUG) << "Creating output directory " << directory;
+            allpix::create_directories(directory);
+        }
+    } catch(std::invalid_argument& e) {
+        LOG(ERROR) << "Cannot create output directory " << directory << ": " << e.what()
+                   << ". Using current directory instead!";
+        // Change to the new/existing output directory
+        gSystem->ChangeDirectory(directory.c_str());
+    }
 
     // Enable relevant multithreading if needed (disabled by default)
     if(global_config.get<bool>("experimental_multithreading", false)) {
