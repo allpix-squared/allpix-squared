@@ -57,7 +57,12 @@ void ModuleManager::load(Messenger* messenger,
     std::vector<Configuration> configs = conf_manager->getConfigurations();
     global_config_ = conf_manager->getGlobalConfiguration();
 
+    // (Re)create the main ROOT file
     auto path = std::string(gSystem->pwd()) + "/" + global_config_.get<std::string>("root_file", "modules") + ".root";
+    if(allpix::path_is_file(path)) {
+        LOG(WARNING) << "Main ROOT file " << path << " exists and will be overwritten.";
+        allpix::remove_path(path);
+    }
     modules_file_ = std::make_unique<TFile>(path.c_str(), "RECREATE");
     if(modules_file_->IsZombie()) {
         throw RuntimeError("Cannot create main ROOT file " + path);

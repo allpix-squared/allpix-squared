@@ -87,6 +87,11 @@ std::string Module::getOutputPath(const std::string& path, bool global) const {
         file += "/";
         file += path;
 
+        if(path_is_file(file)) {
+            LOG(WARNING) << "File " << file << " exists and will be overwritten.";
+            remove_path(file);
+        }
+
         // Open the file to check if it can be accessed
         std::fstream file_stream(file, std::ios_base::out | std::ios_base::app);
         if(!file_stream.good()) {
