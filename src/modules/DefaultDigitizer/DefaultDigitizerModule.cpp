@@ -143,11 +143,15 @@ void DefaultDigitizerModule::run(unsigned int) {
                          (1 << config_.get<int>("adc_resolution")) - 1),
                 0));
             LOG(DEBUG) << "Charge converted to ADC units: " << charge;
-        }
 
-        // Fill the final pixel charge
-        if(config_.get<bool>("output_plots")) {
-            h_pxq_adc->Fill(charge);
+            if(config_.get<bool>("output_plots")) {
+                h_pxq_adc->Fill(charge);
+            }
+        } else {
+            // Fill the final pixel charge
+            if(config_.get<bool>("output_plots")) {
+                h_pxq_adc->Fill(charge / 1e3);
+            }
         }
 
         // Add the hit to the hitmap
