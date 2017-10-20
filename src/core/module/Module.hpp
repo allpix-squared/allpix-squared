@@ -128,7 +128,7 @@ namespace allpix {
          * @brief Base constructor for unique modules
          * @param config Configuration for this module
          */
-        explicit Module(Configuration config);
+        explicit Module(Configuration&& config);
         /**
          * @brief Base constructor for detector modules
          * @param config Configuration for this module
@@ -136,7 +136,7 @@ namespace allpix {
          * @warning Detector modules should not forget to forward their detector to the base constructor. An
          *          \ref InvalidModuleStateException will be raised if the module failed to so.
          */
-        explicit Module(Configuration config, std::shared_ptr<Detector> detector);
+        explicit Module(Configuration&& config, std::shared_ptr<Detector> detector);
         /**
          * @brief Essential virtual destructor.
          *

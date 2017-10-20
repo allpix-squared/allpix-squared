@@ -24,8 +24,8 @@
 
 using namespace allpix;
 
-Module::Module(Configuration config) : Module(std::move(config), nullptr) {}
-Module::Module(Configuration config, std::shared_ptr<Detector> detector)
+Module::Module(Configuration&& config) : Module(std::move(config), nullptr) {}
+Module::Module(Configuration&& config, std::shared_ptr<Detector> detector)
     : config_(std::move(config)), detector_(std::move(detector)) {}
 /**
  * @note The remove_delegate can throw in theory, but this should never happen in practice
