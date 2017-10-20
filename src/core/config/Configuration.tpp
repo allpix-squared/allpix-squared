@@ -7,6 +7,8 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
+#include <core/utils/log.h>
+
 namespace allpix {
     /**
      * @throws MissingKeyError If the requested key is not defined
@@ -43,7 +45,17 @@ namespace allpix {
     template <typename T> std::vector<T> Configuration::getArray(const std::string& key) const {
         try {
             std::string str = config_.at(key);
-            return allpix::split<T>(str, " ,");
+
+            std::vector<T> result;
+            auto node = parse_string(str);
+            for(auto& child : node->children) {
+                if(!child->children.empty()) {
+                    throw std::invalid_argument("array has more than one dimension");
+                }
+
+                result.push_back(allpix::from_string<T>(child->value));
+            }
+            return result;
         } catch(std::out_of_range& e) {
             throw MissingKeyError(key, getName());
         } catch(std::invalid_argument& e) {

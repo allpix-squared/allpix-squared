@@ -17,7 +17,7 @@
 #include "core/utils/file.h"
 #include "exceptions.h"
 
-#include <iostream>
+#include "core/utils/log.h"
 
 using namespace allpix;
 
@@ -153,4 +153,60 @@ std::vector<std::pair<std::string, std::string>> Configuration::getAll() {
     }
 
     return result;
+}
+
+/**
+ * Parse info ??
+ */
+std::unique_ptr<Configuration::parse_node> Configuration::parse_string(std::string str, int depth) {
+    using parse_node = Configuration::parse_node;
+
+    auto node = std::make_unique<parse_node>();
+    str = allpix::trim(str);
+    if(str.empty()) {
+        throw std::invalid_argument("string is empty");
+    }
+
+    // Add pair of brackets if not there yet on the lowest depth
+    if(depth == 0 && str.front() != '[') {
+        str = '[' + str + ']';
+    }
+
+    // Check if value or list
+    if(str.front() == '[' && str.back() == ']') {
+        // Found list, recurse on items
+        size_t lst = 1;
+        int in_dpt = 0;
+        for(size_t i = 1; i < str.size() - 1; ++i) {
+            // Skip over quotation marks
+            if(str[i] == '\'' || str[i] == '\"') {
+                i = str.find(str[i], i + 1);
+                continue;
+            }
+
+            // Handle brackets
+            if(str[i] == '[')
+                ++in_dpt;
+            else if(str[i] == ']')
+                --in_dpt;
+
+            // Make subitems at the zero level
+            if(in_dpt == 0 && str[i] == ',') {
+                node->children.push_back(parse_string(str.substr(lst, i - lst), depth + 1));
+                lst = i + 1;
+            }
+        }
+
+        // Handle last item
+        node->children.push_back(parse_string(str.substr(lst, str.size() - 1 - lst), depth + 1));
+    } else {
+        // Not an array, handle as value instead
+        node->value = str;
+    }
+
+    // If only a single child, use the child instead
+    if(node->children.size() == 1) {
+        node = std::move(node->children[0]);
+    }
+    return node;
 }

@@ -11,6 +11,7 @@
 #define ALLPIX_CONFIGURATION_H
 
 #include <map>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -184,6 +185,15 @@ namespace allpix {
          * @param canonicalize_path If the path should be canonicalized (throws an error if the path does not exist)
          */
         std::string path_to_absolute(std::string path, bool canonicalize_path) const;
+
+        struct parse_node {
+            std::string value;
+            std::vector<std::unique_ptr<parse_node>> children;
+        };
+        /**
+         * @brief Generate parse tree from configuration string
+         */
+        static std::unique_ptr<parse_node> parse_string(std::string, int depth = 0);
 
         std::string name_;
         std::string path_;
