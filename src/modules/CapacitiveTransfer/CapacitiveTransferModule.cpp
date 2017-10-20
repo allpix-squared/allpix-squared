@@ -127,6 +127,7 @@ void CapacitiveTransferModule::init() {
             << "Cross-coupling was not defined. Provide a coupling matrix file or a coupling matrix in the config file.";
     }
 
+    // if(config_.has("output_plots")){
     if(config_.get<bool>("output_plots")) {
         LOG(TRACE) << "Creating output plots";
 
@@ -169,6 +170,7 @@ void CapacitiveTransferModule::init() {
                                             -0.5,
                                             pixel_grid.y() - 0.5);
     }
+    //}
 }
 
 double CapacitiveTransferModule::gap(Pixel::Index pixel) {
@@ -180,19 +182,21 @@ double CapacitiveTransferModule::gap(Pixel::Index pixel) {
     Eigen::Vector3d pixel_projection = plane.projection(pixel_point);
     pixel_gap = pixel_projection[2];
 
-    gap_distribution->Fill(static_cast<double>(Units::convert(pixel_gap, "um")));
-    gap_map->SetBinContent(
-        static_cast<int>(pixel.x()), static_cast<int>(pixel.y()), static_cast<double>(Units::convert(pixel_gap, "um")));
+    if(config_.get<bool>("output_plots")) {
+        gap_distribution->Fill(static_cast<double>(Units::convert(pixel_gap, "um")));
+        gap_map->SetBinContent(
+            static_cast<int>(pixel.x()), static_cast<int>(pixel.y()), static_cast<double>(Units::convert(pixel_gap, "um")));
 
-    capacitance_map->SetBinContent(static_cast<int>(pixel.x()),
-                                   static_cast<int>(pixel.y()),
-                                   capacitances[4]->Eval(static_cast<double>(Units::convert(pixel_gap, "um")), 0, "S"));
+        capacitance_map->SetBinContent(static_cast<int>(pixel.x()),
+                                       static_cast<int>(pixel.y()),
+                                       capacitances[4]->Eval(static_cast<double>(Units::convert(pixel_gap, "um")), 0, "S"));
 
-    relative_capacitance_map->SetBinContent(
-        static_cast<int>(pixel.x()),
-        static_cast<int>(pixel.y()),
-        capacitances[4]->Eval(static_cast<double>(Units::convert(pixel_gap, "um")), 0, "S") /
-            capacitances[4]->Eval(static_cast<double>(Units::convert(nominal_gap, "um")), 0, "S"));
+        relative_capacitance_map->SetBinContent(
+            static_cast<int>(pixel.x()),
+            static_cast<int>(pixel.y()),
+            capacitances[4]->Eval(static_cast<double>(Units::convert(pixel_gap, "um")), 0, "S") /
+                capacitances[4]->Eval(static_cast<double>(Units::convert(nominal_gap, "um")), 0, "S"));
+    }
 
     return static_cast<double>(Units::convert(pixel_gap, "um"));
 }
@@ -294,6 +298,7 @@ void CapacitiveTransferModule::finalize() {
     LOG(INFO) << "Transferred total of " << total_transferred_charges_ << " charges to " << unique_pixels_.size()
               << " different pixels";
 
+    // if(config_.has("output_plots")){
     if(config_.get<bool>("output_plots")) {
         gap_distribution->Write();
         gap_map->Write();
@@ -305,4 +310,5 @@ void CapacitiveTransferModule::finalize() {
             }
         }
     }
+    //}
 }
