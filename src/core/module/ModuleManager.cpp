@@ -171,6 +171,9 @@ void ModuleManager::load(Messenger* messenger,
             unique = reinterpret_cast<bool (*)()>(uniqueFunction)(); // NOLINT
         }
 
+        // Apply the module specific options to the module configuration
+        conf_manager->applyOptions(config.getName(), config);
+
         // Add the global internal parameters to the configuration
         std::string global_dir = gSystem->pwd();
         config.set<std::string>("_global_dir", global_dir);
@@ -183,9 +186,10 @@ void ModuleManager::load(Messenger* messenger,
         std::vector<std::pair<ModuleIdentifier, Module*>> mod_list;
         if(unique) {
             mod_list.emplace_back(
-                create_unique_modules(loaded_libraries_[lib_name], config, messenger, geo_manager, seeder));
+                create_unique_modules(loaded_libraries_[lib_name], config, conf_manager, messenger, geo_manager, seeder));
         } else {
-            mod_list = create_detector_modules(loaded_libraries_[lib_name], config, messenger, geo_manager, seeder);
+            mod_list =
+                create_detector_modules(loaded_libraries_[lib_name], config, conf_manager, messenger, geo_manager, seeder);
         }
 
         // Loop through all created instantiations
@@ -230,8 +234,12 @@ void ModuleManager::load(Messenger* messenger,
 /**
  * For unique modules a single instance is created per section
  */
-std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
-    void* library, Configuration config, Messenger* messenger, GeometryManager* geo_manager, std::mt19937_64& seeder) {
+std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* library,
+                                                                          Configuration config,
+                                                                          ConfigManager* conf_manager,
+                                                                          Messenger* messenger,
+                                                                          GeometryManager* geo_manager,
+                                                                          std::mt19937_64& seeder) {
     // Make the vector to return
     std::string module_name = config.getName();
 
@@ -263,6 +271,9 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
         LOG(ERROR) << "Module library is invalid or outdated: required interface function not found!";
         throw allpix::DynamicLibraryError(module_name);
     }
+
+    // Apply instantiation specific options
+    conf_manager->applyOptions(identifier.getUniqueName(), config);
 
     // Add internal module config
     config.set<std::string>("_unique_name", identifier.getUniqueName());
@@ -310,8 +321,12 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
  * For detector modules multiple instantiations may be created per section. An instantiation is created for every detector if
  * no selection parameters are provided. Otherwise instantiations are created for every linked detector name and type.
  */
-std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector_modules(
-    void* library, Configuration config, Messenger* messenger, GeometryManager* geo_manager, std::mt19937_64& seeder) {
+std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector_modules(void* library,
+                                                                                         Configuration config,
+                                                                                         ConfigManager* conf_manager,
+                                                                                         Messenger* messenger,
+                                                                                         GeometryManager* geo_manager,
+                                                                                         std::mt19937_64& seeder) {
     std::string module_name = config.getName();
     LOG(DEBUG) << "Creating instantions for detector module " << module_name;
 
@@ -388,6 +403,9 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         LOG(DEBUG) << "Creating detector instantiation " << instance.second.getUniqueName();
         // Get current time
         auto start = std::chrono::steady_clock::now();
+
+        // Apply instantiation specific options
+        conf_manager->applyOptions(instance.second.getUniqueName(), config);
 
         // Add internal module config
         config.set<std::string>("_unique_name", instance.second.getUniqueName());

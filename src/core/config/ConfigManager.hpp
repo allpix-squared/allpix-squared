@@ -85,6 +85,20 @@ namespace allpix {
         void addIgnoreHeaderName(std::string name);
 
         /**
+         * @brief Parse an extra configuration option
+         * @param line Line with the option
+         */
+        void parseOption(std::string line);
+
+        /**
+         * @brief Apply all relevant options to the passed configuration
+         * @param identifier Identifier to select the options to apply
+         * @param config Configuration option where the options should be applied to
+         * @return True if the configuration was changed because of applied options
+         */
+        bool applyOptions(std::string identifier, Configuration& config);
+
+        /**
          * @brief Return if section with given name exists
          * @param name Name of the section
          * @return True if at least one section with that name exists, false otherwise
@@ -102,9 +116,13 @@ namespace allpix {
 
         ConfigReader reader_;
 
-        std::string global_default_name_;
-        std::set<std::string> global_names_;
-        std::set<std::string> ignore_names_;
+        Configuration global_base_config_;
+        std::string global_default_name_{};
+        std::set<std::string> global_names_{};
+
+        std::set<std::string> ignore_names_{};
+
+        std::map<std::string, std::vector<std::pair<std::string, std::string>>> identifier_options_{};
     };
 } // namespace allpix
 

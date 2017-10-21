@@ -85,6 +85,7 @@ int main(int argc, const char* argv[]) {
     // Parse arguments
     std::string config_file_name;
     std::string log_file_name;
+    std::vector<std::string> options;
     for(int i = 1; i < argc; i++) {
         if(strcmp(argv[i], "-h") == 0) {
             print_help = true;
@@ -99,6 +100,8 @@ int main(int argc, const char* argv[]) {
             config_file_name = std::string(argv[++i]);
         } else if(strcmp(argv[i], "-l") == 0 && (i + 1 < argc)) {
             log_file_name = std::string(argv[++i]);
+        } else if(strcmp(argv[i], "-o") == 0 && (i + 1 < argc)) {
+            options.push_back(std::string(argv[++i]));
         } else {
             LOG(ERROR) << "Unrecognized command line argument \"" << argv[i] << "\"";
             print_help = true;
@@ -112,7 +115,8 @@ int main(int argc, const char* argv[]) {
         std::cout << "Generic simulation framework for pixel detectors" << std::endl;
         std::cout << "\t -c <file>    configuration file to be used" << std::endl;
         std::cout << "\t -l <file>    file to log to besides standard output" << std::endl;
-        std::cout << "\t -v <level>   verbosity level overwrites global level,\n"
+        std::cout << "\t -o <option>  extra configuration options to pass" << std::endl;
+        std::cout << "\t -v <level>   verbosity level, overwriting the global level,\n"
                   << "\t              but not the per-module configuration." << std::endl;
         clean();
         return return_code;
@@ -141,7 +145,7 @@ int main(int argc, const char* argv[]) {
 
     try {
         // Construct main Allpix object
-        apx = std::make_unique<Allpix>(config_file_name);
+        apx = std::make_unique<Allpix>(config_file_name, options);
         apx_ready = true;
 
         // Load modules
@@ -156,9 +160,9 @@ int main(int argc, const char* argv[]) {
         // Finalize modules (post-run)
         apx->finalize();
     } catch(ConfigurationError& e) {
-        LOG(FATAL) << "Error in the configuration file:" << std::endl
+        LOG(FATAL) << "Error in the configuration:" << std::endl
                    << " " << e.what() << std::endl
-                   << "The configuration file needs to be updated! Cannot continue...";
+                   << "The configuration needs to be updated! Cannot continue...";
         return_code = 1;
     } catch(RuntimeError& e) {
         LOG(FATAL) << "Error during execution of run:" << std::endl

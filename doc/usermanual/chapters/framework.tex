@@ -82,7 +82,7 @@ Any line that does not comply to these specifications should lead to an immediat
 Different section header are allowed to have the same name (unless specified otherwise in the particular configuration description).
 All key-value pairs following this section header are part of this section until a new section header is started.
 \item If the line starts with an alphanumeric character, the line should indicate a key-value pair.
-The beginning of the line should contain an string of alphabetic characters, numbers and underscores, but it may not start with an underscore.
+The beginning of the line should contain a string of alphabetic characters, numbers, dots (\texttt{.}), colons (\texttt{:}) and underscores (\texttt{_}), but it may only start with an alphanumeric character.
 This string indicates the 'key'.
 After a optional number of ignored whitespace, the key should be followed by an equality sign (\texttt{$=$}).
 Any text between the \texttt{$=$} and the first \texttt{\#} character not enclosed within a pair of single double quotes (\texttt{'} or \texttt{"}) is known as the non-stripped string.
