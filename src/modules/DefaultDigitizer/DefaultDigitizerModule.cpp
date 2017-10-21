@@ -35,6 +35,8 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration config,
 
     // Set defaults for config variables
     config_.setDefault<int>("electronics_noise", Units::get(110, "e"));
+    config_.setDefault<double>("gain", 1.0);
+    config_.setDefault<double>("gain_smearing", 0.0);
     config_.setDefault<int>("threshold", Units::get(600, "e"));
     config_.setDefault<int>("threshold_smearing", Units::get(30, "e"));
 
@@ -68,6 +70,9 @@ void DefaultDigitizerModule::init() {
         // Create histograms if needed
         h_pxq = new TH1D("pixelcharge", "raw pixel charge;pixel charge [ke];pixels", nbins, 0, maximum);
         h_pxq_noise = new TH1D("pixelcharge_noise", "pixel charge w/ el. noise;pixel charge [ke];pixels", nbins, 0, maximum);
+        h_gain = new TH1D("gain", "applied gain; gain factor;events", 40, -20, 20);
+        h_pxq_gain =
+            new TH1D("pixelcharge_gain", "pixel charge w/ gain applied;pixel charge [ke];pixels", nbins, 0, maximum);
         h_thr = new TH1D("threshold", "applied threshold; threshold [ke];events", maximum, 0, maximum / 10);
         h_pxq_thr =
             new TH1D("pixelcharge_threshold", "pixel charge above threshold;pixel charge [ke];pixels", nbins, 0, maximum);
@@ -114,7 +119,19 @@ void DefaultDigitizerModule::run(unsigned int) {
             h_pxq_noise->Fill(charge / 1e3);
         }
 
-        // FIXME Simulate gain / gain smearing
+        // Smear the gain factor, Gaussian distribution around "gain" with width "gain_smearing"
+        std::normal_distribution<double> gain_smearing(config_.get<double>("gain"), config_.get<double>("gain_smearing"));
+        double gain = gain_smearing(random_generator_);
+        if(config_.get<bool>("output_plots")) {
+            h_gain->Fill(gain);
+        }
+
+        // Apply the gain to the charge:
+        charge *= gain;
+        LOG(DEBUG) << "Charge after amplifier (gain): " << Units::display(charge, "e");
+        if(config_.get<bool>("output_plots")) {
+            h_pxq_gain->Fill(charge / 1e3);
+        }
 
         // Smear the threshold, Gaussian distribution around "threshold" with width "threshold_smearing"
         std::normal_distribution<double> thr_smearing(config_.get<unsigned int>("threshold"),
@@ -188,6 +205,8 @@ void DefaultDigitizerModule::finalize() {
         LOG(TRACE) << "Writing output plots to file";
         h_pxq->Write();
         h_pxq_noise->Write();
+        h_gain->Write();
+        h_pxq_gain->Write();
         h_thr->Write();
         h_pxq_thr->Write();
         h_pxq_adc->Write();

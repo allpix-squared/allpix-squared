@@ -10,6 +10,7 @@ Very simple digitization module which translates the collected charges into a di
 In detail, the following steps are performed for every pixel charge:
 
 * A Gaussian noise is added to the input charge value in order to simulate input noise to the preamplifier circuit.
+* The preamplifier is simulated by multiplying the input charge with a defined gain factor. The actually applied gain is smeared with a Gaussian distribution on an event-by-event basis.
 * A charge threshold is applied. Only if the threshold is surpassed, the pixel is accounted for - for all values below the threshold, the pixel charge is discarded. The actually applied threshold is smeared with a Gaussian distribution on an event-by-event basis allowing for simulating fluctuations of the threshold level.
 * An ADC with configurable resolution, given in bit, can be simulated. For this, first an inaccuracy of the ADC is simulated using an additional Gaussian smearing which allows to take ADC noise into account. Then, the charge is converted into ADC units using the `adc_slope` and `adc_offset` parameters provided. Finally, the calculated value is clamped to be contained within the ADC resolution, over- and underflows are treated as saturation.
 
@@ -21,7 +22,9 @@ In addition, the distribution of the actually applied threshold is provided as h
 
 
 #### Parameters
-* `electronics_noise` : Standard deviation of the Gaussian noise in the electronics (before applying the threshold). Defaults to 110 electrons.
+* `electronics_noise` : Standard deviation of the Gaussian noise in the electronics (before amplification and application of the threshold). Defaults to 110 electrons.
+* `gain` : Gain factor the input charge is multiplied with, defaults to 1.0 (no gain).
+* `gain_smearing` : Standard deviation of the Gaussian uncertainty in the gain factor. Defaults to 0.
 * `threshold` : Threshold for considering the collected charge as a hit. Defaults to 600 electrons.
 * `threshold_smearing` : Standard deviation of the Gaussian uncertainty in the threshold charge value. Defaults to 30 electrons.
 * `adc_resolution` : Resolution of the ADC in units of bits. Thus, a value of 8 would translate to an ADC range of 0 -- 255. A value of 0bit switches off the ADC simulation and returns the actual charge in electrons. Defaults to 0.
