@@ -185,6 +185,6 @@ namespace allpix {
         }
         return std::make_pair(base_name, "");
     }
-}
+} // namespace allpix
 
 #endif /* ALLPIX_FILE_H */

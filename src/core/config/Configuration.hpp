@@ -133,10 +133,10 @@ namespace allpix {
         void setText(const std::string& key, const std::string& val);
 
         /**
-           * @brief Set alias name for an already existing key
-           * @param new_key New alias to be created
-           * @param old_key Key the alias is created for
-           */
+         * @brief Set alias name for an already existing key
+         * @param new_key New alias to be created
+         * @param old_key Key the alias is created for
+         */
         void setAlias(const std::string& new_key, const std::string& old_key);
 
         /**
