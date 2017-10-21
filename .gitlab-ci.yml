@@ -390,7 +390,8 @@ perf:cc7-gcc:
     allow_failure: true
     retry: 1
 
-perf:cc7-llvm:
+# Temporarily hide LLVM job, have to find out why this is so slow.
+.perf:cc7-llvm:
     stage: performance
     tags:
         - benchmark
