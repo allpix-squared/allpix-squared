@@ -152,4 +152,4 @@ namespace mesh_converter {
         std::vector<Point> vertices;
         std::vector<Point> e_field;
     };
-}
+} // namespace mesh_converter

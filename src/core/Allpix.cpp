@@ -81,6 +81,7 @@ Allpix::Allpix(std::string config_file_name)
     if(global_config.has("log_file")) {
         // NOTE: this stream should be available for the duration of the logging
         log_file_.open(global_config.getPath("log_file"), std::ios_base::out | std::ios_base::trunc);
+        LOG(TRACE) << "Added log stream to file " << global_config.getPath("log_file");
         Log::addStream(log_file_);
     }
 

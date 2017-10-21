@@ -345,8 +345,8 @@ void GeometryConstructionG4::build_detectors() {
         auto hybrid_model = std::dynamic_pointer_cast<HybridPixelDetectorModel>(model);
         if(hybrid_model != nullptr) {
             /* BUMPS
-            * the bump bonds connect the sensor to the readout chip
-            */
+             * the bump bonds connect the sensor to the readout chip
+             */
 
             // Get parameters from model
             auto bump_height = hybrid_model->getBumpHeight();

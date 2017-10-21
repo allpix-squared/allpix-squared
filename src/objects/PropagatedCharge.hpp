@@ -59,6 +59,6 @@ namespace allpix {
      * @brief Typedef for message carrying propagated charges
      */
     using PropagatedChargeMessage = Message<PropagatedCharge>;
-}
+} // namespace allpix
 
 #endif
