@@ -207,7 +207,7 @@ namespace allpix {
          * @param depth Current depth of the parsing (starts at zero)
          * @return Root node of the parsed tree
          */
-        static std::unique_ptr<parse_node> parse_string(std::string str, int depth = 0);
+        static std::unique_ptr<parse_node> parse_value(std::string str, int depth = 0);
 
         std::string name_;
         std::string path_;

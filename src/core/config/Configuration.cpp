@@ -157,7 +157,7 @@ std::vector<std::pair<std::string, std::string>> Configuration::getAll() {
  * String is recursively parsed for all pair of [ and ] brackets. All parts between single or double quotation marks are
  * skipped.
  */
-std::unique_ptr<Configuration::parse_node> Configuration::parse_string(std::string str, int depth) {
+std::unique_ptr<Configuration::parse_node> Configuration::parse_value(std::string str, int depth) {
     using parse_node = Configuration::parse_node;
 
     auto node = std::make_unique<parse_node>();
@@ -204,7 +204,7 @@ std::unique_ptr<Configuration::parse_node> Configuration::parse_string(std::stri
 
         // Make subitems at the zero level
         if(in_dpt == 1 && (str[i] == ',' || (isspace(str[i]) && (!isspace(str[i - 1]) && str[i - 1] != ',')))) {
-            node->children.push_back(parse_string(str.substr(lst, i - lst), depth + 1));
+            node->children.push_back(parse_value(str.substr(lst, i - lst), depth + 1));
             lst = i + 1;
         }
     }
@@ -223,7 +223,7 @@ std::unique_ptr<Configuration::parse_node> Configuration::parse_string(std::stri
             }
             end = str.size() - 1;
         }
-        node->children.push_back(parse_string(str.substr(lst, end - lst), depth + 1));
+        node->children.push_back(parse_value(str.substr(lst, end - lst), depth + 1));
         node->value = str.substr(beg, end - beg);
     } else {
         // Not an array, handle as value instead

@@ -15,7 +15,7 @@ namespace allpix {
      */
     template <typename T> T Configuration::get(const std::string& key) const {
         try {
-            auto node = parse_string(config_.at(key));
+            auto node = parse_value(config_.at(key));
             return allpix::from_string<T>(node->value);
         } catch(std::out_of_range& e) {
             throw MissingKeyError(key, getName());
@@ -46,7 +46,7 @@ namespace allpix {
             std::string str = config_.at(key);
 
             std::vector<T> array;
-            auto node = parse_string(str);
+            auto node = parse_value(str);
             for(auto& child : node->children) {
                 array.push_back(allpix::from_string<T>(child->value));
             }
@@ -70,7 +70,7 @@ namespace allpix {
             std::string str = config_.at(key);
 
             Matrix<T> matrix;
-            auto node = parse_string(str);
+            auto node = parse_value(str);
             for(auto& child : node->children) {
                 std::vector<T> array;
                 // Create subarray of matrix
