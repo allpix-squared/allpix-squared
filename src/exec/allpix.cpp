@@ -111,13 +111,16 @@ int main(int argc, const char* argv[]) {
 
     // Print help if requested or no arguments given
     if(print_help) {
-        std::cout << "Usage: allpix -c <config> [-v <level>]" << std::endl;
-        std::cout << "Generic simulation framework for pixel detectors" << std::endl;
-        std::cout << "\t -c <file>    configuration file to be used" << std::endl;
-        std::cout << "\t -l <file>    file to log to besides standard output" << std::endl;
-        std::cout << "\t -o <option>  extra configuration options to pass" << std::endl;
-        std::cout << "\t -v <level>   verbosity level, overwriting the global level,\n"
-                  << "\t              but not the per-module configuration." << std::endl;
+        std::cout << "Usage: allpix -c <file> [OPTIONS]" << std::endl;
+        std::cout << "Generic pixel detector simulation framework" << std::endl;
+        std::cout << std::endl;
+        std::cout << "Options:" << std::endl;
+        std::cout << "  -c <file>    configuration file to be used" << std::endl;
+        std::cout << "  -l <file>    file to log to besides standard output" << std::endl;
+        std::cout << "  -o <option>  extra configuration option(s) to pass" << std::endl;
+        std::cout << "  -v <level>   verbosity level, overwriting the global level" << std::endl;
+        std::cout << std::endl;
+        std::cout << "For more help, please see <https://cern.ch/allpix-squared>" << std::endl;
         clean();
         return return_code;
     }
