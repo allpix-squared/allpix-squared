@@ -41,6 +41,13 @@ namespace allpix {
         explicit ConfigReader(std::istream& stream, std::string file_name = "");
 
         /**
+         * @brief Parse a line as key-value pair
+         * @param line Line to interpret
+         * @return Pair of the key and the value
+         */
+        static std::pair<std::string, std::string> parseKeyValue(std::string line);
+
+        /**
          * @brief Adds a configuration stream to read
          * @param stream Stream to read configuration from
          * @param file_name Name of the file related to the stream or empty if not linked to a file
