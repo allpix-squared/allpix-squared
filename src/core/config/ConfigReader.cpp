@@ -45,7 +45,7 @@ void ConfigReader::copy_init_map() {
 /**
  * @throws KeyValueParseError If the key / value pair could not be parsed
  *
- * The key / value pair is splitted according to the format specifications and an error is thrown if it is invalid
+ * The key / value pair is split according to the format specifications
  */
 std::pair<std::string, std::string> ConfigReader::parseKeyValue(std::string line) {
     line = allpix::trim(line);

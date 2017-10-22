@@ -82,21 +82,25 @@ Any line that does not comply to these specifications should lead to an immediat
 Different section header are allowed to have the same name (unless specified otherwise in the particular configuration description).
 All key-value pairs following this section header are part of this section until a new section header is started.
 \item If the line starts with an alphanumeric character, the line should indicate a key-value pair.
-The beginning of the line should contain a string of alphabetic characters, numbers, dots (\texttt{.}), colons (\texttt{:}) and underscores (\texttt{_}), but it may only start with an alphanumeric character.
+The beginning of the line should contain a string of alphabetic characters, numbers, dots (\texttt{.}), colons (\texttt{\:}) and underscores (\texttt{\_}), but it may only start with an alphanumeric character.
 This string indicates the 'key'.
 After a optional number of ignored whitespace, the key should be followed by an equality sign (\texttt{$=$}).
-Any text between the \texttt{$=$} and the first \texttt{\#} character not enclosed within a pair of single double quotes (\texttt{'} or \texttt{"}) is known as the non-stripped string.
+Any text between the \texttt{$=$} and the first \texttt{\#} character not enclosed within a pair of single or double quotes (\texttt{'} or \texttt{"}) is known as the non-stripped string.
 Any character after the \texttt{\#} is handled as specified in point 3.
 If the line does not contain any non-enclosed \texttt{\#} character, the value ends at the end of the line instead.
 The 'value' of the key-value pair is the non-stripped string with all whitespace in front and at the end stripped. 
 The value may not be empty.
 Any line that does not comply to these specifications should lead to an immediate parse error.
-\item The value can either be accessed as a single value or an array.
-If the value is accessed as an array, the string is split at every whitespace or comma character (\texttt{,}) not enclosed in a pair of \texttt{"} characters.
-All empty entities are not considered.
-All other entities are treated as single values in the array.
-\item All single values are stored as a string containing at least one character.
-The conversion to the actual type is performed when accessing the value.
+\item The value may consist of multiple nested dimensions which are grouped by pairs of square brackets (\texttt{[} and \texttt{]}).
+The number of square brackets should be properly balanced, otherwise an error is raised.
+Square brackets which should not be used for grouping should be enclosed in quotation marks.
+Every dimension is split at every whitespace sequence and comma character (\texttt{,}) not enclosed in quotation marks.
+Implicit square brackets are added to the begin and end of the value, if these are not explicitly added.
+\item The sections of the value which are interpreted as separate entities are named elements. 
+For a single value the element is on the zeroth dimension, for arrays on the first dimension and for matrices on the second dimension.
+Elements can be forced by using quotation marks, either single or double quotes (\texttt{'} or \texttt{"}). 
+The number of both types of quotation marks should be properly balanced, otherwise an error is raised.
+The conversion to the elements to the actual type is performed when accessing the value.
 \item All key-value pairs defined before the first section header are part of a zero-length empty section header.
 \end{enumerate}
 
@@ -112,8 +116,10 @@ config.has("key")
 config.get<TYPE>("key")
 // Returns the value in the given type or the provided default value if it does not exist
 config.get<TYPE>("key", default_value)
-// Returns an array of single values of the given type; throws an exception if the key does not exist or a conversion is not possible
+// Returns an array of elements of the given type
 config.getArray<TYPE>("key")
+// Returns a matrix: an array of arrays of elements of the given type
+config.getMatrix<TYPE>("key")
 // Returns an absolute (canonical if it should exist) path to a file
 config.getPath("key", true /* check if path exists */)
 // Return an array of absolute paths
@@ -124,7 +130,7 @@ config.getText("key")
 config.setDefault("key", default_value)
 // Set the value of the key to the default array if key is not defined
 config.setDefaultArray<TYPE>("key", vector_of_default_values)
-// Create an alias named new_key for the already existing old_key. Throws an exception if the old_key does not exist
+// Create an alias named new_key for the already existing old_key or throws an exception if the old_key does not exist
 config.setAlias("new_key", "old_key")
 \end{minted}
 
