@@ -17,8 +17,6 @@
 #include "core/utils/file.h"
 #include "exceptions.h"
 
-#include "core/utils/log.h"
-
 using namespace allpix;
 
 Configuration::Configuration(std::string name, std::string path) : name_(std::move(name)), path_(std::move(path)) {}
@@ -169,13 +167,13 @@ std::unique_ptr<Configuration::parse_node> Configuration::parse_string(std::stri
     }
 
     // Initialize variables for non-zero levels
-    size_t lst = 1;
+    size_t beg = 1, lst = 1;
     int in_dpt = 0;
     bool in_dpt_chg = false;
 
     // Implicitly add pair of brackets on zero level
     if(depth == 0) {
-        lst = 0;
+        beg = lst = 0;
         in_dpt = 1;
     }
 
@@ -226,6 +224,7 @@ std::unique_ptr<Configuration::parse_node> Configuration::parse_string(std::stri
             end = str.size() - 1;
         }
         node->children.push_back(parse_string(str.substr(lst, end - lst), depth + 1));
+        node->value = str.substr(beg, end - beg);
     } else {
         // Not an array, handle as value instead
         node->value = str;

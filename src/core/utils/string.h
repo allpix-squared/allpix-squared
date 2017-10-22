@@ -231,7 +231,7 @@ namespace allpix {
      * @param delims Delimiters to split at
      * @return List of all the substrings with all empty substrings ignored (thus removed)
      */
-    template <typename T> std::vector<T> split(std::string str, std::string delims = " ,") {
+    template <typename T> std::vector<T> split(std::string str, std::string delims = " \t,") {
         str = trim(str, delims);
 
         // If the input string is empty, simply return empty container
