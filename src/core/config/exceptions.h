@@ -65,7 +65,7 @@ namespace allpix {
                 section_str = "in empty section";
             }
 
-            error_message_ = "Could not convert value '" + value + "' of key '" + key + "' " + section_str + " to type " +
+            error_message_ = "Could not convert value '" + value + "' from key '" + key + "' " + section_str + " to type " +
                              allpix::demangle(type.name());
             if(!reason.empty()) {
                 error_message_ += ": " + reason;

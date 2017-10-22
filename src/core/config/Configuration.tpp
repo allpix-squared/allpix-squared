@@ -16,7 +16,11 @@ namespace allpix {
     template <typename T> T Configuration::get(const std::string& key) const {
         try {
             auto node = parse_value(config_.at(key));
-            return allpix::from_string<T>(node->value);
+            try {
+                return allpix::from_string<T>(node->value);
+            } catch(std::invalid_argument& e) {
+                throw InvalidKeyError(key, getName(), node->value, typeid(T), e.what());
+            }
         } catch(std::out_of_range& e) {
             throw MissingKeyError(key, getName());
         } catch(std::invalid_argument& e) {
@@ -48,7 +52,11 @@ namespace allpix {
             std::vector<T> array;
             auto node = parse_value(str);
             for(auto& child : node->children) {
-                array.push_back(allpix::from_string<T>(child->value));
+                try {
+                    array.push_back(allpix::from_string<T>(child->value));
+                } catch(std::invalid_argument& e) {
+                    throw InvalidKeyError(key, getName(), child->value, typeid(T), e.what());
+                }
             }
             return array;
         } catch(std::out_of_range& e) {
@@ -75,7 +83,11 @@ namespace allpix {
                 std::vector<T> array;
                 // Create subarray of matrix
                 for(auto& subchild : child->children) {
-                    array.push_back(allpix::from_string<T>(subchild->value));
+                    try {
+                        array.push_back(allpix::from_string<T>(subchild->value));
+                    } catch(std::invalid_argument& e) {
+                        throw InvalidKeyError(key, getName(), subchild->value, typeid(T), e.what());
+                    }
                 }
                 if(!child->value.empty()) {
                     throw std::invalid_argument("matrix has less than two dimensions");
