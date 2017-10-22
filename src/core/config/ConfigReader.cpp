@@ -86,10 +86,9 @@ std::pair<std::string, std::string> ConfigReader::parseKeyValue(std::string line
         }
 
         return std::make_pair(key, allpix::trim(value));
-    } else {
-        // Key / value pair does not contain equal sign
-        throw KeyValueParseError(line, "missing equality sign to split key and value");
     }
+    // Key / value pair does not contain equal sign
+    throw KeyValueParseError(line, "missing equality sign to split key and value");
 }
 
 /**

@@ -96,7 +96,7 @@ namespace allpix {
          * @param config Configuration option where the options should be applied to
          * @return True if the configuration was changed because of applied options
          */
-        bool applyOptions(std::string identifier, Configuration& config);
+        bool applyOptions(const std::string& identifier, Configuration& config);
 
         /**
          * @brief Return if section with given name exists

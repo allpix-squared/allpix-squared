@@ -101,7 +101,7 @@ int main(int argc, const char* argv[]) {
         } else if(strcmp(argv[i], "-l") == 0 && (i + 1 < argc)) {
             log_file_name = std::string(argv[++i]);
         } else if(strcmp(argv[i], "-o") == 0 && (i + 1 < argc)) {
-            options.push_back(std::string(argv[++i]));
+            options.emplace_back(std::string(argv[++i]));
         } else {
             LOG(ERROR) << "Unrecognized command line argument \"" << argv[i] << "\"";
             print_help = true;

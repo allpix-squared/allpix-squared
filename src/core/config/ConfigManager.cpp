@@ -102,7 +102,7 @@ void ConfigManager::parseOption(std::string line) {
     }
 }
 
-bool ConfigManager::applyOptions(std::string identifier, Configuration& config) {
+bool ConfigManager::applyOptions(const std::string& identifier, Configuration& config) {
     if(identifier_options_.find(identifier) == identifier_options_.end()) {
         return false;
     }
