@@ -165,45 +165,75 @@ std::unique_ptr<Configuration::parse_node> Configuration::parse_string(std::stri
     auto node = std::make_unique<parse_node>();
     str = allpix::trim(str);
     if(str.empty()) {
-        throw std::invalid_argument("string is empty");
+        throw std::invalid_argument("element is empty");
     }
 
-    // Add pair of brackets if not there yet on the lowest depth
-    if(depth == 0 && str.front() != '[') {
-        str = '[' + str + ']';
+    // Initialize variables for non-zero levels
+    size_t lst = 1;
+    int in_dpt = 0;
+    bool in_dpt_chg = false;
+
+    // Implicitly add pair of brackets on zero level
+    if(depth == 0) {
+        lst = 0;
+        in_dpt = 1;
     }
 
-    // Check if value or list
-    if(str.front() == '[' && str.back() == ']') {
-        // Found list, recurse on items
-        size_t lst = 1;
-        int in_dpt = 0;
-        for(size_t i = 1; i < str.size() - 1; ++i) {
-            // Skip over quotation marks
-            if(str[i] == '\'' || str[i] == '\"') {
-                i = str.find(str[i], i + 1);
-                continue;
+    for(size_t i = 0; i < str.size(); ++i) {
+        // Skip over quotation marks
+        if(str[i] == '\'' || str[i] == '\"') {
+            i = str.find(str[i], i + 1);
+            if(i == std::string::npos) {
+                throw std::invalid_argument("quotes are not balanced");
             }
-
-            // Handle brackets
-            if(str[i] == '[') {
-                ++in_dpt;
-            } else if(str[i] == ']') {
-                --in_dpt;
-            }
-
-            // Make subitems at the zero level
-            if(in_dpt == 0 && str[i] == ',') {
-                node->children.push_back(parse_string(str.substr(lst, i - lst), depth + 1));
-                lst = i + 1;
-            }
+            continue;
         }
 
-        // Handle last item
-        node->children.push_back(parse_string(str.substr(lst, str.size() - 1 - lst), depth + 1));
+        // Handle brackets
+        if(str[i] == '[') {
+            ++in_dpt;
+            if(!in_dpt_chg && i != 0) {
+                throw std::invalid_argument("invalid start bracket");
+            }
+            in_dpt_chg = true;
+        } else if(str[i] == ']') {
+            if(in_dpt == 0) {
+                throw std::invalid_argument("brackets are not matched");
+            }
+            --in_dpt;
+            in_dpt_chg = true;
+        }
+
+        // Make subitems at the zero level
+        if(in_dpt == 1 && (str[i] == ',' || (isspace(str[i]) && (!isspace(str[i - 1]) && str[i - 1] != ',')))) {
+            node->children.push_back(parse_string(str.substr(lst, i - lst), depth + 1));
+            lst = i + 1;
+        }
+    }
+
+    if((depth > 0 && in_dpt != 0) || (depth == 0 && in_dpt != 1)) {
+        throw std::invalid_argument("brackets are not balanced");
+    }
+
+    // Determine if array or value
+    if(in_dpt_chg || depth == 0) {
+        // Handle last array item
+        size_t end = str.size();
+        if(depth != 0) {
+            if(str.back() != ']') {
+                throw std::invalid_argument("invalid end bracket");
+            }
+            end = str.size() - 1;
+        }
+        node->children.push_back(parse_string(str.substr(lst, end - lst), depth + 1));
     } else {
         // Not an array, handle as value instead
         node->value = str;
+    }
+
+    // Handle zero level where brackets where explicitly added
+    if(depth == 0 && node->children.size() == 1 && !node->children.front()->children.empty()) {
+        node = std::move(node->children.front());
     }
 
     return node;
