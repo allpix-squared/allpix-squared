@@ -87,7 +87,7 @@ std::vector<std::string> Configuration::getPathArray(const std::string& key, boo
  */
 std::string Configuration::path_to_absolute(std::string path, bool canonicalize_path) const {
     // If not a absolute path, make it an absolute path
-    if(path[0] != '/') {
+    if(path.front() != '/') {
         // Get base directory of config file
         std::string directory = path_.substr(0, path_.find_last_of('/'));
 
@@ -143,7 +143,7 @@ std::vector<std::pair<std::string, std::string>> Configuration::getAll() {
     // Loop over all configuration keys
     for(auto& key_value : config_) {
         // Skip internal keys starting with an underscore
-        if(!key_value.first.empty() && key_value.first[0] == '_') {
+        if(!key_value.first.empty() && key_value.first.front() == '_') {
             continue;
         }
 
