@@ -11,6 +11,7 @@
 #define ALLPIX_CONFIGURATION_H
 
 #include <map>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -19,6 +20,8 @@
 #include "exceptions.h"
 
 namespace allpix {
+
+    template <typename T> using Matrix = std::vector<std::vector<T>>;
 
     /**
      * @brief Generic configuration object storing keys
@@ -65,6 +68,12 @@ namespace allpix {
          */
         // TODO [doc] Provide second template parameter to specify the vector type to return it in
         template <typename T> std::vector<T> getArray(const std::string& key) const;
+        /**
+         * @brief Get values for a key containing a 2D matrix
+         * @param key Key to get values of
+         * @return Matrix of values from the requested template parameter
+         */
+        template <typename T> Matrix<T> getMatrix(const std::string& key) const;
 
         /**
          * @brief Get literal value of a key as string
@@ -184,6 +193,21 @@ namespace allpix {
          * @param canonicalize_path If the path should be canonicalized (throws an error if the path does not exist)
          */
         std::string path_to_absolute(std::string path, bool canonicalize_path) const;
+
+        /**
+         * @brief Node in a parse tree
+         */
+        struct parse_node {
+            std::string value;
+            std::vector<std::unique_ptr<parse_node>> children;
+        };
+        /**
+         * @brief Generate parse tree from configuration string
+         * @param str String to parse
+         * @param depth Current depth of the parsing (starts at zero)
+         * @return Root node of the parsed tree
+         */
+        static std::unique_ptr<parse_node> parse_value(std::string str, int depth = 0);
 
         std::string name_;
         std::string path_;
