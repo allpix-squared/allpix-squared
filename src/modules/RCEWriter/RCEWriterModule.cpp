@@ -33,7 +33,7 @@ RCEWriterModule::~RCEWriterModule() = default;
 
 void RCEWriterModule::init() {
     // Create output file
-    std::string file_name = getOutputPath(config_.get<std::string>("file_name", "rce_data") + ".root", true);
+    std::string file_name = createOutputFile(config_.get<std::string>("file_name", "rce_data") + ".root", true);
     output_file_ = std::make_unique<TFile>(file_name.c_str(), "RECREATE");
     output_file_->cd();
 

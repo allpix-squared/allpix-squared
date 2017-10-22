@@ -173,13 +173,12 @@ namespace allpix {
         std::string getUniqueName() const;
 
         /**
-         * @brief Get an absolute path to be used for output from a relative path
+         * @brief Create and return an absolute path to be used for output from a relative path
          * @param path Relative path to add after the main output directory
          * @param global True if the global output directory should be used instead of the module-specific version
          * @return Canonical path to an output file
          */
-        // TODO [doc] Should be renamed to getOutputFile
-        std::string getOutputPath(const std::string& path, bool global = false) const;
+        std::string createOutputFile(const std::string& path, bool global = false) const;
 
         /**
          * @brief Get seed to initialize random generators
