@@ -203,7 +203,7 @@ std::unique_ptr<Configuration::parse_node> Configuration::parse_value(std::strin
         }
 
         // Make subitems at the zero level
-        if(in_dpt == 1 && (str[i] == ',' || (isspace(str[i]) && (!isspace(str[i - 1]) && str[i - 1] != ',')))) {
+        if(in_dpt == 1 && (str[i] == ',' || (isspace(str[i]) != 0 && (isspace(str[i - 1]) == 0 && str[i - 1] != ',')))) {
             node->children.push_back(parse_value(str.substr(lst, i - lst), depth + 1));
             lst = i + 1;
         }
