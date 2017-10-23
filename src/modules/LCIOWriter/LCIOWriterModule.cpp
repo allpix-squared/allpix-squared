@@ -167,8 +167,8 @@ void LCIOWriterModule::finalize() {
 
         for(auto& detector : detectors) {
             // Write header for the layer:
-            geometry_file << "<!-- Allpix Squared Detector: " << detector->getName() << " - type: " << detector->getType()
-                          << " -->" << std::endl;
+            geometry_file << "      <!-- Allpix Squared Detector: " << detector->getName()
+                          << " - type: " << detector->getType() << " -->" << std::endl;
             geometry_file << "        <layer>" << std::endl;
 
             auto position = detector->getPosition();
@@ -183,24 +183,29 @@ void LCIOWriterModule::finalize() {
 
             // Write ladder
             geometry_file << "          <ladder ID=\"" << detectorIDs_[detector->getName()] << "\"" << std::endl;
-            geometry_file << "            positionX=\"" << position.x() << "\"\tpositionY=\"" << position.y()
-                          << "\"\tpositionZ=\"" << position.z() << "\"" << std::endl;
+            geometry_file << "            positionX=\"" << Units::convert(position.x(), "mm") << "\"\tpositionY=\""
+                          << Units::convert(position.y(), "mm") << "\"\tpositionZ=\"" << Units::convert(position.z(), "mm")
+                          << "\"" << std::endl;
             // FIXME rotation
-            geometry_file << "            sizeX=\"" << total_size.x() << "\"\tsizeY=\"" << total_size.y()
-                          << "\"\tthickness=\"" << total_size.z() << "\"" << std::endl;
+            geometry_file << "            sizeX=\"" << Units::convert(total_size.x(), "mm") << "\"\tsizeY=\""
+                          << Units::convert(total_size.y(), "mm") << "\"\tthickness=\""
+                          << Units::convert(total_size.z(), "mm") << "\"" << std::endl;
             geometry_file << "            radLength=\"93.65\"" << std::endl;
             geometry_file << "            />" << std::endl;
 
             // Write sensitive
             geometry_file << "          <sensitive ID=\"" << detectorIDs_[detector->getName()] << "\"" << std::endl;
-            geometry_file << "            positionX=\"" << position.x() << "\"\tpositionY=\"" << position.x()
-                          << "\"\tpositionZ=\"" << position.x() << "\"" << std::endl;
-            geometry_file << "            sizeX=\"" << sensitive_size.x() << "\"\tsizeY=\"" << sensitive_size.y()
-                          << "\"\tthickness=\"" << sensitive_size.z() << "\"" << std::endl;
+            geometry_file << "            positionX=\"" << Units::convert(position.x(), "mm") << "\"\tpositionY=\""
+                          << Units::convert(position.y(), "mm") << "\"\tpositionZ=\"" << Units::convert(position.z(), "mm")
+                          << "\"" << std::endl;
+            geometry_file << "            sizeX=\"" << Units::convert(sensitive_size.x(), "mm") << "\"\tsizeY=\""
+                          << Units::convert(sensitive_size.y(), "mm") << "\"\tthickness=\""
+                          << Units::convert(sensitive_size.z(), "mm") << "\"" << std::endl;
             geometry_file << "            npixelsX=\"" << npixels.x() << "\"\tnpixelsY=\"" << npixels.y() << "\""
                           << std::endl;
-            geometry_file << "            pitchX=\"" << pitch.x() << "\"\tpitchY=\"" << pitch.y() << "\"\tresolution=\""
-                          << (pitch.x() / std::sqrt(12)) << "\"" << std::endl;
+            geometry_file << "            pitchX=\"" << Units::convert(pitch.x(), "mm") << "\"\tpitchY=\""
+                          << Units::convert(pitch.y(), "mm") << "\"\tresolution=\""
+                          << Units::convert(pitch.x() / std::sqrt(12), "mm") << "\"" << std::endl;
 
             std::vector<double> components(9);
             orientation.GetComponents(components.begin(), components.end());
