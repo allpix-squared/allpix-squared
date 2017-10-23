@@ -172,7 +172,7 @@ void LCIOWriterModule::finalize() {
             geometry_file << "        <layer>" << std::endl;
 
             auto position = detector->getPosition();
-            // FIXME auto orientation = detector->getOrientation();
+            auto orientation = detector->getOrientation();
 
             auto model = detector->getModel();
             auto npixels = model->getNPixels();
@@ -201,7 +201,13 @@ void LCIOWriterModule::finalize() {
                           << std::endl;
             geometry_file << "            pitchX=\"" << pitch.x() << "\"\tpitchY=\"" << pitch.y() << "\"\tresolution=\""
                           << (pitch.x() / std::sqrt(12)) << "\"" << std::endl;
-            // FIXME rotation
+
+            std::vector<double> components(9);
+            orientation.GetComponents(components.begin(), components.end());
+            geometry_file << "            rotation1=\"" << components.at(0) << "\"\trotation2=\"" << components.at(1) << "\""
+                          << std::endl;
+            geometry_file << "            rotation3=\"" << components.at(3) << "\"\trotation4=\"" << components.at(4) << "\""
+                          << std::endl;
             geometry_file << "            radLength=\"93.65\"" << std::endl;
             geometry_file << "            />" << std::endl;
 
