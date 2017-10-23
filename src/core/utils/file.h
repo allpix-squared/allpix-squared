@@ -169,6 +169,30 @@ namespace allpix {
     }
 
     /**
+     * @brief Check for the existence of the file extension and add it if not present
+     * @param path File name or path to file
+     * @param extension File extension (without separating dot) to be checked for or added
+     * @return File name or path to file including the appropriate file extension
+     */
+    inline std::string add_file_extension(const std::string& path, std::string extension) {
+        if(extension.empty()) {
+            return path;
+        }
+        // Add separating dot if not present:
+        if(extension.at(0) != '.') {
+            extension.insert(0, 1, '.');
+        }
+
+        if(path.size() > extension.size()) {
+            if(std::equal(extension.rbegin(), extension.rend(), path.rbegin())) {
+                return path;
+            }
+        }
+
+        return path + extension;
+    }
+
+    /**
      * @brief Get the name of the file together with the extension
      * @param path Absolute path to the file
      * @return Pair of name of the file and the possible extension
