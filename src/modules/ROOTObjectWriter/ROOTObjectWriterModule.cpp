@@ -17,6 +17,7 @@
 #include <TClass.h>
 
 #include "core/config/ConfigReader.hpp"
+#include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "core/utils/type.h"
 
@@ -42,7 +43,7 @@ ROOTObjectWriterModule::~ROOTObjectWriterModule() {
 
 void ROOTObjectWriterModule::init() {
     // Create output file
-    output_file_name_ = createOutputFile(config_.get<std::string>("file_name", "data") + ".root", true);
+    output_file_name_ = createOutputFile(add_file_extension(config_.get<std::string>("file_name", "data"), "root"), true);
     output_file_ = std::make_unique<TFile>(output_file_name_.c_str(), "RECREATE");
     output_file_->cd();
 
