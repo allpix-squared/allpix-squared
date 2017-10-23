@@ -25,7 +25,7 @@ namespace allpix {
          * @brief Construct a cluster
          * @param seedPixelHit PixelHit to start the cluster with
          */
-        explicit explicit Cluster(const PixelHit* seedPixelHit);
+        explicit Cluster(const PixelHit* seedPixelHit);
 
         /**
          * @brief Get the signal data for the hit
