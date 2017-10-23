@@ -187,7 +187,9 @@ void ModuleManager::load(Messenger* messenger,
         // Add the global internal parameters to the configuration
         std::string global_dir = gSystem->pwd();
         config.set<std::string>("_global_dir", global_dir);
-        config.set<bool>("_deny_overwrite", global_config_.get<bool>("deny_overwrite", false));
+
+        // Set default file protection setting, inherited from the global setting:
+        config.setDefault<bool>("deny_overwrite", global_config_.get<bool>("deny_overwrite", false));
 
         // Set default input and output name
         config.setDefault<std::string>("input", "");
