@@ -69,9 +69,9 @@ std::shared_ptr<Detector> Module::getDetector() const {
 std::string Module::createOutputFile(const std::string& path, bool global) const {
     std::string file;
     if(global) {
-        file = config_.get<std::string>("_global_dir");
+        file = config_.get<std::string>("_global_dir", std::string());
     } else {
-        file = config_.get<std::string>("_output_dir");
+        file = config_.get<std::string>("_output_dir", std::string());
     }
 
     // The file name will only be empty if this method is executed from the constructor
