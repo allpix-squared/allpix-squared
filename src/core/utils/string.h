@@ -163,7 +163,7 @@ namespace allpix {
 
         std::istringstream sstream(str);
         bool ret_value = false;
-        if(isalpha(str.back())) {
+        if(isalpha(str.back()) != 0) {
             sstream >> std::boolalpha >> ret_value;
         } else {
             sstream >> ret_value;
@@ -231,7 +231,7 @@ namespace allpix {
      * @param delims Delimiters to split at
      * @return List of all the substrings with all empty substrings ignored (thus removed)
      */
-    template <typename T> std::vector<T> split(std::string str, std::string delims = " \t,") {
+    template <typename T> std::vector<T> split(std::string str, const std::string& delims = " \t,") {
         str = trim(str, delims);
 
         // If the input string is empty, simply return empty container
