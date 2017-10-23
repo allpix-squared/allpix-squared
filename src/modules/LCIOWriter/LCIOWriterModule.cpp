@@ -35,8 +35,11 @@ LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, G
     // Bind pixel hits message
     messenger->bindMulti(this, &LCIOWriterModule::pixel_messages_, MsgFlags::REQUIRED);
 
+    // Store pointer to the  geometry manager for later use:
+    geo_mgr_ = geo;
+
     // get all detector names and assign id.
-    std::vector<std::shared_ptr<Detector>> detectors = geo->getDetectors();
+    auto detectors = geo->getDetectors();
     unsigned int i = 0;
     for(const auto& det : detectors) {
         detectorIDs_[det->getName()] = i;

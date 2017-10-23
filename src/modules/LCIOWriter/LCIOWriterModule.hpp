@@ -49,6 +49,7 @@ namespace allpix {
         void finalize() override;
 
     private:
+        GeometryManager* geo_mgr_{};
         std::vector<std::shared_ptr<PixelHitMessage>> pixel_messages_;
         IO::LCWriter* lcWriter_{};
         std::map<std::string, unsigned int> detectorIDs_;
