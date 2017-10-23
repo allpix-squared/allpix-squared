@@ -39,6 +39,11 @@ namespace allpix {
         ~LCIOWriterModule();
 
         /**
+         * @brief Initialize LCIO and GEAR output files
+         */
+        void init() override;
+
+        /**
          * @brief Receive pixel hit messages, create lcio event, add hit collection and write event to file.
          */
         void run(unsigned int) override;
@@ -56,5 +61,7 @@ namespace allpix {
         int pixelType_;
         std::string OutputCollectionName_;
         std::string DetectorName_;
+        std::string lcio_file_name_;
+        int write_cnt_{0};
     };
 } // namespace allpix

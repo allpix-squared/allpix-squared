@@ -56,10 +56,13 @@ LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, G
     pixelType_ = config_.get<int>("pixel_type");
     DetectorName_ = config_.get<std::string>("detector_name");
     OutputCollectionName_ = config_.get<std::string>("output_collection_name");
+}
 
+void LCIOWriterModule::init() {
     // Open LCIO file and write run header
+    lcio_file_name_ = getOutputPath(config_.get<std::string>("file_name"));
     lcWriter_ = LCFactory::getInstance()->createLCWriter();
-    lcWriter_->open(config_.get<std::string>("file_name"), LCIO::WRITE_NEW);
+    lcWriter_->open(lcio_file_name_, LCIO::WRITE_NEW);
     auto run = std::make_unique<LCRunHeaderImpl>();
     run->setRunNumber(1);
     run->setDetectorName(DetectorName_);
@@ -132,10 +135,13 @@ void LCIOWriterModule::run(unsigned int eventNb) {
     // Add collection to event and write event to LCIO file
     evt->addCollection(hitVec, OutputCollectionName_); // add the collection with a name
     lcWriter_->writeEvent(evt.get());                  // write the event to the file
+    write_cnt_++;
 }
 
 void LCIOWriterModule::finalize() {
     lcWriter_->close();
+    // Print statistics
+    LOG(STATUS) << "Wrote " << write_cnt_ << " events to file:" << std::endl << lcio_file_name_;
 }
 
 LCIOWriterModule::~LCIOWriterModule() {
