@@ -62,9 +62,11 @@ std::shared_ptr<Detector> Module::getDetector() const {
 /**
  * @throws ModuleError If the file cannot be accessed (or created if it did not yet exist)
  * @throws InvalidModuleActionException If this method is called from the constructor with the global flag false
+ * @throws ModuleError If the file exists but the "deny_overwrite" flag is set to true
  * @warning A local path cannot be fetched from the constructor, because the instantiation logic has not finished yet
  *
  * The output path is automatically created if it does not exists. The path is always accessible if this functions returns.
+ * Obeys the "deny_overwrite" parameter of the module.
  */
 std::string Module::createOutputFile(const std::string& path, bool global) const {
     std::string file;
