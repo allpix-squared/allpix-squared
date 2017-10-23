@@ -168,6 +168,21 @@ namespace allpix {
         }
     }
 
+    /*
+     * @brief Removes a single file from the file system
+     * @param path Path to the file
+     * @throws std::invalid_argument If the file cannot be removed
+     *
+     * Remove a single file at the given path. If the function returns the deletion was successfull.
+     */
+    inline void remove_file(const std::string& path) {
+        int status = unlink(path.c_str());
+
+        if(status != 0) {
+            throw std::invalid_argument("file cannot be deleted");
+        }
+    }
+
     /**
      * @brief Check for the existence of the file extension and add it if not present
      * @param path File name or path to file
