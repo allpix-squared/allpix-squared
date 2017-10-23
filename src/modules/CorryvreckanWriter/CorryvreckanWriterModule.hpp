@@ -64,6 +64,7 @@ namespace allpix {
 
         // Parameters for output writing
         std::string fileName_;                                   // Output filename
+        std::string geometryFileName_;                           // Output geometry filename
         std::unique_ptr<TFile> outputFile_;                      // Output file
         long long int time_;                                     // Event time being written
         std::map<std::string, TTree*> outputTrees_;              // Output trees

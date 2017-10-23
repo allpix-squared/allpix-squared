@@ -9,6 +9,9 @@
 
 #include "CorryvreckanWriterModule.hpp"
 
+#include <Math/RotationZYX.h>
+
+#include <fstream>
 #include <string>
 #include <utility>
 
@@ -31,6 +34,9 @@ void CorryvreckanWriterModule::init() {
     outputFile_ = std::make_unique<TFile>(fileName_.c_str(), "RECREATE");
     outputFile_->cd();
     outputFile_->mkdir("pixels");
+
+    // Create geometry file:
+    geometryFileName_ = getOutputPath(config_.get<std::string>("geometry_file", "corryvreckanGeometry.conf"), true);
 
     // Loop over all detectors and make trees for data
     auto detectors = geometryManager_->getDetectors();
@@ -91,7 +97,7 @@ void CorryvreckanWriterModule::run(unsigned int) {
 void CorryvreckanWriterModule::finalize() {
 
     // Loop over all detectors and store the trees
-    std::vector<std::shared_ptr<Detector>> detectors = geometryManager_->getDetectors();
+    auto detectors = geometryManager_->getDetectors();
     for(auto& detector : detectors) {
 
         // Get the detector ID and type
@@ -107,8 +113,40 @@ void CorryvreckanWriterModule::finalize() {
         delete outputTrees_[objectID];
         treePixels_[objectID] = nullptr;
     }
+    outputFile_->Close();
+
     // Print statistics
     LOG(STATUS) << "Wrote output data to file:" << std::endl << fileName_;
 
-    outputFile_->Close();
+    // Loop over all detectors and store the geometry:
+    // Write geometry:
+    std::ofstream geometry_file;
+    if(!geometryFileName_.empty()) {
+        geometry_file.open(geometryFileName_, std::ios_base::out | std::ios_base::trunc);
+        if(!geometry_file.good()) {
+            throw ModuleError("Cannot write to GEAR geometry file");
+        }
+
+        geometry_file << "# Allpix Squared detector geometry - https://cern.ch/allpix-squared/" << std::endl << std::endl;
+
+        for(auto& detector : detectors) {
+            geometry_file << "[" << detector->getName() << "]" << std::endl;
+            geometry_file << "position = " << Units::display(detector->getPosition().x(), {"mm", "um"}) << ", "
+                          << Units::display(detector->getPosition().y(), {"mm", "um"}) << ", "
+                          << Units::display(detector->getPosition().z(), {"mm", "um"}) << std::endl;
+            ROOT::Math::RotationZYX rotations(detector->getOrientation());
+            geometry_file << "orientation = " << Units::display(rotations.Phi(), "deg") << ", "
+                          << Units::display(rotations.Psi(), "deg") << ", " << Units::display(rotations.Theta(), "deg")
+                          << std::endl;
+
+            auto model = detector->getModel();
+            geometry_file << "type = \"" << model->getType() << "\"" << std::endl;
+            geometry_file << "pixel_pitch = " << Units::display(model->getPixelSize().x(), "um") << ", "
+                          << Units::display(model->getPixelSize().y(), "um") << std::endl;
+            geometry_file << "number_of_pixels = " << model->getNPixels().x() << ", " << model->getNPixels().y()
+                          << std::endl;
+
+            geometry_file << std::endl;
+        }
+    }
 }
