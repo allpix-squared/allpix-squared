@@ -62,6 +62,7 @@ namespace allpix {
         std::string OutputCollectionName_;
         std::string DetectorName_;
         std::string lcio_file_name_;
+        std::string geometry_file_name_;
         int write_cnt_{0};
     };
 } // namespace allpix

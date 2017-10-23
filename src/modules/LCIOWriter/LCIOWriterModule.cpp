@@ -9,6 +9,7 @@
 
 #include "LCIOWriterModule.hpp"
 
+#include <fstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -49,6 +50,7 @@ LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, G
 
     // Set configuration defaults:
     config_.setDefault("file_name", "output.slcio");
+    config_.setDefault("geometry_file", "allpix_squared_gear.xml");
     config_.setDefault("pixel_type", 2);
     config_.setDefault("detector_name", "EUTelescope");
     config_.setDefault("output_collection_name", "zsdata_m26");
@@ -59,6 +61,9 @@ LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, G
 }
 
 void LCIOWriterModule::init() {
+    // Create the output GEAR file for the detector geometry
+    geometry_file_name_ = getOutputPath(config_.get<std::string>("geometry_file"), true);
+
     // Open LCIO file and write run header
     lcio_file_name_ = getOutputPath(config_.get<std::string>("file_name"));
     lcWriter_ = LCFactory::getInstance()->createLCWriter();
@@ -142,6 +147,79 @@ void LCIOWriterModule::finalize() {
     lcWriter_->close();
     // Print statistics
     LOG(STATUS) << "Wrote " << write_cnt_ << " events to file:" << std::endl << lcio_file_name_;
+
+    // Write geometry:
+    std::ofstream geometry_file;
+    if(!geometry_file_name_.empty()) {
+        geometry_file.open(geometry_file_name_, std::ios_base::out | std::ios_base::trunc);
+        if(!geometry_file.good()) {
+            throw ModuleError("Cannot write to GEAR geometry file");
+        }
+
+        auto detectors = geo_mgr_->getDetectors();
+        geometry_file << "<?xml version=\"1.0\" encoding=\"utf-8\"?>" << std::endl
+                      << "<!-- ?xml-stylesheet type=\"text/xsl\" href=\"https://cern.ch/allpix-squared/\"? -->" << std::endl
+                      << "<gear>" << std::endl;
+
+        geometry_file << "  <global detectorName=\"" << DetectorName_ << "\"/>" << std::endl;
+        geometry_file << "  <detectors>" << std::endl;
+        geometry_file << "    <detector name=\"SiPlanes\" geartype=\"SiPlanesParameters\">" << std::endl;
+        geometry_file << "      <siplanesType type=\"TelescopeWithDUT\">" << std::endl;
+        geometry_file << "      <siplanesNumber number=\"" << detectors.size() << "\">" << std::endl;
+        geometry_file << "      <layers>" << std::endl;
+
+        for(auto& detector : detectors) {
+            // Write header for the layer:
+            geometry_file << "<!-- Allpix Squared Detector: " << detector->getName() << " - type: " << detector->getType()
+                          << " -->" << std::endl;
+            geometry_file << "        <layer>" << std::endl;
+
+            auto position = detector->getPosition();
+            // FIXME auto orientation = detector->getOrientation();
+
+            auto model = detector->getModel();
+            auto npixels = model->getNPixels();
+            auto pitch = model->getPixelSize();
+
+            auto total_size = model->getSize();
+            auto sensitive_size = model->getSensorSize();
+
+            // Write ladder
+            geometry_file << "          <ladder ID=\"" << detectorIDs_[detector->getName()] << "\"" << std::endl;
+            geometry_file << "            positionX=\"" << position.x() << "\"\tpositionY=\"" << position.y()
+                          << "\"\tpositionZ=\"" << position.z() << "\"" << std::endl;
+            // FIXME rotation
+            geometry_file << "            sizeX=\"" << total_size.x() << "\"\tsizeY=\"" << total_size.y()
+                          << "\"\tthickness=\"" << total_size.z() << "\"" << std::endl;
+            geometry_file << "            radLength=\"93.65\"" << std::endl;
+            geometry_file << "            />" << std::endl;
+
+            // Write sensitive
+            geometry_file << "          <sensitive ID=\"" << detectorIDs_[detector->getName()] << "\"" << std::endl;
+            geometry_file << "            positionX=\"" << position.x() << "\"\tpositionY=\"" << position.x()
+                          << "\"\tpositionZ=\"" << position.x() << "\"" << std::endl;
+            geometry_file << "            sizeX=\"" << sensitive_size.x() << "\"\tsizeY=\"" << sensitive_size.y()
+                          << "\"\tthickness=\"" << sensitive_size.z() << "\"" << std::endl;
+            geometry_file << "            npixelsX=\"" << npixels.x() << "\"\tnpixelsY=\"" << npixels.y() << "\""
+                          << std::endl;
+            geometry_file << "            pitchX=\"" << pitch.x() << "\"\tpitchY=\"" << pitch.y() << "\"\tresolution=\""
+                          << (pitch.x() / std::sqrt(12)) << "\"" << std::endl;
+            // FIXME rotation
+            geometry_file << "            radLength=\"93.65\"" << std::endl;
+            geometry_file << "            />" << std::endl;
+
+            // End the layer:
+            geometry_file << "        </layer>" << std::endl;
+        }
+
+        // Close XML tree:
+        geometry_file << "      </layers>" << std::endl
+                      << "    </detector>" << std::endl
+                      << "  </detectors>" << std::endl
+                      << "</gear>" << std::endl;
+
+        LOG(STATUS) << "Wrote GEAR geometry to file:" << std::endl << geometry_file_name_;
+    }
 }
 
 LCIOWriterModule::~LCIOWriterModule() {
