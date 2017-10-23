@@ -47,7 +47,9 @@ LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, G
     pixelType_ = config_.get<int>("pixel_type", 2);
     DetectorName_ = config_.get<std::string>("detector_name", "EUTelescope");
     OutputCollectionName_ = config_.get<std::string>("output_collection_name", "zsdata_m26");
+}
 
+void LCIOWriterModule::init() {
     // Open LCIO file and write run header
     lcWriter_ = std::shared_ptr<IO::LCWriter>(LCFactory::getInstance()->createLCWriter());
     lcWriter_->open(createOutputFile(config_.get<std::string>("file_name", "output.slcio")), LCIO::WRITE_NEW);

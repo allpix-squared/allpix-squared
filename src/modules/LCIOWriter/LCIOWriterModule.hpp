@@ -39,6 +39,11 @@ namespace allpix {
         ~LCIOWriterModule(){};
 
         /**
+         * @brief Initialize LCIO and GEAR output files
+         */
+        void init() override;
+
+        /**
          * @brief Receive pixel hit messages, create lcio event, add hit collection and write event to file.
          */
         void run(unsigned int) override;
