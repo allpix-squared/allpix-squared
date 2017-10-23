@@ -243,6 +243,7 @@ Another (additional) location to write to can be specified on the command line u
 Subdirectories are created automatically for all module instantiations.
 This directory will also contain the \textbf{\texttt{root\_file}} specified via the parameter described above.
 Defaults to the current working directory with the subdirectory \textit{output/} attached.
+\item \textbf{\texttt{purge_output_directory}}: Decides whether the content of an already existing output directory is deleted before a new run starts. Defaults to \texttt{false}, i.e. files are kept but will be overwritten by new files created by the framework.
 \item \textbf{\texttt{random\_seed}}: Seed for the global random seed generator used to initialize seeds for module instantiations.
 A random seed from multiple entropy sources will be generated if the parameter is not specified.
 Can be used to reproduce an earlier simulation run.
@@ -250,7 +251,7 @@ Can be used to reproduce an earlier simulation run.
 See Section~\ref{sec:module_instantiation} for details.
 \item \textbf{\texttt{model\_paths}}: Additional files or directories from which detector models should be read besides the standard search locations.
 Refer to Section~\ref{sec:detector_models} for more information.
-\item \textbf{\texttt{experimental\_multithreading}}: Enable EXPERIMENTAL multithreading for the framework. This can speed up simulations of multiple detectors significantly. More information about the multithreading in Section \ref{sec:multithreading}.
+\item \textbf{\texttt{experimental\_multithreading}}: Enables EXPERIMENTAL multithreading for the framework. This can speed up simulations of multiple detectors significantly. More information about the multithreading in Section \ref{sec:multithreading}.
 \item \textbf{\texttt{workers}}: Specify the number of workers to use in total, should be strictly larger than zero. Only used if \texttt{experimental\_multithreading} is set to true. Defaults to the number of native threads available on the system if this can be determined.
 \end{itemize}
 
