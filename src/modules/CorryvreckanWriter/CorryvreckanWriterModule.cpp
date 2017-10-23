@@ -18,16 +18,13 @@ using namespace allpix;
 
 CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration config, Messenger* messenger, GeometryManager* geoManager)
     : Module(std::move(config)), messenger_(messenger), geometryManager_(geoManager) {
-    // ... Implement ... (Typically bounds the required messages and optionally sets configuration defaults)
-    LOG(TRACE) << "Initializing module " << getUniqueName();
+
     // Require PixelCharge messages for single detector
     messenger_->bindMulti(this, &CorryvreckanWriterModule::pixel_messages_, MsgFlags::REQUIRED);
 }
 
 // Set up the output trees
 void CorryvreckanWriterModule::init() {
-
-    LOG(TRACE) << "Initialising module " << getUniqueName();
 
     // Create output file and directories
     fileName_ = getOutputPath(config_.get<std::string>("file_name", "corryvreckanOutput") + ".root", true);
@@ -36,7 +33,7 @@ void CorryvreckanWriterModule::init() {
     outputFile_->mkdir("pixels");
 
     // Loop over all detectors and make trees for data
-    std::vector<std::shared_ptr<Detector>> detectors = geometryManager_->getDetectors();
+    auto detectors = geometryManager_->getDetectors();
     for(auto& detector : detectors) {
 
         // Get the detector ID and type
@@ -63,8 +60,8 @@ void CorryvreckanWriterModule::run(unsigned int) {
     // Loop through all receieved messages
     for(auto& message : pixel_messages_) {
 
-        std::string detectorID = message->getDetector()->getName();
-        std::string objectID = detectorID + "_pixels";
+        auto detectorID = message->getDetector()->getName();
+        auto objectID = detectorID + "_pixels";
         LOG(DEBUG) << "Receieved " << message->getData().size() << " pixel hits from detector " << detectorID;
         LOG(DEBUG) << "Time on event hits will be " << time_;
 
@@ -76,7 +73,7 @@ void CorryvreckanWriterModule::run(unsigned int) {
             unsigned int pixelY = allpix_pixel.getPixel().getIndex().Y();
             double adc = allpix_pixel.getSignal();
             long long int time(time_);
-            corryvreckan::Pixel* outputPixel = new corryvreckan::Pixel(detectorID, int(pixelY), int(pixelX), int(adc), time);
+            auto outputPixel = new corryvreckan::Pixel(detectorID, int(pixelY), int(pixelX), int(adc), time);
 
             LOG(DEBUG) << "Pixel (" << pixelX << "," << pixelY << ") written to device " << detectorID;
 
@@ -91,7 +88,6 @@ void CorryvreckanWriterModule::run(unsigned int) {
 }
 
 // Save the output trees to file
-// Set up the output trees
 void CorryvreckanWriterModule::finalize() {
 
     // Loop over all detectors and store the trees
@@ -111,6 +107,8 @@ void CorryvreckanWriterModule::finalize() {
         delete outputTrees_[objectID];
         treePixels_[objectID] = nullptr;
     }
+    // Print statistics
+    LOG(STATUS) << "Wrote output data to file:" << std::endl << fileName_;
 
     outputFile_->Close();
 }
