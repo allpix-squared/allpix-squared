@@ -66,7 +66,7 @@ void ModuleManager::load(Messenger* messenger,
             throw RuntimeError("Overwriting of existing main ROOT file " + path + " denied");
         }
         LOG(WARNING) << "Main ROOT file " << path << " exists and will be overwritten.";
-        allpix::remove_path(path);
+        allpix::remove_file(path);
     }
     modules_file_ = std::make_unique<TFile>(path.c_str(), "RECREATE");
     if(modules_file_->IsZombie()) {
