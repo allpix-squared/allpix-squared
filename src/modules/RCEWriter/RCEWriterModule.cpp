@@ -35,7 +35,7 @@ RCEWriterModule::~RCEWriterModule() = default;
 void RCEWriterModule::init() {
     // Create output file
     std::string file_name =
-        createOutputFile(add_file_extension(config_.get<std::string>("file_name", "rce_data"), "root"), true);
+        createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name", "rce_data"), "root"), true);
     output_file_ = std::make_unique<TFile>(file_name.c_str(), "RECREATE");
     output_file_->cd();
 

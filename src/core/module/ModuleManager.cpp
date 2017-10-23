@@ -59,7 +59,7 @@ void ModuleManager::load(Messenger* messenger,
 
     // (Re)create the main ROOT file
     auto path = std::string(gSystem->pwd()) + "/" + global_config_.get<std::string>("root_file", "modules");
-    path = add_file_extension(path, "root");
+    path = allpix::add_file_extension(path, "root");
 
     modules_file_ = std::make_unique<TFile>(path.c_str(), "RECREATE");
     if(modules_file_->IsZombie()) {
