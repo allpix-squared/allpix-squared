@@ -39,8 +39,8 @@
 
 using namespace allpix;
 
-GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo_manager, Configuration config)
-    : geo_manager_(geo_manager), config_(std::move(config)) {}
+GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo_manager, Configuration& config)
+    : geo_manager_(geo_manager), config_(config) {}
 
 /**
  * @brief Version of std::make_shared that does not delete the pointer

@@ -437,10 +437,10 @@ void GeometryManager::close_geometry() {
             if(new_config.countSettings() != 0) {
                 ConfigReader reader;
                 // Add the new configuration first to overwrite
-                reader.addConfiguration(new_config);
+                reader.addConfiguration(std::move(new_config));
                 // Then add the original configuration
                 for(auto& model_config : model_configs) {
-                    reader.addConfiguration(model_config);
+                    reader.addConfiguration(std::move(model_config));
                 }
 
                 model = parse_config(detectors_types.first, reader);

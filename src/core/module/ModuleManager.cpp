@@ -235,7 +235,7 @@ void ModuleManager::load(Messenger* messenger,
  * For unique modules a single instance is created per section
  */
 std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* library,
-                                                                          Configuration config,
+                                                                          Configuration& config,
                                                                           ConfigManager* conf_manager,
                                                                           Messenger* messenger,
                                                                           GeometryManager* geo_manager,
@@ -322,7 +322,7 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
  * no selection parameters are provided. Otherwise instantiations are created for every linked detector name and type.
  */
 std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector_modules(void* library,
-                                                                                         Configuration config,
+                                                                                         Configuration& config,
                                                                                          ConfigManager* conf_manager,
                                                                                          Messenger* messenger,
                                                                                          GeometryManager* geo_manager,
@@ -735,7 +735,7 @@ void ModuleManager::finalize() {
     for(auto& module : modules_) {
         auto config = module->config_;
         config.setName(module->getUniqueName());
-        final_configurations.addConfiguration(config);
+        final_configurations.addConfiguration(std::move(config));
     }
 
     LOG_PROGRESS(TRACE, "FINALIZE_LOOP") << "Finalizing module instantiations";
