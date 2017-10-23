@@ -163,7 +163,7 @@ namespace allpix {
 
         std::istringstream sstream(str);
         bool ret_value = false;
-        if(isalpha(str.back())) {
+        if(isalpha(str.back()) != 0) {
             sstream >> std::boolalpha >> ret_value;
         } else {
             sstream >> ret_value;
