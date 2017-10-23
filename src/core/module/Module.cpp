@@ -94,7 +94,11 @@ std::string Module::createOutputFile(const std::string& path, bool global) const
                 throw ModuleError("Overwriting of existing file " + file + " denied.");
             }
             LOG(WARNING) << "File " << file << " exists and will be overwritten.";
-            allpix::remove_path(file);
+            try {
+                allpix::remove_file(file);
+            } catch(std::invalid_argument& e) {
+                throw ModuleError("Deleting file " + file + " failed: " + e.what());
+            }
         }
 
         // Open the file to check if it can be accessed
