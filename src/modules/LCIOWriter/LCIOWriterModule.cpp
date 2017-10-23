@@ -31,16 +31,13 @@ using namespace allpix;
 using namespace lcio;
 
 LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, GeometryManager* geo)
-    : Module(std::move(config)) {
+    : Module(std::move(config)), geo_mgr_(geo) {
 
     // Bind pixel hits message
     messenger->bindMulti(this, &LCIOWriterModule::pixel_messages_, MsgFlags::REQUIRED);
 
-    // Store pointer to the  geometry manager for later use:
-    geo_mgr_ = geo;
-
     // get all detector names and assign id.
-    auto detectors = geo->getDetectors();
+    auto detectors = geo_mgr_->getDetectors();
     unsigned int i = 0;
     for(const auto& det : detectors) {
         detectorIDs_[det->getName()] = i;
