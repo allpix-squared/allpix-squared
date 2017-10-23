@@ -59,7 +59,7 @@ void ModuleManager::load(Messenger* messenger,
 
     // (Re)create the main ROOT file
     auto path = std::string(gSystem->pwd()) + "/" + global_config_.get<std::string>("root_file", "modules");
-    path = add_file_extension(path, "root");
+    path = allpix::add_file_extension(path, "root");
 
     if(allpix::path_is_file(path)) {
         if(global_config_.get<bool>("deny_overwrite", false)) {
