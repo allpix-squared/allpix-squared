@@ -88,6 +88,15 @@ std::string Module::createOutputFile(const std::string& path, bool global) const
         file += path;
 
         if(path_is_file(file)) {
+            // Give priority to local module setting - if it's set and true, deny:
+            if(config_.has("deny_overwrite")) {
+                if(config_.get<bool>("deny_overwrite")) {
+                    throw ModuleError("Overwriting of existing file " + file + " denied by module setting.");
+                }
+            } else if(config_.get<bool>("_deny_overwrite")) {
+                // If no module setting is present, use global setting:
+                throw ModuleError("Overwriting of existing file " + file + " denied by global setting.");
+            }
             LOG(WARNING) << "File " << file << " exists and will be overwritten.";
             remove_path(file);
         }

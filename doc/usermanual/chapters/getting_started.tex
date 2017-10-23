@@ -244,6 +244,7 @@ Subdirectories are created automatically for all module instantiations.
 This directory will also contain the \textbf{\texttt{root\_file}} specified via the parameter described above.
 Defaults to the current working directory with the subdirectory \textit{output/} attached.
 \item \textbf{\texttt{purge_output_directory}}: Decides whether the content of an already existing output directory is deleted before a new run starts. Defaults to \texttt{false}, i.e. files are kept but will be overwritten by new files created by the framework.
+\item \textbf{\texttt{deny_overwrite}}: Forces the framework to abort the run and throw an exception when attempting to overwrite an existing file. Defaults to \texttt{false}, i.e. files are overwritten when requested. This setting is inherited by all modules, but can be overwritten in the configuration section of each of the modules.
 \item \textbf{\texttt{random\_seed}}: Seed for the global random seed generator used to initialize seeds for module instantiations.
 A random seed from multiple entropy sources will be generated if the parameter is not specified.
 Can be used to reproduce an earlier simulation run.

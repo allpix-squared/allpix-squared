@@ -62,6 +62,9 @@ void ModuleManager::load(Messenger* messenger,
     path = add_file_extension(path, "root");
 
     if(allpix::path_is_file(path)) {
+        if(global_config_.get<bool>("deny_overwrite", false)) {
+            throw RuntimeError("Overwriting of existing main ROOT file " + path + " denied");
+        }
         LOG(WARNING) << "Main ROOT file " << path << " exists and will be overwritten.";
         allpix::remove_path(path);
     }
@@ -184,6 +187,7 @@ void ModuleManager::load(Messenger* messenger,
         // Add the global internal parameters to the configuration
         std::string global_dir = gSystem->pwd();
         config.set<std::string>("_global_dir", global_dir);
+        config.set<bool>("_deny_overwrite", global_config_.get<bool>("deny_overwrite", false));
 
         // Set default input and output name
         config.setDefault<std::string>("input", "");
