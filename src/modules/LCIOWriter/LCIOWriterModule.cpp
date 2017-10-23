@@ -44,13 +44,19 @@ LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, G
         i++;
     }
 
-    pixelType_ = config_.get<int>("pixel_type", 2);
-    DetectorName_ = config_.get<std::string>("detector_name", "EUTelescope");
-    OutputCollectionName_ = config_.get<std::string>("output_collection_name", "zsdata_m26");
+    // Set configuration defaults:
+    config_.setDefault("file_name", "output.slcio");
+    config_.setDefault("pixel_type", 2);
+    config_.setDefault("detector_name", "EUTelescope");
+    config_.setDefault("output_collection_name", "zsdata_m26");
+
+    pixelType_ = config_.get<int>("pixel_type");
+    DetectorName_ = config_.get<std::string>("detector_name");
+    OutputCollectionName_ = config_.get<std::string>("output_collection_name");
 
     // Open LCIO file and write run header
     lcWriter_ = LCFactory::getInstance()->createLCWriter();
-    lcWriter_->open(config_.get<std::string>("file_name", "output.slcio"), LCIO::WRITE_NEW);
+    lcWriter_->open(config_.get<std::string>("file_name"), LCIO::WRITE_NEW);
     auto run = std::make_unique<LCRunHeaderImpl>();
     run->setRunNumber(1);
     run->setDetectorName(DetectorName_);
