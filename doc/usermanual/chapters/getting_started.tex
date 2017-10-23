@@ -226,7 +226,7 @@ The only \underline{required} global parameter: the framework will fail to start
 \item \textbf{\texttt{number\_of\_events}}: Determines the total number of events the framework should simulate.
 Equivalent to the amount of times the modules are run.
 Defaults to one (simulating a single event).
-\item \textbf{\texttt{root\_file}}: Location relative to the \textbf{\texttt{output\_directory}} where the ROOT output data of all modules will be written to.
+\item \textbf{\texttt{root\_file}}: Location relative to the \textbf{\texttt{output\_directory}} where the ROOT output data of all modules will be written to. The file extension \texttt{.root} will be appended if not present.
 Default value is \textit{modules.root}.
 Directories within the ROOT file will be created automatically for all module instantiations.
 \item \textbf{\texttt{log\_level}}: Specifies the lowest log level which should be reported.
