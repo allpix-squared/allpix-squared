@@ -52,7 +52,7 @@ std::stringstream listkeys(TDirectoryFile* dir) {
             str << key << " = " << value << std::endl;
         } else if(cl->InheritsFrom("ROOT::Math::Rotation3D")) {
             // FIXME transform rotation back to the three ZYX angles
-            //str << entry->GetName() << " = " << (*(ROOT::Math::Rotation3D*)entry->ReadObj()) << std::endl;
+            // str << entry->GetName() << " = " << (*(ROOT::Math::Rotation3D*)entry->ReadObj()) << std::endl;
         } else if(cl->InheritsFrom("ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>,ROOT::Math::"
                                    "DefaultCoordinateSystemTag>")) {
             ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>, ROOT::Math::DefaultCoordinateSystemTag> position =
@@ -60,8 +60,7 @@ std::stringstream listkeys(TDirectoryFile* dir) {
                       entry->ReadObj());
             str << entry->GetName() << " = " << position.x() << "mm " << position.y() << "mm " << position.z() << "mm"
                 << std::endl;
-        }
-        else {
+        } else {
             std::cout << "Could not deduce parameter type of \"" << entry->GetName() << "\"";
         }
     }
