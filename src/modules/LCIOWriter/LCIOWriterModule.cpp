@@ -16,6 +16,7 @@
 
 #include "core/messenger/Messenger.hpp"
 
+#include "core/utils/file.h"
 #include "core/utils/log.h"
 
 #include <IMPL/LCCollectionVec.h>
@@ -59,11 +60,12 @@ LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, G
 
 void LCIOWriterModule::init() {
     // Create the output GEAR file for the detector geometry
-    geometry_file_name_ = getOutputPath(config_.get<std::string>("geometry_file"), true);
+    geometry_file_name_ =
+        createOutputFile(allpix::add_file_extension(config_.get<std::string>("geometry_file"), "xml"), true);
 
     // Open LCIO file and write run header
-    lcio_file_name_ = getOutputPath(config_.get<std::string>("file_name"));
-    lcWriter_ = LCFactory::getInstance()->createLCWriter();
+    lcio_file_name_ = createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name"), "slcio"));
+    lcWriter_ = std::shared_ptr<IO::LCWriter>(LCFactory::getInstance()->createLCWriter());
     lcWriter_->open(lcio_file_name_, LCIO::WRITE_NEW);
     auto run = std::make_unique<LCRunHeaderImpl>();
     run->setRunNumber(1);
