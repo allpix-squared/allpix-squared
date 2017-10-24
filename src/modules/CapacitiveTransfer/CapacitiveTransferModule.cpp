@@ -242,6 +242,8 @@ void CapacitiveTransferModule::run(unsigned int) {
                     pixel_point = Eigen::Vector3d(local_x, local_y, 0);
                     pixel_projection = Eigen::Vector3d(plane.projection(pixel_point));
                     pixel_gap = pixel_projection[2];
+                    // pixel_gap = gap_map->GetBinContent(static_cast<int>(pixel_index.x()+1),
+                    // static_cast<int>(pixel_index.y()+1));
 
                     ccpd_factor =
                         capacitances[row * 3 + col]->Eval(
