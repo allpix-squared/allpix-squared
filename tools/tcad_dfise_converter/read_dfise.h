@@ -42,6 +42,6 @@ namespace mesh_converter {
 
     // Read the electric field
     std::map<std::string, std::map<std::string, std::vector<Point>>> read_electric_field(const std::string& file_name);
-}
+} // namespace mesh_converter
 
 #endif

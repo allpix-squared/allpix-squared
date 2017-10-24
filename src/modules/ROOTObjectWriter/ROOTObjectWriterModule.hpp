@@ -65,7 +65,6 @@ namespace allpix {
         void finalize() override;
 
     private:
-        Configuration config_;
         GeometryManager* geo_mgr_;
 
         // Object names to include or exclude from writing
@@ -74,6 +73,7 @@ namespace allpix {
 
         // Output data file to write
         std::unique_ptr<TFile> output_file_;
+        std::string output_file_name_{};
 
         // List of trees that are stored in data file
         std::map<std::string, std::unique_ptr<TTree>> trees_;

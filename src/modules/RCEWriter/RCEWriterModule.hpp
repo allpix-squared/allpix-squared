@@ -61,7 +61,6 @@ namespace allpix {
         void finalize() override;
 
     private:
-        Configuration config_;
         GeometryManager* geo_mgr_;
 
         // Vector of detector names retrieved from the geometry manager

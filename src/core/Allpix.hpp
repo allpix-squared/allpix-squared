@@ -37,8 +37,9 @@ namespace allpix {
         /**
          * @brief Constructs Allpix and initialize all managers
          * @param config_file_name Path of the main configuration file
+         * @param options List of extra configuration options
          */
-        explicit Allpix(std::string config_file_name);
+        explicit Allpix(std::string config_file_name, std::vector<std::string> options = std::vector<std::string>());
 
         /**
          * @brief Load modules from the main configuration and construct them

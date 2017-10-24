@@ -9,7 +9,7 @@ This chapter contains details on the standard installation process and informati
 \subsection{Supported Operating Systems}
 \label{sec:os}
 \apsq is designed to run without issues on either a recent Linux distribution or Mac OS\,X.
-The continuous integration of the project ensures correct building and functioning of the software framework on CentOS\,7 (with GCC and LLVM), SLC\,6 (with GCC and LLVM) and Mac OS Sierra (OS X 10.12, with AppleClang).
+The continuous integration of the project described in Section~\ref{sec:ci} ensures correct building and functioning of the software framework on CentOS\,7 (with GCC and LLVM), SLC\,6 (with GCC and LLVM) and Mac OS Sierra (OS X 10.12, with AppleClang).
 Microsoft Windows is not supported.
 
 \subsection{Prerequisites}
@@ -36,7 +36,7 @@ A useful set of CMake flags to build a functional Geant4 package would be:
 -DGEANT4_BUILD_MULTITHREADED=OFF
 -DGEANT4_USE_GDML=ON
 -DGEANT4_USE_QT=ON
--DGEANT4_USE_XM=ON 
+-DGEANT4_USE_XM=ON
 -DGEANT4_USE_OPENGL_X11=ON
 -DGEANT4_USE_SYSTEM_CLHEP=OFF
 \end{verbatim}
@@ -92,9 +92,9 @@ These options can be set with -D\textit{option} (see the end of this section for
 Currently the following options are supported:
 \begin{itemize}
 \item \textbf{CMAKE\_INSTALL\_PREFIX}: The directory to use as a prefix for installing the binaries, libraries and data.
-Defaults to the source directory (where the folders \textit{bin/} and \textit{lib/} are added). 
+Defaults to the source directory (where the folders \textit{bin/} and \textit{lib/} are added).
 \item \textbf{CMAKE\_BUILD\_TYPE}: Type of build to install, defaults to \texttt{RelWithDebInfo} (compiles with optimizations and debug symbols).
-Other possible options are \texttt{Debug} (for compiling with no optimizations, but with debug symbols and extended tracing using the Clang Address Sanitizer library) and \texttt{Release} (for compiling with full optimizations and no debug symbols). 
+Other possible options are \texttt{Debug} (for compiling with no optimizations, but with debug symbols and extended tracing using the Clang Address Sanitizer library) and \texttt{Release} (for compiling with full optimizations and no debug symbols).
 \item \textbf{MODEL\_DIRECTORY}: Directory to install the internal models to.
 Defaults to not installing if the \textbf{CMAKE\_INSTALL\_PREFIX} is set to the directory containing the sources (the default).
 Otherwise the default value is equal to the directory \textit{<CMAKE\_INSTALL\_PREFIX>/share/allpix/}.
@@ -133,14 +133,3 @@ The binary is now available as \textit{bin/allpix} in the installation directory
 The example configuration files are not installed as they should only be used as a starting point for your own configuration.
 They can however be used to check if the installation was successful.
 Running the allpix binary with the example configuration (\texttt{bin/allpix -c \textit{etc/example.conf}}) should pass the test without problems if a standard installation is used.
-
-\subsection{Testing}
-The build system of the framework is configured such, that it provides a set of automated tests which can be executed to ensure a correct compilation and functionality of the framework.
-
-The tests use the example configuration delivered with the source code and can be started from the build directory of \apsq by invoking
-\begin{verbatim}
-$ make test
-\end{verbatim}
-
-All tests are expected to pass.
-

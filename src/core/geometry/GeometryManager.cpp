@@ -136,7 +136,7 @@ void GeometryManager::load(const Configuration& global_config, std::mt19937_64& 
 
 /**
  * The default list of models to search for are in the following order
- * - The list of paths provided in the main configuration as models_path
+ * - The list of paths provided in the main configuration as model_paths
  * - The build variable ALLPIX_MODEL_DIR pointing to the installation directory of the framework models
  * - The directories in XDG_DATA_DIRS with ALLPIX_PROJECT_NAME attached or /usr/share/:/usr/local/share if not defined
  */
@@ -474,10 +474,10 @@ void GeometryManager::close_geometry() {
             if(new_config.countSettings() != 0) {
                 ConfigReader reader;
                 // Add the new configuration first to overwrite
-                reader.addConfiguration(new_config);
+                reader.addConfiguration(std::move(new_config));
                 // Then add the original configuration
                 for(auto& model_config : model_configs) {
-                    reader.addConfiguration(model_config);
+                    reader.addConfiguration(std::move(model_config));
                 }
 
                 model = parse_config(detectors_types.first, reader);

@@ -39,8 +39,8 @@
 
 using namespace allpix;
 
-GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo_manager, Configuration config)
-    : geo_manager_(geo_manager), config_(std::move(config)) {}
+GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo_manager, Configuration& config)
+    : geo_manager_(geo_manager), config_(config) {}
 
 /**
  * @brief Version of std::make_shared that does not delete the pointer
@@ -325,8 +325,10 @@ void GeometryConstructionG4::build_detectors() {
             if(support_material_iter == materials_.end()) {
                 throw ModuleError("Cannot construct a support layer of material '" + layer.getMaterial() + "'");
             }
-            auto support_log = make_shared_no_delete<G4LogicalVolume>(
-                support_solid.get(), materials_["epoxy"], "support_" + name + "_log_" + std::to_string(support_idx));
+            auto support_log =
+                make_shared_no_delete<G4LogicalVolume>(support_solid.get(),
+                                                       support_material_iter->second,
+                                                       "support_" + name + "_log_" + std::to_string(support_idx));
             supports_log->push_back(support_log);
 
             // Place the support
@@ -352,8 +354,8 @@ void GeometryConstructionG4::build_detectors() {
         auto hybrid_model = std::dynamic_pointer_cast<HybridPixelDetectorModel>(model);
         if(hybrid_model != nullptr) {
             /* BUMPS
-            * the bump bonds connect the sensor to the readout chip
-            */
+             * the bump bonds connect the sensor to the readout chip
+             */
 
             // Get parameters from model
             auto bump_height = hybrid_model->getBumpHeight();

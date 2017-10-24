@@ -70,7 +70,6 @@ namespace allpix {
         unsigned int checkAdjacentPixels(const PixelHit*);
 
     private:
-        Configuration config_;
         std::shared_ptr<Detector> detector_;
 
         // List of pixel hits
