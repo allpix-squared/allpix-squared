@@ -25,21 +25,23 @@ CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration config, Messeng
 
     // Require PixelCharge messages for single detector
     messenger_->bindMulti(this, &CorryvreckanWriterModule::pixel_messages_, MsgFlags::REQUIRED);
+
+    config_.setDefault("file_name", "corryvreckanOutput.root");
+    config_.setDefault("geometry_file", "corryvreckanGeometry.conf");
 }
 
 // Set up the output trees
 void CorryvreckanWriterModule::init() {
 
     // Create output file and directories
-    fileName_ = createOutputFile(
-        allpix::add_file_extension(config_.get<std::string>("file_name", "corryvreckanOutput"), "root"), true);
+    fileName_ = createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name"), "root"), true);
     outputFile_ = std::make_unique<TFile>(fileName_.c_str(), "RECREATE");
     outputFile_->cd();
     outputFile_->mkdir("pixels");
 
     // Create geometry file:
-    geometryFileName_ = createOutputFile(
-        allpix::add_file_extension(config_.get<std::string>("geometry_file", "corryvreckanGeometry"), "conf"), true);
+    geometryFileName_ =
+        createOutputFile(allpix::add_file_extension(config_.get<std::string>("geometry_file"), "conf"), true);
 
     // Loop over all detectors and make trees for data
     auto detectors = geometryManager_->getDetectors();
