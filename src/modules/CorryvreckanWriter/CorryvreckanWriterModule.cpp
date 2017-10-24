@@ -38,7 +38,8 @@ void CorryvreckanWriterModule::init() {
     outputFile_->mkdir("pixels");
 
     // Create geometry file:
-    geometryFileName_ = getOutputPath(config_.get<std::string>("geometry_file", "corryvreckanGeometry.conf"), true);
+    geometryFileName_ = createOutputFile(
+        allpix::add_file_extension(config_.get<std::string>("geometry_file", "corryvreckanGeometry"), "conf"), true);
 
     // Loop over all detectors and make trees for data
     auto detectors = geometryManager_->getDetectors();
