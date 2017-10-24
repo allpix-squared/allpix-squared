@@ -126,12 +126,12 @@ void CapacitiveTransferModule::init() {
 
                     gap_map->Fill(col, row, static_cast<double>(Units::convert(pixel_gap, "um")));
                     capacitance_map->Fill(
-                        col, row, capacitances[4]->Eval(static_cast<double>(Units::convert(pixel_gap, "um")), 0, "S"));
+                        col, row, capacitances[4]->Eval(static_cast<double>(Units::convert(pixel_gap, "um")), nullptr, "S"));
                     relative_capacitance_map->Fill(
                         col,
                         row,
-                        capacitances[4]->Eval(static_cast<double>(Units::convert(pixel_gap, "um")), 0, "S") /
-                            capacitances[4]->Eval(static_cast<double>(Units::convert(nominal_gap, "um")), 0, "S"));
+                        capacitances[4]->Eval(static_cast<double>(Units::convert(pixel_gap, "um")), nullptr, "S") /
+                            capacitances[4]->Eval(static_cast<double>(Units::convert(nominal_gap, "um")), nullptr, "S"));
                 }
             }
         }
@@ -242,8 +242,9 @@ void CapacitiveTransferModule::run(unsigned int) {
                 double neighbour_charge;
                 double ccpd_factor;
                 if(config_.has("scan_file")) {
-                    ccpd_factor = capacitances[row * 3 + col]->Eval(static_cast<double>(gap(pixel_index)), 0, "S") /
-                                  capacitances[4]->Eval(static_cast<double>(Units::convert(nominal_gap, "um")), 0, "S");
+                    ccpd_factor =
+                        capacitances[row * 3 + col]->Eval(static_cast<double>(gap(pixel_index)), nullptr, "S") /
+                        capacitances[4]->Eval(static_cast<double>(Units::convert(nominal_gap, "um")), nullptr, "S");
                 } else if(config_.has("capacitance_matrix") || config_.has("matrix_file")) {
                     ccpd_factor = relative_coupling[col][row];
                 } else {
