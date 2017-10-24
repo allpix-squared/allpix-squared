@@ -243,7 +243,7 @@ void CapacitiveTransferModule::run(unsigned int) {
                 double ccpd_factor;
                 if(config_.has("scan_file")) {
                     ccpd_factor =
-                        capacitances[row * 3 + col]->Eval(static_cast<double>(gap(pixel_index)), nullptr, "S") /
+                        capacitances[row * 3 + col]->Eval(gap(pixel_index), nullptr, "S") /
                         capacitances[4]->Eval(static_cast<double>(Units::convert(nominal_gap, "um")), nullptr, "S");
                 } else if(config_.has("capacitance_matrix") || config_.has("matrix_file")) {
                     ccpd_factor = relative_coupling[col][row];
