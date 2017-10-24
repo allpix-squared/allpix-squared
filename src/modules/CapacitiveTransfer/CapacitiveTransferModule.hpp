@@ -110,7 +110,6 @@ namespace allpix {
         double angles[2] = {0.0, 0.0};
         double pixel_gap = 1.0;
 
-        TH1D* gap_distribution;
         TH2D* gap_map;
         TH2D* capacitance_map;
         TH2D* relative_capacitance_map;

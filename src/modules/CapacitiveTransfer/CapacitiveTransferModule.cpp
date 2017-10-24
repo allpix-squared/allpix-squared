@@ -33,6 +33,7 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration config,
     : Module(config, detector), config_(std::move(config)), messenger_(messenger), detector_(std::move(detector)) {
     // Save detector model
     model_ = detector_->getModel();
+    config_.setDefault("output_plots", 0);
 
     // Require propagated deposits for single detector
     messenger->bindSingle(this, &CapacitiveTransferModule::propagated_message_, MsgFlags::REQUIRED);
@@ -81,6 +82,59 @@ void CapacitiveTransferModule::init() {
         }
 
         plane = Eigen::Hyperplane<double, 3>(rotated_normal, origin);
+
+        if(config_.get<bool>("output_plots")) {
+            LOG(TRACE) << "Creating output plots";
+
+            // Create histograms if needed
+            auto pixel_grid = model_->getNPixels();
+            gap_map = new TH2D("gap_map",
+                               "Gap;pixel x;pixel y",
+                               pixel_grid.x(),
+                               -0.5,
+                               pixel_grid.x() - 0.5,
+                               pixel_grid.y(),
+                               -0.5,
+                               pixel_grid.y() - 0.5);
+
+            capacitance_map = new TH2D("capacitance_map",
+                                       "Capacitance;pixel x;pixel y",
+                                       pixel_grid.x(),
+                                       -0.5,
+                                       pixel_grid.x() - 0.5,
+                                       pixel_grid.y(),
+                                       -0.5,
+                                       pixel_grid.y() - 0.5);
+
+            relative_capacitance_map = new TH2D("relative_capacitance_map",
+                                                "Relative Capacitance;pixel x;pixel y",
+                                                pixel_grid.x(),
+                                                -0.5,
+                                                pixel_grid.x() - 0.5,
+                                                pixel_grid.y(),
+                                                -0.5,
+                                                pixel_grid.y() - 0.5);
+
+            for(int col = 0; col < pixel_grid.x(); col++) {
+                for(int row = 0; row < pixel_grid.y(); row++) {
+                    auto local_x = col * model_->getPixelSize().x();
+                    auto local_y = row * model_->getPixelSize().y();
+
+                    Eigen::Vector3d pixel_point(local_x, local_y, 0);
+                    Eigen::Vector3d pixel_projection = plane.projection(pixel_point);
+                    pixel_gap = pixel_projection[2];
+
+                    gap_map->Fill(col, row, static_cast<double>(Units::convert(pixel_gap, "um")));
+                    capacitance_map->Fill(
+                        col, row, capacitances[4]->Eval(static_cast<double>(Units::convert(pixel_gap, "um")), 0, "S"));
+                    relative_capacitance_map->Fill(
+                        col,
+                        row,
+                        capacitances[4]->Eval(static_cast<double>(Units::convert(pixel_gap, "um")), 0, "S") /
+                            capacitances[4]->Eval(static_cast<double>(Units::convert(nominal_gap, "um")), 0, "S"));
+                }
+            }
+        }
     }
     // Reading file with coupling matrix
     else if(config_.has("matrix_file")) {
@@ -128,48 +182,6 @@ void CapacitiveTransferModule::init() {
     }
 
     // if(config_.has("output_plots")){
-    if(config_.get<bool>("output_plots")) {
-        LOG(TRACE) << "Creating output plots";
-
-        // Create histograms if needed
-        auto pixel_grid = model_->getNPixels();
-        Eigen::Vector3d point1(0, 0, 0);
-        Eigen::Vector3d point2(pixel_grid.x() * model_->getPixelSize().x(), pixel_grid.y() * model_->getPixelSize().y(), 0);
-        Eigen::Vector3d point1_proj = plane.projection(point1);
-        Eigen::Vector3d point2_proj = plane.projection(point2);
-
-        gap_distribution = new TH1D("gap_distribution",
-                                    "Gap;Gap[nn];#Entries",
-                                    100,
-                                    static_cast<double>(Units::convert(point1_proj[2], "um")),
-                                    static_cast<double>(Units::convert(point2_proj[2], "um")));
-        gap_map = new TH2D("gap_map",
-                           "Gap;pixel x;pixel y",
-                           pixel_grid.x(),
-                           -0.5,
-                           pixel_grid.x() - 0.5,
-                           pixel_grid.y(),
-                           -0.5,
-                           pixel_grid.y() - 0.5);
-
-        capacitance_map = new TH2D("capacitance_map",
-                                   "Capacitance;pixel x;pixel y",
-                                   pixel_grid.x(),
-                                   -0.5,
-                                   pixel_grid.x() - 0.5,
-                                   pixel_grid.y(),
-                                   -0.5,
-                                   pixel_grid.y() - 0.5);
-
-        relative_capacitance_map = new TH2D("relative_capacitance_map",
-                                            "Relative Capacitance;pixel x;pixel y",
-                                            pixel_grid.x(),
-                                            -0.5,
-                                            pixel_grid.x() - 0.5,
-                                            pixel_grid.y(),
-                                            -0.5,
-                                            pixel_grid.y() - 0.5);
-    }
     //}
 }
 
@@ -181,22 +193,6 @@ double CapacitiveTransferModule::gap(Pixel::Index pixel) {
     Eigen::Vector3d pixel_point(local_x, local_y, 0);
     Eigen::Vector3d pixel_projection = plane.projection(pixel_point);
     pixel_gap = pixel_projection[2];
-
-    if(config_.get<bool>("output_plots")) {
-        gap_distribution->Fill(static_cast<double>(Units::convert(pixel_gap, "um")));
-        gap_map->SetBinContent(
-            static_cast<int>(pixel.x()), static_cast<int>(pixel.y()), static_cast<double>(Units::convert(pixel_gap, "um")));
-
-        capacitance_map->SetBinContent(static_cast<int>(pixel.x()),
-                                       static_cast<int>(pixel.y()),
-                                       capacitances[4]->Eval(static_cast<double>(Units::convert(pixel_gap, "um")), 0, "S"));
-
-        relative_capacitance_map->SetBinContent(
-            static_cast<int>(pixel.x()),
-            static_cast<int>(pixel.y()),
-            capacitances[4]->Eval(static_cast<double>(Units::convert(pixel_gap, "um")), 0, "S") /
-                capacitances[4]->Eval(static_cast<double>(Units::convert(nominal_gap, "um")), 0, "S"));
-    }
 
     return static_cast<double>(Units::convert(pixel_gap, "um"));
 }
@@ -298,17 +294,14 @@ void CapacitiveTransferModule::finalize() {
     LOG(INFO) << "Transferred total of " << total_transferred_charges_ << " charges to " << unique_pixels_.size()
               << " different pixels";
 
-    // if(config_.has("output_plots")){
     if(config_.get<bool>("output_plots")) {
-        gap_distribution->Write();
-        gap_map->Write();
-        capacitance_map->Write();
-        relative_capacitance_map->Write();
         if(config_.has("scan_file")) {
+            gap_map->Write();
+            capacitance_map->Write();
+            relative_capacitance_map->Write();
             for(int i = 1; i < 10; i++) {
                 capacitances[i - 1]->Write(Form("Pixel_%i", i));
             }
         }
     }
-    //}
 }
