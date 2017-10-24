@@ -185,18 +185,6 @@ void CapacitiveTransferModule::init() {
     //}
 }
 
-double CapacitiveTransferModule::gap(Pixel::Index pixel) {
-
-    auto local_x = pixel.x() * model_->getPixelSize().x();
-    auto local_y = pixel.y() * model_->getPixelSize().y();
-
-    Eigen::Vector3d pixel_point(local_x, local_y, 0);
-    Eigen::Vector3d pixel_projection = plane.projection(pixel_point);
-    pixel_gap = pixel_projection[2];
-
-    return static_cast<double>(Units::convert(pixel_gap, "um"));
-}
-
 void CapacitiveTransferModule::run(unsigned int) {
 
     // Find corresponding pixels for all propagated charges
@@ -219,50 +207,68 @@ void CapacitiveTransferModule::run(unsigned int) {
         auto ypixel = static_cast<int>(std::round(position.y() / model_->getPixelSize().y()));
         LOG(DEBUG) << "Hit at pixel " << xpixel << ", " << ypixel;
 
-        size_t row = 1;
-        size_t col = 1;
-        // for(size_t row = 0; row < matrix_rows; row++) {
-        // for(size_t col = 0; col < matrix_cols; col++) {
+        Pixel::Index pixel_index;
+        double local_x = 0;
+        double local_y = 0;
+        double neighbour_charge = 0;
+        double ccpd_factor = 0;
 
-        // Ignore if out of pixel grid
-        if((xpixel + static_cast<int>(col - static_cast<size_t>(std::floor(matrix_cols / 2)))) < 0 ||
-           (xpixel + static_cast<int>(col - static_cast<size_t>(std::floor(matrix_cols / 2)))) >= model_->getNPixels().x() ||
-           (ypixel + static_cast<int>(row - static_cast<size_t>(std::floor(matrix_rows / 2)))) < 0 ||
-           (ypixel + static_cast<int>(row - static_cast<size_t>(std::floor(matrix_rows / 2)))) >= model_->getNPixels().y()) {
-            LOG(DEBUG) << "Skipping set of propagated charges at " << propagated_charge.getLocalPosition()
-                       << " because their nearest pixel (" << xpixel << "," << ypixel << ") is outside the pixel matrix";
-            continue;
-        }
+        Eigen::Vector3d pixel_point;
+        Eigen::Vector3d pixel_projection;
 
-        Pixel::Index pixel_index(static_cast<unsigned int>(xpixel + static_cast<int>(col) - std::floor(matrix_cols / 2)),
+        for(size_t row = 0; row < matrix_rows; row++) {
+            for(size_t col = 0; col < matrix_cols; col++) {
+
+                // Ignore if out of pixel grid
+                if((xpixel + static_cast<int>(col - static_cast<size_t>(std::floor(matrix_cols / 2)))) < 0 ||
+                   (xpixel + static_cast<int>(col - static_cast<size_t>(std::floor(matrix_cols / 2)))) >=
+                       model_->getNPixels().x() ||
+                   (ypixel + static_cast<int>(row - static_cast<size_t>(std::floor(matrix_rows / 2)))) < 0 ||
+                   (ypixel + static_cast<int>(row - static_cast<size_t>(std::floor(matrix_rows / 2)))) >=
+                       model_->getNPixels().y()) {
+                    LOG(DEBUG) << "Skipping set of propagated charges at " << propagated_charge.getLocalPosition()
+                               << " because their nearest pixel (" << xpixel << "," << ypixel
+                               << ") is outside the pixel matrix";
+                    continue;
+                }
+
+                pixel_index =
+                    Pixel::Index(static_cast<unsigned int>(xpixel + static_cast<int>(col) - std::floor(matrix_cols / 2)),
                                  static_cast<unsigned int>(ypixel + static_cast<int>(row) - std::floor(matrix_rows / 2)));
 
-        double neighbour_charge;
-        double ccpd_factor;
-        if(config_.has("scan_file")) {
-            ccpd_factor = capacitances[row * 3 + col]->Eval(gap(pixel_index), nullptr, "S") /
-                          capacitances[4]->Eval(static_cast<double>(Units::convert(nominal_gap, "um")), nullptr, "S");
-        } else if(config_.has("capacitance_matrix") || config_.has("matrix_file")) {
-            ccpd_factor = relative_coupling[col][row];
-        } else {
-            ccpd_factor = 1;
-            LOG(ERROR) << "No coupling factor defined. Transferring 100% of detected charge";
+                local_x = pixel_index.x() * model_->getPixelSize().x();
+                local_y = pixel_index.y() * model_->getPixelSize().y();
+                pixel_point = Eigen::Vector3d(local_x, local_y, 0);
+                pixel_projection = Eigen::Vector3d(plane.projection(pixel_point));
+                pixel_gap = pixel_projection[2];
+
+                if(config_.has("scan_file")) {
+                    ccpd_factor =
+                        capacitances[row * 3 + col]->Eval(
+                            static_cast<double>(Units::convert(pixel_gap, "um")), nullptr, "S") /
+                        capacitances[4]->Eval(static_cast<double>(Units::convert(nominal_gap, "um")), nullptr, "S");
+                } else if(config_.has("capacitance_matrix") || config_.has("matrix_file")) {
+                    ccpd_factor = relative_coupling[col][row];
+                } else {
+                    ccpd_factor = 1;
+                    LOG(ERROR) << "No coupling factor defined. Transferring 100% of detected charge";
+                }
+
+                // Update statistics
+                unique_pixels_.insert(pixel_index);
+
+                transferred_charges_count += static_cast<unsigned int>(propagated_charge.getCharge() * ccpd_factor);
+                neighbour_charge = propagated_charge.getCharge() * ccpd_factor;
+
+                LOG(DEBUG) << "Set of " << propagated_charge.getCharge() * ccpd_factor << " charges brought to neighbour "
+                           << col << "," << row << " pixel " << pixel_index << "with cross-coupling of " << ccpd_factor * 100
+                           << "%";
+
+                // Add the pixel the list of hit pixels
+                pixel_map[pixel_index].first += neighbour_charge;
+                pixel_map[pixel_index].second.emplace_back(&propagated_charge);
+            }
         }
-
-        // Update statistics
-        unique_pixels_.insert(pixel_index);
-
-        transferred_charges_count += static_cast<unsigned int>(propagated_charge.getCharge() * ccpd_factor);
-        neighbour_charge = propagated_charge.getCharge() * ccpd_factor;
-
-        LOG(DEBUG) << "Set of " << propagated_charge.getCharge() * ccpd_factor << " charges brought to neighbour " << col
-                   << "," << row << " pixel " << pixel_index << "with cross-coupling of " << ccpd_factor * 100 << "%";
-
-        // Add the pixel the list of hit pixels
-        pixel_map[pixel_index].first += neighbour_charge;
-        pixel_map[pixel_index].second.emplace_back(&propagated_charge);
-        //}
-        //}
     }
 
     // Create pixel charges
