@@ -94,11 +94,6 @@ namespace allpix {
         unsigned int matrix_rows = 0;
         unsigned int matrix_cols = 0;
 
-        /**
-         * @brief Calculate the gap between pixels in tilted chip assembliesy
-         */
-        double gap(Pixel::Index pixel);
-
         double nominal_gap = 0.0;
 
         void getCapacitanceScan(TFile* root_file);

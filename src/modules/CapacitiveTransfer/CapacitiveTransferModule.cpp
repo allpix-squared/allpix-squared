@@ -236,13 +236,13 @@ void CapacitiveTransferModule::run(unsigned int) {
                     Pixel::Index(static_cast<unsigned int>(xpixel + static_cast<int>(col) - std::floor(matrix_cols / 2)),
                                  static_cast<unsigned int>(ypixel + static_cast<int>(row) - std::floor(matrix_rows / 2)));
 
-                local_x = pixel_index.x() * model_->getPixelSize().x();
-                local_y = pixel_index.y() * model_->getPixelSize().y();
-                pixel_point = Eigen::Vector3d(local_x, local_y, 0);
-                pixel_projection = Eigen::Vector3d(plane.projection(pixel_point));
-                pixel_gap = pixel_projection[2];
-
                 if(config_.has("scan_file")) {
+                    local_x = pixel_index.x() * model_->getPixelSize().x();
+                    local_y = pixel_index.y() * model_->getPixelSize().y();
+                    pixel_point = Eigen::Vector3d(local_x, local_y, 0);
+                    pixel_projection = Eigen::Vector3d(plane.projection(pixel_point));
+                    pixel_gap = pixel_projection[2];
+
                     ccpd_factor =
                         capacitances[row * 3 + col]->Eval(
                             static_cast<double>(Units::convert(pixel_gap, "um")), nullptr, "S") /
