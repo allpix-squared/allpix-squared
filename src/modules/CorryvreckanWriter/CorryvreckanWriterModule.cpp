@@ -15,6 +15,7 @@
 #include <string>
 #include <utility>
 
+#include "core/utils/file.h"
 #include "core/utils/log.h"
 
 using namespace allpix;
@@ -30,7 +31,8 @@ CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration config, Messeng
 void CorryvreckanWriterModule::init() {
 
     // Create output file and directories
-    fileName_ = getOutputPath(config_.get<std::string>("file_name", "corryvreckanOutput") + ".root", true);
+    fileName_ = createOutputFile(
+        allpix::add_file_extension(config_.get<std::string>("file_name", "corryvreckanOutput"), "root"), true);
     outputFile_ = std::make_unique<TFile>(fileName_.c_str(), "RECREATE");
     outputFile_->cd();
     outputFile_->mkdir("pixels");

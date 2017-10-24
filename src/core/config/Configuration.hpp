@@ -39,6 +39,22 @@ namespace allpix {
          */
         explicit Configuration(std::string name = "", std::string path = "");
 
+        /// @{
+        /**
+         * @brief Allow copying the configuration
+         */
+        Configuration(const Configuration&) = default;
+        Configuration& operator=(const Configuration&) = default;
+        /// @}
+
+        /// @{
+        /**
+         * @brief Allow moving the configuration
+         */
+        Configuration(Configuration&&) noexcept = default;
+        Configuration& operator=(Configuration&&) noexcept = default;
+        /// @}
+
         /**
          * @brief Check if key is defined
          * @param key Key to check for existence

@@ -24,8 +24,8 @@
 
 using namespace allpix;
 
-Module::Module(Configuration config) : Module(std::move(config), nullptr) {}
-Module::Module(Configuration config, std::shared_ptr<Detector> detector)
+Module::Module(Configuration&& config) : Module(std::move(config), nullptr) {}
+Module::Module(Configuration&& config, std::shared_ptr<Detector> detector)
     : config_(std::move(config)), detector_(std::move(detector)) {}
 /**
  * @note The remove_delegate can throw in theory, but this should never happen in practice
@@ -62,16 +62,18 @@ std::shared_ptr<Detector> Module::getDetector() const {
 /**
  * @throws ModuleError If the file cannot be accessed (or created if it did not yet exist)
  * @throws InvalidModuleActionException If this method is called from the constructor with the global flag false
+ * @throws ModuleError If the file exists but the "deny_overwrite" flag is set to true
  * @warning A local path cannot be fetched from the constructor, because the instantiation logic has not finished yet
  *
  * The output path is automatically created if it does not exists. The path is always accessible if this functions returns.
+ * Obeys the "deny_overwrite" parameter of the module.
  */
-std::string Module::getOutputPath(const std::string& path, bool global) const {
+std::string Module::createOutputFile(const std::string& path, bool global) const {
     std::string file;
     if(global) {
-        file = config_.get<std::string>("_global_dir");
+        file = config_.get<std::string>("_global_dir", std::string());
     } else {
-        file = config_.get<std::string>("_output_dir");
+        file = config_.get<std::string>("_output_dir", std::string());
     }
 
     // The file name will only be empty if this method is executed from the constructor
@@ -86,6 +88,18 @@ std::string Module::getOutputPath(const std::string& path, bool global) const {
         // Add the file itself
         file += "/";
         file += path;
+
+        if(path_is_file(file)) {
+            if(config_.get<bool>("deny_overwrite")) {
+                throw ModuleError("Overwriting of existing file " + file + " denied.");
+            }
+            LOG(WARNING) << "File " << file << " exists and will be overwritten.";
+            try {
+                allpix::remove_file(file);
+            } catch(std::invalid_argument& e) {
+                throw ModuleError("Deleting file " + file + " failed: " + e.what());
+            }
+        }
 
         // Open the file to check if it can be accessed
         std::fstream file_stream(file, std::ios_base::out | std::ios_base::app);

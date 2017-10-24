@@ -17,6 +17,7 @@
 #include <TClass.h>
 
 #include "core/config/ConfigReader.hpp"
+#include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "core/utils/type.h"
 
@@ -42,8 +43,9 @@ ROOTObjectWriterModule::~ROOTObjectWriterModule() {
 
 void ROOTObjectWriterModule::init() {
     // Create output file
-    std::string file_name = getOutputPath(config_.get<std::string>("file_name", "data") + ".root", true);
-    output_file_ = std::make_unique<TFile>(file_name.c_str(), "RECREATE");
+    output_file_name_ =
+        createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name", "data"), "root"), true);
+    output_file_ = std::make_unique<TFile>(output_file_name_.c_str(), "RECREATE");
     output_file_->cd();
 
     // Read include and exclude list
@@ -220,5 +222,5 @@ void ROOTObjectWriterModule::finalize() {
 
     // Print statistics
     LOG(STATUS) << "Wrote " << write_cnt_ << " objects to " << branch_count << " branches in file:" << std::endl
-                << getOutputPath(config_.get<std::string>("file_name", "data") + ".root", true);
+                << output_file_name_;
 }

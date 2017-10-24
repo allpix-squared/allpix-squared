@@ -229,7 +229,3 @@ void LCIOWriterModule::finalize() {
         LOG(STATUS) << "Wrote GEAR geometry to file:" << std::endl << geometry_file_name_;
     }
 }
-
-LCIOWriterModule::~LCIOWriterModule() {
-    delete lcWriter_;
-}
