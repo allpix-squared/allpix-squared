@@ -140,8 +140,8 @@ void CorryvreckanWriterModule::finalize() {
                           << Units::display(detector->getPosition().y(), {"mm", "um"}) << ", "
                           << Units::display(detector->getPosition().z(), {"mm", "um"}) << std::endl;
             ROOT::Math::RotationZYX rotations(detector->getOrientation());
-            geometry_file << "orientation = " << Units::display(rotations.Phi(), "deg") << ", "
-                          << Units::display(rotations.Psi(), "deg") << ", " << Units::display(rotations.Theta(), "deg")
+            geometry_file << "orientation = " << Units::display(rotations.Psi(), "deg") << ", "
+                          << Units::display(rotations.Theta(), "deg") << ", " << Units::display(rotations.Phi(), "deg")
                           << std::endl;
 
             auto model = detector->getModel();
