@@ -3,6 +3,7 @@
 #include <sstream>
 
 #include <Math/Rotation3D.h>
+#include <Math/RotationZYX.h>
 #include <TClass.h>
 #include <TDirectoryFile.h>
 #include <TFile.h>
@@ -51,8 +52,11 @@ std::stringstream listkeys(TDirectoryFile* dir) {
             // Otherwise add the configuration key/value pair:
             str << key << " = " << value << std::endl;
         } else if(cl->InheritsFrom("ROOT::Math::Rotation3D")) {
-            // FIXME transform rotation back to the three ZYX angles
-            // str << entry->GetName() << " = " << (*(ROOT::Math::Rotation3D*)entry->ReadObj()) << std::endl;
+            // Transform rotation back to the three ZYX angles
+            ROOT::Math::Rotation3D rot = (*(ROOT::Math::Rotation3D*)entry->ReadObj()).Inverse();
+            ROOT::Math::RotationZYX angles = ROOT::Math::RotationZYX(rot);
+            str << entry->GetName() << " = " << (-angles.Psi()) << "deg " << (-angles.Theta()) << "deg " << (-angles.Phi())
+                << "deg" << std::endl;
         } else if(cl->InheritsFrom("ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>,ROOT::Math::"
                                    "DefaultCoordinateSystemTag>")) {
             ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>, ROOT::Math::DefaultCoordinateSystemTag> position =
@@ -74,7 +78,7 @@ void recoverConfiguration(TString data_file, TString config_file_name, TString d
     TFile* f1 = TFile::Open(data_file);
     if(!f1) {
         std::cout << "Cannot open data file \"" << data_file << "\"" << std::endl;
-        return 1;
+        return;
     }
 
     TDirectoryFile* config = nullptr;
