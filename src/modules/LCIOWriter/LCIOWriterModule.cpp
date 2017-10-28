@@ -15,9 +15,10 @@
 #include <vector>
 
 #include "core/messenger/Messenger.hpp"
-
 #include "core/utils/file.h"
 #include "core/utils/log.h"
+
+#include <Math/RotationZYX.h>
 
 #include <IMPL/LCCollectionVec.h>
 #include <IMPL/LCEventImpl.h>
@@ -174,7 +175,6 @@ void LCIOWriterModule::finalize() {
             geometry_file << "        <layer>" << std::endl;
 
             auto position = detector->getPosition();
-            auto orientation = detector->getOrientation();
 
             auto model = detector->getModel();
             auto npixels = model->getNPixels();
@@ -188,7 +188,10 @@ void LCIOWriterModule::finalize() {
             geometry_file << "            positionX=\"" << Units::convert(position.x(), "mm") << "\"\tpositionY=\""
                           << Units::convert(position.y(), "mm") << "\"\tpositionZ=\"" << Units::convert(position.z(), "mm")
                           << "\"" << std::endl;
-            // FIXME rotation
+            ROOT::Math::RotationZYX rotations(detector->getOrientation().Inverse());
+            geometry_file << "            rotationZY=\"" << Units::convert(-rotations.Psi(), "deg") << "\"     rotationZX=\""
+                          << Units::convert(-rotations.Theta(), "deg") << "\"   rotationXY=\""
+                          << Units::convert(-rotations.Phi(), "deg") << "\"" << std::endl;
             geometry_file << "            sizeX=\"" << Units::convert(total_size.x(), "mm") << "\"\tsizeY=\""
                           << Units::convert(total_size.y(), "mm") << "\"\tthickness=\""
                           << Units::convert(total_size.z(), "mm") << "\"" << std::endl;
@@ -208,13 +211,8 @@ void LCIOWriterModule::finalize() {
             geometry_file << "            pitchX=\"" << Units::convert(pitch.x(), "mm") << "\"\tpitchY=\""
                           << Units::convert(pitch.y(), "mm") << "\"\tresolution=\""
                           << Units::convert(pitch.x() / std::sqrt(12), "mm") << "\"" << std::endl;
-
-            std::vector<double> components(9);
-            orientation.GetComponents(components.begin(), components.end());
-            geometry_file << "            rotation1=\"" << components.at(0) << "\"\trotation2=\"" << components.at(1) << "\""
-                          << std::endl;
-            geometry_file << "            rotation3=\"" << components.at(3) << "\"\trotation4=\"" << components.at(4) << "\""
-                          << std::endl;
+            geometry_file << "            rotation1=\"1.0\"\trotation2=\"0.0\"" << std::endl;
+            geometry_file << "            rotation3=\"0.0\"\trotation4=\"1.0\"" << std::endl;
             geometry_file << "            radLength=\"93.65\"" << std::endl;
             geometry_file << "            />" << std::endl;
 
