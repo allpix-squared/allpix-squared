@@ -40,8 +40,8 @@ std::stringstream listkeys(TDirectoryFile* dir) {
         } else if(cl->InheritsFrom("string")) {
             std::string key = entry->GetName();
             std::string value = (*(string*)entry->ReadObj());
-            // If the value is empty, omit the key:
-            if(value == "" || value == "\"\"") {
+            // Omit empty "input" and "output" keys:
+            if((key == "input" || name == "output") && (value == "" || value == "\"\"")) {
                 continue;
             }
             // If the name has already been specified, omit:
