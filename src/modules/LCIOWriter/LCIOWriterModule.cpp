@@ -166,7 +166,7 @@ void LCIOWriterModule::finalize() {
         geometry_file << "    <detector name=\"SiPlanes\" geartype=\"SiPlanesParameters\">" << std::endl;
         geometry_file << "      <siplanesType type=\"TelescopeWithoutDUT\"/>" << std::endl;
         geometry_file << "      <siplanesNumber number=\"" << detectors.size() << "\"/>" << std::endl;
-        geometry_file << "      <siplanesID ID=\"" << detectors.size() << "\"/>" << std::endl;
+        geometry_file << "      <siplanesID ID=\"" << 0 << "\"/>" << std::endl;
         geometry_file << "      <layers>" << std::endl;
 
         for(auto& detector : detectors) {
@@ -204,8 +204,8 @@ void LCIOWriterModule::finalize() {
             geometry_file << "            positionX=\"" << Units::convert(position.x(), "mm") << "\"\tpositionY=\""
                           << Units::convert(position.y(), "mm") << "\"\tpositionZ=\"" << Units::convert(position.z(), "mm")
                           << "\"" << std::endl;
-            geometry_file << "            sizeX=\"" << Units::convert(sensitive_size.x(), "mm") << "\"\tsizeY=\""
-                          << Units::convert(sensitive_size.y(), "mm") << "\"\tthickness=\""
+            geometry_file << "            sizeX=\"" << Units::convert(npixels.x() * pitch.x(), "mm") << "\"\tsizeY=\""
+                          << Units::convert(npixels.y() * pitch.y(), "mm") << "\"\tthickness=\""
                           << Units::convert(sensitive_size.z(), "mm") << "\"" << std::endl;
             geometry_file << "            npixelX=\"" << npixels.x() << "\"\tnpixelY=\"" << npixels.y() << "\"" << std::endl;
             geometry_file << "            pitchX=\"" << Units::convert(pitch.x(), "mm") << "\"\tpitchY=\""
