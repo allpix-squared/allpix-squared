@@ -49,17 +49,36 @@ void GeometryManager::load(const Configuration& global_config) {
     for(auto& detector_section : reader.getConfigurations()) {
         // Get the position and orientation
         auto position = detector_section.get<ROOT::Math::XYZPoint>("position", ROOT::Math::XYZPoint());
-        auto orient_vec = detector_section.get<ROOT::Math::XYZVector>("orientation", ROOT::Math::XYZVector());
 
         auto orientation_type = detector_section.get<std::string>("orientation_type", "zyx");
         ROOT::Math::Rotation3D orientation;
 
-        if(orientation_type == "zyx") {
+        if(orientation_type == "matrix") {
+            auto orient_matrix = detector_section.getMatrix<double>("orientation");
+            // Check correct dimensions:
+            auto elements = std::minmax_element(
+                std::begin(orient_matrix),
+                std::end(orient_matrix),
+                [](const std::vector<double>& lhs, const std::vector<double>& rhs) { return lhs.size() < rhs.size(); });
+            if(orient_matrix.size() != 3 || elements.first->size() != 3 || elements.second->size() != 3) {
+                throw InvalidValueError(
+                    detector_section, "orientation", "orientation matrix is required to have dimensions 3x3");
+            } else {
+                LOG(TRACE) << "Read rotation matrix with dimensions 3x3";
+            }
+            ROOT::Math::XYZVector row_x(orient_matrix.at(0).at(0), orient_matrix.at(1).at(0), orient_matrix.at(2).at(0));
+            ROOT::Math::XYZVector row_y(orient_matrix.at(0).at(1), orient_matrix.at(1).at(1), orient_matrix.at(2).at(1));
+            ROOT::Math::XYZVector row_z(orient_matrix.at(0).at(2), orient_matrix.at(1).at(2), orient_matrix.at(2).at(2));
+            orientation = ROOT::Math::Rotation3D(row_x, row_y, row_z);
+        } else if(orientation_type == "zyx") {
+            auto orient_vec = detector_section.get<ROOT::Math::XYZVector>("orientation", ROOT::Math::XYZVector());
             orientation = ROOT::Math::RotationZYX(orient_vec.z(), orient_vec.y(), orient_vec.x());
         } else if(orientation_type == "xyz") {
+            auto orient_vec = detector_section.get<ROOT::Math::XYZVector>("orientation", ROOT::Math::XYZVector());
             orientation = ROOT::Math::RotationZ(orient_vec.z()) * ROOT::Math::RotationY(orient_vec.y()) *
                           ROOT::Math::RotationX(orient_vec.x());
         } else if(orientation_type == "zxz") {
+            auto orient_vec = detector_section.get<ROOT::Math::XYZVector>("orientation", ROOT::Math::XYZVector());
             orientation = ROOT::Math::EulerAngles(orient_vec.x(), orient_vec.y(), orient_vec.z());
         } else {
             throw InvalidValueError(

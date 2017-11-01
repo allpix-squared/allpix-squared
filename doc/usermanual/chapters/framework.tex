@@ -361,13 +361,31 @@ Every detector has a set of properties attached to it:
 \item The \textbf{position} in the world frame.
 This is the position of the geometric center of the sensitive device (sensor) given in world coordinates as X, Y and Z (note that any additional components like the chip and possible support layers are ignored when determining the geometric center).
 \item An \textbf{orientation\_mode} that determines the way the orientation is applied.
-It can be either \texttt{zyx}, \texttt{xyz} or \texttt{zxz}, where \textbf{\texttt{zyx} is used if the parameter is not specified}.
+It can be either \texttt{zyx}, \texttt{xyz}, \texttt{zxz} or \texttt{matrix}, where \textbf{\texttt{zyx} is used if the parameter is not specified}. For the three first options, three angles are expected as input, while the matrix mode requires a matrix.
 \begin{itemize}
     \item The \texttt{xyz} option uses the \textbf{extrinsic Z-Y-X convention} for Euler angles, also known as the 321 convention. The rotation is represented by three angles describing first a rotation of an angle $\phi$ (yaw) about the $Z$ axis, followed by a rotation of an angle $\theta$ (pitch) about the new $Y'$ axis, followed by a third rotation of an angle $\psi$ (roll) about the final $X''$ axis.
     \item The \texttt{xyz} option uses extrinsic Euler angles to apply an rotation around the X-axis, followed by an rotation around the original global Y-axis and finally an rotation around the global Z-axis.
     \item The \texttt{zxz} uses the \textbf{extrinsic Z-X-Z convention} for Euler angles instead. This option is also known as the 3-1-3 or the "x-convention" and the most widely used definition of Euler angles~\cite{eulerangles}.
+    \item The \texttt{matrix} mode allows to directly specify the $3\times3$ rotation matrix to be used.
 \end{itemize}
-\item The \textbf{orientation} to specify the Euler angles in logical order, interpreted using the method above (or with the \texttt{xyz} method if the \textbf{orientation\_mode} is not specified).
+\item The \textbf{orientation} to specify the Euler angles in logical order (first x, then y, then z), interpreted using the method above (or with the \texttt{xyz} method if the \textbf{orientation\_mode} is not specified). An example for three Euler angles would be
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+orientation = 12deg 10deg 45deg
+\end{minted}
+which describes the rotation of \SI{45}{\degree} around the $Z$ axis, followed by a \SI{10}{\degree} rotation around the new $Y'$ axis, and finally a rotation of \SI{12}{\degree} around the new $X''$ axis.
+
+If \textbf{orientation\_mode} is set to \texttt{matrix}, a $3\times3$ rotation matrix is expected. The matrix uses the row-major C convention, i.e.\ different rows of the rotation matrix are interpreted as row vectors and the configuration
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+orientation = [a, b, c], [d, e, f], [g, h, i]
+\end{minted}
+would translate into the following rotation matrix $\mathcal{M}$:
+$$
+\mathcal{M} = \begin{pmatrix}
+a & b & c \\
+d & e & f \\
+g & h & i
+\end{pmatrix}
+$$
 \item A \textbf{type} of a detector model, for example \emph{hybrid} or \emph{monolithic}.
 The model defines the geometry and parameters of the detector.
 Multiple detectors can share the same model.
