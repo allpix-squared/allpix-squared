@@ -17,6 +17,7 @@
 #include <Math/RotationX.h>
 #include <Math/RotationY.h>
 #include <Math/RotationZ.h>
+#include <Math/RotationZYX.h>
 #include <Math/Vector3D.h>
 
 #include "GeometryManager.hpp"
@@ -50,10 +51,12 @@ void GeometryManager::load(const Configuration& global_config) {
         auto position = detector_section.get<ROOT::Math::XYZPoint>("position", ROOT::Math::XYZPoint());
         auto orient_vec = detector_section.get<ROOT::Math::XYZVector>("orientation", ROOT::Math::XYZVector());
 
-        auto orientation_type = detector_section.get<std::string>("orientation_type", "xyz");
+        auto orientation_type = detector_section.get<std::string>("orientation_type", "zyx");
         ROOT::Math::Rotation3D orientation;
 
-        if(orientation_type == "xyz") {
+        if(orientation_type == "zyx") {
+            orientation = ROOT::Math::RotationZYX(orient_vec.z(), orient_vec.y(), orient_vec.x());
+        } else if(orientation_type == "xyz") {
             orientation = ROOT::Math::RotationZ(orient_vec.z()) * ROOT::Math::RotationY(orient_vec.y()) *
                           ROOT::Math::RotationX(orient_vec.x());
         } else if(orientation_type == "zxz") {
