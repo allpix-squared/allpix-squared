@@ -95,7 +95,7 @@ void DetectorHistogrammerModule::init() {
 
     // Create number of clusters plot
     std::string n_cluster_name = "n_cluster";
-    std::string n_cluster_title = "Number of clusters for " + detector_->getName() + ";size;clusters";
+    std::string n_cluster_title = "Number of clusters for " + detector_->getName() + ";clusters;events";
     n_cluster = new TH1I(n_cluster_name.c_str(),
                          n_cluster_title.c_str(),
                          model->getNPixels().x() * model->getNPixels().y(),
