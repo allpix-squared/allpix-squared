@@ -80,6 +80,10 @@ namespace allpix {
             Matrix<T> matrix;
             auto node = parse_value(str);
             for(auto& child : node->children) {
+                if(child->children.empty()) {
+                    throw std::invalid_argument("matrix has less than two dimensions");
+                }
+
                 std::vector<T> array;
                 // Create subarray of matrix
                 for(auto& subchild : child->children) {
@@ -89,10 +93,6 @@ namespace allpix {
                         throw InvalidKeyError(key, getName(), subchild->value, typeid(T), e.what());
                     }
                 }
-                if(!child->value.empty()) {
-                    throw std::invalid_argument("matrix has less than two dimensions");
-                }
-
                 matrix.push_back(array);
             }
             return matrix;
