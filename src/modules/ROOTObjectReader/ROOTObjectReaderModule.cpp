@@ -30,7 +30,7 @@
 using namespace allpix;
 
 ROOTObjectReaderModule::ROOTObjectReaderModule(Configuration config, Messenger* messenger, GeometryManager* geo_mgr)
-    : Module(config), config_(std::move(config)), messenger_(messenger), geo_mgr_(geo_mgr) {}
+    : Module(std::move(config)), messenger_(messenger), geo_mgr_(geo_mgr) {}
 
 /**
  * @note Objects cannot be stored in smart pointers due to internal ROOT logic

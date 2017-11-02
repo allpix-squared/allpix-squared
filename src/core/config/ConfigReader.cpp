@@ -43,6 +43,55 @@ void ConfigReader::copy_init_map() {
 }
 
 /**
+ * @throws KeyValueParseError If the key / value pair could not be parsed
+ *
+ * The key / value pair is split according to the format specifications
+ */
+std::pair<std::string, std::string> ConfigReader::parseKeyValue(std::string line) {
+    line = allpix::trim(line);
+    size_t equals_pos = line.find('=');
+    if(equals_pos != std::string::npos) {
+        std::string key = trim(std::string(line, 0, equals_pos));
+        std::string value = trim(std::string(line, equals_pos + 1));
+        char last_quote = 0;
+        for(size_t i = 0; i < value.size(); ++i) {
+            if(value[i] == '\'' || value[i] == '\"') {
+                if(last_quote == 0) {
+                    last_quote = value[i];
+                } else if(last_quote == value[i]) {
+                    last_quote = 0;
+                }
+            }
+            if(last_quote == 0 && value[i] == '#') {
+                value = std::string(value, 0, i);
+                break;
+            }
+        }
+
+        // Check if key contains only alphanumeric or underscores
+        bool valid_key = true;
+        for(auto& ch : key) {
+            if(isalnum(ch) == 0 && ch != '_' && ch != '.' && ch != ':') {
+                valid_key = false;
+                break;
+            }
+        }
+
+        // Check if value is not empty and key is valid
+        if(!valid_key) {
+            throw KeyValueParseError(line, "key is not valid");
+        }
+        if(value.empty()) {
+            throw KeyValueParseError(line, "value is empty");
+        }
+
+        return std::make_pair(key, allpix::trim(value));
+    }
+    // Key / value pair does not contain equal sign
+    throw KeyValueParseError(line, "missing equality sign to split key and value");
+}
+
+/**
  * @throws ConfigParseError If an error occurred during the parsing of the stream
  *
  * The configuration is immediately parsed and all of its configurations are available after the functions returns.
@@ -69,56 +118,54 @@ void ConfigReader::add(std::istream& stream, std::string file_name) {
         std::getline(stream, line);
         ++line_num;
 
-        // Find equal sign
-        size_t equals_pos = line.find('=');
-        if(equals_pos == std::string::npos) {
-            line = allpix::trim(line);
+        // Ignore empty lines or comments
+        if(line.empty() || line.front() == '#') {
+            continue;
+        }
 
-            // Ignore empty lines or comments
-            if(line == "" || line[0] == '#') {
-                continue;
-            }
-
-            // Parse new section
-            if(line[0] == '[' && line[line.length() - 1] == ']') {
-                // Ignore empty sections if they contain no configurations
-                if(!conf.getName().empty() || conf.countSettings() > 0) {
-                    // Add previous section
-                    addConfiguration(conf);
-                }
-
-                // Begin new section
-                section_name = std::string(line, 1, line.length() - 2);
-                conf = Configuration(section_name, file_name);
-            } else {
-                // FIXME: should be a bit more helpful...
-                throw ConfigParseError(file_name, line_num);
-            }
-        } else {
-            std::string key = trim(std::string(line, 0, equals_pos));
-
-            std::string value = trim(std::string(line, equals_pos + 1));
-            char ins = 0;
-            for(size_t i = 0; i < value.size(); ++i) {
-                if(value[i] == '\'' || value[i] == '\"') {
-                    if(ins == 0) {
-                        ins = value[i];
-                    } else if(ins == value[i]) {
-                        ins = 0;
-                    }
-                }
-                if(ins == 0 && value[i] == '#') {
-                    value = std::string(value, 0, i);
+        // Check if section header or key-value pair
+        if(line.front() == '[') {
+            // Line should be a section header with an alphanumeric name
+            size_t idx = 1;
+            for(; idx < line.length() - 1; ++idx) {
+                if(isalnum(line[idx]) == 0 && line[idx] != '_') {
                     break;
                 }
             }
+            std::string remain = allpix::trim(line.substr(idx + 1));
+            if(line[idx] == ']' && (remain.empty() || remain.front() == '#')) {
+                // Ignore empty sections if they contain no configurations
+                if(!conf.getName().empty() || conf.countSettings() > 0) {
+                    // Add previous section
+                    addConfiguration(std::move(conf));
+                }
 
-            // Add the config key
-            conf.setText(key, trim(value));
+                // Begin new section
+                section_name = std::string(line, 1, idx - 1);
+                conf = Configuration(section_name, file_name);
+            } else {
+                // Section header is not valid
+                throw ConfigParseError(file_name, line_num);
+            }
+        } else if(isalpha(line.front()) != 0) {
+            // Line should be a key / value pair with an equal sign
+            try {
+                // Parse the key value pair
+                auto key_value = parseKeyValue(line);
+
+                // Add the config key
+                conf.setText(key_value.first, key_value.second);
+            } catch(KeyValueParseError& e) {
+                // Rethrow key / value parse error as a configuration parse error
+                throw ConfigParseError(file_name, line_num);
+            }
+        } else {
+            // Line is not a comment, key/value pair or section header
+            throw ConfigParseError(file_name, line_num);
         }
     }
     // Add last section
-    addConfiguration(conf);
+    addConfiguration(std::move(conf));
 }
 
 void ConfigReader::addConfiguration(Configuration config) {

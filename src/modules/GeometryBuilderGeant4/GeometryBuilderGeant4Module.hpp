@@ -45,7 +45,6 @@ namespace allpix {
         void init() override;
 
     private:
-        Configuration config_;
         GeometryManager* geo_manager_;
 
         // Geant4 run manager is owned by this module

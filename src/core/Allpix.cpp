@@ -34,7 +34,7 @@ using namespace allpix;
  * - Set the log level and log format as requested.
  * - Load the detector configuration and parse it
  */
-Allpix::Allpix(std::string config_file_name)
+Allpix::Allpix(std::string config_file_name, std::vector<std::string> options)
     : terminate_(false), has_run_(false), msg_(std::make_unique<Messenger>()), mod_mgr_(std::make_unique<ModuleManager>()),
       geo_mgr_(std::make_unique<GeometryManager>()) {
     // Load the global configuration
@@ -44,6 +44,11 @@ Allpix::Allpix(std::string config_file_name)
     conf_mgr_->setGlobalHeaderName("Allpix");
     conf_mgr_->addGlobalHeaderName("");
     conf_mgr_->addIgnoreHeaderName("Ignore");
+
+    // Parse all the options
+    for(auto& option : options) {
+        conf_mgr_->parseOption(option);
+    }
 
     // Fetch the global configuration
     Configuration global_config = conf_mgr_->getGlobalConfiguration();
@@ -81,6 +86,7 @@ Allpix::Allpix(std::string config_file_name)
     if(global_config.has("log_file")) {
         // NOTE: this stream should be available for the duration of the logging
         log_file_.open(global_config.getPath("log_file"), std::ios_base::out | std::ios_base::trunc);
+        LOG(TRACE) << "Added log stream to file " << global_config.getPath("log_file");
         Log::addStream(log_file_);
     }
 
@@ -137,18 +143,29 @@ void Allpix::load() {
         // Use config specified one if available
         directory = global_config.getPath("output_directory");
     }
-    // Delete previous output directory if it exists
+
+    // Use existing output directory if it exists
+    bool create_output_dir = true;
     if(allpix::path_is_directory(directory)) {
-        LOG(DEBUG) << "Deleting previous output directory";
-        allpix::remove_path(directory);
+        if(global_config.get<bool>("purge_output_directory", false)) {
+            LOG(DEBUG) << "Deleting previous output directory " << directory;
+            allpix::remove_path(directory);
+        } else {
+            LOG(DEBUG) << "Output directory " << directory << " already exists";
+            create_output_dir = false;
+        }
     }
     // Create the output directory
     try {
-        allpix::create_directories(directory);
+        if(create_output_dir) {
+            LOG(DEBUG) << "Creating output directory " << directory;
+            allpix::create_directories(directory);
+        }
+        // Change to the new/existing output directory
         gSystem->ChangeDirectory(directory.c_str());
     } catch(std::invalid_argument& e) {
         LOG(ERROR) << "Cannot create output directory " << directory << ": " << e.what()
-                   << ". Using current directory instead!";
+                   << ". Using current directory instead.";
     }
 
     // Enable relevant multithreading if needed (disabled by default)

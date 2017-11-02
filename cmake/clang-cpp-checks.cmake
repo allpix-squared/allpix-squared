@@ -25,12 +25,12 @@ IF(CLANG_FORMAT)
         ${CLANG_FORMAT}
         -style=file
         -output-replacements-xml
-        ${CHECK_CXX_SOURCE_FILES} 
+        ${CHECK_CXX_SOURCE_FILES}
         # print output
-        | tee ${CMAKE_BINARY_DIR}/check_format_file.txt | grep -c "replacement " | 
+        | tee ${CMAKE_BINARY_DIR}/check_format_file.txt | grep -c "replacement " |
                 tr -d "[:cntrl:]" && echo " replacements necessary"
         # WARNING: fix to stop with error if there are problems
-        COMMAND ! grep -c "replacement " 
+        COMMAND ! grep -c "replacement "
                   ${CMAKE_BINARY_DIR}/check_format_file.txt > /dev/null
         COMMENT "Checking format compliance"
     )
@@ -53,7 +53,7 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # Enable checking and formatting through run-clang-tidy if available
     # FIXME Make finding this program more portable
     GET_FILENAME_COMPONENT(CLANG_DIR ${CLANG_TIDY} DIRECTORY)
-    FIND_PROGRAM(RUN_CLANG_TIDY "run-clang-tidy.py" HINTS /usr/share/clang/ ${CLANG_DIR}/../share/clang/)
+    FIND_PROGRAM(RUN_CLANG_TIDY NAMES "run-clang-tidy.py" "run-clang-tidy-4.0.py" HINTS /usr/share/clang/ ${CLANG_DIR}/../share/clang/ /usr/bin/)
     IF(RUN_CLANG_TIDY)
         # Set export commands on
         SET (CMAKE_EXPORT_COMPILE_COMMANDS ON)

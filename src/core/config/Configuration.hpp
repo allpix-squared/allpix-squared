@@ -11,6 +11,7 @@
 #define ALLPIX_CONFIGURATION_H
 
 #include <map>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -19,6 +20,8 @@
 #include "exceptions.h"
 
 namespace allpix {
+
+    template <typename T> using Matrix = std::vector<std::vector<T>>;
 
     /**
      * @brief Generic configuration object storing keys
@@ -35,6 +38,22 @@ namespace allpix {
          * @param path Path to the file containing the configuration (or empty if not stored in a file)
          */
         explicit Configuration(std::string name = "", std::string path = "");
+
+        /// @{
+        /**
+         * @brief Allow copying the configuration
+         */
+        Configuration(const Configuration&) = default;
+        Configuration& operator=(const Configuration&) = default;
+        /// @}
+
+        /// @{
+        /**
+         * @brief Allow moving the configuration
+         */
+        Configuration(Configuration&&) noexcept = default;
+        Configuration& operator=(Configuration&&) noexcept = default;
+        /// @}
 
         /**
          * @brief Check if key is defined
@@ -65,6 +84,12 @@ namespace allpix {
          */
         // TODO [doc] Provide second template parameter to specify the vector type to return it in
         template <typename T> std::vector<T> getArray(const std::string& key) const;
+        /**
+         * @brief Get values for a key containing a 2D matrix
+         * @param key Key to get values of
+         * @return Matrix of values from the requested template parameter
+         */
+        template <typename T> Matrix<T> getMatrix(const std::string& key) const;
 
         /**
          * @brief Get literal value of a key as string
@@ -133,10 +158,10 @@ namespace allpix {
         void setText(const std::string& key, const std::string& val);
 
         /**
-           * @brief Set alias name for an already existing key
-           * @param new_key New alias to be created
-           * @param old_key Key the alias is created for
-           */
+         * @brief Set alias name for an already existing key
+         * @param new_key New alias to be created
+         * @param old_key Key the alias is created for
+         */
         void setAlias(const std::string& new_key, const std::string& old_key);
 
         /**
@@ -150,6 +175,12 @@ namespace allpix {
          * @return Configuration name
          */
         std::string getName() const;
+
+        /**
+         * @brief Set name of the configuration header
+         */
+        void setName(const std::string& name);
+
         /**
          * @brief Get path to the file containing the configuration if it has one
          * @return Absolute path to configuration file or empty if not linked to a file
@@ -178,6 +209,21 @@ namespace allpix {
          * @param canonicalize_path If the path should be canonicalized (throws an error if the path does not exist)
          */
         std::string path_to_absolute(std::string path, bool canonicalize_path) const;
+
+        /**
+         * @brief Node in a parse tree
+         */
+        struct parse_node {
+            std::string value;
+            std::vector<std::unique_ptr<parse_node>> children;
+        };
+        /**
+         * @brief Generate parse tree from configuration string
+         * @param str String to parse
+         * @param depth Current depth of the parsing (starts at zero)
+         * @return Root node of the parsed tree
+         */
+        static std::unique_ptr<parse_node> parse_value(std::string str, int depth = 0);
 
         std::string name_;
         std::string path_;

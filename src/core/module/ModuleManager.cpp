@@ -57,7 +57,17 @@ void ModuleManager::load(Messenger* messenger,
     std::vector<Configuration> configs = conf_manager->getConfigurations();
     global_config_ = conf_manager->getGlobalConfiguration();
 
-    auto path = std::string(gSystem->pwd()) + "/" + global_config_.get<std::string>("root_file", "modules") + ".root";
+    // (Re)create the main ROOT file
+    auto path = std::string(gSystem->pwd()) + "/" + global_config_.get<std::string>("root_file", "modules");
+    path = allpix::add_file_extension(path, "root");
+
+    if(allpix::path_is_file(path)) {
+        if(global_config_.get<bool>("deny_overwrite", false)) {
+            throw RuntimeError("Overwriting of existing main ROOT file " + path + " denied");
+        }
+        LOG(WARNING) << "Main ROOT file " << path << " exists and will be overwritten.";
+        allpix::remove_file(path);
+    }
     modules_file_ = std::make_unique<TFile>(path.c_str(), "RECREATE");
     if(modules_file_->IsZombie()) {
         throw RuntimeError("Cannot create main ROOT file " + path);
@@ -171,9 +181,15 @@ void ModuleManager::load(Messenger* messenger,
             unique = reinterpret_cast<bool (*)()>(uniqueFunction)(); // NOLINT
         }
 
+        // Apply the module specific options to the module configuration
+        conf_manager->applyOptions(config.getName(), config);
+
         // Add the global internal parameters to the configuration
         std::string global_dir = gSystem->pwd();
         config.set<std::string>("_global_dir", global_dir);
+
+        // Set default file protection setting, inherited from the global setting:
+        config.setDefault<bool>("deny_overwrite", global_config_.get<bool>("deny_overwrite", false));
 
         // Set default input and output name
         config.setDefault<std::string>("input", "");
@@ -183,9 +199,10 @@ void ModuleManager::load(Messenger* messenger,
         std::vector<std::pair<ModuleIdentifier, Module*>> mod_list;
         if(unique) {
             mod_list.emplace_back(
-                create_unique_modules(loaded_libraries_[lib_name], config, messenger, geo_manager, seeder));
+                create_unique_modules(loaded_libraries_[lib_name], config, conf_manager, messenger, geo_manager, seeder));
         } else {
-            mod_list = create_detector_modules(loaded_libraries_[lib_name], config, messenger, geo_manager, seeder);
+            mod_list =
+                create_detector_modules(loaded_libraries_[lib_name], config, conf_manager, messenger, geo_manager, seeder);
         }
 
         // Loop through all created instantiations
@@ -230,8 +247,12 @@ void ModuleManager::load(Messenger* messenger,
 /**
  * For unique modules a single instance is created per section
  */
-std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
-    void* library, Configuration config, Messenger* messenger, GeometryManager* geo_manager, std::mt19937_64& seeder) {
+std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* library,
+                                                                          Configuration& config,
+                                                                          ConfigManager* conf_manager,
+                                                                          Messenger* messenger,
+                                                                          GeometryManager* geo_manager,
+                                                                          std::mt19937_64& seeder) {
     // Make the vector to return
     std::string module_name = config.getName();
 
@@ -263,6 +284,9 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
         LOG(ERROR) << "Module library is invalid or outdated: required interface function not found!";
         throw allpix::DynamicLibraryError(module_name);
     }
+
+    // Apply instantiation specific options
+    conf_manager->applyOptions(identifier.getUniqueName(), config);
 
     // Add internal module config
     config.set<std::string>("_unique_name", identifier.getUniqueName());
@@ -310,8 +334,12 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
  * For detector modules multiple instantiations may be created per section. An instantiation is created for every detector if
  * no selection parameters are provided. Otherwise instantiations are created for every linked detector name and type.
  */
-std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector_modules(
-    void* library, Configuration config, Messenger* messenger, GeometryManager* geo_manager, std::mt19937_64& seeder) {
+std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector_modules(void* library,
+                                                                                         Configuration& config,
+                                                                                         ConfigManager* conf_manager,
+                                                                                         Messenger* messenger,
+                                                                                         GeometryManager* geo_manager,
+                                                                                         std::mt19937_64& seeder) {
     std::string module_name = config.getName();
     LOG(DEBUG) << "Creating instantions for detector module " << module_name;
 
@@ -388,6 +416,9 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         LOG(DEBUG) << "Creating detector instantiation " << instance.second.getUniqueName();
         // Get current time
         auto start = std::chrono::steady_clock::now();
+
+        // Apply instantiation specific options
+        conf_manager->applyOptions(instance.second.getUniqueName(), config);
 
         // Add internal module config
         config.set<std::string>("_unique_name", instance.second.getUniqueName());
@@ -710,6 +741,16 @@ static std::string seconds_to_time(long double seconds) {
  * after finalization. No method will be called after finalizing the module (except the destructor).
  */
 void ModuleManager::finalize() {
+
+    // Collect the modules' configurations as used during the simulation:
+    LOG(TRACE) << "Collecting module configurations...";
+    ConfigReader final_configurations;
+    for(auto& module : modules_) {
+        auto config = module->config_;
+        config.setName(module->getUniqueName());
+        final_configurations.addConfiguration(std::move(config));
+    }
+
     LOG_PROGRESS(TRACE, "FINALIZE_LOOP") << "Finalizing module instantiations";
     for(auto& module : modules_) {
         LOG_PROGRESS(TRACE, "FINALIZE_LOOP") << "Finalizing " << module->get_identifier().getUniqueName();
@@ -723,6 +764,8 @@ void ModuleManager::finalize() {
         Log::setSection(section_name);
         // Set module specific settings
         auto old_settings = set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
+        // Supply final configurations to the module
+        module->set_final_configuration(final_configurations);
         // Change to our ROOT directory
         module->getROOTDirectory()->cd();
         // Finalize module

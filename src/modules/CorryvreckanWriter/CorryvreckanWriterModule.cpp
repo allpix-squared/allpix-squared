@@ -12,12 +12,13 @@
 #include <string>
 #include <utility>
 
+#include "core/utils/file.h"
 #include "core/utils/log.h"
 
 using namespace allpix;
 
 CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration config, Messenger* messenger, GeometryManager* geoManager)
-    : Module(config), messenger_(messenger), config_(std::move(config)), geometryManager_(geoManager) {
+    : Module(std::move(config)), messenger_(messenger), geometryManager_(geoManager) {
     // ... Implement ... (Typically bounds the required messages and optionally sets configuration defaults)
     LOG(TRACE) << "Initializing module " << getUniqueName();
     // Require PixelCharge messages for single detector
@@ -30,7 +31,8 @@ void CorryvreckanWriterModule::init() {
     LOG(TRACE) << "Initialising module " << getUniqueName();
 
     // Create output file and directories
-    fileName_ = getOutputPath(config_.get<std::string>("file_name", "corryvreckanOutput") + ".root", true);
+    fileName_ = createOutputFile(
+        allpix::add_file_extension(config_.get<std::string>("file_name", "corryvreckanOutput"), "root"), true);
     outputFile_ = std::make_unique<TFile>(fileName_.c_str(), "RECREATE");
     outputFile_->cd();
     outputFile_->mkdir("pixels");
@@ -74,8 +76,11 @@ void CorryvreckanWriterModule::run(unsigned int) {
             // Make a new output pixel
             unsigned int pixelX = allpix_pixel.getPixel().getIndex().X();
             unsigned int pixelY = allpix_pixel.getPixel().getIndex().Y();
-            unsigned int adc = allpix_pixel.getPixel().getIndex().Y();
-            corryvreckan::Pixel* outputPixel = new corryvreckan::Pixel(detectorID, int(pixelX), int(pixelY), int(adc));
+            double adc = allpix_pixel.getSignal();
+            long long int time(time_);
+            corryvreckan::Pixel* outputPixel = new corryvreckan::Pixel(detectorID, int(pixelY), int(pixelX), int(adc), time);
+
+            LOG(DEBUG) << "Pixel (" << pixelX << "," << pixelY << ") written to device " << detectorID;
 
             // Map the pixel to the output tree and write it
             treePixels_[objectID] = outputPixel;
@@ -84,7 +89,7 @@ void CorryvreckanWriterModule::run(unsigned int) {
     }
 
     // Increment the time till the next event
-    time_ += 1;
+    time_ += 10;
 }
 
 // Save the output trees to file

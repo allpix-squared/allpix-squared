@@ -17,6 +17,7 @@
 #include <TClass.h>
 
 #include "core/config/ConfigReader.hpp"
+#include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "core/utils/type.h"
 
@@ -26,7 +27,7 @@
 using namespace allpix;
 
 ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration config, Messenger* messenger, GeometryManager* geo_mgr)
-    : Module(config), config_(std::move(config)), geo_mgr_(geo_mgr) {
+    : Module(std::move(config)), geo_mgr_(geo_mgr) {
     // Bind to all messages
     messenger->registerListener(this, &ROOTObjectWriterModule::receive);
 }
@@ -42,8 +43,9 @@ ROOTObjectWriterModule::~ROOTObjectWriterModule() {
 
 void ROOTObjectWriterModule::init() {
     // Create output file
-    std::string file_name = getOutputPath(config_.get<std::string>("file_name", "data") + ".root", true);
-    output_file_ = std::make_unique<TFile>(file_name.c_str(), "RECREATE");
+    output_file_name_ =
+        createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name", "data"), "root"), true);
+    output_file_ = std::make_unique<TFile>(output_file_name_.c_str(), "RECREATE");
     output_file_->cd();
 
     // Read include and exclude list
@@ -169,34 +171,20 @@ void ROOTObjectWriterModule::finalize() {
         branch_count += tree.second->GetListOfBranches()->GetEntries();
     }
 
-    // Save the main configuration to the output file if possible
-    // FIXME This should be improved to write the information in a more flexible way
-    std::string path = config_.getFilePath();
-    if(!path.empty()) {
-        // Create main config directory
-        TDirectory* config_dir = output_file_->mkdir("config");
-        config_dir->cd();
+    // Create main config directory
+    TDirectory* config_dir = output_file_->mkdir("config");
+    config_dir->cd();
 
-        // Read the configuration
-        std::fstream file(path);
-        ConfigReader full_config(file);
+    // Save the main configuration to the output file
+    for(auto& config : this->get_final_configuration()) {
+        // Create a new directory per section, using the unique module identifiers as names
+        auto section_dir = config_dir->mkdir(config.getName().c_str());
+        LOG(TRACE) << "Writing configuration for: " << config.getName();
 
-        // Loop over all configurations
-        std::map<std::string, int> count_configs;
-        for(auto& config : full_config.getConfigurations()) {
-            // Create a new directory per section (adding a number to make every folder unique)
-            // FIXME Writing with the number is not a very good approach
-            auto section_dir =
-                config_dir->mkdir((config.getName() + "-" + std::to_string(count_configs[config.getName()])).c_str());
-            count_configs[config.getName()]++;
-
-            // Loop over all values in the section
-            for(auto& key_value : config.getAll()) {
-                section_dir->WriteObject(&key_value.second, key_value.first.c_str());
-            }
+        // Loop over all values in the section
+        for(auto& key_value : config.getAll()) {
+            section_dir->WriteObject(&key_value.second, key_value.first.c_str());
         }
-    } else {
-        LOG(ERROR) << "Cannot save main configuration, because the ROOTObjectWriter is not loaded directly from the file";
     }
 
     // Save the detectors to the output file
@@ -234,5 +222,5 @@ void ROOTObjectWriterModule::finalize() {
 
     // Print statistics
     LOG(STATUS) << "Wrote " << write_cnt_ << " objects to " << branch_count << " branches in file:" << std::endl
-                << getOutputPath(config_.get<std::string>("file_name", "data") + ".root", true);
+                << output_file_name_;
 }

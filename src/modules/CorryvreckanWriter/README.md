@@ -7,7 +7,7 @@
 Takes all digitised pixel hits and converts them into Corryvrekan pixel format. These are then written to an output file in the expected format to be read in by the reconstruction software.
 
 #### Parameters
-* `file_name` : Output filename (appended with .root)
+* `file_name` : Output filename (file extension `.root` will be appended if not present)
 
 #### Usage
 Typical usage is:

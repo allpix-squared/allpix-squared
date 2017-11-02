@@ -10,6 +10,9 @@ The particle type can be set via a string (particle_type) or by the respective P
 
 For all particles passing the sensitive device of the detectors, the energy loss is converted into deposited charge carriers in every step of the Geant4 simulation. The information about the truth particle passage is also fully available, with every deposit linked to a MCParticle. The parental hierarchy of the MCParticles is not always available in the current implementation.
 
+With the `output_plots` parameter activated, the module produces histograms of the total deposited charge per event for every sensor in units of kilo-electrons.
+The scale of the plot axis can be adjusted using the `output_plots_scale` parameter and defaults to a maximum of 100ke.
+
 #### Dependencies
 
 This module requires an installation Geant4.
@@ -29,6 +32,8 @@ This module requires an installation Geant4.
 * `beam_divergence` : Standard deviation of the particle angles in x and y from the particle beam
 * `beam_direction` : Direction of the particle as a unit vector.
 * `number_of_particles` : Number of particles to generate in a single event. Defaults to one particle.
+* `output_plots` : Enables output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
+* `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 100ke.
 
 #### Usage
 A possible default configuration to use, simulating a beam of 120 GeV pions with a divergence in x, is the following:

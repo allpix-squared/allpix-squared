@@ -18,6 +18,7 @@
 #include <TDirectory.h>
 
 #include "ThreadPool.hpp"
+#include "core/config/ConfigReader.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
 #include "core/messenger/delegates.h"
@@ -35,8 +36,8 @@ namespace allpix {
     class ModuleIdentifier {
     public:
         /**
-          * @brief Constructs an empty identifier
-          */
+         * @brief Constructs an empty identifier
+         */
         // TODO [doc] Is this method really necessary
         ModuleIdentifier() = default;
         /**
@@ -127,7 +128,7 @@ namespace allpix {
          * @brief Base constructor for unique modules
          * @param config Configuration for this module
          */
-        explicit Module(Configuration config);
+        explicit Module(Configuration&& config);
         /**
          * @brief Base constructor for detector modules
          * @param config Configuration for this module
@@ -135,7 +136,7 @@ namespace allpix {
          * @warning Detector modules should not forget to forward their detector to the base constructor. An
          *          \ref InvalidModuleStateException will be raised if the module failed to so.
          */
-        explicit Module(Configuration config, std::shared_ptr<Detector> detector);
+        explicit Module(Configuration&& config, std::shared_ptr<Detector> detector);
         /**
          * @brief Essential virtual destructor.
          *
@@ -173,13 +174,12 @@ namespace allpix {
         std::string getUniqueName() const;
 
         /**
-         * @brief Get an absolute path to be used for output from a relative path
+         * @brief Create and return an absolute path to be used for output from a relative path
          * @param path Relative path to add after the main output directory
          * @param global True if the global output directory should be used instead of the module-specific version
          * @return Canonical path to an output file
          */
-        // TODO [doc] Should be renamed to getOutputFile
-        std::string getOutputPath(const std::string& path, bool global = false) const;
+        std::string createOutputFile(const std::string& path, bool global = false) const;
 
         /**
          * @brief Get seed to initialize random generators
@@ -234,6 +234,20 @@ namespace allpix {
          */
         void enable_parallelization();
 
+        /**
+         * @brief Get the module configuration for internal use
+         * @return Configuration of the module
+         */
+        Configuration& get_configuration();
+        Configuration config_;
+
+        /**
+         * @brief Get the final configurations of all modules
+         * @return Vector of Configuration objects containing the final configurations for all modules
+         * @throws InvalidModuleActionException If the function is called outside the finalize method
+         */
+        std::vector<Configuration> get_final_configuration();
+
     private:
         /**
          * @brief Set the module identifier for internal use
@@ -248,13 +262,6 @@ namespace allpix {
         ModuleIdentifier identifier_;
 
         /**
-         * @brief Get the module configuration for internal use
-         * @return Configuration of the module
-         */
-        Configuration& get_configuration();
-        Configuration config_;
-
-        /**
          * @brief Set the thread pool for parallel execution
          * @return Thread pool (or null pointer to disable it)
          */
@@ -267,6 +274,14 @@ namespace allpix {
          */
         void set_ROOT_directory(TDirectory* directory);
         TDirectory* directory_{};
+
+        /**
+         * @brief Set the final configuration from all modules in the finalize function
+         * @param config ConfigReader holding all configurations from modules in this simulation
+         */
+        void set_final_configuration(const ConfigReader& config);
+        bool initialized_final_configreader_{false};
+        ConfigReader final_configreader_{};
 
         /**
          * @brief Add a messenger delegate to this instantiation
