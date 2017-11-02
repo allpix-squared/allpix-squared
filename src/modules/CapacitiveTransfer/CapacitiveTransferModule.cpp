@@ -272,7 +272,7 @@ void CapacitiveTransferModule::run(unsigned int) {
                     local_x = pixel_index.x() * model_->getPixelSize().x();
                     local_y = pixel_index.y() * model_->getPixelSize().y();
                     pixel_point = Eigen::Vector3d(local_x, local_y, 0);
-                    pixel_projection = Eigen::Vector3d(plane.projection(pixel_point));
+                    pixel_projection = plane.projection(pixel_point);
                     pixel_gap = pixel_projection[2];
                     // pixel_gap = gap_map->GetBinContent(static_cast<int>(pixel_index.x()+1),
                     // static_cast<int>(pixel_index.y()+1));
