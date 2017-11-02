@@ -65,7 +65,7 @@ namespace allpix {
         void finalize() override;
 
     private:
-        Configuration config_;
+        // Configuration config_;
         Messenger* messenger_;
         std::shared_ptr<Detector> detector_;
         std::shared_ptr<DetectorModel> model_;
@@ -91,10 +91,15 @@ namespace allpix {
 
         // Matrix to store cross-coupling values
         std::vector<std::vector<double>> relative_coupling;
-        unsigned int matrix_rows = 0;
-        unsigned int matrix_cols = 0;
+        unsigned int matrix_rows;
+        unsigned int matrix_cols;
+        unsigned int max_rows;
+        unsigned int max_cols;
 
-        double nominal_gap = 0.0;
+        double nominal_gap;
+        double minimum_gap;
+
+        int cross_coupling;
 
         void getCapacitanceScan(TFile* root_file);
         TGraph* capacitances[9];

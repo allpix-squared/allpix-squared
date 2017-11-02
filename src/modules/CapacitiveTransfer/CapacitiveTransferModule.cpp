@@ -30,10 +30,20 @@ using namespace allpix;
 CapacitiveTransferModule::CapacitiveTransferModule(Configuration config,
                                                    Messenger* messenger,
                                                    std::shared_ptr<Detector> detector)
-    : Module(config, detector), config_(std::move(config)), messenger_(messenger), detector_(std::move(detector)) {
+    //: Module(config, detector), config_(std::move(config)), messenger_(messenger), detector_(std::move(detector)) {
+    : Module(std::move(config), detector), messenger_(messenger), detector_(std::move(detector)) {
     // Save detector model
     model_ = detector_->getModel();
     config_.setDefault("output_plots", 0);
+    config_.setDefault("cross_coupling", 0);
+    if(config_.has("coupling_matrix") || config_.has("matrix_file")) {
+        config_.setDefault("cross_coupling", 1);
+    }
+    if(config_.has("scan_file") || config_.has("matrix_file")) {
+        config_.setDefault("cross_coupling", 1);
+    }
+    config_.setDefault("nominal_gap", 0.0);
+    config_.setDefault("minimum_gap", config_.get<double>("nominal_gap"));
 
     // Require propagated deposits for single detector
     messenger->bindSingle(this, &CapacitiveTransferModule::propagated_message_, MsgFlags::REQUIRED);
@@ -43,8 +53,59 @@ void CapacitiveTransferModule::init() {
 
     // Reading coupling matrix from config file
     if(config_.has("coupling_matrix")) {
+        relative_coupling = config_.getMatrix<double>("coupling_matrix");
         // TODO
-        // relative_coupling = config_.get<Matrix>("coupling_matrix");
+        // if(config_.get<int>("cross_coupling") == 1) {
+        //	max_cols = 3;
+        //	max_rows = 3;
+        //} else {
+        //	max_cols = 1;
+        //	max_rows = 1;
+        //}
+    } else if(config_.has("matrix_file")) {
+        LOG(TRACE) << "Reading cross-coupling matrix file " << config_.get<std::string>("matrix_file");
+        std::ifstream input_file(config_.getPath("matrix_file", true), std::ifstream::in);
+        if(!input_file.good()) {
+            LOG(ERROR) << "Matrix file not found";
+        }
+
+        double dummy = -1;
+        std::string file_line;
+        while(getline(input_file, file_line)) {
+            std::stringstream mystream(file_line);
+            matrix_cols = 0;
+            while(mystream >> dummy) {
+                matrix_cols++;
+            }
+            matrix_rows++;
+        }
+        input_file.clear();
+        input_file.seekg(0, std::ios::beg);
+
+        relative_coupling.resize(matrix_rows);
+        for(auto& el : relative_coupling) {
+            el.resize(matrix_cols);
+        }
+
+        size_t row = matrix_rows - 1, col = 0;
+        while(getline(input_file, file_line)) {
+            std::stringstream mystream(file_line);
+            col = 0;
+            while(mystream >> dummy) {
+                relative_coupling[col][row] = dummy;
+                col++;
+            }
+            row--;
+        }
+        input_file.close();
+        if(config_.get<int>("cross_coupling") == 1) {
+            max_cols = matrix_cols;
+            max_rows = matrix_rows;
+        } else {
+            max_cols = 1;
+            max_rows = 1;
+        }
+        LOG(DEBUG) << matrix_cols << "x" << matrix_rows << " Capacitance matrix imported";
     } else if(config_.has("scan_file")) {
         TFile* root_file = new TFile(config_.getPath("scan_file", true).c_str());
         for(int i = 1; i < 10; i++) {
@@ -53,17 +114,28 @@ void CapacitiveTransferModule::init() {
         }
         matrix_cols = 3;
         matrix_rows = 3;
+        if(config_.get<int>("cross_coupling") == 1) {
+            max_cols = 3;
+            max_rows = 3;
+        } else {
+            max_cols = 1;
+            max_rows = 1;
+        }
+
         root_file->Delete();
 
+        if(config_.has("minimum_gap")) {
+            minimum_gap = config_.get<double>("minimum_gap");
+        }
         if(config_.has("nominal_gap")) {
             nominal_gap = config_.get<double>("nominal_gap");
         }
-        Eigen::Vector3d origin(0, 0, nominal_gap);
+        Eigen::Vector3d origin(0, 0, minimum_gap);
 
         if(config_.has("tilt_center")) {
             center[0] = config_.get<ROOT::Math::XYPoint>("tilt_center").x() * model_->getPixelSize().x();
             center[1] = config_.get<ROOT::Math::XYPoint>("tilt_center").y() * model_->getPixelSize().y();
-            origin = Eigen::Vector3d(center[0], center[1], nominal_gap);
+            origin = Eigen::Vector3d(center[0], center[1], minimum_gap);
         }
 
         Eigen::Vector3d rotated_normal(0, 0, 1);
@@ -135,54 +207,10 @@ void CapacitiveTransferModule::init() {
                 }
             }
         }
+    } else {
+        LOG(ERROR) << "Capacitive coupling was not defined. Please, check the README file for configuration options or use "
+                      "the SimpleTransfer module.";
     }
-    // Reading file with coupling matrix
-    else if(config_.has("matrix_file")) {
-        LOG(TRACE) << "Reading cross-coupling matrix file " << config_.get<std::string>("matrix_file");
-        std::ifstream input_file(config_.getPath("matrix_file", true), std::ifstream::in);
-        if(!input_file.good()) {
-            LOG(ERROR) << "Matrix file not found";
-        }
-
-        double dummy = -1;
-        std::string file_line;
-        while(getline(input_file, file_line)) {
-            std::stringstream mystream(file_line);
-            matrix_cols = 0;
-            while(mystream >> dummy) {
-                matrix_cols++;
-            }
-            matrix_rows++;
-        }
-        input_file.clear();
-        input_file.seekg(0, std::ios::beg);
-
-        relative_coupling.resize(matrix_rows);
-        for(auto& el : relative_coupling) {
-            el.resize(matrix_cols);
-        }
-
-        size_t row = matrix_rows - 1, col = 0;
-        while(getline(input_file, file_line)) {
-            std::stringstream mystream(file_line);
-            col = 0;
-            while(mystream >> dummy) {
-                relative_coupling[col][row] = dummy;
-                col++;
-            }
-            row--;
-        }
-        input_file.close();
-        LOG(DEBUG) << matrix_cols << "x" << matrix_rows << " Capacitance matrix imported";
-    }
-    // If no coupling matrix is provided
-    else {
-        LOG(ERROR)
-            << "Cross-coupling was not defined. Provide a coupling matrix file or a coupling matrix in the config file.";
-    }
-
-    // if(config_.has("output_plots")){
-    //}
 }
 
 void CapacitiveTransferModule::run(unsigned int) {
@@ -216,8 +244,12 @@ void CapacitiveTransferModule::run(unsigned int) {
         Eigen::Vector3d pixel_point;
         Eigen::Vector3d pixel_projection;
 
-        for(size_t row = 0; row < matrix_rows; row++) {
-            for(size_t col = 0; col < matrix_cols; col++) {
+        for(size_t row = 0; row < max_rows; row++) {
+            for(size_t col = 0; col < max_cols; col++) {
+                if(config_.get<int>("cross_coupling") == 0) {
+                    col = static_cast<size_t>(std::floor(matrix_cols / 2));
+                    row = static_cast<size_t>(std::floor(matrix_rows / 2));
+                }
 
                 // Ignore if out of pixel grid
                 if((xpixel + static_cast<int>(col - static_cast<size_t>(std::floor(matrix_cols / 2)))) < 0 ||
