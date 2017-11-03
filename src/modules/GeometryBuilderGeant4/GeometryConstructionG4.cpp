@@ -135,6 +135,7 @@ void GeometryConstructionG4::init_materials() {
     materials_["kapton"] = nistman->FindOrBuildMaterial("G4_KAPTON");
     materials_["copper"] = nistman->FindOrBuildMaterial("G4_Cu");
     materials_["air"] = nistman->FindOrBuildMaterial("G4_AIR");
+    materials_["lead"] = nistman->FindOrBuildMaterial("G4_Pb");
 
     // Create required elements:
     G4Element* H = new G4Element("Hydrogen", "H", 1., 1.01 * CLHEP::g / CLHEP::mole);

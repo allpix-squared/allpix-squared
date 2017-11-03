@@ -74,7 +74,7 @@ In the rest of this format specification the \textit{line} refers to the line wi
 Every other character should lead to an immediate parse error.
 \item If the line starts with a hash character (\texttt{\#}), it is interpreted as comment and all other content on the same line is ignored.
 \item If the line starts with an open square bracket (\texttt{[}), it indicates a section header (also known as configuration header).
-The line should contain an alphanumeric string indicating the header name followed by a closing square bracket (\texttt{]}) to end the header.
+The line should contain a string with alphanumeric characters and underscores, indicating the header name, followed by a closing square bracket (\texttt{]}), to end the header.
 After any number of ignored whitespace characters there could be a \texttt{\#} character.
 If this is the case, the rest of the line is handled as specified in point~3.
 Otherwise there should not be any other character (except the whitespace) on the line.
