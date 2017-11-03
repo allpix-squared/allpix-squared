@@ -1,6 +1,6 @@
 ## CapacitiveTransfer
 **Maintainer**: Mateus Vicente (mvicente@cern.ch)  
-**Status**: Functional (WIP)  
+**Status**: Functional  
 **Input**: *PropagatedCharge*  
 **Output**: *PixelCharge*  
 
