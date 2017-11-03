@@ -205,7 +205,6 @@ void GeometryConstructionG4::build_detectors() {
         orientation.GetComponents(copy_vec.begin(), copy_vec.end());
 
         LOG(DEBUG) << " - Position\t\t:\t" << display_vector(position, {"mm", "um"});
-        LOG(DEBUG) << " - Orientation\t:\t" << display_vector(copy_vec, {"deg"});
 
         G4ThreeVector posWrapper = toG4Vector(position);
         auto rotWrapper = std::make_shared<G4RotationMatrix>(copy_vec.data());

@@ -80,25 +80,27 @@ void GeometryManager::load(const Configuration& global_config, std::mt19937_64& 
                 res_x(random_generator), res_y(random_generator), res_z(random_generator));
         };
 
-        auto misalign_rotation = [&](ROOT::Math::EulerAngles residuals) {
-            std::normal_distribution<double> res_phi(0, residuals.Phi());
-            std::normal_distribution<double> res_theta(0, residuals.Theta());
-            std::normal_distribution<double> res_psi(0, residuals.Psi());
-            return ROOT::Math::EulerAngles(
-                res_phi(random_generator), res_theta(random_generator), res_psi(random_generator));
+        auto misalign_rotation = [&](ROOT::Math::XYZVector residuals) {
+            std::normal_distribution<double> res_phi(0, residuals.z());
+            std::normal_distribution<double> res_theta(0, residuals.y());
+            std::normal_distribution<double> res_psi(0, residuals.x());
+            ROOT::Math::Rotation3D rotation;
+
+            if(orientation_type == "xyz") {
+                rotation = ROOT::Math::RotationZ(res_phi(random_generator)) *
+                           ROOT::Math::RotationY(res_theta(random_generator)) *
+                           ROOT::Math::RotationX(res_psi(random_generator));
+            } else if(orientation_type == "zxz") {
+                rotation = ROOT::Math::EulerAngles(
+                    res_psi(random_generator), res_theta(random_generator), res_phi(random_generator));
+            }
+            return rotation;
         };
 
         position +=
             misalign_shift(detector_section.get<ROOT::Math::XYZPoint>("alignment_precision_shift", ROOT::Math::XYZPoint()));
-        orientation = orientation * misalign_rotation(detector_section.get<ROOT::Math::EulerAngles>(
-                                        "alignment_precision_rotation", ROOT::Math::EulerAngles()));
-
-        if(detector_section.has("alignment_precision_shift")) {
-            LOG(DEBUG) << " - Misaligned position:\t" << display_vector(position, {"mm", "um"});
-        }
-        if(detector_section.has("alignment_precision_rotation")) {
-            LOG(DEBUG) << " - Misaligned rotation:\t" << display_vector(orientation, {"deg"});
-        }
+        orientation = orientation * misalign_rotation(detector_section.get<ROOT::Math::XYZVector>(
+                                        "alignment_precision_rotation", ROOT::Math::XYZVector()));
 
         // Create the detector and add it without model
         // NOTE: cannot use make_shared here due to the private constructor
