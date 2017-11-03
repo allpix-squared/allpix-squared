@@ -30,9 +30,10 @@ using namespace allpix;
 CapacitiveTransferModule::CapacitiveTransferModule(Configuration config,
                                                    Messenger* messenger,
                                                    std::shared_ptr<Detector> detector)
-    //: Module(config, detector), config_(std::move(config)), messenger_(messenger), detector_(std::move(detector)) {
     : Module(std::move(config), detector), messenger_(messenger), detector_(std::move(detector)) {
-    // Save detector model
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+
     model_ = detector_->getModel();
     config_.setDefault("output_plots", 0);
     config_.setDefault("cross_coupling", 0);
