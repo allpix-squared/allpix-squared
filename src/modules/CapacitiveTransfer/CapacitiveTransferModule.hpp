@@ -96,6 +96,7 @@ namespace allpix {
         unsigned int max_rows;
         unsigned int max_cols;
 
+        double normalization;
         double nominal_gap;
         double minimum_gap;
 

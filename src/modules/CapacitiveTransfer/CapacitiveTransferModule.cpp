@@ -36,13 +36,7 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration config,
 
     model_ = detector_->getModel();
     config_.setDefault("output_plots", 0);
-    config_.setDefault("cross_coupling", 0);
-    if(config_.has("coupling_matrix") || config_.has("matrix_file")) {
-        config_.setDefault("cross_coupling", 1);
-    }
-    if(config_.has("scan_file") || config_.has("matrix_file")) {
-        config_.setDefault("cross_coupling", 1);
-    }
+    config_.setDefault("cross_coupling", 1);
     config_.setDefault("nominal_gap", 0.0);
     config_.setDefault("minimum_gap", config_.get<double>("nominal_gap"));
 
@@ -57,8 +51,8 @@ void CapacitiveTransferModule::init() {
         relative_coupling = config_.getMatrix<double>("coupling_matrix");
         // TODO
         // if(config_.get<int>("cross_coupling") == 1) {
-        //	max_cols = 3;
-        //	max_rows = 3;
+        //	max_cols = relative_coupling.size();
+        //	max_rows = relative_coupling.size();
         //} else {
         //	max_cols = 1;
         //	max_rows = 1;
@@ -154,6 +148,7 @@ void CapacitiveTransferModule::init() {
             }
         }
 
+        normalization = 1 / (capacitances[4]->Eval(static_cast<double>(Units::convert(nominal_gap, "um")), nullptr, "S"));
         plane = Eigen::Hyperplane<double, 3>(rotated_normal, origin);
 
         if(config_.get<bool>("output_plots")) {
@@ -223,7 +218,6 @@ void CapacitiveTransferModule::run(unsigned int) {
     for(auto& propagated_charge : propagated_message_->getData()) {
         auto position = propagated_charge.getLocalPosition();
         // Ignore if outside depth range of implant
-        // FIXME This logic should be improved
         if(std::fabs(position.z() - (model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0)) >
            config_.get<double>("max_depth_distance")) {
             LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
@@ -275,13 +269,10 @@ void CapacitiveTransferModule::run(unsigned int) {
                     pixel_point = Eigen::Vector3d(local_x, local_y, 0);
                     pixel_projection = plane.projection(pixel_point);
                     pixel_gap = pixel_projection[2];
-                    // pixel_gap = gap_map->GetBinContent(static_cast<int>(pixel_index.x()+1),
-                    // static_cast<int>(pixel_index.y()+1));
 
-                    ccpd_factor =
-                        capacitances[row * 3 + col]->Eval(
-                            static_cast<double>(Units::convert(pixel_gap, "um")), nullptr, "S") /
-                        capacitances[4]->Eval(static_cast<double>(Units::convert(nominal_gap, "um")), nullptr, "S");
+                    ccpd_factor = capacitances[row * 3 + col]->Eval(
+                                      static_cast<double>(Units::convert(pixel_gap, "um")), nullptr, "S") *
+                                  normalization;
                 } else if(config_.has("capacitance_matrix") || config_.has("matrix_file")) {
                     ccpd_factor = relative_coupling[col][row];
                 } else {
