@@ -93,8 +93,9 @@ namespace allpix {
         std::vector<std::vector<double>> relative_coupling;
         unsigned int matrix_rows;
         unsigned int matrix_cols;
-        unsigned int max_rows;
-        unsigned int max_cols;
+        unsigned int max_row;
+        unsigned int max_col;
+        bool cc_in;
 
         double normalization;
         double nominal_gap;
@@ -111,6 +112,7 @@ namespace allpix {
         double angles[2] = {0.0, 0.0};
         double pixel_gap = 1.0;
 
+        TH2D* coupling_map;
         TH2D* gap_map;
         TH2D* capacitance_map;
         TH2D* relative_capacitance_map;

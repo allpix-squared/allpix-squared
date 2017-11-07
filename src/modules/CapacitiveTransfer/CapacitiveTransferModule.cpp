@@ -46,26 +46,52 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration config,
 
 void CapacitiveTransferModule::init() {
 
+    // Check if more than one coupling model is imported
+    if(config_.has("coupling_matrix") ^ config_.has("coupling_file") ? config_.has("coupling_scan_file")
+                                                                     : config_.has("coupling_matrix")) {
+        throw InvalidValueError(
+            config_, "coupling_*", "More than one coupling input defined. Please, check the README file.");
+    }
+
     // Reading coupling matrix from config file
     if(config_.has("coupling_matrix")) {
         relative_coupling = config_.getMatrix<double>("coupling_matrix");
-        // TODO
-        // if(config_.get<int>("cross_coupling") == 1) {
-        //	max_cols = relative_coupling.size();
-        //	max_rows = relative_coupling.size();
-        //} else {
-        //	max_cols = 1;
-        //	max_rows = 1;
-        //}
-    } else if(config_.has("matrix_file")) {
-        LOG(TRACE) << "Reading cross-coupling matrix file " << config_.get<std::string>("matrix_file");
-        std::ifstream input_file(config_.getPath("matrix_file", true), std::ifstream::in);
+        max_row = static_cast<unsigned int>(relative_coupling.size());
+        max_col = static_cast<unsigned int>(relative_coupling[0].size());
+
+        if(config_.get<bool>("output_plots")) {
+            LOG(TRACE) << "Creating output plots";
+
+            // Create histograms if needed
+            coupling_map = new TH2D("coupling_map",
+                                    "Coupling;pixel x;pixel y",
+                                    static_cast<int>(max_col),
+                                    -0.5,
+                                    static_cast<int>(max_col) - 0.5,
+                                    static_cast<int>(max_row),
+                                    -0.5,
+                                    static_cast<int>(max_row) - 0.5);
+
+            for(size_t col = 0; col < max_col; col++) {
+                for(size_t row = 0; row < max_row; row++) {
+                    coupling_map->SetBinContent(
+                        static_cast<int>(col + 1), static_cast<int>(row + 1), relative_coupling[max_row - row - 1][col]);
+                }
+            }
+        }
+
+        LOG(STATUS) << max_col << "x" << max_row << " coupling matrix imported from config file";
+
+    } else if(config_.has("coupling_file")) {
+        LOG(TRACE) << "Reading cross-coupling matrix file " << config_.get<std::string>("coupling_file");
+        std::ifstream input_file(config_.getPath("coupling_file", true), std::ifstream::in);
         if(!input_file.good()) {
-            LOG(ERROR) << "Matrix file not found";
+            throw InvalidValueError(config_, "coupling_file", "Matrix file not found");
         }
 
         double dummy = -1;
         std::string file_line;
+        matrix_rows = 0;
         while(getline(input_file, file_line)) {
             std::stringstream mystream(file_line);
             matrix_cols = 0;
@@ -82,6 +108,9 @@ void CapacitiveTransferModule::init() {
             el.resize(matrix_cols);
         }
 
+        max_col = matrix_cols;
+        max_row = matrix_rows;
+
         size_t row = matrix_rows - 1, col = 0;
         while(getline(input_file, file_line)) {
             std::stringstream mystream(file_line);
@@ -93,28 +122,53 @@ void CapacitiveTransferModule::init() {
             row--;
         }
         input_file.close();
-        if(config_.get<int>("cross_coupling") == 1) {
-            max_cols = matrix_cols;
-            max_rows = matrix_rows;
-        } else {
-            max_cols = 1;
-            max_rows = 1;
+
+        if(config_.get<bool>("output_plots")) {
+            LOG(TRACE) << "Creating output plots";
+
+            // Create histograms if needed
+            coupling_map = new TH2D("coupling_map",
+                                    "Coupling;pixel x;pixel y",
+                                    static_cast<int>(max_col),
+                                    -0.5,
+                                    static_cast<int>(max_col) - 0.5,
+                                    static_cast<int>(max_row),
+                                    -0.5,
+                                    static_cast<int>(max_row) - 0.5);
+
+            for(col = 0; col < max_col; col++) {
+                for(row = 0; row < max_row; row++) {
+                    coupling_map->SetBinContent(
+                        static_cast<int>(col + 1), static_cast<int>(row + 1), relative_coupling[col][row]);
+                }
+            }
         }
-        LOG(DEBUG) << matrix_cols << "x" << matrix_rows << " Capacitance matrix imported";
-    } else if(config_.has("scan_file")) {
-        TFile* root_file = new TFile(config_.getPath("scan_file", true).c_str());
+
+        LOG(STATUS) << matrix_cols << "x" << matrix_rows << " capacitance matrix imported from file "
+                    << config_.get<std::string>("coupling_file");
+
+    } else if(config_.has("coupling_scan_file")) {
+        TFile* root_file = new TFile(config_.getPath("coupling_scan_file", true).c_str());
+        if(root_file->IsZombie()) {
+            throw InvalidValueError(config_, "coupling_scan_file", "ROOT file is corrupted. Please, check it");
+        }
         for(int i = 1; i < 10; i++) {
             capacitances[i - 1] = static_cast<TGraph*>(root_file->Get(Form("Pixel_%i", i)));
+            if(capacitances[i - 1]->IsZombie()) {
+                throw InvalidValueError(
+                    config_, "coupling_scan_file", "ROOT TGraphs couldn't be imported. Please, check it");
+            }
             capacitances[i - 1]->SetBit(TGraph::kIsSortedX);
         }
         matrix_cols = 3;
         matrix_rows = 3;
         if(config_.get<int>("cross_coupling") == 1) {
-            max_cols = 3;
-            max_rows = 3;
+            max_col = 3;
+            max_row = 3;
         } else {
-            max_cols = 1;
-            max_rows = 1;
+            LOG(STATUS) << "Cross-coupling (neighbour charge transfer) disabled";
+            max_col = 1;
+            max_row = 1;
         }
 
         root_file->Delete();
@@ -202,10 +256,14 @@ void CapacitiveTransferModule::init() {
                             capacitances[4]->Eval(static_cast<double>(Units::convert(nominal_gap, "um")), nullptr, "S"));
                 }
             }
+
+            LOG(STATUS) << "Using " << config_.getPath("coupling_scan_file", true).c_str()
+                        << " ROOT file as input for the capacitance vs pixel gaps";
         }
     } else {
-        LOG(ERROR) << "Capacitive coupling was not defined. Please, check the README file for configuration options or use "
-                      "the SimpleTransfer module.";
+        throw ModuleError(
+            "Capacitive coupling was not defined. Please, check the README file for configuration options or use "
+            "the SimpleTransfer module.");
     }
 }
 
@@ -231,16 +289,14 @@ void CapacitiveTransferModule::run(unsigned int) {
         LOG(DEBUG) << "Hit at pixel " << xpixel << ", " << ypixel;
 
         Pixel::Index pixel_index;
-        double local_x = 0;
-        double local_y = 0;
         double neighbour_charge = 0;
         double ccpd_factor = 0;
 
         Eigen::Vector3d pixel_point;
         Eigen::Vector3d pixel_projection;
 
-        for(size_t row = 0; row < max_rows; row++) {
-            for(size_t col = 0; col < max_cols; col++) {
+        for(size_t row = 0; row < max_row; row++) {
+            for(size_t col = 0; col < max_col; col++) {
                 if(config_.get<int>("cross_coupling") == 0) {
                     col = static_cast<size_t>(std::floor(matrix_cols / 2));
                     row = static_cast<size_t>(std::floor(matrix_rows / 2));
@@ -263,9 +319,9 @@ void CapacitiveTransferModule::run(unsigned int) {
                     Pixel::Index(static_cast<unsigned int>(xpixel + static_cast<int>(col) - std::floor(matrix_cols / 2)),
                                  static_cast<unsigned int>(ypixel + static_cast<int>(row) - std::floor(matrix_rows / 2)));
 
-                if(config_.has("scan_file")) {
-                    local_x = pixel_index.x() * model_->getPixelSize().x();
-                    local_y = pixel_index.y() * model_->getPixelSize().y();
+                if(config_.has("coupling_scan_file")) {
+                    double local_x = pixel_index.x() * model_->getPixelSize().x();
+                    double local_y = pixel_index.y() * model_->getPixelSize().y();
                     pixel_point = Eigen::Vector3d(local_x, local_y, 0);
                     pixel_projection = plane.projection(pixel_point);
                     pixel_gap = pixel_projection[2];
@@ -273,11 +329,13 @@ void CapacitiveTransferModule::run(unsigned int) {
                     ccpd_factor = capacitances[row * 3 + col]->Eval(
                                       static_cast<double>(Units::convert(pixel_gap, "um")), nullptr, "S") *
                                   normalization;
-                } else if(config_.has("capacitance_matrix") || config_.has("matrix_file")) {
+                } else if(config_.has("coupling_file")) {
                     ccpd_factor = relative_coupling[col][row];
+                } else if(config_.has("coupling_matrix")) {
+                    ccpd_factor = relative_coupling[max_row - row - 1][col];
                 } else {
                     ccpd_factor = 1;
-                    LOG(ERROR) << "No coupling factor defined. Transferring 100% of detected charge";
+                    LOG(ERROR) << "This shouldn't happen. Transferring 100% of detected charge";
                 }
 
                 // Update statistics
@@ -324,13 +382,15 @@ void CapacitiveTransferModule::finalize() {
               << " different pixels";
 
     if(config_.get<bool>("output_plots")) {
-        if(config_.has("scan_file")) {
+        if(config_.has("coupling_scan_file")) {
             gap_map->Write();
             capacitance_map->Write();
             relative_capacitance_map->Write();
             for(int i = 1; i < 10; i++) {
                 capacitances[i - 1]->Write(Form("Pixel_%i", i));
             }
+        } else {
+            coupling_map->Write();
         }
     }
 }
