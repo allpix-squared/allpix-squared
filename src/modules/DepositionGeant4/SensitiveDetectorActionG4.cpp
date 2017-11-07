@@ -100,9 +100,10 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
                << " after " << Units::display(mid_time, {"ns", "ps"});
 
     LOG(DEBUG) << "Geant4 transformation to local: " << display_vector(deposit_position_g4loc, {"mm", "um"});
-    if((deposit_position_g4loc - deposit_position).mag2() > 0.001)
+    if((deposit_position_g4loc - deposit_position).mag2() > 0.001) {
         LOG(WARNING) << "Difference G4 to internal: "
                      << display_vector((deposit_position_g4loc - deposit_position), {"mm", "um"});
+    }
     return true;
 }
 
