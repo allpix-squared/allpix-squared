@@ -43,8 +43,9 @@ void CorryvreckanWriterModule::init() {
     outputFile_ = std::make_unique<TFile>(fileName_.c_str(), "RECREATE");
     outputFile_->cd();
     outputFile_->mkdir("pixels");
-    if(outputMCtruth_)
+    if(outputMCtruth_) {
         outputFile_->mkdir("mcparticles");
+    }
 
     // Loop over all detectors and make trees for data
     std::vector<std::shared_ptr<Detector>> detectors = geometryManager_->getDetectors();
@@ -64,8 +65,9 @@ void CorryvreckanWriterModule::init() {
         outputTrees_[objectID]->Branch("pixels", &treePixels_[objectID]);
 
         // If MC truth needed then make trees for output
-        if(!outputMCtruth_)
+        if(!outputMCtruth_) {
             continue;
+        }
 
         // Create the tree
         std::string objectID_MC = detectorID + "_mcparticles";
@@ -110,8 +112,9 @@ void CorryvreckanWriterModule::run(unsigned int) {
             outputTrees_[objectID]->Fill();
 
             // If writing MC truth then also write out associated particle info
-            if(!outputMCtruth_)
+            if(!outputMCtruth_) {
                 continue;
+            }
 
             // Get all associated particles
             std::vector<const MCParticle*> mcp = allpix_pixel.getMCParticles();
@@ -155,8 +158,9 @@ void CorryvreckanWriterModule::finalize() {
         treePixels_[objectID] = nullptr;
 
         // Write the MC truth
-        if(!outputMCtruth_)
+        if(!outputMCtruth_) {
             continue;
+        }
 
         std::string objectID_MC = detectorID + "_mcparticles";
         outputFile_->cd("mcparticles");
