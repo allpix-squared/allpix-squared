@@ -73,7 +73,7 @@ void CorryvreckanWriterModule::init() {
       
       // Map the mc particle object to the tree
       treeMCParticles_[objectID_MC] = new corryvreckan::MCParticle();
-      outputTreesMC_[objectID_MC]->Branch("pixels", &treeMCParticles_[objectID_MC]);
+      outputTreesMC_[objectID_MC]->Branch("mcparticles", &treeMCParticles_[objectID_MC]);
 
     }
 
