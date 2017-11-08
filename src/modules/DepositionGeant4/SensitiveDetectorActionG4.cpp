@@ -65,7 +65,7 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     auto deposit_position_g4loc =
         ROOT::Math::XYZPoint(deposit_position_g4.x() + detector_->getModel()->getSensorCenter().x(),
                              deposit_position_g4.y() + detector_->getModel()->getSensorCenter().y(),
-                             deposit_position_g4.z());
+                             deposit_position_g4.z() + detector_->getModel()->getSensorCenter().z());
 
     // Save begin point when track is seen for the first time
     if(track_begin_.find(step->GetTrack()->GetTrackID()) == track_begin_.end()) {
