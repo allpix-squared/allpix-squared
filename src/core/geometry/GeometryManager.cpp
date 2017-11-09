@@ -31,6 +31,7 @@
 #include "core/geometry/MonolithicPixelDetectorModel.hpp"
 
 using namespace allpix;
+using namespace ROOT::Math;
 
 GeometryManager::GeometryManager() : closed_{false} {}
 
@@ -53,54 +54,38 @@ void GeometryManager::load(const Configuration& global_config, std::mt19937_64& 
     for(auto& detector_section : reader.getConfigurations()) {
         LOG(DEBUG) << "Detector " << detector_section.getName() << "...";
 
-        // Get the position and orientation
-        auto position = detector_section.get<ROOT::Math::XYZPoint>("position", ROOT::Math::XYZPoint());
-        auto orient_vec = detector_section.get<ROOT::Math::XYZVector>("orientation", ROOT::Math::XYZVector());
+        // Calculate possible detector misalignment to be added
+        auto misalignment = [&](auto residuals) -> const DisplacementVector3D<Cartesian3D<double>> {
+            std::normal_distribution<double> res_x(0, residuals.x());
+            std::normal_distribution<double> res_y(0, residuals.y());
+            std::normal_distribution<double> res_z(0, residuals.z());
+            return DisplacementVector3D<Cartesian3D<double>>(
+                res_x(random_generator), res_y(random_generator), res_z(random_generator));
+        };
+
+        // Get the position and apply potenial misalignment
+        auto position = detector_section.get<XYZPoint>("position", XYZPoint());
+        LOG(DEBUG) << "Position:    " << display_vector(position, {"mm", "um"});
+        position += misalignment(detector_section.get<XYZPoint>("alignment_precision_position", XYZPoint()));
+        LOG(DEBUG) << " misaligned: " << display_vector(position, {"mm", "um"});
+
+        // Get the orientation and apply misalignment to the individual angles before combining them
+        auto orient_vec = detector_section.get<XYZVector>("orientation", XYZVector());
+        LOG(DEBUG) << "Orientation: " << display_vector(orient_vec, {"deg"});
+        orient_vec += misalignment(detector_section.get<XYZVector>("alignment_precision_orientation", XYZVector()));
+        LOG(DEBUG) << " misaligned: " << display_vector(orient_vec, {"deg"});
 
         auto orientation_type = detector_section.get<std::string>("orientation_type", "xyz");
-        ROOT::Math::Rotation3D orientation;
+        Rotation3D orientation;
 
         if(orientation_type == "xyz") {
-            orientation = ROOT::Math::RotationZ(orient_vec.z()) * ROOT::Math::RotationY(orient_vec.y()) *
-                          ROOT::Math::RotationX(orient_vec.x());
+            orientation = RotationZ(orient_vec.z()) * RotationY(orient_vec.y()) * RotationX(orient_vec.x());
         } else if(orientation_type == "zxz") {
-            orientation = ROOT::Math::EulerAngles(orient_vec.x(), orient_vec.y(), orient_vec.z());
+            orientation = EulerAngles(orient_vec.x(), orient_vec.y(), orient_vec.z());
         } else {
             throw InvalidValueError(
                 detector_section, "orientation_type", "orientation_mode should be either 'xyz' or 'zxz'");
         }
-
-        // Calculate possible detector misalignment to be added
-        auto misalign_shift =
-            [&](ROOT::Math::XYZPoint residuals) -> const ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<double>> {
-            std::normal_distribution<double> res_x(0, residuals.x());
-            std::normal_distribution<double> res_y(0, residuals.y());
-            std::normal_distribution<double> res_z(0, residuals.z());
-            return ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<double>>(
-                res_x(random_generator), res_y(random_generator), res_z(random_generator));
-        };
-
-        auto misalign_rotation = [&](ROOT::Math::XYZVector residuals) {
-            std::normal_distribution<double> res_phi(0, residuals.z());
-            std::normal_distribution<double> res_theta(0, residuals.y());
-            std::normal_distribution<double> res_psi(0, residuals.x());
-            ROOT::Math::Rotation3D rotation;
-
-            if(orientation_type == "xyz") {
-                rotation = ROOT::Math::RotationZ(res_phi(random_generator)) *
-                           ROOT::Math::RotationY(res_theta(random_generator)) *
-                           ROOT::Math::RotationX(res_psi(random_generator));
-            } else if(orientation_type == "zxz") {
-                rotation = ROOT::Math::EulerAngles(
-                    res_psi(random_generator), res_theta(random_generator), res_phi(random_generator));
-            }
-            return rotation;
-        };
-
-        position += misalign_shift(
-            detector_section.get<ROOT::Math::XYZPoint>("alignment_precision_position", ROOT::Math::XYZPoint()));
-        orientation = orientation * misalign_rotation(detector_section.get<ROOT::Math::XYZVector>(
-                                        "alignment_precision_orientation", ROOT::Math::XYZVector()));
 
         // Create the detector and add it without model
         // NOTE: cannot use make_shared here due to the private constructor
