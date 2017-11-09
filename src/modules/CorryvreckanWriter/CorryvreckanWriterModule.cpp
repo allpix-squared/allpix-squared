@@ -117,12 +117,12 @@ void CorryvreckanWriterModule::run(unsigned int) {
             }
 
             // Get all associated particles
-            std::vector<const MCParticle*> mcp = allpix_pixel.getMCParticles();
+            auto mcp = allpix_pixel.getMCParticles();
             for(auto& particle : mcp) {
 
                 // Create a new particle object
                 std::string objectID_MC = detectorID + "_mcparticles";
-                corryvreckan::MCParticle* mcParticle = new corryvreckan::MCParticle(
+                auto mcParticle = new corryvreckan::MCParticle(
                     particle->getParticleID(), particle->getLocalStartPoint(), particle->getLocalEndPoint());
 
                 // Map the mc particle to the output tree and write it
