@@ -214,8 +214,8 @@ In addition to these required parameters, the following parameters allow to rand
 In order to reproduce misalignments, a fixed random seed for the framework core can be used as explained in Section~\ref{sec:framework_parameters}.
 Misalignment can be introduced both for shifts along the three global axes and the three rotations angles with the following parameters:
 \begin{itemize}
-\item The parameter \textbf{alignment\_precision\_position} allows the specification of the alignment precision along the three global axes. Each value represents the Gaussian width with which the detector will be randomly misaligned along the corresponding axis.
-\item The parameter \textbf{alignment\_precision\_orientation} allows to specify the alignment precision in the three rotation angles defined by the \texttt{orientation} parameter. The misalignments are added to the individual angles before combining them into the final rotation as defined by the \texttt{orientation\_type} parameter.
+\item The parameter \parameter{alignment_precision_position} allows the specification of the alignment precision along the three global axes. Each value represents the Gaussian width with which the detector will be randomly misaligned along the corresponding axis.
+\item The parameter \parameter{alignment_precision_orientation} allows to specify the alignment precision in the three rotation angles defined by the \parameter{orientation} parameter. The misalignments are added to the individual angles before combining them into the final rotation as defined by the \parameter{orientation_type} parameter.
 \end{itemize}
 
 Furthermore it is possible to specialize certain parameters of the detector models, which is explained in more detail in Section~\ref{sec:detector_models}.
