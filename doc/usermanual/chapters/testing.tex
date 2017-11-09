@@ -79,7 +79,7 @@ Once modules are altered, their respective expectation output has to be adapted 
 Module tests are automatically discovered by CMake and are thus easy to extend and add.
 CMake automatically searches for all configurations found in the \texttt{test\_modules} folder and executes \apsq with them.
 The regular expressions to search for are also stored in the configuration file.
-Every line containing such an expression should start with \texttt{\#REGEX} and will be picked up by CMake automatically.
+Every line containing such an expression should start with \texttt{\#PASS} and will be picked up by CMake automatically.
 
 Dependencies between tests can be indicated using the \texttt{\#DEPENDS} keyword in the configuration file.
 Module test 09 implements such a dependency as it uses the output of module test 08-1 to read data from an \apsq data file.

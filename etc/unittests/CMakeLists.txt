@@ -1,6 +1,6 @@
 FUNCTION(ESCAPE_REGEX INP OUTPUT)
     # Escape possible regex patterns in the expected output:
-    STRING(REPLACE "#REGEX " "" _TMP_STR "${INP}")
+    STRING(REPLACE "#PASS " "" _TMP_STR "${INP}")
     STRING(REPLACE "#FAIL " "" _TMP_STR "${_TMP_STR}")
     STRING(REPLACE "\\" "\\\\" _TMP_STR "${_TMP_STR}")
     STRING(REPLACE "?" "\\?" _TMP_STR "${_TMP_STR}")
@@ -38,7 +38,7 @@ IF(TEST_MODULES)
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
             COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/run_directory.sh "output/${TEST}" "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_CURRENT_SOURCE_DIR}/${TEST}"
         )
-        FILE(STRINGS ${TEST} EXPRESSIONS REGEX "#REGEX ")
+        FILE(STRINGS ${TEST} EXPRESSIONS REGEX "#PASS ")
 
         # Escape possible regex patterns in the expected output:
         ESCAPE_REGEX("${EXPRESSIONS}" EXPRESSIONS)
@@ -101,9 +101,9 @@ IF(TEST_CORE)
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
             COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/run_directory.sh "output/${TEST}" "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_CURRENT_SOURCE_DIR}/${TEST}"
         )
-        FILE(STRINGS ${TEST} EXPRESSIONS REGEX "#REGEX ")
+        FILE(STRINGS ${TEST} EXPRESSIONS REGEX "#PASS ")
 		FILE(STRINGS ${TEST} EXPRESSIONS_FAIL REGEX "#FAIL ")
-		
+
         # Escape possible regex patterns in the expected output:
         ESCAPE_REGEX("${EXPRESSIONS}" EXPRESSIONS)
 		ESCAPE_REGEX("${EXPRESSIONS_FAIL}" EXPRESSIONS_FAIL)
