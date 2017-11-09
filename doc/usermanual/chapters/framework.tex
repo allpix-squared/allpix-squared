@@ -88,7 +88,7 @@ After a optional number of ignored whitespace, the key should be followed by an 
 Any text between the \texttt{$=$} and the first \texttt{\#} character not enclosed within a pair of single or double quotes (\texttt{'} or \texttt{"}) is known as the non-stripped string.
 Any character after the \texttt{\#} is handled as specified in point 3.
 If the line does not contain any non-enclosed \texttt{\#} character, the value ends at the end of the line instead.
-The 'value' of the key-value pair is the non-stripped string with all whitespace in front and at the end stripped. 
+The 'value' of the key-value pair is the non-stripped string with all whitespace in front and at the end stripped.
 The value may not be empty.
 Any line that does not comply to these specifications should lead to an immediate parse error.
 \item The value may consist of multiple nested dimensions which are grouped by pairs of square brackets (\texttt{[} and \texttt{]}).
@@ -96,9 +96,9 @@ The number of square brackets should be properly balanced, otherwise an error is
 Square brackets which should not be used for grouping should be enclosed in quotation marks.
 Every dimension is split at every whitespace sequence and comma character (\texttt{,}) not enclosed in quotation marks.
 Implicit square brackets are added to the begin and end of the value, if these are not explicitly added.
-\item The sections of the value which are interpreted as separate entities are named elements. 
+\item The sections of the value which are interpreted as separate entities are named elements.
 For a single value the element is on the zeroth dimension, for arrays on the first dimension and for matrices on the second dimension.
-Elements can be forced by using quotation marks, either single or double quotes (\texttt{'} or \texttt{"}). 
+Elements can be forced by using quotation marks, either single or double quotes (\texttt{'} or \texttt{"}).
 The number of both types of quotation marks should be properly balanced, otherwise an error is raised.
 The conversion to the elements to the actual type is performed when accessing the value.
 \item All key-value pairs defined before the first section header are part of a zero-length empty section header.
@@ -369,6 +369,8 @@ The \texttt{zxz} uses the extrinsic Z-X-Z convention for Euler angles instead (t
 The model defines the geometry and parameters of the detector.
 Multiple detectors can share the same model.
 Several ready-to-use models are shipped with the framework.
+\item An optional parameter \textbf{alignment\_precision\_position} to specify the alignment precision along the three global axes as described in Section~\ref{sec:detector_config}.
+\item An optional parameter \textbf{alignment\_precision\_orientation} for the alignment precision in the three rotation angles as described in Section~\ref{sec:detector_config}.
 \item An optional \textbf{electric field} in the sensitive device.
 An electric field can be added to a detector by a special module as demonstrated in Section~\ref{sec:module_electric_field}.
 \end{itemize}

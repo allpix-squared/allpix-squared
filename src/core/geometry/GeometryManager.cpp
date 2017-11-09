@@ -97,10 +97,10 @@ void GeometryManager::load(const Configuration& global_config, std::mt19937_64& 
             return rotation;
         };
 
-        position +=
-            misalign_shift(detector_section.get<ROOT::Math::XYZPoint>("alignment_precision_shift", ROOT::Math::XYZPoint()));
+        position += misalign_shift(
+            detector_section.get<ROOT::Math::XYZPoint>("alignment_precision_position", ROOT::Math::XYZPoint()));
         orientation = orientation * misalign_rotation(detector_section.get<ROOT::Math::XYZVector>(
-                                        "alignment_precision_rotation", ROOT::Math::XYZVector()));
+                                        "alignment_precision_orientation", ROOT::Math::XYZVector()));
 
         // Create the detector and add it without model
         // NOTE: cannot use make_shared here due to the private constructor
