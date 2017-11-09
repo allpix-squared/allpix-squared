@@ -127,6 +127,9 @@ void CorryvreckanWriterModule::run(unsigned int) {
 
                 // Map the mc particle to the output tree and write it
                 treeMCParticles_[objectID_MC] = mcParticle;
+                LOG(DEBUG) << "MC particle started locally at (" << mcParticle->getLocalStart().X() << ","
+                           << mcParticle->getLocalStart().Y() << ") and ended at " << mcParticle->getLocalEnd().X() << ","
+                           << mcParticle->getLocalEnd().Y() << ")";
                 outputTreesMC_[objectID_MC]->Fill();
             }
         }
