@@ -15,6 +15,9 @@
 % Paragraph with new line
 \newcommand{\nlparagraph}[1]{\paragraph{#1}\mbox{}\\}
 
+% Typeset framework parameter and escape underscores:
+\DeclareUrlCommand\parameter{\bfseries\urlstyle{tt}}
+
 % Define ini format used in the converted Markdown files
 \lstdefinelanguage{Ini}
 {
