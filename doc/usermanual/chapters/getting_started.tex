@@ -60,31 +60,39 @@ The list of base units is shown in Table~\ref{tab:units}.
 The internal base units of the framework are not chosen for user convenience but for maximum precision of the calculations and in order to avoid the necessity of conversions in the code.
 
 \begin{table}[tbp]
-\centering
 \caption{List of units supported by \apsq}
 \label{tab:units}
-\begin{tabular}{|l|l|l|}
-\hline
-\textbf{Quantity}                 & \textbf{Default unit}                   & \textbf{Auxiliary units} \\ \hline
-\multirow{6}{*}{\textit{Length}}  & \multirow{6}{*}{mm (millimeter)}        & nm (nanometer)           \\ \cline{3-3}
-                                  &                                         & um (micrometer)          \\ \cline{3-3}
-                                  &                                         & cm (centimeter)          \\ \cline{3-3}
-                                  &                                         & dm (decimeter)           \\ \cline{3-3}
-                                  &                                         & m (meter)                \\ \cline{3-3}
-                                  &                                         & km (kilometer)           \\ \hline
-\multirow{4}{*}{\textit{Time}}    & \multirow{4}{*}{ns (nanosecond)}        & ps (picosecond)          \\ \cline{3-3}
-                                  &                                         & us (microsecond)         \\ \cline{3-3}
-                                  &                                         & ms (millisecond)         \\ \cline{3-3}
-                                  &                                         & s (second)               \\ \hline
-\multirow{4}{*}{\textit{Energy}}  & \multirow{4}{*}{MeV (megaelectronvolt)} & eV (electronvolt)        \\ \cline{3-3}
-                                  &                                         & keV (kiloelectronvolt)   \\ \cline{3-3}
-                                  &                                         & GeV (gigaelectronvolt)   \\ \hline
-\textit{Temperature}              & K (kelvin)                              &                          \\ \hline
-\textit{Charge}                   & e (elementary charge)                   & C (coulomb)              \\ \hline
-\multirow{2}{*}{\textit{Voltage}} & \multirow{2}{*}{MV (megavolt)}          & V (volt)                 \\ \cline{3-3}
-                                  &                                         & kV (kilovolt)            \\ \hline
-\multirow{2}{*}{\textit{Angle}}   & \multirow{2}{*}{rad (radian)}           & deg (degree)             \\ \cline{3-3}
-                                  &                                         & mrad (milliradian)       \\ \hline
+\centering
+\begin{tabular}{lll}
+  \toprule
+\textbf{Quantity}                 & \textbf{Default unit}                   & \textbf{Auxiliary units} \\
+ \midrule
+\multirow{6}{*}{\textit{Length}}  & \multirow{6}{*}{mm (millimeter)}        & nm (nanometer)           \\
+                                  &                                         & um (micrometer)          \\
+                                  &                                         & cm (centimeter)          \\
+                                  &                                         & dm (decimeter)           \\
+                                  &                                         & m (meter)                \\
+                                  &                                         & km (kilometer)           \\
+ \midrule
+\multirow{4}{*}{\textit{Time}}    & \multirow{4}{*}{ns (nanosecond)}        & ps (picosecond)          \\
+                                  &                                         & us (microsecond)         \\
+                                  &                                         & ms (millisecond)         \\
+                                  &                                         & s (second)               \\
+\midrule
+\multirow{4}{*}{\textit{Energy}}  & \multirow{4}{*}{MeV (megaelectronvolt)} & eV (electronvolt)        \\
+                                  &                                         & keV (kiloelectronvolt)   \\
+                                  &                                         & GeV (gigaelectronvolt)   \\
+\midrule
+\textit{Temperature}              & K (kelvin)                              & ---                      \\
+\midrule
+\textit{Charge}                   & e (elementary charge)                   & C (coulomb)              \\
+\midrule
+\multirow{2}{*}{\textit{Voltage}} & \multirow{2}{*}{MV (megavolt)}          & V (volt)                 \\
+                                  &                                         & kV (kilovolt)            \\
+\midrule
+\multirow{2}{*}{\textit{Angle}}   & \multirow{2}{*}{rad (radian)}           & deg (degree)             \\
+                                  &                                         & mrad (milliradian)       \\
+\bottomrule
 \end{tabular}
 \end{table}
 
