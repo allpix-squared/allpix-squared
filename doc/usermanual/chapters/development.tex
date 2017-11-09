@@ -8,7 +8,7 @@ Before starting the development, the \texttt{CONTRIBUTING.md} file in the reposi
 
 \todo{add description of what should be a module and what not (aka analysis)}
 It is essential to carefully read the framework module manager documentation in Section \ref{sec:module_manager}, the information about the directory structure in Section \ref{sec:module_files} and the details of the module structure in Section \ref{sec:module_structure} before creating a new module.
-Thereafter, the steps below should provide enough details for starting with a new module, hereafter called \texttt{ModuleName}:
+Thereafter, the steps below should provide enough details for starting with a new module, hereafter called \parameter{ModuleName}:
 \begin{enumerate}
 \item Run the module initialization script at \textit{etc/scripts/make\_module.sh} in the repository.
 The script will ask for the name of the model and the type (unique or detector-specific).
@@ -17,7 +17,7 @@ It creates the directory with a minimal example to get started together with the
 No additional documentation in LaTeX has to be provided, as this Markdown-formatted file~\cite{markdown} is automatically converted and included in the user manual.
 Formulas can be included by enclosing it in Dollar-backtick markers, i.e. \texttt{\$` E(z) = 0`\$}.
 Also the Doxygen documentation in \textit{\texttt{ModuleName}.hpp} should be extended to provide a basic description of the module.
-\item Finally the constructor, the \texttt{init}, \texttt{run} and/or \texttt{finalize} methods can be written, depending on the requirements of the new module.
+\item Finally the constructor, the \parameter{init}, \parameter{run} and/or \parameter{finalize} methods can be written, depending on the requirements of the new module.
 \end{enumerate}
 
 After this, it is up to the developer to implement all required functionality.
@@ -44,9 +44,9 @@ The default models provided in the \textit{models} directory of the repository c
 To create a new detector model, the following steps should be considered:
 \begin{enumerate}
 \item Create a new file with the name of the model followed by the \textit{.conf} suffix (for example \texttt{your\_model.conf}).
-\item Add a configuration parameter \texttt{type} with the type of the model, at the moment either 'monolithic' or 'hybrid' for respectively monolithic sensors or hybrid models with bump bonds and a separate readout chip.
+\item Add a configuration parameter \parameter{type} with the type of the model, at the moment either 'monolithic' or 'hybrid' for respectively monolithic sensors or hybrid models with bump bonds and a separate readout chip.
 \item Add all required parameters and possibly optional parameters as explained in Section \ref{sec:detector_models}.
-\item Include the detector model in the search path of the framework by adding the \texttt{model\_path} parameter to the general setting of the main configuration (see Section \ref{sec:framework_parameters}) pointing to either directly to the detector model file or the directory containing it. It should be noted, that files in this path will overwrite models with the same name in the default model folder.
+\item Include the detector model in the search path of the framework by adding the \parameter{model_path} parameter to the general setting of the main configuration (see Section \ref{sec:framework_parameters}) pointing to either directly to the detector model file or the directory containing it. It should be noted, that files in this path will overwrite models with the same name in the default model folder.
 \end{enumerate}
 
 Models should be contributed to the main repository to make them available to other users of the framework.
