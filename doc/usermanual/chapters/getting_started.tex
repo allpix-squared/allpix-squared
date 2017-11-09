@@ -248,6 +248,7 @@ Defaults to the current working directory with the subdirectory \textit{output/}
 \item \textbf{\texttt{random\_seed}}: Seed for the global random seed generator used to initialize seeds for module instantiations.
 A random seed from multiple entropy sources will be generated if the parameter is not specified.
 Can be used to reproduce an earlier simulation run.
+\item \textbf{\texttt{random\_seed\_core}}: Optional seed used for pseudo-random number generators in the core components of the framework. If not set explictely, the value $(\mathrm{\texttt{random\_seed}} + 1)$ is used.
 \item \textbf{\texttt{library\_directories}}: Additional directories to search for module libraries, before searching the default paths.
 See Section~\ref{sec:module_instantiation} for details.
 \item \textbf{\texttt{model\_paths}}: Additional files or directories from which detector models should be read besides the standard search locations.

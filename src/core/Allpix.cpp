@@ -111,13 +111,15 @@ void Allpix::load() {
     // Fetch the global configuration
     Configuration global_config = conf_mgr_->getGlobalConfiguration();
 
-    // Initialize the random seeder
-    std::mt19937_64 seeder;
+    // Initialize the random seeders, one for modules, one for core components
+    std::mt19937_64 seeder_modules;
+    std::mt19937_64 seeder_core;
+
     uint64_t seed = 0;
     if(global_config.has("random_seed")) {
         // Use provided random seed
         seed = global_config.get<uint64_t>("random_seed");
-        seeder.seed(seed);
+        seeder_modules.seed(seed);
         LOG(STATUS) << "Initialized PRNG with configured seed " << seed;
     } else {
         // Compute random entropy seed
@@ -129,12 +131,22 @@ void Allpix::load() {
         std::hash<std::thread::id> thrd_hasher;
         auto thread_seed = thrd_hasher(std::this_thread::get_id());
         seed = (clock_seed ^ mem_seed ^ thread_seed);
-        seeder.seed(seed);
+        seeder_modules.seed(seed);
         LOG(STATUS) << "Initialized PRNG with system entropy seed " << seed;
     }
 
+    if(global_config.has("random_seed_core")) {
+        // Use provided random seed
+        seed = global_config.get<uint64_t>("random_seed_core");
+        seeder_core.seed(seed);
+        LOG(STATUS) << "Initialized core PRNG with configured seed " << seed;
+    } else {
+        // Use module seeder + 1
+        seeder_core.seed(seed + 1);
+    }
+
     // Initialize ROOT random generator
-    gRandom->SetSeed(seeder());
+    gRandom->SetSeed(seeder_modules());
 
     // Get output directory
     std::string directory = gSystem->pwd();
@@ -181,11 +193,11 @@ void Allpix::load() {
     set_style();
 
     // Load the geometry
-    geo_mgr_->load(global_config, seeder);
+    geo_mgr_->load(global_config, seeder_core);
 
     // Load the modules from the configuration
     if(!terminate_) {
-        mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get(), seeder);
+        mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get(), seeder_modules);
     } else {
         LOG(INFO) << "Skip loading modules because termination is requested";
     }
