@@ -6,7 +6,7 @@ IF(COMMAND CMAKE_POLICY)
 ENDIF(COMMAND CMAKE_POLICY)
 
 # Set default version
-SET(ALLPIX_VERSION "v0.2")
+SET(ALLPIX_VERSION "v1.0.1")
 
 # Set default build type
 IF(NOT CMAKE_BUILD_TYPE)
@@ -91,7 +91,7 @@ FIND_PACKAGE(Threads REQUIRED)
 
 INCLUDE("cmake/compiler-flag-checks.cmake")
 
-# Set some debug flags 
+# Set some debug flags
 # FIXME: not using the flag checker now because it wrongly rejects a sanitizer flag..
 IF(CMAKE_BUILD_TYPE MATCHES Debug AND ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")))
     MESSAGE(STATUS "Running debug build - Adding extra sanitizer flags")
@@ -160,7 +160,7 @@ SET(ALLPIX_LIBRARIES ${ALLPIX_LIBRARIES} AllpixCore)
 # Build required modules
 ADD_SUBDIRECTORY(src/modules)
 
-# Build the executable 
+# Build the executable
 ADD_SUBDIRECTORY(src/exec)
 
 # Handle the included tools
