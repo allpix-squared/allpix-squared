@@ -209,6 +209,15 @@ See Section~\ref{sec:models_geometry} for details.
 This means the detector is rotated first around the X-axis, then around the world's Y-axis and then around the world's Z-axis.
 Alternatively the orientation can be set in an X-Z-X extrinsic Euler angle, refer to Section~\ref{sec:models_geometry} for details.
 \end{itemize}
+
+In addition to these required parameters, the following parameters allow to randomly misalign the respective detector from its initial position. The values are interpreted as width of a normal distribution centered around zero.
+In order to reproduce misalignments, a fixed random seed for the framework core can be used as explained in Section~\ref{sec:framework_parameters}.
+Misalignment can be introduced both for shifts along the three global axes and the three rotations angles with the following parameters:
+\begin{itemize}
+\item The parameter \parameter{alignment_precision_position} allows the specification of the alignment precision along the three global axes. Each value represents the Gaussian width with which the detector will be randomly misaligned along the corresponding axis.
+\item The parameter \parameter{alignment_precision_orientation} allows to specify the alignment precision in the three rotation angles defined by the \parameter{orientation} parameter. The misalignments are added to the individual angles before combining them into the final rotation as defined by the \parameter{orientation_type} parameter.
+\end{itemize}
+
 Furthermore it is possible to specialize certain parameters of the detector models, which is explained in more detail in Section~\ref{sec:detector_models}.
 This allows to quickly adapt e.g. the sensor thickness of a certain detector without altering the actual detector model file.
 
@@ -256,6 +265,7 @@ Defaults to the current working directory with the subdirectory \textit{output/}
 \item \parameter{random_seed}: Seed for the global random seed generator used to initialize seeds for module instantiations.
 A random seed from multiple entropy sources will be generated if the parameter is not specified.
 Can be used to reproduce an earlier simulation run.
+\item \parameter{random_seed_core}: Optional seed used for pseudo-random number generators in the core components of the framework. If not set explictely, the value $(\textrm{\parameter{random_seed}} + 1)$ is used.
 \item \parameter{library_directories}: Additional directories to search for module libraries, before searching the default paths.
 See Section~\ref{sec:module_instantiation} for details.
 \item \parameter{model_paths}: Additional files or directories from which detector models should be read besides the standard search locations.
