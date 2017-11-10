@@ -55,7 +55,7 @@ void GeometryManager::load(const Configuration& global_config, std::mt19937_64& 
         LOG(DEBUG) << "Detector " << detector_section.getName() << "...";
 
         // Calculate possible detector misalignment to be added
-        auto misalignment = [&](auto residuals) -> const DisplacementVector3D<Cartesian3D<double>> {
+        auto misalignment = [&](auto residuals) {
             double dx = std::normal_distribution<double>(0, residuals.x())(random_generator);
             double dy = std::normal_distribution<double>(0, residuals.y())(random_generator);
             double dz = std::normal_distribution<double>(0, residuals.z())(random_generator);
