@@ -128,7 +128,7 @@ void ConfigReader::add(std::istream& stream, std::string file_name) {
             // Line should be a section header with an alphanumeric name
             size_t idx = 1;
             for(; idx < line.length() - 1; ++idx) {
-                if(isalnum(line[idx]) == 0) {
+                if(isalnum(line[idx]) == 0 && line[idx] != '_') {
                     break;
                 }
             }

@@ -91,18 +91,18 @@ CMake can be run with several extra arguments to change the type of installation
 These options can be set with -D\textit{option} (see the end of this section for an example).
 Currently the following options are supported:
 \begin{itemize}
-\item \textbf{CMAKE\_INSTALL\_PREFIX}: The directory to use as a prefix for installing the binaries, libraries and data.
+\item \parameter{CMAKE_INSTALL_PREFIX}: The directory to use as a prefix for installing the binaries, libraries and data.
 Defaults to the source directory (where the folders \textit{bin/} and \textit{lib/} are added).
-\item \textbf{CMAKE\_BUILD\_TYPE}: Type of build to install, defaults to \texttt{RelWithDebInfo} (compiles with optimizations and debug symbols).
+\item \parameter{CMAKE_BUILD_TYPE}: Type of build to install, defaults to \texttt{RelWithDebInfo} (compiles with optimizations and debug symbols).
 Other possible options are \texttt{Debug} (for compiling with no optimizations, but with debug symbols and extended tracing using the Clang Address Sanitizer library) and \texttt{Release} (for compiling with full optimizations and no debug symbols).
-\item \textbf{MODEL\_DIRECTORY}: Directory to install the internal models to.
-Defaults to not installing if the \textbf{CMAKE\_INSTALL\_PREFIX} is set to the directory containing the sources (the default).
+\item \parameter{MODEL_DIRECTORY}: Directory to install the internal models to.
+Defaults to not installing if the \parameter{CMAKE_INSTALL_PREFIX} is set to the directory containing the sources (the default).
 Otherwise the default value is equal to the directory \textit{<CMAKE\_INSTALL\_PREFIX>/share/allpix/}.
 The install directory is automatically added to the model search path used by the geometry model parsers to find all the detector models.
-\item \textbf{BUILD\_\textit{ModuleName}}: If the specific module \textit{ModuleName} should be installed or not.
+\item \textbf{\texttt{BUILD\_\textit{ModuleName}}}: If the specific module \textit{ModuleName} should be installed or not.
 Defaults to ON for most modules, however some modules with large additional dependencies such as LCIO~\cite{lcio} are disabled by default.
 This set of parameters allows to configure the build for minimal requirements as detailed in Section~\ref{sec:prerequisites}.
-\item \textbf{BUILD\_ALL\_MODULES}: Build all included modules, defaulting to OFF.
+\item \parameter{BUILD_ALL_MODULES}: Build all included modules, defaulting to OFF.
 This overwrites any selection using the parameters described above.
 \end{itemize}
 
@@ -132,4 +132,4 @@ $ make install
 The binary is now available as \textit{bin/allpix} in the installation directory.
 The example configuration files are not installed as they should only be used as a starting point for your own configuration.
 They can however be used to check if the installation was successful.
-Running the allpix binary with the example configuration (\texttt{bin/allpix -c \textit{etc/example.conf}}) should pass the test without problems if a standard installation is used.
+Running the allpix binary with the example configuration using \texttt{\textbf{bin/allpix -c \textit{etc/example.conf}}} should pass the test without problems if a standard installation is used.
