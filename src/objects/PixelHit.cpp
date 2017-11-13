@@ -20,6 +20,9 @@ using namespace allpix;
 PixelHit::PixelHit(Pixel pixel, double time, double signal, const PixelCharge* pixel_charge)
     : pixel_(std::move(pixel)), time_(time), signal_(signal) {
     pixel_charge_ = const_cast<PixelCharge*>(pixel_charge); // NOLINT
+    for(auto mc_particle : pixel_charge->getMCParticles()) {
+        mc_particles_.Add(const_cast<MCParticle*>(mc_particle)); // NOLINT
+    }
 }
 
 const Pixel& PixelHit::getPixel() const {
