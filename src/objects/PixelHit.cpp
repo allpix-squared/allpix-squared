@@ -44,25 +44,22 @@ const PixelCharge* PixelHit::getPixelCharge() const {
 }
 
 /**
- * @throws MissingReferenceException If some object in the required history is not in scope
+ * @throws MissingReferenceException If the pointed object is not in scope
  *
  * MCParticles can only be fetched if the full history of objects are in scope and stored
  */
 std::vector<const MCParticle*> PixelHit::getMCParticles() const {
-    auto pixel_charge = getPixelCharge();
 
-    // Find particles corresponding to every propagated charge
-    auto propagated_charges = pixel_charge->getPropagatedCharges();
-    std::set<const MCParticle*> unique_particles;
-    for(auto& propagated_charge : propagated_charges) {
-        auto deposited_charge = propagated_charge->getDepositedCharge();
-        auto mc_particle = deposited_charge->getMCParticle();
-        // NOTE if any deposited charge has no related mc particle this will fail
-        unique_particles.insert(mc_particle);
+  std::vector<const MCParticle*> mc_particles;
+    for(auto mc_particle : mc_particles_) {
+      if(mc_particle == nullptr) {
+        throw MissingReferenceException(typeid(*this), typeid(MCParticle));
+      }
+      mc_particles.emplace_back(dynamic_cast<MCParticle*>(mc_particle));
     }
 
     // Return as a vector of mc particles
-    return std::vector<const MCParticle*>(unique_particles.begin(), unique_particles.end());
+    return mc_particles;
 }
 
 ClassImp(PixelHit)
