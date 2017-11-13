@@ -16,7 +16,8 @@ using namespace allpix;
 PixelCharge::PixelCharge(Pixel pixel, unsigned int charge, std::vector<const PropagatedCharge*> propagated_charges)
     : pixel_(std::move(pixel)), charge_(charge) {
     for(auto& propagated_charge : propagated_charges) {
-        propagated_charges_.Add(const_cast<PropagatedCharge*>(propagated_charge)); // NOLINT
+        propagated_charges_.Add(const_cast<PropagatedCharge*>(propagated_charge));      // NOLINT
+        mc_particles_.Add(const_cast<MCParticle*>(propagated_charge->getMCParticle())); // NOLINT
     }
 }
 
@@ -47,6 +48,25 @@ std::vector<const PropagatedCharge*> PixelCharge::getPropagatedCharges() const {
         }
     }
     return propagated_charges;
+}
+
+/**
+ * @throws MissingReferenceException If the pointed object is not in scope
+ *
+ * MCParticles can only be fetched if the full history of objects are in scope and stored
+ */
+std::vector<const MCParticle*> PixelCharge::getMCParticles() const {
+
+    std::vector<const MCParticle*> mc_particles;
+    for(auto mc_particle : mc_particles_) {
+        if(mc_particle == nullptr) {
+            throw MissingReferenceException(typeid(*this), typeid(MCParticle));
+        }
+        mc_particles.emplace_back(dynamic_cast<MCParticle*>(mc_particle));
+    }
+
+    // Return as a vector of mc particles
+    return mc_particles;
 }
 
 ClassImp(PixelCharge)

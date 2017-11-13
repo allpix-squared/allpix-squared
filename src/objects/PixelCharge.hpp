@@ -14,6 +14,7 @@
 
 #include <TRefArray.h>
 
+#include "MCParticle.hpp"
 #include "Object.hpp"
 #include "Pixel.hpp"
 #include "PropagatedCharge.hpp"
@@ -56,6 +57,11 @@ namespace allpix {
          * @return Possible set of pointers to propagated charges
          */
         std::vector<const PropagatedCharge*> getPropagatedCharges() const;
+        /**
+         * @brief Get the Monte-Carlo particles resulting in this pixel hit
+         * @return List of all related Monte-Carlo particles
+         */
+        std::vector<const MCParticle*> getMCParticles() const;
 
         /**
          * @brief ROOT class definition
@@ -71,6 +77,7 @@ namespace allpix {
         unsigned int charge_{};
 
         TRefArray propagated_charges_;
+        TRefArray mc_particles_;
     };
 
     /**
