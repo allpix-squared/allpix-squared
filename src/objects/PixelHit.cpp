@@ -50,12 +50,12 @@ const PixelCharge* PixelHit::getPixelCharge() const {
  */
 std::vector<const MCParticle*> PixelHit::getMCParticles() const {
 
-  std::vector<const MCParticle*> mc_particles;
+    std::vector<const MCParticle*> mc_particles;
     for(auto mc_particle : mc_particles_) {
-      if(mc_particle == nullptr) {
-        throw MissingReferenceException(typeid(*this), typeid(MCParticle));
-      }
-      mc_particles.emplace_back(dynamic_cast<MCParticle*>(mc_particle));
+        if(mc_particle == nullptr) {
+            throw MissingReferenceException(typeid(*this), typeid(MCParticle));
+        }
+        mc_particles.emplace_back(dynamic_cast<MCParticle*>(mc_particle));
     }
 
     // Return as a vector of mc particles
