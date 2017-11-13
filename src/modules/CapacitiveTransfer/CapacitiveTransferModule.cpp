@@ -46,15 +46,10 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration config,
 
 void CapacitiveTransferModule::init() {
 
-    // Check if more than one coupling model is imported
-    if(config_.has("coupling_matrix") ^ config_.has("coupling_file") ? config_.has("coupling_scan_file")
-                                                                     : config_.has("coupling_matrix")) {
-        throw InvalidValueError(
-            config_, "coupling_*", "More than one coupling input defined. Please, check the README file.");
-    }
-
-    // Reading coupling matrix from config file
-    if(config_.has("coupling_matrix")) {
+    if((config_.has("coupling_matrix") || config_.has("coupling_file")) &&
+       (config_.has("coupling_file") || config_.has("coupling_scan_file"))) {
+        throw InvalidValueError(config_, "coupling_matrix", "More than one coupling input defined");
+    } else if(config_.has("coupling_matrix")) {
         relative_coupling = config_.getMatrix<double>("coupling_matrix");
         max_row = static_cast<unsigned int>(relative_coupling.size());
         max_col = static_cast<unsigned int>(relative_coupling[0].size());
