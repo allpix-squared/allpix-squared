@@ -97,7 +97,7 @@ export PATH="$Ninja_HOME:$PATH"
 #--------------------------------------------------------------------------------
 
 export Eigen_HOME=${CLICREPO}/software/Eigen/3.3.4/${BUILD_FLAVOUR}
-export Eigen3_DIR=${Eigen_HOME}/lib64/cmake/eigen3/
+export Eigen3_DIR=${Eigen_HOME}/share/eigen3/cmake/
 
 #--------------------------------------------------------------------------------
 #     LCIO
