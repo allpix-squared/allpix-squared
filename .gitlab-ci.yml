@@ -128,6 +128,7 @@ cmp:mac1013-clang:
         - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -DCMAKE_USE_RELATIVE_PATHS=TRUE ..
         - ninja
         - ninja install
+    allow_failure: true
     artifacts:
         paths:
             - build
@@ -349,6 +350,7 @@ mod:mac1013-clang:
         - source .gitlab-ci.d/load_deps.sh
         - cd build/
         - ctest -R test_modules --output-on-failure -j4
+    allow_failure: true
 
 core:mac1013-clang:
     stage: testing
@@ -361,7 +363,7 @@ core:mac1013-clang:
         - source .gitlab-ci.d/load_deps.sh
         - cd build/
         - ctest -R test_core --output-on-failure -j4
-
+    allow_failure: true
 
 #####################
 # Performance tests #
