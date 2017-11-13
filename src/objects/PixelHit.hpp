@@ -83,6 +83,7 @@ namespace allpix {
         double signal_{};
 
         TRef pixel_charge_;
+        TRefArray mc_particles_;
     };
 
     /**
