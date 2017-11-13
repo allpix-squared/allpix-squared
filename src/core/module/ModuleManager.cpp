@@ -683,7 +683,7 @@ void ModuleManager::run() {
 
                 // Resetting delegates
                 LOG(TRACE) << "Resetting messages";
-                module->reset_delegates();
+                //                module->reset_delegates();
                 // Reset logging
                 Log::setSection(old_section_name);
                 set_module_after(old_settings);
@@ -706,6 +706,10 @@ void ModuleManager::run() {
         // Finish executing the last remaining tasks
         thread_pool->execute_all();
 
+        // Reset the module messages
+        for(auto& module : modules_) {
+            module->reset_delegates();
+        }
         // Reset object count for next event
         TProcessID::SetObjectCount(save_id);
     }
