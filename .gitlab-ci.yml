@@ -348,7 +348,6 @@ mod:mac1012-clang:
         - source .gitlab-ci.d/init_mac.sh
         - source .gitlab-ci.d/load_deps.sh
         - cd build/
-        - cmake -DTEST_MODULES=OFF ..
         - ctest -R test_modules --output-on-failure -j4
 
 core:mac1012-clang:
@@ -361,7 +360,6 @@ core:mac1012-clang:
         - source .gitlab-ci.d/init_mac.sh
         - source .gitlab-ci.d/load_deps.sh
         - cd build/
-        - cmake -DTEST_MODULES=OFF ..
         - ctest -R test_core --output-on-failure -j4
 
 
@@ -385,7 +383,6 @@ perf:cc7-gcc:
         - source .gitlab-ci.d/init_x86_64.sh
         - source .gitlab-ci.d/load_deps.sh
         - cd build/
-        - cmake -DTEST_MODULES=OFF ..
         - ctest -R test_performance --output-on-failure
     allow_failure: true
     retry: 1
@@ -402,7 +399,6 @@ perf:cc7-gcc:
         - export COMPILER_TYPE="llvm"
         - source .gitlab-ci.d/init_x86_64.sh
         - cd build/
-        - cmake -DTEST_MODULES=OFF ..
         - ctest -R test_performance --output-on-failure
     allow_failure: true
     retry: 1
