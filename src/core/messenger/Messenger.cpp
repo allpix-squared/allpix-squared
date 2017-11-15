@@ -108,7 +108,7 @@ void Messenger::dispatch_message(Module* source, const std::shared_ptr<BaseMessa
     }
 
     // Save a copy of the sent message
-    sent_messages_.push_back(std::move(message));
+    sent_messages_.emplace_back(message);
 }
 
 /**
