@@ -701,13 +701,14 @@ void ModuleManager::run() {
         // Finish executing the last remaining tasks
         thread_pool->execute_all();
 
+        // Reset object count for next event
+        TProcessID::SetObjectCount(save_id);
+
         // Resetting delegates
         for(auto& module : modules_) {
             LOG(TRACE) << "Resetting messages";
             module->reset_delegates();
         }
-        // Reset object count for next event
-        TProcessID::SetObjectCount(save_id);
     }
     LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of " << number_of_events << " events";
     auto end_time = std::chrono::steady_clock::now();
