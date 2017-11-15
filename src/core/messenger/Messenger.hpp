@@ -168,7 +168,7 @@ namespace allpix {
 
         DelegateMap delegates_;
         DelegateIteratorMap delegate_to_iterator_;
-        std::vector<const std::shared_ptr<BaseMessage>> sent_messages_;
+        std::vector<std::shared_ptr<BaseMessage>> sent_messages_;
 
         mutable std::mutex mutex_;
     };
