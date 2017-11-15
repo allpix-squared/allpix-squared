@@ -100,15 +100,15 @@ void Messenger::dispatch_message(Module* source, const std::shared_ptr<BaseMessa
     // Send to generic listeners
     send = dispatch_message(source, message, name, "*") || send;
 
-    // Save a copy of the sent message
-    sent_messages_.push_back(message);
-
     // Display a TRACE log message if the message is send to no receiver
     if(!send) {
         const BaseMessage* inst = message.get();
         LOG(TRACE) << "Dispatched message " << allpix::demangle(typeid(*inst).name()) << " from " << source->getUniqueName()
                    << " has no receivers!";
     }
+
+    // Save a copy of the sent message
+    sent_messages_.push_back(std::move(message));
 }
 
 /**
