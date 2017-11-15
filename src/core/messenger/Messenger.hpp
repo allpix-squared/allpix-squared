@@ -125,6 +125,11 @@ namespace allpix {
         template <typename T>
         void dispatchMessage(Module* source, std::shared_ptr<T> message, const std::string& name = "-");
 
+        /**
+         * @brief Removes the list of sent messages, clearing them from memory if not otherwise used
+         */
+        inline void clearMessages() { sent_messages_.clear(); }
+
     private:
         /**
          * @brief Add a delegate to the listeners
