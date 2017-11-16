@@ -71,6 +71,7 @@ The following authors, in alphabetical order, have contributed to Allpix<sup>2</
 * Andreas Matthias Nürnberg, CERN, @nurnberg
 * Marko Petric, CERN, @mpetric
 * Edoardo Rossi, DESY, @edrossi
+* Andre Sailer, CERN, @sailer
 * Paul Schütze, DESY, @pschutze
 * Mateus Vicente Barreto Pinto, Université de Genève, @mvicente
 
