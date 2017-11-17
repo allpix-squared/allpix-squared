@@ -80,7 +80,7 @@ void GeometryManager::load(const Configuration& global_config, std::mt19937_64& 
 
         if(orientation_type == "zyx") {
             // First angle given in the configuration file is around z, second around y, last around x:
-            orientation = ROOT::Math::RotationZYX(orient_vec.x(), orient_vec.y(), orient_vec.z());
+            orientation = RotationZYX(orient_vec.x(), orient_vec.y(), orient_vec.z());
         } else if(orientation_type == "xyz") {
             // First angle given in the configuration file is around x, second around y, last around z:
             orientation = RotationZ(orient_vec.z()) * RotationY(orient_vec.y()) * RotationX(orient_vec.x());
