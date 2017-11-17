@@ -186,9 +186,9 @@ void GeometryConstructionG4::build_detectors() {
 
         std::string name = detector->getName();
         LOG(DEBUG) << "Creating Geant4 model for " << name;
-
         LOG(DEBUG) << " Wrapper dimensions of model: " << display_vector(model->getSize(), {"mm", "um"});
-        LOG(DEBUG) << " Center of the geometry parts relative to the origin:";
+
+        LOG(DEBUG) << " Global position and orientation of the detector:";
 
         // Create the wrapper box and logical volume
         auto wrapper_box = std::make_shared<G4Box>(
@@ -199,10 +199,14 @@ void GeometryConstructionG4::build_detectors() {
         detector->setExternalObject("wrapper_log", wrapper_log);
 
         // Get position and orientation
-        G4ThreeVector posWrapper = toG4Vector(detector->getPosition());
+        auto position = detector->getPosition();
         ROOT::Math::Rotation3D orientation = detector->getOrientation();
         std::vector<double> copy_vec(9);
         orientation.GetComponents(copy_vec.begin(), copy_vec.end());
+
+        LOG(DEBUG) << " - Position\t\t:\t" << display_vector(position, {"mm", "um"});
+
+        G4ThreeVector posWrapper = toG4Vector(position);
         auto rotWrapper = std::make_shared<G4RotationMatrix>(copy_vec.data());
         detector->setExternalObject("rotation_matrix", rotWrapper);
 
@@ -210,6 +214,8 @@ void GeometryConstructionG4::build_detectors() {
         auto wrapper_phys = make_shared_no_delete<G4PVPlacement>(
             rotWrapper.get(), posWrapper, wrapper_log.get(), "wrapper_" + name + "_phys", world_log_.get(), false, 0, true);
         detector->setExternalObject("wrapper_phys", wrapper_phys);
+
+        LOG(DEBUG) << " Center of the geometry parts relative to the origin:";
 
         /* SENSOR
          * the sensitive detector is the part that collects the deposits
@@ -327,7 +333,7 @@ void GeometryConstructionG4::build_detectors() {
 
             // Place the support
             auto support_pos = toG4Vector(layer.getCenter() - model->getCenter());
-            LOG(DEBUG) << "  - Support\t:\t" << display_vector(support_pos, {"mm", "um"});
+            LOG(DEBUG) << "  - Support\t\t:\t" << display_vector(support_pos, {"mm", "um"});
             auto support_phys =
                 make_shared_no_delete<G4PVPlacement>(nullptr,
                                                      support_pos,

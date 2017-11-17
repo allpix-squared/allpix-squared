@@ -32,54 +32,58 @@
 #include "core/geometry/MonolithicPixelDetectorModel.hpp"
 
 using namespace allpix;
+using namespace ROOT::Math;
 
 GeometryManager::GeometryManager() : closed_{false} {}
 
 /**
  * Loads the geometry by parsing the configuration file
  */
-void GeometryManager::load(const Configuration& global_config) {
+void GeometryManager::load(const Configuration& global_config, std::mt19937_64& seeder) {
     LOG(TRACE) << "Reading geometry";
+
+    // Set up a random number generator and seed it with the global seed:
+    std::mt19937_64 random_generator;
+    random_generator.seed(seeder());
 
     std::string detector_file_name = global_config.getPath("detectors_file", true);
     std::fstream file(detector_file_name);
     ConfigReader reader(file, detector_file_name);
 
     // Loop over all defined detectors
+    LOG(DEBUG) << "Loading all detectors:";
     for(auto& detector_section : reader.getConfigurations()) {
-        // Get the position and orientation
-        auto position = detector_section.get<ROOT::Math::XYZPoint>("position", ROOT::Math::XYZPoint());
+        LOG(DEBUG) << "Detector " << detector_section.getName() << "...";
+
+        // Calculate possible detector misalignment to be added
+        auto misalignment = [&](auto residuals) {
+            double dx = std::normal_distribution<double>(0, residuals.x())(random_generator);
+            double dy = std::normal_distribution<double>(0, residuals.y())(random_generator);
+            double dz = std::normal_distribution<double>(0, residuals.z())(random_generator);
+            return DisplacementVector3D<Cartesian3D<double>>(dx, dy, dz);
+        };
+
+        // Get the position and apply potenial misalignment
+        auto position = detector_section.get<XYZPoint>("position", XYZPoint());
+        LOG(DEBUG) << "Position:    " << display_vector(position, {"mm", "um"});
+        position += misalignment(detector_section.get<XYZPoint>("alignment_precision_position", XYZPoint()));
+        LOG(DEBUG) << " misaligned: " << display_vector(position, {"mm", "um"});
+
+        // Get the orientation and apply misalignment to the individual angles before combining them
+        auto orient_vec = detector_section.get<XYZVector>("orientation", XYZVector());
+        LOG(DEBUG) << "Orientation: " << display_vector(orient_vec, {"deg"});
+        orient_vec += misalignment(detector_section.get<XYZVector>("alignment_precision_orientation", XYZVector()));
+        LOG(DEBUG) << " misaligned: " << display_vector(orient_vec, {"deg"});
 
         auto orientation_type = detector_section.get<std::string>("orientation_type", "zyx");
-        ROOT::Math::Rotation3D orientation;
+        Rotation3D orientation;
 
-        if(orientation_type == "matrix") {
-            auto orient_matrix = detector_section.getMatrix<double>("orientation");
-            // Check correct dimensions:
-            auto elements = std::minmax_element(
-                std::begin(orient_matrix),
-                std::end(orient_matrix),
-                [](const std::vector<double>& lhs, const std::vector<double>& rhs) { return lhs.size() < rhs.size(); });
-            if(orient_matrix.size() != 3 || elements.first->size() != 3 || elements.second->size() != 3) {
-                throw InvalidValueError(
-                    detector_section, "orientation", "orientation matrix is required to have dimensions 3x3");
-            } else {
-                LOG(TRACE) << "Read rotation matrix with dimensions 3x3";
-            }
-            ROOT::Math::XYZVector row_x(orient_matrix.at(0).at(0), orient_matrix.at(1).at(0), orient_matrix.at(2).at(0));
-            ROOT::Math::XYZVector row_y(orient_matrix.at(0).at(1), orient_matrix.at(1).at(1), orient_matrix.at(2).at(1));
-            ROOT::Math::XYZVector row_z(orient_matrix.at(0).at(2), orient_matrix.at(1).at(2), orient_matrix.at(2).at(2));
-            orientation = ROOT::Math::Rotation3D(row_x, row_y, row_z);
-        } else if(orientation_type == "zyx") {
-            auto orient_vec = detector_section.get<ROOT::Math::XYZVector>("orientation", ROOT::Math::XYZVector());
+        if(orientation_type == "zyx") {
             orientation = ROOT::Math::RotationZYX(orient_vec.z(), orient_vec.y(), orient_vec.x());
         } else if(orientation_type == "xyz") {
-            auto orient_vec = detector_section.get<ROOT::Math::XYZVector>("orientation", ROOT::Math::XYZVector());
-            orientation = ROOT::Math::RotationZ(orient_vec.z()) * ROOT::Math::RotationY(orient_vec.y()) *
-                          ROOT::Math::RotationX(orient_vec.x());
+            orientation = RotationZ(orient_vec.z()) * RotationY(orient_vec.y()) * RotationX(orient_vec.x());
         } else if(orientation_type == "zxz") {
-            auto orient_vec = detector_section.get<ROOT::Math::XYZVector>("orientation", ROOT::Math::XYZVector());
-            orientation = ROOT::Math::EulerAngles(orient_vec.x(), orient_vec.y(), orient_vec.z());
+            orientation = EulerAngles(orient_vec.x(), orient_vec.y(), orient_vec.z());
         } else {
             throw InvalidValueError(
                 detector_section, "orientation_type", "orientation_mode should be either 'xyz' or 'zxz'");

@@ -50,13 +50,22 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     G4StepPoint* preStepPoint = step->GetPreStepPoint();
     G4StepPoint* postStepPoint = step->GetPostStepPoint();
 
+    // Get Transportaion Matrix
+    G4TouchableHandle theTouchable = step->GetPreStepPoint()->GetTouchableHandle();
+
     // Put the charge deposit in the middle of the step
     G4ThreeVector mid_pos = (preStepPoint->GetPosition() + postStepPoint->GetPosition()) / 2;
     double mid_time = (preStepPoint->GetGlobalTime() + postStepPoint->GetGlobalTime()) / 2;
 
     // Calculate the charge deposit at a local position
     auto deposit_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(mid_pos));
+    auto deposit_position_g4 = theTouchable->GetHistory()->GetTopTransform().TransformPoint(mid_pos);
     auto charge = static_cast<unsigned int>(edep / charge_creation_energy_);
+
+    auto deposit_position_g4loc =
+        ROOT::Math::XYZPoint(deposit_position_g4.x() + detector_->getModel()->getSensorCenter().x(),
+                             deposit_position_g4.y() + detector_->getModel()->getSensorCenter().y(),
+                             deposit_position_g4.z() + detector_->getModel()->getSensorCenter().z());
 
     // Save begin point when track is seen for the first time
     if(track_begin_.find(step->GetTrack()->GetTrackID()) == track_begin_.end()) {
@@ -90,6 +99,11 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
                << " locally on " << display_vector(deposit_position, {"mm", "um"}) << " in " << detector_->getName()
                << " after " << Units::display(mid_time, {"ns", "ps"});
 
+    LOG(DEBUG) << "Geant4 transformation to local: " << display_vector(deposit_position_g4loc, {"mm", "um"});
+    if((deposit_position_g4loc - deposit_position).mag2() > 0.001) {
+        LOG(ERROR) << "Difference G4 to internal: "
+                   << display_vector((deposit_position_g4loc - deposit_position), {"mm", "um"});
+    }
     return true;
 }
 
@@ -120,6 +134,10 @@ void SensitiveDetectorActionG4::dispatchMessages() {
         auto global_end = detector_->getGlobalPosition(local_end);
         mc_particles.emplace_back(local_begin, global_begin, local_end, global_end, pdg_code);
         id_to_particle_[track_id] = mc_particles.size() - 1;
+
+        LOG(DEBUG) << "Found MC particle " << pdg_code << " crossing detector from "
+                   << display_vector(local_begin, {"mm", "um"}) << " to " << display_vector(local_end, {"mm", "um"})
+                   << " (local coordinates)";
     }
 
     // Link mc particles to parents
