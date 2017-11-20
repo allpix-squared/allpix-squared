@@ -112,6 +112,8 @@ The values can be accessed via the following methods:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 // Returns true if the key exists and false otherwise
 config.has("key")
+// Returns the number of keys found from the provided initializer list:
+config.count({"key1", "key2", "key3"});
 // Returns the value in the given type, throws an exception if not existing or a conversion to TYPE is not possible
 config.get<TYPE>("key")
 // Returns the value in the given type or the provided default value if it does not exist
