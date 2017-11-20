@@ -63,6 +63,13 @@ namespace allpix {
         bool has(const std::string& key) const;
 
         /**
+         * @brief Check how many of the given keys are defined
+         * @param keys Keys to check for existence
+         * @return number of existing keys from the given list
+         */
+        unsigned int count(std::initializer_list<std::string> keys) const;
+
+        /**
          * @brief Get value of a key in requested type
          * @param key Key to get value of
          * @return Value of the key in the type of the requested template parameter
