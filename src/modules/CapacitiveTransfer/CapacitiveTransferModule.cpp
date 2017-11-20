@@ -46,9 +46,9 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration config,
 
 void CapacitiveTransferModule::init() {
 
-    if((config_.has("coupling_matrix") || config_.has("coupling_file")) &&
-       (config_.has("coupling_file") || config_.has("coupling_scan_file"))) {
-        throw InvalidValueError(config_, "coupling_matrix", "More than one coupling input defined");
+    if(config_.count({"coupling_matrix", "coupling_file", "coupling_scan_file"}) > 1) {
+        throw InvalidCombinationError(
+            config_, {"coupling_matrix", "coupling_file", "coupling_scan_file"}, "More than one coupling input defined");
     } else if(config_.has("coupling_matrix")) {
         relative_coupling = config_.getMatrix<double>("coupling_matrix");
         max_row = static_cast<unsigned int>(relative_coupling.size());
