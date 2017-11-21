@@ -11,8 +11,11 @@ IF(NOT ROOT_FOUND)
     MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
     "$ source YOUR_ROOT_DIR/bin/thisroot.sh")
 ENDIF()
-
 INCLUDE_DIRECTORIES(SYSTEM ${ROOT_INCLUDE_DIRS})
+
+# Find required Allpix Squared tools
+GET_FILENAME_COMPONENT(ALLPIX_STRING_UTILS "${CMAKE_CURRENT_SOURCE_DIR}/../../src" ABSOLUTE)
+INCLUDE_DIRECTORIES(${ALLPIX_STRING_UTILS})
 
 # Add TCAD dfise converter executable
 ADD_EXECUTABLE(dfise_converter
