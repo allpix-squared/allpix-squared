@@ -8,6 +8,19 @@ The output .init file (with the same name as the .grd and .dat files) can be imp
 node.x	node.y	node.z	observable.x	observable.y	observable.z
 ```
 
+#### Compilation
+
+When compiling the Allpix Squared framework, the TCAD DF-ISE mesh converter is automatically compiled and installed in the Allpix Squared installation directory.
+
+It is also possible to compile the converter separately as stand-alone tool within this directory:
+```bash
+$ mkdir build && cd build
+$ cmake ..
+$ make
+```
+
+It should be noted that the TCAD DF-ISE mesh converter depends on the `string.h` utilities of the Allpix Squared framework. Thus it is discouraged to move the converter code outside the repository as the dependent files would have to copied as well. Furthermore, updates are only distributed through the repository and new release versions of the Allpix Squared framework.
+
 #### Features
 - TCAD DF-ISE file format reader.
 - Fast radius neighbor search for three-dimensional point clouds.
