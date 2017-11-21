@@ -135,7 +135,6 @@ namespace allpix {
     /**
      * @ingroup Exceptions
      * @brief Indicates an error with the contents of value
-     * @note Only configuration error that should be called directly from modules
      *
      * Should be raised if the data contains valid data for its type (otherwise an \ref InvalidKeyError should have been
      * raised earlier), but the value is not in the range of allowed values.
@@ -149,6 +148,25 @@ namespace allpix {
          * @param reason Reason why the value is invalid (empty if no explicit reason)
          */
         InvalidValueError(const Configuration& config, const std::string& key, const std::string& reason = "");
+    };
+    /**
+     * @ingroup Exceptions
+     * @brief Indicates an error with a combination of configuration keys
+     *
+     * Should be raised if a disallowed combination of keys is used, such as two optional parameters which contradict each
+     * other.
+     */
+    class InvalidCombinationError : public ConfigurationError {
+    public:
+        /**
+         * @brief Construct an error for an invalid combination of keys
+         * @param config Configuration object containing the problematic key combination
+         * @param key Name of the problematic keys
+         * @param reason Reason why the key combination is invalid (empty if no explicit reason)
+         */
+        InvalidCombinationError(const Configuration& config,
+                                std::initializer_list<std::string> keys,
+                                const std::string& reason = "");
     };
 } // namespace allpix
 

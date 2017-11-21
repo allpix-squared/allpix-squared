@@ -112,6 +112,8 @@ The values can be accessed via the following methods:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 // Returns true if the key exists and false otherwise
 config.has("key")
+// Returns the number of keys found from the provided initializer list:
+config.count({"key1", "key2", "key3"});
 // Returns the value in the given type, throws an exception if not existing or a conversion to TYPE is not possible
 config.get<TYPE>("key")
 // Returns the value in the given type or the provided default value if it does not exist
@@ -746,7 +748,7 @@ Reporting this type of errors can help developers during their development of ne
 \end{itemize}
 
 Outside the core framework, exceptions can also be used directly by the modules.
-There are only two exceptions which should be used by typical modules to indicate errors:
+There are a few exceptions which should typically be used by modules to indicate errors:
 \begin{itemize}
 \item \parameter{InvalidValueError}: Derived from configuration exceptions.
 Signals any problem with the value of a configuration parameter not related to parsing or conversion to the required type.
@@ -765,6 +767,22 @@ void run(unsigned int event_id) {
     }
 }
 \end{minted}
+\item \parameter{InvalidCombinationError}: Derived from configuration exceptions.
+Signals any problem with a combination of configuration parameters used.
+This could be used if several optional but mutually exclusive parameters are present in a module, and it should be ensured that only one is specified at the time.
+The exceptions accepts the list of keys as initializer list.
+An example is shown below:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+void run(unsigned int event_id) {
+    // Check if we have mutually exclusive options defined:
+    if(config.count({"exclusive_opt_a", "exclusive_opt_b"}) > 1) {
+        // Raise an error if the combination of keys is not valid
+        //   provide the configuration object, keys and an explanation
+        throw InvalidCombinationError(config, {"exclusive_opt_a", "exclusive_opt_b"}, "Options A and B are mutually exclusive, specify only one.");
+    }
+}
+\end{minted}
+
 \item \parameter{ModuleError}: Derived from module exceptions.
 Should be used to indicate any runtime error in a module not directly caused by an invalid configuration value, for example that it is not possible to write an output file.
 A reason should be given to indicate what the source of problem is.
