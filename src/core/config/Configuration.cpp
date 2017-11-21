@@ -27,7 +27,7 @@ bool Configuration::has(const std::string& key) const {
 
 unsigned int Configuration::count(std::initializer_list<std::string> keys) const {
     if(keys.size() == 0) {
-        throw std::invalid_argument("list of possible units cannot be empty");
+        throw std::invalid_argument("list of keys cannot be empty");
     }
 
     unsigned int found = 0;
