@@ -14,11 +14,9 @@
 
 #include <Eigen/Eigen>
 
-#include "../../src/core/utils/log.h"
-
 #include "Octree.hpp"
-
 #include "read_dfise.h"
+#include "utils/log.h"
 
 void interrupt_handler(int) {
     LOG(STATUS) << "Interrupted! Aborting conversion...";
