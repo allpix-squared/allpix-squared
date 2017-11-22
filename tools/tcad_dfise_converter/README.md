@@ -19,7 +19,7 @@ $ cmake ..
 $ make
 ```
 
-It should be noted that the TCAD DF-ISE mesh converter depends on the core utilities of the Allpix Squared framework found in the directory `src/core/utils`. Thus it is discouraged to move the converter code outside the repository as this directory would have to copied as well. Furthermore, updates are only distributed through the repository and new release versions of the Allpix Squared framework.
+It should be noted that the TCAD DF-ISE mesh converter depends on the core utilities of the Allpix Squared framework found in the directory `src/core/utils`. Thus, it is discouraged to move the converter code outside the repository as this directory would have to be copied and included in the code as well. Furthermore, updates are only distributed through the repository and new release versions of the Allpix Squared framework.
 
 #### Features
 - TCAD DF-ISE file format reader.
