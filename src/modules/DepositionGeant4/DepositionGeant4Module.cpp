@@ -134,15 +134,29 @@ void DepositionGeant4Module::init() {
     // Register a step limiter (uses the user limits defined earlier)
     physicsList->RegisterPhysics(new G4StepLimiterPhysics());
 
-    // Define the production cut as one fifth of the minimum size (thickness, pitch) among the detectors
-    double min_size = std::numeric_limits<double>::max();
-    for(auto& detector : geo_manager_->getDetectors()) {
-        auto model = detector->getModel();
-        min_size = std::min(std::min(std::min(min_size, model->getPixelSize().x()), model->getPixelSize().y()),
-                            model->getSensorSize().z());
+    // Set the range-cut off threshold for secondary production:
+    double production_cut;
+    if(config_.has("range_cut")) {
+        production_cut = config_.get<double>("range_cut");
+        LOG(INFO) << "Setting configured G4 production cut to " << Units::display(production_cut, {"mm", "um"});
+    } else {
+        // Define the production cut as one fifth of the minimum size (thickness, pitch) among the detectors
+        double min_size = std::numeric_limits<double>::max();
+        std::string min_detector;
+        for(auto& detector : geo_manager_->getDetectors()) {
+            auto model = detector->getModel();
+            double prev_min_size = min_size;
+            min_size = std::min(std::min(std::min(min_size, model->getPixelSize().x()), model->getPixelSize().y()),
+                                model->getSensorSize().z());
+            if(min_size != prev_min_size) {
+                min_detector = detector->getName();
+            }
+        }
+        production_cut = min_size / 5;
+        LOG(INFO) << "Setting G4 production cut to " << Units::display(production_cut, {"mm", "um"})
+                  << ", derived from properties of detector \"" << min_detector << "\"";
     }
-    auto production_cut = std::to_string(min_size / 5);
-    ui_g4->ApplyCommand("/run/setCut " + production_cut);
+    ui_g4->ApplyCommand("/run/setCut " + std::to_string(production_cut));
 
     // Initialize the physics list
     LOG(TRACE) << "Initializing physics processes";
