@@ -14,15 +14,15 @@ ENDIF()
 INCLUDE_DIRECTORIES(SYSTEM ${ROOT_INCLUDE_DIRS})
 
 # Find required Allpix Squared tools
-GET_FILENAME_COMPONENT(ALLPIX_UTILS "${CMAKE_CURRENT_SOURCE_DIR}/../../src" ABSOLUTE)
+GET_FILENAME_COMPONENT(ALLPIX_UTILS "${CMAKE_CURRENT_SOURCE_DIR}/../../src/core" ABSOLUTE)
 INCLUDE_DIRECTORIES(${ALLPIX_UTILS})
 
 # Add TCAD dfise converter executable
 ADD_EXECUTABLE(dfise_converter
     dfise_converter.cpp
     read_dfise.cpp
-    ${ALLPIX_UTILS}/core/utils/log.cpp
-    ${ALLPIX_UTILS}/core/utils/unit.cpp
+    ${ALLPIX_UTILS}/utils/log.cpp
+    ${ALLPIX_UTILS}/utils/unit.cpp
 )
 
 #Build the TCAD converter

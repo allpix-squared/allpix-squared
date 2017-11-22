@@ -10,7 +10,7 @@
 #include <string>
 
 // Include trim utility from allpix
-#include "core/utils/string.h"
+#include "utils/string.h"
 
 std::map<std::string, std::vector<Point>> read_grid(const std::string& file_name) {
     std::ifstream file(file_name);
