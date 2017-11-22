@@ -1,5 +1,5 @@
 # How to contribute
-First off all, thanks for considering to contribute to Allpix<sup>2</sup>. Any type of merge request, ranging from small bugfixes, improvements to the documentation to entirely new functionality, is much appreciated. We, the maintainers, will try to our best to look carefully at every merge request.
+Thanks for considering to contribute to Allpix<sup>2</sup>. Any type of merge request, ranging from small bugfixes, improvements to the documentation to entirely new functionality, is much appreciated. We, the maintainers, will try to our best to look carefully at every merge request.
 
 If you only want to submit an issue, that is also very welcome, please continue directly to the [issue tracker](https://gitlab.cern.ch/simonspa/allpix-squared/issues) to open a ticket. 
 
