@@ -36,7 +36,12 @@ namespace allpix {
          */
         LCIOWriterModule(Configuration config, Messenger* messenger, GeometryManager* geo_manager);
 
-        ~LCIOWriterModule();
+        ~LCIOWriterModule(){};
+
+        /**
+         * @brief Initialize LCIO and GEAR output files
+         */
+        void init() override;
 
         /**
          * @brief Receive pixel hit messages, create lcio event, add hit collection and write event to file.
@@ -49,9 +54,8 @@ namespace allpix {
         void finalize() override;
 
     private:
-        Configuration config_;
         std::vector<std::shared_ptr<PixelHitMessage>> pixel_messages_;
-        IO::LCWriter* lcWriter_{};
+        std::shared_ptr<IO::LCWriter> lcWriter_{};
         std::map<std::string, unsigned int> detectorIDs_;
         int pixelType_;
         std::string OutputCollectionName_;

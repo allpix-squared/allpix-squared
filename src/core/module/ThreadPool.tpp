@@ -18,8 +18,8 @@ namespace allpix {
     template <typename T> ThreadPool::SafeQueue<T>::~SafeQueue() { invalidate(); }
 
     /*
-    * Block until a value is available if the wait parameter is set to true. The wait exits when the queue is invalidated.
-    */
+     * Block until a value is available if the wait parameter is set to true. The wait exits when the queue is invalidated.
+     */
     template <typename T> bool ThreadPool::SafeQueue<T>::pop(T& out, bool wait, const std::function<void()>& func) {
         // Lock the mutex
         std::unique_lock<std::mutex> lock{mutex_};
@@ -60,11 +60,11 @@ namespace allpix {
     /*
      * Used to ensure no conditions are being waited for in pop when a thread or the application is trying to exit. The queue
      * is invalid after calling this method and it is an error to continue using a queue after this method has been called.
-    */
+     */
     template <typename T> void ThreadPool::SafeQueue<T>::invalidate() {
         std::lock_guard<std::mutex> lock{mutex_};
         std::queue<T>().swap(queue_);
         valid_ = false;
         condition_.notify_all();
     }
-}
+} // namespace allpix

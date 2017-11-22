@@ -39,8 +39,8 @@
 
 using namespace allpix;
 
-GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo_manager, Configuration config)
-    : geo_manager_(geo_manager), config_(std::move(config)) {}
+GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo_manager, Configuration& config)
+    : geo_manager_(geo_manager), config_(config) {}
 
 /**
  * @brief Version of std::make_shared that does not delete the pointer
@@ -135,6 +135,7 @@ void GeometryConstructionG4::init_materials() {
     materials_["kapton"] = nistman->FindOrBuildMaterial("G4_KAPTON");
     materials_["copper"] = nistman->FindOrBuildMaterial("G4_Cu");
     materials_["air"] = nistman->FindOrBuildMaterial("G4_AIR");
+    materials_["lead"] = nistman->FindOrBuildMaterial("G4_Pb");
 
     // Create required elements:
     G4Element* H = new G4Element("Hydrogen", "H", 1., 1.01 * CLHEP::g / CLHEP::mole);
@@ -185,9 +186,9 @@ void GeometryConstructionG4::build_detectors() {
 
         std::string name = detector->getName();
         LOG(DEBUG) << "Creating Geant4 model for " << name;
-
         LOG(DEBUG) << " Wrapper dimensions of model: " << display_vector(model->getSize(), {"mm", "um"});
-        LOG(DEBUG) << " Center of the geometry parts relative to the origin:";
+
+        LOG(DEBUG) << " Global position and orientation of the detector:";
 
         // Create the wrapper box and logical volume
         auto wrapper_box = std::make_shared<G4Box>(
@@ -198,10 +199,14 @@ void GeometryConstructionG4::build_detectors() {
         detector->setExternalObject("wrapper_log", wrapper_log);
 
         // Get position and orientation
-        G4ThreeVector posWrapper = toG4Vector(detector->getPosition());
+        auto position = detector->getPosition();
         ROOT::Math::Rotation3D orientation = detector->getOrientation();
         std::vector<double> copy_vec(9);
         orientation.GetComponents(copy_vec.begin(), copy_vec.end());
+
+        LOG(DEBUG) << " - Position\t\t:\t" << display_vector(position, {"mm", "um"});
+
+        G4ThreeVector posWrapper = toG4Vector(position);
         auto rotWrapper = std::make_shared<G4RotationMatrix>(copy_vec.data());
         detector->setExternalObject("rotation_matrix", rotWrapper);
 
@@ -209,6 +214,8 @@ void GeometryConstructionG4::build_detectors() {
         auto wrapper_phys = make_shared_no_delete<G4PVPlacement>(
             rotWrapper.get(), posWrapper, wrapper_log.get(), "wrapper_" + name + "_phys", world_log_.get(), false, 0, true);
         detector->setExternalObject("wrapper_phys", wrapper_phys);
+
+        LOG(DEBUG) << " Center of the geometry parts relative to the origin:";
 
         /* SENSOR
          * the sensitive detector is the part that collects the deposits
@@ -318,13 +325,15 @@ void GeometryConstructionG4::build_detectors() {
             if(support_material_iter == materials_.end()) {
                 throw ModuleError("Cannot construct a support layer of material '" + layer.getMaterial() + "'");
             }
-            auto support_log = make_shared_no_delete<G4LogicalVolume>(
-                support_solid.get(), materials_["epoxy"], "support_" + name + "_log_" + std::to_string(support_idx));
+            auto support_log =
+                make_shared_no_delete<G4LogicalVolume>(support_solid.get(),
+                                                       support_material_iter->second,
+                                                       "support_" + name + "_log_" + std::to_string(support_idx));
             supports_log->push_back(support_log);
 
             // Place the support
             auto support_pos = toG4Vector(layer.getCenter() - model->getCenter());
-            LOG(DEBUG) << "  - Support\t:\t" << display_vector(support_pos, {"mm", "um"});
+            LOG(DEBUG) << "  - Support\t\t:\t" << display_vector(support_pos, {"mm", "um"});
             auto support_phys =
                 make_shared_no_delete<G4PVPlacement>(nullptr,
                                                      support_pos,
@@ -345,8 +354,8 @@ void GeometryConstructionG4::build_detectors() {
         auto hybrid_model = std::dynamic_pointer_cast<HybridPixelDetectorModel>(model);
         if(hybrid_model != nullptr) {
             /* BUMPS
-            * the bump bonds connect the sensor to the readout chip
-            */
+             * the bump bonds connect the sensor to the readout chip
+             */
 
             // Get parameters from model
             auto bump_height = hybrid_model->getBumpHeight();

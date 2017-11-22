@@ -23,3 +23,23 @@ InvalidValueError::InvalidValueError(const Configuration& config, const std::str
         error_message_ += ": " + reason;
     }
 }
+
+InvalidCombinationError::InvalidCombinationError(const Configuration& config,
+                                                 std::initializer_list<std::string> keys,
+                                                 const std::string& reason) {
+    std::string section_str = "in section '" + config.getName() + "'";
+    if(config.getName().empty()) {
+        section_str = "in empty section";
+    }
+    error_message_ = "Combination of keys ";
+    for(auto& key : keys) {
+        if(!config.has(key)) {
+            continue;
+        }
+        error_message_ += "'" + key + "', ";
+    }
+    error_message_ += section_str + " is not valid";
+    if(!reason.empty()) {
+        error_message_ += ": " + reason;
+    }
+}

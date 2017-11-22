@@ -10,8 +10,8 @@ To construct a comparison tree using this macro, follow these steps:
 * Open root with the data file attached like `root -l /path/to/data.root`
 * Load the current library of objects with `.L path/to/libAllpixObjects.so`
 * Build the macro with `.L path/to/constructComparisonTree.C++`
-* Run the macro with `auto tree = constructComparisonTree(_file0, "name_of_dut")`
 * Open a new file with `auto file = new TFile("output.root", "RECREATE")`
+* Run the macro with `auto tree = constructComparisonTree(_file0, "name_of_dut")`
 * Write the tree with `tree->Write()`
 
 #### Remake project

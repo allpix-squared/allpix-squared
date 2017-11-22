@@ -16,6 +16,7 @@
 #include <TClass.h>
 #include <TDirectory.h>
 
+#include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "core/utils/type.h"
 
@@ -25,7 +26,7 @@
 using namespace allpix;
 
 RCEWriterModule::RCEWriterModule(Configuration config, Messenger* messenger, GeometryManager* geo_mgr)
-    : Module(config), config_(std::move(config)), geo_mgr_(geo_mgr) {
+    : Module(std::move(config)), geo_mgr_(geo_mgr) {
     // Bind to PixelHitMessage
     messenger->bindMulti(this, &RCEWriterModule::pixel_hit_messages_);
 }
@@ -33,7 +34,8 @@ RCEWriterModule::~RCEWriterModule() = default;
 
 void RCEWriterModule::init() {
     // Create output file
-    std::string file_name = getOutputPath(config_.get<std::string>("file_name", "rce_data") + ".root", true);
+    std::string file_name =
+        createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name", "rce_data"), "root"), true);
     output_file_ = std::make_unique<TFile>(file_name.c_str(), "RECREATE");
     output_file_->cd();
 

@@ -23,6 +23,7 @@ ENDIF()
 ROOT_GENERATE_DICTIONARY(CorryvreckanObjectsDictionary
     ${CMAKE_CURRENT_SOURCE_DIR}/corryvreckan/TestBeamObject.h
     ${CMAKE_CURRENT_SOURCE_DIR}/corryvreckan/Pixel.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/corryvreckan/MCParticle.h
     LINKDEF
     ${CMAKE_CURRENT_SOURCE_DIR}/corryvreckan/Linkdef.h
     MODULE

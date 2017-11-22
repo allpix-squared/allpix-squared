@@ -17,8 +17,6 @@
 #include "core/utils/file.h"
 #include "exceptions.h"
 
-#include <iostream>
-
 using namespace allpix;
 
 Configuration::Configuration(std::string name, std::string path) : name_(std::move(name)), path_(std::move(path)) {}
@@ -27,8 +25,25 @@ bool Configuration::has(const std::string& key) const {
     return config_.find(key) != config_.cend();
 }
 
+unsigned int Configuration::count(std::initializer_list<std::string> keys) const {
+    if(keys.size() == 0) {
+        throw std::invalid_argument("list of keys cannot be empty");
+    }
+
+    unsigned int found = 0;
+    for(auto& key : keys) {
+        if(has(key)) {
+            found++;
+        }
+    }
+    return found;
+}
+
 std::string Configuration::getName() const {
     return name_;
+}
+void Configuration::setName(const std::string& name) {
+    name_ = name;
 }
 std::string Configuration::getFilePath() const {
     return path_;
@@ -86,7 +101,7 @@ std::vector<std::string> Configuration::getPathArray(const std::string& key, boo
  */
 std::string Configuration::path_to_absolute(std::string path, bool canonicalize_path) const {
     // If not a absolute path, make it an absolute path
-    if(path[0] != '/') {
+    if(path.front() != '/') {
         // Get base directory of config file
         std::string directory = path_.substr(0, path_.find_last_of('/'));
 
@@ -142,7 +157,7 @@ std::vector<std::pair<std::string, std::string>> Configuration::getAll() {
     // Loop over all configuration keys
     for(auto& key_value : config_) {
         // Skip internal keys starting with an underscore
-        if(!key_value.first.empty() && key_value.first[0] == '_') {
+        if(!key_value.first.empty() && key_value.first.front() == '_') {
             continue;
         }
 
@@ -150,4 +165,89 @@ std::vector<std::pair<std::string, std::string>> Configuration::getAll() {
     }
 
     return result;
+}
+
+/**
+ * String is recursively parsed for all pair of [ and ] brackets. All parts between single or double quotation marks are
+ * skipped.
+ */
+std::unique_ptr<Configuration::parse_node> Configuration::parse_value(std::string str, int depth) {
+    using parse_node = Configuration::parse_node;
+
+    auto node = std::make_unique<parse_node>();
+    str = allpix::trim(str);
+    if(str.empty()) {
+        throw std::invalid_argument("element is empty");
+    }
+
+    // Initialize variables for non-zero levels
+    size_t beg = 1, lst = 1;
+    int in_dpt = 0;
+    bool in_dpt_chg = false;
+
+    // Implicitly add pair of brackets on zero level
+    if(depth == 0) {
+        beg = lst = 0;
+        in_dpt = 1;
+    }
+
+    for(size_t i = 0; i < str.size(); ++i) {
+        // Skip over quotation marks
+        if(str[i] == '\'' || str[i] == '\"') {
+            i = str.find(str[i], i + 1);
+            if(i == std::string::npos) {
+                throw std::invalid_argument("quotes are not balanced");
+            }
+            continue;
+        }
+
+        // Handle brackets
+        if(str[i] == '[') {
+            ++in_dpt;
+            if(!in_dpt_chg && i != 0) {
+                throw std::invalid_argument("invalid start bracket");
+            }
+            in_dpt_chg = true;
+        } else if(str[i] == ']') {
+            if(in_dpt == 0) {
+                throw std::invalid_argument("brackets are not matched");
+            }
+            --in_dpt;
+            in_dpt_chg = true;
+        }
+
+        // Make subitems at the zero level
+        if(in_dpt == 1 && (str[i] == ',' || (isspace(str[i]) != 0 && (isspace(str[i - 1]) == 0 && str[i - 1] != ',')))) {
+            node->children.push_back(parse_value(str.substr(lst, i - lst), depth + 1));
+            lst = i + 1;
+        }
+    }
+
+    if((depth > 0 && in_dpt != 0) || (depth == 0 && in_dpt != 1)) {
+        throw std::invalid_argument("brackets are not balanced");
+    }
+
+    // Determine if array or value
+    if(in_dpt_chg || depth == 0) {
+        // Handle last array item
+        size_t end = str.size();
+        if(depth != 0) {
+            if(str.back() != ']') {
+                throw std::invalid_argument("invalid end bracket");
+            }
+            end = str.size() - 1;
+        }
+        node->children.push_back(parse_value(str.substr(lst, end - lst), depth + 1));
+        node->value = str.substr(beg, end - beg);
+    } else {
+        // Not an array, handle as value instead
+        node->value = str;
+    }
+
+    // Handle zero level where brackets where explicitly added
+    if(depth == 0 && node->children.size() == 1 && !node->children.front()->children.empty()) {
+        node = std::move(node->children.front());
+    }
+
+    return node;
 }

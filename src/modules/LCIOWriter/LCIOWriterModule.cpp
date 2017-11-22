@@ -30,7 +30,7 @@ using namespace allpix;
 using namespace lcio;
 
 LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, GeometryManager* geo)
-    : Module(config), config_(std::move(config)) {
+    : Module(std::move(config)) {
 
     // Bind pixel hits message
     messenger->bindMulti(this, &LCIOWriterModule::pixel_messages_, MsgFlags::REQUIRED);
@@ -47,10 +47,12 @@ LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, G
     pixelType_ = config_.get<int>("pixel_type", 2);
     DetectorName_ = config_.get<std::string>("detector_name", "EUTelescope");
     OutputCollectionName_ = config_.get<std::string>("output_collection_name", "zsdata_m26");
+}
 
+void LCIOWriterModule::init() {
     // Open LCIO file and write run header
-    lcWriter_ = LCFactory::getInstance()->createLCWriter();
-    lcWriter_->open(config_.get<std::string>("file_name", "output.slcio"), LCIO::WRITE_NEW);
+    lcWriter_ = std::shared_ptr<IO::LCWriter>(LCFactory::getInstance()->createLCWriter());
+    lcWriter_->open(createOutputFile(config_.get<std::string>("file_name", "output.slcio")), LCIO::WRITE_NEW);
     auto run = std::make_unique<LCRunHeaderImpl>();
     run->setRunNumber(1);
     run->setDetectorName(DetectorName_);
@@ -127,8 +129,4 @@ void LCIOWriterModule::run(unsigned int eventNb) {
 
 void LCIOWriterModule::finalize() {
     lcWriter_->close();
-}
-
-LCIOWriterModule::~LCIOWriterModule() {
-    delete lcWriter_;
 }

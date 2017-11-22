@@ -21,6 +21,7 @@
 #include "objects/PixelCharge.hpp"
 
 #include <TH1D.h>
+#include <TH2D.h>
 
 namespace allpix {
     /**
@@ -60,7 +61,6 @@ namespace allpix {
     private:
         std::mt19937_64 random_generator_;
 
-        Configuration config_;
         Messenger* messenger_;
 
         // Input message with the charges on the pixels
@@ -70,7 +70,8 @@ namespace allpix {
         unsigned long long total_hits_{};
 
         // Output histograms
-        TH1D *h_pxq, *h_pxq_noise, *h_thr, *h_pxq_thr, *h_pxq_adc_smear, *h_pxq_adc;
+        TH1D *h_pxq{}, *h_pxq_noise{}, *h_gain{}, *h_pxq_gain{}, *h_thr{}, *h_pxq_thr{}, *h_pxq_adc_smear{}, *h_pxq_adc{};
+        TH2D* h_calibration{};
     };
 } // namespace allpix
 

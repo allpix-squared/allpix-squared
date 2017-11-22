@@ -34,7 +34,7 @@ using namespace allpix;
  * - Set the log level and log format as requested.
  * - Load the detector configuration and parse it
  */
-Allpix::Allpix(std::string config_file_name)
+Allpix::Allpix(std::string config_file_name, std::vector<std::string> options)
     : terminate_(false), has_run_(false), msg_(std::make_unique<Messenger>()), mod_mgr_(std::make_unique<ModuleManager>()),
       geo_mgr_(std::make_unique<GeometryManager>()) {
     // Load the global configuration
@@ -44,6 +44,11 @@ Allpix::Allpix(std::string config_file_name)
     conf_mgr_->setGlobalHeaderName("Allpix");
     conf_mgr_->addGlobalHeaderName("");
     conf_mgr_->addIgnoreHeaderName("Ignore");
+
+    // Parse all the options
+    for(auto& option : options) {
+        conf_mgr_->parseOption(option);
+    }
 
     // Fetch the global configuration
     Configuration global_config = conf_mgr_->getGlobalConfiguration();
@@ -81,6 +86,7 @@ Allpix::Allpix(std::string config_file_name)
     if(global_config.has("log_file")) {
         // NOTE: this stream should be available for the duration of the logging
         log_file_.open(global_config.getPath("log_file"), std::ios_base::out | std::ios_base::trunc);
+        LOG(TRACE) << "Added log stream to file " << global_config.getPath("log_file");
         Log::addStream(log_file_);
     }
 
@@ -105,13 +111,15 @@ void Allpix::load() {
     // Fetch the global configuration
     Configuration global_config = conf_mgr_->getGlobalConfiguration();
 
-    // Initialize the random seeder
-    std::mt19937_64 seeder;
+    // Initialize the random seeders, one for modules, one for core components
+    std::mt19937_64 seeder_modules;
+    std::mt19937_64 seeder_core;
+
     uint64_t seed = 0;
     if(global_config.has("random_seed")) {
         // Use provided random seed
         seed = global_config.get<uint64_t>("random_seed");
-        seeder.seed(seed);
+        seeder_modules.seed(seed);
         LOG(STATUS) << "Initialized PRNG with configured seed " << seed;
     } else {
         // Compute random entropy seed
@@ -123,12 +131,22 @@ void Allpix::load() {
         std::hash<std::thread::id> thrd_hasher;
         auto thread_seed = thrd_hasher(std::this_thread::get_id());
         seed = (clock_seed ^ mem_seed ^ thread_seed);
-        seeder.seed(seed);
+        seeder_modules.seed(seed);
         LOG(STATUS) << "Initialized PRNG with system entropy seed " << seed;
     }
 
+    if(global_config.has("random_seed_core")) {
+        // Use provided random seed
+        seed = global_config.get<uint64_t>("random_seed_core");
+        seeder_core.seed(seed);
+        LOG(STATUS) << "Initialized core PRNG with configured seed " << seed;
+    } else {
+        // Use module seeder + 1
+        seeder_core.seed(seed + 1);
+    }
+
     // Initialize ROOT random generator
-    gRandom->SetSeed(seeder());
+    gRandom->SetSeed(seeder_modules());
 
     // Get output directory
     std::string directory = gSystem->pwd();
@@ -137,18 +155,29 @@ void Allpix::load() {
         // Use config specified one if available
         directory = global_config.getPath("output_directory");
     }
-    // Delete previous output directory if it exists
+
+    // Use existing output directory if it exists
+    bool create_output_dir = true;
     if(allpix::path_is_directory(directory)) {
-        LOG(DEBUG) << "Deleting previous output directory";
-        allpix::remove_path(directory);
+        if(global_config.get<bool>("purge_output_directory", false)) {
+            LOG(DEBUG) << "Deleting previous output directory " << directory;
+            allpix::remove_path(directory);
+        } else {
+            LOG(DEBUG) << "Output directory " << directory << " already exists";
+            create_output_dir = false;
+        }
     }
     // Create the output directory
     try {
-        allpix::create_directories(directory);
+        if(create_output_dir) {
+            LOG(DEBUG) << "Creating output directory " << directory;
+            allpix::create_directories(directory);
+        }
+        // Change to the new/existing output directory
         gSystem->ChangeDirectory(directory.c_str());
     } catch(std::invalid_argument& e) {
         LOG(ERROR) << "Cannot create output directory " << directory << ": " << e.what()
-                   << ". Using current directory instead!";
+                   << ". Using current directory instead.";
     }
 
     // Enable relevant multithreading if needed (disabled by default)
@@ -164,11 +193,11 @@ void Allpix::load() {
     set_style();
 
     // Load the geometry
-    geo_mgr_->load(global_config);
+    geo_mgr_->load(global_config, seeder_core);
 
     // Load the modules from the configuration
     if(!terminate_) {
-        mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get(), seeder);
+        mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get(), seeder_modules);
     } else {
         LOG(INFO) << "Skip loading modules because termination is requested";
     }

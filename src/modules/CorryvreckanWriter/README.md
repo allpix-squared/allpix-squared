@@ -4,10 +4,11 @@
 **Input**: PixelHit
 
 #### Description
-Takes all digitised pixel hits and converts them into Corryvrekan pixel format. These are then written to an output file in the expected format to be read in by the reconstruction software.
+Takes all digitised pixel hits and converts them into Corryvrekan pixel format. These are then written to an output file in the expected format to be read in by the reconstruction software. Will optionally write out the MC Truth information, storing the MC particle class from Corryvreckan.
 
 #### Parameters
-* `file_name` : Output filename (appended with .root)
+* `file_name` : Output filename (file extension `.root` will be appended if not present)
+* `output_mctruth` : Flag to write out MCParticle information for each hit. Defaults to false.
 
 #### Usage
 Typical usage is:
@@ -15,4 +16,5 @@ Typical usage is:
 ```ini
 [CorryvreckanWriter]
 file_name = corryvreckan
+output_mctruth = true
 ```

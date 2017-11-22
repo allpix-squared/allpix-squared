@@ -19,4 +19,4 @@ namespace allpix {
      * @brief Tuple containing all objects
      */
     using OBJECTS = std::tuple<MCParticle, DepositedCharge, PropagatedCharge, PixelCharge, PixelHit>;
-}
+} // namespace allpix
