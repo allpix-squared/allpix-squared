@@ -146,8 +146,8 @@ void DepositionGeant4Module::init() {
         for(auto& detector : geo_manager_->getDetectors()) {
             auto model = detector->getModel();
             double prev_min_size = min_size;
-            min_size = std::min(std::min(std::min(min_size, model->getPixelSize().x()), model->getPixelSize().y()),
-                                model->getSensorSize().z());
+            min_size =
+                std::min({min_size, model->getPixelSize().x(), model->getPixelSize().y(), model->getSensorSize().z()});
             if(min_size != prev_min_size) {
                 min_detector = detector->getName();
             }
