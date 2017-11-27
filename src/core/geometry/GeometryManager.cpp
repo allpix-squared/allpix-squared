@@ -75,7 +75,7 @@ void GeometryManager::load(const Configuration& global_config, std::mt19937_64& 
         orient_vec += misalignment(detector_section.get<XYZVector>("alignment_precision_orientation", XYZVector()));
         LOG(DEBUG) << " misaligned: " << display_vector(orient_vec, {"deg"});
 
-        auto orientation_type = detector_section.get<std::string>("orientation_type", "zyx");
+        auto orientation_type = detector_section.get<std::string>("orientation_type", "xyz");
         Rotation3D orientation;
 
         if(orientation_type == "zyx") {
