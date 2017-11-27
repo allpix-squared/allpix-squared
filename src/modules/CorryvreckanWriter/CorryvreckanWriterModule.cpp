@@ -190,17 +190,20 @@ void CorryvreckanWriterModule::finalize() {
     if(!geometryFileName_.empty()) {
         geometry_file.open(geometryFileName_, std::ios_base::out | std::ios_base::trunc);
         if(!geometry_file.good()) {
-            throw ModuleError("Cannot write to GEAR geometry file");
+            throw ModuleError("Cannot write to Corryvreckan geometry file");
         }
 
-        geometry_file << "# Allpix Squared detector geometry - https://cern.ch/allpix-squared/" << std::endl << std::endl;
+        geometry_file << "# Allpix Squared detector geometry - https://cern.ch/allpix-squared" << std::endl << std::endl;
 
         for(auto& detector : detectors) {
             geometry_file << "[" << detector->getName() << "]" << std::endl;
             geometry_file << "position = " << Units::display(detector->getPosition().x(), {"mm", "um"}) << ", "
                           << Units::display(detector->getPosition().y(), {"mm", "um"}) << ", "
                           << Units::display(detector->getPosition().z(), {"mm", "um"}) << std::endl;
-            geometry_file << "orientation_mode = \"zyx\"" << std::endl;
+
+            // Transform the rotation matrix to a ZYX rotation and invert it to get a XYZ rotation
+            // This way we stay compatible to old Corryvreckan versions which only support XYZ.
+            geometry_file << "orientation_mode = \"xyz\"" << std::endl;
             ROOT::Math::RotationZYX rotations(detector->getOrientation().Inverse());
             geometry_file << "orientation = " << Units::display(-rotations.Psi(), "deg") << ", "
                           << Units::display(-rotations.Theta(), "deg") << ", " << Units::display(-rotations.Phi(), "deg")
