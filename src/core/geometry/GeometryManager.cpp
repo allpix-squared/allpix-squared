@@ -17,6 +17,7 @@
 #include <Math/RotationX.h>
 #include <Math/RotationY.h>
 #include <Math/RotationZ.h>
+#include <Math/RotationZYX.h>
 #include <Math/Vector3D.h>
 
 #include "GeometryManager.hpp"
@@ -77,13 +78,18 @@ void GeometryManager::load(const Configuration& global_config, std::mt19937_64& 
         auto orientation_type = detector_section.get<std::string>("orientation_type", "xyz");
         Rotation3D orientation;
 
-        if(orientation_type == "xyz") {
+        if(orientation_type == "zyx") {
+            // First angle given in the configuration file is around z, second around y, last around x:
+            orientation = RotationZYX(orient_vec.x(), orient_vec.y(), orient_vec.z());
+        } else if(orientation_type == "xyz") {
+            // First angle given in the configuration file is around x, second around y, last around z:
             orientation = RotationZ(orient_vec.z()) * RotationY(orient_vec.y()) * RotationX(orient_vec.x());
         } else if(orientation_type == "zxz") {
+            // First angle given in the configuration file is around z, second around x, last around z:
             orientation = EulerAngles(orient_vec.x(), orient_vec.y(), orient_vec.z());
         } else {
             throw InvalidValueError(
-                detector_section, "orientation_type", "orientation_mode should be either 'xyz' or 'zxz'");
+                detector_section, "orientation_type", "orientation_mode should be either 'zyx', xyz' or 'zxz'");
         }
 
         // Create the detector and add it without model

@@ -112,6 +112,8 @@ The values can be accessed via the following methods:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 // Returns true if the key exists and false otherwise
 config.has("key")
+// Returns the number of keys found from the provided initializer list:
+config.count({"key1", "key2", "key3"});
 // Returns the value in the given type, throws an exception if not existing or a conversion to TYPE is not possible
 config.get<TYPE>("key")
 // Returns the value in the given type or the provided default value if it does not exist
@@ -361,10 +363,26 @@ Every detector has a set of properties attached to it:
 \item The \parameter{position} in the world frame.
 This is the position of the geometric center of the sensitive device (sensor) given in world coordinates as X, Y and Z (note that any additional components like the chip and possible support layers are ignored when determining the geometric center).
 \item An \parameter{orientation_mode} that determines the way the orientation is applied.
-It can be either \texttt{xyz} or \texttt{zxz}, where \texttt{xyz} is used if the parameter is not specified.
-The \texttt{xyz} option uses extrinsic Euler angles to apply an rotation around the X-axis, followed by an rotation around the original global Y-axis and finally an rotation around the global Z-axis.
-The \texttt{zxz} uses the extrinsic Z-X-Z convention for Euler angles instead (this option is also known as the 3-1-3 or the "x-convention" and the most widely used definition of Euler angles overall~\cite{eulerangles}).
-\item The \parameter{orientation} to specify the Euler angles in logical order, interpreted using the method above (or with the \texttt{xyz} method if the \parameter{orientation_mode} is not specified).
+It can be either \texttt{xyz}, \texttt{zyx} or \texttt{zxz}, where \textbf{\texttt{xyz} is used as default if the parameter is not specified}. Three angles are expected as input, which should always be provided in the order in which they are applied.
+\begin{itemize}
+    \item The \texttt{xyz} option uses extrinsic Euler angles to apply a rotation around the global $X$ axis, followed by a rotation around the global $Y$ axis and finally a rotation around the global $Z$ axis.
+    \item The \texttt{zyx} option uses the \textbf{extrinsic Z-Y-X convention} for Euler angles, also known as Pitch-Roll-Yaw or 321 convention. The rotation is represented by three angles describing first a rotation of an angle $\phi$ (yaw) about the $Z$ axis, followed by a rotation of an angle $\theta$ (pitch) about the initial $Y$ axis, followed by a third rotation of an angle $\psi$ (roll) about the initial $X$ axis.
+    \item The \texttt{zxz} uses the \textbf{extrinsic Z-X-Z convention} for Euler angles instead. This option is also known as the 3-1-3 or the "x-convention" and the most widely used definition of Euler angles~\cite{eulerangles}.
+\end{itemize}
+\begin{warning}
+It is highly recommended to always explicitly state the orientation mode instead of relying on the default configuration.
+\end{warning}
+
+\item The \parameter{orientation} to specify the Euler angles in logical order (e.g. first $X$, then $Y$, then $Z$ for the \texttt{xyz} method), interpreted using the method above (or with the \texttt{xyz} method if the \parameter{orientation_mode} is not specified). An example for three Euler angles would be
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+orientation_mode = "zyx"
+orientation = 45deg 10deg 12deg
+\end{minted}
+which describes the rotation of \SI{45}{\degree} around the $Z$ axis, followed by a \SI{10}{\degree} rotation around the initial $Y$ axis, and finally a rotation of \SI{12}{\degree} around the initial $X$ axis.
+\begin{warning}
+All supported rotations are extrinsic active rotations, i.e. the vector itself is rotated, not the coordinate system. All angles in configuration files should be specified in the order they will be applied.
+\end{warning}
+
 \item A \parameter{type} of a detector model, for example \emph{hybrid} or \emph{monolithic}.
 The model defines the geometry and parameters of the detector.
 Multiple detectors can share the same model.
@@ -746,7 +764,7 @@ Reporting this type of errors can help developers during their development of ne
 \end{itemize}
 
 Outside the core framework, exceptions can also be used directly by the modules.
-There are only two exceptions which should be used by typical modules to indicate errors:
+There are a few exceptions which should typically be used by modules to indicate errors:
 \begin{itemize}
 \item \parameter{InvalidValueError}: Derived from configuration exceptions.
 Signals any problem with the value of a configuration parameter not related to parsing or conversion to the required type.
@@ -765,6 +783,22 @@ void run(unsigned int event_id) {
     }
 }
 \end{minted}
+\item \parameter{InvalidCombinationError}: Derived from configuration exceptions.
+Signals any problem with a combination of configuration parameters used.
+This could be used if several optional but mutually exclusive parameters are present in a module, and it should be ensured that only one is specified at the time.
+The exceptions accepts the list of keys as initializer list.
+An example is shown below:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+void run(unsigned int event_id) {
+    // Check if we have mutually exclusive options defined:
+    if(config.count({"exclusive_opt_a", "exclusive_opt_b"}) > 1) {
+        // Raise an error if the combination of keys is not valid
+        //   provide the configuration object, keys and an explanation
+        throw InvalidCombinationError(config, {"exclusive_opt_a", "exclusive_opt_b"}, "Options A and B are mutually exclusive, specify only one.");
+    }
+}
+\end{minted}
+
 \item \parameter{ModuleError}: Derived from module exceptions.
 Should be used to indicate any runtime error in a module not directly caused by an invalid configuration value, for example that it is not possible to write an output file.
 A reason should be given to indicate what the source of problem is.

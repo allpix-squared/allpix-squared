@@ -116,7 +116,7 @@ cmp:cc7-llvm:
             - lib
         expire_in: 3 hour
 
-cmp:mac1012-clang:
+cmp:mac1013-clang:
     stage: compilation
     tags:
         - mac
@@ -338,30 +338,28 @@ core:cc7-llvm:
 
 # Mac OS X
 
-mod:mac1012-clang:
+mod:mac1013-clang:
     stage: testing
     tags:
         - mac
     dependencies:
-        - cmp:mac1012-clang
+        - cmp:mac1013-clang
     script:
         - source .gitlab-ci.d/init_mac.sh
         - source .gitlab-ci.d/load_deps.sh
         - cd build/
-        - cmake -DTEST_MODULES=OFF ..
         - ctest -R test_modules --output-on-failure -j4
 
-core:mac1012-clang:
+core:mac1013-clang:
     stage: testing
     tags:
         - mac
     dependencies:
-        - cmp:mac1012-clang
+        - cmp:mac1013-clang
     script:
         - source .gitlab-ci.d/init_mac.sh
         - source .gitlab-ci.d/load_deps.sh
         - cd build/
-        - cmake -DTEST_MODULES=OFF ..
         - ctest -R test_core --output-on-failure -j4
 
 
@@ -385,7 +383,6 @@ perf:cc7-gcc:
         - source .gitlab-ci.d/init_x86_64.sh
         - source .gitlab-ci.d/load_deps.sh
         - cd build/
-        - cmake -DTEST_MODULES=OFF ..
         - ctest -R test_performance --output-on-failure
     allow_failure: true
     retry: 1
@@ -402,24 +399,22 @@ perf:cc7-gcc:
         - export COMPILER_TYPE="llvm"
         - source .gitlab-ci.d/init_x86_64.sh
         - cd build/
-        - cmake -DTEST_MODULES=OFF ..
         - ctest -R test_performance --output-on-failure
     allow_failure: true
     retry: 1
 
 # Mac OS X
 
-perf:mac1012-clang:
+perf:mac1013-clang:
     stage: performance
     tags:
         - mac
     dependencies:
-        - cmp:mac1012-clang
+        - cmp:mac1013-clang
     script:
         - source .gitlab-ci.d/init_mac.sh
         - source .gitlab-ci.d/load_deps.sh
         - cd build/
-        - cmake -DTEST_MODULES=OFF ..
         - ctest -R test_performance --output-on-failure
     allow_failure: true
     retry: 1
