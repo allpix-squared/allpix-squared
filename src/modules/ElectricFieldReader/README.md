@@ -21,7 +21,7 @@ Furthermore the module can produce a plot the electric field profile on an proje
 * `model` : Type of the electric field model, either **linear**, **constant** or **init**.
 * `bias_voltage` : Voltage over the whole sensor thickness. Used to calculate the electric field if the *model* parameter is equal to **constant** or **linear**.
 * `depletion_voltage` : Indicates the voltage at which the sensor is fully depleted. Used to calculate the electric field if the *model* parameter is equal to **linear**.
-* `depletion_depth` : Thickness of the depleted region. Only used in **linear** mode and if no depletion voltage is given.
+* `depletion_depth` : Thickness of the depleted region. Used for all electric fields. When using the depletion depth in **linear** mode, no depletion voltage can be specified.
 * `file_name` : Location of file containing the electric field in the INIT format. Only used if the *model* parameter has the value **init**.
 * `output_plots` : Determines if output plots should be generated. Disabled by default.
 * `output_plots_steps` : Number of bins in both x- and y-direction in the 2D histogram used to plot the electric field in the detectors. Only used if `output_plots` is enabled.
