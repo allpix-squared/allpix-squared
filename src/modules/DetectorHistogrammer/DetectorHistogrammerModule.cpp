@@ -128,10 +128,6 @@ void DetectorHistogrammerModule::run(unsigned int) {
 
     // Evaluate the clusters
     for(auto clus : clusters) {
-        LOG(DEBUG) << "Cluster, size " << clus.getClusterSize() << " :";
-        for(auto& pixel : clus.getPixelHits()) {
-            LOG(DEBUG) << pixel->getPixel().getIndex();
-        }
         // Fill cluster histograms
         cluster_size->Fill(static_cast<double>(clus.getClusterSize()));
         auto clusSizesXY = clus.getClusterSizeXY();
@@ -277,6 +273,7 @@ std::vector<Cluster> DetectorHistogrammerModule::doClustering() {
             LOG(DEBUG) << "Adding pixel: " << neighbor->getPixel().getIndex();
             usedPixel[neighbor] = true;
         }
+        clusters.push_back(cluster);
     }
     return clusters;
 }

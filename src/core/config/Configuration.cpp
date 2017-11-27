@@ -25,6 +25,20 @@ bool Configuration::has(const std::string& key) const {
     return config_.find(key) != config_.cend();
 }
 
+unsigned int Configuration::count(std::initializer_list<std::string> keys) const {
+    if(keys.size() == 0) {
+        throw std::invalid_argument("list of keys cannot be empty");
+    }
+
+    unsigned int found = 0;
+    for(auto& key : keys) {
+        if(has(key)) {
+            found++;
+        }
+    }
+    return found;
+}
+
 std::string Configuration::getName() const {
     return name_;
 }

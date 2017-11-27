@@ -67,6 +67,16 @@ namespace allpix {
             throw InvalidKeyError(key, getName(), config_.at(key), typeid(T), e.what());
         }
     }
+    /**
+     * @throws InvalidKeyError If the conversion to the requested type did not succeed
+     * @throws InvalidKeyError If an overflow happened while converting the key
+     */
+    template <typename T> std::vector<T> Configuration::getArray(const std::string& key, const std::vector<T> def) const {
+        if(has(key)) {
+            return getArray<T>(key);
+        }
+        return def;
+    }
 
     /**
      * @throws MissingKeyError If the requested key is not defined

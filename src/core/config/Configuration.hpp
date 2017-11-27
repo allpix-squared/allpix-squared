@@ -63,6 +63,13 @@ namespace allpix {
         bool has(const std::string& key) const;
 
         /**
+         * @brief Check how many of the given keys are defined
+         * @param keys Keys to check for existence
+         * @return number of existing keys from the given list
+         */
+        unsigned int count(std::initializer_list<std::string> keys) const;
+
+        /**
          * @brief Get value of a key in requested type
          * @param key Key to get value of
          * @return Value of the key in the type of the requested template parameter
@@ -84,6 +91,17 @@ namespace allpix {
          */
         // TODO [doc] Provide second template parameter to specify the vector type to return it in
         template <typename T> std::vector<T> getArray(const std::string& key) const;
+
+        /**
+         * @brief Get values for a key containing an array or default array if it does not exists
+         * @param key Key to get values of
+         * @param def Default value array to use if key is not defined
+         * @return List of values in the array in the requested template parameter
+         *         or the default array if the key does not exist
+         */
+        // TODO [doc] Provide second template parameter to specify the vector type to return it in
+        template <typename T> std::vector<T> getArray(const std::string& key, const std::vector<T> def) const;
+
         /**
          * @brief Get values for a key containing a 2D matrix
          * @param key Key to get values of
