@@ -50,17 +50,17 @@ void GeometryManager::load(const Configuration& global_config) {
         auto position = detector_section.get<ROOT::Math::XYZPoint>("position", ROOT::Math::XYZPoint());
         auto orient_vec = detector_section.get<ROOT::Math::XYZVector>("orientation", ROOT::Math::XYZVector());
 
-        auto orientation_type = detector_section.get<std::string>("orientation_type", "xyz");
+        auto orientation_mode = detector_section.get<std::string>("orientation_mode", "xyz");
         ROOT::Math::Rotation3D orientation;
 
-        if(orientation_type == "xyz") {
+        if(orientation_mode == "xyz") {
             orientation = ROOT::Math::RotationZ(orient_vec.z()) * ROOT::Math::RotationY(orient_vec.y()) *
                           ROOT::Math::RotationX(orient_vec.x());
-        } else if(orientation_type == "zxz") {
+        } else if(orientation_mode == "zxz") {
             orientation = ROOT::Math::EulerAngles(orient_vec.x(), orient_vec.y(), orient_vec.z());
         } else {
             throw InvalidValueError(
-                detector_section, "orientation_type", "orientation_mode should be either 'xyz' or 'zxz'");
+                detector_section, "orientation_mode", "orientation_mode should be either 'xyz' or 'zxz'");
         }
 
         // Create the detector and add it without model
@@ -426,7 +426,7 @@ void GeometryManager::close_geometry() {
             for(auto& key_value : config.getAll()) {
                 auto key = key_value.first;
                 // Skip all internal parameters
-                if(key == "type" || key == "position" || key == "orientation_type" || key == "orientation") {
+                if(key == "type" || key == "position" || key == "orientation_mode" || key == "orientation") {
                     continue;
                 }
                 // Add the extra parameter to the new overwritten config
