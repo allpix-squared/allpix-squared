@@ -189,6 +189,8 @@ void LCIOWriterModule::finalize() {
             geometry_file << "            positionX=\"" << Units::convert(position.x(), "mm") << "\"\tpositionY=\""
                           << Units::convert(position.y(), "mm") << "\"\tpositionZ=\"" << Units::convert(position.z(), "mm")
                           << "\"" << std::endl;
+
+            // Use inverse ZYX rotation to retrieve XYZ angles as used in EUTelescope:
             ROOT::Math::RotationZYX rotations(detector->getOrientation().Inverse());
             geometry_file << "            rotationZY=\"" << Units::convert(-rotations.Psi(), "deg") << "\"     rotationZX=\""
                           << Units::convert(-rotations.Theta(), "deg") << "\"   rotationXY=\""
