@@ -118,6 +118,9 @@ void ConfigReader::add(std::istream& stream, std::string file_name) {
         std::getline(stream, line);
         ++line_num;
 
+        // Trim whitespaces at beginning and end of line:
+        line = allpix::trim(line);
+
         // Ignore empty lines or comments
         if(line.empty() || line.front() == '#') {
             continue;
