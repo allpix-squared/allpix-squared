@@ -200,6 +200,7 @@ void CorryvreckanWriterModule::finalize() {
             geometry_file << "position = " << Units::display(detector->getPosition().x(), {"mm", "um"}) << ", "
                           << Units::display(detector->getPosition().y(), {"mm", "um"}) << ", "
                           << Units::display(detector->getPosition().z(), {"mm", "um"}) << std::endl;
+            geometry_file << "orientation_mode = \"zyx\"" << std::endl;
             ROOT::Math::RotationZYX rotations(detector->getOrientation().Inverse());
             geometry_file << "orientation = " << Units::display(-rotations.Psi(), "deg") << ", "
                           << Units::display(-rotations.Theta(), "deg") << ", " << Units::display(-rotations.Phi(), "deg")
