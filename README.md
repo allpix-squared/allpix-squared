@@ -5,7 +5,7 @@
 
 For more details about the project please have a look at the website at https://cern.ch/allpix-squared.
 
-[![build status](https://gitlab.cern.ch/simonspa/allpix-squared/badges/master/build.svg)](https://gitlab.cern.ch/simonspa/allpix-squared/commits/master)
+[![build status](https://gitlab.cern.ch/allpix-squared/allpix-squared/badges/master/build.svg)](https://gitlab.cern.ch/allpix-squared/allpix-squared/commits/master)
 [![coverity status](https://scan.coverity.com/projects/11975/badge.svg)](https://scan.coverity.com/projects/koensw-allpix-squared)
 
 ## Dependencies
@@ -40,8 +40,8 @@ $ make install
 For more detailed installation instructions, please refer to the documentation below.
 
 ## Documentation
-The most recently published version of the User Manual is available online [here](https://project-allpix-squared.web.cern.ch/project-allpix-squared/usermanual/allpix-manual.pdf).
-The Doxygen reference is published [online](https://project-allpix-squared.web.cern.ch/project-allpix-squared/reference/html/) too.
+The most recently published version of the User Manual is available online [here](https://cern.ch/allpix-squared/usermanual/allpix-manual.pdf).
+The Doxygen reference is published [online](https://cern.ch/allpix-squared/reference/html/) too.
 
 The latest PDF version of the User Manual can also be created from source by executing
 ```
