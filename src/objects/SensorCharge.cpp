@@ -34,5 +34,3 @@ unsigned int SensorCharge::getCharge() const {
 double SensorCharge::getEventTime() const {
     return event_time_;
 }
-
-ClassImp(SensorCharge)

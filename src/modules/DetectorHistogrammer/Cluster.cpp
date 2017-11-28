@@ -55,5 +55,3 @@ std::pair<unsigned int, unsigned int> Cluster::getClusterSizeXY() {
     std::pair<unsigned int, unsigned int> sizes = std::make_pair(maxX_ - minX_ + 1, maxY_ - minY_ + 1);
     return sizes;
 }
-
-ClassImp(PixelHit)

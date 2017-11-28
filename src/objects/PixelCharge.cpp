@@ -76,5 +76,3 @@ std::vector<const MCParticle*> PixelCharge::getMCParticles() const {
     // Return as a vector of mc particles
     return mc_particles;
 }
-
-ClassImp(PixelCharge)
