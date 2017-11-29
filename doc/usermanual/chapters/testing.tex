@@ -1,11 +1,31 @@
-\section{Testing \& Continuous Integration}
+\section{Development Tools \& Continuous Integration}
 \label{sec:testing}
 
-Quality and compatibility of the \apsq framework is ensured by a elaborate continuous integration (CI) which builds and tests the software on all supported platforms.
-The CI structure and the different tests performed are detailed in the following.
+The following section will introduce a few tools included in the framework to ease development and help to maintain a high code quality. This comprises tools for the developer to be used while coding, as well as a continuous integration (CI) and automated test cases of various framework and module functionalities.
+
+The section is structured as follows.
+Section~\ref{sec:targets} describes the available \command{make} targets for code quality and formatting checks, Section~\ref{sec:ci} briefly introduces the CI, and Section~\ref{sec:tests} provides an overview of the currently implemented framework, module, and performance test scenarios.
+
+\subsection{Additional Targets}
+\label{sec:targets}
+
+A set of testing targets in addition to the standard compilation targets are automatically created by CMake to enable additional code quality checks and testing.
+Some of these targets are used by the project's CI, others are intended for manual checks.
+Currently, the following targets are provided:
+
+\begin{description}
+  \item[\command{make format}]
+  \item[\command{make check-format}]
+  \item[\command{make lint}]
+  \item[\command{make check-lint}]
+\end{description}
 
 \subsection{Continuous Integration}
 \label{sec:ci}
+
+Quality and compatibility of the \apsq framework is ensured by an elaborate continuous integration (CI) which builds and tests the software on all supported platforms.
+The \apsq CI uses the GitLab Continuous Integration features and consists of five distinct stages as depicted in Figure~\ref{fig:ci}.
+It is configured via the \file{.gitlab-ci.yml} file in the repository's root directory, while additional setup scripts for the GitLab Ci Runner machines and the Docker instances can be found in the \dir{.gitlab-ci.d} directory.
 
 \begin{figure}[btp]
   \centering
@@ -13,8 +33,6 @@ The CI structure and the different tests performed are detailed in the following
   \caption{Typical \apsq continous integration pipeline with 20 jobs distributed over five distinct stages. In this example, all jobs passed.}
   \label{fig:ci}
 \end{figure}
-
-The \apsq CI uses the integrated GitLab Continuous Integration and consists of five distinct stages.
 
 The \textbf{compilation} stage builds the framework from the source on different platforms.
 Currently, builds are performed on Scientifc Linux 6, CentOS7, and Mac OS X.
@@ -38,11 +56,11 @@ This allows to optimize the CI setup depending on the demands of the test to be 
 This ensures maximal performance and reproducible results for execution durations.
 All tests are expected to pass, and no code that fails to satisfy all tests will be merged into the repository.
 
-The \textbf{formatting} stage ensures proper formatting of the source code using the \texttt{clang-format} and following the coding conventions defined in the \texttt{.clang-format} file in the repository.
-In addition, the \texttt{clang-tidy} tool is used for ``linting'' of the source code.
+The \textbf{formatting} stage ensures proper formatting of the source code using the \command{clang-format} and following the coding conventions defined in the \file{.clang-format} file in the repository.
+In addition, the \command{clang-tidy} tool is used for ``linting'' of the source code.
 This means, the source code undergoes a static code analysis in order to identify possible sources of bugs by flagging suspicious and non-portable constructs used.
 In addition, it ensures proper usage of modern C++ standards.
-Tests are marked as failed if either of the CMake targets \texttt{make check-format} or \texttt{make check-lint} fail.
+Tests are marked as failed if either of the CMake targets \command{make check-format} or \command{make check-lint} fail.
 No code that fails to satisfy the coding conventions and formatting tests will be merged into the repository.
 
 The \textbf{documentation} stage prepares this user manual as well as the Doxygen source code documentation for publication.
@@ -50,6 +68,7 @@ This also allows to identify e.g.\ failing compilation of the \LaTeX documents o
 
 Finally, the \textbf{deployment} stage is only executed for new tags in the repository.
 Whenever a tag is pushed, this stages receives the build artifacts of previous stages and publishes them to the \apsq project website through the EOS file system~\cite{eos}.
+
 
 \subsection{Tests}
 \label{sec:tests}
@@ -60,30 +79,30 @@ The tests can also be manually invoked from the build directory of \apsq with
 $ ctest
 \end{verbatim}
 
-The different subcategories of tests described below can be executed or ignored using the \texttt{-E} (exclude) and \texttt{-R} (run) switches of the \texttt{ctest} program:
+The different subcategories of tests described below can be executed or ignored using the \command{-E} (exclude) and \command{-R} (run) switches of the \command{ctest} program:
 \begin{verbatim}
 $ ctest -R test_performance
 \end{verbatim}
 
-The configuration of the tests can be found in the \texttt{etc/unittests} directory of the repository.
+The configuration of the tests can be found in the \dir{etc/unittests} directory of the repository.
 The tests currently implemented can be broadly categorized in the following types.
 
 \paragraph{Module Functionality Tests}
 
 These tests ensure the proper functionality of each module covered and thus protect the repository against accidental changes affecting the physics simulation.
-Using a fixed seed (using the \texttt{random\_seed} configuration keyword) together with a specific version of Geant4~\cite{geant4} allows to reproduce the same simulation event.
+Using a fixed seed (using the \parameter{random_seed} configuration keyword) together with a specific version of Geant4~\cite{geant4} allows to reproduce the same simulation event.
 
-One event is produced per test and the \texttt{DEBUG}-level logging output of the respective module is checked against pre-defined expectation output using regular expressions.
+One event is produced per test and the \parameter{DEBUG}-level logging output of the respective module is checked against pre-defined expectation output using regular expressions.
 Once modules are altered, their respective expectation output has to be adapted after careful verification of the simulation result.
 
 Module tests are automatically discovered by CMake and are thus easy to extend and add.
-CMake automatically searches for all configurations found in the \texttt{test\_modules} folder and executes \apsq with them.
+CMake automatically searches for all configurations found in the \parameter{test_modules} folder and executes \apsq with them.
 The regular expressions to search for are stored in the configuration file.
-Two different types of expressions can be used and are picked up by CMake automatically: Positive expressions, indicated by a line starting with \texttt{\#PASS}, are required in order to pass the test and negative expressions, indicated by \texttt{\#FAIL}, which will fail the tests if found.
-Each test can only contain one \texttt{\#PASS} and one \texttt{\#FAIL} expression.
+Two different types of expressions can be used and are picked up by CMake automatically: Positive expressions, indicated by a line starting with \parameter{#PASS}, are required in order to pass the test and negative expressions, indicated by \parameter{#FAIL}, which will fail the tests if found.
+Each test can only contain one \parameter{#PASS} and one \parameter{#FAIL} expression.
 If different functionality and thus outputs need to be tested, a second test should be added to cover the corresponding expression.
 
-Dependencies between tests can be indicated using the \texttt{\#DEPENDS} keyword in the configuration file.
+Dependencies between tests can be indicated using the \parameter{#DEPENDS} keyword in the configuration file.
 Module test 09 implements such a dependency as it uses the output of module test 08-1 to read data from an \apsq data file.
 
 Currently implemented tests comprise:
@@ -107,13 +126,13 @@ Currently implemented tests comprise:
 \paragraph{Performance Tests}
 
 Similar to the module test implementation described above, performance tests use configurations prepared such, that one particular module takes most of the load (dubbed the ``slowest instantiation'' by \apsq), and a few of thousand events are simulated starting from a fixed seed for the pseudo-random number generator.
-The \texttt{\#TIMEOUT} keyword in the configuration file will ask CTest to abort the test after the given running time.
+The \parameter{#TIMEOUT} keyword in the configuration file will ask CTest to abort the test after the given running time.
 
 In the project CI, performance tests are limited to native runners, i.e. they are not executed on docker hosts where the hypervisor decides on the number of parallel jobs.
 Only one test is performed at a time.
 
 Despite these countermeasures, fluctuations on the CI runners occur, arising from different loads of the executing machines.
-Thus, all performance CI jobs are marked with the \texttt{allow\_failure} keyword which allows GitLab to continue processing the pipeline but will mark the final pipeline result as ``passed with warnings'' indicating an issue in the pipeline.
+Thus, all performance CI jobs are marked with the \parameter{allow_failure} keyword which allows GitLab to continue processing the pipeline but will mark the final pipeline result as ``passed with warnings'' indicating an issue in the pipeline.
 These tests should be checked manually before merging the code under review.
 
 Current performance tests comprise:
