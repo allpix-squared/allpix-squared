@@ -107,7 +107,6 @@ IF(CPPCHECK)
     IF(CPPCHECK_HTML)
         ADD_CUSTOM_TARGET(
             cppcheck-html
-            DEPENDS cppcheck
             COMMAND ${CPPCHECK_HTML}
             --title=${CMAKE_PROJECT_NAME}
             --file=${CMAKE_BINARY_DIR}/cppcheck_results.xml
@@ -115,5 +114,6 @@ IF(CPPCHECK)
             --source-dir=${CMAKE_SOURCE_DIR}
             COMMENT "Convert cppcheck report to HTML output"
         )
+        ADD_DEPENDENCIES(cppcheck-html cppcheck)
     ENDIF()
 ENDIF()
