@@ -33,15 +33,15 @@ namespace mesh_converter {
          * @brief Explicit constructor with the mesh Points
          * @param p{i} Points from the mesh
          */
-        MeshElement(Point v1, Point v2, Point v3, Point v4) : vertices{v1, v2, v3, v4} {}
+        MeshElement(Point& v1, Point& v2, Point& v3, Point& v4) : MeshElement(std::vector<Point>({v1, v2, v3, v4})) {}
 
         /**
          * @brief Explicit constructor with the mesh Points and the electric field Points
          * @param p{i} Points from the mesh
          * @param f{i} Points with the electric field components from the mesh node
          */
-        MeshElement(Point v1, Point f1, Point v2, Point f2, Point v3, Point f3, Point v4, Point f4)
-            : vertices{v1, v2, v3, v4}, e_field{f1, f2, f3, f4} {}
+        MeshElement(Point& v1, Point& f1, Point& v2, Point& f2, Point& v3, Point& f3, Point& v4, Point& f4)
+            : MeshElement(std::vector<Point>({v1, v2, v3, v4}), std::vector<Point>({f1, f2, f3, f4})) {}
 
         /**
          * @brief Constructor using std::vector<Points> for the mesh and the electric field Points
@@ -148,9 +148,9 @@ namespace mesh_converter {
         void printElement(Point qp);
 
     private:
-        int _dimension;
-        std::vector<size_t> index_vec;
-        std::vector<Point> vertices;
-        std::vector<Point> e_field;
+        int _dimension{3};
+        std::vector<size_t> index_vec{};
+        std::vector<Point> vertices{};
+        std::vector<Point> e_field{};
     };
 } // namespace mesh_converter
