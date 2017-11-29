@@ -73,7 +73,7 @@ Whenever a tag is pushed, this stages receives the build artifacts of previous s
 \subsection{Tests}
 \label{sec:tests}
 
-The build system of the framework provides a set of automated tests which are executed by the CI to ensure a correct compilation and functionality of the framework.
+The build system of the framework provides a set of automated tests which are executed by the CI to ensure a correct compilation and functionality of the framework and its modules.
 The tests can also be manually invoked from the build directory of \apsq with
 \begin{verbatim}
 $ ctest
@@ -85,7 +85,44 @@ $ ctest -R test_performance
 \end{verbatim}
 
 The configuration of the tests can be found in the \dir{etc/unittests} directory of the repository.
-The tests currently implemented can be broadly categorized in the following types.
+Adding a new test is as simple as adding a new configuration file to one of the different subdirectories and specifying the pass or fail conditions based on the tags described in the following paragraph.
+
+\paragraph{Pass and Fail Conditions}
+
+The output of any test is compared to a search string in order to determine whether it passed or failed.
+These expressions are simply placed in the configuration file for the corresponding tests, a tag at the beginning of the line indicates whether it should be used for passing or failing the test.
+
+Different tags are provided for Mac OS X since the C++ standard does not define the exact implementation of random number distributions such as \texttt{std::normal\_distribution}.
+Thus, the distributions produce different results on different platforms even when used with the same random number as input.
+
+\begin{description}
+  \item[Passing a test] The expression marked with the tag \parameter{#PASS}/\parameter{#PASSOSX} has to be found in the output in order for the test to pass. If the expression is not found, the test fails.
+  \item[Failing a test] If the expression tagged with \parameter{#FAIL}/\parameter{#FAILOSX} is found in the output, the test fails. If the expression is not found, the test passes.
+  \item[Depending on another test] The tag \parameter{#DEPENDS} can be used to indicate dependencies between tests. For example, the module test 09 described below implements such a dependency as it uses the output of module test 08-1 to read data from a previously produced \apsq data file.
+  \item[Defining a timeout] For performance tests the runtime of the application is monitored, and the test fails if it exceeds the number of seconds defined using the \parameter{#TIMEOUT} tag.
+\end{description}
+
+\paragraph{Framework Functionality Tests}
+
+
+Currently implemented tests comprise:
+
+\begin{description}
+    \item[test\_01-1\_globalconfig_detectors.conf] \todo{describe}
+    \item[test\_01-2\_globalconfig_modelpaths.conf] \todo{describe}
+    \item[test\_01-3\_globalconfig_log_format.conf] \todo{describe}
+    \item[test\_01-4\_globalconfig_log_level.conf] \todo{describe}
+    \item[test\_01-5\_globalconfig_log_file.conf] \todo{describe}
+    \item[test\_01-6\_globalconfig_missing_model.conf] \todo{describe}
+    \item[test\_01-7\_globalconfig_random_seed.conf] \todo{describe}
+    \item[test\_01-8\_globalconfig_random_seed_core.conf] \todo{describe}
+    \item[test\_02-1\_specialization_unique_name.conf] \todo{describe}
+    \item[test\_02-2\_specialization_unique_type.conf] \todo{describe}
+    \item[test\_03-1\_geometry_g4_coordinate_system.conf] \todo{describe}
+    \item[test\_03-2\_geometry_rotations.conf] \todo{describe}
+    \item[test\_03-3\_geometry_misaligned.conf] \todo{describe}
+\end{description}
+
 
 \paragraph{Module Functionality Tests}
 
@@ -102,24 +139,26 @@ Two different types of expressions can be used and are picked up by CMake automa
 Each test can only contain one \parameter{#PASS} and one \parameter{#FAIL} expression.
 If different functionality and thus outputs need to be tested, a second test should be added to cover the corresponding expression.
 
-Dependencies between tests can be indicated using the \parameter{#DEPENDS} keyword in the configuration file.
-Module test 09 implements such a dependency as it uses the output of module test 08-1 to read data from an \apsq data file.
-
 Currently implemented tests comprise:
 
 \begin{description}
     \item[test\_01\_geobuilder.conf] takes the provided detector setup and builds the Geant4 geometry from the internal detector description. The monitored output comprises the total world size calculated as well as the wrapper dimensions of the detector model.
     \item[test\_02-1\_electricfield\_linear.conf] creates a linear electric field in the constructed detector. The monitored output comprises the configured values of bias and depletion voltage and the calculated effective thickness of the electric field.
     \item[test\_02-2\_electricfield\_init.conf] loads an INIT file containing a TCAD-simulated electric field (cf.\ Section~\ref{sec:module_electric_field}) and applies the field to the detector model. The monitored output comprises the header of the parsed INIT file as well as the calculated number of field cells for each pixel.
-    \item[test\_03\_deposition.conf] executes the charge carrier deposition module. This will invoke Geant4 to deposit energy in the sensitive volume. The monitored output comprises the physics list used and the exact number of charge carriers deposited in the detector.
+    \item[test\_03-1\_deposition.conf] executes the charge carrier deposition module. This will invoke Geant4 to deposit energy in the sensitive volume. The monitored output comprises the physics list used and the exact number of charge carriers deposited in the detector.
+    \item[test\_03-2\_deposition_mc.conf] \todo{describe}
     \item[test\_04-1\_propagation\_project.conf] projects deposited charges to the implant side of the sensor. The monitored output comprises the total number fo charge carriers and the total charge projected into the implants.
     \item[test\_04-2\_propagation\_generic.conf] uses the Runge-Kutta-Fehlberg integration of the equations of motion implemented in the drift-diffusion model to propagate the charge carriers to the implants. The monitored output comprises the total number of charges moved, the number of integration steps taken and the simulated propagation time.
     \item[test\_05\_transfer\_simple.conf] tests the transfer of charges from sensor implants to readout chip. The monitored output comprises the total number of charges transferred and the number of pixels the charges have been assigned to.
-    \item[test\_06\_digitization.conf] digitizes the transferred charges to simulate the front-end electronics. The monitored output of this test comprises the total charge per pixel including noise contributions, the smeared threshold value and the total number of digitized pixel hits.
+    \item[test\_06-1\_digitization_charge.conf] digitizes the transferred charges to simulate the front-end electronics. The monitored output of this test comprises the total charge per pixel including noise contributions, the smeared threshold value and the total number of digitized pixel hits.
+    \item[test\_06-2\_digitization_adc.conf]
+    \item[test\_06-3\_digitization_gain.conf]
     \item[test\_07\_histogramming.conf] tests the detector histogramming module and its clustering algorithm. The monitored output comprises the total number of clusters and their mean position.
     \item[test\_08-1\_writer\_root.conf] ensures proper functionality of the ROOT file writer module. It monitors the total number of objects and branches written to the output ROOT trees.
     \item[test\_08-2\_writer\_rce.conf] ensures proper functionality of the RCE file writer module. The correct creation of tree branches and the conversion of the PixelHit position and value is monitored by the test's regular expressions.
     \item[test\_08-3\_writer\_lcio.conf] ensures proper functionality of the LCIO file writer module. Similar to the above tests, the branch creation and the conversion of PixelHits is monitored.
+    \item[test\_08-4\_writer\_corryvreckan.conf]
+    \item[test\_08-5\_writer\_corryvreckan_mc.conf]
     \item[test\_09\_reader\_root.conf] tests the capability of the framework to read data back in and to dispatch messages for all objects found in the input tree. The monitored output comprises the total number of objects read from all branches as well as the correct path and recipient of the dispatched messages.
 \end{description}
 
