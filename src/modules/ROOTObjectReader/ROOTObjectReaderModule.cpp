@@ -176,7 +176,6 @@ void ROOTObjectReaderModule::init() {
                 throw ModuleError("Tree contains objects of the wrong type");
             }
 
-            std::string message_name;
             if(name_idx != INT_MAX) {
                 message_info_array_.back().name = split[name_idx];
             }
