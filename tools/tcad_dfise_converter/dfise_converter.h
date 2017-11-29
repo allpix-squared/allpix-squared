@@ -147,6 +147,7 @@ namespace mesh_converter {
          */
         void printElement(Point qp);
 
+    private:
         int _dimension;
         std::vector<size_t> index_vec;
         std::vector<Point> vertices;
