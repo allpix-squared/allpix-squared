@@ -17,6 +17,11 @@
 
 % Typeset framework parameter and escape underscores:
 \DeclareUrlCommand\parameter{\bfseries\urlstyle{tt}}
+\newcommand{\command}[1]{\parameter{#1}}
+
+% Typeset directory and file names
+\newcommand{\dir}[1]{\texttt{#1}}
+\newcommand{\file}[1]{\texttt{#1}}
 
 % Define ini format used in the converted Markdown files
 \lstdefinelanguage{Ini}
