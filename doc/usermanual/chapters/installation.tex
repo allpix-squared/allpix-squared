@@ -1,7 +1,7 @@
 \section{Installation}
 \label{sec:installation}
 
-This section aims at providing details and instructions on how to build and install \apsq.
+This section aims to provide details and instructions on how to build and install \apsq.
 An overview of possible build configurations is given.
 After installing and loading the required dependencies, there are various options to customize the installation of \apsq.
 This chapter contains details on the standard installation process and information about custom build configurations.
@@ -17,16 +17,15 @@ Microsoft Windows is not supported.
 If the framework is to be compiled and executed on CERN's LXPLUS service, all build dependencies can be loaded automatically from the CVMFS file system as described in Section~\ref{sec:initialize_dependencies}.
 
 The core framework is compiled separately from the individual modules and \apsq has therefore only one required dependency: ROOT 6 (versions below 6 are not supported!)~\cite{root}.
-Otherwise all required dependencies need to be installed before building \apsq.
 Please refer to \cite{rootinstallation} for instructions on how to install ROOT.
 ROOT has several components of which the GenVector package is required to run \apsq.
 This package is included in the default build.
 
-For some modules, additional dependencies are necessary.
+For some modules, additional dependencies exist.
 For details about the dependencies and their installation visit the module documentation in Section~\ref{sec:modules}.
 The following dependencies are needed to compile the standard installation:
 \begin{itemize}
-\item Geant4~\cite{geant4}: Simulates the particle beam, depositing charges in the detectors with the help of the constructed geometry.
+\item Geant4~\cite{geant4}: Simulates the desired particles and their interactions with matter, depositing charges in the detectors with the help of the constructed geometry.
 See the instructions in \cite{geant4installation} for details on how to install the software.
 All Geant4 data sets are required to run the modules successfully.
 It is recommended to enable the Geant4 Qt extensions to allow visualization of the detector setup and the simulated particle tracks.
@@ -39,22 +38,22 @@ A useful set of CMake flags to build a functional Geant4 package would be:
 -DGEANT4_USE_OPENGL_X11=ON
 -DGEANT4_USE_SYSTEM_CLHEP=OFF
 \end{verbatim}
-\item Eigen3~\cite{eigen3}: Vector package to do Runge-Kutta integration in the generic charge propagation module.
+\item Eigen3~\cite{eigen3}: Vector package used to perform Runge-Kutta integration in the generic charge propagation module.
 Eigen is available in almost all Linux distributions through the package manager.
-Otherwise it can be easily installed since it is a header-only library.
+Otherwise it can be easily installed, comprising a header-only library.
 \end{itemize}
-Extra flags needs to be set for building an \apsq installation without these dependencies.
+Extra flags need to be set for building an \apsq installation without these dependencies.
 Details about these configuration options are given in Section~\ref{sec:cmake_config}.
 
 \subsection{Downloading the source code}
 The latest version of \apsq can be downloaded from the CERN Gitlab repository~\cite{ap2-repo}.
-For production environments it is recommended to only download and use tagged software versions since the versions available from the git branches are considered development versions and might exhibit unexpected behavior.
+For production environments it is recommended to only download and use tagged software versions, as many of the available git branches are considered development versions and might exhibit unexpected behavior.
 
-However, for developers it is recommended to always use the latest available version from the git \texttt{master} branch.
+For developers, it is recommended to always use the latest available version from the git \texttt{master} branch.
 The software repository can be cloned as follows:
 
 \begin{verbatim}
-$ git clone https://gitlab.cern.ch/simonspa/allpix-squared
+$ git clone https://gitlab.cern.ch/allpix-squared/allpix-squared
 $ cd allpix-squared
 \end{verbatim}
 
@@ -75,10 +74,10 @@ $ source etc/scripts/setup_lxplus.sh
 
 \subsection{Configuration via CMake}
 \label{sec:cmake_config}
-\apsq uses the CMake build system to configure, build and install the core framework as well as its modules.
+\apsq uses the CMake build system to configure, build and install the core framework as well as all modules.
 An out-of-source build is recommended: this means CMake should not be directly executed in the source folder.
-Instead a \textit{build} folder should be created, from which CMake should be run.
-For a standard build without any flags this implies executing:
+Instead, a \textit{build} folder should be created, from which CMake should be run.
+For a standard build without any additional flags this implies executing:
 
 \begin{verbatim}
 $ mkdir build
@@ -97,7 +96,7 @@ Other possible options are \texttt{Debug} (for compiling with no optimizations, 
 \item \parameter{MODEL_DIRECTORY}: Directory to install the internal models to.
 Defaults to not installing if the \parameter{CMAKE_INSTALL_PREFIX} is set to the directory containing the sources (the default).
 Otherwise the default value is equal to the directory \textit{<CMAKE\_INSTALL\_PREFIX>/share/allpix/}.
-The install directory is automatically added to the model search path used by the geometry model parsers to find all the detector models.
+The install directory is automatically added to the model search path used by the geometry model parsers to find all of the detector models.
 \item \textbf{\texttt{BUILD\_\textit{ModuleName}}}: If the specific module \textit{ModuleName} should be installed or not.
 Defaults to ON for most modules, however some modules with large additional dependencies such as LCIO~\cite{lcio} are disabled by default.
 This set of parameters allows to configure the build for minimal requirements as detailed in Section~\ref{sec:prerequisites}.
