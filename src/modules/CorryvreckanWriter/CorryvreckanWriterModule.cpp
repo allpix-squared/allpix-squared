@@ -42,7 +42,7 @@ void CorryvreckanWriterModule::init() {
     outputMCtruth_ = config_.get<bool>("output_mctruth", false);
 
     // Create output file and directories
-    fileName_ = createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name"), "root"), true);
+    fileName_ = createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name"), "root"));
     outputFile_ = std::make_unique<TFile>(fileName_.c_str(), "RECREATE");
     outputFile_->cd();
     outputFile_->mkdir("pixels");
@@ -51,8 +51,7 @@ void CorryvreckanWriterModule::init() {
     }
 
     // Create geometry file:
-    geometryFileName_ =
-        createOutputFile(allpix::add_file_extension(config_.get<std::string>("geometry_file"), "conf"), true);
+    geometryFileName_ = createOutputFile(allpix::add_file_extension(config_.get<std::string>("geometry_file"), "conf"));
 
     // Loop over all detectors and make trees for data
     auto detectors = geometryManager_->getDetectors();
