@@ -71,6 +71,19 @@ namespace allpix {
         ROOT::Math::XYZPoint global_center_;
         ROOT::Math::XYVector size_;
     };
+
+    /**
+     * @brief Compare two pixels, necessary to store them in the a std::map
+     */
+    struct pixel_cmp {
+        bool operator()(const Pixel::Index& p1, const Pixel::Index& p2) const {
+            if(p1.x() == p2.x()) {
+                return p1.y() < p2.y();
+            }
+            return p1.x() < p2.x();
+        }
+    };
+
 } // namespace allpix
 
 #endif
