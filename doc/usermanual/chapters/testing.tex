@@ -108,23 +108,23 @@ Thus, the distributions produce different results on different platforms even wh
 
 \paragraph{Framework Functionality Tests}
 
-
+The framework functionality tests aim at reproducing basic features such as correct parsing of configuration keys or resolution of module instantiations.
 Currently implemented tests comprise:
 
 \begin{description}
-    \item[\file{test_01-1_globalconfig_detectors.conf}] \todo{describe}
-    \item[\file{test_01-2_globalconfig_modelpaths.conf}] \todo{describe}
-    \item[\file{test_01-3_globalconfig_log_format.conf}] \todo{describe}
-    \item[\file{test_01-4_globalconfig_log_level.conf}] \todo{describe}
-    \item[\file{test_01-5_globalconfig_log_file.conf}] \todo{describe}
-    \item[\file{test_01-6_globalconfig_missing_model.conf}] \todo{describe}
-    \item[\file{test_01-7_globalconfig_random_seed.conf}] \todo{describe}
-    \item[\file{test_01-8_globalconfig_random_seed_core.conf}] \todo{describe}
-    \item[\file{test_02-1_specialization_unique_name.conf}] \todo{describe}
-    \item[\file{test_02-2_specialization_unique_type.conf}] \todo{describe}
-    \item[\file{test_03-1_geometry_g4_coordinate_system.conf}] \todo{describe}
-    \item[\file{test_03-2_geometry_rotations.conf}] \todo{describe}
-    \item[\file{test_03-3_geometry_misaligned.conf}] \todo{describe}
+    \item[\file{test_01-1_globalconfig_detectors.conf}] tests the framework behavior in case of a non-existent detector setup description file.
+    \item[\file{test_01-2_globalconfig_modelpaths.conf}] tests the correct parsing of additional model paths and the loading of the detector model.
+    \item[\file{test_01-3_globalconfig_log_format.conf}] switches the logging format.
+    \item[\file{test_01-4_globalconfig_log_level.conf}] sets a different logging verbosity level.
+    \item[\file{test_01-5_globalconfig_log_file.conf}] configures the framework to write log messages into a file.
+    \item[\file{test_01-6_globalconfig_missing_model.conf}] tests the behavior of the framework in case of a missing detector model file.
+    \item[\file{test_01-7_globalconfig_random_seed.conf}] sets a defined random seed to start the simulation with.
+    \item[\file{test_01-8_globalconfig_random_seed_core.conf}] sets a defined seed for the core component seed generator, e.g. used for misalignment.
+    \item[\file{test_02-1_specialization_unique_name.conf}] tests the framework behavior for an invalid module configuration: attempt to specialize a unique module for one detector instance.
+    \item[\file{test_02-2_specialization_unique_type.conf}] tests the framework behavior for an invalid module configuration: attempt to specialize a unique module for one detector type.
+    \item[\file{test_03-1_geometry_g4_coordinate_system.conf}] ensures that the \apsq and Geant4 coordinate systems and transformations are identical.
+    \item[\file{test_03-2_geometry_rotations.conf}] tests the correct interpretation of rotation angles in the detector setup file.
+    \item[\file{test_03-3_geometry_misaligned.conf}] tests the correct calculation of misalignments from alignment precisions given in the detector setup file.
 \end{description}
 
 
