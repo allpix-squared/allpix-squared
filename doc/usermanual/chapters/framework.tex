@@ -309,6 +309,7 @@ Details about the procedure Linux follows can be found in~\cite{linuxld}.
 \end{enumerate}
 
 If the loading of the module library is successful, the module is checked to determine if it is a unique or detector module.
+As a single module may be called multiple times in the configuration, with overlapping requirements (such as a module which runs on all detectors of a given type, followed by the same module but with different parameters for one specific detector, also of this type) the Module Manager must establish which instantiations to keep and which to discard.
 The instantiation logic determines a unique name and priority, where a lower number indicates a higher priority, for every instantiation.
 The name and priority for the instantiation are determined differently for the two types of modules:
 \begin{itemize}
@@ -319,7 +320,7 @@ If the name of the detector is specified directly by the \parameter{name} parame
 If the detector is only matched by the \parameter{type} parameter, the priority is \emph{medium}.
 If the \parameter{name} and \parameter{type} are both unspecified and the module is instantiated for all detectors, the priority is \emph{low}.
 \end{itemize}
-The instantiation logic only allows a single instance for every unique name.
+In the end, only a single instance for every unique name is allowed.
 If there are multiple instantiations with the same unique name, the instantiation with the highest priority is kept.
 If multiple instantiations with the same unique name and the same priority exist, an exception is raised.
 
@@ -437,7 +438,7 @@ The set of base parameters supported by every model is provided below.
 These parameters should be given at the top of the file before the start of any sub-sections.
 \begin{itemize}
 \item \parameter{type}: A required parameter describing the type of the model.
-At the moment either \textbf{monolithic} or \textbf{hybrid}.
+At the moment either \parameter{monolithic} or \parameter{hybrid}.
 This value determines the supported parameters as discussed later.
 \item \parameter{number_of_pixels}: The number of pixels in the 2D pixel matrix.
 Determines the base size of the sensor together with the \parameter{pixel_size} parameter below.
@@ -446,9 +447,9 @@ Provided as 2D parameter in the x-y-plane.
 This parameter is required for all models.
 \item \parameter{sensor_thickness}: Thickness of the active area of the detector model containing the individual pixels.
 This parameter is required for all models.
-\item \texttt{\textbf{sensor\_excess\_\textit{direction}}}: With direction either \parameter{top}, \parameter{bottom}, \parameter{left} or \textit{right}, where the top, bottom, right and left direction are the positive y-axis, the negative y-axis, the positive x-axis and the negative x-axis, respectively.
+\item \texttt{\textbf{sensor\_excess\_\textit{direction}}}: With direction either \parameter{top}, \parameter{bottom}, \parameter{right} or \parameter{left}, where the top, bottom, right and left direction are the positive y-axis, the negative y-axis, the positive x-axis and the negative x-axis, respectively.
 Specifies the extra material added to the sensor outside the active pixel matrix in the given direction.
-\item \parameter{sensor_excess}: Fallback for the excess width of the sensor in all four directions (top, bottom, left and right).
+\item \parameter{sensor_excess}: Fallback for the excess width of the sensor in all four directions (top, bottom, right and left).
 Used if the specialized parameters described below are not given.
 Defaults to zero, thus having a sensor size equal to the number of pixels times the pixel pitch.
 \item \parameter{chip_thickness}: Thickness of the readout chip, placed next to the sensor.
@@ -487,7 +488,7 @@ The \textbf{hybrid} model adds bump bonds between the chip and sensor while auto
 Furthermore, it allows the user to specify the chip dimensions independently from the sensor size, as the readout chip is treated as a separate entity.
 The additional parameters for the \textbf{hybrid} model are as follows:
 \begin{itemize}
-\item \texttt{\textbf{chip\_excess\_\textit{direction}}}: With direction either \textit{top}, \textit{bottom}, \textit{left} or \textit{right}.
+\item \texttt{\textbf{chip\_excess\_\textit{direction}}}: With direction either \parameter{top}, \parameter{bottom}, \parameter{right} or \parameter{left}.
 The chip excess in the specific direction, similar to the \texttt{\textbf{sensor\_excess\_\textit{direction}}} parameter described above.
 \item \parameter{chip_excess}: Fallback for the excess width of the chip, defaults to zero and thus to a chip size equal to the dimensions of the pixel matrix.
 See the \parameter{sensor_excess} parameter above.

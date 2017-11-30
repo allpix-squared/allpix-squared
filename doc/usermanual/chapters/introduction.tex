@@ -5,13 +5,12 @@ The goal of the \apsq framework is to provide and easy-to-use package for simula
 
 The framework builds upon other packages to perform tasks in the simulation chain, most notably Geant4~\cite{geant4} for the deposition of charge carriers in the sensor and ROOT~\cite{root} for producing histograms and storing the produced data.
 The core of the framework focuses on the simulation of charge transport in semiconductor detectors and the digitization to hits in the frontend electronics.
-The framework does not perform a reconstruction of the particle tracks.
 
 \apsq is designed as a modular framework, allowing for an easy extension to more complex and specialized detector simulations.
 The modular setup also allows to separate the core of the framework from the implementation of the algorithms in the modules, leading to a framework which is both easier to understand and to maintain.
 Besides modularity, the \apsq framework was designed with the following main design goals in mind (listed from most to least important):
 \begin{enumerate}
-    \item Reflects the physics
+    \item Reflect the physics
     \begin{itemize}
         \item A run consists of several sequential events. A single event here refers to an independent passage of one or multiple particles through the setup
         \item Detectors are treated as separate objects for particles to pass through
@@ -36,10 +35,10 @@ Originally written as a Geant4 user application, it has been successfully used f
 
 \subsection{Scope of this Manual}
 This document is meant to be the primary User's Guide for \apsq.
-It contains both an extensive description of the user interface and configuration possibilities and a detailed introduction to the code base for potential developers.
+It contains both an extensive description of the user interface and configuration possibilities, and a detailed introduction to the code base for potential developers.
 This manual is designed to:
 \begin{itemize}
-\item Guide all new users through the installation
+\item Guide new users through the installation
 \item Introduce new users to the toolkit for the purpose of running their own simulations
 \item Explain the structure of the core framework and the components it provides to the simulation modules
 \item Provide detailed information about all modules and how to use and configure them
@@ -51,14 +50,14 @@ No programming experience is required from novice users, but knowledge of (moder
 
 \subsection{Support and Reporting Issues}
 As for most of the software used within the high-energy particle physics community, no professional support for this software can be offered.
-The authors are, however, happy to receive feedback on potential improvements or problem arising.
+The authors are, however, happy to receive feedback on potential improvements or problems arising.
 Reports on issues, questions concerning the software as well as the documentation and suggestions for improvements are very much appreciated.
 These should preferably be brought up on the issues tracker of the project which can be found in the repository~\cite{ap2-issue-tracker}.
 
 
 \subsection{Contributing Code}
-\apsq is a community project that lives from active participation in the development and code contributions from users.
+\apsq is a community project that benefits from active participation in the development and code contributions from users.
 We encourage users to discuss their needs either via the issue tracker of the repository~\cite{ap2-issue-tracker} or the developer's mailing list to receive ideas and guidance on how to implement a specific feature.
-Getting in touch with other developers early in the development cycle prevents from spending time on features which already exist or are currently developed by someone else.
+Getting in touch with other developers early in the development cycle avoids spending time on features which already exist or are currently under development by other users.
 
 The repository contains a few tools to facilitate contributions and to ensure code quality as detailed in Section~\ref{sec:testing}.
