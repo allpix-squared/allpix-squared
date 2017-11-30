@@ -16,7 +16,7 @@ Currently, the following targets are provided:
 \begin{description}
   \item[\command{make format}] invokes the \command{clang-format} tool to apply the project's coding style convention to all files of the code base. The format is defined in the \file{.clang-format} file in the root directory of the repository and mostly follows the suggestions defined by the standard LLVM style with minor modifications. Most notably are the consistent usage of four whitespace characters as indentation and the column limit of 125 characters.
   \item[\command{make check-format}] also invokes the \command{clang-format} tool but does not apply the required changes to the code. Instead, it returns an exit code 0 (pass) if no changes are necessary and exit code 1 (fail) if changes are to be applied. This is used by the CI.
-  \item[\command{make lint}] invokes the \command{clang-tidy} tool to provide additional linting of the osurce code. The tool tries to detect possible errors (and thus potential bugs), dangerous constructs (such as uninitialized variables) as well as stylistic errors. The configuration used for the \command{clang-tidy} command can be found in the \file{.clang-tidy} file in the root directory of the repository.
+  \item[\command{make lint}] invokes the \command{clang-tidy} tool to provide additional linting of the source code. The tool tries to detect possible errors (and thus potential bugs), dangerous constructs (such as uninitialized variables) as well as stylistic errors. In addition, it ensures proper usage of modern C++ standards. The configuration used for the \command{clang-tidy} command can be found in the \file{.clang-tidy} file in the root directory of the repository.
   \item[\command{make check-lint}] also invokes the \command{clang-tidy} tool but does not report the issues found while parsing the code. Instead, it returns an exit code 0 (pass) if no errors have been produced and exit code 1 (fail) if issues are present. This is used by the CI.
 \end{description}
 
@@ -35,8 +35,8 @@ It is configured via the \file{.gitlab-ci.yml} file in the repository's root dir
 \end{figure}
 
 The \textbf{compilation} stage builds the framework from the source on different platforms.
-Currently, builds are performed on Scientifc Linux 6, CentOS7, and Mac OS X.
-On Linux type platforms, the framework is compiled with GCC 7.1 and Clang 4.0, while AppleClang 8.1 is used on Mac OS X.
+Currently, builds are performed on Scientific Linux 6, CentOS7, and Mac OS X.
+On Linux type platforms, the framework is compiled with recent versions of GCC and Clang, while the latest AppleClang is used on Mac OS X.
 The build is always performed with the default compiler flags enabled for the project:
 \begin{verbatim}
     -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wconversion
@@ -59,7 +59,6 @@ All tests are expected to pass, and no code that fails to satisfy all tests will
 The \textbf{formatting} stage ensures proper formatting of the source code using the \command{clang-format} and following the coding conventions defined in the \file{.clang-format} file in the repository.
 In addition, the \command{clang-tidy} tool is used for ``linting'' of the source code.
 This means, the source code undergoes a static code analysis in order to identify possible sources of bugs by flagging suspicious and non-portable constructs used.
-In addition, it ensures proper usage of modern C++ standards.
 Tests are marked as failed if either of the CMake targets \command{make check-format} or \command{make check-lint} fail.
 No code that fails to satisfy the coding conventions and formatting tests will be merged into the repository.
 
@@ -177,5 +176,5 @@ Current performance tests comprise:
     \item[\file{test_01_deposition.conf}] tests the performance of charge carrier deposition in the sensitive sensor volume using Geant4~\cite{geant4}. A stepping length of \SI{1.0}{\um} is chosen, and \num{10000} events are simulated. The addition of an electric field and the subsequent projection of the charges are necessary since \apsq would otherwise detect that there are no recipients for the deposited charge carriers and skip the deposition entirely.
     \item[\file{test_02-1_propagation_generic.conf}] tests the very critical performance of the drift-diffusion propagation of charge carriers, as this is the most computing-intense module of the framework. Charge carriers are deposited and a propagation with 10 charge carriers per step and a fine spatial and temporal resolution is performed. The simulation comprises \num{500} events.
     \item[\file{test_02-2_propagation_project.conf}] tests the projection of charge carriers onto the implants, taking into account the diffusion only. Since this module is less computing-intense, a total of \num{5000} events are simulated, and charge carriers are propagated one-by-one.
-    \item[\file{test_02-3_propagation_generic_multithread.conf}] tests the performance of multi-threaded simulation. It utilizes the very same configuration as performance test 02-1 but in addition enables multithreading with four worker threads.
+    \item[\file{test_02-3_propagation_generic_multithread.conf}] tests the performance of multi-threaded simulation. It utilizes the very same configuration as performance test 02-1 but in addition enables multi-threading with four worker threads.
 \end{description}
