@@ -61,6 +61,6 @@ namespace allpix {
 
         // Statistical information
         unsigned int total_transferred_charges_{};
-        std::set<Pixel::Index, pixel_cmp> unique_pixels_;
+        std::set<Pixel::Index> unique_pixels_;
     };
 } // namespace allpix
