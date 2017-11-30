@@ -14,10 +14,10 @@ Some of these targets are used by the project's CI, others are intended for manu
 Currently, the following targets are provided:
 
 \begin{description}
-  \item[\command{make format}]
-  \item[\command{make check-format}]
-  \item[\command{make lint}]
-  \item[\command{make check-lint}]
+  \item[\command{make format}] invokes the \command{clang-format} tool to apply the project's coding style convention to all files of the code base. The format is defined in the \file{.clang-format} file in the root directory of the repository and mostly follows the suggestions defined by the standard LLVM style with minor modifications. Most notably are the consistent usage of four whitespace characters as indentation and the column limit of 125 characters.
+  \item[\command{make check-format}] also invokes the \command{clang-format} tool but does not apply the required changes to the code. Instead, it returns an exit code 0 (pass) if no changes are necessary and exit code 1 (fail) if changes are to be applied. This is used by the CI.
+  \item[\command{make lint}] invokes the \command{clang-tidy} tool to provide additional linting of the osurce code. The tool tries to detect possible errors (and thus potential bugs), dangerous constructs (such as uninitialized variables) as well as stylistic errors. The configuration used for the \command{clang-tidy} command can be found in the \file{.clang-tidy} file in the root directory of the repository.
+  \item[\command{make check-lint}] also invokes the \command{clang-tidy} tool but does not report the issues found while parsing the code. Instead, it returns an exit code 0 (pass) if no errors have been produced and exit code 1 (fail) if issues are present. This is used by the CI.
 \end{description}
 
 \subsection{Continuous Integration}
