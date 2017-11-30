@@ -84,13 +84,17 @@ The different subcategories of tests described below can be executed or ignored 
 $ ctest -R test_performance
 \end{verbatim}
 
-The configuration of the tests can be found in the \dir{etc/unittests} directory of the repository.
+The configuration of the tests can be found in the \dir{etc/unittests_test*} directories of the repository and are automatically discovered by CMake.
+CMake automatically searches for \apsq configuration files in the different directories and passes them to the \apsq executable~(cf.\ Section~\ref{sec:allpix_executable}).
+
 Adding a new test is as simple as adding a new configuration file to one of the different subdirectories and specifying the pass or fail conditions based on the tags described in the following paragraph.
 
 \paragraph{Pass and Fail Conditions}
 
 The output of any test is compared to a search string in order to determine whether it passed or failed.
-These expressions are simply placed in the configuration file for the corresponding tests, a tag at the beginning of the line indicates whether it should be used for passing or failing the test.
+These expressions are simply placed in the configuration file of the corresponding tests, a tag at the beginning of the line indicates whether it should be used for passing or failing the test.
+Each test can only contain one passing and one failing expression.
+If different functionality and thus outputs need to be tested, a second test should be added to cover the corresponding expression.
 
 Different tags are provided for Mac OS X since the C++ standard does not define the exact implementation of random number distributions such as \texttt{std::normal\_distribution}.
 Thus, the distributions produce different results on different platforms even when used with the same random number as input.
@@ -126,40 +130,33 @@ Currently implemented tests comprise:
 
 \paragraph{Module Functionality Tests}
 
-These tests ensure the proper functionality of each module covered and thus protect the repository against accidental changes affecting the physics simulation.
+These tests ensure the proper functionality of each module covered and thus protect the framework against accidental changes affecting the physics simulation.
 Using a fixed seed (using the \parameter{random_seed} configuration keyword) together with a specific version of Geant4~\cite{geant4} allows to reproduce the same simulation event.
 
 One event is produced per test and the \parameter{DEBUG}-level logging output of the respective module is checked against pre-defined expectation output using regular expressions.
 Once modules are altered, their respective expectation output has to be adapted after careful verification of the simulation result.
 
-Module tests are automatically discovered by CMake and are thus easy to extend and add.
-CMake automatically searches for all configurations found in the \parameter{test_modules} folder and executes \apsq with them.
-The regular expressions to search for are stored in the configuration file.
-Two different types of expressions can be used and are picked up by CMake automatically: Positive expressions, indicated by a line starting with \parameter{#PASS}, are required in order to pass the test and negative expressions, indicated by \parameter{#FAIL}, which will fail the tests if found.
-Each test can only contain one \parameter{#PASS} and one \parameter{#FAIL} expression.
-If different functionality and thus outputs need to be tested, a second test should be added to cover the corresponding expression.
-
 Currently implemented tests comprise:
 
 \begin{description}
-    \item[\file{test_01_geobuilder.conf}] takes the provided detector setup and builds the Geant4 geometry from the internal detector description. The monitored output comprises the total world size calculated as well as the wrapper dimensions of the detector model.
-    \item[\file{test_02-1_electricfield_linear.conf}] creates a linear electric field in the constructed detector. The monitored output comprises the configured values of bias and depletion voltage and the calculated effective thickness of the electric field.
-    \item[\file{test_02-2_electricfield_init.conf}] loads an INIT file containing a TCAD-simulated electric field (cf.\ Section~\ref{sec:module_electric_field}) and applies the field to the detector model. The monitored output comprises the header of the parsed INIT file as well as the calculated number of field cells for each pixel.
-    \item[\file{test_03-1_deposition.conf}] executes the charge carrier deposition module. This will invoke Geant4 to deposit energy in the sensitive volume. The monitored output comprises the physics list used and the exact number of charge carriers deposited in the detector.
-    \item[\file{test_03-2_deposition_mc.conf}] \todo{describe}
-    \item[\file{test_04-1_propagation_project.conf}] projects deposited charges to the implant side of the sensor. The monitored output comprises the total number of charge carriers and the total charge projected into the implants.
+    \item[\file{test_01_geobuilder.conf}] takes the provided detector setup and builds the Geant4 geometry from the internal detector description. The monitored output comprises the calculated wrapper dimensions of the detector model.
+    \item[\file{test_02-1_electricfield_linear.conf}] creates a linear electric field in the constructed detector. The monitored output comprises the calculated effective thickness of the depleted detector volume.
+    \item[\file{test_02-2_electricfield_init.conf}] loads an INIT file containing a TCAD-simulated electric field (cf.\ Section~\ref{sec:module_electric_field}) and applies the field to the detector model. The monitored output comprises the number of field cells for each pixel as read and parsed from the input file.
+    \item[\file{test_03-1_deposition.conf}] executes the charge carrier deposition module. This will invoke Geant4 to deposit energy in the sensitive volume. The monitored output comprises the exact number of charge carriers deposited in the detector.
+    \item[\file{test_03-2_deposition_mc.conf}] executes the charge carrier deposition module as the previous tests, but monitors the type, entry and exit point of the Monte Carlo particle associated associated to the deposited charge carriers.
+    \item[\file{test_04-1_propagation_project.conf}] projects deposited charges to the implant side of the sensor. The monitored output comprises the total number of charge carriers propagated to the sensor implants.
     \item[\file{test_04-2_propagation_generic.conf}] uses the Runge-Kutta-Fehlberg integration of the equations of motion implemented in the drift-diffusion model to propagate the charge carriers to the implants. The monitored output comprises the total number of charges moved, the number of integration steps taken and the simulated propagation time.
-    \item[\file{test_05_transfer_simple.conf}] tests the transfer of charges from sensor implants to readout chip. The monitored output comprises the total number of charges transferred and the number of pixels the charges have been assigned to.
-    \item[\file{test_06-1_digitization_charge.conf}] digitizes the transferred charges to simulate the front-end electronics. The monitored output of this test comprises the total charge per pixel including noise contributions, the smeared threshold value and the total number of digitized pixel hits.
-    \item[\file{test_06-2_digitization_adc.conf}]
-    \item[\file{test_06-3_digitization_gain.conf}]
+    \item[\file{test_05_transfer_simple.conf}] tests the transfer of charges from sensor implants to readout chip. The monitored output comprises the total number of charges transferred and the coordinates of the pixels the charges have been assigned to.
+    \item[\file{test_06-1_digitization_charge.conf}] digitizes the transferred charges to simulate the front-end electronics. The monitored output of this test comprises the total charge for one pixel including noise contributions and the smeared threshold it is compared to.
+    \item[\file{test_06-2_digitization_adc.conf}] digitizes the transferred charges and tests the conversion into ADC units. The monitored output comprises the converted charge value in units of ADC counts.
+    \item[\file{test_06-3_digitization_gain.conf}] digitizes the transferred charges and tests the amplification process by monitoring the total charge after signal amplification and smearing.
     \item[\file{test_07_histogramming.conf}] tests the detector histogramming module and its clustering algorithm. The monitored output comprises the total number of clusters and their mean position.
     \item[\file{test_08-1_writer_root.conf}] ensures proper functionality of the ROOT file writer module. It monitors the total number of objects and branches written to the output ROOT trees.
-    \item[\file{test_08-2_writer_rce.conf}] ensures proper functionality of the RCE file writer module. The correct creation of tree branches and the conversion of the PixelHit position and value is monitored by the test's regular expressions.
-    \item[\file{test_08-3_writer_lcio.conf}] ensures proper functionality of the LCIO file writer module. Similar to the above tests, the branch creation and the conversion of PixelHits is monitored.
-    \item[\file{test_08-4_writer_corryvreckan.conf}]
-    \item[\file{test_08-5_writer_corryvreckan_mc.conf}]
-    \item[\file{test_09_reader_root.conf}] tests the capability of the framework to read data back in and to dispatch messages for all objects found in the input tree. The monitored output comprises the total number of objects read from all branches as well as the correct path and recipient of the dispatched messages.
+    \item[\file{test_08-2_writer_rce.conf}] ensures proper functionality of the RCE file writer module. The correct conversion of the PixelHit position and value is monitored by the test's regular expressions.
+    \item[\file{test_08-3_writer_lcio.conf}] ensures proper functionality of the LCIO file writer module. Similar to the above test, the correct conversion of PixelHits (coordinates and charge) is monitored.
+    \item[\file{test_08-4_writer_corryvreckan.conf}] ensures proper functionality of the Corryvreckan file writer module. The monitored output comprises the coordinates of the pixel produced in the simulation.
+    \item[\file{test_08-5_writer_corryvreckan_mc.conf}] ensures the correct storage of Monte Carlo truth particle information in the Corryvreckan file writer module by monitoring the local coordinates of the MC particle associated to the pixel hit.
+    \item[\file{test_09_reader_root.conf}] tests the capability of the framework to read data back in and to dispatch messages for all objects found in the input tree. The monitored output comprises the total number of objects read from all branches.
 \end{description}
 
 \paragraph{Performance Tests}
