@@ -1,6 +1,5 @@
 ## Precise DUT Simulation Example
 
-#### Description
 This example combines features from the "fast simulation" and the "TCAD field simulation" examples. The setup consists of six telescope planes of Timepix-type detectors for reference tracks and a device under test (DUT), in this case a CLICpix2 detector, in the center of the telescope between the two arms. The goal of this setup is to demonstrate how to perform a fast simulation on the telescope planes while maintaining a high precision on the DUT.
 
 For this propose, the telescope follows the example of the "fast simulation" and employs a linear electric field and the `ProjectionPropagation` module for charge carrier transport. To assign this module only to the telescope planes, the `type` keyword is used to restrict the module to instances of Timepix detectors.
