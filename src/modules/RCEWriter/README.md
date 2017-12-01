@@ -1,5 +1,6 @@
 ## RCEWriter
-**Maintainer**: Salman Maqbool (<salman.maqbool@cern.ch>)   
+**Author**: Salman Maqbool (<salman.maqbool@cern.ch>)   
+**Maintainer**: Moritz Kiehn (<msmk@cern.ch>)   
 **Status**: Functional   
 **Input**: PixelHit
 
