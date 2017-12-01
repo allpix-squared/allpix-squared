@@ -56,6 +56,6 @@ Whenever the related object is not in memory (either because it is not available
 
 \begin{warning}
     If no explicit dependency is added to a linked object in history, the module could misbehave depending on other modules.
-    Also take note that \underline{all} intermediate objects need an explicit dependency to fetch deeper history (like the \parameter{MCParticle}s from an \parameter{PixelHit}).
+    It should also be noted that \textit{all} intermediate objects need an explicit dependency to fetch deeper history (like the \parameter{MCParticle}s from \parameter{PixelHit}).
     Finally, the \parameter{MissingReferenceException} should be properly caught by modules to handle instances where the history is not available or incomplete.
 \end{warning}

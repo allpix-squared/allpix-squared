@@ -1,5 +1,6 @@
-\section{The \apsq Framework}
+\section{Structure \& Components of the Framework}
 \label{sec:framework}
+
 This section details the technical implementation of the \apsq framework and is mostly intended to provide insight into the gearbox to potential developers and interested users.
 The framework consists of the following four main components that together form \apsq:
 \begin{enumerate}
@@ -31,7 +32,7 @@ Some C++ code will be provided in the text, but readers not interested may skip 
 \subsection{Architecture of the Core}
 \label{sec:arch}
 The core is constructed as a light-weight framework which provides various subsystems to the modules.
-It contains the part of the software responsible for instantiating and running the modules from the supplied configuration file, and is structured around five subsystems, of which four are centred around a manager and the fifth contains a set of simple general utilities.
+It contains the part of the software responsible for instantiating and running the modules from the supplied configuration file, and is structured around five subsystems, of which four are centered around a manager and the fifth contains a set of general utilities.
 The systems provided are:
 \begin{enumerate}
 \item \textbf{Configuration}: The configuration subsystem provides a configuration object from which data can be retrieved or stored, together with a TOML-like~\cite{tomlgit} parser to read configuration files.
@@ -218,11 +219,11 @@ ALLPIX_MODULE_INSTALL(${MODULE_NAME})
 \end{minted}
 
 \paragraph{README.md}
-The README.md serves as the documentation for the module and should be written in Markdown format~\cite{markdown}.
+The \file{README.md} serves as the documentation for the module and should be written in Markdown format~\cite{markdown}.
 It is automatically converted to \LaTeX using Pandoc~\cite{pandoc} and included in the user manual in Section~\ref{sec:modules}.
 By documenting the module functionality in Markdown, the information is also viewable with a web browser in the repository within the module sub-folder.
 
-The README.md should follow the structure indicated in the README file of the DummyModule in \textit{src/modules/Dummy}, and should contain at least the following sections:
+The \file{README.md} should follow the structure indicated in the \file{README.md} file of the \parameter{DummyModule} in \dir{src/modules/Dummy}, and should contain at least the following sections:
 \begin{itemize}
 \item The H2-size header with the name of the module and at least the following required elements: the \textbf{Maintainer} and the \textbf{Status} of the module.
 If the module is working and well-tested, the status of the module should be \textit{Functional}.
@@ -330,7 +331,7 @@ The framework has experimental support for running several modules in parallel.
 This feature is disabled for new modules by default, and has to be both supported by the module and enabled by the user as described in Section \ref{sec:framework_parameters}.
 A significant speed improvement can be achieved if the simulation contains multiple detectors or simulates the same module using different parameters.
 
-The framework allows to parallelise the execution of the same type of module, if these would otherwise be executed directly after each other in a linear order.
+The framework allows to parallelize the execution of the same type of module, if these would otherwise be executed directly after each other in a linear order.
 Thus, as long as the name of the module remains the same, while going through the execution order of all \parameter{run()} methods, all instances are added to a work queue.
 The instances are then distributed to a set of worker threads as specified in the configuration or determined from system parameters, which will execute the individual modules.
 The module manager will wait for all jobs to finish before continuing to process the next type of module.
@@ -352,7 +353,7 @@ Each detector has a set of properties attached to it:
 \begin{itemize}
 \item A unique detector \parameter{name} to refer to the detector in the configuration.
 \item The \parameter{position} in the world frame.
-This is the position of the geometric centre of the sensitive device (sensor) given in world coordinates as X, Y and Z (note that any additional components like the chip and possible support layers are ignored when determining the geometric centre).
+This is the position of the geometric center of the sensitive device (sensor) given in world coordinates as X, Y and Z as defined in Section~\ref{sec:coordinate_systems} (note that any additional components like the chip and possible support layers are ignored when determining the geometric center).
 \item An \parameter{orientation_mode} that determines the way that the orientation is applied.
 This can be either \texttt{xyz}, \texttt{zyx} or \texttt{zxz}, where \textbf{\texttt{xyz} is used as default if the parameter is not specified}. Three angles are expected as input, which should always be provided in the order in which they are applied.
 \begin{itemize}
@@ -384,6 +385,16 @@ An electric field can be added to a detector by a special module as demonstrated
 \end{itemize}
 The detector configuration is provided in the detector configuration file as explained in Section~\ref{sec:detector_config}.
 
+\subsubsection{Coordinate systems}
+\label{sec:coordinate_systems}
+
+Local coordinate systems for each detector and a global frame of reference for the full setup are defined.
+The global coordinate system is chosen as a right-handed Cartesian system, and the rotations of individual devices are performed around the geometrical center of their sensor.
+
+Local coordinate systems for the detectors are also right-handed Cartesian systems, with the x- and y-axes defining the sensor plane.
+The origin of this coordinate system is the centre of the lower left pixel in the grid, i.e.\ the pixel with indices (0,0).
+This simplifies calculations in the local coordinate system as all positions can either be stated in absolute numbers or in fractions of the pixel pitch.
+
 \subsubsection{Changing and accessing the geometry}
 The geometry is needed at a very early stage because it determines the number of detector module instantiations as explained in Section~\ref{sec:module_instantiation}.
 The procedure of finding and loading the appropriate detector models is explained in more detail in Section~\ref{sec:detector_models}.
@@ -403,15 +414,6 @@ void run(unsigned int event_id) {
     std::shared_ptr<Detector> detector = this->getDetector();
 }
 \end{minted}
-
-\subsubsection{Coordinate systems}
-
-Local coordinate systems for each detector and a global frame of reference for the full setup are defined.
-The global coordinate system is chosen as a right-handed Cartesian system, and the rotations of individual devices are performed around the geometrical center of their sensor.
-
-Local coordinate systems for the detectors are also right-handed Cartesian systems, with the x- and y-axes defining the sensor plane.
-The origin of this coordinate system is the centre of the lower left pixel in the grid, i.e.\ the pixel with indices (0,0).
-This simplifies calculations in the local coordinate system as all positions can either be stated in absolute numbers or in fractions of the pixel pitch.
 
 \subsubsection{Detector models}
 \label{sec:detector_models}
@@ -647,6 +649,49 @@ Flags can be added to the bind and listening methods which enable a particular b
     \item \parameter{IGNORE_NAME}: If this flag is specified, the name of the dispatched message is not considered.
     Thus, the \parameter{input} parameter is ignored and forced to the value \texttt{*}.
 \end{itemize}
+
+\subsection{Redirect Module Inputs and Outputs}
+\label{sec:redirect_module_input_outputs}
+In the \apsq framework, modules exchange messages typically based on their input and output message types and the detector type.
+It is, however, possible to specify a name for the incoming and outgoing messages for every module in the simulation.
+Modules will then only receive messages dispatched with the name provided and send named messages to other modules listening for messages with that specific name.
+This enables running the same module several times for the same detector, e.g.\ to test different parameter settings.
+
+The message output name of a module can be changed by setting the \parameter{output} parameter of the module to a unique value.
+The output of this module is then not sent to modules without a configured input, because by default modules listens only to data without a name.
+The \parameter{input} parameter of a particular receiving module should therefore be set to match the value of the \parameter{output} parameter.
+In addition, it is permitted to set the \parameter{input} parameter to the special value \texttt{*} to indicate that the module should listen to all messages irrespective of their name.
+
+An example of a configuration with two different settings for the digitisation module is shown below:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+# Digitize the propagated charges with low noise levels
+[DefaultDigitizer]
+# Specify an output identifier
+output = "low_noise"
+# Low amount of noise added by the electronics
+electronics_noise = 100e
+# Default values are used for the other parameters
+
+# Digitize the propagated charges with high noise levels
+[DefaultDigitizer]
+# Specify an output identifier
+output = "high_noise"
+# High amount of noise added by the electronics
+electronics_noise = 500e
+# Default values are used for the other parameters
+
+# Save histogram for 'low_noise' digitized charges
+[DetectorHistogrammer]
+# Specify input identifier
+input = "low_noise"
+
+# Save histogram for 'high_noise' digitized charges
+[DetectorHistogrammer]
+# Specify input identifier
+input = "high_noise"
+\end{minted}
+
+\todo{Maybe we need an option to split the modules}
 
 \subsection{Logging and other Utilities}
 \label{sec:logging_utilities}

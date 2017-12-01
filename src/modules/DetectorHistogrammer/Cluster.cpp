@@ -56,10 +56,4 @@ std::pair<unsigned int, unsigned int> Cluster::getClusterSizeXY() {
     return sizes;
 }
 
-void Cluster::eatCluster(Cluster* otherCluster) {
-    for(auto& pixelHit : otherCluster->getPixelHits()) {
-        addPixelHit(pixelHit);
-    }
-}
-
 ClassImp(PixelHit)

@@ -404,8 +404,8 @@ perf:cc7-gcc:
     retry: 1
 
 # Mac OS X
-
-perf:mac1013-clang:
+# Temporarily disable Mac OS X performance until tests are adapted to actual performance
+.perf:mac1013-clang:
     stage: performance
     tags:
         - mac
