@@ -29,21 +29,29 @@ It should be noted that the TCAD DF-ISE mesh converter depends on the core utili
 - Interpolated data visualization tool.
 
 #### Usage
-To run the program, the following should be executed from the installation folder:
+To run the program, the following command should be executed from the installation folder:
 ```bash
 bin/tcad_dfise_converter/dfise_converter -f <file_name_prefix> [<options>] [<arguments>]
 ```
 The list with options can be accessed using the -h option.
-Default values are assumed for the options not used. Possible options are:
+Possible options and their default values are:
 ```
--R <region> 		= "bulk"
--O <observable>		= "ElectricField"
--d <dimensions>		= 3
--r <search radius>	= 1 um
--r <radius step>	= 0.5 um
--m <max radius>		= 10 um
--c <volume cut>		= 10e-9 um^3
--x,y,z <mesh binning>	= 100 (option should be set using -x, -y and -z)
+-f <file_prefix>       common prefix of DF-ISE grid (.grd) and data (.dat) files
+-o <init_file_prefix>  output file prefix without .init (defaults to file name of <file_prefix>)
+-R <region>            region name to be meshed (defaults to 'bulk')
+-O <observable>        observable to be interpolated (defaults Electric Field)
+-r <radius>            initial node neighbors search radius in um (defaults to 1 um)
+-t <radius_threshold>  minimum distance from node to new mesh point (defaults to 0 um)
+-s <radius_step>       radius step if no neighbor is found (defaults to 0.5 um)
+-m <max_radius>        maximum search radius (default is 10 um)
+-i <index_cut>         index cut during permutation on vertex neighbours (disabled by default)
+-c <volume_cut>        minimum volume for tetrahedron for non-coplanar vertices (defaults to minimum double value)
+-x <mesh x_pitch>      new regular mesh X pitch (defaults to 100)
+-y <mesh_y_pitch>      new regular mesh Y pitch (defaults to 100)
+-z <mesh_z_pitch>      new regular mesh Z pitch (defaults to 100)
+-d <mesh_dimension>    specify mesh dimensionality (defaults to 3)
+-l <file>              file to log to besides standard output (disabled by default)
+-v <level>             verbosity level (default reporiting level is INFO)
 ```
 
 Observables currently implemented for interpolation are: *ElectrostaticPotential*, *ElectricField*, *DopingConcentration*, *DonorConcentration* and *AcceptorConcentration*.
@@ -53,7 +61,7 @@ The *mesh_plotter* tool can be used from the installation folder as follows:
 ```bash
 bin/tcad_dfise_converter/mesh_plotter -f <file_name> [<options>] [<arguments>]
 ```
-The list with options and defaults is displayed with the -h option. A default value of 100 is used for the binning, but this can be changed.
+The list with options and defaults is displayed with the -h option.
 In a 3D mesh, the plane to be plotted must be identified by using the option -p with argument *xy*, *yz* or *zx*, defaulting to *yz*.
 The data to be plotted can be selected with the -d option, the arguments are *ex*, *ey*, *ez* for the vector components or the default value *n* for the norm of the electric field.
 
