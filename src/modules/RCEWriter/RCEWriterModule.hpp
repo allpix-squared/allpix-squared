@@ -43,7 +43,7 @@ namespace allpix {
         /**
          * @brief Destructor deletes the internal objects used to build the ROOT Tree
          */
-        ~RCEWriterModule() override;
+        ~RCEWriterModule() override = default;
 
         /**
          * @brief Opens the file to write the objects to, and initializes the trees

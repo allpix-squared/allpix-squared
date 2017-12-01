@@ -33,7 +33,6 @@ RCEWriterModule::RCEWriterModule(Configuration config, Messenger* messenger, Geo
     config_.setDefault("file_name", "rce-data.root");
     config_.setDefault("geometry_file", "rce-geo.conf");
 }
-RCEWriterModule::~RCEWriterModule() = default;
 
 void RCEWriterModule::init() {
     // Open output data file
