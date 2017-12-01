@@ -29,16 +29,18 @@ RCEWriterModule::RCEWriterModule(Configuration config, Messenger* messenger, Geo
     : Module(std::move(config)), geo_mgr_(geo_mgr) {
     // Bind to PixelHitMessage
     messenger->bindMulti(this, &RCEWriterModule::pixel_hit_messages_);
+
+    config_.setDefault("file_name", "rce-data.root");
+    config_.setDefault("geometry_file", "rce-geo.conf");
 }
 RCEWriterModule::~RCEWriterModule() = default;
 
 void RCEWriterModule::init() {
-    // Create output file
+    // Open output data file
     std::string file_name =
-        createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name", "rce_data"), "root"));
+        createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name"), "root"));
     output_file_ = std::make_unique<TFile>(file_name.c_str(), "RECREATE");
     output_file_->cd();
-
     // Initialize the events tree
     event_tree_ = std::make_unique<TTree>("Event", "");
     event_tree_->Branch("TimeStamp", &timestamp_);
