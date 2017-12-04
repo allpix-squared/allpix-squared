@@ -204,6 +204,23 @@ fmt:cc7-llvm-lint:
 # Unit tests #
 ##############
 
+# Test if examples still execute fine:
+
+
+examples:
+    stage: testing
+    tags:
+        - docker
+    dependencies:
+        - cmp:cc7-gcc
+    image: clicdp/cc7-base
+    script:
+        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab-ci.d/load_deps.sh
+        - cd build/
+        - ctest -R examples --output-on-failure -j4
+
+
 # SLC 6
 
 mod:slc6-gcc:
