@@ -12,7 +12,7 @@ The propagation consists of a combination of drift and diffusion simulation. The
 The two parameters `propagate_electrons` and `propagate_holes` allow to control which type of charge carrier is propagated to their respective electrodes. Either one of the carrier types can be selected, or both can be propagated. It should be noted that this will slow down the simulation considerably since twice as many carriers have to be handled and it should only be used where sensible.
 The direction of the propagation depends on the electric field configured, and it should be ensured that the carrier types selected are actually transported to the implant side. For linear electric fields, a warning is issued if a possible misconfiguration is detected.
 
-A fourth-order Runge-Kutta-Fehlberg method with fifth-order error estimation is used to integrate the electric field. After every Runge-Kutta step, the diffusion is accounted for by applying an offset drawn from a Gaussian distribution calculated from the Einstein relation
+A fourth-order Runge-Kutta-Fehlberg method [@fehlberg] with fifth-order error estimation is used to integrate the electric field. After every Runge-Kutta step, the diffusion is accounted for by applying an offset drawn from a Gaussian distribution calculated from the Einstein relation
 
 $`\sigma = \sqrt{\frac{2k_b T}{e}\mu t}`$
 
@@ -60,3 +60,4 @@ charge_per_step = 25
 ```
 
 [@jacoboni]: https://doi.org/10.1016/0038-1101(77)90054-5
+[@fehlberg]: https://ntrs.nasa.gov/search.jsp?R=19690021375
