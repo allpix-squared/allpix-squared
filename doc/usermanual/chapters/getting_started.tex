@@ -20,7 +20,7 @@ An example can be found in the repository at \textit{etc/example.conf}.
 More details and a more thorough example are found in Section~\ref{sec:main_config}.
 \item The \textbf{detector} configuration passed to the framework to determine the geometry.
 Describes the detector setup, containing the position, orientation and model type of all detectors.
-An example is available in the repository at \textit{etc/example\_detector.conf}.
+An example is available in the repository at \file{etc/example_detector.conf}.
 Introduced in Section~\ref{sec:detector_config}.
 \item The detector \textbf{models} configuration.
 Contains the parameters describing a particular type of detector.
@@ -327,15 +327,15 @@ Finally, some detector histograms for the device under test (DUT) will be record
 An example configuration file implementing this would look like:
 \inputminted[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}{../../etc/manual.conf}
 
-This configuration is available in the repository at \textit{etc/manual.conf}.
-The detector configuration file from Section~\ref{sec:detector_config} can be found at \textit{etc/manual\_detector.conf}.
+This configuration is available in the repository at \file{etc/manual.conf}.
+The detector configuration file from Section~\ref{sec:detector_config} can be found at \file{etc/manual_detector.conf}.
 
 The simulation is started by passing the main configuration to the \parameter{allpix} executable as follows:
 \begin{verbatim}
 $ allpix -c etc/manual.conf
 \end{verbatim}
 The output should look similar to the sample log provided in Appendix~\ref{sec:example_output}.
-The detector histograms such as the hit map are stored in the ROOT file \textit{output/modules.root} in the TDirectory \textit{DetectorHistogrammer/}.
+The detector histograms such as the hit map are stored in the ROOT file \file{output/modules.root} in the TDirectory \textit{DetectorHistogrammer/}.
 
 If problems occur when exercising this example, it should be made sure that an up-to-date and properly installed version of \apsq is used (see the installation instructions in Section~\ref{sec:installation}).
 If modules or models fail to load, more information about potential issues with the library loading can be found in the detailed framework description in Section~\ref{sec:framework}.
