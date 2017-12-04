@@ -218,18 +218,6 @@ mod:slc6-gcc:
         - cd build/
         - ctest -R test_modules --output-on-failure -j4
 
-exm:slc6-gcc:
-    stage: testing
-    tags:
-        - docker
-    dependencies:
-        - cmp:slc6-gcc
-    image: clicdp/slc6-base
-    script:
-        - source .gitlab-ci.d/init_x86_64.sh
-        - cd build/
-        - ctest -R examples --output-on-failure -j4
-
 core:slc6-gcc:
     stage: testing
     tags:
@@ -253,18 +241,6 @@ mod:lxplus-gcc:
         - source etc/scripts/setup_lxplus.sh
         - cd build/
         - ctest -R test_modules --output-on-failure -j4
-
-exm:lxplus-gcc:
-    stage: testing
-    tags:
-        - docker
-    dependencies:
-        - cmp:lxplus-gcc
-    image: clicdp/slc6-base
-    script:
-        - source etc/scripts/setup_lxplus.sh
-        - cd build/
-        - ctest -R examples --output-on-failure -j4
 
 core:lxplus-gcc:
     stage: testing
@@ -290,19 +266,6 @@ mod:slc6-llvm:
         - source .gitlab-ci.d/init_x86_64.sh
         - cd build/
         - ctest -R test_modules --output-on-failure -j4
-
-exm:slc6-llvm:
-    stage: testing
-    tags:
-        - docker
-    dependencies:
-        - cmp:slc6-gcc
-    image: clicdp/slc6-base
-    script:
-        - export COMPILER_TYPE="llvm"
-        - source .gitlab-ci.d/init_x86_64.sh
-        - cd build/
-        - ctest -R examples --output-on-failure -j4
 
 core:slc6-llvm:
     stage: testing
@@ -333,19 +296,6 @@ mod:cc7-gcc:
         - cd build/
         - ctest -R test_modules --output-on-failure -j4
 
-exm:cc7-gcc:
-    stage: testing
-    tags:
-        - docker
-    dependencies:
-        - cmp:cc7-gcc
-    image: clicdp/cc7-base
-    script:
-        - source .gitlab-ci.d/init_x86_64.sh
-        - source .gitlab-ci.d/load_deps.sh
-        - cd build/
-        - ctest -R examples --output-on-failure -j4
-
 core:cc7-gcc:
     stage: testing
     tags:
@@ -371,19 +321,6 @@ mod:cc7-llvm:
         - source .gitlab-ci.d/init_x86_64.sh
         - cd build/
         - ctest -R test_modules --output-on-failure -j4
-
-exm:cc7-llvm:
-    stage: testing
-    tags:
-        - docker
-    dependencies:
-        - cmp:cc7-llvm
-    image: clicdp/cc7-base
-    script:
-        - export COMPILER_TYPE="llvm"
-        - source .gitlab-ci.d/init_x86_64.sh
-        - cd build/
-        - ctest -R examples --output-on-failure -j4
 
 core:cc7-llvm:
     stage: testing
@@ -412,18 +349,6 @@ mod:mac1013-clang:
         - source .gitlab-ci.d/load_deps.sh
         - cd build/
         - ctest -R test_modules --output-on-failure -j4
-
-exm:mac1013-clang:
-    stage: testing
-    tags:
-        - mac
-    dependencies:
-        - cmp:mac1013-clang
-    script:
-        - source .gitlab-ci.d/init_mac.sh
-        - source .gitlab-ci.d/load_deps.sh
-        - cd build/
-        - ctest -R examples --output-on-failure -j4
 
 core:mac1013-clang:
     stage: testing
