@@ -58,7 +58,7 @@ ADD_TEST(NAME manual
 
 OPTION(TEST_EXAMPLES "Perform unit tests to ensure example validity?" ON)
 
-IF(TEST_MODULES)
+IF(TEST_EXAMPLES)
     FILE(GLOB TEST_LIST_EXAMPLES RELATIVE ${CMAKE_SOURCE_DIR}/etc/examples ${CMAKE_SOURCE_DIR}/etc/examples/*)
     LIST(LENGTH TEST_LIST_EXAMPLES NUM_TEST_EXAMPLES)
     MESSAGE(STATUS "Unit tests: ${NUM_TEST_EXAMPLES} example validity tests")
@@ -68,6 +68,8 @@ IF(TEST_MODULES)
             COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/run_directory.sh "output/${TEST}" "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_SOURCE_DIR}/etc/examples/${TEST}/${TEST}.conf -o number_of_events=10"
         )
     ENDFOREACH()
+ELSE()
+    MESSAGE(STATUS "Unit tests: example validity tests deactivated.")
 ENDIF()
 
 ##############################
@@ -95,8 +97,9 @@ IF(TEST_MODULES)
             STRING(REPLACE "#DEPENDS " "" DEPENDENCY "${DEPENDENCY}")
             SET_TESTS_PROPERTIES(${TEST} PROPERTIES DEPENDS "${DEPENDENCY}")
         ENDIF()
-
     ENDFOREACH()
+ELSE()
+    MESSAGE(STATUS "Unit tests: module functionality tests deactivated.")
 ENDIF()
 
 ###############################
@@ -126,8 +129,9 @@ IF(TEST_PERFORMANCE)
             STRING(REPLACE "#DEPENDS " "" DEPENDENCY "${DEPENDENCY}")
             SET_TESTS_PROPERTIES(${TEST} PROPERTIES DEPENDS "${DEPENDENCY}")
         ENDIF()
-
     ENDFOREACH()
+ELSE()
+    MESSAGE(STATUS "Unit tests: performance tests deactivated.")
 ENDIF()
 
 
@@ -150,4 +154,6 @@ IF(TEST_CORE)
         SET_TESTS_PROPERTIES(${TEST} PROPERTIES PASS_REGULAR_EXPRESSION "${EXPRESSIONS_PASS}")
 		SET_TESTS_PROPERTIES(${TEST} PROPERTIES FAIL_REGULAR_EXPRESSION "${EXPRESSIONS_FAIL}")
     ENDFOREACH()
+ELSE()
+    MESSAGE(STATUS "Unit tests: framework core functionality tests deactivated.")
 ENDIF()
