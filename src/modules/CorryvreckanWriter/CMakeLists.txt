@@ -1,5 +1,5 @@
 # Disable default build
-ALLPIX_ENABLE_DEFAULT(OFF)
+ALLPIX_ENABLE_DEFAULT(ON)
 
 # Define module and return the generated name as MODULE_NAME
 ALLPIX_UNIQUE_MODULE(MODULE_NAME)
