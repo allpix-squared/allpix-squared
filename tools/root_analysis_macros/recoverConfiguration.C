@@ -66,7 +66,7 @@ std::stringstream listkeys(TDirectoryFile* dir) {
             str << entry->GetName() << " = " << position.x() << "mm " << position.y() << "mm " << position.z() << "mm"
                 << std::endl;
         } else {
-            std::cout << "Could not deduce parameter type of \"" << entry->GetName() << "\"";
+            std::cout << "Could not deduce parameter type of \"" << entry->GetName() << "\": " << entry->GetClassName() << std::endl;
         }
     }
 
