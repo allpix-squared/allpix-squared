@@ -41,7 +41,7 @@ std::stringstream listkeys(TDirectoryFile* dir) {
             std::string key = entry->GetName();
             std::string value = (*(string*)entry->ReadObj());
             // Omit empty "input" and "output" keys:
-            if((key == "input" || name == "output") && (value == "" || value == "\"\"")) {
+            if((key == "input" || key == "output") && (value == "" || value == "\"\"")) {
                 continue;
             }
             // If the name has already been specified, omit:
@@ -55,6 +55,7 @@ std::stringstream listkeys(TDirectoryFile* dir) {
             // Transform rotation back to the three ZYX angles
             ROOT::Math::Rotation3D rot = (*(ROOT::Math::Rotation3D*)entry->ReadObj()).Inverse();
             ROOT::Math::RotationZYX angles = ROOT::Math::RotationZYX(rot);
+            str << "orientation_type = \"xyz\"" << std::endl;
             str << entry->GetName() << " = " << (-angles.Psi()) << "deg " << (-angles.Theta()) << "deg " << (-angles.Phi())
                 << "deg" << std::endl;
         } else if(cl->InheritsFrom("ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>,ROOT::Math::"
