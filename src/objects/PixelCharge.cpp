@@ -17,10 +17,13 @@ PixelCharge::PixelCharge(Pixel pixel, unsigned int charge, std::vector<const Pro
     : pixel_(std::move(pixel)), charge_(charge) {
     for(auto& propagated_charge : propagated_charges) {
         propagated_charges_.Add(const_cast<PropagatedCharge*>(propagated_charge)); // NOLINT
-        if(std::find(mc_particles_.begin(), mc_particles_.end(), propagated_charge->getMCParticle()) !=
-           mc_particles_.end()) {
-            mc_particles_.Add(const_cast<MCParticle*>(propagated_charge->getMCParticle())); // NOLINT
+        bool matched = false;
+        for(auto mc_particle : mc_particles_) {
+            if(dynamic_cast<MCParticle*>(mc_particle) == propagated_charge->getMCParticle())
+                matched = true;
         }
+        if(!matched)
+            mc_particles_.Add(const_cast<MCParticle*>(propagated_charge->getMCParticle())); // NOLINT
     }
 }
 
