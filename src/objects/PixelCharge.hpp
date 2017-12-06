@@ -11,8 +11,8 @@
 #define ALLPIX_PIXEL_CHARGE_H
 
 #include <Math/DisplacementVector2D.h>
-
 #include <TRefArray.h>
+#include <algorithm>
 
 #include "MCParticle.hpp"
 #include "Object.hpp"
