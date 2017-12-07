@@ -25,10 +25,6 @@ CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration config, Messeng
 
     // Require PixelCharge messages for single detector
     messenger_->bindMulti(this, &CorryvreckanWriterModule::pixel_messages_, MsgFlags::REQUIRED);
-    messenger_->addDependency<MCParticleMessage>(this);
-    messenger_->addDependency<PixelChargeMessage>(this);
-    messenger_->addDependency<PropagatedChargeMessage>(this);
-    messenger_->addDependency<DepositedChargeMessage>(this);
 
     config_.setDefault("file_name", "corryvreckanOutput.root");
     config_.setDefault("geometry_file", "corryvreckanGeometry.conf");
