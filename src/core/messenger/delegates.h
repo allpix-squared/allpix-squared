@@ -40,9 +40,8 @@ namespace allpix {
     enum class MsgFlags : uint32_t {
         NONE = 0,                   ///< No enabled flags
         REQUIRED = (1 << 0),        ///< Require a message before running a module
-        NO_RESET = (1 << 1),        ///< Do not reset a message after run
-        ALLOW_OVERWRITE = (1 << 2), ///< Allow overwriting a previous message
-        IGNORE_NAME = (1 << 3)      ///< Listen to all ignoring message name (equal to * as a input configuration parameter)
+        ALLOW_OVERWRITE = (1 << 1), ///< Allow overwriting a previous message
+        IGNORE_NAME = (1 << 2)      ///< Listen to all ignoring message name (equal to * as a input configuration parameter)
     };
     /**
      * @ingroup Delegates
@@ -212,18 +211,13 @@ namespace allpix {
         /**
          * @brief Reset the delegate by clearing the list of stored messages
          *
-         * Always calls the BaseDelegate::reset first. Clears the storage of the messages unless the \ref MsgFlags::NO_RESET
-         * "NO_RESET" flag is passed to the delegate (note that all messages are kept in memory for the whole run if this
-         * flag is passed)
+         * Always calls the BaseDelegate::reset first. Clears the storage of the messages
          */
         void reset() override {
             // Always do base reset
             BaseDelegate::reset();
-
-            // Clear if needed
-            if((this->getFlags() & MsgFlags::NO_RESET) == MsgFlags::NONE) {
-                messages_.clear();
-            };
+            // Clear
+            messages_.clear();
         }
 
     private:
@@ -345,17 +339,14 @@ namespace allpix {
         /**
          * @brief Reset the delegate by resetting the bound variable
          *
-         * Always calls the BaseDelegate::reset first. Set the referenced member to a null pointer unless the
-         * \ref MsgFlags::NO_RESET "NO_RESET" flag is passed to the delegate.
+         * Always calls the BaseDelegate::reset first. Set the referenced member to a null pointer
          */
         void reset() override {
             // Always do base reset
             BaseDelegate::reset();
 
-            // Clear if needed
-            if((this->getFlags() & MsgFlags::NO_RESET) == MsgFlags::NONE) {
-                this->obj_->*member_ = nullptr;
-            };
+            // Clear
+            this->obj_->*member_ = nullptr;
         }
 
     private:
@@ -396,17 +387,13 @@ namespace allpix {
         /**
          * @brief Reset the delegate by clearing the vector of messages
          *
-         * Always calls the BaseDelegate::reset first. Clears the referenced vector to an empty state unless
-         * \ref MsgFlags::NO_RESET "NO_RESET" flag is passed to the delegate.
-         */
+         * Always calls the BaseDelegate::reset first. Clears the referenced vector to an empty state         */
         void reset() override {
             // Always do base reset
             BaseDelegate::reset();
 
-            // Clear if needed
-            if((this->getFlags() & MsgFlags::NO_RESET) == MsgFlags::NONE) {
-                (this->obj_->*member_).clear();
-            }
+            // Clear
+            (this->obj_->*member_).clear();
         }
 
     private:
