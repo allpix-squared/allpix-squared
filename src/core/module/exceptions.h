@@ -107,14 +107,19 @@ namespace allpix {
     /**
      * @ingroup Exceptions
      * @brief Exception for modules to request an end of the event processing
-     * @note Non-fatal error used to interrupt the event loop and call the finalize function. by modules
+     * @note Non-fatal error used to interrupt the event loop and call the finalize function.
      *
      * This error can be raised by modules if they would like to request an interruption of the event processing, e.g.
      * because there are no more events to read from a file.
      */
-    class EndOfRun : public ModuleError {
+    class EndOfRunException : public RuntimeError {
     public:
-        explicit EndOfRun(std::string reason) : ModuleError(std::move(reason)){};
+        /**
+         * @brief Constructs request to end event processing with a description
+         * @param reason Text explaining the reason of the requested end of event processing
+         */
+        // TODO [doc] the module itself is missing
+        explicit EndOfRunException(std::string reason) { error_message_ = std::move(reason); }
     };
 } // namespace allpix
 

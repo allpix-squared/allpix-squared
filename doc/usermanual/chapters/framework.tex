@@ -830,7 +830,7 @@ void run(unsigned int event_id) {
 Should be used to indicate any runtime error in a module not directly caused by an invalid configuration value, for example that it is not possible to write an output file.
 A reason should be given to indicate what the source of problem is.
 \todo{The module class should be passed as well, so the module name can be displayed in the error message}
-\item \parameter{EndOfRun}: Derived from module exceptions.
+\item \parameter{EndOfRunException}: Derived from module exceptions.
 Should be used to request the end of event processing in the current run, e.g. if a module reading in data from a file reached the end of its input data.
 \end{itemize}
 

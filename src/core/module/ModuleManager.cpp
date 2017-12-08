@@ -675,8 +675,9 @@ void ModuleManager::run() {
                 try {
                     // Run module
                     module->run(event_num);
-                } catch(EndOfRun&) {
+                } catch(EndOfRunException& e) {
                     // Terminate if the module threw the EndOfRun request exception:
+                    LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
                     terminate_ = true;
                 }
 
