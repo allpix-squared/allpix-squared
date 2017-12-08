@@ -671,8 +671,16 @@ void ModuleManager::run() {
                     // DEPRECATED: Switching to the directory should be removed, but can break current modules
                     module->getROOTDirectory()->cd();
                 }
-                // Run module
-                module->run(event_num);
+
+                try {
+                    // Run module
+                    module->run(event_num);
+                } catch(EndOfRunException& e) {
+                    // Terminate if the module threw the EndOfRun request exception:
+                    LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
+                    terminate_ = true;
+                }
+
                 // Resetting delegates
                 LOG(TRACE) << "Resetting messages";
                 module->reset_delegates();
