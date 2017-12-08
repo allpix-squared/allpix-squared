@@ -21,7 +21,15 @@ PixelHit::PixelHit(Pixel pixel, double time, double signal, const PixelCharge* p
     : pixel_(std::move(pixel)), time_(time), signal_(signal) {
     pixel_charge_ = const_cast<PixelCharge*>(pixel_charge); // NOLINT
     for(auto mc_particle : pixel_charge->getMCParticles()) {
-        mc_particles_.Add(const_cast<MCParticle*>(mc_particle)); // NOLINT
+        bool matched = false;
+        for(auto mc_particleStored : mc_particles_) {
+            if(dynamic_cast<MCParticle*>(mc_particleStored) == mc_particle) {
+                matched = true;
+            }
+        }
+        if(!matched) {
+            mc_particles_.Add(const_cast<MCParticle*>(mc_particle)); // NOLINT
+        }
     }
 }
 
