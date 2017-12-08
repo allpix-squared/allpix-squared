@@ -82,7 +82,7 @@ void ElectricFieldReaderModule::init() {
         type = ElectricFieldType::LINEAR;
 
         // Set depletion voltage = bias voltage:
-        config_.setDefault("depletion_voltage", config_.get<double>("bias_voltage", 0.));
+        config_.setDefault("depletion_voltage", config_.get<double>("bias_voltage"));
 
         LOG(INFO) << "Setting linear electric field from " << Units::display(config_.get<double>("bias_voltage"), "V")
                   << " bias voltage and " << Units::display(config_.get<double>("depletion_voltage"), "V")
