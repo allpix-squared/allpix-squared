@@ -191,8 +191,8 @@ void ROOTObjectReaderModule::run(unsigned int event_num) {
     --event_num;
     for(auto& tree : trees_) {
         if(event_num >= tree->GetEntries()) {
-            LOG(WARNING) << "Skipping run because tree does not contain data for event " << event_num;
-            return;
+            LOG(WARNING) << "Requesting end of run because tree does not contain data for event " << event_num;
+            throw EndOfRun("No more events in tree");
         }
         tree->GetEntry(event_num);
     }
