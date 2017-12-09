@@ -63,9 +63,6 @@ namespace allpix {
     private:
         GeometryManager* geo_mgr_;
 
-        // Vector of detector names retrieved from the geometry manager
-        std::vector<std::string> detector_names_;
-
         // Struct to store tree and information for each detector
         struct sensor_data {
             static constexpr int kMaxHits = (1 << 14);
@@ -77,19 +74,8 @@ namespace allpix {
             Int_t timing_[kMaxHits];
             Int_t hit_in_cluster_[kMaxHits];
         };
-
-        // Output data file to write
-        std::unique_ptr<TFile> output_file_;
-
-        // The Event tree
-        std::unique_ptr<TTree> event_tree_;
-
         // The map from detector names to the respective sensor_data struct
         std::map<std::string, sensor_data> sensors_;
-
-        /* Variable to temporarily store the name for the detector sub-directory
-        in root */
-        std::string det_dir_name;
 
         // Relevant information for the Event tree
         ULong64_t timestamp_;
@@ -98,6 +84,11 @@ namespace allpix {
         Int_t trigger_offset_;
         Int_t trigger_info_;
         Bool_t invalid_;
+        // The Event tree
+        std::unique_ptr<TTree> event_tree_;
+
+        // Output data file to write
+        std::unique_ptr<TFile> output_file_;
 
         // retrieve message containing collected pixel hits for all detectors
         std::vector<std::shared_ptr<PixelHitMessage>> pixel_hit_messages_;

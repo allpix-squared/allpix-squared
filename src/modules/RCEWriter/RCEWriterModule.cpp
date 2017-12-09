@@ -35,11 +35,17 @@ RCEWriterModule::RCEWriterModule(Configuration config, Messenger* messenger, Geo
 }
 
 void RCEWriterModule::init() {
+    // We need a sorted list of names to assign monotonic, numeric ids
+    std::vector<std::string> detector_names;
+    for(const auto& detector : geo_mgr_->getDetectors())
+        detector_names.push_back(detector->getName());
+    std::sort(detector_names.begin(), detector_names.end());
+
     // Open output data file
-    std::string file_name =
-        createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name"), "root"));
+    std::string file_name = createOutputFile(add_file_extension(config_.get<std::string>("file_name"), "root"));
     output_file_ = std::make_unique<TFile>(file_name.c_str(), "RECREATE");
     output_file_->cd();
+
     // Initialize the events tree
     event_tree_ = std::make_unique<TTree>("Event", "");
     event_tree_->Branch("TimeStamp", &timestamp_);
@@ -49,18 +55,12 @@ void RCEWriterModule::init() {
     event_tree_->Branch("TriggerInfo", &trigger_info_);
     event_tree_->Branch("Invalid", &invalid_);
 
-    // Get the detector names
-    for(const auto& detector : geo_mgr_->getDetectors()) {
-        detector_names_.push_back(detector->getName());
-    }
-    // Sort the detector names
-    std::sort(detector_names_.begin(), detector_names_.end());
-    // For each detector name, initialze an instance of SensorData
+    // For each detector name, initialize an instance of SensorData
     int det_index = 0;
-    for(const auto& detector_name : detector_names_) {
+    for(const auto& detector_name : detector_names) {
         auto& sensor = sensors_[detector_name];
         // Create directories for each detector
-        det_dir_name = "Plane" + std::to_string(det_index);
+        std::string det_dir_name = "Plane" + std::to_string(det_index);
         TDirectory* detector = output_file_->mkdir(det_dir_name.c_str());
         detector->cd();
         det_index += 1;
@@ -91,12 +91,9 @@ void RCEWriterModule::run(unsigned int event_id) {
     // Fill the events tree
     event_tree_->Fill();
 
-    // Loop over all the detectors
-    for(const auto& detector_name : detector_names_) {
-        // reset nhits
-        auto& sensor = sensors_[detector_name];
-        sensor.nhits_ = 0;
-    }
+    // reset all per-sensor trees
+    for(auto& item : sensors_)
+        item.second.nhits_ = 0;
 
     // Loop over the pixel hit messages
     for(const auto& hit_msg : pixel_hit_messages_) {
@@ -128,9 +125,9 @@ void RCEWriterModule::run(unsigned int event_id) {
     }
 
     // Loop over all the detectors to fill all corresponding sensor trees
-    for(const auto& detector_name : detector_names_) {
-        LOG(TRACE) << "Writing new objects to the Sensor Tree for " << detector_name;
-        sensors_[detector_name].tree->Fill();
+    for(auto& item : sensors_) {
+        LOG(TRACE) << "Writing new objects to the Sensor Tree for " << item.first;
+        item.second.tree->Fill();
     }
 }
 
