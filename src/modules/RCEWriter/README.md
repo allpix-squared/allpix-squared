@@ -9,7 +9,7 @@ Reads in the PixelHit messages and saves track data in the RCE format, appropria
 
 #### Parameters
 * `file_name` : Name of the data file to create, relative to the output directory of the framework. The file extension `.root` will be appended if not present. The default filename is *rce-data.root*
-* `geometry_file` : Name of the output geometry file in the [Proteus][@proteus] toml format. Defaults to `rce-geo.conf`
+* `geometry_file` : Name of the output geometry file in the [Proteus][@proteus] toml format.  The file extension `.toml` will be appended if not present. Defaults to `rce-geo.toml`
 
 #### Usage
 To create the default file (with the name *rce_data.root*) an instantiation without arguments can be placed at the end of the main configuration:
