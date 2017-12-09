@@ -68,13 +68,14 @@ namespace allpix {
 
         // Struct to store tree and information for each detector
         struct sensor_data {
+            static constexpr int kMaxHits = (1 << 14);
             std::unique_ptr<TTree> tree;
             Int_t nhits_;
-            Int_t pix_x_[1024];
-            Int_t pix_y_[1024];
-            Int_t value_[1024];
-            Int_t timing_[1024];
-            Int_t hit_in_cluster_[1024];
+            Int_t pix_x_[kMaxHits];
+            Int_t pix_y_[kMaxHits];
+            Int_t value_[kMaxHits];
+            Int_t timing_[kMaxHits];
+            Int_t hit_in_cluster_[kMaxHits];
         };
 
         // Output data file to write
@@ -93,9 +94,9 @@ namespace allpix {
         // Relevant information for the Event tree
         ULong64_t timestamp_;
         ULong64_t frame_number_;
+        ULong64_t trigger_time_;
         Int_t trigger_offset_;
         Int_t trigger_info_;
-        ULong64_t trigger_time_;
         Bool_t invalid_;
 
         // retrieve message containing collected pixel hits for all detectors

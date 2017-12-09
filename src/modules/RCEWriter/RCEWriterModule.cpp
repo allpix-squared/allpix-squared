@@ -44,9 +44,9 @@ void RCEWriterModule::init() {
     event_tree_ = std::make_unique<TTree>("Event", "");
     event_tree_->Branch("TimeStamp", &timestamp_);
     event_tree_->Branch("FrameNumber", &frame_number_);
+    event_tree_->Branch("TriggerTime", &trigger_time_);
     event_tree_->Branch("TriggerOffset", &trigger_offset_);
     event_tree_->Branch("TriggerInfo", &trigger_info_);
-    event_tree_->Branch("TriggerTime", &trigger_time_);
     event_tree_->Branch("Invalid", &invalid_);
 
     // Get the detector names
@@ -82,9 +82,9 @@ void RCEWriterModule::run(unsigned int event_id) {
     // fill per-event data
     timestamp_ = 0;
     frame_number_ = event_id;
+    trigger_time_ = 0;
     trigger_offset_ = 0;
     trigger_info_ = 0;
-    trigger_time_ = 0;
     invalid_ = false;
 
     LOG(TRACE) << "Writing new objects to the Events tree";
@@ -107,6 +107,11 @@ void RCEWriterModule::run(unsigned int event_id) {
         // Loop over all the hits
         for(const auto& hit : hit_msg->getData()) {
             int i = sensor.nhits_;
+
+            if(sensor.kMaxHits <= sensor.nhits_) {
+                LOG(ERROR) << "More than " << sensor.kMaxHits << " in detector " << detector_name << " for RCEWriter";
+                continue;
+            }
 
             // Fill the tree with received messages
             sensor.nhits_ += 1;
