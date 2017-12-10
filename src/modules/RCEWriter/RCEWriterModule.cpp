@@ -31,7 +31,7 @@ RCEWriterModule::RCEWriterModule(Configuration config, Messenger* messenger, Geo
     messenger->bindMulti(this, &RCEWriterModule::pixel_hit_messages_);
 
     config_.setDefault("file_name", "rce-data.root");
-    config_.setDefault("geometry_file", "rce-geo.conf");
+    config_.setDefault("geometry_file", "rce-geo.toml");
 }
 
 void RCEWriterModule::init() {
@@ -42,8 +42,8 @@ void RCEWriterModule::init() {
     std::sort(detector_names.begin(), detector_names.end());
 
     // Open output data file
-    std::string file_name = createOutputFile(add_file_extension(config_.get<std::string>("file_name"), "root"));
-    output_file_ = std::make_unique<TFile>(file_name.c_str(), "RECREATE");
+    std::string path_data = createOutputFile(add_file_extension(config_.get<std::string>("file_name"), "root"));
+    output_file_ = std::make_unique<TFile>(path_data.c_str(), "RECREATE");
     output_file_->cd();
 
     // Initialize the events tree
@@ -76,6 +76,11 @@ void RCEWriterModule::init() {
         sensor.tree->Branch("Timing", &sensor.timing_, "Timing[NHits]/I");
         sensor.tree->Branch("HitInCluster", &sensor.hit_in_cluster_, "HitInCluster[NHits]/I");
     }
+
+    // Write proteus geometry file
+    std::string path_geo = createOutputFile(add_file_extension(config_.get<std::string>("geometry_file"), "toml"));
+    std::ofstream geo_file(path_geo);
+    print_geo(geo_file, detector_names, geo_mgr_);
 }
 
 void RCEWriterModule::run(unsigned int event_id) {
