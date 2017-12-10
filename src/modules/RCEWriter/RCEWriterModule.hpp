@@ -66,7 +66,7 @@ namespace allpix {
         // Struct to store tree and information for each detector
         struct sensor_data {
             static constexpr int kMaxHits = (1 << 14);
-            std::unique_ptr<TTree> tree;
+            TTree* tree; // no unique_ptr, ROOT takes ownership
             Int_t nhits_;
             Int_t pix_x_[kMaxHits];
             Int_t pix_y_[kMaxHits];
@@ -85,7 +85,7 @@ namespace allpix {
         Int_t trigger_info_;
         Bool_t invalid_;
         // The Event tree
-        std::unique_ptr<TTree> event_tree_;
+        TTree* event_tree_; // no unique_ptr, ROOT takes ownership
 
         // Output data file to write
         std::unique_ptr<TFile> output_file_;

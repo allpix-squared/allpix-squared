@@ -47,7 +47,7 @@ void RCEWriterModule::init() {
     output_file_->cd();
 
     // Initialize the events tree
-    event_tree_ = std::make_unique<TTree>("Event", "");
+    event_tree_ = new TTree("Event", "");
     event_tree_->Branch("TimeStamp", &timestamp_);
     event_tree_->Branch("FrameNumber", &frame_number_);
     event_tree_->Branch("TriggerTime", &trigger_time_);
@@ -66,7 +66,7 @@ void RCEWriterModule::init() {
         det_index += 1;
 
         // Initialize the struct for each detector
-        sensor.tree = std::make_unique<TTree>("Hits", "");
+        sensor.tree = new TTree("Hits", "");
         LOG(TRACE) << "Detector name is: " << detector_name;
         // initialze tree branches for each instance of the sensorData
         sensor.tree->Branch("NHits", &sensor.nhits_);
