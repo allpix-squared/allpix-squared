@@ -1,14 +1,14 @@
 /**
  * @file
- * @brief Definition of sensor pulse object
+ * @brief Definition of pixel pulse object
  * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#ifndef ALLPIX_SENSOR_PULSE_H
-#define ALLPIX_SENSOR_PULSE_H
+#ifndef ALLPIX_PIXEL_PULSE_H
+#define ALLPIX_PIXEL_PULSE_H
 
 #include <TRefArray.h>
 
@@ -22,7 +22,7 @@ namespace allpix {
      * @ingroup Objects
      * @brief Current pulse at sensor implant of the detector
      */
-    class SensorPulse : public Object {
+    class PixelPulse : public Object {
     public:
         /**
          * @brief Construct a sensor pulse
@@ -30,7 +30,7 @@ namespace allpix {
          * @param time_resolution Time per pulse bin, i.e. resolution
          * @param time_total Total integration time of the pulse
          */
-        SensorPulse(Pixel pixel, double time_resolution, double time_total);
+        PixelPulse(Pixel pixel, double time_resolution, double time_total);
 
         /**
          * @brief Add new current contribution
@@ -50,11 +50,11 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDef(SensorPulse, 1);
+        ClassDef(PixelPulse, 1);
         /**
          * @brief Default constructor for ROOT I/O
          */
-        SensorPulse() = default;
+        PixelPulse() = default;
 
     private:
         Pixel pixel_;
@@ -67,7 +67,7 @@ namespace allpix {
     /**
      * @brief Typedef for message carrying deposits
      */
-    using SensorPulseMessage = Message<SensorPulse>;
+    using PixelPulseMessage = Message<PixelPulse>;
 } // namespace allpix
 
 #endif
