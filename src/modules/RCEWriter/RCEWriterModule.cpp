@@ -9,6 +9,8 @@
 
 #include "RCEWriterModule.hpp"
 
+#include <cassert>
+#include <fstream>
 #include <string>
 #include <utility>
 
@@ -32,6 +34,53 @@ RCEWriterModule::RCEWriterModule(Configuration config, Messenger* messenger, Geo
 
     config_.setDefault("file_name", "rce-data.root");
     config_.setDefault("geometry_file", "rce-geo.toml");
+}
+
+static void print_geo_detector(std::ostream& os, int index, std::shared_ptr<const Detector> detector) {
+    assert(detector && "detector must be non-null");
+
+    // Proteus uses the following local to global transformation
+    //
+    //   r = r_0 + Q * q
+    //
+    // where the local origin (0, 0) is located on a pixel edge at the center
+    // of the active matrix
+
+    auto size = detector->getModel()->getNPixels();
+    auto pitch = detector->getModel()->getPixelSize();
+    // pixel index is pixel center, i.e. pixel goes from (-0.5, 0.5)
+    auto pos_u = pitch.x() * (std::round(size.x() / 2.0) - 0.5);
+    auto pos_v = pitch.y() * (std::round(size.y() / 2.0) - 0.5);
+    auto pos = detector->getGlobalPosition({pos_u, pos_v, 0});
+
+    // we need the column vectors of the local to global rotation
+    ROOT::Math::XYZVector uu, uv, uw;
+    auto rot = detector->getOrientation().Inverse();
+    rot.GetComponents(uu, uv, uw);
+
+    // we need to restore the ostream format state later on
+    auto flags = os.flags();
+    auto precision = os.precision();
+    os << std::showpoint;
+    os << std::setprecision(std::numeric_limits<double>::max_digits10);
+
+    os << "[[sensors]]\n";
+    os << "id = " << index << '\n';
+    os << "offset = [" << pos.x() << ", " << pos.y() << ", " << pos.z() << "]\n";
+    os << "unit_u = [" << uu.x() << ", " << uu.y() << ", " << uu.z() << "]\n";
+    os << "unit_v = [" << uv.x() << ", " << uv.y() << ", " << uv.z() << "]\n";
+    os << '\n';
+
+    os.flags(flags);
+    os.precision(precision);
+}
+
+static void print_geo(std::ostream& os, const std::vector<std::string>& names, GeometryManager* geo_mgr) {
+    assert(geo_mgr && "geo_mgr must be non-null");
+
+    int index = 0;
+    for(const auto& name : names)
+        print_geo_detector(os, index++, geo_mgr->getDetector(name));
 }
 
 void RCEWriterModule::init() {
