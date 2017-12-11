@@ -25,7 +25,7 @@ namespace allpix {
     class PixelPulse : public Object {
     public:
         /**
-         * @brief Construct a sensor pulse
+         * @brief Construct a pixel pulse
          * @param pixel Object holding the information of the pixel
          * @param time_resolution Time per pulse bin, i.e. resolution
          * @param time_total Total integration time of the pulse

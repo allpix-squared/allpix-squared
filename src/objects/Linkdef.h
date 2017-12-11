@@ -16,11 +16,11 @@
 #pragma link C++ class allpix::Object + ;
 #pragma link C++ class allpix::MCParticle + ;
 #pragma link C++ class allpix::SensorCharge + ;
-#pragma link C++ class allpix::SensorPulse + ;
 #pragma link C++ class allpix::PropagatedCharge + ;
 #pragma link C++ class allpix::DepositedCharge + ;
 #pragma link C++ class allpix::Pixel + ;
 #pragma link C++ class allpix::PixelCharge + ;
+#pragma link C++ class allpix::PixelPulse + ;
 #pragma link C++ class allpix::PixelHit + ;
 
 // Vector of Object for internal storage
