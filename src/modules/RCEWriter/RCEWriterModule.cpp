@@ -146,8 +146,9 @@ void RCEWriterModule::run(unsigned int event_id) {
     event_tree_->Fill();
 
     // reset all per-sensor trees
-    for(auto& item : sensors_)
+    for(auto& item : sensors_) {
         item.second.nhits_ = 0;
+    }
 
     // Loop over the pixel hit messages
     for(const auto& hit_msg : pixel_hit_messages_) {
