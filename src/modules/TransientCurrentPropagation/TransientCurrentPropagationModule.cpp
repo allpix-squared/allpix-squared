@@ -169,7 +169,8 @@ void TransientCurrentPropagationModule::propagate(const ROOT::Math::XYZPoint& po
         last_time = runge_kutta.getTime();
 
         // Execute a Runge Kutta step
-        auto step = runge_kutta.step();
+        // FIXME the central call to the RKF integrator:
+        // auto step = runge_kutta.step();
 
         // Get the current result
         position = runge_kutta.getValue();
@@ -178,7 +179,7 @@ void TransientCurrentPropagationModule::propagate(const ROOT::Math::XYZPoint& po
         auto efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(position));
 
         // Apply diffusion step
-        auto diffusion = carrier_diffusion(std::sqrt(efield.Mag2()), timestep);
+        auto diffusion = carrier_diffusion(std::sqrt(efield.Mag2()), timestep_);
         position += diffusion;
 
         // TODO implement calculation of Ramo induced charge
