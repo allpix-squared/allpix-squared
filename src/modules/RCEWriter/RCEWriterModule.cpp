@@ -36,9 +36,7 @@ RCEWriterModule::RCEWriterModule(Configuration config, Messenger* messenger, Geo
     config_.setDefault("geometry_file", "rce-geo.toml");
 }
 
-static void print_geo_detector(std::ostream& os, int index, std::shared_ptr<const Detector> detector) {
-    assert(detector && "detector must be non-null");
-
+static void print_geo_detector(std::ostream& os, int index, const Detector& detector) {
     // Proteus uses the following local to global transformation
     //
     //   r = r_0 + Q * q
@@ -46,16 +44,16 @@ static void print_geo_detector(std::ostream& os, int index, std::shared_ptr<cons
     // where the local origin (0, 0) is located on a pixel edge at the center
     // of the active matrix
 
-    auto size = detector->getModel()->getNPixels();
-    auto pitch = detector->getModel()->getPixelSize();
+    auto size = detector.getModel()->getNPixels();
+    auto pitch = detector.getModel()->getPixelSize();
     // pixel index is pixel center, i.e. pixel goes from (-0.5, 0.5)
     auto pos_u = pitch.x() * (std::round(size.x() / 2.0) - 0.5);
     auto pos_v = pitch.y() * (std::round(size.y() / 2.0) - 0.5);
-    auto pos = detector->getGlobalPosition({pos_u, pos_v, 0});
+    auto pos = detector.getGlobalPosition({pos_u, pos_v, 0});
 
     // we need the column vectors of the local to global rotation
     ROOT::Math::XYZVector uu, uv, uw;
-    auto rot = detector->getOrientation().Inverse();
+    auto rot = detector.getOrientation().Inverse();
     rot.GetComponents(uu, uv, uw);
 
     // we need to restore the ostream format state later on
@@ -79,15 +77,17 @@ static void print_geo(std::ostream& os, const std::vector<std::string>& names, G
     assert(geo_mgr && "geo_mgr must be non-null");
 
     int index = 0;
-    for(const auto& name : names)
-        print_geo_detector(os, index++, geo_mgr->getDetector(name));
+    for(const auto& name : names) {
+        print_geo_detector(os, index++, *geo_mgr->getDetector(name));
+    }
 }
 
 void RCEWriterModule::init() {
     // We need a sorted list of names to assign monotonic, numeric ids
     std::vector<std::string> detector_names;
-    for(const auto& detector : geo_mgr_->getDetectors())
+    for(const auto& detector : geo_mgr_->getDetectors()) {
         detector_names.push_back(detector->getName());
+    }
     std::sort(detector_names.begin(), detector_names.end());
 
     // Open output data file
