@@ -41,12 +41,13 @@ static void print_geo_detector(std::ostream& os, int index, const Detector& dete
     //
     //   r = r_0 + Q * q
     //
-    // where the local origin (0, 0) is located on a pixel edge at the center
-    // of the active matrix
+    // where the local origin (0, 0) is located on the lower-left
+    // pixel corner of the pixel closest to the the center of the
+    // active matrix
 
     auto size = detector.getModel()->getNPixels();
     auto pitch = detector.getModel()->getPixelSize();
-    // pixel index is pixel center, i.e. pixel goes from (-0.5, 0.5)
+    // pixel index in allpix is pixel center, i.e. pixel goes from (-0.5, 0.5)
     auto pos_u = pitch.x() * (std::round(size.x() / 2.0) - 0.5);
     auto pos_v = pitch.y() * (std::round(size.y() / 2.0) - 0.5);
     auto pos = detector.getGlobalPosition({pos_u, pos_v, 0});
@@ -108,22 +109,24 @@ void RCEWriterModule::init() {
     int det_index = 0;
     for(const auto& detector_name : detector_names) {
         auto& sensor = sensors_[detector_name];
-        // Create directories for each detector
+
+        LOG(TRACE) << "Sensor " << det_index << ", detector " << detector_name;
+
+        // Create sensor directory
         std::string det_dir_name = "Plane" + std::to_string(det_index);
         TDirectory* detector = output_file_->mkdir(det_dir_name.c_str());
         detector->cd();
-        det_index += 1;
 
-        // Initialize the struct for each detector
+        // Initialize the tree and its branches
         sensor.tree = new TTree("Hits", "");
-        LOG(TRACE) << "Detector name is: " << detector_name;
-        // initialze tree branches for each instance of the sensorData
         sensor.tree->Branch("NHits", &sensor.nhits_);
         sensor.tree->Branch("PixX", &sensor.pix_x_, "PixX[NHits]/I");
         sensor.tree->Branch("PixY", &sensor.pix_y_, "PixY[NHits]/I");
         sensor.tree->Branch("Value", &sensor.value_, "Value[NHits]/I");
         sensor.tree->Branch("Timing", &sensor.timing_, "Timing[NHits]/I");
         sensor.tree->Branch("HitInCluster", &sensor.hit_in_cluster_, "HitInCluster[NHits]/I");
+
+        det_index += 1;
     }
 
     // Write proteus geometry file
@@ -140,10 +143,8 @@ void RCEWriterModule::run(unsigned int event_id) {
     trigger_offset_ = 0;
     trigger_info_ = 0;
     invalid_ = false;
-
-    LOG(TRACE) << "Writing new objects to the Events tree";
-    // Fill the events tree
     event_tree_->Fill();
+    LOG(TRACE) << "Wrote global event data";
 
     // reset all per-sensor trees
     for(auto& item : sensors_) {
@@ -161,7 +162,7 @@ void RCEWriterModule::run(unsigned int event_id) {
             int i = sensor.nhits_;
 
             if(sensor.kMaxHits <= sensor.nhits_) {
-                LOG(ERROR) << "More than " << sensor.kMaxHits << " in detector " << detector_name << " for RCEWriter";
+                LOG(ERROR) << "More than " << sensor.kMaxHits << " in detector " << detector_name;
                 continue;
             }
 
@@ -174,20 +175,19 @@ void RCEWriterModule::run(unsigned int event_id) {
             sensor.timing_[i] = 0;         // NOLINT
             sensor.hit_in_cluster_[i] = 0; // NOLINT
 
-            LOG(TRACE) << "Detector Name: " << detector_name << ", X: " << hit.getPixel().getIndex().x()
-                       << ", Y:" << hit.getPixel().getIndex().y() << ", Signal: " << hit.getSignal();
+            LOG(TRACE) << detector_name << " x=" << hit.getPixel().getIndex().x() << " y=" << hit.getPixel().getIndex().y()
+                       << " signal=" << hit.getSignal();
         }
     }
 
     // Loop over all the detectors to fill all corresponding sensor trees
     for(auto& item : sensors_) {
-        LOG(TRACE) << "Writing new objects to the Sensor Tree for " << item.first;
         item.second.tree->Fill();
+        LOG(TRACE) << "Wrote sensor event data for " << item.first;
     }
 }
 
 void RCEWriterModule::finalize() {
-    LOG(TRACE) << "Writing objects to file";
-    // Finish writing to the output file
     output_file_->Write();
+    LOG(TRACE) << "Wrote data to file";
 }
