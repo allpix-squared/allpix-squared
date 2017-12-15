@@ -532,7 +532,7 @@ Before re-implementing models, it should be checked if the desired change can be
 \nlparagraph{Search order for models}
 To support different detector models and storage locations, the framework searches different paths for model files in the following order:
 \begin{enumerate}
-\item If defined, the paths provided in the global \parameter{models\_path} parameter are searched first.
+\item If defined, the paths provided in the global \parameter{models_path} parameter are searched first.
 Files are read and parsed directly.
 If the path is a directory, all files in the directory are added (without recursing into subdirectories).
 \item The location where the models are installed to (refer to the description of the \parameter{MODEL_DIRECTORY} variable in Section~\ref{sec:cmake_config}).
