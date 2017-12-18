@@ -9,23 +9,23 @@
 
 #include "PixelCharge.hpp"
 
+#include <set>
 #include "exceptions.h"
 
 using namespace allpix;
 
 PixelCharge::PixelCharge(Pixel pixel, unsigned int charge, std::vector<const PropagatedCharge*> propagated_charges)
     : pixel_(std::move(pixel)), charge_(charge) {
+    // Unique set of MC particles
+    std::set<const MCParticle*> unique_particles;
+    // Store all propagated charges and their MC particles
     for(auto& propagated_charge : propagated_charges) {
         propagated_charges_.Add(const_cast<PropagatedCharge*>(propagated_charge)); // NOLINT
-        bool matched = false;
-        for(auto mc_particle : mc_particles_) {
-            if(dynamic_cast<MCParticle*>(mc_particle) == propagated_charge->getMCParticle()) {
-                matched = true;
-            }
-        }
-        if(!matched) {
-            mc_particles_.Add(const_cast<MCParticle*>(propagated_charge->getMCParticle())); // NOLINT
-        }
+        unique_particles.insert(propagated_charge->getMCParticle());
+    }
+    // Store the MC particle references
+    for(auto mc_particle : unique_particles) {
+        mc_particles_.Add(const_cast<MCParticle*>(mc_particle)); // NOLINT
     }
 }
 

@@ -20,16 +20,14 @@ using namespace allpix;
 PixelHit::PixelHit(Pixel pixel, double time, double signal, const PixelCharge* pixel_charge)
     : pixel_(std::move(pixel)), time_(time), signal_(signal) {
     pixel_charge_ = const_cast<PixelCharge*>(pixel_charge); // NOLINT
+    // Get the unique set of MC particles
+    std::set<const MCParticle*> unique_particles;
     for(auto mc_particle : pixel_charge->getMCParticles()) {
-        bool matched = false;
-        for(auto mc_particleStored : mc_particles_) {
-            if(dynamic_cast<MCParticle*>(mc_particleStored) == mc_particle) {
-                matched = true;
-            }
-        }
-        if(!matched) {
-            mc_particles_.Add(const_cast<MCParticle*>(mc_particle)); // NOLINT
-        }
+        unique_particles.insert(mc_particle);
+    }
+    // Store the MC particle references
+    for(auto mc_particle : unique_particles) {
+        mc_particles_.Add(const_cast<MCParticle*>(mc_particle)); // NOLINT
     }
 }
 
