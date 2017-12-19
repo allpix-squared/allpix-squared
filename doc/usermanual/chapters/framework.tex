@@ -576,7 +576,7 @@ void run(unsigned int event_id) {
 
 \subsubsection{Methods to process messages}
 The message system has multiple methods to process received messages.
-The first three are the most common methods and the fourth should be avoided in almost every instance.
+The first two are the most common methods and the third should be avoided in almost every instance.
 \begin{enumerate}
 \item Bind a \textbf{single message} to a variable.
 This should usually be the preferred method, where a module expects only a single message to arrive per event containing the list of all relevant objects.
@@ -604,22 +604,10 @@ TestModule(Configuration, Messenger* messenger, GeometryManager* geo_manager) {
 }
 std::vector<std::shared_ptr<Message<Object>>> messages;
 \end{minted}
-\item Add a dependency to keep messages in memory for retrieving objects from the history.
-Several objects have related objects which can be retrieved as explained in Section \ref{sec:objhistory}.
-Linked objects can only be retrieved if the respective source objects remain in memory.
-Modules should explicitly mark objects that are accessed indirectly through the history of the messages, to ensure that these objects are not deleted.
-This method can be used as follows in a detector-specific \parameter{TestModule}, to keep \parameter{PixelHitMessage}s in memory without having direct access to them (\parameter{PixelHitMessage} can be replaced here with any other type of message):
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
-TestModule(Configuration, Messenger* messenger, std::shared_ptr<Detector>) {
-    messenger->addDependency<PixelHit>(this,
-                                       /* No special message flags */
-                                       MsgFlags::NONE);
-}
-\end{minted}
 \item Listen to a particular message type and execute a \textbf{listener function} as soon as an object is received.
 This can be used for more advanced strategies of retrieving messages, but the other methods should be preferred whenever possible.
 The listening module should \underline{not} do any heavy work in the listening function as this is supposed to take place in the module \command{run} method instead.
-Using a listener function can lead to unexpected behavior because the function is executed during the run method of the dispatching module.
+Using a listener function can lead to unexpected behaviour because the function is executed during the run method of the dispatching module.
 This means that logging is performed at the level of the dispatching module and that the listener method can be accessed from multiple threads if the dispatching module is parallelized.
 Listening to a message containing an array of objects in a detector-specific \parameter{TestModule} could be performed as follows:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
@@ -637,20 +625,22 @@ void listener(std::shared_ptr<Message<Object>> message) {
 \end{enumerate}
 
 \subsubsection{Message flags}
-Flags can be added to the bind and listening methods which enable a particular behavior of the framework.
+Flags can be added to the bind and listening methods which enable a particular behaviour of the framework.
 \begin{itemize}
     \item \textbf{REQUIRED}: Specifies that this message is required during the event processing.
     If this particular message is not received before it is time to execute the module's run function, the execution of the method is automatically skipped by the framework for the current event.
     This can be used to ignore modules which cannot perform any action without received messages, for example charge carrier propagation without any deposited charge carriers.
-    \item \textbf{NO\_RESET}: Messages are by default automatically reset after the \texttt{run} function has been executed, to prevent older messages from previous events from reappearing.
-    This behavior can be disabled by setting this flag (this does not have any effect for listening functions).
-    Setting this flag for single bound messages (without \parameter{ALLOW_OVERWRITE}, see below) would cause an exception to be raised if the message is overwritten in a later event.
     \item \parameter{ALLOW_OVERWRITE}: By default an exception is automatically raised if a single bound message is overwritten (thus receiving it multiple times instead of once).
-    This flag prevents this behavior.
+    This flag prevents this behaviour.
     It can only be used for variables bound to a single message.
     \item \parameter{IGNORE_NAME}: If this flag is specified, the name of the dispatched message is not considered.
     Thus, the \parameter{input} parameter is ignored and forced to the value \texttt{*}.
 \end{itemize}
+
+\subsubsection{Persistency}
+\label{sec:objects_persistency}
+As objects may contain information relating to other objects, in particular for storing their corresponding Monte Carlo history (see Section \ref{sec:objhistory}), objects are by default persistent until the end of each event. All messages are stored as shared pointers by the modules which send them, and are released at the end of each event. If no other copies of the shared message pointer are created, then these will be subsequently deleted, including the objects stored therein. Where a module requires access to data from a previous event (such as to simulate the effects of pile-up etc.), local copies of the data objects must be created. Note that at the point of creating copies the corresponding history will be lost. 
+
 
 \subsection{Redirect Module Inputs and Outputs}
 \label{sec:redirect_module_input_outputs}
