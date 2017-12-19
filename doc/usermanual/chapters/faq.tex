@@ -7,12 +7,14 @@ To run it on a single detector, one should add a parameter \parameter{name} spec
 \item[How do I run a module only for a specific detector type?]
 This is only possible for detector modules (which are constructed to work on individual detectors).
 To run it for a specific type of detector, one should add a parameter \parameter{type} with the type of the detector model (as set in the detector configuration file by the \parameter{model} parameter).
-\item[How can I run the exact same type of module with different settings?] This is possible by using the \parameter{input} and \parameter{output} parameters of a module that specialize the messages of the module.
+Please refer to Section~\ref{sec:module_instantiation} for more information.
+\item[How can I run the exact same type of module with different settings?] This is possible by using the \parameter{input} and \parameter{output} parameters of a module that specify the messages of the module.
 By default, both the input and the output of module are messages with an empty name.
 Please refer to Section~\ref{sec:objects_messages} for more information.
 \item[How can I temporarily ignore a module during development?]
 The section header of a particular module in the configuration file can be replaced by the string \parameter{Ignore}.
 The section and all of its key/value pairs are then ignored.
+Modules can also be excluded from the compilation process as explained in Section~\ref{sec:cmake_config}.
 \item[Can I get a high verbosity level only for a specific module?]
 Yes, it is possible to specify verbosity levels and log formats per module.
 This can be done by adding the \parameter{log_level} and/or \parameter{log_format} key to a specific module to replace the parameter in the global configuration sections.
@@ -20,18 +22,21 @@ This can be done by adding the \parameter{log_level} and/or \parameter{log_forma
 To specialize a detector model, the key that should be changed in the standard detector model, e.g.\ like \parameter{sensor_thickness}, should be added as key to the section of the detector configuration (which already contains the position, orientation and the base model of the detector).
 Only parameters in the header of detector models can be changed.
 If support layers should be changed, or new support layers are needed, a new model should be created instead.
+Please refer to Section~\ref{sec:detector_models} for more information.
 \item[How do I access the history of a particular object?]
 Many objects can include an internal link to related other objects (for example \parameter{getPropagatedCharges} in the \parameter{PixelCharge} object), containing the history of the object (thus the objects that were used to construct the current object).
 These referenced objects are stored as special ROOT pointers inside the object, which can only be accessed if the referenced object is available in memory.
 In \apsq this requirement can be automatically fulfilled by also binding the history object of interest in a module.
 During analysis, the tree holding the referenced object should be loaded and pointing to the same event entry as the object that requests the reference.
 If the referenced object can not be loaded, an exception is thrown by the retrieving method.
+Please refer to Section~\ref{sec:objhistory} for more information.
 \item[How do I access the Monte Carlo truth of a specific PixelHit?]
 The Monte Carlo truth is part of the history of a PixelHit.
 This means that the Monte Carlo truth can be retrieved as described in the question above.
 However take notice that there are multiple layers between a PixelHit and its MCParticles, which are the PixelCharge, PropagatedCharge and DepositedCharge.
 These should all be loaded in memory to make it possible to fetch the history.
 Because getting the Monte Carlo truth of a PixelHit is quite a common thing a \parameter{getMCParticles} method is available which searches all layers of the history and returns an exception if any of the in between steps is not available or not loaded.
+Please refer to Section~\ref{sec:objhistory} for more information.
 \item[Can I import an electric field from TCAD and use it for simulating propagation?]
 Yes, the framework includes a tool to convert DF-ISE files from TCAD to an internal format which \apsq can parse.
 More information about this tool can be found in Section \ref{sec:tcad_electric_field_converter}, instructions to import the generated field are provided in Section \ref{sec:module_electric_field}.

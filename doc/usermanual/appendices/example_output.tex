@@ -1,96 +1,93 @@
-\section{Output of Example Simulation}
+\subsection{Output of Example Simulation}
 \label{sec:example_output}
-Possible output for the example simulation in Section \ref{sec:setting_up_simulation_chain} is given below:
+A possible output for the example simulation in Section \ref{sec:setting_up_simulation_chain} is given below:
 
 \begin{lstlisting}[breaklines]
-(S) Welcome to Allpix^2 v1.0beta1+110^gc065eb9
-(S) Initialized PRNG with system entropy seed 11350876086373902512
-(S) Loaded 8 modules
-(S) Initializing 15 module instantiations
-(I) [I:DepositionGeant4] Using G4 physics list "QGSP_BERT"
-(I) [I:ElectricFieldReader:telescope1] Setting linear electric field from -100V bias voltage and -50V depletion voltage
-(I) [I:ElectricFieldReader:dut] Setting linear electric field from -100V bias voltage and -50V depletion voltage
-(I) [I:ElectricFieldReader:telescope2] Setting linear electric field from -100V bias voltage and -50V depletion voltage
-(S) Initialized 15 module instantiations
+(S) Welcome to Allpix^2 v1.0+391^gf90a88b
+(S) Initialized PRNG with system entropy seed 14531117800570638852
+(S) Loaded 7 modules
+(S) Initializing 12 module instantiations
+(I) [I:DepositionGeant4] Using G4 physics list "FTFP_BERT_EMY"
+(I) [I:DepositionGeant4] Setting G4 production cut to 11um, derived from properties of detector "dut"
+(W) [I:GenericPropagation:dut] This detector does not have an electric field.
+(W) [I:GenericPropagation:telescope2] This detector does not have an electric field.
+(S) Initialized 12 module instantiations
 (S) Running event 1 of 5
-(I) [R:DepositionGeant4] Deposited 87334 charges in sensor of detector telescope1
-(I) [R:DepositionGeant4] Deposited 45780 charges in sensor of detector dut
-(I) [R:DepositionGeant4] Deposited 49552 charges in sensor of detector telescope2
-(I) [R:GenericPropagation:dut] Propagated 22890 charges in 458 steps in average time of 3.48832ns
-(I) [R:GenericPropagation:telescope2] Propagated 24776 charges in 496 steps in average time of 3.49675ns
-(I) [R:SimpleTransfer:dut] Transferred 22890 charges to 4 pixels
-(I) [R:SimpleTransfer:telescope2] Transferred 24776 charges to 4 pixels
-(I) [R:DefaultDigitizer:dut] Digitized 2 pixel hits
-(I) [R:DefaultDigitizer:telescope2] Digitized 4 pixel hits
+(I) [R:DepositionGeant4] Deposited 63258 charges in sensor of detector telescope1
+(I) [R:DepositionGeant4] Deposited 53240 charges in sensor of detector dut
+(I) [R:DepositionGeant4] Deposited 42186 charges in sensor of detector telescope2
+(I) [R:GenericPropagation:dut] Propagated 26620 charges in 690 steps in average time of 24.0224ns
+(I) [R:GenericPropagation:telescope2] Propagated 21093 charges in 565 steps in average time of 23.3058ns
+(I) [R:SimpleTransfer:dut] Transferred 942 charges to 3 pixels
+(I) [R:SimpleTransfer:telescope2] Transferred 1013 charges to 4 pixels
+(I) [R:DefaultDigitizer:dut] Digitized 1 pixel hits
+(I) [R:DefaultDigitizer:telescope2] Digitized 0 pixel hits
 (S) Running event 2 of 5
-(I) [R:DepositionGeant4] Deposited 72234 charges in sensor of detector telescope1
-(I) [R:DepositionGeant4] Deposited 56736 charges in sensor of detector dut
-(I) [R:DepositionGeant4] Deposited 55882 charges in sensor of detector telescope2
-(I) [R:GenericPropagation:dut] Propagated 28368 charges in 568 steps in average time of 3.49392ns
-(I) [R:GenericPropagation:telescope2] Propagated 27941 charges in 559 steps in average time of 3.49617ns
-(I) [R:SimpleTransfer:dut] Transferred 28368 charges to 4 pixels
-(I) [R:SimpleTransfer:telescope2] Transferred 27941 charges to 4 pixels
-(I) [R:DefaultDigitizer:dut] Digitized 2 pixel hits
-(I) [R:DefaultDigitizer:telescope2] Digitized 4 pixel hits
+(I) [R:DepositionGeant4] Deposited 96362 charges in sensor of detector telescope1
+(I) [R:DepositionGeant4] Deposited 43736 charges in sensor of detector dut
+(I) [R:DepositionGeant4] Deposited 66186 charges in sensor of detector telescope2
+(I) [R:GenericPropagation:dut] Propagated 21868 charges in 596 steps in average time of 23.9683ns
+(I) [R:GenericPropagation:telescope2] Propagated 33093 charges in 814 steps in average time of 23.9677ns
+(I) [R:SimpleTransfer:dut] Transferred 959 charges to 4 pixels
+(I) [R:SimpleTransfer:telescope2] Transferred 2307 charges to 4 pixels
+(I) [R:DefaultDigitizer:dut] Digitized 1 pixel hits
+(I) [R:DefaultDigitizer:telescope2] Digitized 1 pixel hits
 (S) Running event 3 of 5
-(I) [R:DepositionGeant4] Deposited 66248 charges in sensor of detector telescope1
-(I) [R:DepositionGeant4] Deposited 57228 charges in sensor of detector dut
-(I) [R:DepositionGeant4] Deposited 59420 charges in sensor of detector telescope2
-(I) [R:GenericPropagation:dut] Propagated 28614 charges in 573 steps in average time of 3.49467ns
-(I) [R:GenericPropagation:telescope2] Propagated 29710 charges in 595 steps in average time of 3.49148ns
-(I) [R:SimpleTransfer:dut] Transferred 28614 charges to 3 pixels
-(I) [R:SimpleTransfer:telescope2] Transferred 29710 charges to 4 pixels
-(I) [R:DefaultDigitizer:dut] Digitized 2 pixel hits
-(I) [R:DefaultDigitizer:telescope2] Digitized 4 pixel hits
+(I) [R:DepositionGeant4] Deposited 72176 charges in sensor of detector telescope1
+(I) [R:DepositionGeant4] Deposited 48154 charges in sensor of detector dut
+(I) [R:DepositionGeant4] Deposited 80880 charges in sensor of detector telescope2
+(I) [R:GenericPropagation:dut] Propagated 24077 charges in 641 steps in average time of 24.1059ns
+(I) [R:GenericPropagation:telescope2] Propagated 40440 charges in 971 steps in average time of 21.3275ns
+(I) [R:SimpleTransfer:dut] Transferred 803 charges to 4 pixels
+(I) [R:SimpleTransfer:telescope2] Transferred 8444 charges to 5 pixels
+(I) [R:DefaultDigitizer:dut] Digitized 1 pixel hits
+(I) [R:DefaultDigitizer:telescope2] Digitized 1 pixel hits
 (S) Running event 4 of 5
-(I) [R:DepositionGeant4] Deposited 65206 charges in sensor of detector telescope1
-(I) [R:DepositionGeant4] Deposited 70198 charges in sensor of detector dut
-(I) [R:DepositionGeant4] Deposited 41846 charges in sensor of detector telescope2
-(I) [R:GenericPropagation:dut] Propagated 35099 charges in 702 steps in average time of 3.49416ns
-(I) [R:GenericPropagation:telescope2] Propagated 20923 charges in 419 steps in average time of 3.48176ns
-(I) [R:SimpleTransfer:dut] Transferred 35099 charges to 4 pixels
-(I) [R:SimpleTransfer:telescope2] Transferred 20923 charges to 4 pixels
-(I) [R:DefaultDigitizer:dut] Digitized 2 pixel hits
-(I) [R:DefaultDigitizer:telescope2] Digitized 4 pixel hits
+(I) [R:DepositionGeant4] Deposited 51442 charges in sensor of detector telescope1
+(I) [R:DepositionGeant4] Deposited 52516 charges in sensor of detector dut
+(I) [R:DepositionGeant4] Deposited 39024 charges in sensor of detector telescope2
+(I) [R:GenericPropagation:dut] Propagated 26258 charges in 675 steps in average time of 24.2782ns
+(I) [R:GenericPropagation:telescope2] Propagated 19512 charges in 543 steps in average time of 23.861ns
+(I) [R:SimpleTransfer:dut] Transferred 852 charges to 3 pixels
+(I) [R:SimpleTransfer:telescope2] Transferred 1130 charges to 4 pixels
+(I) [R:DefaultDigitizer:dut] Digitized 0 pixel hits
+(I) [R:DefaultDigitizer:telescope2] Digitized 0 pixel hits
 (S) Running event 5 of 5
-(I) [R:DepositionGeant4] Deposited 62782 charges in sensor of detector telescope1
-(I) [R:DepositionGeant4] Deposited 47698 charges in sensor of detector dut
-(I) [R:DepositionGeant4] Deposited 53766 charges in sensor of detector telescope2
-(I) [R:GenericPropagation:dut] Propagated 23849 charges in 477 steps in average time of 3.49966ns
-(I) [R:GenericPropagation:telescope2] Propagated 26883 charges in 538 steps in average time of 3.49897ns
-(I) [R:SimpleTransfer:dut] Transferred 23849 charges to 3 pixels
-(I) [R:SimpleTransfer:telescope2] Transferred 26883 charges to 4 pixels
-(I) [R:DefaultDigitizer:dut] Digitized 2 pixel hits
-(I) [R:DefaultDigitizer:telescope2] Digitized 4 pixel hits
+(I) [R:DepositionGeant4] Deposited 64482 charges in sensor of detector telescope1
+(I) [R:DepositionGeant4] Deposited 55822 charges in sensor of detector dut
+(I) [R:DepositionGeant4] Deposited 61396 charges in sensor of detector telescope2
+(I) [R:GenericPropagation:dut] Propagated 27911 charges in 716 steps in average time of 24.1324ns
+(I) [R:GenericPropagation:telescope2] Propagated 30698 charges in 765 steps in average time of 23.9962ns
+(I) [R:SimpleTransfer:dut] Transferred 989 charges to 4 pixels
+(I) [R:SimpleTransfer:telescope2] Transferred 1030 charges to 4 pixels
+(I) [R:DefaultDigitizer:dut] Digitized 1 pixel hits
+(I) [R:DefaultDigitizer:telescope2] Digitized 0 pixel hits
 (S) Finished run of 5 events
-(I) [F:DepositionGeant4] Deposited total of 1783820 charges in 6 sensor(s) (average of 59460 per sensor for every event)
-(I) [F:GenericPropagation:dut] Propagated total of 138820 charges in 2778 steps in average time of 3.4942ns
-(I) [F:GenericPropagation:telescope2] Propagated total of 130233 charges in 2607 steps in average time of 3.49347ns
+(I) [F:DepositionGeant4] Deposited total of 890860 charges in 3 sensor(s) (average of 59390 per sensor for every event)
+(I) [F:GenericPropagation:dut] Propagated total of 126734 charges in 3318 steps in average time of 24.1061ns
+(I) [F:GenericPropagation:telescope2] Propagated total of 144836 charges in 3658 steps in average time of 23.1258ns
 (I) [F:SimpleTransfer:telescope1] Transferred total of 0 charges to 0 different pixels
-(I) [F:SimpleTransfer:dut] Transferred total of 138820 charges to 4 different pixels
-(I) [F:SimpleTransfer:telescope2] Transferred total of 130233 charges to 4 different pixels
+(I) [F:SimpleTransfer:dut] Transferred total of 4545 charges to 4 different pixels
+(I) [F:SimpleTransfer:telescope2] Transferred total of 13924 charges to 5 different pixels
 (I) [F:DefaultDigitizer:telescope1] Digitized 0 pixel hits in total
-(I) [F:DefaultDigitizer:dut] Digitized 10 pixel hits in total
-(I) [F:DefaultDigitizer:telescope2] Digitized 20 pixel hits in total
-(I) [F:DetectorHistogrammer:dut] Plotted 10 hits in total, mean position is (126,125.5)
-(S) [F:ROOTObjectWriter] Wrote 5498 objects to 12 branches in file:
+(I) [F:DefaultDigitizer:dut] Digitized 4 pixel hits in total
+(I) [F:DefaultDigitizer:telescope2] Digitized 2 pixel hits in total
+(I) [F:DetectorHistogrammer:dut] Plotted 4 hits in total, mean position is (126,125)
+(S) [F:ROOTObjectWriter] Wrote 17230 objects to 12 branches in file:
                          /tmp/output/allpix-squared_output.root
 (S) Finalization completed
-(S) Executed 15 instantiations in 2 seconds, spending 58% of time in slowest instantiation DepositionGeant4
-(I)  Module GeometryBuilderGeant4 took 0.0356574 seconds
-(I)  Module DepositionGeant4 took 0.888584 seconds
-(I)  Module ElectricFieldReader:telescope1 took 0.000102932 seconds
-(I)  Module ElectricFieldReader:dut took 6.3408e-05 seconds
-(I)  Module ElectricFieldReader:telescope2 took 5.5951e-05 seconds
-(I)  Module DefaultDigitizer:telescope1 took 5.6189e-05 seconds
-(I)  Module DefaultDigitizer:dut took 0.000543031 seconds
-(I)  Module DefaultDigitizer:telescope2 took 0.000312817 seconds
-(I)  Module DetectorHistogrammer:dut took 0.0237165 seconds
-(I)  Module ROOTObjectWriter took 0.180625 seconds
-(I)  Module SimpleTransfer:telescope1 took 6.8943e-05 seconds
-(I)  Module SimpleTransfer:dut took 0.00504597 seconds
-(I)  Module SimpleTransfer:telescope2 took 0.00274271 seconds
-(I)  Module GenericPropagation:dut took 0.206209 seconds
-(I)  Module GenericPropagation:telescope2 took 0.188115 seconds
-(S) Average processing time is 306 ms/event, event generation at 3 Hz
+(S) Executed 12 instantiations in 2 seconds, spending 83% of time in slowest instantiation DepositionGeant4
+(I)  Module GeometryBuilderGeant4 took 0.0365857 seconds
+(I)  Module DepositionGeant4 took 1.46891 seconds
+(I)  Module GenericPropagation:dut took 0.141857 seconds
+(I)  Module GenericPropagation:telescope2 took 0.150676 seconds
+(I)  Module SimpleTransfer:telescope1 took 4.137e-05 seconds
+(I)  Module SimpleTransfer:dut took 0.00574916 seconds
+(I)  Module SimpleTransfer:telescope2 took 0.00419238 seconds
+(I)  Module DefaultDigitizer:telescope1 took 0.000107107 seconds
+(I)  Module DefaultDigitizer:dut took 0.000731576 seconds
+(I)  Module DefaultDigitizer:telescope2 took 0.000526228 seconds
+(I)  Module DetectorHistogrammer:dut took 0.0587201 seconds
+(I)  Module ROOTObjectWriter took 0.232684 seconds
+(S) Average processing time is 354 ms/event, event generation at 3 Hz
 \end{lstlisting}

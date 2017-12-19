@@ -33,15 +33,15 @@ namespace mesh_converter {
          * @brief Explicit constructor with the mesh Points
          * @param p{i} Points from the mesh
          */
-        MeshElement(Point v1, Point v2, Point v3, Point v4) : vertices{v1, v2, v3, v4} {}
+        MeshElement(Point& v1, Point& v2, Point& v3, Point& v4) : MeshElement(std::vector<Point>({v1, v2, v3, v4})) {}
 
         /**
          * @brief Explicit constructor with the mesh Points and the electric field Points
          * @param p{i} Points from the mesh
          * @param f{i} Points with the electric field components from the mesh node
          */
-        MeshElement(Point v1, Point f1, Point v2, Point f2, Point v3, Point f3, Point v4, Point f4)
-            : vertices{v1, v2, v3, v4}, e_field{f1, f2, f3, f4} {}
+        MeshElement(Point& v1, Point& f1, Point& v2, Point& f2, Point& v3, Point& f3, Point& v4, Point& f4)
+            : MeshElement(std::vector<Point>({v1, v2, v3, v4}), std::vector<Point>({f1, f2, f3, f4})) {}
 
         /**
          * @brief Constructor using std::vector<Points> for the mesh and the electric field Points
@@ -73,14 +73,14 @@ namespace mesh_converter {
          * @brief Setting vertices for the default tetrahedron constructor
          * @param new_vertices std::vector<Points> containing 4 mesh node Points
          */
-        void setVertices(std::vector<Point> new_vertices);
+        void setVertices(std::vector<Point>& new_vertices);
 
         /**
          * @brief Set individual vertices of the tetrahedron
          * @param index Vertex to be set
          * @param new_vertice New tetrahedron Point
          */
-        void setVertex(size_t index, Point new_vertice);
+        void setVertex(size_t index, Point& new_vertice);
 
         /**
          * @brief Get tetrahedron vertice defined by the index
@@ -92,14 +92,14 @@ namespace mesh_converter {
          * @brief Set the electric field on the tetrahedron vertices
          * @param new_e_field New std::vector<Point> to be assigned to the tetrahedron
          */
-        void setVerticesField(std::vector<Point> new_e_field);
+        void setVerticesField(std::vector<Point>& new_e_field);
 
         /**
          * @brief Set the electric field fro individual vertices of the tetrahedron
          * @param index Vertex to be set
          * @param new_e_field New electric field for the tetrahedron vertex
          */
-        void setVertexField(size_t index, Point new_e_field);
+        void setVertexField(size_t index, Point& new_e_field);
 
         /**
          * @brief Get the Point with the components of the electric field for a individual vertex
@@ -127,29 +127,30 @@ namespace mesh_converter {
          * @param index Vertex for which the distance will be calculated
          * @param qp Point from which will be calculated the distance
          */
-        double getDistance(size_t index, Point qp);
+        double getDistance(size_t index, Point& qp);
 
         /**
          * @brief Checks if the tetrahedron is valid for the interpolation
          * @param volume_cut Threshold for the minimum tetrahedron volume
          * @param qp Desired Point for the interpolation
          */
-        bool validElement(double volume_cut, Point qp);
+        bool validElement(double volume_cut, Point& qp);
 
         /**
          * @brief Barycentric interpolation implementation
          * @param qp Point where the interpolation is being done
          */
-        Point getObservable(Point qp);
+        Point getObservable(Point& qp);
 
         /**
          * @brief Print tetrahedron created for debugging
          */
-        void printElement(Point qp);
+        void printElement(Point& qp);
 
-        int _dimension;
-        std::vector<size_t> index_vec;
-        std::vector<Point> vertices;
-        std::vector<Point> e_field;
+    private:
+        int _dimension{3};
+        std::vector<size_t> index_vec{};
+        std::vector<Point> vertices{};
+        std::vector<Point> e_field{};
     };
 } // namespace mesh_converter

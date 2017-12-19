@@ -176,7 +176,6 @@ void ROOTObjectReaderModule::init() {
                 throw ModuleError("Tree contains objects of the wrong type");
             }
 
-            std::string message_name;
             if(name_idx != INT_MAX) {
                 message_info_array_.back().name = split[name_idx];
             }
@@ -192,8 +191,8 @@ void ROOTObjectReaderModule::run(unsigned int event_num) {
     --event_num;
     for(auto& tree : trees_) {
         if(event_num >= tree->GetEntries()) {
-            LOG(WARNING) << "Skipping run because tree does not contain data for event " << event_num;
-            return;
+            throw EndOfRunException("Requesting end of run because TTree only contains data for " +
+                                    std::to_string(event_num) + " events");
         }
         tree->GetEntry(event_num);
     }

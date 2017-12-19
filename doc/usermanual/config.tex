@@ -17,6 +17,11 @@
 
 % Typeset framework parameter and escape underscores:
 \DeclareUrlCommand\parameter{\bfseries\urlstyle{tt}}
+\newcommand{\command}[1]{\parameter{#1}}
+
+% Typeset directory and file names
+\DeclareUrlCommand\dir{\urlstyle{tt}}
+\newcommand{\file}[1]{\dir{#1}}
 
 % Define ini format used in the converted Markdown files
 \lstdefinelanguage{Ini}
@@ -38,10 +43,11 @@
 \newenvironment{warning}
   {\newcommand\colboxcolor{pink}%
    \begin{lrbox}{\warningbox}%
-   \begin{minipage}{\dimexpr\columnwidth-2\fboxsep\relax}}
+   \begin{minipage}{\dimexpr\linewidth-2em\relax}}
   {\end{minipage}\end{lrbox}%
    \begin{center}
-     \colorbox{\colboxcolor}{\usebox{\warningbox}}
+     \setlength\fboxsep{0pt}
+     \colorbox{\colboxcolor}{\setlength\fboxsep{1em}\fbox{\usebox{\warningbox}}}
   \end{center}}
 
 % Command to add all modules

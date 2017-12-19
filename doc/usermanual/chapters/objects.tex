@@ -1,63 +1,54 @@
 \section{Objects}
 \label{sec:objects}
 
+\subsection{Object Types}
+\label{sec:objtypes}
+
+\apsq provides a set of objects which can be used to transfer data between modules.
+These objects can be sent with the messaging system as explained in Section \ref{sec:objects_messages}.
+A \texttt{typedef} is added to every object in order to provide an alternative name for the message which is directly indicating the carried object.
+
+The list of currently supported objects comprises:
+\nlparagraph{MCParticle}
+The Monte-Carlo truth information about the particle passage through the sensor.
+A start and end point are stored in the object: for events involving a single MCParticle passing through the sensor, the start and end points correspond to the entry and exit points.
+The exact handling of non-linear particle trajectories due to multiple scattering is up to module.
+The MCParticle also stores an identifier of the particle type, using the PDG particle codes~\cite{pdg}.
+The MCParticle additionally stores a parent MCParticle object, if available.
+
+\nlparagraph{DepositedCharge}
+The set of charge carriers deposited by an ionizing particle crossing the active material of the sensor.
+The object stores the \underline{local} position in the sensor together with the total number of deposited charges in elementary charge units.
+In addition, the time (in \textit{ns} as the internal framework unit) of the deposition after the start of the event and the type of carrier (electron or hole) is stored.
+
+\nlparagraph{PropagatedCharge}
+The set of charge carriers propagated through the silicon sensor due to drift and/or diffusion processes.
+The object should store the final \underline{local} position of the propagated charges.
+This is either on the pixel implant (if the set of charge carriers are ready to be collected) or on any other position in the sensor if the set of charge carriers got trapped or was lost in another process.
+Timing information giving the total time to arrive at the final location, from the start of the event, can also be stored.
+
+\nlparagraph{PixelCharge}
+The set of charge carriers collected at a single pixel.
+The pixel indices are stored in both the $x$ and $y$ direction, starting from zero for the first pixel.
+Only the total number of charges at the pixel is currently stored, the timing information of the individual charges can be retrieved from the related \parameter{PropagatedCharge} objects.
+
+\nlparagraph{PixelHit}
+The digitised pixel hits after processing in the detector's front-end electronics.
+The object allows the storage of both the time and signal value.
+The time can be stored in an arbitrary unit used to timestamp the hits.
+The signal can hold different kinds of information depending on the type of the digitizer used.
+Examples of the signal information is the 'true' information of a binary readout chip, the number of ADC counts or the ToT (time-over-threshold).
+
 \subsection{Object History}
 \label{sec:objhistory}
 
-Objects can carry the history that was used to create them.
-For example, a \parameter{PropagatedCharge} object could hold a link to the \parameter{DepositedCharge} object at which the propagation started.
-Modules are not required, but recommended, to bind the history of their created objects.
+Objects may carry information about the objects which were used to create them.
+For example, a \parameter{PropagatedCharge} could hold a link to the \parameter{DepositedCharge} object at which the propagation started.
+All objects created during a single simulation event are accessible until the end of the event; more information on object persistency within the framework can be found in Section~\ref{sec:objects_persistency}. 
 
 Object history is implemented using the ROOT TRef class~\cite{roottref}, which acts as a special reference.
 On construction, every object gets a unique identifier assigned, that can be stored in other linked objects.
 This identifier can be used to retrieve the history, even after the objects are written out to ROOT TTrees ~\cite{roottree}.
 TRef objects are however not automatically fetched and can only be retrieved if their linked objects are available in memory, which has to be ensured explicitly.
 Outside the framework this means that the relevant tree containing the linked objects should be retrieved and loaded at the same entry as the object that request the history.
-Inside the framework an explicit dependency should be added for all modules that use object history, as explained in section \ref{sec:objects_messages}.
 Whenever the related object is not in memory (either because it is not available or not fetched) a \parameter{MissingReferenceException} will be thrown.
-
-\begin{warning}
-    If no explicit dependency is added to a linked object in history, the module could misbehave depending on other modules.
-    Also take note that \underline{all} intermediate objects need an explicit dependency to fetch deeper history (like the \parameter{MCParticle}s from an \parameter{PixelHit}).
-    Finally, the \parameter{MissingReferenceException} should be properly caught by modules to handle instances where the history is not available or incomplete.
-\end{warning}
-
-\subsection{Object Types}
-\label{sec:objtypes}
-
-\apsq provides a set of objects that should be used to transfer data between modules.
-These objects can be send with the messaging system as explained in Section \ref{sec:objects_messages}.
-A \texttt{typedef} is added to every object in order to provide an alternative name for the message which is directly indicating the carried object.
-
-The list of currently supported objects comprises:
-\nlparagraph{MCParticle}
-The Monte-Carlo truth information about the particle passage through the sensor.
-A start and end point are stored in the object, to approximate the track.
-For events involving a single MCParticle going through the sensor, the start and end point correspond to the entry and exit point in the sensor.
-The exact handling of non-linear tracks due to multiple scattering, is up to module.
-The MCParticle also stores an identifier of the particle type.
-The recommended naming scheme are the PDG particle codes~\cite{pdg}.
-Finally, the MCParticle stores a parent MCParticle object, if available.
-
-\nlparagraph{DepositedCharge}
-Set of charge carriers deposited by an ionizing particle crossing the active material of the sensor.
-The object stores the \underline{local} position in the sensor together with the total number of deposited charges in elementary charge units.
-Also the time (in \textit{ns} as the internal framework unit) of the deposition after the start of the event and the type of carrier (electron or hole) is stored.
-
-\nlparagraph{PropagatedCharge}
-Set of charge carriers propagated through the silicon sensor due to drift and/or diffusion processes.
-The object should store the final \underline{local} position of the propagation.
-This is either on the pixel implant if the set of charge carriers are ready to be collected, or on any other position in the sensor if the set of charge carriers got trapped or was lost in another process.
-Timing information about the total time to arrive at the final location, from the start of the event, can also be stored.
-
-\nlparagraph{PixelCharge}
-Set of charge carriers collected at a single pixel.
-The pixel indices are stored in both the $x$ and $y$ direction, starting from zero for the first pixel.
-Only the total number of charges at a pixel is currently stored, the timing information of the individual charges can be retrieved from the related \parameter{PropagatedCharge} objects.
-
-\nlparagraph{PixelHit}
-Digitized hit of a pixel after processing of the information in the detector's front-end electronics.
-The object allows to store both the time and a signal value.
-The time can be stored in an arbitrary unit used to timestamp the hits.
-The signal can hold different kinds of information depending on the type of the digitizer used.
-Examples of the signal information is the 'true' information of a binary readout chip, the number of ADC counts or the ToT (time-over-threshold).

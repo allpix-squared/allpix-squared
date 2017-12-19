@@ -164,21 +164,21 @@ int main(int argc, const char* argv[]) {
         apx->finalize();
     } catch(ConfigurationError& e) {
         LOG(FATAL) << "Error in the configuration:" << std::endl
-                   << " " << e.what() << std::endl
-                   << "The configuration needs to be updated! Cannot continue...";
+                   << e.what() << std::endl
+                   << "The configuration needs to be updated. Cannot continue.";
         return_code = 1;
     } catch(RuntimeError& e) {
         LOG(FATAL) << "Error during execution of run:" << std::endl
-                   << " " << e.what() << std::endl
-                   << "Please check your configuration and modules! Cannot continue...";
+                   << e.what() << std::endl
+                   << "Please check your configuration and modules. Cannot continue.";
         return_code = 1;
     } catch(LogicError& e) {
         LOG(FATAL) << "Error in the logic of module:" << std::endl
-                   << " " << e.what() << std::endl
-                   << "Module has to be properly defined! Cannot continue...";
+                   << e.what() << std::endl
+                   << "Module has to be properly defined. Cannot continue.";
         return_code = 1;
     } catch(std::exception& e) {
-        LOG(FATAL) << "Fatal internal error" << std::endl << "   " << e.what() << std::endl << "Cannot continue...";
+        LOG(FATAL) << "Fatal internal error" << std::endl << e.what() << std::endl << "Cannot continue.";
         return_code = 127;
     }
 

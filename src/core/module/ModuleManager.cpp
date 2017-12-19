@@ -672,10 +672,13 @@ void ModuleManager::run() {
                     module->getROOTDirectory()->cd();
                 }
                 // Run module
-                module->run(event_num);
-                // Resetting delegates
-                LOG(TRACE) << "Resetting messages";
-                module->reset_delegates();
+                try {
+                    module->run(event_num);
+                } catch(EndOfRunException& e) {
+                    // Terminate if the module threw the EndOfRun request exception:
+                    LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
+                    terminate_ = true;
+                }
                 // Reset logging
                 Log::setSection(old_section_name);
                 set_module_after(old_settings);
@@ -697,6 +700,12 @@ void ModuleManager::run() {
 
         // Finish executing the last remaining tasks
         thread_pool->execute_all();
+
+        // Resetting delegates
+        for(auto& module : modules_) {
+            LOG(TRACE) << "Resetting messages";
+            module->reset_delegates();
+        }
 
         // Reset object count for next event
         TProcessID::SetObjectCount(save_id);

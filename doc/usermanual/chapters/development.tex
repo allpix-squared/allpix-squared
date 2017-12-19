@@ -1,38 +1,38 @@
 \section{Module \& Detector Development}
 
-The following sections provide brief recipes for developing new simulations modules and detector models for the \apsq framework.
-Before starting the development, the \texttt{CONTRIBUTING.md} file in the repository should be consulted for further information on the development process, code contributions and the preferred coding style for \apsq.
+This section provides a few brief recipes for developing new simulation modules and detector models for the \apsq framework.
+Before starting the development, the \file{CONTRIBUTING.md} file in the repository should be consulted for further information on the development process, code contributions and the preferred coding style for \apsq.
 
 \subsection{Implementing a New Module}
 \label{sec:building_new_module}
 
 \todo{add description of what should be a module and what not (aka analysis)}
 It is essential to carefully read the framework module manager documentation in Section \ref{sec:module_manager}, the information about the directory structure in Section \ref{sec:module_files} and the details of the module structure in Section \ref{sec:module_structure} before creating a new module.
-Thereafter, the steps below should provide enough details for starting with a new module, hereafter called \parameter{ModuleName}:
+Thereafter, the steps below should provide enough details for starting a new module, hereafter called \parameter{ModuleName}:
 \begin{enumerate}
-\item Run the module initialization script at \textit{etc/scripts/make\_module.sh} in the repository.
-The script will ask for the name of the model and the type (unique or detector-specific).
-It creates the directory with a minimal example to get started together with the rough outline of its documentation in \textit{README.md}.
-\item Before starting to implement the actual module, it is recommended to update the introductory documentation in \textit{README.md}.
-No additional documentation in LaTeX has to be provided, as this Markdown-formatted file~\cite{markdown} is automatically converted and included in the user manual.
-Formulas can be included by enclosing it in Dollar-backtick markers, i.e. \texttt{\$` E(z) = 0`\$}.
-Also the Doxygen documentation in \textit{\texttt{ModuleName}.hpp} should be extended to provide a basic description of the module.
-\item Finally the constructor, the \parameter{init}, \parameter{run} and/or \parameter{finalize} methods can be written, depending on the requirements of the new module.
+    \item Run the module initialization script at \file{etc/scripts/make_module.sh} in the repository.
+    The script will ask for the name of the model and the type (unique or detector-specific).
+    It creates the directory with a minimal example to get started together with the rough outline of its documentation in \textit{README.md}.
+    \item Before starting to implement the actual module, it is recommended to update the introductory documentation in \textit{README.md}.
+    No additional documentation in LaTeX has to be provided, as this Markdown-formatted file~\cite{markdown} is automatically converted and included in the user manual.
+    Formulae can be included by enclosure in Dollar-backtick markers, i.e. `$` E(z) = 0`$`.
+    The Doxygen documentation in \textit{\texttt{ModuleName}.hpp} should also be extended to provide a basic description of the module.
+    \item Finally, the constructor and \command{init}, \command{run} and/or \command{finalize} methods can be written, depending on the requirements of the new module.
 \end{enumerate}
 
 After this, it is up to the developer to implement all required functionality.
 
-It should be kept in mind that writing more generic modules, which are not tied to a specific detector type or simulation, might allow other users to benefit from the development.
+It should be kept in mind that writing more generic modules, which are not tied to a specific detector type or simulation, will allow other users to benefit from the development.
 Furthermore, it may be beneficial to split up modules to support the modular design of \apsq.
 Additional sources of documentation which may be useful during the development of a module include:
 \begin{itemize}
 \item The framework documentation in Section \ref{sec:framework} for an introduction to the different parts of the framework.
-\item The module documentation in Section \ref{sec:modules} for a description of functionality other modules already provide and to look for similar modules which can help during development.
+\item The module documentation in Section \ref{sec:modules} for a description of the functionality of other modules already implemented, and to look for similar modules which can help during development.
 \item The Doxygen (core) reference documentation included in the framework~\cite{ap2-doxygen}.
 \item The latest version of the source code of all modules and the \apsq core itself.
 \end{itemize}
 
-Any module potentially useful for other people should be contributed back to the main repository.
+Any module potentially useful for other users should be contributed back to the main repository after is has been validated.
 It is strongly encouraged to send a merge-request through the mechanism provided by the software repository~\cite{ap2-repo}.
 
 \subsection{Adding a New Detector Model}
@@ -40,16 +40,16 @@ It is strongly encouraged to send a merge-request through the mechanism provided
 Custom detector models based on the detector classes provided with \apsq can easily be added to the framework.
 Crucial information to read before writing the model is provided in Section \ref{sec:config_file_format}, which  describes the file format, Section \ref{sec:config_values} for information about the units used in \apsq and Section \ref{sec:models_geometry}, which describes the geometry and detector models.
 In particular Section \ref{sec:detector_models} explains all parameters of the detector models currently available.
-The default models provided in the \textit{models} directory of the repository can serve as examples.
-To create a new detector model, the following steps should be considered:
+The default models provided in the \dir{models} directory of the repository can serve as examples.
+To create a new detector model, the following steps should be taken:
 \begin{enumerate}
-\item Create a new file with the name of the model followed by the \textit{.conf} suffix (for example \texttt{your\_model.conf}).
+\item Create a new file with the name of the model followed by the \file{.conf} suffix (for example \file{your_model.conf}).
 \item Add a configuration parameter \parameter{type} with the type of the model, at the moment either 'monolithic' or 'hybrid' for respectively monolithic sensors or hybrid models with bump bonds and a separate readout chip.
 \item Add all required parameters and possibly optional parameters as explained in Section \ref{sec:detector_models}.
-\item Include the detector model in the search path of the framework by adding the \parameter{model_path} parameter to the general setting of the main configuration (see Section \ref{sec:framework_parameters}) pointing to either directly to the detector model file or the directory containing it. It should be noted, that files in this path will overwrite models with the same name in the default model folder.
+\item Include the detector model in the search path of the framework by adding the \parameter{model_path} parameter to the general setting of the main configuration (see Section \ref{sec:framework_parameters}), pointing either directly to the detector model file or the directory containing it. It should be noted that files in this path will overwrite models with the same name in the default model folder.
 \end{enumerate}
 
 Models should be contributed to the main repository to make them available to other users of the framework.
-To add the detector model to the framework the configuration file should be moved to the \textit{models} folder of the repository.
-Then the file should be added to the installation target in the \textit{CMakeLists.txt} file of the \textit{models} directory.
+To add the detector model to the framework the configuration file should be moved to the \dir{models} folder of the repository.
+The file should then be added to the installation target in the \file{CMakeLists.txt} file of the \dir{models} directory.
 Afterwards, a merge-request can be created via the mechanism provided by the software repository~\cite{ap2-repo}.

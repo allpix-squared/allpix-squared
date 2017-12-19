@@ -35,7 +35,7 @@ namespace allpix {
          * @param file_name Name of the configuration file
          */
         explicit ConfigFileUnavailableError(const std::string& file_name) {
-            error_message_ = "Could not read configuration file " + file_name + " (does it exists?)";
+            error_message_ = "Could not read configuration file " + file_name + " - does it exist?";
         }
     };
 

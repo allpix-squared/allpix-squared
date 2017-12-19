@@ -204,6 +204,7 @@ void Module::add_delegate(Messenger* messenger, BaseDelegate* delegate) {
 }
 void Module::reset_delegates() {
     for(auto& delegate : delegates_) {
+        delegate.first->clearMessages();
         delegate.second->reset();
     }
 }

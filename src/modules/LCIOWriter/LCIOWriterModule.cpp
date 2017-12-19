@@ -9,13 +9,16 @@
 
 #include "LCIOWriterModule.hpp"
 
+#include <fstream>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "core/messenger/Messenger.hpp"
-
+#include "core/utils/file.h"
 #include "core/utils/log.h"
+
+#include <Math/RotationZYX.h>
 
 #include <IMPL/LCCollectionVec.h>
 #include <IMPL/LCEventImpl.h>
@@ -30,13 +33,13 @@ using namespace allpix;
 using namespace lcio;
 
 LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, GeometryManager* geo)
-    : Module(std::move(config)) {
+    : Module(std::move(config)), geo_mgr_(geo) {
 
     // Bind pixel hits message
     messenger->bindMulti(this, &LCIOWriterModule::pixel_messages_, MsgFlags::REQUIRED);
 
     // get all detector names and assign id.
-    std::vector<std::shared_ptr<Detector>> detectors = geo->getDetectors();
+    auto detectors = geo_mgr_->getDetectors();
     unsigned int i = 0;
     for(const auto& det : detectors) {
         detectorIDs_[det->getName()] = i;
@@ -44,15 +47,26 @@ LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, G
         i++;
     }
 
-    pixelType_ = config_.get<int>("pixel_type", 2);
-    DetectorName_ = config_.get<std::string>("detector_name", "EUTelescope");
-    OutputCollectionName_ = config_.get<std::string>("output_collection_name", "zsdata_m26");
+    // Set configuration defaults:
+    config_.setDefault("file_name", "output.slcio");
+    config_.setDefault("geometry_file", "allpix_squared_gear.xml");
+    config_.setDefault("pixel_type", 2);
+    config_.setDefault("detector_name", "EUTelescope");
+    config_.setDefault("output_collection_name", "zsdata_m26");
+
+    pixelType_ = config_.get<int>("pixel_type");
+    DetectorName_ = config_.get<std::string>("detector_name");
+    OutputCollectionName_ = config_.get<std::string>("output_collection_name");
 }
 
 void LCIOWriterModule::init() {
+    // Create the output GEAR file for the detector geometry
+    geometry_file_name_ = createOutputFile(allpix::add_file_extension(config_.get<std::string>("geometry_file"), "xml"));
+
     // Open LCIO file and write run header
+    lcio_file_name_ = createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name"), "slcio"));
     lcWriter_ = std::shared_ptr<IO::LCWriter>(LCFactory::getInstance()->createLCWriter());
-    lcWriter_->open(createOutputFile(config_.get<std::string>("file_name", "output.slcio")), LCIO::WRITE_NEW);
+    lcWriter_->open(lcio_file_name_, LCIO::WRITE_NEW);
     auto run = std::make_unique<LCRunHeaderImpl>();
     run->setRunNumber(1);
     run->setDetectorName(DetectorName_);
@@ -125,8 +139,94 @@ void LCIOWriterModule::run(unsigned int eventNb) {
     // Add collection to event and write event to LCIO file
     evt->addCollection(hitVec, OutputCollectionName_); // add the collection with a name
     lcWriter_->writeEvent(evt.get());                  // write the event to the file
+    write_cnt_++;
 }
 
 void LCIOWriterModule::finalize() {
     lcWriter_->close();
+    // Print statistics
+    LOG(STATUS) << "Wrote " << write_cnt_ << " events to file:" << std::endl << lcio_file_name_;
+
+    // Write geometry:
+    std::ofstream geometry_file;
+    if(!geometry_file_name_.empty()) {
+        geometry_file.open(geometry_file_name_, std::ios_base::out | std::ios_base::trunc);
+        if(!geometry_file.good()) {
+            throw ModuleError("Cannot write to GEAR geometry file");
+        }
+
+        auto detectors = geo_mgr_->getDetectors();
+        geometry_file << "<?xml version=\"1.0\" encoding=\"utf-8\"?>" << std::endl
+                      << "<!-- ?xml-stylesheet type=\"text/xsl\" href=\"https://cern.ch/allpix-squared/\"? -->" << std::endl
+                      << "<gear>" << std::endl;
+
+        geometry_file << "  <global detectorName=\"" << DetectorName_ << "\"/>" << std::endl;
+        geometry_file << "  <detectors>" << std::endl;
+        geometry_file << "    <detector name=\"SiPlanes\" geartype=\"SiPlanesParameters\">" << std::endl;
+        geometry_file << "      <siplanesType type=\"TelescopeWithoutDUT\"/>" << std::endl;
+        geometry_file << "      <siplanesNumber number=\"" << detectors.size() << "\"/>" << std::endl;
+        geometry_file << "      <siplanesID ID=\"" << 0 << "\"/>" << std::endl;
+        geometry_file << "      <layers>" << std::endl;
+
+        for(auto& detector : detectors) {
+            // Write header for the layer:
+            geometry_file << "      <!-- Allpix Squared Detector: " << detector->getName()
+                          << " - type: " << detector->getType() << " -->" << std::endl;
+            geometry_file << "        <layer>" << std::endl;
+
+            auto position = detector->getPosition();
+
+            auto model = detector->getModel();
+            auto npixels = model->getNPixels();
+            auto pitch = model->getPixelSize();
+
+            auto total_size = model->getSize();
+            auto sensitive_size = model->getSensorSize();
+
+            // Write ladder
+            geometry_file << "          <ladder ID=\"" << detectorIDs_[detector->getName()] << "\"" << std::endl;
+            geometry_file << "            positionX=\"" << Units::convert(position.x(), "mm") << "\"\tpositionY=\""
+                          << Units::convert(position.y(), "mm") << "\"\tpositionZ=\"" << Units::convert(position.z(), "mm")
+                          << "\"" << std::endl;
+
+            // Use inverse ZYX rotation to retrieve XYZ angles as used in EUTelescope:
+            ROOT::Math::RotationZYX rotations(detector->getOrientation().Inverse());
+            geometry_file << "            rotationZY=\"" << Units::convert(-rotations.Psi(), "deg") << "\"     rotationZX=\""
+                          << Units::convert(-rotations.Theta(), "deg") << "\"   rotationXY=\""
+                          << Units::convert(-rotations.Phi(), "deg") << "\"" << std::endl;
+            geometry_file << "            sizeX=\"" << Units::convert(total_size.x(), "mm") << "\"\tsizeY=\""
+                          << Units::convert(total_size.y(), "mm") << "\"\tthickness=\""
+                          << Units::convert(total_size.z(), "mm") << "\"" << std::endl;
+            geometry_file << "            radLength=\"93.65\"" << std::endl;
+            geometry_file << "            />" << std::endl;
+
+            // Write sensitive
+            geometry_file << "          <sensitive ID=\"" << detectorIDs_[detector->getName()] << "\"" << std::endl;
+            geometry_file << "            positionX=\"" << Units::convert(position.x(), "mm") << "\"\tpositionY=\""
+                          << Units::convert(position.y(), "mm") << "\"\tpositionZ=\"" << Units::convert(position.z(), "mm")
+                          << "\"" << std::endl;
+            geometry_file << "            sizeX=\"" << Units::convert(npixels.x() * pitch.x(), "mm") << "\"\tsizeY=\""
+                          << Units::convert(npixels.y() * pitch.y(), "mm") << "\"\tthickness=\""
+                          << Units::convert(sensitive_size.z(), "mm") << "\"" << std::endl;
+            geometry_file << "            npixelX=\"" << npixels.x() << "\"\tnpixelY=\"" << npixels.y() << "\"" << std::endl;
+            geometry_file << "            pitchX=\"" << Units::convert(pitch.x(), "mm") << "\"\tpitchY=\""
+                          << Units::convert(pitch.y(), "mm") << "\"\tresolution=\""
+                          << Units::convert(pitch.x() / std::sqrt(12), "mm") << "\"" << std::endl;
+            geometry_file << "            rotation1=\"1.0\"\trotation2=\"0.0\"" << std::endl;
+            geometry_file << "            rotation3=\"0.0\"\trotation4=\"1.0\"" << std::endl;
+            geometry_file << "            radLength=\"93.65\"" << std::endl;
+            geometry_file << "            />" << std::endl;
+
+            // End the layer:
+            geometry_file << "        </layer>" << std::endl;
+        }
+
+        // Close XML tree:
+        geometry_file << "      </layers>" << std::endl
+                      << "    </detector>" << std::endl
+                      << "  </detectors>" << std::endl
+                      << "</gear>" << std::endl;
+
+        LOG(STATUS) << "Wrote GEAR geometry to file:" << std::endl << geometry_file_name_;
+    }
 }

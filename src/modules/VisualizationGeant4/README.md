@@ -3,13 +3,14 @@
 **Status**: Functional  
 
 #### Description
-Constructs a visualization viewer to display the constructed Geant4 geometry. The module supports all type of viewers included in Geant4, but the default Qt visualization with the OpenGL viewer is recommended as long as the installed Geant4 version supports it.
+Constructs a viewer to display the constructed Geant4 geometry. The module supports all type of viewers included in Geant4, but the default Qt visualization with the OpenGL viewer is recommended as long as the installed Geant4 version supports it.
+It offers the best visualization experience.
 
 The module allows for changing a variety of parameters to control the output visualization both for the different detector components and the particle beam.
 
 #### Dependencies
 
-This module requires an installation Geant4.
+This module requires an installation of Geant4.
 
 #### Parameters
 * `mode` : Determines the mode of visualization. Options are **gui** which starts a Qt visualization window containing the driver (as long as the chosen driver supports it), **terminal** starts both the visualization viewer and a Geant4 terminal or **none** which only starts the driver itself (and directly closes it if the driver is asynchronous). Defaults to **gui**.
@@ -35,7 +36,7 @@ This module requires an installation Geant4.
 * `macro_init` : Optional Geant4 macro to execute during initialization. Whenever possible, the configuration parameters above should be used instead of this option.
 
 #### Usage
-An example configuration providing a wireframe viewing style with the same color for every particle and displaying the result after every event for 2s, is the following:
+An example configuration providing a wireframe viewing style with the same color for every particle and displaying the result after every event for 2s is provided below:
 
 ```ini
 [VisualizationGeant4]

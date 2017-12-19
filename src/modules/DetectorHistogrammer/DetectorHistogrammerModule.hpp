@@ -74,13 +74,13 @@ namespace allpix {
         unsigned long total_hits_{};
 
         // Histograms to output
-        TH2I* hit_map;
-        TH2I* cluster_map;
-        TH1I* event_size;
-        TH1I* cluster_size;
-        TH1I* cluster_size_x;
-        TH1I* cluster_size_y;
-        TH1I* n_cluster;
+        TH2D* hit_map;
+        TH2D* cluster_map;
+        TH1D* event_size;
+        TH1D* cluster_size;
+        TH1D* cluster_size_x;
+        TH1D* cluster_size_y;
+        TH1D* n_cluster;
         TH1D* cluster_charge;
     };
 } // namespace allpix

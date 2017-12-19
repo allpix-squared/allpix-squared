@@ -17,6 +17,7 @@
 #include <Math/RotationX.h>
 #include <Math/RotationY.h>
 #include <Math/RotationZ.h>
+#include <Math/RotationZYX.h>
 #include <Math/Vector3D.h>
 
 #include "GeometryManager.hpp"
@@ -74,16 +75,24 @@ void GeometryManager::load(const Configuration& global_config, std::mt19937_64& 
         orient_vec += misalignment(detector_section.get<XYZVector>("alignment_precision_orientation", XYZVector()));
         LOG(DEBUG) << " misaligned: " << display_vector(orient_vec, {"deg"});
 
-        auto orientation_type = detector_section.get<std::string>("orientation_type", "xyz");
+        auto orientation_mode = detector_section.get<std::string>("orientation_mode", "xyz");
         Rotation3D orientation;
 
-        if(orientation_type == "xyz") {
+        if(orientation_mode == "zyx") {
+            // First angle given in the configuration file is around z, second around y, last around x:
+            LOG(DEBUG) << "Interpreting Euler angles as ZYX rotation";
+            orientation = RotationZYX(orient_vec.x(), orient_vec.y(), orient_vec.z());
+        } else if(orientation_mode == "xyz") {
+            LOG(DEBUG) << "Interpreting Euler angles as XYZ rotation";
+            // First angle given in the configuration file is around x, second around y, last around z:
             orientation = RotationZ(orient_vec.z()) * RotationY(orient_vec.y()) * RotationX(orient_vec.x());
-        } else if(orientation_type == "zxz") {
+        } else if(orientation_mode == "zxz") {
+            LOG(DEBUG) << "Interpreting Euler angles as ZXZ rotation";
+            // First angle given in the configuration file is around z, second around x, last around z:
             orientation = EulerAngles(orient_vec.x(), orient_vec.y(), orient_vec.z());
         } else {
             throw InvalidValueError(
-                detector_section, "orientation_type", "orientation_mode should be either 'xyz' or 'zxz'");
+                detector_section, "orientation_mode", "orientation_mode should be either 'zyx', xyz' or 'zxz'");
         }
 
         // Create the detector and add it without model
@@ -449,7 +458,7 @@ void GeometryManager::close_geometry() {
             for(auto& key_value : config.getAll()) {
                 auto key = key_value.first;
                 // Skip all internal parameters
-                if(key == "type" || key == "position" || key == "orientation_type" || key == "orientation") {
+                if(key == "type" || key == "position" || key == "orientation_mode" || key == "orientation") {
                     continue;
                 }
                 // Add the extra parameter to the new overwritten config

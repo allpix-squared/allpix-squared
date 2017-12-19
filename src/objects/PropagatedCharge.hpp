@@ -11,6 +11,7 @@
 #define ALLPIX_PROPAGATED_CHARGE_H
 
 #include "DepositedCharge.hpp"
+#include "MCParticle.hpp"
 #include "SensorCharge.hpp"
 
 namespace allpix {
@@ -43,9 +44,15 @@ namespace allpix {
         const DepositedCharge* getDepositedCharge() const;
 
         /**
+         * @brief Get related Monte-Carlo particle
+         * @return Pointer to Monte-Carlo particle
+         */
+        const MCParticle* getMCParticle() const;
+
+        /**
          * @brief ROOT class definition
          */
-        ClassDef(PropagatedCharge, 2);
+        ClassDef(PropagatedCharge, 3);
         /**
          * @brief Default constructor for ROOT I/O
          */
@@ -53,6 +60,7 @@ namespace allpix {
 
     private:
         TRef deposited_charge_;
+        TRef mc_particle_;
     };
 
     /**

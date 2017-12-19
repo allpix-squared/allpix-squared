@@ -542,12 +542,14 @@ void GenericPropagationModule::run(unsigned int event_num) {
 
             // Create a new propagated charge and add it to the list
             auto global_position = detector_->getGlobalPosition(position);
-            propagated_charges.emplace_back(position,
-                                            global_position,
-                                            deposit.getType(),
-                                            charge_per_step,
-                                            deposit.getEventTime() + prop_pair.second,
-                                            &deposit);
+            PropagatedCharge propagated_charge(position,
+                                               global_position,
+                                               deposit.getType(),
+                                               charge_per_step,
+                                               deposit.getEventTime() + prop_pair.second,
+                                               &deposit);
+
+            propagated_charges.push_back(std::move(propagated_charge));
 
             // Update statistical information
             ++step_count;

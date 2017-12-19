@@ -12,9 +12,9 @@ This allows to directly read configuration parameters to these types, making the
 In addition, more conversions functions are provided together with other useful utilities such as the possibility to display a ROOT vector with units.
 
 \subsubsection{Runge-Kutta integrator}
-A fast Eigen-powered~\cite{eigen3} Runge-Kutta integrator is provided as a tool to solve differential equations.
-The Runge-Kutta integrator is build generically and supports multiple methods using different tableaus.
-It allows to integrate every system of equations in several steps with customizable step size.
+A fast Eigen-powered~\cite{eigen3} Runge-Kutta integrator is provided as a tool to numerically solve differential equations~\cite{fehlberg}.
+The Runge-Kutta integrator is designed in a generic way and supports multiple methods using different tableaus.
+It allows to integrate a system of equations in several steps with customizable step size.
 The step size can also be updated during the integration depending on the error of the Runge-Kutta method (if a tableau with error estimation is used).
 
 \inputmd{tools/tcad_dfise_converter.tex}
