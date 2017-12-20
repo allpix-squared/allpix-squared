@@ -106,6 +106,9 @@ void Messenger::dispatch_message(Module* source, const std::shared_ptr<BaseMessa
         LOG(TRACE) << "Dispatched message " << allpix::demangle(typeid(*inst).name()) << " from " << source->getUniqueName()
                    << " has no receivers!";
     }
+
+    // Save a copy of the sent message
+    sent_messages_.emplace_back(message);
 }
 
 /**

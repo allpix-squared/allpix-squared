@@ -44,18 +44,11 @@ Examples of the signal information is the 'true' information of a binary readout
 
 Objects may carry information about the objects which were used to create them.
 For example, a \parameter{PropagatedCharge} could hold a link to the \parameter{DepositedCharge} object at which the propagation started.
-Modules are not required, but recommended, to bind the history of their created objects.
+All objects created during a single simulation event are accessible until the end of the event; more information on object persistency within the framework can be found in Section~\ref{sec:objects_persistency}. 
 
 Object history is implemented using the ROOT TRef class~\cite{roottref}, which acts as a special reference.
 On construction, every object gets a unique identifier assigned, that can be stored in other linked objects.
 This identifier can be used to retrieve the history, even after the objects are written out to ROOT TTrees ~\cite{roottree}.
 TRef objects are however not automatically fetched and can only be retrieved if their linked objects are available in memory, which has to be ensured explicitly.
 Outside the framework this means that the relevant tree containing the linked objects should be retrieved and loaded at the same entry as the object that request the history.
-Inside the framework an explicit dependency should be added for all modules that use the object history, as explained in section \ref{sec:objects_messages}.
 Whenever the related object is not in memory (either because it is not available or not fetched) a \parameter{MissingReferenceException} will be thrown.
-
-\begin{warning}
-    If no explicit dependency is added to a linked object in history, the module could misbehave depending on other modules.
-    It should also be noted that \textit{all} intermediate objects need an explicit dependency to fetch deeper history (like the \parameter{MCParticle}s from \parameter{PixelHit}).
-    Finally, the \parameter{MissingReferenceException} should be properly caught by modules to handle instances where the history is not available or incomplete.
-\end{warning}

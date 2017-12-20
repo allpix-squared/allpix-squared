@@ -79,14 +79,6 @@ namespace allpix {
         void registerListener(T* receiver, void (T::*method)(std::shared_ptr<R>), MsgFlags flags = MsgFlags::NONE);
 
         /**
-         * @brief Register a dependency on a message for the history to guarantee it to be stored until the module runs.
-         * @param receiver Module to store the received message for
-         * @param message Rvalue reference to the message
-         * @param flags Message configuration flags
-         */
-        template <typename R, typename T> void addDependency(T* receiver, MsgFlags flags = MsgFlags::NONE);
-
-        /**
          * @brief Binds a pointer to a single message
          * @param receiver Receiving module
          * @param member Pointer to the message to listen to
@@ -124,6 +116,11 @@ namespace allpix {
          */
         template <typename T>
         void dispatchMessage(Module* source, std::shared_ptr<T> message, const std::string& name = "-");
+
+        /**
+         * @brief Removes the list of sent messages, clearing them from memory if not otherwise used
+         */
+        inline void clearMessages() { sent_messages_.clear(); }
 
     private:
         /**
@@ -168,6 +165,7 @@ namespace allpix {
 
         DelegateMap delegates_;
         DelegateIteratorMap delegate_to_iterator_;
+        std::vector<std::shared_ptr<BaseMessage>> sent_messages_;
 
         mutable std::mutex mutex_;
     };
