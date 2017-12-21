@@ -4,7 +4,7 @@
 ###########################################
 
 ADD_TEST(NAME example
-COMMAND ${CMAKE_SOURCE_DIR}/etc/unittests/run_directory.sh "test_example" "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_SOURCE_DIR}/examples/example.conf")
+COMMAND ${CMAKE_SOURCE_DIR}/etc/unittests/run_directory.sh "test_example" "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_SOURCE_DIR}/examples/example.conf -o number_of_events=10")
 ADD_TEST(NAME manual
 COMMAND ${CMAKE_SOURCE_DIR}/etc/unittests/run_directory.sh "test_manual" "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_SOURCE_DIR}/etc/manual.conf")
 
