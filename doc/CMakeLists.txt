@@ -58,7 +58,7 @@ IF(LATEX_COMPILER)
         ENDFOREACH()
 
         # Loop through all modules and fetch their README
-        SET(example_dir ${CMAKE_SOURCE_DIR}/etc/examples)
+        SET(example_dir ${CMAKE_SOURCE_DIR}/examples)
         FILE(GLOB subdirs RELATIVE ${example_dir} ${example_dir}/*)
         FOREACH(subdir ${subdirs})
             IF(EXISTS ${example_dir}/${subdir}/README.md)
