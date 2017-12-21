@@ -46,32 +46,6 @@ FUNCTION(ESCAPE_REGEX INP OUTPUT)
     SET(${OUTPUT} "${_TMP_STR}" PARENT_SCOPE)
 ENDFUNCTION()
 
-###########################################
-# Reference tests for configuration files #
-# provided as example and in manual       #
-###########################################
-
-ADD_TEST(NAME example
-         COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/run_directory.sh "test_example" "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_SOURCE_DIR}/etc/example.conf")
-ADD_TEST(NAME manual
-         COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/run_directory.sh "test_manual" "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_SOURCE_DIR}/etc/manual.conf")
-
-OPTION(TEST_EXAMPLES "Perform unit tests to ensure example validity?" ON)
-
-IF(TEST_EXAMPLES)
-    FILE(GLOB TEST_LIST_EXAMPLES RELATIVE ${CMAKE_SOURCE_DIR}/etc/examples ${CMAKE_SOURCE_DIR}/etc/examples/*)
-    LIST(LENGTH TEST_LIST_EXAMPLES NUM_TEST_EXAMPLES)
-    MESSAGE(STATUS "Unit tests: ${NUM_TEST_EXAMPLES} example validity tests")
-    FOREACH(TEST ${TEST_LIST_EXAMPLES})
-        ADD_TEST(NAME "examples/${TEST}"
-            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-            COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/run_directory.sh "output/${TEST}" "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_SOURCE_DIR}/etc/examples/${TEST}/${TEST}.conf -o number_of_events=10"
-        )
-    ENDFOREACH()
-ELSE()
-    MESSAGE(STATUS "Unit tests: example validity tests deactivated.")
-ENDIF()
-
 ##############################
 # Module functionality tests #
 ##############################
