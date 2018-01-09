@@ -58,19 +58,12 @@ namespace allpix {
          */
         void finalize() override;
 
+    private:
         /**
          * @brief Perform a sparse clustering on the PixelHits
          */
-        void doClustering();
+        std::vector<Cluster> doClustering();
 
-        /**
-         * @brief Checks the adjacent pixels for PixelHits
-         * @param pixel_hit Hit to check
-         */
-        unsigned int checkAdjacentPixels(const PixelHit*);
-
-    private:
-        Configuration config_;
         std::shared_ptr<Detector> detector_;
 
         // List of pixel hits
@@ -80,17 +73,14 @@ namespace allpix {
         ROOT::Math::XYVector total_vector_{};
         unsigned long total_hits_{};
 
-        // Forming clusters
-        std::vector<Cluster*> clusters_;
-
         // Histograms to output
-        TH2I* hit_map;
-        TH2I* cluster_map;
-        TH1I* event_size;
-        TH1I* cluster_size;
-        TH1I* cluster_size_x;
-        TH1I* cluster_size_y;
-        TH1I* n_cluster;
+        TH2D* hit_map;
+        TH2D* cluster_map;
+        TH1D* event_size;
+        TH1D* cluster_size;
+        TH1D* cluster_size_x;
+        TH1D* cluster_size_y;
+        TH1D* n_cluster;
         TH1D* cluster_charge;
     };
 } // namespace allpix

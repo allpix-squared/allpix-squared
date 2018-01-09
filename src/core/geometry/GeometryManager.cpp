@@ -17,6 +17,7 @@
 #include <Math/RotationX.h>
 #include <Math/RotationY.h>
 #include <Math/RotationZ.h>
+#include <Math/RotationZYX.h>
 #include <Math/Vector3D.h>
 
 #include "GeometryManager.hpp"
@@ -31,36 +32,67 @@
 #include "core/geometry/MonolithicPixelDetectorModel.hpp"
 
 using namespace allpix;
+using namespace ROOT::Math;
 
 GeometryManager::GeometryManager() : closed_{false} {}
 
 /**
  * Loads the geometry by parsing the configuration file
  */
-void GeometryManager::load(const Configuration& global_config) {
+void GeometryManager::load(const Configuration& global_config, std::mt19937_64& seeder) {
     LOG(TRACE) << "Reading geometry";
+
+    // Set up a random number generator and seed it with the global seed:
+    std::mt19937_64 random_generator;
+    random_generator.seed(seeder());
 
     std::string detector_file_name = global_config.getPath("detectors_file", true);
     std::fstream file(detector_file_name);
     ConfigReader reader(file, detector_file_name);
 
     // Loop over all defined detectors
+    LOG(DEBUG) << "Loading all detectors:";
     for(auto& detector_section : reader.getConfigurations()) {
-        // Get the position and orientation
-        auto position = detector_section.get<ROOT::Math::XYZPoint>("position", ROOT::Math::XYZPoint());
-        auto orient_vec = detector_section.get<ROOT::Math::XYZVector>("orientation", ROOT::Math::XYZVector());
+        LOG(DEBUG) << "Detector " << detector_section.getName() << "...";
 
-        auto orientation_type = detector_section.get<std::string>("orientation_type", "xyz");
-        ROOT::Math::Rotation3D orientation;
+        // Calculate possible detector misalignment to be added
+        auto misalignment = [&](auto residuals) {
+            double dx = std::normal_distribution<double>(0, residuals.x())(random_generator);
+            double dy = std::normal_distribution<double>(0, residuals.y())(random_generator);
+            double dz = std::normal_distribution<double>(0, residuals.z())(random_generator);
+            return DisplacementVector3D<Cartesian3D<double>>(dx, dy, dz);
+        };
 
-        if(orientation_type == "xyz") {
-            orientation = ROOT::Math::RotationZ(orient_vec.z()) * ROOT::Math::RotationY(orient_vec.y()) *
-                          ROOT::Math::RotationX(orient_vec.x());
-        } else if(orientation_type == "zxz") {
-            orientation = ROOT::Math::EulerAngles(orient_vec.x(), orient_vec.y(), orient_vec.z());
+        // Get the position and apply potenial misalignment
+        auto position = detector_section.get<XYZPoint>("position", XYZPoint());
+        LOG(DEBUG) << "Position:    " << display_vector(position, {"mm", "um"});
+        position += misalignment(detector_section.get<XYZPoint>("alignment_precision_position", XYZPoint()));
+        LOG(DEBUG) << " misaligned: " << display_vector(position, {"mm", "um"});
+
+        // Get the orientation and apply misalignment to the individual angles before combining them
+        auto orient_vec = detector_section.get<XYZVector>("orientation", XYZVector());
+        LOG(DEBUG) << "Orientation: " << display_vector(orient_vec, {"deg"});
+        orient_vec += misalignment(detector_section.get<XYZVector>("alignment_precision_orientation", XYZVector()));
+        LOG(DEBUG) << " misaligned: " << display_vector(orient_vec, {"deg"});
+
+        auto orientation_mode = detector_section.get<std::string>("orientation_mode", "xyz");
+        Rotation3D orientation;
+
+        if(orientation_mode == "zyx") {
+            // First angle given in the configuration file is around z, second around y, last around x:
+            LOG(DEBUG) << "Interpreting Euler angles as ZYX rotation";
+            orientation = RotationZYX(orient_vec.x(), orient_vec.y(), orient_vec.z());
+        } else if(orientation_mode == "xyz") {
+            LOG(DEBUG) << "Interpreting Euler angles as XYZ rotation";
+            // First angle given in the configuration file is around x, second around y, last around z:
+            orientation = RotationZ(orient_vec.z()) * RotationY(orient_vec.y()) * RotationX(orient_vec.x());
+        } else if(orientation_mode == "zxz") {
+            LOG(DEBUG) << "Interpreting Euler angles as ZXZ rotation";
+            // First angle given in the configuration file is around z, second around x, last around z:
+            orientation = EulerAngles(orient_vec.x(), orient_vec.y(), orient_vec.z());
         } else {
             throw InvalidValueError(
-                detector_section, "orientation_type", "orientation_mode should be either 'xyz' or 'zxz'");
+                detector_section, "orientation_mode", "orientation_mode should be either 'zyx', xyz' or 'zxz'");
         }
 
         // Create the detector and add it without model
@@ -99,7 +131,7 @@ void GeometryManager::load(const Configuration& global_config) {
 
 /**
  * The default list of models to search for are in the following order
- * - The list of paths provided in the main configuration as models_path
+ * - The list of paths provided in the main configuration as model_paths
  * - The build variable ALLPIX_MODEL_DIR pointing to the installation directory of the framework models
  * - The directories in XDG_DATA_DIRS with ALLPIX_PROJECT_NAME attached or /usr/share/:/usr/local/share if not defined
  */
@@ -426,7 +458,7 @@ void GeometryManager::close_geometry() {
             for(auto& key_value : config.getAll()) {
                 auto key = key_value.first;
                 // Skip all internal parameters
-                if(key == "type" || key == "position" || key == "orientation_type" || key == "orientation") {
+                if(key == "type" || key == "position" || key == "orientation_mode" || key == "orientation") {
                     continue;
                 }
                 // Add the extra parameter to the new overwritten config
@@ -437,10 +469,10 @@ void GeometryManager::close_geometry() {
             if(new_config.countSettings() != 0) {
                 ConfigReader reader;
                 // Add the new configuration first to overwrite
-                reader.addConfiguration(new_config);
+                reader.addConfiguration(std::move(new_config));
                 // Then add the original configuration
                 for(auto& model_config : model_configs) {
-                    reader.addConfiguration(model_config);
+                    reader.addConfiguration(std::move(model_config));
                 }
 
                 model = parse_config(detectors_types.first, reader);

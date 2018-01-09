@@ -1,5 +1,5 @@
 # Disable default build
-ALLPIX_ENABLE_DEFAULT(OFF)
+ALLPIX_ENABLE_DEFAULT(ON)
 
 # Define module and return the generated name as MODULE_NAME
 ALLPIX_UNIQUE_MODULE(MODULE_NAME)
@@ -23,6 +23,7 @@ ENDIF()
 ROOT_GENERATE_DICTIONARY(CorryvreckanObjectsDictionary
     ${CMAKE_CURRENT_SOURCE_DIR}/corryvreckan/TestBeamObject.h
     ${CMAKE_CURRENT_SOURCE_DIR}/corryvreckan/Pixel.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/corryvreckan/MCParticle.h
     LINKDEF
     ${CMAKE_CURRENT_SOURCE_DIR}/corryvreckan/Linkdef.h
     MODULE

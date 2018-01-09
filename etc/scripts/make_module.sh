@@ -24,13 +24,13 @@ OBJDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )"
 OBJDIR=$OBJDIR/../../src/objects
 if [ ! -e ${OBJDIR}/${MESSAGETYPE}.hpp ]
 then
-  echo -e "\nMessage type ${MESSAGETYPE} does not exist. \nPlease see the message types in ${OBJDIR}\n" 
+  echo -e "\nMessage type ${MESSAGETYPE} does not exist. \nPlease see the message types in ${OBJDIR}\n"
   exit
 fi
 
 echo "Creating directory and files..."
 
-echo 
+echo
 # Try to find the modules directory:
 BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )"
 DIRECTORIES[0]="${BASEDIR}/../../src/modules"
@@ -68,8 +68,8 @@ sed -e "s/Dummy/$MODNAME/g" \
     "$MODDIR/Dummy/README.md" > "$MODDIR/$MODNAME/README.md"
 
 # Copy over source code skeleton:
-sed -e "s/Dummy/$MODNAME/g" "$MODDIR/Dummy/DummyModule.hpp" > "$MODDIR/$MODNAME/${MODNAME}Module.hpp" 
-sed -e "s/Dummy/$MODNAME/g" "$MODDIR/Dummy/DummyModule.cpp" > "$MODDIR/$MODNAME/${MODNAME}Module.cpp" 
+sed -e "s/Dummy/$MODNAME/g" "$MODDIR/Dummy/DummyModule.hpp" > "$MODDIR/$MODNAME/${MODNAME}Module.hpp"
+sed -e "s/Dummy/$MODNAME/g" "$MODDIR/Dummy/DummyModule.cpp" > "$MODDIR/$MODNAME/${MODNAME}Module.cpp"
 
 # Change to detetcor module type if necessary:
 if [ "$type" == 2 ]; then
@@ -78,8 +78,8 @@ if [ "$type" == 2 ]; then
   opt=-i
   platform=`uname`
   if [ "$platform" == "Darwin" ]; then opt="-i \"\""; fi
-  
-  # Prepare sed commands to change to per detector module    
+
+  # Prepare sed commands to change to per detector module
   # Change module type in CMakeLists
   command="sed $opt 's/_UNIQUE_/_DETECTOR_/g' $MODDIR/$MODNAME/CMakeLists.txt"
   eval $command
@@ -96,7 +96,7 @@ if [ "$type" == 2 ]; then
   # Change implementation file
   command="sed ${opt} \
       -e 's/GeometryManager\* geo_manager/std::shared\_ptr\<Detector\> detector/g' \
-      -e 's/Module(config)/Module\(config\, detector\)/g' \
+      -e 's/Module(std::move(config))/Module\(std::move(config)\, detector\)/g' \
       -e 's/bindMulti/bindSingle/g' \
       -e 's/messages_/message_/g' \
       -e '/for(auto/d' \
@@ -106,7 +106,7 @@ if [ "$type" == 2 ]; then
       -e 's/detector->get/detector_->get/g' \
       -e '/    }/d' \
       -e '/Loop/d' \
-      $MODDIR/$MODNAME/${MODNAME}Module.cpp" 
+      $MODDIR/$MODNAME/${MODNAME}Module.cpp"
   eval $command
 fi
 

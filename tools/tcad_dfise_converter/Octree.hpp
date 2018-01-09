@@ -53,7 +53,7 @@ namespace unibn {
         template <class PointT> struct access<PointT, 2> {
             static double get(const PointT& p) { return p.z; }
         };
-    }
+    } // namespace traits
 
     /** convenience function for access of point coordinates **/
     template <int D, typename PointT> inline double get(const PointT& p) { return traits::access<PointT, D>::get(p); }
@@ -843,6 +843,6 @@ namespace unibn {
 
         return true;
     }
-}
+} // namespace unibn
 
 #endif /* OCTREE_HPP_ */

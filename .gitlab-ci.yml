@@ -2,18 +2,19 @@ variables:
     EOS_PATH: "/eos/project/a/allpix-squared/www/"
 
 stages:
-    - compile
-    - format
-    - unittest
+    - compilation
+    - testing
+    - formatting
+    - performance
     - documentation
-    - deploy
+    - deployment
 
 #######################
 # Compilation targets #
 #######################
 
 cmp:slc6-gcc:
-    stage: compile
+    stage: compilation
     tags:
         - docker
     image: clicdp/slc6-base
@@ -34,7 +35,7 @@ cmp:slc6-gcc:
         expire_in: 3 hour
 
 cmp:slc6-llvm:
-    stage: compile
+    stage: compilation
     tags:
         - docker
     image: clicdp/slc6-base
@@ -55,7 +56,7 @@ cmp:slc6-llvm:
 
 # Ensure that our LXPLUS setup script is functional:
 cmp:lxplus-gcc:
-    stage: compile
+    stage: compilation
     tags:
         - docker
     image: clicdp/slc6-base
@@ -74,8 +75,8 @@ cmp:lxplus-gcc:
             - lib
         expire_in: 3 hour
 
-cmp:centos7-gcc:
-    stage: compile
+cmp:cc7-gcc:
+    stage: compilation
     tags:
         - docker
     image: clicdp/cc7-base
@@ -95,8 +96,8 @@ cmp:centos7-gcc:
             - lib
         expire_in: 3 hour
 
-cmp:centos7-llvm:
-    stage: compile
+cmp:cc7-llvm:
+    stage: compilation
     tags:
         - docker
     image: clicdp/cc7-base
@@ -115,8 +116,8 @@ cmp:centos7-llvm:
             - lib
         expire_in: 3 hour
 
-cmp:mac1012-clang:
-    stage: compile
+cmp:mac1013-clang:
+    stage: compilation
     tags:
         - mac
     script:
@@ -143,7 +144,7 @@ cmp:mac1012-clang:
 # SLC 6
 
 fmt:slc6-llvm-format:
-    stage: format
+    stage: formatting
     tags:
         - docker
     dependencies:
@@ -156,7 +157,7 @@ fmt:slc6-llvm-format:
         - ninja check-format
 
 fmt:slc6-llvm-lint:
-    stage: format
+    stage: formatting
     tags:
         - docker
     dependencies:
@@ -171,12 +172,12 @@ fmt:slc6-llvm-lint:
 
 # CentOS 7
 
-fmt:centos7-llvm-format:
-    stage: format
+fmt:cc7-llvm-format:
+    stage: formatting
     tags:
         - docker
     dependencies:
-        - cmp:centos7-llvm
+        - cmp:cc7-llvm
     image: clicdp/cc7-base
     script:
         - export COMPILER_TYPE="llvm"
@@ -184,12 +185,12 @@ fmt:centos7-llvm-format:
         - cd build/
         - ninja check-format
 
-fmt:centos7-llvm-lint:
-    stage: format
+fmt:cc7-llvm-lint:
+    stage: formatting
     tags:
         - docker
     dependencies:
-        - cmp:centos7-llvm
+        - cmp:cc7-llvm
     image: clicdp/cc7-base
     script:
         - export COMPILER_TYPE="llvm"
@@ -205,8 +206,8 @@ fmt:centos7-llvm-lint:
 
 # SLC 6
 
-ut:slc6-gcc:
-    stage: unittest
+mod:slc6-gcc:
+    stage: testing
     tags:
         - docker
     dependencies:
@@ -215,11 +216,22 @@ ut:slc6-gcc:
     script:
         - source .gitlab-ci.d/init_x86_64.sh
         - cd build/
-        - ctest --output-on-failure -j4
-        - cat output_check_performance.log
+        - ctest -R test_modules --output-on-failure -j4
 
-ut:lxplus-gcc:
-    stage: unittest
+core:slc6-gcc:
+    stage: testing
+    tags:
+        - docker
+    dependencies:
+        - cmp:slc6-gcc
+    image: clicdp/slc6-base
+    script:
+        - source .gitlab-ci.d/init_x86_64.sh
+        - cd build/
+        - ctest -R test_core --output-on-failure -j4
+
+mod:lxplus-gcc:
+    stage: testing
     tags:
         - docker
     dependencies:
@@ -228,11 +240,22 @@ ut:lxplus-gcc:
     script:
         - source etc/scripts/setup_lxplus.sh
         - cd build/
-        - ctest --output-on-failure -j4
-        - cat output_check_performance.log
+        - ctest -R test_modules --output-on-failure -j4
 
-ut:slc6-llvm:
-    stage: unittest
+core:lxplus-gcc:
+    stage: testing
+    tags:
+        - docker
+    dependencies:
+        - cmp:lxplus-gcc
+    image: clicdp/slc6-base
+    script:
+        - source etc/scripts/setup_lxplus.sh
+        - cd build/
+        - ctest -R test_core --output-on-failure -j4
+
+mod:slc6-llvm:
+    stage: testing
     tags:
         - docker
     dependencies:
@@ -242,57 +265,159 @@ ut:slc6-llvm:
         - export COMPILER_TYPE="llvm"
         - source .gitlab-ci.d/init_x86_64.sh
         - cd build/
-        - ctest --output-on-failure -j4
-        - cat output_check_performance.log
+        - ctest -R test_modules --output-on-failure -j4
+
+core:slc6-llvm:
+    stage: testing
+    tags:
+        - docker
+    dependencies:
+        - cmp:slc6-gcc
+    image: clicdp/slc6-base
+    script:
+        - export COMPILER_TYPE="llvm"
+        - source .gitlab-ci.d/init_x86_64.sh
+        - cd build/
+        - ctest -R test_core --output-on-failure -j4
 
 
 # CentOS 7
 
-ut:centos7-gcc:
-    stage: unittest
+mod:cc7-gcc:
+    stage: testing
     tags:
         - docker
     dependencies:
-        - cmp:centos7-gcc
+        - cmp:cc7-gcc
     image: clicdp/cc7-base
     script:
         - source .gitlab-ci.d/init_x86_64.sh
         - source .gitlab-ci.d/load_deps.sh
         - cd build/
-        - ctest --output-on-failure -j4
-        - cat output_check_performance.log
+        - ctest -R test_modules --output-on-failure -j4
 
-ut:centos7-llvm:
-    stage: unittest
+core:cc7-gcc:
+    stage: testing
     tags:
         - docker
     dependencies:
-        - cmp:centos7-llvm
+        - cmp:cc7-gcc
+    image: clicdp/cc7-base
+    script:
+        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab-ci.d/load_deps.sh
+        - cd build/
+        - ctest -R test_core --output-on-failure -j4
+
+mod:cc7-llvm:
+    stage: testing
+    tags:
+        - docker
+    dependencies:
+        - cmp:cc7-llvm
     image: clicdp/cc7-base
     script:
         - export COMPILER_TYPE="llvm"
         - source .gitlab-ci.d/init_x86_64.sh
         - cd build/
-        - ctest --output-on-failure -j4
-        - cat output_check_performance.log
+        - ctest -R test_modules --output-on-failure -j4
+
+core:cc7-llvm:
+    stage: testing
+    tags:
+        - docker
+    dependencies:
+        - cmp:cc7-llvm
+    image: clicdp/cc7-base
+    script:
+        - export COMPILER_TYPE="llvm"
+        - source .gitlab-ci.d/init_x86_64.sh
+        - cd build/
+        - ctest -R test_core --output-on-failure -j4
 
 
 # Mac OS X
 
-ut:mac1012-clang:
-    stage: unittest
+mod:mac1013-clang:
+    stage: testing
     tags:
         - mac
     dependencies:
-        - cmp:mac1012-clang
+        - cmp:mac1013-clang
     script:
         - source .gitlab-ci.d/init_mac.sh
         - source .gitlab-ci.d/load_deps.sh
         - cd build/
-        - cmake ..
-        - ctest --output-on-failure -j4
-        - cat output_check_performance.log
+        - ctest -R test_modules --output-on-failure -j4
 
+core:mac1013-clang:
+    stage: testing
+    tags:
+        - mac
+    dependencies:
+        - cmp:mac1013-clang
+    script:
+        - source .gitlab-ci.d/init_mac.sh
+        - source .gitlab-ci.d/load_deps.sh
+        - cd build/
+        - ctest -R test_core --output-on-failure -j4
+
+
+#####################
+# Performance tests #
+#####################
+
+# Performance tests are only run on Mac OS X and on a native CentOS7 installation. Otherwise we have no control
+# about how many CI jobs are performed on the same machine in parallel via the hypervisor.
+
+# CentOS7
+
+perf:cc7-gcc:
+    stage: performance
+    tags:
+        - benchmark
+    dependencies:
+        - cmp:cc7-gcc
+    image: clicdp/cc7-base
+    script:
+        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab-ci.d/load_deps.sh
+        - cd build/
+        - ctest -R test_performance --output-on-failure
+    allow_failure: true
+    retry: 1
+
+# Temporarily hide LLVM job, have to find out why this is so slow.
+.perf:cc7-llvm:
+    stage: performance
+    tags:
+        - benchmark
+    dependencies:
+        - cmp:cc7-llvm
+    image: clicdp/cc7-base
+    script:
+        - export COMPILER_TYPE="llvm"
+        - source .gitlab-ci.d/init_x86_64.sh
+        - cd build/
+        - ctest -R test_performance --output-on-failure
+    allow_failure: true
+    retry: 1
+
+# Mac OS X
+# Temporarily disable Mac OS X performance until tests are adapted to actual performance
+.perf:mac1013-clang:
+    stage: performance
+    tags:
+        - mac
+    dependencies:
+        - cmp:mac1013-clang
+    script:
+        - source .gitlab-ci.d/init_mac.sh
+        - source .gitlab-ci.d/load_deps.sh
+        - cd build/
+        - ctest -R test_performance --output-on-failure
+    allow_failure: true
+    retry: 1
 
 
 #############################
@@ -358,7 +483,7 @@ cmp:usermanual:
 # Automatically deploy documentation to the website
 # Deployment job only executed for new tag pushs, not for every commit.
 deploy-documentation:
-    stage: deploy
+    stage: deployment
     tags:
       - docker
     # Only run for new tags:

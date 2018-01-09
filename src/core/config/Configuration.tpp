@@ -15,7 +15,12 @@ namespace allpix {
      */
     template <typename T> T Configuration::get(const std::string& key) const {
         try {
-            return allpix::from_string<T>(config_.at(key));
+            auto node = parse_value(config_.at(key));
+            try {
+                return allpix::from_string<T>(node->value);
+            } catch(std::invalid_argument& e) {
+                throw InvalidKeyError(key, getName(), node->value, typeid(T), e.what());
+            }
         } catch(std::out_of_range& e) {
             throw MissingKeyError(key, getName());
         } catch(std::invalid_argument& e) {
@@ -43,7 +48,64 @@ namespace allpix {
     template <typename T> std::vector<T> Configuration::getArray(const std::string& key) const {
         try {
             std::string str = config_.at(key);
-            return allpix::split<T>(str, " ,");
+
+            std::vector<T> array;
+            auto node = parse_value(str);
+            for(auto& child : node->children) {
+                try {
+                    array.push_back(allpix::from_string<T>(child->value));
+                } catch(std::invalid_argument& e) {
+                    throw InvalidKeyError(key, getName(), child->value, typeid(T), e.what());
+                }
+            }
+            return array;
+        } catch(std::out_of_range& e) {
+            throw MissingKeyError(key, getName());
+        } catch(std::invalid_argument& e) {
+            throw InvalidKeyError(key, getName(), config_.at(key), typeid(T), e.what());
+        } catch(std::overflow_error& e) {
+            throw InvalidKeyError(key, getName(), config_.at(key), typeid(T), e.what());
+        }
+    }
+    /**
+     * @throws InvalidKeyError If the conversion to the requested type did not succeed
+     * @throws InvalidKeyError If an overflow happened while converting the key
+     */
+    template <typename T> std::vector<T> Configuration::getArray(const std::string& key, const std::vector<T> def) const {
+        if(has(key)) {
+            return getArray<T>(key);
+        }
+        return def;
+    }
+
+    /**
+     * @throws MissingKeyError If the requested key is not defined
+     * @throws InvalidKeyError If the conversion to the requested type did not succeed
+     * @throws InvalidKeyError If an overflow happened while converting the key
+     */
+    template <typename T> Matrix<T> Configuration::getMatrix(const std::string& key) const {
+        try {
+            std::string str = config_.at(key);
+
+            Matrix<T> matrix;
+            auto node = parse_value(str);
+            for(auto& child : node->children) {
+                if(child->children.empty()) {
+                    throw std::invalid_argument("matrix has less than two dimensions");
+                }
+
+                std::vector<T> array;
+                // Create subarray of matrix
+                for(auto& subchild : child->children) {
+                    try {
+                        array.push_back(allpix::from_string<T>(subchild->value));
+                    } catch(std::invalid_argument& e) {
+                        throw InvalidKeyError(key, getName(), subchild->value, typeid(T), e.what());
+                    }
+                }
+                matrix.push_back(array);
+            }
+            return matrix;
         } catch(std::out_of_range& e) {
             throw MissingKeyError(key, getName());
         } catch(std::invalid_argument& e) {
@@ -77,4 +139,4 @@ namespace allpix {
             setArray<T>(key, val);
         }
     }
-}
+} // namespace allpix

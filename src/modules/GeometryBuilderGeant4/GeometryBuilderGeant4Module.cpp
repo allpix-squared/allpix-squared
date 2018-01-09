@@ -40,7 +40,7 @@ using namespace allpix;
 using namespace ROOT;
 
 GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration config, Messenger*, GeometryManager* geo_manager)
-    : Module(config), config_(std::move(config)), geo_manager_(geo_manager), run_manager_g4_(nullptr) {}
+    : Module(std::move(config)), geo_manager_(geo_manager), run_manager_g4_(nullptr) {}
 
 /**
  * @brief Checks if a particular Geant4 dataset is available in the environment
@@ -49,13 +49,19 @@ GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration config, M
 static void check_dataset_g4(const std::string& env_name) {
     const char* file_name = std::getenv(env_name.c_str());
     if(file_name == nullptr) {
-        throw ModuleError("Geant4 environment variable " + env_name + " is not set, make sure to source a Geant4 "
-                                                                      "environment with all datasets");
+        /* clang-format off */
+        throw ModuleError("Geant4 environment variable " + env_name +
+                          " is not set, make sure to source a Geant4 "
+                          "environment with all datasets");
+        /* clang-format on */
     }
     std::ifstream file(file_name);
     if(!file.good()) {
-        throw ModuleError("Geant4 environment variable " + env_name + " does not point to existing dataset, your Geant4 "
-                                                                      "environment is not complete");
+        /* clang-format off */
+        throw ModuleError("Geant4 environment variable " + env_name +
+                          " does not point to existing dataset, the Geant4 "
+                          "environment is invalid");
+        /* clang-format on */
     }
     // FIXME: check if file does actually contain a correct dataset
 }
@@ -95,7 +101,7 @@ void GeometryBuilderGeant4Module::init() {
     // Export geometry in GDML if requested (and GDML support is available in Geant4)
     if(config_.has("GDML_output_file")) {
 #ifdef Geant4_GDML
-        std::string GDML_output_file = getOutputPath(config_.get<std::string>("GDML_output_file"));
+        std::string GDML_output_file = createOutputFile(config_.get<std::string>("GDML_output_file"));
         if(GDML_output_file.size() <= 5 || GDML_output_file.substr(GDML_output_file.size() - 5, 5) != ".gdml") {
             GDML_output_file += ".gdml";
         }

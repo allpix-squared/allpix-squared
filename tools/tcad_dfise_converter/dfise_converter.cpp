@@ -14,11 +14,9 @@
 
 #include <Eigen/Eigen>
 
-#include "../../src/core/utils/log.h"
-
 #include "Octree.hpp"
-
 #include "read_dfise.h"
+#include "utils/log.h"
 
 using namespace mesh_converter;
 
@@ -28,7 +26,7 @@ void interrupt_handler(int) {
     std::exit(0);
 }
 
-void MeshElement::setVertices(std::vector<Point> new_vertices) {
+void MeshElement::setVertices(std::vector<Point>& new_vertices) {
     if(vertices.size() != new_vertices.size()) {
         LOG(ERROR) << "Invalid vertices vector";
         return;
@@ -38,7 +36,7 @@ void MeshElement::setVertices(std::vector<Point> new_vertices) {
     }
 }
 
-void MeshElement::setVertex(size_t index, Point new_vertice) {
+void MeshElement::setVertex(size_t index, Point& new_vertice) {
     vertices[index] = new_vertice;
 }
 
@@ -46,7 +44,7 @@ Point MeshElement::getVertex(size_t index) {
     return vertices[index];
 }
 
-void MeshElement::setVerticesField(std::vector<Point> new_observable) {
+void MeshElement::setVerticesField(std::vector<Point>& new_observable) {
     if(vertices.size() != new_observable.size()) {
         LOG(ERROR) << "Invalid field vector";
         return;
@@ -56,7 +54,7 @@ void MeshElement::setVerticesField(std::vector<Point> new_observable) {
     }
 }
 
-void MeshElement::setVertexField(size_t index, Point new_observable) {
+void MeshElement::setVertexField(size_t index, Point& new_observable) {
     e_field[index] = new_observable;
 }
 
@@ -88,11 +86,11 @@ double MeshElement::getVolume() {
     return volume;
 }
 
-double MeshElement::getDistance(size_t index, Point qp) {
+double MeshElement::getDistance(size_t index, Point& qp) {
     return unibn::L2Distance<Point>::compute(vertices[index], qp);
 }
 
-bool MeshElement::validElement(double volume_cut, Point qp) {
+bool MeshElement::validElement(double volume_cut, Point& qp) {
     if(this->getVolume() == 0) {
         LOG(TRACE) << "Invalid tetrahedron with coplanar(3D)/colinear(2D) vertices.";
         return false;
@@ -120,7 +118,7 @@ bool MeshElement::validElement(double volume_cut, Point qp) {
     return true;
 }
 
-Point MeshElement::getObservable(Point qp) {
+Point MeshElement::getObservable(Point& qp) {
     Point new_observable;
     Eigen::Matrix4d sub_tetra_matrix;
     for(size_t index = 0; index < static_cast<size_t>(this->getDimension()) + 1; index++) {
@@ -139,7 +137,7 @@ Point MeshElement::getObservable(Point qp) {
     return new_observable;
 }
 
-void MeshElement::printElement(Point qp) {
+void MeshElement::printElement(Point& qp) {
     for(size_t index = 0; index < static_cast<size_t>(this->getDimension()) + 1; index++) {
         LOG(DEBUG) << "Tetrahedron vertex " << index_vec[index] << " (" << vertices[index].x << ", " << vertices[index].y
                    << ", " << vertices[index].z << ") - "

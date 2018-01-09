@@ -11,9 +11,10 @@
 #define ALLPIX_PIXEL_CHARGE_H
 
 #include <Math/DisplacementVector2D.h>
-
 #include <TRefArray.h>
+#include <algorithm>
 
+#include "MCParticle.hpp"
 #include "Object.hpp"
 #include "Pixel.hpp"
 #include "PropagatedCharge.hpp"
@@ -56,11 +57,16 @@ namespace allpix {
          * @return Possible set of pointers to propagated charges
          */
         std::vector<const PropagatedCharge*> getPropagatedCharges() const;
+        /**
+         * @brief Get the Monte-Carlo particles resulting in this pixel hit
+         * @return List of all related Monte-Carlo particles
+         */
+        std::vector<const MCParticle*> getMCParticles() const;
 
         /**
          * @brief ROOT class definition
          */
-        ClassDef(PixelCharge, 2);
+        ClassDef(PixelCharge, 3);
         /**
          * @brief Default constructor for ROOT I/O
          */
@@ -71,6 +77,7 @@ namespace allpix {
         unsigned int charge_{};
 
         TRefArray propagated_charges_;
+        TRefArray mc_particles_;
     };
 
     /**

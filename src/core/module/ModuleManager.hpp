@@ -107,24 +107,27 @@ namespace allpix {
          * @brief Create unique modules
          * @param library Void pointer to the loaded library
          * @param config Configuration of the module
+         * @param conf_manager Point to the configuration manager
          * @param messenger Pointer to the messenger
          * @param geo_manager Pointer to the geometry manager
          * @param seeder Seeder used to construct the PRNG of the modules
          * @return An unique module together with its identifier
          */
         std::pair<ModuleIdentifier, Module*>
-        create_unique_modules(void*, Configuration, Messenger*, GeometryManager*, std::mt19937_64& seeder);
+        create_unique_modules(void*, Configuration&, ConfigManager*, Messenger*, GeometryManager*, std::mt19937_64& seeder);
+
         /**
          * @brief Create detector modules
          * @param library Void pointer to the loaded library
          * @param config Configuration of the module
+         * @param conf_manager Point to the configuration manager
          * @param messenger Pointer to the messenger
          * @param geo_manager Pointer to the geometry manager
          * @param seeder Seeder used to construct the PRNG of the modules
          * @return A list of all created detector modules and their identifiers
          */
-        std::vector<std::pair<ModuleIdentifier, Module*>>
-        create_detector_modules(void*, Configuration, Messenger*, GeometryManager*, std::mt19937_64& seeder);
+        std::vector<std::pair<ModuleIdentifier, Module*>> create_detector_modules(
+            void*, Configuration&, ConfigManager*, Messenger*, GeometryManager*, std::mt19937_64& seeder);
 
         /**
          * @brief Set module specific log setting before running init/run/finalize

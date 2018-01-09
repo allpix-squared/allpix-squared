@@ -15,6 +15,7 @@
 #include "core/module/Module.hpp"
 
 // Local includes
+#include "corryvreckan/MCParticle.h"
 #include "corryvreckan/Pixel.h"
 #include "corryvreckan/TestBeamObject.h"
 #include "objects/PixelHit.hpp"
@@ -60,14 +61,18 @@ namespace allpix {
         // General module members
         std::vector<std::shared_ptr<PixelHitMessage>> pixel_messages_; // Receieved pixels
         Messenger* messenger_;
-        Configuration config_;
         GeometryManager* geometryManager_;
 
         // Parameters for output writing
         std::string fileName_;                                   // Output filename
+        std::string geometryFileName_;                           // Output geometry filename
         std::unique_ptr<TFile> outputFile_;                      // Output file
         long long int time_;                                     // Event time being written
         std::map<std::string, TTree*> outputTrees_;              // Output trees
         std::map<std::string, corryvreckan::Pixel*> treePixels_; // Objects attached to trees for writing
+
+        bool outputMCtruth_;                                               // Decision to write out MC particle info
+        std::map<std::string, TTree*> outputTreesMC_;                      // Output trees for MC particles
+        std::map<std::string, corryvreckan::MCParticle*> treeMCParticles_; // Objects attached to trees for writing
     };
 } // namespace allpix

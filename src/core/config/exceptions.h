@@ -35,7 +35,7 @@ namespace allpix {
          * @param file_name Name of the configuration file
          */
         explicit ConfigFileUnavailableError(const std::string& file_name) {
-            error_message_ = "Could not read configuration file " + file_name + " (does it exists?)";
+            error_message_ = "Could not read configuration file " + file_name + " - does it exist?";
         }
     };
 
@@ -65,7 +65,7 @@ namespace allpix {
                 section_str = "in empty section";
             }
 
-            error_message_ = "Could not convert value '" + value + "' of key '" + key + "' " + section_str + " to type " +
+            error_message_ = "Could not convert value '" + value + "' from key '" + key + "' " + section_str + " to type " +
                              allpix::demangle(type.name());
             if(!reason.empty()) {
                 error_message_ += ": " + reason;
@@ -96,13 +96,30 @@ namespace allpix {
 
     /**
      * @ingroup Exceptions
+     * @brief Indicates an error while parsing a key / value pair
+     */
+    class KeyValueParseError : public ConfigurationError {
+    public:
+        /**
+         * @brief Construct an error for a invalid key value pair
+         * @param key_value Key value pair which is trying to be parsed
+         * @param line_num Line number where the problem occurred
+         */
+        KeyValueParseError(const std::string& key_value, const std::string& reason) {
+            error_message_ = "Could not parse key / value pair '";
+            error_message_ += key_value;
+            error_message_ += ": " + reason;
+        }
+    };
+
+    /**
+     * @ingroup Exceptions
      * @brief Indicates an error while parsing a configuration file
      */
-    // TODO [doc] Rename to ConfigurationError
     class ConfigParseError : public ConfigurationError {
     public:
         /**
-         * @brief Construct an error for a missing key
+         * @brief Construct an error for a invalid configuration file
          * @param file_name Name of the configuration file
          * @param line_num Line number where the problem occurred
          */
@@ -110,7 +127,7 @@ namespace allpix {
             error_message_ = "Could not parse line ";
             error_message_ += std::to_string(line_num);
             error_message_ += " in file '" + file_name + "'";
-            error_message_ += ": not a section header, key/value pair or comment";
+            error_message_ += ": not a valid section header, key/value pair or comment";
         }
     };
 
@@ -118,7 +135,6 @@ namespace allpix {
     /**
      * @ingroup Exceptions
      * @brief Indicates an error with the contents of value
-     * @note Only configuration error that should be called directly from modules
      *
      * Should be raised if the data contains valid data for its type (otherwise an \ref InvalidKeyError should have been
      * raised earlier), but the value is not in the range of allowed values.
@@ -132,6 +148,25 @@ namespace allpix {
          * @param reason Reason why the value is invalid (empty if no explicit reason)
          */
         InvalidValueError(const Configuration& config, const std::string& key, const std::string& reason = "");
+    };
+    /**
+     * @ingroup Exceptions
+     * @brief Indicates an error with a combination of configuration keys
+     *
+     * Should be raised if a disallowed combination of keys is used, such as two optional parameters which contradict each
+     * other.
+     */
+    class InvalidCombinationError : public ConfigurationError {
+    public:
+        /**
+         * @brief Construct an error for an invalid combination of keys
+         * @param config Configuration object containing the problematic key combination
+         * @param key Name of the problematic keys
+         * @param reason Reason why the key combination is invalid (empty if no explicit reason)
+         */
+        InvalidCombinationError(const Configuration& config,
+                                std::initializer_list<std::string> keys,
+                                const std::string& reason = "");
     };
 } // namespace allpix
 

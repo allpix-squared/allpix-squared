@@ -25,7 +25,7 @@ using namespace allpix;
 DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
-    : Module(config, detector), config_(std::move(config)), detector_(std::move(detector)), pixels_message_(nullptr) {
+    : Module(std::move(config), detector), detector_(std::move(detector)), pixels_message_(nullptr) {
     // Bind pixel hits message
     messenger->bindSingle(this, &DetectorHistogrammerModule::pixels_message_, MsgFlags::REQUIRED);
 }
@@ -38,7 +38,7 @@ void DetectorHistogrammerModule::init() {
     LOG(TRACE) << "Creating histograms";
     std::string hit_map_name = "hit_map";
     std::string hit_map_title = "Hitmap for " + detector_->getName() + ";x (pixels);y (pixels)";
-    hit_map = new TH2I(hit_map_name.c_str(),
+    hit_map = new TH2D(hit_map_name.c_str(),
                        hit_map_title.c_str(),
                        model->getNPixels().x(),
                        -0.5,
@@ -50,7 +50,7 @@ void DetectorHistogrammerModule::init() {
     // Create histogram of cluster map
     std::string cluster_map_name = "cluster_map";
     std::string cluster_map_title = "Cluster map for " + detector_->getName() + ";x (pixels);y (pixels)";
-    cluster_map = new TH2I(cluster_map_name.c_str(),
+    cluster_map = new TH2D(cluster_map_name.c_str(),
                            cluster_map_title.c_str(),
                            model->getNPixels().x(),
                            -0.5,
@@ -62,15 +62,15 @@ void DetectorHistogrammerModule::init() {
     // Create cluster size plots
     std::string cluster_size_name = "cluster_size";
     std::string cluster_size_title = "Cluster size for " + detector_->getName() + ";cluster size [px];clusters";
-    cluster_size = new TH1I(cluster_size_name.c_str(),
+    cluster_size = new TH1D(cluster_size_name.c_str(),
                             cluster_size_title.c_str(),
-                            model->getNPixels().x() * model->getNPixels().y(),
+                            model->getNPixels().x() * model->getNPixels().y() / 10,
                             0.5,
-                            model->getNPixels().x() * model->getNPixels().y() + 0.5);
+                            model->getNPixels().x() * model->getNPixels().y() / 10 + 0.5);
 
     std::string cluster_size_x_name = "cluster_size_x";
     std::string cluster_size_x_title = "Cluster size X for " + detector_->getName() + ";cluster size x [px];clusters";
-    cluster_size_x = new TH1I(cluster_size_x_name.c_str(),
+    cluster_size_x = new TH1D(cluster_size_x_name.c_str(),
                               cluster_size_x_title.c_str(),
                               model->getNPixels().x(),
                               0.5,
@@ -78,7 +78,7 @@ void DetectorHistogrammerModule::init() {
 
     std::string cluster_size_y_name = "cluster_size_y";
     std::string cluster_size_y_title = "Cluster size Y for " + detector_->getName() + ";cluster size y [px];clusters";
-    cluster_size_y = new TH1I(cluster_size_y_name.c_str(),
+    cluster_size_y = new TH1D(cluster_size_y_name.c_str(),
                               cluster_size_y_title.c_str(),
                               model->getNPixels().y(),
                               0.5,
@@ -87,7 +87,7 @@ void DetectorHistogrammerModule::init() {
     // Create event size plot
     std::string event_size_name = "event_size";
     std::string event_size_title = "Event size for " + detector_->getName() + ";event size [px];events";
-    event_size = new TH1I(event_size_name.c_str(),
+    event_size = new TH1D(event_size_name.c_str(),
                           event_size_title.c_str(),
                           model->getNPixels().x() * model->getNPixels().y(),
                           0.5,
@@ -95,8 +95,8 @@ void DetectorHistogrammerModule::init() {
 
     // Create number of clusters plot
     std::string n_cluster_name = "n_cluster";
-    std::string n_cluster_title = "Number of clusters for " + detector_->getName() + ";size;clusters";
-    n_cluster = new TH1I(n_cluster_name.c_str(),
+    std::string n_cluster_title = "Number of clusters for " + detector_->getName() + ";clusters;events";
+    n_cluster = new TH1D(n_cluster_name.c_str(),
                          n_cluster_title.c_str(),
                          model->getNPixels().x() * model->getNPixels().y(),
                          0.5,
@@ -124,30 +124,24 @@ void DetectorHistogrammerModule::run(unsigned int) {
     }
 
     // Perform a clustering
-    doClustering();
+    std::vector<Cluster> clusters = doClustering();
 
     // Evaluate the clusters
-    for(auto clus : clusters_) {
-        LOG(DEBUG) << "Cluster, size " << clus->getClusterSize() << " :";
-        for(auto& pixel : clus->getPixelHits()) {
-            LOG(DEBUG) << pixel->getPixel().getIndex();
-        }
+    for(auto clus : clusters) {
         // Fill cluster histograms
-        cluster_size->Fill(static_cast<double>(clus->getClusterSize()));
-        auto clusSizesXY = clus->getClusterSizeXY();
+        cluster_size->Fill(static_cast<double>(clus.getClusterSize()));
+        auto clusSizesXY = clus.getClusterSizeXY();
         cluster_size_x->Fill(clusSizesXY.first);
         cluster_size_y->Fill(clusSizesXY.second);
 
-        auto clusPos = clus->getClusterPosition();
+        auto clusPos = clus.getClusterPosition();
         cluster_map->Fill(clusPos.x(), clusPos.y());
-        cluster_charge->Fill(clus->getClusterCharge() * 1.e-3);
+        cluster_charge->Fill(clus.getClusterCharge() * 1.e-3);
     }
 
     // Fill further histograms
     event_size->Fill(static_cast<double>(pixels_message_->getData().size()));
-    n_cluster->Fill(static_cast<double>(clusters_.size()));
-
-    clusters_.clear();
+    n_cluster->Fill(static_cast<double>(clusters.size()));
 }
 
 void DetectorHistogrammerModule::finalize() {
@@ -234,53 +228,52 @@ void DetectorHistogrammerModule::finalize() {
     cluster_charge->Write();
 }
 
-void DetectorHistogrammerModule::doClustering() {
+std::vector<Cluster> DetectorHistogrammerModule::doClustering() {
+    std::vector<Cluster> clusters;
+    std::map<const PixelHit*, bool> usedPixel;
 
-    for(auto& pixel_hit : pixels_message_->getData()) {
-        Cluster* clus;
-        if(checkAdjacentPixels(&pixel_hit) == 0) {
-            LOG(DEBUG) << "Creating new cluster: " << pixel_hit.getPixel().getIndex();
-            clus = new Cluster(&pixel_hit);
-            clusters_.push_back(clus);
+    auto pixel_it = pixels_message_->getData().begin();
+    for(; pixel_it != pixels_message_->getData().end(); pixel_it++) {
+        const PixelHit* pixel_hit = &(*pixel_it);
+
+        // Check if the pixel has been used:
+        if(usedPixel[pixel_hit]) {
+            continue;
         }
-    }
-}
 
-unsigned int DetectorHistogrammerModule::checkAdjacentPixels(const PixelHit* pixel_hit) {
-    auto hit_idx = pixel_hit->getPixel().getIndex();
-    unsigned int adjacentClusters = 0;
-    if(clusters_.empty()) {
-        LOG(DEBUG) << "No clusters to check.";
-    } else {
-        LOG(DEBUG) << "Check for clusters with adjacent pixels to " << hit_idx;
-        Cluster* firstFoundCluster = clusters_.front();
-        for(auto it = clusters_.begin(); it < clusters_.end();) {
-            bool mergedCluster = false;
-            Cluster* clus = *it;
-            for(auto& pixel_other : clus->getPixelHits()) {
-                auto other_idx = pixel_other->getPixel().getIndex();
-                auto distx = std::max(hit_idx.x(), other_idx.x()) - std::min(hit_idx.x(), other_idx.x());
-                auto disty = std::max(hit_idx.y(), other_idx.y()) - std::min(hit_idx.y(), other_idx.y());
-                if(distx <= 1 and disty <= 1) {
-                    adjacentClusters++;
-                    if(adjacentClusters == 1) {
-                        LOG(DEBUG) << "Found first adjacent cluster (with pixel " << other_idx << "). Add pixel.";
-                        clus->addPixelHit(pixel_hit);
-                        firstFoundCluster = clus;
-                    } else if(adjacentClusters == 2) {
-                        LOG(DEBUG) << "Found another adjacent cluster. Merging clusters.";
-                        firstFoundCluster->eatCluster(clus);
-                        adjacentClusters--;
-                        it = clusters_.erase(it);
-                        mergedCluster = true;
-                    }
-                    break;
+        // Create new cluster
+        Cluster cluster(pixel_hit);
+        usedPixel[pixel_hit] = true;
+        LOG(DEBUG) << "Creating new cluster with seed: " << pixel_hit->getPixel().getIndex();
+
+        auto touching = [&](const PixelHit* pixel) {
+            auto pxi1 = pixel->getIndex();
+            for(auto& cluster_pixel : cluster.getPixelHits()) {
+
+                auto distance = [](unsigned int lhs, unsigned int rhs) { return (lhs > rhs ? lhs - rhs : rhs - lhs); };
+
+                auto pxi2 = cluster_pixel->getIndex();
+                if(distance(pxi1.x(), pxi2.x()) <= 1 && distance(pxi1.y(), pxi2.y()) <= 1) {
+                    return true;
                 }
             }
-            if(!mergedCluster) {
-                ++it;
+            return false;
+        };
+
+        // Keep adding pixels to the cluster:
+        for(auto other_pixel = pixel_it + 1; other_pixel != pixels_message_->getData().end(); other_pixel++) {
+            const PixelHit* neighbor = &(*other_pixel);
+
+            // Check if neighbor has been used or if it touches the current cluster:
+            if(usedPixel[neighbor] || !touching(neighbor)) {
+                continue;
             }
+
+            cluster.addPixelHit(neighbor);
+            LOG(DEBUG) << "Adding pixel: " << neighbor->getPixel().getIndex();
+            usedPixel[neighbor] = true;
         }
+        clusters.push_back(cluster);
     }
-    return adjacentClusters;
+    return clusters;
 }

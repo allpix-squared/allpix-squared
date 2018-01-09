@@ -10,7 +10,7 @@
 #include <string>
 
 // Include trim utility from allpix
-#include "core/utils/string.h"
+#include "utils/string.h"
 
 using namespace mesh_converter;
 

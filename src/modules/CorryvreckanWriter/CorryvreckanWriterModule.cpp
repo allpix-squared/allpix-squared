@@ -9,34 +9,48 @@
 
 #include "CorryvreckanWriterModule.hpp"
 
+#include <Math/RotationZYX.h>
+
+#include <fstream>
 #include <string>
 #include <utility>
 
+#include "core/utils/file.h"
 #include "core/utils/log.h"
 
 using namespace allpix;
 
 CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration config, Messenger* messenger, GeometryManager* geoManager)
-    : Module(config), messenger_(messenger), config_(std::move(config)), geometryManager_(geoManager) {
-    // ... Implement ... (Typically bounds the required messages and optionally sets configuration defaults)
-    LOG(TRACE) << "Initializing module " << getUniqueName();
+    : Module(std::move(config)), messenger_(messenger), geometryManager_(geoManager) {
+
     // Require PixelCharge messages for single detector
     messenger_->bindMulti(this, &CorryvreckanWriterModule::pixel_messages_, MsgFlags::REQUIRED);
+
+    config_.setDefault("file_name", "corryvreckanOutput.root");
+    config_.setDefault("geometry_file", "corryvreckanGeometry.conf");
+    config_.setDefault("output_mctruth", false);
 }
 
 // Set up the output trees
 void CorryvreckanWriterModule::init() {
 
-    LOG(TRACE) << "Initialising module " << getUniqueName();
+    // Check if MC data to be saved
+    outputMCtruth_ = config_.get<bool>("output_mctruth", false);
 
     // Create output file and directories
-    fileName_ = getOutputPath(config_.get<std::string>("file_name", "corryvreckanOutput") + ".root", true);
+    fileName_ = createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name"), "root"));
     outputFile_ = std::make_unique<TFile>(fileName_.c_str(), "RECREATE");
     outputFile_->cd();
     outputFile_->mkdir("pixels");
+    if(outputMCtruth_) {
+        outputFile_->mkdir("mcparticles");
+    }
+
+    // Create geometry file:
+    geometryFileName_ = createOutputFile(allpix::add_file_extension(config_.get<std::string>("geometry_file"), "conf"));
 
     // Loop over all detectors and make trees for data
-    std::vector<std::shared_ptr<Detector>> detectors = geometryManager_->getDetectors();
+    auto detectors = geometryManager_->getDetectors();
     for(auto& detector : detectors) {
 
         // Get the detector ID and type
@@ -51,6 +65,21 @@ void CorryvreckanWriterModule::init() {
         // Map the pixel object to the tree
         treePixels_[objectID] = new corryvreckan::Pixel();
         outputTrees_[objectID]->Branch("pixels", &treePixels_[objectID]);
+
+        // If MC truth needed then make trees for output
+        if(!outputMCtruth_) {
+            continue;
+        }
+
+        // Create the tree
+        std::string objectID_MC = detectorID + "_mcparticles";
+        std::string treeName_MC = detectorID + "_Timepix3_mcparticles";
+        outputTreesMC_[objectID_MC] = new TTree(treeName_MC.c_str(), treeName_MC.c_str());
+        outputTreesMC_[objectID_MC]->Branch("time", &time_);
+
+        // Map the mc particle object to the tree
+        treeMCParticles_[objectID_MC] = new corryvreckan::MCParticle();
+        outputTreesMC_[objectID_MC]->Branch("mcparticles", &treeMCParticles_[objectID_MC]);
     }
 
     // Initialise the time
@@ -63,8 +92,8 @@ void CorryvreckanWriterModule::run(unsigned int) {
     // Loop through all receieved messages
     for(auto& message : pixel_messages_) {
 
-        std::string detectorID = message->getDetector()->getName();
-        std::string objectID = detectorID + "_pixels";
+        auto detectorID = message->getDetector()->getName();
+        auto objectID = detectorID + "_pixels";
         LOG(DEBUG) << "Receieved " << message->getData().size() << " pixel hits from detector " << detectorID;
         LOG(DEBUG) << "Time on event hits will be " << time_;
 
@@ -74,25 +103,51 @@ void CorryvreckanWriterModule::run(unsigned int) {
             // Make a new output pixel
             unsigned int pixelX = allpix_pixel.getPixel().getIndex().X();
             unsigned int pixelY = allpix_pixel.getPixel().getIndex().Y();
-            unsigned int adc = allpix_pixel.getPixel().getIndex().Y();
-            corryvreckan::Pixel* outputPixel = new corryvreckan::Pixel(detectorID, int(pixelX), int(pixelY), int(adc));
+            double adc = allpix_pixel.getSignal();
+            long long int time(time_);
+            auto outputPixel = new corryvreckan::Pixel(detectorID, int(pixelY), int(pixelX), int(adc), time);
+
+            LOG(DEBUG) << "Pixel (" << pixelX << "," << pixelY << ") written to device " << detectorID;
 
             // Map the pixel to the output tree and write it
             treePixels_[objectID] = outputPixel;
             outputTrees_[objectID]->Fill();
+            delete outputPixel;
+
+            // If writing MC truth then also write out associated particle info
+            if(!outputMCtruth_) {
+                continue;
+            }
+
+            // Get all associated particles
+            auto mcp = allpix_pixel.getMCParticles();
+            for(auto& particle : mcp) {
+
+                // Create a new particle object
+                std::string objectID_MC = detectorID + "_mcparticles";
+                auto mcParticle = new corryvreckan::MCParticle(
+                    particle->getParticleID(), particle->getLocalStartPoint(), particle->getLocalEndPoint());
+
+                // Map the mc particle to the output tree and write it
+                treeMCParticles_[objectID_MC] = mcParticle;
+                LOG(DEBUG) << "MC particle started locally at (" << mcParticle->getLocalStart().X() << ","
+                           << mcParticle->getLocalStart().Y() << ") and ended at " << mcParticle->getLocalEnd().X() << ","
+                           << mcParticle->getLocalEnd().Y() << ")";
+                outputTreesMC_[objectID_MC]->Fill();
+                delete mcParticle;
+            }
         }
     }
 
     // Increment the time till the next event
-    time_ += 1;
+    time_ += 10;
 }
 
 // Save the output trees to file
-// Set up the output trees
 void CorryvreckanWriterModule::finalize() {
 
     // Loop over all detectors and store the trees
-    std::vector<std::shared_ptr<Detector>> detectors = geometryManager_->getDetectors();
+    auto detectors = geometryManager_->getDetectors();
     for(auto& detector : detectors) {
 
         // Get the detector ID and type
@@ -107,7 +162,58 @@ void CorryvreckanWriterModule::finalize() {
         // Clean up the tree and remove object pointer
         delete outputTrees_[objectID];
         treePixels_[objectID] = nullptr;
-    }
 
+        // Write the MC truth
+        if(!outputMCtruth_) {
+            continue;
+        }
+
+        std::string objectID_MC = detectorID + "_mcparticles";
+        outputFile_->cd("mcparticles");
+        outputTreesMC_[objectID_MC]->Write();
+
+        // Clean up the tree and remove object pointer
+        delete outputTreesMC_[objectID_MC];
+        treeMCParticles_[objectID_MC] = nullptr;
+    }
     outputFile_->Close();
+
+    // Print statistics
+    LOG(STATUS) << "Wrote output data to file:" << std::endl << fileName_;
+
+    // Loop over all detectors and store the geometry:
+    // Write geometry:
+    std::ofstream geometry_file;
+    if(!geometryFileName_.empty()) {
+        geometry_file.open(geometryFileName_, std::ios_base::out | std::ios_base::trunc);
+        if(!geometry_file.good()) {
+            throw ModuleError("Cannot write to Corryvreckan geometry file");
+        }
+
+        geometry_file << "# Allpix Squared detector geometry - https://cern.ch/allpix-squared" << std::endl << std::endl;
+
+        for(auto& detector : detectors) {
+            geometry_file << "[" << detector->getName() << "]" << std::endl;
+            geometry_file << "position = " << Units::display(detector->getPosition().x(), {"mm", "um"}) << ", "
+                          << Units::display(detector->getPosition().y(), {"mm", "um"}) << ", "
+                          << Units::display(detector->getPosition().z(), {"mm", "um"}) << std::endl;
+
+            // Transform the rotation matrix to a ZYX rotation and invert it to get a XYZ rotation
+            // This way we stay compatible to old Corryvreckan versions which only support XYZ.
+            geometry_file << "orientation_mode = \"xyz\"" << std::endl;
+            ROOT::Math::RotationZYX rotations(detector->getOrientation().Inverse());
+            geometry_file << "orientation = " << Units::display(-rotations.Psi(), "deg") << ", "
+                          << Units::display(-rotations.Theta(), "deg") << ", " << Units::display(-rotations.Phi(), "deg")
+                          << std::endl;
+
+            auto model = detector->getModel();
+            geometry_file << "type = \"" << model->getType() << "\"" << std::endl;
+            geometry_file << "pixel_pitch = " << Units::display(model->getPixelSize().x(), "um") << ", "
+                          << Units::display(model->getPixelSize().y(), "um") << std::endl;
+            geometry_file << "number_of_pixels = " << model->getNPixels().x() << ", " << model->getNPixels().y()
+                          << std::endl;
+
+            geometry_file << std::endl;
+        }
+    }
 }

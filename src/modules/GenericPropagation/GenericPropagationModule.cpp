@@ -52,7 +52,7 @@ using namespace allpix;
 GenericPropagationModule::GenericPropagationModule(Configuration config,
                                                    Messenger* messenger,
                                                    std::shared_ptr<Detector> detector)
-    : Module(config, detector), config_(std::move(config)), messenger_(messenger), detector_(std::move(detector)) {
+    : Module(std::move(config), detector), messenger_(messenger), detector_(std::move(detector)) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
@@ -269,7 +269,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
         // Create the contour histogram
         std::vector<std::string> file_name_contour;
         std::vector<TH2F*> histogram_contour;
-        file_name_contour.push_back(getOutputPath("contourX" + std::to_string(event_num) + ".gif"));
+        file_name_contour.push_back(createOutputFile("contourX" + std::to_string(event_num) + ".gif"));
         histogram_contour.push_back(new TH2F(("contourX_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
                                              "",
                                              100,
@@ -279,7 +279,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
                                              model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0,
                                              model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0));
         histogram_contour.back()->SetDirectory(getROOTDirectory());
-        file_name_contour.push_back(getOutputPath("contourY" + std::to_string(event_num) + ".gif"));
+        file_name_contour.push_back(createOutputFile("contourY" + std::to_string(event_num) + ".gif"));
         histogram_contour.push_back(new TH2F(("contourY_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
                                              "",
                                              100,
@@ -289,7 +289,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
                                              model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0,
                                              model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0));
         histogram_contour.back()->SetDirectory(getROOTDirectory());
-        file_name_contour.push_back(getOutputPath("contourZ" + std::to_string(event_num) + ".gif"));
+        file_name_contour.push_back(createOutputFile("contourZ" + std::to_string(event_num) + ".gif"));
         histogram_contour.push_back(new TH2F(("contourZ_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
                                              "",
                                              100,
@@ -301,7 +301,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
         histogram_contour.back()->SetDirectory(getROOTDirectory());
 
         // Create file and disable statistics for histogram
-        std::string file_name_anim = getOutputPath("animation" + std::to_string(event_num) + ".gif");
+        std::string file_name_anim = createOutputFile("animation" + std::to_string(event_num) + ".gif");
         for(size_t i = 0; i < 3; ++i) {
             histogram_contour[i]->SetStats(false);
         }
@@ -542,12 +542,14 @@ void GenericPropagationModule::run(unsigned int event_num) {
 
             // Create a new propagated charge and add it to the list
             auto global_position = detector_->getGlobalPosition(position);
-            propagated_charges.emplace_back(position,
-                                            global_position,
-                                            deposit.getType(),
-                                            charge_per_step,
-                                            deposit.getEventTime() + prop_pair.second,
-                                            &deposit);
+            PropagatedCharge propagated_charge(position,
+                                               global_position,
+                                               deposit.getType(),
+                                               charge_per_step,
+                                               deposit.getEventTime() + prop_pair.second,
+                                               &deposit);
+
+            propagated_charges.push_back(std::move(propagated_charge));
 
             // Update statistical information
             ++step_count;

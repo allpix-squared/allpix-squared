@@ -42,13 +42,16 @@ using namespace allpix;
  * Includes the particle source point to the geometry using \ref GeometryManager::addPoint.
  */
 DepositionGeant4Module::DepositionGeant4Module(Configuration config, Messenger* messenger, GeometryManager* geo_manager)
-    : Module(config), config_(std::move(config)), messenger_(messenger), geo_manager_(geo_manager), last_event_num_(1),
+    : Module(std::move(config)), messenger_(messenger), geo_manager_(geo_manager), last_event_num_(1),
       run_manager_g4_(nullptr) {
     // Create user limits for maximum step length in the sensor
     user_limits_ = std::make_unique<G4UserLimits>(config_.get<double>("max_step_length", Units::get(1.0, "um")));
 
     // Set default physics list
     config_.setDefault("physics_list", "FTFP_BERT_LIV");
+
+    config_.setDefault<bool>("output_plots", false);
+    config_.setDefault<int>("output_plots_scale", Units::get(100, "ke"));
 
     // Add the particle source position to the geometry
     geo_manager_->addPoint(config_.get<ROOT::Math::XYZPoint>("beam_position"));
@@ -130,6 +133,31 @@ void DepositionGeant4Module::init() {
     }
     // Register a step limiter (uses the user limits defined earlier)
     physicsList->RegisterPhysics(new G4StepLimiterPhysics());
+
+    // Set the range-cut off threshold for secondary production:
+    double production_cut;
+    if(config_.has("range_cut")) {
+        production_cut = config_.get<double>("range_cut");
+        LOG(INFO) << "Setting configured G4 production cut to " << Units::display(production_cut, {"mm", "um"});
+    } else {
+        // Define the production cut as one fifth of the minimum size (thickness, pitch) among the detectors
+        double min_size = std::numeric_limits<double>::max();
+        std::string min_detector;
+        for(auto& detector : geo_manager_->getDetectors()) {
+            auto model = detector->getModel();
+            double prev_min_size = min_size;
+            min_size =
+                std::min({min_size, model->getPixelSize().x(), model->getPixelSize().y(), model->getSensorSize().z()});
+            if(min_size != prev_min_size) {
+                min_detector = detector->getName();
+            }
+        }
+        production_cut = min_size / 5;
+        LOG(INFO) << "Setting G4 production cut to " << Units::display(production_cut, {"mm", "um"})
+                  << ", derived from properties of detector \"" << min_detector << "\"";
+    }
+    ui_g4->ApplyCommand("/run/setCut " + std::to_string(production_cut));
+
     // Initialize the physics list
     LOG(TRACE) << "Initializing physics processes";
     run_manager_g4_->SetUserInitialization(physicsList);
@@ -172,6 +200,20 @@ void DepositionGeant4Module::init() {
         // Add the sensitive detector action
         logical_volume->SetSensitiveDetector(sensitive_detector_action);
         sensors_.push_back(sensitive_detector_action);
+
+        // If requested, prepare output plots
+        if(config_.get<bool>("output_plots")) {
+            LOG(TRACE) << "Creating output plots";
+
+            // Plot axis are in kilo electrons - convert from framework units!
+            int maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
+            int nbins = 5 * maximum;
+
+            // Create histograms if needed
+            std::string plot_name = "deposited_charge_" + sensitive_detector_action->getName();
+            charge_per_event_[sensitive_detector_action->getName()] =
+                new TH1D(plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum);
+        }
     }
 
     if(!useful_deposition) {
@@ -217,6 +259,12 @@ void DepositionGeant4Module::run(unsigned int event_num) {
     // Dispatch the necessary messages
     for(auto& sensor : sensors_) {
         sensor->dispatchMessages();
+
+        // Fill output plots if requested:
+        if(config_.get<bool>("output_plots")) {
+            double charge = static_cast<double>(Units::convert(sensor->getDepositedCharge(), "ke"));
+            charge_per_event_[sensor->getName()]->Fill(charge);
+        }
     }
 }
 
@@ -224,6 +272,14 @@ void DepositionGeant4Module::finalize() {
     size_t total_charges = 0;
     for(auto& sensor : sensors_) {
         total_charges += sensor->getTotalDepositedCharge();
+    }
+
+    if(config_.get<bool>("output_plots")) {
+        // Write histograms
+        LOG(TRACE) << "Writing output plots to file";
+        for(auto& plot : charge_per_event_) {
+            plot.second->Write();
+        }
     }
 
     // Print summary or warns if module did not output any charges

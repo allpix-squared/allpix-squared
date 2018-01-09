@@ -80,4 +80,4 @@ namespace allpix {
     bool allpix_module_is_unique() { return false; }
 #endif
     }
-}
+} // namespace allpix

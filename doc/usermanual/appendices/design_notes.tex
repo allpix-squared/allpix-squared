@@ -1,7 +1,7 @@
-\section{Design Development Notes}
+\subsection{Design Development Notes}
 This chapter serves as a short overview of the design goals of \apsq and the related implementation choices. Note that \apsq API is currently in a very early development stage and any implementation detail here is subject to change.
 
-\subsection{Goals}
+\paragraph{Goals}
 \apsq is developed with a few goals in mind. These are (listed from most important to least important) the following:
 \begin{enumerate}
     \item Reflects the physics
@@ -27,7 +27,7 @@ This chapter serves as a short overview of the design goals of \apsq and the rel
     \end{itemize}
 \end{enumerate}
 
-\subsection{Setup}
+\paragraph{Setup}
 \apsq consists of four major components listed below:
 \begin{enumerate}
 \item \textbf{Core}: The core contains the internal logic to initiate all modules and to run the event sequence. The core should keep its dependencies to a minimum and remain separated from the components below. More info later.
@@ -38,7 +38,7 @@ This chapter serves as a short overview of the design goals of \apsq and the rel
 
 Finally the implementation provides a executable which integrates the core, messages and tools together with the command-line handling into a single process.
 
-\subsection{Core}
+\paragraph{Core}
 The core is structured around one main object (Allpix) and a set of managers. Besides this it contains a few utilities for logging, some string operations and a set of exceptions that could happen during the execution of a single event. A manager is an unique object bound to Allpix that should not be copyable. The set of managers and their uses follows hereafter.
 
 \begin{enumerate}
@@ -65,7 +65,7 @@ The core is structured around one main object (Allpix) and a set of managers. Be
 \item \textbf{Messenger}: Faciliates the message passing between the modules. Messages should be the only way modules communicate with each other (besides their concurrent access of data through the managers). On instantiation modules should register for the messages they wish to receive. They can either (1) register a callback to be called on message dispatching, (2) to bind the message to variable in the class or (3) to add the message to a list of messages in the module. Messages should only be dispatched in the run() method of every module. The messenger should take care to dispatch messages to the right detector instances and match input, output names that are potentially provided.
 \end{enumerate}
 
-\subsection{Messages}
+\paragraph{Messages}
 A few ideas for messages are the following:
 \begin{itemize}
 \item CarrierDepositionMessage: with vector of carriers located at a certain local x,y,z position in the detector

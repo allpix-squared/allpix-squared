@@ -11,7 +11,7 @@ If the same type of messages is dispatched multiple times, it is combined and wr
 In addition to the objects, both the configuration and the geometry setup are written to the ROOT file. The main configuration file is copied directly and all key/value pairs are written to a directory *config* in a subdirectory with the name of the corresponding module. All the detectors are written to a subdirectory with the name of the detector in the top directory *detectors*. Every detector contains the position, rotation matrix and the detector model (with all key/value pairs stored in a similar way as the main configuration).
 
 #### Parameters
-* `file_name` : Name of the data file (without the .root suffix) to create, relative to the output directory of the framework.
+* `file_name` : Name of the data file to create, relative to the output directory of the framework. The file extension `.root` will be appended if not present.
 * `include` : Array of object names (without `allpix::` prefix) to write to the ROOT trees, all other object names are ignored (cannot be used together simulateneously with the *exclude* parameter).
 * `exclude`: Array of object names (without `allpix::` prefix) that are not written to the ROOT trees (cannot be used together simulateneously with the *include* parameter).
 

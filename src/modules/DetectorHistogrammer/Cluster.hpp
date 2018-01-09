@@ -25,7 +25,7 @@ namespace allpix {
          * @brief Construct a cluster
          * @param seedPixelHit PixelHit to start the cluster with
          */
-        Cluster(const PixelHit* seedPixelHit);
+        explicit Cluster(const PixelHit* seedPixelHit);
 
         /**
          * @brief Get the signal data for the hit
@@ -69,12 +69,6 @@ namespace allpix {
          */
         std::set<const PixelHit*> getPixelHits() const { return pixelHits_; }
 
-        /**
-         * @brief Add all pixels from another cluster and delete it
-         * @param otherCluster cluster to be merged
-         */
-        void eatCluster(Cluster* otherCluster);
-
     private:
         const PixelHit* seedPixelHit_;
 
@@ -83,5 +77,5 @@ namespace allpix {
 
         unsigned int minX_, minY_, maxX_, maxY_;
     };
-}
+} // namespace allpix
 #endif

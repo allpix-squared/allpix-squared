@@ -180,4 +180,4 @@ ADD_SUBDIRECTORY(tools)
 ENABLE_TESTING()
 
 # Include all tests
-ADD_SUBDIRECTORY(test)
+ADD_SUBDIRECTORY(etc/unittests)
