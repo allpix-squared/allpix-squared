@@ -18,3 +18,4 @@ ENDIF()
 # Configure the targets and components to include
 SET(CPACK_GENERATOR "TGZ")
 SET(CPACK_COMPONENTS_ALL application modules)
+SET(CPACK_INSTALLED_DIRECTORIES "${CMAKE_CURRENT_BINARY_DIR}/setup/;.")

@@ -22,6 +22,21 @@ Currently, the following targets are provided:
   \item[\command{make cppcheck-html}] Compiles a HTML report from the defects list gathered by \command{make cppcheck}. This target is only available if the \command{cppcheck-htmlreport} executable is found in the \dir{PATH}.
 \end{description}
 
+\subsection{Packaging}
+
+\apsq comes with a basic configuration to generate tarballs from the compiled binaries using the CPack command. In order to generate a working tarball from the current \apsq build, the \parameter{RPATH} of the executable should not be set, otherwise the \command{allpix} binary will not be able to locate the dynamic libraries. If not set, the global \parameter{LD_LIBRARY_PATH} is used to search for the required libraries:
+
+\begin{verbatim}
+$ mkdir build
+$ cd build
+$ cmake -DCMAKE_SKIP_RPATH=ON ..
+$ cpack
+\end{verbatim}
+
+The content of the produced tarball can be extracted to any location of the file system, but requires the ROOT6 and Geant4 libraries as well as possibly additional libraries linked by individual at runtime.
+For this purpose, a \file{setup.sh} shell script is automatically generated and added to the tarball.
+It contains the ROOT6 and Geant4 paths used for the compilation of the binaries, these paths might have to be changed manually when deploying on different computers.
+
 \subsection{Continuous Integration}
 \label{sec:ci}
 

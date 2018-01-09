@@ -178,3 +178,11 @@ ENABLE_TESTING()
 
 # Include all tests
 ADD_SUBDIRECTORY(etc/unittests)
+
+#############################
+# Create a local setup file #
+#############################
+
+GET_FILENAME_COMPONENT(THISROOT thisroot.sh PROGRAM)
+GET_FILENAME_COMPONENT(THISG4 geant4.sh PROGRAM)
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/setup.cmake.sh" "${CMAKE_CURRENT_BINARY_DIR}/setup/setup.sh" @ONLY)
