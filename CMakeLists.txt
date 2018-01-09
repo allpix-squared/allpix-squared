@@ -32,9 +32,6 @@ ADD_DEFINITIONS(-DALLPIX_PROJECT_NAME="${CMAKE_PROJECT_NAME}" -DALLPIX_PROJECT_V
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake.h" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
 
 INCLUDE(cmake/CPackConfig.cmake)
-include(cmake/TargetArch.cmake)
-target_architecture(MYARCH)
-MESSAGE(STATUS "ARCH: ${MYARCH}")
 INCLUDE(CPack)
 
 ###############################################
