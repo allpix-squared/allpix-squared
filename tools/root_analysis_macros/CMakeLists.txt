@@ -13,6 +13,6 @@ IF(NOT ABSOLUTE_INSTALL_PREFIX STREQUAL PROJECT_SOURCE_DIR)
         FILES
         constructComparisonTree.C
         remakeProject.C
-        COMPONENT tools
-        DESTINATION ${MACRO_DIRECTORY})
+        DESTINATION ${MACRO_DIRECTORY}
+        COMPONENT tools)
 ENDIF()
