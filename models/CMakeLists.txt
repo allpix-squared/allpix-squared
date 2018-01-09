@@ -23,6 +23,7 @@ INSTALL(
     test.conf
     timepix.conf
     medipix3.conf
+    mimosa23.conf
     mimosa26.conf
     fei3.conf
     ibl_planar.conf
