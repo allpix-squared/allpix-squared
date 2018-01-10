@@ -5,9 +5,9 @@ AllpixSquared_version="@ALLPIX_VERSION@"
 
 THIS_BASH=$BASH
 if [[ $THIS_BASH == "" ]]; then
-    THIS_HERE=$(pwd)/$(dirname $0)
+    THIS_HERE=$(dirname $0)
 else
-    THIS_HERE=$(pwd)/$(dirname ${BASH_SOURCE[0]})
+    THIS_HERE=$(dirname ${BASH_SOURCE[0]})
 fi
 
 CLIC_AllpixSquared_home=$THIS_HERE
