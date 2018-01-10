@@ -6,6 +6,10 @@ GET_FILENAME_COMPONENT(ABSOLUTE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} ABSOLUTE)
 IF(ABSOLUTE_INSTALL_PREFIX STREQUAL PROJECT_SOURCE_DIR)
     # Use local model directory (unless other is given)
     SET(MODEL_DIRECTORY "models" CACHE PATH "Models directory" FORCE)
+
+    IF(NOT IS_ABSOLUTE ${MODEL_DIRECTORY})
+        SET(MODEL_DIRECTORY "${CMAKE_INSTALL_PREFIX}/${MODEL_DIRECTORY}" CACHE PATH "Models directory" FORCE)
+    ENDIF()
 ELSE()
     # Set the install path to share
     # FIXME Allow for more fine tuned install configuration
