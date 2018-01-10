@@ -124,7 +124,7 @@ void GeometryManager::load(const Configuration& global_config, std::mt19937_64& 
             data_dir += "/";
         }
 
-        data_dir = data_dir + ALLPIX_PROJECT_NAME + "/models";
+        data_dir += std::string(ALLPIX_PROJECT_NAME) + std::string("/models");
         if(path_is_directory(data_dir)) {
             model_paths_.emplace_back(data_dir);
             LOG(TRACE) << "Registered global model path: " << data_dir;
