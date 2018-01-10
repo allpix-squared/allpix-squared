@@ -26,7 +26,12 @@ FUNCTION(get_version PROJECT_VERSION)
         # If we don't have git we can not really do anything
         MESSAGE(STATUS "Source tarball build - no repository present.")
     ENDIF(NOT SOURCE_PACKAGE)
-    
+
     # Set the project version in the parent scope
     SET(${PROJECT_VERSION} ${${PROJECT_VERSION}} PARENT_SCOPE)
+ENDFUNCTION()
+
+FUNCTION(add_runtime_dep RUNTIME_NAME)
+    GET_FILENAME_COMPONENT(THISPROG ${RUNTIME_NAME} PROGRAM)
+    SET(ALLPIX_RUNTIME_DEPS ${ALLPIX_RUNTIME_DEPS} ${THISPROG} CACHE INTERNAL "ALLPIX_RUNTIME_DEPS")
 ENDFUNCTION()

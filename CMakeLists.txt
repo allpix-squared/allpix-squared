@@ -126,6 +126,9 @@ ENDIF()
 SET(ALLPIX_DEPS_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS})
 SET(ALLPIX_DEPS_LIBRARIES ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES} Threads::Threads)
 
+# Add "thisroot.sh" as runtime dependency for setup.sh file:
+ADD_RUNTIME_DEP(thisroot.sh)
+
 # Include allpix cmake functions
 INCLUDE("cmake/allpix.cmake")
 
@@ -183,6 +186,11 @@ ADD_SUBDIRECTORY(etc/unittests)
 # Create a local setup file #
 #############################
 
-GET_FILENAME_COMPONENT(THISROOT thisroot.sh PROGRAM)
-GET_FILENAME_COMPONENT(THISG4 geant4.sh PROGRAM)
+# Remove duplicate list items
+LIST(REMOVE_DUPLICATES ALLPIX_RUNTIME_DEPS)
+# Build configuration string with commands
+FOREACH(dep ${ALLPIX_RUNTIME_DEPS})
+    SET(SETUP_FILE_DEPS "${SETUP_FILE_DEPS}source ${dep}\n")
+ENDFOREACH()
+# Create setup file
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/setup.cmake.sh" "${CMAKE_CURRENT_BINARY_DIR}/setup/setup.sh" @ONLY)
