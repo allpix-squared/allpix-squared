@@ -485,7 +485,10 @@ void GenericPropagationModule::init() {
         }
     }
     if(output_plots_) {
-        drift_time_histo = new TH1D("drift_time_histo", "Drift time;t[ns];particles", 50, 0., 20.);
+        auto time_bins =
+            static_cast<int>(Units::convert(integration_time_ / config_.get<long double>("output_plots_step"), "ns"));
+        drift_time_histo = new TH1D(
+            "drift_time_histo", "Drift time;t[ns];charge carriers", time_bins, 0., static_cast<int>(integration_time_));
     }
 }
 

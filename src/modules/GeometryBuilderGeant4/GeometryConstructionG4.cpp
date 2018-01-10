@@ -134,6 +134,7 @@ void GeometryConstructionG4::init_materials() {
     materials_["plexiglass"] = nistman->FindOrBuildMaterial("G4_PLEXIGLASS");
     materials_["kapton"] = nistman->FindOrBuildMaterial("G4_KAPTON");
     materials_["copper"] = nistman->FindOrBuildMaterial("G4_Cu");
+    materials_["aluminum"] = nistman->FindOrBuildMaterial("G4_Al");
     materials_["air"] = nistman->FindOrBuildMaterial("G4_AIR");
     materials_["lead"] = nistman->FindOrBuildMaterial("G4_Pb");
 

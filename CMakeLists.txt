@@ -179,6 +179,9 @@ ADD_SUBDIRECTORY(tools)
 # Enable testing
 ENABLE_TESTING()
 
+# Include example configurations:
+ADD_SUBDIRECTORY(examples)
+
 # Include all tests
 ADD_SUBDIRECTORY(etc/unittests)
 

@@ -16,11 +16,11 @@ The framework has the following three required layers of configuration files:
 \begin{itemize}
 \item The \textbf{main} configuration: The most important configuration file and the file that is passed directly to the binary.
 Contains both the global framework configuration and the list of modules to instantiate together with their configuration.
-An example can be found in the repository at \textit{etc/example.conf}.
-More details and a more thorough example are found in Section~\ref{sec:main_config}.
+An example can be found in the repository at \textit{examples/example.conf}.
+More details and a more thorough example are found in Section~\ref{sec:main_config}, several advanced simulation chain configurations are presented in Section~\ref{sec:examples}.
 \item The \textbf{detector} configuration passed to the framework to determine the geometry.
 Describes the detector setup, containing the position, orientation and model type of all detectors.
-An example is available in the repository at \file{etc/example_detector.conf}.
+An example is available in the repository at \file{examples/example_detector.conf}.
 Introduced in Section~\ref{sec:detector_config}.
 \item The detector \textbf{models} configuration.
 Contains the parameters describing a particular type of detector.
@@ -221,11 +221,11 @@ This allows to quickly adapt e.g. the sensor thickness of a certain detector wit
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.6\textwidth]{telescope.png}
-  \caption{Visualization of a particle passing through the telescope setup defined in the detector configuration file}
+  \caption{Visualization of a Pion passing through the telescope setup defined in the detector configuration file. A secondary particle is produced in the material of the detector in the center.}
   \label{fig:telescope}
 \end{figure}
 
-An example configuration file of one test detector and two Timepix~\cite{timepix} models is:
+An example configuration file describing a setup with one CLICpix2 detector and two Timepix~\cite{timepix} models is the following:
 \inputminted[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}{../../etc/manual_detector.conf}
 Figure~\ref{fig:telescope} shows a visualization of the setup described in the file.
 This configuration is used in the rest of this chapter for explaining concepts.
@@ -322,15 +322,15 @@ The \apsq standard file format is a ROOT TTree, which is described in detail in 
 \end{itemize}
 
 In this example, charge carriers will be deposited in the three sensors defined in the detector configuration file in Section~\ref{sec:detector_config}.
-Only the charge carriers deposited in the sensors of the Timepix detector models will be propagated and digitized.
-Finally, some detector histograms for the device under test (DUT) will be recorded as ROOT histograms and all simulated objects, including the entry and exit positions of the simulated Monte Carlo particles (Monte Carlo truth), will be stored in the \apsq ROOT file.
+All charge carriers deposited in the different sensors will be propagated and digitized.
+Finally, monitoring histograms for the device under test (DUT) will be recorded in the framework's main ROOT file and all simulated objects, including the entry and exit positions of the simulated particles (Monte Carlo truth), will be stored in a ROOT file using the \apsq format.
 An example configuration file implementing this would look like:
 \inputminted[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}{../../etc/manual.conf}
 
 This configuration is available in the repository at \file{etc/manual.conf}.
 The detector configuration file from Section~\ref{sec:detector_config} can be found at \file{etc/manual_detector.conf}.
 
-The simulation is started by passing the main configuration to the \parameter{allpix} executable as follows:
+The simulation is started by passing the path of the main configuration file to the \parameter{allpix} executable as follows:
 \begin{verbatim}
 $ allpix -c etc/manual.conf
 \end{verbatim}
