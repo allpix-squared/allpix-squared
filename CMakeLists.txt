@@ -186,11 +186,12 @@ ADD_SUBDIRECTORY(etc/unittests)
 # Create a local setup file #
 #############################
 
-# Remove duplicate list items
-LIST(REMOVE_DUPLICATES ALLPIX_RUNTIME_DEPS)
 # Build configuration string with commands
 FOREACH(dep ${ALLPIX_RUNTIME_DEPS})
     SET(SETUP_FILE_DEPS "${SETUP_FILE_DEPS}source ${dep}\n")
+ENDFOREACH()
+FOREACH(dep ${ALLPIX_RUNTIME_LIBS})
+    SET(SETUP_FILE_DEPS "${SETUP_FILE_DEPS}export LD_LIBRARY_PATH=\"${dep}:$LD_LIBRARY_PATH\"\n")
 ENDFOREACH()
 # Create setup file
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/setup.cmake.sh" "${CMAKE_CURRENT_BINARY_DIR}/setup/setup.sh" @ONLY)
