@@ -34,8 +34,49 @@ $ cpack
 \end{verbatim}
 
 The content of the produced tarball can be extracted to any location of the file system, but requires the ROOT6 and Geant4 libraries as well as possibly additional libraries linked by individual at runtime.
+
 For this purpose, a \file{setup.sh} shell script is automatically generated and added to the tarball.
-It contains the ROOT6 and Geant4 paths used for the compilation of the binaries, these paths might have to be changed manually when deploying on different computers.
+By default, it contains the ROOT6 path used for the compilation of the binaries.
+Additional dependencies, either library paths or shell scripts to be sourced, can be added via CMake for individual modules using the CMake functions described below.
+The paths stored correspond to the dependencies used at compile time, it might be necessary to change them manually when deploying on a different computer.
+
+\paragraph{\texttt{\textbf{ADD\_RUNTIME\_DEP}}}
+
+This CMake command can be used to add a shell script to be sourced to the setup file.
+The mandatory argument can either be an absolute path to the corresponding file, or only the file name when located in a search path known to CMake, for example:
+
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{cmake}
+# Add "geant4.sh" as runtime dependency for setup.sh file:
+ADD_RUNTIME_DEP(geant4.sh)
+\end{minted}
+
+The command uses the \command{GET_FILENAME_COMPONENT} command of CMake with the \parameter{PROGRAM} option.
+Duplicates are removed from the list automatically.
+Each file found will be written to the setup file as
+
+\begin{verbatim}
+source <absolute path to the file>
+\end{verbatim}
+
+\paragraph{\texttt{\textbf{ADD\_RUNTIME\_LIB}}}
+
+This CMake command can be used to add additional libraries to the global search path.
+The mandatory argument should be the absolute path of a library or a list of paths for example:
+
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{cmake}
+# This module requires the LCIO library:
+FIND_PACKAGE(LCIO REQUIRED)
+# The FIND routine provides all libraries in the LCIO_LIBRARIES variable:
+ADD_RUNTIME_LIB(${LCIO_LIBRARIES})
+\end{minted}
+
+The command uses the \command{GET_FILENAME_COMPONENT} command of CMake with the \parameter{DIRECTORY} option to determine the directory of the corresponding shared library.
+Duplicates are removed from the list automatically.
+Each directory found will be added to the global library search path by adding the following line to the setup file:
+
+\begin{verbatim}
+export LD_LIBRARY_PATH="<library directory>:$LD_LIBRARY_PATH"
+\end{verbatim}
 
 \subsection{Continuous Integration}
 \label{sec:ci}
