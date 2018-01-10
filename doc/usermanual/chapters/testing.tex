@@ -22,6 +22,62 @@ Currently, the following targets are provided:
   \item[\command{make cppcheck-html}] Compiles a HTML report from the defects list gathered by \command{make cppcheck}. This target is only available if the \command{cppcheck-htmlreport} executable is found in the \dir{PATH}.
 \end{description}
 
+\subsection{Packaging}
+
+\apsq comes with a basic configuration to generate tarballs from the compiled binaries using the CPack command. In order to generate a working tarball from the current \apsq build, the \parameter{RPATH} of the executable should not be set, otherwise the \command{allpix} binary will not be able to locate the dynamic libraries. If not set, the global \parameter{LD_LIBRARY_PATH} is used to search for the required libraries:
+
+\begin{verbatim}
+$ mkdir build
+$ cd build
+$ cmake -DCMAKE_SKIP_RPATH=ON ..
+$ cpack
+\end{verbatim}
+
+The content of the produced tarball can be extracted to any location of the file system, but requires the ROOT6 and Geant4 libraries as well as possibly additional libraries linked by individual at runtime.
+
+For this purpose, a \file{setup.sh} shell script is automatically generated and added to the tarball.
+By default, it contains the ROOT6 path used for the compilation of the binaries.
+Additional dependencies, either library paths or shell scripts to be sourced, can be added via CMake for individual modules using the CMake functions described below.
+The paths stored correspond to the dependencies used at compile time, it might be necessary to change them manually when deploying on a different computer.
+
+\paragraph{\texttt{\textbf{ADD\_RUNTIME\_DEP(name)}}}
+
+This CMake command can be used to add a shell script to be sourced to the setup file.
+The mandatory argument \parameter{name} can either be an absolute path to the corresponding file, or only the file name when located in a search path known to CMake, for example:
+
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{cmake}
+# Add "geant4.sh" as runtime dependency for setup.sh file:
+ADD_RUNTIME_DEP(geant4.sh)
+\end{minted}
+
+The command uses the \command{GET_FILENAME_COMPONENT} command of CMake with the \parameter{PROGRAM} option.
+Duplicates are removed from the list automatically.
+Each file found will be written to the setup file as
+
+\begin{verbatim}
+source <absolute path to the file>
+\end{verbatim}
+
+\paragraph{\texttt{\textbf{ADD\_RUNTIME\_LIB(names)}}}
+
+This CMake command can be used to add additional libraries to the global search path.
+The mandatory argument \parameter{names} should be the absolute path of a library or a list of paths, such as:
+
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{cmake}
+# This module requires the LCIO library:
+FIND_PACKAGE(LCIO REQUIRED)
+# The FIND routine provides all libraries in the LCIO_LIBRARIES variable:
+ADD_RUNTIME_LIB(${LCIO_LIBRARIES})
+\end{minted}
+
+The command uses the \command{GET_FILENAME_COMPONENT} command of CMake with the \parameter{DIRECTORY} option to determine the directory of the corresponding shared library.
+Duplicates are removed from the list automatically.
+Each directory found will be added to the global library search path by adding the following line to the setup file:
+
+\begin{verbatim}
+export LD_LIBRARY_PATH="<library directory>:$LD_LIBRARY_PATH"
+\end{verbatim}
+
 \subsection{Continuous Integration}
 \label{sec:ci}
 
@@ -141,8 +197,9 @@ Currently implemented tests comprise:
 
 \begin{description}
     \item[\file{test_01_geobuilder.conf}] takes the provided detector setup and builds the Geant4 geometry from the internal detector description. The monitored output comprises the calculated wrapper dimensions of the detector model.
-    \item[\file{test_02-1_electricfield_linear.conf}] creates a linear electric field in the constructed detector. The monitored output comprises the calculated effective thickness of the depleted detector volume.
+    \item[\file{test_02-1_electricfield_linear.conf}] creates a linear electric field in the constructed detector by specifying the bias and depletion voltages. The monitored output comprises the calculated effective thickness of the depleted detector volume.
     \item[\file{test_02-2_electricfield_init.conf}] loads an INIT file containing a TCAD-simulated electric field (cf.\ Section~\ref{sec:module_electric_field}) and applies the field to the detector model. The monitored output comprises the number of field cells for each pixel as read and parsed from the input file.
+    \item[\file{test_02-3_electricfield_linear_depth.conf}] creates a linear electric field in the constructed detector by specifying the applied bias voltage and a depletion depth. The monitored output comprises the calculated effective thickness of the depleted detector volume.
     \item[\file{test_03-1_deposition.conf}] executes the charge carrier deposition module. This will invoke Geant4 to deposit energy in the sensitive volume. The monitored output comprises the exact number of charge carriers deposited in the detector.
     \item[\file{test_03-2_deposition_mc.conf}] executes the charge carrier deposition module as the previous tests, but monitors the type, entry and exit point of the Monte Carlo particle associated associated to the deposited charge carriers.
     \item[\file{test_04-1_propagation_project.conf}] projects deposited charges to the implant side of the sensor. The monitored output comprises the total number of charge carriers propagated to the sensor implants.

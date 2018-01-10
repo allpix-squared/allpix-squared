@@ -108,9 +108,11 @@ void GeometryManager::load(const Configuration& global_config, std::mt19937_64& 
     if(global_config.has("model_paths")) {
         auto extra_paths = global_config.getPathArray("model_paths", true);
         model_paths_.insert(model_paths_.end(), extra_paths.begin(), extra_paths.end());
+        LOG(TRACE) << "Registered model paths from configuration.";
     }
     if(path_is_directory(ALLPIX_MODEL_DIRECTORY)) {
         model_paths_.emplace_back(ALLPIX_MODEL_DIRECTORY);
+        LOG(TRACE) << "Registered model path: " << ALLPIX_MODEL_DIRECTORY;
     }
     const char* data_dirs_env = std::getenv("XDG_DATA_DIRS");
     if(data_dirs_env == nullptr || strlen(data_dirs_env) == 0) {
@@ -122,9 +124,10 @@ void GeometryManager::load(const Configuration& global_config, std::mt19937_64& 
             data_dir += "/";
         }
 
-        data_dir += ALLPIX_PROJECT_NAME;
+        data_dir += std::string(ALLPIX_PROJECT_NAME) + std::string("/models");
         if(path_is_directory(data_dir)) {
             model_paths_.emplace_back(data_dir);
+            LOG(TRACE) << "Registered global model path: " << data_dir;
         }
     }
 }

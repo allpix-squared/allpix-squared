@@ -37,4 +37,5 @@ INCLUDE_DIRECTORIES(SYSTEM ${EIGEN3_INCLUDE_DIR})
 
 # Create install target
 INSTALL(TARGETS dfise_converter
+    COMPONENT tools
     RUNTIME DESTINATION bin/tcad_dfise_converter)

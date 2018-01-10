@@ -532,12 +532,12 @@ Before re-implementing models, it should be checked if the desired change can be
 \nlparagraph{Search order for models}
 To support different detector models and storage locations, the framework searches different paths for model files in the following order:
 \begin{enumerate}
-\item If defined, the paths provided in the global \parameter{models_path} parameter are searched first.
+\item If defined, the paths provided in the global \parameter{model_paths} parameter are searched first.
 Files are read and parsed directly.
 If the path is a directory, all files in the directory are added (without recursing into subdirectories).
 \item The location where the models are installed to (refer to the description of the \parameter{MODEL_DIRECTORY} variable in Section~\ref{sec:cmake_config}).
-\item The standard data paths on the system as given by the environmental variable \parameter{$XDG_DATA_DIRS} with ``\project'' appended.
-The \parameter{$XDG_DATA_DIRS} variable defaults to \textit{/usr/local/share/} (thus effectively \textit{/usr/local/share/\project}) followed by \textit{/usr/share/} (effectively \textit{/usr/share/\project}).
+\item The standard data paths on the system as given by the environmental variable \parameter{$XDG_DATA_DIRS} with ``\project/models'' appended.
+The \parameter{$XDG_DATA_DIRS} variable defaults to \textit{/usr/local/share/} (thus effectively \textit{/usr/local/share/\project/models}) followed by \textit{/usr/share/} (effectively \textit{/usr/share/\project/models}).
 \end{enumerate}
 
 \subsection{Passing Objects using Messages}
@@ -639,7 +639,7 @@ Flags can be added to the bind and listening methods which enable a particular b
 
 \subsubsection{Persistency}
 \label{sec:objects_persistency}
-As objects may contain information relating to other objects, in particular for storing their corresponding Monte Carlo history (see Section \ref{sec:objhistory}), objects are by default persistent until the end of each event. All messages are stored as shared pointers by the modules which send them, and are released at the end of each event. If no other copies of the shared message pointer are created, then these will be subsequently deleted, including the objects stored therein. Where a module requires access to data from a previous event (such as to simulate the effects of pile-up etc.), local copies of the data objects must be created. Note that at the point of creating copies the corresponding history will be lost. 
+As objects may contain information relating to other objects, in particular for storing their corresponding Monte Carlo history (see Section \ref{sec:objhistory}), objects are by default persistent until the end of each event. All messages are stored as shared pointers by the modules which send them, and are released at the end of each event. If no other copies of the shared message pointer are created, then these will be subsequently deleted, including the objects stored therein. Where a module requires access to data from a previous event (such as to simulate the effects of pile-up etc.), local copies of the data objects must be created. Note that at the point of creating copies the corresponding history will be lost.
 
 
 \subsection{Redirect Module Inputs and Outputs}

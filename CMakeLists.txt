@@ -31,6 +31,9 @@ ADD_DEFINITIONS(-DALLPIX_PROJECT_NAME="${CMAKE_PROJECT_NAME}" -DALLPIX_PROJECT_V
 # FIXME: this should be combined with the ADD_DEFINITIONS
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake.h" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
 
+INCLUDE(cmake/CPackConfig.cmake)
+INCLUDE(CPack)
+
 ###############################################
 # Setup the environment for the documentation #
 ###############################################
@@ -123,6 +126,9 @@ ENDIF()
 SET(ALLPIX_DEPS_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS})
 SET(ALLPIX_DEPS_LIBRARIES ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES} Threads::Threads)
 
+# Add "thisroot.sh" as runtime dependency for setup.sh file:
+ADD_RUNTIME_DEP(thisroot.sh)
+
 # Include allpix cmake functions
 INCLUDE("cmake/allpix.cmake")
 
@@ -175,3 +181,17 @@ ENABLE_TESTING()
 
 # Include all tests
 ADD_SUBDIRECTORY(etc/unittests)
+
+#############################
+# Create a local setup file #
+#############################
+
+# Build configuration string with commands
+FOREACH(dep ${ALLPIX_RUNTIME_DEPS})
+    SET(SETUP_FILE_DEPS "${SETUP_FILE_DEPS}source ${dep}\n")
+ENDFOREACH()
+FOREACH(dep ${ALLPIX_RUNTIME_LIBS})
+    SET(SETUP_FILE_DEPS "${SETUP_FILE_DEPS}export LD_LIBRARY_PATH=\"${dep}:$LD_LIBRARY_PATH\"\n")
+ENDFOREACH()
+# Create setup file
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/setup.cmake.sh" "${CMAKE_CURRENT_BINARY_DIR}/setup/setup.sh" @ONLY)
