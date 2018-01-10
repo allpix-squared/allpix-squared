@@ -40,10 +40,10 @@ By default, it contains the ROOT6 path used for the compilation of the binaries.
 Additional dependencies, either library paths or shell scripts to be sourced, can be added via CMake for individual modules using the CMake functions described below.
 The paths stored correspond to the dependencies used at compile time, it might be necessary to change them manually when deploying on a different computer.
 
-\paragraph{\texttt{\textbf{ADD\_RUNTIME\_DEP}}}
+\paragraph{\texttt{\textbf{ADD\_RUNTIME\_DEP(name)}}}
 
 This CMake command can be used to add a shell script to be sourced to the setup file.
-The mandatory argument can either be an absolute path to the corresponding file, or only the file name when located in a search path known to CMake, for example:
+The mandatory argument \parameter{name} can either be an absolute path to the corresponding file, or only the file name when located in a search path known to CMake, for example:
 
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{cmake}
 # Add "geant4.sh" as runtime dependency for setup.sh file:
@@ -58,10 +58,10 @@ Each file found will be written to the setup file as
 source <absolute path to the file>
 \end{verbatim}
 
-\paragraph{\texttt{\textbf{ADD\_RUNTIME\_LIB}}}
+\paragraph{\texttt{\textbf{ADD\_RUNTIME\_LIB(names)}}}
 
 This CMake command can be used to add additional libraries to the global search path.
-The mandatory argument should be the absolute path of a library or a list of paths for example:
+The mandatory argument \parameter{names} should be the absolute path of a library or a list of paths, such as:
 
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{cmake}
 # This module requires the LCIO library:
