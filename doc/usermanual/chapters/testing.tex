@@ -1,4 +1,4 @@
-\section{Development Tools \& Continuous Integration}
+\chapter{Development Tools \& Continuous Integration}
 \label{sec:testing}
 
 The following section will introduce a few tools included in the framework to ease development and help to maintain a high code quality. This comprises tools for the developer to be used while coding, as well as a continuous integration (CI) and automated test cases of various framework and module functionalities.
@@ -6,7 +6,7 @@ The following section will introduce a few tools included in the framework to ea
 The section is structured as follows.
 Section~\ref{sec:targets} describes the available \command{make} targets for code quality and formatting checks, Section~\ref{sec:ci} briefly introduces the CI, and Section~\ref{sec:tests} provides an overview of the currently implemented framework, module, and performance test scenarios.
 
-\subsection{Additional Targets}
+\section{Additional Targets}
 \label{sec:targets}
 
 A set of testing targets in addition to the standard compilation targets are automatically created by CMake to enable additional code quality checks and testing.
@@ -22,7 +22,7 @@ Currently, the following targets are provided:
   \item[\command{make cppcheck-html}] Compiles a HTML report from the defects list gathered by \command{make cppcheck}. This target is only available if the \command{cppcheck-htmlreport} executable is found in the \dir{PATH}.
 \end{description}
 
-\subsection{Packaging}
+\section{Packaging}
 
 \apsq comes with a basic configuration to generate tarballs from the compiled binaries using the CPack command. In order to generate a working tarball from the current \apsq build, the \parameter{RPATH} of the executable should not be set, otherwise the \command{allpix} binary will not be able to locate the dynamic libraries. If not set, the global \parameter{LD_LIBRARY_PATH} is used to search for the required libraries:
 
@@ -78,7 +78,7 @@ Each directory found will be added to the global library search path by adding t
 export LD_LIBRARY_PATH="<library directory>:$LD_LIBRARY_PATH"
 \end{verbatim}
 
-\subsection{Continuous Integration}
+\section{Continuous Integration}
 \label{sec:ci}
 
 Quality and compatibility of the \apsq framework is ensured by an elaborate continuous integration (CI) which builds and tests the software on all supported platforms.
@@ -127,7 +127,7 @@ Finally, the \textbf{deployment} stage is only executed for new tags in the repo
 Whenever a tag is pushed, this stages receives the build artifacts of previous stages and publishes them to the \apsq project website through the EOS file system~\cite{eos}.
 
 
-\subsection{Tests}
+\section{Tests}
 \label{sec:tests}
 
 The build system of the framework provides a set of automated tests which are executed by the CI to ensure proper functioning of the framework and its modules.

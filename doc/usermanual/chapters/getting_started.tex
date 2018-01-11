@@ -1,11 +1,11 @@
-\section{Getting Started}
+\chapter{Getting Started}
 
 This Getting Started guide is written with a default installation in mind, meaning that some parts may not apply if a custom installation was used.
 When the \textit{allpix} binary is used, this refers to the executable installed in \text{bin/allpix} in the installation path.
 It is worth noting that before running any \apsq simulation, ROOT and (in most cases) Geant4 should be initialized.
 Refer to Section~\ref{sec:initialize_dependencies} for instructions on how to load these libraries.
 
-\subsection{Configuration Files}
+\section{Configuration Files}
 \label{sec:configuration_files}
 The framework is configured with simple human-readable configuration files.
 The configuration format is described in detail in Section~\ref{sec:config_file_format}, and consists of several section headers within $[$ and $]$ brackets, and a section without header at the start.
@@ -31,7 +31,7 @@ Please refer to Section~\ref{sec:adding_detector_model} for more details about a
 
 In the following paragraphs, the available types and the unit system are explained and an introduction to the different configuration files is given.
 
-\subsubsection{Parsing types and units}
+\subsection{Parsing types and units}
 \label{sec:config_values}
 The \apsq framework supports the use of a variety of types for all configuration values.
 The module specifies how the value type should be interpreted.
@@ -125,7 +125,7 @@ my_switch = true
 my_other_switch = 0
 \end{minted}
 
-\subsubsection{Main configuration}
+\subsection{Main configuration}
 \label{sec:main_config}
 The main configuration consists of a set of sections specifying the modules used.
 All modules are executed in the \emph{linear} order in which they are defined.
@@ -192,7 +192,7 @@ int_value = 2
 
 In the following paragraphs, a fully functional (albeit simple) configuration file with valid configuration is presented, as opposed to the above examples with hypothetical module names for illustrative purpose.
 
-\subsubsection{Detector configuration}
+\subsection{Detector configuration}
 \label{sec:detector_config}
 The detector configuration consists of a set of sections describing the detectors in the setup.
 Each section starts with a header describing the name used to identify the detector; all names are required to be unique.
@@ -230,7 +230,7 @@ An example configuration file describing a setup with one CLICpix2 detector and 
 Figure~\ref{fig:telescope} shows a visualization of the setup described in the file.
 This configuration is used in the rest of this chapter for explaining concepts.
 
-\subsection{Framework parameters}
+\section{Framework parameters}
 \label{sec:framework_parameters}
 The \apsq framework provides a set of global parameters which control and alter its behavior:
 \begin{itemize}
@@ -271,7 +271,7 @@ Refer to Section~\ref{sec:detector_models} for more information.
 \item \parameter{workers}: Specify the number of workers to use in total, should be strictly larger than zero. Only used if \parameter{experimental_multithreading} is set to true. Defaults to the number of native threads available on the system if this can be determined, otherwise one thread is used.
 \end{itemize}
 
-\subsection{The \textit{allpix} Executable}
+\section{The \textit{allpix} Executable}
 \label{sec:allpix_executable}
 The \parameter{allpix} executable functions as the interface between the user and the framework. It is primarily used to provide the main configuration file, but also allows to add and overwrite options from the main configuration file. This is both useful for quick testing as well as for batch processing of simulations.
 
@@ -302,7 +302,7 @@ No interaction with the framework is possible during the simulation. Signals can
 \end{itemize}
 
 
-\subsection{Setting up the Simulation Chain}
+\section{Setting up the Simulation Chain}
 \label{sec:setting_up_simulation_chain}
 
 In the following, the framework parameters are used to set up a fully functional simulation.
@@ -340,7 +340,7 @@ The detector histograms such as the hit map are stored in the ROOT file \file{ou
 If problems occur when exercising this example, it should be made sure that an up-to-date and properly installed version of \apsq is used (see the installation instructions in Section~\ref{sec:installation}).
 If modules or models fail to load, more information about potential issues with the library loading can be found in the detailed framework description in Section~\ref{sec:framework}.
 
-\subsection{Extending the Simulation Chain}
+\section{Extending the Simulation Chain}
 In the following, a few basic modules will be discussed which may be of use during a first simulation.
 
 \paragraph{Visualization}
@@ -422,7 +422,7 @@ model = "init"
 file_name = "example_electric_field.init"
 \end{minted}
 
-\subsection{Logging and Verbosity Levels}
+\section{Logging and Verbosity Levels}
 \label{sec:logging_verbosity}
 \apsq is designed to identify mistakes and implementation errors as early as possible and to provide the user with clear indications about the problem.
 The amount of feedback can be controlled using different log levels which are inclusive, i.e.\ lower levels also include messages from all higher levels.
@@ -469,7 +469,7 @@ This can help in debugging modules.
 
 More details about the logging system and the procedure for reporting errors in the code can be found in Sections~\ref{sec:logger} and~\ref{sec:error_reporting_exceptions}.
 
-\subsection{Storing Output Data}
+\section{Storing Output Data}
 \label{sec:storing_output_data}
 Storing the simulation output to persistent storage is of primary importance for subsequent reprocessing and analysis.
 \apsq primarily uses ROOT for storing output data, given that it is a standard tool in High-Energy Physics and allows objects to be written directly to disk.

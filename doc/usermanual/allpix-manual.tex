@@ -2,13 +2,14 @@
 %   PACKAGES AND DOCUMENT CONFIGURATIONS
 %----------------------------------------------------------------------------------------
 
-\documentclass[fontsize=12pt, parskip=half]{scrartcl}
+\documentclass[captions=tableheading,a4paper,11pt,numbers=noenddot,titlepage,twoside,openright,DIV=14,BCOR=8mm,parskip=half]{scrbook}
 \PassOptionsToPackage{obeyspaces}{url}
 \usepackage[backend=biber,
             autocite=plain,
             sorting=none,
             url=false
             ]{biblatex}
+\usepackage[headsepline]{scrlayer-scrpage}
 \usepackage[T1]{fontenc}
 \usepackage[shortlabels]{enumitem}
 \usepackage{siunitx}
@@ -52,6 +53,12 @@
 
 \providecommand{\subtitle}[1]{}
 
+\pagestyle{scrheadings}
+\lehead{\leftmark}
+\rohead{\rightmark}
+\lefoot{\pagemark}
+\rofoot{\pagemark}
+
 % Set paths
 \makeatletter
 \def\input@path{{usermanual/}}
@@ -60,6 +67,7 @@
 % Load configuration
 \input{config}
 
+\renewcommand*{\titlepagestyle}{empty}
 %----------------------------------------------------------------------------------------
 %   DOCUMENT INFORMATION
 %----------------------------------------------------------------------------------------
@@ -82,84 +90,85 @@
 \addlicense
 \end{titlepage}
 
-\clearpage
+\cleardoublepage
 % Table Of Contents
 \tableofcontents
 
-\clearpage
+\cleardoublepage
 
 % intro
 \input{chapters/introduction}
-\clearpage
+\cleardoublepage
 
 % quick start
 \input{chapters/quick_start}
-\clearpage
+\cleardoublepage
 
 % installation
 \input{chapters/installation}
-\clearpage
+\cleardoublepage
 
 % configuration and usage
 \input{chapters/getting_started}
-\clearpage
+\cleardoublepage
 
 % core framework
 \input{chapters/framework}
-\clearpage
+\cleardoublepage
 
 % core framework
 \input{chapters/objects}
-\clearpage
+\cleardoublepage
 
 % modules
-\section{Modules}
+\chapter{Modules}
 \label{sec:modules}
 \input{chapters/modules}
 \lstset{language=Ini}
 \includemodulesmd
 \lstset{language=}
-\clearpage
+\cleardoublepage
 
 % modules
-\section{Examples}
+\chapter{Examples}
 \label{sec:examples}
 \input{chapters/examples}
 \lstset{language=Ini}
 \includeexamplesmd
 \lstset{language=}
-\clearpage
+\cleardoublepage
 
 % development of new modules and detectors models
 \input{chapters/development}
-\clearpage
+\cleardoublepage
 
 \input{chapters/testing}
-\clearpage
+\cleardoublepage
 
 % frequently asked question
 \input{chapters/faq}
-\clearpage
+\cleardoublepage
 
 % additional tools and resources
 \input{chapters/additional}
-\clearpage
+\cleardoublepage
 
 % acknowledgements to all contributors etc
 \input{chapters/acknowledgements}
-\clearpage
+\cleardoublepage
 
 \appendix
-\section{Appendix}
+\chapter{Appendix}
 \input{appendices/example_output}
 % \clearpage
 % \input{appendices/design_notes}
 % \clearpage
 % probably some chapter with more advanced notes
 
-\clearpage
+\cleardoublepage
 \phantomsection
-\addreferencesline
+\addcontentsline{toc}{chapter}{\bibname}
+% \addreferencesline
 \printbibliography
 
 \end{document}
