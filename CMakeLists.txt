@@ -190,6 +190,7 @@ ADD_SUBDIRECTORY(etc/unittests)
 # Create a local setup file #
 #############################
 
+
 # Build configuration string with commands
 FOREACH(dep ${ALLPIX_RUNTIME_DEPS})
     SET(SETUP_FILE_DEPS "${SETUP_FILE_DEPS}source ${dep}\n")
