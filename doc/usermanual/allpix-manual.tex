@@ -79,46 +79,40 @@
   Daniel Hynds (\href{mailto:daniel.hynds@cern.ch}{daniel.hynds@cern.ch})
 } % Author names
 
-\date{\today\\ \vspace{10pt} Version \version} % Date for the report
+\date{\today\\ \vspace{10pt} Version \version \vspace{12em} \addlicense} % Date for the report
 
 \graphicspath{{usermanual/figures/}}
 
 \begin{document}
-\begin{titlepage}
+\frontmatter
+\pagenumbering{Roman}
+
+\thispagestyle{empty}
 \maketitle % Insert the title, author and date
 
-\addlicense
-\end{titlepage}
-
-\cleardoublepage
 % Table Of Contents
 \tableofcontents
 
-\cleardoublepage
+\mainmatter
+\pagenumbering{arabic}
 
 % intro
 \input{chapters/introduction}
-\cleardoublepage
 
 % quick start
 \input{chapters/quick_start}
-\cleardoublepage
 
 % installation
 \input{chapters/installation}
-\cleardoublepage
 
 % configuration and usage
 \input{chapters/getting_started}
-\cleardoublepage
 
 % core framework
 \input{chapters/framework}
-\cleardoublepage
 
 % core framework
 \input{chapters/objects}
-\cleardoublepage
 
 % modules
 \chapter{Modules}
@@ -127,7 +121,6 @@
 \lstset{language=Ini}
 \includemodulesmd
 \lstset{language=}
-\cleardoublepage
 
 % modules
 \chapter{Examples}
@@ -136,26 +129,18 @@
 \lstset{language=Ini}
 \includeexamplesmd
 \lstset{language=}
-\cleardoublepage
 
 % development of new modules and detectors models
 \input{chapters/development}
-\cleardoublepage
 
 \input{chapters/testing}
-\cleardoublepage
 
 % frequently asked question
 \input{chapters/faq}
-\cleardoublepage
 
 % additional tools and resources
 \input{chapters/additional}
-\cleardoublepage
 
-% acknowledgements to all contributors etc
-\input{chapters/acknowledgements}
-\cleardoublepage
 
 \appendix
 \chapter{Appendix}
@@ -164,6 +149,11 @@
 % \input{appendices/design_notes}
 % \clearpage
 % probably some chapter with more advanced notes
+
+\backmatter
+
+% acknowledgements to all contributors etc
+\input{chapters/acknowledgements}
 
 \cleardoublepage
 \phantomsection
