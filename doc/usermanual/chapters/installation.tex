@@ -16,7 +16,7 @@ Furthermore, the continuous integration of the project ensures correct building 
 If the framework is to be compiled and executed on CERN's LXPLUS service, all build dependencies can be loaded automatically from the CVMFS file system as described in Section~\ref{sec:initialize_dependencies}.
 
 The core framework is compiled separately from the individual modules and \apsq has therefore only one required dependency: ROOT 6 (versions below 6 are not supported)~\cite{root}.
-Please refer to \cite{rootinstallation} for instructions on how to install ROOT.
+Please refer to~\cite{rootinstallation} for instructions on how to install ROOT.
 ROOT has several components of which the GenVector package is required to run \apsq.
 This package is included in the default build.
 
@@ -25,7 +25,7 @@ For details about the dependencies and their installation see the module documen
 The following dependencies are needed to compile the standard installation:
 \begin{itemize}
 \item Geant4~\cite{geant4}: Simulates the desired particles and their interactions with matter, depositing charges in the detectors with the help of the constructed geometry.
-See the instructions in \cite{geant4installation} for details on how to install the software.
+See the instructions in~\cite{geant4installation} for details on how to install the software.
 All Geant4 data sets are required to run the modules successfully.
 It is recommended to enable the Geant4 Qt extensions to allow visualization of the detector setup and the simulated particle tracks.
 A useful set of CMake flags to build a functional Geant4 package would be:

@@ -268,7 +268,7 @@ Can be used to reproduce an earlier simulation run.
 See Section~\ref{sec:module_instantiation} for details.
 \item \parameter{model_paths}: Additional files or directories from which detector models should be read besides the standard search locations.
 Refer to Section~\ref{sec:detector_models} for more information.
-\item \parameter{experimental_multithreading}: Enable \textbf{experimental} multi-threading for the framework. This can speed up simulations of multiple detectors significantly. More information about multi-threading can be found in Section \ref{sec:multithreading}.
+\item \parameter{experimental_multithreading}: Enable \textbf{experimental} multi-threading for the framework. This can speed up simulations of multiple detectors significantly. More information about multi-threading can be found in Section~\ref{sec:multithreading}.
 \item \parameter{workers}: Specify the number of workers to use in total, should be strictly larger than zero. Only used if \parameter{experimental_multithreading} is set to true. Defaults to the number of native threads available on the system if this can be determined, otherwise one thread is used.
 \end{itemize}
 
@@ -286,7 +286,7 @@ Possible values are \texttt{FATAL}, \texttt{STATUS}, \texttt{ERROR}, \texttt{WAR
 The module specific logging level introduced in Section~\ref{sec:logging_verbosity} is not overwritten.
 \item \texttt{-o <option>}: Passes extra options which are added and overwritten in the main configuration file.
 This argument may be specified multiple times, to add multiple options.
-Options are specified as key/value pairs in the same syntax as used in the configuration files (refer to Section \ref{sec:config_file_format} for more details), but the key is extended to include a reference to a configuration section or instantiation in shorthand notation.
+Options are specified as key/value pairs in the same syntax as used in the configuration files (refer to Section~\ref{sec:config_file_format} for more details), but the key is extended to include a reference to a configuration section or instantiation in shorthand notation.
 There are three types of keys that can be specified:
 \begin{itemize}
 \item Keys to set \textbf{framework parameters}. These have to be provided in exactly the same way as they would be in the main configuration file (a section does not need to be specified). An example to overwrite the standard output directory would be \texttt{allpix -c <file> -o output\_directory="run123456"}.
@@ -481,7 +481,7 @@ This allows for easy histogramming of the acquired data over the total run using
 
 Relations between objects within a single event are internally stored as ROOT TRefs~\cite{roottref}, allowing retrieval of related objects as long as these are loaded in memory.
 An exception will be thrown when trying to access an object which is not in memory.
-Refer to Section \ref{sec:objhistory} for more information about object history.
+Refer to Section~\ref{sec:objhistory} for more information about object history.
 
 In order to save all objects of the simulation, a \parameter{ROOTObjectWriter} module has to be added with a \parameter{file_name} parameter to specify the file location of the created ROOT file in the global output directory.
 The file extension \texttt{.root} will be appended if not present.
