@@ -1,4 +1,4 @@
-## Fast Simulation Example
+# Fast Simulation Example
 
 This example is a simulation chain optimized for speed. A setup like this is well suited for unirradiated standard planar silicon detectors, where a linear electric field is a good approximation.
 

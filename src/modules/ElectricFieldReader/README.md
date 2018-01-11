@@ -1,8 +1,8 @@
-## ElectricFieldReader
+# ElectricFieldReader
 **Maintainer**: Koen Wolters (<koen.wolters@cern.ch>)   
 **Status**: Functional
 
-#### Description
+### Description
 Adds an electric field to the detector from one of the supported sources. By default, detectors do not have an electric field applied.
 
 The reader provides the following models for electric fields:
@@ -17,7 +17,7 @@ It should be noted that `depletion_voltage` and `depletion_depth` are mutually e
 
 Furthermore the module can produce a plot the electric field profile on an projection axis normal to the x,y or z-axis at a particular plane in the sensor.
 
-#### Parameters
+### Parameters
 * `model` : Type of the electric field model, either **linear**, **constant** or **init**.
 * `bias_voltage` : Voltage over the whole sensor thickness. Used to calculate the electric field if the *model* parameter is equal to **constant** or **linear**.
 * `depletion_voltage` : Indicates the voltage at which the sensor is fully depleted. Used to calculate the electric field if the *model* parameter is equal to **linear**.
@@ -29,7 +29,7 @@ Furthermore the module can produce a plot the electric field profile on an proje
 * `output_plots_projection_percentage` : Percentage on the projection axis to plot the electric field profile. For example if *output_plots_project* is **x** and this parameter is set to 0.5, the profile is plotted in the Y,Z-plane at the X-coordinate in the middle of the sensor. Default is 0.5.
 * `output_plots_single_pixel`: Determines if the whole sensor has to be plotted or only a single pixel. Defaults to true (plotting a single pixel).
 
-#### Usage
+### Usage
 An example to add a linear field with a bias voltage of -150 V and a full depletion voltage of -50 V to all the detectors, apart from the detector named 'dut' where a specific INIT field is added, is given below
 
 ```ini

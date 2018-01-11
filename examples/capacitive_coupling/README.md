@@ -1,8 +1,8 @@
-## CapacitiveTransfer example files
+# CapacitiveTransfer example files
 **Maintainer**: Mateus Vicente (mvicente@cern.ch)
 **Status**: Functional
 
-#### Description
+### Description
 In this folder you will find example files and configuration for the CapacitiveTransfer module.
 
 The *capacitive_coupling.conf* configuration file, as it is, simulates 6 FE-I4b planes (aligned as in a telescope) with a FE-I4b as a device-under-test (DUT) between the 3rd and 4th telescope planes. This geometry is defined in the *ccpd_example_detector.conf* file. The *SimpleTransfer* module is used for the telescope planes while the *CapacitiveTransfer* is used for the DUT.

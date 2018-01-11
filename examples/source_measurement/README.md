@@ -1,4 +1,4 @@
-## Source Measurement with Shielding
+# Source Measurement with Shielding
 
 This example simulates an (admittedly not very physical) source emitting electrons with Gaussian distributed energy of $`N(0.56MeV, 0.20MeV)`$.
 A Medipix-type detector is placed below the source, shielded with an additional sheet of aluminum with a thickness of 8mm.

@@ -1,4 +1,4 @@
-## TCAD Field Simulation Example
+# TCAD Field Simulation Example
 
 This example follows the "fast simulation" example but now replaces the simplified linear electric field with an actual TCAD-simulated electric field. For this reason, the `ProjectionPropagation` module is replaced by `GenericPropagation` as the former only allows for linear fields owing to the simplifications made in the drift calculations.
 

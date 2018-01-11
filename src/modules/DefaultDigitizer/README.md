@@ -1,10 +1,10 @@
-## DefaultDigitizer
+# DefaultDigitizer
 **Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)  
 **Status**: Functional  
 **Input**: PixelCharge  
 **Output**: PixelHit  
 
-#### Description
+### Description
 Very simple digitization module which translates the collected charges into a digitized signal proportional to the input charge. It simulates noise contributions from the readout electronics as Gaussian noise and allows for a configurable threshold. Furthermore, the linear response of an ADC with configurable resolution can be simulated.
 
 In detail, the following steps are performed for every pixel charge:
@@ -21,7 +21,7 @@ A 2D-histogram of the actual pixel charge in electrons and the converted charge 
 In addition, the distribution of the actually applied threshold is provided as histogram.
 
 
-#### Parameters
+### Parameters
 * `electronics_noise` : Standard deviation of the Gaussian noise in the electronics (before amplification and application of the threshold). Defaults to 110 electrons.
 * `gain` : Gain factor the input charge is multiplied with, defaults to 1.0 (no gain).
 * `gain_smearing` : Standard deviation of the Gaussian uncertainty in the gain factor. Defaults to 0.
@@ -36,7 +36,7 @@ In addition, the distribution of the actually applied threshold is provided as h
 * `output_plots_bins` : Set the number of bins for the output plot histograms, defaults to 100.
 
 
-#### Usage
+### Usage
 The default configuration is equal to the following:
 
 ```ini

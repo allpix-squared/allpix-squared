@@ -1,9 +1,9 @@
-## DetectorHistogrammer
+# DetectorHistogrammer
 **Maintainer**: Koen Wolters (<koen.wolters@cern.ch>), Paul Schuetze (<paul.schuetze@desy.de>)   
 **Status**: Functional   
 **Input**: PixelHit
 
-#### Description
+### Description
 This module provides an overview of the produced simulation data for a quick inspection and simple checks. For more sophisticated analyses, the output from one of the output writers should be used to make the necessary information available.
 
 Within the module, clustering of the input hits is performed. Looping over the PixelHits, hits being adjacent to an existing cluster are added to this cluster. Clusters are merged if there are multiple adjacent clusters. If the PixelHit is free-standing, a new cluster is created.
@@ -15,10 +15,10 @@ The module creates the following histograms:
 * Total number of pixel hits (event size) per event (an event can have multiple particles).
 * Cluster sizes in x, y and total per cluster.
 
-#### Parameters
+### Parameters
 *No parameters*
 
-#### Usage
+### Usage
 This module is normally bound to a specific detector to plot, for example to the 'dut':
 
 ```ini

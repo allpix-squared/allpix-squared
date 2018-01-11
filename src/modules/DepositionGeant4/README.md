@@ -1,9 +1,9 @@
-## DepositionGeant4
+# DepositionGeant4
 **Maintainer**: Koen Wolters (<koen.wolters@cern.ch>)  
 **Status**: Functional  
 **Output**: DepositedCharge, MCParticle
 
-#### Description
+### Description
 Module which deposits charge carriers in the active volume of all detectors. It acts as wrapper around the Geant4 logic and depends on the global geometry constructed by the GeometryBuilderGeant4 module. It initializes the physical processes to simulate a particle beam that will deposit charges in every event.
 
 The particle type can be set via a string (particle_type) or by the respective PDG code (particle_code). Refer to the Geant4 webpage [@g4particles] for information about the available types of particles and the PDG particle code definition [@pdg] for a list of the available particles and PDG codes.
@@ -15,11 +15,11 @@ A range cut-off threshold for the production of gammas, electrons and positrons 
 With the `output_plots` parameter activated, the module produces histograms of the total deposited charge per event for every sensor in units of kilo-electrons.
 The scale of the plot axis can be adjusted using the `output_plots_scale` parameter and defaults to a maximum of 100ke.
 
-#### Dependencies
+### Dependencies
 
 This module requires an installation Geant4.
 
-#### Parameters
+### Parameters
 * `physics_list`: Geant4-internal list of physical processes to simulate, defaults to FTFP_BERT_LIV. More information about possible physics list and recommendations for defaults are available on the Geant4 website [@g4physicslists].
 * `enable_pai`: Determines if the Photoabsorption Ionization model is enabled in the sensors of all detectors. Defaults to false.
 * `pai_model`: Model can be **pai** for the normal Photoabsorption Ionization model or **paiphoton** for the photon model. Default is **pai**. Only used if *enable_pai* is set to true.
@@ -38,7 +38,7 @@ This module requires an installation Geant4.
 * `output_plots` : Enables output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
 * `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 100ke.
 
-#### Usage
+### Usage
 A possible default configuration to use, simulating a beam of 120 GeV pions with a divergence in x, is the following:
 
 ```ini
