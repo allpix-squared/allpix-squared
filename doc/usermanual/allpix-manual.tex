@@ -67,7 +67,6 @@
 % Load configuration
 \input{config}
 
-\renewcommand*{\titlepagestyle}{empty}
 %----------------------------------------------------------------------------------------
 %   DOCUMENT INFORMATION
 %----------------------------------------------------------------------------------------
@@ -79,7 +78,7 @@
   Daniel Hynds (\href{mailto:daniel.hynds@cern.ch}{daniel.hynds@cern.ch})
 } % Author names
 
-\date{\today\\ \vspace{10pt} Version \version \vspace{10em} \addlicense} % Date for the report
+\date{\today\\ \vspace{10pt} Version \version} % Date for the report
 
 \graphicspath{{usermanual/figures/}}
 
@@ -89,6 +88,10 @@
 
 \thispagestyle{empty}
 \maketitle % Insert the title, author and date
+\cleardoublepage
+\thispagestyle{empty}
+\addlicense
+\cleardoublepage
 
 % Table Of Contents
 \tableofcontents
