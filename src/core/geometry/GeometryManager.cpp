@@ -47,7 +47,7 @@ void GeometryManager::load(const Configuration& global_config, std::mt19937_64& 
     random_generator.seed(seeder());
 
     std::string detector_file_name = global_config.getPath("detectors_file", true);
-    std::fstream file(detector_file_name);
+    std::ifstream file(detector_file_name);
     ConfigReader reader(file, detector_file_name);
 
     // Loop over all defined detectors
@@ -377,7 +377,7 @@ void GeometryManager::load_models() {
 
                 // Add the sub directory path to the reader
                 LOG(TRACE) << "Reading model " << sub_path;
-                std::fstream file(sub_path);
+                std::ifstream file(sub_path);
 
                 ConfigReader reader(file, sub_path);
                 readers.emplace_back(name_ext.first, reader);
@@ -385,7 +385,7 @@ void GeometryManager::load_models() {
         } else {
             // Always a file because paths are already checked
             LOG(TRACE) << "Reading model " << path;
-            std::fstream file(path);
+            std::ifstream file(path);
 
             ConfigReader reader(file, path);
             auto name_ext = allpix::get_file_name_extension(path);
