@@ -1,11 +1,11 @@
 \chapter{Objects}
-\label{sec:objects}
+\label{ch:objects}
 
 \section{Object Types}
 \label{sec:objtypes}
 
 \apsq provides a set of objects which can be used to transfer data between modules.
-These objects can be sent with the messaging system as explained in Section \ref{sec:objects_messages}.
+These objects can be sent with the messaging system as explained in Section \ref{ch:objects_messages}.
 A \texttt{typedef} is added to every object in order to provide an alternative name for the message which is directly indicating the carried object.
 
 The list of currently supported objects comprises:
@@ -44,7 +44,7 @@ Examples of the signal information is the 'true' information of a binary readout
 
 Objects may carry information about the objects which were used to create them.
 For example, a \parameter{PropagatedCharge} could hold a link to the \parameter{DepositedCharge} object at which the propagation started.
-All objects created during a single simulation event are accessible until the end of the event; more information on object persistency within the framework can be found in Section~\ref{sec:objects_persistency}. 
+All objects created during a single simulation event are accessible until the end of the event; more information on object persistency within the framework can be found in Section~\ref{ch:objects_persistency}.
 
 Object history is implemented using the ROOT TRef class~\cite{roottref}, which acts as a special reference.
 On construction, every object gets a unique identifier assigned, that can be stored in other linked objects.

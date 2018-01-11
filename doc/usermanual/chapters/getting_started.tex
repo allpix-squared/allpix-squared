@@ -1,4 +1,5 @@
 \chapter{Getting Started}
+\label{ch:gettingstarted}
 
 This Getting Started guide is written with a default installation in mind, meaning that some parts may not apply if a custom installation was used.
 When the \textit{allpix} binary is used, this refers to the executable installed in \text{bin/allpix} in the installation path.
@@ -17,7 +18,7 @@ The framework has the following three required layers of configuration files:
 \item The \textbf{main} configuration: The most important configuration file and the file that is passed directly to the binary.
 Contains both the global framework configuration and the list of modules to instantiate together with their configuration.
 An example can be found in the repository at \textit{examples/example.conf}.
-More details and a more thorough example are found in Section~\ref{sec:main_config}, several advanced simulation chain configurations are presented in Section~\ref{sec:examples}.
+More details and a more thorough example are found in Section~\ref{sec:main_config}, several advanced simulation chain configurations are presented in Section~\ref{ch:examples}.
 \item The \textbf{detector} configuration passed to the framework to determine the geometry.
 Describes the detector setup, containing the position, orientation and model type of all detectors.
 An example is available in the repository at \file{examples/example_detector.conf}.
@@ -36,7 +37,7 @@ In the following paragraphs, the available types and the unit system are explain
 The \apsq framework supports the use of a variety of types for all configuration values.
 The module specifies how the value type should be interpreted.
 An error will be raised if either the key is not specified in the configuration file, the conversion to the desired type is not possible, or if the given value is outside the domain of possible options.
-Please refer to the module documentation in Section~\ref{sec:modules} for the list of module parameters and their types.
+Please refer to the module documentation in Section~\ref{ch:modules} for the list of module parameters and their types.
 Parsing the value roughly follows common-sense (more details can be found in Section~\ref{sec:accessing_parameters}).
 A few special rules do apply:
 \begin{itemize}
@@ -132,7 +133,7 @@ All modules are executed in the \emph{linear} order in which they are defined.
 There are a few section names which have a special meaning in the main configuration, namely the following:
 \begin{itemize}
 \item The \textbf{global} (framework) header sections: These are all zero-length section headers (including the one at the beginning of the file) and all sections marked with the header \texttt{[Allpix]} (case-insensitive).
-These are combined and accessed together as the global configuration, which contain all parameters of the framework itself (see Section~\ref{sec:framework_parameters} for details).
+These are combined and accessed together as the global configuration, which contain all parameters of the framework itself (see Section~\ref{ch:framework_parameters} for details).
 All key-value pairs defined in this section are also inherited by all individual configurations as long the key is not defined in the module configuration itself.
 \item The \textbf{ignore} header sections: All sections with name \texttt{[Ignore]} are ignored.
 Key-value pairs defined in the section as well as the section itself are discarded by the parser.
@@ -208,7 +209,7 @@ Alternatively the orientation can be set as Z-Y-X or X-Z-X extrinsic Euler angle
 \end{itemize}
 
 In addition to these required parameters, the following parameters allow to randomly misalign the respective detector from its initial position. The values are interpreted as width of a normal distribution centered around zero.
-In order to reproduce misalignments, a fixed random seed for the framework core can be used as explained in Section~\ref{sec:framework_parameters}.
+In order to reproduce misalignments, a fixed random seed for the framework core can be used as explained in Section~\ref{ch:framework_parameters}.
 Misalignment can be introduced both for shifts along the three global axes and the three rotations angles with the following parameters:
 \begin{itemize}
 \item The parameter \parameter{alignment_precision_position} allows the specification of the alignment precision along the three global axes. Each value represents the Gaussian width with which the detector will be randomly misaligned along the corresponding axis.
@@ -231,7 +232,7 @@ Figure~\ref{fig:telescope} shows a visualization of the setup described in the f
 This configuration is used in the rest of this chapter for explaining concepts.
 
 \section{Framework parameters}
-\label{sec:framework_parameters}
+\label{ch:framework_parameters}
 The \apsq framework provides a set of global parameters which control and alter its behavior:
 \begin{itemize}
 \item \parameter{detectors_file}: Location of the file describing the detector configuration (introduced in Section~\ref{sec:detector_config}).
@@ -279,8 +280,8 @@ The executable handles the following arguments:
 \begin{itemize}
 \item \texttt{-c <file>}: Specifies the configuration file to be used for the simulation, relative to the current directory.
 This is the only \underline{required} argument, the simulation will fail to start if this argument is not given.
-\item \texttt{-l <file>}: Specify an additional location to forward log output to, besides standard output and the location specified in the framework parameters explained in Section~\ref{sec:framework_parameters}.
-\item \texttt{-v <level>}: Sets the global log verbosity level, overwriting the value specified in the configuration file described in Section \ref{sec:framework_parameters}.
+\item \texttt{-l <file>}: Specify an additional location to forward log output to, besides standard output and the location specified in the framework parameters explained in Section~\ref{ch:framework_parameters}.
+\item \texttt{-v <level>}: Sets the global log verbosity level, overwriting the value specified in the configuration file described in Section \ref{ch:framework_parameters}.
 Possible values are \texttt{FATAL}, \texttt{STATUS}, \texttt{ERROR}, \texttt{WARNING}, \texttt{INFO} and \texttt{DEBUG}, where all options are case-insensitive.
 The module specific logging level introduced in Section~\ref{sec:logging_verbosity} is not overwritten.
 \item \texttt{-o <option>}: Passes extra options which are added and overwritten in the main configuration file.
@@ -307,7 +308,7 @@ No interaction with the framework is possible during the simulation. Signals can
 
 In the following, the framework parameters are used to set up a fully functional simulation.
 Module parameters are shortly introduced when they are first used.
-For more details about these parameters, the respective module documentation in Section~\ref{sec:modules} should be consulted.
+For more details about these parameters, the respective module documentation in Section~\ref{ch:modules} should be consulted.
 A typical simulation in \apsq will contain the following components:
 \begin{itemize}
 
@@ -337,8 +338,8 @@ $ allpix -c etc/manual.conf
 The output should look similar to the sample log provided in Appendix~\ref{sec:example_output}.
 The detector histograms such as the hit map are stored in the ROOT file \file{output/modules.root} in the TDirectory \textit{DetectorHistogrammer/}.
 
-If problems occur when exercising this example, it should be made sure that an up-to-date and properly installed version of \apsq is used (see the installation instructions in Section~\ref{sec:installation}).
-If modules or models fail to load, more information about potential issues with the library loading can be found in the detailed framework description in Section~\ref{sec:framework}.
+If problems occur when exercising this example, it should be made sure that an up-to-date and properly installed version of \apsq is used (see the installation instructions in Section~\ref{ch:installation}).
+If modules or models fail to load, more information about potential issues with the library loading can be found in the detailed framework description in Section~\ref{ch:framework}.
 
 \section{Extending the Simulation Chain}
 In the following, a few basic modules will be discussed which may be of use during a first simulation.
@@ -384,7 +385,7 @@ mode = "none"
 driver = "VRML2FILE"
 \end{minted}
 
-More information about all possible configuration parameters can be found in the module documentation in Section~\ref{sec:modules}.
+More information about all possible configuration parameters can be found in the module documentation in Section~\ref{ch:modules}.
 
 \paragraph{Electric Fields}
 \label{sec:module_electric_field}
@@ -392,7 +393,7 @@ By default, detectors do not have an electric field associated with them, and no
 A field can be added to each detector using the \parameter{ElectricFieldReader} module.
 
 The section below calculates a linear electric field for every point in active sensor volume based on the depletion voltage of the sensor and the applied bias voltage.
-The sensor is always depleted from the implant side; the direction of the electric field depends on the sign of the bias voltage as described in the module description in Section~\ref{sec:modules}.
+The sensor is always depleted from the implant side; the direction of the electric field depends on the sign of the bias voltage as described in the module description in Section~\ref{ch:modules}.
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 # Add an electric field
 [ElectricFieldReader]
@@ -507,4 +508,4 @@ file_name = "../output/data.root"
 \end{minted}
 
 The \apsq framework comes with a few more output modules which allow data storage in different formats, such as the LCIO persistency event data model~\cite{lcio}, the native RCE file format~\cite{rce}, or the Corryvreckan reconstruction framework data format.
-Detailed descriptions of these modules can be found in Section~\ref{sec:modules}.
+Detailed descriptions of these modules can be found in Section~\ref{ch:modules}.
