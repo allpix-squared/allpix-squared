@@ -7,13 +7,16 @@ Constructs the Geant4 geometry from the internal geometry description. First con
 
 All available detector models are fully supported. This builder can create extra support layers of the following materials:
 
-* Silicon
-* Plexiglass
-* Kapton (using the G4_KAPTON definition)
+* Air
+* Aluminum
+* Carbonfiber (a mixture of carbon and epoxy)
 * Copper
 * Epoxy
-* Carbonfiber (a mixture of carbon and epoxy)
 * G10 (PCB material)
+* Kapton (using the `G4_KAPTON` definition)
+* Lead
+* Plexiglass (using the `G4_PLEXIGLASS` definition)
+* Silicon
 * Solder (a mixture of tin and lead)
 
 ### Dependencies
