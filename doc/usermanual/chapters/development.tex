@@ -27,8 +27,8 @@ It should be kept in mind that writing more generic modules, which are not tied 
 Furthermore, it may be beneficial to split up modules to support the modular design of \apsq.
 Additional sources of documentation which may be useful during the development of a module include:
 \begin{itemize}
-\item The framework documentation in Section \ref{ch:framework} for an introduction to the different parts of the framework.
-\item The module documentation in Section \ref{ch:modules} for a description of the functionality of other modules already implemented, and to look for similar modules which can help during development.
+\item The framework documentation in Chapter~\ref{ch:framework} for an introduction to the different parts of the framework.
+\item The module documentation in Chapter~\ref{ch:modules} for a description of the functionality of other modules already implemented, and to look for similar modules which can help during development.
 \item The Doxygen (core) reference documentation included in the framework~\cite{ap2-doxygen}.
 \item The latest version of the source code of all modules and the \apsq core itself.
 \end{itemize}
@@ -47,7 +47,7 @@ To create a new detector model, the following steps should be taken:
 \item Create a new file with the name of the model followed by the \file{.conf} suffix (for example \file{your_model.conf}).
 \item Add a configuration parameter \parameter{type} with the type of the model, at the moment either 'monolithic' or 'hybrid' for respectively monolithic sensors or hybrid models with bump bonds and a separate readout chip.
 \item Add all required parameters and possibly optional parameters as explained in Section \ref{sec:detector_models}.
-\item Include the detector model in the search path of the framework by adding the \parameter{model_path} parameter to the general setting of the main configuration (see Section \ref{ch:framework_parameters}), pointing either directly to the detector model file or the directory containing it. It should be noted that files in this path will overwrite models with the same name in the default model folder.
+\item Include the detector model in the search path of the framework by adding the \parameter{model_path} parameter to the general setting of the main configuration (see Section~\ref{sec:framework_parameters}), pointing either directly to the detector model file or the directory containing it. It should be noted that files in this path will overwrite models with the same name in the default model folder.
 \end{enumerate}
 
 Models should be contributed to the main repository to make them available to other users of the framework.
