@@ -1,0 +1,9 @@
+1478789382|Initial commit
+1486463922|First draft of framework structure
+1493393464|First executable version v0.1
+1497453764|Version 0.2 with IO modules
+1502477224|Version 0.3 with threading and more modules
+1504010758|Stable Release: Allpix Squared v1.0
+1508511411|Extended CI with Unit Tests
+1512051313|Optional output of simulated geometry
+1515689532|Stable Release: Allpix Squared v1.1
