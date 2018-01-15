@@ -5,7 +5,7 @@ h2 a, h3 a, h4 a, h5 a {
 }
 
 /* do not display title page */
-.maketitle {
+div.titlepage {
     display: none;
 }
 
@@ -50,9 +50,9 @@ div.lstlisting {
     display:none;
 }
 .sidebar .toolbar {
-    font-size:2em; 
-    padding: 5px; 
-    margin-left: 20px; 
+    font-size:2em;
+    padding: 5px;
+    margin-left: 20px;
     background-color:#fed;
 }
 /* hide sidebar for screens to small */
@@ -63,10 +63,10 @@ div.lstlisting {
 }
 
 #license-text {
-    display: inline-block; 
-    position: relative; 
-    left: 10px; 
-    top: -5px; 
+    display: inline-block;
+    position: relative;
+    left: 10px;
+    top: -5px;
     max-width: 350px;
 }
 @media only screen and (max-width: 481px) {
