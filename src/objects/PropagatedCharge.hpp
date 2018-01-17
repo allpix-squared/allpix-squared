@@ -60,7 +60,7 @@ namespace allpix {
 
     private:
         TRef deposited_charge_;
-        TRef mc_particle_;
+        TRef mc_particle_{nullptr};
     };
 
     /**
