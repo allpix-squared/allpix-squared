@@ -36,6 +36,8 @@ This module requires an installation of Eigen3.
 * `integration_time` : Time within which charge carriers are propagated. After exceeding this time, no further propagation is performed for the respective carriers. Defaults to the LHC bunch crossing time of 25ns.
 * `propagate_electrons` : Select whether electron-type charge carriers should be propagated to the electrodes. Defaults to true.
 * `propagate_holes` :  Select whether hole-type charge carriers should be propagated to the electrodes. Defaults to false.
+
+### Plotting parameters
 * `output_plots` : Determines if output plots should be generated for every event. This causes a significant slow down of the simulation, it is not recommended to enable this option for runs with more than a couple of events. Disabled by default.
 * `output_plots_step` : Timestep to use between two points plotted. Indirectly determines the amount of points plotted. Defaults to *timestep_max* if not explicitly specified.
 * `output_plots_theta` : Viewpoint angle of the 3D animation and the 3D line graph around the world X-axis. Defaults to zero.
@@ -50,9 +52,9 @@ This module requires an installation of Eigen3.
 * `output_animations_color_markers`: Determines if colors should be for the markers in the animations, defaults to false.
 
 ### Usage
-A example of generic propagation for all sensors of type ``Timepix'' at room temperature using packets of 25 charges is the following:
+A example of generic propagation for all sensors of type _Timepix_ at room temperature using packets of 25 charges is the following:
 
-```
+```toml
 [GenericPropagation]
 type = "timepix"
 temperature = 293K
