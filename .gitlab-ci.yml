@@ -7,6 +7,7 @@ stages:
     - formatting
     - performance
     - documentation
+    - packaging
     - deployment
 
 #######################
@@ -491,6 +492,53 @@ cmp:usermanual:
           - public
         expire_in: 3 hour
 
+################################
+# Packaging of Binary Tarballs #
+################################
+
+pkg:slc6-gcc:
+    stage: packaging
+    tags:
+        - docker
+    image: clicdp/slc6-base
+    only:
+        - tags
+        - test-deploy
+        - cvmfs
+    dependencies:
+        - cmp:slc6-gcc
+    script:
+        - export COMPILER_TYPE="gcc"
+        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab-ci.d/load_deps.sh
+        - cd build
+        - cpack
+    artifacts:
+        paths:
+            - build/*.tar.gz
+        expire_in: 3 hour
+
+pkg:cc7-gcc:
+    stage: packaging
+    tags:
+        - docker
+    image: clicdp/cc7-base
+    only:
+        - tags
+        - test-deploy
+        - cvmfs
+    dependencies:
+        - cmp:cc7-gcc
+    script:
+        - export COMPILER_TYPE="gcc"
+        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab-ci.d/load_deps.sh
+        - cd build
+        - cpack
+    artifacts:
+        paths:
+            - build/*.tar.gz
+        expire_in: 3 hour
 
 
 ############################
