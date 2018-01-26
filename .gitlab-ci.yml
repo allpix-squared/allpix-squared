@@ -571,3 +571,21 @@ deploy-documentation:
     # do not run any globally defined before_script or after_script for this step
     before_script: []
     after_script: []
+
+deploy-cvmfs:
+  stage: deployment
+  dependencies:
+    - pkg:cc7-gcc
+    - pkg:slc6-gcc
+  tags:
+    - cvmfs, test-deploy
+  script:
+    - curl -g --header "PRIVATE-TOKEN:$API_TOKEN" "https://gitlab.cern.ch/api/v4/projects/14102/pipelines/${CI_PIPELINE_ID}/jobs?scope[]=success" -o pipeline_info.json
+    - ./.gitlab-ci.d/download_artifacts.py
+    - export RUNNER_LOCATION=$(pwd)
+    - sudo -u cvclicdp -i cp $RUNNER_LOCATION/allpix-squared_cc7.tar .
+    - sudo -u cvclicdp -i cp $RUNNER_LOCATION/allpix-squared_slc6.tar .
+    - if [ -z ${CI_COMMIT_TAG} ]; then export BUILD_PATH='nightly'; else export BUILD_PATH=${CI_COMMIT_TAG}; fi
+    - sudo -u cvclicdp -i ./.gitlab-ci.d/gitlab_deploy.sh $BUILD_PATH
+    - rm -f allpix-squared_cc7.tar
+    - rm -f allpix-squared_slc6.tar
