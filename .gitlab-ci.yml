@@ -516,6 +516,7 @@ pkg:slc6-gcc:
         - ninja install
         - cpack
     artifacts:
+        name: "allpix-squared_slc6"
         paths:
             - build/*.tar.gz
         expire_in: 3 hour
@@ -540,6 +541,7 @@ pkg:cc7-gcc:
         - ninja install
         - cpack
     artifacts:
+        name: "allpix-squared_cc7"
         paths:
             - build/*.tar.gz
         expire_in: 3 hour
