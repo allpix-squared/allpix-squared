@@ -18,6 +18,7 @@ All available detector models are fully supported. This builder can create extra
 * Plexiglass (using the `G4_PLEXIGLASS` definition)
 * Silicon
 * Solder (a mixture of tin and lead)
+* Tungsten
 
 ### Dependencies
 
