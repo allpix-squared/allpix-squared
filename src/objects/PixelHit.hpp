@@ -69,19 +69,19 @@ namespace allpix {
         std::vector<const MCParticle*> getMCParticles() const;
 
         /**
-         * @brief ROOT class definition
-         */
-        ClassDef(PixelHit, 3);
-        /**
-         * @brief Default constructor for ROOT I/O
-         */
-        PixelHit() = default;
-
-        /**
          * @brief Print an ASCII representation of PixelHit to the given stream
          * @param out Stream to print to
          */
         void print(std::ostream& out) const;
+
+        /**
+         * @brief ROOT class definition
+         */
+        ClassDef(PixelHit, 4);
+        /**
+         * @brief Default constructor for ROOT I/O
+         */
+        PixelHit() = default;
 
     private:
         Pixel pixel_;

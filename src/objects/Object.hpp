@@ -56,7 +56,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDef(Object, 1);
+        ClassDef(Object, 2);
 
         /** Overloaded ostream operator for printing of object data
         */
