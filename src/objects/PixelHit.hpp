@@ -77,6 +77,12 @@ namespace allpix {
          */
         PixelHit() = default;
 
+        /**
+         * @brief Print an ASCII representation of PixelHit to the given stream
+         * @param out Stream to print to
+         */
+        void print(std::ostream& out) const;
+
     private:
         Pixel pixel_;
         double time_{};

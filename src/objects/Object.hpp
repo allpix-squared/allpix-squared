@@ -15,6 +15,8 @@
 #ifndef ALLPIX_OBJECT_H
 #define ALLPIX_OBJECT_H
 
+#include <iostream>
+
 #include <TObject.h>
 
 namespace allpix {
@@ -55,6 +57,20 @@ namespace allpix {
          * @brief ROOT class definition
          */
         ClassDef(Object, 1);
+
+        /** Overloaded ostream operator for printing of object data
+        */
+        friend std::ostream& operator<<(std::ostream& out, const Object& obj) {
+            obj.print(out);
+            return out;
+        }
+
+    protected:
+        /**
+         * @brief Print an ASCII representation of this Object to the given stream
+         * @param out Stream to print to
+         */
+        virtual void print(std::ostream& out) const { out << "<unknown object>"; };
     };
 } // namespace allpix
 
