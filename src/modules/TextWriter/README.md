@@ -1,6 +1,6 @@
-# ROOTObjectWriter
-**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)
-**Status**: Functional
+# TextWriter
+**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)  
+**Status**: Functional  
 **Input**: *all objects in simulation*
 
 ### Description
@@ -13,7 +13,7 @@ This module allows to write any object from the simulation to a plain ASCII text
 and individual detectors by the detector marker:
 
 ```
---- detector_name ```
+--- <detector name> ---
 ```
 
 The `include` and `exclude` parameters can be used to restrict the objects written to file to a certain type.
