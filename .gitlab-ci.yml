@@ -581,6 +581,7 @@ deploy-cvmfs:
     - cvmfs
   script:
     - curl -g --header "PRIVATE-TOKEN:$API_TOKEN" "https://gitlab.cern.ch/api/v4/projects/14102/pipelines/${CI_PIPELINE_ID}/jobs?scope[]=success" -o pipeline_info.json
+    - cat pipeline_info.json
     - ./.gitlab-ci.d/download_artifacts.py
     - export RUNNER_LOCATION=$(pwd)
     - sudo -u cvclicdp -i cp $RUNNER_LOCATION/allpix-squared_cc7.tar .
