@@ -10,6 +10,7 @@
 #include <string>
 
 // Include trim utility from allpix
+#include "utils/log.h"
 #include "utils/string.h"
 
 using namespace mesh_converter;
@@ -356,6 +357,7 @@ mesh_converter::read_electric_field(const std::string& file_name) {
     if(!file) {
         throw std::runtime_error("file cannot be accessed");
     }
+    LOG(INFO) << "Reading field data...";
 
     DFSection main_section = DFSection::HEADER;
     DFSection sub_section = DFSection::NONE;
@@ -384,6 +386,7 @@ mesh_converter::read_electric_field(const std::string& file_name) {
             std::smatch base_match;
             if(std::regex_match(line, base_match, base_regex) && base_match.ready()) {
                 auto header_string = base_match[1].str();
+                LOG(TRACE) << "Opening section " << header_string;
 
                 if(header_string == "Info") {
                     main_section = DFSection::INFO;
@@ -406,6 +409,7 @@ mesh_converter::read_electric_field(const std::string& file_name) {
 
                 if(header_string == "Dataset") {
                     std::string data_type = header_data.substr(1, header_data.size() - 2);
+                    LOG(DEBUG) << "Opening dataset of type " << data_type;
 
                     if(data_type == "ElectricField") {
                         main_section = DFSection::ELECTRIC_FIELD;
@@ -421,6 +425,7 @@ mesh_converter::read_electric_field(const std::string& file_name) {
                         main_section = DFSection::IGNORED;
                     }
                 } else if(header_string == "Values") {
+                    LOG(DEBUG) << "Opening value section with " << header_data << " entries";
                     sub_section = DFSection::VALUES;
                     data_count = std::stoul(header_data);
                 } else {
@@ -464,6 +469,7 @@ mesh_converter::read_electric_field(const std::string& file_name) {
                         if(std::regex_match(value, base_match, base_regex) && base_match.ready()) {
                             region = base_match[1].str();
                         } else {
+                            LOG(INFO) << "Could not determine validity region, ignoring.";
                             main_section = DFSection::IGNORED;
                         }
                     }
@@ -490,6 +496,7 @@ mesh_converter::read_electric_field(const std::string& file_name) {
                         if(std::regex_match(value, base_match, base_regex) && base_match.ready()) {
                             region = base_match[1].str();
                         } else {
+                            LOG(INFO) << "Could not determine validity region, ignoring.";
                             main_section = DFSection::IGNORED;
                         }
                     }
@@ -515,6 +522,7 @@ mesh_converter::read_electric_field(const std::string& file_name) {
                         if(std::regex_match(value, base_match, base_regex) && base_match.ready()) {
                             region = base_match[1].str();
                         } else {
+                            LOG(INFO) << "Could not determine validity region, ignoring.";
                             main_section = DFSection::IGNORED;
                         }
                     }
@@ -541,6 +549,7 @@ mesh_converter::read_electric_field(const std::string& file_name) {
                         if(std::regex_match(value, base_match, base_regex) && base_match.ready()) {
                             region = base_match[1].str();
                         } else {
+                            LOG(INFO) << "Could not determine validity region, ignoring.";
                             main_section = DFSection::IGNORED;
                         }
                     }
@@ -567,6 +576,7 @@ mesh_converter::read_electric_field(const std::string& file_name) {
                         if(std::regex_match(value, base_match, base_regex) && base_match.ready()) {
                             region = base_match[1].str();
                         } else {
+                            LOG(INFO) << "Could not determine validity region, ignoring.";
                             main_section = DFSection::IGNORED;
                         }
                     }
@@ -577,6 +587,7 @@ mesh_converter::read_electric_field(const std::string& file_name) {
 
         // Look for close of section
         if(line.find('}') != std::string::npos) {
+
             if(main_section == DFSection::ELECTROSTATIC_POTENTIAL && sub_section == DFSection::VALUES) {
                 if(data_count != region_electric_field_num.size()) {
                     throw std::runtime_error("incorrect number of electric field points");
