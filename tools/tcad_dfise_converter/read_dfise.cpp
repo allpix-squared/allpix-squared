@@ -465,7 +465,7 @@ mesh_converter::read_electric_field(const std::string& file_name) {
                     }
                     if(key == "validity") {
                         // Ignore any electric field valid for multiple regions
-                        base_regex = std::regex("\\[\\s+\"(\\w+)\"\\s+\\]");
+                        base_regex = std::regex("\\[\\s+\"([\\w\\.]+)\"\\s+\\]");
                         if(std::regex_match(value, base_match, base_regex) && base_match.ready()) {
                             region = base_match[1].str();
                         } else {
@@ -492,7 +492,7 @@ mesh_converter::read_electric_field(const std::string& file_name) {
                     }
                     if(key == "validity") {
                         // Ignore any electric field valid for multiple regions
-                        base_regex = std::regex("\\[\\s+\"(\\w+)\"\\s+\\]");
+                        base_regex = std::regex("\\[\\s+\"([\\w\\.]+)\"\\s+\\]");
                         if(std::regex_match(value, base_match, base_regex) && base_match.ready()) {
                             region = base_match[1].str();
                         } else {
@@ -518,7 +518,7 @@ mesh_converter::read_electric_field(const std::string& file_name) {
                     }
                     if(key == "validity") {
                         // Ignore any electric field valid for multiple regions
-                        base_regex = std::regex("\\[\\s+\"(\\w+)\"\\s+\\]");
+                        base_regex = std::regex("\\[\\s+\"([\\w\\.]+)\"\\s+\\]");
                         if(std::regex_match(value, base_match, base_regex) && base_match.ready()) {
                             region = base_match[1].str();
                         } else {
@@ -545,7 +545,7 @@ mesh_converter::read_electric_field(const std::string& file_name) {
                     }
                     if(key == "validity") {
                         // Ignore any electric field valid for multiple regions
-                        base_regex = std::regex("\\[\\s+\"(\\w+)\"\\s+\\]");
+                        base_regex = std::regex("\\[\\s+\"([\\w\\.]+)\"\\s+\\]");
                         if(std::regex_match(value, base_match, base_regex) && base_match.ready()) {
                             region = base_match[1].str();
                         } else {
@@ -572,7 +572,7 @@ mesh_converter::read_electric_field(const std::string& file_name) {
                     }
                     if(key == "validity") {
                         // Ignore any electric field valid for multiple regions
-                        base_regex = std::regex("\\[\\s+\"(\\w+)\"\\s+\\]");
+                        base_regex = std::regex("\\[\\s+\"([\\w\\.]+)\"\\s+\\]");
                         if(std::regex_match(value, base_match, base_regex) && base_match.ready()) {
                             region = base_match[1].str();
                         } else {
