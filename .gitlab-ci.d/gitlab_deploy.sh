@@ -13,6 +13,7 @@ if [[ $clicdp_status == *"(stratum0 / local)"* ]]; then
 
   # Extract artifact tars
   echo "Extract the artifact .tar files"
+  ls -l $1/
   mkdir -p /home/cvclicdp/artifact/cc7
   tar xf $1/allpix-squared_cc7.tar -C /home/cvclicdp/artifact/cc7
   mkdir -p /home/cvclicdp/release/$2/x86_64-centos7-gcc7-opt/
