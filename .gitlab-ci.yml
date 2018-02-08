@@ -513,10 +513,8 @@ pkg:slc6-gcc:
         - source .gitlab-ci.d/load_deps.sh
         - cd build
         - cmake -GNinja -DCMAKE_INSTALL_PREFIX=/tmp ..
-        - ninja install
-        - cpack
+        - ninja package
     artifacts:
-        name: "allpix-squared_slc6"
         paths:
             - build/*.tar.gz
         expire_in: 3 hour
@@ -538,10 +536,8 @@ pkg:cc7-gcc:
         - source .gitlab-ci.d/load_deps.sh
         - cd build
         - cmake -GNinja -DCMAKE_INSTALL_PREFIX=/tmp ..
-        - ninja install
-        - cpack
+        - ninja package
     artifacts:
-        name: "allpix-squared_cc7"
         paths:
             - build/*.tar.gz
         expire_in: 3 hour
