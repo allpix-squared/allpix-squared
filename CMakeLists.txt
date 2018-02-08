@@ -190,6 +190,12 @@ ADD_SUBDIRECTORY(etc/unittests)
 # Create a local setup file #
 #############################
 
+# Add compiler if necessary:
+GET_FILENAME_COMPONENT(CMP_PATH ${CMAKE_CXX_COMPILER} DIRECTORY)
+GET_FILENAME_COMPONENT(PARENT_PATH ${CMP_PATH} DIRECTORY)
+IF(EXISTS ${PARENT_PATH}/setup.sh)
+  LIST(APPEND ALLPIX_RUNTIME_DEPS "${PARENT_PATH}/setup.sh")
+ENDIF()
 
 # Build configuration string with commands
 FOREACH(dep ${ALLPIX_RUNTIME_DEPS})
