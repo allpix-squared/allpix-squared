@@ -16,7 +16,7 @@ if [[ $clicdp_status == *"(stratum0 / local)"* ]]; then
   ls -l $1/
   for FLAVOR in "x86_64-centos7-gcc7-opt" "x86_64-slc6-gcc7-opt"; do
     mkdir -p /home/cvclicdp/release/$2/$FLAVOUR/
-    tar xf $1/allpix-squared-latest_$FLAVOUR.tar.gz -C /home/cvclicdp/release/$2/$FLAVOUR/
+    tar --strip-components=1 -xf $1/allpix-squared-latest_$FLAVOUR.tar.gz -C /home/cvclicdp/release/$2/$FLAVOUR/
   done
 
   #Deleting old nightly build if it is not a tag
