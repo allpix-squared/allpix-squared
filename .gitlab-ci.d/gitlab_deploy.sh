@@ -15,7 +15,6 @@ if [[ $clicdp_status == *"(stratum0 / local)"* ]]; then
   echo "Extract the artifact tarballs"
   for FLAVOUR in "x86_64-centos7-gcc7-opt" "x86_64-slc6-gcc7-opt"; do
     echo " - $FLAVOUR"
-    less $1/allpix-squared-latest_$FLAVOUR.tar.gz
     mkdir -p /home/cvclicdp/release/$2/$FLAVOUR/
     tar --strip-components=1 -xf $1/allpix-squared-latest_$FLAVOUR.tar.gz -C /home/cvclicdp/release/$2/$FLAVOUR/
   done

@@ -15,7 +15,7 @@ for i in range(0, len(data)):
 
 #Find last passed GCC build
 for i in range(0, len(data)):
-    if data[i]['name'] == 'pkg:slc6-gcc':
-        print "Downloading SLC6 GCC build"
+  if data[i]['name'] == 'pkg:slc6-gcc':
+    print "Downloading SLC6 GCC build"
     os.system("curl -O https://gitlab.cern.ch/allpix-squared/allpix-squared/-/jobs/%s/artifacts/raw/build/allpix-squared-latest_x86_64-slc6-gcc7-opt.tar.gz" % data[i]['id'] )
     break
