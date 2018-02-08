@@ -580,7 +580,7 @@ deploy-cvmfs:
   tags:
     - cvmfs
   script:
-    - curl -g --header "PRIVATE-TOKEN:$API_TOKEN" "https://gitlab.cern.ch/api/v4/projects/14102/pipelines/${CI_PIPELINE_ID}/jobs?scope[]=success" -o pipeline_info.json
+    - curl -g --header "PRIVATE-TOKEN:$API_TOKEN" "https://gitlab.cern.ch/api/v4/projects/14102/pipelines/${CI_PIPELINE_ID}/jobs?scope[]=success&per_page=100" -o pipeline_info.json
     - cat pipeline_info.json
     - ./.gitlab-ci.d/download_artifacts.py
     - export RUNNER_LOCATION=$(pwd)
