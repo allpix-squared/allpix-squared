@@ -157,7 +157,7 @@ fmt:slc6-llvm-format:
         - cd build/
         - ninja check-format
 
-.fmt:slc6-llvm-lint:
+fmt:slc6-llvm-lint:
     stage: formatting
     tags:
         - docker
@@ -186,7 +186,7 @@ fmt:cc7-llvm-format:
         - cd build/
         - ninja check-format
 
-.fmt:cc7-llvm-lint:
+fmt:cc7-llvm-lint:
     stage: formatting
     tags:
         - docker
@@ -390,7 +390,7 @@ core:mac1013-clang:
 
 # CentOS7
 
-.perf:cc7-gcc:
+perf:cc7-gcc:
     stage: performance
     tags:
         - benchmark
@@ -527,7 +527,7 @@ pkg:cc7-gcc:
     only:
         - tags
         - test-deploy
-        - cvmfs
+        - cvmfs-deploy
     dependencies:
         - cmp:cc7-gcc
     script:
