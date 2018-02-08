@@ -12,15 +12,15 @@ if [[ $clicdp_status == *"(stratum0 / local)"* ]]; then
   cd /home/cvclicdp/
 
   # Extract artifact tars
-  echo "Extract the artifact .tar files"
+  echo "Extract the artifact tarballs"
   ls -l $1/
   mkdir -p /home/cvclicdp/artifact/cc7
-  tar xf $1/allpix-squared_cc7.tar -C /home/cvclicdp/artifact/cc7
+  unzip $1/allpix-squared_cc7.tar -d /home/cvclicdp/artifact/cc7
   mkdir -p /home/cvclicdp/release/$2/x86_64-centos7-gcc7-opt/
   tar xf /home/cvclicdp/artifact/cc7/build/allpix-squared-1.1.0-Linux.tar.gz -C /home/cvclicdp/release/$2/x86_64-centos7-gcc7-opt/
 
   mkdir -p /home/cvclicdp/artifact/slc6
-  tar xf $1/allpix-squared_slc6.tar -C /home/cvclicdp/artifact/slc6
+  unzip $1/allpix-squared_slc6.tar -d /home/cvclicdp/artifact/slc6
   mkdir -p /home/cvclicdp/release/$2/x86_64-slc6-gcc7-opt/
   tar xf /home/cvclicdp/artifact/slc6/build/allpix-squared-1.1.0-Linux.tar.gz -C /home/cvclicdp/release/$2/x86_64-slc6-gcc7-opt/
 
@@ -36,7 +36,7 @@ if [[ $clicdp_status == *"(stratum0 / local)"* ]]; then
 
   # Clean up old stuff
   rm -rf /home/cvclicdp/artifact
-  rm -f /home/cvclicdp/release
+  rm -rf /home/cvclicdp/release
 
   # Publish changes
   #cvmfs_server publish clicdp.cern.ch
