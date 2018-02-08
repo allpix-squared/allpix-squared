@@ -296,6 +296,7 @@ int main(int argc, char** argv) {
     try {
         auto region_grid = read_grid(grid_file);
         points = region_grid[region];
+        LOG(DEBUG) << "Grid with " << points.size() << " points";
     } catch(std::runtime_error& e) {
         LOG(FATAL) << "Failed to parse grid file " << grid_file;
         LOG(FATAL) << " " << e.what();
@@ -309,6 +310,7 @@ int main(int argc, char** argv) {
     try {
         auto region_fields = read_electric_field(data_file);
         field = region_fields[region][observable];
+        LOG(DEBUG) << "Field with " << field.size() << " points";
     } catch(std::runtime_error& e) {
         LOG(FATAL) << "Failed to parse data file " << data_file;
         LOG(FATAL) << " " << e.what();
