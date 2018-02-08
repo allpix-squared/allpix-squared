@@ -51,7 +51,7 @@ fi
 # General variables
 CLICREPO=/cvmfs/clicdp.cern.ch
 SFTREPO=/cvmfs/sft.cern.ch
-BUILD_FLAVOUR=x86_64-${OS}-${COMPILER_VERSION}-${BUILD_TYPE}
+export BUILD_FLAVOUR=x86_64-${OS}-${COMPILER_VERSION}-${BUILD_TYPE}
 
 #--------------------------------------------------------------------------------
 #     Compiler
@@ -154,4 +154,3 @@ export PATH=${Git_HOME}/bin:${PATH}
 
 export LCIO=${CLICREPO}/software/LCIO/2.8.0/${BUILD_FLAVOUR}/
 export CMAKE_PREFIX_PATH="$LCIO:$CMAKE_PREFIX_PATH"
-
