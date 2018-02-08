@@ -527,7 +527,7 @@ pkg:cc7-gcc:
     only:
         - tags
         - test-deploy
-        - cvmfs
+        - cvmfs-deploy
     dependencies:
         - cmp:cc7-gcc
     script:
