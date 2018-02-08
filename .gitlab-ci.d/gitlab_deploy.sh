@@ -5,7 +5,7 @@ clicdp_status=`cvmfs_server list | grep clicdp`
 if [[ $clicdp_status == *"(stratum0 / local)"* ]]; then
   echo "I am not in transaction"
   # Start transaction
-  #cvmfs_server transaction clicdp.cern.ch
+  cvmfs_server transaction clicdp.cern.ch
 
   # Deploy the latest Allpix Squared build
   echo "Deploying build: $2"
@@ -27,14 +27,13 @@ if [[ $clicdp_status == *"(stratum0 / local)"* ]]; then
 
   # Move new build into place
   echo "Moving new build into place"
-  cat /home/cvclicdp/release/*/*/setup.sh
-  # mv /home/cvclicdp/release/$2 /cvmfs/clicdp.cern.ch/software/allpix-squared/
+  mv /home/cvclicdp/release/$2 /cvmfs/clicdp.cern.ch/software/allpix-squared/
 
   # Clean up old stuff
   rm -rf /home/cvclicdp/release
 
   # Publish changes
-  #cvmfs_server publish clicdp.cern.ch
+  cvmfs_server publish clicdp.cern.ch
   exit 0
 else
   (>&2 echo "#################################")

@@ -574,7 +574,8 @@ deploy-cvmfs:
     - pkg:cc7-gcc
     - pkg:slc6-gcc
   tags:
-    - cvmfs
+    - tags
+    - cvmfs-deploy
   script:
     - curl -g --header "PRIVATE-TOKEN:$API_TOKEN" "https://gitlab.cern.ch/api/v4/projects/14102/pipelines/${CI_PIPELINE_ID}/jobs?scope[]=success&per_page=100" -o pipeline_info.json
     - ./.gitlab-ci.d/download_artifacts.py
