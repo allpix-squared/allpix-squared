@@ -2,20 +2,24 @@
 
 import os
 import json
+import sys
 
-with open('pipeline_info.json') as json_data:
-  data = json.load(json_data)
+# Check if we got token:
+if len(sys.argv) != 4:
+  sys.exit(1)
 
-#Find last passed GCC build
+api_token = sys.argv[1]
+ci_project_id = sys.argv[2]
+ci_pipeline_id = sys.argv[3]
+
+print "Downloading job list"
+data = json.load(os.popen("curl -g --header \"PRIVATE-TOKEN:%s\" \"https://gitlab.cern.ch/api/v4/projects/%s/pipelines/%s/jobs?scope[]=success&per_page=100\"" % (api_token, ci_project_id, ci_pipeline_id)))
+
+# Find last passed builds
 for i in range(0, len(data)):
-  if data[i]['name'] == 'pkg:cc7-gcc':
-    print "Downloading CC7 GCC build"
-    os.system("curl -O https://gitlab.cern.ch/allpix-squared/allpix-squared/-/jobs/%s/artifacts/raw/public/releases/allpix-squared-latest_x86_64-centos7-gcc7-opt.tar.gz" % data[i]['id'] )
-    break
+  if "pkg:" not in data[i]['name']:
+    continue
 
-#Find last passed GCC build
-for i in range(0, len(data)):
-  if data[i]['name'] == 'pkg:slc6-gcc':
-    print "Downloading SLC6 GCC build"
-    os.system("curl -O https://gitlab.cern.ch/allpix-squared/allpix-squared/-/jobs/%s/artifacts/raw/public/releases/allpix-squared-latest_x86_64-slc6-gcc7-opt.tar.gz" % data[i]['id'] )
-    break
+  print "Downloading artifact for job %s" % data[i]['id']
+  os.system("curl --header \"PRIVATE-TOKEN:%s\" \"https://gitlab.cern.ch/api/v4/projects/14102/jobs/%s/artifacts\" -o artifact.zip" % (api_token, data[i]['id']) )
+  os.system("unzip -j artifact.zip; rm artifact.zip")
