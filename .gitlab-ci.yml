@@ -604,6 +604,6 @@ deploy-cvmfs:
     script:
         - ./.gitlab-ci.d/download_artifacts.py $API_TOKEN $CI_PROJECT_ID $CI_PIPELINE_ID
         - export RUNNER_LOCATION=$(pwd)
-        - if [ -z ${CI_COMMIT_TAG} ]; then export BUILD_PATH='nightly'; else export BUILD_PATH=${CI_COMMIT_TAG}; fi
+        - if [ -z ${CI_COMMIT_TAG} ]; then export BUILD_PATH='latest'; else export BUILD_PATH=${CI_COMMIT_TAG}; fi
         - sudo -u cvclicdp -i $RUNNER_LOCATION/.gitlab-ci.d/gitlab_deploy.sh $RUNNER_LOCATION $BUILD_PATH
         - rm -f allpix-squared-latest_*.tar.gz
