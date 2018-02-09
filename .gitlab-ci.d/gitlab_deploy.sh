@@ -12,17 +12,38 @@ if [[ $clicdp_status == *"(stratum0 / local)"* ]]; then
   cd /home/cvclicdp/
 
   # Extract artifact tars
-  echo "Extract the artifact tarballs"
-  for FLAVOUR in "x86_64-centos7-gcc7-opt" "x86_64-slc6-gcc7-opt"; do
-    echo " - $FLAVOUR"
-    mkdir -p /home/cvclicdp/release/$2/$FLAVOUR/
-    tar --strip-components=1 -xf $1/allpix-squared-latest_$FLAVOUR.tar.gz -C /home/cvclicdp/release/$2/$FLAVOUR/
+  echo "Extract artifact tarballs"
+  for filename in $1/*.tar.gz; do
+    echo " - $filename"
+
+    if [[ $filename =~ squared-(.+?)-x ]]; then
+      version=${BASH_REMATCH[1]}
+      if [ "$version" != "$2" ]; then
+        echo "Build version does not match: $version"
+        continue
+      fi
+    else
+      echo "Unable to parse string $filename"
+      continue
+    fi
+
+    if [[ $filename =~ $version-(.+?)\.tar ]]; then
+      flavor=${BASH_REMATCH[1]}
+      echo "Found build flavor:  $flavor"
+    else
+      echo "Unable to parse string $filename"
+      continue
+    fi
+
+    # Create target direktory and untar:
+    mkdir -p /home/cvclicdp/release/$version/$flavor
+    tar --strip-components=1 -xf $filename -C /home/cvclicdp/release/$version/$flavor/
   done
 
-  #Deleting old nightly build if it is not a tag
-  if [ "$2" == "nightly" ]; then
-    echo "Deleting old nightly build"
-    rm -rf /cvmfs/clicdp.cern.ch/software/allpix-squared/nightly
+  # Deleting old nightly build if it is not a tag
+  if [ "$2" == "latest" ]; then
+    echo "Deleting old \"latest\" build"
+    rm -rf /cvmfs/clicdp.cern.ch/software/allpix-squared/latest
   fi
 
   # Move new build into place
