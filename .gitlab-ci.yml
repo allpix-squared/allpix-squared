@@ -511,7 +511,7 @@ pkg:slc6-gcc:
         - source .gitlab-ci.d/init_x86_64.sh
         - source .gitlab-ci.d/load_deps.sh
         - cd build
-        - cmake -GNinja -DCMAKE_INSTALL_PREFIX=/tmp ..
+        - cmake -GNinja -DCMAKE_SKIP_RPATH=ON -DCMAKE_INSTALL_PREFIX=/tmp ..
         - ninja package
     artifacts:
         paths:
@@ -533,7 +533,7 @@ pkg:cc7-gcc:
         - source .gitlab-ci.d/init_x86_64.sh
         - source .gitlab-ci.d/load_deps.sh
         - cd build
-        - cmake -GNinja -DCMAKE_INSTALL_PREFIX=/tmp ..
+        - cmake -GNinja -DCMAKE_SKIP_RPATH=ON -DCMAKE_INSTALL_PREFIX=/tmp ..
         - ninja package
     artifacts:
         paths:
