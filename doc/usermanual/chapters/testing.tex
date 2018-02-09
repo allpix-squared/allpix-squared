@@ -19,11 +19,12 @@ Currently, the following targets are provided:
   \item[\command{make lint}] invokes the \command{clang-tidy} tool to provide additional linting of the source code. The tool tries to detect possible errors (and thus potential bugs), dangerous constructs (such as uninitialized variables) as well as stylistic errors. In addition, it ensures proper usage of modern C++ standards. The configuration used for the \command{clang-tidy} command can be found in the \file{.clang-tidy} file in the root directory of the repository.
   \item[\command{make check-lint}] also invokes the \command{clang-tidy} tool but does not report the issues found while parsing the code. Instead, it returns an exit code 0 (pass) if no errors have been produced and exit code 1 (fail) if issues are present. This is used by the CI.
   \item[\command{make cppcheck}] runs the \command{cppcheck} command for additional static code analysis. The output is stored in the file \file{cppcheck_results.xml} in XML2.0 format. It should be noted that some of the issues reported by the tool are to be considered false positives.
-  \item[\command{make cppcheck-html}] Compiles a HTML report from the defects list gathered by \command{make cppcheck}. This target is only available if the \command{cppcheck-htmlreport} executable is found in the \dir{PATH}.
+  \item[\command{make cppcheck-html}] compiles a HTML report from the defects list gathered by \command{make cppcheck}. This target is only available if the \command{cppcheck-htmlreport} executable is found in the \dir{PATH}.
+  \item[\command{make package}] creates a binary release tarball as described in Section~\ref{sec:packaging}.
 \end{description}
 
 \section{Packaging}
-
+\label{sec:packaging}
 \apsq comes with a basic configuration to generate tarballs from the compiled binaries using the CPack command. In order to generate a working tarball from the current \apsq build, the \parameter{RPATH} of the executable should not be set, otherwise the \command{allpix} binary will not be able to locate the dynamic libraries. If not set, the global \parameter{LD_LIBRARY_PATH} is used to search for the required libraries:
 
 \begin{verbatim}
@@ -31,6 +32,13 @@ $ mkdir build
 $ cd build
 $ cmake -DCMAKE_SKIP_RPATH=ON ..
 $ make package
+\end{verbatim}
+
+Since the CMake installation path defaults to the project's source directory, certain files are excluded from the default installation target created by CMake.
+This includes the detector models in the \dir{models/} directory as well as the additional tools provided in \dir{tools/root_analysis_macros/} folder. In order to include them in a release tarball produced by CPack, the installation path should be set to a location different from the project source folder, for example:
+
+\begin{verbatim}
+$ cmake -DCMAKE_INSTALL_PREFIX=/tmp ..
 \end{verbatim}
 
 The content of the produced tarball can be extracted to any location of the file system, but requires the ROOT6 and Geant4 libraries as well as possibly additional libraries linked by individual at runtime.
