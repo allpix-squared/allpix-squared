@@ -504,18 +504,21 @@ pkg:slc6-gcc:
     only:
         - tags
         - deploy-cvmfs
+        - deploy-eos
     dependencies:
         - cmp:slc6-gcc
     script:
         - export COMPILER_TYPE="gcc"
         - source .gitlab-ci.d/init_x86_64.sh
         - source .gitlab-ci.d/load_deps.sh
+        - mkdir -p public/releases
         - cd build
         - cmake -GNinja -DCMAKE_SKIP_RPATH=ON -DCMAKE_INSTALL_PREFIX=/tmp ..
         - ninja package
+        - mv *.tar.gz ../public/releases
     artifacts:
         paths:
-            - build/*.tar.gz
+            - public
         expire_in: 3 hour
 
 pkg:cc7-gcc:
@@ -526,18 +529,21 @@ pkg:cc7-gcc:
     only:
         - tags
         - deploy-cvmfs
+        - deploy-eos
     dependencies:
         - cmp:cc7-gcc
     script:
         - export COMPILER_TYPE="gcc"
         - source .gitlab-ci.d/init_x86_64.sh
         - source .gitlab-ci.d/load_deps.sh
+        - mkdir -p public/releases
         - cd build
         - cmake -GNinja -DCMAKE_SKIP_RPATH=ON -DCMAKE_INSTALL_PREFIX=/tmp ..
         - ninja package
+        - mv *.tar.gz ../public/releases
     artifacts:
         paths:
-            - build/*.tar.gz
+            - public
         expire_in: 3 hour
 
 
@@ -558,6 +564,25 @@ deploy-documentation:
     dependencies:
         - cmp:usermanual
         - cmp:doxygen
+    # Docker image with tools to deploy to EOS
+    image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
+    script:
+        - deploy-eos
+    # do not run any globally defined before_script or after_script for this step
+    before_script: []
+    after_script: []
+
+deploy-eos:
+    stage: deployment
+    tags:
+      - docker
+    # Only run for new tags:
+    only:
+        - tags
+        - deploy-eos
+    dependencies:
+        - pkg:cc7-gcc
+        - pkg:slc6-gcc
     # Docker image with tools to deploy to EOS
     image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
     script:
