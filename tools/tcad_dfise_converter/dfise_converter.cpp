@@ -569,8 +569,8 @@ int main(int argc, char** argv) {
     init_file.open(init_file_name.str());
 
     // Write INIT file h"eader
-    init_file << "tcad_dfise_converter" << std::endl;                                  // NAME
-    init_file << "#Observable: " << observable << std::endl;                           // OBSERVABLE INTERPOLATED
+    init_file << "tcad_dfise_converter, ";                                             // NAME
+    init_file << "observable: " << observable << std::endl;                            // OBSERVABLE INTERPOLATED
     init_file << "##SEED## ##EVENTS##" << std::endl;                                   // UNUSED
     init_file << "##TURN## ##TILT## 1.0" << std::endl;                                 // UNUSED
     init_file << "0.0 0.0 0.0" << std::endl;                                           // MAGNETIC FIELD (UNUSED)
