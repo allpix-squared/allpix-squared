@@ -145,20 +145,20 @@ For new tagged versions, all deployment targets are executed.
 \subsection{Software deployment to CVMFS}
 
 The software is automatically deployed to CERN's VM file system (CVMFS)~\cite{cvmfs} for every new tag and for every update of the \parameter{deploy-cvmfs} branch.
-New versions are published to the folder \dir{/cvmfs/clicdp.cern.ch/software/allpix-squared/} where a new folder is created for every new tag, while updates via the branch are always stored in the \dir{nighly} folder.
+New versions are published to the folder \dir{/cvmfs/clicdp.cern.ch/software/allpix-squared/} where a new folder is created for every new tag, while updates via the branch are always stored in the \dir{latest} folder.
 
 The deployed version currently comprises all modules as well as the detector models shipped with the framework.
 An additional \file{setup.sh} is placed in the root folder of the respective release, which allows to set up all runtime dependencies necessary for executing this version.
 Versions both for SLC\,6 and CentOS\,7 are provided.
 
 The deployment CI job runs on a dedicated computer with a GitLab SSH runner.
-Job artifacts from the packaging stage of the CI are downloaded via their ID and made available to the \emph{cvclicdp} user, which has access to the CVMFS interface.
-The job checks for concurrent deployments to CVMFS, the corresponding script for the deployment can be found in \dir{.gitlab-ci.d/gitlab_deployment.sh}.
+Job artifacts from the packaging stage of the CI are downloaded via their ID using the script found in \dir{.gitlab-ci.d/download_artifacts.py}, and are made available to the \emph{cvclicdp} user which has access to the CVMFS interface.
+The job checks for concurrent deployments to CVMFS and then unpacks arr tarball releases and publishes the to the CLICdp experiment CVMFS space, the corresponding script for the deployment can be found in \dir{.gitlab-ci.d/gitlab_deployment.sh}.
 This job requires a private API token to be set as secret project variable through the GitLab interface, currently this token belongs to the service account user \emph{ap2}.
 
 \subsection{User manual deployment to EOS}
 
-The user manual is deployed to the project's EOS space at \dir{/eos/project/a/allpix-squared/} for publication on the project website.
+The user manual is deployed to the project's EOS space at \dir{/eos/project/a/allpix-squared/www/usermanual} for publication on the project website.
 This comprises both the PDF and HTMl versions of the manual as well as the Doxygen code reference.
 New versions are published for tags and updates of the \parameter{deploy-usermanual} branch.
 The CI jobs uses the \parameter{ci-web-deployer} Docker image from the CERN GitLab CI tools to access EOS, which requires a specific file structure of the artifact.
@@ -169,7 +169,7 @@ Currently, this uses the credentials of the service account user \emph{ap2}.
 
 \subsection{Release tarball deployment to EOS}
 
-Binary release tarballs are deployed to EOS to serve as downloads from the website.
+Binary release tarballs are deployed to EOS to serve as downloads from the website to the directory \dir{/eos/project/a/allpix-squared/www/releases}.
 New tarballs are produced for every tag as well as for any update of the \parameter{deploy-eos} branch.
 The files are taken from the packaging jobs and published via the \parameter{ci-web-deployer} Docker image from the CERN GitLab CI tools.
 
