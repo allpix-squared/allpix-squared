@@ -375,8 +375,8 @@ which describes the rotation of \SI{45}{\degree} around the $Z$ axis, followed b
 All supported rotations are extrinsic active rotations, i.e. the vector itself is rotated, not the coordinate system. All angles in configuration files should be specified in the order they will be applied.
 \end{warning}
 
-\item A \parameter{type} of the detector model, for example \emph{hybrid} or \emph{monolithic}.
-The model defines the geometry and parameters of the detector.
+\item A \parameter{type} parameter describing the detector model, for example \emph{timepix} or \emph{mimosa26}.
+These models define the geometry and parameters of the detector.
 Multiple detectors can share the same model, several of which are shipped ready-to-use with the framework.
 \item An optional parameter \parameter{alignment_precision_position} to specify the alignment precision along the three global axes as described in Section~\ref{sec:detector_config}.
 \item An optional parameter \parameter{alignment_precision_orientation} for the alignment precision in the three rotation angles as described in Section~\ref{sec:detector_config}.
@@ -425,12 +425,6 @@ Outside the active matrix, the sensor can feature excess material in all directi
 A detector of base class type does not feature a separate readout chip, thus only the thickness of an additional, inactive silicon layer can be specified.
 Derived models allow for separate readout chips, optionally connected with bump bonds.
 
-\subsection{Support Layers}
-\label{sec:support_layers}
-In addition to the active layer, multiple layers of support material can be added to the detector description.
-It is possible to place support layers at arbitrary positions relative to the sensor, while the default position is behind the readout chip (or inactive silicon layer).
-The support material can be chosen from a set of predefined materials, including PCB and Kapton.
-
 The base detector model can be extended to provide more detailed geometries.
 Currently implemented derived models are the \texttt{MonolithicPixelDetectorModel}, which describes a monolithic detector with all electronics directly implemented in the same silicon wafer as the sensor, and the \texttt{HybridPixelDetectorModel}, which in addition to the features described above also includes a separate readout chip with configurable size and bump bonds between the sensor and readout chip.
 
@@ -459,7 +453,32 @@ Defaults to zero, thus having a sensor size equal to the number of pixels times 
 \item \parameter{chip_thickness}: Thickness of the readout chip, placed next to the sensor.
 \end{itemize}
 
-In addition, multiple layers of support can be added to the detector model.
+The base parameters described above are the only set of parameters supported by the \textbf{monolithic} model. For this model, the \parameter{chip_thickness} parameter represents the first few micrometers of silicon which contain the chip circuitry and are shielded from the bias voltage and thus do not contribute to the signal formation.
+
+The \textbf{hybrid} model adds bump bonds between the chip and sensor while automatically making sure the chip and support layers are shifted appropriately.
+Furthermore, it allows the user to specify the chip dimensions independently from the sensor size, as the readout chip is treated as a separate entity.
+The additional parameters for the \textbf{hybrid} model are as follows:
+\begin{itemize}
+\item \texttt{\textbf{chip\_excess\_\textit{direction}}}: With direction either \parameter{top}, \parameter{bottom}, \parameter{right} or \parameter{left}.
+The chip excess in the specific direction, similar to the \texttt{\textbf{sensor\_excess\_\textit{direction}}} parameter described above.
+\item \parameter{chip_excess}: Fallback for the excess width of the chip, defaults to zero and thus to a chip size equal to the dimensions of the pixel matrix.
+See the \parameter{sensor_excess} parameter above.
+\item \parameter{bump_height}: Height of the bump bonds (the separation distance between the chip and the sensor)
+\item \parameter{bump_sphere_radius}: The individual bump bonds are simulated as union solids of a sphere and a cylinder.
+This parameter sets the radius of the sphere to use.
+\item \parameter{bump_cylinder_radius}: The radius of the cylinder part of the bump.
+The height of the cylinder is determined by the \parameter{bump_height} parameter.
+\item \parameter{bump_offset}: A 2D offset of the grid of bumps.
+The individual bumps are by default positioned at the center of each single pixel in the grid.
+\end{itemize}
+
+
+\nlparagraph{Support Layers}
+\label{sec:support_layers}
+In addition to the active layer, multiple layers of support material can be added to the detector description.
+It is possible to place support layers at arbitrary positions relative to the sensor, while the default position is behind the readout chip (or inactive silicon layer).
+The support material can be chosen from a set of predefined materials, including PCB and Kapton.
+
 Every support layer should be defined in its own section headed with the name \texttt{[support]}.
 By default, no support layers are added.
 Support layers allow for the following parameters.
@@ -484,25 +503,6 @@ A 2D offset with respect to its default position can be specified using this par
 \item \texttt{material}: Material of the support. \apsq does not provide a set of materials to choose from; it is up to the modules using this parameter to implement the materials such that they can use it.
 Chapter~\ref{ch:modules} provides details about the materials supported by the geometry builder module (\parameter{GeometryBuilderGeant4}).
 \todo{This should be standardized...}
-\end{itemize}
-
-The base parameters described above are the only set of parameters supported by the \textbf{monolithic} model.
-
-The \textbf{hybrid} model adds bump bonds between the chip and sensor while automatically making sure the chip and support layers are shifted appropriately.
-Furthermore, it allows the user to specify the chip dimensions independently from the sensor size, as the readout chip is treated as a separate entity.
-The additional parameters for the \textbf{hybrid} model are as follows:
-\begin{itemize}
-\item \texttt{\textbf{chip\_excess\_\textit{direction}}}: With direction either \parameter{top}, \parameter{bottom}, \parameter{right} or \parameter{left}.
-The chip excess in the specific direction, similar to the \texttt{\textbf{sensor\_excess\_\textit{direction}}} parameter described above.
-\item \parameter{chip_excess}: Fallback for the excess width of the chip, defaults to zero and thus to a chip size equal to the dimensions of the pixel matrix.
-See the \parameter{sensor_excess} parameter above.
-\item \parameter{bump_height}: Height of the bump bonds (the separation distance between the chip and the sensor)
-\item \parameter{bump_sphere_radius}: The individual bump bonds are simulated as union solids of a sphere and a cylinder.
-This parameter sets the radius of the sphere to use.
-\item \parameter{bump_cylinder_radius}: The radius of the cylinder part of the bump.
-The height of the cylinder is determined by the \parameter{bump_height} parameter.
-\item \parameter{bump_offset}: A 2D offset of the grid of bumps.
-The individual bumps are by default positioned at the center of each single pixel in the grid.
 \end{itemize}
 
 \nlparagraph{Accessing specific detector models within the framework}
