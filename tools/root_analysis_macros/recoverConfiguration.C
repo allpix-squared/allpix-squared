@@ -10,6 +10,8 @@
 #include <TKey.h>
 #include <TROOT.h>
 
+std::string detectors_file;
+
 std::stringstream listkeys(TDirectoryFile* dir) {
     std::stringstream str;
     bool name_set = false;
@@ -49,6 +51,11 @@ std::stringstream listkeys(TDirectoryFile* dir) {
                 continue;
             }
 
+            // If this is the detectors file, cache its name:
+            if(key == "detectors_file") {
+                detectors_file = value;
+            }
+
             // Otherwise add the configuration key/value pair:
             str << key << " = " << value << std::endl;
         } else if(cl->InheritsFrom("ROOT::Math::Rotation3D")) {
@@ -66,7 +73,8 @@ std::stringstream listkeys(TDirectoryFile* dir) {
             str << entry->GetName() << " = " << position.x() << "mm " << position.y() << "mm " << position.z() << "mm"
                 << std::endl;
         } else {
-            std::cout << "Could not deduce parameter type of \"" << entry->GetName() << "\": " << entry->GetClassName() << std::endl;
+            std::cout << "Could not deduce parameter type of \"" << entry->GetName() << "\": " << entry->GetClassName()
+                      << std::endl;
         }
     }
 
@@ -74,9 +82,9 @@ std::stringstream listkeys(TDirectoryFile* dir) {
     return str;
 }
 
-void recoverConfiguration(TString data_file, TString config_file_name, TString detector_file_name) {
+void recoverConfiguration(std::string data_file, std::string config_file_name) {
 
-    TFile* f1 = TFile::Open(data_file);
+    TFile* f1 = TFile::Open(data_file.c_str());
     if(!f1) {
         std::cout << "Cannot open data file \"" << data_file << "\"" << std::endl;
         return;
@@ -101,10 +109,27 @@ void recoverConfiguration(TString data_file, TString config_file_name, TString d
     if(detectors != nullptr) {
         cout << "Found TDirectory containing the detector configuration." << std::endl;
         stringstream str = listkeys(detectors);
-        std::ofstream det_file(detector_file_name, std::ios_base::out | std::ios_base::trunc);
+
+        if(detectors_file.empty()) {
+            // Default to detectors file name:
+            detectors_file = "detectors.conf";
+            cout << "Using default name for detectors file - you might need to adjust the parameter.";
+        } else {
+            // Clean string from quotation marks:
+            if(detectors_file.front() == '"') {
+                detectors_file.erase(0, 1);                      // erase the first character
+                detectors_file.erase(detectors_file.size() - 1); // erase the last character
+            }
+        }
+
+        // Use path of the configuration file:
+        std::size_t found = config_file_name.find_last_of("/\\");
+        detectors_file = config_file_name.substr(0, found) + "/" + detectors_file;
+
+        std::ofstream det_file(detectors_file, std::ios_base::out | std::ios_base::trunc);
         if(det_file.good()) {
             det_file << str.str();
-            std::cout << "Wrote detector setup to: \"" << detector_file_name << "\"" << std::endl;
+            std::cout << "Wrote detector setup to: \"" << detectors_file << "\"" << std::endl;
         }
     } else {
         cout << "Could not find TDirectory with detector configuration." << std::endl;
