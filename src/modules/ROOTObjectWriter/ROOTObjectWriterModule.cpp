@@ -205,10 +205,10 @@ void ROOTObjectWriterModule::finalize() {
     }
 
     // Save the detectors to the output file
-    // FIXME Possibly the format to save the geometry should be more flexible
     auto detectors_dir = output_file_->mkdir("detectors");
-    detectors_dir->cd();
+    auto models_dir = output_file_->mkdir("models");
     for(auto& detector : geo_mgr_->getDetectors()) {
+        detectors_dir->cd();
         auto detector_dir = detectors_dir->mkdir(detector->getName().c_str());
 
         auto position = detector->getPosition();
@@ -216,7 +216,12 @@ void ROOTObjectWriterModule::finalize() {
         auto orientation = detector->getOrientation();
         detector_dir->WriteObject(&orientation, "orientation");
 
-        auto model_dir = detector_dir->mkdir("model");
+        // Store the detector model
+        std::string model_name = "model_" + detector->getName();
+        detector_dir->WriteObject(&model_name, "type");
+        models_dir->cd();
+        auto model_dir = models_dir->mkdir(model_name.c_str());
+
         // FIXME This saves the model every time again also for models that appear multiple times
         auto model_configs = detector->getModel()->getConfigurations();
         std::map<std::string, int> count_configs;
