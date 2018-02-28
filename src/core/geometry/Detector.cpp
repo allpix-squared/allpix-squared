@@ -55,14 +55,16 @@ void Detector::set_model(std::shared_ptr<DetectorModel> model) {
     build_transform();
 }
 void Detector::build_transform() {
-    // Transform from center to local coordinate
+    // Transform from locally centered to global coordinates
     ROOT::Math::Translation3D translation_center(static_cast<ROOT::Math::XYZVector>(position_));
     ROOT::Math::Rotation3D rotation_center(orientation_);
+    // Rotation is inverted because it is given as rotation in global coordinates. Thus, going from center to global
+    // coordinates, we need to invert it.
     ROOT::Math::Transform3D transform_center(rotation_center.Inverse(), translation_center);
-    // Transform from global to center
+    // Transform from locally centered to local coordinates
     ROOT::Math::Translation3D translation_local(static_cast<ROOT::Math::XYZVector>(model_->getCenter()));
     ROOT::Math::Transform3D transform_local(translation_local);
-    // Compute total transform
+    // Compute total transform local to global by first transforming local to locally centered and then to global coordinates
     transform_ = transform_center * transform_local.Inverse();
 }
 
