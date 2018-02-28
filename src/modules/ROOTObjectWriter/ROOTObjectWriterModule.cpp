@@ -224,7 +224,7 @@ void ROOTObjectWriterModule::finalize() {
             auto model_config_dir = model_dir;
             if(!model_config.getName().empty()) {
                 model_config_dir = model_dir->mkdir(
-                    (model_config.getName() + "-" + std::to_string(count_configs[model_config.getName()])).c_str());
+                    (model_config.getName() + "_" + std::to_string(count_configs[model_config.getName()])).c_str());
                 count_configs[model_config.getName()]++;
             }
 
