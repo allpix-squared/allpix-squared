@@ -103,6 +103,10 @@ void recoverConfiguration(std::string data_file, std::string config_file_name) {
         cout << "Could not find TDirectory with configuration." << std::endl;
     }
 
+    // Use path of the configuration file:
+    std::size_t found = config_file_name.find_last_of("/\\");
+    std::string path = config_file_name.substr(0, found);
+
     TDirectoryFile* detectors = nullptr;
     f1->GetObject("detectors", detectors);
     if(detectors != nullptr) {
@@ -121,14 +125,38 @@ void recoverConfiguration(std::string data_file, std::string config_file_name) {
             }
         }
 
-        // Use path of the configuration file:
-        std::size_t found = config_file_name.find_last_of("/\\");
-        detectors_file = config_file_name.substr(0, found) + "/" + detectors_file;
-
+        detectors_file = path + "/" + detectors_file;
         std::ofstream det_file(detectors_file, std::ios_base::out | std::ios_base::trunc);
         if(det_file.good()) {
             det_file << str.str();
             std::cout << "Wrote detector setup to: \"" << detectors_file << "\"" << std::endl;
+        }
+    } else {
+        cout << "Could not find TDirectory with detector configuration." << std::endl;
+    }
+
+    TDirectoryFile* models = nullptr;
+    f1->GetObject("models", models);
+    if(models != nullptr) {
+        cout << "Found TDirectory containing the model configurations." << std::endl;
+
+        TIter next(models->GetListOfKeys());
+        TKey* entry;
+        while((entry = (TKey*)next())) {
+            TClass* cl = gROOT->GetClass(entry->GetClassName());
+            std::string key = std::string(entry->GetName());
+
+            if(cl->InheritsFrom("TDirectoryFile")) {
+                stringstream str = listkeys((TDirectoryFile*)entry->ReadObj());
+                std::string model_file = path + "/" + key + ".conf";
+                std::ofstream mod_file(model_file, std::ios_base::out | std::ios_base::trunc);
+                if(mod_file.good()) {
+                    mod_file << str.str();
+                    std::cout << "Wrote model \"" << key << "\" to: \"" << model_file << "\"" << std::endl;
+                }
+            } else {
+                std::cout << "Directory entry not a detector model." << std::endl;
+            }
         }
     } else {
         cout << "Could not find TDirectory with detector configuration." << std::endl;
