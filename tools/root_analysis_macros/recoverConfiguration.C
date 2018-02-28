@@ -12,35 +12,33 @@
 
 std::string detectors_file;
 
-std::stringstream listkeys(TDirectoryFile* dir) {
+std::stringstream listkeys(TDirectoryFile* dir, bool name_set = false) {
     std::stringstream str;
-    bool name_set = false;
-
-    std::string dirname = std::string(dir->GetName());
-    // Don't add a top-level section:
-    if(dirname != "config" && dirname != "detectors") {
-        // Split directory name into module, detector and input name:
-        std::string::size_type n = dirname.find(":");
-        if(n != std::string::npos) {
-            str << "[" << dirname.substr(0, n) << "]" << std::endl;
-            std::string::size_type m = dirname.substr(n + 1).find("_");
-            str << "name = \"" << dirname.substr(n + 1).substr(0, m) << "\"" << std::endl;
-            name_set = true;
-        } else {
-            str << "[" << dir->GetName() << "]" << std::endl;
-        }
-    }
 
     // Loop over directory content:
     TIter next(dir->GetListOfKeys());
     TKey* entry;
     while((entry = (TKey*)next())) {
         TClass* cl = gROOT->GetClass(entry->GetClassName());
+        std::string key = std::string(entry->GetName());
+
         if(cl->InheritsFrom("TDirectoryFile")) {
-            // If entry is a directory, recurse:
-            str << listkeys((TDirectoryFile*)entry->ReadObj()).str();
+            bool named_module = false;
+
+            // Split directory name into module, detector and input name:
+            std::string::size_type n = key.find(":");
+            if(n != std::string::npos) {
+                str << "[" << key.substr(0, n) << "]" << std::endl;
+                std::string::size_type m = key.substr(n + 1).find("_");
+                str << "name = \"" << key.substr(n + 1).substr(0, m) << "\"" << std::endl;
+                named_module = true;
+            } else {
+                str << "[" << key << "]" << std::endl;
+            }
+
+            // Recurse:
+            str << listkeys((TDirectoryFile*)entry->ReadObj(), named_module).str();
         } else if(cl->InheritsFrom("string")) {
-            std::string key = entry->GetName();
             std::string value = (*(string*)entry->ReadObj());
             // Omit empty "input" and "output" keys:
             if((key == "input" || key == "output") && (value == "" || value == "\"\"")) {
@@ -51,9 +49,10 @@ std::stringstream listkeys(TDirectoryFile* dir) {
                 continue;
             }
 
-            // If this is the detectors file, cache its name:
+            // If this is the detectors file, cache its name and add the current directory as model path:
             if(key == "detectors_file") {
                 detectors_file = value;
+                str << "model_paths = \".\"" << std::endl;
             }
 
             // Otherwise add the configuration key/value pair:
@@ -63,17 +62,17 @@ std::stringstream listkeys(TDirectoryFile* dir) {
             ROOT::Math::Rotation3D rot = (*(ROOT::Math::Rotation3D*)entry->ReadObj()).Inverse();
             ROOT::Math::RotationZYX angles = ROOT::Math::RotationZYX(rot);
             str << "orientation_type = \"xyz\"" << std::endl;
-            str << entry->GetName() << " = " << (-angles.Psi()) << "deg " << (-angles.Theta()) << "deg " << (-angles.Phi())
-                << "deg" << std::endl;
+            str << key << " = " << (-angles.Psi()) << "rad " << (-angles.Theta()) << "rad " << (-angles.Phi())
+                << "rad" << std::endl;
         } else if(cl->InheritsFrom("ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>,ROOT::Math::"
                                    "DefaultCoordinateSystemTag>")) {
             ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>, ROOT::Math::DefaultCoordinateSystemTag> position =
                 (*(ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>, ROOT::Math::DefaultCoordinateSystemTag>*)
                       entry->ReadObj());
-            str << entry->GetName() << " = " << position.x() << "mm " << position.y() << "mm " << position.z() << "mm"
+            str << key << " = " << position.x() << "mm " << position.y() << "mm " << position.z() << "mm"
                 << std::endl;
         } else {
-            std::cout << "Could not deduce parameter type of \"" << entry->GetName() << "\": " << entry->GetClassName()
+            std::cout << "Could not deduce parameter type of \"" << key << "\": " << entry->GetClassName()
                       << std::endl;
         }
     }
