@@ -45,7 +45,7 @@ std::stringstream listkeys(TDirectoryFile* dir, bool name_set = false) {
                 continue;
             }
             // If the name has already been specified, omit:
-            if(key == "name" && name_set) {
+            if((key == "name" || key == "type") && name_set) {
                 continue;
             }
 
