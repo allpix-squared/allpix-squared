@@ -24,14 +24,13 @@ To recreate the project source files, the following commands should be executed:
 * Recreate the source files using `remakeProject(_file0, "output_dir")`
 
 ### Recover Configuration Files
-This macro allows to recover the full configuration of a simulation from a data file written by the ROOTObjectWriter module. It retrieves the stored key-value pairs and writes them into new files, both for the framework and module configuration as well as the detector setup.
+This macro allows to recover the full configuration of a simulation from a data file written by the ROOTObjectWriter module. It retrieves the stored key-value pairs and writes them into new files, including the framework and module configuration, the detector setup and the individual detector models with possibly overwritten parameters.
 
 The simulation configuration can be recreated using the following command:
 
 ```
 root -x 'recoverConfiguration.C("path/to/output/data.root",
-                                "configuration.conf",
-                                "detectors.conf")'
+                                "configuration.conf")'
 ```
 
-Here, the first argument is the input data file produced by the ROOTObjectWriter, while the send and third argument are the output file names for the framework configuration and the detector setup.
+Here, the first argument is the input data file produced by the ROOTObjectWriter, while the second argument is the output file name and path for the framework configuration. The detector setup and model files will be named as defined in the main configuration and are placed in the same folder.
