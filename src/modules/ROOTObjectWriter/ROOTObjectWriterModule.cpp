@@ -209,6 +209,7 @@ void ROOTObjectWriterModule::finalize() {
     auto models_dir = output_file_->mkdir("models");
     for(auto& detector : geo_mgr_->getDetectors()) {
         detectors_dir->cd();
+        LOG(TRACE) << "Writing detector configuration for: " << detector->getName();
         auto detector_dir = detectors_dir->mkdir(detector->getName().c_str());
 
         auto position = detector->getPosition();
