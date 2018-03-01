@@ -62,18 +62,16 @@ std::stringstream listkeys(TDirectoryFile* dir, bool name_set = false) {
             ROOT::Math::Rotation3D rot = (*(ROOT::Math::Rotation3D*)entry->ReadObj()).Inverse();
             ROOT::Math::RotationZYX angles = ROOT::Math::RotationZYX(rot);
             str << "orientation_type = \"xyz\"" << std::endl;
-            str << key << " = " << (-angles.Psi()) << "rad " << (-angles.Theta()) << "rad " << (-angles.Phi())
-                << "rad" << std::endl;
+            str << key << " = " << (-angles.Psi()) << "rad " << (-angles.Theta()) << "rad " << (-angles.Phi()) << "rad"
+                << std::endl;
         } else if(cl->InheritsFrom("ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>,ROOT::Math::"
                                    "DefaultCoordinateSystemTag>")) {
             ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>, ROOT::Math::DefaultCoordinateSystemTag> position =
                 (*(ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>, ROOT::Math::DefaultCoordinateSystemTag>*)
                       entry->ReadObj());
-            str << key << " = " << position.x() << "mm " << position.y() << "mm " << position.z() << "mm"
-                << std::endl;
+            str << key << " = " << position.x() << "mm " << position.y() << "mm " << position.z() << "mm" << std::endl;
         } else {
-            std::cout << "Could not deduce parameter type of \"" << key << "\": " << entry->GetClassName()
-                      << std::endl;
+            std::cout << "Could not deduce parameter type of \"" << key << "\": " << entry->GetClassName() << std::endl;
         }
     }
 
