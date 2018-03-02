@@ -1,7 +1,7 @@
 # Include the dependencies
 INCLUDE_DIRECTORIES(SYSTEM ${ALLPIX_DEPS_INCLUDE_DIRS})
 
-# Create core library 
+# Create core library
 ADD_LIBRARY(AllpixCore SHARED
     utils/log.cpp
     utils/unit.cpp
@@ -30,5 +30,6 @@ TARGET_LINK_LIBRARIES(AllpixCore ${CMAKE_DL_LIBS})
 
 # Create standard install target
 INSTALL(TARGETS AllpixCore
-  RUNTIME DESTINATION bin
-  LIBRARY DESTINATION lib)
+    COMPONENT application
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib)

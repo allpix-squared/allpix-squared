@@ -27,6 +27,9 @@ ROOT_GENERATE_DICTIONARY(AllpixObjectsDictionary
     ${CMAKE_CURRENT_SOURCE_DIR}/MCParticle.hpp
     LINKDEF
     ${CMAKE_CURRENT_SOURCE_DIR}/Linkdef.h
+    OPTIONS
+    -inlineInputHeader
+    -I${CMAKE_CURRENT_SOURCE_DIR}
     MODULE
     AllpixObjects
 )
@@ -63,6 +66,7 @@ TARGET_LINK_LIBRARIES(AllpixObjects ${ALLPIX_DEPS_LIBRARIES})
 
 # Specify install for the messages
 INSTALL(TARGETS AllpixObjects
+    COMPONENT application
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib)
 
@@ -70,4 +74,5 @@ INSTALL(TARGETS AllpixObjects
 INSTALL(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/libAllpixObjects_rdict.pcm
     ${CMAKE_CURRENT_BINARY_DIR}/libAllpixObjects.rootmap
+    COMPONENT application
     DESTINATION lib)

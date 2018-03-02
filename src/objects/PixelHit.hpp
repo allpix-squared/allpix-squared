@@ -71,7 +71,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDef(PixelHit, 2);
+        ClassDef(PixelHit, 3);
         /**
          * @brief Default constructor for ROOT I/O
          */
@@ -83,6 +83,7 @@ namespace allpix {
         double signal_{};
 
         TRef pixel_charge_;
+        TRefArray mc_particles_;
     };
 
     /**

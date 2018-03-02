@@ -52,9 +52,16 @@
 
 % Command to add all modules
 \newcommand{\includemodulesmd}{\def\temp{@ALLPIX_MODULE_FILES@}\ifx\temp\empty
-  \textit{Module documentation not added because Markdown to LaTex conversion was not possible}
+  \textit{Module documentation not added because Markdown to \LaTeX~conversion was not possible}
 \else
   \foreach \n in @ALLPIX_MODULE_FILES@ {\input{\n}}
+\fi}
+
+% Command to add all examples
+\newcommand{\includeexamplesmd}{\def\temp{@ALLPIX_EXAMPLE_FILES@}\ifx\temp\empty
+  \textit{Example documentation not added because Markdown to \LaTeX~conversion was not possible}
+\else
+  \foreach \n in @ALLPIX_EXAMPLE_FILES@ {\input{\n}}
 \fi}
 
 % Command to add a single converted markdown file
@@ -68,11 +75,11 @@
 \newcommand{\project}{@CMAKE_PROJECT_NAME@}
 
 % Create addreferences command (overwritten for HTML in config)
-\newcommand{\addreferencesline}{\addcontentsline{toc}{section}{References}}
+\newcommand{\addreferencesline}{\addcontentsline{toc}{chapter}{References}}
 
 % Command to add the license (overwritten for HTML in config)
 \newcommand{\addlicense}{
-\begin{table}
+\begin{table}[H]
 \centering
 \renewcommand{\arraystretch}{1.5}% Spread rows out...
 \begin{tabular}{>{\centering\arraybackslash}m{.10\textwidth}>{\raggedright\arraybackslash}m{.90\textwidth}}

@@ -21,6 +21,9 @@ PropagatedCharge::PropagatedCharge(ROOT::Math::XYZPoint local_position,
                                    const DepositedCharge* deposited_charge)
     : SensorCharge(std::move(local_position), std::move(global_position), type, charge, event_time) {
     deposited_charge_ = const_cast<DepositedCharge*>(deposited_charge); // NOLINT
+    if(deposited_charge != nullptr) {
+        mc_particle_ = const_cast<MCParticle*>(deposited_charge->getMCParticle()); // NOLINT
+    }
 }
 
 /**
@@ -34,6 +37,19 @@ const DepositedCharge* PropagatedCharge::getDepositedCharge() const {
         throw MissingReferenceException(typeid(*this), typeid(DepositedCharge));
     }
     return deposited_charge;
+}
+
+/**
+ * @throws MissingReferenceException If the pointed object is not in scope
+ *
+ * Object is stored as TRef and can only be accessed if pointed object is in scope
+ */
+const MCParticle* PropagatedCharge::getMCParticle() const {
+    auto mc_particle = dynamic_cast<MCParticle*>(mc_particle_.GetObject());
+    if(mc_particle == nullptr) {
+        throw MissingReferenceException(typeid(*this), typeid(MCParticle));
+    }
+    return mc_particle;
 }
 
 ClassImp(PropagatedCharge)

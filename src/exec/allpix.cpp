@@ -89,6 +89,16 @@ int main(int argc, const char* argv[]) {
     for(int i = 1; i < argc; i++) {
         if(strcmp(argv[i], "-h") == 0) {
             print_help = true;
+        } else if(strcmp(argv[i], "--version") == 0) {
+            std::cout << "Allpix Squared version " << ALLPIX_PROJECT_VERSION << std::endl;
+            std::cout << "               built on " << ALLPIX_BUILD_TIME << std::endl;
+            std::cout << std::endl;
+            std::cout << "Copyright (c) 2017 CERN and the Allpix Squared authors." << std::endl << std::endl;
+            std::cout << "This software is distributed under the terms of the MIT License." << std::endl;
+            std::cout << "In applying this license, CERN does not waive the privileges and immunities" << std::endl;
+            std::cout << "granted to it by virtue of its status as an Intergovernmental Organization" << std::endl;
+            std::cout << "or submit itself to any jurisdiction." << std::endl;
+            return 0;
         } else if(strcmp(argv[i], "-v") == 0 && (i + 1 < argc)) {
             try {
                 LogLevel log_level = Log::getLevelFromString(std::string(argv[++i]));
@@ -119,6 +129,7 @@ int main(int argc, const char* argv[]) {
         std::cout << "  -l <file>    file to log to besides standard output" << std::endl;
         std::cout << "  -o <option>  extra configuration option(s) to pass" << std::endl;
         std::cout << "  -v <level>   verbosity level, overwriting the global level" << std::endl;
+        std::cout << "  --version    print version information and quit" << std::endl;
         std::cout << std::endl;
         std::cout << "For more help, please see <https://cern.ch/allpix-squared>" << std::endl;
         clean();
@@ -164,21 +175,21 @@ int main(int argc, const char* argv[]) {
         apx->finalize();
     } catch(ConfigurationError& e) {
         LOG(FATAL) << "Error in the configuration:" << std::endl
-                   << " " << e.what() << std::endl
-                   << "The configuration needs to be updated! Cannot continue...";
+                   << e.what() << std::endl
+                   << "The configuration needs to be updated. Cannot continue.";
         return_code = 1;
     } catch(RuntimeError& e) {
         LOG(FATAL) << "Error during execution of run:" << std::endl
-                   << " " << e.what() << std::endl
-                   << "Please check your configuration and modules! Cannot continue...";
+                   << e.what() << std::endl
+                   << "Please check your configuration and modules. Cannot continue.";
         return_code = 1;
     } catch(LogicError& e) {
         LOG(FATAL) << "Error in the logic of module:" << std::endl
-                   << " " << e.what() << std::endl
-                   << "Module has to be properly defined! Cannot continue...";
+                   << e.what() << std::endl
+                   << "Module has to be properly defined. Cannot continue.";
         return_code = 1;
     } catch(std::exception& e) {
-        LOG(FATAL) << "Fatal internal error" << std::endl << "   " << e.what() << std::endl << "Cannot continue...";
+        LOG(FATAL) << "Fatal internal error" << std::endl << e.what() << std::endl << "Cannot continue.";
         return_code = 127;
     }
 

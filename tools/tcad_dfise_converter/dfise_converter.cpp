@@ -296,6 +296,7 @@ int main(int argc, char** argv) {
     try {
         auto region_grid = read_grid(grid_file);
         points = region_grid[region];
+        LOG(DEBUG) << "Grid with " << points.size() << " points";
     } catch(std::runtime_error& e) {
         LOG(FATAL) << "Failed to parse grid file " << grid_file;
         LOG(FATAL) << " " << e.what();
@@ -309,6 +310,7 @@ int main(int argc, char** argv) {
     try {
         auto region_fields = read_electric_field(data_file);
         field = region_fields[region][observable];
+        LOG(DEBUG) << "Field with " << field.size() << " points";
     } catch(std::runtime_error& e) {
         LOG(FATAL) << "Failed to parse data file " << data_file;
         LOG(FATAL) << " " << e.what();
@@ -567,8 +569,8 @@ int main(int argc, char** argv) {
     init_file.open(init_file_name.str());
 
     // Write INIT file h"eader
-    init_file << "tcad_dfise_converter" << std::endl;                                  // NAME
-    init_file << "#Observable: " << observable << std::endl;                           // OBSERVABLE INTERPOLATED
+    init_file << "tcad_dfise_converter, ";                                             // NAME
+    init_file << "observable: " << observable << std::endl;                            // OBSERVABLE INTERPOLATED
     init_file << "##SEED## ##EVENTS##" << std::endl;                                   // UNUSED
     init_file << "##TURN## ##TILT## 1.0" << std::endl;                                 // UNUSED
     init_file << "0.0 0.0 0.0" << std::endl;                                           // MAGNETIC FIELD (UNUSED)

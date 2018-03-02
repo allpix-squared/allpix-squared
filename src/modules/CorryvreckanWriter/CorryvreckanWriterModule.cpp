@@ -25,10 +25,6 @@ CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration config, Messeng
 
     // Require PixelCharge messages for single detector
     messenger_->bindMulti(this, &CorryvreckanWriterModule::pixel_messages_, MsgFlags::REQUIRED);
-    messenger_->addDependency<MCParticleMessage>(this);
-    messenger_->addDependency<PixelChargeMessage>(this);
-    messenger_->addDependency<PropagatedChargeMessage>(this);
-    messenger_->addDependency<DepositedChargeMessage>(this);
 
     config_.setDefault("file_name", "corryvreckanOutput.root");
     config_.setDefault("geometry_file", "corryvreckanGeometry.conf");
@@ -116,6 +112,7 @@ void CorryvreckanWriterModule::run(unsigned int) {
             // Map the pixel to the output tree and write it
             treePixels_[objectID] = outputPixel;
             outputTrees_[objectID]->Fill();
+            delete outputPixel;
 
             // If writing MC truth then also write out associated particle info
             if(!outputMCtruth_) {
@@ -137,6 +134,7 @@ void CorryvreckanWriterModule::run(unsigned int) {
                            << mcParticle->getLocalStart().Y() << ") and ended at " << mcParticle->getLocalEnd().X() << ","
                            << mcParticle->getLocalEnd().Y() << ")";
                 outputTreesMC_[objectID_MC]->Fill();
+                delete mcParticle;
             }
         }
     }

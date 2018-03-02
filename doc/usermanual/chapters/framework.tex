@@ -1,6 +1,7 @@
-\section{The \apsq Framework}
-\label{sec:framework}
-This section details the technical implementation of the \apsq framework and is mostly intended to provide insight into the gearbox to potential developers and interested users.
+\chapter{Structure \& Components of the Framework}
+\label{ch:framework}
+
+This chapter details the technical implementation of the \apsq framework and is mostly intended to provide insight into the gearbox to potential developers and interested users.
 The framework consists of the following four main components that together form \apsq:
 \begin{enumerate}
 \item \textbf{Core}: The core contains the internal logic to initialize the modules, provide the geometry, facilitate module communication and run the event sequence.
@@ -8,7 +9,7 @@ The core keeps its dependencies to a minimum (it only relies on ROOT) and remain
 It is the main component discussed in this section.
 \item \textbf{Modules}: A module is a set of methods which is executed as part of the simulation chain.
 Modules are built as separate libraries and loaded dynamically on demand by the core.
-The available modules and their parameters are discussed in detail in Section~\ref{sec:modules}.
+The available modules and their parameters are discussed in detail in Chapter~\ref{ch:modules}.
 \item \textbf{Objects}: Objects form the data passed between modules using the message framework provided by the core.
 Modules can listen and bind to messages with objects they wish to receive.
 Messages are identified by the object type they are carrying, but can also be renamed to allow the direction of data to specific modules, facilitating more sophisticated simulation setups.
@@ -16,22 +17,22 @@ Messages are intended to be read-only and a copy of the data should be made if a
 All objects are compiled into a separate library which is automatically linked to every module.
 More information about the messaging system and the supported objects can be found in Section~\ref{sec:objects_messages}.
 \item \textbf{Tools}: \apsq provides a set of header-only 'tools' that allow access to common logic shared by various modules.
-Examples are the Runge-Kutta solver implemented using the Eigen3 library and the set of template specializations for ROOT and Geant4 configurations.
-More information about the tools can be found in Section~\ref{sec:additional_tools_resources}.
+Examples are the Runge-Kutta solver~\cite{fehlberg} implemented using the Eigen3 library and the set of template specializations for ROOT and Geant4 configurations.
+More information about the tools can be found in Chapter~\ref{ch:additional_tools_resources}.
 This set of tools is different from the set of core utilities the framework itself provides, which is part of the core and explained in Section~\ref{sec:logging_utilities}.
 \end{enumerate}
 Finally, \apsq provides an executable which instantiates the core of the framework, receives and distributes the configuration object and runs the simulation chain.
 
-This section is structured as follows.
+The chapter is structured as follows.
 Section~\ref{sec:arch} provides an overview of the architectural design of the core and describes its interaction with the rest of the \apsq framework.
-The different subcomponents such as configuration, modules and messages are discussed in Sections~\ref{sec:config_parameters} to ~\ref{sec:objects_messages}.
-The section closes with a description of the available framework tools in Section~\ref{sec:logging_utilities}.
+The different subcomponents such as configuration, modules and messages are discussed in Sections~\ref{sec:config_parameters}--\ref{sec:objects_messages}.
+The chapter closes with a description of the available framework tools in Section~\ref{sec:logging_utilities}.
 Some C++ code will be provided in the text, but readers not interested may skip the technical details.
 
-\subsection{Architecture of the Core}
+\section{Architecture of the Core}
 \label{sec:arch}
 The core is constructed as a light-weight framework which provides various subsystems to the modules.
-It contains the part of the software responsible for instantiating and running the modules from the supplied configuration file, and is structured around five subsystems, of which four are centred around a manager and the fifth contains a set of simple general utilities.
+It contains the part of the software responsible for instantiating and running the modules from the supplied configuration file, and is structured around five subsystems, of which four are centered around a manager and the fifth contains a set of general utilities.
 The systems provided are:
 \begin{enumerate}
 \item \textbf{Configuration}: The configuration subsystem provides a configuration object from which data can be retrieved or stored, together with a TOML-like~\cite{tomlgit} parser to read configuration files.
@@ -54,12 +55,12 @@ Proper use of exceptions, together with logging information and reporting errors
 A few notes about the use and structure of exceptions are provided in Section~\ref{sec:error_reporting_exceptions}.
 \end{enumerate}
 
-\subsection{Configuration and Parameters}
+\section{Configuration and Parameters}
 \label{sec:config_parameters}
 Individual modules as well as the framework itself are configured through configuration files, which all follow the same format.
 Explanations on how to use the various configuration files together with several examples have been provided in Section~\ref{sec:configuration_files}.
 
-\subsubsection{File format}
+\subsection{File format}
 \label{sec:config_file_format}
 Throughout the framework, a simplified version of TOML~\cite{tomlgit} is used as standard format for configuration files.
 The format is defined as follows:
@@ -101,7 +102,7 @@ The conversion to the elements to the actual type is performed when accessing th
 \item All key-value pairs defined before the first section header are part of a zero-length empty section header.
 \end{enumerate}
 
-\subsubsection{Accessing parameters}
+\subsection{Accessing parameters}
 \label{sec:accessing_parameters}
 Values are accessed via the configuration object.
 In the following example, the key is a string called \parameter{key}, the object is named \parameter{config} and the type \parameter{TYPE} is a valid C++ type the value should represent.
@@ -143,7 +144,7 @@ Strings can thus also be provided with or without quotation marks.
     For performance-critical sections of the code, one should consider fetching the configuration value once and caching it in a local variable.
 \end{warning}
 
-\subsection{Modules and the Module Manager}
+\section{Modules and the Module Manager}
 \label{sec:module_manager}
 \apsq is a modular framework and one of the core ideas is to partition functionality in independent modules which can be inserted or removed as required.
 These modules are located in the subdirectory \textit{src/modules/} of the repository, with the name of the directory the unique name of the module.
@@ -157,7 +158,7 @@ There are two different kind of modules which can be defined:
 The type of module determines the constructor used, the internal unique name and the supported configuration parameters.
 For more details about the instantiation logic for the different types of modules, see Section~\ref{sec:module_instantiation}.
 
-\subsubsection{Files of a Module}
+\subsection{Files of a Module}
 \label{sec:module_files}
 Every module directory should at minimum contain the following documents (with \texttt{ModuleName} replaced by the name of the module):
 \begin{itemize}
@@ -218,27 +219,27 @@ ALLPIX_MODULE_INSTALL(${MODULE_NAME})
 \end{minted}
 
 \paragraph{README.md}
-The README.md serves as the documentation for the module and should be written in Markdown format~\cite{markdown}.
-It is automatically converted to \LaTeX using Pandoc~\cite{pandoc} and included in the user manual in Section~\ref{sec:modules}.
+The \file{README.md} serves as the documentation for the module and should be written in Markdown format~\cite{markdown}.
+It is automatically converted to \LaTeX using Pandoc~\cite{pandoc} and included in the user manual in Chapter~\ref{ch:modules}.
 By documenting the module functionality in Markdown, the information is also viewable with a web browser in the repository within the module sub-folder.
 
-The README.md should follow the structure indicated in the README file of the DummyModule in \textit{src/modules/Dummy}, and should contain at least the following sections:
+The \file{README.md} should follow the structure indicated in the \file{README.md} file of the \parameter{DummyModule} in \dir{src/modules/Dummy}, and should contain at least the following sections:
 \begin{itemize}
-\item The H2-size header with the name of the module and at least the following required elements: the \textbf{Maintainer} and the \textbf{Status} of the module.
+\item The H1-size header with the name of the module and at least the following required elements: the \textbf{Maintainer} and the \textbf{Status} of the module.
 If the module is working and well-tested, the status of the module should be \textit{Functional}.
 By default, new modules are given the status \textbf{Immature}.
 The maintainer should mention the full name of the module maintainer, with their email address in parentheses.
 A minimal header is therefore:
 \begin{verbatim}
-## ModuleName
+# ModuleName
 Maintainer: Example Author (<example@example.org>)
 Status: Functional
 \end{verbatim}
 In addition, the \textbf{Input} and \textbf{Output} objects to be received and dispatched by the module should be mentioned.
-\item An H4-size section named \textbf{Description}, containing a short description of the module.
-\item An H4-size section named \textbf{Parameters}, with all available configuration parameters of the module.
+\item An H3-size section named \textbf{Description}, containing a short description of the module.
+\item An H3-size section named \textbf{Parameters}, with all available configuration parameters of the module.
 The parameters should be briefly explained in an itemised list with the name of the parameter set as an inline code block.
-\item An H4-size section with the title \textbf{Usage} which should contain at least one simple example of a valid configuration for the module.
+\item An H3-size section with the title \textbf{Usage} which should contain at least one simple example of a valid configuration for the module.
 \end{itemize}
 
 \paragraph{\texttt{ModuleName}Module.hpp and \texttt{ModuleName}Module.cpp}
@@ -248,7 +249,7 @@ Brief Doxygen documentation should be added to explain what each method does.
 The source file should provide the implementation of every method and also its more detailed Doxygen documentation.
 Methods should only be declared in the header and defined in the source file in order to keep the interface clean.
 
-\subsubsection{Module structure}
+\subsection{Module structure}
 \label{sec:module_structure}
 All modules must inherit from the \texttt{Module} base class, which can be found in \textit{src/core/module/Module.hpp}.
 The module base class provides two base constructors, a few convenient methods and several methods which the user is required to override.
@@ -273,7 +274,7 @@ Thus, the constructor of a detector module is:
 TestModule(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector): Module(std::move(config), std::move(detector)) {}
 \end{minted}
 
-The pointer to a Messenger can be used to bind variables to either receive or dispatch messages as explained in~\ref{sec:objects_messages}.
+The pointer to a Messenger can be used to bind variables to either receive or dispatch messages as explained in Section~\ref{sec:objects_messages}.
 The constructor should be used to bind required messages, set configuration defaults and to throw exceptions in case of failures.
 Unique modules can access the GeometryManager to fetch all detector descriptions, while detector modules directly receive a link to their respective detector.
 
@@ -292,7 +293,7 @@ Within the \parameter{finalize()} method, each module has access to the full fin
 This allows to retrieve and e.g. store the configuration actually used for the simulation alongside the data.
 It is not possible to call this method outside the \parameter{finalize()} method.
 
-\subsubsection{Module instantiation}
+\subsection{Module instantiation}
 \label{sec:module_instantiation}
 Modules are dynamically loaded and instantiated by the Module Manager.
 They are constructed, initialized, executed and finalized in the linear order in which they are defined in the configuration file; for this reason the configuration file should follow the order of the real process.
@@ -324,13 +325,13 @@ In the end, only a single instance for every unique name is allowed.
 If there are multiple instantiations with the same unique name, the instantiation with the highest priority is kept.
 If multiple instantiations with the same unique name and the same priority exist, an exception is raised.
 
-\subsubsection{Parallel execution of modules}
+\subsection{Parallel execution of modules}
 \label{sec:multithreading}
 The framework has experimental support for running several modules in parallel.
-This feature is disabled for new modules by default, and has to be both supported by the module and enabled by the user as described in Section \ref{sec:framework_parameters}.
+This feature is disabled for new modules by default, and has to be both supported by the module and enabled by the user as described in Section~\ref{sec:framework_parameters}.
 A significant speed improvement can be achieved if the simulation contains multiple detectors or simulates the same module using different parameters.
 
-The framework allows to parallelise the execution of the same type of module, if these would otherwise be executed directly after each other in a linear order.
+The framework allows to parallelize the execution of the same type of module, if these would otherwise be executed directly after each other in a linear order.
 Thus, as long as the name of the module remains the same, while going through the execution order of all \parameter{run()} methods, all instances are added to a work queue.
 The instances are then distributed to a set of worker threads as specified in the configuration or determined from system parameters, which will execute the individual modules.
 The module manager will wait for all jobs to finish before continuing to process the next type of module.
@@ -344,7 +345,7 @@ By adding this, the module promises that it will work correctly if the run-metho
 This means in particular that the module will safely handle access to shared (for example static) variables and it will properly bind ROOT histograms to their directory before the \parameter{run()}-method.
 Access to constant operations in the GeometryManager, Detector and DetectorModel is always valid between various threads. In addition, sending and receiving messages is thread-safe.
 
-\subsection{Geometry and Detectors}
+\section{Geometry and Detectors}
 \label{sec:models_geometry}
 Simulations are frequently performed for a set of different detectors (such as a beam telescope and a device under test).
 All of these individual detectors together form what \apsq defines as the geometry.
@@ -352,7 +353,7 @@ Each detector has a set of properties attached to it:
 \begin{itemize}
 \item A unique detector \parameter{name} to refer to the detector in the configuration.
 \item The \parameter{position} in the world frame.
-This is the position of the geometric centre of the sensitive device (sensor) given in world coordinates as X, Y and Z (note that any additional components like the chip and possible support layers are ignored when determining the geometric centre).
+This is the position of the geometric center of the sensitive device (sensor) given in world coordinates as X, Y and Z as defined in Section~\ref{sec:coordinate_systems} (note that any additional components like the chip and possible support layers are ignored when determining the geometric center).
 \item An \parameter{orientation_mode} that determines the way that the orientation is applied.
 This can be either \texttt{xyz}, \texttt{zyx} or \texttt{zxz}, where \textbf{\texttt{xyz} is used as default if the parameter is not specified}. Three angles are expected as input, which should always be provided in the order in which they are applied.
 \begin{itemize}
@@ -374,8 +375,8 @@ which describes the rotation of \SI{45}{\degree} around the $Z$ axis, followed b
 All supported rotations are extrinsic active rotations, i.e. the vector itself is rotated, not the coordinate system. All angles in configuration files should be specified in the order they will be applied.
 \end{warning}
 
-\item A \parameter{type} of the detector model, for example \emph{hybrid} or \emph{monolithic}.
-The model defines the geometry and parameters of the detector.
+\item A \parameter{type} parameter describing the detector model, for example \emph{timepix} or \emph{mimosa26}.
+These models define the geometry and parameters of the detector.
 Multiple detectors can share the same model, several of which are shipped ready-to-use with the framework.
 \item An optional parameter \parameter{alignment_precision_position} to specify the alignment precision along the three global axes as described in Section~\ref{sec:detector_config}.
 \item An optional parameter \parameter{alignment_precision_orientation} for the alignment precision in the three rotation angles as described in Section~\ref{sec:detector_config}.
@@ -384,7 +385,17 @@ An electric field can be added to a detector by a special module as demonstrated
 \end{itemize}
 The detector configuration is provided in the detector configuration file as explained in Section~\ref{sec:detector_config}.
 
-\subsubsection{Changing and accessing the geometry}
+\subsection{Coordinate systems}
+\label{sec:coordinate_systems}
+
+Local coordinate systems for each detector and a global frame of reference for the full setup are defined.
+The global coordinate system is chosen as a right-handed Cartesian system, and the rotations of individual devices are performed around the geometrical center of their sensor.
+
+Local coordinate systems for the detectors are also right-handed Cartesian systems, with the x- and y-axes defining the sensor plane.
+The origin of this coordinate system is the centre of the lower left pixel in the grid, i.e.\ the pixel with indices (0,0).
+This simplifies calculations in the local coordinate system as all positions can either be stated in absolute numbers or in fractions of the pixel pitch.
+
+\subsection{Changing and accessing the geometry}
 The geometry is needed at a very early stage because it determines the number of detector module instantiations as explained in Section~\ref{sec:module_instantiation}.
 The procedure of finding and loading the appropriate detector models is explained in more detail in Section~\ref{sec:detector_models}.
 
@@ -404,16 +415,7 @@ void run(unsigned int event_id) {
 }
 \end{minted}
 
-\subsubsection{Coordinate systems}
-
-Local coordinate systems for each detector and a global frame of reference for the full setup are defined.
-The global coordinate system is chosen as a right-handed Cartesian system, and the rotations of individual devices are performed around the geometrical center of their sensor.
-
-Local coordinate systems for the detectors are also right-handed Cartesian systems, with the x- and y-axes defining the sensor plane.
-The origin of this coordinate system is the centre of the lower left pixel in the grid, i.e.\ the pixel with indices (0,0).
-This simplifies calculations in the local coordinate system as all positions can either be stated in absolute numbers or in fractions of the pixel pitch.
-
-\subsubsection{Detector models}
+\subsection{Detector models}
 \label{sec:detector_models}
 Different types of detector models are available and distributed together with the framework: these models use the configuration format introduced in Section~\ref{sec:config_file_format} and can be found in the \textit{models} directory of the repository.
 Every model extends from the \texttt{DetectorModel} base class, which defines the minimum required parameters of a detector model within the framework.
@@ -422,10 +424,6 @@ This is defined by the number of pixels in the sensor in both the x- and y-direc
 Outside the active matrix, the sensor can feature excess material in all directions in the x-y-plane.
 A detector of base class type does not feature a separate readout chip, thus only the thickness of an additional, inactive silicon layer can be specified.
 Derived models allow for separate readout chips, optionally connected with bump bonds.
-
-In addition to the active layer, multiple layers of support material can be added to the detector description.
-It is possible to place support layers at arbitrary positions relative to the sensor, while the default position is behind the readout chip (or inactive silicon layer).
-The support material can be chosen from a set of predefined materials, including PCB and Kapton.
 
 The base detector model can be extended to provide more detailed geometries.
 Currently implemented derived models are the \texttt{MonolithicPixelDetectorModel}, which describes a monolithic detector with all electronics directly implemented in the same silicon wafer as the sensor, and the \texttt{HybridPixelDetectorModel}, which in addition to the features described above also includes a separate readout chip with configurable size and bump bonds between the sensor and readout chip.
@@ -455,7 +453,32 @@ Defaults to zero, thus having a sensor size equal to the number of pixels times 
 \item \parameter{chip_thickness}: Thickness of the readout chip, placed next to the sensor.
 \end{itemize}
 
-In addition, multiple layers of support can be added to the detector model.
+The base parameters described above are the only set of parameters supported by the \textbf{monolithic} model. For this model, the \parameter{chip_thickness} parameter represents the first few micrometers of silicon which contain the chip circuitry and are shielded from the bias voltage and thus do not contribute to the signal formation.
+
+The \textbf{hybrid} model adds bump bonds between the chip and sensor while automatically making sure the chip and support layers are shifted appropriately.
+Furthermore, it allows the user to specify the chip dimensions independently from the sensor size, as the readout chip is treated as a separate entity.
+The additional parameters for the \textbf{hybrid} model are as follows:
+\begin{itemize}
+\item \texttt{\textbf{chip\_excess\_\textit{direction}}}: With direction either \parameter{top}, \parameter{bottom}, \parameter{right} or \parameter{left}.
+The chip excess in the specific direction, similar to the \texttt{\textbf{sensor\_excess\_\textit{direction}}} parameter described above.
+\item \parameter{chip_excess}: Fallback for the excess width of the chip, defaults to zero and thus to a chip size equal to the dimensions of the pixel matrix.
+See the \parameter{sensor_excess} parameter above.
+\item \parameter{bump_height}: Height of the bump bonds (the separation distance between the chip and the sensor)
+\item \parameter{bump_sphere_radius}: The individual bump bonds are simulated as union solids of a sphere and a cylinder.
+This parameter sets the radius of the sphere to use.
+\item \parameter{bump_cylinder_radius}: The radius of the cylinder part of the bump.
+The height of the cylinder is determined by the \parameter{bump_height} parameter.
+\item \parameter{bump_offset}: A 2D offset of the grid of bumps.
+The individual bumps are by default positioned at the center of each single pixel in the grid.
+\end{itemize}
+
+
+\nlparagraph{Support Layers}
+\label{sec:support_layers}
+In addition to the active layer, multiple layers of support material can be added to the detector description.
+It is possible to place support layers at arbitrary positions relative to the sensor, while the default position is behind the readout chip (or inactive silicon layer).
+The support material can be chosen from a set of predefined materials, including PCB and Kapton.
+
 Every support layer should be defined in its own section headed with the name \texttt{[support]}.
 By default, no support layers are added.
 Support layers allow for the following parameters.
@@ -478,27 +501,8 @@ No hole will be added if this parameter is not present.
 \item \parameter{hole_offset}: If present, the hole is by default placed at the center of the support layer.
 A 2D offset with respect to its default position can be specified using this parameter.
 \item \texttt{material}: Material of the support. \apsq does not provide a set of materials to choose from; it is up to the modules using this parameter to implement the materials such that they can use it.
-Section~\ref{sec:modules} provides details about the materials supported by the geometry builder module (\parameter{GeometryBuilderGeant4}).
+Chapter~\ref{ch:modules} provides details about the materials supported by the geometry builder module (\parameter{GeometryBuilderGeant4}).
 \todo{This should be standardized...}
-\end{itemize}
-
-The base parameters described above are the only set of parameters supported by the \textbf{monolithic} model.
-
-The \textbf{hybrid} model adds bump bonds between the chip and sensor while automatically making sure the chip and support layers are shifted appropriately.
-Furthermore, it allows the user to specify the chip dimensions independently from the sensor size, as the readout chip is treated as a separate entity.
-The additional parameters for the \textbf{hybrid} model are as follows:
-\begin{itemize}
-\item \texttt{\textbf{chip\_excess\_\textit{direction}}}: With direction either \parameter{top}, \parameter{bottom}, \parameter{right} or \parameter{left}.
-The chip excess in the specific direction, similar to the \texttt{\textbf{sensor\_excess\_\textit{direction}}} parameter described above.
-\item \parameter{chip_excess}: Fallback for the excess width of the chip, defaults to zero and thus to a chip size equal to the dimensions of the pixel matrix.
-See the \parameter{sensor_excess} parameter above.
-\item \parameter{bump_height}: Height of the bump bonds (the separation distance between the chip and the sensor)
-\item \parameter{bump_sphere_radius}: The individual bump bonds are simulated as union solids of a sphere and a cylinder.
-This parameter sets the radius of the sphere to use.
-\item \parameter{bump_cylinder_radius}: The radius of the cylinder part of the bump.
-The height of the cylinder is determined by the \parameter{bump_height} parameter.
-\item \parameter{bump_offset}: A 2D offset of the grid of bumps.
-The individual bumps are by default positioned at the center of each single pixel in the grid.
 \end{itemize}
 
 \nlparagraph{Accessing specific detector models within the framework}
@@ -528,19 +532,19 @@ Before re-implementing models, it should be checked if the desired change can be
 \nlparagraph{Search order for models}
 To support different detector models and storage locations, the framework searches different paths for model files in the following order:
 \begin{enumerate}
-\item If defined, the paths provided in the global \parameter{models\_path} parameter are searched first.
+\item If defined, the paths provided in the global \parameter{model_paths} parameter are searched first.
 Files are read and parsed directly.
 If the path is a directory, all files in the directory are added (without recursing into subdirectories).
 \item The location where the models are installed to (refer to the description of the \parameter{MODEL_DIRECTORY} variable in Section~\ref{sec:cmake_config}).
-\item The standard data paths on the system as given by the environmental variable \parameter{$XDG_DATA_DIRS} with ``\project'' appended.
-The \parameter{$XDG_DATA_DIRS} variable defaults to \textit{/usr/local/share/} (thus effectively \textit{/usr/local/share/\project}) followed by \textit{/usr/share/} (effectively \textit{/usr/share/\project}).
+\item The standard data paths on the system as given by the environmental variable \parameter{$XDG_DATA_DIRS} with ``\project/models'' appended.
+The \parameter{$XDG_DATA_DIRS} variable defaults to \textit{/usr/local/share/} (thus effectively \textit{/usr/local/share/\project/models}) followed by \textit{/usr/share/} (effectively \textit{/usr/share/\project/models}).
 \end{enumerate}
 
-\subsection{Passing Objects using Messages}
+\section{Passing Objects using Messages}
 \label{sec:objects_messages}
 Communication between modules is performed by the exchange of messages.
 Messages are templated instantiations of the \parameter{Message} class carrying a vector of objects.
-The list of objects available in the \apsq objects library are discussed in Section~\ref{sec:objects}.
+The list of objects available in the \apsq objects library are discussed in Chapter~\ref{ch:objects}.
 The messaging system has a dispatching mechanism to send messages and a receiving part that fetches incoming messages.
 
 The dispatching module can specify an optional name for the messages, but modules should normally not specify this name directly.
@@ -570,9 +574,9 @@ void run(unsigned int event_id) {
 }
 \end{minted}
 
-\subsubsection{Methods to process messages}
+\subsection{Methods to process messages}
 The message system has multiple methods to process received messages.
-The first three are the most common methods and the fourth should be avoided in almost every instance.
+The first two are the most common methods and the third should be avoided in almost every instance.
 \begin{enumerate}
 \item Bind a \textbf{single message} to a variable.
 This should usually be the preferred method, where a module expects only a single message to arrive per event containing the list of all relevant objects.
@@ -600,22 +604,10 @@ TestModule(Configuration, Messenger* messenger, GeometryManager* geo_manager) {
 }
 std::vector<std::shared_ptr<Message<Object>>> messages;
 \end{minted}
-\item Add a dependency to keep messages in memory for retrieving objects from the history.
-Several objects have related objects which can be retrieved as explained in Section \ref{sec:objhistory}.
-Linked objects can only be retrieved if the respective source objects remain in memory.
-Modules should explicitly mark objects that are accessed indirectly through the history of the messages, to ensure that these objects are not deleted.
-This method can be used as follows in a detector-specific \parameter{TestModule}, to keep \parameter{PixelHitMessage}s in memory without having direct access to them (\parameter{PixelHitMessage} can be replaced here with any other type of message):
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
-TestModule(Configuration, Messenger* messenger, std::shared_ptr<Detector>) {
-    messenger->addDependency<PixelHit>(this,
-                                       /* No special message flags */
-                                       MsgFlags::NONE);
-}
-\end{minted}
 \item Listen to a particular message type and execute a \textbf{listener function} as soon as an object is received.
 This can be used for more advanced strategies of retrieving messages, but the other methods should be preferred whenever possible.
 The listening module should \underline{not} do any heavy work in the listening function as this is supposed to take place in the module \command{run} method instead.
-Using a listener function can lead to unexpected behavior because the function is executed during the run method of the dispatching module.
+Using a listener function can lead to unexpected behaviour because the function is executed during the run method of the dispatching module.
 This means that logging is performed at the level of the dispatching module and that the listener method can be accessed from multiple threads if the dispatching module is parallelized.
 Listening to a message containing an array of objects in a detector-specific \parameter{TestModule} could be performed as follows:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
@@ -632,30 +624,75 @@ void listener(std::shared_ptr<Message<Object>> message) {
 \end{minted}
 \end{enumerate}
 
-\subsubsection{Message flags}
-Flags can be added to the bind and listening methods which enable a particular behavior of the framework.
+\subsection{Message flags}
+Flags can be added to the bind and listening methods which enable a particular behaviour of the framework.
 \begin{itemize}
     \item \textbf{REQUIRED}: Specifies that this message is required during the event processing.
     If this particular message is not received before it is time to execute the module's run function, the execution of the method is automatically skipped by the framework for the current event.
     This can be used to ignore modules which cannot perform any action without received messages, for example charge carrier propagation without any deposited charge carriers.
-    \item \textbf{NO\_RESET}: Messages are by default automatically reset after the \texttt{run} function has been executed, to prevent older messages from previous events from reappearing.
-    This behavior can be disabled by setting this flag (this does not have any effect for listening functions).
-    Setting this flag for single bound messages (without \parameter{ALLOW_OVERWRITE}, see below) would cause an exception to be raised if the message is overwritten in a later event.
     \item \parameter{ALLOW_OVERWRITE}: By default an exception is automatically raised if a single bound message is overwritten (thus receiving it multiple times instead of once).
-    This flag prevents this behavior.
+    This flag prevents this behaviour.
     It can only be used for variables bound to a single message.
     \item \parameter{IGNORE_NAME}: If this flag is specified, the name of the dispatched message is not considered.
     Thus, the \parameter{input} parameter is ignored and forced to the value \texttt{*}.
 \end{itemize}
 
-\subsection{Logging and other Utilities}
+\subsection{Persistency}
+\label{ch:objects_persistency}
+As objects may contain information relating to other objects, in particular for storing their corresponding Monte Carlo history (see Section~\ref{sec:objhistory}), objects are by default persistent until the end of each event. All messages are stored as shared pointers by the modules which send them, and are released at the end of each event. If no other copies of the shared message pointer are created, then these will be subsequently deleted, including the objects stored therein. Where a module requires access to data from a previous event (such as to simulate the effects of pile-up etc.), local copies of the data objects must be created. Note that at the point of creating copies the corresponding history will be lost.
+
+
+\section{Redirect Module Inputs and Outputs}
+\label{sec:redirect_module_input_outputs}
+In the \apsq framework, modules exchange messages typically based on their input and output message types and the detector type.
+It is, however, possible to specify a name for the incoming and outgoing messages for every module in the simulation.
+Modules will then only receive messages dispatched with the name provided and send named messages to other modules listening for messages with that specific name.
+This enables running the same module several times for the same detector, e.g.\ to test different parameter settings.
+
+The message output name of a module can be changed by setting the \parameter{output} parameter of the module to a unique value.
+The output of this module is then not sent to modules without a configured input, because by default modules listens only to data without a name.
+The \parameter{input} parameter of a particular receiving module should therefore be set to match the value of the \parameter{output} parameter.
+In addition, it is permitted to set the \parameter{input} parameter to the special value \texttt{*} to indicate that the module should listen to all messages irrespective of their name.
+
+An example of a configuration with two different settings for the digitisation module is shown below:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+# Digitize the propagated charges with low noise levels
+[DefaultDigitizer]
+# Specify an output identifier
+output = "low_noise"
+# Low amount of noise added by the electronics
+electronics_noise = 100e
+# Default values are used for the other parameters
+
+# Digitize the propagated charges with high noise levels
+[DefaultDigitizer]
+# Specify an output identifier
+output = "high_noise"
+# High amount of noise added by the electronics
+electronics_noise = 500e
+# Default values are used for the other parameters
+
+# Save histogram for 'low_noise' digitized charges
+[DetectorHistogrammer]
+# Specify input identifier
+input = "low_noise"
+
+# Save histogram for 'high_noise' digitized charges
+[DetectorHistogrammer]
+# Specify input identifier
+input = "high_noise"
+\end{minted}
+
+\todo{Maybe we need an option to split the modules}
+
+\section{Logging and other Utilities}
 \label{sec:logging_utilities}
 The \apsq framework provides a set of utilities which improve the usability of the framework and extend the functionality provided by the C++ Standard Template Library (STL).
 The former includes a flexible and easy-to-use logging system, introduced in Section~\ref{sec:logger} and an easy-to-use framework for units that supports converting arbitrary combinations of units to common base units which can  be used transparently throughout the framework, and which will be discussed in more detail in Section~\ref{sec:unit_system}.
 The latter comprise tools which provide functionality the C++14 standard does not contain.
 These utilities are used internally in the framework and are only shortly discussed in Section~\ref{sec:filesystem} (file system support) and Section~\ref{sec:string_utilities} (string utilities).
 
-\subsubsection{Logging system}
+\subsection{Logging system}
 \label{sec:logger}
 The logging system is built to handle input/output in the same way as \texttt{std::cin} and \texttt{std::cout} do.
 This approach is both very flexible and easy to read.
@@ -676,7 +713,7 @@ This is disabled automatically for all non-terminal outputs.
 
 More details about the logging levels and formats can be found in Section~\ref{sec:logging_verbosity}.
 
-\subsubsection{Unit system}
+\subsection{Unit system}
 \label{sec:unit_system}
 Correctly handling units and conversions is of paramount importance.
 Having a separate C++ type for every unit would however be too cumbersome for a lot of operations, therefore units are stored in standard C++ floating point types in a default unit which all code in the framework should use for calculations.
@@ -702,7 +739,7 @@ Units::display(2e3, {"mm/ns", "m/ns"});
 
 A description of the use of units in config files within \apsq was presented in Section~\ref{sec:config_values}.
 
-\subsubsection{Internal utilities}
+\subsection{Internal utilities}
 \label{sec:filesystem}
 The \textbf{filesystem} utilities provide functions to convert relative to absolute canonical paths, to iterate through all files in a directory and to create new directories.
 These functions should be replaced by the C++17 file system API~\cite{cppfilesystem} as soon as the framework minimum standard is updated to C++17.
@@ -718,7 +755,7 @@ The string utilities also include trim and split strings functions missing in th
 Furthermore, the \apsq tool system contains extensions to allow automatic conversions for ROOT and Geant4 types as explained in Section~\ref{sec:root_and_geant4_utilities}.
 
 
-\subsection{Error Reporting and Exceptions}
+\section{Error Reporting and Exceptions}
 \label{sec:error_reporting_exceptions}
 \apsq generally follows the principle of throwing exceptions in all cases where something is definitely wrong.
 Exceptions are also thrown to signal errors in the user configuration.
@@ -783,6 +820,8 @@ void run(unsigned int event_id) {
 Should be used to indicate any runtime error in a module not directly caused by an invalid configuration value, for example that it is not possible to write an output file.
 A reason should be given to indicate what the source of problem is.
 \todo{The module class should be passed as well, so the module name can be displayed in the error message}
+\item \parameter{EndOfRunException}: Derived from module exceptions.
+Should be used to request the end of event processing in the current run, e.g. if a module reading in data from a file reached the end of its input data.
 \end{itemize}
 
 \todo{add more info about error reporting style?}

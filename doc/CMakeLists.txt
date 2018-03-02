@@ -57,6 +57,22 @@ IF(LATEX_COMPILER)
             ENDIF()
         ENDFOREACH()
 
+        # Loop through all modules and fetch their README
+        SET(example_dir ${CMAKE_SOURCE_DIR}/examples)
+        FILE(GLOB subdirs RELATIVE ${example_dir} ${example_dir}/*)
+        FOREACH(subdir ${subdirs})
+            IF(EXISTS ${example_dir}/${subdir}/README.md)
+                ADD_PANDOC_DOCUMENT(
+                    ${CMAKE_BINARY_DIR}/usermanual/examples/${subdir}.tex
+                    SOURCES              ${example_dir}/${subdir}/README.md
+                    PRODUCT_DIRECTORY    usermanual/examples/
+                    PANDOC_DIRECTIVES    -t latex --listings --biblatex
+                    NO_EXPORT_PRODUCT
+                )
+                SET(example_tex_files ${example_tex_files} ${CMAKE_BINARY_DIR}/usermanual/examples/${subdir}.tex)
+            ENDIF()
+        ENDFOREACH()
+
         # Generate other tex files from README we need and put them in the MD folder of the user manual
         SET(other_tex_files "")
         FOREACH(doc_readme_file ${DOC_README_FILES})
@@ -76,11 +92,14 @@ IF(LATEX_COMPILER)
         ENDFOREACH()
     ELSE()
         SET(module_tex_files)
+        SET(example_tex_files)
         SET(other_tex_files "")
         MESSAGE(WARNING "No pandoc command, cannot add Markdown documentation to user manual")
     ENDIF()
 
     # Build array of LaTex files to add to the documentation
+    LIST(LENGTH module_tex_files NUM_MODULES)
+    MESSAGE(STATUS "Manual: adding ${NUM_MODULES} module descriptions")
     FOREACH(module_tex_file ${module_tex_files})
         IF(NOT ALLPIX_MODULE_FILES)
             SET(ALLPIX_MODULE_FILES "{${module_tex_file}")
@@ -92,6 +111,21 @@ IF(LATEX_COMPILER)
         SET(ALLPIX_MODULE_FILES "${ALLPIX_MODULE_FILES}}")
     ELSE()
         SET(ALLPIX_MODULE_FILES "")
+    ENDIF()
+
+    LIST(LENGTH example_tex_files NUM_EXAMPLES)
+    MESSAGE(STATUS "Manual: adding ${NUM_EXAMPLES} example descriptions")
+    FOREACH(example_tex_file ${example_tex_files})
+        IF(NOT ALLPIX_EXAMPLE_FILES)
+            SET(ALLPIX_EXAMPLE_FILES "{${example_tex_file}")
+        ELSE()
+            SET(ALLPIX_EXAMPLE_FILES "${ALLPIX_EXAMPLE_FILES},${example_tex_file}")
+        ENDIF()
+    ENDFOREACH()
+    IF(ALLPIX_EXAMPLE_FILES)
+        SET(ALLPIX_EXAMPLE_FILES "${ALLPIX_EXAMPLE_FILES}}")
+    ELSE()
+        SET(ALLPIX_EXAMPLE_FILES "")
     ENDIF()
 
     # Check if we have biber and do not build if not
@@ -116,11 +150,11 @@ IF(LATEX_COMPILER)
             usermanual/chapters/getting_started.tex
             usermanual/chapters/objects.tex
             usermanual/chapters/modules.tex
+            usermanual/chapters/examples.tex
             usermanual/chapters/development.tex
             usermanual/chapters/faq.tex
             usermanual/chapters/additional.tex
             usermanual/chapters/acknowledgements.tex
-            usermanual/appendices/design_notes.tex
             usermanual/appendices/example_output.tex
             usermanual/config.tex
 
@@ -132,7 +166,7 @@ IF(LATEX_COMPILER)
             CONFIGURE
             usermanual/config.tex
             EXCLUDE_FROM_ALL
-            DEPENDS ${module_tex_files} ${other_tex_files})
+            DEPENDS ${module_tex_files} ${example_tex_files} ${other_tex_files})
     ELSE()
         MESSAGE(WARNING "No biber command, cannot compile user manual.")
     ENDIF()

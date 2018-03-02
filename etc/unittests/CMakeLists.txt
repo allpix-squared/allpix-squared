@@ -46,16 +46,6 @@ FUNCTION(ESCAPE_REGEX INP OUTPUT)
     SET(${OUTPUT} "${_TMP_STR}" PARENT_SCOPE)
 ENDFUNCTION()
 
-###########################################
-# Reference tests for configuration files #
-# provided as example and in manual       #
-###########################################
-
-ADD_TEST(NAME example
-         COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/run_directory.sh "test_example" "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_SOURCE_DIR}/etc/example.conf")
-ADD_TEST(NAME manual
-         COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/run_directory.sh "test_manual" "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_SOURCE_DIR}/etc/manual.conf")
-
 ##############################
 # Module functionality tests #
 ##############################
@@ -81,8 +71,9 @@ IF(TEST_MODULES)
             STRING(REPLACE "#DEPENDS " "" DEPENDENCY "${DEPENDENCY}")
             SET_TESTS_PROPERTIES(${TEST} PROPERTIES DEPENDS "${DEPENDENCY}")
         ENDIF()
-
     ENDFOREACH()
+ELSE()
+    MESSAGE(STATUS "Unit tests: module functionality tests deactivated.")
 ENDIF()
 
 ###############################
@@ -112,8 +103,9 @@ IF(TEST_PERFORMANCE)
             STRING(REPLACE "#DEPENDS " "" DEPENDENCY "${DEPENDENCY}")
             SET_TESTS_PROPERTIES(${TEST} PROPERTIES DEPENDS "${DEPENDENCY}")
         ENDIF()
-
     ENDFOREACH()
+ELSE()
+    MESSAGE(STATUS "Unit tests: performance tests deactivated.")
 ENDIF()
 
 
@@ -136,4 +128,6 @@ IF(TEST_CORE)
         SET_TESTS_PROPERTIES(${TEST} PROPERTIES PASS_REGULAR_EXPRESSION "${EXPRESSIONS_PASS}")
 		SET_TESTS_PROPERTIES(${TEST} PROPERTIES FAIL_REGULAR_EXPRESSION "${EXPRESSIONS_FAIL}")
     ENDFOREACH()
+ELSE()
+    MESSAGE(STATUS "Unit tests: framework core functionality tests deactivated.")
 ENDIF()

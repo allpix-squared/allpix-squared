@@ -31,9 +31,6 @@ ElectricFieldReaderModule::ElectricFieldReaderModule(Configuration config, Messe
     : Module(std::move(config), detector), detector_(std::move(detector)) {
     // NOTE use voltage as a synonym for bias voltage
     config_.setAlias("bias_voltage", "voltage");
-    if(config_.has("bias_voltage")) {
-        config_.setDefault("depletion_voltage", config_.get<double>("bias_voltage"));
-    }
 }
 
 void ElectricFieldReaderModule::init() {
@@ -47,11 +44,23 @@ void ElectricFieldReaderModule::init() {
                      << " set, this is most likely not desired.";
     }
 
-    // Calculate thickness domain
+    // Check we don't have both depletion depth and depletion voltage:
+    if(config_.count({"depletion_voltage", "depletion_depth"}) > 1) {
+        throw InvalidCombinationError(
+            config_, {"depletion_voltage", "depletion_depth"}, "Depletion voltage and depth are mutually exclusive.");
+    }
+
+    // Set depletion depth to full sensor:
     auto model = detector_->getModel();
-    auto sensor_min_z = model->getSensorCenter().z() - model->getSensorSize().z() / 2.0;
+    config_.setDefault("depletion_depth", model->getSensorSize().z());
+    auto depletion_depth = config_.get<double>("depletion_depth");
+    if(depletion_depth - model->getSensorSize().z() > 1e-9) {
+        throw InvalidValueError(config_, "depletion_depth", "depletion depth can not be larger than the sensor thickness");
+    }
+
+    // Calculate thickness domain
     auto sensor_max_z = model->getSensorCenter().z() + model->getSensorSize().z() / 2.0;
-    auto thickness_domain = std::make_pair(sensor_min_z, sensor_max_z);
+    auto thickness_domain = std::make_pair(sensor_max_z - depletion_depth, sensor_max_z);
 
     // Calculate the field depending on the configuration
     if(field_model == "init") {
@@ -71,6 +80,10 @@ void ElectricFieldReaderModule::init() {
     } else if(field_model == "linear") {
         LOG(TRACE) << "Adding linear electric field";
         type = ElectricFieldType::LINEAR;
+
+        // Set default depletion voltage = bias voltage:
+        config_.setDefault("depletion_voltage", config_.get<double>("bias_voltage"));
+
         LOG(INFO) << "Setting linear electric field from " << Units::display(config_.get<double>("bias_voltage"), "V")
                   << " bias voltage and " << Units::display(config_.get<double>("depletion_voltage"), "V")
                   << " depletion voltage";

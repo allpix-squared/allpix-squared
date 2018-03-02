@@ -2,7 +2,7 @@
 %   PACKAGES AND DOCUMENT CONFIGURATIONS
 %----------------------------------------------------------------------------------------
 
-\documentclass[fontsize=12pt, parskip=half]{scrartcl}
+\documentclass[captions=tableheading,a4paper,11pt,numbers=noenddot,headsepline,titlepage,twoside,openright,DIV=14,BCOR=8mm,parskip=half]{scrbook}
 \PassOptionsToPackage{obeyspaces}{url}
 \usepackage[backend=biber,
             autocite=plain,
@@ -36,6 +36,7 @@
 \urlstyle{same}
 \usepackage{longtable,booktabs}
 \usepackage[normalem]{ulem}
+
 
 \setlength{\emergencystretch}{3em}
 \providecommand{\tightlist}{%
@@ -76,79 +77,78 @@
 \graphicspath{{usermanual/figures/}}
 
 \begin{document}
-\begin{titlepage}
+\frontmatter
+\pagenumbering{Roman}
+
+\thispagestyle{empty}
 \maketitle % Insert the title, author and date
-
+\cleardoublepage
+\thispagestyle{empty}
 \addlicense
-\end{titlepage}
+\cleardoublepage
 
-\clearpage
 % Table Of Contents
 \tableofcontents
 
-\clearpage
+\mainmatter
+\pagenumbering{arabic}
 
 % intro
 \input{chapters/introduction}
-\clearpage
 
 % quick start
 \input{chapters/quick_start}
-\clearpage
 
 % installation
 \input{chapters/installation}
-\clearpage
 
 % configuration and usage
 \input{chapters/getting_started}
-\clearpage
 
 % core framework
 \input{chapters/framework}
-\clearpage
 
 % core framework
 \input{chapters/objects}
-\clearpage
 
 % modules
-\section{Modules}
-\label{sec:modules}
+\chapter{Modules}
+\label{ch:modules}
 \input{chapters/modules}
 \lstset{language=Ini}
 \includemodulesmd
 \lstset{language=}
-\clearpage
+
+% modules
+\chapter{Examples}
+\label{ch:examples}
+\input{chapters/examples}
+\lstset{language=Ini}
+\includeexamplesmd
+\lstset{language=}
 
 % development of new modules and detectors models
 \input{chapters/development}
-\clearpage
 
 \input{chapters/testing}
-\clearpage
 
 % frequently asked question
 \input{chapters/faq}
-\clearpage
 
 % additional tools and resources
 \input{chapters/additional}
-\clearpage
+
+
+\appendix
+\chapter{Appendix}
+\input{appendices/example_output}
+
+\backmatter
 
 % acknowledgements to all contributors etc
 \input{chapters/acknowledgements}
-\clearpage
 
-\appendix
-\section{Appendix}
-\input{appendices/example_output}
-% \clearpage
-% \input{appendices/design_notes}
-% \clearpage
-% probably some chapter with more advanced notes
-
-\clearpage
+\cleardoublepage
 \phantomsection
 \addreferencesline
 \printbibliography
