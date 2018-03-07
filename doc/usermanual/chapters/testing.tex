@@ -19,18 +19,26 @@ Currently, the following targets are provided:
   \item[\command{make lint}] invokes the \command{clang-tidy} tool to provide additional linting of the source code. The tool tries to detect possible errors (and thus potential bugs), dangerous constructs (such as uninitialized variables) as well as stylistic errors. In addition, it ensures proper usage of modern C++ standards. The configuration used for the \command{clang-tidy} command can be found in the \file{.clang-tidy} file in the root directory of the repository.
   \item[\command{make check-lint}] also invokes the \command{clang-tidy} tool but does not report the issues found while parsing the code. Instead, it returns an exit code 0 (pass) if no errors have been produced and exit code 1 (fail) if issues are present. This is used by the CI.
   \item[\command{make cppcheck}] runs the \command{cppcheck} command for additional static code analysis. The output is stored in the file \file{cppcheck_results.xml} in XML2.0 format. It should be noted that some of the issues reported by the tool are to be considered false positives.
-  \item[\command{make cppcheck-html}] Compiles a HTML report from the defects list gathered by \command{make cppcheck}. This target is only available if the \command{cppcheck-htmlreport} executable is found in the \dir{PATH}.
+  \item[\command{make cppcheck-html}] compiles a HTML report from the defects list gathered by \command{make cppcheck}. This target is only available if the \command{cppcheck-htmlreport} executable is found in the \dir{PATH}.
+  \item[\command{make package}] creates a binary release tarball as described in Section~\ref{sec:packaging}.
 \end{description}
 
 \section{Packaging}
-
+\label{sec:packaging}
 \apsq comes with a basic configuration to generate tarballs from the compiled binaries using the CPack command. In order to generate a working tarball from the current \apsq build, the \parameter{RPATH} of the executable should not be set, otherwise the \command{allpix} binary will not be able to locate the dynamic libraries. If not set, the global \parameter{LD_LIBRARY_PATH} is used to search for the required libraries:
 
 \begin{verbatim}
 $ mkdir build
 $ cd build
 $ cmake -DCMAKE_SKIP_RPATH=ON ..
-$ cpack
+$ make package
+\end{verbatim}
+
+Since the CMake installation path defaults to the project's source directory, certain files are excluded from the default installation target created by CMake.
+This includes the detector models in the \dir{models/} directory as well as the additional tools provided in \dir{tools/root_analysis_macros/} folder. In order to include them in a release tarball produced by CPack, the installation path should be set to a location different from the project source folder, for example:
+
+\begin{verbatim}
+$ cmake -DCMAKE_INSTALL_PREFIX=/tmp ..
 \end{verbatim}
 
 The content of the produced tarball can be extracted to any location of the file system, but requires the ROOT6 and Geant4 libraries as well as possibly additional libraries linked by individual at runtime.
@@ -124,8 +132,49 @@ The \textbf{documentation} stage prepares this user manual as well as the Doxyge
 This also allows to identify e.g.\ failing compilation of the \LaTeX documents or additional files which accidentally have not been committed to the repository.
 
 Finally, the \textbf{deployment} stage is only executed for new tags in the repository.
-Whenever a tag is pushed, this stages receives the build artifacts of previous stages and publishes them to the \apsq project website through the EOS file system~\cite{eos}.
+Whenever a tag is pushed, this stages receives the build artifacts of previous stages and publishes them to the \apsq project website through the EOS file system~\cite{eos}. More detailed information on deployments is provided in the following.
 
+\section{Automatic Deployment}
+
+The CI is configured to automatically deploy new versions of \apsq and its user manual and code reference to different places to make them available to users.
+This section briefly describes the different deployment end-points currently configured and in use.
+The individual targets can be triggered by a push into the respective branches.
+In order to prevent accidental publications, these branches are protected and can only be updated by users with \emph{Master} privileges.
+For new tagged versions, all deployment targets are executed.
+
+\subsection{Software deployment to CVMFS}
+
+The software is automatically deployed to CERN's VM file system (CVMFS)~\cite{cvmfs} for every new tag and for every update of the \parameter{deploy-cvmfs} branch.
+New versions are published to the folder \dir{/cvmfs/clicdp.cern.ch/software/allpix-squared/} where a new folder is created for every new tag, while updates via the branch are always stored in the \dir{latest} folder.
+
+The deployed version currently comprises all modules as well as the detector models shipped with the framework.
+An additional \file{setup.sh} is placed in the root folder of the respective release, which allows to set up all runtime dependencies necessary for executing this version.
+Versions both for SLC\,6 and CentOS\,7 are provided.
+
+The deployment CI job runs on a dedicated computer with a GitLab SSH runner.
+Job artifacts from the packaging stage of the CI are downloaded via their ID using the script found in \dir{.gitlab-ci.d/download_artifacts.py}, and are made available to the \emph{cvclicdp} user which has access to the CVMFS interface.
+The job checks for concurrent deployments to CVMFS and then unpacks arr tarball releases and publishes the to the CLICdp experiment CVMFS space, the corresponding script for the deployment can be found in \dir{.gitlab-ci.d/gitlab_deployment.sh}.
+This job requires a private API token to be set as secret project variable through the GitLab interface, currently this token belongs to the service account user \emph{ap2}.
+
+\subsection{User manual deployment to EOS}
+
+The user manual is deployed to the project's EOS space at \dir{/eos/project/a/allpix-squared/www/usermanual} for publication on the project website.
+This comprises both the PDF and HTMl versions of the manual as well as the Doxygen code reference.
+New versions are published for tags and updates of the \parameter{deploy-usermanual} branch.
+The CI jobs uses the \parameter{ci-web-deployer} Docker image from the CERN GitLab CI tools to access EOS, which requires a specific file structure of the artifact.
+All files in the artifact's \dir{public/} folder will be published to the \dir{www/} folder of the given project.
+
+This job requires the secret project variables \parameter{EOS_ACCOUNT_USERNAME} and \parameter{EOS_ACCOUNT_PASSWORD} to be set via the GitLab web interface.
+Currently, this uses the credentials of the service account user \emph{ap2}.
+
+\subsection{Release tarball deployment to EOS}
+
+Binary release tarballs are deployed to EOS to serve as downloads from the website to the directory \dir{/eos/project/a/allpix-squared/www/releases}.
+New tarballs are produced for every tag as well as for any update of the \parameter{deploy-eos} branch.
+The files are taken from the packaging jobs and published via the \parameter{ci-web-deployer} Docker image from the CERN GitLab CI tools.
+
+This job requires the secret project variables \parameter{EOS_ACCOUNT_USERNAME} and \parameter{EOS_ACCOUNT_PASSWORD} to be set via the GitLab web interface.
+Currently, this uses the credentials of the service account user \emph{ap2}.
 
 \section{Tests}
 \label{sec:tests}

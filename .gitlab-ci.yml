@@ -7,6 +7,7 @@ stages:
     - formatting
     - performance
     - documentation
+    - packaging
     - deployment
 
 #######################
@@ -491,6 +492,59 @@ cmp:usermanual:
           - public
         expire_in: 3 hour
 
+################################
+# Packaging of Binary Tarballs #
+################################
+
+pkg:slc6-gcc:
+    stage: packaging
+    tags:
+        - docker
+    image: clicdp/slc6-base
+    only:
+        - tags
+        - deploy-cvmfs
+        - deploy-eos
+    dependencies:
+        - cmp:slc6-gcc
+    script:
+        - export COMPILER_TYPE="gcc"
+        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab-ci.d/load_deps.sh
+        - mkdir -p public/releases
+        - cd build
+        - cmake -GNinja -DCMAKE_SKIP_RPATH=ON -DCMAKE_INSTALL_PREFIX=/tmp ..
+        - ninja package
+        - mv *.tar.gz ../public/releases
+    artifacts:
+        paths:
+            - public
+        expire_in: 3 hour
+
+pkg:cc7-gcc:
+    stage: packaging
+    tags:
+        - docker
+    image: clicdp/cc7-base
+    only:
+        - tags
+        - deploy-cvmfs
+        - deploy-eos
+    dependencies:
+        - cmp:cc7-gcc
+    script:
+        - export COMPILER_TYPE="gcc"
+        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab-ci.d/load_deps.sh
+        - mkdir -p public/releases
+        - cd build
+        - cmake -GNinja -DCMAKE_SKIP_RPATH=ON -DCMAKE_INSTALL_PREFIX=/tmp ..
+        - ninja package
+        - mv *.tar.gz ../public/releases
+    artifacts:
+        paths:
+            - public
+        expire_in: 3 hour
 
 
 ############################
@@ -506,7 +560,7 @@ deploy-documentation:
     # Only run for new tags:
     only:
         - tags
-        - test-deploy
+        - deploy-usermanual
     dependencies:
         - cmp:usermanual
         - cmp:doxygen
@@ -517,3 +571,39 @@ deploy-documentation:
     # do not run any globally defined before_script or after_script for this step
     before_script: []
     after_script: []
+
+deploy-eos:
+    stage: deployment
+    tags:
+      - docker
+    # Only run for new tags:
+    only:
+        - tags
+        - deploy-eos
+    dependencies:
+        - pkg:cc7-gcc
+        - pkg:slc6-gcc
+    # Docker image with tools to deploy to EOS
+    image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
+    script:
+        - deploy-eos
+    # do not run any globally defined before_script or after_script for this step
+    before_script: []
+    after_script: []
+
+deploy-cvmfs:
+    stage: deployment
+    dependencies:
+        - pkg:cc7-gcc
+        - pkg:slc6-gcc
+    tags:
+        - cvmfs
+    only:
+        - tags
+        - deploy-cvmfs
+    script:
+        - ./.gitlab-ci.d/download_artifacts.py $API_TOKEN $CI_PROJECT_ID $CI_PIPELINE_ID
+        - export RUNNER_LOCATION=$(pwd)
+        - if [ -z ${CI_COMMIT_TAG} ]; then export BUILD_PATH='latest'; else export BUILD_PATH=${CI_COMMIT_TAG}; fi
+        - sudo -u cvclicdp -i $RUNNER_LOCATION/.gitlab-ci.d/gitlab_deploy.sh $RUNNER_LOCATION $BUILD_PATH
+        - rm -f allpix-squared-*.tar.gz

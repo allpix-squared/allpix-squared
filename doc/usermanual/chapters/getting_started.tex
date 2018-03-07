@@ -284,6 +284,7 @@ This is the only \underline{required} argument, the simulation will fail to star
 \item \texttt{-v <level>}: Sets the global log verbosity level, overwriting the value specified in the configuration file described in Section~\ref{sec:framework_parameters}.
 Possible values are \texttt{FATAL}, \texttt{STATUS}, \texttt{ERROR}, \texttt{WARNING}, \texttt{INFO} and \texttt{DEBUG}, where all options are case-insensitive.
 The module specific logging level introduced in Section~\ref{sec:logging_verbosity} is not overwritten.
+\item \texttt{-{}-version}: Prints the version and build time of the executable and terminates the program.
 \item \texttt{-o <option>}: Passes extra options which are added and overwritten in the main configuration file.
 This argument may be specified multiple times, to add multiple options.
 Options are specified as key/value pairs in the same syntax as used in the configuration files (refer to Section~\ref{sec:config_file_format} for more details), but the key is extended to include a reference to a configuration section or instantiation in shorthand notation.
