@@ -20,12 +20,12 @@ PixelCharge::PixelCharge(Pixel pixel, unsigned int charge, std::vector<const Pro
     std::set<const MCParticle*> unique_particles;
     // Store all propagated charges and their MC particles
     for(auto& propagated_charge : propagated_charges) {
-        propagated_charges_.Add(const_cast<PropagatedCharge*>(propagated_charge)); // NOLINT
+        propagated_charges_.push_back(const_cast<PropagatedCharge*>(propagated_charge)); // NOLINT
         unique_particles.insert(propagated_charge->getMCParticle());
     }
     // Store the MC particle references
     for(auto mc_particle : unique_particles) {
-        mc_particles_.Add(const_cast<MCParticle*>(mc_particle)); // NOLINT
+        mc_particles_.push_back(const_cast<MCParticle*>(mc_particle)); // NOLINT
     }
 }
 
@@ -44,16 +44,16 @@ unsigned int PixelCharge::getCharge() const {
 /**
  * @throws MissingReferenceException If the pointed object is not in scope
  *
- * Objects are stored as TRefArray and can only be accessed if pointed objects are in scope
+ * Objects are stored as vector of TRef and can only be accessed if pointed objects are in scope
  */
 std::vector<const PropagatedCharge*> PixelCharge::getPropagatedCharges() const {
     // FIXME: This is not very efficient unfortunately
     std::vector<const PropagatedCharge*> propagated_charges;
-    for(int i = 0; i < propagated_charges_.GetEntries(); ++i) {
-        propagated_charges.emplace_back(dynamic_cast<PropagatedCharge*>(propagated_charges_[i]));
-        if(propagated_charges.back() == nullptr) {
+    for(auto& propagated_charge : propagated_charges_) {
+        if(propagated_charge == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(PropagatedCharge));
         }
+        propagated_charges.emplace_back(dynamic_cast<PropagatedCharge*>(propagated_charge.GetObject()));
     }
     return propagated_charges;
 }
@@ -66,11 +66,11 @@ std::vector<const PropagatedCharge*> PixelCharge::getPropagatedCharges() const {
 std::vector<const MCParticle*> PixelCharge::getMCParticles() const {
 
     std::vector<const MCParticle*> mc_particles;
-    for(auto mc_particle : mc_particles_) {
+    for(auto& mc_particle : mc_particles_) {
         if(mc_particle == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(MCParticle));
         }
-        mc_particles.emplace_back(dynamic_cast<MCParticle*>(mc_particle));
+        mc_particles.emplace_back(dynamic_cast<MCParticle*>(mc_particle.GetObject()));
     }
 
     // Return as a vector of mc particles

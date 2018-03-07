@@ -11,7 +11,7 @@
 #define ALLPIX_PIXEL_CHARGE_H
 
 #include <Math/DisplacementVector2D.h>
-#include <TRefArray.h>
+#include <TRef.h>
 #include <algorithm>
 
 #include "MCParticle.hpp"
@@ -66,7 +66,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDef(PixelCharge, 3);
+        ClassDef(PixelCharge, 4);
         /**
          * @brief Default constructor for ROOT I/O
          */
@@ -76,8 +76,8 @@ namespace allpix {
         Pixel pixel_;
         unsigned int charge_{};
 
-        TRefArray propagated_charges_;
-        TRefArray mc_particles_;
+        std::vector<TRef> propagated_charges_;
+        std::vector<TRef> mc_particles_;
     };
 
     /**
