@@ -11,6 +11,11 @@
 
 using namespace allpix;
 
+std::ostream& allpix::operator<<(std::ostream& out, const Object& obj) {
+    obj.print(out);
+    return out;
+}
+
 Object::Object(const Object&) = default;
 Object& Object::operator=(const Object&) = default;
 

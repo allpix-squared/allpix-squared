@@ -28,6 +28,8 @@ namespace allpix {
      */
     class Object : public TObject {
     public:
+        friend std::ostream& operator<<(std::ostream& out, const allpix::Object& obj);
+
         /**
          * @brief Required default constructor
          */
@@ -58,13 +60,6 @@ namespace allpix {
          */
         ClassDef(Object, 2);
 
-        /** Overloaded ostream operator for printing of object data
-        */
-        friend std::ostream& operator<<(std::ostream& out, const Object& obj) {
-            obj.print(out);
-            return out;
-        }
-
     protected:
         /**
          * @brief Print an ASCII representation of this Object to the given stream
@@ -82,6 +77,14 @@ namespace allpix {
             std::cout << std::endl;
         }
     };
+
+    /**
+     * @brief Overloaded ostream operator for printing of object data
+     * @param out Stream to write output to
+     * @param obj Object to print to stream
+     * @return Stream where output was written to
+     */
+    std::ostream& operator<<(std::ostream& out, const allpix::Object& obj);
 
 } // namespace allpix
 
