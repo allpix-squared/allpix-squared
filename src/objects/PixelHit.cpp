@@ -27,7 +27,7 @@ PixelHit::PixelHit(Pixel pixel, double time, double signal, const PixelCharge* p
     }
     // Store the MC particle references
     for(auto mc_particle : unique_particles) {
-        mc_particles_.Add(const_cast<MCParticle*>(mc_particle)); // NOLINT
+        mc_particles_.push_back(const_cast<MCParticle*>(mc_particle)); // NOLINT
     }
 }
 
@@ -60,11 +60,11 @@ const PixelCharge* PixelHit::getPixelCharge() const {
 std::vector<const MCParticle*> PixelHit::getMCParticles() const {
 
     std::vector<const MCParticle*> mc_particles;
-    for(auto mc_particle : mc_particles_) {
+    for(auto& mc_particle : mc_particles_) {
         if(mc_particle == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(MCParticle));
         }
-        mc_particles.emplace_back(dynamic_cast<MCParticle*>(mc_particle));
+        mc_particles.emplace_back(dynamic_cast<MCParticle*>(mc_particle.GetObject()));
     }
 
     // Return as a vector of mc particles
