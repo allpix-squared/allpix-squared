@@ -71,4 +71,9 @@ std::vector<const MCParticle*> PixelHit::getMCParticles() const {
     return mc_particles;
 }
 
+void PixelHit::print(std::ostream& out) const {
+    out << "PixelHit " << this->getIndex().X() << ", " << this->getIndex().Y() << ", " << this->getSignal() << ", "
+        << this->getTime();
+}
+
 ClassImp(PixelHit)

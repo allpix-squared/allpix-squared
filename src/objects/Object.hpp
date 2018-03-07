@@ -15,6 +15,8 @@
 #ifndef ALLPIX_OBJECT_H
 #define ALLPIX_OBJECT_H
 
+#include <iostream>
+
 #include <TObject.h>
 
 namespace allpix {
@@ -26,6 +28,8 @@ namespace allpix {
      */
     class Object : public TObject {
     public:
+        friend std::ostream& operator<<(std::ostream& out, const allpix::Object& obj);
+
         /**
          * @brief Required default constructor
          */
@@ -54,8 +58,34 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDef(Object, 1);
+        ClassDef(Object, 2);
+
+    protected:
+        /**
+         * @brief Print an ASCII representation of this Object to the given stream
+         * @param out Stream to print to
+         */
+        virtual void print(std::ostream& out) const { out << "<unknown object>"; };
+
+        /**
+         * @brief Override function for the ROOT Print() class
+         * @warning Should not be used inside the framework but might assist in inspecting ROOT files with these objects.
+         * @param Unused ROOT options
+         */
+        void Print(Option_t*) const override {
+            print(std::cout);
+            std::cout << std::endl;
+        }
     };
+
+    /**
+     * @brief Overloaded ostream operator for printing of object data
+     * @param out Stream to write output to
+     * @param obj Object to print to stream
+     * @return Stream where output was written to
+     */
+    std::ostream& operator<<(std::ostream& out, const allpix::Object& obj);
+
 } // namespace allpix
 
 #endif
