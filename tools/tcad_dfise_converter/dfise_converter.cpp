@@ -15,6 +15,9 @@
 #include <Eigen/Eigen>
 
 #include "Octree.hpp"
+#include "config/ConfigReader.hpp"
+#include "config/Configuration.hpp"
+#include "config/exceptions.h"
 #include "read_dfise.h"
 #include "utils/log.h"
 
@@ -167,10 +170,11 @@ int main(int argc, char** argv) {
     std::string file_prefix;
     std::string init_file_prefix;
     std::string log_file_name;
+    // DEFAULT VALUES //
     std::string region = "bulk";              // Sensor bulk region name on DF-ISE file
     std::string observable = "ElectricField"; // Sensor bulk region name on DF-ISE file
     double volume_cut = 1e-9;                 // Enclosing tetrahedron should have volume != 0
-    size_t index_cut = 10000000;              // Permutation index initial cut
+    size_t index_cut = 100000;                // Permutation index initial cut
     bool index_cut_flag = false;
     double initial_radius = 1;   // Neighbour vertex search radius
     double radius_threshold = 0; // Neighbour vertex search radius
@@ -181,6 +185,8 @@ int main(int argc, char** argv) {
     int xdiv = 100; // New mesh X pitch
     int ydiv = 100; // New mesh Y pitch
     int zdiv = 100; // New mesh Z pitch
+
+    std::string conf_file_name = "config_test.conf";
 
     for(int i = 1; i < argc; i++) {
         if(strcmp(argv[i], "-h") == 0) {
@@ -195,35 +201,37 @@ int main(int argc, char** argv) {
             }
         } else if(strcmp(argv[i], "-f") == 0 && (i + 1 < argc)) {
             file_prefix = std::string(argv[++i]);
+        } else if(strcmp(argv[i], "-c") == 0 && (i + 1 < argc)) {
+            conf_file_name = std::string(argv[++i]);
         } else if(strcmp(argv[i], "-o") == 0 && (i + 1 < argc)) {
             init_file_prefix = std::string(argv[++i]);
-        } else if(strcmp(argv[i], "-R") == 0 && (i + 1 < argc)) {
-            region = std::string(argv[++i]);
-        } else if(strcmp(argv[i], "-O") == 0 && (i + 1 < argc)) {
-            observable = std::string(argv[++i]);
-        } else if(strcmp(argv[i], "-r") == 0 && (i + 1 < argc)) {
-            initial_radius = strtod(argv[++i], nullptr);
-        } else if(strcmp(argv[i], "-t") == 0 && (i + 1 < argc)) {
-            radius_threshold = strtod(argv[++i], nullptr);
-            threshold_flag = true;
-        } else if(strcmp(argv[i], "-s") == 0 && (i + 1 < argc)) {
-            radius_step = strtod(argv[++i], nullptr);
-        } else if(strcmp(argv[i], "-m") == 0 && (i + 1 < argc)) {
-            max_radius = strtod(argv[++i], nullptr);
-        } else if(strcmp(argv[i], "-i") == 0 && (i + 1 < argc)) {
-            index_cut = static_cast<size_t>(strtol(argv[++i], nullptr, 10));
-            index_cut_flag = true;
-        } else if(strcmp(argv[i], "-c") == 0 && (i + 1 < argc)) {
-            volume_cut = strtod(argv[++i], nullptr);
-        } else if(strcmp(argv[i], "-x") == 0 && (i + 1 < argc)) {
-            xdiv = static_cast<int>(strtol(argv[++i], nullptr, 10));
-        } else if(strcmp(argv[i], "-y") == 0 && (i + 1 < argc)) {
-            ydiv = static_cast<int>(strtol(argv[++i], nullptr, 10));
-        } else if(strcmp(argv[i], "-z") == 0 && (i + 1 < argc)) {
-            zdiv = static_cast<int>(strtol(argv[++i], nullptr, 10));
-        } else if(strcmp(argv[i], "-d") == 0 && (i + 1 < argc)) {
-            dimension = static_cast<int>(strtol(argv[++i], nullptr, 10));
-            xdiv = 1;
+            //} else if(strcmp(argv[i], "-R") == 0 && (i + 1 < argc)) {
+            //    region = std::string(argv[++i]);
+            //} else if(strcmp(argv[i], "-O") == 0 && (i + 1 < argc)) {
+            //    observable = std::string(argv[++i]);
+            //} else if(strcmp(argv[i], "-r") == 0 && (i + 1 < argc)) {
+            //    initial_radius = strtod(argv[++i], nullptr);
+            //} else if(strcmp(argv[i], "-t") == 0 && (i + 1 < argc)) {
+            //    radius_threshold = strtod(argv[++i], nullptr);
+            //    threshold_flag = true;
+            //} else if(strcmp(argv[i], "-s") == 0 && (i + 1 < argc)) {
+            //    radius_step = strtod(argv[++i], nullptr);
+            //} else if(strcmp(argv[i], "-m") == 0 && (i + 1 < argc)) {
+            //    max_radius = strtod(argv[++i], nullptr);
+            //} else if(strcmp(argv[i], "-i") == 0 && (i + 1 < argc)) {
+            //    index_cut = static_cast<size_t>(strtol(argv[++i], nullptr, 10));
+            //    index_cut_flag = true;
+            //} else if(strcmp(argv[i], "-c") == 0 && (i + 1 < argc)) {
+            //    volume_cut = strtod(argv[++i], nullptr);
+            //} else if(strcmp(argv[i], "-x") == 0 && (i + 1 < argc)) {
+            //    xdiv = static_cast<int>(strtol(argv[++i], nullptr, 10));
+            //} else if(strcmp(argv[i], "-y") == 0 && (i + 1 < argc)) {
+            //    ydiv = static_cast<int>(strtol(argv[++i], nullptr, 10));
+            //} else if(strcmp(argv[i], "-z") == 0 && (i + 1 < argc)) {
+            //    zdiv = static_cast<int>(strtol(argv[++i], nullptr, 10));
+            //} else if(strcmp(argv[i], "-d") == 0 && (i + 1 < argc)) {
+            //    dimension = static_cast<int>(strtol(argv[++i], nullptr, 10));
+            //    xdiv = 1;
         } else if(strcmp(argv[i], "-l") == 0 && (i + 1 < argc)) {
             log_file_name = std::string(argv[++i]);
         } else {
@@ -250,30 +258,73 @@ int main(int argc, char** argv) {
     if(print_help) {
         std::cerr << "Usage: ./tcad_dfise_reader -f <file_name> [<options>]" << std::endl;
         std::cout << "\t -f <file_prefix>       common prefix of DF-ISE grid (.grd) and data (.dat) files" << std::endl;
+        std::cout << "\t -c <config_file>       configuration file name" << std::endl;
         std::cout << "\t -o <init_file_prefix>  output file prefix without .init (defaults to file name of <file_prefix>)"
                   << std::endl;
-        std::cout << "\t -R <region>            region name to be meshed (defaults to 'bulk')" << std::endl;
-        std::cout << "\t -O <observable>        observable to be interpolated (defaults Electric Field)" << std::endl;
-        std::cout << "\t -r <radius>            initial node neighbors search radius in um (defaults to 1 um)" << std::endl;
-        std::cout << "\t -t <radius_threshold>  minimum distance from node to new mesh point (defaults to 0 um)"
-                  << std::endl;
-        std::cout << "\t -s <radius_step>       radius step if no neighbor is found (defaults to 0.5 um)" << std::endl;
-        std::cout << "\t -m <max_radius>        maximum search radius (default is 10 um)" << std::endl;
-        std::cout << "\t -i <index_cut>         index cut during permutation on vertex neighbours (disabled by default)"
-                  << std::endl;
-        std::cout << "\t -c <volume_cut>        minimum volume for tetrahedron for non-coplanar vertices (defaults to "
-                     "minimum double value)"
-                  << std::endl;
-        std::cout << "\t -x <mesh x_pitch>      new regular mesh X pitch (defaults to 100)" << std::endl;
-        std::cout << "\t -y <mesh_y_pitch>      new regular mesh Y pitch (defaults to 100)" << std::endl;
-        std::cout << "\t -z <mesh_z_pitch>      new regular mesh Z pitch (defaults to 100)" << std::endl;
-        std::cout << "\t -d <mesh_dimension>    specify mesh dimensionality (defaults to 3)" << std::endl;
+        // std::cout << "\t -R <region>            region name to be meshed (defaults to 'bulk')" << std::endl;
+        // std::cout << "\t -O <observable>        observable to be interpolated (defaults Electric Field)" << std::endl;
+        // std::cout << "\t -r <radius>            initial node neighbors search radius in um (defaults to 1 um)" <<
+        // std::endl;
+        // std::cout << "\t -t <radius_threshold>  minimum distance from node to new mesh point (defaults to 0 um)"
+        //          << std::endl;
+        // std::cout << "\t -s <radius_step>       radius step if no neighbor is found (defaults to 0.5 um)" << std::endl;
+        // std::cout << "\t -m <max_radius>        maximum search radius (default is 10 um)" << std::endl;
+        // std::cout << "\t -i <index_cut>         index cut during permutation on vertex neighbours (disabled by default)"
+        //          << std::endl;
+        // std::cout << "\t -c <volume_cut>        minimum volume for tetrahedron for non-coplanar vertices (defaults to "
+        //             "minimum double value)"
+        //          << std::endl;
+        // std::cout << "\t -x <mesh x_pitch>      new regular mesh X pitch (defaults to 100)" << std::endl;
+        // std::cout << "\t -y <mesh_y_pitch>      new regular mesh Y pitch (defaults to 100)" << std::endl;
+        // std::cout << "\t -z <mesh_z_pitch>      new regular mesh Z pitch (defaults to 100)" << std::endl;
+        // std::cout << "\t -d <mesh_dimension>    specify mesh dimensionality (defaults to 3)" << std::endl;
         std::cout << "\t -l <file>              file to log to besides standard output (disabled by default)" << std::endl;
         std::cout << "\t -v <level>             verbosity level (default reporiting level is INFO)" << std::endl;
 
         allpix::Log::finish();
         return return_code;
     }
+
+    std::ifstream file(conf_file_name);
+    allpix::ConfigReader reader(file, conf_file_name);
+    allpix::Configuration config = reader.getHeaderConfiguration();
+    // std::vector<allpix::Configuration> section = reader.getConfigurations("section_test");
+    // std::cout << config.get<double>("test") << std::endl;
+    // std::cout << section.get<double>("test2") << std::endl;
+
+    if(config.has("dimension")) {
+        dimension = config.get<int>("dimension");
+        if(dimension == 2)
+            xdiv = 1;
+    }
+    if(config.has("region"))
+        region = config.get<std::string>("region");
+    if(config.has("observable"))
+        observable = config.get<std::string>("observable");
+
+    if(config.has("initial_radius"))
+        initial_radius = config.get<double>("initial_radius");
+    if(config.has("radius_step"))
+        radius_step = config.get<double>("radius_step");
+    if(config.has("max_radius"))
+        max_radius = config.get<double>("max_radius");
+    if(config.has("radius_threshold") && radius_threshold != -1) {
+        radius_threshold = config.get<double>("radius_threshold");
+        threshold_flag = true;
+    }
+    if(config.has("volume_cut"))
+        volume_cut = config.get<double>("volume_cut");
+    if(config.has("index_cut")) {
+        index_cut = config.get<size_t>("index_cut");
+        index_cut_flag = true;
+    }
+
+    if(config.has("xdiv"))
+        xdiv = config.get<int>("xdiv");
+    if(config.has("ydiv"))
+        ydiv = config.get<int>("ydiv");
+    if(config.has("zdiv"))
+        zdiv = config.get<int>("zdiv");
 
     // NOTE: this stream should be available for the duration of the logging
     std::ofstream log_file;
