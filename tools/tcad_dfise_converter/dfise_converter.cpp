@@ -186,7 +186,7 @@ int main(int argc, char** argv) {
     int ydiv = 100; // New mesh Y pitch
     int zdiv = 100; // New mesh Z pitch
 
-    std::string conf_file_name = "config_test.conf";
+    std::string conf_file_name;
 
     for(int i = 1; i < argc; i++) {
         if(strcmp(argv[i], "-h") == 0) {
@@ -201,6 +201,7 @@ int main(int argc, char** argv) {
             }
         } else if(strcmp(argv[i], "-f") == 0 && (i + 1 < argc)) {
             file_prefix = std::string(argv[++i]);
+            conf_file_name = file_prefix + ".conf";
         } else if(strcmp(argv[i], "-c") == 0 && (i + 1 < argc)) {
             conf_file_name = std::string(argv[++i]);
         } else if(strcmp(argv[i], "-o") == 0 && (i + 1 < argc)) {
@@ -241,12 +242,10 @@ int main(int argc, char** argv) {
         return return_code;
     }
 
+    LOG(STATUS) << "Using " << conf_file_name << " configuration file";
     std::ifstream file(conf_file_name);
     allpix::ConfigReader reader(file, conf_file_name);
     allpix::Configuration config = reader.getHeaderConfiguration();
-    // std::vector<allpix::Configuration> section = reader.getConfigurations("section_test");
-    // std::cout << config.get<double>("test") << std::endl;
-    // std::cout << section.get<double>("test2") << std::endl;
 
     if(config.has("region"))
         region = config.get<std::string>("region");
@@ -335,16 +334,8 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    ///* ALERT fix coordinates */
-    // if(dimension == 3) {
-    //    for(unsigned int i = 0; i < points.size(); ++i) {
-    //        std::swap(points[i].y, points[i].z);
-    //        std::swap(field[i].y, field[i].z);
-    //    }
-    //}
     auto points_temp = points;
     auto field_temp = field;
-    // if(rot[0] == "-x" || rot[0] == "x") continue;
     if(rot[0] == "-y" || rot[0] == "y") {
         for(size_t i = 0; i < points.size(); ++i) {
             points_temp[i].x = points[i].y;
@@ -357,7 +348,6 @@ int main(int argc, char** argv) {
             field_temp[i].x = field[i].z;
         }
     }
-    // if(rot[1] == "-y" || rot[1] == "y") continue;
     if(rot[1] == "-x" || rot[1] == "x") {
         for(size_t i = 0; i < points.size(); ++i) {
             points_temp[i].y = points[i].x;
@@ -370,7 +360,6 @@ int main(int argc, char** argv) {
             field_temp[i].y = field[i].z;
         }
     }
-    // if(rot[2] == "-z" || rot[2] == "z") continue;
     if(rot[2] == "-x" || rot[2] == "x") {
         for(size_t i = 0; i < points.size(); ++i) {
             points_temp[i].z = points[i].x;
@@ -415,27 +404,28 @@ int main(int argc, char** argv) {
     double zstep = (maxz - minz) / static_cast<double>(zdiv);
     double cell_volume = xstep * ystep * zstep;
 
+    if(rot[0] != "x" || rot[1] != "y" || rot[2] != "z")
+        LOG(STATUS) << "TCAD mesh (x,y,z) coords. transformation into: (" << rot[0] << "," << rot[1] << "," << rot[2] << ")";
     LOG(STATUS) << "Mesh dimensions: " << maxx - minx << " x " << maxy - miny << " x " << maxz - minz << std::endl
                 << "New mesh element dimension: " << xstep << " x " << ystep << " x " << zstep
                 << " ==>  Volume = " << cell_volume;
 
-    LOG(STATUS) << "Coordinate system transformation:	" << rot[0] << "	" << rot[1] << "	" << rot[2] << std::endl;
     if(rot[0].find('-') != std::string::npos) {
-        std::cout << "Inverting coordinate X. Might change right-handness of the coordinate system!" << std::endl;
+        LOG(WARNING) << "Inverting coordinate X. This might change the right-handness of the coordinate system!";
         for(size_t i = 0; i < points.size(); ++i) {
             points[i].x = maxx - (points[i].x - minx);
             field[i].x = -field[i].x;
         }
     }
     if(rot[1].find('-') != std::string::npos) {
-        std::cout << "Inverting coordinate Y. Might change right-handness of the coordinate system!" << std::endl;
+        LOG(WARNING) << "Inverting coordinate Y. This might change the right-handness of the coordinate system!";
         for(size_t i = 0; i < points.size(); ++i) {
             points[i].y = maxy - (points[i].y - miny);
             field[i].y = -field[i].y;
         }
     }
     if(rot[2].find('-') != std::string::npos) {
-        std::cout << "Inverting coordinate Z. Might change right-handness of the coordinate system!" << std::endl;
+        LOG(WARNING) << "Inverting coordinate Z. This might change the right-handness of the coordinate system!";
         for(size_t i = 0; i < points.size(); ++i) {
             points[i].z = maxz - (points[i].z - minz);
             field[i].z = -field[i].z;
