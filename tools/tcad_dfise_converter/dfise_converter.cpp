@@ -247,34 +247,43 @@ int main(int argc, char** argv) {
     allpix::ConfigReader reader(file, conf_file_name);
     allpix::Configuration config = reader.getHeaderConfiguration();
 
-    if(config.has("region"))
+    if(config.has("region")) {
         region = config.get<std::string>("region");
-    if(config.has("observable"))
+    }
+    if(config.has("observable")) {
         observable = config.get<std::string>("observable");
+    }
 
-    if(config.has("initial_radius"))
+    if(config.has("initial_radius")) {
         initial_radius = config.get<double>("initial_radius");
-    if(config.has("radius_step"))
+    }
+    if(config.has("radius_step")) {
         radius_step = config.get<double>("radius_step");
-    if(config.has("max_radius"))
+    }
+    if(config.has("max_radius")) {
         max_radius = config.get<double>("max_radius");
+    }
     if(config.has("radius_threshold") && radius_threshold != -1) {
         radius_threshold = config.get<double>("radius_threshold");
         threshold_flag = true;
     }
-    if(config.has("volume_cut"))
+    if(config.has("volume_cut")) {
         volume_cut = config.get<double>("volume_cut");
+    }
     if(config.has("index_cut")) {
         index_cut = config.get<size_t>("index_cut");
         index_cut_flag = true;
     }
 
-    if(config.has("xdiv"))
+    if(config.has("xdiv")) {
         xdiv = config.get<int>("xdiv");
-    if(config.has("ydiv"))
+    }
+    if(config.has("ydiv")) {
         ydiv = config.get<int>("ydiv");
-    if(config.has("zdiv"))
+    }
+    if(config.has("zdiv")) {
         zdiv = config.get<int>("zdiv");
+    }
     if(config.has("dimension")) {
         dimension = config.get<int>("dimension");
         if(dimension == 2)
@@ -282,8 +291,9 @@ int main(int argc, char** argv) {
     }
 
     std::vector<std::string> rot;
-    if(config.has("xyz"))
+    if(config.has("xyz")) {
         rot = config.getArray<std::string>("xyz");
+    }
 
     // NOTE: this stream should be available for the duration of the logging
     std::ofstream log_file;
@@ -404,8 +414,9 @@ int main(int argc, char** argv) {
     double zstep = (maxz - minz) / static_cast<double>(zdiv);
     double cell_volume = xstep * ystep * zstep;
 
-    if(rot[0] != "x" || rot[1] != "y" || rot[2] != "z")
+    if(rot[0] != "x" || rot[1] != "y" || rot[2] != "z") {
         LOG(STATUS) << "TCAD mesh (x,y,z) coords. transformation into: (" << rot[0] << "," << rot[1] << "," << rot[2] << ")";
+    }
     LOG(STATUS) << "Mesh dimensions: " << maxx - minx << " x " << maxy - miny << " x " << maxz - minz << std::endl
                 << "New mesh element dimension: " << xstep << " x " << ystep << " x " << zstep
                 << " ==>  Volume = " << cell_volume;
