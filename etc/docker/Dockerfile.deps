@@ -1,7 +1,7 @@
 FROM gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-base:latest
 MAINTAINER Simon Spannagel <simon.spannagel@cern.ch>
 
-ENV GEANT4_VERSION 10.03.p01
+ENV GEANT4_VERSION 10.03.p03
 ENV ROOT6_VERSION 6.10.08
 
 # Add layer for Geant4
