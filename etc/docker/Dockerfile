@@ -6,11 +6,6 @@ COPY . /opt/allpix-squared
 
 ENV PATH="/opt/allpix-squared/bin:${PATH}"
 
-# Add dependencies to bash startup:
-RUN touch /root/.bashrc && \
-    echo "source /opt/root6/bin/thisroot.sh" >> /root/.bashrc && \
-    echo "source /opt/geant4/bin/geant4.sh" >> /root/.bashrc
-
 # Compile Allpix Squared
 RUN source scl_source enable devtoolset-7 && \
     source /opt/root6/bin/thisroot.sh && \
