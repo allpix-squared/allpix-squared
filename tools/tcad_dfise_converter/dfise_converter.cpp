@@ -235,28 +235,28 @@ int main(int argc, char** argv) {
     std::string region = config.get<std::string>("region", "bulk");
     std::string observable = config.get<std::string>("observable", "ElectricField");
 
-    double initial_radius = config.get<double>("initial_radius", 1);
-    double radius_step = config.get<double>("radius_step", 0.5);
-    double max_radius = config.get<double>("max_radius", 10);
+    auto initial_radius = config.get<double>("initial_radius", 1);
+    auto radius_step = config.get<double>("radius_step", 0.5);
+    auto max_radius = config.get<double>("max_radius", 10);
 
     bool threshold_flag = false;
-    double radius_threshold = config.get<double>("radius_threshold", -1);
+    auto radius_threshold = config.get<double>("radius_threshold", -1);
     if(radius_threshold != -1) {
         threshold_flag = true;
     }
 
-    double volume_cut = config.get<double>("volume_cut");
+    auto volume_cut = config.get<double>("volume_cut");
 
     bool index_cut_flag = false;
-    size_t index_cut = config.get<size_t>("index_cut", 999999);
+    auto index_cut = config.get<size_t>("index_cut", 999999);
     if(index_cut != 999999) {
         index_cut_flag = true;
     }
 
-    int xdiv = config.get<int>("xdiv", 100);
-    int ydiv = config.get<int>("ydiv", 100);
-    int zdiv = config.get<int>("zdiv", 100);
-    int dimension = config.get<int>("dimension", 3);
+    auto xdiv = config.get<int>("xdiv", 100);
+    auto ydiv = config.get<int>("ydiv", 100);
+    auto zdiv = config.get<int>("zdiv", 100);
+    auto dimension = config.get<int>("dimension", 3);
     if(dimension == 2) {
         xdiv = 1;
     }

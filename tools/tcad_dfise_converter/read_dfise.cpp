@@ -8,6 +8,8 @@
 #include <regex>
 #include <set>
 #include <string>
+#include "TFile.h"
+#include "TTree.h"
 
 // Include trim utility from allpix
 #include "utils/log.h"
@@ -30,6 +32,12 @@ std::map<std::string, std::vector<Point>> mesh_converter::read_grid(const std::s
     std::vector<std::vector<long unsigned int>> elements;
 
     std::map<std::string, std::vector<long unsigned int>> regions_vertices;
+
+    Point point(-1.0, -1.0, -1.0);
+    TTree* tree = new TTree("mesh_points", "Mesh points");
+    tree->Branch("x", &point.x, "x/D");
+    tree->Branch("y", &point.y, "y/D");
+    tree->Branch("z", &point.z, "z/D");
 
     std::string region;
     long unsigned int dimension = 1;
@@ -175,15 +183,21 @@ std::map<std::string, std::vector<Point>> mesh_converter::read_grid(const std::s
         case DFSection::VERTICES: {
             // Read vertex points
             if(dimension == 3) {
-                Point point(-1.0, -1.0, -1.0);
+                point.x = -1.0;
+                point.y = -1.0;
+                point.z = -1.0;
                 while(sstr >> point.x >> point.y >> point.z) {
                     vertices.push_back(point);
+                    tree->Fill();
                 }
             }
             if(dimension == 2) {
-                Point point(-1.0, -1.0, -1.0);
+                point.x = -1.0;
+                point.y = -1.0;
+                point.z = -1.0;
                 while(sstr >> point.y >> point.z) {
                     vertices.push_back(point);
+                    tree->Fill();
                 }
             }
         } break;
@@ -347,6 +361,11 @@ std::map<std::string, std::vector<Point>> mesh_converter::read_grid(const std::s
 
         ret_map[name_region_vertices.first] = ret_vector;
     }
+
+    std::string root_file_name = file_name + "_MESH_POINTS_TTREE.root";
+    TFile* root_file = new TFile(root_file_name.c_str(), "RECREATE");
+    tree->Write();
+    root_file->Close();
 
     return ret_map;
 }
