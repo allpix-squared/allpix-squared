@@ -608,16 +608,28 @@ deploy-cvmfs:
         - sudo -u cvclicdp -i $RUNNER_LOCATION/.gitlab-ci.d/gitlab_deploy.sh $RUNNER_LOCATION $BUILD_PATH
         - rm -f allpix-squared-*.tar.gz
 
-deploy-docker:
+deploy-docker-latest:
+    stage: deployment
+    tags:
+        - docker-image-build
+    dependencies: []
+    only:
+        - deploy-docker
+    script:
+        - "echo" # unused but this line is required by GitLab CI
+    variables:
+        TO: gitlab-registry.cern.ch/allpix-squared/allpix-squared
+        DOCKER_FILE: etc/docker/Dockerfile
+
+deploy-docker-tag:
     stage: deployment
     tags:
         - docker-image-build
     dependencies: []
     only:
         - tags
-        - deploy-docker
     script:
         - "echo" # unused but this line is required by GitLab CI
     variables:
-        TO: gitlab-registry.cern.ch/allpix-squared/allpix-squared:${CI_COMMIT_SHA}
+        TO: gitlab-registry.cern.ch/allpix-squared/allpix-squared:${CI_COMMIT_TAG}
         DOCKER_FILE: etc/docker/Dockerfile
