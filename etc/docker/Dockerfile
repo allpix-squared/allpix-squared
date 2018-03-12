@@ -9,8 +9,6 @@ WORKDIR "/data"
 
 # Compile Allpix Squared
 RUN source scl_source enable devtoolset-7 && \
-    source /opt/root6/bin/thisroot.sh && \
-    source /opt/geant4/bin/geant4.sh && \
     mkdir -p /opt/allpix-squared/build && \
     cd /opt/allpix-squared/build && \
     cmake3 -DCMAKE_INSTALL_PREFIX=../ \
