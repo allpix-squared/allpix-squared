@@ -5,6 +5,7 @@ MAINTAINER Simon Spannagel <simon.spannagel@cern.ch>
 COPY . /opt/allpix-squared
 
 ENV PATH="/opt/allpix-squared/bin:${PATH}"
+WORKDIR "/data"
 
 # Compile Allpix Squared
 RUN source scl_source enable devtoolset-7 && \
