@@ -590,7 +590,7 @@ mesh_converter::read_electric_field(const std::string& file_name) {
 
             if(main_section == DFSection::ELECTROSTATIC_POTENTIAL && sub_section == DFSection::VALUES) {
                 if(data_count != region_electric_field_num.size()) {
-                    throw std::runtime_error("incorrect number of electric field points");
+                    throw std::runtime_error("incorrect number of electrostatic potential points");
                 }
 
                 for(size_t i = 0; i < region_electric_field_num.size(); i += 1) {
@@ -619,7 +619,7 @@ mesh_converter::read_electric_field(const std::string& file_name) {
                     for(size_t i = 0; i < region_electric_field_num.size(); i += 2) {
                         auto x = region_electric_field_num[i];
                         auto y = region_electric_field_num[i + 1];
-                        region_electric_field_map[region][observable].emplace_back(x, y);
+                        region_electric_field_map[region][observable].emplace_back(0, x, y);
                     }
                 }
 

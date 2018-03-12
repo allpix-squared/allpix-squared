@@ -170,21 +170,6 @@ int main(int argc, char** argv) {
     std::string file_prefix;
     std::string init_file_prefix;
     std::string log_file_name;
-    // DEFAULT VALUES //
-    std::string region = "bulk";              // Sensor bulk region name on DF-ISE file
-    std::string observable = "ElectricField"; // Sensor bulk region name on DF-ISE file
-    double volume_cut = 1e-9;                 // Enclosing tetrahedron should have volume != 0
-    size_t index_cut = 100000;                // Permutation index initial cut
-    bool index_cut_flag = false;
-    double initial_radius = 1;   // Neighbour vertex search radius
-    double radius_threshold = 0; // Neighbour vertex search radius
-    bool threshold_flag = false;
-    double radius_step = 0.5; // Search radius increment
-    double max_radius = 10;   // Maximum search radiuss
-    int dimension = 3;
-    int xdiv = 100; // New mesh X pitch
-    int ydiv = 100; // New mesh Y pitch
-    int zdiv = 100; // New mesh Z pitch
 
     std::string conf_file_name;
 
@@ -247,53 +232,43 @@ int main(int argc, char** argv) {
     allpix::ConfigReader reader(file, conf_file_name);
     allpix::Configuration config = reader.getHeaderConfiguration();
 
-    if(config.has("region")) {
-        region = config.get<std::string>("region");
-    }
-    if(config.has("observable")) {
-        observable = config.get<std::string>("observable");
-    }
+    std::string region = config.get<std::string>("region", "bulk");
+    std::string observable = config.get<std::string>("observable", "ElectricField");
 
-    if(config.has("initial_radius")) {
-        initial_radius = config.get<double>("initial_radius");
-    }
-    if(config.has("radius_step")) {
-        radius_step = config.get<double>("radius_step");
-    }
-    if(config.has("max_radius")) {
-        max_radius = config.get<double>("max_radius");
-    }
-    if(config.has("radius_threshold") && radius_threshold != -1) {
-        radius_threshold = config.get<double>("radius_threshold");
+    double initial_radius = config.get<double>("initial_radius", 1);
+    double radius_step = config.get<double>("radius_step", 0.5);
+    double max_radius = config.get<double>("max_radius", 10);
+
+    bool threshold_flag = false;
+    double radius_threshold = config.get<double>("radius_threshold", -1);
+    if(radius_threshold != -1) {
         threshold_flag = true;
     }
-    if(config.has("volume_cut")) {
-        volume_cut = config.get<double>("volume_cut");
-    }
-    if(config.has("index_cut")) {
-        index_cut = config.get<size_t>("index_cut");
+
+    double volume_cut = config.get<double>("volume_cut");
+
+    bool index_cut_flag = false;
+    size_t index_cut = config.get<size_t>("index_cut", 999999);
+    if(index_cut != 999999) {
         index_cut_flag = true;
     }
 
-    if(config.has("xdiv")) {
-        xdiv = config.get<int>("xdiv");
-    }
-    if(config.has("ydiv")) {
-        ydiv = config.get<int>("ydiv");
-    }
-    if(config.has("zdiv")) {
-        zdiv = config.get<int>("zdiv");
-    }
-    if(config.has("dimension")) {
-        dimension = config.get<int>("dimension");
-        if(dimension == 2) {
-            xdiv = 1;
-        }
+    int xdiv = config.get<int>("xdiv", 100);
+    int ydiv = config.get<int>("ydiv", 100);
+    int zdiv = config.get<int>("zdiv", 100);
+    int dimension = config.get<int>("dimension", 3);
+    if(dimension == 2) {
+        xdiv = 1;
     }
 
-    std::vector<std::string> rot;
+    std::vector<std::string> rot = {"x", "y", "z"};
     if(config.has("xyz")) {
         rot = config.getArray<std::string>("xyz");
+    }
+    if(rot.size() != 3) {
+        LOG(FATAL) << "Configuration keyword xyz must have 3 entries.";
+        allpix::Log::finish();
+        return 1;
     }
 
     // NOTE: this stream should be available for the duration of the logging
