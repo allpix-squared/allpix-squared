@@ -286,8 +286,9 @@ int main(int argc, char** argv) {
     }
     if(config.has("dimension")) {
         dimension = config.get<int>("dimension");
-        if(dimension == 2)
+        if(dimension == 2) {
             xdiv = 1;
+        }
     }
 
     std::vector<std::string> rot;
