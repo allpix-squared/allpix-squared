@@ -612,11 +612,12 @@ deploy-docker:
     stage: deployment
     tags:
         - docker-image-build
+    dependencies: []
     only:
         - tags
         - deploy-docker
     script:
         - "echo" # unused but this line is required by GitLab CI
     variables:
-        TO: gitlab-registry.cern.ch/allpix-squared/allpix-squared:${CI_COMMIT_TAG}
+        TO: gitlab-registry.cern.ch/allpix-squared/allpix-squared:${CI_COMMIT_SHA}
         DOCKER_FILE: etc/docker/Dockerfile
