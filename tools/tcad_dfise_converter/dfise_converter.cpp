@@ -251,7 +251,7 @@ int main(int argc, char** argv) {
         threshold_flag = true;
     }
 
-    auto volume_cut = config.get<double>("volume_cut");
+    auto volume_cut = config.get<double>("volume_cut", 10e-9);
 
     bool index_cut_flag = false;
     auto index_cut = config.get<size_t>("index_cut", 999999);
@@ -278,6 +278,7 @@ int main(int argc, char** argv) {
     }
 
     bool ss_flag = false;
+    auto ss_radius = config.get<double>("ss_radius", -1);
     std::vector<int> ss_point = {-1, -1, -1};
     if(config.has("screen_shot")) {
         ss_point = config.getArray<int>("screen_shot");
@@ -541,10 +542,14 @@ int main(int argc, char** argv) {
                         mesh_points->SetBranchAddress("z", &mesh_z);
                         for(long iii = 0; iii < mesh_points->GetEntries(); iii++) {
                             mesh_points->GetEntry(iii);
-                            // if(mesh_z>(x-radius*1.5) && mesh_z<(x+radius*1.5) && mesh_x>(y-radius*1.5) && mesh_x
-                            // <(y+radius*1.5) && mesh_y < (z+radius*1.5)) {
-                            tg->SetPoint(tg->GetN(), mesh_z, mesh_x, mesh_y);
-                            //}
+                            if(ss_radius != -1) {
+                                if(mesh_x > (x - radius * ss_radius) && mesh_x < (x + radius * ss_radius) &&
+                                   mesh_y > (y - radius * ss_radius) && mesh_y < (y + radius * ss_radius) &&
+                                   mesh_z < (z + radius * ss_radius)) {
+                                    tg->SetPoint(tg->GetN(), mesh_z, mesh_x, mesh_y);
+                                }
+                            } else
+                                tg->SetPoint(tg->GetN(), mesh_z, mesh_x, mesh_y);
                         }
 
                         auto tg1 = new TGraph2D();
