@@ -12,6 +12,12 @@
 #include <string>
 #include <utility>
 
+#include "TCanvas.h"
+#include "TFile.h"
+#include "TGraph2D.h"
+#include "TH1.h"
+#include "TTree.h"
+
 #include <Eigen/Eigen>
 
 #include "Octree.hpp"
@@ -271,6 +277,15 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+    bool ss_flag = false;
+    std::vector<int> ss_point = {-1, -1, -1};
+    if(config.has("screen_shot")) {
+        ss_point = config.getArray<int>("screen_shot");
+    }
+    if(ss_point[0] != -1 && ss_point[1] != -1 && ss_point[2] != -1 && dimension == 3) {
+        ss_flag = true;
+    }
+
     // NOTE: this stream should be available for the duration of the logging
     std::ofstream log_file;
     if(!log_file_name.empty()) {
@@ -436,6 +451,11 @@ int main(int argc, char** argv) {
             double z = minz + zstep / 2.0;
             for(int k = 0; k < zdiv; ++k) {
                 Point q, e;
+                if(ss_flag) {
+                    x = ss_point[0];
+                    y = ss_point[1];
+                    z = ss_point[2];
+                }
                 if(dimension == 2) {
                     q.x = -1;
                     q.y = y;
@@ -503,6 +523,59 @@ int main(int argc, char** argv) {
                     }
 
                     LOG(DEBUG) << "Number of vertices found: " << results.size();
+
+                    if(ss_flag) {
+
+                        std::string root_file_name_in = grid_file + "_MESH_POINTS_TTREE.root";
+                        TFile* input = new TFile(root_file_name_in.c_str(), "READ");
+                        TTree* mesh_points = static_cast<TTree*>(input->Get("mesh_points"));
+                        TGraph2D* tg = new TGraph2D();
+                        tg->SetMarkerStyle(20);
+                        tg->SetMarkerSize(0.25);
+                        tg->SetMarkerColor(kBlack);
+                        double mesh_x;
+                        double mesh_y;
+                        double mesh_z;
+                        mesh_points->SetBranchAddress("x", &mesh_x);
+                        mesh_points->SetBranchAddress("y", &mesh_y);
+                        mesh_points->SetBranchAddress("z", &mesh_z);
+                        for(long iii = 0; iii < mesh_points->GetEntries(); iii++) {
+                            mesh_points->GetEntry(iii);
+                            // if(mesh_z>(x-radius*1.5) && mesh_z<(x+radius*1.5) && mesh_x>(y-radius*1.5) && mesh_x
+                            // <(y+radius*1.5) && mesh_y < (z+radius*1.5)) {
+                            tg->SetPoint(tg->GetN(), mesh_z, mesh_x, mesh_y);
+                            //}
+                        }
+
+                        auto tg1 = new TGraph2D();
+                        auto tg2 = new TGraph2D();
+                        tg1->SetMarkerStyle(20);
+                        tg1->SetMarkerSize(1);
+                        tg1->SetMarkerColor(kBlue);
+                        tg2->SetMarkerStyle(34);
+                        tg2->SetMarkerSize(1);
+                        tg2->SetMarkerColor(kRed);
+                        tg2->SetPoint(0, z, x, y);
+                        for(size_t iii = 0; iii < results.size(); iii++) {
+                            tg1->SetPoint(
+                                tg1->GetN(), points[results[iii]].z, points[results[iii]].x, points[results[iii]].y);
+                        }
+
+                        std::string root_file_name_out = grid_file + "_INTERPOLATION_POINT_SCREEN_SHOT.root";
+                        TFile* root_output = new TFile(root_file_name_out.c_str(), "RECREATE");
+                        TCanvas* c = new TCanvas();
+                        TH1F* hr = c->DrawFrame(-20, -20, 20, 20);
+                        hr->SetXTitle("X title");
+                        hr->SetYTitle("Y title");
+                        tg->Draw("p");
+                        tg1->Draw("p same");
+                        tg2->Draw("p same");
+                        c->Write("canvas");
+                        root_output->Close();
+
+                        LOG(STATUS) << "Mesh screen-shot created. Terminating the program.";
+                        return 1;
+                    }
 
                     // Finding tetrahedrons
                     Eigen::Matrix4d matrix;
@@ -596,6 +669,11 @@ int main(int argc, char** argv) {
 
                 e_field_new_mesh.push_back(e);
                 z += zstep;
+
+                if(ss_flag) {
+                    LOG(FATAL) << "Mesh screen-shot created. Terminating the program.";
+                    return 1;
+                }
             }
             y += ystep;
         }
