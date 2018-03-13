@@ -435,6 +435,10 @@ int main(int argc, char** argv) {
         }
     }
 
+    rot[0].erase(std::remove(rot[0].begin(), rot[0].end(), '-'), rot[0].end());
+    rot[1].erase(std::remove(rot[1].begin(), rot[1].end(), '-'), rot[1].end());
+    rot[2].erase(std::remove(rot[2].begin(), rot[2].end(), '-'), rot[2].end());
+
     auto end = std::chrono::system_clock::now();
     auto elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
     LOG(INFO) << "Reading the files took " << elapsed_seconds << " seconds.";
@@ -453,9 +457,13 @@ int main(int argc, char** argv) {
             for(int k = 0; k < zdiv; ++k) {
                 Point q, e;
                 if(ss_flag) {
-                    x = ss_point[0];
-                    y = ss_point[1];
-                    z = ss_point[2];
+                    std::map<std::string, int> map;
+                    map.emplace("x", ss_point[0]);
+                    map.emplace("y", ss_point[1]);
+                    map.emplace("z", ss_point[2]);
+                    x = map.find(rot[0].c_str())->second;
+                    y = map.find(rot[1].c_str())->second;
+                    z = map.find(rot[2].c_str())->second;
                 }
                 if(dimension == 2) {
                     q.x = -1;
@@ -532,24 +540,24 @@ int main(int argc, char** argv) {
                         TTree* mesh_points = static_cast<TTree*>(input->Get("mesh_points"));
                         TGraph2D* tg = new TGraph2D();
                         tg->SetMarkerStyle(20);
-                        tg->SetMarkerSize(0.25);
+                        tg->SetMarkerSize(0.5);
                         tg->SetMarkerColor(kBlack);
                         double mesh_x;
                         double mesh_y;
                         double mesh_z;
-                        mesh_points->SetBranchAddress("x", &mesh_x);
-                        mesh_points->SetBranchAddress("y", &mesh_y);
-                        mesh_points->SetBranchAddress("z", &mesh_z);
+                        mesh_points->SetBranchAddress(rot[0].c_str(), &mesh_x);
+                        mesh_points->SetBranchAddress(rot[1].c_str(), &mesh_y);
+                        mesh_points->SetBranchAddress(rot[2].c_str(), &mesh_z);
                         for(long iii = 0; iii < mesh_points->GetEntries(); iii++) {
                             mesh_points->GetEntry(iii);
                             if(ss_radius != -1) {
                                 if(mesh_x > (x - radius * ss_radius) && mesh_x < (x + radius * ss_radius) &&
                                    mesh_y > (y - radius * ss_radius) && mesh_y < (y + radius * ss_radius) &&
                                    mesh_z < (z + radius * ss_radius)) {
-                                    tg->SetPoint(tg->GetN(), mesh_z, mesh_x, mesh_y);
+                                    tg->SetPoint(tg->GetN(), mesh_x, mesh_y, mesh_z);
                                 }
                             } else
-                                tg->SetPoint(tg->GetN(), mesh_z, mesh_x, mesh_y);
+                                tg->SetPoint(tg->GetN(), mesh_x, mesh_y, mesh_z);
                         }
 
                         auto tg1 = new TGraph2D();
@@ -560,25 +568,22 @@ int main(int argc, char** argv) {
                         tg2->SetMarkerStyle(34);
                         tg2->SetMarkerSize(1);
                         tg2->SetMarkerColor(kRed);
-                        tg2->SetPoint(0, z, x, y);
+                        tg2->SetPoint(0, x, y, z);
                         for(size_t iii = 0; iii < results.size(); iii++) {
                             tg1->SetPoint(
-                                tg1->GetN(), points[results[iii]].z, points[results[iii]].x, points[results[iii]].y);
+                                tg1->GetN(), points[results[iii]].x, points[results[iii]].y, points[results[iii]].z);
                         }
 
                         std::string root_file_name_out = grid_file + "_INTERPOLATION_POINT_SCREEN_SHOT.root";
                         TFile* root_output = new TFile(root_file_name_out.c_str(), "RECREATE");
                         TCanvas* c = new TCanvas();
-                        TH1F* hr = c->DrawFrame(-20, -20, 20, 20);
-                        hr->SetXTitle("X title");
-                        hr->SetYTitle("Y title");
                         tg->Draw("p");
                         tg1->Draw("p same");
                         tg2->Draw("p same");
                         c->Write("canvas");
                         root_output->Close();
 
-                        LOG(STATUS) << "Mesh screen-shot created. Terminating the program.";
+                        LOG(STATUS) << "Mesh screen-shot created. Closing the program.";
                         return 1;
                     }
 
@@ -674,11 +679,6 @@ int main(int argc, char** argv) {
 
                 e_field_new_mesh.push_back(e);
                 z += zstep;
-
-                if(ss_flag) {
-                    LOG(FATAL) << "Mesh screen-shot created. Terminating the program.";
-                    return 1;
-                }
             }
             y += ystep;
         }
