@@ -547,9 +547,12 @@ int main(int argc, char** argv) {
                         double mesh_x;
                         double mesh_y;
                         double mesh_z;
-                        mesh_points->SetBranchAddress(rot[0].c_str(), &mesh_x, nullptr);
-                        mesh_points->SetBranchAddress(rot[1].c_str(), &mesh_y, nullptr);
-                        mesh_points->SetBranchAddress(rot[2].c_str(), &mesh_z, nullptr);
+                        const char* char_x = rot[0].c_str();
+                        const char* char_y = rot[1].c_str();
+                        const char* char_z = rot[2].c_str();
+                        mesh_points->SetBranchAddress(char_x, &mesh_x, nullptr);
+                        mesh_points->SetBranchAddress(char_y, &mesh_y, nullptr);
+                        mesh_points->SetBranchAddress(char_z, &mesh_z, nullptr);
                         for(long iii = 0; iii < mesh_points->GetEntries(); iii++) {
                             mesh_points->GetEntry(iii);
                             if(ss_radius != -1) {
@@ -577,8 +580,8 @@ int main(int argc, char** argv) {
                         }
 
                         std::string root_file_name_out = grid_file + "_INTERPOLATION_POINT_SCREEN_SHOT.root";
-                        TFile* root_output = new TFile(root_file_name_out.c_str(), "RECREATE");
-                        TCanvas* c = new TCanvas();
+                        auto root_output = new TFile(root_file_name_out.c_str(), "RECREATE");
+                        auto c = new TCanvas();
                         tg->Draw("p");
                         tg1->Draw("p same");
                         tg2->Draw("p same");
