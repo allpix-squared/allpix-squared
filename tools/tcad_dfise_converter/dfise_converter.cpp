@@ -561,8 +561,9 @@ int main(int argc, char** argv) {
                                    mesh_z < (z + radius * ss_radius)) {
                                     tg->SetPoint(tg->GetN(), mesh_x, mesh_y, mesh_z);
                                 }
-                            } else
+                            } else {
                                 tg->SetPoint(tg->GetN(), mesh_x, mesh_y, mesh_z);
+                            }
                         }
 
                         auto tg1 = new TGraph2D();
