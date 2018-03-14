@@ -277,6 +277,8 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+    auto mesh_tree = config.get<bool>("mesh_tree", false);
+
     bool ss_flag = false;
     auto ss_radius = config.get<double>("ss_radius", -1);
     std::vector<int> ss_point = {-1, -1, -1};
@@ -285,6 +287,7 @@ int main(int argc, char** argv) {
     }
     if(ss_point[0] != -1 && ss_point[1] != -1 && ss_point[2] != -1 && dimension == 3) {
         ss_flag = true;
+        mesh_tree = true;
     }
 
     // NOTE: this stream should be available for the duration of the logging
@@ -306,7 +309,7 @@ int main(int argc, char** argv) {
 
     std::vector<Point> points;
     try {
-        auto region_grid = read_grid(grid_file);
+        auto region_grid = read_grid(grid_file, mesh_tree);
         points = region_grid[region];
         LOG(DEBUG) << "Grid with " << points.size() << " points";
     } catch(std::runtime_error& e) {

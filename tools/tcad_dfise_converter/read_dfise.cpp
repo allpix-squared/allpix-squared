@@ -17,7 +17,7 @@
 
 using namespace mesh_converter;
 
-std::map<std::string, std::vector<Point>> mesh_converter::read_grid(const std::string& file_name) {
+std::map<std::string, std::vector<Point>> mesh_converter::read_grid(const std::string& file_name, bool mesh_tree) {
     std::ifstream file(file_name);
     if(!file) {
         throw std::runtime_error("file cannot be accessed");
@@ -362,10 +362,13 @@ std::map<std::string, std::vector<Point>> mesh_converter::read_grid(const std::s
         ret_map[name_region_vertices.first] = ret_vector;
     }
 
-    std::string root_file_name = file_name + "_MESH_POINTS_TTREE.root";
-    auto root_file = new TFile(root_file_name.c_str(), "RECREATE");
-    tree->Write();
-    root_file->Close();
+    if(mesh_tree) {
+        std::string root_file_name = file_name + "_MESH_POINTS_TTREE.root";
+        auto root_file = new TFile(root_file_name.c_str(), "RECREATE");
+        tree->Write();
+        root_file->Close();
+    } else
+        tree->Delete();
 
     return ret_map;
 }

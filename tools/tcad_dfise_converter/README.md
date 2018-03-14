@@ -42,6 +42,9 @@ It should be noted that the TCAD DF-ISE mesh converter depends on the core utili
 * ydiv: New regular mesh Y pitch (defaults to 100).
 * zdiv: New regular mesh Z pitch (defaults to 100).
 * xyz: Array to replace the system coordinates of the mesh. 
+* screen_shot: Enables "screen-shot" of mesh points, point being interpolated (in red) and neighbouring pixels (in blue) (defaults to -1 -1 -1, disabling the screen-shot). 
+* ss_radius: Sets a region of interest around the point being interpolated to show the mesh points.
+* mesh_tree: Switch enabling the creation of a root file with the TCAD mesh nodes stored in a ROOT::TTree (automatically enabled if screen-shot is activated).
 
 ### Usage
 To run the program, the following command should be executed from the installation folder:
@@ -65,8 +68,11 @@ The output INIT file will be saved with the same *file_prefix* as the .grd and .
 The new coordinate system of the mesh can be changed by providing an array for the *xyz* keyword in the configuration file. The first entry of the array, representing the new mesh *x* coordinate, should indicate the TCAD original mesh coordinate (*x*, *y* or *z*), and so on for the second (*y*) and third (*z*) array entry. For example, if one wants to have the TCAD *x*, *y* and *z* mesh coordinates mapped into the *y*, *z* and *x* coordinates of the new mesh, respectiviely, the configuration file should have *xyz = z x y*. If one wants to flip one of the coordinates, the minus symbol ("-") can be used in front of one of the coordinates (such as *xyz = z x -y*).  
 
 The program can be used to convert 3D and 2D TCAD mesh files. Note that when converting 2D meshes, the *x* coordinate will be fixed to 1 and the interpolation will happen over the *yz* plane.
+The keyword mesh_tree can be used as a switch to enable or disable the creation of a root file with the original TCAD mesh points stored as a ROOT::TTree for later, fast, inspection.
 
-The *mesh_plotter* tool can be used from the installation folder as follows:
+It is possible to visualise the position of the new mesh point to be interpolated (in red) surounded by the mesh points and the closest neighbours found (in blue) by providing the keyword *screen_shot* with the new mesh node coordinates (such as *screen_shot = 1 2 3*) as value pair. This can be useful if the interpolation gets stuck in some region. Currently, it is implemented only for 3D meshes. The 3D point-cloud will be saved as a ROOT::TGraph2D in a root file with the grid file name (including .grd extension) as prefix and "_INTERPOLATION_POINT_SCREEN_SHOT.root" as sufix.
+
+In addition, the *mesh_plotter* tool can be used, in order to visualise the new mesh interpolation results, from the installation folder as follows:
 ```bash
 bin/tcad_dfise_converter/mesh_plotter -f <file_name> [<options>] [<arguments>]
 ```
