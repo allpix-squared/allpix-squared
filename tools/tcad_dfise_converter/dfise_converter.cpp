@@ -537,20 +537,19 @@ int main(int argc, char** argv) {
                     LOG(DEBUG) << "Number of vertices found: " << results.size();
 
                     if(ss_flag) {
-
                         std::string root_file_name_in = grid_file + "_MESH_POINTS_TTREE.root";
-                        TFile* input = new TFile(root_file_name_in.c_str(), "READ");
-                        TTree* mesh_points = static_cast<TTree*>(input->Get("mesh_points"));
-                        TGraph2D* tg = new TGraph2D();
+                        auto input = new TFile(root_file_name_in.c_str(), "READ");
+                        auto mesh_points = static_cast<TTree*>(input->Get("mesh_points"));
+                        auto tg = new TGraph2D();
                         tg->SetMarkerStyle(20);
                         tg->SetMarkerSize(0.5);
                         tg->SetMarkerColor(kBlack);
                         double mesh_x;
                         double mesh_y;
                         double mesh_z;
-                        mesh_points->SetBranchAddress(rot[0].c_str(), &mesh_x);
-                        mesh_points->SetBranchAddress(rot[1].c_str(), &mesh_y);
-                        mesh_points->SetBranchAddress(rot[2].c_str(), &mesh_z);
+                        mesh_points->SetBranchAddress(rot[0].c_str(), &mesh_x, nullptr);
+                        mesh_points->SetBranchAddress(rot[1].c_str(), &mesh_y, nullptr);
+                        mesh_points->SetBranchAddress(rot[2].c_str(), &mesh_z, nullptr);
                         for(long iii = 0; iii < mesh_points->GetEntries(); iii++) {
                             mesh_points->GetEntry(iii);
                             if(ss_radius != -1) {
