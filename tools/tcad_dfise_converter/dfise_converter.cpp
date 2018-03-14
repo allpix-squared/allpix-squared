@@ -464,9 +464,9 @@ int main(int argc, char** argv) {
                     map.emplace("x", ss_point[0]);
                     map.emplace("y", ss_point[1]);
                     map.emplace("z", ss_point[2]);
-                    x = map.find(rot[0].c_str())->second;
-                    y = map.find(rot[1].c_str())->second;
-                    z = map.find(rot[2].c_str())->second;
+                    x = map.find(rot[0])->second;
+                    y = map.find(rot[1])->second;
+                    z = map.find(rot[2])->second;
                 }
                 if(dimension == 2) {
                     q.x = -1;

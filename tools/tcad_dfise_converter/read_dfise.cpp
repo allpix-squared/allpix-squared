@@ -367,8 +367,9 @@ std::map<std::string, std::vector<Point>> mesh_converter::read_grid(const std::s
         auto root_file = new TFile(root_file_name.c_str(), "RECREATE");
         tree->Write();
         root_file->Close();
-    } else
+    } else {
         tree->Delete();
+    }
 
     return ret_map;
 }
