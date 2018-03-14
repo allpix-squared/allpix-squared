@@ -574,9 +574,8 @@ int main(int argc, char** argv) {
                         tg2->SetMarkerSize(1);
                         tg2->SetMarkerColor(kRed);
                         tg2->SetPoint(0, x, y, z);
-                        for(size_t iii = 0; iii < results.size(); iii++) {
-                            tg1->SetPoint(
-                                tg1->GetN(), points[results[iii]].x, points[results[iii]].y, points[results[iii]].z);
+                        for(auto& elem : results) {
+                            tg1->SetPoint(tg1->GetN(), points[elem].x, points[elem].y, points[elem].z);
                         }
 
                         std::string root_file_name_out = grid_file + "_INTERPOLATION_POINT_SCREEN_SHOT.root";
