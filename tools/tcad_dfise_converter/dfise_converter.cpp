@@ -156,14 +156,14 @@ void MeshElement::printElement(Point& qp) {
     LOG(DEBUG) << "Volume: " << this->getVolume();
 }
 
-void mesh_ploter(std::string grid_file,
-                 double ss_radius,
-                 double radius,
-                 double x,
-                 double y,
-                 double z,
-                 std::vector<Point> points,
-                 std::vector<unsigned int> results) {
+void mesh_plotter(std::string grid_file,
+                  double ss_radius,
+                  double radius,
+                  double x,
+                  double y,
+                  double z,
+                  std::vector<Point> points,
+                  std::vector<unsigned int> results) {
     auto tg = new TGraph2D();
     tg->SetMarkerStyle(20);
     tg->SetMarkerSize(0.5);
@@ -171,9 +171,8 @@ void mesh_ploter(std::string grid_file,
 
     for(auto& point : points) {
         if(ss_radius != -1) {
-            if(point.x > (x - radius * ss_radius) && point.x < (x + radius * ss_radius) &&
-               point.y > (y - radius * ss_radius) && point.y < (y + radius * ss_radius) &&
-               point.z > (z - radius * ss_radius) && point.z < (z + radius * ss_radius)) {
+            if((abs(point.x - x) < radius * ss_radius) && (abs(point.y - y) < radius * ss_radius) &&
+               (abs(point.z - z) < radius * ss_radius)) {
                 tg->SetPoint(tg->GetN(), point.x, point.y, point.z);
             }
         } else {
@@ -587,7 +586,7 @@ int main(int argc, char** argv) {
                     LOG(DEBUG) << "Number of vertices found: " << results.size();
 
                     if(ss_flag) {
-                        mesh_ploter(grid_file, ss_radius, radius, x, y, z, points, results);
+                        mesh_plotter(grid_file, ss_radius, radius, x, y, z, points, results);
                         return 1;
                     }
 

@@ -11,6 +11,18 @@
 // Interrupt handler
 void interrupt_handler(int);
 
+/**
+ * @brief Function for 3D screen-shot of new mesh node being interpolated
+ */
+void mesh_plotter(std::string grid_file,
+                  double ss_radius,
+                  double radius,
+                  double x,
+                  double y,
+                  double z,
+                  std::vector<mesh_converter::Point> points,
+                  std::vector<unsigned int> results);
+
 namespace mesh_converter {
 
     /**
@@ -146,17 +158,6 @@ namespace mesh_converter {
          * @brief Print tetrahedron created for debugging
          */
         void printElement(Point& qp);
-
-        void mesh_ploter(std::string grid_file,
-                         double ss_radius,
-                         double radius,
-                         double x,
-                         double y,
-                         double z,
-                         std::vector<Point> points,
-                         std::vector<unsigned int> results);
-        // void mesh_ploter(std::string grid_file, std::vector<std::string> rot, double ss_radius, double radius, double x,
-        // double y, double z, std::vector<Point> points, std::vector<unsigned int> results);
 
     private:
         int _dimension{3};
