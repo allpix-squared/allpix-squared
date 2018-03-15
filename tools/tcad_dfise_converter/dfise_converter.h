@@ -12,6 +12,17 @@
 void interrupt_handler(int);
 
 namespace mesh_converter {
+    /**
+     * @brief Function for 3D screen-shot of new mesh node being interpolated
+     */
+    void mesh_plotter(const std::string& grid_file,
+                      double ss_radius,
+                      double radius,
+                      double x,
+                      double y,
+                      double z,
+                      std::vector<mesh_converter::Point> points,
+                      std::vector<unsigned int> results);
 
     /**
      * @brief Tetrahedron class for the 3D barycentric interpolation

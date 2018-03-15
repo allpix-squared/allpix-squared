@@ -78,9 +78,6 @@ int main(int argc, char** argv) {
 
     size_t firstindex = file_name.find_last_of('_');
     size_t lastindex = file_name.find('.');
-    output_file_name = file_name.substr(0, lastindex);
-    output_file_name += ".png";
-
     std::string observable = file_name.substr(firstindex + 1, lastindex - (firstindex + 1));
 
     std::ifstream input_file;
@@ -181,8 +178,12 @@ int main(int argc, char** argv) {
         }
         line++;
     }
+
+    output_file_name = file_name.substr(0, lastindex);
+    output_file_name = output_file_name + "_" + plane + "_" + std::to_string(slice_cut) + ".png";
+
     std::string root_file_name = file_name.substr(0, lastindex);
-    root_file_name += "_Interpolation_plots.root";
+    root_file_name = root_file_name + "_Interpolation_plots_" + plane + "_" + std::to_string(slice_cut) + ".root";
     auto* tf = new TFile(root_file_name.c_str(), "RECREATE");
     exfield_map->Write(Form("%s X component", observable.c_str()));
     eyfield_map->Write(Form("%s Y component", observable.c_str()));

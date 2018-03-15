@@ -12,9 +12,18 @@
 #include <string>
 #include <utility>
 
+#include "TCanvas.h"
+#include "TFile.h"
+#include "TGraph2D.h"
+#include "TH1.h"
+#include "TTree.h"
+
 #include <Eigen/Eigen>
 
 #include "Octree.hpp"
+#include "config/ConfigReader.hpp"
+#include "config/Configuration.hpp"
+#include "config/exceptions.h"
 #include "read_dfise.h"
 #include "utils/log.h"
 
@@ -147,6 +156,55 @@ void MeshElement::printElement(Point& qp) {
     LOG(DEBUG) << "Volume: " << this->getVolume();
 }
 
+void mesh_converter::mesh_plotter(const std::string& grid_file,
+                                  double ss_radius,
+                                  double radius,
+                                  double x,
+                                  double y,
+                                  double z,
+                                  std::vector<Point> points,
+                                  std::vector<unsigned int> results) {
+    auto tg = new TGraph2D();
+    tg->SetMarkerStyle(20);
+    tg->SetMarkerSize(0.5);
+    tg->SetMarkerColor(kBlack);
+
+    for(auto& point : points) {
+        if(ss_radius != -1) {
+            if((abs(point.x - x) < radius * ss_radius) && (abs(point.y - y) < radius * ss_radius) &&
+               (abs(point.z - z) < radius * ss_radius)) {
+                tg->SetPoint(tg->GetN(), point.x, point.y, point.z);
+            }
+        } else {
+            tg->SetPoint(tg->GetN(), point.x, point.y, point.z);
+        }
+    }
+
+    auto tg1 = new TGraph2D();
+    auto tg2 = new TGraph2D();
+    tg1->SetMarkerStyle(20);
+    tg1->SetMarkerSize(1);
+    tg1->SetMarkerColor(kBlue);
+    tg2->SetMarkerStyle(34);
+    tg2->SetMarkerSize(1);
+    tg2->SetMarkerColor(kRed);
+    tg2->SetPoint(0, x, y, z);
+    for(auto& elem : results) {
+        tg1->SetPoint(tg1->GetN(), points[elem].x, points[elem].y, points[elem].z);
+    }
+
+    std::string root_file_name_out = grid_file + "_INTERPOLATION_POINT_SCREEN_SHOT.root";
+    auto root_output = new TFile(root_file_name_out.c_str(), "RECREATE");
+    auto c = new TCanvas();
+    tg->Draw("p");
+    tg1->Draw("p same");
+    tg2->Draw("p same");
+    c->Write("canvas");
+    root_output->Close();
+
+    LOG(STATUS) << "Mesh screen-shot created. Closing the program.";
+}
+
 int main(int argc, char** argv) {
     // If no arguments are provided, print the help:
     bool print_help = false;
@@ -167,20 +225,8 @@ int main(int argc, char** argv) {
     std::string file_prefix;
     std::string init_file_prefix;
     std::string log_file_name;
-    std::string region = "bulk";              // Sensor bulk region name on DF-ISE file
-    std::string observable = "ElectricField"; // Sensor bulk region name on DF-ISE file
-    double volume_cut = 1e-9;                 // Enclosing tetrahedron should have volume != 0
-    size_t index_cut = 10000000;              // Permutation index initial cut
-    bool index_cut_flag = false;
-    double initial_radius = 1;   // Neighbour vertex search radius
-    double radius_threshold = 0; // Neighbour vertex search radius
-    bool threshold_flag = false;
-    double radius_step = 0.5; // Search radius increment
-    double max_radius = 10;   // Maximum search radiuss
-    int dimension = 3;
-    int xdiv = 100; // New mesh X pitch
-    int ydiv = 100; // New mesh Y pitch
-    int zdiv = 100; // New mesh Z pitch
+
+    std::string conf_file_name;
 
     for(int i = 1; i < argc; i++) {
         if(strcmp(argv[i], "-h") == 0) {
@@ -195,35 +241,11 @@ int main(int argc, char** argv) {
             }
         } else if(strcmp(argv[i], "-f") == 0 && (i + 1 < argc)) {
             file_prefix = std::string(argv[++i]);
+            conf_file_name = file_prefix + ".conf";
+        } else if(strcmp(argv[i], "-c") == 0 && (i + 1 < argc)) {
+            conf_file_name = std::string(argv[++i]);
         } else if(strcmp(argv[i], "-o") == 0 && (i + 1 < argc)) {
             init_file_prefix = std::string(argv[++i]);
-        } else if(strcmp(argv[i], "-R") == 0 && (i + 1 < argc)) {
-            region = std::string(argv[++i]);
-        } else if(strcmp(argv[i], "-O") == 0 && (i + 1 < argc)) {
-            observable = std::string(argv[++i]);
-        } else if(strcmp(argv[i], "-r") == 0 && (i + 1 < argc)) {
-            initial_radius = strtod(argv[++i], nullptr);
-        } else if(strcmp(argv[i], "-t") == 0 && (i + 1 < argc)) {
-            radius_threshold = strtod(argv[++i], nullptr);
-            threshold_flag = true;
-        } else if(strcmp(argv[i], "-s") == 0 && (i + 1 < argc)) {
-            radius_step = strtod(argv[++i], nullptr);
-        } else if(strcmp(argv[i], "-m") == 0 && (i + 1 < argc)) {
-            max_radius = strtod(argv[++i], nullptr);
-        } else if(strcmp(argv[i], "-i") == 0 && (i + 1 < argc)) {
-            index_cut = static_cast<size_t>(strtol(argv[++i], nullptr, 10));
-            index_cut_flag = true;
-        } else if(strcmp(argv[i], "-c") == 0 && (i + 1 < argc)) {
-            volume_cut = strtod(argv[++i], nullptr);
-        } else if(strcmp(argv[i], "-x") == 0 && (i + 1 < argc)) {
-            xdiv = static_cast<int>(strtol(argv[++i], nullptr, 10));
-        } else if(strcmp(argv[i], "-y") == 0 && (i + 1 < argc)) {
-            ydiv = static_cast<int>(strtol(argv[++i], nullptr, 10));
-        } else if(strcmp(argv[i], "-z") == 0 && (i + 1 < argc)) {
-            zdiv = static_cast<int>(strtol(argv[++i], nullptr, 10));
-        } else if(strcmp(argv[i], "-d") == 0 && (i + 1 < argc)) {
-            dimension = static_cast<int>(strtol(argv[++i], nullptr, 10));
-            xdiv = 1;
         } else if(strcmp(argv[i], "-l") == 0 && (i + 1 < argc)) {
             log_file_name = std::string(argv[++i]);
         } else {
@@ -250,29 +272,70 @@ int main(int argc, char** argv) {
     if(print_help) {
         std::cerr << "Usage: ./tcad_dfise_reader -f <file_name> [<options>]" << std::endl;
         std::cout << "\t -f <file_prefix>       common prefix of DF-ISE grid (.grd) and data (.dat) files" << std::endl;
+        std::cout << "\t -c <config_file>       configuration file name" << std::endl;
         std::cout << "\t -o <init_file_prefix>  output file prefix without .init (defaults to file name of <file_prefix>)"
                   << std::endl;
-        std::cout << "\t -R <region>            region name to be meshed (defaults to 'bulk')" << std::endl;
-        std::cout << "\t -O <observable>        observable to be interpolated (defaults Electric Field)" << std::endl;
-        std::cout << "\t -r <radius>            initial node neighbors search radius in um (defaults to 1 um)" << std::endl;
-        std::cout << "\t -t <radius_threshold>  minimum distance from node to new mesh point (defaults to 0 um)"
-                  << std::endl;
-        std::cout << "\t -s <radius_step>       radius step if no neighbor is found (defaults to 0.5 um)" << std::endl;
-        std::cout << "\t -m <max_radius>        maximum search radius (default is 10 um)" << std::endl;
-        std::cout << "\t -i <index_cut>         index cut during permutation on vertex neighbours (disabled by default)"
-                  << std::endl;
-        std::cout << "\t -c <volume_cut>        minimum volume for tetrahedron for non-coplanar vertices (defaults to "
-                     "minimum double value)"
-                  << std::endl;
-        std::cout << "\t -x <mesh x_pitch>      new regular mesh X pitch (defaults to 100)" << std::endl;
-        std::cout << "\t -y <mesh_y_pitch>      new regular mesh Y pitch (defaults to 100)" << std::endl;
-        std::cout << "\t -z <mesh_z_pitch>      new regular mesh Z pitch (defaults to 100)" << std::endl;
-        std::cout << "\t -d <mesh_dimension>    specify mesh dimensionality (defaults to 3)" << std::endl;
         std::cout << "\t -l <file>              file to log to besides standard output (disabled by default)" << std::endl;
         std::cout << "\t -v <level>             verbosity level (default reporiting level is INFO)" << std::endl;
 
         allpix::Log::finish();
         return return_code;
+    }
+
+    LOG(STATUS) << "Using " << conf_file_name << " configuration file";
+    std::ifstream file(conf_file_name);
+    allpix::ConfigReader reader(file, conf_file_name);
+    allpix::Configuration config = reader.getHeaderConfiguration();
+
+    std::string region = config.get<std::string>("region", "bulk");
+    std::string observable = config.get<std::string>("observable", "ElectricField");
+
+    auto initial_radius = config.get<double>("initial_radius", 1);
+    auto radius_step = config.get<double>("radius_step", 0.5);
+    auto max_radius = config.get<double>("max_radius", 10);
+
+    bool threshold_flag = false;
+    auto radius_threshold = config.get<double>("radius_threshold", -1);
+    if(radius_threshold != -1) {
+        threshold_flag = true;
+    }
+
+    auto volume_cut = config.get<double>("volume_cut", 10e-9);
+
+    bool index_cut_flag = false;
+    auto index_cut = config.get<size_t>("index_cut", 999999);
+    if(index_cut != 999999) {
+        index_cut_flag = true;
+    }
+
+    auto xdiv = config.get<int>("xdiv", 100);
+    auto ydiv = config.get<int>("ydiv", 100);
+    auto zdiv = config.get<int>("zdiv", 100);
+    auto dimension = config.get<int>("dimension", 3);
+    if(dimension == 2) {
+        xdiv = 1;
+    }
+
+    std::vector<std::string> rot = {"x", "y", "z"};
+    if(config.has("xyz")) {
+        rot = config.getArray<std::string>("xyz");
+    }
+    if(rot.size() != 3) {
+        LOG(FATAL) << "Configuration keyword xyz must have 3 entries.";
+        allpix::Log::finish();
+        return 1;
+    }
+
+    auto mesh_tree = config.get<bool>("mesh_tree", false);
+
+    bool ss_flag = false;
+    auto ss_radius = config.get<double>("ss_radius", -1);
+    std::vector<int> ss_point = {-1, -1, -1};
+    if(config.has("screen_shot")) {
+        ss_point = config.getArray<int>("screen_shot");
+    }
+    if(ss_point[0] != -1 && ss_point[1] != -1 && ss_point[2] != -1 && dimension == 3) {
+        ss_flag = true;
     }
 
     // NOTE: this stream should be available for the duration of the logging
@@ -294,7 +357,7 @@ int main(int argc, char** argv) {
 
     std::vector<Point> points;
     try {
-        auto region_grid = read_grid(grid_file);
+        auto region_grid = read_grid(grid_file, mesh_tree);
         points = region_grid[region];
         LOG(DEBUG) << "Grid with " << points.size() << " points";
     } catch(std::runtime_error& e) {
@@ -324,13 +387,46 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    /* ALERT fix coordinates */
-    if(dimension == 3) {
-        for(unsigned int i = 0; i < points.size(); ++i) {
-            std::swap(points[i].y, points[i].z);
-            std::swap(field[i].y, field[i].z);
+    auto points_temp = points;
+    auto field_temp = field;
+    if(rot.at(0) == "-y" || rot.at(0) == "y") {
+        for(size_t i = 0; i < points.size(); ++i) {
+            points_temp[i].x = points[i].y;
+            field_temp[i].x = field[i].y;
         }
     }
+    if(rot.at(0) == "-z" || rot.at(0) == "z") {
+        for(size_t i = 0; i < points.size(); ++i) {
+            points_temp[i].x = points[i].z;
+            field_temp[i].x = field[i].z;
+        }
+    }
+    if(rot.at(1) == "-x" || rot.at(1) == "x") {
+        for(size_t i = 0; i < points.size(); ++i) {
+            points_temp[i].y = points[i].x;
+            field_temp[i].y = field[i].x;
+        }
+    }
+    if(rot.at(1) == "-z" || rot.at(1) == "z") {
+        for(size_t i = 0; i < points.size(); ++i) {
+            points_temp[i].y = points[i].z;
+            field_temp[i].y = field[i].z;
+        }
+    }
+    if(rot.at(2) == "-x" || rot.at(2) == "x") {
+        for(size_t i = 0; i < points.size(); ++i) {
+            points_temp[i].z = points[i].x;
+            field_temp[i].z = field[i].x;
+        }
+    }
+    if(rot.at(2) == "-y" || rot.at(2) == "y") {
+        for(size_t i = 0; i < points.size(); ++i) {
+            points_temp[i].z = points[i].y;
+            field_temp[i].z = field[i].y;
+        }
+    }
+    points = points_temp;
+    field = field_temp;
 
     // Find minimum and maximum from mesh coordinates
     double minx = DBL_MAX, miny = DBL_MAX, minz = DBL_MAX;
@@ -361,18 +457,39 @@ int main(int argc, char** argv) {
     double zstep = (maxz - minz) / static_cast<double>(zdiv);
     double cell_volume = xstep * ystep * zstep;
 
+    if(rot.at(0) != "x" || rot.at(1) != "y" || rot.at(2) != "z") {
+        LOG(STATUS) << "TCAD mesh (x,y,z) coords. transformation into: (" << rot.at(0) << "," << rot.at(1) << ","
+                    << rot.at(2) << ")";
+    }
     LOG(STATUS) << "Mesh dimensions: " << maxx - minx << " x " << maxy - miny << " x " << maxz - minz << std::endl
                 << "New mesh element dimension: " << xstep << " x " << ystep << " x " << zstep
                 << " ==>  Volume = " << cell_volume;
 
-    /*
-     * ALERT invert the z-axis to match the ap2 system
-     * WARNING this will remove the right-handedness of the coordinate system!
-     */
-    for(size_t i = 0; i < points.size(); ++i) {
-        points[i].z = maxz - (points[i].z - minz);
-        field[i].z = -field[i].z;
+    if(rot.at(0).find('-') != std::string::npos) {
+        LOG(WARNING) << "Inverting coordinate X. This might change the right-handness of the coordinate system!";
+        for(size_t i = 0; i < points.size(); ++i) {
+            points[i].x = maxx - (points[i].x - minx);
+            field[i].x = -field[i].x;
+        }
     }
+    if(rot.at(1).find('-') != std::string::npos) {
+        LOG(WARNING) << "Inverting coordinate Y. This might change the right-handness of the coordinate system!";
+        for(size_t i = 0; i < points.size(); ++i) {
+            points[i].y = maxy - (points[i].y - miny);
+            field[i].y = -field[i].y;
+        }
+    }
+    if(rot.at(2).find('-') != std::string::npos) {
+        LOG(WARNING) << "Inverting coordinate Z. This might change the right-handness of the coordinate system!";
+        for(size_t i = 0; i < points.size(); ++i) {
+            points[i].z = maxz - (points[i].z - minz);
+            field[i].z = -field[i].z;
+        }
+    }
+
+    rot.at(0).erase(std::remove(rot.at(0).begin(), rot.at(0).end(), '-'), rot.at(0).end());
+    rot.at(1).erase(std::remove(rot.at(1).begin(), rot.at(1).end(), '-'), rot.at(1).end());
+    rot.at(2).erase(std::remove(rot.at(2).begin(), rot.at(2).end(), '-'), rot.at(2).end());
 
     auto end = std::chrono::system_clock::now();
     auto elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
@@ -391,6 +508,15 @@ int main(int argc, char** argv) {
             double z = minz + zstep / 2.0;
             for(int k = 0; k < zdiv; ++k) {
                 Point q, e;
+                if(ss_flag) {
+                    std::map<std::string, int> map;
+                    map.emplace("x", ss_point[0]);
+                    map.emplace("y", ss_point[1]);
+                    map.emplace("z", ss_point[2]);
+                    x = map.find(rot.at(0))->second;
+                    y = map.find(rot.at(1))->second;
+                    z = map.find(rot.at(2))->second;
+                }
                 if(dimension == 2) {
                     q.x = -1;
                     q.y = y;
@@ -458,6 +584,11 @@ int main(int argc, char** argv) {
                     }
 
                     LOG(DEBUG) << "Number of vertices found: " << results.size();
+
+                    if(ss_flag) {
+                        mesh_plotter(grid_file, ss_radius, radius, x, y, z, points, results);
+                        return 1;
+                    }
 
                     // Finding tetrahedrons
                     Eigen::Matrix4d matrix;

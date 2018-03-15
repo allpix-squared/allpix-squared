@@ -19,10 +19,13 @@ INCLUDE_DIRECTORIES(${ALLPIX_UTILS})
 
 # Add TCAD dfise converter executable
 ADD_EXECUTABLE(dfise_converter
-    dfise_converter.cpp
-    read_dfise.cpp
-    ${ALLPIX_UTILS}/utils/log.cpp
-    ${ALLPIX_UTILS}/utils/unit.cpp
+		dfise_converter.cpp
+		read_dfise.cpp
+		${ALLPIX_UTILS}/utils/log.cpp
+		${ALLPIX_UTILS}/utils/unit.cpp
+		${ALLPIX_UTILS}/config/ConfigReader.cpp
+		${ALLPIX_UTILS}/config/Configuration.cpp
+		${ALLPIX_UTILS}/config/exceptions.cpp
 )
 
 #Build the TCAD converter

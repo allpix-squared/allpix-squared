@@ -28,36 +28,51 @@ It should be noted that the TCAD DF-ISE mesh converter depends on the core utili
 - Several cuts available on the interpolation algorithm variables.
 - Interpolated data visualization tool.
 
+### Parameters
+* `dimension`: Specify mesh dimensionality (defaults to 3).
+* `region`: Region name to be meshed (defaults to 'bulk').
+* `observable`: Observable to be interpolated (defaults Electric Field).
+* `radius`: Initial node neighbors search radius in um (defaults to 1 um).
+* `radius_step`: Radius step if no neighbor is found (defaults to 0.5 um).
+* `max_radius`: Maximum search radius (default is 10 um).
+* `radius_threshold`: Minimum distance from node to new mesh point (defaults to 0 um).
+* `volume_cut`: Minimum volume for tetrahedron for non-coplanar vertices (defaults to minimum double value).
+* `index_cut`: Index cut during permutation on vertex neighbours (disabled by default).
+* `xdiv`: New regular mesh X pitch (defaults to 100 for 3D mesh, and 1 for 2D mesh).
+* `ydiv`: New regular mesh Y pitch (defaults to 100).
+* `zdiv`: New regular mesh Z pitch (defaults to 100).
+* `xyz`: Array to replace the system coordinates of the mesh. 
+* `screen_shot`: Enables "screen-shot" of mesh points, point being interpolated (in red) and neighbouring pixels (in blue) (defaults to -1 -1 -1, disabling the screen-shot). 
+* `ss_radius`: Sets a region of interest around the point being interpolated to show the mesh points.
+* `mesh_tree`: Switch enabling the creation of a root file with the TCAD mesh nodes stored in a ROOT::TTree (automatically enabled if screen-shot is activated).
+
 ### Usage
 To run the program, the following command should be executed from the installation folder:
 ```bash
-bin/tcad_dfise_converter/dfise_converter -f <file_name_prefix> [<options>] [<arguments>]
+bin/tcad_dfise_converter/dfise_converter -f <file_prefix> [<options>] [<arguments>]
 ```
+The converter will look for a configuration file with <file_prefix> and .conf extension. The configuration file can be repaced with the -c option.
 The list with options can be accessed using the -h option.
 Possible options and their default values are:
 ```
 -f <file_prefix>       common prefix of DF-ISE grid (.grd) and data (.dat) files
+-c <config_file>	   configuration file seting mesh conversion parameters
 -o <init_file_prefix>  output file prefix without .init (defaults to file name of <file_prefix>)
--R <region>            region name to be meshed (defaults to 'bulk')
--O <observable>        observable to be interpolated (defaults Electric Field)
--r <radius>            initial node neighbors search radius in um (defaults to 1 um)
--t <radius_threshold>  minimum distance from node to new mesh point (defaults to 0 um)
--s <radius_step>       radius step if no neighbor is found (defaults to 0.5 um)
--m <max_radius>        maximum search radius (default is 10 um)
--i <index_cut>         index cut during permutation on vertex neighbours (disabled by default)
--c <volume_cut>        minimum volume for tetrahedron for non-coplanar vertices (defaults to minimum double value)
--x <mesh x_pitch>      new regular mesh X pitch (defaults to 100)
--y <mesh_y_pitch>      new regular mesh Y pitch (defaults to 100)
--z <mesh_z_pitch>      new regular mesh Z pitch (defaults to 100)
--d <mesh_dimension>    specify mesh dimensionality (defaults to 3)
 -l <file>              file to log to besides standard output (disabled by default)
 -v <level>             verbosity level (default reporiting level is INFO)
 ```
 
 Observables currently implemented for interpolation are: *ElectrostaticPotential*, *ElectricField*, *DopingConcentration*, *DonorConcentration* and *AcceptorConcentration*.
-The output INIT file will be saved with the same *file_name_prefix* as the .grd and .dat files, +*_observable_interpolated.init*.
+The output INIT file will be saved with the same *file_prefix* as the .grd and .dat files, +*_observable_interpolated.init*.
 
-The *mesh_plotter* tool can be used from the installation folder as follows:
+The new coordinate system of the mesh can be changed by providing an array for the *xyz* keyword in the configuration file. The first entry of the array, representing the new mesh *x* coordinate, should indicate the TCAD original mesh coordinate (*x*, *y* or *z*), and so on for the second (*y*) and third (*z*) array entry. For example, if one wants to have the TCAD *x*, *y* and *z* mesh coordinates mapped into the *y*, *z* and *x* coordinates of the new mesh, respectiviely, the configuration file should have *xyz = z x y*. If one wants to flip one of the coordinates, the minus symbol ("-") can be used in front of one of the coordinates (such as *xyz = z x -y*).  
+
+The program can be used to convert 3D and 2D TCAD mesh files. Note that when converting 2D meshes, the *x* coordinate will be fixed to 1 and the interpolation will happen over the *yz* plane.
+The keyword mesh_tree can be used as a switch to enable or disable the creation of a root file with the original TCAD mesh points stored as a ROOT::TTree for later, fast, inspection.
+
+It is possible to visualise the position of the new mesh point to be interpolated (in red) surounded by the mesh points and the closest neighbours found (in blue) by providing the keyword *screen_shot* with the new mesh node coordinates (such as *screen_shot = 1 2 3*) as value pair. This can be useful if the interpolation gets stuck in some region. Currently, it is implemented only for 3D meshes. The 3D point-cloud will be saved as a ROOT::TGraph2D in a root file with the grid file name (including .grd extension) as prefix and "_INTERPOLATION_POINT_SCREEN_SHOT.root" as sufix.
+
+In addition, the *mesh_plotter* tool can be used, in order to visualise the new mesh interpolation results, from the installation folder as follows:
 ```bash
 bin/tcad_dfise_converter/mesh_plotter -f <file_name> [<options>] [<arguments>]
 ```

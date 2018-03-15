@@ -44,7 +44,7 @@ namespace mesh_converter {
     };
 
     // Read the grid
-    std::map<std::string, std::vector<Point>> read_grid(const std::string& file_name);
+    std::map<std::string, std::vector<Point>> read_grid(const std::string& file_name, bool mesh_tree);
 
     // Read the electric field
     std::map<std::string, std::map<std::string, std::vector<Point>>> read_electric_field(const std::string& file_name);
