@@ -156,14 +156,14 @@ void MeshElement::printElement(Point& qp) {
     LOG(DEBUG) << "Volume: " << this->getVolume();
 }
 
-void mesh_plotter(const std::string& grid_file,
-                  double ss_radius,
-                  double radius,
-                  double x,
-                  double y,
-                  double z,
-                  std::vector<Point> points,
-                  std::vector<unsigned int> results) {
+void mesh_converter::mesh_plotter(const std::string& grid_file,
+                                  double ss_radius,
+                                  double radius,
+                                  double x,
+                                  double y,
+                                  double z,
+                                  std::vector<Point> points,
+                                  std::vector<unsigned int> results) {
     auto tg = new TGraph2D();
     tg->SetMarkerStyle(20);
     tg->SetMarkerSize(0.5);
