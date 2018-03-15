@@ -29,22 +29,22 @@ It should be noted that the TCAD DF-ISE mesh converter depends on the core utili
 - Interpolated data visualization tool.
 
 ### Parameters
-* dimension: Specify mesh dimensionality (defaults to 3).
-* region: Region name to be meshed (defaults to 'bulk').
-* observable: Observable to be interpolated (defaults Electric Field).
-* radius: Initial node neighbors search radius in um (defaults to 1 um).
-* radius_step: Radius step if no neighbor is found (defaults to 0.5 um).
-* max_radius: Maximum search radius (default is 10 um).
-* radius_threshold: Minimum distance from node to new mesh point (defaults to 0 um).
-* volume_cut: Minimum volume for tetrahedron for non-coplanar vertices (defaults to minimum double value).
-* index_cut: Index cut during permutation on vertex neighbours (disabled by default).
-* xdiv: New regular mesh X pitch (defaults to 100 for 3D mesh, and 1 for 2D mesh).
-* ydiv: New regular mesh Y pitch (defaults to 100).
-* zdiv: New regular mesh Z pitch (defaults to 100).
-* xyz: Array to replace the system coordinates of the mesh. 
-* screen_shot: Enables "screen-shot" of mesh points, point being interpolated (in red) and neighbouring pixels (in blue) (defaults to -1 -1 -1, disabling the screen-shot). 
-* ss_radius: Sets a region of interest around the point being interpolated to show the mesh points.
-* mesh_tree: Switch enabling the creation of a root file with the TCAD mesh nodes stored in a ROOT::TTree (automatically enabled if screen-shot is activated).
+* `dimension`: Specify mesh dimensionality (defaults to 3).
+* `region`: Region name to be meshed (defaults to 'bulk').
+* `observable`: Observable to be interpolated (defaults Electric Field).
+* `radius`: Initial node neighbors search radius in um (defaults to 1 um).
+* `radius_step`: Radius step if no neighbor is found (defaults to 0.5 um).
+* `max_radius`: Maximum search radius (default is 10 um).
+* `radius_threshold`: Minimum distance from node to new mesh point (defaults to 0 um).
+* `volume_cut`: Minimum volume for tetrahedron for non-coplanar vertices (defaults to minimum double value).
+* `index_cut`: Index cut during permutation on vertex neighbours (disabled by default).
+* `xdiv`: New regular mesh X pitch (defaults to 100 for 3D mesh, and 1 for 2D mesh).
+* `ydiv`: New regular mesh Y pitch (defaults to 100).
+* `zdiv`: New regular mesh Z pitch (defaults to 100).
+* `xyz`: Array to replace the system coordinates of the mesh. 
+* `screen_shot`: Enables "screen-shot" of mesh points, point being interpolated (in red) and neighbouring pixels (in blue) (defaults to -1 -1 -1, disabling the screen-shot). 
+* `ss_radius`: Sets a region of interest around the point being interpolated to show the mesh points.
+* `mesh_tree`: Switch enabling the creation of a root file with the TCAD mesh nodes stored in a ROOT::TTree (automatically enabled if screen-shot is activated).
 
 ### Usage
 To run the program, the following command should be executed from the installation folder:

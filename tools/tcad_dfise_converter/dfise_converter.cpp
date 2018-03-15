@@ -156,6 +156,56 @@ void MeshElement::printElement(Point& qp) {
     LOG(DEBUG) << "Volume: " << this->getVolume();
 }
 
+void mesh_ploter(std::string grid_file,
+                 double ss_radius,
+                 double radius,
+                 double x,
+                 double y,
+                 double z,
+                 std::vector<Point> points,
+                 std::vector<unsigned int> results) {
+    auto tg = new TGraph2D();
+    tg->SetMarkerStyle(20);
+    tg->SetMarkerSize(0.5);
+    tg->SetMarkerColor(kBlack);
+
+    for(auto& point : points) {
+        if(ss_radius != -1) {
+            if(point.x > (x - radius * ss_radius) && point.x < (x + radius * ss_radius) &&
+               point.y > (y - radius * ss_radius) && point.y < (y + radius * ss_radius) &&
+               point.z > (z - radius * ss_radius) && point.z < (z + radius * ss_radius)) {
+                tg->SetPoint(tg->GetN(), point.x, point.y, point.z);
+            }
+        } else {
+            tg->SetPoint(tg->GetN(), point.x, point.y, point.z);
+        }
+    }
+
+    auto tg1 = new TGraph2D();
+    auto tg2 = new TGraph2D();
+    tg1->SetMarkerStyle(20);
+    tg1->SetMarkerSize(1);
+    tg1->SetMarkerColor(kBlue);
+    tg2->SetMarkerStyle(34);
+    tg2->SetMarkerSize(1);
+    tg2->SetMarkerColor(kRed);
+    tg2->SetPoint(0, x, y, z);
+    for(auto& elem : results) {
+        tg1->SetPoint(tg1->GetN(), points[elem].x, points[elem].y, points[elem].z);
+    }
+
+    std::string root_file_name_out = grid_file + "_INTERPOLATION_POINT_SCREEN_SHOT.root";
+    auto root_output = new TFile(root_file_name_out.c_str(), "RECREATE");
+    auto c = new TCanvas();
+    tg->Draw("p");
+    tg1->Draw("p same");
+    tg2->Draw("p same");
+    c->Write("canvas");
+    root_output->Close();
+
+    LOG(STATUS) << "Mesh screen-shot created. Closing the program.";
+}
+
 int main(int argc, char** argv) {
     // If no arguments are provided, print the help:
     bool print_help = false;
@@ -287,7 +337,6 @@ int main(int argc, char** argv) {
     }
     if(ss_point[0] != -1 && ss_point[1] != -1 && ss_point[2] != -1 && dimension == 3) {
         ss_flag = true;
-        mesh_tree = true;
     }
 
     // NOTE: this stream should be available for the duration of the logging
@@ -341,37 +390,37 @@ int main(int argc, char** argv) {
 
     auto points_temp = points;
     auto field_temp = field;
-    if(rot[0] == "-y" || rot[0] == "y") {
+    if(rot.at(0) == "-y" || rot.at(0) == "y") {
         for(size_t i = 0; i < points.size(); ++i) {
             points_temp[i].x = points[i].y;
             field_temp[i].x = field[i].y;
         }
     }
-    if(rot[0] == "-z" || rot[0] == "z") {
+    if(rot.at(0) == "-z" || rot.at(0) == "z") {
         for(size_t i = 0; i < points.size(); ++i) {
             points_temp[i].x = points[i].z;
             field_temp[i].x = field[i].z;
         }
     }
-    if(rot[1] == "-x" || rot[1] == "x") {
+    if(rot.at(1) == "-x" || rot.at(1) == "x") {
         for(size_t i = 0; i < points.size(); ++i) {
             points_temp[i].y = points[i].x;
             field_temp[i].y = field[i].x;
         }
     }
-    if(rot[1] == "-z" || rot[1] == "z") {
+    if(rot.at(1) == "-z" || rot.at(1) == "z") {
         for(size_t i = 0; i < points.size(); ++i) {
             points_temp[i].y = points[i].z;
             field_temp[i].y = field[i].z;
         }
     }
-    if(rot[2] == "-x" || rot[2] == "x") {
+    if(rot.at(2) == "-x" || rot.at(2) == "x") {
         for(size_t i = 0; i < points.size(); ++i) {
             points_temp[i].z = points[i].x;
             field_temp[i].z = field[i].x;
         }
     }
-    if(rot[2] == "-y" || rot[2] == "y") {
+    if(rot.at(2) == "-y" || rot.at(2) == "y") {
         for(size_t i = 0; i < points.size(); ++i) {
             points_temp[i].z = points[i].y;
             field_temp[i].z = field[i].y;
@@ -409,28 +458,29 @@ int main(int argc, char** argv) {
     double zstep = (maxz - minz) / static_cast<double>(zdiv);
     double cell_volume = xstep * ystep * zstep;
 
-    if(rot[0] != "x" || rot[1] != "y" || rot[2] != "z") {
-        LOG(STATUS) << "TCAD mesh (x,y,z) coords. transformation into: (" << rot[0] << "," << rot[1] << "," << rot[2] << ")";
+    if(rot.at(0) != "x" || rot.at(1) != "y" || rot.at(2) != "z") {
+        LOG(STATUS) << "TCAD mesh (x,y,z) coords. transformation into: (" << rot.at(0) << "," << rot.at(1) << ","
+                    << rot.at(2) << ")";
     }
     LOG(STATUS) << "Mesh dimensions: " << maxx - minx << " x " << maxy - miny << " x " << maxz - minz << std::endl
                 << "New mesh element dimension: " << xstep << " x " << ystep << " x " << zstep
                 << " ==>  Volume = " << cell_volume;
 
-    if(rot[0].find('-') != std::string::npos) {
+    if(rot.at(0).find('-') != std::string::npos) {
         LOG(WARNING) << "Inverting coordinate X. This might change the right-handness of the coordinate system!";
         for(size_t i = 0; i < points.size(); ++i) {
             points[i].x = maxx - (points[i].x - minx);
             field[i].x = -field[i].x;
         }
     }
-    if(rot[1].find('-') != std::string::npos) {
+    if(rot.at(1).find('-') != std::string::npos) {
         LOG(WARNING) << "Inverting coordinate Y. This might change the right-handness of the coordinate system!";
         for(size_t i = 0; i < points.size(); ++i) {
             points[i].y = maxy - (points[i].y - miny);
             field[i].y = -field[i].y;
         }
     }
-    if(rot[2].find('-') != std::string::npos) {
+    if(rot.at(2).find('-') != std::string::npos) {
         LOG(WARNING) << "Inverting coordinate Z. This might change the right-handness of the coordinate system!";
         for(size_t i = 0; i < points.size(); ++i) {
             points[i].z = maxz - (points[i].z - minz);
@@ -438,9 +488,9 @@ int main(int argc, char** argv) {
         }
     }
 
-    rot[0].erase(std::remove(rot[0].begin(), rot[0].end(), '-'), rot[0].end());
-    rot[1].erase(std::remove(rot[1].begin(), rot[1].end(), '-'), rot[1].end());
-    rot[2].erase(std::remove(rot[2].begin(), rot[2].end(), '-'), rot[2].end());
+    rot.at(0).erase(std::remove(rot.at(0).begin(), rot.at(0).end(), '-'), rot.at(0).end());
+    rot.at(1).erase(std::remove(rot.at(1).begin(), rot.at(1).end(), '-'), rot.at(1).end());
+    rot.at(2).erase(std::remove(rot.at(2).begin(), rot.at(2).end(), '-'), rot.at(2).end());
 
     auto end = std::chrono::system_clock::now();
     auto elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
@@ -464,9 +514,9 @@ int main(int argc, char** argv) {
                     map.emplace("x", ss_point[0]);
                     map.emplace("y", ss_point[1]);
                     map.emplace("z", ss_point[2]);
-                    x = map.find(rot[0])->second;
-                    y = map.find(rot[1])->second;
-                    z = map.find(rot[2])->second;
+                    x = map.find(rot.at(0))->second;
+                    y = map.find(rot.at(1))->second;
+                    z = map.find(rot.at(2))->second;
                 }
                 if(dimension == 2) {
                     q.x = -1;
@@ -537,58 +587,7 @@ int main(int argc, char** argv) {
                     LOG(DEBUG) << "Number of vertices found: " << results.size();
 
                     if(ss_flag) {
-                        std::string root_file_name_in = grid_file + "_MESH_POINTS_TTREE.root";
-                        auto input = new TFile(root_file_name_in.c_str(), "READ");
-                        auto mesh_points = static_cast<TTree*>(input->Get("mesh_points"));
-                        auto tg = new TGraph2D();
-                        tg->SetMarkerStyle(20);
-                        tg->SetMarkerSize(0.5);
-                        tg->SetMarkerColor(kBlack);
-                        double mesh_x;
-                        double mesh_y;
-                        double mesh_z;
-                        const char* char_x = rot[0].c_str();
-                        const char* char_y = rot[1].c_str();
-                        const char* char_z = rot[2].c_str();
-                        mesh_points->SetBranchAddress(char_x, &mesh_x, nullptr);
-                        mesh_points->SetBranchAddress(char_y, &mesh_y, nullptr);
-                        mesh_points->SetBranchAddress(char_z, &mesh_z, nullptr);
-                        for(long iii = 0; iii < mesh_points->GetEntries(); iii++) {
-                            mesh_points->GetEntry(iii);
-                            if(ss_radius != -1) {
-                                if(mesh_x > (x - radius * ss_radius) && mesh_x < (x + radius * ss_radius) &&
-                                   mesh_y > (y - radius * ss_radius) && mesh_y < (y + radius * ss_radius) &&
-                                   mesh_z < (z + radius * ss_radius)) {
-                                    tg->SetPoint(tg->GetN(), mesh_x, mesh_y, mesh_z);
-                                }
-                            } else {
-                                tg->SetPoint(tg->GetN(), mesh_x, mesh_y, mesh_z);
-                            }
-                        }
-
-                        auto tg1 = new TGraph2D();
-                        auto tg2 = new TGraph2D();
-                        tg1->SetMarkerStyle(20);
-                        tg1->SetMarkerSize(1);
-                        tg1->SetMarkerColor(kBlue);
-                        tg2->SetMarkerStyle(34);
-                        tg2->SetMarkerSize(1);
-                        tg2->SetMarkerColor(kRed);
-                        tg2->SetPoint(0, x, y, z);
-                        for(auto& elem : results) {
-                            tg1->SetPoint(tg1->GetN(), points[elem].x, points[elem].y, points[elem].z);
-                        }
-
-                        std::string root_file_name_out = grid_file + "_INTERPOLATION_POINT_SCREEN_SHOT.root";
-                        auto root_output = new TFile(root_file_name_out.c_str(), "RECREATE");
-                        auto c = new TCanvas();
-                        tg->Draw("p");
-                        tg1->Draw("p same");
-                        tg2->Draw("p same");
-                        c->Write("canvas");
-                        root_output->Close();
-
-                        LOG(STATUS) << "Mesh screen-shot created. Closing the program.";
+                        mesh_ploter(grid_file, ss_radius, radius, x, y, z, points, results);
                         return 1;
                     }
 
