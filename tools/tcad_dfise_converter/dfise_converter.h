@@ -14,7 +14,7 @@ void interrupt_handler(int);
 /**
  * @brief Function for 3D screen-shot of new mesh node being interpolated
  */
-void mesh_plotter(std::string grid_file,
+void mesh_plotter(const std::string& grid_file,
                   double ss_radius,
                   double radius,
                   double x,
