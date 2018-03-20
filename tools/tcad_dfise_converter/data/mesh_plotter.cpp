@@ -24,6 +24,7 @@ int main(int argc, char** argv) {
     // Read parameters
     std::string file_name;
     std::string output_file_name;
+    bool output_file_name_flag = false;
     std::string plane = "yz";
     int slice_index = 0;
     bool flag_cut = false;
@@ -38,6 +39,7 @@ int main(int argc, char** argv) {
             file_name = std::string(argv[++i]);
         } else if(strcmp(argv[i], "-o") == 0 && (i + 1 < argc)) {
             output_file_name = std::string(argv[++i]);
+            output_file_name_flag = true;
         } else if(strcmp(argv[i], "-p") == 0 && (i + 1 < argc)) {
             plane = std::string(argv[++i]);
         } else if(strcmp(argv[i], "-c") == 0 && (i + 1 < argc)) {
@@ -179,8 +181,10 @@ int main(int argc, char** argv) {
         line++;
     }
 
-    output_file_name = file_name.substr(0, lastindex);
-    output_file_name = output_file_name + "_" + plane + "_" + std::to_string(slice_cut) + ".png";
+    if(!output_file_name_flag) {
+        output_file_name = file_name.substr(0, lastindex);
+        output_file_name = output_file_name + "_" + plane + "_" + std::to_string(slice_cut) + ".png";
+    }
 
     std::string root_file_name = file_name.substr(0, lastindex);
     root_file_name = root_file_name + "_Interpolation_plots_" + plane + "_" + std::to_string(slice_cut) + ".root";
