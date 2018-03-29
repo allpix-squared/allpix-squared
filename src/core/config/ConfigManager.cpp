@@ -34,7 +34,7 @@ ConfigManager::ConfigManager(std::string file_name) : file_name_(std::move(file_
     }
 
     // Convert main file to absolute path
-    file_name_ = allpix::get_absolute_path(file_name_);
+    file_name_ = allpix::get_canonical_path(file_name_);
 
     // Initialize global base configuration with absolute file name
     global_base_config_ = Configuration("", file_name_);

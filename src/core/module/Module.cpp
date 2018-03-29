@@ -108,7 +108,7 @@ std::string Module::createOutputFile(const std::string& path, bool global) const
         }
 
         // Convert the file to an absolute path
-        file = get_absolute_path(file);
+        file = get_canonical_path(file);
     } catch(std::invalid_argument& e) {
         throw ModuleError("Path " + file + " cannot be created");
     }

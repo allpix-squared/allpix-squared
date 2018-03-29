@@ -107,12 +107,12 @@ std::string Configuration::path_to_absolute(std::string path, bool canonicalize_
 
         // Set new path
         path = directory + "/" + path;
+    }
 
-        // Normalize path only if we have to check if it exists
-        // NOTE: This throws an error if the path does not exist
-        if(canonicalize_path) {
-            path = allpix::get_absolute_path(path);
-        }
+    // Normalize path only if we have to check if it exists
+    // NOTE: This throws an error if the path does not exist
+    if(canonicalize_path) {
+        path = allpix::get_canonical_path(path);
     }
     return path;
 }
