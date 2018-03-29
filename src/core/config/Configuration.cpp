@@ -111,7 +111,7 @@ std::string Configuration::path_to_absolute(std::string path, bool canonicalize_
         // Normalize path only if we have to check if it exists
         // NOTE: This throws an error if the path does not exist
         if(canonicalize_path) {
-            path = allpix::get_absolute_path(path);
+            path = allpix::get_canonical_path(path);
         }
     }
     return path;
