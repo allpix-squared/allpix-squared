@@ -101,7 +101,7 @@ void ConfigReader::add(std::istream& stream, std::string file_name) {
 
     // Convert file name to absolute path (if given)
     if(!file_name.empty()) {
-        file_name = allpix::get_absolute_path(file_name);
+        file_name = allpix::get_canonical_path(file_name);
     }
 
     // Build first empty configuration
