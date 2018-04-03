@@ -102,8 +102,8 @@ namespace allpix {
     public:
         /**
          * @brief Construct an error for a invalid key value pair
-         * @param key_value Key value pair which is trying to be parsed
-         * @param line_num Line number where the problem occurred
+         * @param key_value Key value pair which the parser tries to interpret
+         * @param reason Reason for the parser to fail
          */
         KeyValueParseError(const std::string& key_value, const std::string& reason) {
             error_message_ = "Could not parse key / value pair '";
@@ -153,15 +153,15 @@ namespace allpix {
      * @ingroup Exceptions
      * @brief Indicates an error with a combination of configuration keys
      *
-     * Should be raised if a disallowed combination of keys is used, such as two optional parameters which contradict each
-     * other.
+     * Should be raised if a disallowed combination of keys is used, such as two optional parameters which cannot be used at
+     * the same time because they contradict each other.
      */
     class InvalidCombinationError : public ConfigurationError {
     public:
         /**
          * @brief Construct an error for an invalid combination of keys
          * @param config Configuration object containing the problematic key combination
-         * @param key Name of the problematic keys
+         * @param keys List of names of the conflicting keys
          * @param reason Reason why the key combination is invalid (empty if no explicit reason)
          */
         InvalidCombinationError(const Configuration& config,
