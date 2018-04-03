@@ -265,9 +265,10 @@ namespace unibn {
 
         /** @brief test if search ball S(q,r) overlaps with octant
          *
-         * @param query   query point
-         * @param radius  "squared" radius
-         * @param o       pointer to octant
+         * @param query    query point
+         * @param radius   radius
+         * @param sqRadius "squared" radius
+         * @param o        pointer to octant
          *
          * @return true, if search ball overlaps with octant, false otherwise.
          */
