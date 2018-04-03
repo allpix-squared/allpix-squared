@@ -68,9 +68,8 @@ namespace allpix {
         virtual void print(std::ostream& out) const { out << "<unknown object>"; };
 
         /**
-         * @brief Override function for the ROOT Print() class
+         * @brief Override function to implement ROOT Print()
          * @warning Should not be used inside the framework but might assist in inspecting ROOT files with these objects.
-         * @param Unused ROOT options
          */
         void Print(Option_t*) const override {
             print(std::cout);

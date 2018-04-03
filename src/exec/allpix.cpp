@@ -1,3 +1,8 @@
+/**
+ * @file
+ * @brief Executable running the framework
+ */
+
 #include <atomic>
 #include <csignal>
 #include <cstdlib>
@@ -10,10 +15,6 @@
 #include "core/config/ConfigManager.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/utils/exceptions.h"
-/**
- * @file
- * @brief Executable running the framework
- */
 
 #include "core/utils/log.h"
 

@@ -11,9 +11,8 @@
 #include "TFile.h"
 #include "TTree.h"
 
-// Include trim utility from allpix
-#include "utils/log.h"
-#include "utils/string.h"
+#include "core/utils/log.h"
+#include "core/utils/string.h"
 
 using namespace mesh_converter;
 
