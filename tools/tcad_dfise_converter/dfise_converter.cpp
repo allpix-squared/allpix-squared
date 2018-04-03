@@ -171,8 +171,8 @@ void mesh_converter::mesh_plotter(const std::string& grid_file,
 
     for(auto& point : points) {
         if(ss_radius != -1) {
-            if((abs(point.x - x) < radius * ss_radius) && (abs(point.y - y) < radius * ss_radius) &&
-               (abs(point.z - z) < radius * ss_radius)) {
+            if((fabs(point.x - x) < radius * ss_radius) && (fabs(point.y - y) < radius * ss_radius) &&
+               (fabs(point.z - z) < radius * ss_radius)) {
                 tg->SetPoint(tg->GetN(), point.x, point.y, point.z);
             }
         } else {
