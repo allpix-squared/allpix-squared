@@ -61,8 +61,9 @@ namespace allpix {
         /// @}
 
         /**
-         * @brief Loads the geometry from the reader
+         * @brief Loads the geometry from the global configuration
          * @param global_config Global configuration for the framework
+         * @param seeder PRNG to use for generating random misalignments
          * @warning Has to be the first function called after the constructor
          */
         void load(const Configuration& global_config, std::mt19937_64& seeder);

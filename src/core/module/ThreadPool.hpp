@@ -65,7 +65,7 @@ namespace allpix {
 
             /**
              * @brief Return if the queue is in a valid state
-             * @return True if the queue is valid, false if \ref TaskQueue::invalidate was called
+             * @return True if the queue is valid, false if \ref SafeQueue::invalidate has been called
              */
             bool isValid() const;
 
@@ -90,7 +90,7 @@ namespace allpix {
     public:
         /**
          * @brief Construct thread pool with provided number of threads
-         * @param num_thread Number of threads in the pool
+         * @param num_threads Number of threads in the pool
          * @param modules List of module instantiations to create a task queue for
          * @param worker_init_function Function run by all the workers to initialize
          * @warning Only module instantiations that are registered in this constructor can spawn tasks
