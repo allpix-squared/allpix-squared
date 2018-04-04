@@ -112,7 +112,7 @@ std::list<Configuration>& ConfigManager::getModuleConfigurations() {
 /**
  * An instance configuration is a specialized configuration for a particular module instance
  */
-Configuration& ConfigManager::addInstanceConfiguration(std::string unique_name, Configuration config) {
+Configuration& ConfigManager::addInstanceConfiguration(const std::string& unique_name, const Configuration& config) {
     // Add configuration
     instance_configs_.push_back(config);
     Configuration& ret_config = instance_configs_.back();

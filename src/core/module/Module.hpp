@@ -154,10 +154,10 @@ namespace allpix {
 
         /// @{
         /**
-         * @brief Use default move behaviour
+         * @brief Disallow move behaviour (not possible with references)
          */
-        Module(Module&&) noexcept = default;
-        Module& operator=(Module&&) noexcept = default;
+        Module(Module&&) noexcept = delete;
+        Module& operator=(Module&&) noexcept = delete;
         /// @}
 
         /**

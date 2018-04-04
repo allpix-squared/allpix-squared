@@ -80,7 +80,7 @@ namespace allpix {
          * @param config Instance configuration to store
          * @return Reference to stored instance configuration
          */
-        Configuration& addInstanceConfiguration(std::string unique_name, Configuration config);
+        Configuration& addInstanceConfiguration(const std::string& unique_name, const Configuration& config);
         /**
          * @brief Get all the instance configurations
          * @return Reference to list of instance configurations

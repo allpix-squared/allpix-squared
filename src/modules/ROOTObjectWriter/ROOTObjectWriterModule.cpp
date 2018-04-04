@@ -193,8 +193,11 @@ void ROOTObjectWriterModule::finalize() {
 
         // Loop over all values in the section
         for(auto& key_value : config.getAll()) {
-            // Skip the unique name
+            // Skip the unique name and input / output if empty
             if(key_value.first == "unique_name") {
+                continue;
+            }
+            if((key_value.first == "input" || key_value.first == "output") && key_value.second.empty()) {
                 continue;
             }
             section_dir->WriteObject(&key_value.second, key_value.first.c_str());

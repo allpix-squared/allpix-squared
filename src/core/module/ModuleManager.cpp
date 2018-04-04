@@ -55,7 +55,7 @@ void ModuleManager::load(Messenger* messenger,
                          GeometryManager* geo_manager,
                          std::mt19937_64& seeder) {
     // Store config manager and get configurations
-    conf_manager_ = std::move(conf_manager);
+    conf_manager_ = conf_manager;
     auto& configs = conf_manager_->getModuleConfigurations();
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
 
