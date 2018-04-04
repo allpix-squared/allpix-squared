@@ -18,10 +18,10 @@
 
 using namespace allpix;
 
-ProjectionPropagationModule::ProjectionPropagationModule(Configuration config,
+ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
                                                          Messenger* messenger,
                                                          std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector), messenger_(messenger), detector_(std::move(detector)) {
+    : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
     // Save detector model
     model_ = detector_->getModel();
 

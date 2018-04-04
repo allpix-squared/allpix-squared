@@ -26,8 +26,8 @@
 
 using namespace allpix;
 
-ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration config, Messenger* messenger, GeometryManager* geo_mgr)
-    : Module(std::move(config)), geo_mgr_(geo_mgr) {
+ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
+    : Module(config), geo_mgr_(geo_mgr) {
     // Bind to all messages
     messenger->registerListener(this, &ROOTObjectWriterModule::receive);
 }

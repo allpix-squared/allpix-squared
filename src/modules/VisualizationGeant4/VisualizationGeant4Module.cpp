@@ -41,8 +41,8 @@
 
 using namespace allpix;
 
-VisualizationGeant4Module::VisualizationGeant4Module(Configuration config, Messenger*, GeometryManager* geo_manager)
-    : Module(std::move(config)), geo_manager_(geo_manager), has_run_(false), session_param_ptr_(nullptr) {
+VisualizationGeant4Module::VisualizationGeant4Module(Configuration& config, Messenger*, GeometryManager* geo_manager)
+    : Module(config), geo_manager_(geo_manager), has_run_(false), session_param_ptr_(nullptr) {
     // Set default mode and driver for display
     config_.setDefault("mode", "gui");
     config_.setDefault("driver", "OGL");

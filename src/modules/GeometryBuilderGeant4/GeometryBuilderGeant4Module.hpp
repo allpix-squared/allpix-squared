@@ -37,7 +37,7 @@ namespace allpix {
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
          * @param geo_manager Pointer to the geometry manager, containing the detectors
          */
-        GeometryBuilderGeant4Module(Configuration config, Messenger* messenger, GeometryManager* geo_manager);
+        GeometryBuilderGeant4Module(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
 
         /**
          * @brief Initializes Geant4 and construct the Geant4 geometry from the internal geometry

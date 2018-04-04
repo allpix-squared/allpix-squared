@@ -39,7 +39,7 @@ namespace allpix {
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
          * @param geo_mgr Pointer to the geometry manager, containing the detectors
          */
-        RCEWriterModule(Configuration config, Messenger*, GeometryManager*);
+        RCEWriterModule(Configuration& config, Messenger*, GeometryManager*);
         /**
          * @brief Destructor deletes the internal objects used to build the ROOT Tree
          */

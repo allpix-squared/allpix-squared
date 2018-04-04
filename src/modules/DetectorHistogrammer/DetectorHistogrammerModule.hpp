@@ -41,7 +41,7 @@ namespace allpix {
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
          * @param detector Pointer to the detector for this module instance
          */
-        DetectorHistogrammerModule(Configuration, Messenger*, std::shared_ptr<Detector>);
+        DetectorHistogrammerModule(Configuration& config, Messenger*, std::shared_ptr<Detector>);
 
         /**
          * @brief Initialize the histograms
