@@ -79,7 +79,7 @@ namespace allpix {
          * @param config Instance configuration to store
          * @return Reference to stored instance configuration
          */
-        // Configuration& addInstanceConfiguration(Configuration config);
+        Configuration& addInstanceConfiguration(Configuration config);
         /**
          * @brief Get all the instance configurations
          * @return Reference to list of instance configurations
@@ -109,6 +109,8 @@ namespace allpix {
 
         std::vector<Configuration> module_configs_;
         Configuration global_config_;
+
+        std::vector<Configuration> instance_configs_;
     };
 } // namespace allpix
 

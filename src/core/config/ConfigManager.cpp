@@ -92,3 +92,11 @@ OptionParser& ConfigManager::getOptionParser() {
 std::vector<Configuration>& ConfigManager::getModuleConfigurations() {
     return module_configs_;
 }
+
+/**
+ * An instance configuration is a specialized configuration for a particular module instance
+ */
+Configuration& ConfigManager::addInstanceConfiguration(Configuration config) {
+    instance_configs_.push_back(config);
+    return instance_configs_.back();
+}

@@ -77,7 +77,7 @@ void ModuleManager::load(Messenger* messenger,
     modules_file_->cd();
 
     // Loop through all non-global configurations
-    for(auto config : configs) {
+    for(auto& config : configs) {
         // Load library for each module. Libraries are named (by convention + CMAKE) libAllpixModule Name.suffix
         std::string lib_name = std::string(ALLPIX_MODULE_PREFIX).append(config.getName()).append(SHARED_LIBRARY_SUFFIX);
         LOG_PROGRESS(STATUS, "LOAD_LOOP") << "Loading module " << config.getName();
@@ -282,14 +282,17 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
         throw allpix::DynamicLibraryError(module_name);
     }
 
-    // Apply instantiation specific options
-    conf_manager_->getOptionParser().applyOptions(identifier.getUniqueName(), config);
+    // Create and add module instance config
+    Configuration& instance_config = conf_manager_->addInstanceConfiguration(config);
 
-    // Add internal module config
-    config.set<std::string>("_unique_name", identifier.getUniqueName());
-    config.set<uint64_t>("_seed", seeder());
+    // Apply instantiation specific options
+    conf_manager_->getOptionParser().applyOptions(identifier.getUniqueName(), instance_config);
+
+    // Specialize instance configuration
+    instance_config.set<std::string>("_unique_name", identifier.getUniqueName());
+    instance_config.set<uint64_t>("_seed", seeder());
     std::string output_dir;
-    output_dir = config.get<std::string>("_global_dir");
+    output_dir = instance_config.get<std::string>("_global_dir");
     output_dir += "/";
     std::string path_mod_name = identifier.getUniqueName();
     std::replace(path_mod_name.begin(), path_mod_name.end(), ':', '_');
@@ -308,9 +311,9 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
     section_name += identifier.getUniqueName();
     Log::setSection(section_name);
     // Set module specific log settings
-    auto old_settings = set_module_before(identifier.getUniqueName(), config);
+    auto old_settings = set_module_before(identifier.getUniqueName(), instance_config);
     // Build module
-    Module* module = module_generator(config, messenger, geo_manager);
+    Module* module = module_generator(instance_config, messenger, geo_manager);
     // Reset log
     Log::setSection(old_section_name);
     set_module_after(old_settings);
@@ -410,14 +413,17 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         // Get current time
         auto start = std::chrono::steady_clock::now();
 
+        // Create and add module instance config
+        Configuration& instance_config = conf_manager_->addInstanceConfiguration(config);
+
         // Apply instantiation specific options
-        conf_manager_->getOptionParser().applyOptions(instance.second.getUniqueName(), config);
+        conf_manager_->getOptionParser().applyOptions(instance.second.getUniqueName(), instance_config);
 
         // Add internal module config
-        config.set<std::string>("_unique_name", instance.second.getUniqueName());
-        config.set<uint64_t>("_seed", seeder());
+        instance_config.set<std::string>("_unique_name", instance.second.getUniqueName());
+        instance_config.set<uint64_t>("_seed", seeder());
         std::string output_dir;
-        output_dir = config.get<std::string>("_global_dir");
+        output_dir = instance_config.get<std::string>("_global_dir");
         output_dir += "/";
         std::string path_mod_name = instance.second.getUniqueName();
         std::replace(path_mod_name.begin(), path_mod_name.end(), ':', '/');
@@ -429,9 +435,9 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         section_name += instance.second.getUniqueName();
         Log::setSection(section_name);
         // Set module specific log settings
-        auto old_settings = set_module_before(instance.second.getUniqueName(), config);
+        auto old_settings = set_module_before(instance.second.getUniqueName(), instance_config);
         // Build module
-        Module* module = module_generator(config, messenger, instance.first);
+        Module* module = module_generator(instance_config, messenger, instance.first);
         // Reset logging
         Log::setSection(old_section_name);
         set_module_after(old_settings);
