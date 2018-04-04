@@ -76,15 +76,16 @@ namespace allpix {
 
         /**
          * @brief Add a new module instance configuration and applies instance options
+         * @param unique_name Unique name for this instance
          * @param config Instance configuration to store
          * @return Reference to stored instance configuration
          */
-        Configuration& addInstanceConfiguration(std::string unique_identifier, Configuration config);
+        Configuration& addInstanceConfiguration(std::string unique_name, Configuration config);
         /**
          * @brief Get all the instance configurations
          * @return Reference to list of instance configurations
          */
-        // std::vector<Configuration>& getInstanceConfigurations();
+        std::list<Configuration>& getInstanceConfigurations();
 
         /**
          * @brief Get the option parser
@@ -103,7 +104,7 @@ namespace allpix {
          * @brief Get all the detector configurations
          * @return Reference to list of detector configurations
          */
-        // std::vector<Configuration>& getDetectorConfigurations();
+        // std::list<Configuration>& getDetectorConfigurations();
     private:
         std::string file_name_;
         ConfigReader reader_;

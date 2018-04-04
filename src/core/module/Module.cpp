@@ -48,7 +48,7 @@ Module::~Module() {
  * This name is guaranteed to be unique for every single instantiation of all modules
  */
 std::string Module::getUniqueName() const {
-    std::string unique_name = config_.get<std::string>("_unique_name");
+    std::string unique_name = config_.get<std::string>("unique_name");
     return unique_name;
 }
 
@@ -169,16 +169,18 @@ void Module::set_ROOT_directory(TDirectory* directory) {
     directory_ = directory;
 }
 
-std::vector<Configuration> Module::get_final_configuration() {
-    if(!initialized_final_configreader_) {
-        throw InvalidModuleActionException("Cannot access final module configurations outside the finalize() function.");
+/**
+ * @throws InvalidModuleActionException If this method is called from the constructor or destructor
+ * @warning This function technically allows to write to the configurations of other modules, but this should never be done
+ */
+ConfigManager* Module::getConfigManager() {
+    if(conf_manager_ == nullptr) {
+        throw InvalidModuleActionException("Cannot access the config manager in constructor or destructor.");
     };
-    return final_configreader_.getConfigurations();
+    return conf_manager_;
 }
-
-void Module::set_final_configuration(const ConfigReader& config) {
-    initialized_final_configreader_ = true;
-    final_configreader_ = config;
+void Module::set_config_manager(ConfigManager* conf_manager) {
+    conf_manager_ = conf_manager;
 }
 
 bool Module::canParallelize() {

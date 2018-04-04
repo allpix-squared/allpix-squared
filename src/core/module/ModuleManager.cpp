@@ -283,7 +283,6 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
     Configuration& instance_config = conf_manager_->addInstanceConfiguration(identifier.getUniqueName(), config);
 
     // Specialize instance configuration
-    instance_config.set<std::string>("_unique_name", identifier.getUniqueName());
     instance_config.set<uint64_t>("_seed", seeder());
     std::string output_dir;
     output_dir = instance_config.get<std::string>("_global_dir");
@@ -411,7 +410,6 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         Configuration& instance_config = conf_manager_->addInstanceConfiguration(instance.second.getUniqueName(), config);
 
         // Add internal module config
-        instance_config.set<std::string>("_unique_name", instance.second.getUniqueName());
         instance_config.set<uint64_t>("_seed", seeder());
         std::string output_dir;
         output_dir = instance_config.get<std::string>("_global_dir");
@@ -516,8 +514,11 @@ void ModuleManager::init() {
     for(auto& module : modules_) {
         LOG_PROGRESS(TRACE, "INIT_LOOP") << "Initializing " << module->get_identifier().getUniqueName();
 
-        LOG(TRACE) << "Creating and accessing ROOT directory";
+        // Pass the config manager to this instance
+        module->set_config_manager(conf_manager_);
+
         // Create main ROOT directory for this module class if it does not exists yet
+        LOG(TRACE) << "Creating and accessing ROOT directory";
         std::string module_name = module->get_configuration().getName();
         auto directory = modules_file_->GetDirectory(module_name.c_str());
         if(directory == nullptr) {
@@ -742,16 +743,6 @@ static std::string seconds_to_time(long double seconds) {
  * after finalization. No method will be called after finalizing the module (except the destructor).
  */
 void ModuleManager::finalize() {
-
-    // Collect the modules' configurations as used during the simulation:
-    LOG(TRACE) << "Collecting module configurations...";
-    ConfigReader final_configurations;
-    for(auto& module : modules_) {
-        auto config = module->config_;
-        config.setName(module->getUniqueName());
-        final_configurations.addConfiguration(std::move(config));
-    }
-
     LOG_PROGRESS(TRACE, "FINALIZE_LOOP") << "Finalizing module instantiations";
     for(auto& module : modules_) {
         LOG_PROGRESS(TRACE, "FINALIZE_LOOP") << "Finalizing " << module->get_identifier().getUniqueName();
@@ -765,8 +756,6 @@ void ModuleManager::finalize() {
         Log::setSection(section_name);
         // Set module specific settings
         auto old_settings = set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
-        // Supply final configurations to the module
-        module->set_final_configuration(final_configurations);
         // Change to our ROOT directory
         module->getROOTDirectory()->cd();
         // Finalize module
@@ -774,6 +763,8 @@ void ModuleManager::finalize() {
         // Close the ROOT directory after finalizing
         module->getROOTDirectory()->Close();
         module->set_ROOT_directory(nullptr);
+        // Remove the config manager
+        module->set_config_manager(nullptr);
         // Reset logging
         Log::setSection(old_section_name);
         set_module_after(old_settings);

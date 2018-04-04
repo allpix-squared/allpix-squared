@@ -18,7 +18,7 @@
 #include <TDirectory.h>
 
 #include "ThreadPool.hpp"
-#include "core/config/ConfigReader.hpp"
+#include "core/config/ConfigManager.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
 #include "core/messenger/delegates.h"
@@ -199,6 +199,12 @@ namespace allpix {
         TDirectory* getROOTDirectory() const;
 
         /**
+         * @brief Get the config manager object to allow to read the global and other module configurations
+         * @return Pointer to the config manager
+         */
+        ConfigManager* getConfigManager();
+
+        /**
          * @brief Returns if parallelization of this module is enabled
          * @return True if parallelization is enabled, false otherwise (the default)
          */
@@ -241,13 +247,6 @@ namespace allpix {
         Configuration& get_configuration();
         Configuration& config_;
 
-        /**
-         * @brief Get the final configurations of all modules
-         * @return Vector of Configuration objects containing the final configurations for all modules
-         * @throws InvalidModuleActionException If the function is called outside the finalize method
-         */
-        std::vector<Configuration> get_final_configuration();
-
     private:
         /**
          * @brief Set the module identifier for internal use
@@ -273,15 +272,14 @@ namespace allpix {
          * @param directory ROOT directory for storage
          */
         void set_ROOT_directory(TDirectory* directory);
-        TDirectory* directory_{};
+        TDirectory* directory_{nullptr};
 
         /**
-         * @brief Set the final configuration from all modules in the finalize function
-         * @param config ConfigReader holding all configurations from modules in this simulation
+         * @brief Set the link to the config manager
+         * @param conf_manager ConfigManager holding all relevant configurations
          */
-        void set_final_configuration(const ConfigReader& config);
-        bool initialized_final_configreader_{false};
-        ConfigReader final_configreader_{};
+        void set_config_manager(ConfigManager* config);
+        ConfigManager* conf_manager_{nullptr};
 
         /**
          * @brief Add a messenger delegate to this instantiation

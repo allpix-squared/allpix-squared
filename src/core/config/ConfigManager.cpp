@@ -112,12 +112,23 @@ std::list<Configuration>& ConfigManager::getModuleConfigurations() {
 /**
  * An instance configuration is a specialized configuration for a particular module instance
  */
-Configuration& ConfigManager::addInstanceConfiguration(std::string unique_identifier, Configuration config) {
+Configuration& ConfigManager::addInstanceConfiguration(std::string unique_name, Configuration config) {
     // Add configuration
     instance_configs_.push_back(config);
     Configuration& ret_config = instance_configs_.back();
 
+    // Add unique identifier key
+    ret_config.set<std::string>("unique_name", unique_name);
+
     // Apply instance options
-    getOptionParser().applyOptions(unique_identifier, ret_config);
+    getOptionParser().applyOptions(unique_name, ret_config);
     return ret_config;
+}
+
+/**
+ * The list of instance configurations can contain configurations with duplicate names, but the instance configuration is
+ * guaranteed to have a configuration value 'unique_name' that contains an unique name
+ */
+std::list<Configuration>& ConfigManager::getInstanceConfigurations() {
+    return instance_configs_;
 }
