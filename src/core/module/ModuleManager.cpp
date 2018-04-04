@@ -54,15 +54,17 @@ void ModuleManager::load(Messenger* messenger,
                          ConfigManager* conf_manager,
                          GeometryManager* geo_manager,
                          std::mt19937_64& seeder) {
-    std::vector<Configuration>& configs = conf_manager->getModuleConfigurations();
-    global_config_ = conf_manager->getGlobalConfiguration();
+    // Store config manager and get configurations
+    conf_manager_ = std::move(conf_manager);
+    std::vector<Configuration>& configs = conf_manager_->getModuleConfigurations();
+    Configuration& global_config = conf_manager_->getGlobalConfiguration();
 
     // (Re)create the main ROOT file
-    auto path = std::string(gSystem->pwd()) + "/" + global_config_.get<std::string>("root_file", "modules");
+    auto path = std::string(gSystem->pwd()) + "/" + global_config.get<std::string>("root_file", "modules");
     path = allpix::add_file_extension(path, "root");
 
     if(allpix::path_is_file(path)) {
-        if(global_config_.get<bool>("deny_overwrite", false)) {
+        if(global_config.get<bool>("deny_overwrite", false)) {
             throw RuntimeError("Overwriting of existing main ROOT file " + path + " denied");
         }
         LOG(WARNING) << "Main ROOT file " << path << " exists and will be overwritten.";
@@ -75,7 +77,7 @@ void ModuleManager::load(Messenger* messenger,
     modules_file_->cd();
 
     // Loop through all non-global configurations
-    for(auto& config : configs) {
+    for(auto config : configs) {
         // Load library for each module. Libraries are named (by convention + CMAKE) libAllpixModule Name.suffix
         std::string lib_name = std::string(ALLPIX_MODULE_PREFIX).append(config.getName()).append(SHARED_LIBRARY_SUFFIX);
         LOG_PROGRESS(STATUS, "LOAD_LOOP") << "Loading module " << config.getName();
@@ -85,8 +87,8 @@ void ModuleManager::load(Messenger* messenger,
         dlerror();
         if(loaded_libraries_.count(lib_name) == 0) {
             // If library is not loaded then try to load it first from the config directories
-            if(global_config_.has("library_directories")) {
-                std::vector<std::string> lib_paths = global_config_.getPathArray("library_directories", true);
+            if(global_config.has("library_directories")) {
+                std::vector<std::string> lib_paths = global_config.getPathArray("library_directories", true);
                 for(auto& lib_path : lib_paths) {
                     std::string full_lib_path = lib_path;
                     full_lib_path += "/";
@@ -182,14 +184,14 @@ void ModuleManager::load(Messenger* messenger,
         }
 
         // Apply the module specific options to the module configuration
-        conf_manager->getOptionParser().applyOptions(config.getName(), config);
+        conf_manager_->getOptionParser().applyOptions(config.getName(), config);
 
         // Add the global internal parameters to the configuration
         std::string global_dir = gSystem->pwd();
         config.set<std::string>("_global_dir", global_dir);
 
         // Set default file protection setting, inherited from the global setting:
-        config.setDefault<bool>("deny_overwrite", global_config_.get<bool>("deny_overwrite", false));
+        config.setDefault<bool>("deny_overwrite", global_config.get<bool>("deny_overwrite", false));
 
         // Set default input and output name
         config.setDefault<std::string>("input", "");
@@ -199,10 +201,9 @@ void ModuleManager::load(Messenger* messenger,
         std::vector<std::pair<ModuleIdentifier, Module*>> mod_list;
         if(unique) {
             mod_list.emplace_back(
-                create_unique_modules(loaded_libraries_[lib_name], config, conf_manager, messenger, geo_manager, seeder));
+                create_unique_modules(loaded_libraries_[lib_name], config, messenger, geo_manager, seeder));
         } else {
-            mod_list =
-                create_detector_modules(loaded_libraries_[lib_name], config, conf_manager, messenger, geo_manager, seeder);
+            mod_list = create_detector_modules(loaded_libraries_[lib_name], config, messenger, geo_manager, seeder);
         }
 
         // Loop through all created instantiations
@@ -247,12 +248,8 @@ void ModuleManager::load(Messenger* messenger,
 /**
  * For unique modules a single instance is created per section
  */
-std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* library,
-                                                                          Configuration& config,
-                                                                          ConfigManager* conf_manager,
-                                                                          Messenger* messenger,
-                                                                          GeometryManager* geo_manager,
-                                                                          std::mt19937_64& seeder) {
+std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
+    void* library, Configuration& config, Messenger* messenger, GeometryManager* geo_manager, std::mt19937_64& seeder) {
     // Make the vector to return
     std::string module_name = config.getName();
 
@@ -286,7 +283,7 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
     }
 
     // Apply instantiation specific options
-    conf_manager->getOptionParser().applyOptions(identifier.getUniqueName(), config);
+    conf_manager_->getOptionParser().applyOptions(identifier.getUniqueName(), config);
 
     // Add internal module config
     config.set<std::string>("_unique_name", identifier.getUniqueName());
@@ -334,12 +331,8 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
  * For detector modules multiple instantiations may be created per section. An instantiation is created for every detector if
  * no selection parameters are provided. Otherwise instantiations are created for every linked detector name and type.
  */
-std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector_modules(void* library,
-                                                                                         Configuration& config,
-                                                                                         ConfigManager* conf_manager,
-                                                                                         Messenger* messenger,
-                                                                                         GeometryManager* geo_manager,
-                                                                                         std::mt19937_64& seeder) {
+std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector_modules(
+    void* library, Configuration& config, Messenger* messenger, GeometryManager* geo_manager, std::mt19937_64& seeder) {
     std::string module_name = config.getName();
     LOG(DEBUG) << "Creating instantions for detector module " << module_name;
 
@@ -418,7 +411,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         auto start = std::chrono::steady_clock::now();
 
         // Apply instantiation specific options
-        conf_manager->getOptionParser().applyOptions(instance.second.getUniqueName(), config);
+        conf_manager_->getOptionParser().applyOptions(instance.second.getUniqueName(), config);
 
         // Add internal module config
         config.set<std::string>("_unique_name", instance.second.getUniqueName());
@@ -586,14 +579,16 @@ void ModuleManager::init() {
  * initialization
  */
 void ModuleManager::run() {
-    global_config_.setDefault("experimental_multithreading", false);
+    Configuration& global_config = conf_manager_->getGlobalConfiguration();
+
+    global_config.setDefault("experimental_multithreading", false);
     unsigned int threads_num;
 
-    if(global_config_.get<bool>("experimental_multithreading")) {
+    if(global_config.get<bool>("experimental_multithreading")) {
         // Try to fetch a suitable number of workers if multithreading is enabled
-        threads_num = global_config_.get<unsigned int>("workers", std::max(std::thread::hardware_concurrency(), 1u));
+        threads_num = global_config.get<unsigned int>("workers", std::max(std::thread::hardware_concurrency(), 1u));
         if(threads_num == 0) {
-            throw InvalidValueError(global_config_, "workers", "number of workers should be strictly more than zero");
+            throw InvalidValueError(global_config, "workers", "number of workers should be strictly more than zero");
         }
         LOG(WARNING) << "Experimental multithreading enabled - using " << threads_num << " worker threads.";
         --threads_num;
@@ -620,14 +615,14 @@ void ModuleManager::run() {
 
     // Loop over all the events
     auto start_time = std::chrono::steady_clock::now();
-    global_config_.setDefault<unsigned int>("number_of_events", 1u);
-    auto number_of_events = global_config_.get<unsigned int>("number_of_events");
+    global_config.setDefault<unsigned int>("number_of_events", 1u);
+    auto number_of_events = global_config.get<unsigned int>("number_of_events");
     for(unsigned int i = 0; i < number_of_events; ++i) {
         // Check for termination
         if(terminate_) {
             LOG(INFO) << "Interrupting event loop after " << i << " events because of request to terminate";
             number_of_events = i;
-            global_config_.set<unsigned int>("number_of_events", i);
+            global_config.set<unsigned int>("number_of_events", i);
             break;
         }
 
@@ -805,13 +800,15 @@ void ModuleManager::finalize() {
     for(auto& module : modules_) {
         LOG(INFO) << " Module " << module->getUniqueName() << " took " << module_execution_time_[module.get()] << " seconds";
     }
+
+    Configuration& global_config = conf_manager_->getGlobalConfiguration();
     long double processing_time = 0;
-    if(global_config_.get<unsigned int>("number_of_events") > 0) {
-        processing_time = std::round((1000 * total_time_) / global_config_.get<unsigned int>("number_of_events"));
+    if(global_config.get<unsigned int>("number_of_events") > 0) {
+        processing_time = std::round((1000 * total_time_) / global_config.get<unsigned int>("number_of_events"));
     }
 
     LOG(STATUS) << "Average processing time is \x1B[1m" << processing_time << " ms/event\x1B[0m, event generation at \x1B[1m"
-                << std::round(global_config_.get<double>("number_of_events") / total_time_) << " Hz\x1B[0m";
+                << std::round(global_config.get<double>("number_of_events") / total_time_) << " Hz\x1B[0m";
 }
 
 /**
