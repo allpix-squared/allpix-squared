@@ -105,7 +105,7 @@ bool ConfigManager::loadOptions() {
 /**
  * All special global and ignored sections are not included in the list of module configurations.
  */
-std::vector<Configuration>& ConfigManager::getModuleConfigurations() {
+std::list<Configuration>& ConfigManager::getModuleConfigurations() {
     return module_configs_;
 }
 

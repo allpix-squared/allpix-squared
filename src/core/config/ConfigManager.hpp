@@ -72,7 +72,7 @@ namespace allpix {
          * @brief Get all the module configurations
          * @return Reference to list of module configurations
          */
-        std::vector<Configuration>& getModuleConfigurations();
+        std::list<Configuration>& getModuleConfigurations();
 
         /**
          * @brief Add a new module instance configuration and applies instance options
@@ -113,10 +113,10 @@ namespace allpix {
 
         OptionParser option_parser_;
 
-        std::vector<Configuration> module_configs_;
+        std::list<Configuration> module_configs_;
         Configuration global_config_;
 
-        std::vector<Configuration> instance_configs_;
+        std::list<Configuration> instance_configs_;
     };
 } // namespace allpix
 

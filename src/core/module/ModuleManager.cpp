@@ -56,7 +56,7 @@ void ModuleManager::load(Messenger* messenger,
                          std::mt19937_64& seeder) {
     // Store config manager and get configurations
     conf_manager_ = std::move(conf_manager);
-    std::vector<Configuration>& configs = conf_manager_->getModuleConfigurations();
+    auto& configs = conf_manager_->getModuleConfigurations();
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
 
     // (Re)create the main ROOT file
@@ -293,7 +293,7 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
     output_dir += path_mod_name;
 
     // Convert to correct generator function
-    auto module_generator = reinterpret_cast<Module* (*)(Configuration, Messenger*, GeometryManager*)>(generator); // NOLINT
+    auto module_generator = reinterpret_cast<Module* (*)(Configuration&, Messenger*, GeometryManager*)>(generator); // NOLINT
 
     LOG(DEBUG) << "Creating unique instantiation " << identifier.getUniqueName();
 
@@ -353,7 +353,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
     }
     // Convert to correct generator function
     auto module_generator =
-        reinterpret_cast<Module* (*)(Configuration, Messenger*, std::shared_ptr<Detector>)>(generator); // NOLINT
+        reinterpret_cast<Module* (*)(Configuration&, Messenger*, std::shared_ptr<Detector>)>(generator); // NOLINT
 
     // Handle empty type and name arrays:
     bool instances_created = false;
