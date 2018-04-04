@@ -38,20 +38,20 @@ Allpix::Allpix(std::string config_file_name, std::vector<std::string> options)
     : terminate_(false), has_run_(false), msg_(std::make_unique<Messenger>()), mod_mgr_(std::make_unique<ModuleManager>()),
       geo_mgr_(std::make_unique<GeometryManager>()) {
     // Load the global configuration
-    conf_mgr_ = std::make_unique<ConfigManager>(std::move(config_file_name));
-
-    // Configure the standard special sections
-    conf_mgr_->setGlobalHeaderName("Allpix");
-    conf_mgr_->addGlobalHeaderName("");
-    conf_mgr_->addIgnoreHeaderName("Ignore");
+    conf_mgr_ = std::make_unique<ConfigManager>(std::move(config_file_name),
+                                                std::initializer_list<std::string>({"Allpix", ""}),
+                                                std::initializer_list<std::string>({"Ignore"}));
 
     // Parse all the options
     for(auto& option : options) {
-        conf_mgr_->parseOption(option);
+        conf_mgr_->getOptionParser().parseOption(option);
     }
 
     // Fetch the global configuration
-    Configuration global_config = conf_mgr_->getGlobalConfiguration();
+    Configuration& global_config = conf_mgr_->getGlobalConfiguration();
+
+    // Apply the global options
+    conf_mgr_->getOptionParser().applyGlobalOptions(global_config);
 
     // Set the log level from config if not specified earlier
     std::string log_level_string;

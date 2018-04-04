@@ -54,7 +54,7 @@ void ModuleManager::load(Messenger* messenger,
                          ConfigManager* conf_manager,
                          GeometryManager* geo_manager,
                          std::mt19937_64& seeder) {
-    std::vector<Configuration> configs = conf_manager->getConfigurations();
+    std::vector<Configuration>& configs = conf_manager->getModuleConfigurations();
     global_config_ = conf_manager->getGlobalConfiguration();
 
     // (Re)create the main ROOT file
@@ -182,7 +182,7 @@ void ModuleManager::load(Messenger* messenger,
         }
 
         // Apply the module specific options to the module configuration
-        conf_manager->applyOptions(config.getName(), config);
+        conf_manager->getOptionParser().applyOptions(config.getName(), config);
 
         // Add the global internal parameters to the configuration
         std::string global_dir = gSystem->pwd();
@@ -286,7 +286,7 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
     }
 
     // Apply instantiation specific options
-    conf_manager->applyOptions(identifier.getUniqueName(), config);
+    conf_manager->getOptionParser().applyOptions(identifier.getUniqueName(), config);
 
     // Add internal module config
     config.set<std::string>("_unique_name", identifier.getUniqueName());
@@ -418,7 +418,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         auto start = std::chrono::steady_clock::now();
 
         // Apply instantiation specific options
-        conf_manager->applyOptions(instance.second.getUniqueName(), config);
+        conf_manager->getOptionParser().applyOptions(instance.second.getUniqueName(), config);
 
         // Add internal module config
         config.set<std::string>("_unique_name", instance.second.getUniqueName());
