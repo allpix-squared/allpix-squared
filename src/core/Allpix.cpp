@@ -105,11 +105,12 @@ Allpix::Allpix(std::string config_file_name, std::vector<std::string> options)
 void Allpix::load() {
     LOG(TRACE) << "Loading Allpix";
 
-    // Put welcome message
-    LOG(STATUS) << "Welcome to Allpix^2 " << ALLPIX_PROJECT_VERSION;
-
     // Fetch the global configuration
-    Configuration global_config = conf_mgr_->getGlobalConfiguration();
+    Configuration& global_config = conf_mgr_->getGlobalConfiguration();
+
+    // Put welcome message and set version
+    LOG(STATUS) << "Welcome to Allpix^2 " << ALLPIX_PROJECT_VERSION;
+    global_config.set<std::string>("version", ALLPIX_PROJECT_VERSION);
 
     // Initialize the random seeders, one for modules, one for core components
     std::mt19937_64 seeder_modules;
@@ -121,6 +122,7 @@ void Allpix::load() {
         seed = global_config.get<uint64_t>("random_seed");
         seeder_modules.seed(seed);
         LOG(STATUS) << "Initialized PRNG with configured seed " << seed;
+        global_config.set<uint64_t>("random_seed", seed);
     } else {
         // Compute random entropy seed
         // Use the clock
@@ -143,6 +145,7 @@ void Allpix::load() {
     } else {
         // Use module seeder + 1
         seeder_core.seed(seed + 1);
+        global_config.set<uint64_t>("random_seed_core", seed + 1);
     }
 
     // Initialize ROOT random generator
