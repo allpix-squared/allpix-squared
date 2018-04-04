@@ -92,11 +92,11 @@ bool ConfigManager::loadOptions() {
     bool retValue = false;
 
     // Apply global options
-    retValue = retValue || option_parser_.applyGlobalOptions(global_config_);
+    retValue = option_parser_.applyGlobalOptions(global_config_) || retValue;
 
     // Apply module options
     for(auto& config : module_configs_) {
-        retValue = retValue || option_parser_.applyOptions(config.getName(), config);
+        retValue = option_parser_.applyOptions(config.getName(), config) || retValue;
     }
 
     return retValue;
