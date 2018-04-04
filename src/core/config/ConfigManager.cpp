@@ -85,6 +85,22 @@ Configuration& ConfigManager::getGlobalConfiguration() {
 OptionParser& ConfigManager::getOptionParser() {
     return option_parser_;
 }
+/**
+ * Load all the options that are added to the option parser before calling this function.
+ */
+bool ConfigManager::loadOptions() {
+    bool retValue = false;
+
+    // Apply global options
+    retValue = retValue || option_parser_.applyGlobalOptions(global_config_);
+
+    // Apply module options
+    for(auto& config : module_configs_) {
+        retValue = retValue || option_parser_.applyOptions(config.getName(), config);
+    }
+
+    return retValue;
+}
 
 /**
  * All special global and ignored sections are not included in the list of module configurations.
@@ -96,7 +112,12 @@ std::vector<Configuration>& ConfigManager::getModuleConfigurations() {
 /**
  * An instance configuration is a specialized configuration for a particular module instance
  */
-Configuration& ConfigManager::addInstanceConfiguration(Configuration config) {
+Configuration& ConfigManager::addInstanceConfiguration(std::string unique_identifier, Configuration config) {
+    // Add configuration
     instance_configs_.push_back(config);
-    return instance_configs_.back();
+    Configuration& ret_config = instance_configs_.back();
+
+    // Apply instance options
+    getOptionParser().applyOptions(unique_identifier, ret_config);
+    return ret_config;
 }

@@ -183,9 +183,6 @@ void ModuleManager::load(Messenger* messenger,
             unique = reinterpret_cast<bool (*)()>(uniqueFunction)(); // NOLINT
         }
 
-        // Apply the module specific options to the module configuration
-        conf_manager_->getOptionParser().applyOptions(config.getName(), config);
-
         // Add the global internal parameters to the configuration
         std::string global_dir = gSystem->pwd();
         config.set<std::string>("_global_dir", global_dir);
@@ -283,10 +280,7 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
     }
 
     // Create and add module instance config
-    Configuration& instance_config = conf_manager_->addInstanceConfiguration(config);
-
-    // Apply instantiation specific options
-    conf_manager_->getOptionParser().applyOptions(identifier.getUniqueName(), instance_config);
+    Configuration& instance_config = conf_manager_->addInstanceConfiguration(identifier.getUniqueName(), config);
 
     // Specialize instance configuration
     instance_config.set<std::string>("_unique_name", identifier.getUniqueName());
@@ -414,10 +408,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         auto start = std::chrono::steady_clock::now();
 
         // Create and add module instance config
-        Configuration& instance_config = conf_manager_->addInstanceConfiguration(config);
-
-        // Apply instantiation specific options
-        conf_manager_->getOptionParser().applyOptions(instance.second.getUniqueName(), instance_config);
+        Configuration& instance_config = conf_manager_->addInstanceConfiguration(instance.second.getUniqueName(), config);
 
         // Add internal module config
         instance_config.set<std::string>("_unique_name", instance.second.getUniqueName());

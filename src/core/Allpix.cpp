@@ -47,11 +47,11 @@ Allpix::Allpix(std::string config_file_name, std::vector<std::string> options)
         conf_mgr_->getOptionParser().parseOption(option);
     }
 
+    // Load and apply the global and module options
+    conf_mgr_->loadOptions();
+
     // Fetch the global configuration
     Configuration& global_config = conf_mgr_->getGlobalConfiguration();
-
-    // Apply the global options
-    conf_mgr_->getOptionParser().applyGlobalOptions(global_config);
 
     // Set the log level from config if not specified earlier
     std::string log_level_string;

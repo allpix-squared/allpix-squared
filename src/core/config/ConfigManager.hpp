@@ -75,11 +75,11 @@ namespace allpix {
         std::vector<Configuration>& getModuleConfigurations();
 
         /**
-         * @brief Add a new module instance configuration
+         * @brief Add a new module instance configuration and applies instance options
          * @param config Instance configuration to store
          * @return Reference to stored instance configuration
          */
-        Configuration& addInstanceConfiguration(Configuration config);
+        Configuration& addInstanceConfiguration(std::string unique_identifier, Configuration config);
         /**
          * @brief Get all the instance configurations
          * @return Reference to list of instance configurations
@@ -90,8 +90,14 @@ namespace allpix {
          * @brief Get the option parser
          * @return Reference to the option parser
          */
-        // FIXME: should be integrated better in the config manager
         OptionParser& getOptionParser();
+        /**
+         * @brief Apply options to the global configuration and the module configurations
+         * @return True if any actual options where applied
+         *
+         * @note Instance configuration options are applied in \ref ConfigManager::addInstanceConfiguration
+         */
+        bool loadOptions();
 
         /**
          * @brief Get all the detector configurations
