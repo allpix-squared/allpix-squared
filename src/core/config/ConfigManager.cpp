@@ -80,26 +80,26 @@ Configuration& ConfigManager::getGlobalConfiguration() {
 }
 
 /**
- * The option parser is used to apply specific settings on top of the default
+ * Load all extra options that should be added on top of the configuration in the file. The options loaded here are
+ * automatically applied to the module instance when these are added later.
  */
-OptionParser& ConfigManager::getOptionParser() {
-    return option_parser_;
-}
-/**
- * Load all the options that are added to the option parser before calling this function.
- */
-bool ConfigManager::loadOptions() {
-    bool retValue = false;
+bool ConfigManager::loadOptions(const std::vector<std::string>& options) {
+    bool optionsApplied = false;
+
+    // Parse the options
+    for(auto& option : options) {
+        option_parser_.parseOption(option);
+    }
 
     // Apply global options
-    retValue = option_parser_.applyGlobalOptions(global_config_) || retValue;
+    optionsApplied = option_parser_.applyGlobalOptions(global_config_) || optionsApplied;
 
     // Apply module options
     for(auto& config : module_configs_) {
-        retValue = option_parser_.applyOptions(config.getName(), config) || retValue;
+        optionsApplied = option_parser_.applyOptions(config.getName(), config) || optionsApplied;
     }
 
-    return retValue;
+    return optionsApplied;
 }
 
 /**
@@ -130,7 +130,7 @@ Configuration& ConfigManager::addInstanceConfiguration(const std::string& unique
     ret_config.set<std::string>("unique_name", unique_name);
 
     // Apply instance options
-    getOptionParser().applyOptions(unique_name, ret_config);
+    option_parser_.applyOptions(unique_name, ret_config);
     return ret_config;
 }
 

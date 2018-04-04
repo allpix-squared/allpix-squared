@@ -42,13 +42,8 @@ Allpix::Allpix(std::string config_file_name, std::vector<std::string> options)
                                                 std::initializer_list<std::string>({"Allpix", ""}),
                                                 std::initializer_list<std::string>({"Ignore"}));
 
-    // Parse all the options
-    for(auto& option : options) {
-        conf_mgr_->getOptionParser().parseOption(option);
-    }
-
-    // Load and apply the global and module options
-    conf_mgr_->loadOptions();
+    // Load and apply the provided options
+    conf_mgr_->loadOptions(options);
 
     // Fetch the global configuration
     Configuration& global_config = conf_mgr_->getGlobalConfiguration();

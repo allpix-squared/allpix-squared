@@ -88,17 +88,13 @@ namespace allpix {
         std::list<Configuration>& getInstanceConfigurations();
 
         /**
-         * @brief Get the option parser
-         * @return Reference to the option parser
-         */
-        OptionParser& getOptionParser();
-        /**
-         * @brief Apply options to the global configuration and the module configurations
+         * @brief Load and options and directly apply them to the global configuration and the module configurations
+         * @param options List of options to load and apply
          * @return True if any actual options where applied
          *
-         * @note Instance configuration options are applied in \ref ConfigManager::addInstanceConfiguration
+         * @note Instance configuration options are applied in \ref ConfigManager::addInstanceConfiguration instead
          */
-        bool loadOptions();
+        bool loadOptions(const std::vector<std::string>& options);
 
         /**
          * @brief Get all the detector configurations
