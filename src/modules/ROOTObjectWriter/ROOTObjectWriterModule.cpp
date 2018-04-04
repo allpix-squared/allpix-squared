@@ -189,7 +189,7 @@ void ROOTObjectWriterModule::finalize() {
         // Create a new directory per section, using the unique module name
         auto unique_name = config.get<std::string>("unique_name");
         auto section_dir = config_dir->mkdir(unique_name.c_str());
-        LOG(TRACE) << "Writing configuration for: " << config.getName();
+        LOG(TRACE) << "Writing configuration for: " << unique_name;
 
         // Loop over all values in the section
         for(auto& key_value : config.getAll()) {

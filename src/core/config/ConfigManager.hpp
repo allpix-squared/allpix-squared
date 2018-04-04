@@ -118,6 +118,7 @@ namespace allpix {
         Configuration global_config_;
 
         std::list<Configuration> instance_configs_;
+        std::map<std::string, std::list<Configuration>::iterator> instance_name_to_config_;
     };
 } // namespace allpix
 
