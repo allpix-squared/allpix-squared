@@ -287,6 +287,10 @@ void Allpix::add_units() {
     Units::add("V", 1e-6);
     Units::add("kV", 1e-3);
 
+    // MAGNETIC FIELD
+    Units::add("T", 1e-3);
+    Units::add("mT", 1e-6);
+
     // ANGLES
     // NOTE: these are fake units
     Units::add("deg", 0.01745329252);

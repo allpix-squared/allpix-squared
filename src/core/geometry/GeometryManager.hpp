@@ -25,6 +25,17 @@
 namespace allpix {
 
     /**
+     * @brief Type of the magnetic field
+     */
+    enum class MagneticFieldType {
+        NONE = 0, ///< No magnetic field is simulated
+        CONSTANT, ///< Constant magnetic field (mostly for testing)
+        CUSTOM,   ///< Custom magnetic field function
+    };
+
+    using MagneticFieldFunction = std::function<ROOT::Math::XYZVector(const ROOT::Math::XYZPoint&)>;
+
+    /**
      * @ingroup Managers
      * @brief Manager responsible for the global geometry
      *
@@ -170,6 +181,28 @@ namespace allpix {
          */
         std::vector<std::shared_ptr<Detector>> getDetectorsByType(const std::string& type);
 
+        /**
+             * @brief Set the magnetic field in the volume
+             * @param function Function used to retrieve the magnetic field
+             * @param type Type of the magnetic field function used
+     holds
+             */
+        void setMagneticFieldFunction(MagneticFieldFunction function, MagneticFieldType type = MagneticFieldType::CUSTOM);
+
+        /**
+         * @brief Returns if a magnetic field is present
+         * @return True if the a magnetic field is present in the volume, false otherwise
+         */
+        bool hasMagneticField() const;
+        /**
+         * @brief Get the magnetic field at a global position
+         * @param pos Position in the global frame
+         * @return Vector of the field at the queried point
+         */
+        ROOT::Math::XYZVector getMagneticFieldAtPos(ROOT::Math::XYZPoint position) const;
+
+        MagneticFieldType getMagneticFieldType() const;
+
     private:
         /**
          * @brief Load all standard framework models (automatically done when the geometry is closed)
@@ -199,6 +232,9 @@ namespace allpix {
         std::map<std::string, std::vector<std::pair<Configuration, Detector*>>> nonresolved_models_;
         std::vector<std::shared_ptr<Detector>> detectors_;
         std::set<std::string> detector_names_;
+
+        MagneticFieldType magnetic_field_type_{MagneticFieldType::NONE};
+        MagneticFieldFunction magnetic_field_function_;
     };
 } // namespace allpix
 
