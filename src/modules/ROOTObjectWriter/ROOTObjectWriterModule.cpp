@@ -190,7 +190,8 @@ void ROOTObjectWriterModule::finalize() {
         auto unique_name = config.getName();
         auto identifier = config.get<std::string>("identifier");
         if(!identifier.empty()) {
-            unique_name = unique_name + ":" + identifier;
+            unique_name += ":";
+            unique_name += identifier;
         }
         auto section_dir = config_dir->mkdir(unique_name.c_str());
         LOG(TRACE) << "Writing configuration for: " << unique_name;
