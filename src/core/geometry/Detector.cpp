@@ -37,6 +37,7 @@ Detector::Detector(std::string name,
         throw InvalidModuleActionException("Detector model cannot be a null pointer");
     }
 
+    magnetic_field_on_ = false;
     // Build the transformation matrix
     build_transform();
 }
@@ -52,6 +53,7 @@ Detector::Detector(std::string name, ROOT::Math::XYZPoint position, const ROOT::
       electric_field_(nullptr) {}
 void Detector::set_model(std::shared_ptr<DetectorModel> model) {
     model_ = std::move(model);
+    magnetic_field_on_ = false;
     build_transform();
 }
 void Detector::build_transform() {
