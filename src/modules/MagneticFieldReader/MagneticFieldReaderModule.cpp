@@ -34,6 +34,8 @@ MagneticFieldReaderModule::MagneticFieldReaderModule(Configuration config, Messe
 void MagneticFieldReaderModule::init() {
     MagneticFieldType type = MagneticFieldType::CONSTANT;
 
+    config_.setDefault("model", "constant");
+
     // Check field strength
     auto field_model = config_.get<std::string>("model");
 
