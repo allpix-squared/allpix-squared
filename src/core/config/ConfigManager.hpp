@@ -101,7 +101,8 @@ namespace allpix {
          * @brief Get all the detector configurations
          * @return Reference to list of detector configurations
          */
-        // std::list<Configuration>& getDetectorConfigurations();
+        std::list<Configuration>& getDetectorConfigurations();
+
     private:
         std::string file_name_;
         ConfigReader reader_;
@@ -113,6 +114,8 @@ namespace allpix {
 
         std::list<Configuration> module_configs_;
         Configuration global_config_;
+
+        std::list<Configuration> detector_configs_;
 
         std::list<Configuration> instance_configs_;
         std::map<std::string, std::list<Configuration>::iterator> instance_name_to_config_;

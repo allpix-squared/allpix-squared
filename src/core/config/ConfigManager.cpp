@@ -36,7 +36,7 @@ ConfigManager::ConfigManager(std::string file_name,
 
     // Convert main file to absolute path
     file_name_ = allpix::get_canonical_path(file_name_);
-    LOG(TRACE) << "Using " << file_name_ << " as main configuration file";
+    LOG(TRACE) << "Reading main configuration";
 
     // Read the file
     reader_.add(file, file_name_);
@@ -70,6 +70,15 @@ ConfigManager::ConfigManager(std::string file_name,
 
         module_configs_.push_back(config);
     }
+
+    // Reading detector file
+    std::string detector_file_name = global_config_.getPath("detectors_file", true);
+    LOG(TRACE) << "Reading detector configuration";
+
+    std::ifstream detector_file(detector_file_name);
+    ConfigReader detector_reader(detector_file, detector_file_name);
+    auto detector_configs = detector_reader.getConfigurations();
+    detector_configs_ = std::list<Configuration>(detector_configs.begin(), detector_configs.end());
 }
 
 /**
@@ -107,6 +116,12 @@ bool ConfigManager::loadOptions(const std::vector<std::string>& options) {
  */
 std::list<Configuration>& ConfigManager::getModuleConfigurations() {
     return module_configs_;
+}
+/**
+ * The list of detector configurations is read from the configuration defined in 'detector_file'
+ */
+std::list<Configuration>& ConfigManager::getDetectorConfigurations() {
+    return detector_configs_;
 }
 
 /**
