@@ -646,13 +646,13 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
         Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
 
+        Eigen::Vector3d velocity;
         if(has_magnetic_field_) {
             Eigen::Vector3d bfield(magnetic_field_.x(), magnetic_field_.y(), magnetic_field_.z());
 
             auto mob = carrier_mobility(efield.norm());
             auto exb = efield.cross(bfield);
 
-            Eigen::Vector3d term0 = efield;
             Eigen::Vector3d term1;
             double hallFactor;
             if(type == CarrierType::ELECTRON) {
@@ -665,10 +665,11 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
 
             auto rnorm = 1 + mob * mob * hallFactor * hallFactor * bfield.dot(bfield);
 
-            return static_cast<int>(type) * mob * (term0 + term1 + term2) / rnorm;
+            velocity = static_cast<int>(type) * mob * (efield + term1 + term2) / rnorm;
         } else {
-            return static_cast<int>(type) * carrier_mobility(efield.norm()) * efield;
+            velocity = static_cast<int>(type) * carrier_mobility(efield.norm()) * efield;
         }
+        return velocity;
     };
 
     // Create the runge kutta solver with an RKF5 tableau
