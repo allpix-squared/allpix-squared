@@ -104,9 +104,6 @@ namespace allpix {
         std::list<Configuration>& getDetectorConfigurations();
 
     private:
-        std::string file_name_;
-        ConfigReader reader_;
-
         std::set<std::string> global_names_{};
         std::set<std::string> ignore_names_{};
 

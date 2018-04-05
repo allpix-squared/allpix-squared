@@ -26,20 +26,19 @@ using namespace allpix;
  */
 ConfigManager::ConfigManager(std::string file_name,
                              std::initializer_list<std::string> global,
-                             std::initializer_list<std::string> ignore)
-    : file_name_(std::move(file_name)) {
+                             std::initializer_list<std::string> ignore) {
     // Check if the file exists
-    std::ifstream file(file_name_);
+    std::ifstream file(file_name);
     if(!file) {
-        throw ConfigFileUnavailableError(file_name_);
+        throw ConfigFileUnavailableError(file_name);
     }
 
     // Convert main file to absolute path
-    file_name_ = allpix::get_canonical_path(file_name_);
+    file_name = allpix::get_canonical_path(file_name);
     LOG(TRACE) << "Reading main configuration";
 
     // Read the file
-    reader_.add(file, file_name_);
+    ConfigReader reader(file, file_name);
 
     // Convert all global and ignored names to lower case and store them
     auto lowercase = [](const std::string& in) {
@@ -51,10 +50,10 @@ ConfigManager::ConfigManager(std::string file_name,
     std::transform(ignore.begin(), ignore.end(), std::inserter(ignore_names_, ignore_names_.end()), lowercase);
 
     // Initialize global base configuration
-    global_config_ = reader_.getHeaderConfiguration();
+    global_config_ = reader.getHeaderConfiguration();
 
     // Store all the configurations read
-    for(auto& config : reader_.getConfigurations()) {
+    for(auto& config : reader.getConfigurations()) {
         // Skip all ignored sections
         std::string config_name = config.getName();
         std::transform(config_name.begin(), config_name.end(), config_name.begin(), ::tolower);
