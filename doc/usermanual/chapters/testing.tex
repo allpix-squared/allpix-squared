@@ -235,7 +235,7 @@ The different subcategories of tests described below can be executed or ignored 
 $ ctest -R test_performance
 \end{verbatim}
 
-The configuration of the tests can be found in the \dir{etc/unittests_test*} directories of the repository and are automatically discovered by CMake.
+The configuration of the tests can be found in the \dir{etc/unittests/test_*} directories of the repository and are automatically discovered by CMake.
 CMake automatically searches for \apsq configuration files in the different directories and passes them to the \apsq executable~(cf.\ Section~\ref{sec:allpix_executable}).
 
 Adding a new test is as simple as adding a new configuration file to one of the different subdirectories and specifying the pass or fail conditions based on the tags described in the following paragraph.
@@ -255,6 +255,7 @@ Thus, the distributions produce different results on different platforms even wh
   \item[Failing a test] If the expression tagged with \parameter{#FAIL}/\parameter{#FAILOSX} is found in the output, the test fails. If the expression is not found, the test passes.
   \item[Depending on another test] The tag \parameter{#DEPENDS} can be used to indicate dependencies between tests. For example, the module test 09 described below implements such a dependency as it uses the output of module test 08-1 to read data from a previously produced \apsq data file.
   \item[Defining a timeout] For performance tests the runtime of the application is monitored, and the test fails if it exceeds the number of seconds defined using the \parameter{#TIMEOUT} tag.
+  \item[Adding additional CLI options] Additional command line options can be specified for the \parameter{allpix} executable using the \parameter{#OPTION} tag, following the format found in Section~\ref{sec:allpix_executable}. Multiple options can be supplied by repeating the \parameter{#OPTION} tag in the configuration file, only one option per tag is allowed.
 \end{description}
 
 \paragraph{Framework Functionality Tests}
@@ -276,6 +277,8 @@ Currently implemented tests comprise:
     \item[\file{test_03-1_geometry_g4_coordinate_system.conf}] ensures that the \apsq and Geant4 coordinate systems and transformations are identical.
     \item[\file{test_03-2_geometry_rotations.conf}] tests the correct interpretation of rotation angles in the detector setup file.
     \item[\file{test_03-3_geometry_misaligned.conf}] tests the correct calculation of misalignments from alignment precisions given in the detector setup file.
+    \item[\file{test_04-1_configuration_cli_change.conf}] tests whether single configuration values can be overwritten by options supplied via the command line.
+    \item[\file{test_04-2_configuration_cli_nochange.conf}] tests whether command line options are correctly assigned to module instances and do not alter other values.
 \end{description}
 
 
@@ -308,6 +311,7 @@ Currently implemented tests comprise:
     \item[\file{test_08-3_writer_lcio.conf}] ensures proper functionality of the LCIO file writer module. Similar to the above test, the correct conversion of PixelHits (coordinates and charge) is monitored.
     \item[\file{test_08-4_writer_corryvreckan.conf}] ensures proper functionality of the Corryvreckan file writer module. The monitored output comprises the coordinates of the pixel produced in the simulation.
     \item[\file{test_08-5_writer_corryvreckan_mc.conf}] ensures the correct storage of Monte Carlo truth particle information in the Corryvreckan file writer module by monitoring the local coordinates of the MC particle associated to the pixel hit.
+    \item[\file{test_08-6_writer_text.conf}] ensures proper functionality of the ASCII text writer module by monitoring the total number of objects and messages written to the text file..
     \item[\file{test_09_reader_root.conf}] tests the capability of the framework to read data back in and to dispatch messages for all objects found in the input tree. The monitored output comprises the total number of objects read from all branches.
 \end{description}
 
