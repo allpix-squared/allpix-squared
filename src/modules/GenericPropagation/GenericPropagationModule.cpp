@@ -112,6 +112,11 @@ GenericPropagationModule::GenericPropagationModule(Configuration config,
     hole_Beta_ = 0.46 * std::pow(temperature_, 0.17);
 
     boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * temperature_;
+
+    // Parameter for charge transport in magnetic field (approximated from graphs:
+    // http://www.ioffe.ru/SVA/NSM/Semicond/Si/electric.html) FIXME
+    electron_Hall_ = 1.15;
+    hole_Hall_ = 0.9;
 }
 
 void GenericPropagationModule::create_output_plots(unsigned int event_num) {
@@ -484,6 +489,14 @@ void GenericPropagationModule::init() {
             LOG(WARNING) << "Electric field indicates hole collection at implants, but holes are not propagated!";
         }
     }
+
+    // Check for magnetic field and output warning for slow propagation if not defined
+    has_magnetic_field_ = detector->hasMagneticField();
+    if(has_magnetic_field_) {
+        LOG(DEBUG) << "This detector sees a magnetic field.";
+        magnetic_field_ = detector_->getMagneticField();
+    }
+
     if(output_plots_) {
         auto time_bins =
             static_cast<int>(Units::convert(integration_time_ / config_.get<long double>("output_plots_step"), "ns"));
@@ -629,11 +642,33 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
 
     // Define a lambda function to compute the electron velocity
     auto carrier_velocity = [&](double, Eigen::Vector3d cur_pos) -> Eigen::Vector3d {
-        auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
         // Compute the drift velocity
+        auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
         Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
 
-        return static_cast<int>(type) * carrier_mobility(efield.norm()) * efield;
+        if(has_magnetic_field_) {
+            Eigen::Vector3d bfield(magnetic_field_.x(), magnetic_field_.y(), magnetic_field_.z());
+
+            auto mob = carrier_mobility(efield.norm());
+            auto exb = efield.cross(bfield);
+
+            Eigen::Vector3d term0 = efield;
+            Eigen::Vector3d term1;
+            double hallFactor;
+            if(type == CarrierType::ELECTRON) {
+                hallFactor = electron_Hall_;
+            } else {
+                hallFactor = hole_Hall_;
+            }
+            term1 = static_cast<int>(type) * mob * hallFactor * exb;
+            Eigen::Vector3d term2 = mob * mob * hallFactor * hallFactor * efield.dot(bfield) * bfield;
+
+            auto rnorm = 1 + mob * mob * hallFactor * hallFactor * bfield.dot(bfield);
+
+            return static_cast<int>(type) * mob * (term0 + term1 + term2) / rnorm;
+        } else {
+            return static_cast<int>(type) * carrier_mobility(efield.norm()) * efield;
+        }
     };
 
     // Create the runge kutta solver with an RKF5 tableau

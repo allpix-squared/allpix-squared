@@ -63,6 +63,10 @@ void ProjectionPropagationModule::init() {
         throw ModuleError("This module should only be used with linear electric fields.");
     }
 
+    if(detector_->hasMagneticField()) {
+        throw ModuleError("This module should not be used with magnetic fields.");
+    }
+
     if(output_plots_) {
         // Initialize output plot
         drift_time_histo = new TH1D("drift_time_histo", "Drift time;t[ns];particles", 75, 0., 25.);
