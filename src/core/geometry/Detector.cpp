@@ -261,3 +261,19 @@ void Detector::setElectricFieldFunction(ElectricFieldFunction function,
     electric_field_function_ = std::move(function);
     electric_field_type_ = type;
 }
+
+bool Detector::hasMagneticField() const {
+    return magnetic_field_on_;
+}
+
+void Detector::setMagneticField(ROOT::Math::XYZVector b_field) {
+    magnetic_field_on_ = true;
+    magnetic_field_ = b_field;
+}
+
+/**
+ * The magnetic field is evaluated for any sensor position.
+ */
+ROOT::Math::XYZVector Detector::getMagneticField() const {
+    return magnetic_field_;
+}
