@@ -115,7 +115,8 @@ std::list<Configuration>& ConfigManager::getModuleConfigurations() {
  * An instance configuration is a specialized configuration for a particular module instance. If an unique name already
  * exists the previous record is deleted and a new configuration record corresponding to the replaced instance is added.
  */
-Configuration& ConfigManager::addInstanceConfiguration(const std::string& unique_name, const Configuration& config) {
+Configuration& ConfigManager::addInstanceConfiguration(const ModuleIdentifier& identifier, const Configuration& config) {
+    std::string unique_name = identifier.getUniqueName();
     // Check uniqueness
     if(instance_name_to_config_.find(unique_name) != instance_name_to_config_.end()) {
         instance_configs_.erase(instance_name_to_config_[unique_name]);
@@ -126,8 +127,8 @@ Configuration& ConfigManager::addInstanceConfiguration(const std::string& unique
     Configuration& ret_config = instance_configs_.back();
     instance_name_to_config_[unique_name] = --instance_configs_.end();
 
-    // Add unique identifier key
-    ret_config.set<std::string>("unique_name", unique_name);
+    // Add identifier key to config
+    ret_config.set<std::string>("identifier", identifier.getIdentifier());
 
     // Apply instance options
     option_parser_.applyOptions(unique_name, ret_config);
@@ -136,7 +137,7 @@ Configuration& ConfigManager::addInstanceConfiguration(const std::string& unique
 
 /**
  * The list of instance configurations can contain configurations with duplicate names, but the instance configuration is
- * guaranteed to have a configuration value 'unique_name' that contains an unique name
+ * guaranteed to have a configuration value 'identifier' that contains an unique identifier for every same config name
  */
 std::list<Configuration>& ConfigManager::getInstanceConfigurations() {
     return instance_configs_;

@@ -17,6 +17,7 @@
 #include "ConfigReader.hpp"
 #include "Configuration.hpp"
 #include "OptionParser.hpp"
+#include "core/module/ModuleIdentifier.hpp"
 
 namespace allpix {
 
@@ -76,11 +77,11 @@ namespace allpix {
 
         /**
          * @brief Add a new module instance configuration and applies instance options
-         * @param unique_name Unique name for this instance
+         * @param identifier Identifier for this module instance
          * @param config Instance configuration to store
          * @return Reference to stored instance configuration
          */
-        Configuration& addInstanceConfiguration(const std::string& unique_name, const Configuration& config);
+        Configuration& addInstanceConfiguration(const ModuleIdentifier& identifier, const Configuration& config);
         /**
          * @brief Get all the instance configurations
          * @return Reference to list of instance configurations

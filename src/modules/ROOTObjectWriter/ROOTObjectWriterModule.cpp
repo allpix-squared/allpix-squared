@@ -187,17 +187,18 @@ void ROOTObjectWriterModule::finalize() {
     // Save the instance configuration to the output file
     for(auto& config : conf_manager->getInstanceConfigurations()) {
         // Create a new directory per section, using the unique module name
-        auto unique_name = config.get<std::string>("unique_name");
+        auto unique_name = config.getName();
+        auto identifier = config.get<std::string>("identifier");
+        if(!identifier.empty()) {
+            unique_name = unique_name + ":" + identifier;
+        }
         auto section_dir = config_dir->mkdir(unique_name.c_str());
         LOG(TRACE) << "Writing configuration for: " << unique_name;
 
         // Loop over all values in the section
         for(auto& key_value : config.getAll()) {
-            // Skip the unique name and input / output if empty
-            if(key_value.first == "unique_name") {
-                continue;
-            }
-            if((key_value.first == "input" || key_value.first == "output") && key_value.second.empty()) {
+            // Skip the identifier
+            if(key_value.first == "identifier") {
                 continue;
             }
             section_dir->WriteObject(&key_value.second, key_value.first.c_str());

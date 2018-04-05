@@ -187,9 +187,6 @@ void ModuleManager::load(Messenger* messenger,
         std::string global_dir = gSystem->pwd();
         config.set<std::string>("_global_dir", global_dir);
 
-        // Set default file protection setting, inherited from the global setting:
-        config.setDefault<bool>("deny_overwrite", global_config.get<bool>("deny_overwrite", false));
-
         // Set default input and output name
         config.setDefault<std::string>("input", "");
         config.setDefault<std::string>("output", "");
@@ -280,7 +277,7 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
     }
 
     // Create and add module instance config
-    Configuration& instance_config = conf_manager_->addInstanceConfiguration(identifier.getUniqueName(), config);
+    Configuration& instance_config = conf_manager_->addInstanceConfiguration(identifier, config);
 
     // Specialize instance configuration
     instance_config.set<uint64_t>("_seed", seeder());
@@ -407,7 +404,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         auto start = std::chrono::steady_clock::now();
 
         // Create and add module instance config
-        Configuration& instance_config = conf_manager_->addInstanceConfiguration(instance.second.getUniqueName(), config);
+        Configuration& instance_config = conf_manager_->addInstanceConfiguration(instance.second, config);
 
         // Add internal module config
         instance_config.set<uint64_t>("_seed", seeder());
