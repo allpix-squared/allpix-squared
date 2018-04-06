@@ -648,36 +648,42 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         return diffusion;
     };
 
-    // Define a lambda function to compute the electron velocity
-    auto carrier_velocity = [&](double, Eigen::Vector3d cur_pos) -> Eigen::Vector3d {
-        // Compute the drift velocity
+    // Define lambda functions to compute the charge carrier velocity with or without magnetic field
+    std::function<Eigen::Vector3d(double, Eigen::Vector3d)> carrier_velocity_noB =
+        [&](double, Eigen::Vector3d cur_pos) -> Eigen::Vector3d {
+        auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
+        Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
+
+        LOG(INFO) << "noB";
+        return static_cast<int>(type) * carrier_mobility(efield.norm()) * efield;
+    };
+
+    std::function<Eigen::Vector3d(double, Eigen::Vector3d)> carrier_velocity_withB =
+        [&](double, Eigen::Vector3d cur_pos) -> Eigen::Vector3d {
         auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
         Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
 
         Eigen::Vector3d velocity;
-        if(has_magnetic_field_) {
-            Eigen::Vector3d bfield(magnetic_field_.x(), magnetic_field_.y(), magnetic_field_.z());
+        Eigen::Vector3d bfield(magnetic_field_.x(), magnetic_field_.y(), magnetic_field_.z());
 
-            auto mob = carrier_mobility(efield.norm());
-            auto exb = efield.cross(bfield);
+        auto mob = carrier_mobility(efield.norm());
+        auto exb = efield.cross(bfield);
 
-            Eigen::Vector3d term1;
-            double hallFactor = (type == CarrierType::ELECTRON ? electron_Hall_ : hole_Hall_);
-            term1 = static_cast<int>(type) * mob * hallFactor * exb;
+        Eigen::Vector3d term1;
+        double hallFactor = (type == CarrierType::ELECTRON ? electron_Hall_ : hole_Hall_);
+        term1 = static_cast<int>(type) * mob * hallFactor * exb;
 
-            Eigen::Vector3d term2 = mob * mob * hallFactor * hallFactor * efield.dot(bfield) * bfield;
+        Eigen::Vector3d term2 = mob * mob * hallFactor * hallFactor * efield.dot(bfield) * bfield;
 
-            auto rnorm = 1 + mob * mob * hallFactor * hallFactor * bfield.dot(bfield);
-
-            velocity = static_cast<int>(type) * mob * (efield + term1 + term2) / rnorm;
-        } else {
-            velocity = static_cast<int>(type) * carrier_mobility(efield.norm()) * efield;
-        }
-        return velocity;
+        auto rnorm = 1 + mob * mob * hallFactor * hallFactor * bfield.dot(bfield);
+        LOG(INFO) << "withB";
+        return static_cast<int>(type) * mob * (efield + term1 + term2) / rnorm;
     };
 
-    // Create the runge kutta solver with an RKF5 tableau
-    auto runge_kutta = make_runge_kutta(tableau::RK5, carrier_velocity, timestep_start_, position);
+    // Create the runge kutta solver with an RKF5 tableau, using different velocity calculators depending on the magnetic
+    // field
+    auto runge_kutta = make_runge_kutta(
+        tableau::RK5, (has_magnetic_field_ ? carrier_velocity_withB : carrier_velocity_noB), timestep_start_, position);
 
     // Continue propagation until the deposit is outside the sensor
     Eigen::Vector3d last_position = position;
