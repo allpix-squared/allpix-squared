@@ -654,13 +654,9 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
             auto exb = efield.cross(bfield);
 
             Eigen::Vector3d term1;
-            double hallFactor;
-            if(type == CarrierType::ELECTRON) {
-                hallFactor = electron_Hall_;
-            } else {
-                hallFactor = hole_Hall_;
-            }
+            double hallFactor = (type == CarrierType::ELECTRON ? electron_Hall_ : hole_Hall_);
             term1 = static_cast<int>(type) * mob * hallFactor * exb;
+
             Eigen::Vector3d term2 = mob * mob * hallFactor * hallFactor * efield.dot(bfield) * bfield;
 
             auto rnorm = 1 + mob * mob * hallFactor * hallFactor * bfield.dot(bfield);
