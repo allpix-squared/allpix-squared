@@ -81,7 +81,7 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
 
         //Conversion of G4ParentID to customID, if ID = 0 do not convert
         auto parentTrackG4ID = step->GetTrack()->GetParentID();
-        auto parentTrackCustomID = parentTrackG4ID == 0 ? parentTrackG4ID : G4TrackIDToCustomID_.at(parentTrackG4ID);
+        auto parentTrackCustomID = AllpixG4TrackInfo::getCustomIDfromG4ID(parentTrackG4ID); 
         track_parents_.emplace(trackID, parentTrackCustomID);
 
         track_pdg_.emplace(trackID, step->GetTrack()->GetDynamicParticle()->GetPDGcode());

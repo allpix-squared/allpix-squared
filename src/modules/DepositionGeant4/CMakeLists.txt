@@ -25,6 +25,7 @@ ALLPIX_MODULE_SOURCES(${MODULE_NAME}
     DepositionGeant4Module.cpp
     GeneratorActionG4.cpp
     SensitiveDetectorActionG4.cpp
+    AllpixG4TrackInfo.cpp
     UserHookSetUniqueTrackID.cpp
 )
 
