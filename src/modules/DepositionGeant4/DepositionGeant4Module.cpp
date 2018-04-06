@@ -179,7 +179,7 @@ void DepositionGeant4Module::init() {
         MagneticFieldType magnetic_field_type_ = geo_manager_->getMagneticFieldType();
 
         if(magnetic_field_type_ == MagneticFieldType::CONSTANT) {
-            ROOT::Math::XYZVector b_field = geo_manager_->getMagneticFieldAtPos(ROOT::Math::XYZPoint(0., 0., 0.));
+            ROOT::Math::XYZVector b_field = geo_manager_->getMagneticField(ROOT::Math::XYZPoint(0., 0., 0.));
             G4MagneticField* magField = new G4UniformMagField(G4ThreeVector(b_field.x(), b_field.y(), b_field.z()));
             G4FieldManager* globalFieldMgr = G4TransportationManager::GetTransportationManager()->GetFieldManager();
             globalFieldMgr->SetDetectorField(magField);

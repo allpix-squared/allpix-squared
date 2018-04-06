@@ -490,11 +490,7 @@ void GeometryManager::close_geometry() {
 }
 
 bool GeometryManager::hasMagneticField() const {
-    if(magnetic_field_type_ != MagneticFieldType::NONE) {
-        return true;
-    } else {
-        return false;
-    }
+    return (magnetic_field_type_ != MagneticFieldType::NONE);
 }
 
 void GeometryManager::setMagneticFieldFunction(MagneticFieldFunction function, MagneticFieldType type) {
@@ -506,6 +502,6 @@ MagneticFieldType GeometryManager::getMagneticFieldType() const {
     return magnetic_field_type_;
 }
 
-ROOT::Math::XYZVector GeometryManager::getMagneticFieldAtPos(ROOT::Math::XYZPoint position) const {
+ROOT::Math::XYZVector GeometryManager::getMagneticField(const ROOT::Math::XYZPoint position) const {
     return magnetic_field_function_(position);
 }

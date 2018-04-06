@@ -270,7 +270,7 @@ bool Detector::hasMagneticField() const {
 
 void Detector::setMagneticField(ROOT::Math::XYZVector b_field) {
     magnetic_field_on_ = true;
-    magnetic_field_ = b_field;
+    magnetic_field_ = std::move(b_field);
 }
 
 /**

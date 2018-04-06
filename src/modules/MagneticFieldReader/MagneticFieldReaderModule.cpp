@@ -53,7 +53,7 @@ void MagneticFieldReaderModule::init() {
         geometryManager_->setMagneticFieldFunction(function, type);
         std::vector<std::shared_ptr<Detector>> detectors = geometryManager_->getDetectors();
         for(auto& detector : detectors) {
-            detector->setMagneticField(geometryManager_->getMagneticFieldAtPos(detector->getPosition()));
+            detector->setMagneticField(geometryManager_->getMagneticField(detector->getPosition()));
         }
     } else {
         throw InvalidValueError(config_, "model", "model can currently only be 'constant'");
