@@ -9,6 +9,7 @@
  */
 
 #include "SensitiveDetectorActionG4.hpp"
+#include "AllpixG4TrackInfo.hpp"
 
 #include <memory>
 
@@ -66,19 +67,29 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
         ROOT::Math::XYZPoint(deposit_position_g4.x() + detector_->getModel()->getSensorCenter().x(),
                              deposit_position_g4.y() + detector_->getModel()->getSensorCenter().y(),
                              deposit_position_g4.z() + detector_->getModel()->getSensorCenter().z());
+ 
+    const auto& userTrackInfo = dynamic_cast<AllpixG4TrackInfo*>(step->GetTrack()->GetUserInformation());
+    auto trackID = userTrackInfo->getID();
 
     // Save begin point when track is seen for the first time
-    if(track_begin_.find(step->GetTrack()->GetTrackID()) == track_begin_.end()) {
+    if(track_begin_.find(trackID) == track_begin_.end()) {
         auto start_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(preStepPoint->GetPosition()));
-        track_begin_.emplace(step->GetTrack()->GetTrackID(), start_position);
+        track_begin_.emplace(trackID, start_position);
+        
+        //Bookkeeping of G4ID to customID translation
+        G4TrackIDToCustomID_.emplace(step->GetTrack()->GetTrackID(), trackID);
 
-        track_parents_.emplace(step->GetTrack()->GetTrackID(), step->GetTrack()->GetParentID());
-        track_pdg_.emplace(step->GetTrack()->GetTrackID(), step->GetTrack()->GetDynamicParticle()->GetPDGcode());
+        //Conversion of G4ParentID to customID, if ID = 0 do not convert
+        auto parentTrackG4ID = step->GetTrack()->GetParentID();
+        auto parentTrackCustomID = parentTrackG4ID == 0 ? parentTrackG4ID : G4TrackIDToCustomID_.at(parentTrackG4ID);
+        track_parents_.emplace(trackID, parentTrackCustomID);
+
+        track_pdg_.emplace(trackID, step->GetTrack()->GetDynamicParticle()->GetPDGcode());
     }
 
     // Update current end point with the current last step
     auto end_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(postStepPoint->GetPosition()));
-    track_end_[step->GetTrack()->GetTrackID()] = end_position;
+    track_end_[trackID] = end_position;
 
     // Add new deposit if the charge is more than zero
     if(charge == 0) {
@@ -89,11 +100,11 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
 
     // Deposit electron
     deposits_.emplace_back(deposit_position, global_deposit_position, CarrierType::ELECTRON, charge, mid_time);
-    deposit_to_id_.push_back(step->GetTrack()->GetTrackID());
+    deposit_to_id_.push_back(trackID);
 
     // Deposit hole
     deposits_.emplace_back(deposit_position, global_deposit_position, CarrierType::HOLE, charge, mid_time);
-    deposit_to_id_.push_back(step->GetTrack()->GetTrackID());
+    deposit_to_id_.push_back(trackID);
 
     LOG(DEBUG) << "Created deposit of " << charge << " charges at " << display_vector(mid_pos, {"mm", "um"})
                << " locally on " << display_vector(deposit_position, {"mm", "um"}) << " in " << detector_->getName()
@@ -195,4 +206,5 @@ void SensitiveDetectorActionG4::dispatchMessages() {
     // Clear link tables for next event
     deposit_to_id_.clear();
     id_to_particle_.clear();
+    AllpixG4TrackInfo::resetCounter();
 }

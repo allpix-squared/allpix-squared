@@ -96,6 +96,9 @@ namespace allpix {
         std::vector<int> deposit_to_id_;
         // Map from track id to mc particle index
         std::map<int, size_t> id_to_particle_;
+
+        // Map to link the internal G4TrackID to the custom trackID
+        std::map<int, int> G4TrackIDToCustomID_;
     };
 } // namespace allpix
 
