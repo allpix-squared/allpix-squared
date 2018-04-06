@@ -7,6 +7,6 @@ using namespace allpix;
 int AllpixG4TrackInfo::gCounter = 1;
 
 void UserHookSetUniqueTrackID::PreUserTrackingAction(const G4Track* aTrack) {
-  G4Track* theTrack = (G4Track*)aTrack;
+  G4Track* theTrack = const_cast<G4Track*>(aTrack);
   theTrack->SetUserInformation(new AllpixG4TrackInfo());
 }
