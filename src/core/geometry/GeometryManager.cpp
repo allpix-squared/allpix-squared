@@ -502,6 +502,6 @@ MagneticFieldType GeometryManager::getMagneticFieldType() const {
     return magnetic_field_type_;
 }
 
-ROOT::Math::XYZVector GeometryManager::getMagneticField(const ROOT::Math::XYZPoint position) const {
+ROOT::Math::XYZVector GeometryManager::getMagneticField(const ROOT::Math::XYZPoint& position) const {
     return magnetic_field_function_(position);
 }

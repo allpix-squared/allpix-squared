@@ -199,7 +199,7 @@ namespace allpix {
          * @param pos Position in the global frame
          * @return Vector of the field at the queried point
          */
-        ROOT::Math::XYZVector getMagneticField(const ROOT::Math::XYZPoint position) const;
+        ROOT::Math::XYZVector getMagneticField(const ROOT::Math::XYZPoint& position) const;
 
         MagneticFieldType getMagneticFieldType() const;
 
