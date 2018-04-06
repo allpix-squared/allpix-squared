@@ -490,7 +490,7 @@ void GenericPropagationModule::init() {
         }
     }
 
-    // Check for magnetic field and output warning for slow propagation if not defined
+    // Check for magnetic field
     has_magnetic_field_ = detector->hasMagneticField();
     if(has_magnetic_field_) {
         LOG(DEBUG) << "This detector sees a magnetic field.";
