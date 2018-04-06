@@ -10,30 +10,30 @@
 #ifndef UserHookSetUniqueTrackID_H
 #define UserHookSetUniqueTrackID_H 1
 
-#include "G4UserTrackingAction.hh"
 #include "G4Track.hh"
+#include "G4UserTrackingAction.hh"
 
 namespace allpix {
     /**
-     * @brief Assigns every G4Track a AllpixG4TrackInfo which carries the unique track ID 
+     * @brief Assigns every G4Track a AllpixG4TrackInfo which carries the unique track ID
      */
     class UserHookSetUniqueTrackID : public G4UserTrackingAction {
     public:
-    /**
-     * @brief Default constructor 
-     */
-    UserHookSetUniqueTrackID() = default;
+        /**
+         * @brief Default constructor
+         */
+        UserHookSetUniqueTrackID() = default;
 
-    /**
-     * @brief Default destructor 
-     */
-    ~UserHookSetUniqueTrackID() = default;
+        /**
+         * @brief Default destructor
+         */
+        ~UserHookSetUniqueTrackID() = default;
 
-    /**
-     * @brief Called for every G4Track at beginning 
-     */
-    void PreUserTrackingAction(const G4Track* aTrack);
-};
+        /**
+         * @brief Called for every G4Track at beginning
+         */
+        void PreUserTrackingAction(const G4Track* aTrack);
+    };
 
-}
+} // namespace allpix
 #endif

@@ -67,7 +67,7 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
         ROOT::Math::XYZPoint(deposit_position_g4.x() + detector_->getModel()->getSensorCenter().x(),
                              deposit_position_g4.y() + detector_->getModel()->getSensorCenter().y(),
                              deposit_position_g4.z() + detector_->getModel()->getSensorCenter().z());
- 
+
     const auto userTrackInfo = dynamic_cast<AllpixG4TrackInfo*>(step->GetTrack()->GetUserInformation());
     auto trackID = userTrackInfo->getID();
 
@@ -75,13 +75,13 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     if(track_begin_.find(trackID) == track_begin_.end()) {
         auto start_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(preStepPoint->GetPosition()));
         track_begin_.emplace(trackID, start_position);
-        
-        //Bookkeeping of G4ID to customID translation
+
+        // Bookkeeping of G4ID to customID translation
         G4TrackIDToCustomID_.emplace(step->GetTrack()->GetTrackID(), trackID);
 
-        //Conversion of G4ParentID to customID, if ID = 0 do not convert
+        // Conversion of G4ParentID to customID, if ID = 0 do not convert
         auto parentTrackG4ID = step->GetTrack()->GetParentID();
-        auto parentTrackCustomID = AllpixG4TrackInfo::getCustomIDfromG4ID(parentTrackG4ID); 
+        auto parentTrackCustomID = AllpixG4TrackInfo::getCustomIDfromG4ID(parentTrackG4ID);
         track_parents_.emplace(trackID, parentTrackCustomID);
 
         track_pdg_.emplace(trackID, step->GetTrack()->GetDynamicParticle()->GetPDGcode());
