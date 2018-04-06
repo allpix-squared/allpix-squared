@@ -92,6 +92,9 @@ GenericPropagationModule::GenericPropagationModule(Configuration config,
             "propagate_electrons",
             "No charge carriers selected for propagation, enable 'propagate_electrons' or 'propagate_holes'.");
     }
+
+    config_.setDefault<bool>("ignore_magnetic_field", false);
+
     // Copy some variables from configuration to avoid lookups:
     temperature_ = config_.get<double>("temperature");
     timestep_min_ = config_.get<double>("timestep_min");
@@ -493,8 +496,13 @@ void GenericPropagationModule::init() {
     // Check for magnetic field
     has_magnetic_field_ = detector->hasMagneticField();
     if(has_magnetic_field_) {
-        LOG(DEBUG) << "This detector sees a magnetic field.";
-        magnetic_field_ = detector_->getMagneticField();
+        if(config_.get<bool>("ignore_magnetic_field")) {
+            has_magnetic_field_ = false;
+            LOG(WARNING) << "A magnetic field is switched on, but is set to be ignored for this module.";
+        } else {
+            LOG(DEBUG) << "This detector sees a magnetic field.";
+            magnetic_field_ = detector_->getMagneticField();
+        }
     }
 
     if(output_plots_) {
