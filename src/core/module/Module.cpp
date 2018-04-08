@@ -83,7 +83,7 @@ std::string Module::createOutputFile(const std::string& path, bool global) const
 
     try {
         // Create all the required main directories
-        create_directories(file);
+        allpix::create_directories(file);
 
         // Add the file itself
         file += "/";
