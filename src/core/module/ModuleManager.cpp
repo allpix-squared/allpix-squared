@@ -598,7 +598,9 @@ void ModuleManager::run() {
     for(auto& module : modules_) {
         module_list.emplace_back(module.get());
     }
+    // clang-format off
     auto init_function = [log_level = Log::getReportingLevel(), log_format = Log::getFormat()]() {
+        // clang-format on
         // Initialize the threads to the same log level and format as the master setting
         Log::setReportingLevel(log_level);
         Log::setFormat(log_format);
@@ -637,7 +639,9 @@ void ModuleManager::run() {
                 thread_pool->execute_all();
             }
 
+            // clang-format off
             auto execute_module = [module = module.get(), event_num = i + 1, this, number_of_events]() {
+                // clang-format on
                 LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << event_num << " of " << number_of_events << " ["
                                                   << module->get_identifier().getUniqueName() << "]";
                 // Check if module is satisfied to run
