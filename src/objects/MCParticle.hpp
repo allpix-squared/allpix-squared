@@ -33,7 +33,9 @@ namespace allpix {
                    ROOT::Math::XYZPoint global_start_point,
                    ROOT::Math::XYZPoint local_end_point,
                    ROOT::Math::XYZPoint global_end_point,
-                   int particle_id);
+                   int particle_id,
+                   int trackID,
+                   int parentTrackID);
 
         /**
          * @brief Get the entry point of the particle in local coordinates
@@ -77,9 +79,19 @@ namespace allpix {
         const MCParticle* getParent() const;
 
         /**
+         * @brief Get unique track ID of the track responsible for this MCParticle
+         */
+        auto getTrackID() const;
+
+        /**
+         * @brief Get unique track ID of the parent track of this MCParticle, 0 if it doesn't exist
+         */
+        auto getParentTrackID() const;
+
+        /**
          * @brief ROOT class definition
          */
-        ClassDef(MCParticle, 3);
+        ClassDef(MCParticle, 4);
         /**
          * @brief Default constructor for ROOT I/O
          */
@@ -92,6 +104,8 @@ namespace allpix {
         ROOT::Math::XYZPoint global_end_point_{};
 
         int particle_id_{};
+        int trackID_{};
+        int parentTrackID_{};
 
         TRef parent_;
     };

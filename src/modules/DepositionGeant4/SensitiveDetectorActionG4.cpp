@@ -76,10 +76,7 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
         auto start_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(preStepPoint->GetPosition()));
         track_begin_.emplace(trackID, start_position);
 
-        // Bookkeeping of G4ID to customID translation
-        G4TrackIDToCustomID_.emplace(step->GetTrack()->GetTrackID(), trackID);
-
-        // Conversion of G4ParentID to customID, if ID = 0 do not convert
+        // Conversion of G4ParentID to customID
         auto parentTrackG4ID = step->GetTrack()->GetParentID();
         auto parentTrackCustomID = AllpixG4TrackInfo::getCustomIDfromG4ID(parentTrackG4ID);
         track_parents_.emplace(trackID, parentTrackCustomID);
@@ -143,7 +140,8 @@ void SensitiveDetectorActionG4::dispatchMessages() {
 
         auto global_begin = detector_->getGlobalPosition(local_begin);
         auto global_end = detector_->getGlobalPosition(local_end);
-        mc_particles.emplace_back(local_begin, global_begin, local_end, global_end, pdg_code);
+        mc_particles.emplace_back(
+            local_begin, global_begin, local_end, global_end, pdg_code, track_id, track_parents_[track_id]);
         id_to_particle_[track_id] = mc_particles.size() - 1;
 
         LOG(DEBUG) << "Found MC particle " << pdg_code << " crossing detector from "

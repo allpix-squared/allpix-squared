@@ -6,7 +6,7 @@ int AllpixG4TrackInfo::gCounter = 1;
 std::map<int, int> AllpixG4TrackInfo::gG4ToCustomID = std::map<int, int>();
 
 AllpixG4TrackInfo::AllpixG4TrackInfo(int G4TrackID) : G4VUserTrackInformation(), _counter(gCounter++) {
-    gG4ToCustomID.emplace(G4TrackID, _counter);
+    gG4ToCustomID[G4TrackID] = _counter;
 }
 
 void AllpixG4TrackInfo::resetCounter() {
