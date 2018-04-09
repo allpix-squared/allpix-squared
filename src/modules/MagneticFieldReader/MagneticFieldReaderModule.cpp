@@ -53,6 +53,8 @@ void MagneticFieldReaderModule::init() {
         geometryManager_->setMagneticFieldFunction(function, type);
         std::vector<std::shared_ptr<Detector>> detectors = geometryManager_->getDetectors();
         for(auto& detector : detectors) {
+            // TODO the magnetic field is calculated once for the center position of the detector. This could be extended to
+            // a function enabling a gradient in the magnetic field inside the sensor
             detector->setMagneticField(geometryManager_->getMagneticField(detector->getPosition()));
         }
     } else {

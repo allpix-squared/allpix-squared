@@ -268,6 +268,8 @@ bool Detector::hasMagneticField() const {
     return magnetic_field_on_;
 }
 
+// TODO Currently the magnetic field in the detector is fixed to the field vector at it's center position. Change in case a
+// field gradient is needed inside the sensor.
 void Detector::setMagneticField(ROOT::Math::XYZVector b_field) {
     magnetic_field_on_ = true;
     magnetic_field_ = std::move(b_field);
