@@ -654,7 +654,6 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
         Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
 
-        LOG(INFO) << "noB";
         return static_cast<int>(type) * carrier_mobility(efield.norm()) * efield;
     };
 
@@ -676,7 +675,6 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         Eigen::Vector3d term2 = mob * mob * hallFactor * hallFactor * efield.dot(bfield) * bfield;
 
         auto rnorm = 1 + mob * mob * hallFactor * hallFactor * bfield.dot(bfield);
-        LOG(INFO) << "withB";
         return static_cast<int>(type) * mob * (efield + term1 + term2) / rnorm;
     };
 
