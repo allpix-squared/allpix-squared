@@ -42,11 +42,11 @@ int MCParticle::getParticleID() const {
     return particle_id_;
 }
 
-auto MCParticle::getTrackID() const {
+int MCParticle::getTrackID() const {
     return trackID_;
 }
 
-auto MCParticle::getParentTrackID() const {
+int MCParticle::getParentTrackID() const {
     return parentTrackID_;
 }
 

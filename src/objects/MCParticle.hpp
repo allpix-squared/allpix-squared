@@ -81,12 +81,12 @@ namespace allpix {
         /**
          * @brief Get unique track ID of the track responsible for this MCParticle
          */
-        auto getTrackID() const;
+        int getTrackID() const;
 
         /**
          * @brief Get unique track ID of the parent track of this MCParticle, 0 if it doesn't exist
          */
-        auto getParentTrackID() const;
+        int getParentTrackID() const;
 
         /**
          * @brief ROOT class definition
