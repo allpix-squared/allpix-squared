@@ -15,7 +15,7 @@ A start and end point are stored in the object: for events involving a single MC
 The exact handling of non-linear particle trajectories due to multiple scattering is up to module.
 Every MCParticle carries a unique track ID to associate it to a trajectory. MCParticles which have the same track ID belong to the same trajectory.
 The MCParticle also stores an identifier of the particle type, using the PDG particle codes~\cite{pdg}.
-The MCParticle additionally stores a parent MCParticle object, if available. The lack of a parent doesn't gurantee that this MCParticle originates from a primary particle, but only means that no parent on the given plane exists.
+The MCParticle additionally stores a parent MCParticle object, if available. The lack of a parent doesn't guarantee that this MCParticle originates from a primary particle, but only means that no parent on the given plane exists.
 
 \nlparagraph{DepositedCharge}
 The set of charge carriers deposited by an ionizing particle crossing the active material of the sensor.
