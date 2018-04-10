@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Defines the handling of the sensitive device
+ * @brief Defines a user hook for Geant4 to assign custom track IDs which are unique
  * @copyright Copyright (c) 2018 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
