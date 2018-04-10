@@ -187,9 +187,6 @@ void ModuleManager::load(Messenger* messenger,
         std::string global_dir = gSystem->pwd();
         config.set<std::string>("_global_dir", global_dir);
 
-        // Set default file protection setting, inherited from the global setting:
-        config.setDefault<bool>("deny_overwrite", global_config.get<bool>("deny_overwrite", false));
-
         // Set default input and output name
         config.setDefault<std::string>("input", "");
         config.setDefault<std::string>("output", "");
@@ -280,7 +277,7 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
     }
 
     // Create and add module instance config
-    Configuration& instance_config = conf_manager_->addInstanceConfiguration(identifier.getUniqueName(), config);
+    Configuration& instance_config = conf_manager_->addInstanceConfiguration(identifier, config);
 
     // Specialize instance configuration
     instance_config.set<uint64_t>("_seed", seeder());
@@ -407,7 +404,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         auto start = std::chrono::steady_clock::now();
 
         // Create and add module instance config
-        Configuration& instance_config = conf_manager_->addInstanceConfiguration(instance.second.getUniqueName(), config);
+        Configuration& instance_config = conf_manager_->addInstanceConfiguration(instance.second, config);
 
         // Add internal module config
         instance_config.set<uint64_t>("_seed", seeder());
@@ -601,7 +598,9 @@ void ModuleManager::run() {
     for(auto& module : modules_) {
         module_list.emplace_back(module.get());
     }
-    auto init_function = [ log_level = Log::getReportingLevel(), log_format = Log::getFormat() ]() {
+    // clang-format off
+    auto init_function = [log_level = Log::getReportingLevel(), log_format = Log::getFormat()]() {
+        // clang-format on
         // Initialize the threads to the same log level and format as the master setting
         Log::setReportingLevel(log_level);
         Log::setFormat(log_format);
@@ -640,7 +639,9 @@ void ModuleManager::run() {
                 thread_pool->execute_all();
             }
 
-            auto execute_module = [ module = module.get(), event_num = i + 1, this, number_of_events ]() {
+            // clang-format off
+            auto execute_module = [module = module.get(), event_num = i + 1, this, number_of_events]() {
+                // clang-format on
                 LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << event_num << " of " << number_of_events << " ["
                                                   << module->get_identifier().getUniqueName() << "]";
                 // Check if module is satisfied to run
@@ -760,8 +761,7 @@ void ModuleManager::finalize() {
         module->getROOTDirectory()->cd();
         // Finalize module
         module->finalize();
-        // Close the ROOT directory after finalizing
-        module->getROOTDirectory()->Close();
+        // Remove the pointer to the ROOT directory after finalizing
         module->set_ROOT_directory(nullptr);
         // Remove the config manager
         module->set_config_manager(nullptr);
@@ -772,6 +772,8 @@ void ModuleManager::finalize() {
         auto end = std::chrono::steady_clock::now();
         module_execution_time_[module.get()] += static_cast<std::chrono::duration<long double>>(end - start).count();
     }
+    // Close module ROOT file
+    modules_file_->Close();
     LOG_PROGRESS(STATUS, "FINALIZE_LOOP") << "Finalization completed";
 
     long double slowest_time = 0;

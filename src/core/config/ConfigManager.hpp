@@ -17,6 +17,7 @@
 #include "ConfigReader.hpp"
 #include "Configuration.hpp"
 #include "OptionParser.hpp"
+#include "core/module/ModuleIdentifier.hpp"
 
 namespace allpix {
 
@@ -76,11 +77,11 @@ namespace allpix {
 
         /**
          * @brief Add a new module instance configuration and applies instance options
-         * @param unique_name Unique name for this instance
+         * @param identifier Identifier for this module instance
          * @param config Instance configuration to store
          * @return Reference to stored instance configuration
          */
-        Configuration& addInstanceConfiguration(const std::string& unique_name, const Configuration& config);
+        Configuration& addInstanceConfiguration(const ModuleIdentifier& identifier, const Configuration& config);
         /**
          * @brief Get all the instance configurations
          * @return Reference to list of instance configurations
@@ -100,11 +101,9 @@ namespace allpix {
          * @brief Get all the detector configurations
          * @return Reference to list of detector configurations
          */
-        // std::list<Configuration>& getDetectorConfigurations();
-    private:
-        std::string file_name_;
-        ConfigReader reader_;
+        std::list<Configuration>& getDetectorConfigurations();
 
+    private:
         std::set<std::string> global_names_{};
         std::set<std::string> ignore_names_{};
 
@@ -112,6 +111,8 @@ namespace allpix {
 
         std::list<Configuration> module_configs_;
         Configuration global_config_;
+
+        std::list<Configuration> detector_configs_;
 
         std::list<Configuration> instance_configs_;
         std::map<std::string, std::list<Configuration>::iterator> instance_name_to_config_;

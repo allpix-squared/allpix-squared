@@ -117,7 +117,6 @@ void Allpix::load() {
         seed = global_config.get<uint64_t>("random_seed");
         seeder_modules.seed(seed);
         LOG(STATUS) << "Initialized PRNG with configured seed " << seed;
-        global_config.set<uint64_t>("random_seed", seed);
     } else {
         // Compute random entropy seed
         // Use the clock
@@ -130,6 +129,7 @@ void Allpix::load() {
         seed = (clock_seed ^ mem_seed ^ thread_seed);
         seeder_modules.seed(seed);
         LOG(STATUS) << "Initialized PRNG with system entropy seed " << seed;
+        global_config.set<uint64_t>("random_seed", seed);
     }
 
     if(global_config.has("random_seed_core")) {
@@ -191,7 +191,7 @@ void Allpix::load() {
     set_style();
 
     // Load the geometry
-    geo_mgr_->load(global_config, seeder_core);
+    geo_mgr_->load(conf_mgr_.get(), seeder_core);
 
     // Load the modules from the configuration
     if(!terminate_) {

@@ -26,20 +26,19 @@ using namespace allpix;
  */
 ConfigManager::ConfigManager(std::string file_name,
                              std::initializer_list<std::string> global,
-                             std::initializer_list<std::string> ignore)
-    : file_name_(std::move(file_name)) {
+                             std::initializer_list<std::string> ignore) {
     // Check if the file exists
-    std::ifstream file(file_name_);
+    std::ifstream file(file_name);
     if(!file) {
-        throw ConfigFileUnavailableError(file_name_);
+        throw ConfigFileUnavailableError(file_name);
     }
 
     // Convert main file to absolute path
-    file_name_ = allpix::get_canonical_path(file_name_);
-    LOG(TRACE) << "Using " << file_name_ << " as main configuration file";
+    file_name = allpix::get_canonical_path(file_name);
+    LOG(TRACE) << "Reading main configuration";
 
     // Read the file
-    reader_.add(file, file_name_);
+    ConfigReader reader(file, file_name);
 
     // Convert all global and ignored names to lower case and store them
     auto lowercase = [](const std::string& in) {
@@ -51,10 +50,10 @@ ConfigManager::ConfigManager(std::string file_name,
     std::transform(ignore.begin(), ignore.end(), std::inserter(ignore_names_, ignore_names_.end()), lowercase);
 
     // Initialize global base configuration
-    global_config_ = reader_.getHeaderConfiguration();
+    global_config_ = reader.getHeaderConfiguration();
 
     // Store all the configurations read
-    for(auto& config : reader_.getConfigurations()) {
+    for(auto& config : reader.getConfigurations()) {
         // Skip all ignored sections
         std::string config_name = config.getName();
         std::transform(config_name.begin(), config_name.end(), config_name.begin(), ::tolower);
@@ -70,6 +69,15 @@ ConfigManager::ConfigManager(std::string file_name,
 
         module_configs_.push_back(config);
     }
+
+    // Reading detector file
+    std::string detector_file_name = global_config_.getPath("detectors_file", true);
+    LOG(TRACE) << "Reading detector configuration";
+
+    std::ifstream detector_file(detector_file_name);
+    ConfigReader detector_reader(detector_file, detector_file_name);
+    auto detector_configs = detector_reader.getConfigurations();
+    detector_configs_ = std::list<Configuration>(detector_configs.begin(), detector_configs.end());
 }
 
 /**
@@ -108,6 +116,12 @@ bool ConfigManager::loadOptions(const std::vector<std::string>& options) {
 std::list<Configuration>& ConfigManager::getModuleConfigurations() {
     return module_configs_;
 }
+/**
+ * The list of detector configurations is read from the configuration defined in 'detector_file'
+ */
+std::list<Configuration>& ConfigManager::getDetectorConfigurations() {
+    return detector_configs_;
+}
 
 /**
  * @warning A previously stored configuration is directly invalidated if the same unique name is used again
@@ -115,7 +129,8 @@ std::list<Configuration>& ConfigManager::getModuleConfigurations() {
  * An instance configuration is a specialized configuration for a particular module instance. If an unique name already
  * exists the previous record is deleted and a new configuration record corresponding to the replaced instance is added.
  */
-Configuration& ConfigManager::addInstanceConfiguration(const std::string& unique_name, const Configuration& config) {
+Configuration& ConfigManager::addInstanceConfiguration(const ModuleIdentifier& identifier, const Configuration& config) {
+    std::string unique_name = identifier.getUniqueName();
     // Check uniqueness
     if(instance_name_to_config_.find(unique_name) != instance_name_to_config_.end()) {
         instance_configs_.erase(instance_name_to_config_[unique_name]);
@@ -126,8 +141,8 @@ Configuration& ConfigManager::addInstanceConfiguration(const std::string& unique
     Configuration& ret_config = instance_configs_.back();
     instance_name_to_config_[unique_name] = --instance_configs_.end();
 
-    // Add unique identifier key
-    ret_config.set<std::string>("unique_name", unique_name);
+    // Add identifier key to config
+    ret_config.set<std::string>("identifier", identifier.getIdentifier());
 
     // Apply instance options
     option_parser_.applyOptions(unique_name, ret_config);
@@ -136,7 +151,7 @@ Configuration& ConfigManager::addInstanceConfiguration(const std::string& unique
 
 /**
  * The list of instance configurations can contain configurations with duplicate names, but the instance configuration is
- * guaranteed to have a configuration value 'unique_name' that contains an unique name
+ * guaranteed to have a configuration value 'identifier' that contains an unique identifier for every same config name
  */
 std::list<Configuration>& ConfigManager::getInstanceConfigurations() {
     return instance_configs_;

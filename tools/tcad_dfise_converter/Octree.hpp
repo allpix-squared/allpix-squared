@@ -546,10 +546,9 @@ namespace unibn {
                 if(firsttime) {
                     octant->start = octant->child[i]->start;
                 } else {
-                    successors_[octant->child[lastChildIdx]->end] =
-                        octant->child[i]->start; // we have to ensure that also the
-                                                 // child ends link to the next
-                                                 // child start.
+                    successors_[octant->child[lastChildIdx]->end] = octant->child[i]->start; // we have to ensure that also
+                                                                                             // the child ends link to the
+                                                                                             // next child start.
                 }
 
                 lastChildIdx = i;
