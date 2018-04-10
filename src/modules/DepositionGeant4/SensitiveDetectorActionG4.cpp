@@ -74,6 +74,7 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
 
     // Save begin point when track is seen for the first time
     if(track_begin_.find(trackID) == track_begin_.end()) {
+        AllpixG4TrackInfo::registerTrack(trackID);
         auto start_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(preStepPoint->GetPosition()));
         track_begin_.emplace(trackID, start_position);
         track_parents_.emplace(trackID, parentTrackID);
@@ -199,5 +200,4 @@ void SensitiveDetectorActionG4::dispatchMessages() {
     // Clear link tables for next event
     deposit_to_id_.clear();
     id_to_particle_.clear();
-    AllpixG4TrackInfo::reset();
 }

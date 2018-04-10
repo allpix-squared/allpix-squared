@@ -12,6 +12,7 @@
 
 #include <Math/Point3D.h>
 #include <TRef.h>
+#include <TString.h>
 
 #include "Object.hpp"
 
@@ -29,7 +30,8 @@ namespace allpix {
          */
         MCTrack(ROOT::Math::XYZPoint start_point,
                 std::string G4Volume,
-                std::string Test,
+                std::string prodProcessName,
+                int prodProcessType,
                 int particle_id,
                 int trackID,
                 int parentID);
@@ -76,6 +78,7 @@ namespace allpix {
 
         bool isUsed() const { return used_; };
         void setUsed() { used_ = true; };
+        void dumpInfo();
 
         /**
          * @brief ROOT class definition
@@ -92,9 +95,14 @@ namespace allpix {
 
         int particle_id_{};
         int trackID_{};
+        int parentID_{};
+        int originG4ProcessType_{};
         int nSteps_{};
 
         bool used_;
+
+        TString originG4VolName_{};
+        TString originG4ProcessName_{};
 
         TRef parent_;
     };

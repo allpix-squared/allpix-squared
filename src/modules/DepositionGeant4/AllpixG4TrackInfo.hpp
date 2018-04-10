@@ -11,8 +11,13 @@
 #define AllpixG4TrackInfo_H 1
 
 #include <map>
+
 #include "G4Track.hh"
 #include "G4VUserTrackInformation.hh"
+
+#include "objects/MCTrack.hpp"
+
+#include "core/messenger/Messenger.hpp"
 
 namespace allpix {
     /**
@@ -39,13 +44,21 @@ namespace allpix {
         /**
          * @brief Static function to reset the state, i.e. counters etc. To be called after every event
          */
-        static void reset();
+        static void reset(Module* module, Messenger* messenger);
+        static void storeTrack(std::unique_ptr<MCTrack> theTrack);
+        static void registerTrack(int trackID);
+
+        void finaliseInfo(const G4Track* const aTrack);
 
     private:
         // Static counter to keep track of assigned track IDs
         static int gCounter;
         // Static map to link G4 ID to custom ID
         static std::map<int, int> gG4ToCustomID;
+        static std::map<int, std::unique_ptr<MCTrack>> gStoredTracks;
+
+        std::unique_ptr<MCTrack> _mcTrack;
+
         // Assigned track ID to track
         int _customTrackID;
         // Parent's track ID

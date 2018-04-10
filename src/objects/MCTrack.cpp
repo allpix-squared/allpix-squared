@@ -11,9 +11,15 @@
 
 using namespace allpix;
 
-MCTrack::MCTrack(
-    ROOT::Math::XYZPoint start_point, std::string G4Volume, std::string Test, int particle_id, int trackID, int parentID)
-    : start_point_(std::move(start_point)), particle_id_(particle_id), trackID_(trackID) {
+MCTrack::MCTrack(ROOT::Math::XYZPoint start_point,
+                 std::string G4Volume,
+                 std::string prodProcessName,
+                 int prodProcessType,
+                 int particle_id,
+                 int trackID,
+                 int parentID)
+    : start_point_(std::move(start_point)), particle_id_(particle_id), trackID_(trackID), parentID_(parentID),
+      originG4ProcessType_(prodProcessType), originG4VolName_(G4Volume), originG4ProcessName_(prodProcessName) {
     setParent(nullptr);
 }
 
@@ -31,6 +37,14 @@ int MCTrack::getParticleID() const {
 
 int MCTrack::getTrackID() const {
     return trackID_;
+}
+
+void MCTrack::dumpInfo() {
+    std::cout << "Track " << trackID_ << " has parent: " << parentID_ << ". It was created by particle: " << particle_id_
+              << " which was created by a " << originG4ProcessName_ << "(" << originG4ProcessType_ << ")"
+              << " process. It was created in " << originG4VolName_ << ", precisely at: " << start_point_.X() << "|"
+              << start_point_.Y() << "|" << start_point_.Z() << " and ends at: " << end_point_.X() << "|" << end_point_.Y()
+              << "|" << end_point_.Z() << '\n';
 }
 
 /**

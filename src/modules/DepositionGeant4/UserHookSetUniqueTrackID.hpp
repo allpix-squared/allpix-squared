@@ -33,6 +33,11 @@ namespace allpix {
          * @brief Called for every G4Track at beginning
          */
         void PreUserTrackingAction(const G4Track* aTrack);
+
+        /**
+         * @brief Called for every G4Track at end
+         */
+        void PostUserTrackingAction(const G4Track* aTrack);
     };
 
 } // namespace allpix
