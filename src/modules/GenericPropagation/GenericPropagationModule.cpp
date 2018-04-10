@@ -49,10 +49,10 @@ using namespace allpix;
  * Besides binding the message and setting defaults for the configuration, the module copies some configuration variables to
  * local copies to speed up computation.
  */
-GenericPropagationModule::GenericPropagationModule(Configuration config,
+GenericPropagationModule::GenericPropagationModule(Configuration& config,
                                                    Messenger* messenger,
                                                    std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector), messenger_(messenger), detector_(std::move(detector)) {
+    : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 

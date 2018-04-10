@@ -38,7 +38,7 @@ namespace allpix {
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
          * @param detector Pointer to the detector for this module instance
          */
-        ProjectionPropagationModule(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector);
+        ProjectionPropagationModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector);
 
         /**
          * @brief Initialize - create plots if needed

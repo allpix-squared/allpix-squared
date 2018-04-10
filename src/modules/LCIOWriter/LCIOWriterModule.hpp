@@ -34,7 +34,7 @@ namespace allpix {
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
          * @param geo_manager Pointer to the geometry manager, containing the detectors
          */
-        LCIOWriterModule(Configuration config, Messenger* messenger, GeometryManager* geo_manager);
+        LCIOWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
 
         ~LCIOWriterModule(){};
 

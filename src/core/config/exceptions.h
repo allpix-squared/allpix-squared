@@ -62,7 +62,7 @@ namespace allpix {
             // FIXME: file and line number are missing
             std::string section_str = "in section '" + section + "'";
             if(section.empty()) {
-                section_str = "in empty section";
+                section_str = "in global section";
             }
 
             error_message_ = "Could not convert value '" + value + "' from key '" + key + "' " + section_str + " to type " +
@@ -88,7 +88,7 @@ namespace allpix {
             // FIXME: file and line number are missing
             std::string section_str = "in section '" + section + "'";
             if(section.empty()) {
-                section_str = "in empty section";
+                section_str = "in global section";
             }
             error_message_ = "Key '" + key + "' " + section_str + " does not exist";
         }
