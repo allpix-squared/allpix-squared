@@ -70,17 +70,13 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
 
     const auto userTrackInfo = dynamic_cast<AllpixG4TrackInfo*>(step->GetTrack()->GetUserInformation());
     auto trackID = userTrackInfo->getID();
+    auto parentTrackID = userTrackInfo->getParentID();
 
     // Save begin point when track is seen for the first time
     if(track_begin_.find(trackID) == track_begin_.end()) {
         auto start_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(preStepPoint->GetPosition()));
         track_begin_.emplace(trackID, start_position);
-
-        // Conversion of G4ParentID to customID
-        auto parentTrackG4ID = step->GetTrack()->GetParentID();
-        auto parentTrackCustomID = AllpixG4TrackInfo::getCustomIDfromG4ID(parentTrackG4ID);
-        track_parents_.emplace(trackID, parentTrackCustomID);
-
+        track_parents_.emplace(trackID, parentTrackID);
         track_pdg_.emplace(trackID, step->GetTrack()->GetDynamicParticle()->GetPDGcode());
     }
 
@@ -204,5 +200,5 @@ void SensitiveDetectorActionG4::dispatchMessages() {
     // Clear link tables for next event
     deposit_to_id_.clear();
     id_to_particle_.clear();
-    AllpixG4TrackInfo::resetCounter();
+    AllpixG4TrackInfo::reset();
 }

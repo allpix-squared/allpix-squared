@@ -5,15 +5,14 @@ using namespace allpix;
 int AllpixG4TrackInfo::gCounter = 1;
 std::map<int, int> AllpixG4TrackInfo::gG4ToCustomID = std::map<int, int>();
 
-AllpixG4TrackInfo::AllpixG4TrackInfo(int G4TrackID) : _counter(gCounter++) {
-    gG4ToCustomID[G4TrackID] = _counter;
+AllpixG4TrackInfo::AllpixG4TrackInfo(const G4Track* const aTrack) : _customTrackID(gCounter++) {
+    gG4ToCustomID[aTrack->GetTrackID()] = _customTrackID;
+    // If the Geant4 ID is 0 we mustn't convert
+    auto G4ParentID = aTrack->GetParentID();
+    _parentTrackID = G4ParentID == 0 ? G4ParentID : gG4ToCustomID.at(G4ParentID);
 }
 
-void AllpixG4TrackInfo::resetCounter() {
+void AllpixG4TrackInfo::reset() {
     gCounter = 1;
     gG4ToCustomID.clear();
-}
-
-int AllpixG4TrackInfo::getCustomIDfromG4ID(int G4ID) {
-    return G4ID == 0 ? G4ID : gG4ToCustomID.at(G4ID);
 }

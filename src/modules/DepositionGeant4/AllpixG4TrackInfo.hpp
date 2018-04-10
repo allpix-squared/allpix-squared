@@ -11,6 +11,7 @@
 #define AllpixG4TrackInfo_H 1
 
 #include <map>
+#include "G4Track.hh"
 #include "G4VUserTrackInformation.hh"
 
 namespace allpix {
@@ -23,23 +24,22 @@ namespace allpix {
          * @brief Default constructor which automatically assigns new track ID
          * @param G4TrackID The G4 ID of the track to which the info is attached
          */
-        AllpixG4TrackInfo(int G4TrackID);
+        AllpixG4TrackInfo(const G4Track* const aTrack);
 
         /**
          * @brief Getter for unique ID of track
          */
-        int getID() const { return _counter; };
+        int getID() const { return _customTrackID; };
 
         /**
-         * @brief Static function to reset counter, to be called after every event
+         * @brief Getter for parent's track ID of track
          */
-        static void resetCounter();
+        int getParentID() const { return _parentTrackID; };
 
         /**
-         * @brief Static function to translate G4ID to custom ID
-         * @param G4ID The G4 ID to be translated
+         * @brief Static function to reset the state, i.e. counters etc. To be called after every event
          */
-        static int getCustomIDfromG4ID(int G4ID);
+        static void reset();
 
     private:
         // Static counter to keep track of assigned track IDs
@@ -47,7 +47,9 @@ namespace allpix {
         // Static map to link G4 ID to custom ID
         static std::map<int, int> gG4ToCustomID;
         // Assigned track ID to track
-        int _counter;
+        int _customTrackID;
+        // Parent's track ID
+        int _parentTrackID;
     };
 } // namespace allpix
 #endif
