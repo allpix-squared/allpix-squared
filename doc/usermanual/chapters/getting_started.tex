@@ -427,7 +427,7 @@ file_name = "example_electric_field.init"
 \paragraph{Magnetic Fields}
 \label{sec:module_magnetic_field}
 
-For simulating the detector response in the presence of a magnetic field with \apsq, a constant magnetic field can be defined. By default, it is turned off. A field can be added using the \parameter{MagneticFieldReader} module, giving the field vector as parameter:
+For simulating the detector response in the presence of a magnetic field with \apsq, a constant, global magnetic field can be defined. By default, it is turned off. A field can be added to the whole setup using the unique module \parameter{MagneticFieldReader}, passing the field vector as parameter:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 # Add a magnetic field
 [MagneticFieldReader]
@@ -437,7 +437,7 @@ model="constant"
 magnetic_field = 0mT 3.8T 0T
 \end{minted}
 
-The magnetic field is used by the interface to Geant4 and therefore exposes charged primary particles to the Lorentz force, and as a property of each detector present, enabling a Lorentz drift of the charge carriers in the active sensors. By now, in contrast to the \parameter{GenericPropagation} module, the \parameter{ProjectionPropagation} module does not feature a Lorentz drift. However, in both modules, the effect of the magnetic field can be ignored intentionally by enabling the parameter \parameter{ignore_magnetic_field} for the corresponding propagator module.
+The global magnetic field is used by the interface to Geant4 and therefore exposes charged primary particles to the Lorentz force, and as a property of each detector present, enabling a Lorentz drift of the charge carriers in the active sensors, if supported by the used propagation modules. See Chapter \ref{ch:modules} for more information on the available propagation modules.
 
 Currently, only constant magnetic fields can be applied.
 

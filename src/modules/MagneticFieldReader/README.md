@@ -3,7 +3,7 @@
 **Status**: Testing
 
 ### Description
-Adds a magnetic field to the full volume, including the active sensors. By default, the magnetic field is turned off.
+Unique module, adds a magnetic field to the full volume, including the active sensors. By default, the magnetic field is turned off.
 
 The magnetic field reader only provides constant magnetic fields, read in as a three-dimensional vector. The magnetic field is forwarded to the GeometryManager, enabling the magnetic field for the particle propagation via Geant4, as well as to all detectors for enabling a Lorentz drift during the charge propagation.
 
@@ -12,7 +12,7 @@ The magnetic field reader only provides constant magnetic fields, read in as a t
 * `magnetic_field` : Vector describing the magnetic field.
 
 ### Usage
-A simple example is given below
+An example is given below
 
 ```ini
 [MagneticFieldReader]
