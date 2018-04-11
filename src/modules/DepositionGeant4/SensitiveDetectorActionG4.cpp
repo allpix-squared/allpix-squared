@@ -69,7 +69,7 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
                              deposit_position_g4.z() + detector_->getModel()->getSensorCenter().z());
 
     const auto userTrackInfo = dynamic_cast<AllpixG4TrackInfo*>(step->GetTrack()->GetUserInformation());
-    if(!userTrackInfo) {
+    if(userTrackInfo == nullptr) {
         throw ModuleError("No proper AllpixG4TrackInfo attached to Geant4 track.");
     }
     auto trackID = userTrackInfo->getID();
