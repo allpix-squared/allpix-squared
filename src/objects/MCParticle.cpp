@@ -19,7 +19,7 @@ MCParticle::MCParticle(ROOT::Math::XYZPoint local_start_point,
                        int trackID)
     : local_start_point_(std::move(local_start_point)), global_start_point_(std::move(global_start_point)),
       local_end_point_(std::move(local_end_point)), global_end_point_(std::move(global_end_point)),
-      particle_id_(particle_id), trackID_(trackID) {
+      particle_id_(particle_id), track_id_(trackID) {
     setParent(nullptr);
 }
 
@@ -42,7 +42,7 @@ int MCParticle::getParticleID() const {
 }
 
 int MCParticle::getTrackID() const {
-    return trackID_;
+    return track_id_;
 }
 
 /**
@@ -59,7 +59,8 @@ void MCParticle::setParent(const MCParticle* mc_particle) {
 namespace allpix {
     std::ostream& operator<<(std::ostream& stream, const MCParticle& particle) {
         stream << "\n ------- Printing particle information (" << &particle << ")-------\n"
-               << "Particle type (PDG ID): " << particle.particle_id_ << " | Belongs to track: " << particle.trackID_ << '\n'
+               << "Particle type (PDG ID): " << particle.particle_id_ << " | Belongs to track: " << particle.track_id_
+               << '\n'
                << "Local start point:\t " << particle.local_start_point_.X() << " mm\t|" << particle.local_start_point_.Y()
                << " mm\t|" << particle.local_start_point_.Z() << " mm\n"
                << "Global start point:\t " << particle.global_start_point_.X() << " mm\t|"
@@ -68,7 +69,7 @@ namespace allpix {
                << " mm\t|" << particle.local_end_point_.Z() << " mm\n"
                << "Local end point: \t " << particle.global_end_point_.X() << " mm\t|" << particle.global_end_point_.Y()
                << " mm\t|" << particle.global_end_point_.Z() << " mm\n"
-               << "---------------------------------------------------------------";
+               << "---------------------------------------------------------------\n";
         return stream;
     }
 } // namespace allpix

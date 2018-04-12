@@ -100,7 +100,7 @@ namespace allpix {
         ROOT::Math::XYZPoint global_end_point_{};
 
         int particle_id_{};
-        int trackID_{};
+        int track_id_{};
 
         TRef parent_;
     };

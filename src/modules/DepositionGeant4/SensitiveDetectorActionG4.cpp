@@ -9,7 +9,7 @@
  */
 
 #include "SensitiveDetectorActionG4.hpp"
-#include "AllpixG4TrackInfo.hpp"
+#include "TrackInfoG4.hpp"
 
 #include <memory>
 
@@ -68,16 +68,16 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
                              deposit_position_g4.y() + detector_->getModel()->getSensorCenter().y(),
                              deposit_position_g4.z() + detector_->getModel()->getSensorCenter().z());
 
-    const auto userTrackInfo = dynamic_cast<AllpixG4TrackInfo*>(step->GetTrack()->GetUserInformation());
+    const auto userTrackInfo = dynamic_cast<TrackInfoG4*>(step->GetTrack()->GetUserInformation());
     if(userTrackInfo == nullptr) {
-        throw ModuleError("No proper AllpixG4TrackInfo attached to Geant4 track.");
+        throw ModuleError("No proper TrackInfoG4 attached to Geant4 track.");
     }
     auto trackID = userTrackInfo->getID();
     auto parentTrackID = userTrackInfo->getParentID();
 
     // Save begin point when track is seen for the first time
     if(track_begin_.find(trackID) == track_begin_.end()) {
-        AllpixG4TrackInfo::registerTrack(trackID);
+        TrackInfoG4::registerTrack(trackID);
         auto start_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(preStepPoint->GetPosition()));
         track_begin_.emplace(trackID, start_position);
         track_parents_.emplace(trackID, parentTrackID);

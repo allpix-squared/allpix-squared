@@ -7,8 +7,8 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#ifndef AllpixG4TrackInfo_H
-#define AllpixG4TrackInfo_H 1
+#ifndef TrackInfoG4_H
+#define TrackInfoG4_H 1
 
 #include <map>
 
@@ -23,23 +23,23 @@ namespace allpix {
     /**
      * @brief Allpix implementation of G4VUserTrackInformation to handle unique track IDs
      */
-    class AllpixG4TrackInfo : public G4VUserTrackInformation {
+    class TrackInfoG4 : public G4VUserTrackInformation {
     public:
         /**
          * @brief Default constructor which automatically assigns new track ID
          * @param G4TrackID The G4 ID of the track to which the info is attached
          */
-        AllpixG4TrackInfo(const G4Track* const aTrack);
+        TrackInfoG4(const G4Track* const aTrack);
 
         /**
          * @brief Getter for unique ID of track
          */
-        int getID() const { return _customTrackID; };
+        int getID() const { return custom_track_id_; };
 
         /**
          * @brief Getter for parent's track ID of track
          */
-        int getParentID() const { return _parentTrackID; };
+        int getParentID() const { return parent_track_id_; };
 
         /**
          * @brief Static function to reset the state, i.e. counters etc. To be called after every event
@@ -60,9 +60,9 @@ namespace allpix {
         std::unique_ptr<MCTrack> _mcTrack;
 
         // Assigned track ID to track
-        int _customTrackID;
+        int custom_track_id_;
         // Parent's track ID
-        int _parentTrackID;
+        int parent_track_id_;
     };
 } // namespace allpix
 #endif

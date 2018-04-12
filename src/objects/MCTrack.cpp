@@ -53,7 +53,7 @@ namespace allpix {
                << "Final position:\t\t " << track.end_point_.X() << " mm\t|" << track.end_point_.Y() << " mm\t|"
                << track.end_point_.Z() << " mm\n"
                << "Initial energy: " << track.initialEnergy_ << " MeV \t Final energy: " << track.finalEnergy_ << " MeV\n"
-               << "---------------------------------------------------------------";
+               << "---------------------------------------------------------------\n";
         return stream;
     }
 } // namespace allpix
