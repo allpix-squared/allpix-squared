@@ -30,23 +30,20 @@ namespace allpix {
          * @param TODO
          */
         MCTrack(ROOT::Math::XYZPoint start_point,
-                std::string G4Volume,
-                std::string prodProcessName,
-                int prodProcessType,
+                std::string g4_volume,
+                std::string g4_prod_process_name,
+                int g4_prod_process_type,
                 int particle_id,
-                int trackID,
-                int parentID,
-                double initialEnergy);
+                int track_id,
+                int parent_id,
+                double initial_kin_E,
+                double initial_tot_E);
 
         /**
          * @brief Get the point of where the track originated
          * @return Track start point
          */
         ROOT::Math::XYZPoint getStartPoint() const;
-
-        void setEndPoint(ROOT::Math::XYZPoint thePoint) { end_point_ = std::move(thePoint); };
-        void setFinalEnergy(double e) { finalEnergy_ = e; };
-        void setNumberSteps(int nmbrSteps) { nSteps_ = nmbrSteps; };
 
         /**
          * @brief Get the point of where the track terminated
@@ -59,6 +56,13 @@ namespace allpix {
          * @return Particle identifier
          */
         int getParticleID() const;
+
+        int getParentTrackID() const;
+
+        void setEndPoint(ROOT::Math::XYZPoint end_point) { end_point_ = std::move(end_point); };
+        void setFinalTotalEnergy(double final_tot_E) { final_tot_E_ = final_tot_E; };
+        void setFinalKineticEnergy(double final_kin_E) { final_kin_E_ = final_kin_E; };
+        void setNumberSteps(int n_steps) { n_steps_ = n_steps; };
 
         /**
          * @brief Set the Monte-Carlo parent track
@@ -79,9 +83,6 @@ namespace allpix {
          */
         int getTrackID() const;
 
-        bool isUsed() const { return used_; };
-        void setUsed() { used_ = true; };
-
         friend std::ostream& operator<<(std::ostream& stream, const MCTrack& track);
 
         /**
@@ -98,18 +99,18 @@ namespace allpix {
         ROOT::Math::XYZPoint end_point_{};
 
         int particle_id_{};
-        int trackID_{};
-        int parentID_{};
-        int originG4ProcessType_{};
-        int nSteps_{};
+        int track_id_{};
+        int parent_id_{};
+        int origin_g4_process_type_{};
+        int n_steps_{};
 
-        double initialEnergy_{};
-        double finalEnergy_{};
+        double initial_kin_E_{};
+        double initial_tot_E_{};
+        double final_kin_E_{};
+        double final_tot_E_{};
 
-        bool used_;
-
-        TString originG4VolName_{};
-        TString originG4ProcessName_{};
+        TString origin_g4_vol_name_{};
+        TString origin_g4_process_name_{};
 
         TRef parent_;
     };

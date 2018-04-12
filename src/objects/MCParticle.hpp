@@ -34,7 +34,7 @@ namespace allpix {
                    ROOT::Math::XYZPoint local_end_point,
                    ROOT::Math::XYZPoint global_end_point,
                    int particle_id,
-                   int trackID);
+                   int track_id);
 
         /**
          * @brief Get the entry point of the particle in local coordinates

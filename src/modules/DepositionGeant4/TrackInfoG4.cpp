@@ -26,13 +26,15 @@ TrackInfoG4::TrackInfoG4(const G4Track* const aTrack) : custom_track_id_(gCounte
                                          aTrack->GetDynamicParticle()->GetPDGcode(),
                                          custom_track_id_,
                                          parent_track_id_,
+                                         aTrack->GetKineticEnergy(),
                                          aTrack->GetTotalEnergy());
 }
 
 void TrackInfoG4::finaliseInfo(const G4Track* const aTrack) {
     _mcTrack->setNumberSteps(aTrack->GetCurrentStepNumber());
     _mcTrack->setEndPoint(static_cast<ROOT::Math::XYZPoint>(aTrack->GetPosition()));
-    _mcTrack->setFinalEnergy(aTrack->GetTotalEnergy());
+    _mcTrack->setFinalKineticEnergy(aTrack->GetKineticEnergy());
+    _mcTrack->setFinalTotalEnergy(aTrack->GetTotalEnergy());
     //_mcTrack->dumpInfo();
     TrackInfoG4::storeTrack(std::move(_mcTrack));
 }

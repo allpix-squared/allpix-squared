@@ -12,16 +12,17 @@
 using namespace allpix;
 
 MCTrack::MCTrack(ROOT::Math::XYZPoint start_point,
-                 std::string G4Volume,
-                 std::string prodProcessName,
-                 int prodProcessType,
+                 std::string g4_volume,
+                 std::string g4_prod_process_name,
+                 int g4_prod_process_type,
                  int particle_id,
-                 int trackID,
-                 int parentID,
-                 double initialEnergy)
-    : start_point_(std::move(start_point)), particle_id_(particle_id), trackID_(trackID), parentID_(parentID),
-      initialEnergy_(initialEnergy), originG4ProcessType_(prodProcessType), originG4VolName_(G4Volume),
-      originG4ProcessName_(prodProcessName) {
+                 int track_id,
+                 int parent_id,
+                 double initial_kin_E,
+                 double initial_tot_E)
+    : start_point_(std::move(start_point)), particle_id_(particle_id), track_id_(track_id), parent_id_(parent_id),
+      initial_kin_E_(initial_kin_E), initial_tot_E_(initial_tot_E), origin_g4_process_type_(g4_prod_process_type),
+      origin_g4_vol_name_(g4_volume), origin_g4_process_name_(g4_prod_process_name) {
     setParent(nullptr);
 }
 
@@ -38,26 +39,12 @@ int MCTrack::getParticleID() const {
 }
 
 int MCTrack::getTrackID() const {
-    return trackID_;
+    return track_id_;
 }
 
-namespace allpix {
-    std::ostream& operator<<(std::ostream& stream, const MCTrack& track) {
-        stream << "\n ------- Printing track information for track: " << track.trackID_ << " (" << &track << ") -------\n"
-               << "Particle type (PDG ID): " << track.particle_id_ << " | Parent track ID: " << track.parentID_ << '\n'
-               << "Production process: " << track.originG4ProcessName_ << " (G4 process type: " << track.originG4ProcessType_
-               << ")\n"
-               << "Production in G4Volume: " << track.originG4VolName_ << '\n'
-               << "Initial position:\t " << track.start_point_.X() << " mm\t|" << track.start_point_.Y() << " mm\t|"
-               << track.start_point_.Z() << " mm\n"
-               << "Final position:\t\t " << track.end_point_.X() << " mm\t|" << track.end_point_.Y() << " mm\t|"
-               << track.end_point_.Z() << " mm\n"
-               << "Initial energy: " << track.initialEnergy_ << " MeV \t Final energy: " << track.finalEnergy_ << " MeV\n"
-               << "---------------------------------------------------------------\n";
-        return stream;
-    }
-} // namespace allpix
-
+int MCTrack::getParentTrackID() const {
+    return parent_id_;
+}
 /**
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
@@ -70,3 +57,24 @@ void MCTrack::setParent(const MCTrack* mc_track) {
 }
 
 ClassImp(MCTrack)
+
+    namespace allpix {
+    std::ostream& operator<<(std::ostream& stream, const MCTrack& track) {
+        stream << "\n ------- Printing track information for track: " << track.track_id_ << " (" << &track << ") -------\n"
+               << "Particle type (PDG ID): " << track.particle_id_ << " | Parent track ID: " << track.parent_id_ << '\n'
+               << "Production process: " << track.origin_g4_process_name_
+               << " (G4 process type: " << track.origin_g4_process_type_ << ")\n"
+               << "Production in G4Volume: " << track.origin_g4_vol_name_ << '\n'
+               << "Initial position:\t " << track.start_point_.X() << " mm\t|" << track.start_point_.Y() << " mm\t|"
+               << track.start_point_.Z() << " mm\n"
+               << "Final position:\t\t " << track.end_point_.X() << " mm\t|" << track.end_point_.Y() << " mm\t|"
+               << track.end_point_.Z() << " mm\n"
+               << "Initial kinetic energy: " << track.initial_kin_E_
+               << " MeV \t Final kinetic energy: " << track.final_kin_E_ << " MeV\n"
+               << "Initial total energy: " << track.initial_tot_E_ << " MeV \t Final total energy: " << track.final_tot_E_
+               << " MeV\n"
+               << "Parent track: " << track.parent_.GetObject() << '\n'
+               << " -----------------------------------------------------------------\n";
+        return stream;
+    }
+} // namespace allpix
