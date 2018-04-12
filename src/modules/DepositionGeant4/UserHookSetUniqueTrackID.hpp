@@ -15,7 +15,7 @@
 
 namespace allpix {
     /**
-     * @brief Assigns every G4Track a AllpixG4TrackInfo which carries the unique track ID
+     * @brief Assigns every G4Track a TrackInfoG4 which carries the unique track ID
      */
     class UserHookSetUniqueTrackID : public G4UserTrackingAction {
     public:

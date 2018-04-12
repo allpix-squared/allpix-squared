@@ -31,9 +31,9 @@
 #include "tools/ROOT.h"
 #include "tools/geant4.h"
 
-#include "AllpixG4TrackInfo.hpp"
 #include "GeneratorActionG4.hpp"
 #include "SensitiveDetectorActionG4.hpp"
+#include "TrackInfoG4.hpp"
 #include "UserHookSetUniqueTrackID.hpp"
 
 #define G4_NUM_SEEDS 10
@@ -272,7 +272,7 @@ void DepositionGeant4Module::run(unsigned int event_num) {
             charge_per_event_[sensor->getName()]->Fill(charge);
         }
     }
-    AllpixG4TrackInfo::reset();
+    TrackInfoG4::reset();
 }
 
 void DepositionGeant4Module::finalize() {

@@ -19,7 +19,7 @@ MCParticle::MCParticle(ROOT::Math::XYZPoint local_start_point,
                        int trackID)
     : local_start_point_(std::move(local_start_point)), global_start_point_(std::move(global_start_point)),
       local_end_point_(std::move(local_end_point)), global_end_point_(std::move(global_end_point)),
-      particle_id_(particle_id), trackID_(trackID) {
+      particle_id_(particle_id), track_id_(trackID) {
     setParent(nullptr);
 }
 
@@ -42,7 +42,7 @@ int MCParticle::getParticleID() const {
 }
 
 int MCParticle::getTrackID() const {
-    return trackID_;
+    return track_id_;
 }
 
 /**
