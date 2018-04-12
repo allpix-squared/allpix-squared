@@ -44,8 +44,6 @@ void MagneticFieldReaderModule::init() {
 
         auto b_field = config_.get<ROOT::Math::XYZVector>("magnetic_field", ROOT::Math::XYZVector());
 
-        LOG(INFO) << "Set constant magnetic field: (" << Units::display(b_field.x(), {"T", "mT"}) << ","
-                  << Units::display(b_field.y(), {"T", "mT"}) << "," << Units::display(b_field.z(), {"T", "mT"}) << ")";
         MagneticFieldFunction function = [b_field](const ROOT::Math::XYZPoint&) { return b_field; };
 
         geometryManager_->setMagneticFieldFunction(function, type);
@@ -55,6 +53,8 @@ void MagneticFieldReaderModule::init() {
             // a function enabling a gradient in the magnetic field inside the sensor
             detector->setMagneticField(geometryManager_->getMagneticField(detector->getPosition()));
         }
+        LOG(INFO) << "Set constant magnetic field: (" << Units::display(b_field.x(), {"T", "mT"}) << ","
+                  << Units::display(b_field.y(), {"T", "mT"}) << "," << Units::display(b_field.z(), {"T", "mT"}) << ")";
     } else {
         throw InvalidValueError(config_, "model", "model can currently only be 'constant'");
     }
