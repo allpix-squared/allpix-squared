@@ -1,6 +1,6 @@
 # MagneticFieldReader
 **Maintainer**: Paul Schuetze (<paul.schuetze@desy.de>)
-**Status**: Testing
+**Status**: Functional
 
 ### Description
 Unique module, adds a magnetic field to the full volume, including the active sensors. By default, the magnetic field is turned off.
