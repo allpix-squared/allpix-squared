@@ -28,6 +28,7 @@ namespace allpix {
          * @param local_end_point Exit point of the particle in the sensor in local coordinates
          * @param global_end_point Exit point of the particle in the sensor in global coordinates
          * @param particle_id Identifier for the particle type
+         * @param track_id Identifier for the track associated to this MCParticle
          */
         MCParticle(ROOT::Math::XYZPoint local_start_point,
                    ROOT::Math::XYZPoint global_start_point,

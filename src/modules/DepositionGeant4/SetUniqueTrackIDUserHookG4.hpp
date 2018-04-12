@@ -7,8 +7,8 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#ifndef UserHookSetUniqueTrackID_H
-#define UserHookSetUniqueTrackID_H 1
+#ifndef SetUniqueTrackIDUserHookG4_H
+#define SetUniqueTrackIDUserHookG4_H 1
 
 #include "G4Track.hh"
 #include "G4UserTrackingAction.hh"
@@ -17,17 +17,17 @@ namespace allpix {
     /**
      * @brief Assigns every G4Track a TrackInfoG4 which carries the unique track ID
      */
-    class UserHookSetUniqueTrackID : public G4UserTrackingAction {
+    class SetUniqueTrackIDUserHookG4 : public G4UserTrackingAction {
     public:
         /**
          * @brief Default constructor
          */
-        UserHookSetUniqueTrackID() = default;
+        SetUniqueTrackIDUserHookG4() = default;
 
         /**
          * @brief Default destructor
          */
-        ~UserHookSetUniqueTrackID() = default;
+        ~SetUniqueTrackIDUserHookG4() = default;
 
         /**
          * @brief Called for every G4Track at beginning

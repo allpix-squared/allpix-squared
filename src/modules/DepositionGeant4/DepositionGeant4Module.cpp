@@ -33,8 +33,8 @@
 
 #include "GeneratorActionG4.hpp"
 #include "SensitiveDetectorActionG4.hpp"
+#include "SetUniqueTrackIDUserHookG4.hpp"
 #include "TrackInfoG4.hpp"
-#include "UserHookSetUniqueTrackID.hpp"
 
 #include "TrackInfoG4.hpp"
 #define G4_NUM_SEEDS 10
@@ -175,7 +175,7 @@ void DepositionGeant4Module::init() {
     run_manager_g4_->SetUserAction(generator);
 
     // User hook to set custom track ID
-    auto userTrackIDHook = new UserHookSetUniqueTrackID();
+    auto userTrackIDHook = new SetUniqueTrackIDUserHookG4();
     run_manager_g4_->SetUserAction(userTrackIDHook);
 
     // Get the creation energy for charge (default is silicon electron hole pair energy)

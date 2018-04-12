@@ -26,7 +26,7 @@ ALLPIX_MODULE_SOURCES(${MODULE_NAME}
     GeneratorActionG4.cpp
     SensitiveDetectorActionG4.cpp
     TrackInfoG4.cpp
-    UserHookSetUniqueTrackID.cpp
+    SetUniqueTrackIDUserHookG4.cpp
 )
 
 # Include Geant4 directories (NOTE Geant4_USE_FILE is not used!)
