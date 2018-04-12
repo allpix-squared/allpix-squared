@@ -5,3 +5,7 @@ This example demonstrates the charged particle propagation inside a sensor with 
 Two CMS Pixel Detector single chip modules are placed in a 3.8 T magnetic field, of which the rear one is turned to 19 deg. This results in mostly 2 pixel clusters in the front sensor due to the Lorentz drift, while the rotation of the second sensor cancels out the Lorentz drift, resulting in mostly 1 pixel clusters.
 
 For better performance, disable the output plots for the `GenericPropagation` module.
+
+The following image shows the Lorentz drift for electrons (blue) and holes (orange) in the non-tilted sensor.
+
+![Visualization of the Lorentz drift for electrons (blue) and holes (orange)](LorentzDrift.pdf)
