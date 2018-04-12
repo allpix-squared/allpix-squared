@@ -141,6 +141,7 @@ IF(LATEX_COMPILER)
             cc-by.png
             usermanual/figures/telescope.png
             usermanual/figures/ci.png
+            usermanual/figures/LorentzDrift.pdf
             INPUTS
             usermanual/chapters/introduction.tex
             usermanual/chapters/quick_start.tex
