@@ -54,4 +54,7 @@ TRef objects are however not automatically fetched and can only be retrieved if 
 Outside the framework this means that the relevant tree containing the linked objects should be retrieved and loaded at the same entry as the object that request the history.
 Whenever the related object is not in memory (either because it is not available or not fetched) a \parameter{MissingReferenceException} will be thrown.
 
-Regarding trajectory history, the raw Geant4 trajectories are not stored and thus not available. However, every MCParticle can be linked to a track with the associated track ID. Track hirarchy can be derived using the entire set of MCParticles. If a MCParticle is linked via the parent-child relationship on one plane, the tracks can be globally linked this way sa well.
+Regarding trajectory history, the raw Geant4 trajectories are not stored and thus not available.
+However, every MCParticle can be linked to a track with the associated track ID.
+Track hirarchy can be derived using the entire set of MCParticles.
+If a MCParticle is linked via the parent-child relationship on one plane, the tracks can be globally linked this way as well.
