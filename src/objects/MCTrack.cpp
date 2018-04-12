@@ -17,9 +17,11 @@ MCTrack::MCTrack(ROOT::Math::XYZPoint start_point,
                  int prodProcessType,
                  int particle_id,
                  int trackID,
-                 int parentID)
+                 int parentID,
+                 double initialEnergy)
     : start_point_(std::move(start_point)), particle_id_(particle_id), trackID_(trackID), parentID_(parentID),
-      originG4ProcessType_(prodProcessType), originG4VolName_(G4Volume), originG4ProcessName_(prodProcessName) {
+      initialEnergy_(initialEnergy), originG4ProcessType_(prodProcessType), originG4VolName_(G4Volume),
+      originG4ProcessName_(prodProcessName) {
     setParent(nullptr);
 }
 
@@ -39,13 +41,22 @@ int MCTrack::getTrackID() const {
     return trackID_;
 }
 
-void MCTrack::dumpInfo() {
-    std::cout << "Track " << trackID_ << " has parent: " << parentID_ << ". It was created by particle: " << particle_id_
-              << " which was created by a " << originG4ProcessName_ << "(" << originG4ProcessType_ << ")"
-              << " process. It was created in " << originG4VolName_ << ", precisely at: " << start_point_.X() << "|"
-              << start_point_.Y() << "|" << start_point_.Z() << " and ends at: " << end_point_.X() << "|" << end_point_.Y()
-              << "|" << end_point_.Z() << '\n';
-}
+namespace allpix {
+    std::ostream& operator<<(std::ostream& stream, const MCTrack& track) {
+        stream << "\n ------- Printing track information for track: " << track.trackID_ << " (" << &track << ") -------\n"
+               << "Particle type (PDG ID): " << track.particle_id_ << " | Parent track ID: " << track.parentID_ << '\n'
+               << "Production process: " << track.originG4ProcessName_ << " (G4 process type: " << track.originG4ProcessType_
+               << ")\n"
+               << "Production in G4Volume: " << track.originG4VolName_ << '\n'
+               << "Initial position:\t " << track.start_point_.X() << " mm\t|" << track.start_point_.Y() << " mm\t|"
+               << track.start_point_.Z() << " mm\n"
+               << "Final position:\t\t " << track.end_point_.X() << " mm\t|" << track.end_point_.Y() << " mm\t|"
+               << track.end_point_.Z() << " mm\n"
+               << "Initial energy: " << track.initialEnergy_ << " MeV \t Final energy: " << track.finalEnergy_ << " MeV\n"
+               << "---------------------------------------------------------------";
+        return stream;
+    }
+} // namespace allpix
 
 /**
  * Object is stored as TRef and can only be accessed if pointed object is in scope

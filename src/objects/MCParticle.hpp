@@ -91,6 +91,8 @@ namespace allpix {
          */
         MCParticle() = default;
 
+        friend std::ostream& operator<<(std::ostream& stream, const MCParticle& particle);
+
     private:
         ROOT::Math::XYZPoint local_start_point_{};
         ROOT::Math::XYZPoint global_start_point_{};

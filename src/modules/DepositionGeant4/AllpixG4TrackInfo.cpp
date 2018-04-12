@@ -24,12 +24,14 @@ AllpixG4TrackInfo::AllpixG4TrackInfo(const G4Track* const aTrack) : _customTrack
                                          processType,
                                          aTrack->GetDynamicParticle()->GetPDGcode(),
                                          _customTrackID,
-                                         _parentTrackID);
+                                         _parentTrackID,
+                                         aTrack->GetTotalEnergy());
 }
 
 void AllpixG4TrackInfo::finaliseInfo(const G4Track* const aTrack) {
     _mcTrack->setNumberSteps(aTrack->GetCurrentStepNumber());
     _mcTrack->setEndPoint(static_cast<ROOT::Math::XYZPoint>(aTrack->GetPosition()));
+    _mcTrack->setFinalEnergy(aTrack->GetTotalEnergy());
     //_mcTrack->dumpInfo();
     AllpixG4TrackInfo::storeTrack(std::move(_mcTrack));
 }
@@ -43,8 +45,7 @@ void AllpixG4TrackInfo::storeTrack(std::unique_ptr<MCTrack> theTrack) {
     auto ID = theTrack->getTrackID();
     auto element = gStoredTracks.find(ID);
     if(element != gStoredTracks.end()) {
-        std::cout << "Stored:\n";
-        theTrack->dumpInfo();
+        std::cout << "Stored: \n" << *(theTrack.get()) << '\n';
         (*element).second = std::move(theTrack);
     }
 }

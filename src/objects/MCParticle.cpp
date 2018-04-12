@@ -56,4 +56,21 @@ void MCParticle::setParent(const MCParticle* mc_particle) {
     parent_ = const_cast<MCParticle*>(mc_particle); // NOLINT
 }
 
+namespace allpix {
+    std::ostream& operator<<(std::ostream& stream, const MCParticle& particle) {
+        stream << "\n ------- Printing particle information (" << &particle << ")-------\n"
+               << "Particle type (PDG ID): " << particle.particle_id_ << " | Belongs to track: " << particle.trackID_ << '\n'
+               << "Local start point:\t " << particle.local_start_point_.X() << " mm\t|" << particle.local_start_point_.Y()
+               << " mm\t|" << particle.local_start_point_.Z() << " mm\n"
+               << "Global start point:\t " << particle.global_start_point_.X() << " mm\t|"
+               << particle.global_start_point_.Y() << " mm\t|" << particle.global_start_point_.Z() << " mm\n"
+               << "Local end point: \t " << particle.local_end_point_.X() << " mm\t|" << particle.local_end_point_.Y()
+               << " mm\t|" << particle.local_end_point_.Z() << " mm\n"
+               << "Local end point: \t " << particle.global_end_point_.X() << " mm\t|" << particle.global_end_point_.Y()
+               << " mm\t|" << particle.global_end_point_.Z() << " mm\n"
+               << "---------------------------------------------------------------";
+        return stream;
+    }
+} // namespace allpix
+
 ClassImp(MCParticle)

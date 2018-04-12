@@ -14,6 +14,7 @@
 #include <TRef.h>
 #include <TString.h>
 
+#include <iostream>
 #include "Object.hpp"
 
 namespace allpix {
@@ -34,7 +35,8 @@ namespace allpix {
                 int prodProcessType,
                 int particle_id,
                 int trackID,
-                int parentID);
+                int parentID,
+                double initialEnergy);
 
         /**
          * @brief Get the point of where the track originated
@@ -43,6 +45,7 @@ namespace allpix {
         ROOT::Math::XYZPoint getStartPoint() const;
 
         void setEndPoint(ROOT::Math::XYZPoint thePoint) { end_point_ = std::move(thePoint); };
+        void setFinalEnergy(double e) { finalEnergy_ = e; };
         void setNumberSteps(int nmbrSteps) { nSteps_ = nmbrSteps; };
 
         /**
@@ -78,7 +81,8 @@ namespace allpix {
 
         bool isUsed() const { return used_; };
         void setUsed() { used_ = true; };
-        void dumpInfo();
+
+        friend std::ostream& operator<<(std::ostream& stream, const MCTrack& track);
 
         /**
          * @brief ROOT class definition
@@ -98,6 +102,9 @@ namespace allpix {
         int parentID_{};
         int originG4ProcessType_{};
         int nSteps_{};
+
+        double initialEnergy_{};
+        double finalEnergy_{};
 
         bool used_;
 
