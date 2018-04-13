@@ -70,7 +70,7 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
 
     const auto userTrackInfo = dynamic_cast<TrackInfoG4*>(step->GetTrack()->GetUserInformation());
     if(userTrackInfo == nullptr) {
-        throw ModuleError("No proper TrackInfoG4 attached to Geant4 track.");
+        throw ModuleError("No track information attached to track.");
     }
     auto trackID = userTrackInfo->getID();
     auto parentTrackID = userTrackInfo->getParentID();
