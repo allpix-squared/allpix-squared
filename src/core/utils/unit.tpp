@@ -45,12 +45,23 @@ namespace allpix {
     // Display function for vectors
     template <typename T> std::string Units::display(T inp, std::initializer_list<std::string> units) {
         auto split = allpix::split<Units::UnitType>(allpix::to_string(inp));
-        std::string ret_str = "(";
+
+        std::string ret_str;
+        if(split.size() > 1) {
+            ret_str += "(";
+        }
+
         for(auto& element : split) {
             ret_str += Units::display(element, units);
             ret_str += ",";
         }
-        ret_str[ret_str.size() - 1] = ')';
+
+        if(split.size() > 1) {
+            ret_str[ret_str.size() - 1] = ')';
+        } else {
+            ret_str.pop_back();
+        }
+
         return ret_str;
     }
 } // namespace allpix
