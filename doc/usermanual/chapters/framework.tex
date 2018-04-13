@@ -780,8 +780,8 @@ These methods should never be raised for correctly implemented modules and shoul
 Reporting this type of error can help developers during the development of new modules.
 \end{itemize}
 
-Outside the core framework, exceptions can also be used directly by the modules.
-There are a few exceptions which should typically be used by modules to indicate errors:
+There are only four exceptions that are supposed to be used in specific modules, outside of the core framework.
+These exceptions should be used to indicate errors that modules cannot handle themselves:
 \begin{itemize}
 \item \parameter{InvalidValueError}: Derived from configuration exceptions.
 Signals any problem with the value of a configuration parameter not related to parsing or conversion to the required type.
