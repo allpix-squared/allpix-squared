@@ -11,8 +11,7 @@ namespace allpix {
         return from_string_impl(str, type_tag<T>());
     }
 
-    template <typename T, typename = std::enable_if_t<!std::is_arithmetic<T>::value>, typename = void>
-    constexpr T from_string_impl(const std::string&, type_tag<T>) {
+    template <typename T, typename> constexpr T from_string_impl(const std::string&, type_tag<T>) {
         static_assert(std::is_same<T, void>::value,
                       "Conversion to this type is not implemented: an overload should be added to support this conversion");
         return T();
@@ -22,8 +21,7 @@ namespace allpix {
      * The unit system is used through \ref Units::get to parse unit suffixes and convert the values to the appropriate
      * standard framework unit.
      */
-    template <typename T, typename = std::enable_if_t<std::is_arithmetic<T>::value>>
-    T from_string_impl(std::string str, type_tag<T>) {
+    template <typename T, typename> T from_string_impl(std::string str, type_tag<T>) {
         str = from_string_helper(str);
 
         // Find an optional set of units
@@ -62,13 +60,11 @@ namespace allpix {
         return to_string_impl(inp, empty_tag());
     }
 
-    template <typename T, typename = std::enable_if_t<!std::is_arithmetic<T>::value>, typename = void>
-    constexpr void to_string_impl(T, empty_tag) {
+    template <typename T, typename, typename> constexpr void to_string_impl(T, empty_tag) {
         static_assert(std::is_same<T, void>::value,
                       "Conversion to this type is not implemented: an overload should be added to support this conversion");
     }
-    template <typename T, typename = std::enable_if_t<std::is_arithmetic<T>::value>>
-    std::string to_string_impl(T inp, empty_tag) {
+    template <typename T, typename> std::string to_string_impl(T inp, empty_tag) {
         std::ostringstream out;
         out << inp;
         return out.str();
