@@ -9,3 +9,8 @@ void SetUniqueTrackIDUserHookG4::PreUserTrackingAction(const G4Track* aTrack) {
         theTrack->SetUserInformation(new TrackInfoG4(aTrack));
     }
 }
+
+void SetUniqueTrackIDUserHookG4::PostUserTrackingAction(const G4Track* aTrack) {
+    auto userInfo = dynamic_cast<TrackInfoG4*>(aTrack->GetUserInformation());
+    userInfo->finaliseInfo(aTrack);
+}

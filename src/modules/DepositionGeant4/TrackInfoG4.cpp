@@ -40,7 +40,6 @@ void TrackInfoG4::finaliseInfo(const G4Track* const aTrack) {
 }
 
 void TrackInfoG4::registerTrack(int trackID) {
-    std::cout << "Registeres track: " << trackID << '\n';
     gStoredTracks[trackID] = nullptr;
 }
 
@@ -48,7 +47,6 @@ void TrackInfoG4::storeTrack(std::unique_ptr<MCTrack> theTrack) {
     auto ID = theTrack->getTrackID();
     auto element = gStoredTracks.find(ID);
     if(element != gStoredTracks.end()) {
-        std::cout << "Stored: \n" << *(theTrack.get()) << '\n';
         (*element).second = std::move(theTrack);
     }
 }

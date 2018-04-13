@@ -64,6 +64,7 @@ namespace allpix {
         void setFinalKineticEnergy(double final_kin_E) { final_kin_E_ = final_kin_E; };
         void setNumberSteps(int n_steps) { n_steps_ = n_steps; };
 
+        double getFinalKineticEnergy() const { return final_kin_E_; };
         /**
          * @brief Set the Monte-Carlo parent track
          * @param mc_track The Monte-Carlo track
