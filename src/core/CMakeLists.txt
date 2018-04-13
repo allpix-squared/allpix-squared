@@ -5,6 +5,7 @@ INCLUDE_DIRECTORIES(SYSTEM ${ALLPIX_DEPS_INCLUDE_DIRS})
 ADD_LIBRARY(AllpixCore SHARED
     utils/log.cpp
     utils/unit.cpp
+    utils/string.cpp
     module/Module.cpp
     module/ModuleManager.cpp
     module/ThreadPool.cpp
