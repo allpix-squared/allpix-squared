@@ -27,8 +27,6 @@ namespace allpix {
      * whole volume
      */
     class MagneticFieldReaderModule : public Module {
-        using FieldData = std::pair<std::shared_ptr<std::vector<double>>, std::array<size_t, 3>>;
-
     public:
         /**
          * @brief Constructor for this unique module

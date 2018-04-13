@@ -1,5 +1,5 @@
 # MagneticFieldReader
-**Maintainer**: Paul Schuetze (<paul.schuetze@desy.de>)
+**Maintainer**: Paul Schuetze (<paul.schuetze@desy.de>)  
 **Status**: Functional
 
 ### Description
