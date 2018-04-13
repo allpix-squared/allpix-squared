@@ -25,6 +25,7 @@
 #include "core/module/exceptions.h"
 #include "core/utils/file.h"
 #include "core/utils/log.h"
+#include "core/utils/unit.h"
 #include "exceptions.h"
 #include "tools/ROOT.h"
 
@@ -59,15 +60,15 @@ void GeometryManager::load(ConfigManager* conf_manager, std::mt19937_64& seeder)
 
         // Get the position and apply potenial misalignment
         auto position = detector_section.get<XYZPoint>("position", XYZPoint());
-        LOG(DEBUG) << "Position:    " << display_vector(position, {"mm", "um"});
+        LOG(DEBUG) << "Position:    " << Units::display(position, {"mm", "um"});
         position += misalignment(detector_section.get<XYZPoint>("alignment_precision_position", XYZPoint()));
-        LOG(DEBUG) << " misaligned: " << display_vector(position, {"mm", "um"});
+        LOG(DEBUG) << " misaligned: " << Units::display(position, {"mm", "um"});
 
         // Get the orientation and apply misalignment to the individual angles before combining them
         auto orient_vec = detector_section.get<XYZVector>("orientation", XYZVector());
-        LOG(DEBUG) << "Orientation: " << display_vector(orient_vec, {"deg"});
+        LOG(DEBUG) << "Orientation: " << Units::display(orient_vec, {"deg"});
         orient_vec += misalignment(detector_section.get<XYZVector>("alignment_precision_orientation", XYZVector()));
-        LOG(DEBUG) << " misaligned: " << display_vector(orient_vec, {"deg"});
+        LOG(DEBUG) << " misaligned: " << Units::display(orient_vec, {"deg"});
 
         auto orientation_mode = detector_section.get<std::string>("orientation_mode", "xyz");
         Rotation3D orientation;

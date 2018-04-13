@@ -528,7 +528,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
         if((deposit.getType() == CarrierType::ELECTRON && !config_.get<bool>("propagate_electrons")) ||
            (deposit.getType() == CarrierType::HOLE && !config_.get<bool>("propagate_holes"))) {
             LOG(DEBUG) << "Skipping charge carriers (" << deposit.getType() << ") on "
-                       << display_vector(deposit.getLocalPosition(), {"mm", "um"});
+                       << Units::display(deposit.getLocalPosition(), {"mm", "um"});
             continue;
         }
 
@@ -536,7 +536,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
         unsigned int charges_remaining = deposit.getCharge();
 
         LOG(DEBUG) << "Set of charge carriers (" << deposit.getType() << ") on "
-                   << display_vector(deposit.getLocalPosition(), {"mm", "um"});
+                   << Units::display(deposit.getLocalPosition(), {"mm", "um"});
 
         auto charge_per_step = config_.get<unsigned int>("charge_per_step");
         while(charges_remaining > 0) {
@@ -561,7 +561,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
             auto prop_pair = propagate(position, deposit.getType());
             position = prop_pair.first;
 
-            LOG(DEBUG) << " Propagated " << charge_per_step << " to " << display_vector(position, {"mm", "um"}) << " in "
+            LOG(DEBUG) << " Propagated " << charge_per_step << " to " << Units::display(position, {"mm", "um"}) << " in "
                        << Units::display(prop_pair.second, "ns") << " time";
 
             // Create a new propagated charge and add it to the list

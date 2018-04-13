@@ -104,14 +104,14 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     deposits_.emplace_back(deposit_position, global_deposit_position, CarrierType::HOLE, charge, mid_time);
     deposit_to_id_.push_back(trackID);
 
-    LOG(DEBUG) << "Created deposit of " << charge << " charges at " << display_vector(mid_pos, {"mm", "um"})
-               << " locally on " << display_vector(deposit_position, {"mm", "um"}) << " in " << detector_->getName()
+    LOG(DEBUG) << "Created deposit of " << charge << " charges at " << Units::display(mid_pos, {"mm", "um"})
+               << " locally on " << Units::display(deposit_position, {"mm", "um"}) << " in " << detector_->getName()
                << " after " << Units::display(mid_time, {"ns", "ps"});
 
-    LOG(DEBUG) << "Geant4 transformation to local: " << display_vector(deposit_position_g4loc, {"mm", "um"});
+    LOG(DEBUG) << "Geant4 transformation to local: " << Units::display(deposit_position_g4loc, {"mm", "um"});
     if((deposit_position_g4loc - deposit_position).mag2() > 0.001) {
         LOG(ERROR) << "Difference G4 to internal: "
-                   << display_vector((deposit_position_g4loc - deposit_position), {"mm", "um"});
+                   << Units::display((deposit_position_g4loc - deposit_position), {"mm", "um"});
     }
     return true;
 }
@@ -146,7 +146,7 @@ void SensitiveDetectorActionG4::dispatchMessages() {
         id_to_particle_[track_id] = mc_particles.size() - 1;
 
         LOG(DEBUG) << "Found MC particle " << pdg_code << " crossing detector from "
-                   << display_vector(local_begin, {"mm", "um"}) << " to " << display_vector(local_end, {"mm", "um"})
+                   << Units::display(local_begin, {"mm", "um"}) << " to " << Units::display(local_end, {"mm", "um"})
                    << " (local coordinates)";
     }
 
