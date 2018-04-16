@@ -220,12 +220,12 @@ void ROOTObjectWriterModule::finalize() {
         detector_dir->WriteObject(&orientation, "orientation");
 
         // Store the detector model
-        std::string model_name = "model_" + detector->getName();
+        std::string model_name = detector->getModel()->getType() + "_" + detector->getName();
         detector_dir->WriteObject(&model_name, "type");
         models_dir->cd();
         auto model_dir = models_dir->mkdir(model_name.c_str());
 
-        // FIXME This saves the model every time again also for models that appear multiple times
+        // NOTE We save the model for every detector separately since parameter overloading might have changed it
         auto model_configs = detector->getModel()->getConfigurations();
         std::map<std::string, int> count_configs;
         for(auto& model_config : model_configs) {
