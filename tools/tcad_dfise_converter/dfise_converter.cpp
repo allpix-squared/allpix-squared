@@ -20,140 +20,26 @@
 
 #include <Eigen/Eigen>
 
+#include "core/config/ConfigReader.hpp"
+#include "core/config/Configuration.hpp"
+#include "core/config/exceptions.h"
+#include "core/utils/log.h"
+
+#include "MeshElement.h"
 #include "Octree.hpp"
-#include "config/ConfigReader.hpp"
-#include "config/Configuration.hpp"
-#include "config/exceptions.h"
 #include "read_dfise.h"
-#include "utils/log.h"
 
 using namespace mesh_converter;
 
+void interrupt_handler(int);
+
+/**
+ * @brief Handle termination request (CTRL+C)
+ */
 void interrupt_handler(int) {
     LOG(STATUS) << "Interrupted! Aborting conversion...";
     allpix::Log::finish();
     std::exit(0);
-}
-
-void MeshElement::setVertices(std::vector<Point>& new_vertices) {
-    if(vertices.size() != new_vertices.size()) {
-        LOG(ERROR) << "Invalid vertices vector";
-        return;
-    }
-    for(size_t index = 0; index < new_vertices.size(); index++) {
-        vertices[index] = new_vertices[index];
-    }
-}
-
-void MeshElement::setVertex(size_t index, Point& new_vertice) {
-    vertices[index] = new_vertice;
-}
-
-Point MeshElement::getVertex(size_t index) {
-    return vertices[index];
-}
-
-void MeshElement::setVerticesField(std::vector<Point>& new_observable) {
-    if(vertices.size() != new_observable.size()) {
-        LOG(ERROR) << "Invalid field vector";
-        return;
-    }
-    for(size_t index = 0; index < 4; index++) {
-        e_field[index] = new_observable[index];
-    }
-}
-
-void MeshElement::setVertexField(size_t index, Point& new_observable) {
-    e_field[index] = new_observable;
-}
-
-Point MeshElement::getVertexProperty(size_t index) {
-    return e_field[index];
-}
-
-void MeshElement::setDimension(int dimension) {
-    _dimension = dimension;
-}
-
-int MeshElement::getDimension() {
-    return _dimension;
-}
-
-double MeshElement::getVolume() {
-    double volume = 0;
-    if(this->getDimension() == 3) {
-        Eigen::Matrix4d element_matrix;
-        element_matrix << 1, 1, 1, 1, vertices[0].x, vertices[1].x, vertices[2].x, vertices[3].x, vertices[0].y,
-            vertices[1].y, vertices[2].y, vertices[3].y, vertices[0].z, vertices[1].z, vertices[2].z, vertices[3].z;
-        volume = (element_matrix.determinant()) / 6;
-    }
-    if(this->getDimension() == 2) {
-        Eigen::Matrix3d element_matrix;
-        element_matrix << 1, 1, 1, vertices[0].y, vertices[1].y, vertices[2].y, vertices[0].z, vertices[1].z, vertices[2].z;
-        volume = (element_matrix.determinant()) / 2;
-    }
-    return volume;
-}
-
-double MeshElement::getDistance(size_t index, Point& qp) {
-    return unibn::L2Distance<Point>::compute(vertices[index], qp);
-}
-
-bool MeshElement::validElement(double volume_cut, Point& qp) {
-    if(this->getVolume() == 0) {
-        LOG(TRACE) << "Invalid tetrahedron with coplanar(3D)/colinear(2D) vertices.";
-        return false;
-    }
-    if(std::abs(this->getVolume()) <= volume_cut) {
-        LOG(TRACE) << "Tetrahedron volume smaller than volume cut.";
-        return false;
-    }
-
-    Eigen::Matrix4d sub_tetra_matrix;
-    for(size_t i = 0; i < static_cast<size_t>(this->getDimension()) + 1; i++) {
-        std::vector<Point> sub_vertices = vertices;
-        sub_vertices[i] = qp;
-        MeshElement sub_tetrahedron(sub_vertices);
-        sub_tetrahedron.setDimension(this->getDimension());
-        double tetra_volume = sub_tetrahedron.getVolume();
-        if(this->getVolume() * tetra_volume >= 0) {
-            continue;
-        }
-        if(this->getVolume() * tetra_volume < 0) {
-            LOG(TRACE) << "New mesh Point outside found element.";
-            return false;
-        }
-    }
-    return true;
-}
-
-Point MeshElement::getObservable(Point& qp) {
-    Point new_observable;
-    Eigen::Matrix4d sub_tetra_matrix;
-    for(size_t index = 0; index < static_cast<size_t>(this->getDimension()) + 1; index++) {
-        auto sub_vertices = vertices;
-        sub_vertices[index] = qp;
-        MeshElement sub_tetrahedron(sub_vertices);
-        sub_tetrahedron.setDimension(this->getDimension());
-        double sub_volume = sub_tetrahedron.getVolume();
-        LOG(DEBUG) << "Sub volume " << index << ": " << sub_volume;
-        new_observable.x = new_observable.x + (sub_volume * e_field[index].x) / this->getVolume();
-        new_observable.y = new_observable.y + (sub_volume * e_field[index].y) / this->getVolume();
-        new_observable.z = new_observable.z + (sub_volume * e_field[index].z) / this->getVolume();
-    }
-    LOG(DEBUG) << "Interpolated electric field: (" << new_observable.x << "," << new_observable.y << "," << new_observable.z
-               << ")" << std::endl;
-    return new_observable;
-}
-
-void MeshElement::printElement(Point& qp) {
-    for(size_t index = 0; index < static_cast<size_t>(this->getDimension()) + 1; index++) {
-        LOG(DEBUG) << "Tetrahedron vertex " << index_vec[index] << " (" << vertices[index].x << ", " << vertices[index].y
-                   << ", " << vertices[index].z << ") - "
-                   << " Distance: " << this->getDistance(index, qp) << " - Electric field: (" << e_field[index].x << ", "
-                   << e_field[index].y << ", " << e_field[index].z << ")";
-    }
-    LOG(DEBUG) << "Volume: " << this->getVolume();
 }
 
 void mesh_converter::mesh_plotter(const std::string& grid_file,
@@ -162,7 +48,7 @@ void mesh_converter::mesh_plotter(const std::string& grid_file,
                                   double x,
                                   double y,
                                   double z,
-                                  std::vector<Point> points,
+                                  std::vector<mesh_converter::Point> points,
                                   std::vector<unsigned int> results) {
     auto tg = new TGraph2D();
     tg->SetMarkerStyle(20);

@@ -20,6 +20,7 @@
 
 #include "Detector.hpp"
 #include "DetectorModel.hpp"
+#include "core/config/ConfigManager.hpp"
 #include "core/config/ConfigReader.hpp"
 
 namespace allpix {
@@ -72,11 +73,12 @@ namespace allpix {
         /// @}
 
         /**
-         * @brief Loads the geometry from the reader
-         * @param global_config Global configuration for the framework
+         * @brief Loads the geometry from the global configuration
+         * @param global_config Configuration manager of the framework
+         * @param seeder PRNG to use for generating random misalignments
          * @warning Has to be the first function called after the constructor
          */
-        void load(const Configuration& global_config, std::mt19937_64& seeder);
+        void load(ConfigManager* conf_manager, std::mt19937_64& seeder);
 
         /**
          * @brief Returns the list of standard paths where models should be searched in

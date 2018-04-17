@@ -96,7 +96,7 @@ if [ "$type" == 2 ]; then
   # Change implementation file
   command="sed ${opt} \
       -e 's/GeometryManager\* geo_manager/std::shared\_ptr\<Detector\> detector/g' \
-      -e 's/Module(std::move(config))/Module\(std::move(config)\, detector\)/g' \
+      -e 's/Module(config)/Module\(config\, detector\)/g' \
       -e 's/bindMulti/bindSingle/g' \
       -e 's/messages_/message_/g' \
       -e '/for(auto/d' \

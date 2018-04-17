@@ -32,8 +32,8 @@
 using namespace allpix;
 using namespace lcio;
 
-LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, GeometryManager* geo)
-    : Module(std::move(config)), geo_mgr_(geo) {
+LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo)
+    : Module(config), geo_mgr_(geo) {
 
     // Bind pixel hits message
     messenger->bindMulti(this, &LCIOWriterModule::pixel_messages_, MsgFlags::REQUIRED);

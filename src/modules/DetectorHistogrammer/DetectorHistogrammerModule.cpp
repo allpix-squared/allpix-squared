@@ -22,10 +22,10 @@
 
 using namespace allpix;
 
-DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration config,
+DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector), detector_(std::move(detector)), pixels_message_(nullptr) {
+    : Module(config, detector), detector_(std::move(detector)), pixels_message_(nullptr) {
     // Bind pixel hits message
     messenger->bindSingle(this, &DetectorHistogrammerModule::pixels_message_, MsgFlags::REQUIRED);
 }

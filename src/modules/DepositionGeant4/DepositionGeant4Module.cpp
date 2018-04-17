@@ -37,6 +37,8 @@
 
 #include "GeneratorActionG4.hpp"
 #include "SensitiveDetectorActionG4.hpp"
+#include "SetUniqueTrackIDUserHookG4.hpp"
+#include "TrackInfoG4.hpp"
 
 #define G4_NUM_SEEDS 10
 
@@ -45,9 +47,8 @@ using namespace allpix;
 /**
  * Includes the particle source point to the geometry using \ref GeometryManager::addPoint.
  */
-DepositionGeant4Module::DepositionGeant4Module(Configuration config, Messenger* messenger, GeometryManager* geo_manager)
-    : Module(std::move(config)), messenger_(messenger), geo_manager_(geo_manager), last_event_num_(1),
-      run_manager_g4_(nullptr) {
+DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
+    : Module(config), messenger_(messenger), geo_manager_(geo_manager), last_event_num_(1), run_manager_g4_(nullptr) {
     // Create user limits for maximum step length in the sensor
     user_limits_ = std::make_unique<G4UserLimits>(config_.get<double>("max_step_length", Units::get(1.0, "um")));
 
@@ -175,6 +176,10 @@ void DepositionGeant4Module::init() {
     auto generator = new GeneratorActionG4(config_);
     run_manager_g4_->SetUserAction(generator);
 
+    // User hook to set custom track ID
+    auto userTrackIDHook = new SetUniqueTrackIDUserHookG4();
+    run_manager_g4_->SetUserAction(userTrackIDHook);
+
     if(geo_manager_->hasMagneticField()) {
         MagneticFieldType magnetic_field_type_ = geo_manager_->getMagneticFieldType();
 
@@ -284,6 +289,7 @@ void DepositionGeant4Module::run(unsigned int event_num) {
             charge_per_event_[sensor->getName()]->Fill(charge);
         }
     }
+    TrackInfoG4::reset();
 }
 
 void DepositionGeant4Module::finalize() {

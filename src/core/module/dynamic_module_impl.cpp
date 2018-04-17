@@ -49,9 +49,9 @@ namespace allpix {
      * Internal method for the dynamic loading in the ModuleManager. Forwards the supplied arguments to the constructor and
      * returns an instantiation.
      */
-    Module* allpix_module_generator(Configuration config, Messenger* messenger, GeometryManager* geo_manager);
-    Module* allpix_module_generator(Configuration config, Messenger* messenger, GeometryManager* geo_manager) {
-        auto module = new ALLPIX_MODULE_NAME(std::move(config), messenger, geo_manager); // NOLINT
+    Module* allpix_module_generator(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
+    Module* allpix_module_generator(Configuration& config, Messenger* messenger, GeometryManager* geo_manager) {
+        auto module = new ALLPIX_MODULE_NAME(config, messenger, geo_manager); // NOLINT
         return static_cast<Module*>(module);
     }
 
@@ -70,9 +70,9 @@ namespace allpix {
      * Internal method for the dynamic loading in the ModuleManager. Forwards the supplied arguments to the constructor and
      * returns an instantiation
      */
-    Module* allpix_module_generator(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector);
-    Module* allpix_module_generator(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector) {
-        auto module = new ALLPIX_MODULE_NAME(std::move(config), messenger, std::move(detector)); // NOLINT
+    Module* allpix_module_generator(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector);
+    Module* allpix_module_generator(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector) {
+        auto module = new ALLPIX_MODULE_NAME(config, messenger, std::move(detector)); // NOLINT
         return static_cast<Module*>(module);
     }
 

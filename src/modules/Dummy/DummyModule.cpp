@@ -16,8 +16,8 @@
 
 using namespace allpix;
 
-DummyModule::DummyModule(Configuration config, Messenger* messenger, GeometryManager* geo_manager)
-    : Module(std::move(config)), geo_manager_(geo_manager), messenger_(messenger) {
+DummyModule::DummyModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
+    : Module(config), geo_manager_(geo_manager), messenger_(messenger) {
 
     // ... Implement ... (Typically bounds the required messages and optionally sets configuration defaults)
     // Input required by this module
