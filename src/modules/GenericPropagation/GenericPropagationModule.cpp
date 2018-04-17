@@ -49,10 +49,10 @@ using namespace allpix;
  * Besides binding the message and setting defaults for the configuration, the module copies some configuration variables to
  * local copies to speed up computation.
  */
-GenericPropagationModule::GenericPropagationModule(Configuration config,
+GenericPropagationModule::GenericPropagationModule(Configuration& config,
                                                    Messenger* messenger,
                                                    std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector), messenger_(messenger), detector_(std::move(detector)) {
+    : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
@@ -92,6 +92,9 @@ GenericPropagationModule::GenericPropagationModule(Configuration config,
             "propagate_electrons",
             "No charge carriers selected for propagation, enable 'propagate_electrons' or 'propagate_holes'.");
     }
+
+    config_.setDefault<bool>("ignore_magnetic_field", false);
+
     // Copy some variables from configuration to avoid lookups:
     temperature_ = config_.get<double>("temperature");
     timestep_min_ = config_.get<double>("timestep_min");
@@ -112,6 +115,11 @@ GenericPropagationModule::GenericPropagationModule(Configuration config,
     hole_Beta_ = 0.46 * std::pow(temperature_, 0.17);
 
     boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * temperature_;
+
+    // Parameter for charge transport in magnetic field (approximated from graphs:
+    // http://www.ioffe.ru/SVA/NSM/Semicond/Si/electric.html) FIXME
+    electron_Hall_ = 1.15;
+    hole_Hall_ = 0.9;
 }
 
 void GenericPropagationModule::create_output_plots(unsigned int event_num) {
@@ -484,6 +492,19 @@ void GenericPropagationModule::init() {
             LOG(WARNING) << "Electric field indicates hole collection at implants, but holes are not propagated!";
         }
     }
+
+    // Check for magnetic field
+    has_magnetic_field_ = detector->hasMagneticField();
+    if(has_magnetic_field_) {
+        if(config_.get<bool>("ignore_magnetic_field")) {
+            has_magnetic_field_ = false;
+            LOG(WARNING) << "A magnetic field is switched on, but is set to be ignored for this module.";
+        } else {
+            LOG(DEBUG) << "This detector sees a magnetic field.";
+            magnetic_field_ = detector_->getMagneticField();
+        }
+    }
+
     if(output_plots_) {
         auto time_bins =
             static_cast<int>(Units::convert(integration_time_ / config_.get<long double>("output_plots_step"), "ns"));
@@ -627,17 +648,40 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         return diffusion;
     };
 
-    // Define a lambda function to compute the electron velocity
-    auto carrier_velocity = [&](double, Eigen::Vector3d cur_pos) -> Eigen::Vector3d {
+    // Define lambda functions to compute the charge carrier velocity with or without magnetic field
+    std::function<Eigen::Vector3d(double, Eigen::Vector3d)> carrier_velocity_noB =
+        [&](double, Eigen::Vector3d cur_pos) -> Eigen::Vector3d {
         auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
-        // Compute the drift velocity
         Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
 
         return static_cast<int>(type) * carrier_mobility(efield.norm()) * efield;
     };
 
-    // Create the runge kutta solver with an RKF5 tableau
-    auto runge_kutta = make_runge_kutta(tableau::RK5, carrier_velocity, timestep_start_, position);
+    std::function<Eigen::Vector3d(double, Eigen::Vector3d)> carrier_velocity_withB =
+        [&](double, Eigen::Vector3d cur_pos) -> Eigen::Vector3d {
+        auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
+        Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
+
+        Eigen::Vector3d velocity;
+        Eigen::Vector3d bfield(magnetic_field_.x(), magnetic_field_.y(), magnetic_field_.z());
+
+        auto mob = carrier_mobility(efield.norm());
+        auto exb = efield.cross(bfield);
+
+        Eigen::Vector3d term1;
+        double hallFactor = (type == CarrierType::ELECTRON ? electron_Hall_ : hole_Hall_);
+        term1 = static_cast<int>(type) * mob * hallFactor * exb;
+
+        Eigen::Vector3d term2 = mob * mob * hallFactor * hallFactor * efield.dot(bfield) * bfield;
+
+        auto rnorm = 1 + mob * mob * hallFactor * hallFactor * bfield.dot(bfield);
+        return static_cast<int>(type) * mob * (efield + term1 + term2) / rnorm;
+    };
+
+    // Create the runge kutta solver with an RKF5 tableau, using different velocity calculators depending on the magnetic
+    // field
+    auto runge_kutta = make_runge_kutta(
+        tableau::RK5, (has_magnetic_field_ ? carrier_velocity_withB : carrier_velocity_noB), timestep_start_, position);
 
     // Continue propagation until the deposit is outside the sensor
     Eigen::Vector3d last_position = position;

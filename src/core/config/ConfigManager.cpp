@@ -24,115 +24,135 @@ using namespace allpix;
 /**
  * @throws ConfigFileUnavailableError If the main configuration file cannot be accessed
  */
-ConfigManager::ConfigManager(std::string file_name) : file_name_(std::move(file_name)) {
-    LOG(TRACE) << "Using " << file_name_ << " as main configuration file";
-
+ConfigManager::ConfigManager(std::string file_name,
+                             std::initializer_list<std::string> global,
+                             std::initializer_list<std::string> ignore) {
     // Check if the file exists
-    std::ifstream file(file_name_);
+    std::ifstream file(file_name);
     if(!file) {
-        throw ConfigFileUnavailableError(file_name_);
+        throw ConfigFileUnavailableError(file_name);
     }
 
     // Convert main file to absolute path
-    file_name_ = allpix::get_absolute_path(file_name_);
-
-    // Initialize global base configuration with absolute file name
-    global_base_config_ = Configuration("", file_name_);
+    file_name = allpix::get_canonical_path(file_name);
+    LOG(TRACE) << "Reading main configuration";
 
     // Read the file
-    reader_.add(file, file_name_);
-}
+    ConfigReader reader(file, file_name);
 
-/**
- * @warning Only one header can be added in this way to define its main name
- */
-void ConfigManager::setGlobalHeaderName(std::string name) {
-    global_default_name_ = name;
-    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
-    global_names_.emplace(std::move(name));
-}
-void ConfigManager::addGlobalHeaderName(std::string name) {
-    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
-    global_names_.emplace(std::move(name));
+    // Convert all global and ignored names to lower case and store them
+    auto lowercase = [](const std::string& in) {
+        std::string out(in);
+        std::transform(out.begin(), out.end(), out.begin(), ::tolower);
+        return out;
+    };
+    std::transform(global.begin(), global.end(), std::inserter(global_names_, global_names_.end()), lowercase);
+    std::transform(ignore.begin(), ignore.end(), std::inserter(ignore_names_, ignore_names_.end()), lowercase);
+
+    // Initialize global base configuration
+    global_config_ = reader.getHeaderConfiguration();
+
+    // Store all the configurations read
+    for(auto& config : reader.getConfigurations()) {
+        // Skip all ignored sections
+        std::string config_name = config.getName();
+        std::transform(config_name.begin(), config_name.end(), config_name.begin(), ::tolower);
+        if(ignore_names_.find(config_name) != ignore_names_.end()) {
+            continue;
+        }
+
+        // Merge all global section with the global config
+        if(global_names_.find(config_name) != global_names_.end()) {
+            global_config_.merge(config);
+            continue;
+        }
+
+        module_configs_.push_back(config);
+    }
+
+    // Reading detector file
+    std::string detector_file_name = global_config_.getPath("detectors_file", true);
+    LOG(TRACE) << "Reading detector configuration";
+
+    std::ifstream detector_file(detector_file_name);
+    ConfigReader detector_reader(detector_file, detector_file_name);
+    auto detector_configs = detector_reader.getConfigurations();
+    detector_configs_ = std::list<Configuration>(detector_configs.begin(), detector_configs.end());
 }
 
 /**
  * The global configuration is the combination of all sections with a global header.
  */
-Configuration ConfigManager::getGlobalConfiguration() {
-    // Copy base config and set name
-    Configuration global_config = global_base_config_;
-    global_config.setName(global_default_name_);
-
-    // Add all other global configuration
-    for(auto& global_name : global_names_) {
-        auto configs = reader_.getConfigurations(global_name);
-        for(auto& config : configs) {
-            global_config.merge(config);
-        }
-    }
-    return global_config;
-}
-void ConfigManager::addIgnoreHeaderName(std::string name) {
-    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
-    ignore_names_.emplace(std::move(name));
+Configuration& ConfigManager::getGlobalConfiguration() {
+    return global_config_;
 }
 
 /**
- * Option is split in a key / value pair, an error is thrown if that is not possible. When the key contains at least one dot
- * it is interpreted as a relative configuration with the module identified by the first dot. In that case the option is
- * applied during module loading when either the unique or the configuration name match. Otherwise the key is interpreted as
- * global key and is added to the global header.
+ * Load all extra options that should be added on top of the configuration in the file. The options loaded here are
+ * automatically applied to the module instance when these are added later.
  */
-void ConfigManager::parseOption(std::string line) {
-    line = allpix::trim(line);
-    auto key_value = ConfigReader::parseKeyValue(line);
-    auto key = key_value.first;
-    auto value = key_value.second;
+bool ConfigManager::loadOptions(const std::vector<std::string>& options) {
+    bool optionsApplied = false;
 
-    auto dot_pos = key.find('.');
-    if(dot_pos == std::string::npos) {
-        // Global option, add to the global base config
-        global_base_config_.setText(key, value);
-    } else {
-        // Other identifier bound option is passed
-        auto identifier = key.substr(0, dot_pos);
-        key = key.substr(dot_pos + 1);
-        identifier_options_[identifier].push_back(std::make_pair(key, value));
-    }
-}
-
-bool ConfigManager::applyOptions(const std::string& identifier, Configuration& config) {
-    if(identifier_options_.find(identifier) == identifier_options_.end()) {
-        return false;
+    // Parse the options
+    for(auto& option : options) {
+        option_parser_.parseOption(option);
     }
 
-    for(auto& key_value : identifier_options_[identifier]) {
-        config.setText(key_value.first, key_value.second);
-    }
-    return true;
-}
+    // Apply global options
+    optionsApplied = option_parser_.applyGlobalOptions(global_config_) || optionsApplied;
 
-bool ConfigManager::hasConfiguration(const std::string& name) {
-    return reader_.hasConfiguration(name);
+    // Apply module options
+    for(auto& config : module_configs_) {
+        optionsApplied = option_parser_.applyOptions(config.getName(), config) || optionsApplied;
+    }
+
+    return optionsApplied;
 }
 
 /**
- * All special global and ignored sections are removed before returning the rest of the configurations. The list of normal
- * sections is used by the ModuleManager to instantiate all the required modules.
+ * All special global and ignored sections are not included in the list of module configurations.
  */
-std::vector<Configuration> ConfigManager::getConfigurations() const {
-    std::vector<Configuration> result;
-    for(auto& config : reader_.getConfigurations()) {
-        // ignore all global and ignores names
-        std::string config_name = config.getName();
-        std::transform(config_name.begin(), config_name.end(), config_name.begin(), ::tolower);
-        if(global_names_.find(config_name) != global_names_.end() ||
-           ignore_names_.find(config_name) != ignore_names_.end()) {
-            continue;
-        }
-        result.push_back(config);
+std::list<Configuration>& ConfigManager::getModuleConfigurations() {
+    return module_configs_;
+}
+/**
+ * The list of detector configurations is read from the configuration defined in 'detector_file'
+ */
+std::list<Configuration>& ConfigManager::getDetectorConfigurations() {
+    return detector_configs_;
+}
+
+/**
+ * @warning A previously stored configuration is directly invalidated if the same unique name is used again
+ *
+ * An instance configuration is a specialized configuration for a particular module instance. If an unique name already
+ * exists the previous record is deleted and a new configuration record corresponding to the replaced instance is added.
+ */
+Configuration& ConfigManager::addInstanceConfiguration(const ModuleIdentifier& identifier, const Configuration& config) {
+    std::string unique_name = identifier.getUniqueName();
+    // Check uniqueness
+    if(instance_name_to_config_.find(unique_name) != instance_name_to_config_.end()) {
+        instance_configs_.erase(instance_name_to_config_[unique_name]);
     }
 
-    return result;
+    // Add configuration
+    instance_configs_.push_back(config);
+    Configuration& ret_config = instance_configs_.back();
+    instance_name_to_config_[unique_name] = --instance_configs_.end();
+
+    // Add identifier key to config
+    ret_config.set<std::string>("identifier", identifier.getIdentifier());
+
+    // Apply instance options
+    option_parser_.applyOptions(unique_name, ret_config);
+    return ret_config;
+}
+
+/**
+ * The list of instance configurations can contain configurations with duplicate names, but the instance configuration is
+ * guaranteed to have a configuration value 'identifier' that contains an unique identifier for every same config name
+ */
+std::list<Configuration>& ConfigManager::getInstanceConfigurations() {
+    return instance_configs_;
 }

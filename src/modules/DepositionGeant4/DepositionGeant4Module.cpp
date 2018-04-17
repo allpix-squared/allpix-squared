@@ -23,6 +23,10 @@
 #include <G4UImanager.hh>
 #include <G4UserLimits.hh>
 
+#include "G4FieldManager.hh"
+#include "G4TransportationManager.hh"
+#include "G4UniformMagField.hh"
+
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/module/exceptions.h"
@@ -42,9 +46,8 @@ using namespace allpix;
 /**
  * Includes the particle source point to the geometry using \ref GeometryManager::addPoint.
  */
-DepositionGeant4Module::DepositionGeant4Module(Configuration config, Messenger* messenger, GeometryManager* geo_manager)
-    : Module(std::move(config)), messenger_(messenger), geo_manager_(geo_manager), last_event_num_(1),
-      run_manager_g4_(nullptr) {
+DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
+    : Module(config), messenger_(messenger), geo_manager_(geo_manager), last_event_num_(1), run_manager_g4_(nullptr) {
     // Create user limits for maximum step length in the sensor
     user_limits_ = std::make_unique<G4UserLimits>(config_.get<double>("max_step_length", Units::get(1.0, "um")));
 
@@ -177,6 +180,20 @@ void DepositionGeant4Module::init() {
     // User hook to set custom track ID
     auto userTrackIDHook = new SetUniqueTrackIDUserHookG4(track_info_manager_.get());
     run_manager_g4_->SetUserAction(userTrackIDHook);
+
+    if(geo_manager_->hasMagneticField()) {
+        MagneticFieldType magnetic_field_type_ = geo_manager_->getMagneticFieldType();
+
+        if(magnetic_field_type_ == MagneticFieldType::CONSTANT) {
+            ROOT::Math::XYZVector b_field = geo_manager_->getMagneticField(ROOT::Math::XYZPoint(0., 0., 0.));
+            G4MagneticField* magField = new G4UniformMagField(G4ThreeVector(b_field.x(), b_field.y(), b_field.z()));
+            G4FieldManager* globalFieldMgr = G4TransportationManager::GetTransportationManager()->GetFieldManager();
+            globalFieldMgr->SetDetectorField(magField);
+            globalFieldMgr->CreateChordFinder(magField);
+        } else {
+            throw ModuleError("Magnetic field enabled, but not constant. This can't be handled by this module yet.");
+        }
+    }
 
     // Get the creation energy for charge (default is silicon electron hole pair energy)
     auto charge_creation_energy = config_.get<double>("charge_creation_energy", Units::get(3.64, "eV"));

@@ -35,7 +35,7 @@ namespace allpix {
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
          * @param geo_manager Pointer to the geometry manager, containing the detectors
          */
-        DummyModule(Configuration config, Messenger* messenger, GeometryManager* geo_manager);
+        DummyModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
 
         /**
          * @brief [Initialise this module]

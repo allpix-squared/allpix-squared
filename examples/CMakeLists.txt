@@ -12,12 +12,23 @@ OPTION(TEST_EXAMPLES "Perform unit tests to ensure example validity?" ON)
 
 IF(TEST_EXAMPLES)
     FILE(GLOB TEST_LIST_EXAMPLES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/*)
+    LIST(LENGTH TEST_LIST_EXAMPLES NUM_TEST_EXAMPLES)
+    MESSAGE(STATUS "Unit tests: ${NUM_TEST_EXAMPLES} examples")
     FOREACH(TEST ${TEST_LIST_EXAMPLES})
         IF(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${TEST}/${TEST}.conf")
-            ADD_TEST(NAME "examples/${TEST}"
+            SET(TEST_NAME "examples/${TEST}")
+
+            # Add ad-hoc cli arguments for some examples:
+            if(${TEST} MATCHES "replay")
+                SET(ADDITIONAL_CLI_ARGS "${ADDITIONAL_CLI_ARGS} -o ROOTObjectReader.file_name=${CMAKE_BINARY_DIR}/output/fast_simulation/output/output_fast_simulation.root")
+                SET(DEPENDENCY "examples/fast_simulation")
+            ENDIF()
+
+            ADD_TEST(NAME "${TEST_NAME}"
                 WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-                COMMAND ${CMAKE_SOURCE_DIR}/etc/unittests/run_directory.sh "output/${TEST}" "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_SOURCE_DIR}/examples/${TEST}/${TEST}.conf -o number_of_events=10"
+                COMMAND ${CMAKE_SOURCE_DIR}/etc/unittests/run_directory.sh "output/${TEST}" "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_SOURCE_DIR}/examples/${TEST}/${TEST}.conf -o number_of_events=10 ${ADDITIONAL_CLI_ARGS}"
             )
+            SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES DEPENDS "${DEPENDENCY}")
         ENDIF()
     ENDFOREACH()
 ELSE()

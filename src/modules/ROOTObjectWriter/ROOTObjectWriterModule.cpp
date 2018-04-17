@@ -26,8 +26,8 @@
 
 using namespace allpix;
 
-ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration config, Messenger* messenger, GeometryManager* geo_mgr)
-    : Module(std::move(config)), geo_mgr_(geo_mgr) {
+ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
+    : Module(config), geo_mgr_(geo_mgr) {
     // Bind to all messages
     messenger->registerListener(this, &ROOTObjectWriterModule::receive);
 }
@@ -172,14 +172,36 @@ void ROOTObjectWriterModule::finalize() {
     TDirectory* config_dir = output_file_->mkdir("config");
     config_dir->cd();
 
+    // Get the config manager
+    ConfigManager* conf_manager = getConfigManager();
+
     // Save the main configuration to the output file
-    for(auto& config : this->get_final_configuration()) {
-        // Create a new directory per section, using the unique module identifiers as names
-        auto section_dir = config_dir->mkdir(config.getName().c_str());
-        LOG(TRACE) << "Writing configuration for: " << config.getName();
+    auto global_dir = config_dir->mkdir("Allpix");
+    LOG(TRACE) << "Writing global configuration";
+
+    // Loop over all values in the global configuration
+    for(auto& key_value : conf_manager->getGlobalConfiguration().getAll()) {
+        global_dir->WriteObject(&key_value.second, key_value.first.c_str());
+    }
+
+    // Save the instance configuration to the output file
+    for(auto& config : conf_manager->getInstanceConfigurations()) {
+        // Create a new directory per section, using the unique module name
+        auto unique_name = config.getName();
+        auto identifier = config.get<std::string>("identifier");
+        if(!identifier.empty()) {
+            unique_name += ":";
+            unique_name += identifier;
+        }
+        auto section_dir = config_dir->mkdir(unique_name.c_str());
+        LOG(TRACE) << "Writing configuration for: " << unique_name;
 
         // Loop over all values in the section
         for(auto& key_value : config.getAll()) {
+            // Skip the identifier
+            if(key_value.first == "identifier") {
+                continue;
+            }
             section_dir->WriteObject(&key_value.second, key_value.first.c_str());
         }
     }

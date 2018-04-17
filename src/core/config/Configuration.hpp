@@ -195,11 +195,6 @@ namespace allpix {
         std::string getName() const;
 
         /**
-         * @brief Set name of the configuration header
-         */
-        void setName(const std::string& name);
-
-        /**
          * @brief Get path to the file containing the configuration if it has one
          * @return Absolute path to configuration file or empty if not linked to a file
          * @warning Parameter should be used with care as not all configurations are required to have a file

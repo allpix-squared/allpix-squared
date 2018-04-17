@@ -37,23 +37,17 @@ using namespace ROOT::Math;
 GeometryManager::GeometryManager() : closed_{false} {}
 
 /**
- * Loads the geometry by parsing the configuration file
+ * Loads the geometry by looping over all defined detectors
  */
-void GeometryManager::load(const Configuration& global_config, std::mt19937_64& seeder) {
-    LOG(TRACE) << "Reading geometry";
-
+void GeometryManager::load(ConfigManager* conf_manager, std::mt19937_64& seeder) {
     // Set up a random number generator and seed it with the global seed:
     std::mt19937_64 random_generator;
     random_generator.seed(seeder());
 
-    std::string detector_file_name = global_config.getPath("detectors_file", true);
-    std::ifstream file(detector_file_name);
-    ConfigReader reader(file, detector_file_name);
-
     // Loop over all defined detectors
-    LOG(DEBUG) << "Loading all detectors:";
-    for(auto& detector_section : reader.getConfigurations()) {
-        LOG(DEBUG) << "Detector " << detector_section.getName() << "...";
+    LOG(DEBUG) << "Loading detectors";
+    for(auto& detector_section : conf_manager->getDetectorConfigurations()) {
+        LOG(DEBUG) << "Detector " << detector_section.getName() << ":";
 
         // Calculate possible detector misalignment to be added
         auto misalignment = [&](auto residuals) {
@@ -105,6 +99,7 @@ void GeometryManager::load(const Configuration& global_config, std::mt19937_64& 
     }
 
     // Load the list of standard model paths
+    Configuration& global_config = conf_manager->getGlobalConfiguration();
     if(global_config.has("model_paths")) {
         auto extra_paths = global_config.getPathArray("model_paths", true);
         model_paths_.insert(model_paths_.end(), extra_paths.begin(), extra_paths.end());
@@ -487,4 +482,21 @@ void GeometryManager::close_geometry() {
 
     closed_ = true;
     LOG(TRACE) << "Closed geometry";
+}
+
+bool GeometryManager::hasMagneticField() const {
+    return (magnetic_field_type_ != MagneticFieldType::NONE);
+}
+
+void GeometryManager::setMagneticFieldFunction(MagneticFieldFunction function, MagneticFieldType type) {
+    magnetic_field_function_ = std::move(function);
+    magnetic_field_type_ = type;
+}
+
+MagneticFieldType GeometryManager::getMagneticFieldType() const {
+    return magnetic_field_type_;
+}
+
+ROOT::Math::XYZVector GeometryManager::getMagneticField(const ROOT::Math::XYZPoint& position) const {
+    return magnetic_field_function_(position);
 }

@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
     }
 
     if(print_help) {
-        std::cerr << "Usage: ./tcad_dfise_reader -f <file_name> [<options>]" << std::endl;
+        std::cerr << "Usage: ./mesh_ploter -f <file_name> [<options>]" << std::endl;
         std::cout << "\t -f <file_name>         init file name" << std::endl;
         std::cout << "\t -o <output_file_name>  name of the file to output (default is efield.png)" << std::endl;
         std::cout << "\t -p <plane>             plane to be ploted. xy, yz or zx (default is yz)" << std::endl;
@@ -127,31 +127,31 @@ int main(int argc, char** argv) {
 
     // Create and fill histogram
     auto efield_map =
-        new TH2D(Form("%s", observable.c_str()), Form("%s", observable.c_str()), x_bin, 0, x_bin, y_bin, 0, y_bin);
+        new TH2D(Form("%s", observable.c_str()), Form("%s", observable.c_str()), x_bin, 1, x_bin + 1, y_bin, 1, y_bin + 1);
     auto exfield_map = new TH2D(Form("%s X component", observable.c_str()),
                                 Form("%s X component", observable.c_str()),
-                                x_bin,
-                                0,
-                                x_bin,
-                                y_bin,
-                                0,
-                                y_bin);
+                                x_bin + 1,
+                                1,
+                                x_bin + 1,
+                                y_bin + 1,
+                                1,
+                                y_bin + 1);
     auto eyfield_map = new TH2D(Form("%s Y component", observable.c_str()),
                                 Form("%s Y component", observable.c_str()),
-                                x_bin,
-                                0,
-                                x_bin,
-                                y_bin,
-                                0,
-                                y_bin);
+                                x_bin + 1,
+                                1,
+                                x_bin + 1,
+                                y_bin + 1,
+                                1,
+                                y_bin + 1);
     auto ezfield_map = new TH2D(Form("%s Z component", observable.c_str()),
                                 Form("%s Z component", observable.c_str()),
-                                x_bin,
-                                0,
-                                x_bin,
-                                y_bin,
-                                0,
-                                y_bin);
+                                x_bin + 1,
+                                1,
+                                x_bin + 1,
+                                y_bin + 1,
+                                1,
+                                y_bin + 1);
     auto c1 = new TCanvas();
 
     double dummy;
@@ -179,8 +179,10 @@ int main(int argc, char** argv) {
         line++;
     }
 
-    output_file_name = file_name.substr(0, lastindex);
-    output_file_name = output_file_name + "_" + plane + "_" + std::to_string(slice_cut) + ".png";
+    if(output_file_name.empty()) {
+        output_file_name = file_name.substr(0, lastindex);
+        output_file_name = output_file_name + "_" + plane + "_" + std::to_string(slice_cut) + ".png";
+    }
 
     std::string root_file_name = file_name.substr(0, lastindex);
     root_file_name = root_file_name + "_Interpolation_plots_" + plane + "_" + std::to_string(slice_cut) + ".root";

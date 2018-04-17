@@ -44,7 +44,7 @@ namespace allpix {
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
          * @param geo_manager Pointer to the geometry manager, containing the detectors
          */
-        DepositionGeant4Module(Configuration, Messenger* messenger, GeometryManager* geo_manager);
+        DepositionGeant4Module(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
 
         /**
          * @brief Initializes the physics list of processes and constructs the particle source

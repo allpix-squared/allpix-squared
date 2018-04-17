@@ -189,6 +189,8 @@ void GeometryConstructionG4::build_detectors() {
         std::string name = detector->getName();
         LOG(DEBUG) << "Creating Geant4 model for " << name;
         LOG(DEBUG) << " Wrapper dimensions of model: " << display_vector(model->getSize(), {"mm", "um"});
+        LOG(TRACE) << " Sensor dimensions: " << model->getSensorSize();
+        LOG(TRACE) << " Chip dimensions: " << model->getChipSize();
 
         LOG(DEBUG) << " Global position and orientation of the detector:";
 

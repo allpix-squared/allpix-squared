@@ -91,12 +91,12 @@ namespace allpix {
 
         /**
          * @brief Convert a global position to a position in the detector frame
-         * @param global_pos Position in the local frame
+         * @param global_pos Position in the global frame
          * @return Position in the local frame
          */
         ROOT::Math::XYZPoint getLocalPosition(const ROOT::Math::XYZPoint& global_pos) const;
         /**
-         * @brief Convert a global position to a position in the detector frame
+         * @brief Convert a position in the detector frame to a global position
          * @param local_pos Position in the local frame
          * @return Position in the global frame
          */
@@ -151,6 +151,26 @@ namespace allpix {
                                       ElectricFieldType type = ElectricFieldType::CUSTOM);
 
         /**
+             * @brief Set the magnetic field in the detector
+             * @param function Function used to retrieve the magnetic field
+             * @param type Type of the magnetic field function used
+     holds
+             */
+        void setMagneticField(ROOT::Math::XYZVector b_field);
+
+        /**
+         * @brief Returns if the detector has a magnetic field in the sensor
+         * @return True if the detector has an magnetic field, false otherwise
+         */
+        bool hasMagneticField() const;
+        /**
+         * @brief Get the magnetic field in the sensor at a local position
+         * @param pos Position in the local frame
+         * @return Vector of the field at the queried point
+         */
+        ROOT::Math::XYZVector getMagneticField() const;
+
+        /**
          * @brief Get the model of this detector
          * @return Pointer to the constant detector model
          */
@@ -203,6 +223,9 @@ namespace allpix {
         std::pair<double, double> electric_field_thickness_domain_;
         ElectricFieldType electric_field_type_{ElectricFieldType::NONE};
         ElectricFieldFunction electric_field_function_;
+
+        ROOT::Math::XYZVector magnetic_field_;
+        bool magnetic_field_on_;
 
         std::map<std::type_index, std::map<std::string, std::shared_ptr<void>>> external_objects_;
     };

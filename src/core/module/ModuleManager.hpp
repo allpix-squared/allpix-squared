@@ -80,19 +80,19 @@ namespace allpix {
 
         /**
          * @brief Initialize all modules before the event sequence
-         * @warning Should be called after the \ref Allpix::load "load function"
+         * @warning Should be called after the \ref ModuleManager::load "load function"
          */
         void init();
 
         /**
          * @brief Run all modules for the number of events
-         * @warning Should be called after the \ref Allpix::init "init function"
+         * @warning Should be called after the \ref ModuleManager::init "init function"
          */
         void run();
 
         /**
          * @brief Finalize all modules after the event sequence
-         * @warning Should be called after the \ref Allpix::init "run function"
+         * @warning Should be called after the \ref ModuleManager::init "run function"
          */
         void finalize();
 
@@ -107,27 +107,25 @@ namespace allpix {
          * @brief Create unique modules
          * @param library Void pointer to the loaded library
          * @param config Configuration of the module
-         * @param conf_manager Point to the configuration manager
          * @param messenger Pointer to the messenger
          * @param geo_manager Pointer to the geometry manager
          * @param seeder Seeder used to construct the PRNG of the modules
          * @return An unique module together with its identifier
          */
         std::pair<ModuleIdentifier, Module*>
-        create_unique_modules(void*, Configuration&, ConfigManager*, Messenger*, GeometryManager*, std::mt19937_64& seeder);
+        create_unique_modules(void*, Configuration&, Messenger*, GeometryManager*, std::mt19937_64& seeder);
 
         /**
          * @brief Create detector modules
          * @param library Void pointer to the loaded library
          * @param config Configuration of the module
-         * @param conf_manager Point to the configuration manager
          * @param messenger Pointer to the messenger
          * @param geo_manager Pointer to the geometry manager
          * @param seeder Seeder used to construct the PRNG of the modules
          * @return A list of all created detector modules and their identifiers
          */
-        std::vector<std::pair<ModuleIdentifier, Module*>> create_detector_modules(
-            void*, Configuration&, ConfigManager*, Messenger*, GeometryManager*, std::mt19937_64& seeder);
+        std::vector<std::pair<ModuleIdentifier, Module*>>
+        create_detector_modules(void*, Configuration&, Messenger*, GeometryManager*, std::mt19937_64& seeder);
 
         /**
          * @brief Set module specific log setting before running init/run/finalize
@@ -144,12 +142,12 @@ namespace allpix {
         ModuleList modules_;
         IdentifierToModuleMap id_to_module_;
 
+        ConfigManager* conf_manager_;
+
         std::unique_ptr<TFile> modules_file_;
 
         std::map<Module*, long double> module_execution_time_;
         long double total_time_{};
-
-        Configuration global_config_;
 
         std::map<std::string, void*> loaded_libraries_;
 
