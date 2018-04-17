@@ -71,11 +71,11 @@ double MCTrack::getFinalTotalEnergy() const {
     return final_tot_E_;
 }
 
-TString MCTrack::getOriginatingVolumeName() const {
+std::string MCTrack::getOriginatingVolumeName() const {
     return origin_g4_vol_name_;
 }
 
-TString MCTrack::getCreationProcessName() const {
+std::string MCTrack::getCreationProcessName() const {
     return origin_g4_process_name_;
 }
 

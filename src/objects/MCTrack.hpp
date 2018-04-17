@@ -12,9 +12,7 @@
 
 #include <Math/Point3D.h>
 #include <TRef.h>
-#include <TString.h>
 
-#include <iostream>
 #include "Object.hpp"
 
 namespace allpix {
@@ -116,13 +114,13 @@ namespace allpix {
          * @brief Getter for the Geant4 name of the physical volume in which the track originated
          * @return The name of the phyical volume
          */
-        TString getOriginatingVolumeName() const;
+        std::string getOriginatingVolumeName() const;
 
         /**
          * @brief Getter for the name of the process which created this particle
          * @return The process name or "none" if no such process exists
          */
-        TString getCreationProcessName() const;
+        std::string getCreationProcessName() const;
 
         /**
          * @brief Get the parent MCTrack if it has one

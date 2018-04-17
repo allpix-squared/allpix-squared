@@ -175,7 +175,7 @@ void DepositionGeant4Module::init() {
     auto generator = new GeneratorActionG4(config_);
     run_manager_g4_->SetUserAction(generator);
 
-    track_info_manager_ = std::unique_ptr<TrackInfoManager>(new TrackInfoManager());
+    track_info_manager_ = std::make_unique<TrackInfoManager>();
 
     // User hook to set custom track ID
     auto userTrackIDHook = new SetUniqueTrackIDUserHookG4(track_info_manager_.get());

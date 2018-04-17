@@ -119,7 +119,7 @@ void TextWriterModule::run(unsigned int event_num) {
         if(message->getDetector() != nullptr) {
             *output_file_ << "--- " << message->getDetector()->getName() << " ---" << std::endl;
         } else {
-            *output_file_ << "--- <no detector> ---" << std::endl;
+            *output_file_ << "--- <global> ---" << std::endl;
         }
         for(auto& object : message->getObjectArray()) {
             // Print the object's ASCII representation:
