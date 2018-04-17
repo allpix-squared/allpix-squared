@@ -29,7 +29,6 @@ void TrackInfoManager::storeTrackInfo(std::unique_ptr<MCTrack> theTrack) {
     auto ID = theTrack->getTrackID();
     auto element = to_store_tracks_.find(ID);
     if(element != to_store_tracks_.end()) {
-        std::cout << "Stored!\n";
         (*element).second = std::move(theTrack);
     }
 }

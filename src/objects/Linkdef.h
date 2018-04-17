@@ -8,7 +8,6 @@
 #pragma link off all functions;
 
 // Missing ROOT objects
-#pragma link C++ class ROOT::TString + ;
 #pragma link C++ class ROOT::Math::Cartesian2D < unsigned int > +;
 #pragma link C++ class ROOT::Math::DisplacementVector2D < ROOT::Math::Cartesian2D < unsigned int >,                         \
     ROOT::Math::DefaultCoordinateSystemTag > +;
