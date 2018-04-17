@@ -131,7 +131,7 @@ void ROOTObjectReaderModule::init() {
     }
 
     // Cross-check the core random seed stored in the file with the one configured:
-    auto global_config = getConfigManager()->getGlobalConfiguration();
+    auto& global_config = getConfigManager()->getGlobalConfiguration();
     auto config_seed = global_config.get<uint64_t>("random_seed_core");
 
     std::string* str;
