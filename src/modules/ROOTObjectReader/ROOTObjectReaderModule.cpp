@@ -130,6 +130,28 @@ void ROOTObjectReaderModule::init() {
         LOG(ERROR) << "Provided ROOT file does not contain any trees, module will not read any data";
     }
 
+    // Cross-check the core random seed stored in the file with the one configured:
+    auto global_config = getConfigManager()->getGlobalConfiguration();
+    auto config_seed = global_config.get<uint64_t>("random_seed_core");
+
+    std::string* str;
+    input_file_->GetObject("config/Allpix/random_seed_core", str);
+    if(!str) {
+        throw InvalidValueError(global_config,
+                                "random_seed_core",
+                                "no random seed for core set in the input data file, cross-check with configured value "
+                                "impossible - this might lead to unexpected behavior.");
+    }
+
+    auto file_seed = allpix::from_string<uint64_t>(*str);
+    if(config_seed != file_seed) {
+        throw InvalidValueError(global_config,
+                                "random_seed_core",
+                                "mismatch between core random seed in configuration file and input data - this "
+                                "might lead to unexpected behavior. Set to value configured in the input data file: " +
+                                    (*str));
+    }
+
     // Loop over all found trees
     for(auto& tree : trees_) {
         // Loop over the list of branches and create the set of receiver objects
