@@ -42,8 +42,9 @@ void TrackInfoManager::resetTrackInfoManager() {
 void TrackInfoManager::dispatchMesseges(Module* module, Messenger* messenger) {
     auto test = std::vector<MCTrack>();
     for(auto& id_track_pair : to_store_tracks_) {
-        if(id_track_pair.second)
+        if(id_track_pair.second) {
             test.push_back(*std::move(id_track_pair.second));
+        }
     }
     auto mc_track_message = std::make_shared<MCTrackMessage>(std::move(test));
     messenger->dispatchMessage(module, mc_track_message);
