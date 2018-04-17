@@ -185,8 +185,7 @@ void DepositionGeant4Module::init() {
             globalFieldMgr->SetDetectorField(magField);
             globalFieldMgr->CreateChordFinder(magField);
         } else {
-            throw InvalidModuleStateException(
-                "Magnetic field enabled, but not constant. This can't be handled by this module yet.");
+            throw ModuleError("Magnetic field enabled, but not constant. This can't be handled by this module yet.");
         }
     }
 
