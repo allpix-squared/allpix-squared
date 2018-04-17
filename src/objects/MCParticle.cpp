@@ -8,8 +8,6 @@
  */
 
 #include "MCParticle.hpp"
-#include "core/utils/unit.h"
-#include "tools/ROOT.h"
 
 using namespace allpix;
 

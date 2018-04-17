@@ -181,19 +181,19 @@ namespace allpix {
         ROOT::Math::XYZPoint start_point_{};
         ROOT::Math::XYZPoint end_point_{};
 
+        TString origin_g4_vol_name_{};
+        TString origin_g4_process_name_{};
+
+        int origin_g4_process_type_{};
         int particle_id_{};
         int track_id_{};
         int parent_id_{};
-        int origin_g4_process_type_{};
         int n_steps_{};
 
         double initial_kin_E_{};
         double initial_tot_E_{};
         double final_kin_E_{};
         double final_tot_E_{};
-
-        TString origin_g4_vol_name_{};
-        TString origin_g4_process_name_{};
 
         TRef parent_;
     };
