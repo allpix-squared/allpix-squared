@@ -483,3 +483,20 @@ void GeometryManager::close_geometry() {
     closed_ = true;
     LOG(TRACE) << "Closed geometry";
 }
+
+bool GeometryManager::hasMagneticField() const {
+    return (magnetic_field_type_ != MagneticFieldType::NONE);
+}
+
+void GeometryManager::setMagneticFieldFunction(MagneticFieldFunction function, MagneticFieldType type) {
+    magnetic_field_function_ = std::move(function);
+    magnetic_field_type_ = type;
+}
+
+MagneticFieldType GeometryManager::getMagneticFieldType() const {
+    return magnetic_field_type_;
+}
+
+ROOT::Math::XYZVector GeometryManager::getMagneticField(const ROOT::Math::XYZPoint& position) const {
+    return magnetic_field_function_(position);
+}

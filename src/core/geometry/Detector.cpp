@@ -37,6 +37,7 @@ Detector::Detector(std::string name,
         throw InvalidModuleActionException("Detector model cannot be a null pointer");
     }
 
+    magnetic_field_on_ = false;
     // Build the transformation matrix
     build_transform();
 }
@@ -52,6 +53,7 @@ Detector::Detector(std::string name, ROOT::Math::XYZPoint position, const ROOT::
       electric_field_(nullptr) {}
 void Detector::set_model(std::shared_ptr<DetectorModel> model) {
     model_ = std::move(model);
+    magnetic_field_on_ = false;
     build_transform();
 }
 void Detector::build_transform() {
@@ -260,4 +262,22 @@ void Detector::setElectricFieldFunction(ElectricFieldFunction function,
     electric_field_thickness_domain_ = std::move(thickness_domain);
     electric_field_function_ = std::move(function);
     electric_field_type_ = type;
+}
+
+bool Detector::hasMagneticField() const {
+    return magnetic_field_on_;
+}
+
+// TODO Currently the magnetic field in the detector is fixed to the field vector at it's center position. Change in case a
+// field gradient is needed inside the sensor.
+void Detector::setMagneticField(ROOT::Math::XYZVector b_field) {
+    magnetic_field_on_ = true;
+    magnetic_field_ = std::move(b_field);
+}
+
+/**
+ * The magnetic field is evaluated for any sensor position.
+ */
+ROOT::Math::XYZVector Detector::getMagneticField() const {
+    return magnetic_field_;
 }
