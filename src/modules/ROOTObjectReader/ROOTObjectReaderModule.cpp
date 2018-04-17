@@ -152,6 +152,14 @@ void ROOTObjectReaderModule::init() {
                                     (*str));
     }
 
+    // Cross-check version, print warning only in case of a mismatch:
+    std::string* version_str;
+    input_file_->GetObject("config/Allpix/version", version_str);
+    if(version_str && (*version_str) != ALLPIX_PROJECT_VERSION) {
+        LOG(WARNING) << "Reading data produced with different version " << (*version_str)
+                     << " - this might lead to unexpected behavior.";
+    }
+
     // Loop over all found trees
     for(auto& tree : trees_) {
         // Loop over the list of branches and create the set of receiver objects
