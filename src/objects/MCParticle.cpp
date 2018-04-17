@@ -57,7 +57,7 @@ void MCParticle::setParent(const MCParticle* mc_particle) {
 }
 
 void MCParticle::print(std::ostream& out) const {
-    out << "\n ------- Printing particle information (" << this << ")-------\n"
+    out << "\n ------- Printing MCParticle information (" << this << ")-------\n"
         << "Particle type (PDG ID): " << particle_id_ << " | Belongs to track: " << track_id_ << '\n'
         << "Local start point:\t " << local_start_point_.X() << " mm\t|" << local_start_point_.Y() << " mm\t|"
         << local_start_point_.Z() << " mm\n"

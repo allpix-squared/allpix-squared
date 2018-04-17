@@ -107,7 +107,7 @@ void MCTrack::setParent(const MCTrack* mc_track) {
 }
 
 void MCTrack::print(std::ostream& out) const {
-    out << "\n ------- Printing track information for track: " << track_id_ << " (" << this << ") -------\n"
+    out << "\n ------- Printing MCTrack information for track: " << track_id_ << " (" << this << ") -------\n"
         << "Particle type (PDG ID): " << particle_id_ << " | Parent track ID: " << parent_id_ << '\n'
         << "Production process: " << origin_g4_process_name_ << " (G4 process type: " << origin_g4_process_type_ << ")\n"
         << "Production in G4Volume: " << origin_g4_vol_name_ << '\n'
