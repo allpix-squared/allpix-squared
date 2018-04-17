@@ -181,8 +181,8 @@ namespace allpix {
         ROOT::Math::XYZPoint start_point_{};
         ROOT::Math::XYZPoint end_point_{};
 
-        TString origin_g4_vol_name_{};
-        TString origin_g4_process_name_{};
+        std::string origin_g4_vol_name_{};
+        std::string origin_g4_process_name_{};
 
         int origin_g4_process_type_{};
         int particle_id_{};

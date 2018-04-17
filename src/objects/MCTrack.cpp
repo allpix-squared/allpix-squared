@@ -20,9 +20,10 @@ MCTrack::MCTrack(ROOT::Math::XYZPoint start_point,
                  int parent_id,
                  double initial_kin_E,
                  double initial_tot_E)
-    : start_point_(std::move(start_point)), origin_g4_vol_name_(g4_volume), origin_g4_process_name_(g4_prod_process_name),
-      origin_g4_process_type_(g4_prod_process_type), particle_id_(particle_id), track_id_(track_id), parent_id_(parent_id),
-      initial_kin_E_(initial_kin_E), initial_tot_E_(initial_tot_E) {
+    : start_point_(std::move(start_point)), origin_g4_vol_name_(std::move(g4_volume)),
+      origin_g4_process_name_(std::move(g4_prod_process_name)), origin_g4_process_type_(g4_prod_process_type),
+      particle_id_(particle_id), track_id_(track_id), parent_id_(parent_id), initial_kin_E_(initial_kin_E),
+      initial_tot_E_(initial_tot_E) {
     setParent(nullptr);
 }
 
