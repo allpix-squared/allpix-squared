@@ -28,8 +28,8 @@
 
 using namespace allpix;
 
-MagneticFieldReaderModule::MagneticFieldReaderModule(Configuration config, Messenger*, GeometryManager* geoManager)
-    : Module(std::move(config)), geometryManager_(geoManager) {}
+MagneticFieldReaderModule::MagneticFieldReaderModule(Configuration& config, Messenger*, GeometryManager* geoManager)
+    : Module(config), geometryManager_(geoManager) {}
 
 void MagneticFieldReaderModule::init() {
     MagneticFieldType type = MagneticFieldType::NONE;
