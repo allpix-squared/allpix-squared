@@ -92,7 +92,11 @@ namespace allpix {
          */
         MCParticle() = default;
 
-        friend std::ostream& operator<<(std::ostream& stream, const MCParticle& particle);
+        /**
+         * @brief Print an ASCII representation of MCParticle to the given stream
+         * @param out Stream to print to
+         */
+        void print(std::ostream& out) const override;
 
     private:
         ROOT::Math::XYZPoint local_start_point_{};

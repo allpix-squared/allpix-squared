@@ -26,8 +26,14 @@ namespace allpix {
         /**
          * @brief Construct a Monte-Carlo track
          * @param start_point Global point where track came into existance
-         * @param TODO
-         * @param TODO
+         * @param g4_volume Geant4 volume where track originated in
+         * @param g4_prod_process_name Geant4 creation process name
+         * @param g4_prod_process_type Geant4 creation process id
+         * @param particle_id PDG particle id
+         * @param track_id Custom track id
+         * @param parent_id Track id of parent track
+         * @param initial_kin_E Initial kinetic energy (in MeV)
+         * @param initial_tot_E Initial total energy (in MeV)
          */
         MCTrack(ROOT::Math::XYZPoint start_point,
                 std::string g4_volume,
@@ -57,20 +63,66 @@ namespace allpix {
          */
         int getParticleID() const;
 
+        /**
+         * @brief Get unique track ID of this track
+         */
+        int getTrackID() const;
+
+        /**
+         * @brief Get the ID of the parent track
+         * @return Parent track ID
+         */
         int getParentTrackID() const;
 
-        void setEndPoint(ROOT::Math::XYZPoint end_point) { end_point_ = std::move(end_point); };
-        void setFinalTotalEnergy(double final_tot_E) { final_tot_E_ = final_tot_E; };
-        void setFinalKineticEnergy(double final_kin_E) { final_kin_E_ = final_kin_E; };
-        void setNumberSteps(int n_steps) { n_steps_ = n_steps; };
-
-        double getFinalKineticEnergy() const { return final_kin_E_; };
         /**
-         * @brief Set the Monte-Carlo parent track
-         * @param mc_track The Monte-Carlo track
-         * @warning Special method because parent can only be set after creation, should not be replaced later.
+         * @brief Get the Geant4 internal ID of the process which created the particle
+         * @return The Geant4 process type or "-1" if no such process exists
          */
-        void setParent(const MCTrack* mc_track);
+        int getCreationProcessType() const;
+
+        /**
+         * @brief Get the amount of stepping steps the Geant4 track made
+         * @return The amount of steps
+         */
+        int getNumberOfSteps() const;
+
+        /**
+         * @brief Getter for the kinetic energy the particle had when the track was created
+         * @return The kinetic energy in MeV of the particle at the beginning of the track
+         */
+        double getInitialKineticEnergy() const;
+
+        /**
+         * @brief Getter for the total energy (i.e. kinetic energy and dynamic mass) the particle had when the track was
+         * created
+         * @return The total energy in MeV of the particle at the beginning of the track
+         */
+        double getInitialTotalEnergy() const;
+
+        /**
+         * @brief Getter for the kinetic energy the particle had when the track terminated
+         * @return The kinetic energy in MeV of the particle at the end of the track
+         */
+        double getFinalKineticEnergy() const;
+
+        /**
+         * @brief Getter for the total energy (i.e. kinetic energy and dynamic mass) the particle had when the track
+         * terminated
+         * @return The total energy in MeV of the particle at the end of the track
+         */
+        double getFinalTotalEnergy() const;
+
+        /**
+         * @brief Getter for the Geant4 name of the physical volume in which the track originated
+         * @return The name of the phyical volume
+         */
+        TString getOriginatingVolumeName() const;
+
+        /**
+         * @brief Getter for the name of the process which created this particle
+         * @return The process name or "none" if no such process exists
+         */
+        TString getCreationProcessName() const;
 
         /**
          * @brief Get the parent MCTrack if it has one
@@ -80,11 +132,41 @@ namespace allpix {
         const MCTrack* getParent() const;
 
         /**
-         * @brief Get unique track ID of this track
+         * @brief Set the end point of the track, i.e. the point the track terminates
+         * @param end_point Point to be set as end point for track
          */
-        int getTrackID() const;
+        void setEndPoint(ROOT::Math::XYZPoint end_point);
 
-        friend std::ostream& operator<<(std::ostream& stream, const MCTrack& track);
+        /**
+         * @brief Set the number of Geant4 stepping steps this track made
+         * @param n_steps The number of steps to set
+         */
+        void setNumberOfSteps(int n_steps);
+
+        /**
+         * @brief Set the final kinetic energy of the particle at the end of the track
+         * @param final_kin_E The final kinetic energy to be set
+         */
+        void setFinalKineticEnergy(double final_kin_E);
+
+        /**
+         * @brief Set the final total energy (i.e. kinetic energy and dynamic mass) of the particle at the end of the track
+         * @param final_tot_E The final total energy to be set
+         */
+        void setFinalTotalEnergy(double final_tot_E);
+
+        /**
+         * @brief Set the Monte-Carlo parent track
+         * @param mc_track The Monte-Carlo track
+         * @warning Special method because parent can only be set after creation, should not be replaced later.
+         */
+        void setParent(const MCTrack* mc_track);
+
+        /**
+         * @brief Print an ASCII representation of MCTrack to the given stream
+         * @param out Stream to print to
+         */
+        void print(std::ostream& out) const override;
 
         /**
          * @brief ROOT class definition

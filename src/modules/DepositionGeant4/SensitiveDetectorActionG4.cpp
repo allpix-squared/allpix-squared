@@ -36,9 +36,10 @@ using namespace allpix;
 SensitiveDetectorActionG4::SensitiveDetectorActionG4(Module* module,
                                                      const std::shared_ptr<Detector>& detector,
                                                      Messenger* msg,
+                                                     TrackInfoManager* track_info_manager,
                                                      double charge_creation_energy)
     : G4VSensitiveDetector("SensitiveDetector_" + detector->getName()), module_(module), detector_(detector),
-      messenger_(msg), charge_creation_energy_(charge_creation_energy) {
+      messenger_(msg), track_info_manager_(track_info_manager), charge_creation_energy_(charge_creation_energy) {
 
     // Add the sensor to the internal sensitive detector manager
     G4SDManager* sd_man_g4 = G4SDManager::GetSDMpointer();
@@ -77,7 +78,7 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
 
     // Save begin point when track is seen for the first time
     if(track_begin_.find(trackID) == track_begin_.end()) {
-        TrackInfoG4::registerTrack(trackID);
+        track_info_manager_->setTrackInfoToBeStored(trackID);
         auto start_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(preStepPoint->GetPosition()));
         track_begin_.emplace(trackID, start_position);
         track_parents_.emplace(trackID, parentTrackID);

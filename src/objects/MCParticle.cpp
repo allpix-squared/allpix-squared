@@ -8,6 +8,8 @@
  */
 
 #include "MCParticle.hpp"
+#include "core/utils/unit.h"
+#include "tools/ROOT.h"
 
 using namespace allpix;
 
@@ -56,23 +58,19 @@ void MCParticle::setParent(const MCParticle* mc_particle) {
     parent_ = const_cast<MCParticle*>(mc_particle); // NOLINT
 }
 
-namespace allpix {
-    std::ostream& operator<<(std::ostream& stream, const MCParticle& particle) {
-        stream << "\n ------- Printing particle information (" << &particle << ")-------\n"
-               << "Particle type (PDG ID): " << particle.particle_id_ << " | Belongs to track: " << particle.track_id_
-               << '\n'
-               << "Local start point:\t " << particle.local_start_point_.X() << " mm\t|" << particle.local_start_point_.Y()
-               << " mm\t|" << particle.local_start_point_.Z() << " mm\n"
-               << "Global start point:\t " << particle.global_start_point_.X() << " mm\t|"
-               << particle.global_start_point_.Y() << " mm\t|" << particle.global_start_point_.Z() << " mm\n"
-               << "Local end point: \t " << particle.local_end_point_.X() << " mm\t|" << particle.local_end_point_.Y()
-               << " mm\t|" << particle.local_end_point_.Z() << " mm\n"
-               << "Local end point: \t " << particle.global_end_point_.X() << " mm\t|" << particle.global_end_point_.Y()
-               << " mm\t|" << particle.global_end_point_.Z() << " mm\n"
-               << "Parent particle: " << particle.parent_.GetObject() << '\n'
-               << " -----------------------------------------------------------------\n";
-        return stream;
-    }
-} // namespace allpix
+void MCParticle::print(std::ostream& out) const {
+    out << "\n ------- Printing particle information (" << this << ")-------\n"
+        << "Particle type (PDG ID): " << particle_id_ << " | Belongs to track: " << track_id_ << '\n'
+        << "Local start point:\t " << local_start_point_.X() << " mm\t|" << local_start_point_.Y() << " mm\t|"
+        << local_start_point_.Z() << " mm\n"
+        << "Global start point:\t " << global_start_point_.X() << " mm\t|" << global_start_point_.Y() << " mm\t|"
+        << global_start_point_.Z() << " mm\n"
+        << "Local end point: \t " << local_end_point_.X() << " mm\t|" << local_end_point_.Y() << " mm\t|"
+        << local_end_point_.Z() << " mm\n"
+        << "Global end point: \t " << global_end_point_.X() << " mm\t|" << global_end_point_.Y() << " mm\t|"
+        << global_end_point_.Z() << " mm\n"
+        << "Parent particle: " << parent_.GetObject() << '\n'
+        << " -----------------------------------------------------------------\n";
+}
 
 ClassImp(MCParticle)

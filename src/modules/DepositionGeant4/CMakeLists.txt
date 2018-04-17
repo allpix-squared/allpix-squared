@@ -26,6 +26,7 @@ ALLPIX_MODULE_SOURCES(${MODULE_NAME}
     GeneratorActionG4.cpp
     SensitiveDetectorActionG4.cpp
     TrackInfoG4.cpp
+    TrackInfoManager.cpp
     SetUniqueTrackIDUserHookG4.cpp
 )
 

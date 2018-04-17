@@ -26,43 +26,49 @@ namespace allpix {
     class TrackInfoG4 : public G4VUserTrackInformation {
     public:
         /**
-         * @brief Default constructor which automatically assigns new track ID
-         * @param G4TrackID The G4 ID of the track to which the info is attached
+         * @brief Only available constructor
+         * @param custom_track_id The custom id for this track
+         * @param parent_track_id The custom id of parent track
+         * @param G4TrackID The Geant4 id of the track to which the info is attached
          */
-        TrackInfoG4(const G4Track* const aTrack);
+        TrackInfoG4(int custom_track_id, int parent_track_id, const G4Track* const aTrack);
 
         /**
-         * @brief Getter for unique ID of track
+         * @brief Default constructor deleted
+         */
+        TrackInfoG4() = delete;
+
+        /**
+         * @brief Getter for custom id of track
+         * @return The custom track id
          */
         int getID() const { return custom_track_id_; };
 
         /**
-         * @brief Getter for parent's track ID of track
+         * @brief Getter for parent's track id of track
+         * @return The parent's custrom track id
          */
         int getParentID() const { return parent_track_id_; };
 
         /**
-         * @brief Static function to reset the state, i.e. counters etc. To be called after every event
+         * @brief Get the TrackInfoG4 user info and update it with the information from the G4Track*
+         * @param aTrack A pointer to a G4Track instance which represents this track's final state
          */
-        static void reset(Module* module, Messenger* messenger);
-        static void storeTrack(std::unique_ptr<MCTrack> theTrack);
-        static void registerTrack(int trackID);
-
         void finaliseInfo(const G4Track* const aTrack);
 
+        /**
+         * @brief Release the MCTrack owned by this TrackInfoG4 to pass on ownership
+         * @return The MCTrack object encapsulated in a unique_ptr
+         */
+        std::unique_ptr<MCTrack> releaseMCTrack();
+
     private:
-        // Static counter to keep track of assigned track IDs
-        static int gCounter;
-        // Static map to link G4 ID to custom ID
-        static std::map<int, int> gG4ToCustomID;
-        static std::map<int, std::unique_ptr<MCTrack>> gStoredTracks;
-
-        std::unique_ptr<MCTrack> _mcTrack;
-
-        // Assigned track ID to track
+        // Assigned track id to track
         int custom_track_id_;
-        // Parent's track ID
+        // Parent's track id
         int parent_track_id_;
+        // Owning a MCTrack instance
+        std::unique_ptr<MCTrack> _mcTrack;
     };
 } // namespace allpix
 #endif

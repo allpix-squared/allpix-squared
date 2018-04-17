@@ -45,6 +45,39 @@ int MCTrack::getTrackID() const {
 int MCTrack::getParentTrackID() const {
     return parent_id_;
 }
+
+int MCTrack::getCreationProcessType() const {
+    return origin_g4_process_type_;
+}
+
+int MCTrack::getNumberOfSteps() const {
+    return n_steps_;
+}
+
+double MCTrack::getInitialKineticEnergy() const {
+    return initial_kin_E_;
+}
+
+double MCTrack::getInitialTotalEnergy() const {
+    return initial_tot_E_;
+}
+
+double MCTrack::getFinalKineticEnergy() const {
+    return final_kin_E_;
+}
+
+double MCTrack::getFinalTotalEnergy() const {
+    return final_tot_E_;
+}
+
+TString MCTrack::getOriginatingVolumeName() const {
+    return origin_g4_vol_name_;
+}
+
+TString MCTrack::getCreationProcessName() const {
+    return origin_g4_process_name_;
+}
+
 /**
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
@@ -52,29 +85,38 @@ const MCTrack* MCTrack::getParent() const {
     return dynamic_cast<MCTrack*>(parent_.GetObject());
 }
 
+void MCTrack::setEndPoint(ROOT::Math::XYZPoint end_point) {
+    end_point_ = std::move(end_point);
+}
+
+void MCTrack::setNumberOfSteps(int n_steps) {
+    n_steps_ = n_steps;
+}
+
+void MCTrack::setFinalKineticEnergy(double final_kin_E) {
+    final_kin_E_ = final_kin_E;
+}
+
+void MCTrack::setFinalTotalEnergy(double final_tot_E) {
+    final_tot_E_ = final_tot_E;
+};
+
 void MCTrack::setParent(const MCTrack* mc_track) {
     parent_ = const_cast<MCTrack*>(mc_track); // NOLINT
 }
 
-ClassImp(MCTrack)
+void MCTrack::print(std::ostream& out) const {
+    out << "\n ------- Printing track information for track: " << track_id_ << " (" << this << ") -------\n"
+        << "Particle type (PDG ID): " << particle_id_ << " | Parent track ID: " << parent_id_ << '\n'
+        << "Production process: " << origin_g4_process_name_ << " (G4 process type: " << origin_g4_process_type_ << ")\n"
+        << "Production in G4Volume: " << origin_g4_vol_name_ << '\n'
+        << "Initial position:\t " << start_point_.X() << " mm\t|" << start_point_.Y() << " mm\t|" << start_point_.Z()
+        << " mm\n"
+        << "Final position:\t\t " << end_point_.X() << " mm\t|" << end_point_.Y() << " mm\t|" << end_point_.Z() << " mm\n"
+        << "Initial kinetic energy: " << initial_kin_E_ << " MeV \t Final kinetic energy: " << final_kin_E_ << " MeV\n"
+        << "Initial total energy: " << initial_tot_E_ << " MeV \t Final total energy: " << final_tot_E_ << " MeV\n"
+        << "Parent track: " << parent_.GetObject() << '\n'
+        << " -----------------------------------------------------------------\n";
+}
 
-    namespace allpix {
-    std::ostream& operator<<(std::ostream& stream, const MCTrack& track) {
-        stream << "\n ------- Printing track information for track: " << track.track_id_ << " (" << &track << ") -------\n"
-               << "Particle type (PDG ID): " << track.particle_id_ << " | Parent track ID: " << track.parent_id_ << '\n'
-               << "Production process: " << track.origin_g4_process_name_
-               << " (G4 process type: " << track.origin_g4_process_type_ << ")\n"
-               << "Production in G4Volume: " << track.origin_g4_vol_name_ << '\n'
-               << "Initial position:\t " << track.start_point_.X() << " mm\t|" << track.start_point_.Y() << " mm\t|"
-               << track.start_point_.Z() << " mm\n"
-               << "Final position:\t\t " << track.end_point_.X() << " mm\t|" << track.end_point_.Y() << " mm\t|"
-               << track.end_point_.Z() << " mm\n"
-               << "Initial kinetic energy: " << track.initial_kin_E_
-               << " MeV \t Final kinetic energy: " << track.final_kin_E_ << " MeV\n"
-               << "Initial total energy: " << track.initial_tot_E_ << " MeV \t Final total energy: " << track.final_tot_E_
-               << " MeV\n"
-               << "Parent track: " << track.parent_.GetObject() << '\n'
-               << " -----------------------------------------------------------------\n";
-        return stream;
-    }
-} // namespace allpix
+ClassImp(MCTrack)
