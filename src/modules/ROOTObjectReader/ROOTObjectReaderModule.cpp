@@ -81,7 +81,8 @@ template <typename T> static ROOTObjectReaderModule::MessageCreatorMap gen_creat
 void ROOTObjectReaderModule::init() {
     // Read include and exclude list
     if(config_.has("include") && config_.has("exclude")) {
-        throw InvalidValueError(config_, "exclude", "include and exclude parameter are mutually exclusive");
+        throw InvalidCombinationError(
+            config_, {"exclude", "include"}, "include and exclude parameter are mutually exclusive");
     } else if(config_.has("include")) {
         auto inc_arr = config_.getArray<std::string>("include");
         include_.insert(inc_arr.begin(), inc_arr.end());
@@ -126,7 +127,7 @@ void ROOTObjectReaderModule::init() {
     }
 
     if(trees_.empty()) {
-        LOG(ERROR) << "Provided ROOT file does not contain any trees, module is useless!";
+        LOG(ERROR) << "Provided ROOT file does not contain any trees, module will not read any data";
     }
 
     // Loop over all found trees
