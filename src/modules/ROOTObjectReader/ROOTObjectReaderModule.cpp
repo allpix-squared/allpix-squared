@@ -134,9 +134,9 @@ void ROOTObjectReaderModule::init() {
     auto& global_config = getConfigManager()->getGlobalConfiguration();
     auto config_seed = global_config.get<uint64_t>("random_seed_core");
 
-    std::string* str;
+    std::string* str = nullptr;
     input_file_->GetObject("config/Allpix/random_seed_core", str);
-    if(!str) {
+    if(str == nullptr) {
         throw InvalidValueError(global_config,
                                 "random_seed_core",
                                 "no random seed for core set in the input data file, cross-check with configured value "
@@ -153,9 +153,9 @@ void ROOTObjectReaderModule::init() {
     }
 
     // Cross-check version, print warning only in case of a mismatch:
-    std::string* version_str;
+    std::string* version_str = nullptr;
     input_file_->GetObject("config/Allpix/version", version_str);
-    if(version_str && (*version_str) != ALLPIX_PROJECT_VERSION) {
+    if(version_str != nullptr && (*version_str) != ALLPIX_PROJECT_VERSION) {
         LOG(WARNING) << "Reading data produced with different version " << (*version_str)
                      << " - this might lead to unexpected behavior.";
     }
