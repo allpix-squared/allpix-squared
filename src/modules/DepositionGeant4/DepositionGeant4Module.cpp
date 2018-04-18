@@ -291,7 +291,7 @@ void DepositionGeant4Module::run(unsigned int event_num) {
             charge_per_event_[sensor->getName()]->Fill(charge);
         }
     }
-    track_info_manager_->dispatchMesseges(this, messenger_);
+    track_info_manager_->dispatchMessage(this, messenger_);
     track_info_manager_->resetTrackInfoManager();
 }
 

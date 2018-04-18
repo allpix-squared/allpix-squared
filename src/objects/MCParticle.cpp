@@ -48,12 +48,12 @@ int MCParticle::getTrackID() const {
 /**
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
-const MCParticle* MCParticle::getParent() const {
-    return dynamic_cast<MCParticle*>(parent_.GetObject());
+const MCTrack* MCParticle::getParent() const {
+    return dynamic_cast<MCTrack*>(parent_.GetObject());
 }
 
-void MCParticle::setParent(const MCParticle* mc_particle) {
-    parent_ = const_cast<MCParticle*>(mc_particle); // NOLINT
+void MCParticle::setParent(const MCTrack* mc_particle) {
+    parent_ = const_cast<MCTrack*>(mc_particle); // NOLINT
 }
 
 void MCParticle::print(std::ostream& out) const {
@@ -67,7 +67,7 @@ void MCParticle::print(std::ostream& out) const {
         << local_end_point_.Z() << " mm\n"
         << "Global end point: \t " << global_end_point_.X() << " mm\t|" << global_end_point_.Y() << " mm\t|"
         << global_end_point_.Z() << " mm\n"
-        << "Parent particle: " << parent_.GetObject() << '\n'
+        << "Parent track: " << parent_.GetObject() << '\n'
         << " -----------------------------------------------------------------\n";
 }
 

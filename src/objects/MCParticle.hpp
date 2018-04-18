@@ -13,6 +13,7 @@
 #include <Math/Point3D.h>
 #include <TRef.h>
 
+#include "MCTrack.hpp"
 #include "Object.hpp"
 
 namespace allpix {
@@ -70,13 +71,13 @@ namespace allpix {
          * @param mc_particle The Monte-Carlo particle
          * @warning Special method because parent can only be set after creation, should not be replaced later.
          */
-        void setParent(const MCParticle* mc_particle);
+        void setParent(const MCTrack* mc_track);
         /**
          * @brief Get the parent MCParticle if it has one
          * @return Parent MCParticle or null pointer if it has no parent
          * @warning No \ref MissingReferenceException is thrown, because a particle without parent should always be handled.
          */
-        const MCParticle* getParent() const;
+        const MCTrack* getParent() const;
 
         /**
          * @brief Get unique track ID of the track responsible for this MCParticle

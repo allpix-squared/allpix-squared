@@ -32,29 +32,29 @@ namespace allpix {
 
         /**
          * @brief Factory method for TrackInfoG4 instances
-         * @param aTrack A pointer to the G4Track for which the TrackInfoG4 is used
+         * @param track A pointer to the G4Track for which the TrackInfoG4 is used
          * @return unique_ptr holding the TrackInfoG4
          *
          * This factory method will take care that it will only assign every track id once for this
          * TrackInfoManager instance, until reset @see #resetTrackInfoManager
          */
-        std::unique_ptr<TrackInfoG4> makeTrackInfo(const G4Track* const aTrack);
+        std::unique_ptr<TrackInfoG4> makeTrackInfo(const G4Track* const track);
 
         /**
          * @brief Will take a MCTrack and attempt to store it
-         * @param theTrack The MCTrack to be (possibly) stored
+         * @param the_track The MCTrack to be (possibly) stored
          *
          * It will be stored if it was registered to be stored (@see #setTrackInfoToBeStored), otherwise deleted
          */
-        void storeTrackInfo(std::unique_ptr<MCTrack> theTrack);
+        void storeTrackInfo(std::unique_ptr<MCTrack> the_track);
 
         /**
          * @brief Will register a track id to be stored
-         * @param theTrack The id of teh track to be stored
+         * @param track_id The id of the track to be stored
          *
          * The track itself will have to be provided via @see storeTrackInfo once finished
          */
-        void setTrackInfoToBeStored(int trackID);
+        void setTrackInfoToBeStored(int track_id);
 
         /**
          * @brief Reset of the TrackInfoManager instance
@@ -70,12 +70,28 @@ namespace allpix {
          * @param module The module which is responsible for dispatching the message
          * @param messenger The messenger used to dispatch it
          */
-        void dispatchMesseges(Module* module, Messenger* messenger);
+        void dispatchMessage(Module* module, Messenger* messenger);
+
+        /**
+         * @brief Will internally set all the parent-child relations between stored tracks
+         * @warning This must only be called once all the tracks are stored and no reallocation of the back-end vector can be
+         * guranteed
+         */
+        void setAllTrackParents();
+
+        /**
+         * @brief Returns a pointer to the MCTrack object in the #stored_tracks_ or a nullptr if not found
+         * @param track_id The id of the track for which to retrieve the pointer
+         * @return Const pointer to the MCTrack object or a nullptr if track_id is not found
+         * @warning Results are invalidated by any reallocation iof the internal #stored_tracks_ vector
+         */
+        MCTrack const* findMCTrack(int track_id) const;
 
     private:
         int counter_;
         std::map<int, int> g4_to_custom_id_;
-        std::map<int, std::unique_ptr<MCTrack>> to_store_tracks_;
+        std::vector<int> to_store_track_ids_;
+        std::vector<MCTrack> stored_tracks_;
     };
 } // namespace allpix
 #endif
