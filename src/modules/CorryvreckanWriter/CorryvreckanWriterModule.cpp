@@ -126,7 +126,7 @@ void CorryvreckanWriterModule::run(unsigned int) {
                 // Create a new particle object
                 std::string objectID_MC = detectorID + "_mcparticles";
                 auto mcParticle = new corryvreckan::MCParticle(
-                    particle->getParticleID(), particle->getLocalStartPoint(), particle->getLocalEndPoint());
+                    particle->getParent()->getParticleID(), particle->getLocalStartPoint(), particle->getLocalEndPoint());
 
                 // Map the mc particle to the output tree and write it
                 treeMCParticles_[objectID_MC] = mcParticle;

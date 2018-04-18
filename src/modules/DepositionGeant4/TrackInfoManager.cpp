@@ -55,11 +55,7 @@ MCTrack const* TrackInfoManager::findMCTrack(int track_id) const {
     auto element = std::find_if(stored_tracks_.begin(), stored_tracks_.end(), [&track_id](MCTrack const& track) {
         return (track.getTrackID() == track_id);
     });
-    if(element == stored_tracks_.end()) {
-        return nullptr;
-    } else {
-        return &(*element);
-    }
+    return (element != stored_tracks_.end()) ? &(*element) : nullptr;
 }
 
 void TrackInfoManager::setAllTrackParents() {

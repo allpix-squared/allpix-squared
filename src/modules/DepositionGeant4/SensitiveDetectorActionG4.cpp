@@ -141,17 +141,13 @@ void SensitiveDetectorActionG4::dispatchMessages() {
 
         auto global_begin = detector_->getGlobalPosition(local_begin);
         auto global_end = detector_->getGlobalPosition(local_end);
-        mc_particles.emplace_back(local_begin, global_begin, local_end, global_end, pdg_code, track_id);
+        mc_particles.emplace_back(local_begin, global_begin, local_end, global_end);
+        mc_particles.back().setParent(track_info_manager_->findMCTrack(track_id));
         id_to_particle_[track_id] = mc_particles.size() - 1;
 
         LOG(DEBUG) << "Found MC particle " << pdg_code << " crossing detector from "
                    << display_vector(local_begin, {"mm", "um"}) << " to " << display_vector(local_end, {"mm", "um"})
                    << " (local coordinates)";
-    }
-
-    // Link the MCParticles to their tracks
-    for(auto& particle : mc_particles) {
-        particle.setParent(track_info_manager_->findMCTrack(particle.getTrackID()));
     }
 
     // Send the mc particle information

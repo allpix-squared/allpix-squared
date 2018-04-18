@@ -14,12 +14,9 @@ using namespace allpix;
 MCParticle::MCParticle(ROOT::Math::XYZPoint local_start_point,
                        ROOT::Math::XYZPoint global_start_point,
                        ROOT::Math::XYZPoint local_end_point,
-                       ROOT::Math::XYZPoint global_end_point,
-                       int particle_id,
-                       int track_id)
+                       ROOT::Math::XYZPoint global_end_point)
     : local_start_point_(std::move(local_start_point)), global_start_point_(std::move(global_start_point)),
-      local_end_point_(std::move(local_end_point)), global_end_point_(std::move(global_end_point)),
-      particle_id_(particle_id), track_id_(track_id) {
+      local_end_point_(std::move(local_end_point)), global_end_point_(std::move(global_end_point)) {
     setParent(nullptr);
 }
 
@@ -37,14 +34,6 @@ ROOT::Math::XYZPoint MCParticle::getGlobalEndPoint() const {
     return global_end_point_;
 }
 
-int MCParticle::getParticleID() const {
-    return particle_id_;
-}
-
-int MCParticle::getTrackID() const {
-    return track_id_;
-}
-
 /**
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
@@ -57,8 +46,9 @@ void MCParticle::setParent(const MCTrack* mc_particle) {
 }
 
 void MCParticle::print(std::ostream& out) const {
+    auto parent = getParent();
     out << "\n ------- Printing MCParticle information (" << this << ")-------\n"
-        << "Particle type (PDG ID): " << particle_id_ << " | Belongs to track: " << track_id_ << '\n'
+        << "Particle type (PDG ID): " << parent->getParticleID() << " | Belongs to track: " << parent->getTrackID() << '\n'
         << "Local start point:\t " << local_start_point_.X() << " mm\t|" << local_start_point_.Y() << " mm\t|"
         << local_start_point_.Z() << " mm\n"
         << "Global start point:\t " << global_start_point_.X() << " mm\t|" << global_start_point_.Y() << " mm\t|"

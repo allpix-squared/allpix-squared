@@ -28,15 +28,11 @@ namespace allpix {
          * @param global_start_point Entry point of the particle in the sensor in global coordinates
          * @param local_end_point Exit point of the particle in the sensor in local coordinates
          * @param global_end_point Exit point of the particle in the sensor in global coordinates
-         * @param particle_id Identifier for the particle type
-         * @param track_id Identifier for the track associated to this MCParticle
          */
         MCParticle(ROOT::Math::XYZPoint local_start_point,
                    ROOT::Math::XYZPoint global_start_point,
                    ROOT::Math::XYZPoint local_end_point,
-                   ROOT::Math::XYZPoint global_end_point,
-                   int particle_id,
-                   int track_id);
+                   ROOT::Math::XYZPoint global_end_point);
 
         /**
          * @brief Get the entry point of the particle in local coordinates
@@ -61,12 +57,6 @@ namespace allpix {
         ROOT::Math::XYZPoint getGlobalEndPoint() const;
 
         /**
-         * @brief Get particle identifier
-         * @return Particle identifier
-         */
-        int getParticleID() const;
-
-        /**
          * @brief Set the Monte-Carlo particle
          * @param mc_particle The Monte-Carlo particle
          * @warning Special method because parent can only be set after creation, should not be replaced later.
@@ -78,11 +68,6 @@ namespace allpix {
          * @warning No \ref MissingReferenceException is thrown, because a particle without parent should always be handled.
          */
         const MCTrack* getParent() const;
-
-        /**
-         * @brief Get unique track ID of the track responsible for this MCParticle
-         */
-        int getTrackID() const;
 
         /**
          * @brief ROOT class definition
@@ -104,9 +89,6 @@ namespace allpix {
         ROOT::Math::XYZPoint global_start_point_{};
         ROOT::Math::XYZPoint local_end_point_{};
         ROOT::Math::XYZPoint global_end_point_{};
-
-        int particle_id_{};
-        int track_id_{};
 
         TRef parent_;
     };
