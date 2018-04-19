@@ -8,6 +8,8 @@
  */
 
 #include "MCTrack.hpp"
+#include <sstream>
+
 using namespace allpix;
 
 MCTrack::MCTrack(ROOT::Math::XYZPoint start_point,

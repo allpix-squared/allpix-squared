@@ -8,6 +8,7 @@
  */
 
 #include "MCParticle.hpp"
+#include <sstream>
 
 using namespace allpix;
 
