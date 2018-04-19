@@ -90,6 +90,7 @@ namespace allpix {
     private:
         int counter_;
         std::map<int, int> g4_to_custom_id_;
+        std::map<int, int> track_id_to_parent_id_;
         std::vector<int> to_store_track_ids_;
         std::vector<MCTrack> stored_tracks_;
     };

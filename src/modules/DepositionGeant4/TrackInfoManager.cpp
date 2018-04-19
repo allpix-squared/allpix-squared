@@ -18,6 +18,7 @@ std::unique_ptr<TrackInfoG4> TrackInfoManager::makeTrackInfo(const G4Track* cons
     auto G4ParentID = track->GetParentID();
     auto parent_track_id = G4ParentID == 0 ? G4ParentID : g4_to_custom_id_.at(G4ParentID);
     g4_to_custom_id_[track->GetTrackID()] = i;
+    track_id_to_parent_id_[track->GetTrackID()] = parent_track_id;
     return std::make_unique<TrackInfoG4>(i, parent_track_id, track);
 }
 
@@ -60,6 +61,6 @@ MCTrack const* TrackInfoManager::findMCTrack(int track_id) const {
 
 void TrackInfoManager::setAllTrackParents() {
     for(auto& track : stored_tracks_) {
-        track.setParent(findMCTrack(track.getParentTrackID()));
+        track.setParent(findMCTrack(track_id_to_parent_id_[track.getTrackID()]));
     }
 }
