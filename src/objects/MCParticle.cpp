@@ -72,7 +72,7 @@ void MCParticle::print(std::ostream& out) const {
     auto track = getTrack();
     auto parent = getParent();
 
-    std::stringstream title;
+    auto title = std::stringstream();
     title << "--- Printing MCParticle information (" << this << ") ";
     out << '\n'
         << std::setw(largest_output) << std::left << std::setfill('-') << title.str() << '\n'

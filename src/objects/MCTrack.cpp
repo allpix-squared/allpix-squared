@@ -108,7 +108,7 @@ void MCTrack::print(std::ostream& out) const {
 
     auto parent = getParent();
 
-    std::stringstream title;
+    auto title = std::stringstream();
     title << "--- Printing MCTrack information for track: " << track_id_ << " (" << this << ") ";
 
     out << '\n'
