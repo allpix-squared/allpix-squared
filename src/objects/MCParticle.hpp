@@ -61,13 +61,27 @@ namespace allpix {
          * @param mc_particle The Monte-Carlo particle
          * @warning Special method because parent can only be set after creation, should not be replaced later.
          */
-        void setParent(const MCTrack* mc_track);
+        void setParent(const MCParticle* mc_particle);
         /**
          * @brief Get the parent MCParticle if it has one
          * @return Parent MCParticle or null pointer if it has no parent
          * @warning No \ref MissingReferenceException is thrown, because a particle without parent should always be handled.
          */
-        const MCTrack* getParent() const;
+        const MCParticle* getParent() const;
+
+        /**
+         * @brief Set the MCParticle's track
+         * @param mc_track The track
+         * @warning Special method because track can only be set after creation, should not be replaced later.
+         */
+        void setTrack(const MCTrack* mc_track);
+
+        /**
+         * @brief Get the MCTrack of this MCParticle
+         * @return Parent MCTrack or null pointer if it has no track
+         * @warning No \ref MissingReferenceException is thrown, because a particle without a track should always be handled.
+         */
+        const MCTrack* getTrack() const;
 
         /**
          * @brief ROOT class definition
@@ -91,6 +105,7 @@ namespace allpix {
         ROOT::Math::XYZPoint global_end_point_{};
 
         TRef parent_;
+        TRef track_;
     };
 
     /**

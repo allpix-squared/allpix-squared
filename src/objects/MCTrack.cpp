@@ -116,7 +116,7 @@ void MCTrack::print(std::ostream& out) const {
         << "Final position:\t\t " << end_point_.X() << " mm\t|" << end_point_.Y() << " mm\t|" << end_point_.Z() << " mm\n"
         << "Initial kinetic energy: " << initial_kin_E_ << " MeV \t Final kinetic energy: " << final_kin_E_ << " MeV\n"
         << "Initial total energy: " << initial_tot_E_ << " MeV \t Final total energy: " << final_tot_E_ << " MeV\n"
-        << "Parent track: " << parent_.GetObject() << '\n'
+        << "Linked parent: " << parent_.GetObject() << '\n'
         << " -----------------------------------------------------------------\n";
 }
 

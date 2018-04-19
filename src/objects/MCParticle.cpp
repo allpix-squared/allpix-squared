@@ -34,21 +34,32 @@ ROOT::Math::XYZPoint MCParticle::getGlobalEndPoint() const {
     return global_end_point_;
 }
 
+void MCParticle::setParent(const MCParticle* mc_particle) {
+    parent_ = const_cast<MCParticle*>(mc_particle); // NOLINT
+}
+
 /**
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
-const MCTrack* MCParticle::getParent() const {
-    return dynamic_cast<MCTrack*>(parent_.GetObject());
+const MCParticle* MCParticle::getParent() const {
+    return dynamic_cast<MCParticle*>(parent_.GetObject());
 }
 
-void MCParticle::setParent(const MCTrack* mc_particle) {
-    parent_ = const_cast<MCTrack*>(mc_particle); // NOLINT
+void MCParticle::setTrack(const MCTrack* mc_track) {
+    track_ = const_cast<MCTrack*>(mc_track); // NOLINT
+}
+
+/**
+ * Object is stored as TRef and can only be accessed if pointed object is in scope
+ */
+const MCTrack* MCParticle::getTrack() const {
+    return dynamic_cast<MCTrack*>(track_.GetObject());
 }
 
 void MCParticle::print(std::ostream& out) const {
-    auto parent = getParent();
+    auto track = getTrack();
     out << "\n ------- Printing MCParticle information (" << this << ")-------\n"
-        << "Particle type (PDG ID): " << parent->getParticleID() << " | Belongs to track: " << parent->getTrackID() << '\n'
+        << "Particle type (PDG ID): " << track->getParticleID() << " | Belongs to track: " << track->getTrackID() << '\n'
         << "Local start point:\t " << local_start_point_.X() << " mm\t|" << local_start_point_.Y() << " mm\t|"
         << local_start_point_.Z() << " mm\n"
         << "Global start point:\t " << global_start_point_.X() << " mm\t|" << global_start_point_.Y() << " mm\t|"
@@ -57,7 +68,8 @@ void MCParticle::print(std::ostream& out) const {
         << local_end_point_.Z() << " mm\n"
         << "Global end point: \t " << global_end_point_.X() << " mm\t|" << global_end_point_.Y() << " mm\t|"
         << global_end_point_.Z() << " mm\n"
-        << "Parent track: " << parent_.GetObject() << '\n'
+        << "Linked parent: " << parent_.GetObject() << '\n'
+        << "Linked track: " << track_.GetObject() << '\n'
         << " -----------------------------------------------------------------\n";
 }
 
