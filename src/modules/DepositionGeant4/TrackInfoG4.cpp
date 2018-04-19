@@ -5,27 +5,65 @@ using namespace allpix;
 
 TrackInfoG4::TrackInfoG4(int custom_track_id, int parent_track_id, const G4Track* const aTrack)
     : custom_track_id_(custom_track_id), parent_track_id_(parent_track_id) {
-    auto G4OriginatingVolumeName = aTrack->GetVolume()->GetName();
     auto G4Process = aTrack->GetCreatorProcess();
-    auto processType = (G4Process != nullptr) ? G4Process->GetProcessType() : -1;
-    auto processName = (G4Process != nullptr) ? static_cast<std::string>(G4Process->GetProcessName()) : "none";
-    _mcTrack = std::make_unique<MCTrack>(static_cast<ROOT::Math::XYZPoint>(aTrack->GetPosition()),
-                                         static_cast<std::string>(G4OriginatingVolumeName),
-                                         processName,
-                                         processType,
-                                         aTrack->GetDynamicParticle()->GetPDGcode(),
-                                         custom_track_id_,
-                                         aTrack->GetKineticEnergy(),
-                                         aTrack->GetTotalEnergy());
+    origin_g4_process_type_ = (G4Process != nullptr) ? G4Process->GetProcessType() : -1;
+    particle_id_ = aTrack->GetDynamicParticle()->GetPDGcode();
+    start_point_ = static_cast<ROOT::Math::XYZPoint>(aTrack->GetPosition());
+    origin_g4_vol_name_ = aTrack->GetVolume()->GetName();
+    ;
+    origin_g4_process_name_ = (G4Process != nullptr) ? static_cast<std::string>(G4Process->GetProcessName()) : "none";
+    initial_kin_E_ = aTrack->GetKineticEnergy();
+    initial_tot_E_ = aTrack->GetTotalEnergy();
 }
 
 void TrackInfoG4::finaliseInfo(const G4Track* const aTrack) {
-    _mcTrack->setNumberOfSteps(aTrack->GetCurrentStepNumber());
-    _mcTrack->setEndPoint(static_cast<ROOT::Math::XYZPoint>(aTrack->GetPosition()));
-    _mcTrack->setKineticEnergyFinal(aTrack->GetKineticEnergy());
-    _mcTrack->setTotalEnergyFinal(aTrack->GetTotalEnergy());
+    final_kin_E_ = aTrack->GetKineticEnergy();
+    final_tot_E_ = aTrack->GetTotalEnergy();
+    n_steps_ = aTrack->GetCurrentStepNumber();
+    end_point_ = static_cast<ROOT::Math::XYZPoint>(aTrack->GetPosition());
 }
 
-std::unique_ptr<MCTrack> TrackInfoG4::releaseMCTrack() {
-    return std::move(_mcTrack);
+ROOT::Math::XYZPoint TrackInfoG4::getStartPoint() const {
+    return start_point_;
+}
+
+ROOT::Math::XYZPoint TrackInfoG4::getEndPoint() const {
+    return end_point_;
+}
+
+int TrackInfoG4::getParticleID() const {
+    return particle_id_;
+}
+
+int TrackInfoG4::getCreationProcessType() const {
+    return origin_g4_process_type_;
+}
+
+int TrackInfoG4::getNumberOfSteps() const {
+    return n_steps_;
+}
+
+double TrackInfoG4::getKineticEnergyInitial() const {
+
+    return initial_kin_E_;
+}
+
+double TrackInfoG4::getTotalEnergyInitial() const {
+    return initial_tot_E_;
+}
+
+double TrackInfoG4::getKineticEnergyFinal() const {
+    return final_kin_E_;
+}
+
+double TrackInfoG4::getTotalEnergyFinal() const {
+    return final_tot_E_;
+}
+
+std::string TrackInfoG4::getOriginatingVolumeName() const {
+    return origin_g4_vol_name_;
+}
+
+std::string TrackInfoG4::getCreationProcessName() const {
+    return origin_g4_process_name_;
 }

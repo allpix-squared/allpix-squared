@@ -57,18 +57,95 @@ namespace allpix {
         void finaliseInfo(const G4Track* const aTrack);
 
         /**
-         * @brief Release the MCTrack owned by this TrackInfoG4 to pass on ownership
-         * @return The MCTrack object encapsulated in a unique_ptr
+         * @brief Get the point of where the track originated
+         * @return Track start point
          */
-        std::unique_ptr<MCTrack> releaseMCTrack();
+        ROOT::Math::XYZPoint getStartPoint() const;
+
+        /**
+         * @brief Get the point of where the track terminated
+         * @return Track end point
+         */
+        ROOT::Math::XYZPoint getEndPoint() const;
+
+        /**
+         * @brief Get PDG particle id for the particle
+         * @return Particle id
+         */
+        int getParticleID() const;
+
+        /**
+         * @brief Get the Geant4 internal ID of the process which created the particle
+         * @return The Geant4 process type or "-1" if no such process exists
+         */
+        int getCreationProcessType() const;
+
+        /**
+         * @brief Get the amount of stepping steps the Geant4 track made
+         * @return The amount of steps
+         */
+        int getNumberOfSteps() const;
+
+        /**
+         * @brief Getter for the kinetic energy the particle had when the track was created
+         * @return The kinetic energy in MeV of the particle at the beginning of the track
+         */
+        double getKineticEnergyInitial() const;
+        /**
+         * @brief Getter for the total energy (i.e. kinetic energy and dynamic mass) the particle had when the track was
+         * created
+         * @return The total energy in MeV of the particle at the beginning of the track
+         */
+        double getTotalEnergyInitial() const;
+
+        /**
+         * @brief Getter for the kinetic energy the particle had when the track terminated
+         * @return The kinetic energy in MeV of the particle at the end of the track
+         */
+        double getKineticEnergyFinal() const;
+
+        /**
+         * @brief Getter for the total energy (i.e. kinetic energy and dynamic mass) the particle had when the track
+         * terminated
+         * @return The total energy in MeV of the particle at the end of the track
+         */
+        double getTotalEnergyFinal() const;
+
+        /**
+         * @brief Getter for the Geant4 name of the physical volume in which the track originated
+         * @return The name of the phyical volume
+         */
+        std::string getOriginatingVolumeName() const;
+
+        /**
+         * @brief Getter for the name of the process which created this particle
+         * @return The process name or "none" if no such process exists
+         */
+        std::string getCreationProcessName() const;
 
     private:
         // Assigned track id to track
-        int custom_track_id_;
+        int custom_track_id_{};
         // Parent's track id
-        int parent_track_id_;
+        int parent_track_id_{};
+
         // Owning a MCTrack instance
         std::unique_ptr<MCTrack> _mcTrack;
+
+        int origin_g4_process_type_{};
+        int particle_id_{};
+        int n_steps_{};
+
+        ROOT::Math::XYZPoint start_point_{};
+        ROOT::Math::XYZPoint end_point_{};
+
+        std::string origin_g4_vol_name_{};
+        std::string origin_g4_process_name_{};
+
+        double initial_kin_E_{};
+        double initial_tot_E_{};
+        double final_kin_E_{};
+        double final_tot_E_{};
     };
 } // namespace allpix
 #endif

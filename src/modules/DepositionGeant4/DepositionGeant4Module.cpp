@@ -281,6 +281,8 @@ void DepositionGeant4Module::run(unsigned int event_num) {
     // Release the stream (if it was suspended)
     RELEASE_STREAM(G4cout);
 
+    track_info_manager_->createMCTracks();
+
     // Dispatch the necessary messages
     for(auto& sensor : sensors_) {
         sensor->dispatchMessages();
@@ -291,6 +293,7 @@ void DepositionGeant4Module::run(unsigned int event_num) {
             charge_per_event_[sensor->getName()]->Fill(charge);
         }
     }
+
     track_info_manager_->dispatchMessage(this, messenger_);
     track_info_manager_->resetTrackInfoManager();
 }

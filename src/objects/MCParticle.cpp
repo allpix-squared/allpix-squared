@@ -102,7 +102,7 @@ void MCParticle::print(std::ostream& out) const {
     }
     out << std::left << std::setw(big_gap) << "Linked track:";
     if(track != nullptr) {
-        out << std::right << std::setw(small_gap) << track << " (Track ID: " << track->getTrackID() << ")\n";
+        out << std::right << std::setw(small_gap) << track << '\n';
     } else {
         out << std::right << std::setw(small_gap) << "<nullptr>\n";
     }

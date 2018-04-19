@@ -24,22 +24,26 @@ namespace allpix {
         /**
          * @brief Construct a Monte-Carlo track
          * @param start_point Global point where track came into existance
+         * @param end_point Global point where track went out of existance
          * @param g4_volume Geant4 volume where track originated in
          * @param g4_prod_process_name Geant4 creation process name
          * @param g4_prod_process_type Geant4 creation process id
          * @param particle_id PDG particle id
-         * @param track_id Custom track id
          * @param initial_kin_E Initial kinetic energy (in MeV)
+         * @param final_kin_E Final kinetic energy (in MeV)
          * @param initial_tot_E Initial total energy (in MeV)
+         * @param final_tot_E Final total energy (in MeV)
          */
         MCTrack(ROOT::Math::XYZPoint start_point,
+                ROOT::Math::XYZPoint end_point,
                 std::string g4_volume,
                 std::string g4_prod_process_name,
                 int g4_prod_process_type,
                 int particle_id,
-                int track_id,
                 double initial_kin_E,
-                double initial_tot_E);
+                double final_kin_E,
+                double initial_tot_E,
+                double final_tot_E);
 
         /**
          * @brief Get the point of where the track originated
@@ -121,30 +125,6 @@ namespace allpix {
         const MCTrack* getParent() const;
 
         /**
-         * @brief Set the end point of the track, i.e. the point the track terminates
-         * @param end_point Point to be set as end point for track
-         */
-        void setEndPoint(ROOT::Math::XYZPoint end_point);
-
-        /**
-         * @brief Set the number of Geant4 stepping steps this track made
-         * @param n_steps The number of steps to set
-         */
-        void setNumberOfSteps(int n_steps);
-
-        /**
-         * @brief Set the final kinetic energy of the particle at the end of the track
-         * @param final_kin_E The final kinetic energy to be set
-         */
-        void setKineticEnergyFinal(double final_kin_E);
-
-        /**
-         * @brief Set the final total energy (i.e. kinetic energy and dynamic mass) of the particle at the end of the track
-         * @param final_tot_E The final total energy to be set
-         */
-        void setTotalEnergyFinal(double final_tot_E);
-
-        /**
          * @brief Set the Monte-Carlo parent track
          * @param mc_track The Monte-Carlo track
          * @warning Special method because parent can only be set after creation, should not be replaced later.
@@ -175,12 +155,11 @@ namespace allpix {
 
         int origin_g4_process_type_{};
         int particle_id_{};
-        int track_id_{};
         int n_steps_{};
 
         double initial_kin_E_{};
-        double initial_tot_E_{};
         double final_kin_E_{};
+        double initial_tot_E_{};
         double final_tot_E_{};
 
         TRef parent_;

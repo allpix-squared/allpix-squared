@@ -42,11 +42,11 @@ namespace allpix {
 
         /**
          * @brief Will take a MCTrack and attempt to store it
-         * @param the_track The MCTrack to be (possibly) stored
+         * @param the_track_info The MCTrack to be (possibly) stored
          *
          * It will be stored if it was registered to be stored (@see #setTrackInfoToBeStored), otherwise deleted
          */
-        void storeTrackInfo(std::unique_ptr<MCTrack> the_track);
+        void storeTrackInfo(std::unique_ptr<TrackInfoG4> the_track_info);
 
         /**
          * @brief Will register a track id to be stored
@@ -79,6 +79,8 @@ namespace allpix {
          */
         void setAllTrackParents();
 
+        void createMCTracks();
+
         /**
          * @brief Returns a pointer to the MCTrack object in the #stored_tracks_ or a nullptr if not found
          * @param track_id The id of the track for which to retrieve the pointer
@@ -92,7 +94,11 @@ namespace allpix {
         std::map<int, int> g4_to_custom_id_;
         std::map<int, int> track_id_to_parent_id_;
         std::vector<int> to_store_track_ids_;
+        std::vector<std::unique_ptr<TrackInfoG4>> stored_track_infos_;
+
         std::vector<MCTrack> stored_tracks_;
+        std::vector<int> stored_track_ids_;
+        std::map<int, size_t> id_to_track_;
     };
 } // namespace allpix
 #endif

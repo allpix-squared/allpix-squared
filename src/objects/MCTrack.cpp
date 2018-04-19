@@ -13,16 +13,19 @@
 using namespace allpix;
 
 MCTrack::MCTrack(ROOT::Math::XYZPoint start_point,
+                 ROOT::Math::XYZPoint end_point,
                  std::string g4_volume,
                  std::string g4_prod_process_name,
                  int g4_prod_process_type,
                  int particle_id,
-                 int track_id,
                  double initial_kin_E,
-                 double initial_tot_E)
-    : start_point_(std::move(start_point)), origin_g4_vol_name_(std::move(g4_volume)),
+                 double final_kin_E,
+                 double initial_tot_E,
+                 double final_tot_E)
+    : start_point_(std::move(start_point)), end_point_(end_point), origin_g4_vol_name_(std::move(g4_volume)),
       origin_g4_process_name_(std::move(g4_prod_process_name)), origin_g4_process_type_(g4_prod_process_type),
-      particle_id_(particle_id), track_id_(track_id), initial_kin_E_(initial_kin_E), initial_tot_E_(initial_tot_E) {
+      particle_id_(particle_id), initial_kin_E_(initial_kin_E), final_kin_E_(final_kin_E), initial_tot_E_(initial_tot_E),
+      final_tot_E_(final_tot_E) {
     setParent(nullptr);
 }
 
@@ -36,10 +39,6 @@ ROOT::Math::XYZPoint MCTrack::getEndPoint() const {
 
 int MCTrack::getParticleID() const {
     return particle_id_;
-}
-
-int MCTrack::getTrackID() const {
-    return track_id_;
 }
 
 int MCTrack::getCreationProcessType() const {
@@ -82,22 +81,6 @@ const MCTrack* MCTrack::getParent() const {
     return dynamic_cast<MCTrack*>(parent_.GetObject());
 }
 
-void MCTrack::setEndPoint(ROOT::Math::XYZPoint end_point) {
-    end_point_ = std::move(end_point);
-}
-
-void MCTrack::setNumberOfSteps(int n_steps) {
-    n_steps_ = n_steps;
-}
-
-void MCTrack::setKineticEnergyFinal(double final_kin_E) {
-    final_kin_E_ = final_kin_E;
-}
-
-void MCTrack::setTotalEnergyFinal(double final_tot_E) {
-    final_tot_E_ = final_tot_E;
-}
-
 void MCTrack::setParent(const MCTrack* mc_track) {
     parent_ = const_cast<MCTrack*>(mc_track); // NOLINT
 }
@@ -111,7 +94,7 @@ void MCTrack::print(std::ostream& out) const {
     auto parent = getParent();
 
     auto title = std::stringstream();
-    title << "--- Printing MCTrack information for track: " << track_id_ << " (" << this << ") ";
+    title << "--- Printing MCTrack information for track (" << this << ") ";
 
     out << '\n'
         << std::setw(largest_output) << std::left << std::setfill('-') << title.str() << '\n'
@@ -133,7 +116,7 @@ void MCTrack::print(std::ostream& out) const {
         << std::setw(small_gap) << " MeV | " << std::left << std::setw(big_gap) << "Final total energy: " << std::right
         << std::setw(med_gap) << final_tot_E_ << std::setw(small_gap) << " MeV   \n";
     if(parent != nullptr) {
-        out << "Linked parent: " << parent_.GetObject() << " (Track ID: " << parent->getTrackID() << ")\n";
+        out << "Linked parent: " << parent_.GetObject() << '\n';
     } else {
         out << "Linked parent: <nullptr>\n";
     }

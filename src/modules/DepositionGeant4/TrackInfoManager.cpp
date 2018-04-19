@@ -30,11 +30,11 @@ void TrackInfoManager::setTrackInfoToBeStored(int track_id) {
     }
 }
 
-void TrackInfoManager::storeTrackInfo(std::unique_ptr<MCTrack> the_track) {
-    auto track_id = the_track->getTrackID();
+void TrackInfoManager::storeTrackInfo(std::unique_ptr<TrackInfoG4> the_track_info) {
+    auto track_id = the_track_info->getID();
     auto element = std::find(to_store_track_ids_.begin(), to_store_track_ids_.end(), track_id);
     if(element != to_store_track_ids_.end()) {
-        stored_tracks_.push_back(*std::move(the_track));
+        stored_track_infos_.push_back(std::move(the_track_info));
         to_store_track_ids_.erase(element);
     }
 }
@@ -53,14 +53,36 @@ void TrackInfoManager::dispatchMessage(Module* module, Messenger* messenger) {
 }
 
 MCTrack const* TrackInfoManager::findMCTrack(int track_id) const {
-    auto element = std::find_if(stored_tracks_.begin(), stored_tracks_.end(), [&track_id](MCTrack const& track) {
-        return (track.getTrackID() == track_id);
-    });
-    return (element != stored_tracks_.end()) ? &(*element) : nullptr;
+    auto it = id_to_track_.find(track_id);
+    if(it == id_to_track_.end()) {
+        return nullptr;
+    } else {
+        return &stored_tracks_.at(it->second);
+    }
+}
+
+void TrackInfoManager::createMCTracks() {
+    for(auto& track_info : stored_track_infos_) {
+        stored_tracks_.emplace_back(track_info->getStartPoint(),
+                                    track_info->getEndPoint(),
+                                    track_info->getOriginatingVolumeName(),
+                                    track_info->getCreationProcessName(),
+                                    track_info->getCreationProcessType(),
+                                    track_info->getParticleID(),
+                                    track_info->getKineticEnergyInitial(),
+                                    track_info->getKineticEnergyFinal(),
+                                    track_info->getTotalEnergyInitial(),
+                                    track_info->getTotalEnergyFinal());
+
+        id_to_track_[track_info->getID()] = stored_tracks_.size() - 1;
+        stored_track_ids_.emplace_back(track_info->getID());
+    }
 }
 
 void TrackInfoManager::setAllTrackParents() {
-    for(auto& track : stored_tracks_) {
-        track.setParent(findMCTrack(track_id_to_parent_id_[track.getTrackID()]));
+    for(size_t ix = 0; ix < stored_track_ids_.size(); ++ix) {
+        auto track_id = stored_track_ids_[ix];
+        auto parent_id = track_id_to_parent_id_[track_id];
+        stored_tracks_[ix].setParent(findMCTrack(parent_id));
     }
 }
