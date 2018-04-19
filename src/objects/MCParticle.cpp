@@ -64,31 +64,48 @@ const MCTrack* MCParticle::getTrack() const {
 }
 
 void MCParticle::print(std::ostream& out) const {
+    static const size_t big_gap = 25;
+    static const size_t med_gap = 10;
+    static const size_t small_gap = 6;
+    static const size_t largest_output = big_gap + 3 * med_gap + 3 * small_gap;
+
     auto track = getTrack();
-    auto parent = getTrack();
-    out << "\n ------- Printing MCParticle information (" << this << ")-------\n"
-        << "Particle type (PDG ID): " << particle_id_ << '\n'
-        << std::left << std::setw(25) << "Local start point:" << std::right << std::setw(10) << local_start_point_.X()
-        << " mm |" << std::setw(10) << local_start_point_.Y() << " mm |" << std::setw(10) << local_start_point_.Z()
-        << " mm\n"
-        << std::left << std::setw(25) << "Global start point:" << std::right << std::setw(10) << global_start_point_.X()
-        << " mm |" << std::setw(10) << global_start_point_.Y() << " mm |" << std::setw(10) << global_start_point_.Z()
-        << " mm\n"
-        << std::left << std::setw(25) << "Local end point:" << std::right << std::setw(10) << local_end_point_.X() << " mm |"
-        << std::setw(10) << local_end_point_.Y() << " mm |" << std::setw(10) << local_end_point_.Z() << " mm\n"
-        << std::left << std::setw(25) << "Global end point:" << std::right << std::setw(10) << global_end_point_.X()
-        << " mm |" << std::setw(10) << global_end_point_.Y() << " mm |" << std::setw(10) << global_end_point_.Z() << " mm\n";
+    auto parent = getParent();
+
+    std::stringstream title;
+    title << "--- Printing MCParticle information (" << this << ") ";
+    out << '\n'
+        << std::setw(largest_output) << std::left << std::setfill('-') << title.str() << '\n'
+        << std::setfill(' ') << std::left << std::setw(big_gap) << "Particle type (PDG ID): " << std::right
+        << std::setw(small_gap) << particle_id_ << '\n'
+        << std::left << std::setw(big_gap) << "Local start point:" << std::right << std::setw(med_gap)
+        << local_start_point_.X() << std::setw(small_gap) << " mm |" << std::setw(med_gap) << local_start_point_.Y()
+        << std::setw(small_gap) << " mm |" << std::setw(med_gap) << local_start_point_.Z() << std::setw(small_gap)
+        << " mm  \n"
+        << std::left << std::setw(big_gap) << "Global start point:" << std::right << std::setw(med_gap)
+        << global_start_point_.X() << std::setw(small_gap) << " mm |" << std::setw(med_gap) << global_start_point_.Y()
+        << std::setw(small_gap) << " mm |" << std::setw(med_gap) << global_start_point_.Z() << std::setw(small_gap)
+        << " mm  \n"
+        << std::left << std::setw(big_gap) << "Local end point:" << std::right << std::setw(med_gap) << local_end_point_.X()
+        << std::setw(small_gap) << " mm |" << std::setw(med_gap) << local_end_point_.Y() << std::setw(small_gap) << " mm |"
+        << std::setw(med_gap) << local_end_point_.Z() << std::setw(small_gap) << " mm  \n"
+        << std::left << std::setw(big_gap) << "Global end point:" << std::right << std::setw(med_gap)
+        << global_end_point_.X() << std::setw(small_gap) << " mm |" << std::setw(med_gap) << global_end_point_.Y()
+        << std::setw(small_gap) << " mm |" << std::setw(med_gap) << global_end_point_.Z() << std::setw(small_gap)
+        << " mm  \n"
+        << std::left << std::setw(big_gap) << "Linked parent:";
     if(parent != nullptr) {
-        out << "Linked parent: " << parent << '\n';
+        out << std::right << std::setw(small_gap) << parent << '\n';
     } else {
-        out << "Linked parent: <nullptr> \n";
+        out << std::right << std::setw(small_gap) << "<nullptr>\n";
     }
+    out << std::left << std::setw(big_gap) << "Linked track:";
     if(track != nullptr) {
-        out << "Linked track: " << track << " (ID: " << track->getTrackID() << ")\n";
+        out << std::right << std::setw(small_gap) << track << " (Track ID: " << track->getTrackID() << ")\n";
     } else {
-        out << "Linked track: <nullptr> \n";
+        out << std::right << std::setw(small_gap) << "<nullptr>\n";
     }
-    out << " -----------------------------------------------------------------\n";
+    out << std::setfill('-') << std::setw(largest_output) << "" << std::setfill(' ') << std::endl;
 }
 
 ClassImp(MCParticle)

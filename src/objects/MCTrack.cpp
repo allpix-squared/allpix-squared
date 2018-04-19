@@ -8,7 +8,6 @@
  */
 
 #include "MCTrack.hpp"
-
 using namespace allpix;
 
 MCTrack::MCTrack(ROOT::Math::XYZPoint start_point,
@@ -102,24 +101,41 @@ void MCTrack::setParent(const MCTrack* mc_track) {
 }
 
 void MCTrack::print(std::ostream& out) const {
+    static const size_t big_gap = 25;
+    static const size_t med_gap = 10;
+    static const size_t small_gap = 6;
+    static const size_t largest_output = 2 * big_gap + 2 * med_gap + 2 * small_gap;
+
     auto parent = getParent();
-    out << "\n ------- Printing MCTrack information for track: " << track_id_ << " (" << this << ") -------\n"
-        << "Particle type (PDG ID): " << particle_id_ << '\n'
-        << "Production process: " << origin_g4_process_name_ << " (G4 process type: " << origin_g4_process_type_ << ")\n"
-        << "Production in G4Volume: " << origin_g4_vol_name_ << '\n'
-        << std::left << std::setw(25) << "Initial position:" << std::right << std::setw(10) << start_point_.X() << " mm |"
-        << std::right << std::setw(10) << start_point_.Y() << " mm |" << std::right << std::setw(10) << start_point_.Z()
-        << " mm\n"
-        << std::left << std::setw(25) << "Final position:" << std::right << std::setw(10) << end_point_.X() << " mm |"
-        << std::setw(10) << end_point_.Y() << " mm |" << std::setw(10) << end_point_.Z() << " mm\n"
-        << "Initial kinetic energy: " << initial_kin_E_ << " MeV \t Final kinetic energy: " << final_kin_E_ << " MeV\n"
-        << "Initial total energy: " << initial_tot_E_ << " MeV \t Final total energy: " << final_tot_E_ << " MeV\n";
+
+    std::stringstream title;
+    title << "--- Printing MCTrack information for track: " << track_id_ << " (" << this << ") ";
+
+    out << '\n'
+        << std::setw(largest_output) << std::left << std::setfill('-') << title.str() << '\n'
+        << std::setfill(' ') << std::left << std::setw(big_gap) << "Particle type (PDG ID): " << std::right
+        << std::setw(small_gap) << particle_id_ << '\n'
+        << std::left << std::setw(big_gap) << "Production process: " << std::right << std::setw(small_gap)
+        << origin_g4_process_name_ << " (G4 process type: " << origin_g4_process_type_ << ")\n"
+        << std::left << std::setw(big_gap) << "Production in G4Volume: " << std::right << std::setw(small_gap)
+        << origin_g4_vol_name_ << '\n'
+        << std::left << std::setw(big_gap) << "Initial position:" << std::right << std::setw(med_gap) << start_point_.X()
+        << " mm |" << std::setw(med_gap) << start_point_.Y() << " mm |" << std::setw(med_gap) << start_point_.Z() << " mm\n"
+        << std::left << std::setw(big_gap) << "Final position:" << std::right << std::setw(med_gap) << end_point_.X()
+        << " mm |" << std::setw(med_gap) << end_point_.Y() << " mm |" << std::setw(med_gap) << end_point_.Z() << " mm\n"
+        << std::left << std::setw(big_gap) << "Initial kinetic energy: " << std::right << std::setw(med_gap)
+        << initial_kin_E_ << std::setw(small_gap) << " MeV | " << std::left << std::setw(big_gap)
+        << "Final kinetic energy: " << std::right << std::setw(med_gap) << final_kin_E_ << std::setw(small_gap)
+        << " MeV   \n"
+        << std::left << std::setw(big_gap) << "Initial total energy: " << std::right << std::setw(med_gap) << initial_tot_E_
+        << std::setw(small_gap) << " MeV | " << std::left << std::setw(big_gap) << "Final total energy: " << std::right
+        << std::setw(med_gap) << final_tot_E_ << std::setw(small_gap) << " MeV   \n";
     if(parent != nullptr) {
-        out << "Linked parent: " << parent_.GetObject() << " Parent track ID: " << parent->getTrackID() << '\n';
+        out << "Linked parent: " << parent_.GetObject() << " (Track ID: " << parent->getTrackID() << ")\n";
     } else {
-        out << "Linked parent: <nullptr>";
+        out << "Linked parent: <nullptr>\n";
     }
-    out << " -----------------------------------------------------------------\n";
+    out << std::setfill('-') << std::setw(largest_output) << "" << std::setfill(' ') << std::endl;
 }
 
 ClassImp(MCTrack)
