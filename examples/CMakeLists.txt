@@ -23,6 +23,10 @@ IF(TEST_EXAMPLES)
                 SET(ADDITIONAL_CLI_ARGS "${ADDITIONAL_CLI_ARGS} -o ROOTObjectReader.file_name=${CMAKE_BINARY_DIR}/output/fast_simulation/output/output_fast_simulation.root")
                 SET(DEPENDENCY "examples/fast_simulation")
             ENDIF()
+            if(${TEST} MATCHES "replay" OR ${TEST} MATCHES "fast")
+                SET(ADDITIONAL_CLI_ARGS "${ADDITIONAL_CLI_ARGS} -o random_seed_core=1")
+                SET(DEPENDENCY "examples/fast_simulation")
+            ENDIF()
 
             ADD_TEST(NAME "${TEST_NAME}"
                 WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
