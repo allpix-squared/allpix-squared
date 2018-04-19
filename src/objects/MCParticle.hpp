@@ -28,11 +28,13 @@ namespace allpix {
          * @param global_start_point Entry point of the particle in the sensor in global coordinates
          * @param local_end_point Exit point of the particle in the sensor in local coordinates
          * @param global_end_point Exit point of the particle in the sensor in global coordinates
+         * @param particle_id PDG id for this particle type
          */
         MCParticle(ROOT::Math::XYZPoint local_start_point,
                    ROOT::Math::XYZPoint global_start_point,
                    ROOT::Math::XYZPoint local_end_point,
-                   ROOT::Math::XYZPoint global_end_point);
+                   ROOT::Math::XYZPoint global_end_point,
+                   int particle_id);
 
         /**
          * @brief Get the entry point of the particle in local coordinates
@@ -55,6 +57,12 @@ namespace allpix {
          * @return Particle entry point
          */
         ROOT::Math::XYZPoint getGlobalEndPoint() const;
+
+        /**
+         * @brief Get PDG particle id for the particle
+         * @return Particle id
+         */
+        int getParticleID() const;
 
         /**
          * @brief Set the Monte-Carlo particle
@@ -103,6 +111,8 @@ namespace allpix {
         ROOT::Math::XYZPoint global_start_point_{};
         ROOT::Math::XYZPoint local_end_point_{};
         ROOT::Math::XYZPoint global_end_point_{};
+
+        int particle_id_{};
 
         TRef parent_;
         TRef track_;

@@ -56,8 +56,8 @@ namespace allpix {
         ROOT::Math::XYZPoint getEndPoint() const;
 
         /**
-         * @brief Get particle identifier
-         * @return Particle identifier
+         * @brief Get PDG particle id for the particle
+         * @return Particle id
          */
         int getParticleID() const;
 

@@ -14,10 +14,13 @@ using namespace allpix;
 MCParticle::MCParticle(ROOT::Math::XYZPoint local_start_point,
                        ROOT::Math::XYZPoint global_start_point,
                        ROOT::Math::XYZPoint local_end_point,
-                       ROOT::Math::XYZPoint global_end_point)
+                       ROOT::Math::XYZPoint global_end_point,
+                       int particle_id)
     : local_start_point_(std::move(local_start_point)), global_start_point_(std::move(global_start_point)),
-      local_end_point_(std::move(local_end_point)), global_end_point_(std::move(global_end_point)) {
+      local_end_point_(std::move(local_end_point)), global_end_point_(std::move(global_end_point)),
+      particle_id_(particle_id) {
     setParent(nullptr);
+    setTrack(nullptr);
 }
 
 ROOT::Math::XYZPoint MCParticle::getLocalStartPoint() const {
@@ -32,6 +35,10 @@ ROOT::Math::XYZPoint MCParticle::getLocalEndPoint() const {
 }
 ROOT::Math::XYZPoint MCParticle::getGlobalEndPoint() const {
     return global_end_point_;
+}
+
+int MCParticle::getParticleID() const {
+    return particle_id_;
 }
 
 void MCParticle::setParent(const MCParticle* mc_particle) {
