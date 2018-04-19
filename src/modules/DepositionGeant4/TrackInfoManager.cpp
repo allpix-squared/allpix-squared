@@ -44,6 +44,10 @@ void TrackInfoManager::resetTrackInfoManager() {
     stored_tracks_.clear();
     to_store_track_ids_.clear();
     g4_to_custom_id_.clear();
+    track_id_to_parent_id_.clear();
+    stored_track_infos_.clear();
+    stored_track_ids_.clear();
+    id_to_track_.clear();
 }
 
 void TrackInfoManager::dispatchMessage(Module* module, Messenger* messenger) {
