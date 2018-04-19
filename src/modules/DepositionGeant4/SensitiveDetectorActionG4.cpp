@@ -150,6 +150,19 @@ void SensitiveDetectorActionG4::dispatchMessages() {
                    << " (local coordinates)";
     }
 
+    for(auto& track_parent : track_parents_) {
+        auto track_id = track_parent.first;
+        auto parent_id = track_parent.second;
+        if(id_to_particle_.find(parent_id) == id_to_particle_.end()) {
+            // Skip tracks without direct parents with deposits
+            // FIXME: Geant4 does not allow for an easy way retrieve the whole hierarchy
+            continue;
+        }
+        auto track_idx = id_to_particle_.at(track_id);
+        auto parent_idx = id_to_particle_.at(parent_id);
+        mc_particles.at(track_idx).setParent(&mc_particles.at(parent_idx));
+    }
+
     // Send the mc particle information
     auto mc_particle_message = std::make_shared<MCParticleMessage>(std::move(mc_particles), detector_);
     messenger_->dispatchMessage(module_, mc_particle_message);
