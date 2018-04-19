@@ -29,7 +29,6 @@ namespace allpix {
          * @param g4_prod_process_type Geant4 creation process id
          * @param particle_id PDG particle id
          * @param track_id Custom track id
-         * @param parent_id Track id of parent track
          * @param initial_kin_E Initial kinetic energy (in MeV)
          * @param initial_tot_E Initial total energy (in MeV)
          */
@@ -39,7 +38,6 @@ namespace allpix {
                 int g4_prod_process_type,
                 int particle_id,
                 int track_id,
-                int parent_id,
                 double initial_kin_E,
                 double initial_tot_E);
 
@@ -65,12 +63,6 @@ namespace allpix {
          * @brief Get unique track ID of this track
          */
         int getTrackID() const;
-
-        /**
-         * @brief Get the ID of the parent track
-         * @return Parent track ID
-         */
-        int getParentTrackID() const;
 
         /**
          * @brief Get the Geant4 internal ID of the process which created the particle
@@ -184,7 +176,6 @@ namespace allpix {
         int origin_g4_process_type_{};
         int particle_id_{};
         int track_id_{};
-        int parent_id_{};
         int n_steps_{};
 
         double initial_kin_E_{};

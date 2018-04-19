@@ -15,7 +15,6 @@ TrackInfoG4::TrackInfoG4(int custom_track_id, int parent_track_id, const G4Track
                                          processType,
                                          aTrack->GetDynamicParticle()->GetPDGcode(),
                                          custom_track_id_,
-                                         parent_track_id_,
                                          aTrack->GetKineticEnergy(),
                                          aTrack->GetTotalEnergy());
 }

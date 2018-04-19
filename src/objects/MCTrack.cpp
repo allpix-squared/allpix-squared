@@ -17,13 +17,11 @@ MCTrack::MCTrack(ROOT::Math::XYZPoint start_point,
                  int g4_prod_process_type,
                  int particle_id,
                  int track_id,
-                 int parent_id,
                  double initial_kin_E,
                  double initial_tot_E)
     : start_point_(std::move(start_point)), origin_g4_vol_name_(std::move(g4_volume)),
       origin_g4_process_name_(std::move(g4_prod_process_name)), origin_g4_process_type_(g4_prod_process_type),
-      particle_id_(particle_id), track_id_(track_id), parent_id_(parent_id), initial_kin_E_(initial_kin_E),
-      initial_tot_E_(initial_tot_E) {
+      particle_id_(particle_id), track_id_(track_id), initial_kin_E_(initial_kin_E), initial_tot_E_(initial_tot_E) {
     setParent(nullptr);
 }
 
@@ -41,10 +39,6 @@ int MCTrack::getParticleID() const {
 
 int MCTrack::getTrackID() const {
     return track_id_;
-}
-
-int MCTrack::getParentTrackID() const {
-    return parent_id_;
 }
 
 int MCTrack::getCreationProcessType() const {
@@ -109,7 +103,7 @@ void MCTrack::setParent(const MCTrack* mc_track) {
 
 void MCTrack::print(std::ostream& out) const {
     out << "\n ------- Printing MCTrack information for track: " << track_id_ << " (" << this << ") -------\n"
-        << "Particle type (PDG ID): " << particle_id_ << " | Parent track ID: " << parent_id_ << '\n'
+        << "Particle type (PDG ID): " << particle_id_ << '\n'
         << "Production process: " << origin_g4_process_name_ << " (G4 process type: " << origin_g4_process_type_ << ")\n"
         << "Production in G4Volume: " << origin_g4_vol_name_ << '\n'
         << "Initial position:\t " << start_point_.X() << " mm\t|" << start_point_.Y() << " mm\t|" << start_point_.Z()
