@@ -23,8 +23,8 @@ TrackInfoG4::TrackInfoG4(int custom_track_id, int parent_track_id, const G4Track
 void TrackInfoG4::finaliseInfo(const G4Track* const aTrack) {
     _mcTrack->setNumberOfSteps(aTrack->GetCurrentStepNumber());
     _mcTrack->setEndPoint(static_cast<ROOT::Math::XYZPoint>(aTrack->GetPosition()));
-    _mcTrack->setFinalKineticEnergy(aTrack->GetKineticEnergy());
-    _mcTrack->setFinalTotalEnergy(aTrack->GetTotalEnergy());
+    _mcTrack->setKineticEnergyFinal(aTrack->GetKineticEnergy());
+    _mcTrack->setTotalEnergyFinal(aTrack->GetTotalEnergy());
 }
 
 std::unique_ptr<MCTrack> TrackInfoG4::releaseMCTrack() {

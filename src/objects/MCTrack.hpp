@@ -88,27 +88,26 @@ namespace allpix {
          * @brief Getter for the kinetic energy the particle had when the track was created
          * @return The kinetic energy in MeV of the particle at the beginning of the track
          */
-        double getInitialKineticEnergy() const;
-
+        double getKineticEnergyInitial() const;
         /**
          * @brief Getter for the total energy (i.e. kinetic energy and dynamic mass) the particle had when the track was
          * created
          * @return The total energy in MeV of the particle at the beginning of the track
          */
-        double getInitialTotalEnergy() const;
+        double getTotalEnergyInitial() const;
 
         /**
          * @brief Getter for the kinetic energy the particle had when the track terminated
          * @return The kinetic energy in MeV of the particle at the end of the track
          */
-        double getFinalKineticEnergy() const;
+        double getKineticEnergyFinal() const;
 
         /**
          * @brief Getter for the total energy (i.e. kinetic energy and dynamic mass) the particle had when the track
          * terminated
          * @return The total energy in MeV of the particle at the end of the track
          */
-        double getFinalTotalEnergy() const;
+        double getTotalEnergyFinal() const;
 
         /**
          * @brief Getter for the Geant4 name of the physical volume in which the track originated
@@ -145,13 +144,13 @@ namespace allpix {
          * @brief Set the final kinetic energy of the particle at the end of the track
          * @param final_kin_E The final kinetic energy to be set
          */
-        void setFinalKineticEnergy(double final_kin_E);
+        void setKineticEnergyFinal(double final_kin_E);
 
         /**
          * @brief Set the final total energy (i.e. kinetic energy and dynamic mass) of the particle at the end of the track
          * @param final_tot_E The final total energy to be set
          */
-        void setFinalTotalEnergy(double final_tot_E);
+        void setTotalEnergyFinal(double final_tot_E);
 
         /**
          * @brief Set the Monte-Carlo parent track

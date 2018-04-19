@@ -55,19 +55,20 @@ int MCTrack::getNumberOfSteps() const {
     return n_steps_;
 }
 
-double MCTrack::getInitialKineticEnergy() const {
+double MCTrack::getKineticEnergyInitial() const {
+
     return initial_kin_E_;
 }
 
-double MCTrack::getInitialTotalEnergy() const {
+double MCTrack::getTotalEnergyInitial() const {
     return initial_tot_E_;
 }
 
-double MCTrack::getFinalKineticEnergy() const {
+double MCTrack::getKineticEnergyFinal() const {
     return final_kin_E_;
 }
 
-double MCTrack::getFinalTotalEnergy() const {
+double MCTrack::getTotalEnergyFinal() const {
     return final_tot_E_;
 }
 
@@ -94,11 +95,11 @@ void MCTrack::setNumberOfSteps(int n_steps) {
     n_steps_ = n_steps;
 }
 
-void MCTrack::setFinalKineticEnergy(double final_kin_E) {
+void MCTrack::setKineticEnergyFinal(double final_kin_E) {
     final_kin_E_ = final_kin_E;
 }
 
-void MCTrack::setFinalTotalEnergy(double final_tot_E) {
+void MCTrack::setTotalEnergyFinal(double final_tot_E) {
     final_tot_E_ = final_tot_E;
 }
 
