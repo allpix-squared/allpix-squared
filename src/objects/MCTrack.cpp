@@ -102,17 +102,24 @@ void MCTrack::setParent(const MCTrack* mc_track) {
 }
 
 void MCTrack::print(std::ostream& out) const {
+    auto parent = getParent();
     out << "\n ------- Printing MCTrack information for track: " << track_id_ << " (" << this << ") -------\n"
         << "Particle type (PDG ID): " << particle_id_ << '\n'
         << "Production process: " << origin_g4_process_name_ << " (G4 process type: " << origin_g4_process_type_ << ")\n"
         << "Production in G4Volume: " << origin_g4_vol_name_ << '\n'
-        << "Initial position:\t " << start_point_.X() << " mm\t|" << start_point_.Y() << " mm\t|" << start_point_.Z()
+        << std::left << std::setw(25) << "Initial position:" << std::right << std::setw(10) << start_point_.X() << " mm |"
+        << std::right << std::setw(10) << start_point_.Y() << " mm |" << std::right << std::setw(10) << start_point_.Z()
         << " mm\n"
-        << "Final position:\t\t " << end_point_.X() << " mm\t|" << end_point_.Y() << " mm\t|" << end_point_.Z() << " mm\n"
+        << std::left << std::setw(25) << "Final position:" << std::right << std::setw(10) << end_point_.X() << " mm |"
+        << std::setw(10) << end_point_.Y() << " mm |" << std::setw(10) << end_point_.Z() << " mm\n"
         << "Initial kinetic energy: " << initial_kin_E_ << " MeV \t Final kinetic energy: " << final_kin_E_ << " MeV\n"
-        << "Initial total energy: " << initial_tot_E_ << " MeV \t Final total energy: " << final_tot_E_ << " MeV\n"
-        << "Linked parent: " << parent_.GetObject() << '\n'
-        << " -----------------------------------------------------------------\n";
+        << "Initial total energy: " << initial_tot_E_ << " MeV \t Final total energy: " << final_tot_E_ << " MeV\n";
+    if(parent != nullptr) {
+        out << "Linked parent: " << parent_.GetObject() << " Parent track ID: " << parent->getTrackID() << '\n';
+    } else {
+        out << "Linked parent: <nullptr>";
+    }
+    out << " -----------------------------------------------------------------\n";
 }
 
 ClassImp(MCTrack)

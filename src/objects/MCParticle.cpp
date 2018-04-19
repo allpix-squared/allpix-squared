@@ -65,19 +65,30 @@ const MCTrack* MCParticle::getTrack() const {
 
 void MCParticle::print(std::ostream& out) const {
     auto track = getTrack();
+    auto parent = getTrack();
     out << "\n ------- Printing MCParticle information (" << this << ")-------\n"
-        << "Particle type (PDG ID): " << track->getParticleID() << " | Belongs to track: " << track->getTrackID() << '\n'
-        << "Local start point:\t " << local_start_point_.X() << " mm\t|" << local_start_point_.Y() << " mm\t|"
-        << local_start_point_.Z() << " mm\n"
-        << "Global start point:\t " << global_start_point_.X() << " mm\t|" << global_start_point_.Y() << " mm\t|"
-        << global_start_point_.Z() << " mm\n"
-        << "Local end point: \t " << local_end_point_.X() << " mm\t|" << local_end_point_.Y() << " mm\t|"
-        << local_end_point_.Z() << " mm\n"
-        << "Global end point: \t " << global_end_point_.X() << " mm\t|" << global_end_point_.Y() << " mm\t|"
-        << global_end_point_.Z() << " mm\n"
-        << "Linked parent: " << parent_.GetObject() << '\n'
-        << "Linked track: " << track_.GetObject() << '\n'
-        << " -----------------------------------------------------------------\n";
+        << "Particle type (PDG ID): " << particle_id_ << '\n'
+        << std::left << std::setw(25) << "Local start point:" << std::right << std::setw(10) << local_start_point_.X()
+        << " mm |" << std::setw(10) << local_start_point_.Y() << " mm |" << std::setw(10) << local_start_point_.Z()
+        << " mm\n"
+        << std::left << std::setw(25) << "Global start point:" << std::right << std::setw(10) << global_start_point_.X()
+        << " mm |" << std::setw(10) << global_start_point_.Y() << " mm |" << std::setw(10) << global_start_point_.Z()
+        << " mm\n"
+        << std::left << std::setw(25) << "Local end point:" << std::right << std::setw(10) << local_end_point_.X() << " mm |"
+        << std::setw(10) << local_end_point_.Y() << " mm |" << std::setw(10) << local_end_point_.Z() << " mm\n"
+        << std::left << std::setw(25) << "Global end point:" << std::right << std::setw(10) << global_end_point_.X()
+        << " mm |" << std::setw(10) << global_end_point_.Y() << " mm |" << std::setw(10) << global_end_point_.Z() << " mm\n";
+    if(parent != nullptr) {
+        out << "Linked parent: " << parent << '\n';
+    } else {
+        out << "Linked parent: <nullptr> \n";
+    }
+    if(track != nullptr) {
+        out << "Linked track: " << track << " (ID: " << track->getTrackID() << ")\n";
+    } else {
+        out << "Linked track: <nullptr> \n";
+    }
+    out << " -----------------------------------------------------------------\n";
 }
 
 ClassImp(MCParticle)
