@@ -58,11 +58,8 @@ void TrackInfoManager::dispatchMessage(Module* module, Messenger* messenger) {
 
 MCTrack const* TrackInfoManager::findMCTrack(int track_id) const {
     auto it = id_to_track_.find(track_id);
-    if(it == id_to_track_.end()) {
-        return nullptr;
-    } else {
-        return &stored_tracks_.at(it->second);
-    }
+    return (it == id_to_track_.end()) ? nullptr : &stored_tracks_.at(it->second);
+}
 }
 
 void TrackInfoManager::createMCTracks() {
