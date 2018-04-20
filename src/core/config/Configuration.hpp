@@ -110,6 +110,14 @@ namespace allpix {
         template <typename T> Matrix<T> getMatrix(const std::string& key) const;
 
         /**
+         * @brief Get values for a key containing a 2D matrix
+         * @param key Key to get values of
+         * @param def Default value matrix to use if key is not defined
+         * @return Matrix of values from the requested template parameter
+         */
+        template <typename T> Matrix<T> getMatrix(const std::string& key, const Matrix<T> def) const;
+
+        /**
          * @brief Get literal value of a key as string
          * @param key Key to get values of
          * @return Literal value of the key
