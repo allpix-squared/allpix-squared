@@ -33,11 +33,6 @@ namespace allpix {
         ~SetUniqueTrackIDUserHookG4() = default;
 
         /**
-         * @brief Default constructor is deleted
-         */
-        SetUniqueTrackIDUserHookG4() = delete;
-
-        /**
          * @brief Called for every G4Track at beginning
          * @param aTrack The pointer to the G4Track for which this routine is called
          */

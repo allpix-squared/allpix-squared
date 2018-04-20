@@ -73,12 +73,10 @@ namespace allpix {
         void dispatchMessage(Module* module, Messenger* messenger);
 
         /**
-         * @brief Will internally set all the parent-child relations between stored tracks
-         * @warning This must only be called once all the tracks are stored and no reallocation of the back-end vector can be
+         * @brief Populate the #stored_tracks_ with MCTrack objects
+         * @warning Must only be called once Geant4 finished stepping through all the G4Track objects
          * guranteed
          */
-        void setAllTrackParents();
-
         void createMCTracks();
 
         /**
@@ -90,14 +88,28 @@ namespace allpix {
         MCTrack const* findMCTrack(int track_id) const;
 
     private:
-        int counter_;
-        std::map<int, int> g4_to_custom_id_;
-        std::map<int, int> track_id_to_parent_id_;
-        std::vector<int> to_store_track_ids_;
-        std::vector<std::unique_ptr<TrackInfoG4>> stored_track_infos_;
+        /**
+         * @brief Will internally set all the parent-child relations between stored tracks
+         * @warning This must only be called once all the tracks are created (@see #createMCTracks) and no reallocation of
+         * the back-end vector is guranteed
+         */
+        void setAllTrackParents();
 
+        // Counter to store highest assigned track id
+        int counter_{};
+        // Geant4 id to custom id translation
+        std::map<int, int> g4_to_custom_id_{};
+        // Custom id to custom parent id tracking
+        std::map<int, int> track_id_to_parent_id_{};
+        // List of track ids to be stored if they are provided via #storeTrackInfo
+        std::vector<int> to_store_track_ids_;
+        // The TrackInfoG4 instances which are handed over to this track manager
+        std::vector<std::unique_ptr<TrackInfoG4>> stored_track_infos_;
+        // The MCTrack vector which is dispatched via #dispatchMessage
         std::vector<MCTrack> stored_tracks_;
+        // Ids ins same order as tracks stored in #stored_tracks_
         std::vector<int> stored_track_ids_;
+        // Id to index in #stored_tracks_ for easier handling
         std::map<int, size_t> id_to_track_;
     };
 } // namespace allpix

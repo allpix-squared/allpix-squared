@@ -60,7 +60,6 @@ MCTrack const* TrackInfoManager::findMCTrack(int track_id) const {
     auto it = id_to_track_.find(track_id);
     return (it == id_to_track_.end()) ? nullptr : &stored_tracks_.at(it->second);
 }
-}
 
 void TrackInfoManager::createMCTracks() {
     for(auto& track_info : stored_track_infos_) {
