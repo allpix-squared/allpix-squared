@@ -161,6 +161,7 @@ void LCIOWriterModule::finalize() {
                       << "<gear>" << std::endl;
 
         geometry_file << "  <global detectorName=\"" << DetectorName_ << "\"/>" << std::endl;
+        geometry_file << "  <BField type=\"ConstantBField\" x=\"0.0\" y=\"0.0\" z=\"0.0\"/>" << std::endl;
         geometry_file << "  <detectors>" << std::endl;
         geometry_file << "    <detector name=\"SiPlanes\" geartype=\"SiPlanesParameters\">" << std::endl;
         geometry_file << "      <siplanesType type=\"TelescopeWithoutDUT\"/>" << std::endl;
