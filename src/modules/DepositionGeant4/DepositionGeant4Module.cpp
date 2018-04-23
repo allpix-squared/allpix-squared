@@ -37,7 +37,7 @@
 
 #include "GeneratorActionG4.hpp"
 #include "SensitiveDetectorActionG4.hpp"
-#include "SetUniqueTrackIDUserHookG4.hpp"
+#include "SetTrackInfoUserHookG4.hpp"
 
 #define G4_NUM_SEEDS 10
 
@@ -177,8 +177,8 @@ void DepositionGeant4Module::init() {
 
     track_info_manager_ = std::make_unique<TrackInfoManager>();
 
-    // User hook to set custom track ID
-    auto userTrackIDHook = new SetUniqueTrackIDUserHookG4(track_info_manager_.get());
+    // User hook to store additional information at track initialization and termination as well as custom track ids
+    auto userTrackIDHook = new SetTrackInfoUserHookG4(track_info_manager_.get());
     run_manager_g4_->SetUserAction(userTrackIDHook);
 
     if(geo_manager_->hasMagneticField()) {

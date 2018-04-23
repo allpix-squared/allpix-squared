@@ -1,14 +1,15 @@
 /**
  * @file
- * @brief Defines a user hook for Geant4 to assign custom track IDs which are unique
+ * @brief Defines a user hook for Geant4 to assign custom track information via TrackInfoG4 objects. This includes custom
+ * (unique) track ids.
  * @copyright Copyright (c) 2018 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#ifndef SetUniqueTrackIDUserHookG4_H
-#define SetUniqueTrackIDUserHookG4_H 1
+#ifndef SetTrackInfoUserHookG4_H
+#define SetTrackInfoUserHookG4_H 1
 
 #include "G4Track.hh"
 #include "G4UserTrackingAction.hh"
@@ -17,20 +18,20 @@
 
 namespace allpix {
     /**
-     * @brief Assigns every G4Track a TrackInfoG4 which carries the unique track id
+     * @brief Assigns every G4Track a TrackInfoG4 which carries various inforamtion, including the custom track id
      */
-    class SetUniqueTrackIDUserHookG4 : public G4UserTrackingAction {
+    class SetTrackInfoUserHookG4 : public G4UserTrackingAction {
     public:
         /**
          * @brief Constructor taking a TrackInfoManager*
          * @param track_info_mgr_ptr Pointer to TrackInfoManager which must be used to create the TrackInfoG4 instances
          */
-        SetUniqueTrackIDUserHookG4(TrackInfoManager* track_info_mgr_ptr) : track_info_mgr_ptr_(track_info_mgr_ptr){};
+        SetTrackInfoUserHookG4(TrackInfoManager* track_info_mgr_ptr) : track_info_mgr_ptr_(track_info_mgr_ptr){};
 
         /**
          * @brief Default destructor
          */
-        ~SetUniqueTrackIDUserHookG4() = default;
+        ~SetTrackInfoUserHookG4() = default;
 
         /**
          * @brief Called for every G4Track at beginning
