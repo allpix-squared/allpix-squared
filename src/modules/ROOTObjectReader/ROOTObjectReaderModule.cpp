@@ -181,7 +181,9 @@ void ROOTObjectReaderModule::init() {
             }
             std::shared_ptr<Detector> detector = nullptr;
             if(det_idx != INT_MAX) {
-                message_info_array_.back().detector = geo_mgr_->getDetector(split[det_idx]);
+                if(geo_mgr_->hasDetector(split[det_idx])) {
+                    message_info_array_.back().detector = geo_mgr_->getDetector(split[det_idx]);
+                }
             }
         }
     }
