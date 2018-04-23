@@ -64,11 +64,6 @@ namespace allpix {
         int getParticleID() const;
 
         /**
-         * @brief Get unique track ID of this track
-         */
-        int getTrackID() const;
-
-        /**
          * @brief Get the Geant4 internal ID of the process which created the particle
          * @return The Geant4 process type or "-1" if no such process exists
          */

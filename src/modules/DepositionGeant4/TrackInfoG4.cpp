@@ -15,7 +15,7 @@ TrackInfoG4::TrackInfoG4(int custom_track_id, int parent_track_id, const G4Track
     initial_tot_E_ = aTrack->GetTotalEnergy();
 }
 
-void TrackInfoG4::finaliseInfo(const G4Track* const aTrack) {
+void TrackInfoG4::finalizeInfo(const G4Track* const aTrack) {
     final_kin_E_ = aTrack->GetKineticEnergy();
     final_tot_E_ = aTrack->GetTotalEnergy();
     n_steps_ = aTrack->GetCurrentStepNumber();

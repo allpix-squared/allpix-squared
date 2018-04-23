@@ -49,7 +49,7 @@ namespace allpix {
          * @brief Update track info from the G4Track
          * @param aTrack A pointer to a G4Track instance which represents this track's final state
          */
-        void finaliseInfo(const G4Track* const aTrack);
+        void finalizeInfo(const G4Track* const aTrack);
 
         /**
          * @brief Get the point where the track originated in global coordinates
