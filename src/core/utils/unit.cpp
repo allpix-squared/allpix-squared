@@ -18,7 +18,7 @@
 #include <string>
 #include <type_traits>
 
-#include "./string.h"
+#include "text.h"
 
 using namespace allpix;
 

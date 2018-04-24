@@ -1,4 +1,4 @@
-#include "string.h"
+#include "text.h"
 
 namespace allpix {
     /**

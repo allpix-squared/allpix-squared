@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 
-#include "core/utils/string.h"
+#include "core/utils/text.h"
 #include "exceptions.h"
 
 namespace allpix {

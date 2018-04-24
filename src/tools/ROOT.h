@@ -22,7 +22,7 @@
 #include <Math/PositionVector3D.h>
 #include <TString.h>
 
-#include "core/utils/string.h"
+#include "core/utils/text.h"
 #include "core/utils/type.h"
 
 namespace allpix {

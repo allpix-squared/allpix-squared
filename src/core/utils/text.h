@@ -14,8 +14,8 @@
  * @brief Collection of all the overloads of string conversions
  */
 
-#ifndef ALLPIX_STRING_H
-#define ALLPIX_STRING_H
+#ifndef ALLPIX_TEXT_H
+#define ALLPIX_TEXT_H
 
 #include <cctype>
 #include <sstream>
@@ -121,6 +121,6 @@ namespace allpix {
 } // namespace allpix
 
 // Include template definitions
-#include "string.tpp"
+#include "text.tpp"
 
-#endif /* ALLPIX_STRING_H */
+#endif /* ALLPIX_TEXT_H */

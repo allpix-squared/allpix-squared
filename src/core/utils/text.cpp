@@ -10,7 +10,7 @@
  * Used extensively for parsing the configuration in the \ref allpix::ConfigReader.
  */
 
-#include "string.h"
+#include "text.h"
 
 #include "unit.h"
 
