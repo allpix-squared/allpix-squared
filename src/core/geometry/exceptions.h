@@ -76,6 +76,20 @@ namespace allpix {
             error_message_ = "Model with type " + name + " is already registered, detector names should be unique";
         }
     };
-} // namespace allpix
 
+    /**
+     * @ingroup Exceptions
+     * @brief Indicates an attempt to add a detector with an invalid name
+     */
+    class DetectorInvalidNameError : public RuntimeError {
+    public:
+        /**
+         * @brief Constructs an error for a detector with an invalid name
+         * @param name Invalid name of the detector that is attempted to be added
+         */
+        explicit DetectorInvalidNameError(const std::string& name) {
+            error_message_ = "Detector name " + name + " is invalid, choose a different name";
+        }
+    };
+} // namespace allpix
 #endif /* ALLPIX_GEOMETRY_EXCEPTIONS_H */

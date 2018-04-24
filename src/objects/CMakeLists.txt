@@ -24,9 +24,11 @@ ROOT_GENERATE_DICTIONARY(AllpixObjectsDictionary
     ${CMAKE_CURRENT_SOURCE_DIR}/Pixel.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/PixelHit.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MCParticle.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/MCTrack.hpp
     LINKDEF
     ${CMAKE_CURRENT_SOURCE_DIR}/Linkdef.h
     OPTIONS
+    -Wno-inconsistent-missing-override
     -inlineInputHeader
     -I${CMAKE_CURRENT_SOURCE_DIR}
     MODULE
@@ -56,6 +58,7 @@ ADD_LIBRARY(AllpixObjects SHARED
     PropagatedCharge.cpp
     PixelHit.cpp
     MCParticle.cpp
+    MCTrack.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx.o
 )
 

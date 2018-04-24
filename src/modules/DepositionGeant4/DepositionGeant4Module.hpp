@@ -19,6 +19,7 @@
 #include "core/module/Module.hpp"
 
 #include "SensitiveDetectorActionG4.hpp"
+#include "TrackInfoManager.hpp"
 
 #include <TH1D.h>
 
@@ -63,6 +64,9 @@ namespace allpix {
     private:
         Messenger* messenger_;
         GeometryManager* geo_manager_;
+
+        // The track manager which this module uses to assign custom track IDs and manage & create MCTracks
+        std::unique_ptr<TrackInfoManager> track_info_manager_;
 
         // Handling of the charge deposition in all the sensitive devices
         std::vector<SensitiveDetectorActionG4*> sensors_;

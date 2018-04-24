@@ -117,7 +117,7 @@ void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::
                         std::make_unique<TTree>(class_name.c_str(), (std::string("Tree of ") + class_name).c_str()));
                 }
 
-                std::string branch_name = detector_name;
+                std::string branch_name = detector_name.empty() ? "global" : detector_name;
                 if(!message_name.empty()) {
                     branch_name += "_";
                     branch_name += message_name;

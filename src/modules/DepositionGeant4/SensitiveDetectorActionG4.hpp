@@ -21,6 +21,8 @@
 #include "objects/DepositedCharge.hpp"
 #include "objects/MCParticle.hpp"
 
+#include "TrackInfoManager.hpp"
+
 namespace allpix {
     /**
      * @brief Handles the steps of the particles in all sensitive devices
@@ -37,6 +39,7 @@ namespace allpix {
         SensitiveDetectorActionG4(Module* module,
                                   const std::shared_ptr<Detector>& detector,
                                   Messenger* msg,
+                                  TrackInfoManager* track_info_manager,
                                   double charge_creation_energy);
 
         /**
@@ -73,6 +76,8 @@ namespace allpix {
         Module* module_;
         std::shared_ptr<Detector> detector_;
         Messenger* messenger_;
+        // Pointer to track info manager to register tracks which pass through sensitive detectors
+        TrackInfoManager* track_info_manager_;
 
         double charge_creation_energy_;
 

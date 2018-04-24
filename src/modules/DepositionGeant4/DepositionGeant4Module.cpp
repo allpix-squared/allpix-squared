@@ -23,6 +23,10 @@
 #include <G4UImanager.hh>
 #include <G4UserLimits.hh>
 
+#include "G4FieldManager.hh"
+#include "G4TransportationManager.hh"
+#include "G4UniformMagField.hh"
+
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/module/exceptions.h"
@@ -33,8 +37,7 @@
 
 #include "GeneratorActionG4.hpp"
 #include "SensitiveDetectorActionG4.hpp"
-#include "SetUniqueTrackIDUserHookG4.hpp"
-#include "TrackInfoG4.hpp"
+#include "SetTrackInfoUserHookG4.hpp"
 
 #define G4_NUM_SEEDS 10
 
@@ -172,9 +175,25 @@ void DepositionGeant4Module::init() {
     auto generator = new GeneratorActionG4(config_);
     run_manager_g4_->SetUserAction(generator);
 
-    // User hook to set custom track ID
-    auto userTrackIDHook = new SetUniqueTrackIDUserHookG4();
+    track_info_manager_ = std::make_unique<TrackInfoManager>();
+
+    // User hook to store additional information at track initialization and termination as well as custom track ids
+    auto userTrackIDHook = new SetTrackInfoUserHookG4(track_info_manager_.get());
     run_manager_g4_->SetUserAction(userTrackIDHook);
+
+    if(geo_manager_->hasMagneticField()) {
+        MagneticFieldType magnetic_field_type_ = geo_manager_->getMagneticFieldType();
+
+        if(magnetic_field_type_ == MagneticFieldType::CONSTANT) {
+            ROOT::Math::XYZVector b_field = geo_manager_->getMagneticField(ROOT::Math::XYZPoint(0., 0., 0.));
+            G4MagneticField* magField = new G4UniformMagField(G4ThreeVector(b_field.x(), b_field.y(), b_field.z()));
+            G4FieldManager* globalFieldMgr = G4TransportationManager::GetTransportationManager()->GetFieldManager();
+            globalFieldMgr->SetDetectorField(magField);
+            globalFieldMgr->CreateChordFinder(magField);
+        } else {
+            throw ModuleError("Magnetic field enabled, but not constant. This can't be handled by this module yet.");
+        }
+    }
 
     // Get the creation energy for charge (default is silicon electron hole pair energy)
     auto charge_creation_energy = config_.get<double>("charge_creation_energy", Units::get(3.64, "eV"));
@@ -193,7 +212,8 @@ void DepositionGeant4Module::init() {
         useful_deposition = true;
 
         // Get model of the sensitive device
-        auto sensitive_detector_action = new SensitiveDetectorActionG4(this, detector, messenger_, charge_creation_energy);
+        auto sensitive_detector_action =
+            new SensitiveDetectorActionG4(this, detector, messenger_, track_info_manager_.get(), charge_creation_energy);
         auto logical_volume = detector->getExternalObject<G4LogicalVolume>("sensor_log");
         if(logical_volume == nullptr) {
             throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
@@ -261,6 +281,8 @@ void DepositionGeant4Module::run(unsigned int event_num) {
     // Release the stream (if it was suspended)
     RELEASE_STREAM(G4cout);
 
+    track_info_manager_->createMCTracks();
+
     // Dispatch the necessary messages
     for(auto& sensor : sensors_) {
         sensor->dispatchMessages();
@@ -271,7 +293,9 @@ void DepositionGeant4Module::run(unsigned int event_num) {
             charge_per_event_[sensor->getName()]->Fill(charge);
         }
     }
-    TrackInfoG4::reset();
+
+    track_info_manager_->dispatchMessage(this, messenger_);
+    track_info_manager_->resetTrackInfoManager();
 }
 
 void DepositionGeant4Module::finalize() {

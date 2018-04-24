@@ -9,14 +9,24 @@ These objects can be sent with the messaging system as explained in Section~\ref
 A \texttt{typedef} is added to every object in order to provide an alternative name for the message which is directly indicating the carried object.
 
 The list of currently supported objects comprises:
+
+
+\nlparagraph{MCTrack}
+The MCTrack objects reflects the state of a particle's trajectory when it was created and when it terminates.
+Moreover, it allows to retrieve the hierarchy of secondary tracks.
+This can be done via the parent-child relations the MCTrack objects store, allowing retrieval of the primary track for a given track. 
+Combining this information with MCParticles allows the Monte-Carlo trajectory to be fully reconstructed.
+In addition to these relational information, the MCTrack stores information on the initial and final point of the trajectory (in \underline{global} coordinates), the energies (total as well as kinetic only) at those points, the creation process type, name, and the volume it took place in.
+Furthermore, the particle's PDG id is stored.
+
 \nlparagraph{MCParticle}
 The Monte-Carlo truth information about the particle passage through the sensor.
 A start and end point are stored in the object: for events involving a single MCParticle passing through the sensor, the start and end points correspond to the entry and exit points.
 The exact handling of non-linear particle trajectories due to multiple scattering is up to module.
-Every MCParticle carries a unique track ID to associate it to a trajectory. MCParticles which have the same track ID belong to the same trajectory.
 The MCParticle also stores an identifier of the particle type, using the PDG particle codes~\cite{pdg}.
 The MCParticle additionally stores a parent MCParticle object, if available.
 The lack of a parent doesn't guarantee that this MCParticle originates from a primary particle, but only means that no parent on the given detector exists.
+Also, the MCParticle stores a reference to the MCTrack it is associated with.
 
 \nlparagraph{DepositedCharge}
 The set of charge carriers deposited by an ionizing particle crossing the active material of the sensor.
@@ -55,6 +65,8 @@ TRef objects are however not automatically fetched and can only be retrieved if 
 Outside the framework this means that the relevant tree containing the linked objects should be retrieved and loaded at the same entry as the object that request the history.
 Whenever the related object is not in memory (either because it is not available or not fetched) a \parameter{MissingReferenceException} will be thrown.
 
-Every MCParticle can be linked to a track with the associated track ID.
-The track hierarchy can be obtained by using the parent-child relationships of all MCParticles in a given event.
-If a MCParticle is linked via this relationship on one detector, the tracks can be globally linked this way as well.
+A MCTrack which originated from another MCTrack is linked via a reference to this track, this way the track hierarchy can be obtained.
+Every MCParticle is linked to the MCTrack it is associated with.
+A MCParticle can furthermore be linked to another MCParticle on the same detector.
+This will be the case if there are MCParticles from a primary (parent) and secondary (child) track on one detector. 
+The corresponding child MCParticles will then carry a reference to the parent MCParticle.

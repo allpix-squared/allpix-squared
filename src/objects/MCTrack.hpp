@@ -1,64 +1,58 @@
 /**
  * @file
- * @brief Defines a concrete implementation of a G4VUserTrackInformation to carry unique track and parent track IDs as well
- * as create and dispatch MCTracks which are the AP2 representation of a Monte-Carlo trajectory
+ * @brief Definition of Monte-Carlo track object
  * @copyright Copyright (c) 2018 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#ifndef TrackInfoG4_H
-#define TrackInfoG4_H 1
+#ifndef ALLPIX_MC_TRACK_H
+#define ALLPIX_MC_TRACK_H
 
-#include <map>
+#include <Math/Point3D.h>
+#include <TRef.h>
 
-#include "G4Track.hh"
-#include "G4VUserTrackInformation.hh"
-
-#include "core/messenger/Messenger.hpp"
-#include "objects/MCTrack.hpp"
+#include "Object.hpp"
 
 namespace allpix {
     /**
-     * @brief Allpix implementation of G4VUserTrackInformation to handle unique track IDs and the creation of MCTracks
+     * @brief Monte-Carlo track through the world
      */
-    class TrackInfoG4 : public G4VUserTrackInformation {
+    class MCTrack : public Object {
     public:
         /**
-         * @brief Only available constructor
-         * @param custom_track_id The custom id for this track
-         * @param parent_track_id The custom id of parent track
-         * @param aTrack The Geant4 track
+         * @brief Construct a Monte-Carlo track
+         * @param start_point Global point where track came into existance
+         * @param end_point Global point where track went out of existance
+         * @param g4_volume Geant4 volume where track originated in
+         * @param g4_prod_process_name Geant4 creation process name
+         * @param g4_prod_process_type Geant4 creation process id
+         * @param particle_id PDG particle id
+         * @param initial_kin_E Initial kinetic energy (in MeV)
+         * @param final_kin_E Final kinetic energy (in MeV)
+         * @param initial_tot_E Initial total energy (in MeV)
+         * @param final_tot_E Final total energy (in MeV)
          */
-        TrackInfoG4(int custom_track_id, int parent_track_id, const G4Track* const aTrack);
+        MCTrack(ROOT::Math::XYZPoint start_point,
+                ROOT::Math::XYZPoint end_point,
+                std::string g4_volume,
+                std::string g4_prod_process_name,
+                int g4_prod_process_type,
+                int particle_id,
+                double initial_kin_E,
+                double final_kin_E,
+                double initial_tot_E,
+                double final_tot_E);
 
         /**
-         * @brief Getter for custom id of track
-         * @return The custom track id
-         */
-        int getID() const;
-
-        /**
-         * @brief Getter for parent's track id of track
-         * @return The parent's custrom track id
-         */
-        int getParentID() const;
-
-        /**
-         * @brief Update track info from the G4Track
-         * @param aTrack A pointer to a G4Track instance which represents this track's final state
-         */
-        void finalizeInfo(const G4Track* const aTrack);
-
-        /**
-         * @brief Get the point where the track originated in global coordinates
+         * @brief Get the point of where the track originated
          * @return Track start point
          */
         ROOT::Math::XYZPoint getStartPoint() const;
 
         /**
-         * @brief Get the point of where the track terminated in global coordiantes
+         * @brief Get the point of where the track terminated
          * @return Track end point
          */
         ROOT::Math::XYZPoint getEndPoint() const;
@@ -71,7 +65,7 @@ namespace allpix {
 
         /**
          * @brief Get the Geant4 internal ID of the process which created the particle
-         * @return The Geant4 process type, or "-1" if no such process exists
+         * @return The Geant4 process type or "-1" if no such process exists
          */
         int getCreationProcessType() const;
 
@@ -114,37 +108,62 @@ namespace allpix {
 
         /**
          * @brief Getter for the name of the process which created this particle
-         * @return The process name, or "none" if no such process exists
+         * @return The process name or "none" if no such process exists
          */
         std::string getCreationProcessName() const;
 
+        /**
+         * @brief Get the parent MCTrack if it has one
+         * @return Parent MCTrack or null pointer if it has no parent
+         * @warning No \ref MissingReferenceException is thrown, because a track without parent should always be handled.
+         */
+        const MCTrack* getParent() const;
+
+        /**
+         * @brief Set the Monte-Carlo parent track
+         * @param mc_track The Monte-Carlo track
+         * @warning Special method because parent can only be set after creation, should not be replaced later.
+         */
+        void setParent(const MCTrack* mc_track);
+
+        /**
+         * @brief Print an ASCII representation of MCTrack to the given stream
+         * @param out Stream to print to
+         */
+        void print(std::ostream& out) const override;
+
+        /**
+         * @brief ROOT class definition
+         */
+        ClassDef(MCTrack, 1);
+        /**
+         * @brief Default constructor for ROOT I/O
+         */
+        MCTrack() = default;
+
     private:
-        // Assigned track id to track
-        int custom_track_id_{};
-        // Parent's track id
-        int parent_track_id_{};
-        // Geant4 Type of the process which created this track
-        int origin_g4_process_type_{};
-        // PDG particle id
-        int particle_id_{};
-        // Number of steps this track made in Geant4
-        int n_steps_{};
-        // Start point of track (in mm)
         ROOT::Math::XYZPoint start_point_{};
-        // End point of track (in mm)
         ROOT::Math::XYZPoint end_point_{};
-        // Geant4 volume in which the track was created
+
         std::string origin_g4_vol_name_{};
-        // Name of Geant4 process which created this track
         std::string origin_g4_process_name_{};
-        // Initial kinetic energy (MeV)
+
+        int origin_g4_process_type_{};
+        int particle_id_{};
+        int n_steps_{};
+
         double initial_kin_E_{};
-        // Initial total energy (MeV)
-        double initial_tot_E_{};
-        // Final kinetic energy (MeV)
         double final_kin_E_{};
-        // Final total energy (MeV)
+        double initial_tot_E_{};
         double final_tot_E_{};
+
+        TRef parent_;
     };
+
+    /**
+     * @brief Typedef for message carrying MC tracks
+     */
+    using MCTrackMessage = Message<MCTrack>;
 } // namespace allpix
+
 #endif
