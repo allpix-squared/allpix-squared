@@ -27,6 +27,7 @@ ROOT_GENERATE_DICTIONARY(CorryvreckanObjectsDictionary
     LINKDEF
     ${CMAKE_CURRENT_SOURCE_DIR}/corryvreckan/Linkdef.h
     OPTIONS
+    -Wno-inconsistent-missing-override
     -inlineInputHeader
     -I${CMAKE_CURRENT_SOURCE_DIR}/corryvreckan
     MODULE
