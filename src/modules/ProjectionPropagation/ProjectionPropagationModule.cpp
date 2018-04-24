@@ -100,7 +100,7 @@ void ProjectionPropagationModule::run(unsigned int) {
         }
 
         LOG(DEBUG) << "Set of " << deposit.getCharge() << " charge carriers (" << type << ") on "
-                   << display_vector(position, {"mm", "um"});
+                   << Units::display(position, {"mm", "um"});
 
         // Define a lambda function to compute the carrier mobility
         auto carrier_mobility = [&](double efield_mag) {
@@ -139,7 +139,7 @@ void ProjectionPropagationModule::run(unsigned int) {
 
         // Only project if within the depleted region (i.e. efield not zero)
         if(efield_mag < std::numeric_limits<double>::epsilon()) {
-            LOG(TRACE) << "Electric field is zero at " << display_vector(position, {"mm", "um"});
+            LOG(TRACE) << "Electric field is zero at " << Units::display(position, {"mm", "um"});
             continue;
         }
 
@@ -193,7 +193,7 @@ void ProjectionPropagationModule::run(unsigned int) {
                 projected_position, global_position, deposit.getType(), charge_per_step, deposit.getEventTime(), &deposit);
 
             LOG(DEBUG) << "Propagated " << charge_per_step << " charge carriers (" << type << ") to "
-                       << display_vector(projected_position, {"mm", "um"});
+                       << Units::display(projected_position, {"mm", "um"});
 
             projected_charge += charge_per_step;
         }

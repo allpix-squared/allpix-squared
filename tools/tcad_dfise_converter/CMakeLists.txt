@@ -23,6 +23,7 @@ ADD_EXECUTABLE(dfise_converter
     dfise_converter.cpp
     read_dfise.cpp
     ${ALLPIX_SRC}/core/utils/log.cpp
+    ${ALLPIX_SRC}/core/utils/text.cpp
     ${ALLPIX_SRC}/core/utils/unit.cpp
     ${ALLPIX_SRC}/core/config/ConfigReader.cpp
     ${ALLPIX_SRC}/core/config/Configuration.cpp
