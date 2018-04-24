@@ -55,8 +55,8 @@ void TrackInfoManager::dispatchMessage(Module* module, Messenger* messenger) {
     IFLOG(DEBUG) {
         LOG(DEBUG) << "Dispatching " << stored_tracks_.size() << " MCTrack(s) from TrackInfoManager::dispatchMessage()";
         for(auto const& mc_track : stored_tracks_) {
-            LOG(DEBUG) << "MCTrack originates at: " << display_vector(mc_track.getStartPoint(), {"mm", "um"})
-                       << " and terminates at: " << display_vector(mc_track.getEndPoint(), {"mm", "um"});
+            LOG(DEBUG) << "MCTrack originates at: " << Units::display(mc_track.getStartPoint(), {"mm", "um"})
+                       << " and terminates at: " << Units::display(mc_track.getEndPoint(), {"mm", "um"});
         }
     }
     auto mc_track_message = std::make_shared<MCTrackMessage>(std::move(stored_tracks_));
