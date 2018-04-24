@@ -292,12 +292,13 @@ void GeometryManager::addDetector(std::shared_ptr<Detector> detector) {
         throw InvalidModuleActionException("Added detector cannot be a null pointer");
     }
 
-    // The name gloabl is used for objects not assigned to any detector, hence it shouldn't be used as a detector name
+    LOG(TRACE) << "Registering new detector " << detector->getName();
+
+    // The name global is used for objects not assigned to any detector, hence it shouldn't be used as a detector name
     if(detector->getName() == "global") {
         throw DetectorInvalidNameError(detector->getName());
     }
 
-    LOG(TRACE) << "Registering new detector " << detector->getName();
     if(detector_names_.find(detector->getName()) != detector_names_.end()) {
         throw DetectorExistsError(detector->getName());
     }

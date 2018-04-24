@@ -88,7 +88,7 @@ namespace allpix {
          * @param name Invalid name of the detector that is attempted to be added
          */
         explicit DetectorInvalidNameError(const std::string& name) {
-            error_message_ = "Detector with name " + name + " is invalid, choose a different name";
+            error_message_ = "Detector name " + name + " is invalid, choose a different name";
         }
     };
 } // namespace allpix
