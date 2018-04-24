@@ -207,10 +207,11 @@ void ROOTObjectWriterModule::finalize() {
     }
 
     // Save the detectors to the output file
-    // FIXME Possibly the format to save the geometry should be more flexible
     auto detectors_dir = output_file_->mkdir("detectors");
-    detectors_dir->cd();
+    auto models_dir = output_file_->mkdir("models");
     for(auto& detector : geo_mgr_->getDetectors()) {
+        detectors_dir->cd();
+        LOG(TRACE) << "Writing detector configuration for: " << detector->getName();
         auto detector_dir = detectors_dir->mkdir(detector->getName().c_str());
 
         auto position = detector->getPosition();
@@ -218,15 +219,21 @@ void ROOTObjectWriterModule::finalize() {
         auto orientation = detector->getOrientation();
         detector_dir->WriteObject(&orientation, "orientation");
 
-        auto model_dir = detector_dir->mkdir("model");
-        // FIXME This saves the model every time again also for models that appear multiple times
+        // Store the detector model
+        // NOTE We save the model for every detector separately since parameter overloading might have changed it
+        std::string model_name = detector->getModel()->getType() + "_" + detector->getName();
+        detector_dir->WriteObject(&model_name, "type");
+        models_dir->cd();
+        auto model_dir = models_dir->mkdir(model_name.c_str());
+
+        // Get all sections of the model configuration (maon config plus support layers):
         auto model_configs = detector->getModel()->getConfigurations();
         std::map<std::string, int> count_configs;
         for(auto& model_config : model_configs) {
             auto model_config_dir = model_dir;
             if(!model_config.getName().empty()) {
                 model_config_dir = model_dir->mkdir(
-                    (model_config.getName() + "-" + std::to_string(count_configs[model_config.getName()])).c_str());
+                    (model_config.getName() + "_" + std::to_string(count_configs[model_config.getName()])).c_str());
                 count_configs[model_config.getName()]++;
             }
 

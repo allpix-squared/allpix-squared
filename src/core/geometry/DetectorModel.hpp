@@ -186,7 +186,25 @@ namespace allpix {
          * @brief Get the configuration associated with this model
          * @return Configuration used to construct the model
          */
-        std::vector<Configuration> getConfigurations() const { return reader_.getConfigurations(); }
+        std::vector<Configuration> getConfigurations() const {
+            std::vector<Configuration> configurations;
+            // Initialize global base configuration
+            auto global_config_ = reader_.getHeaderConfiguration();
+
+            for(auto& config : reader_.getConfigurations()) {
+                if(config.getName().empty()) {
+                    // Merge all global sections with the global config
+                    global_config_.merge(config);
+                } else {
+                    // Store all others
+                    configurations.push_back(config);
+                }
+            }
+
+            // Prepend global config and return vector:
+            configurations.insert(configurations.begin(), global_config_);
+            return configurations;
+        }
 
         /**
          * @brief Get the type of the model
