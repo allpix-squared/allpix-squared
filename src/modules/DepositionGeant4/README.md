@@ -1,5 +1,5 @@
 # DepositionGeant4
-**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>), Tobias Bisanz (<tobias.bisanz@phys.uni-goettingen.de>)
+**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>), Tobias Bisanz (<tobias.bisanz@phys.uni-goettingen.de>)  
 **Status**: Functional  
 **Output**: DepositedCharge, MCParticle, MCTrack
 
