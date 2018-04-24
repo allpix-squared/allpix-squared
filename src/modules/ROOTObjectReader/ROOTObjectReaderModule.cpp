@@ -180,7 +180,7 @@ void ROOTObjectReaderModule::init() {
                 message_info_array_.back().name = split[name_idx];
             }
             if(det_idx != INT_MAX) {
-                if(geo_mgr_->hasDetector(split[det_idx])) {
+                if(split[det_idx] != "global") {
                     message_info_array_.back().detector = geo_mgr_->getDetector(split[det_idx]);
                 }
             }
