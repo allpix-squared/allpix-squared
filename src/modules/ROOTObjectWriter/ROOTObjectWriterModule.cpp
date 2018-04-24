@@ -226,7 +226,7 @@ void ROOTObjectWriterModule::finalize() {
         models_dir->cd();
         auto model_dir = models_dir->mkdir(model_name.c_str());
 
-        // Get all sections of the model configuration (support layers):
+        // Get all sections of the model configuration (maon config plus support layers):
         auto model_configs = detector->getModel()->getConfigurations();
         std::map<std::string, int> count_configs;
         for(auto& model_config : model_configs) {
