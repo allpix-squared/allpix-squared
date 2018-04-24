@@ -281,6 +281,7 @@ std::shared_ptr<DetectorModel> GeometryManager::getModel(const std::string& name
 /**
  * @throws InvalidModuleActionException If the passed detector is a null pointer
  * @throws ModuleError If the geometry is already closed before calling this function
+ * @throws DetectorInvalidNameError If the detector name is invalid
  * @throws DetectorNameExistsError If the detector name is already registered before
  */
 void GeometryManager::addDetector(std::shared_ptr<Detector> detector) {
@@ -292,6 +293,12 @@ void GeometryManager::addDetector(std::shared_ptr<Detector> detector) {
     }
 
     LOG(TRACE) << "Registering new detector " << detector->getName();
+
+    // The name global is used for objects not assigned to any detector, hence it shouldn't be used as a detector name
+    if(detector->getName() == "global") {
+        throw DetectorInvalidNameError(detector->getName());
+    }
+
     if(detector_names_.find(detector->getName()) != detector_names_.end()) {
         throw DetectorExistsError(detector->getName());
     }

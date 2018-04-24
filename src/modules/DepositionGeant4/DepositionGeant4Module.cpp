@@ -37,8 +37,7 @@
 
 #include "GeneratorActionG4.hpp"
 #include "SensitiveDetectorActionG4.hpp"
-#include "SetUniqueTrackIDUserHookG4.hpp"
-#include "TrackInfoG4.hpp"
+#include "SetTrackInfoUserHookG4.hpp"
 
 #define G4_NUM_SEEDS 10
 
@@ -176,8 +175,10 @@ void DepositionGeant4Module::init() {
     auto generator = new GeneratorActionG4(config_);
     run_manager_g4_->SetUserAction(generator);
 
-    // User hook to set custom track ID
-    auto userTrackIDHook = new SetUniqueTrackIDUserHookG4();
+    track_info_manager_ = std::make_unique<TrackInfoManager>();
+
+    // User hook to store additional information at track initialization and termination as well as custom track ids
+    auto userTrackIDHook = new SetTrackInfoUserHookG4(track_info_manager_.get());
     run_manager_g4_->SetUserAction(userTrackIDHook);
 
     if(geo_manager_->hasMagneticField()) {
@@ -211,7 +212,8 @@ void DepositionGeant4Module::init() {
         useful_deposition = true;
 
         // Get model of the sensitive device
-        auto sensitive_detector_action = new SensitiveDetectorActionG4(this, detector, messenger_, charge_creation_energy);
+        auto sensitive_detector_action =
+            new SensitiveDetectorActionG4(this, detector, messenger_, track_info_manager_.get(), charge_creation_energy);
         auto logical_volume = detector->getExternalObject<G4LogicalVolume>("sensor_log");
         if(logical_volume == nullptr) {
             throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
@@ -279,6 +281,8 @@ void DepositionGeant4Module::run(unsigned int event_num) {
     // Release the stream (if it was suspended)
     RELEASE_STREAM(G4cout);
 
+    track_info_manager_->createMCTracks();
+
     // Dispatch the necessary messages
     for(auto& sensor : sensors_) {
         sensor->dispatchMessages();
@@ -289,7 +293,9 @@ void DepositionGeant4Module::run(unsigned int event_num) {
             charge_per_event_[sensor->getName()]->Fill(charge);
         }
     }
-    TrackInfoG4::reset();
+
+    track_info_manager_->dispatchMessage(this, messenger_);
+    track_info_manager_->resetTrackInfoManager();
 }
 
 void DepositionGeant4Module::finalize() {
