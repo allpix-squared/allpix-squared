@@ -53,6 +53,12 @@ namespace allpix {
         std::unique_ptr<DetectorConstructionG4> detector_builder_;
         std::unique_ptr<PassiveMaterialConstructionG4> passive_builder_;
 
+        /**
+         * @brief Import gdml model from file
+         */
+        void import_gdml();
+        G4Colour get_color(std::string value);
+
         // Storage of internal objects
         std::vector<std::shared_ptr<G4VSolid>> solids_;
 
