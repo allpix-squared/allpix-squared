@@ -34,12 +34,15 @@ fi
 
 # Determine which compiler to use
 if [ -z ${COMPILER_TYPE} ]; then
+    echo "No compiler type set, falling back to GCC."
     COMPILER_TYPE="gcc"
 fi
 if [ ${COMPILER_TYPE} == "gcc" ]; then
+    echo "Compiler type set to GCC."
     COMPILER_VERSION="gcc7"
 fi
 if [ ${COMPILER_TYPE} == "llvm" ]; then
+    echo "Compiler type set to LLVM."
     COMPILER_VERSION="llvm40"
 fi
 
