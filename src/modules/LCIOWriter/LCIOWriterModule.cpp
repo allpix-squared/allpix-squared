@@ -161,14 +161,14 @@ void LCIOWriterModule::finalize() {
                       << "<gear>" << std::endl;
 
         geometry_file << "  <global detectorName=\"" << DetectorName_ << "\"/>" << std::endl;
-        if(geo_mgr_->getMagneticFieldType() == MagneticFieldType::CONSTANT){
-			ROOT::Math::XYZVector b_field = geo_mgr_->getMagneticField(ROOT::Math::XYZPoint(0., 0., 0.));
-			geometry_file << "  <BField type=\"ConstantBField\" x=\""<< Units::convert(b_field.x(),"T")
-			              << "\" y=\"" << Units::convert(b_field.y(),"T")
-			              << "\" z=\"" << Units::convert(b_field.z(),"T") << "\"/>" << std::endl;
-		} else {
-			geometry_file << "  <BField type=\"ConstantBField\" x=\"0.0\" y=\"0.0\" z=\"0.0\"/>" << std::endl;
-		}
+        if(geo_mgr_->getMagneticFieldType() == MagneticFieldType::CONSTANT) {
+            ROOT::Math::XYZVector b_field = geo_mgr_->getMagneticField(ROOT::Math::XYZPoint(0., 0., 0.));
+            geometry_file << "  <BField type=\"ConstantBField\" x=\"" << Units::convert(b_field.x(), "T") << "\" y=\""
+                          << Units::convert(b_field.y(), "T") << "\" z=\"" << Units::convert(b_field.z(), "T") << "\"/>"
+                          << std::endl;
+        } else {
+            geometry_file << "  <BField type=\"ConstantBField\" x=\"0.0\" y=\"0.0\" z=\"0.0\"/>" << std::endl;
+        }
         geometry_file << "  <detectors>" << std::endl;
         geometry_file << "    <detector name=\"SiPlanes\" geartype=\"SiPlanesParameters\">" << std::endl;
         geometry_file << "      <siplanesType type=\"TelescopeWithoutDUT\"/>" << std::endl;
