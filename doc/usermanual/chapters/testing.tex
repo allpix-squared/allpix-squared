@@ -318,7 +318,8 @@ Currently implemented tests comprise:
     \item[\file{test_08-4_writer_corryvreckan.conf}] ensures proper functionality of the Corryvreckan file writer module. The monitored output comprises the coordinates of the pixel produced in the simulation.
     \item[\file{test_08-5_writer_corryvreckan_mc.conf}] ensures the correct storage of Monte Carlo truth particle information in the Corryvreckan file writer module by monitoring the local coordinates of the MC particle associated to the pixel hit.
     \item[\file{test_08-6_writer_text.conf}] ensures proper functionality of the ASCII text writer module by monitoring the total number of objects and messages written to the text file..
-    \item[\file{test_09_reader_root.conf}] tests the capability of the framework to read data back in and to dispatch messages for all objects found in the input tree. The monitored output comprises the total number of objects read from all branches.
+    \item[\file{test_09-1_reader_root.conf}] tests the capability of the framework to read data back in and to dispatch messages for all objects found in the input tree. The monitored output comprises the total number of objects read from all branches.
+    \item[\file{test_09-2_reader_root_seed.conf}] tests the capability of the framework to detect different random seeds for misalignment set in a data file to be read back in. The monitored output comprises the error message including the two different random seed values.
 \end{description}
 
 \paragraph{Performance Tests}

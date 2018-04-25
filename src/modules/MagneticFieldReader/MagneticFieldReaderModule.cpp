@@ -53,7 +53,7 @@ void MagneticFieldReaderModule::init() {
             // a function enabling a gradient in the magnetic field inside the sensor
             detector->setMagneticField(geometryManager_->getMagneticField(detector->getPosition()));
         }
-        LOG(INFO) << "Set constant magnetic field: " << display_vector(b_field, {"T", "mT"});
+        LOG(INFO) << "Set constant magnetic field: " << Units::display(b_field, {"T", "mT"});
     } else {
         throw InvalidValueError(config_, "model", "model can currently only be 'constant'");
     }

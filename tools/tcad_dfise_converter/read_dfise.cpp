@@ -12,7 +12,7 @@
 #include "TTree.h"
 
 #include "core/utils/log.h"
-#include "core/utils/string.h"
+#include "core/utils/text.h"
 
 using namespace mesh_converter;
 
