@@ -26,6 +26,7 @@
 #include <IMPL/TrackImpl.h>
 #include <IMPL/TrackerDataImpl.h>
 #include <IMPL/TrackerHitImpl.h>
+#include <IMPL/TrackerPulseImpl.h>
 #include <IO/LCWriter.h>
 #include <IOIMPL/LCFactory.h>
 #include <UTIL/CellIDEncoder.h>
@@ -42,15 +43,6 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
     messenger->bindMulti(this, &LCIOWriterModule::mcparticle_messages_, MsgFlags::REQUIRED);
     messenger->bindSingle(this, &LCIOWriterModule::mctracks_message_, MsgFlags::REQUIRED);
 
-    // get all detector names and assign id.
-    auto detectors = geo_mgr_->getDetectors();
-    unsigned int i = 0;
-    for(const auto& det : detectors) {
-        detector_ids_[det->getName()] = i;
-        LOG(DEBUG) << det->getName() << " has ID " << detector_ids_[det->getName()];
-        i++;
-    }
-
     // Set configuration defaults:
     config_.setDefault("file_name", "output.slcio");
     config_.setDefault("geometry_file", "allpix_squared_gear.xml");
@@ -61,19 +53,64 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
 
     pixel_type_ = config_.get<int>("pixel_type");
     detector_name_ = config_.get<std::string>("detector_name");
-    tel_out_collection_name_ = config_.get<std::string>("output_collection_name");
-    dut_out_collection_name_ = config_.get<std::string>("dut_collection_name");
 
-    // config_.getArray<std::string>("telescope_detectors");
-    // config_.getArray<std::string>("dut_detectors");
-    // config_.get<int>("first_tel_sensor_id", 0);
-    // config_.get<int>("first_dut_sensor_id", 20);
+    // The 'collections' parameter has a string matrix with three elements per row
+    // ["detector_name", "output_collection", "sensor_id"] where the detector_name
+    // must correspond to the detector name in the geometry file, the output_collection
+    // will be the name of the lcio output collection (multiple detectors can write to)
+    // the same collection, and sensor_id has to be a unique id which the data corresponding
+    // to this sensor will carry
+    auto collections = config.getMatrix<std::string>("collections");
+    auto assigned_ids = std::vector<unsigned>{};
+
+    for(auto const& col_entry : collections) {
+        if(col_entry.size() == 3) {
+            // This map will help determine how many collections we will create (keys) and what
+            // detectors write into that collection (values)
+            collection_to_detector_map_[col_entry[1]].emplace_back(col_entry[0]);
+            auto id = static_cast<unsigned>(std::stoi(col_entry[2]));
+            if(std::find(assigned_ids.begin(), assigned_ids.end(), id) == assigned_ids.end()) {
+                assigned_ids.emplace_back(id);
+                // This map will translate the internally used detector name to the sensor id
+                detector_ids_[col_entry[0]] = id;
+            } else {
+                // panic
+                std::cout << "PANIC! - duplicate ID" << std::endl;
+            }
+        } else {
+            // panic
+            std::cout << "PANIC! - wrong format" << std::endl;
+        }
+    }
+
+    //
+    for(auto const& col_dets_pair : collection_to_detector_map_) {
+        collection_names_.emplace_back(col_dets_pair.first);
+        LOG(DEBUG) << "Registered output collection " << col_dets_pair.first << " for sensors: ";
+        for(auto const& det_name : col_dets_pair.second) {
+            LOG(DEBUG) << det_name << " ";
+            auto detector_id = detector_ids_[det_name];
+            detector_id_to_collection_index_[detector_id] = collection_names_.size() - 1;
+        }
+    }
+
+    // get all detector names and assign id.
+    auto detectors = geo_mgr_->getDetectors();
+    for(const auto& det : detectors) {
+        auto const& det_name = det->getName();
+        auto it = detector_ids_.find(det_name);
+        if(it != detector_ids_.end()) {
+            LOG(DEBUG) << det_name << " has ID " << detector_ids_[det_name];
+        } else {
+            // panic
+            std::cout << "PANIC! - detector missing in config" << std::endl;
+        }
+    }
 }
 
 void LCIOWriterModule::init() {
     // Create the output GEAR file for the detector geometry
     geometry_file_name_ = createOutputFile(allpix::add_file_extension(config_.get<std::string>("geometry_file"), "xml"));
-
     // Open LCIO file and write run header
     lcio_file_name_ = createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name"), "slcio"));
     lcWriter_ = std::shared_ptr<IO::LCWriter>(LCFactory::getInstance()->createLCWriter());
@@ -91,26 +128,37 @@ void LCIOWriterModule::run(unsigned int eventNb) {
     evt->setEventNumber(static_cast<int>(eventNb)); // set the event attributes
     evt->parameters().setValue("EventType", 2);
 
-    auto mcParticleToPixelDataVec = std::map<MCParticle const*, std::vector<std::vector<float>>>{};
-    auto mcParticleToDetectorID = std::map<MCParticle const*, unsigned>{};
-    auto mcParticleToTrackerData = std::map<MCParticle const*, TrackerDataImpl*>{};
-    auto mcTrackToHitDataVec = std::map<MCTrack const*, std::vector<TrackerHitImpl*>>{};
+    auto mcp_to_pixel_data_vec = std::map<MCParticle const*, std::vector<std::vector<float>>>{};
+    auto mcp_to_det_id = std::map<MCParticle const*, unsigned>{};
+    auto mcp_to_tracker_data = std::map<MCParticle const*, TrackerDataImpl*>{};
+    auto mctrk_to_hit_data_vec = std::map<MCTrack const*, std::vector<TrackerHitImpl*>>{};
 
-    // Prepare output collections
-    LCCollectionVec* hitVec = new LCCollectionVec(LCIO::TRACKERDATA);
-    LCCollectionVec* mcClusterVec = new LCCollectionVec(LCIO::TRACKERDATA);
-    LCCollectionVec* mcHitVec = new LCCollectionVec(LCIO::TRACKERHIT);
-    LCCollectionVec* mcTrackVec = new LCCollectionVec(LCIO::TRACK);
+    auto output_collection_vec = std::vector<LCCollectionVec*>();
+    auto output_collection_encoder_vec = std::vector<std::unique_ptr<CellIDEncoder<TrackerDataImpl>>>();
 
-    CellIDEncoder<TrackerDataImpl> sparseDataEncoder("sensorID:7,sparsePixelType:5", hitVec);
-    CellIDEncoder<TrackerDataImpl> mcClusterEncoder("sensorID:7,sparsePixelType:5", mcClusterVec);
-    CellIDEncoder<TrackerHitImpl> mcHitEncoder("sensorID:7,properties:7", mcHitVec);
+    // Prepare dynamic output collections and their CellIDEncoders which are defined by the user's config
+    for(size_t i = 0; i < collection_names_.size(); ++i) {
+        output_collection_vec.emplace_back(new LCCollectionVec(LCIO::TRACKERDATA));
+        std::cout << "Collection: " << output_collection_vec.back() << std::endl;
+        output_collection_encoder_vec.emplace_back(
+            std::make_unique<CellIDEncoder<TrackerDataImpl>>("sensorID:7,sparsePixelType:5", output_collection_vec.back()));
+    }
 
-    // Prepare charge vectors
-    std::vector<std::vector<float>> charges;
-    for(size_t i = 0; i < detector_ids_.size(); i++) {
-        std::vector<float> charge;
-        charges.push_back(charge);
+    // Prepare static Monte-Carlo output collections and their CellIDEncoders which are the same everytime
+    LCCollectionVec* mc_cluster_vec = new LCCollectionVec(LCIO::TRACKERPULSE);
+    LCCollectionVec* mc_cluster_raw_vec = new LCCollectionVec(LCIO::TRACKERDATA);
+    LCCollectionVec* mc_hit_vec = new LCCollectionVec(LCIO::TRACKERHIT);
+    LCCollectionVec* mc_track_vec = new LCCollectionVec(LCIO::TRACK);
+    CellIDEncoder<TrackerDataImpl> mc_cluster_raw_encoder("sensorID:7,sparsePixelType:5", mc_cluster_raw_vec);
+    CellIDEncoder<TrackerPulseImpl> mc_cluster_encoder("sensorID:7,xSeed:12,ySeed:12,xCluSize:5,yCluSize:5,type:5,quality:5",
+                                                       mc_cluster_vec);
+    CellIDEncoder<TrackerHitImpl> mc_hit_encoder("sensorID:7,properties:7", mc_hit_vec);
+
+    // In LCIO the 'charge vector' is a vector of floats which correspond to hit pixels, depending on the pixel
+    // type in EUTelescope the number of entries per pixel varies
+    std::map<unsigned, std::vector<float>> charges;
+    for(auto const& det : detector_ids_) {
+        charges[det.second] = std::vector<float>{};
     }
 
     // Receive all pixel messages, fill charge vectors
@@ -123,7 +171,7 @@ void LCIOWriterModule::run(unsigned int eventNb) {
             LOG(DEBUG) << "X: " << hitdata.getPixel().getIndex().x() << ", Y:" << hitdata.getPixel().getIndex().y()
                        << ", Signal: " << hitdata.getSignal();
 
-            unsigned int detectorID = detector_ids_[hit_msg->getDetector()->getName()];
+            unsigned detectorID = detector_ids_[hit_msg->getDetector()->getName()];
 
             switch(pixel_type_) {
             case 1: // EUTelSimpleSparsePixel
@@ -164,72 +212,84 @@ void LCIOWriterModule::run(unsigned int eventNb) {
             }
 
             for(auto const& mcp : hitdata.getMCParticles()) {
-                mcParticleToDetectorID[mcp] = detectorID;
-                mcParticleToPixelDataVec[mcp].emplace_back(thisHitCharge);
+                mcp_to_det_id[mcp] = detectorID;
+                mcp_to_pixel_data_vec[mcp].emplace_back(thisHitCharge);
             }
         }
     }
 
-    for(auto& pair : mcParticleToPixelDataVec) {
+    for(auto& pair : mcp_to_pixel_data_vec) {
         auto trackerData = new TrackerDataImpl();
+        auto tracker_pulse = new TrackerPulseImpl();
+
         std::vector<float> finalChargeVec;
         for(auto const& signalVec : pair.second) {
             finalChargeVec.insert(std::end(finalChargeVec), std::begin(signalVec), std::end(signalVec));
         }
+
         trackerData->setChargeValues(finalChargeVec);
-        mcClusterEncoder["sensorID"] = mcParticleToDetectorID[pair.first];
-        mcClusterEncoder["sparsePixelType"] = pixel_type_;
-        mcClusterEncoder.setCellID(trackerData);
-        mcParticleToTrackerData[pair.first] = trackerData;
-        mcClusterVec->push_back(trackerData);
+        mc_cluster_raw_encoder["sensorID"] = mcp_to_det_id[pair.first];
+        mc_cluster_raw_encoder["sparsePixelType"] = pixel_type_;
+        mc_cluster_raw_encoder.setCellID(trackerData);
+        mcp_to_tracker_data[pair.first] = trackerData;
+        mc_cluster_raw_vec->push_back(trackerData);
+
+        tracker_pulse->setTrackerData(trackerData);
+        mc_cluster_encoder["sensorID"] = mcp_to_det_id[pair.first];
+        mc_cluster_encoder.setCellID(tracker_pulse);
+        mc_cluster_vec->push_back(tracker_pulse);
     }
 
     // Fill hitvector with event data
-    for(unsigned int detectorID = 0; detectorID < detector_ids_.size(); detectorID++) {
+    for(auto const& det_id_name_pair : detector_ids_) {
+        auto detector_id = det_id_name_pair.second;
         auto hit = new TrackerDataImpl();
-        sparseDataEncoder["sensorID"] = detectorID;
-        sparseDataEncoder["sparsePixelType"] = pixel_type_;
-        sparseDataEncoder.setCellID(hit);
-        hit->setChargeValues(charges[detectorID]);
-        hitVec->push_back(hit);
+        hit->setChargeValues(charges[detector_id]);
+        auto collection_index = detector_id_to_collection_index_[detector_id];
+        output_collection_encoder_vec[collection_index]->operator[]("sensorID") = detector_id;
+        output_collection_encoder_vec[collection_index]->operator[]("sparsePixelType") = pixel_type_;
+        output_collection_encoder_vec[collection_index]->setCellID(hit);
+        output_collection_vec[collection_index]->push_back(hit);
     }
 
     for(const auto& mcparticle_msg : mcparticle_messages_) {
         for(const auto& mcp : mcparticle_msg->getData()) {
             // Every MCParticle will be reflected by a TrackerHitImpl
             auto hit = new TrackerHitImpl();
-            unsigned int detectorID = detector_ids_[mcparticle_msg->getDetector()->getName()];
-            mcHitEncoder["sensorID"] = detectorID;
+            auto detectorID = detector_ids_[mcparticle_msg->getDetector()->getName()];
             auto pos = mcp.getGlobalStartPoint();
             auto posArray = std::array<double, 3>{pos.x(), pos.y(), pos.z()};
-            mcHitEncoder.setCellID(hit);
             hit->setPosition(posArray.data());
-
-            hit->rawHits() = std::vector<LCObject*>{mcParticleToTrackerData[&mcp]};
-            mcHitVec->push_back(hit);
-            mcTrackToHitDataVec[mcp.getTrack()].emplace_back(hit);
+            mc_hit_encoder["sensorID"] = detectorID;
+            mc_hit_encoder.setCellID(hit);
+            hit->rawHits() = std::vector<LCObject*>{mcp_to_tracker_data[&mcp]};
+            mc_hit_vec->push_back(hit);
+            mctrk_to_hit_data_vec[mcp.getTrack()].emplace_back(hit);
         }
     }
 
-    LCFlagImpl flag(mcTrackVec->getFlag());
+    LCFlagImpl flag(mc_track_vec->getFlag());
     flag.setBit(LCIO::TRBIT_HITS);
-    mcTrackVec->setFlag(flag.getFlag());
-
-    for(auto& pair : mcTrackToHitDataVec) {
+    mc_track_vec->setFlag(flag.getFlag());
+    for(auto& pair : mctrk_to_hit_data_vec) {
         auto track = new TrackImpl();
         for(auto& hit : pair.second) {
             // std::cout << "Got hit: " << hit << " z-pos: " << hit->getPosition()[2] << '\n';
             track->addHit(hit);
         }
-        mcTrackVec->push_back(track);
+        mc_track_vec->push_back(track);
     }
 
     // Add collection to event and write event to LCIO file
-    evt->addCollection(mcTrackVec, "mc_track");
-    evt->addCollection(mcHitVec, "mc_hit");
-    evt->addCollection(mcClusterVec, "mc_cluster");
-    evt->addCollection(hitVec, tel_out_collection_name_); // add the collection with a name
-    lcWriter_->writeEvent(evt.get());                     // write the event to the file
+    evt->addCollection(mc_track_vec, "mc_track");
+    evt->addCollection(mc_hit_vec, "mc_hit");
+    evt->addCollection(mc_cluster_raw_vec, "mc_raw_cluster");
+    evt->addCollection(mc_cluster_vec, "mc_cluster");
+    for(size_t i = 0; i < collection_names_.size(); i++) {
+        evt->addCollection(output_collection_vec[i], collection_names_[i]);
+    }
+
+    lcWriter_->writeEvent(evt.get()); // write the event to the file
     write_cnt_++;
 }
 
