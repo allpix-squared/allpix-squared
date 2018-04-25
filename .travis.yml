@@ -40,7 +40,7 @@ install:
 
 # command to run tests
 script:
-  - docker run -it --name CI_container -v $PKGDIR:/Package -e COMPILER=$COMPILER -v /cvmfs/clicdp.cern.ch:/cvmfs/clicdp.cern.ch -v /cvmfs/sft.cern.ch:/cvmfs/sft.cern.ch -d clicdp/slc6-build /bin/bash
+  - docker run -it --name CI_container -v $PKGDIR:/Package -e COMPILER_TYPE=$COMPILER -v /cvmfs/clicdp.cern.ch:/cvmfs/clicdp.cern.ch -v /cvmfs/sft.cern.ch:/cvmfs/sft.cern.ch -d clicdp/slc6-build /bin/bash
   - docker exec -it CI_container /bin/bash -c "./Package/.travis-ci.d/compile_and_test.sh";
 
 # Don't send e-mail notifications on success
