@@ -597,7 +597,7 @@ deploy-cvmfs:
         - pkg:cc7-gcc
         - pkg:slc6-gcc
     tags:
-        - cvmfs
+        - cvmfs-deploy
     only:
         - tags
         - deploy-cvmfs
