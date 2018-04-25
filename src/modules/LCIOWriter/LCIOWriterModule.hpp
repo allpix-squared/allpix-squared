@@ -56,11 +56,15 @@ namespace allpix {
     private:
         GeometryManager* geo_mgr_{};
         std::vector<std::shared_ptr<PixelHitMessage>> pixel_messages_;
+        std::vector<std::shared_ptr<MCParticleMessage>> mcparticle_messages_;
+        std::shared_ptr<MCTrackMessage> mctracks_message_;
+
         std::shared_ptr<IO::LCWriter> lcWriter_{};
-        std::map<std::string, unsigned int> detectorIDs_;
-        int pixelType_;
-        std::string OutputCollectionName_;
-        std::string DetectorName_;
+        std::map<std::string, unsigned int> detector_ids_;
+        int pixel_type_;
+        std::string tel_out_collection_name_;
+        std::string dut_out_collection_name_;
+        std::string detector_name_;
         std::string lcio_file_name_;
         std::string geometry_file_name_;
         int write_cnt_{0};
