@@ -8,7 +8,6 @@ language: cpp
 
 env:
   matrix:
-    - COMPILER=gcc
     - COMPILER=llvm
 
 before_install:
