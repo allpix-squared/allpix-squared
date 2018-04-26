@@ -35,6 +35,15 @@
 using namespace allpix;
 using namespace lcio;
 
+namespace EUTELESCOPE {
+    static const std::string gTrackerHitEncoding = "sensorID:7,properties:7";
+    static const std::string gTrackerPulseEncoding = "sensorID:7,xSeed:12,ySeed:12,xCluSize:5,yCluSize:5,type:5,quality:5";
+    static const std::string gTrackerDataEncoding = "sensorID:7,sparsePixelType:5";
+
+    enum HitProperties { kHitInGlobalCoord = 1L << 0, kFittedHit = 1L << 1, kSimulatedHit = 1L << 2, kDeltaHit = 1L << 3 };
+
+} // namespace EUTELESCOPE
+
 LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo)
     : Module(config), geo_mgr_(geo) {
 
@@ -170,7 +179,7 @@ void LCIOWriterModule::run(unsigned int eventNb) {
         output_col_vec.emplace_back(new LCCollectionVec(LCIO::TRACKERDATA));
         std::cout << "Collection: " << output_col_vec.back() << std::endl;
         output_col_encoder_vec.emplace_back(
-            std::make_unique<CellIDEncoder<TrackerDataImpl>>("sensorID:7,sparsePixelType:5", output_col_vec.back()));
+            std::make_unique<CellIDEncoder<TrackerDataImpl>>(EUTELESCOPE::gTrackerDataEncoding, output_col_vec.back()));
     }
 
     // Prepare static Monte-Carlo output setup and their CellIDEncoders which are the same everytime
@@ -178,10 +187,10 @@ void LCIOWriterModule::run(unsigned int eventNb) {
     LCCollectionVec* mc_cluster_raw_vec = new LCCollectionVec(LCIO::TRACKERDATA);
     LCCollectionVec* mc_hit_vec = new LCCollectionVec(LCIO::TRACKERHIT);
     LCCollectionVec* mc_track_vec = new LCCollectionVec(LCIO::TRACK);
-    CellIDEncoder<TrackerDataImpl> mc_cluster_raw_encoder("sensorID:7,sparsePixelType:5", mc_cluster_raw_vec);
-    CellIDEncoder<TrackerPulseImpl> mc_cluster_encoder("sensorID:7,xSeed:12,ySeed:12,xCluSize:5,yCluSize:5,type:5,quality:5",
-                                                       mc_cluster_vec);
-    CellIDEncoder<TrackerHitImpl> mc_hit_encoder("sensorID:7,properties:7", mc_hit_vec);
+
+    CellIDEncoder<TrackerDataImpl> mc_cluster_raw_encoder(EUTELESCOPE::gTrackerDataEncoding, mc_cluster_raw_vec);
+    CellIDEncoder<TrackerPulseImpl> mc_cluster_encoder(EUTELESCOPE::gTrackerPulseEncoding, mc_cluster_vec);
+    CellIDEncoder<TrackerHitImpl> mc_hit_encoder(EUTELESCOPE::gTrackerHitEncoding, mc_hit_vec);
 
     // The detector id is only attached to the message, not the MCParticle, thus we store it here
     auto mcp_to_det_id = std::map<MCParticle const*, unsigned>{};
@@ -201,54 +210,54 @@ void LCIOWriterModule::run(unsigned int eventNb) {
         LOG(DEBUG) << hit_msg->getDetector()->getName();
         for(const auto& hitdata : hit_msg->getData()) {
 
-            auto thisHitCharge = std::vector<float>{};
+            auto this_hit_charge_vec = std::vector<float>{};
 
             LOG(DEBUG) << "X: " << hitdata.getPixel().getIndex().x() << ", Y:" << hitdata.getPixel().getIndex().y()
                        << ", Signal: " << hitdata.getSignal();
 
-            unsigned detectorID = det_name_to_id_[hit_msg->getDetector()->getName()];
+            unsigned det_id = det_name_to_id_[hit_msg->getDetector()->getName()];
 
             switch(pixel_type_) {
-            case 1: // EUTelSimpleSparsePixel
-                charges[detectorID].push_back(static_cast<float>(hitdata.getPixel().getIndex().x())); // x
-                charges[detectorID].push_back(static_cast<float>(hitdata.getPixel().getIndex().y())); // y
-                charges[detectorID].push_back(static_cast<float>(hitdata.getSignal()));               // signal
-                thisHitCharge.push_back(static_cast<float>(hitdata.getPixel().getIndex().x()));       // x
-                thisHitCharge.push_back(static_cast<float>(hitdata.getPixel().getIndex().y()));       // y
-                thisHitCharge.push_back(static_cast<float>(hitdata.getSignal()));                     // signal
+            case 1:                                                                               // EUTelSimpleSparsePixel
+                charges[det_id].push_back(static_cast<float>(hitdata.getPixel().getIndex().x())); // x
+                charges[det_id].push_back(static_cast<float>(hitdata.getPixel().getIndex().y())); // y
+                charges[det_id].push_back(static_cast<float>(hitdata.getSignal()));               // signal
+                this_hit_charge_vec.push_back(static_cast<float>(hitdata.getPixel().getIndex().x())); // x
+                this_hit_charge_vec.push_back(static_cast<float>(hitdata.getPixel().getIndex().y())); // y
+                this_hit_charge_vec.push_back(static_cast<float>(hitdata.getSignal()));               // signal
                 break;
             case 2:  // EUTelGenericSparsePixel
             default: // EUTelGenericSparsePixel is default
-                charges[detectorID].push_back(static_cast<float>(hitdata.getPixel().getIndex().x())); // x
-                charges[detectorID].push_back(static_cast<float>(hitdata.getPixel().getIndex().y())); // y
-                charges[detectorID].push_back(static_cast<float>(hitdata.getSignal()));               // signal
-                charges[detectorID].push_back(0.0);
-                thisHitCharge.push_back(static_cast<float>(hitdata.getPixel().getIndex().x())); // x
-                thisHitCharge.push_back(static_cast<float>(hitdata.getPixel().getIndex().y())); // y
-                thisHitCharge.push_back(static_cast<float>(hitdata.getSignal()));               // signal
-                thisHitCharge.push_back(0.0);                                                   // time
+                charges[det_id].push_back(static_cast<float>(hitdata.getPixel().getIndex().x())); // x
+                charges[det_id].push_back(static_cast<float>(hitdata.getPixel().getIndex().y())); // y
+                charges[det_id].push_back(static_cast<float>(hitdata.getSignal()));               // signal
+                charges[det_id].push_back(0.0);
+                this_hit_charge_vec.push_back(static_cast<float>(hitdata.getPixel().getIndex().x())); // x
+                this_hit_charge_vec.push_back(static_cast<float>(hitdata.getPixel().getIndex().y())); // y
+                this_hit_charge_vec.push_back(static_cast<float>(hitdata.getSignal()));               // signal
+                this_hit_charge_vec.push_back(0.0);                                                   // time
                 break;
-            case 5: // EUTelTimepix3SparsePixel
-                charges[detectorID].push_back(static_cast<float>(hitdata.getPixel().getIndex().x())); // x
-                charges[detectorID].push_back(static_cast<float>(hitdata.getPixel().getIndex().y())); // y
-                charges[detectorID].push_back(static_cast<float>(hitdata.getSignal()));               // signal
-                charges[detectorID].push_back(0.0);                                                   // time
-                charges[detectorID].push_back(0.0);                                                   // time
-                charges[detectorID].push_back(0.0);                                                   // time
-                charges[detectorID].push_back(0.0);                                                   // time
-                thisHitCharge.push_back(static_cast<float>(hitdata.getPixel().getIndex().x()));       // x
-                thisHitCharge.push_back(static_cast<float>(hitdata.getPixel().getIndex().y()));       // y
-                thisHitCharge.push_back(static_cast<float>(hitdata.getSignal()));                     // signal
-                thisHitCharge.push_back(0.0);                                                         // time
-                thisHitCharge.push_back(0.0);                                                         // time
-                thisHitCharge.push_back(0.0);                                                         // time
-                thisHitCharge.push_back(0.0);                                                         // time
+            case 5:                                                                               // EUTelTimepix3SparsePixel
+                charges[det_id].push_back(static_cast<float>(hitdata.getPixel().getIndex().x())); // x
+                charges[det_id].push_back(static_cast<float>(hitdata.getPixel().getIndex().y())); // y
+                charges[det_id].push_back(static_cast<float>(hitdata.getSignal()));               // signal
+                charges[det_id].push_back(0.0);                                                   // time
+                charges[det_id].push_back(0.0);                                                   // time
+                charges[det_id].push_back(0.0);                                                   // time
+                charges[det_id].push_back(0.0);                                                   // time
+                this_hit_charge_vec.push_back(static_cast<float>(hitdata.getPixel().getIndex().x())); // x
+                this_hit_charge_vec.push_back(static_cast<float>(hitdata.getPixel().getIndex().y())); // y
+                this_hit_charge_vec.push_back(static_cast<float>(hitdata.getSignal()));               // signal
+                this_hit_charge_vec.push_back(0.0);                                                   // time
+                this_hit_charge_vec.push_back(0.0);                                                   // time
+                this_hit_charge_vec.push_back(0.0);                                                   // time
+                this_hit_charge_vec.push_back(0.0);                                                   // time
                 break;
             }
 
             for(auto const& mcp : hitdata.getMCParticles()) {
-                mcp_to_det_id[mcp] = detectorID;
-                mcp_to_pixel_data_vec[mcp].emplace_back(thisHitCharge);
+                mcp_to_det_id[mcp] = det_id;
+                mcp_to_pixel_data_vec[mcp].emplace_back(this_hit_charge_vec);
             }
         }
     }
@@ -280,10 +289,21 @@ void LCIOWriterModule::run(unsigned int eventNb) {
         mc_cluster_encoder.setCellID(mc_tracker_pulse);
         mc_cluster_vec->push_back(mc_tracker_pulse);
 
-        auto pos = mc_particle->getGlobalStartPoint();
-        auto posArray = std::array<double, 3>{pos.x(), pos.y(), pos.z()};
-        mc_tracker_hit->setPosition(posArray.data());
+        // we take the centre of the MCParticle to be the global z-position
+        auto const& hit_start_pos = mc_particle->getGlobalStartPoint();
+        auto const& hit_end_pos = mc_particle->getGlobalEndPoint();
+        auto pos_arr = std::array<double, 3>{0.5 * (hit_start_pos.x() + hit_end_pos.x()),
+                                             0.5 * (hit_start_pos.y() + hit_end_pos.y()),
+                                             0.5 * (hit_start_pos.z() + hit_end_pos.z())};
+        mc_tracker_hit->setPosition(pos_arr.data());
         mc_hit_encoder["sensorID"] = mcp_to_det_id[mc_particle];
+
+        int hit_properties = EUTELESCOPE::HitProperties::kHitInGlobalCoord;
+        if(mc_particle->getTrack()->getParent() != nullptr) {
+            hit_properties += EUTELESCOPE::HitProperties::kDeltaHit;
+        }
+        mc_hit_encoder["properties"] = hit_properties;
+
         mc_hit_encoder.setCellID(mc_tracker_hit);
         mc_tracker_hit->rawHits() = std::vector<LCObject*>{mc_tracker_data};
         mc_hit_vec->push_back(mc_tracker_hit);
