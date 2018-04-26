@@ -54,29 +54,34 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
     pixel_type_ = config_.get<int>("pixel_type");
     detector_name_ = config_.get<std::string>("detector_name");
 
-    // The 'collections' parameter has a string matrix with three elements per row
+    // The 'setup' parameter has a string matrix with three elements per row
     // ["detector_name", "output_collection", "sensor_id"] where the detector_name
     // must correspond to the detector name in the geometry file, the output_collection
-    // will be the name of the lcio output collection (multiple detectors can write to)
-    // the same collection, and sensor_id has to be a unique id which the data corresponding
+    // will be the name of the lcio output collection (multiple detectors can write to
+    // the same collection), and sensor_id has to be a unique id which the data corresponding
     // to this sensor will carry
-    auto collections = config.getMatrix<std::string>("collections");
+    auto setup = config.getMatrix<std::string>("setup");
     auto assigned_ids = std::vector<unsigned>{};
 
-    for(auto const& col_entry : collections) {
-        if(col_entry.size() == 3) {
-            // This map will help determine how many collections we will create (keys) and what
+    for(auto const& setup_entry : setup) {
+        if(setup_entry.size() == 3) {
+            auto const& det_name = setup_entry[0];
+            auto const& col_name = setup_entry[1];
+            auto const& sensor_id_str = setup_entry[2];
+            // This map will help determine how many setup we will create (keys) and what
             // detectors write into that collection (values)
-            collection_to_detector_map_[col_entry[1]].emplace_back(col_entry[0]);
-            auto id = static_cast<unsigned>(std::stoi(col_entry[2]));
-            if(std::find(assigned_ids.begin(), assigned_ids.end(), id) == assigned_ids.end()) {
-                assigned_ids.emplace_back(id);
+            col_to_dets_map_[col_name].emplace_back(det_name);
+            auto sensor_id = static_cast<unsigned>(std::stoi(sensor_id_str));
+
+            if(std::find(assigned_ids.begin(), assigned_ids.end(), sensor_id) == assigned_ids.end()) {
+                assigned_ids.emplace_back(sensor_id);
                 // This map will translate the internally used detector name to the sensor id
-                detector_ids_[col_entry[0]] = id;
+                det_name_to_id_[det_name] = sensor_id;
             } else {
                 // panic
                 std::cout << "PANIC! - duplicate ID" << std::endl;
             }
+
         } else {
             // panic
             std::cout << "PANIC! - wrong format" << std::endl;
@@ -84,13 +89,13 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
     }
 
     //
-    for(auto const& col_dets_pair : collection_to_detector_map_) {
-        collection_names_.emplace_back(col_dets_pair.first);
+    for(auto const& col_dets_pair : col_to_dets_map_) {
+        col_name_vec_.emplace_back(col_dets_pair.first);
         LOG(DEBUG) << "Registered output collection " << col_dets_pair.first << " for sensors: ";
         for(auto const& det_name : col_dets_pair.second) {
             LOG(DEBUG) << det_name << " ";
-            auto detector_id = detector_ids_[det_name];
-            detector_id_to_collection_index_[detector_id] = collection_names_.size() - 1;
+            auto det_id = det_name_to_id_[det_name];
+            det_id_to_col_index_[det_id] = col_name_vec_.size() - 1;
         }
     }
 
@@ -98,9 +103,9 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
     auto detectors = geo_mgr_->getDetectors();
     for(const auto& det : detectors) {
         auto const& det_name = det->getName();
-        auto it = detector_ids_.find(det_name);
-        if(it != detector_ids_.end()) {
-            LOG(DEBUG) << det_name << " has ID " << detector_ids_[det_name];
+        auto it = det_name_to_id_.find(det_name);
+        if(it != det_name_to_id_.end()) {
+            LOG(DEBUG) << det_name << " has ID " << det_name_to_id_[det_name];
         } else {
             // panic
             std::cout << "PANIC! - detector missing in config" << std::endl;
@@ -128,23 +133,27 @@ void LCIOWriterModule::run(unsigned int eventNb) {
     evt->setEventNumber(static_cast<int>(eventNb)); // set the event attributes
     evt->parameters().setValue("EventType", 2);
 
-    auto mcp_to_pixel_data_vec = std::map<MCParticle const*, std::vector<std::vector<float>>>{};
+    // The detector id is only attached to the message, not the MCParticle, thus we store it here
     auto mcp_to_det_id = std::map<MCParticle const*, unsigned>{};
+    // Multiple pixel hits can be assigned to a single MCParticle, here we store them in a LCIO 'float vector' to create the
+    // Monte Carlo truth cluster
+    auto mcp_to_pixel_data_vec = std::map<MCParticle const*, std::vector<std::vector<float>>>{};
+    // Every MCParticle will also be reflected by a TrackerData object
     auto mcp_to_tracker_data = std::map<MCParticle const*, TrackerDataImpl*>{};
+    // Every track will be linked to at leat one (typically multiple) MCParticles and thus TrackerData objets
     auto mctrk_to_hit_data_vec = std::map<MCTrack const*, std::vector<TrackerHitImpl*>>{};
 
-    auto output_collection_vec = std::vector<LCCollectionVec*>();
-    auto output_collection_encoder_vec = std::vector<std::unique_ptr<CellIDEncoder<TrackerDataImpl>>>();
-
-    // Prepare dynamic output collections and their CellIDEncoders which are defined by the user's config
-    for(size_t i = 0; i < collection_names_.size(); ++i) {
-        output_collection_vec.emplace_back(new LCCollectionVec(LCIO::TRACKERDATA));
-        std::cout << "Collection: " << output_collection_vec.back() << std::endl;
-        output_collection_encoder_vec.emplace_back(
-            std::make_unique<CellIDEncoder<TrackerDataImpl>>("sensorID:7,sparsePixelType:5", output_collection_vec.back()));
+    auto output_col_vec = std::vector<LCCollectionVec*>();
+    auto output_col_encoder_vec = std::vector<std::unique_ptr<CellIDEncoder<TrackerDataImpl>>>();
+    // Prepare dynamic output setup and their CellIDEncoders which are defined by the user's config
+    for(size_t i = 0; i < col_name_vec_.size(); ++i) {
+        output_col_vec.emplace_back(new LCCollectionVec(LCIO::TRACKERDATA));
+        std::cout << "Collection: " << output_col_vec.back() << std::endl;
+        output_col_encoder_vec.emplace_back(
+            std::make_unique<CellIDEncoder<TrackerDataImpl>>("sensorID:7,sparsePixelType:5", output_col_vec.back()));
     }
 
-    // Prepare static Monte-Carlo output collections and their CellIDEncoders which are the same everytime
+    // Prepare static Monte-Carlo output setup and their CellIDEncoders which are the same everytime
     LCCollectionVec* mc_cluster_vec = new LCCollectionVec(LCIO::TRACKERPULSE);
     LCCollectionVec* mc_cluster_raw_vec = new LCCollectionVec(LCIO::TRACKERDATA);
     LCCollectionVec* mc_hit_vec = new LCCollectionVec(LCIO::TRACKERHIT);
@@ -157,7 +166,7 @@ void LCIOWriterModule::run(unsigned int eventNb) {
     // In LCIO the 'charge vector' is a vector of floats which correspond to hit pixels, depending on the pixel
     // type in EUTelescope the number of entries per pixel varies
     std::map<unsigned, std::vector<float>> charges;
-    for(auto const& det : detector_ids_) {
+    for(auto const& det : det_name_to_id_) {
         charges[det.second] = std::vector<float>{};
     }
 
@@ -171,7 +180,7 @@ void LCIOWriterModule::run(unsigned int eventNb) {
             LOG(DEBUG) << "X: " << hitdata.getPixel().getIndex().x() << ", Y:" << hitdata.getPixel().getIndex().y()
                        << ", Signal: " << hitdata.getSignal();
 
-            unsigned detectorID = detector_ids_[hit_msg->getDetector()->getName()];
+            unsigned detectorID = det_name_to_id_[hit_msg->getDetector()->getName()];
 
             switch(pixel_type_) {
             case 1: // EUTelSimpleSparsePixel
@@ -241,22 +250,22 @@ void LCIOWriterModule::run(unsigned int eventNb) {
     }
 
     // Fill hitvector with event data
-    for(auto const& det_id_name_pair : detector_ids_) {
-        auto detector_id = det_id_name_pair.second;
+    for(auto const& det_id_name_pair : det_name_to_id_) {
+        auto det_id = det_id_name_pair.second;
         auto hit = new TrackerDataImpl();
-        hit->setChargeValues(charges[detector_id]);
-        auto collection_index = detector_id_to_collection_index_[detector_id];
-        output_collection_encoder_vec[collection_index]->operator[]("sensorID") = detector_id;
-        output_collection_encoder_vec[collection_index]->operator[]("sparsePixelType") = pixel_type_;
-        output_collection_encoder_vec[collection_index]->setCellID(hit);
-        output_collection_vec[collection_index]->push_back(hit);
+        hit->setChargeValues(charges[det_id]);
+        auto col_index = det_id_to_col_index_[det_id];
+        output_col_encoder_vec[col_index]->operator[]("sensorID") = det_id;
+        output_col_encoder_vec[col_index]->operator[]("sparsePixelType") = pixel_type_;
+        output_col_encoder_vec[col_index]->setCellID(hit);
+        output_col_vec[col_index]->push_back(hit);
     }
 
     for(const auto& mcparticle_msg : mcparticle_messages_) {
         for(const auto& mcp : mcparticle_msg->getData()) {
             // Every MCParticle will be reflected by a TrackerHitImpl
             auto hit = new TrackerHitImpl();
-            auto detectorID = detector_ids_[mcparticle_msg->getDetector()->getName()];
+            auto detectorID = det_name_to_id_[mcparticle_msg->getDetector()->getName()];
             auto pos = mcp.getGlobalStartPoint();
             auto posArray = std::array<double, 3>{pos.x(), pos.y(), pos.z()};
             hit->setPosition(posArray.data());
@@ -285,8 +294,8 @@ void LCIOWriterModule::run(unsigned int eventNb) {
     evt->addCollection(mc_hit_vec, "mc_hit");
     evt->addCollection(mc_cluster_raw_vec, "mc_raw_cluster");
     evt->addCollection(mc_cluster_vec, "mc_cluster");
-    for(size_t i = 0; i < collection_names_.size(); i++) {
-        evt->addCollection(output_collection_vec[i], collection_names_[i]);
+    for(size_t i = 0; i < col_name_vec_.size(); i++) {
+        evt->addCollection(output_col_vec[i], col_name_vec_[i]);
     }
 
     lcWriter_->writeEvent(evt.get()); // write the event to the file
@@ -335,7 +344,7 @@ void LCIOWriterModule::finalize() {
             auto sensitive_size = model->getSensorSize();
 
             // Write ladder
-            geometry_file << "          <ladder ID=\"" << detector_ids_[detector->getName()] << "\"" << std::endl;
+            geometry_file << "          <ladder ID=\"" << det_name_to_id_[detector->getName()] << "\"" << std::endl;
             geometry_file << "            positionX=\"" << Units::convert(position.x(), "mm") << "\"\tpositionY=\""
                           << Units::convert(position.y(), "mm") << "\"\tpositionZ=\"" << Units::convert(position.z(), "mm")
                           << "\"" << std::endl;
@@ -352,7 +361,7 @@ void LCIOWriterModule::finalize() {
             geometry_file << "            />" << std::endl;
 
             // Write sensitive
-            geometry_file << "          <sensitive ID=\"" << detector_ids_[detector->getName()] << "\"" << std::endl;
+            geometry_file << "          <sensitive ID=\"" << det_name_to_id_[detector->getName()] << "\"" << std::endl;
             geometry_file << "            positionX=\"" << Units::convert(position.x(), "mm") << "\"\tpositionY=\""
                           << Units::convert(position.y(), "mm") << "\"\tpositionZ=\"" << Units::convert(position.z(), "mm")
                           << "\"" << std::endl;
