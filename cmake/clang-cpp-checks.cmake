@@ -9,6 +9,7 @@ ENDIF()
 # Adding clang-format check and formatter if found
 FIND_PROGRAM(CLANG_FORMAT "clang-format")
 IF(CLANG_FORMAT)
+    MESSAGE(STATUS "Found clang-format, adding formatting targets")
     ADD_CUSTOM_TARGET(
         format
         COMMAND
@@ -34,6 +35,8 @@ IF(CLANG_FORMAT)
                   ${CMAKE_BINARY_DIR}/check_format_file.txt > /dev/null
         COMMENT "Checking format compliance"
     )
+ELSE()
+    MESSAGE(STATUS "Could NOT find clang-format")
 ENDIF()
 
 # Adding clang-tidy target if executable is found
@@ -55,6 +58,8 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     GET_FILENAME_COMPONENT(CLANG_DIR ${CLANG_TIDY} DIRECTORY)
     FIND_PROGRAM(RUN_CLANG_TIDY NAMES "run-clang-tidy.py" "run-clang-tidy-4.0.py" HINTS /usr/share/clang/ ${CLANG_DIR}/../share/clang/ /usr/bin/)
     IF(RUN_CLANG_TIDY)
+        MESSAGE(STATUS "Found clang-tidy, adding linting targets")
+
         # Set export commands on
         SET (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -79,7 +84,11 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             COMMAND ! grep -c ": error: " ${CMAKE_BINARY_DIR}/check_lint_file.txt > /dev/null
             COMMENT "Checking for problems in source files"
         )
+    ELSE()
+        MESSAGE(STATUS "Could NOT find run-clang-tidy script")
     ENDIF()
+ELSE()
+    MESSAGE(STATUS "Could NOT find clang-tidy")
 ENDIF()
 
 FIND_PROGRAM(CPPCHECK "cppcheck")
