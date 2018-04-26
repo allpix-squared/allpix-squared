@@ -292,9 +292,9 @@ void LCIOWriterModule::run(unsigned int eventNb) {
         // we take the centre of the MCParticle to be the global z-position
         auto const& hit_start_pos = mc_particle->getGlobalStartPoint();
         auto const& hit_end_pos = mc_particle->getGlobalEndPoint();
-        auto pos_arr = std::array<double, 3>{0.5 * (hit_start_pos.x() + hit_end_pos.x()),
-                                             0.5 * (hit_start_pos.y() + hit_end_pos.y()),
-                                             0.5 * (hit_start_pos.z() + hit_end_pos.z())};
+        auto pos_arr = std::array<double, 3>{(0.5 * (hit_start_pos.x() + hit_end_pos.x())),
+                                             (0.5 * (hit_start_pos.y() + hit_end_pos.y())),
+                                             (0.5 * (hit_start_pos.z() + hit_end_pos.z()))};
         mc_tracker_hit->setPosition(pos_arr.data());
         mc_hit_encoder["sensorID"] = mcp_to_det_id[mc_particle];
 
