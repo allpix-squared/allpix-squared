@@ -57,7 +57,6 @@ namespace allpix {
         GeometryManager* geo_mgr_{};
 
         std::vector<std::shared_ptr<PixelHitMessage>> pixel_messages_;
-        std::vector<std::shared_ptr<MCParticleMessage>> mcparticle_messages_;
         std::shared_ptr<MCTrackMessage> mctracks_message_;
 
         std::vector<std::string> col_name_vec_;
