@@ -166,7 +166,10 @@ void LCIOWriterModule::finalize() {
             geometry_file << "  <BField type=\"ConstantBField\" x=\"" << Units::convert(b_field.x(), "T") << "\" y=\""
                           << Units::convert(b_field.y(), "T") << "\" z=\"" << Units::convert(b_field.z(), "T") << "\"/>"
                           << std::endl;
+        } else if(geo_mgr_->getMagneticFieldType() == MagneticFieldType::NONE) {
+            geometry_file << "  <BField type=\"ConstantBField\" x=\"0.0\" y=\"0.0\" z=\"0.0\"/>" << std::endl;
         } else {
+            LOG(WARNING) << "Field type not handled by GEAR geometry. Writing null magnetic field instead.";
             geometry_file << "  <BField type=\"ConstantBField\" x=\"0.0\" y=\"0.0\" z=\"0.0\"/>" << std::endl;
         }
         geometry_file << "  <detectors>" << std::endl;
