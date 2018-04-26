@@ -71,27 +71,51 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
             // This map will help determine how many setup we will create (keys) and what
             // detectors write into that collection (values)
             col_to_dets_map_[col_name].emplace_back(det_name);
-            auto sensor_id = static_cast<unsigned>(std::stoi(sensor_id_str));
+
+            unsigned sensor_id = 0;
+            try {
+                auto sensor_id_unchecked = std::stoi(sensor_id_str);
+                if(sensor_id_unchecked >= 0 && sensor_id_unchecked <= 127) {
+                    sensor_id = static_cast<unsigned>(sensor_id_unchecked);
+                } else {
+                    auto error = "The sensor id \"" + std::to_string(sensor_id_unchecked) +
+                                 "\" which was provided for detector \"" + det_name +
+                                 "\" must be positive and less than or equal to 127 (7 bit)";
+                    throw InvalidValueError(config_, "setup", error);
+                }
+            } catch(const std::invalid_argument&) {
+                auto error = "The sensor id \"" + sensor_id_str + "\" which was provided for detector \"" + det_name +
+                             "\" is not a valid integer";
+                throw InvalidValueError(config_, "setup", error);
+            }
 
             if(std::find(assigned_ids.begin(), assigned_ids.end(), sensor_id) == assigned_ids.end()) {
                 assigned_ids.emplace_back(sensor_id);
                 // This map will translate the internally used detector name to the sensor id
                 det_name_to_id_[det_name] = sensor_id;
             } else {
-                // panic
-                std::cout << "PANIC! - duplicate ID" << std::endl;
+                auto error = "Trying to assign sensor id \"" + std::to_string(sensor_id) + "\" to detector \"" + det_name +
+                             "\", this id is already assigned";
+                throw InvalidValueError(config_, "setup", error);
             }
 
         } else {
-            // panic
-            std::cout << "PANIC! - wrong format" << std::endl;
+            auto error = std::string("The entry: [");
+            for(auto const& value : setup_entry) {
+                error.append("\"" + value + "\", ");
+            }
+            error.pop_back();
+            error.pop_back();
+            error.append(
+                "] should have three entries in following order: [\"detector_name\", \"output_collection\", \"sensor_id\"]");
+            throw InvalidValueError(config_, "setup", error);
         }
     }
 
     //
     for(auto const& col_dets_pair : col_to_dets_map_) {
         col_name_vec_.emplace_back(col_dets_pair.first);
-        LOG(DEBUG) << "Registered output collection " << col_dets_pair.first << " for sensors: ";
+        LOG(DEBUG) << "Registered output collection \"" << col_dets_pair.first << "\" for sensors: ";
         for(auto const& det_name : col_dets_pair.second) {
             LOG(DEBUG) << det_name << " ";
             auto det_id = det_name_to_id_[det_name];
@@ -99,16 +123,23 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
         }
     }
 
-    // get all detector names and assign id.
+    // Cross check the detector geometry against the configuration file
     auto detectors = geo_mgr_->getDetectors();
+    if(setup.size() != detectors.size()) {
+        auto error = "In the configuration file " + std::to_string(setup.size()) +
+                     " detectors are specified, in the geometry " + std::to_string(detectors.size()) +
+                     ", this is a mismatch";
+        throw InvalidValueError(config_, "setup", error);
+    }
     for(const auto& det : detectors) {
         auto const& det_name = det->getName();
         auto it = det_name_to_id_.find(det_name);
         if(it != det_name_to_id_.end()) {
             LOG(DEBUG) << det_name << " has ID " << det_name_to_id_[det_name];
         } else {
-            // panic
-            std::cout << "PANIC! - detector missing in config" << std::endl;
+            auto error = "Detector \"" + det_name +
+                         "\" is specified in the geometry file, but not provided in the configuration file";
+            throw InvalidValueError(config_, "setup", error);
         }
     }
 }
