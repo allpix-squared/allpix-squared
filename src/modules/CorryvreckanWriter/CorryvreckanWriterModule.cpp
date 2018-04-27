@@ -104,7 +104,7 @@ void CorryvreckanWriterModule::run(unsigned int) {
             unsigned int pixelX = allpix_pixel.getPixel().getIndex().X();
             unsigned int pixelY = allpix_pixel.getPixel().getIndex().Y();
             double adc = allpix_pixel.getSignal();
-            long long int time(time_);
+            double time(time_);
             auto outputPixel = new corryvreckan::Pixel(detectorID, int(pixelY), int(pixelX), int(adc), time);
 
             LOG(DEBUG) << "Pixel (" << pixelX << "," << pixelY << ") written to device " << detectorID;
@@ -125,8 +125,11 @@ void CorryvreckanWriterModule::run(unsigned int) {
 
                 // Create a new particle object
                 std::string objectID_MC = detectorID + "_mcparticles";
-                auto mcParticle = new corryvreckan::MCParticle(
-                    particle->getParticleID(), particle->getLocalStartPoint(), particle->getLocalEndPoint());
+                auto mcParticle = new corryvreckan::MCParticle(detectorID,
+                                                               particle->getParticleID(),
+                                                               particle->getLocalStartPoint(),
+                                                               particle->getLocalEndPoint(),
+                                                               time);
 
                 // Map the mc particle to the output tree and write it
                 treeMCParticles_[objectID_MC] = mcParticle;

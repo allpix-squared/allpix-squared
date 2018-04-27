@@ -16,8 +16,8 @@
 
 // Local includes
 #include "corryvreckan/MCParticle.h"
+#include "corryvreckan/Object.hpp"
 #include "corryvreckan/Pixel.h"
-#include "corryvreckan/TestBeamObject.h"
 #include "objects/PixelHit.hpp"
 
 // ROOT includes
@@ -67,7 +67,7 @@ namespace allpix {
         std::string fileName_;                                   // Output filename
         std::string geometryFileName_;                           // Output geometry filename
         std::unique_ptr<TFile> outputFile_;                      // Output file
-        long long int time_;                                     // Event time being written
+        double time_;                                            // Event time being written
         std::map<std::string, TTree*> outputTrees_;              // Output trees
         std::map<std::string, corryvreckan::Pixel*> treePixels_; // Objects attached to trees for writing
 

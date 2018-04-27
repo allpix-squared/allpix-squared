@@ -7,10 +7,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-// AP2 objects
-#pragma link C++ class corryvreckan::TestBeamObject + ;
+// Corryvreckan objects
+#pragma link C++ class corryvreckan::Object + ;
 #pragma link C++ class corryvreckan::Pixel + ;
 #pragma link C++ class corryvreckan::MCParticle + ;
-
-// Vector of Object for internal storage
-//#pragma link C++ class std::vector < allpix::Object* > +;
