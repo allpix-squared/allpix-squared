@@ -32,6 +32,8 @@
 #include <UTIL/CellIDEncoder.h>
 #include <lcio.h>
 
+#include <Eigen/Core>
+
 using namespace allpix;
 using namespace lcio;
 
@@ -43,6 +45,37 @@ namespace EUTELESCOPE {
     enum HitProperties { kHitInGlobalCoord = 1L << 0, kFittedHit = 1L << 1, kSimulatedHit = 1L << 2, kDeltaHit = 1L << 3 };
 
 } // namespace EUTELESCOPE
+
+inline Eigen::Vector3d getRotationAnglesFromMatrix(Eigen::Matrix3d rot_mat) {
+    long double aX = 0;
+    long double aY = 0;
+    long double aZ = 0;
+    static long double const pi = 3.14159265359;
+    // This is a correct decomposition for the given rotation order: YXZ, i.e.
+    // initial Z-rotation,
+    // followed by X and ultimately Y rotation. In the case of a gimbal lock,
+    // the angle around the
+    // Z axis is (arbitrarily) set to 0.
+    if(rot_mat(1, 2) < 1) {
+        if(rot_mat(1, 2) > -1) {
+            aX = std::asin(-rot_mat(1, 2));
+            aY = std::atan2(rot_mat(0, 2), rot_mat(2, 2));
+            aZ = std::atan2(rot_mat(1, 0), rot_mat(1, 1));
+        } else /* r12 = -1 */ {
+            aX = pi / 2;
+            aY = -std::atan2(-rot_mat(0, 1), rot_mat(0, 0));
+            aZ = 0;
+        }
+    } else /* r12 = 1 */ {
+        aX = -pi / 2;
+        aY = std::atan2(-rot_mat(0, 1), rot_mat(0, 0));
+        aZ = 0;
+    }
+
+    Eigen::Vector3d vec;
+    vec << static_cast<double>(aX), static_cast<double>(aY), static_cast<double>(aZ);
+    return vec;
+}
 
 LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo)
     : Module(config), geo_mgr_(geo) {
@@ -394,11 +427,13 @@ void LCIOWriterModule::finalize() {
                           << Units::convert(position.y(), "mm") << "\"\tpositionZ=\"" << Units::convert(position.z(), "mm")
                           << "\"" << std::endl;
 
-            // Use inverse ZYX rotation to retrieve XYZ angles as used in EUTelescope:
-            ROOT::Math::RotationZYX rotations(detector->getOrientation().Inverse());
-            geometry_file << "            rotationZY=\"" << Units::convert(-rotations.Psi(), "deg") << "\"     rotationZX=\""
-                          << Units::convert(-rotations.Theta(), "deg") << "\"   rotationXY=\""
-                          << Units::convert(-rotations.Phi(), "deg") << "\"" << std::endl;
+            Eigen::Matrix3d rot_matrix;
+            detector->getOrientation().GetRotationMatrix(rot_matrix);
+            auto angles = getRotationAnglesFromMatrix(rot_matrix);
+
+            geometry_file << "            rotationZY=\"" << Units::convert(-angles[0], "deg") << "\"     rotationZX=\""
+                          << Units::convert(-angles[1], "deg") << "\"   rotationXY=\"" << Units::convert(-angles[2], "deg")
+                          << "\"" << std::endl;
             geometry_file << "            sizeX=\"" << Units::convert(total_size.x(), "mm") << "\"\tsizeY=\""
                           << Units::convert(total_size.y(), "mm") << "\"\tthickness=\""
                           << Units::convert(total_size.z(), "mm") << "\"" << std::endl;
