@@ -9,7 +9,7 @@ ALLPIX_MODULE_SOURCES(${MODULE_NAME}
 
 # Eigen is required for finding the coupling distances
 FIND_PACKAGE(Eigen3 REQUIRED)
-INCLUDE_DIRECTORIES(SYSTEM ${EIGEN3_INCLUDE_DIR})
+TARGET_LINK_LIBRARIES(${MODULE_NAME} Eigen3::Eigen)
 
 # Provide standard install target
 ALLPIX_MODULE_INSTALL(${MODULE_NAME})
