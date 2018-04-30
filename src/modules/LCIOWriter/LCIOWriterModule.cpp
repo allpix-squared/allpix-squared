@@ -32,8 +32,6 @@
 #include <UTIL/CellIDEncoder.h>
 #include <lcio.h>
 
-#include <Eigen/Core>
-
 using namespace allpix;
 using namespace lcio;
 
@@ -46,7 +44,19 @@ namespace EUTELESCOPE {
 
 } // namespace EUTELESCOPE
 
-inline Eigen::Vector3d getRotationAnglesFromMatrix(Eigen::Matrix3d rot_mat) {
+inline std::array<long double, 3> getRotationAnglesFromMatrix(ROOT::Math::Rotation3D const& rot_mat) {
+    double r00 = 0;
+    double r01 = 0;
+    double r02 = 0;
+    double r10 = 0;
+    double r11 = 0;
+    double r12 = 0;
+    double r20 = 0;
+    double r21 = 0;
+    double r22 = 0;
+
+    rot_mat.GetComponents(r00, r01, r02, r10, r11, r12, r20, r21, r22);
+
     long double aX = 0;
     long double aY = 0;
     long double aZ = 0;
@@ -56,24 +66,22 @@ inline Eigen::Vector3d getRotationAnglesFromMatrix(Eigen::Matrix3d rot_mat) {
     // followed by X and ultimately Y rotation. In the case of a gimbal lock,
     // the angle around the
     // Z axis is (arbitrarily) set to 0.
-    if(rot_mat(1, 2) < 1) {
-        if(rot_mat(1, 2) > -1) {
-            aX = std::asin(-rot_mat(1, 2));
-            aY = std::atan2(rot_mat(0, 2), rot_mat(2, 2));
-            aZ = std::atan2(rot_mat(1, 0), rot_mat(1, 1));
+    if(r12 < 1) {
+        if(r12 > -1) {
+            aX = std::asin(-r12);
+            aY = std::atan2(r02, r22);
+            aZ = std::atan2(r10, r11);
         } else /* r12 = -1 */ {
             aX = pi / 2;
-            aY = -std::atan2(-rot_mat(0, 1), rot_mat(0, 0));
+            aY = -std::atan2(-r01, r00);
             aZ = 0;
         }
     } else /* r12 = 1 */ {
         aX = -pi / 2;
-        aY = std::atan2(-rot_mat(0, 1), rot_mat(0, 0));
+        aY = std::atan2(-r01, r00);
         aZ = 0;
     }
-
-    Eigen::Vector3d vec;
-    vec << static_cast<double>(aX), static_cast<double>(aY), static_cast<double>(aZ);
+    std::array<long double, 3> vec = {aX, aY, aZ};
     return vec;
 }
 
@@ -89,70 +97,104 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
     config_.setDefault("geometry_file", "allpix_squared_gear.xml");
     config_.setDefault("pixel_type", 2);
     config_.setDefault("detector_name", "EUTelescope");
-    config_.setDefault("output_collection_name", "zsdata_m26");
-    config_.setDefault("dut_collection_name", "zsdata_dut");
 
     pixel_type_ = config_.get<int>("pixel_type");
     detector_name_ = config_.get<std::string>("detector_name");
 
-    // The 'setup' parameter has a string matrix with three elements per row
-    // ["detector_name", "output_collection", "sensor_id"] where the detector_name
-    // must correspond to the detector name in the geometry file, the output_collection
-    // will be the name of the lcio output collection (multiple detectors can write to
-    // the same collection), and sensor_id has to be a unique id which the data corresponding
-    // to this sensor will carry
-    auto setup = config.getMatrix<std::string>("setup");
-    auto assigned_ids = std::vector<unsigned>{};
+    // There are two ways to configure this module - either by providing a "output_collection_name" or a
+    // "detector_assignment". Throws an error if both are provided and defaults back to "output_collection_name" if none are
+    // provided
+    auto has_short_config = config_.has("output_collection_name");
+    auto has_long_config = config_.has("detector_assignment");
 
-    for(auto const& setup_entry : setup) {
-        if(setup_entry.size() == 3) {
-            auto const& det_name = setup_entry[0];
-            auto const& col_name = setup_entry[1];
-            auto const& sensor_id_str = setup_entry[2];
-            // This map will help determine how many setup we will create (keys) and what
-            // detectors write into that collection (values)
-            col_to_dets_map_[col_name].emplace_back(det_name);
-
-            unsigned sensor_id = 0;
-            try {
-                auto sensor_id_unchecked = std::stoi(sensor_id_str);
-                if(sensor_id_unchecked >= 0 && sensor_id_unchecked <= 127) {
-                    sensor_id = static_cast<unsigned>(sensor_id_unchecked);
-                } else {
-                    auto error = "The sensor id \"" + std::to_string(sensor_id_unchecked) +
-                                 "\" which was provided for detector \"" + det_name +
-                                 "\" must be positive and less than or equal to 127 (7 bit)";
-                    throw InvalidValueError(config_, "setup", error);
-                }
-            } catch(const std::invalid_argument&) {
-                auto error = "The sensor id \"" + sensor_id_str + "\" which was provided for detector \"" + det_name +
-                             "\" is not a valid integer";
-                throw InvalidValueError(config_, "setup", error);
-            }
-
-            if(std::find(assigned_ids.begin(), assigned_ids.end(), sensor_id) == assigned_ids.end()) {
-                assigned_ids.emplace_back(sensor_id);
-                // This map will translate the internally used detector name to the sensor id
-                det_name_to_id_[det_name] = sensor_id;
-            } else {
-                auto error = "Trying to assign sensor id \"" + std::to_string(sensor_id) + "\" to detector \"" + det_name +
-                             "\", this id is already assigned";
-                throw InvalidValueError(config_, "setup", error);
-            }
-
-        } else {
-            auto error = std::string("The entry: [");
-            for(auto const& value : setup_entry) {
-                error.append("\"" + value + "\", ");
-            }
-            error.pop_back();
-            error.pop_back();
-            error.append(
-                "] should have three entries in following order: [\"detector_name\", \"output_collection\", \"sensor_id\"]");
-            throw InvalidValueError(config_, "setup", error);
-        }
+    if(has_short_config && has_long_config) {
+        throw InvalidCombinationError(config_,
+                                      {"output_collection_name", "detector_assignment"},
+                                      "Provide either a \"output_collection_name\" or a \"detector_assignment\" "
+                                      "configuration parameter. They are mutually exclusive!");
+    } else if(!has_short_config && !has_long_config) {
+        config_.setDefault("output_collection_name", "zsdata_m26");
+        has_short_config = true;
     }
 
+    auto detectors = geo_mgr_->getDetectors();
+
+    if(has_short_config) {
+        auto out_col_name = config_.get<std::string>("output_collection_name");
+        unsigned sensor_id = 0;
+        for(auto const& det : detectors) {
+            auto const& det_name = det->getName();
+            col_to_dets_map_[out_col_name].emplace_back(det_name);
+            det_name_to_id_[det_name] = sensor_id++;
+        }
+    } else {
+
+        // The 'setup' parameter has a string matrix with three elements per row
+        // ["detector_name", "output_collection", "sensor_id"] where the detector_name
+        // must correspond to the detector name in the geometry file, the output_collection
+        // will be the name of the lcio output collection (multiple detectors can write to
+        // the same collection), and sensor_id has to be a unique id which the data corresponding
+        // to this sensor will carry
+        auto setup = config.getMatrix<std::string>("detector_assignment");
+        auto assigned_ids = std::vector<unsigned>{};
+
+        for(auto const& setup_entry : setup) {
+            if(setup_entry.size() == 3) {
+                auto const& det_name = setup_entry[0];
+                auto const& col_name = setup_entry[1];
+                auto const& sensor_id_str = setup_entry[2];
+                // This map will help determine how many setup we will create (keys) and what
+                // detectors write into that collection (values)
+                col_to_dets_map_[col_name].emplace_back(det_name);
+
+                unsigned sensor_id = 0;
+                try {
+                    auto sensor_id_unchecked = std::stoi(sensor_id_str);
+                    if(sensor_id_unchecked >= 0 && sensor_id_unchecked <= 127) {
+                        sensor_id = static_cast<unsigned>(sensor_id_unchecked);
+                    } else {
+                        auto error = "The sensor id \"" + std::to_string(sensor_id_unchecked) +
+                                     "\" which was provided for detector \"" + det_name +
+                                     "\" must be positive and less than or equal to 127 (7 bit)";
+                        throw InvalidValueError(config_, "detector_assignment", error);
+                    }
+                } catch(const std::invalid_argument&) {
+                    auto error = "The sensor id \"" + sensor_id_str + "\" which was provided for detector \"" + det_name +
+                                 "\" is not a valid integer";
+                    throw InvalidValueError(config_, "detector_assignment", error);
+                }
+
+                if(std::find(assigned_ids.begin(), assigned_ids.end(), sensor_id) == assigned_ids.end()) {
+                    assigned_ids.emplace_back(sensor_id);
+                    // This map will translate the internally used detector name to the sensor id
+                    det_name_to_id_[det_name] = sensor_id;
+                } else {
+                    auto error = "Trying to assign sensor id \"" + std::to_string(sensor_id) + "\" to detector \"" +
+                                 det_name + "\", this id is already assigned";
+                    throw InvalidValueError(config_, "detector_assignment", error);
+                }
+
+            } else {
+                auto error = std::string("The entry: [");
+                for(auto const& value : setup_entry) {
+                    error.append("\"" + value + "\", ");
+                }
+                error.pop_back();
+                error.pop_back();
+                error.append("] should have three entries in following order: [\"detector_name\", \"output_collection\", "
+                             "\"sensor_id\"]");
+                throw InvalidValueError(config_, "detector_assignment", error);
+            }
+        }
+
+        // Cross check the detector geometry against the configuration file
+        if(setup.size() != detectors.size()) {
+            auto error = "In the configuration file " + std::to_string(setup.size()) +
+                         " detectors are specified, in the geometry " + std::to_string(detectors.size()) +
+                         ", this is a mismatch";
+            throw InvalidValueError(config_, "detector_assignment", error);
+        }
+    }
     //
     for(auto const& col_dets_pair : col_to_dets_map_) {
         col_name_vec_.emplace_back(col_dets_pair.first);
@@ -164,14 +206,6 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
         }
     }
 
-    // Cross check the detector geometry against the configuration file
-    auto detectors = geo_mgr_->getDetectors();
-    if(setup.size() != detectors.size()) {
-        auto error = "In the configuration file " + std::to_string(setup.size()) +
-                     " detectors are specified, in the geometry " + std::to_string(detectors.size()) +
-                     ", this is a mismatch";
-        throw InvalidValueError(config_, "setup", error);
-    }
     for(const auto& det : detectors) {
         auto const& det_name = det->getName();
         auto it = det_name_to_id_.find(det_name);
@@ -180,7 +214,7 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
         } else {
             auto error = "Detector \"" + det_name +
                          "\" is specified in the geometry file, but not provided in the configuration file";
-            throw InvalidValueError(config_, "setup", error);
+            throw InvalidValueError(config_, "detector_assignment", error);
         }
     }
 }
@@ -427,9 +461,7 @@ void LCIOWriterModule::finalize() {
                           << Units::convert(position.y(), "mm") << "\"\tpositionZ=\"" << Units::convert(position.z(), "mm")
                           << "\"" << std::endl;
 
-            Eigen::Matrix3d rot_matrix;
-            detector->getOrientation().GetRotationMatrix(rot_matrix);
-            auto angles = getRotationAnglesFromMatrix(rot_matrix);
+            auto angles = getRotationAnglesFromMatrix(detector->getOrientation());
 
             geometry_file << "            rotationZY=\"" << Units::convert(-angles[0], "deg") << "\"     rotationZX=\""
                           << Units::convert(-angles[1], "deg") << "\"   rotationXY=\"" << Units::convert(-angles[2], "deg")
