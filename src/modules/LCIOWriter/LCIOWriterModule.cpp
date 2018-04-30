@@ -81,7 +81,7 @@ inline std::array<long double, 3> getRotationAnglesFromMatrix(ROOT::Math::Rotati
         aY = std::atan2(-r01, r00);
         aZ = 0;
     }
-    std::array<long double, 3> vec = {aX, aY, aZ};
+    std::array<long double, 3> vec = {{aX, aY, aZ}};
     return vec;
 }
 
