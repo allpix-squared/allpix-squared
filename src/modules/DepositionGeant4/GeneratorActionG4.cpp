@@ -96,7 +96,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     if(fabs(direction.mag() - 1.0) > std::numeric_limits<double>::epsilon()) {
         LOG(WARNING) << "Momentum direction is not a unit vector: magnitude is ignored";
     }
-    if(!particle_type.empty() && particle_code != 0) {
+    if(!particle_type.empty() || particle_code != 0) {
         single_source->GetAngDist()->SetParticleMomentumDirection(direction);
     }
 
