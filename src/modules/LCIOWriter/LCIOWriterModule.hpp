@@ -67,6 +67,7 @@ namespace allpix {
         std::shared_ptr<IO::LCWriter> lcWriter_{};
         int pixel_type_;
 
+        bool dump_mc_truth_;
         std::string detector_name_;
         std::string lcio_file_name_;
         std::string geometry_file_name_;

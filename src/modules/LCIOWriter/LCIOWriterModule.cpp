@@ -35,14 +35,14 @@
 using namespace allpix;
 using namespace lcio;
 
-namespace EUTELESCOPE {
+namespace eutelescope {
     static const std::string gTrackerHitEncoding = "sensorID:7,properties:7";
     static const std::string gTrackerPulseEncoding = "sensorID:7,xSeed:12,ySeed:12,xCluSize:5,yCluSize:5,type:5,quality:5";
     static const std::string gTrackerDataEncoding = "sensorID:7,sparsePixelType:5";
 
     enum HitProperties { kHitInGlobalCoord = 1L << 0, kFittedHit = 1L << 1, kSimulatedHit = 1L << 2, kDeltaHit = 1L << 3 };
 
-} // namespace EUTELESCOPE
+} // namespace eutelescope
 
 inline std::array<long double, 3> getRotationAnglesFromMatrix(ROOT::Math::Rotation3D const& rot_mat) {
     double r00 = 0;
@@ -97,10 +97,11 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
     config_.setDefault("geometry_file", "allpix_squared_gear.xml");
     config_.setDefault("pixel_type", 2);
     config_.setDefault("detector_name", "EUTelescope");
+    config_.setDefault("dump_mc_truth", false);
 
     pixel_type_ = config_.get<int>("pixel_type");
     detector_name_ = config_.get<std::string>("detector_name");
-
+    dump_mc_truth_ = config_.get<bool>("dump_mc_truth");
     // There are two ways to configure this module - either by providing a "output_collection_name" or a
     // "detector_assignment". Throws an error if both are provided and defaults back to "output_collection_name" if none are
     // provided
@@ -160,7 +161,7 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
                     }
                 } catch(const std::invalid_argument&) {
                     auto error = "The sensor id \"" + sensor_id_str + "\" which was provided for detector \"" + det_name +
-                                 "\" is not a valid integer";
+                                 "\" is not a valid integer"; // NOLINT
                     throw InvalidValueError(config_, "detector_assignment", error);
                 }
 
@@ -170,7 +171,7 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
                     det_name_to_id_[det_name] = sensor_id;
                 } else {
                     auto error = "Trying to assign sensor id \"" + std::to_string(sensor_id) + "\" to detector \"" +
-                                 det_name + "\", this id is already assigned";
+                                 det_name + "\", this id is already assigned"; // NOLINT
                     throw InvalidValueError(config_, "detector_assignment", error);
                 }
 
@@ -189,9 +190,9 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
 
         // Cross check the detector geometry against the configuration file
         if(setup.size() != detectors.size()) {
-            auto error = "In the configuration file " + std::to_string(setup.size()) +
-                         " detectors are specified, in the geometry " + std::to_string(detectors.size()) +
-                         ", this is a mismatch";
+            auto error = "In the configuration file " + std::to_string(setup.size()) +                     // NOLINT
+                         " detectors are specified, in the geometry " + std::to_string(detectors.size()) + // NOLINT
+                         ", this is a mismatch";                                                           // NOLINT
             throw InvalidValueError(config_, "detector_assignment", error);
         }
     }
@@ -212,8 +213,8 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
         if(it != det_name_to_id_.end()) {
             LOG(DEBUG) << det_name << " has ID " << det_name_to_id_[det_name];
         } else {
-            auto error = "Detector \"" + det_name +
-                         "\" is specified in the geometry file, but not provided in the configuration file";
+            auto error = "Detector \"" + det_name +                                                          // NOLINT
+                         "\" is specified in the geometry file, but not provided in the configuration file"; // NOLINT
             throw InvalidValueError(config_, "detector_assignment", error);
         }
     }
@@ -233,7 +234,6 @@ void LCIOWriterModule::init() {
 }
 
 void LCIOWriterModule::run(unsigned int eventNb) {
-
     auto evt = std::make_unique<LCEventImpl>(); // create the event
     evt->setRunNumber(1);
     evt->setEventNumber(static_cast<int>(eventNb)); // set the event attributes
@@ -246,24 +246,41 @@ void LCIOWriterModule::run(unsigned int eventNb) {
         output_col_vec.emplace_back(new LCCollectionVec(LCIO::TRACKERDATA));
         std::cout << "Collection: " << output_col_vec.back() << std::endl;
         output_col_encoder_vec.emplace_back(
-            std::make_unique<CellIDEncoder<TrackerDataImpl>>(EUTELESCOPE::gTrackerDataEncoding, output_col_vec.back()));
+            std::make_unique<CellIDEncoder<TrackerDataImpl>>(eutelescope::gTrackerDataEncoding, output_col_vec.back()));
     }
 
-    // Prepare static Monte-Carlo output setup and their CellIDEncoders which are the same everytime
-    LCCollectionVec* mc_cluster_vec = new LCCollectionVec(LCIO::TRACKERPULSE);
-    LCCollectionVec* mc_cluster_raw_vec = new LCCollectionVec(LCIO::TRACKERDATA);
-    LCCollectionVec* mc_hit_vec = new LCCollectionVec(LCIO::TRACKERHIT);
-    LCCollectionVec* mc_track_vec = new LCCollectionVec(LCIO::TRACK);
+    LCCollectionVec* mc_cluster_vec = nullptr;
+    LCCollectionVec* mc_cluster_raw_vec = nullptr;
+    LCCollectionVec* mc_hit_vec = nullptr;
+    LCCollectionVec* mc_track_vec = nullptr;
 
-    CellIDEncoder<TrackerDataImpl> mc_cluster_raw_encoder(EUTELESCOPE::gTrackerDataEncoding, mc_cluster_raw_vec);
-    CellIDEncoder<TrackerPulseImpl> mc_cluster_encoder(EUTELESCOPE::gTrackerPulseEncoding, mc_cluster_vec);
-    CellIDEncoder<TrackerHitImpl> mc_hit_encoder(EUTELESCOPE::gTrackerHitEncoding, mc_hit_vec);
+    //    CellIDEncoder<TrackerDataImpl> mc_cluster_raw_encoder(eutelescope::gTrackerDataEncoding, mc_cluster_raw_vec);
+    //    CellIDEncoder<TrackerPulseImpl> mc_cluster_encoder(eutelescope::gTrackerPulseEncoding, mc_cluster_vec);
+    //    CellIDEncoder<TrackerHitImpl> mc_hit_encoder(eutelescope::gTrackerHitEncoding, mc_hit_vec);
+
+    std::unique_ptr<CellIDEncoder<TrackerDataImpl>> mc_cluster_raw_encoder = nullptr;
+    std::unique_ptr<CellIDEncoder<TrackerPulseImpl>> mc_cluster_encoder = nullptr;
+    std::unique_ptr<CellIDEncoder<TrackerHitImpl>> mc_hit_encoder = nullptr;
 
     // The detector id is only attached to the message, not the MCParticle, thus we store it here
     auto mcp_to_det_id = std::map<MCParticle const*, unsigned>{};
     // Multiple pixel hits can be assigned to a single MCParticle, here we store them in a LCIO 'float vector' to create the
     // Monte Carlo truth cluster
     auto mcp_to_pixel_data_vec = std::map<MCParticle const*, std::vector<std::vector<float>>>{};
+
+    if(dump_mc_truth_ == true) {
+        // Prepare static Monte-Carlo output setup and their CellIDEncoders which are the same everytime
+        mc_cluster_vec = new LCCollectionVec(LCIO::TRACKERPULSE);
+        mc_cluster_raw_vec = new LCCollectionVec(LCIO::TRACKERDATA);
+        mc_hit_vec = new LCCollectionVec(LCIO::TRACKERHIT);
+        mc_track_vec = new LCCollectionVec(LCIO::TRACK);
+
+        mc_cluster_raw_encoder =
+            std::make_unique<CellIDEncoder<TrackerDataImpl>>(eutelescope::gTrackerDataEncoding, mc_cluster_raw_vec);
+        mc_cluster_encoder =
+            std::make_unique<CellIDEncoder<TrackerPulseImpl>>(eutelescope::gTrackerPulseEncoding, mc_cluster_vec);
+        mc_hit_encoder = std::make_unique<CellIDEncoder<TrackerHitImpl>>(eutelescope::gTrackerHitEncoding, mc_hit_vec);
+    }
 
     // In LCIO the 'charge vector' is a vector of floats which correspond to hit pixels, depending on the pixel
     // type in EUTelescope the number of entries per pixel varies
@@ -332,51 +349,52 @@ void LCIOWriterModule::run(unsigned int eventNb) {
     // Every track will be linked to at leat one (typically multiple) MCParticles and thus TrackerData objets
     auto mctrk_to_hit_data_vec = std::map<MCTrack const*, std::vector<TrackerHitImpl*>>{};
 
-    for(auto& mcp_pixel_data_vec_pair : mcp_to_pixel_data_vec) {
-        auto mc_tracker_data = new TrackerDataImpl();
-        auto mc_tracker_pulse = new TrackerPulseImpl();
-        auto mc_tracker_hit = new TrackerHitImpl();
+    if(dump_mc_truth_ == true) {
+        for(auto& mcp_pixel_data_vec_pair : mcp_to_pixel_data_vec) {
+            auto mc_tracker_data = new TrackerDataImpl();
+            auto mc_tracker_pulse = new TrackerPulseImpl();
+            auto mc_tracker_hit = new TrackerHitImpl();
 
-        auto& mc_particle = mcp_pixel_data_vec_pair.first;
+            auto& mc_particle = mcp_pixel_data_vec_pair.first;
 
-        std::vector<float> truth_cluster_charge_vec;
-        for(auto const& pixel_hit_charge_vec : mcp_pixel_data_vec_pair.second) {
-            truth_cluster_charge_vec.insert(
-                std::end(truth_cluster_charge_vec), std::begin(pixel_hit_charge_vec), std::end(pixel_hit_charge_vec));
+            std::vector<float> truth_cluster_charge_vec;
+            for(auto const& pixel_hit_charge_vec : mcp_pixel_data_vec_pair.second) {
+                truth_cluster_charge_vec.insert(
+                    std::end(truth_cluster_charge_vec), std::begin(pixel_hit_charge_vec), std::end(pixel_hit_charge_vec));
+            }
+
+            mc_tracker_data->setChargeValues(truth_cluster_charge_vec);
+            mc_cluster_raw_encoder->operator[]("sensorID") = mcp_to_det_id[mc_particle];
+            mc_cluster_raw_encoder->operator[]("sparsePixelType") = pixel_type_;
+            mc_cluster_raw_encoder->setCellID(mc_tracker_data);
+            mc_cluster_raw_vec->push_back(mc_tracker_data);
+
+            mc_tracker_pulse->setTrackerData(mc_tracker_data);
+            mc_cluster_encoder->operator[]("sensorID") = mcp_to_det_id[mc_particle];
+            mc_cluster_encoder->setCellID(mc_tracker_pulse);
+            mc_cluster_vec->push_back(mc_tracker_pulse);
+
+            // we take the centre of the MCParticle to be the global z-position
+            auto const& hit_start_pos = mc_particle->getGlobalStartPoint();
+            auto const& hit_end_pos = mc_particle->getGlobalEndPoint();
+            auto pos_arr = std::array<double, 3>{{0.5 * (hit_start_pos.x() + hit_end_pos.x()),
+                                                  0.5 * (hit_start_pos.y() + hit_end_pos.y()),
+                                                  0.5 * (hit_start_pos.z() + hit_end_pos.z())}};
+            mc_tracker_hit->setPosition(pos_arr.data());
+            mc_hit_encoder->operator[]("sensorID") = mcp_to_det_id[mc_particle];
+
+            int hit_properties = eutelescope::HitProperties::kHitInGlobalCoord;
+            if(mc_particle->getTrack()->getParent() != nullptr) {
+                hit_properties += eutelescope::HitProperties::kDeltaHit;
+            }
+            mc_hit_encoder->operator[]("properties") = hit_properties;
+
+            mc_hit_encoder->setCellID(mc_tracker_hit);
+            mc_tracker_hit->rawHits() = std::vector<LCObject*>{mc_tracker_data};
+            mc_hit_vec->push_back(mc_tracker_hit);
+            mctrk_to_hit_data_vec[mc_particle->getTrack()].emplace_back(mc_tracker_hit);
         }
-
-        mc_tracker_data->setChargeValues(truth_cluster_charge_vec);
-        mc_cluster_raw_encoder["sensorID"] = mcp_to_det_id[mc_particle];
-        mc_cluster_raw_encoder["sparsePixelType"] = pixel_type_;
-        mc_cluster_raw_encoder.setCellID(mc_tracker_data);
-        mc_cluster_raw_vec->push_back(mc_tracker_data);
-
-        mc_tracker_pulse->setTrackerData(mc_tracker_data);
-        mc_cluster_encoder["sensorID"] = mcp_to_det_id[mc_particle];
-        mc_cluster_encoder.setCellID(mc_tracker_pulse);
-        mc_cluster_vec->push_back(mc_tracker_pulse);
-
-        // we take the centre of the MCParticle to be the global z-position
-        auto const& hit_start_pos = mc_particle->getGlobalStartPoint();
-        auto const& hit_end_pos = mc_particle->getGlobalEndPoint();
-        auto pos_arr = std::array<double, 3>{{0.5 * (hit_start_pos.x() + hit_end_pos.x()),
-                                              0.5 * (hit_start_pos.y() + hit_end_pos.y()),
-                                              0.5 * (hit_start_pos.z() + hit_end_pos.z())}};
-        mc_tracker_hit->setPosition(pos_arr.data());
-        mc_hit_encoder["sensorID"] = mcp_to_det_id[mc_particle];
-
-        int hit_properties = EUTELESCOPE::HitProperties::kHitInGlobalCoord;
-        if(mc_particle->getTrack()->getParent() != nullptr) {
-            hit_properties += EUTELESCOPE::HitProperties::kDeltaHit;
-        }
-        mc_hit_encoder["properties"] = hit_properties;
-
-        mc_hit_encoder.setCellID(mc_tracker_hit);
-        mc_tracker_hit->rawHits() = std::vector<LCObject*>{mc_tracker_data};
-        mc_hit_vec->push_back(mc_tracker_hit);
-        mctrk_to_hit_data_vec[mc_particle->getTrack()].emplace_back(mc_tracker_hit);
     }
-
     // Fill hitvector with event data
     for(auto const& det_id_name_pair : det_name_to_id_) {
         auto det_id = det_id_name_pair.second;
@@ -389,23 +407,25 @@ void LCIOWriterModule::run(unsigned int eventNb) {
         output_col_vec[col_index]->push_back(hit);
     }
 
-    LCFlagImpl flag(mc_track_vec->getFlag());
-    flag.setBit(LCIO::TRBIT_HITS);
-    mc_track_vec->setFlag(flag.getFlag());
-    for(auto& pair : mctrk_to_hit_data_vec) {
-        auto track = new TrackImpl();
-        for(auto& hit : pair.second) {
-            // std::cout << "Got hit: " << hit << " z-pos: " << hit->getPosition()[2] << '\n';
-            track->addHit(hit);
+    if(dump_mc_truth_ == true) {
+        LCFlagImpl flag(mc_track_vec->getFlag());
+        flag.setBit(LCIO::TRBIT_HITS);
+        mc_track_vec->setFlag(flag.getFlag());
+        for(auto& pair : mctrk_to_hit_data_vec) {
+            auto track = new TrackImpl();
+            for(auto& hit : pair.second) {
+                // std::cout << "Got hit: " << hit << " z-pos: " << hit->getPosition()[2] << '\n';
+                track->addHit(hit);
+            }
+            mc_track_vec->push_back(track);
         }
-        mc_track_vec->push_back(track);
-    }
 
-    // Add collection to event and write event to LCIO file
-    evt->addCollection(mc_track_vec, "mc_track");
-    evt->addCollection(mc_hit_vec, "mc_hit");
-    evt->addCollection(mc_cluster_raw_vec, "mc_raw_cluster");
-    evt->addCollection(mc_cluster_vec, "mc_cluster");
+        // Add collection to event and write event to LCIO file
+        evt->addCollection(mc_track_vec, "mc_track");
+        evt->addCollection(mc_hit_vec, "mc_hit");
+        evt->addCollection(mc_cluster_raw_vec, "mc_raw_cluster");
+        evt->addCollection(mc_cluster_vec, "mc_cluster");
+    }
     for(size_t i = 0; i < col_name_vec_.size(); i++) {
         evt->addCollection(output_col_vec[i], col_name_vec_[i]);
     }
