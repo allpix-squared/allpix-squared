@@ -33,8 +33,8 @@ namespace corryvreckan {
     public:
         // Constructors and destructors
         Object();
-        Object(std::string detectorID);
-        Object(double timestamp);
+        explicit Object(std::string detectorID);
+        explicit Object(double timestamp);
         Object(std::string detectorID, double timestamp);
         virtual ~Object();
 
@@ -47,19 +47,19 @@ namespace corryvreckan {
         void setTimestamp(double time) { timestamp(time); }
 
         // Methods to set member variables
-        void setDetectorID(std::string detectorID) { m_detectorID = detectorID; }
+        void setDetectorID(std::string detectorID) { m_detectorID = std::move(detectorID); }
 
     protected:
         // Member variables
         std::string m_detectorID;
-        double m_timestamp;
+        double m_timestamp{0};
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(Object, 1)
+        ClassDef(Object, 2)
     };
 
     // Vector type declaration
-    typedef std::vector<Object*> Objects;
+    using Objects = std::vector<Object*>;
 } // namespace corryvreckan
 
 #endif // CORRYVRECKAN_OBJECT_H
