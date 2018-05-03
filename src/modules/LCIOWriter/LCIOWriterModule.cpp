@@ -372,6 +372,7 @@ void LCIOWriterModule::run(unsigned int eventNb) {
 
             mc_tracker_pulse->setTrackerData(mc_tracker_data);
             mc_cluster_encoder->operator[]("sensorID") = mcp_to_det_id[mc_particle];
+            mc_cluster_encoder->operator[]("type") = 1; // corresponds to kEUTelGenericSparseClusterImpl
             mc_cluster_encoder->setCellID(mc_tracker_pulse);
             mc_cluster_vec->push_back(mc_tracker_pulse);
 
@@ -382,6 +383,7 @@ void LCIOWriterModule::run(unsigned int eventNb) {
                                                   0.5 * (hit_start_pos.y() + hit_end_pos.y()),
                                                   0.5 * (hit_start_pos.z() + hit_end_pos.z())}};
             mc_tracker_hit->setPosition(pos_arr.data());
+            mc_tracker_hit->setType(1); // corresponds to kEUTelGenericSparseClusterImpl
             mc_hit_encoder->operator[]("sensorID") = mcp_to_det_id[mc_particle];
 
             int hit_properties = eutelescope::HitProperties::kHitInGlobalCoord;
