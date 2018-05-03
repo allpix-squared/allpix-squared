@@ -68,7 +68,9 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             throw InvalidValueError(config, "particle_type", "particle type does not exist.");
         }
     } else {
-        throw InvalidValueError(config, "source_type", "Please set source type.");
+        if(source_type.empty()) {
+            throw InvalidValueError(config, "source_type", "Please set source type.");
+        }
     }
 
     LOG(DEBUG) << "Using particle " << particle->GetParticleName() << " (ID " << particle->GetPDGEncoding() << ").";

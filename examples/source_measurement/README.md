@@ -1,6 +1,6 @@
 # Source Measurement with Shielding
 
-This example simulates an (admittedly not very physical) source emitting electrons with Gaussian distributed energy of $`N(0.56MeV, 0.20MeV)`$.
+This example simulates 1) an (admittedly not very physical) source emitting electrons with Gaussian distributed energy of $`N(0.56MeV, 0.20MeV)`$ and 2) a simple Iron-55 source emitting 28% 0.0059MeV and 2.85% 0.00649MeV gammas.
 A Medipix-type detector is placed below the source, shielded with an additional sheet of aluminum with a thickness of 8mm.
 No misalignment is added but the absolute position and orientation of the detector is specified.
 
