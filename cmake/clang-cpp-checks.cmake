@@ -45,7 +45,7 @@ IF(${CMAKE_CXX_STANDARD})
     SET(CXX_STD ${CMAKE_CXX_STANDARD})
 ENDIF()
 
-FIND_PROGRAM(CLANG_TIDY "clang-tidy")
+FIND_PROGRAM(CLANG_TIDY NAMES "clang-tidy-6.0" "clang-tidy-5.0" "clang-tidy-4.0" "clang-tidy")
 # Enable clang tidy only if using a clang compiler
 IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # If debug build enabled do automatic clang tidy
@@ -55,10 +55,11 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
     # Enable checking and formatting through run-clang-tidy if available
     # FIXME Make finding this program more portable
+    GET_FILENAME_COMPONENT(CLANG_TIDY ${CLANG_TIDY} REALPATH)
     GET_FILENAME_COMPONENT(CLANG_DIR ${CLANG_TIDY} DIRECTORY)
     FIND_PROGRAM(RUN_CLANG_TIDY NAMES "run-clang-tidy.py" "run-clang-tidy-4.0.py" HINTS /usr/share/clang/ ${CLANG_DIR}/../share/clang/ /usr/bin/)
     IF(RUN_CLANG_TIDY)
-        MESSAGE(STATUS "Found clang-tidy, adding linting targets")
+        MESSAGE(STATUS "Found ${CLANG_TIDY}, adding linting targets")
 
         # Set export commands on
         SET (CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -88,7 +89,7 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         MESSAGE(STATUS "Could NOT find run-clang-tidy script")
     ENDIF()
 ELSE()
-    MESSAGE(STATUS "Could NOT find clang-tidy")
+    MESSAGE(STATUS "Could NOT find clang-tidy ${CMAKE_CXX_COMPILER_ID}")
 ENDIF()
 
 FIND_PROGRAM(CPPCHECK "cppcheck")
