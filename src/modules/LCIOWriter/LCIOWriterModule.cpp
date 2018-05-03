@@ -154,15 +154,16 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
                     if(sensor_id_unchecked >= 0 && sensor_id_unchecked <= 127) {
                         sensor_id = static_cast<unsigned>(sensor_id_unchecked);
                     } else {
-                        auto error = "The sensor id \"" + std::to_string(sensor_id_unchecked) +
-                                     "\" which was provided for detector \"" + det_name +
-                                     "\" must be positive and less than or equal to 127 (7 bit)";
+                        auto error = "The sensor id \"" + std::to_string(sensor_id_unchecked) +   // NOLINT
+                                     "\" which was provided for detector \"" + det_name +         // NOLINT
+                                     "\" must be positive and less than or equal to 127 (7 bit)"; // NOLINT
                         throw InvalidValueError(config_, "detector_assignment", error);
                     }
                 } catch(const std::invalid_argument&) {
-                    auto error = "The sensor id \"" + sensor_id_str + "\" which was provided for detector \"" +
-                                 det_name +                   // NOLINT
-                                 "\" is not a valid integer"; // NOLINT
+                    auto error = "The sensor id \"" + sensor_id_str +      // NOLINT
+                                 "\" which was provided for detector \"" + // NOLINT
+                                 det_name +                                // NOLINT
+                                 "\" is not a valid integer";              // NOLINT
                     throw InvalidValueError(config_, "detector_assignment", error);
                 }
 
@@ -171,7 +172,8 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
                     // This map will translate the internally used detector name to the sensor id
                     det_name_to_id_[det_name] = sensor_id;
                 } else {
-                    auto error = "Trying to assign sensor id \"" + std::to_string(sensor_id) +
+                    auto error = "Trying to assign sensor id \""               // NOLINT
+                                 + std::to_string(sensor_id) +                 // NOLINT
                                  "\" to detector \"" +                         // NOLINT
                                  det_name + "\", this id is already assigned"; // NOLINT
                     throw InvalidValueError(config_, "detector_assignment", error);
