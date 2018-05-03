@@ -160,7 +160,8 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
                         throw InvalidValueError(config_, "detector_assignment", error);
                     }
                 } catch(const std::invalid_argument&) {
-                    auto error = "The sensor id \"" + sensor_id_str + "\" which was provided for detector \"" + det_name +
+                    auto error = "The sensor id \"" + sensor_id_str + "\" which was provided for detector \"" +
+                                 det_name +                   // NOLINT
                                  "\" is not a valid integer"; // NOLINT
                     throw InvalidValueError(config_, "detector_assignment", error);
                 }
@@ -170,7 +171,8 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
                     // This map will translate the internally used detector name to the sensor id
                     det_name_to_id_[det_name] = sensor_id;
                 } else {
-                    auto error = "Trying to assign sensor id \"" + std::to_string(sensor_id) + "\" to detector \"" +
+                    auto error = "Trying to assign sensor id \"" + std::to_string(sensor_id) +
+                                 "\" to detector \"" +                         // NOLINT
                                  det_name + "\", this id is already assigned"; // NOLINT
                     throw InvalidValueError(config_, "detector_assignment", error);
                 }
@@ -244,7 +246,6 @@ void LCIOWriterModule::run(unsigned int eventNb) {
     // Prepare dynamic output setup and their CellIDEncoders which are defined by the user's config
     for(size_t i = 0; i < col_name_vec_.size(); ++i) {
         output_col_vec.emplace_back(new LCCollectionVec(LCIO::TRACKERDATA));
-        std::cout << "Collection: " << output_col_vec.back() << std::endl;
         output_col_encoder_vec.emplace_back(
             std::make_unique<CellIDEncoder<TrackerDataImpl>>(eutelescope::gTrackerDataEncoding, output_col_vec.back()));
     }
