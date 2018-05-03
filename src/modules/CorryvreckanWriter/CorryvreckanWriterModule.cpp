@@ -55,10 +55,11 @@ void CorryvreckanWriterModule::init() {
 
         // Get the detector ID and type
         std::string detectorID = detector->getName();
+        std::string detectorModel = detector->getModel()->getType();
 
         // Create the tree
         std::string objectID = detectorID + "_pixels";
-        std::string treeName = detectorID + "_Timepix3_pixels";
+        std::string treeName = detectorID + "_" + detectorModel + "_pixels";
         outputTrees_[objectID] = new TTree(treeName.c_str(), treeName.c_str());
         outputTrees_[objectID]->Branch("time", &time_);
 
@@ -73,7 +74,7 @@ void CorryvreckanWriterModule::init() {
 
         // Create the tree
         std::string objectID_MC = detectorID + "_mcparticles";
-        std::string treeName_MC = detectorID + "_Timepix3_mcparticles";
+        std::string treeName_MC = detectorID + "_" + detectorModel + "_mcparticles";
         outputTreesMC_[objectID_MC] = new TTree(treeName_MC.c_str(), treeName_MC.c_str());
         outputTreesMC_[objectID_MC]->Branch("time", &time_);
 
