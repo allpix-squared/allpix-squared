@@ -27,7 +27,7 @@ namespace corryvreckan {
      * @brief Base class for internal objects
      *
      * Generic base class. Every class which inherits from Object can be placed on the clipboard and written out to file.
-    */
+     */
     class Object : public TObject {
 
     public:
@@ -48,11 +48,6 @@ namespace corryvreckan {
 
         // Methods to set member variables
         void setDetectorID(std::string detectorID) { m_detectorID = detectorID; }
-
-        // Function to get instantiation of inherited class (given a string, give back
-        // an object of type 'daughter')
-        static Object* Factory(std::string, Object* object = NULL);
-        static Object* Factory(std::string, std::string, Object* object = NULL);
 
     protected:
         // Member variables
