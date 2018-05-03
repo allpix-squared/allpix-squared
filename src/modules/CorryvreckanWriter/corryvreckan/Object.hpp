@@ -36,7 +36,7 @@ namespace corryvreckan {
         explicit Object(std::string detectorID);
         explicit Object(double timestamp);
         Object(std::string detectorID, double timestamp);
-        virtual ~Object();
+        override ~Object();
 
         // Methods to get member variables
         std::string getDetectorID() { return m_detectorID; }
