@@ -85,7 +85,7 @@ namespace allpix {
         ROOT::Math::XYZPoint getPosition() const;
         /**
          * @brief Get orientation in the world
-         * @return Orientation in Z-X-Z extrinsic Euler angles
+         * @return Rotation matrix representing the orientation
          */
         ROOT::Math::Rotation3D getOrientation() const;
 
@@ -194,7 +194,7 @@ namespace allpix {
          * @brief Constructs a detector in the geometry without a model (added later by the \ref GeometryManager)
          * @param name Unique name of the detector
          * @param position Position in the world frame
-         * @param orientation Orientation in Z-X-Z extrinsic Euler angles
+         * @param orientation Rotation matrix representing the orientation
          */
         Detector(std::string name, ROOT::Math::XYZPoint position, const ROOT::Math::Rotation3D& orientation);
 
