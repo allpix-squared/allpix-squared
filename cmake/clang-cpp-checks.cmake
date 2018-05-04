@@ -9,32 +9,39 @@ ENDIF()
 # Adding clang-format check and formatter if found
 FIND_PROGRAM(CLANG_FORMAT NAMES "clang-format-6.0" "clang-format-5.0" "clang-format-4.0" "clang-format")
 IF(CLANG_FORMAT)
-    MESSAGE(STATUS "Found ${CLANG_FORMAT}, adding formatting targets")
-    ADD_CUSTOM_TARGET(
-        format
-        COMMAND
-        ${CLANG_FORMAT}
-        -i
-        -style=file
-        ${CHECK_CXX_SOURCE_FILES}
-        COMMENT "Auto formatting of all source files"
-    )
+    EXEC_PROGRAM(${CLANG_FORMAT} ${CMAKE_CURRENT_SOURCE_DIR} ARGS --version OUTPUT_VARIABLE CLANG_VERSION)
+    STRING(REGEX REPLACE ".*([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" CLANG_MAJOR_VERSION ${CLANG_VERSION})
 
-    ADD_CUSTOM_TARGET(
-        check-format
-        COMMAND
-        ${CLANG_FORMAT}
-        -style=file
-        -output-replacements-xml
-        ${CHECK_CXX_SOURCE_FILES}
-        # print output
-        | tee ${CMAKE_BINARY_DIR}/check_format_file.txt | grep -c "replacement " |
-                tr -d "[:cntrl:]" && echo " replacements necessary"
-        # WARNING: fix to stop with error if there are problems
-        COMMAND ! grep -c "replacement "
-                  ${CMAKE_BINARY_DIR}/check_format_file.txt > /dev/null
-        COMMENT "Checking format compliance"
-    )
+    IF(${CLANG_MAJOR_VERSION} GREATER_EQUAL "4")
+        MESSAGE(STATUS "Found ${CLANG_FORMAT}, adding formatting targets")
+        ADD_CUSTOM_TARGET(
+            format
+            COMMAND
+            ${CLANG_FORMAT}
+            -i
+            -style=file
+            ${CHECK_CXX_SOURCE_FILES}
+            COMMENT "Auto formatting of all source files"
+        )
+
+        ADD_CUSTOM_TARGET(
+            check-format
+            COMMAND
+            ${CLANG_FORMAT}
+            -style=file
+            -output-replacements-xml
+            ${CHECK_CXX_SOURCE_FILES}
+            # print output
+            | tee ${CMAKE_BINARY_DIR}/check_format_file.txt | grep -c "replacement " |
+            tr -d "[:cntrl:]" && echo " replacements necessary"
+            # WARNING: fix to stop with error if there are problems
+            COMMAND ! grep -c "replacement "
+            ${CMAKE_BINARY_DIR}/check_format_file.txt > /dev/null
+            COMMENT "Checking format compliance"
+        )
+    ELSE()
+        MESSAGE(STATUS "Could only find version ${CLANG_MAJOR_VERSION} of clang-format, but version >= 4 is required.")
+    ENDIF()
 ELSE()
     MESSAGE(STATUS "Could NOT find clang-format")
 ENDIF()
