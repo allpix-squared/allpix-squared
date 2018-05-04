@@ -35,10 +35,16 @@ if [[ $clicdp_status == *"(stratum0 / local)"* ]]; then
       continue
     fi
 
-    # Create target direktory and untar:
+    # Create target directory and untar:
     mkdir -p /home/cvclicdp/release/$version/$flavor
     tar --strip-components=1 -xf $filename -C /home/cvclicdp/release/$version/$flavor/
   done
+
+  # Check if we found eny version and flavor to be installed:
+  if [[ -z $version || -z $flavor ]]; then
+    echo "Did not find suitable version or flavor to install."
+    exit 1
+  fi
 
   # Deleting old nightly build if it is not a tag
   if [ "$2" == "latest" ]; then
