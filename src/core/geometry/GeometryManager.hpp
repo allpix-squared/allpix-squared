@@ -184,10 +184,10 @@ namespace allpix {
         std::vector<std::shared_ptr<Detector>> getDetectorsByType(const std::string& type);
 
         /**
-     * @brief Set the magnetic field in the volume
-     * @param function Function used to retrieve the magnetic field
-     * @param type Type of the magnetic field function used
-     */
+         * @brief Set the magnetic field in the volume
+         * @param function Function used to retrieve the magnetic field
+         * @param type Type of the magnetic field function used
+         */
         void setMagneticFieldFunction(MagneticFieldFunction function, MagneticFieldType type = MagneticFieldType::CUSTOM);
 
         /**
