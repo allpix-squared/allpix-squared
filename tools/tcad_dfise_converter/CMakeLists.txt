@@ -33,12 +33,11 @@ ADD_EXECUTABLE(dfise_converter
 #Build the TCAD converter
 ADD_SUBDIRECTORY(data)
 
-# Link the dependency libraries
-TARGET_LINK_LIBRARIES(dfise_converter ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES})
-
 # Include Eigen dependency
 FIND_PACKAGE(Eigen3 REQUIRED)
-INCLUDE_DIRECTORIES(SYSTEM ${EIGEN3_INCLUDE_DIR})
+
+# Link the dependency libraries
+TARGET_LINK_LIBRARIES(dfise_converter ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES} Eigen3::Eigen)
 
 # Create install target
 INSTALL(TARGETS dfise_converter
