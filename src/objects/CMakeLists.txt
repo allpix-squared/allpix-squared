@@ -28,7 +28,6 @@ ROOT_GENERATE_DICTIONARY(AllpixObjectsDictionary
     LINKDEF
     ${CMAKE_CURRENT_SOURCE_DIR}/Linkdef.h
     OPTIONS
-    -Wno-inconsistent-missing-override
     -inlineInputHeader
     -I${CMAKE_CURRENT_SOURCE_DIR}
     MODULE

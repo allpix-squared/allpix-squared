@@ -58,7 +58,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDef(Object, 2);
+        ClassDefOverride(Object, 2);
 
     protected:
         /**

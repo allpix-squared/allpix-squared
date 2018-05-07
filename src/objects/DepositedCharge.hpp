@@ -54,7 +54,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDef(DepositedCharge, 2);
+        ClassDefOverride(DepositedCharge, 2);
         /**
          * @brief Default constructor for ROOT I/O
          */

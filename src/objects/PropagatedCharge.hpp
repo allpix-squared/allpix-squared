@@ -52,7 +52,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDef(PropagatedCharge, 3);
+        ClassDefOverride(PropagatedCharge, 3);
         /**
          * @brief Default constructor for ROOT I/O
          */
