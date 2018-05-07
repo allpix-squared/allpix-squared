@@ -68,13 +68,6 @@ if [ ${COMPILER_TYPE} == "llvm" ]; then
 fi
 
 #--------------------------------------------------------------------------------
-#     Python
-#--------------------------------------------------------------------------------
-export PYTHONDIR=${CLICREPO}/software/Python/2.7.13/${BUILD_FLAVOUR}
-export PATH=${PYTHONDIR}/bin:$PATH
-export LD_LIBRARY_PATH=${PYTHONDIR}/lib:${LD_LIBRARY_PATH}
-
-#--------------------------------------------------------------------------------
 #     CMake
 #--------------------------------------------------------------------------------
 
@@ -92,14 +85,6 @@ export LD_LIBRARY_PATH="$ROOTSYS/lib:$LD_LIBRARY_PATH"
 export CMAKE_PREFIX_PATH="$ROOTSYS:$CMAKE_PREFIX_PATH"
 
 #--------------------------------------------------------------------------------
-#     XercesC
-#--------------------------------------------------------------------------------
-
-export XercesC_HOME=${CLICREPO}/${BUILD_FLAVOUR}
-export PATH="$XercesC_HOME/bin:$PATH"
-export LD_LIBRARY_PATH="$XercesC_HOME/lib:$LD_LIBRARY_PATH"
-
-#--------------------------------------------------------------------------------
 #     Geant4
 #--------------------------------------------------------------------------------
 
@@ -108,19 +93,6 @@ export G4LIB=$G4INSTALL/lib64/Geant4-10.3.1/
 export G4ENV_INIT="${G4INSTALL}/bin/geant4.sh"
 export G4SYSTEM="Linux-g++"
 export CMAKE_PREFIX_PATH="$G4INSTALL:$CMAKE_PREFIX_PATH"
-
-#--------------------------------------------------------------------------------
-#     CLHEP
-#--------------------------------------------------------------------------------
-export CLHEP_ROOT_DIR=/lcg/releases/clhep/2.3.1.1-6ba0c/x86_64-slc6-gcc62-opt/
-export CMAKE_PREFIX_PATH="$CLHEP_ROOT_DIR:$CMAKE_PREFIX_PATH"
-
-#--------------------------------------------------------------------------------
-#     Boost
-#--------------------------------------------------------------------------------
-
-export BOOST_ROOT=${CLICREPO}/software/Boost/1.64.0/${BUILD_FLAVOUR}
-export LD_LIBRARY_PATH="${BOOST_ROOT}/lib:$LD_LIBRARY_PATH"
 
 #--------------------------------------------------------------------------------
 #     Ninja
