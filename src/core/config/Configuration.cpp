@@ -169,7 +169,6 @@ std::vector<std::pair<std::string, std::string>> Configuration::getAll() {
  * skipped.
  */
 std::unique_ptr<Configuration::parse_node> Configuration::parse_value(std::string str, int depth) {
-    using parse_node = Configuration::parse_node;
 
     auto node = std::make_unique<parse_node>();
     str = allpix::trim(str);
