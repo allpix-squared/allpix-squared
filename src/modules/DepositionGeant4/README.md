@@ -30,12 +30,12 @@ This module requires an installation Geant4.
 * `range_cut` : Geant4 range cut-off threshold for the production of gammas, electrons and positrons to avoid infrared divergence. Defaults to a fifth of the shortest pixel feature, i.e. either pitch or thickness.
 * `particle_type` : Type of the Geant4 particle to use in the source (string). Refer to the Geant4 documentation [@g4particles] for information about the available types of particles.
 * `particle_code` : PDG code of the Geant4 particle to use in the source.
-* `beam_energy` : Mean energy of the generated particles.
-* `beam_energy_spread` : Energy spread of the generated particle beam.
-* `beam_position` : Position of the particle beam/source in the world geometry.
-* `beam_size` : Width of the Gaussian beam profile.
-* `beam_divergence` : Standard deviation of the particle angles in x and y from the particle beam
-* `beam_direction` : Direction of the particle as a unit vector.
+* `source_energy` : Mean energy of the generated particles.
+* `source_energy_spread` : Energy spread of the source.
+* `source_position` : Position of the particle source in the world geometry.
+* `source_beam_size` : Width of the Gaussian beam profile.
+* `source_beam_divergence` : Standard deviation of the particle angles in x and y from the particle beam
+* `source_beam_direction` : Direction of the particle as a unit vector.
 * `number_of_particles` : Number of particles to generate in a single event. Defaults to one particle.
 * `output_plots` : Enables output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
 * `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 100ke.
@@ -47,10 +47,10 @@ A possible default configuration to use, simulating a beam of 120 GeV pions with
 [DepositionGeant4]
 physics_list = FTFP_BERT_LIV
 particle_type = "pi+"
-beam_energy = 120GeV
-beam_position = 0 0 -1mm
-beam_direction = 0 0 1
-beam_divergence = 3mrad 0mrad
+source_energy = 120GeV
+source_position = 0 0 -1mm
+source_beam_direction = 0 0 1
+source_beam_divergence = 3mrad 0mrad
 number_of_particles = 1
 ```
 

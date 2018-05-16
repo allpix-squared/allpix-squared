@@ -58,7 +58,7 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
     config_.setDefault<int>("output_plots_scale", Units::get(100, "ke"));
 
     // Add the particle source position to the geometry
-    geo_manager_->addPoint(config_.get<ROOT::Math::XYZPoint>("beam_position"));
+    geo_manager_->addPoint(config_.get<ROOT::Math::XYZPoint>("source_position"));
 }
 
 /**
