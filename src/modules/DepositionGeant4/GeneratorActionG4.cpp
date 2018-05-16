@@ -19,6 +19,7 @@
 #include <G4GeneralParticleSource.hh>
 #include <G4ParticleDefinition.hh>
 #include <G4ParticleTable.hh>
+#include <Randomize.hh>
 #include <array>
 
 #include "core/config/exceptions.h"
@@ -121,10 +122,19 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
         single_source->SetParticleTime(0.0);
         single_source->GetAngDist()->SetParticleMomentumDirection(direction);
         single_source->GetEneDist()->SetEnergyDisType("User");
-        G4ThreeVector hist_point1(0.0059, 28., 0.1), hist_point2(0.00649, 2.85, 0.1);
-        std::array<G4ThreeVector, 2> beam_hist_point = {{hist_point1, hist_point2}};
-        for(auto& hist_point : beam_hist_point) {
-            single_source->GetEneDist()->UserEnergyHisto(hist_point);
+        G4double energy_hist_1[10];
+        G4double intensity_hist_1[10];
+        for(G4int i = 0; i < 10; i++) {
+            energy_hist_1[i] = 0.0059 + 0.0001 * (1 - 2 * G4UniformRand());
+            intensity_hist_1[i] = 28. + 0.1 * (1 - 2 * G4UniformRand());
+            single_source->GetEneDist()->UserEnergyHisto(G4ThreeVector(energy_hist_1[i], intensity_hist_1[i], 0.));
+        }
+        G4double energy_hist_2[10];
+        G4double intensity_hist_2[10];
+        for(G4int i = 0; i < 10; i++) {
+            energy_hist_2[i] = 0.00649 + 0.0001 * (1 - 2 * G4UniformRand());
+            intensity_hist_2[i] = 2.85 + 0.01 * (1 - 2 * G4UniformRand());
+            single_source->GetEneDist()->UserEnergyHisto(G4ThreeVector(energy_hist_2[i], intensity_hist_2[i], 0.));
         }
     } else {
         single_source->GetEneDist()->SetEnergyDisType("Gauss");
