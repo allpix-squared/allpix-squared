@@ -94,7 +94,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDef(MCParticle, 5);
+        ClassDefOverride(MCParticle, 5);
         /**
          * @brief Default constructor for ROOT I/O
          */

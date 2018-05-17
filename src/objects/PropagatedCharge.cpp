@@ -51,5 +51,3 @@ const MCParticle* PropagatedCharge::getMCParticle() const {
     }
     return mc_particle;
 }
-
-ClassImp(PropagatedCharge)

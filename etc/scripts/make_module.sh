@@ -71,13 +71,13 @@ sed -e "s/Dummy/$MODNAME/g" \
 sed -e "s/Dummy/$MODNAME/g" "$MODDIR/Dummy/DummyModule.hpp" > "$MODDIR/$MODNAME/${MODNAME}Module.hpp"
 sed -e "s/Dummy/$MODNAME/g" "$MODDIR/Dummy/DummyModule.cpp" > "$MODDIR/$MODNAME/${MODNAME}Module.cpp"
 
-# Change to detetcor module type if necessary:
-if [ "$type" == 2 ]; then
+# Options for sed vary slightly between mac and linux
+opt=-i
+platform=`uname`
+if [ "$platform" == "Darwin" ]; then opt="-i \"\""; fi
 
-  # Options for sed vary slightly between mac and linux
-  opt=-i
-  platform=`uname`
-  if [ "$platform" == "Darwin" ]; then opt="-i \"\""; fi
+# Change to detector module type if necessary:
+if [ "$type" == 2 ]; then
 
   # Prepare sed commands to change to per detector module
   # Change module type in CMakeLists
@@ -90,7 +90,6 @@ if [ "$type" == 2 ]; then
       -e 's/GeometryManager\* geo\_manager/std::shared\_ptr\<Detector\> detector/g' \
       -e 's/GeometryManager/DetectorModel/g' \
       -e 's/std::vector<std::shared_ptr<PixelHitMessage>> messages_/std::shared_ptr<PixelHitMessage> message_/g' \
-      -e 's/PixelHit/${MESSAGETYPE}/g' \
       $MODDIR/$MODNAME/${MODNAME}Module.hpp"
   eval $command
   # Change implementation file
@@ -110,8 +109,17 @@ if [ "$type" == 2 ]; then
   eval $command
 fi
 
+# Replace the corresponding message type in the header file
+command="sed ${opt} \
+-e 's/PixelHit/${MESSAGETYPE}/g' \
+$MODDIR/$MODNAME/${MODNAME}Module.hpp"
+eval $command
+
+# Print a summary of the module created:
+FINALPATH=`realpath $MODDIR/$MODNAME`
 echo "Name:   $MODNAME"
 echo "Author: $MYNAME ($MYMAIL)"
-echo "Path:   $MODDIR/$MODNAME"
+echo "Path:   $FINALPATH"
+echo "This module listens to \"$MESSAGETYPE\" messages from" $([ "$type" == 2 ] && echo "one detector" || echo "all detectors")
 echo
 echo "Re-run CMake in order to build your new module."

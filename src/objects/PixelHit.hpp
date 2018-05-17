@@ -77,7 +77,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDef(PixelHit, 4);
+        ClassDefOverride(PixelHit, 4);
         /**
          * @brief Default constructor for ROOT I/O
          */

@@ -39,5 +39,3 @@ const MCParticle* DepositedCharge::getMCParticle() const {
 void DepositedCharge::setMCParticle(const MCParticle* mc_particle) {
     mc_particle_ = const_cast<MCParticle*>(mc_particle); // NOLINT
 }
-
-ClassImp(DepositedCharge)
