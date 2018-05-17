@@ -264,6 +264,135 @@ void Detector::setElectricFieldFunction(ElectricFieldFunction function,
     electric_field_type_ = type;
 }
 
+bool Detector::hasWeightingField() const {
+    return weighting_field_function_ ||
+           (weighting_field_sizes_[0] != 0 && weighting_field_sizes_[1] != 0 && weighting_field_sizes_[2] != 0);
+}
+
+/**
+ * The weighting field is replicated for all pixels and uses flipping at each boundary. Outside of the sensor the weighting
+ * field is strictly zero by definition.
+ */
+ROOT::Math::XYZVector Detector::getWeightingField(const ROOT::Math::XYZPoint& pos) const {
+    // FIXME: We need to revisit this to be faster and not too specific
+    if(weighting_field_type_ == ElectricFieldType::NONE) {
+        return ROOT::Math::XYZVector(0, 0, 0);
+    }
+
+    auto x = pos.x();
+    auto y = pos.y();
+    auto z = pos.z();
+
+    // Compute corresponding pixel coordinates
+    // WARNING This relies on the origin of the local coordinate system
+    auto pixel_x = static_cast<int>(std::round(x / model_->getPixelSize().x()));
+    auto pixel_y = static_cast<int>(std::round(y / model_->getPixelSize().y()));
+
+    // Convert to the pixel frame
+    x -= pixel_x * model_->getPixelSize().x();
+    y -= pixel_y * model_->getPixelSize().y();
+
+    // Do flipping if necessary
+    if((pixel_x % 2) == 1) {
+        x *= -1;
+    }
+    if((pixel_y % 2) == 1) {
+        y *= -1;
+    }
+
+    // Compute using the grid or a function depending on the setting
+    ROOT::Math::XYZVector ret_val;
+    if(weighting_field_type_ == ElectricFieldType::GRID) {
+        // Compute indices
+        auto x_ind = static_cast<int>(std::floor(static_cast<double>(weighting_field_sizes_[0]) *
+                                                 (x + model_->getPixelSize().x() / 2.0) / model_->getPixelSize().x()));
+        auto y_ind = static_cast<int>(std::floor(static_cast<double>(weighting_field_sizes_[1]) *
+                                                 (y + model_->getPixelSize().y() / 2.0) / model_->getPixelSize().y()));
+        auto z_ind = static_cast<int>(
+            std::floor(static_cast<double>(weighting_field_sizes_[2]) * (z - weighting_field_thickness_domain_.first) /
+                       (weighting_field_thickness_domain_.second - weighting_field_thickness_domain_.first)));
+
+        // Check for indices within the sensor
+        if(x_ind < 0 || x_ind >= static_cast<int>(weighting_field_sizes_[0]) || y_ind < 0 ||
+           y_ind >= static_cast<int>(weighting_field_sizes_[1]) || z_ind < 0 ||
+           z_ind >= static_cast<int>(weighting_field_sizes_[2])) {
+            return ROOT::Math::XYZVector(0, 0, 0);
+        }
+
+        // Compute total index
+        size_t tot_ind = static_cast<size_t>(x_ind) * weighting_field_sizes_[1] * weighting_field_sizes_[2] * 3 +
+                         static_cast<size_t>(y_ind) * weighting_field_sizes_[2] * 3 + static_cast<size_t>(z_ind) * 3;
+
+        ret_val = ROOT::Math::XYZVector(
+            (*weighting_field_)[tot_ind], (*weighting_field_)[tot_ind + 1], (*weighting_field_)[tot_ind + 2]);
+    } else {
+        // Check if inside the thickness domain
+        if(z < weighting_field_thickness_domain_.first || weighting_field_thickness_domain_.second < z) {
+            return ROOT::Math::XYZVector(0, 0, 0);
+        }
+
+        // Calculate the weighting field
+        ret_val = weighting_field_function_(ROOT::Math::XYZPoint(x, y, z));
+    }
+
+    // Flip vector if necessary
+    if((pixel_x % 2) == 1) {
+        ret_val.SetX(-ret_val.x());
+    }
+    if((pixel_y % 2) == 1) {
+        ret_val.SetY(-ret_val.y());
+    }
+
+    return ret_val;
+}
+
+/**
+ * The type of the weighting field is set depending on the function used to apply it.
+ */
+ElectricFieldType Detector::getWeightingFieldType() const {
+    if(!hasWeightingField()) {
+        return ElectricFieldType::NONE;
+    }
+    return weighting_field_type_;
+}
+
+/**
+ * @throws std::invalid_argument If the weighting field sizes are incorrect or the thickness domain is outside the sensor
+ *
+ * The weighting field is stored as a large flat array. If the sizes are denoted as respectively X_SIZE, Y_ SIZE and Z_SIZE,
+ * each position (x, y, z) has three indices:
+ * - x*Y_SIZE*Z_SIZE*3+y*Z_SIZE*3+z*3: the x-component of the weighting field
+ * - x*Y_SIZE*Z_SIZE*3+y*Z_SIZE*3+z*3+1: the y-component of the weighting field
+ * - x*Y_SIZE*Z_SIZE*3+y*Z_SIZE*3+z*3+2: the z-component of the weighting field
+ */
+void Detector::setWeightingFieldGrid(std::shared_ptr<std::vector<double>> field,
+                                     std::array<size_t, 3> sizes,
+                                     std::pair<double, double> thickness_domain) {
+    if(sizes[0] * sizes[1] * sizes[2] * 3 != field->size()) {
+        throw std::invalid_argument("weighting field does not match the given sizes");
+    }
+    if(thickness_domain.first + 1e-9 < model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0 ||
+       model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0 < thickness_domain.second - 1e-9) {
+        throw std::invalid_argument("thickness domain is outside sensor dimensions");
+    }
+    if(thickness_domain.first >= thickness_domain.second) {
+        throw std::invalid_argument("end of thickness domain is before begin");
+    }
+
+    weighting_field_ = std::move(field);
+    weighting_field_sizes_ = sizes;
+    weighting_field_thickness_domain_ = std::move(thickness_domain);
+    weighting_field_type_ = ElectricFieldType::GRID;
+}
+
+void Detector::setWeightingFieldFunction(ElectricFieldFunction function,
+                                         std::pair<double, double> thickness_domain,
+                                         ElectricFieldType type) {
+    weighting_field_thickness_domain_ = std::move(thickness_domain);
+    weighting_field_function_ = std::move(function);
+    weighting_field_type_ = type;
+}
+
 bool Detector::hasMagneticField() const {
     return magnetic_field_on_;
 }
