@@ -1,7 +1,7 @@
-## TransientCurrentPropagation
-**Maintainer**: Simon Spannagel (simon.spannagel@cern.ch)
-**Status**: Immature
-**Input**: DepositedCharge
+## TransientPropagation
+**Maintainer**: Simon Spannagel (simon.spannagel@cern.ch)  
+**Status**: Immature  
+**Input**: DepositedCharge  
 **Output**: PixelPulse
 
 #### Description
