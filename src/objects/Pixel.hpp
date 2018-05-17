@@ -20,7 +20,7 @@ namespace ROOT {
         bool operator<(const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>>& lhs,
                        const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>>& rhs);
     }
-}
+} // namespace ROOT
 
 namespace allpix {
     /**
