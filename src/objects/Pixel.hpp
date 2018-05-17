@@ -16,7 +16,7 @@
 #include <TObject.h>
 
 namespace ROOT {
-    namespace Math {
+    namespace Math { // NOLINT
         bool operator<(const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>>& lhs,
                        const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>>& rhs);
     }
