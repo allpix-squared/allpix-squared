@@ -20,9 +20,21 @@
 
 #include "Detector.hpp"
 #include "DetectorModel.hpp"
+#include "core/config/ConfigManager.hpp"
 #include "core/config/ConfigReader.hpp"
 
 namespace allpix {
+
+    /**
+     * @brief Type of the magnetic field
+     */
+    enum class MagneticFieldType {
+        NONE = 0, ///< No magnetic field is simulated
+        CONSTANT, ///< Constant magnetic field (mostly for testing)
+        CUSTOM,   ///< Custom magnetic field function
+    };
+
+    using MagneticFieldFunction = std::function<ROOT::Math::XYZVector(const ROOT::Math::XYZPoint&)>;
 
     /**
      * @ingroup Managers
@@ -61,11 +73,12 @@ namespace allpix {
         /// @}
 
         /**
-         * @brief Loads the geometry from the reader
-         * @param global_config Global configuration for the framework
+         * @brief Loads the geometry from the global configuration
+         * @param global_config Configuration manager of the framework
+         * @param seeder PRNG to use for generating random misalignments
          * @warning Has to be the first function called after the constructor
          */
-        void load(const Configuration& global_config, std::mt19937_64& seeder);
+        void load(ConfigManager* conf_manager, std::mt19937_64& seeder);
 
         /**
          * @brief Returns the list of standard paths where models should be searched in
@@ -170,6 +183,27 @@ namespace allpix {
          */
         std::vector<std::shared_ptr<Detector>> getDetectorsByType(const std::string& type);
 
+        /**
+         * @brief Set the magnetic field in the volume
+         * @param function Function used to retrieve the magnetic field
+         * @param type Type of the magnetic field function used
+         */
+        void setMagneticFieldFunction(MagneticFieldFunction function, MagneticFieldType type = MagneticFieldType::CUSTOM);
+
+        /**
+         * @brief Returns if a magnetic field is present
+         * @return True if the a magnetic field is present in the volume, false otherwise
+         */
+        bool hasMagneticField() const;
+        /**
+         * @brief Get the magnetic field at a global position
+         * @param pos Position in the global frame
+         * @return Vector of the field at the queried point
+         */
+        ROOT::Math::XYZVector getMagneticField(const ROOT::Math::XYZPoint& position) const;
+
+        MagneticFieldType getMagneticFieldType() const;
+
     private:
         /**
          * @brief Load all standard framework models (automatically done when the geometry is closed)
@@ -199,6 +233,9 @@ namespace allpix {
         std::map<std::string, std::vector<std::pair<Configuration, Detector*>>> nonresolved_models_;
         std::vector<std::shared_ptr<Detector>> detectors_;
         std::set<std::string> detector_names_;
+
+        MagneticFieldType magnetic_field_type_{MagneticFieldType::NONE};
+        MagneticFieldFunction magnetic_field_function_;
     };
 } // namespace allpix
 

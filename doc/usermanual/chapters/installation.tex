@@ -130,3 +130,34 @@ The binary is now available as \textit{bin/allpix} in the installation directory
 The example configuration files are not installed as they should only be used as a starting point for your own configuration.
 They can however be used to check if the installation was successful.
 Running the allpix binary with the example configuration using \texttt{\textbf{bin/allpix -c \textit{examples/example.conf}}} should pass the test without problems if a standard installation is used.
+
+\section{Docker images}
+\label{sec:docker}
+Docker images are provided for the framework to allow anyone to run simulations without the need of installing \apsq on their system.
+The only required program is the Docker executable, all other dependencies are provided within the Docker images.
+In order to exchange configuration files and output data between the host system and the Docker container, a folder from the host system should be mounted to the container's data path \dir{/data}, which also acts as the Docker \parameter{WORKDIR} location.
+
+The following command creates a container from the latest Docker image in the project registry and start an interactive shell session with the \command{allpix} executable already in the \texttt{\$PATH}.
+Here, the current host system path is mounted to the \dir{/data} directory of the container.
+
+\begin{verbatim}
+$ docker run --interactive -tty                                    \
+             --volume "$(pwd)":/data                               \
+             --name=allpix-squared                                 \
+             gitlab-registry.cern.ch/allpix-squared/allpix-squared \
+             bash
+\end{verbatim}
+
+Alternatively it is also possible to directly start the simulation instead of an interactive shell, e.g. using the following command:
+\begin{verbatim}
+$ docker run --interactive -tty                                    \
+             --volume "$(pwd)":/data                               \
+             --name=allpix-squared                                 \
+             gitlab-registry.cern.ch/allpix-squared/allpix-squared \
+             "allpix -c my_simulation.conf"
+\end{verbatim}
+where a simulation described in the configuration \file{my_simulation.conf} is directly executed.
+Of course, any additional command line arguments known to the \command{allpix} executable described in Section~\ref{sec:allpix_executable} can be appended.
+
+For tagged versions, the tag name should be appended to the image name, e.g.\ \parameter{gitlab-registry.cern.ch/allpix-squared/allpix-squared:v1.1}, and a full list of available Docker containers is provided via the project's container registry~\cite{ap2-container-registry}.
+A short description of how Docker images for this project are built can be found in Section~\ref{sec:build-docker}.

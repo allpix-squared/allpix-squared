@@ -13,6 +13,7 @@
 #include <Math/Point3D.h>
 #include <TRef.h>
 
+#include "MCTrack.hpp"
 #include "Object.hpp"
 
 namespace allpix {
@@ -27,7 +28,7 @@ namespace allpix {
          * @param global_start_point Entry point of the particle in the sensor in global coordinates
          * @param local_end_point Exit point of the particle in the sensor in local coordinates
          * @param global_end_point Exit point of the particle in the sensor in global coordinates
-         * @param particle_id Identifier for the particle type
+         * @param particle_id PDG id for this particle type
          */
         MCParticle(ROOT::Math::XYZPoint local_start_point,
                    ROOT::Math::XYZPoint global_start_point,
@@ -58,8 +59,8 @@ namespace allpix {
         ROOT::Math::XYZPoint getGlobalEndPoint() const;
 
         /**
-         * @brief Get particle identifier
-         * @return Particle identifier
+         * @brief Get PDG particle id for the particle
+         * @return Particle id
          */
         int getParticleID() const;
 
@@ -77,13 +78,33 @@ namespace allpix {
         const MCParticle* getParent() const;
 
         /**
+         * @brief Set the MCParticle's track
+         * @param mc_track The track
+         * @warning Special method because track can only be set after creation, should not be replaced later.
+         */
+        void setTrack(const MCTrack* mc_track);
+
+        /**
+         * @brief Get the MCTrack of this MCParticle
+         * @return Parent MCTrack or null pointer if it has no track
+         * @warning No \ref MissingReferenceException is thrown, because a particle without a track should always be handled.
+         */
+        const MCTrack* getTrack() const;
+
+        /**
          * @brief ROOT class definition
          */
-        ClassDef(MCParticle, 3);
+        ClassDefOverride(MCParticle, 5);
         /**
          * @brief Default constructor for ROOT I/O
          */
         MCParticle() = default;
+
+        /**
+         * @brief Print an ASCII representation of MCParticle to the given stream
+         * @param out Stream to print to
+         */
+        void print(std::ostream& out) const override;
 
     private:
         ROOT::Math::XYZPoint local_start_point_{};
@@ -94,6 +115,7 @@ namespace allpix {
         int particle_id_{};
 
         TRef parent_;
+        TRef track_;
     };
 
     /**

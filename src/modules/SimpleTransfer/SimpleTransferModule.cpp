@@ -27,8 +27,8 @@
 
 using namespace allpix;
 
-SimpleTransferModule::SimpleTransferModule(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector), messenger_(messenger), detector_(std::move(detector)) {
+SimpleTransferModule::SimpleTransferModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector)
+    : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
@@ -54,7 +54,8 @@ void SimpleTransferModule::run(unsigned int) {
         if(std::fabs(position.z() - (model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0)) >
            config_.get<double>("max_depth_distance")) {
             LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
-                       << propagated_charge.getLocalPosition() << " because their local position is not in implant range";
+                       << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
+                       << " because their local position is not in implant range";
             continue;
         }
 
@@ -65,8 +66,8 @@ void SimpleTransferModule::run(unsigned int) {
         // Ignore if out of pixel grid
         if(xpixel < 0 || xpixel >= model_->getNPixels().x() || ypixel < 0 || ypixel >= model_->getNPixels().y()) {
             LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
-                       << propagated_charge.getLocalPosition() << " because their nearest pixel (" << xpixel << "," << ypixel
-                       << ") is outside the grid";
+                       << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
+                       << " because their nearest pixel (" << xpixel << "," << ypixel << ") is outside the grid";
             continue;
         }
         Pixel::Index pixel_index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel));
@@ -76,7 +77,8 @@ void SimpleTransferModule::run(unsigned int) {
         transferred_charges_count += propagated_charge.getCharge();
 
         LOG(DEBUG) << "Set of " << propagated_charge.getCharge() << " propagated charges at "
-                   << propagated_charge.getLocalPosition() << " brought to pixel " << pixel_index;
+                   << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"}) << " brought to pixel "
+                   << pixel_index;
 
         // Add the pixel the list of hit pixels
         pixel_map[pixel_index].emplace_back(&propagated_charge);

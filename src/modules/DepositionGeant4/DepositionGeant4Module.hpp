@@ -19,6 +19,7 @@
 #include "core/module/Module.hpp"
 
 #include "SensitiveDetectorActionG4.hpp"
+#include "TrackInfoManager.hpp"
 
 #include <TH1D.h>
 
@@ -43,7 +44,7 @@ namespace allpix {
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
          * @param geo_manager Pointer to the geometry manager, containing the detectors
          */
-        DepositionGeant4Module(Configuration, Messenger* messenger, GeometryManager* geo_manager);
+        DepositionGeant4Module(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
 
         /**
          * @brief Initializes the physics list of processes and constructs the particle source
@@ -63,6 +64,9 @@ namespace allpix {
     private:
         Messenger* messenger_;
         GeometryManager* geo_manager_;
+
+        // The track manager which this module uses to assign custom track IDs and manage & create MCTracks
+        std::unique_ptr<TrackInfoManager> track_info_manager_;
 
         // Handling of the charge deposition in all the sensitive devices
         std::vector<SensitiveDetectorActionG4*> sensors_;

@@ -34,24 +34,19 @@ using namespace allpix;
  * - Set the log level and log format as requested.
  * - Load the detector configuration and parse it
  */
-Allpix::Allpix(std::string config_file_name, std::vector<std::string> options)
+Allpix::Allpix(std::string config_file_name, const std::vector<std::string>& options)
     : terminate_(false), has_run_(false), msg_(std::make_unique<Messenger>()), mod_mgr_(std::make_unique<ModuleManager>()),
       geo_mgr_(std::make_unique<GeometryManager>()) {
     // Load the global configuration
-    conf_mgr_ = std::make_unique<ConfigManager>(std::move(config_file_name));
+    conf_mgr_ = std::make_unique<ConfigManager>(std::move(config_file_name),
+                                                std::initializer_list<std::string>({"Allpix", ""}),
+                                                std::initializer_list<std::string>({"Ignore"}));
 
-    // Configure the standard special sections
-    conf_mgr_->setGlobalHeaderName("Allpix");
-    conf_mgr_->addGlobalHeaderName("");
-    conf_mgr_->addIgnoreHeaderName("Ignore");
-
-    // Parse all the options
-    for(auto& option : options) {
-        conf_mgr_->parseOption(option);
-    }
+    // Load and apply the provided options
+    conf_mgr_->loadOptions(options);
 
     // Fetch the global configuration
-    Configuration global_config = conf_mgr_->getGlobalConfiguration();
+    Configuration& global_config = conf_mgr_->getGlobalConfiguration();
 
     // Set the log level from config if not specified earlier
     std::string log_level_string;
@@ -105,11 +100,12 @@ Allpix::Allpix(std::string config_file_name, std::vector<std::string> options)
 void Allpix::load() {
     LOG(TRACE) << "Loading Allpix";
 
-    // Put welcome message
-    LOG(STATUS) << "Welcome to Allpix^2 " << ALLPIX_PROJECT_VERSION;
-
     // Fetch the global configuration
-    Configuration global_config = conf_mgr_->getGlobalConfiguration();
+    Configuration& global_config = conf_mgr_->getGlobalConfiguration();
+
+    // Put welcome message and set version
+    LOG(STATUS) << "Welcome to Allpix^2 " << ALLPIX_PROJECT_VERSION;
+    global_config.set<std::string>("version", ALLPIX_PROJECT_VERSION);
 
     // Initialize the random seeders, one for modules, one for core components
     std::mt19937_64 seeder_modules;
@@ -133,6 +129,7 @@ void Allpix::load() {
         seed = (clock_seed ^ mem_seed ^ thread_seed);
         seeder_modules.seed(seed);
         LOG(STATUS) << "Initialized PRNG with system entropy seed " << seed;
+        global_config.set<uint64_t>("random_seed", seed);
     }
 
     if(global_config.has("random_seed_core")) {
@@ -143,6 +140,7 @@ void Allpix::load() {
     } else {
         // Use module seeder + 1
         seeder_core.seed(seed + 1);
+        global_config.set<uint64_t>("random_seed_core", seed + 1);
     }
 
     // Initialize ROOT random generator
@@ -193,7 +191,7 @@ void Allpix::load() {
     set_style();
 
     // Load the geometry
-    geo_mgr_->load(global_config, seeder_core);
+    geo_mgr_->load(conf_mgr_.get(), seeder_core);
 
     // Load the modules from the configuration
     if(!terminate_) {
@@ -286,6 +284,10 @@ void Allpix::add_units() {
     // NOTE: fixed by above
     Units::add("V", 1e-6);
     Units::add("kV", 1e-3);
+
+    // MAGNETIC FIELD
+    Units::add("T", 1e-3);
+    Units::add("mT", 1e-6);
 
     // ANGLES
     // NOTE: these are fake units

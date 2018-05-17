@@ -20,8 +20,8 @@
 
 using namespace allpix;
 
-CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration config, Messenger* messenger, GeometryManager* geoManager)
-    : Module(std::move(config)), messenger_(messenger), geometryManager_(geoManager) {
+CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geoManager)
+    : Module(config), messenger_(messenger), geometryManager_(geoManager) {
 
     // Require PixelCharge messages for single detector
     messenger_->bindMulti(this, &CorryvreckanWriterModule::pixel_messages_, MsgFlags::REQUIRED);
@@ -133,6 +133,9 @@ void CorryvreckanWriterModule::run(unsigned int) {
                 LOG(DEBUG) << "MC particle started locally at (" << mcParticle->getLocalStart().X() << ","
                            << mcParticle->getLocalStart().Y() << ") and ended at " << mcParticle->getLocalEnd().X() << ","
                            << mcParticle->getLocalEnd().Y() << ")";
+                LOG(DEBUG) << "MC particle started globally at (" << particle->getGlobalStartPoint().X() << ","
+                           << particle->getGlobalStartPoint().Y() << ") and ended at " << particle->getGlobalEndPoint().X()
+                           << "," << particle->getGlobalEndPoint().Y() << ")";
                 outputTreesMC_[objectID_MC]->Fill();
                 delete mcParticle;
             }

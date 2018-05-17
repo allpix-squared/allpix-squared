@@ -10,9 +10,9 @@ Simulates the propagation of electrons and/or holes through the sensitive sensor
 The propagation consists of a combination of drift and diffusion simulation. The drift is calculated using the charge carrier velocity derived from the charge carrier mobility parameterization by C. Jacoboni et al. [@jacoboni]. The correct mobility for either electrons or holes is automatically chosen, based on the type of the charge carrier under consideration. Thus, also input with both electrons and holes is treated properly.
 
 The two parameters `propagate_electrons` and `propagate_holes` allow to control which type of charge carrier is propagated to their respective electrodes. Either one of the carrier types can be selected, or both can be propagated. It should be noted that this will slow down the simulation considerably since twice as many carriers have to be handled and it should only be used where sensible.
-The direction of the propagation depends on the electric field configured, and it should be ensured that the carrier types selected are actually transported to the implant side. For linear electric fields, a warning is issued if a possible misconfiguration is detected.
+The direction of the propagation depends on the electric and magnetic fields field configured, and it should be ensured that the carrier types selected are actually transported to the implant side. For linear electric fields, a warning is issued if a possible misconfiguration is detected.
 
-A fourth-order Runge-Kutta-Fehlberg method [@fehlberg] with fifth-order error estimation is used to integrate the electric field. After every Runge-Kutta step, the diffusion is accounted for by applying an offset drawn from a Gaussian distribution calculated from the Einstein relation
+A fourth-order Runge-Kutta-Fehlberg method [@fehlberg] with fifth-order error estimation is used to integrate the particle propagation in the electric and magnetic fields. After every Runge-Kutta step, the diffusion is accounted for by applying an offset drawn from a Gaussian distribution calculated from the Einstein relation
 
 $`\sigma = \sqrt{\frac{2k_b T}{e}\mu t}`$
 
@@ -36,6 +36,7 @@ This module requires an installation of Eigen3.
 * `integration_time` : Time within which charge carriers are propagated. After exceeding this time, no further propagation is performed for the respective carriers. Defaults to the LHC bunch crossing time of 25ns.
 * `propagate_electrons` : Select whether electron-type charge carriers should be propagated to the electrodes. Defaults to true.
 * `propagate_holes` :  Select whether hole-type charge carriers should be propagated to the electrodes. Defaults to false.
+* `ignore_magnetic_field`: The magnetic field, if present, is ignored for this module. Defaults to false.
 
 ### Plotting parameters
 * `output_plots` : Determines if output plots should be generated for every event. This causes a significant slow down of the simulation, it is not recommended to enable this option for runs with more than a couple of events. Disabled by default.

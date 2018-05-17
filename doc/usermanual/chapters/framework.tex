@@ -256,22 +256,16 @@ The module base class provides two base constructors, a few convenient methods a
 Each module should provide a constructor using the fixed set of arguments defined by the framework; this particular constructor is always called during by the module instantiation logic.
 These arguments for the constructor differ for unique and detector modules.
 
-\begin{warning}
-For both module types, it is \textbf{important to forward the configuration object} to the base class \texttt{Module} using C++ move semantics instead of creating a local copy.
-Otherwise, the framework is not able to retrieve the final and potentially updated configuration settings after finalizing the simulation.
-This final configuration is stored in the output data of the ROOTObjectWriter for later reference.
-\end{warning}
-
 For unique modules, the constructor for a \texttt{TestModule} should be:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
-TestModule(Configuration config, Messenger* messenger, GeometryManager* geo_manager): Module(std::move(config)) {}
+TestModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager): Module(config) {}
 \end{minted}
 
 For detector modules, the first two arguments are the same, but the last argument is a \texttt{std::shared\_ptr} to the linked detector.
 It should always forward this detector to the base class together with the configuration object.
 Thus, the constructor of a detector module is:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
-TestModule(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector): Module(std::move(config), std::move(detector)) {}
+TestModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector): Module(config, std::move(detector)) {}
 \end{minted}
 
 The pointer to a Messenger can be used to bind variables to either receive or dispatch messages as explained in Section~\ref{sec:objects_messages}.
@@ -289,9 +283,8 @@ Typically used to save the output data (like histograms).
 Any exceptions should be thrown from here instead of the destructor.
 \end{itemize}
 
-Within the \parameter{finalize()} method, each module has access to the full final framework configuration via the \parameter{get_final_configuration()} method.
+If necessary, modules can also access the ConfigurationManager directly in order to obtain configuration information from other module instances or other modules in the framework using the \parameter{getConfigManager()} call.
 This allows to retrieve and e.g. store the configuration actually used for the simulation alongside the data.
-It is not possible to call this method outside the \parameter{finalize()} method.
 
 \subsection{Module instantiation}
 \label{sec:module_instantiation}
@@ -582,7 +575,7 @@ The first two are the most common methods and the third should be avoided in alm
 This should usually be the preferred method, where a module expects only a single message to arrive per event containing the list of all relevant objects.
 The following example binds to a message containing an array of objects and is placed in the constructor of a detector-type \parameter{TestModule}:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
-TestModule(Configuration, Messenger* messenger, std::shared_ptr<Detector>) {
+TestModule(Configuration&, Messenger* messenger, std::shared_ptr<Detector>) {
     messenger->bindSingle(this,
                           /* Pointer to the message variable */
                           &TestModule::message,
@@ -595,7 +588,7 @@ std::shared_ptr<Message<Object>> message;
 This method should be used if the module can (and expects to) receive the same message multiple times (possibly because it wants to receive the same type of message for all detectors).
 An example to bind multiple messages containing an array of objects in the constructor of a unique-type \parameter{TestModule} would be:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
-TestModule(Configuration, Messenger* messenger, GeometryManager* geo_manager) {
+TestModule(Configuration&, Messenger* messenger, GeometryManager* geo_manager) {
     messenger->bindMulti(this,
                           /* Pointer to the message vector */
                           &TestModule::messages,
@@ -611,7 +604,7 @@ Using a listener function can lead to unexpected behaviour because the function 
 This means that logging is performed at the level of the dispatching module and that the listener method can be accessed from multiple threads if the dispatching module is parallelized.
 Listening to a message containing an array of objects in a detector-specific \parameter{TestModule} could be performed as follows:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
-TestModule(Configuration, Messenger* messenger, std::shared_ptr<Detector>) {
+TestModule(Configuration&, Messenger* messenger, std::shared_ptr<Detector>) {
     messenger->registerListener(this,
                                 /* Pointer to the listener method */
                                 &TestModule::listener,
@@ -780,8 +773,8 @@ These methods should never be raised for correctly implemented modules and shoul
 Reporting this type of error can help developers during the development of new modules.
 \end{itemize}
 
-Outside the core framework, exceptions can also be used directly by the modules.
-There are a few exceptions which should typically be used by modules to indicate errors:
+There are only four exceptions that are supposed to be used in specific modules, outside of the core framework.
+These exceptions should be used to indicate errors that modules cannot handle themselves:
 \begin{itemize}
 \item \parameter{InvalidValueError}: Derived from configuration exceptions.
 Signals any problem with the value of a configuration parameter not related to parsing or conversion to the required type.

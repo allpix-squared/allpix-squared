@@ -16,6 +16,8 @@
 
 #include "ConfigReader.hpp"
 #include "Configuration.hpp"
+#include "OptionParser.hpp"
+#include "core/module/ModuleIdentifier.hpp"
 
 namespace allpix {
 
@@ -35,8 +37,12 @@ namespace allpix {
         /**
          * @brief Construct the configuration manager
          * @param file_name Path to the main configuration file
+         * @param global List of sections representing the global configuration (excluding the empty header section)
+         * @param ignore List of sections that should be ignored
          */
-        explicit ConfigManager(std::string file_name);
+        explicit ConfigManager(std::string file_name,
+                               std::initializer_list<std::string> global = {},
+                               std::initializer_list<std::string> ignore = {"Ignore"});
         /**
          * @brief Use default destructor
          */
@@ -59,70 +65,57 @@ namespace allpix {
         /// @}
 
         /**
-         * @brief Set the name of the global header and add to the global names
-         * @param name Name of a global header that should be used as the name
-         */
-        // TODO [doc] Should only set the name and do not add it
-        void setGlobalHeaderName(std::string name);
-        /**
-         * @brief Add a global header name
-         * @param name Name of a global header section
-         */
-        // TODO [doc] Rename to addGlobalHeader
-        void addGlobalHeaderName(std::string name);
-
-        /**
          * @brief Get the global configuration
-         * @return Global configuration
+         * @return Reference to global configuration
          */
-        Configuration getGlobalConfiguration();
+        Configuration& getGlobalConfiguration();
+        /**
+         * @brief Get all the module configurations
+         * @return Reference to list of module configurations
+         */
+        std::list<Configuration>& getModuleConfigurations();
 
         /**
-         * @brief Add a header name to fully ignore
-         * @param name Name of a header to ignore
+         * @brief Add a new module instance configuration and applies instance options
+         * @param identifier Identifier for this module instance
+         * @param config Instance configuration to store
+         * @return Reference to stored instance configuration
          */
-        // TODO [doc] Rename to ignoreHeader
-        void addIgnoreHeaderName(std::string name);
+        Configuration& addInstanceConfiguration(const ModuleIdentifier& identifier, const Configuration& config);
+        /**
+         * @brief Get all the instance configurations
+         * @return Reference to list of instance configurations
+         */
+        std::list<Configuration>& getInstanceConfigurations();
 
         /**
-         * @brief Parse an extra configuration option
-         * @param line Line with the option
+         * @brief Load and options and directly apply them to the global configuration and the module configurations
+         * @param options List of options to load and apply
+         * @return True if any actual options where applied
+         *
+         * @note Instance configuration options are applied in \ref ConfigManager::addInstanceConfiguration instead
          */
-        void parseOption(std::string line);
+        bool loadOptions(const std::vector<std::string>& options);
 
         /**
-         * @brief Apply all relevant options to the passed configuration
-         * @param identifier Identifier to select the options to apply
-         * @param config Configuration option where the options should be applied to
-         * @return True if the configuration was changed because of applied options
+         * @brief Get all the detector configurations
+         * @return Reference to list of detector configurations
          */
-        bool applyOptions(const std::string& identifier, Configuration& config);
-
-        /**
-         * @brief Return if section with given name exists
-         * @param name Name of the section
-         * @return True if at least one section with that name exists, false otherwise
-         */
-        bool hasConfiguration(const std::string&);
-
-        /**
-         * @brief Get all configurations that are not global or ignored
-         * @return List of all normal configurations
-         */
-        std::vector<Configuration> getConfigurations() const;
+        std::list<Configuration>& getDetectorConfigurations();
 
     private:
-        std::string file_name_;
-
-        ConfigReader reader_;
-
-        Configuration global_base_config_;
-        std::string global_default_name_{};
         std::set<std::string> global_names_{};
-
         std::set<std::string> ignore_names_{};
 
-        std::map<std::string, std::vector<std::pair<std::string, std::string>>> identifier_options_{};
+        OptionParser option_parser_;
+
+        std::list<Configuration> module_configs_;
+        Configuration global_config_;
+
+        std::list<Configuration> detector_configs_;
+
+        std::list<Configuration> instance_configs_;
+        std::map<std::string, std::list<Configuration>::iterator> instance_name_to_config_;
     };
 } // namespace allpix
 

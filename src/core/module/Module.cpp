@@ -20,13 +20,11 @@
 #include "core/utils/log.h"
 #include "exceptions.h"
 
-#include <iostream>
-
 using namespace allpix;
 
-Module::Module(Configuration&& config) : Module(std::move(config), nullptr) {}
-Module::Module(Configuration&& config, std::shared_ptr<Detector> detector)
-    : config_(std::move(config)), detector_(std::move(detector)) {}
+Module::Module(Configuration& config) : Module(config, nullptr) {}
+Module::Module(Configuration& config, std::shared_ptr<Detector> detector)
+    : config_(config), detector_(std::move(detector)) {}
 /**
  * @note The remove_delegate can throw in theory, but this should never happen in practice
  */
@@ -48,7 +46,10 @@ Module::~Module() {
  * This name is guaranteed to be unique for every single instantiation of all modules
  */
 std::string Module::getUniqueName() const {
-    std::string unique_name = config_.get<std::string>("_unique_name");
+    std::string unique_name = get_identifier().getUniqueName();
+    if(unique_name.empty()) {
+        throw InvalidModuleActionException("Cannot uniquely identify module in constructor");
+    }
     return unique_name;
 }
 
@@ -62,13 +63,13 @@ std::shared_ptr<Detector> Module::getDetector() const {
 /**
  * @throws ModuleError If the file cannot be accessed (or created if it did not yet exist)
  * @throws InvalidModuleActionException If this method is called from the constructor with the global flag false
- * @throws ModuleError If the file exists but the "deny_overwrite" flag is set to true
+ * @throws ModuleError If the file exists but the "deny_overwrite" flag is set to true (defaults to false)
  * @warning A local path cannot be fetched from the constructor, because the instantiation logic has not finished yet
  *
  * The output path is automatically created if it does not exists. The path is always accessible if this functions returns.
  * Obeys the "deny_overwrite" parameter of the module.
  */
-std::string Module::createOutputFile(const std::string& path, bool global) const {
+std::string Module::createOutputFile(const std::string& path, bool global) {
     std::string file;
     if(global) {
         file = config_.get<std::string>("_global_dir", std::string());
@@ -83,14 +84,15 @@ std::string Module::createOutputFile(const std::string& path, bool global) const
 
     try {
         // Create all the required main directories
-        create_directories(file);
+        allpix::create_directories(file);
 
         // Add the file itself
         file += "/";
         file += path;
 
         if(path_is_file(file)) {
-            if(config_.get<bool>("deny_overwrite")) {
+            auto global_overwrite = getConfigManager()->getGlobalConfiguration().get<bool>("deny_overwrite", false);
+            if(config_.get<bool>("deny_overwrite", global_overwrite)) {
                 throw ModuleError("Overwriting of existing file " + file + " denied.");
             }
             LOG(WARNING) << "File " << file << " exists and will be overwritten.";
@@ -108,7 +110,7 @@ std::string Module::createOutputFile(const std::string& path, bool global) const
         }
 
         // Convert the file to an absolute path
-        file = get_absolute_path(file);
+        file = get_canonical_path(file);
     } catch(std::invalid_argument& e) {
         throw ModuleError("Path " + file + " cannot be created");
     }
@@ -169,16 +171,18 @@ void Module::set_ROOT_directory(TDirectory* directory) {
     directory_ = directory;
 }
 
-std::vector<Configuration> Module::get_final_configuration() {
-    if(!initialized_final_configreader_) {
-        throw InvalidModuleActionException("Cannot access final module configurations outside the finalize() function.");
+/**
+ * @throws InvalidModuleActionException If this method is called from the constructor or destructor
+ * @warning This function technically allows to write to the configurations of other modules, but this should never be done
+ */
+ConfigManager* Module::getConfigManager() {
+    if(conf_manager_ == nullptr) {
+        throw InvalidModuleActionException("Cannot access the config manager in constructor or destructor.");
     };
-    return final_configreader_.getConfigurations();
+    return conf_manager_;
 }
-
-void Module::set_final_configuration(const ConfigReader& config) {
-    initialized_final_configreader_ = true;
-    final_configreader_ = config;
+void Module::set_config_manager(ConfigManager* conf_manager) {
+    conf_manager_ = conf_manager;
 }
 
 bool Module::canParallelize() {

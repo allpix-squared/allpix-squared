@@ -39,5 +39,3 @@ ROOT::Math::XYZPoint Pixel::getGlobalCenter() const {
 ROOT::Math::XYVector Pixel::getSize() const {
     return size_;
 }
-
-ClassImp(Pixel)

@@ -40,7 +40,7 @@ namespace allpix {
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
          * @param geo_manager Pointer to the geometry manager, containing the detectors
          */
-        CorryvreckanWriterModule(Configuration config, Messenger* messenger, GeometryManager* geo_manager);
+        CorryvreckanWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
 
         /**
          * @brief Set up output file and ntuple for filewriting

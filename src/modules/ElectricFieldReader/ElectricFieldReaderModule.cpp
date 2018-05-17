@@ -27,8 +27,8 @@
 
 using namespace allpix;
 
-ElectricFieldReaderModule::ElectricFieldReaderModule(Configuration config, Messenger*, std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector), detector_(std::move(detector)) {
+ElectricFieldReaderModule::ElectricFieldReaderModule(Configuration& config, Messenger*, std::shared_ptr<Detector> detector)
+    : Module(config, detector), detector_(std::move(detector)) {
     // NOTE use voltage as a synonym for bias voltage
     config_.setAlias("bias_voltage", "voltage");
 }
@@ -52,8 +52,7 @@ void ElectricFieldReaderModule::init() {
 
     // Set depletion depth to full sensor:
     auto model = detector_->getModel();
-    config_.setDefault("depletion_depth", model->getSensorSize().z());
-    auto depletion_depth = config_.get<double>("depletion_depth");
+    auto depletion_depth = config_.get<double>("depletion_depth", model->getSensorSize().z());
     if(depletion_depth - model->getSensorSize().z() > 1e-9) {
         throw InvalidValueError(config_, "depletion_depth", "depletion depth can not be larger than the sensor thickness");
     }
@@ -81,13 +80,12 @@ void ElectricFieldReaderModule::init() {
         LOG(TRACE) << "Adding linear electric field";
         type = ElectricFieldType::LINEAR;
 
-        // Set default depletion voltage = bias voltage:
-        config_.setDefault("depletion_voltage", config_.get<double>("bias_voltage"));
+        // Get depletion voltage, defaults to bias voltage:
+        auto depletion_voltage = config_.get<double>("depletion_voltage", config_.get<double>("bias_voltage"));
 
         LOG(INFO) << "Setting linear electric field from " << Units::display(config_.get<double>("bias_voltage"), "V")
-                  << " bias voltage and " << Units::display(config_.get<double>("depletion_voltage"), "V")
-                  << " depletion voltage";
-        ElectricFieldFunction function = get_linear_field_function(thickness_domain);
+                  << " bias voltage and " << Units::display(depletion_voltage, "V") << " depletion voltage";
+        ElectricFieldFunction function = get_linear_field_function(depletion_voltage, thickness_domain);
         detector_->setElectricFieldFunction(function, thickness_domain, type);
     } else {
         throw InvalidValueError(config_, "model", "model should be 'linear', 'constant' or 'init'");
@@ -99,11 +97,12 @@ void ElectricFieldReaderModule::init() {
     }
 }
 
-ElectricFieldFunction ElectricFieldReaderModule::get_linear_field_function(std::pair<double, double> thickness_domain) {
+ElectricFieldFunction ElectricFieldReaderModule::get_linear_field_function(double depletion_voltage,
+                                                                           std::pair<double, double> thickness_domain) {
     LOG(TRACE) << "Calculating function for the linear electric field.";
     // We always deplete from the implants:
     auto bias_voltage = std::fabs(config_.get<double>("bias_voltage"));
-    auto depletion_voltage = std::fabs(config_.get<double>("depletion_voltage"));
+    depletion_voltage = std::fabs(depletion_voltage);
     // But the direction of the field depends on the applied voltage:
     auto direction = std::signbit(config_.get<double>("bias_voltage"));
     double eff_thickness = thickness_domain.second - thickness_domain.first;

@@ -26,8 +26,8 @@
 
 using namespace allpix;
 
-ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration config, Messenger* messenger, GeometryManager* geo_mgr)
-    : Module(std::move(config)), geo_mgr_(geo_mgr) {
+ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
+    : Module(config), geo_mgr_(geo_mgr) {
     // Bind to all messages
     messenger->registerListener(this, &ROOTObjectWriterModule::receive);
 }
@@ -117,7 +117,7 @@ void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::
                         std::make_unique<TTree>(class_name.c_str(), (std::string("Tree of ") + class_name).c_str()));
                 }
 
-                std::string branch_name = detector_name;
+                std::string branch_name = detector_name.empty() ? "global" : detector_name;
                 if(!message_name.empty()) {
                     branch_name += "_";
                     branch_name += message_name;
@@ -172,23 +172,46 @@ void ROOTObjectWriterModule::finalize() {
     TDirectory* config_dir = output_file_->mkdir("config");
     config_dir->cd();
 
+    // Get the config manager
+    ConfigManager* conf_manager = getConfigManager();
+
     // Save the main configuration to the output file
-    for(auto& config : this->get_final_configuration()) {
-        // Create a new directory per section, using the unique module identifiers as names
-        auto section_dir = config_dir->mkdir(config.getName().c_str());
-        LOG(TRACE) << "Writing configuration for: " << config.getName();
+    auto global_dir = config_dir->mkdir("Allpix");
+    LOG(TRACE) << "Writing global configuration";
+
+    // Loop over all values in the global configuration
+    for(auto& key_value : conf_manager->getGlobalConfiguration().getAll()) {
+        global_dir->WriteObject(&key_value.second, key_value.first.c_str());
+    }
+
+    // Save the instance configuration to the output file
+    for(auto& config : conf_manager->getInstanceConfigurations()) {
+        // Create a new directory per section, using the unique module name
+        auto unique_name = config.getName();
+        auto identifier = config.get<std::string>("identifier");
+        if(!identifier.empty()) {
+            unique_name += ":";
+            unique_name += identifier;
+        }
+        auto section_dir = config_dir->mkdir(unique_name.c_str());
+        LOG(TRACE) << "Writing configuration for: " << unique_name;
 
         // Loop over all values in the section
         for(auto& key_value : config.getAll()) {
+            // Skip the identifier
+            if(key_value.first == "identifier") {
+                continue;
+            }
             section_dir->WriteObject(&key_value.second, key_value.first.c_str());
         }
     }
 
     // Save the detectors to the output file
-    // FIXME Possibly the format to save the geometry should be more flexible
     auto detectors_dir = output_file_->mkdir("detectors");
-    detectors_dir->cd();
+    auto models_dir = output_file_->mkdir("models");
     for(auto& detector : geo_mgr_->getDetectors()) {
+        detectors_dir->cd();
+        LOG(TRACE) << "Writing detector configuration for: " << detector->getName();
         auto detector_dir = detectors_dir->mkdir(detector->getName().c_str());
 
         auto position = detector->getPosition();
@@ -196,15 +219,21 @@ void ROOTObjectWriterModule::finalize() {
         auto orientation = detector->getOrientation();
         detector_dir->WriteObject(&orientation, "orientation");
 
-        auto model_dir = detector_dir->mkdir("model");
-        // FIXME This saves the model every time again also for models that appear multiple times
+        // Store the detector model
+        // NOTE We save the model for every detector separately since parameter overloading might have changed it
+        std::string model_name = detector->getModel()->getType() + "_" + detector->getName();
+        detector_dir->WriteObject(&model_name, "type");
+        models_dir->cd();
+        auto model_dir = models_dir->mkdir(model_name.c_str());
+
+        // Get all sections of the model configuration (maon config plus support layers):
         auto model_configs = detector->getModel()->getConfigurations();
         std::map<std::string, int> count_configs;
         for(auto& model_config : model_configs) {
             auto model_config_dir = model_dir;
             if(!model_config.getName().empty()) {
                 model_config_dir = model_dir->mkdir(
-                    (model_config.getName() + "-" + std::to_string(count_configs[model_config.getName()])).c_str());
+                    (model_config.getName() + "_" + std::to_string(count_configs[model_config.getName()])).c_str());
                 count_configs[model_config.getName()]++;
             }
 

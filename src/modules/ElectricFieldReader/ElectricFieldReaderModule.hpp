@@ -37,7 +37,7 @@ namespace allpix {
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
          * @param detector Pointer to the detector for this module instance
          */
-        ElectricFieldReaderModule(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector);
+        ElectricFieldReaderModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector);
 
         /**
          * @brief Read electric field and apply it to the bound detectors
@@ -51,7 +51,8 @@ namespace allpix {
          * @brief Create and apply a linear field
          * @param thickness_domain Domain of the thickness where the field is defined
          */
-        ElectricFieldFunction get_linear_field_function(std::pair<double, double> thickness_domain);
+        ElectricFieldFunction get_linear_field_function(double depletion_voltage,
+                                                        std::pair<double, double> thickness_domain);
 
         /**
          * @brief Read field in the init format and apply it

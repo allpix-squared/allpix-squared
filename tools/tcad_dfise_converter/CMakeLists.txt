@@ -14,26 +14,30 @@ ENDIF()
 INCLUDE_DIRECTORIES(SYSTEM ${ROOT_INCLUDE_DIRS})
 
 # Find required Allpix Squared tools
-GET_FILENAME_COMPONENT(ALLPIX_UTILS "${CMAKE_CURRENT_SOURCE_DIR}/../../src/core" ABSOLUTE)
-INCLUDE_DIRECTORIES(${ALLPIX_UTILS})
+GET_FILENAME_COMPONENT(ALLPIX_SRC "${CMAKE_CURRENT_SOURCE_DIR}/../../src/" ABSOLUTE)
+INCLUDE_DIRECTORIES(${ALLPIX_SRC})
 
 # Add TCAD dfise converter executable
 ADD_EXECUTABLE(dfise_converter
+    MeshElement.cpp
     dfise_converter.cpp
     read_dfise.cpp
-    ${ALLPIX_UTILS}/utils/log.cpp
-    ${ALLPIX_UTILS}/utils/unit.cpp
+    ${ALLPIX_SRC}/core/utils/log.cpp
+    ${ALLPIX_SRC}/core/utils/text.cpp
+    ${ALLPIX_SRC}/core/utils/unit.cpp
+    ${ALLPIX_SRC}/core/config/ConfigReader.cpp
+    ${ALLPIX_SRC}/core/config/Configuration.cpp
+    ${ALLPIX_SRC}/core/config/exceptions.cpp
 )
 
 #Build the TCAD converter
 ADD_SUBDIRECTORY(data)
 
-# Link the dependency libraries
-TARGET_LINK_LIBRARIES(dfise_converter ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES})
-
 # Include Eigen dependency
 FIND_PACKAGE(Eigen3 REQUIRED)
-INCLUDE_DIRECTORIES(SYSTEM ${EIGEN3_INCLUDE_DIR})
+
+# Link the dependency libraries
+TARGET_LINK_LIBRARIES(dfise_converter ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES} Eigen3::Eigen)
 
 # Create install target
 INSTALL(TARGETS dfise_converter

@@ -69,9 +69,15 @@ namespace allpix {
         std::vector<const MCParticle*> getMCParticles() const;
 
         /**
+         * @brief Print an ASCII representation of PixelHit to the given stream
+         * @param out Stream to print to
+         */
+        void print(std::ostream& out) const override;
+
+        /**
          * @brief ROOT class definition
          */
-        ClassDef(PixelHit, 3);
+        ClassDefOverride(PixelHit, 4);
         /**
          * @brief Default constructor for ROOT I/O
          */
@@ -83,7 +89,7 @@ namespace allpix {
         double signal_{};
 
         TRef pixel_charge_;
-        TRefArray mc_particles_;
+        std::vector<TRef> mc_particles_;
     };
 
     /**

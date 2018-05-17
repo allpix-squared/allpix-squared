@@ -18,10 +18,10 @@
 
 using namespace allpix;
 
-ProjectionPropagationModule::ProjectionPropagationModule(Configuration config,
+ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
                                                          Messenger* messenger,
                                                          std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector), messenger_(messenger), detector_(std::move(detector)) {
+    : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
     // Save detector model
     model_ = detector_->getModel();
 
@@ -56,11 +56,20 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration config,
     hole_Beta_ = 0.46 * std::pow(temperature, 0.17);
 
     boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * temperature;
+
+    config_.setDefault<bool>("ignore_magnetic_field", false);
 }
 
 void ProjectionPropagationModule::init() {
     if(detector_->getElectricFieldType() != ElectricFieldType::LINEAR) {
         throw ModuleError("This module should only be used with linear electric fields.");
+    }
+
+    if(detector_->hasMagneticField() && !config_.get<bool>("ignore_magnetic_field")) {
+        throw ModuleError("This module should not be used with magnetic fields. Add the option 'ignore_magnetic_field' to "
+                          "the configuration if you would like to continue.");
+    } else if(detector_->hasMagneticField() && config_.get<bool>("ignore_magnetic_field")) {
+        LOG(WARNING) << "A magnetic field is switched on, but is set to be ignored for this module.";
     }
 
     if(output_plots_) {
@@ -91,7 +100,7 @@ void ProjectionPropagationModule::run(unsigned int) {
         }
 
         LOG(DEBUG) << "Set of " << deposit.getCharge() << " charge carriers (" << type << ") on "
-                   << display_vector(position, {"mm", "um"});
+                   << Units::display(position, {"mm", "um"});
 
         // Define a lambda function to compute the carrier mobility
         auto carrier_mobility = [&](double efield_mag) {
@@ -130,7 +139,7 @@ void ProjectionPropagationModule::run(unsigned int) {
 
         // Only project if within the depleted region (i.e. efield not zero)
         if(efield_mag < std::numeric_limits<double>::epsilon()) {
-            LOG(TRACE) << "Electric field is zero at " << display_vector(position, {"mm", "um"});
+            LOG(TRACE) << "Electric field is zero at " << Units::display(position, {"mm", "um"});
             continue;
         }
 
@@ -184,7 +193,7 @@ void ProjectionPropagationModule::run(unsigned int) {
                 projected_position, global_position, deposit.getType(), charge_per_step, deposit.getEventTime(), &deposit);
 
             LOG(DEBUG) << "Propagated " << charge_per_step << " charge carriers (" << type << ") to "
-                       << display_vector(projected_position, {"mm", "um"});
+                       << Units::display(projected_position, {"mm", "um"});
 
             projected_charge += charge_per_step;
         }

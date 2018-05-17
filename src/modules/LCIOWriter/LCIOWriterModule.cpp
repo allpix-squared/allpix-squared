@@ -32,8 +32,8 @@
 using namespace allpix;
 using namespace lcio;
 
-LCIOWriterModule::LCIOWriterModule(Configuration config, Messenger* messenger, GeometryManager* geo)
-    : Module(std::move(config)), geo_mgr_(geo) {
+LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo)
+    : Module(config), geo_mgr_(geo) {
 
     // Bind pixel hits message
     messenger->bindMulti(this, &LCIOWriterModule::pixel_messages_, MsgFlags::REQUIRED);
@@ -161,6 +161,17 @@ void LCIOWriterModule::finalize() {
                       << "<gear>" << std::endl;
 
         geometry_file << "  <global detectorName=\"" << DetectorName_ << "\"/>" << std::endl;
+        if(geo_mgr_->getMagneticFieldType() == MagneticFieldType::CONSTANT) {
+            ROOT::Math::XYZVector b_field = geo_mgr_->getMagneticField(ROOT::Math::XYZPoint(0., 0., 0.));
+            geometry_file << "  <BField type=\"ConstantBField\" x=\"" << Units::convert(b_field.x(), "T") << "\" y=\""
+                          << Units::convert(b_field.y(), "T") << "\" z=\"" << Units::convert(b_field.z(), "T") << "\"/>"
+                          << std::endl;
+        } else if(geo_mgr_->getMagneticFieldType() == MagneticFieldType::NONE) {
+            geometry_file << "  <BField type=\"ConstantBField\" x=\"0.0\" y=\"0.0\" z=\"0.0\"/>" << std::endl;
+        } else {
+            LOG(WARNING) << "Field type not handled by GEAR geometry. Writing null magnetic field instead.";
+            geometry_file << "  <BField type=\"ConstantBField\" x=\"0.0\" y=\"0.0\" z=\"0.0\"/>" << std::endl;
+        }
         geometry_file << "  <detectors>" << std::endl;
         geometry_file << "    <detector name=\"SiPlanes\" geartype=\"SiPlanesParameters\">" << std::endl;
         geometry_file << "      <siplanesType type=\"TelescopeWithoutDUT\"/>" << std::endl;

@@ -1,0 +1,24 @@
+FROM clicdp/cc7-base
+MAINTAINER Simon Spannagel <simon.spannagel@cern.ch>
+
+# Add layer for development tools
+RUN yum -y install \
+    devtoolset-7 \
+    cmake3 cmake \
+    centos-release-scl \
+    scl-utils \
+    xerces-c xerces-c-devel \
+    qt qt-devel \
+    eigen3-devel \
+    openssl-devel pcre-devel \
+    fftw-devel cfitsio-devel graphviz-devel \
+    avahi-compat-libdns_sd-devel python-devel \
+    libxml2-devel gsl-devel \
+    libX11-devel libXpm-devel \
+    libXft-devel libXext-devel \
+    python \
+    redhat-lsb-core \
+    git
+
+ENTRYPOINT ["scl", "enable", "devtoolset-7"]
+CMD ["bash"]

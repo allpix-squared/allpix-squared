@@ -17,91 +17,15 @@
 
 #include <TDirectory.h>
 
+#include "ModuleIdentifier.hpp"
 #include "ThreadPool.hpp"
-#include "core/config/ConfigReader.hpp"
+#include "core/config/ConfigManager.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
 #include "core/messenger/delegates.h"
 #include "exceptions.h"
 
-// TODO [doc] All these methods should move to the implementation file
-
 namespace allpix {
-
-    /**
-     * @brief Internal identifier for a module
-     *
-     * Used by the framework to distinguish between different module instantiations and their priority.
-     */
-    class ModuleIdentifier {
-    public:
-        /**
-         * @brief Constructs an empty identifier
-         */
-        // TODO [doc] Is this method really necessary
-        ModuleIdentifier() = default;
-        /**
-         * @brief Construct an identifier
-         * @param module_name Name of the module
-         * @param identifier Unique identifier for the instantiation
-         * @param prio Priority of this module
-         */
-        ModuleIdentifier(std::string module_name, std::string identifier, int prio)
-            : name_(std::move(module_name)), identifier_(std::move(identifier)), prio_(prio) {}
-
-        /**
-         * @brief Get the name of the module
-         * @return Module name
-         */
-        std::string getName() const { return name_; }
-        /**
-         * @brief Get the identifier of the instantiation
-         * @return Module identifier
-         */
-        std::string getIdentifier() const { return identifier_; }
-        /**
-         * @brief Get the unique name of the instantiation
-         * @return Unique module name
-         *
-         * The unique name of the module is the name combined with its identifier separated by a semicolon.
-         */
-        std::string getUniqueName() const {
-            std::string unique_name = name_;
-            if(!identifier_.empty()) {
-                unique_name += ":" + identifier_;
-            }
-            return unique_name;
-        }
-        /**
-         * @brief Get the priority of the instantiation
-         * @return Priority level
-         *
-         * A lower number indicates a higher priority
-         *
-         * @warning It is important to realize that the priority is ordered from high to low numbers
-         */
-        int getPriority() const { return prio_; }
-
-        /// @{
-        /**
-         * @brief Operators for comparing identifiers
-         *
-         * Identifiers are only compared on their unique name, identifiers are not distinguished on priorities
-         */
-        bool operator==(const ModuleIdentifier& other) const { return getUniqueName() == other.getUniqueName(); }
-        bool operator!=(const ModuleIdentifier& other) const { return getUniqueName() != other.getUniqueName(); }
-        bool operator<(const ModuleIdentifier& other) const { return getUniqueName() < other.getUniqueName(); }
-        bool operator<=(const ModuleIdentifier& other) const { return getUniqueName() <= other.getUniqueName(); }
-        bool operator>(const ModuleIdentifier& other) const { return getUniqueName() > other.getUniqueName(); }
-        bool operator>=(const ModuleIdentifier& other) const { return getUniqueName() >= other.getUniqueName(); }
-        /// @}
-
-    private:
-        std::string name_;
-        std::string identifier_;
-        int prio_{};
-    };
-
     class Messenger;
     /**
      * @defgroup Modules Modules
@@ -128,7 +52,7 @@ namespace allpix {
          * @brief Base constructor for unique modules
          * @param config Configuration for this module
          */
-        explicit Module(Configuration&& config);
+        explicit Module(Configuration& config);
         /**
          * @brief Base constructor for detector modules
          * @param config Configuration for this module
@@ -136,7 +60,7 @@ namespace allpix {
          * @warning Detector modules should not forget to forward their detector to the base constructor. An
          *          \ref InvalidModuleStateException will be raised if the module failed to so.
          */
-        explicit Module(Configuration&& config, std::shared_ptr<Detector> detector);
+        explicit Module(Configuration& config, std::shared_ptr<Detector> detector);
         /**
          * @brief Essential virtual destructor.
          *
@@ -154,10 +78,10 @@ namespace allpix {
 
         /// @{
         /**
-         * @brief Use default move behaviour
+         * @brief Disallow move behaviour (not possible with references)
          */
-        Module(Module&&) noexcept = default;
-        Module& operator=(Module&&) noexcept = default;
+        Module(Module&&) noexcept = delete;
+        Module& operator=(Module&&) noexcept = delete;
         /// @}
 
         /**
@@ -179,7 +103,7 @@ namespace allpix {
          * @param global True if the global output directory should be used instead of the module-specific version
          * @return Canonical path to an output file
          */
-        std::string createOutputFile(const std::string& path, bool global = false) const;
+        std::string createOutputFile(const std::string& path, bool global = false);
 
         /**
          * @brief Get seed to initialize random generators
@@ -197,6 +121,12 @@ namespace allpix {
          * @return ROOT directory for storage
          */
         TDirectory* getROOTDirectory() const;
+
+        /**
+         * @brief Get the config manager object to allow to read the global and other module configurations
+         * @return Pointer to the config manager
+         */
+        ConfigManager* getConfigManager();
 
         /**
          * @brief Returns if parallelization of this module is enabled
@@ -239,14 +169,7 @@ namespace allpix {
          * @return Configuration of the module
          */
         Configuration& get_configuration();
-        Configuration config_;
-
-        /**
-         * @brief Get the final configurations of all modules
-         * @return Vector of Configuration objects containing the final configurations for all modules
-         * @throws InvalidModuleActionException If the function is called outside the finalize method
-         */
-        std::vector<Configuration> get_final_configuration();
+        Configuration& config_;
 
     private:
         /**
@@ -273,15 +196,14 @@ namespace allpix {
          * @param directory ROOT directory for storage
          */
         void set_ROOT_directory(TDirectory* directory);
-        TDirectory* directory_{};
+        TDirectory* directory_{nullptr};
 
         /**
-         * @brief Set the final configuration from all modules in the finalize function
-         * @param config ConfigReader holding all configurations from modules in this simulation
+         * @brief Set the link to the config manager
+         * @param conf_manager ConfigManager holding all relevant configurations
          */
-        void set_final_configuration(const ConfigReader& config);
-        bool initialized_final_configreader_{false};
-        ConfigReader final_configreader_{};
+        void set_config_manager(ConfigManager* config);
+        ConfigManager* conf_manager_{nullptr};
 
         /**
          * @brief Add a messenger delegate to this instantiation

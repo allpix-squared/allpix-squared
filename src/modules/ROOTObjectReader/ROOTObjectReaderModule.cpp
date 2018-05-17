@@ -29,8 +29,8 @@
 
 using namespace allpix;
 
-ROOTObjectReaderModule::ROOTObjectReaderModule(Configuration config, Messenger* messenger, GeometryManager* geo_mgr)
-    : Module(std::move(config)), messenger_(messenger), geo_mgr_(geo_mgr) {}
+ROOTObjectReaderModule::ROOTObjectReaderModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
+    : Module(config), messenger_(messenger), geo_mgr_(geo_mgr) {}
 
 /**
  * @note Objects cannot be stored in smart pointers due to internal ROOT logic
@@ -81,7 +81,8 @@ template <typename T> static ROOTObjectReaderModule::MessageCreatorMap gen_creat
 void ROOTObjectReaderModule::init() {
     // Read include and exclude list
     if(config_.has("include") && config_.has("exclude")) {
-        throw InvalidValueError(config_, "exclude", "include and exclude parameter are mutually exclusive");
+        throw InvalidCombinationError(
+            config_, {"exclude", "include"}, "include and exclude parameter are mutually exclusive");
     } else if(config_.has("include")) {
         auto inc_arr = config_.getArray<std::string>("include");
         include_.insert(inc_arr.begin(), inc_arr.end());
@@ -126,7 +127,37 @@ void ROOTObjectReaderModule::init() {
     }
 
     if(trees_.empty()) {
-        LOG(ERROR) << "Provided ROOT file does not contain any trees, module is useless!";
+        LOG(ERROR) << "Provided ROOT file does not contain any trees, module will not read any data";
+    }
+
+    // Cross-check the core random seed stored in the file with the one configured:
+    auto& global_config = getConfigManager()->getGlobalConfiguration();
+    auto config_seed = global_config.get<uint64_t>("random_seed_core");
+
+    std::string* str = nullptr;
+    input_file_->GetObject("config/Allpix/random_seed_core", str);
+    if(str == nullptr) {
+        throw InvalidValueError(global_config,
+                                "random_seed_core",
+                                "no random seed for core set in the input data file, cross-check with configured value "
+                                "impossible - this might lead to unexpected behavior.");
+    }
+
+    auto file_seed = allpix::from_string<uint64_t>(*str);
+    if(config_seed != file_seed) {
+        throw InvalidValueError(global_config,
+                                "random_seed_core",
+                                "mismatch between core random seed in configuration file and input data - this "
+                                "might lead to unexpected behavior. Set to value configured in the input data file: " +
+                                    (*str));
+    }
+
+    // Cross-check version, print warning only in case of a mismatch:
+    std::string* version_str = nullptr;
+    input_file_->GetObject("config/Allpix/version", version_str);
+    if(version_str != nullptr && (*version_str) != ALLPIX_PROJECT_VERSION) {
+        LOG(WARNING) << "Reading data produced with different version " << (*version_str)
+                     << " - this might lead to unexpected behavior.";
     }
 
     // Loop over all found trees
@@ -179,9 +210,10 @@ void ROOTObjectReaderModule::init() {
             if(name_idx != INT_MAX) {
                 message_info_array_.back().name = split[name_idx];
             }
-            std::shared_ptr<Detector> detector = nullptr;
             if(det_idx != INT_MAX) {
-                message_info_array_.back().detector = geo_mgr_->getDetector(split[det_idx]);
+                if(split[det_idx] != "global") {
+                    message_info_array_.back().detector = geo_mgr_->getDetector(split[det_idx]);
+                }
             }
         }
     }

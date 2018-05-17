@@ -43,7 +43,7 @@ namespace allpix {
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
          * @param detector Pointer to the detector for this module instance
          */
-        GenericPropagationModule(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector);
+        GenericPropagationModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector);
 
         /**
          * @brief Initialize the module and check field configuration
@@ -97,6 +97,14 @@ namespace allpix {
 
         // Precalculated value for Boltzmann constant:
         double boltzmann_kT_;
+
+        // Predefined values for electron/hole velocity calculation in magnetic fields
+        double electron_Hall_;
+        double hole_Hall_;
+
+        // Magnetic field
+        bool has_magnetic_field_;
+        ROOT::Math::XYZVector magnetic_field_;
 
         // Deposits for the bound detector in this event
         std::shared_ptr<DepositedChargeMessage> deposits_message_;

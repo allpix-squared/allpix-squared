@@ -35,8 +35,7 @@ namespace allpix {
      * @return The canonical path (without dots)
      * @throws std::invalid_argument If absolute path does not exist on the system
      */
-    // TODO [DOC] should be renamed get_canonical_path
-    inline std::string get_absolute_path(const std::string& path) {
+    inline std::string get_canonical_path(const std::string& path) {
         char* path_ptr = realpath(path.c_str(), nullptr);
         if(path_ptr == nullptr) {
             // Throw an error if the path does not exist

@@ -8,7 +8,12 @@
 ##################################################################
 # SETTINGS
 # set path to clang-format binary
-CLANG_FORMAT=$(which clang-format)
+for bin in "clang-format-6.0" "clang-format-5.0" "clang-format-4.0" "clang-format";
+do
+    CLANG_FORMAT=$(which "$bin")
+    [ -n "$CLANG_FORMAT" ] && break
+done
+
 
 # set file extensions to handle
 FILE_EXTS=".c .h .cpp .hpp .cc .hh .cxx .tpp .C"

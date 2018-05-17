@@ -111,7 +111,6 @@ namespace allpix {
          * @param units Name of the possible output units
          * @return Value with best unit to be used for display
          */
-        // TODO [doc] Shall we change the name in something better here
         static std::string display(UnitType input, std::initializer_list<std::string> units);
         /**
          * @brief Return value in the requested unit for display
@@ -119,55 +118,23 @@ namespace allpix {
          * @param unit Name of the output unit
          * @return Value with unit to be used for display
          */
-        // TODO [doc] Shall we change the name in something better here
         static std::string display(UnitType input, std::string unit);
+        /**
+         * @brief Return value for display in the best of all the provided units for all vector elements
+         * @param input Vector of values in the base unit system
+         * @param units Name of the possible output units
+         * @return Vector of values between parentheses with best display units for each element
+         * @note Works for all vector types that can be converted to a string using \ref StringConversions "the string
+         * utilities".
+         */
+        template <typename T> static std::string display(T input, std::initializer_list<std::string> units);
 
     private:
         static std::map<std::string, UnitType> unit_map_;
     };
-
-    // TODO [doc] Move these to a separate template implementation file?
-
-    /**
-     * @throws std::overflow_error If the converted unit overflows the requested type
-     *
-     * The unit type is internally converted to the type \ref Units::UnitType. After multiplying the unit, the output is
-     * checked for overflow problems before the type is converted back to the original type.
-     */
-    template <typename T> T Units::get(T inp, std::string str) {
-        UnitType out = static_cast<UnitType>(inp) * get(std::move(str));
-        if(out > static_cast<UnitType>(std::numeric_limits<T>::max()) ||
-           out < static_cast<UnitType>(std::numeric_limits<T>::lowest())) {
-            throw std::overflow_error("unit conversion overflows the type");
-        }
-        return static_cast<T>(out);
-    }
-
-    // Getters for single and inverse units
-    template <typename T> T Units::getSingle(T inp, std::string str) {
-        UnitType out = static_cast<UnitType>(inp) * getSingle(std::move(str));
-        if(out > static_cast<UnitType>(std::numeric_limits<T>::max()) ||
-           out < static_cast<UnitType>(std::numeric_limits<T>::lowest())) {
-            throw std::overflow_error("unit conversion overflows the type");
-        }
-        return static_cast<T>(out);
-    }
-    template <typename T> T Units::getSingleInverse(T inp, std::string str) {
-        UnitType out = static_cast<UnitType>(inp) / getSingle(std::move(str));
-        if(out > static_cast<UnitType>(std::numeric_limits<T>::max()) ||
-           out < static_cast<UnitType>(std::numeric_limits<T>::lowest())) {
-            throw std::overflow_error("unit conversion overflows the type");
-        }
-        return static_cast<T>(out);
-    }
-    template <typename T> T Units::getInverse(T inp, std::string str) {
-        UnitType out = static_cast<UnitType>(inp) / get(std::move(str));
-        if(out > static_cast<UnitType>(std::numeric_limits<T>::max()) ||
-           out < static_cast<UnitType>(std::numeric_limits<T>::lowest())) {
-            throw std::overflow_error("unit conversion overflows the type");
-        }
-        return static_cast<T>(out);
-    }
 } // namespace allpix
+
+// Include template definitions
+#include "unit.tpp"
 
 #endif /* ALLPIX_UNIT_H */

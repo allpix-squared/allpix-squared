@@ -20,10 +20,10 @@
 
 using namespace allpix;
 
-DefaultDigitizerModule::DefaultDigitizerModule(Configuration config,
+DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
                                                Messenger* messenger,
                                                std::shared_ptr<Detector> detector)
-    : Module(std::move(config), std::move(detector)), messenger_(messenger), pixel_message_(nullptr) {
+    : Module(config, std::move(detector)), messenger_(messenger), pixel_message_(nullptr) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 

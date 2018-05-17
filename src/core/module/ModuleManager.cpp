@@ -54,15 +54,17 @@ void ModuleManager::load(Messenger* messenger,
                          ConfigManager* conf_manager,
                          GeometryManager* geo_manager,
                          std::mt19937_64& seeder) {
-    std::vector<Configuration> configs = conf_manager->getConfigurations();
-    global_config_ = conf_manager->getGlobalConfiguration();
+    // Store config manager and get configurations
+    conf_manager_ = conf_manager;
+    auto& configs = conf_manager_->getModuleConfigurations();
+    Configuration& global_config = conf_manager_->getGlobalConfiguration();
 
     // (Re)create the main ROOT file
-    auto path = std::string(gSystem->pwd()) + "/" + global_config_.get<std::string>("root_file", "modules");
+    auto path = std::string(gSystem->pwd()) + "/" + global_config.get<std::string>("root_file", "modules");
     path = allpix::add_file_extension(path, "root");
 
     if(allpix::path_is_file(path)) {
-        if(global_config_.get<bool>("deny_overwrite", false)) {
+        if(global_config.get<bool>("deny_overwrite", false)) {
             throw RuntimeError("Overwriting of existing main ROOT file " + path + " denied");
         }
         LOG(WARNING) << "Main ROOT file " << path << " exists and will be overwritten.";
@@ -85,8 +87,8 @@ void ModuleManager::load(Messenger* messenger,
         dlerror();
         if(loaded_libraries_.count(lib_name) == 0) {
             // If library is not loaded then try to load it first from the config directories
-            if(global_config_.has("library_directories")) {
-                std::vector<std::string> lib_paths = global_config_.getPathArray("library_directories", true);
+            if(global_config.has("library_directories")) {
+                std::vector<std::string> lib_paths = global_config.getPathArray("library_directories", true);
                 for(auto& lib_path : lib_paths) {
                     std::string full_lib_path = lib_path;
                     full_lib_path += "/";
@@ -181,15 +183,9 @@ void ModuleManager::load(Messenger* messenger,
             unique = reinterpret_cast<bool (*)()>(uniqueFunction)(); // NOLINT
         }
 
-        // Apply the module specific options to the module configuration
-        conf_manager->applyOptions(config.getName(), config);
-
         // Add the global internal parameters to the configuration
         std::string global_dir = gSystem->pwd();
         config.set<std::string>("_global_dir", global_dir);
-
-        // Set default file protection setting, inherited from the global setting:
-        config.setDefault<bool>("deny_overwrite", global_config_.get<bool>("deny_overwrite", false));
 
         // Set default input and output name
         config.setDefault<std::string>("input", "");
@@ -199,10 +195,9 @@ void ModuleManager::load(Messenger* messenger,
         std::vector<std::pair<ModuleIdentifier, Module*>> mod_list;
         if(unique) {
             mod_list.emplace_back(
-                create_unique_modules(loaded_libraries_[lib_name], config, conf_manager, messenger, geo_manager, seeder));
+                create_unique_modules(loaded_libraries_[lib_name], config, messenger, geo_manager, seeder));
         } else {
-            mod_list =
-                create_detector_modules(loaded_libraries_[lib_name], config, conf_manager, messenger, geo_manager, seeder);
+            mod_list = create_detector_modules(loaded_libraries_[lib_name], config, messenger, geo_manager, seeder);
         }
 
         // Loop through all created instantiations
@@ -247,12 +242,8 @@ void ModuleManager::load(Messenger* messenger,
 /**
  * For unique modules a single instance is created per section
  */
-std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* library,
-                                                                          Configuration& config,
-                                                                          ConfigManager* conf_manager,
-                                                                          Messenger* messenger,
-                                                                          GeometryManager* geo_manager,
-                                                                          std::mt19937_64& seeder) {
+std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
+    void* library, Configuration& config, Messenger* messenger, GeometryManager* geo_manager, std::mt19937_64& seeder) {
     // Make the vector to return
     std::string module_name = config.getName();
 
@@ -285,21 +276,20 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
         throw allpix::DynamicLibraryError(module_name);
     }
 
-    // Apply instantiation specific options
-    conf_manager->applyOptions(identifier.getUniqueName(), config);
+    // Create and add module instance config
+    Configuration& instance_config = conf_manager_->addInstanceConfiguration(identifier, config);
 
-    // Add internal module config
-    config.set<std::string>("_unique_name", identifier.getUniqueName());
-    config.set<uint64_t>("_seed", seeder());
+    // Specialize instance configuration
+    instance_config.set<uint64_t>("_seed", seeder());
     std::string output_dir;
-    output_dir = config.get<std::string>("_global_dir");
+    output_dir = instance_config.get<std::string>("_global_dir");
     output_dir += "/";
     std::string path_mod_name = identifier.getUniqueName();
     std::replace(path_mod_name.begin(), path_mod_name.end(), ':', '_');
     output_dir += path_mod_name;
 
     // Convert to correct generator function
-    auto module_generator = reinterpret_cast<Module* (*)(Configuration, Messenger*, GeometryManager*)>(generator); // NOLINT
+    auto module_generator = reinterpret_cast<Module* (*)(Configuration&, Messenger*, GeometryManager*)>(generator); // NOLINT
 
     LOG(DEBUG) << "Creating unique instantiation " << identifier.getUniqueName();
 
@@ -311,9 +301,9 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
     section_name += identifier.getUniqueName();
     Log::setSection(section_name);
     // Set module specific log settings
-    auto old_settings = set_module_before(identifier.getUniqueName(), config);
+    auto old_settings = set_module_before(identifier.getUniqueName(), instance_config);
     // Build module
-    Module* module = module_generator(config, messenger, geo_manager);
+    Module* module = module_generator(instance_config, messenger, geo_manager);
     // Reset log
     Log::setSection(old_section_name);
     set_module_after(old_settings);
@@ -334,12 +324,8 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
  * For detector modules multiple instantiations may be created per section. An instantiation is created for every detector if
  * no selection parameters are provided. Otherwise instantiations are created for every linked detector name and type.
  */
-std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector_modules(void* library,
-                                                                                         Configuration& config,
-                                                                                         ConfigManager* conf_manager,
-                                                                                         Messenger* messenger,
-                                                                                         GeometryManager* geo_manager,
-                                                                                         std::mt19937_64& seeder) {
+std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector_modules(
+    void* library, Configuration& config, Messenger* messenger, GeometryManager* geo_manager, std::mt19937_64& seeder) {
     std::string module_name = config.getName();
     LOG(DEBUG) << "Creating instantions for detector module " << module_name;
 
@@ -363,7 +349,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
     }
     // Convert to correct generator function
     auto module_generator =
-        reinterpret_cast<Module* (*)(Configuration, Messenger*, std::shared_ptr<Detector>)>(generator); // NOLINT
+        reinterpret_cast<Module* (*)(Configuration&, Messenger*, std::shared_ptr<Detector>)>(generator); // NOLINT
 
     // Handle empty type and name arrays:
     bool instances_created = false;
@@ -417,14 +403,13 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         // Get current time
         auto start = std::chrono::steady_clock::now();
 
-        // Apply instantiation specific options
-        conf_manager->applyOptions(instance.second.getUniqueName(), config);
+        // Create and add module instance config
+        Configuration& instance_config = conf_manager_->addInstanceConfiguration(instance.second, config);
 
         // Add internal module config
-        config.set<std::string>("_unique_name", instance.second.getUniqueName());
-        config.set<uint64_t>("_seed", seeder());
+        instance_config.set<uint64_t>("_seed", seeder());
         std::string output_dir;
-        output_dir = config.get<std::string>("_global_dir");
+        output_dir = instance_config.get<std::string>("_global_dir");
         output_dir += "/";
         std::string path_mod_name = instance.second.getUniqueName();
         std::replace(path_mod_name.begin(), path_mod_name.end(), ':', '/');
@@ -436,9 +421,9 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         section_name += instance.second.getUniqueName();
         Log::setSection(section_name);
         // Set module specific log settings
-        auto old_settings = set_module_before(instance.second.getUniqueName(), config);
+        auto old_settings = set_module_before(instance.second.getUniqueName(), instance_config);
         // Build module
-        Module* module = module_generator(config, messenger, instance.first);
+        Module* module = module_generator(instance_config, messenger, instance.first);
         // Reset logging
         Log::setSection(old_section_name);
         set_module_after(old_settings);
@@ -526,8 +511,11 @@ void ModuleManager::init() {
     for(auto& module : modules_) {
         LOG_PROGRESS(TRACE, "INIT_LOOP") << "Initializing " << module->get_identifier().getUniqueName();
 
-        LOG(TRACE) << "Creating and accessing ROOT directory";
+        // Pass the config manager to this instance
+        module->set_config_manager(conf_manager_);
+
         // Create main ROOT directory for this module class if it does not exists yet
+        LOG(TRACE) << "Creating and accessing ROOT directory";
         std::string module_name = module->get_configuration().getName();
         auto directory = modules_file_->GetDirectory(module_name.c_str());
         if(directory == nullptr) {
@@ -586,14 +574,16 @@ void ModuleManager::init() {
  * initialization
  */
 void ModuleManager::run() {
-    global_config_.setDefault("experimental_multithreading", false);
+    Configuration& global_config = conf_manager_->getGlobalConfiguration();
+
+    global_config.setDefault("experimental_multithreading", false);
     unsigned int threads_num;
 
-    if(global_config_.get<bool>("experimental_multithreading")) {
+    if(global_config.get<bool>("experimental_multithreading")) {
         // Try to fetch a suitable number of workers if multithreading is enabled
-        threads_num = global_config_.get<unsigned int>("workers", std::max(std::thread::hardware_concurrency(), 1u));
+        threads_num = global_config.get<unsigned int>("workers", std::max(std::thread::hardware_concurrency(), 1u));
         if(threads_num == 0) {
-            throw InvalidValueError(global_config_, "workers", "number of workers should be strictly more than zero");
+            throw InvalidValueError(global_config, "workers", "number of workers should be strictly more than zero");
         }
         LOG(WARNING) << "Experimental multithreading enabled - using " << threads_num << " worker threads.";
         --threads_num;
@@ -608,7 +598,9 @@ void ModuleManager::run() {
     for(auto& module : modules_) {
         module_list.emplace_back(module.get());
     }
-    auto init_function = [ log_level = Log::getReportingLevel(), log_format = Log::getFormat() ]() {
+    // clang-format off
+    auto init_function = [log_level = Log::getReportingLevel(), log_format = Log::getFormat()]() {
+        // clang-format on
         // Initialize the threads to the same log level and format as the master setting
         Log::setReportingLevel(log_level);
         Log::setFormat(log_format);
@@ -620,14 +612,14 @@ void ModuleManager::run() {
 
     // Loop over all the events
     auto start_time = std::chrono::steady_clock::now();
-    global_config_.setDefault<unsigned int>("number_of_events", 1u);
-    auto number_of_events = global_config_.get<unsigned int>("number_of_events");
+    global_config.setDefault<unsigned int>("number_of_events", 1u);
+    auto number_of_events = global_config.get<unsigned int>("number_of_events");
     for(unsigned int i = 0; i < number_of_events; ++i) {
         // Check for termination
         if(terminate_) {
             LOG(INFO) << "Interrupting event loop after " << i << " events because of request to terminate";
             number_of_events = i;
-            global_config_.set<unsigned int>("number_of_events", i);
+            global_config.set<unsigned int>("number_of_events", i);
             break;
         }
 
@@ -647,7 +639,9 @@ void ModuleManager::run() {
                 thread_pool->execute_all();
             }
 
-            auto execute_module = [ module = module.get(), event_num = i + 1, this, number_of_events ]() {
+            // clang-format off
+            auto execute_module = [module = module.get(), event_num = i + 1, this, number_of_events]() {
+                // clang-format on
                 LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << event_num << " of " << number_of_events << " ["
                                                   << module->get_identifier().getUniqueName() << "]";
                 // Check if module is satisfied to run
@@ -750,16 +744,6 @@ static std::string seconds_to_time(long double seconds) {
  * after finalization. No method will be called after finalizing the module (except the destructor).
  */
 void ModuleManager::finalize() {
-
-    // Collect the modules' configurations as used during the simulation:
-    LOG(TRACE) << "Collecting module configurations...";
-    ConfigReader final_configurations;
-    for(auto& module : modules_) {
-        auto config = module->config_;
-        config.setName(module->getUniqueName());
-        final_configurations.addConfiguration(std::move(config));
-    }
-
     LOG_PROGRESS(TRACE, "FINALIZE_LOOP") << "Finalizing module instantiations";
     for(auto& module : modules_) {
         LOG_PROGRESS(TRACE, "FINALIZE_LOOP") << "Finalizing " << module->get_identifier().getUniqueName();
@@ -773,15 +757,14 @@ void ModuleManager::finalize() {
         Log::setSection(section_name);
         // Set module specific settings
         auto old_settings = set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
-        // Supply final configurations to the module
-        module->set_final_configuration(final_configurations);
         // Change to our ROOT directory
         module->getROOTDirectory()->cd();
         // Finalize module
         module->finalize();
-        // Close the ROOT directory after finalizing
-        module->getROOTDirectory()->Close();
+        // Remove the pointer to the ROOT directory after finalizing
         module->set_ROOT_directory(nullptr);
+        // Remove the config manager
+        module->set_config_manager(nullptr);
         // Reset logging
         Log::setSection(old_section_name);
         set_module_after(old_settings);
@@ -789,6 +772,8 @@ void ModuleManager::finalize() {
         auto end = std::chrono::steady_clock::now();
         module_execution_time_[module.get()] += static_cast<std::chrono::duration<long double>>(end - start).count();
     }
+    // Close module ROOT file
+    modules_file_->Close();
     LOG_PROGRESS(STATUS, "FINALIZE_LOOP") << "Finalization completed";
 
     long double slowest_time = 0;
@@ -805,13 +790,15 @@ void ModuleManager::finalize() {
     for(auto& module : modules_) {
         LOG(INFO) << " Module " << module->getUniqueName() << " took " << module_execution_time_[module.get()] << " seconds";
     }
+
+    Configuration& global_config = conf_manager_->getGlobalConfiguration();
     long double processing_time = 0;
-    if(global_config_.get<unsigned int>("number_of_events") > 0) {
-        processing_time = std::round((1000 * total_time_) / global_config_.get<unsigned int>("number_of_events"));
+    if(global_config.get<unsigned int>("number_of_events") > 0) {
+        processing_time = std::round((1000 * total_time_) / global_config.get<unsigned int>("number_of_events"));
     }
 
     LOG(STATUS) << "Average processing time is \x1B[1m" << processing_time << " ms/event\x1B[0m, event generation at \x1B[1m"
-                << std::round(global_config_.get<double>("number_of_events") / total_time_) << " Hz\x1B[0m";
+                << std::round(global_config.get<double>("number_of_events") / total_time_) << " Hz\x1B[0m";
 }
 
 /**

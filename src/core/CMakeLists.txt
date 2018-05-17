@@ -4,6 +4,7 @@ INCLUDE_DIRECTORIES(SYSTEM ${ALLPIX_DEPS_INCLUDE_DIRS})
 # Create core library
 ADD_LIBRARY(AllpixCore SHARED
     utils/log.cpp
+    utils/text.cpp
     utils/unit.cpp
     module/Module.cpp
     module/ModuleManager.cpp
@@ -14,6 +15,7 @@ ADD_LIBRARY(AllpixCore SHARED
     config/Configuration.cpp
     config/ConfigReader.cpp
     config/ConfigManager.cpp
+    config/OptionParser.cpp
     geometry/Detector.cpp
     geometry/GeometryManager.cpp
     Allpix.cpp

@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 
-#include "core/utils/string.h"
+#include "core/utils/text.h"
 #include "exceptions.h"
 
 namespace allpix {
@@ -110,6 +110,14 @@ namespace allpix {
         template <typename T> Matrix<T> getMatrix(const std::string& key) const;
 
         /**
+         * @brief Get values for a key containing a 2D matrix
+         * @param key Key to get values of
+         * @param def Default value matrix to use if key is not defined
+         * @return Matrix of values from the requested template parameter
+         */
+        template <typename T> Matrix<T> getMatrix(const std::string& key, const Matrix<T> def) const;
+
+        /**
          * @brief Get literal value of a key as string
          * @param key Key to get values of
          * @return Literal value of the key
@@ -193,11 +201,6 @@ namespace allpix {
          * @return Configuration name
          */
         std::string getName() const;
-
-        /**
-         * @brief Set name of the configuration header
-         */
-        void setName(const std::string& name);
 
         /**
          * @brief Get path to the file containing the configuration if it has one
