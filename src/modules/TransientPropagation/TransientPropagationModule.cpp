@@ -25,7 +25,7 @@ using namespace allpix;
 TransientPropagationModule::TransientPropagationModule(Configuration& config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
-    : Module(config, detector), detector_(detector), messenger_(messenger) {
+    : Module(config, detector), detector_(std::move(detector)), messenger_(messenger) {
 
     // Save detector model
     model_ = detector_->getModel();
@@ -203,5 +203,6 @@ void TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
             position = last_position;
             time = last_time;
         }
+        LOG(TRACE) << "Time: " << Units::display(time, {"ps", "ns"});
     }
 }
