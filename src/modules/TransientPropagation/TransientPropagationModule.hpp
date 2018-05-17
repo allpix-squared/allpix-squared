@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Definition of [TransientCurrentPropagation] module
+ * @brief Definition of charge propagation module with transient behavior simulation
  * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
@@ -31,7 +31,7 @@ namespace allpix {
      *
      * More detailed explanation of module
      */
-    class TransientCurrentPropagationModule : public Module {
+    class TransientPropagationModule : public Module {
     public:
         /**
          * @brief Constructor for this detector-specific module
@@ -39,7 +39,7 @@ namespace allpix {
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
          * @param detector Pointer to the detector for this module instance
          */
-        TransientCurrentPropagationModule(Configuration config, Messenger* messenger, std::shared_ptr<Detector> detector);
+        TransientPropagationModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector);
 
         /**
          * @brief [Initialise this module]

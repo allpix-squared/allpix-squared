@@ -1,13 +1,13 @@
 /**
  * @file
- * @brief Implementation of [TransientCurrentPropagation] module
+ * @brief Implementation of charge propagation module with transient behavior simulation
  * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#include "TransientCurrentPropagationModule.hpp"
+#include "TransientPropagationModule.hpp"
 
 #include <map>
 #include <memory>
@@ -22,16 +22,16 @@
 
 using namespace allpix;
 
-TransientCurrentPropagationModule::TransientCurrentPropagationModule(Configuration config,
-                                                                     Messenger* messenger,
-                                                                     std::shared_ptr<Detector> detector)
-    : Module(std::move(config), detector), detector_(detector), messenger_(messenger) {
+TransientPropagationModule::TransientPropagationModule(Configuration& config,
+                                                       Messenger* messenger,
+                                                       std::shared_ptr<Detector> detector)
+    : Module(config, detector), detector_(detector), messenger_(messenger) {
 
     // Save detector model
     model_ = detector_->getModel();
 
     // Require deposits message for single detector:
-    messenger_->bindSingle(this, &TransientCurrentPropagationModule::deposits_message_, MsgFlags::REQUIRED);
+    messenger_->bindSingle(this, &TransientPropagationModule::deposits_message_, MsgFlags::REQUIRED);
 
     // Seed the random generator with the module seed
     random_generator_.seed(getRandomSeed());
@@ -55,12 +55,12 @@ TransientCurrentPropagationModule::TransientCurrentPropagationModule(Configurati
     boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * temperature_;
 }
 
-void TransientCurrentPropagationModule::init() {
+void TransientPropagationModule::init() {
 
     // FIXME check that we have a Ramo Weighting field for the detector!
 }
 
-void TransientCurrentPropagationModule::run(unsigned int) {
+void TransientPropagationModule::run(unsigned int) {
 
     // Create map for all pixels
     std::map<Pixel::Index, PixelPulse> pixel_map;
@@ -73,7 +73,7 @@ void TransientCurrentPropagationModule::run(unsigned int) {
         unsigned int charges_remaining = deposit.getCharge();
 
         LOG(DEBUG) << "Set of charge carriers (" << deposit.getType() << ") on "
-                   << display_vector(deposit.getLocalPosition(), {"mm", "um"});
+                   << Units::display(deposit.getLocalPosition(), {"mm", "um"});
 
         auto charge_per_step = config_.get<unsigned int>("charge_per_step");
         while(charges_remaining > 0) {
@@ -109,10 +109,10 @@ void TransientCurrentPropagationModule::run(unsigned int) {
  * velocity at every point with help of the electric field map of the detector. A Runge-Kutta integration is applied in
  * multiple steps, adding a random diffusion to the propagating charge every step.
  */
-void TransientCurrentPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
-                                                  const CarrierType& type,
-                                                  const unsigned int,
-                                                  std::map<Pixel::Index, PixelPulse>&) {
+void TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
+                                           const CarrierType& type,
+                                           const unsigned int,
+                                           std::map<Pixel::Index, PixelPulse>&) {
 
     // Create a runge kutta solver using the electric field as step function
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
