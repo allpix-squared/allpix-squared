@@ -606,9 +606,6 @@ void ModuleManager::run() {
         Log::setFormat(log_format);
     };
     std::shared_ptr<ThreadPool> thread_pool = std::make_shared<ThreadPool>(threads_num, module_list, init_function);
-    for(auto& module : modules_) {
-        module->set_thread_pool(thread_pool);
-    }
 
     // Loop over all the events
     auto start_time = std::chrono::steady_clock::now();
@@ -681,15 +678,10 @@ void ModuleManager::run() {
                 module_execution_time_[module] += static_cast<std::chrono::duration<long double>>(end - start).count();
             };
 
-            if(module->canParallelize()) {
-                // Submit the module function
-                thread_pool->submit_module_function(execute_module);
-            } else {
-                // Finish thread pool
-                thread_pool->execute_all();
-                // Execute current module
-                execute_module();
-            }
+            // Finish thread pool (which will always be empty as of now).
+            thread_pool->execute_all();
+            // Execute current module
+            execute_module();
         }
 
         // Finish executing the last remaining tasks
@@ -710,9 +702,6 @@ void ModuleManager::run() {
 
     // Remove pool from modules, wait for the threads to finish and destroy pool
     LOG(TRACE) << "Destroying thread pool";
-    for(auto& module : modules_) {
-        module->set_thread_pool(nullptr);
-    }
     thread_pool.reset();
     assert(thread_pool.use_count() == 0);
 }
