@@ -112,11 +112,6 @@ namespace allpix {
         uint64_t getRandomSeed();
 
         /**
-         * @brief Get thread pool to submit asynchronous tasks to
-         */
-        ThreadPool& getThreadPool();
-
-        /**
          * @brief Get ROOT directory which should be used to output histograms et cetera
          * @return ROOT directory for storage
          */
@@ -183,13 +178,6 @@ namespace allpix {
          */
         ModuleIdentifier get_identifier() const;
         ModuleIdentifier identifier_;
-
-        /**
-         * @brief Set the thread pool for parallel execution
-         * @return Thread pool (or null pointer to disable it)
-         */
-        void set_thread_pool(std::shared_ptr<ThreadPool> thread_pool);
-        std::shared_ptr<ThreadPool> thread_pool_;
 
         /**
          * @brief Set the output ROOT directory for this module
