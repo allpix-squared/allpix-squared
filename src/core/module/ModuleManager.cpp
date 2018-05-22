@@ -630,12 +630,6 @@ void ModuleManager::run() {
             module_name = modules_.front()->get_identifier().getName();
         }
         for(auto& module : modules_) {
-            // Execute all remaining jobs in the thread pool when switching to a new module type
-            if(module->get_identifier().getName() != module_name) {
-                module_name = module->get_identifier().getName();
-                thread_pool->execute_all();
-            }
-
             // clang-format off
             auto execute_module = [module = module.get(), event_num = i + 1, this, number_of_events]() {
                 // clang-format on
@@ -678,14 +672,9 @@ void ModuleManager::run() {
                 module_execution_time_[module] += static_cast<std::chrono::duration<long double>>(end - start).count();
             };
 
-            // Finish thread pool (which will always be empty as of now).
-            thread_pool->execute_all();
             // Execute current module
             execute_module();
         }
-
-        // Finish executing the last remaining tasks
-        thread_pool->execute_all();
 
         // Resetting delegates
         for(auto& module : modules_) {
