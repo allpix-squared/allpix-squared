@@ -69,22 +69,19 @@ inline std::array<long double, 3> getRotationAnglesFromMatrix(ROOT::Math::Rotati
     long double aY = 0;
     long double aZ = 0;
     static long double const pi = 3.14159265359;
-    // This is a correct decomposition for the given rotation order: YXZ, i.e.
-    // initial Z-rotation,
-    // followed by X and ultimately Y rotation. In the case of a gimbal lock,
-    // the angle around the
-    // Z axis is (arbitrarily) set to 0.
+    // This is a correct decomposition for the given rotation order: YXZ, i.e. initial Z-rotation, followed by X and
+    // ultimately Y rotation. In the case of a gimbal lock, the angle around the Z axis is (arbitrarily) set to 0.
     if(r12 < 1) {
         if(r12 > -1) {
             aX = std::asin(-r12);
             aY = std::atan2(r02, r22);
             aZ = std::atan2(r10, r11);
-        } else /* r12 = -1 */ {
+        } else /* r12 == -1 */ {
             aX = pi / 2;
             aY = -std::atan2(-r01, r00);
             aZ = 0;
         }
-    } else /* r12 = 1 */ {
+    } else /* r12 == 1 */ {
         aX = -pi / 2;
         aY = std::atan2(-r01, r00);
         aZ = 0;
@@ -162,17 +159,17 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
                     if(sensor_id_unchecked >= 0 && sensor_id_unchecked <= 127) {
                         sensor_id = static_cast<unsigned>(sensor_id_unchecked);
                     } else {
-                        auto error = "The sensor id \"" + std::to_string(sensor_id_unchecked) +   // NOLINT
-                                     "\" which was provided for detector \"" + det_name +         // NOLINT
-                                     "\" must be positive and less than or equal to 127 (7 bit)"; // NOLINT
-                        throw InvalidValueError(config_, "detector_assignment", error);
+                        throw InvalidValueError(config_,
+                                                "detector_assignment",
+                                                "The sensor id \"" + std::to_string(sensor_id_unchecked) +
+                                                    "\" which was provided for detector \"" + det_name +
+                                                    "\" must be positive and less than or equal to 127 (7 bit)");
                     }
                 } catch(const std::invalid_argument&) {
-                    auto error = "The sensor id \"" + sensor_id_str +      // NOLINT
-                                 "\" which was provided for detector \"" + // NOLINT
-                                 det_name +                                // NOLINT
-                                 "\" is not a valid integer";              // NOLINT
-                    throw InvalidValueError(config_, "detector_assignment", error);
+                    throw InvalidValueError(config_,
+                                            "detector_assignment",
+                                            "The sensor id \"" + sensor_id_str + "\" which was provided for detector \"" +
+                                                det_name + "\" is not a valid integer");
                 }
 
                 if(std::find(assigned_ids.begin(), assigned_ids.end(), sensor_id) == assigned_ids.end()) {
@@ -180,11 +177,10 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
                     // This map will translate the internally used detector name to the sensor id
                     det_name_to_id_[det_name] = sensor_id;
                 } else {
-                    auto error = "Trying to assign sensor id \""               // NOLINT
-                                 + std::to_string(sensor_id) +                 // NOLINT
-                                 "\" to detector \"" +                         // NOLINT
-                                 det_name + "\", this id is already assigned"; // NOLINT
-                    throw InvalidValueError(config_, "detector_assignment", error);
+                    throw InvalidValueError(config_,
+                                            "detector_assignment",
+                                            "Trying to assign sensor id \"" + std::to_string(sensor_id) +
+                                                "\" to detector \"" + det_name + "\", this id is already assigned");
                 }
 
             } else {
@@ -202,10 +198,11 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
 
         // Cross check the detector geometry against the configuration file
         if(setup.size() != detectors.size()) {
-            auto error = "In the configuration file " + std::to_string(setup.size()) +                     // NOLINT
-                         " detectors are specified, in the geometry " + std::to_string(detectors.size()) + // NOLINT
-                         ", this is a mismatch";                                                           // NOLINT
-            throw InvalidValueError(config_, "detector_assignment", error);
+            throw InvalidValueError(config_,
+                                    "detector_assignment",
+                                    "In the configuration file " + std::to_string(setup.size()) +
+                                        " detectors are specified, in the geometry " + std::to_string(detectors.size()) +
+                                        ", this is a mismatch");
         }
     }
     //
@@ -225,9 +222,10 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
         if(it != det_name_to_id_.end()) {
             LOG(DEBUG) << det_name << " has ID " << det_name_to_id_[det_name];
         } else {
-            auto error = "Detector \"" + det_name +                                                          // NOLINT
-                         "\" is specified in the geometry file, but not provided in the configuration file"; // NOLINT
-            throw InvalidValueError(config_, "detector_assignment", error);
+            throw InvalidValueError(config_,
+                                    "detector_assignment",
+                                    "Detector \"" + det_name +
+                                        "\" is specified in the geometry file, but not provided in the configuration file");
         }
     }
 }
