@@ -9,6 +9,7 @@
  */
 
 #include "ModuleManager.hpp"
+#include "Event.hpp"
 
 #include <dlfcn.h>
 #include <unistd.h>
@@ -23,7 +24,6 @@
 #include <stdexcept>
 #include <string>
 
-#include <TProcessID.h>
 #include <TSystem.h>
 
 #include "core/config/ConfigManager.hpp"
@@ -568,10 +568,7 @@ void ModuleManager::init() {
 }
 
 /**
- * Initializes the thread pool for excuting multiple modules and module tasks in parallel. The run for a module is skipped if
- * its delegates are not \ref Module::check_delegates() "satisfied". Sets the section header and logging settings before
- * executing the \ref Module::run() function. \ref Module::reset_delegates() "Resets" the delegates and the logging after
- * initialization
+ * Initializes the thread pool for executing each event in parallel
  */
 void ModuleManager::run() {
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
@@ -622,68 +619,9 @@ void ModuleManager::run() {
 
         LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Running event " << (i + 1) << " of " << number_of_events;
 
-        // Get object count for linking objects in current event
-        auto save_id = TProcessID::GetObjectCount();
-
-        std::string module_name;
-        if(!modules_.empty()) {
-            module_name = modules_.front()->get_identifier().getName();
-        }
-        for(auto& module : modules_) {
-            // clang-format off
-            auto execute_module = [module = module.get(), event_num = i + 1, this, number_of_events]() {
-                // clang-format on
-                LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << event_num << " of " << number_of_events << " ["
-                                                  << module->get_identifier().getUniqueName() << "]";
-                // Check if module is satisfied to run
-                if(!module->check_delegates()) {
-                    LOG(TRACE) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
-                               << ", skipping module!";
-                    return;
-                }
-
-                // Get current time
-                auto start = std::chrono::steady_clock::now();
-                // Set run module section header
-                std::string old_section_name = Log::getSection();
-                std::string section_name = "R:";
-                section_name += module->get_identifier().getUniqueName();
-                Log::setSection(section_name);
-                // Set module specific settings
-                auto old_settings = set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
-                // Change to ROOT directory is not thread safe, only do this for module without parallelization support
-                if(!module->canParallelize()) {
-                    // DEPRECATED: Switching to the directory should be removed, but can break current modules
-                    module->getROOTDirectory()->cd();
-                }
-                // Run module
-                try {
-                    module->run(event_num);
-                } catch(EndOfRunException& e) {
-                    // Terminate if the module threw the EndOfRun request exception:
-                    LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
-                    terminate_ = true;
-                }
-                // Reset logging
-                Log::setSection(old_section_name);
-                set_module_after(old_settings);
-                // Update execution time
-                auto end = std::chrono::steady_clock::now();
-                module_execution_time_[module] += static_cast<std::chrono::duration<long double>>(end - start).count();
-            };
-
-            // Execute current module
-            execute_module();
-        }
-
-        // Resetting delegates
-        for(auto& module : modules_) {
-            LOG(TRACE) << "Resetting messages";
-            module->reset_delegates();
-        }
-
-        // Reset object count for next event
-        TProcessID::SetObjectCount(save_id);
+        // XXX: later, create event and submit it to the thread pool
+        Event event(modules_, i, terminate_);
+        event.run(number_of_events, this);
     }
     LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of " << number_of_events << " events";
     auto end_time = std::chrono::steady_clock::now();

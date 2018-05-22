@@ -26,6 +26,8 @@
 
 namespace allpix {
 
+    using ModuleList = std::list<std::unique_ptr<Module>>;
+
     class ConfigManager;
     class Messenger;
     class GeometryManager;
@@ -42,6 +44,8 @@ namespace allpix {
      * - Finalizing the modules
      */
     class ModuleManager {
+        friend class Event;
+
     public:
         /**
          * @brief Construct manager
@@ -135,7 +139,6 @@ namespace allpix {
          */
         void set_module_after(std::tuple<LogLevel, LogFormat> prev);
 
-        using ModuleList = std::list<std::unique_ptr<Module>>;
         using IdentifierToModuleMap = std::map<ModuleIdentifier, ModuleList::iterator>;
 
         ModuleList modules_;

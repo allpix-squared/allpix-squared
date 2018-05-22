@@ -44,6 +44,7 @@ namespace allpix {
      * used by the ModuleManager and the Messenger to work.
      */
     class Module {
+        friend class Event;
         friend class ModuleManager;
         friend class Messenger;
 
