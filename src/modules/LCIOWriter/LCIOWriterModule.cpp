@@ -41,6 +41,14 @@ namespace eutelescope {
     static const std::string gTrackerDataEncoding = "sensorID:7,sparsePixelType:5";
 
     enum HitProperties { kHitInGlobalCoord = 1L << 0, kFittedHit = 1L << 1, kSimulatedHit = 1L << 2, kDeltaHit = 1L << 3 };
+    enum ClusterType {
+        kEUTelFFClusterImpl = 0,
+        kEUTelSparseClusterImpl = 1,
+        kEUTelDFFClusterImpl = 2,
+        kEUTelBrickedClusterImpl = 3,
+        kEUTelGenericSparseClusterImpl = 4,
+        kUnknown = 31
+    };
 
 } // namespace eutelescope
 
@@ -257,10 +265,6 @@ void LCIOWriterModule::run(unsigned int eventNb) {
     LCCollectionVec* mc_hit_vec = nullptr;
     LCCollectionVec* mc_track_vec = nullptr;
 
-    //    CellIDEncoder<TrackerDataImpl> mc_cluster_raw_encoder(eutelescope::gTrackerDataEncoding, mc_cluster_raw_vec);
-    //    CellIDEncoder<TrackerPulseImpl> mc_cluster_encoder(eutelescope::gTrackerPulseEncoding, mc_cluster_vec);
-    //    CellIDEncoder<TrackerHitImpl> mc_hit_encoder(eutelescope::gTrackerHitEncoding, mc_hit_vec);
-
     std::unique_ptr<CellIDEncoder<TrackerDataImpl>> mc_cluster_raw_encoder = nullptr;
     std::unique_ptr<CellIDEncoder<TrackerPulseImpl>> mc_cluster_encoder = nullptr;
     std::unique_ptr<CellIDEncoder<TrackerHitImpl>> mc_hit_encoder = nullptr;
@@ -352,6 +356,8 @@ void LCIOWriterModule::run(unsigned int eventNb) {
     // Every track will be linked to at leat one (typically multiple) MCParticles and thus TrackerData objets
     auto mctrk_to_hit_data_vec = std::map<MCTrack const*, std::vector<TrackerHitImpl*>>{};
 
+    // A MCParticle will be reflected by an LCIO hit and cluster - the hit is stored in a TrackerHit, the cluster in
+    // a TrackerPulse linked to a TrackerData object
     if(dump_mc_truth_ == true) {
         for(auto& mcp_pixel_data_vec_pair : mcp_to_pixel_data_vec) {
             auto mc_tracker_data = new TrackerDataImpl();
@@ -360,6 +366,7 @@ void LCIOWriterModule::run(unsigned int eventNb) {
 
             auto& mc_particle = mcp_pixel_data_vec_pair.first;
 
+            // Every detected pixel hit which had charge contribution from this MCParticle will be added to the cluster
             std::vector<float> truth_cluster_charge_vec;
             for(auto const& pixel_hit_charge_vec : mcp_pixel_data_vec_pair.second) {
                 truth_cluster_charge_vec.insert(
@@ -388,7 +395,7 @@ void LCIOWriterModule::run(unsigned int eventNb) {
             mc_tracker_hit->setType(1); // corresponds to kEUTelGenericSparseClusterImpl
             mc_hit_encoder->operator[]("sensorID") = mcp_to_det_id[mc_particle];
 
-            int hit_properties = eutelescope::HitProperties::kHitInGlobalCoord;
+            int hit_properties = eutelescope::HitProperties::kHitInGlobalCoord + eutelescope::HitProperties::kSimulatedHit;
             if(mc_particle->getTrack()->getParent() != nullptr) {
                 hit_properties += eutelescope::HitProperties::kDeltaHit;
             }
