@@ -36,7 +36,7 @@ void Event::init()
  * Sets the section header and logging settings before exeuting the \ref Module::run() function.
  * \ref Module::reset_delegates() "Resets" the delegates and the logging after initialization
  */
-void Event::run(const unsigned int number_of_events, ModuleManager *mm)
+void Event::run(const unsigned int number_of_events, std::map<Module*, long double> &module_execution_time)
 {
     // Get object count for linking objects in current event
     auto save_id = TProcessID::GetObjectCount();
@@ -47,7 +47,7 @@ void Event::run(const unsigned int number_of_events, ModuleManager *mm)
     }
     for (auto& module : modules_) {
         // clang-format off
-        auto execute_module = [module = module.get(), this, number_of_events, mm]() {
+        auto execute_module = [module = module.get(), this, number_of_events, &module_execution_time]() {
             // clang-format on
             LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << this->event_num_ << " of " << number_of_events << " ["
                                               << module->get_identifier().getUniqueName() << "]";
@@ -66,7 +66,7 @@ void Event::run(const unsigned int number_of_events, ModuleManager *mm)
             section_name += module->get_identifier().getUniqueName();
             Log::setSection(section_name);
             // Set module specific settings
-            auto old_settings = mm->set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
+            auto old_settings = ModuleManager::set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
             // Change to ROOT directory is not thread safe, only do this for module without parallelization support
             if(!module->canParallelize())
                 // DEPRECATED: Switching to the directory should be removed, but can break current modules
@@ -82,10 +82,10 @@ void Event::run(const unsigned int number_of_events, ModuleManager *mm)
             }
             // Reset logging
             Log::setSection(old_section_name);
-            mm->set_module_after(old_settings);
+            ModuleManager::set_module_after(old_settings);
             // Update execution time
             auto end = std::chrono::steady_clock::now();
-            mm->module_execution_time_[module] += static_cast<std::chrono::duration<long double>>(end - start).count();
+            module_execution_time[module] += static_cast<std::chrono::duration<long double>>(end - start).count();
         };
 
         // Execute current module

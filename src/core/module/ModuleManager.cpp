@@ -621,7 +621,7 @@ void ModuleManager::run() {
 
         // XXX: later, create event and submit it to the thread pool
         Event event(modules_, i, terminate_);
-        event.run(number_of_events, this);
+        event.run(number_of_events, module_execution_time_);
     }
     LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of " << number_of_events << " events";
     auto end_time = std::chrono::steady_clock::now();

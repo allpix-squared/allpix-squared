@@ -44,12 +44,12 @@ namespace allpix {
         void init();
 
         /**
-         * @brief Run the event
+         * @brief Run the event, updating the recorded module execution time on the side
          * @param number_of_events The total number of events in the simulation
-         * @param mm The module manager to report to
+         * @param module_execution_time The map that stores module execution times
          * @warning Should be called after the \ref Event::init "init function"
          */
-        void run(const unsigned int number_of_events, ModuleManager *mm);
+        void run(const unsigned int number_of_events, std::map<Module*, long double> &module_execution_time);
 
         /**
          * @brief Finalize the event
