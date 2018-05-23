@@ -168,8 +168,9 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
                 } catch(const std::invalid_argument&) {
                     throw InvalidValueError(config_,
                                             "detector_assignment",
-                                            "The sensor id \"" + sensor_id_str + "\" which was provided for detector \"" +
-                                                det_name + "\" is not a valid integer"); // NOLINT
+                                            "The sensor id \"" + sensor_id_str +          // NOLINT
+                                                "\" which was provided for detector \"" + // NOLINT
+                                                det_name + "\" is not a valid integer");  // NOLINT
                 }
 
                 if(std::find(assigned_ids.begin(), assigned_ids.end(), sensor_id) == assigned_ids.end()) {
