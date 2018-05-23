@@ -602,7 +602,7 @@ void ModuleManager::run() {
         Log::setReportingLevel(log_level);
         Log::setFormat(log_format);
     };
-    std::shared_ptr<ThreadPool> thread_pool = std::make_shared<ThreadPool>(threads_num, module_list, init_function);
+    std::shared_ptr<ThreadPool> thread_pool = std::make_unique<ThreadPool>(threads_num, module_list, init_function);
 
     // Loop over all the events
     auto start_time = std::chrono::steady_clock::now();
@@ -619,9 +619,11 @@ void ModuleManager::run() {
 
         LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Running event " << (i + 1) << " of " << number_of_events;
 
-        // XXX: later, create event and submit it to the thread pool
         Event event(modules_, i, terminate_);
-        event.run(number_of_events, module_execution_time_);
+        auto event_function = [e = std::move(event), number_of_events, this]() mutable {
+            e.run(number_of_events, module_execution_time_);
+        };
+        thread_pool->submit_event_function(std::move(event_function));
     }
     LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of " << number_of_events << " events";
     auto end_time = std::chrono::steady_clock::now();

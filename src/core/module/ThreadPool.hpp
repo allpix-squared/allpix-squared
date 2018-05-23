@@ -25,6 +25,7 @@
 
 namespace allpix {
     class Module;
+    class Event;
 
     /**
      * @brief Pool of threads where module tasks can be submitted to
@@ -138,6 +139,13 @@ namespace allpix {
         void submit_module_function(std::function<void()> module_function);
 
         /**
+         * @brief Function to run a single event by the \ref ModuleManager
+         * @param event_function Function to execute (should call the run-method of the event)
+         * @warning This method can only be called by the \ref ModuleManager
+         */
+        void submit_event_function(std::function<void()> event_function);
+
+        /**
          * @brief Execute jobs from the queue until all tasks and modules are finished or an interrupt happened
          * @return True if module task queue finished, false if stopped for other reason
          * @warning This method can only be called by the \ref ModuleManager
@@ -159,6 +167,7 @@ namespace allpix {
 
         std::atomic_bool done_{false};
 
+        SafeQueue<Task> event_queue_;
         SafeQueue<SafeQueue<Task>*> all_queue_;
         SafeQueue<Task> module_queue_;
         std::map<Module*, SafeQueue<Task>> task_queues_;

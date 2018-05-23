@@ -42,6 +42,11 @@ ThreadPool::~ThreadPool() {
     destroy();
 }
 
+void ThreadPool::submit_event_function(std::function<void()> event_function) {
+    event_queue_.push(std::make_unique<std::packaged_task<void()>>(std::move(event_function)));
+    /* all_queue_.push(&module_queue_); */
+}
+
 /**
  * @warning This function does not wait for the all the running tasks to finish
  * @warning The module running this function is responsible for handling exceptions in the function called
