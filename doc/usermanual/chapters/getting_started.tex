@@ -111,6 +111,10 @@ first_string =   string_without_quotation
 second_string = "  string with quotation marks  "
 # Keys are split on whitespace and commas
 string_array = "first element" "second element","third element"
+# Elements of matrices with more than one dimension are separated using square brackets:
+string_matrix_3x3 = [["1", "0", "0"], ["0", "cos", "-sin"], ["0", "sin", cos]]
+# If the matrix is of dimension 1xN, the outer brackets have to be added explicitly:
+integer_matrix_1x3 = [[10, 11, 12]]
 # Integer and floats can be specified in standard formats
 int_value = 42
 float_value = 123.456e9
