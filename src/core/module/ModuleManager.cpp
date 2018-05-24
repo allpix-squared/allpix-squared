@@ -619,8 +619,11 @@ void ModuleManager::run() {
 
         LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Running event " << (i + 1) << " of " << number_of_events;
 
+        // Create the event and submit it to the thread pool
+        // TODO: clean up the forwarding of parameters, can some be omitted?
         Event event(modules_, i, terminate_);
         auto event_function = [e = std::move(event), number_of_events, this]() mutable {
+            // TODO: module_execution_time_ must be protected with mutex
             e.run(number_of_events, module_execution_time_);
         };
         thread_pool->submit_event_function(std::move(event_function));

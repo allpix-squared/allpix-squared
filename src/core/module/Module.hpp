@@ -216,6 +216,7 @@ namespace allpix {
         std::shared_ptr<Detector> detector_;
 
         bool parallelize_{false};
+        std::mutex run_mutex_;
     };
 
 } // namespace allpix
