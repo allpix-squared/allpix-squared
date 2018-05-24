@@ -37,7 +37,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
 
     // Get source specific parameters
     auto single_source = particle_source_->GetCurrentSource();
-    auto source_type = config.get<std::string>("beam_source_type", "");
+    auto source_type = config.get<std::string>("source_type", "");
 
     // Find Geant4 particle
     auto pdg_table = G4ParticleTable::GetParticleTable();
@@ -107,36 +107,86 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
 
     // Set energy parameters
     auto energy_type = config.get<std::string>("beam_energy_type", "");
-    if(energy_type == "User") {
-        single_source->GetEneDist()->SetEnergyDisType(energy_type);
-        auto beam_hist_point = config.getArray<G4ThreeVector>("beam_hist_point");
-        for(auto& hist_point : beam_hist_point) {
-            single_source->GetEneDist()->UserEnergyHisto(hist_point);
-        }
-    } else if(source_type == "Iron-55") {
-        std::stringstream ss;
-        ss << "gamma";
-        particle_type.assign(ss.str());
-        std::transform(particle_type.begin(), particle_type.end(), particle_type.begin(), ::tolower);
-        particle = pdg_table->FindParticle(particle_type);
-        single_source->SetNumberOfParticles(1);
-        single_source->SetParticleDefinition(particle);
-        single_source->SetParticleTime(0.0);
-        single_source->GetAngDist()->SetParticleMomentumDirection(direction);
-        single_source->GetEneDist()->SetEnergyDisType("User");
-        G4double energy_hist_1[10];
-        G4double intensity_hist_1[10];
-        for(G4int i = 0; i < 10; i++) {
-            energy_hist_1[i] = 0.0059 + 0.0001 * gRandom->Gaus(0, 1);
-            intensity_hist_1[i] = 28. + 0.01 * gRandom->Gaus(0, 1);
-            single_source->GetEneDist()->UserEnergyHisto(G4ThreeVector(energy_hist_1[i], intensity_hist_1[i], 0.));
-        }
-        G4double energy_hist_2[10];
-        G4double intensity_hist_2[10];
-        for(G4int i = 0; i < 10; i++) {
-            energy_hist_2[i] = 0.00649 + 0.00005 * gRandom->Gaus(0, 1);
-            intensity_hist_2[i] = 2.85 + 0.001 * gRandom->Gaus(0, 1);
-            single_source->GetEneDist()->UserEnergyHisto(G4ThreeVector(energy_hist_2[i], intensity_hist_2[i], 0.));
+    if(source_type == "radioactive_source") {
+        auto sample = config.get<std::string>("sample", "");
+        if(sample == "gamma-decay-single") {
+            particle_type.assign("gamma");
+            std::transform(particle_type.begin(), particle_type.end(), particle_type.begin(), ::tolower);
+            particle = pdg_table->FindParticle(particle_type);
+            single_source->SetNumberOfParticles(1);
+            single_source->SetParticleDefinition(particle);
+            single_source->SetParticleTime(0.0);
+            single_source->GetAngDist()->SetParticleMomentumDirection(direction);
+            single_source->GetEneDist()->SetEnergyDisType("Gauss");
+            single_source->GetEneDist()->SetMonoEnergy(0.0059);
+            single_source->GetEneDist()->SetBeamSigmaInE(0.0001);
+        } else if(sample == "gamma-decay-double") { // using iron55 as an example
+            particle_type.assign("gamma");
+            std::transform(particle_type.begin(), particle_type.end(), particle_type.begin(), ::tolower);
+            particle = pdg_table->FindParticle(particle_type);
+            single_source->SetNumberOfParticles(1);
+            single_source->SetParticleDefinition(particle);
+            single_source->SetParticleTime(0.0);
+            single_source->GetAngDist()->SetParticleMomentumDirection(direction);
+            single_source->GetEneDist()->SetEnergyDisType("User");
+            G4ThreeVector hist_point1(0.0059, 28., 0.1), hist_point2(0.00649, 2.85, 0.1);
+            std::array<G4ThreeVector, 2> beam_hist_point_test = {hist_point1, hist_point2};
+            for(auto& hist_point : beam_hist_point_test) {
+                single_source->GetEneDist()->UserEnergyHisto(hist_point);
+            }
+        } else if(sample == "beta-decay-single") {
+            particle_type.assign("e-");
+            std::transform(particle_type.begin(), particle_type.end(), particle_type.begin(), ::tolower);
+            particle = pdg_table->FindParticle(particle_type);
+            single_source->SetNumberOfParticles(1);
+            single_source->SetParticleDefinition(particle);
+            single_source->SetParticleTime(0.0);
+            single_source->GetAngDist()->SetParticleMomentumDirection(direction);
+            single_source->GetEneDist()->SetEnergyDisType("Gauss");
+            single_source->GetEneDist()->SetMonoEnergy(0.0059);
+            single_source->GetEneDist()->SetBeamSigmaInE(0.0001);
+        } else if(sample == "beta-decay-double") {
+            particle_type.assign("e-");
+            std::transform(particle_type.begin(), particle_type.end(), particle_type.begin(), ::tolower);
+            particle = pdg_table->FindParticle(particle_type);
+            single_source->SetNumberOfParticles(1);
+            single_source->SetParticleDefinition(particle);
+            single_source->SetParticleTime(0.0);
+            single_source->GetAngDist()->SetParticleMomentumDirection(direction);
+            single_source->GetEneDist()->SetEnergyDisType("User");
+            G4double energy_hist_1[10];
+            G4double intensity_hist_1[10];
+            for(G4int i = 0; i < 10; i++) {
+                energy_hist_1[i] = 0.0059 + 0.0001 * gRandom->Gaus(0, 1);
+                intensity_hist_1[i] = 28. + 0.01 * gRandom->Gaus(0, 1);
+                single_source->GetEneDist()->UserEnergyHisto(G4ThreeVector(energy_hist_1[i], intensity_hist_1[i], 0.));
+            }
+            G4double energy_hist_2[10];
+            G4double intensity_hist_2[10];
+            for(G4int i = 0; i < 10; i++) {
+                energy_hist_2[i] = 0.00649 + 0.00005 * gRandom->Gaus(0, 1);
+                intensity_hist_2[i] = 2.85 + 0.001 * gRandom->Gaus(0, 1);
+                single_source->GetEneDist()->UserEnergyHisto(G4ThreeVector(energy_hist_2[i], intensity_hist_2[i], 0.));
+            }
+        } else if(sample == "alpha-decay") {
+            particle_type.assign("gamma");
+            std::transform(particle_type.begin(), particle_type.end(), particle_type.begin(), ::tolower);
+            particle = pdg_table->FindParticle(particle_type);
+            single_source->SetNumberOfParticles(1);
+            single_source->SetParticleDefinition(particle);
+            single_source->SetParticleTime(0.0);
+            single_source->GetAngDist()->SetParticleMomentumDirection(direction);
+            single_source->GetEneDist()->SetEnergyDisType("Gauss");
+            single_source->GetEneDist()->SetMonoEnergy(0.0059);
+            single_source->GetEneDist()->SetBeamSigmaInE(0.0001);
+        } else if(sample == "user") {
+            single_source->GetEneDist()->SetEnergyDisType(energy_type);
+            auto beam_hist_point = config.getArray<G4ThreeVector>("beam_hist_point");
+            for(auto& hist_point : beam_hist_point) {
+                single_source->GetEneDist()->UserEnergyHisto(hist_point);
+            }
+        } else {
+            throw InvalidValueError(config, "sample", "Please set a sample.");
         }
     } else {
         single_source->GetEneDist()->SetEnergyDisType("Gauss");
