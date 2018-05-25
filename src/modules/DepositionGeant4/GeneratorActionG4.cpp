@@ -130,7 +130,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             single_source->GetAngDist()->SetParticleMomentumDirection(direction);
             single_source->GetEneDist()->SetEnergyDisType("User");
             G4ThreeVector hist_point1(0.0059, 28., 0.1), hist_point2(0.00649, 2.85, 0.1);
-            std::array<G4ThreeVector, 2> beam_hist_point_test = {hist_point1, hist_point2};
+            std::array<G4ThreeVector, 2> beam_hist_point_test = {{hist_point1, hist_point2}};
             for(auto& hist_point : beam_hist_point_test) {
                 single_source->GetEneDist()->UserEnergyHisto(hist_point);
             }
