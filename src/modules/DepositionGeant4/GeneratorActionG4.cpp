@@ -39,7 +39,18 @@ GeneratorActionG4::GeneratorActionG4(Configuration& config) : particle_source_(s
         G4UImanager* UI = G4UImanager::GetUIpointer();
 
         // Execute the user's macro
-        UI->ApplyCommand("/control/execute " + config.getPath("file_name", true));
+        std::ifstream file(config.getPath("file_name", true));
+        std::string line;
+        while(std::getline(file, line)) {
+            // Check for the "/gps/" pattern in the line:
+            if(!line.empty()) {
+                if(line.substr(0, 5) == "/gps/" || line.at(0) == '#') {
+                    UI->ApplyCommand(line);
+                } else {
+                    LOG(WARNING) << "Ignoring Geant4 macro command: \"" + line + "\" - not related to particle source.";
+                }
+            }
+        }
 
     } else {
 
