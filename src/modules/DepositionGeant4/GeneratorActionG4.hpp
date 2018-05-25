@@ -31,7 +31,7 @@ namespace allpix {
          * @brief Constructs the generator action
          * @param config Configuration of the \ref DepositionGeant4Module module
          */
-        explicit GeneratorActionG4(const Configuration& config);
+        explicit GeneratorActionG4(Configuration& config);
 
         /**
          * @brief Generate the particle for every event

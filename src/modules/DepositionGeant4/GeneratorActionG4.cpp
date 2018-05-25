@@ -27,10 +27,11 @@
 
 using namespace allpix;
 
-GeneratorActionG4::GeneratorActionG4(const Configuration& config)
-    : particle_source_(std::make_unique<G4GeneralParticleSource>()) {
+GeneratorActionG4::GeneratorActionG4(Configuration& config) : particle_source_(std::make_unique<G4GeneralParticleSource>()) {
 
-    if(config.get<std::string>("source_type", "") == "macro") {
+    config.setDefault("source_type", "beam");
+
+    if(config.get<std::string>("source_type") == "macro") {
 
         LOG(INFO) << "Using user macro for particle source.";
 
@@ -97,7 +98,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
         single_source->GetPosDist()->SetCentreCoords(config.get<G4ThreeVector>("source_position"));
 
         // Set other position and direction parameters according to shape
-        if(config.get<std::string>("source_type", "") == "Beam") {
+        if(config.get<std::string>("source_type") == "beam") {
 
             // Set position parameters
             single_source->GetPosDist()->SetPosDisType("Beam");
@@ -115,7 +116,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             }
             single_source->GetAngDist()->SetParticleMomentumDirection(direction);
 
-        } else if(config.get<std::string>("source_type", "") == "Sphere") {
+        } else if(config.get<std::string>("source_type") == "sphere") {
 
             // Set position parameters
             single_source->GetPosDist()->SetPosDisType("Volume");
