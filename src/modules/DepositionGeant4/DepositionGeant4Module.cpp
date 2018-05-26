@@ -54,6 +54,7 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
     // Set default physics list
     config_.setDefault("physics_list", "FTFP_BERT_LIV");
 
+    config_.setDefault("source_type", "beam");
     config_.setDefault<bool>("output_plots", false);
     config_.setDefault<int>("output_plots_scale", Units::get(100, "ke"));
 

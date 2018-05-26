@@ -27,9 +27,8 @@
 
 using namespace allpix;
 
-GeneratorActionG4::GeneratorActionG4(Configuration& config) : particle_source_(std::make_unique<G4GeneralParticleSource>()) {
-
-    config.setDefault("source_type", "beam");
+GeneratorActionG4::GeneratorActionG4(const Configuration& config)
+    : particle_source_(std::make_unique<G4GeneralParticleSource>()) {
 
     if(config.get<std::string>("source_type") == "macro") {
 
