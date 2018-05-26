@@ -591,10 +591,6 @@ void ModuleManager::run() {
 
     // Creates the thread pool
     LOG(DEBUG) << "Initializing thread pool with " << threads_num << " additional thread(s)";
-    std::vector<Module*> module_list;
-    for(auto& module : modules_) {
-        module_list.emplace_back(module.get());
-    }
     // clang-format off
     auto init_function = [log_level = Log::getReportingLevel(), log_format = Log::getFormat()]() {
         // clang-format on
@@ -602,23 +598,13 @@ void ModuleManager::run() {
         Log::setReportingLevel(log_level);
         Log::setFormat(log_format);
     };
-    std::shared_ptr<ThreadPool> thread_pool = std::make_unique<ThreadPool>(threads_num, module_list, init_function);
+    std::shared_ptr<ThreadPool> thread_pool = std::make_unique<ThreadPool>(threads_num, init_function);
 
-    // Loop over all the events
+    // Push all events to the thread pool
     auto start_time = std::chrono::steady_clock::now();
     global_config.setDefault<unsigned int>("number_of_events", 1u);
     auto number_of_events = global_config.get<unsigned int>("number_of_events");
     for(unsigned int i = 0; i < number_of_events; ++i) {
-        // Check for termination
-        if(terminate_) {
-            LOG(INFO) << "Interrupting event loop after " << i << " events because of request to terminate";
-            number_of_events = i;
-            global_config.set<unsigned int>("number_of_events", i);
-            break;
-        }
-
-        LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Running event " << (i + 1) << " of " << number_of_events;
-
         // Create the event and submit it to the thread pool
         // TODO: clean up the forwarding of parameters, can some be omitted?
         Event event(modules_, i, terminate_);
@@ -628,14 +614,27 @@ void ModuleManager::run() {
         };
         thread_pool->submit_event_function(std::move(event_function));
     }
-    LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of " << number_of_events << " events";
+
+    LOG(TRACE) << "Pushed all events to the thread pool queue";
+
+    // Execute all remaining events
+    thread_pool->execute_all();
+
+    // Check if the simulation was prematurely terminated
+    // XXX: this must be checked in between execute_all(); make an execute for single task?
+    if (terminate_) {
+        LOG(INFO) << "Interrupting prematurely because of request";
+        /* number_of_events = i; */
+        /* global_config.set<unsigned int>("number_of_events", i); */
+        /* break; */
+    }
+
+    LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of [FIXME]" /* << number_of_events */ << " events";
     auto end_time = std::chrono::steady_clock::now();
     total_time_ += static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
 
     // Remove pool from modules, wait for the threads to finish and destroy pool
     LOG(TRACE) << "Destroying thread pool";
-    thread_pool.reset();
-    assert(thread_pool.use_count() == 0);
 }
 
 static std::string seconds_to_time(long double seconds) {

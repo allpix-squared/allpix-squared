@@ -92,13 +92,10 @@ namespace allpix {
         /**
          * @brief Construct thread pool with provided number of threads
          * @param num_threads Number of threads in the pool
-         * @param modules List of module instantiations to create a task queue for
          * @param worker_init_function Function run by all the workers to initialize
          * @warning Only module instantiations that are registered in this constructor can spawn tasks
          */
-        explicit ThreadPool(unsigned int num_threads,
-                            std::vector<Module*> modules,
-                            std::function<void()> worker_init_function);
+        explicit ThreadPool(unsigned int num_threads, std::function<void()> worker_init_function);
 
         /// @{
         /**
@@ -113,31 +110,7 @@ namespace allpix {
          */
         ~ThreadPool();
 
-        /**
-         * @brief Submit a job from a module to be run by the thread pool
-         * @param module Module the task belongs to
-         * @param func Function to execute by the pool
-         * @param args Parameters to pass to the function
-         * @warning The thread submitting task should always call the \ref ThreadPool::execute method to prevent a lock when
-         *          there are no threads available
-         */
-        template <typename Func, typename... Args> auto submit(Module* module, Func&& func, Args&&... args);
-
-        /**
-         * @brief Execute jobs from the module queue until all module tasks are finished or an interrupt happened
-         * @param module Module to run tasks for
-         * @return True if module task queue finished, false if stopped for other reason
-         */
-        bool execute(Module* module);
-
     private:
-        /**
-         * @brief Function to run a single event for a module by the \ref ModuleManager
-         * @param module_function Function to execute (should call the run-method of the module)
-         * @warning This method can only be called by the \ref ModuleManager
-         */
-        void submit_module_function(std::function<void()> module_function);
-
         /**
          * @brief Function to run a single event by the \ref ModuleManager
          * @param event_function Function to execute (should call the run-method of the event)
@@ -146,7 +119,7 @@ namespace allpix {
         void submit_event_function(std::function<void()> event_function);
 
         /**
-         * @brief Execute jobs from the queue until all tasks and modules are finished or an interrupt happened
+         * @brief Execute jobs from the queue until all tasks are finished or an interrupt happened
          * @return True if module task queue finished, false if stopped for other reason
          * @warning This method can only be called by the \ref ModuleManager
          */
@@ -168,9 +141,6 @@ namespace allpix {
         std::atomic_bool done_{false};
 
         SafeQueue<Task> event_queue_;
-        SafeQueue<SafeQueue<Task>*> all_queue_;
-        SafeQueue<Task> module_queue_;
-        std::map<Module*, SafeQueue<Task>> task_queues_;
 
         std::atomic<unsigned int> run_cnt_;
         mutable std::mutex run_mutex_;
