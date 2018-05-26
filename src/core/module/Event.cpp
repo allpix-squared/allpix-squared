@@ -38,16 +38,16 @@ void Event::init()
  */
 void Event::run(const unsigned int number_of_events, std::map<Module*, long double> &module_execution_time)
 {
+    LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Running event " << event_num_ << " of " << number_of_events;
+
     // Get object count for linking objects in current event
     auto save_id = TProcessID::GetObjectCount();
 
-    std::string module_name;
-    if (!modules_.empty()) {
-        module_name = modules_.front()->get_identifier().getName();
-    }
     for (auto& module : modules_) {
         // clang-format off
         auto execute_module = [module = module.get(), this, number_of_events, &module_execution_time]() {
+            std::lock_guard<std::mutex> lock(module->run_mutex_);
+
             // clang-format on
             LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << this->event_num_ << " of " << number_of_events << " ["
                                               << module->get_identifier().getUniqueName() << "]";
@@ -70,24 +70,9 @@ void Event::run(const unsigned int number_of_events, std::map<Module*, long doub
             // Set module specific settings
             auto old_settings = ModuleManager::set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
 
-#if 0 // for now
-            // Change to ROOT directory is not thread safe, only do this for module without parallelization support
-            if(!module->canParallelize())
-                // DEPRECATED: Switching to the directory should be removed, but can break current modules
-                module->getROOTDirectory()->cd();
-            }
-#endif
-
             // Run module
             try {
-                if (!module->isThreadSafe()) {
-                    // Module may change member fields in an unsafe manner,
-                    // so this module cannot be run in parallel.
-                    std::lock_guard<std::mutex> lock(module->run_mutex_);
-                    module->run(this->event_num_);
-                } else {
-                    module->run(this->event_num_);
-                }
+                module->run(this->event_num_);
             } catch(EndOfRunException& e) {
                 // Terminate if the module threw the EndOfRun request exception:
                 LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
@@ -110,6 +95,7 @@ void Event::run(const unsigned int number_of_events, std::map<Module*, long doub
     // Resetting delegates
     for(auto& module : modules_) {
         LOG(TRACE) << "Resetting messages";
+        std::lock_guard<std::mutex> lock(module->run_mutex_);
         module->reset_delegates();
     }
 
