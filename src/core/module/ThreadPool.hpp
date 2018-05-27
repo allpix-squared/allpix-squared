@@ -125,6 +125,8 @@ namespace allpix {
          */
         bool execute_all();
 
+        void wait();
+
         /**
          * @brief Constantly running internal function each thread uses to acquire work items from the queue.
          * @param init_function Function to initialize the relevant thread_local variables

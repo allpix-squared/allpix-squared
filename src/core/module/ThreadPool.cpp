@@ -81,6 +81,11 @@ bool ThreadPool::execute_all() {
     return event_queue_.isValid();
 }
 
+void ThreadPool::wait() {
+    std::unique_lock<std::mutex> lock{run_mutex_};
+    run_condition_.wait(lock, [this]() { return event_queue_.empty() && run_cnt_ == 0; });
+}
+
 /**
  * If an exception is thrown by a module, the first exception is saved to propagate in the main thread
  */

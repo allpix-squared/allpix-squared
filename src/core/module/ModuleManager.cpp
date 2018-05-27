@@ -618,7 +618,11 @@ void ModuleManager::run() {
     LOG(TRACE) << "Pushed all events to the thread pool queue";
 
     // Execute all remaining events
-    thread_pool->execute_all();
+    // XXX: try running a single job only in the thread pool!
+    /* thread_pool->execute_all(); */
+
+    // Wait for the thread pool to run all events
+    thread_pool->wait();
 
     // Check if the simulation was prematurely terminated
     // XXX: this must be checked in between execute_all(); make an execute for single task?
