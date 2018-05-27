@@ -33,10 +33,9 @@ namespace allpix {
         /// @{
         /**
          * @brief Copying an event not allowed
-         * XXX: should this not be allowed?
          */
-        Event(const Event&) = default;
-        Event& operator=(const Event&) = default;
+        Event(const Event&) = delete;
+        Event& operator=(const Event&) = delete;
         /**
          * @brief Moving an event is allowed
          */

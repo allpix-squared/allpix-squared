@@ -606,11 +606,11 @@ void ModuleManager::run() {
     auto number_of_events = global_config.get<unsigned int>("number_of_events");
     for(unsigned int i = 0; i < number_of_events; ++i) {
         // Create the event and submit it to the thread pool
-        // TODO: clean up the forwarding of parameters, can some be omitted?
-        Event event(modules_, i, terminate_);
-        auto event_function = [e = std::move(event), number_of_events, this]() mutable {
-            // TODO: module_execution_time_ must be protected with mutex
-            e.run(number_of_events, module_execution_time_);
+        // TODO: clean up the forwarding of parameters. Can some be omitted?
+        auto event_function = [i, number_of_events, this]() {
+            Event event(modules_, i, terminate_);
+            // TODO: module_execution_time_ must be protected with a mutex.
+            event.run(number_of_events, module_execution_time_);
         };
         thread_pool->submit_event_function(std::move(event_function));
     }
