@@ -137,6 +137,18 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             single_source->GetAngDist()->SetAngDistType("focused");
             single_source->GetAngDist()->SetFocusPoint(G4ThreeVector(0, 0, 0));
 
+        } else if(config.get<std::string>("source_type") == "square") {
+
+            // Set position parameters
+            single_source->GetPosDist()->SetPosDisType("Plane");
+            single_source->GetPosDist()->SetPosDisShape("Square");
+            single_source->GetPosDist()->SetHalfX(config.get<double>("source_square_side") / 2);
+            single_source->GetPosDist()->SetHalfY(config.get<double>("source_square_side") / 2);
+
+            // Set angle distribution parameters
+            single_source->GetAngDist()->SetAngDistType("iso");
+            single_source->GetAngDist()->SetMaxTheta(config.get<double>("source_square_angle", 1.571));
+
         } else {
 
             throw InvalidValueError(config, "source_type", "The source type is not valid.");
