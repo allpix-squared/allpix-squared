@@ -33,9 +33,14 @@ This module requires an installation Geant4.
 * `source_energy` : Mean energy of the generated particles.
 * `source_energy_spread` : Energy spread of the source.
 * `source_position` : Position of the particle source in the world geometry.
-* `source_beam_size` : Width of the Gaussian beam profile.
-* `source_beam_divergence` : Standard deviation of the particle angles in x and y from the particle beam
-* `source_beam_direction` : Direction of the particle as a unit vector.
+* `source_type` : Shape of the source: **beam** (default), **point**, **square**, **sphere**, **macro** (to define the source shape and angular distribution using a Geant4 macro).
+* `file_name` : if source_type=**macro**, name of the file (only /gps/pos/ and /gps/ang/ commands are taken into account).
+* `source_beam_size` : if *source_type*=**beam**, width of the Gaussian beam profile.
+* `source_beam_divergence` : if *source_type*=**beam**, standard deviation of the particle angles in x and y from the particle beam
+* `source_beam_direction` : if *source_type*=**beam**, direction of the beam as a unit vector.
+* `source_square_side` : if *source_type*=**square**, length of the square side.
+* `source_square_angle` : if *source_type*=**square**, maximum polar angle (default to pi, which means all angles are allowed).
+* `source_sphere_radius` : if *source_type*=**sphere**, radius of the sphere source.
 * `number_of_particles` : Number of particles to generate in a single event. Defaults to one particle.
 * `output_plots` : Enables output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
 * `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 100ke.
