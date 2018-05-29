@@ -33,8 +33,8 @@ This module requires an installation Geant4.
 * `source_energy` : Mean energy of the generated particles.
 * `source_energy_spread` : Energy spread of the source.
 * `source_position` : Position of the particle source in the world geometry.
-* `source_type` : Shape of the source: **beam** (default), **point**, **square**, **sphere**, **macro** (to define the source shape and angular distribution using a Geant4 macro).
-* `file_name` : if source_type=**macro**, name of the file (only /gps/pos/ and /gps/ang/ commands are taken into account).
+* `source_type` : Shape of the source: **beam** (default), **point**, **square**, **sphere**, **macro** (to define the source shape and angular distribution using a Geant4 macro, see below).
+* `file_name` : if source_type=**macro**, name of the file with Geant4 /gps commands. The source position and number of particles must still be defined in the main configuration file. Only /ene, /pos, /ang and /hist commands are accepted.
 * `source_beam_size` : if *source_type*=**beam**, width of the Gaussian beam profile.
 * `source_beam_divergence` : if *source_type*=**beam**, standard deviation of the particle angles in x and y from the particle beam
 * `source_beam_direction` : if *source_type*=**beam**, direction of the beam as a unit vector.
