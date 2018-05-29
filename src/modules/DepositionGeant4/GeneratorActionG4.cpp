@@ -135,7 +135,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             // Set angle distribution parameters
             single_source->GetPosDist()->SetRadius(config.get<double>("source_sphere_radius"));
             single_source->GetAngDist()->SetAngDistType("focused");
-            single_source->GetAngDist()->SetFocusPoint(G4ThreeVector(0, 0, 0));
+            single_source->GetAngDist()->SetFocusPoint(config.get<G4ThreeVector>("source_position"));
 
         } else if(config.get<std::string>("source_type") == "square") {
 
