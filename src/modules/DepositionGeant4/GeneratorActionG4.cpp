@@ -19,6 +19,7 @@
 #include <G4ParticleTable.hh>
 #include <G4RunManager.hh>
 #include <G4UImanager.hh>
+#include <TRandom3.h>
 #include <core/module/exceptions.h>
 
 #include "core/config/exceptions.h"
@@ -37,7 +38,8 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     auto single_source = particle_source_->GetCurrentSource();
 
     // Set the centre coordinate of the source
-    single_source->GetPosDist()->SetCentreCoords(config.get<G4ThreeVector>("source_position"));
+    G4ThreeVector source_pos = config.get<G4ThreeVector>("source_position");
+    single_source->GetPosDist()->SetCentreCoords(source_pos);
 
     if(config.get<std::string>("source_type") == "macro") {
 
@@ -96,9 +98,19 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             single_source->GetPosDist()->SetPosDisShape("Sphere");
 
             // Set angle distribution parameters
-            single_source->GetPosDist()->SetRadius(config.get<double>("source_sphere_radius"));
+            double radius = config.get<double>("source_sphere_radius");
+            single_source->GetPosDist()->SetRadius(radius);
             single_source->GetAngDist()->SetAngDistType("focused");
-            single_source->GetAngDist()->SetFocusPoint(config.get<G4ThreeVector>("source_position"));
+
+            if(config.has("source_sphere_focus_point")) {
+                single_source->GetAngDist()->SetFocusPoint(config.get<G4ThreeVector>("source_sphere_focus_point"));
+            } else {
+                TRandom3 rand;
+                double x = rand.Uniform(source_pos.x() - radius, source_pos.x() + radius); // radius is in mm
+                double y = rand.Uniform(source_pos.y() - radius, source_pos.y() + radius); // radius is in mm
+                double z = rand.Uniform(source_pos.z() - radius, source_pos.z() + radius); // radius is in mm
+                single_source->GetAngDist()->SetFocusPoint(G4ThreeVector(x, y, z));        // argument in mm
+            }
 
         } else if(config.get<std::string>("source_type") == "square") {
 
