@@ -30,6 +30,15 @@ using namespace allpix;
 GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     : particle_source_(std::make_unique<G4GeneralParticleSource>()) {
 
+    // Set verbosity of source to off
+    particle_source_->SetVerbosity(0);
+
+    // Get source specific parameters
+    auto single_source = particle_source_->GetCurrentSource();
+
+    // Set the centre coordinate of the source
+    single_source->GetPosDist()->SetCentreCoords(config.get<G4ThreeVector>("source_position"));
+
     if(config.get<std::string>("source_type") == "macro") {
 
         LOG(INFO) << "Using user macro for particle source.";
@@ -60,12 +69,6 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
         }
 
     } else {
-
-        // Set verbosity of source to off
-        particle_source_->SetVerbosity(0);
-
-        // Get source specific parameters
-        auto single_source = particle_source_->GetCurrentSource();
 
         // Set position and direction parameters according to shape
         if(config.get<std::string>("source_type") == "beam") {
@@ -166,9 +169,6 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
         single_source->GetEneDist()->SetEnergyDisType("Gauss");
         single_source->GetEneDist()->SetMonoEnergy(config.get<double>("source_energy"));
         single_source->GetEneDist()->SetBeamSigmaInE(config.get<double>("source_energy_spread", 0.));
-
-        // Set the centre coordinate of the source
-        single_source->GetPosDist()->SetCentreCoords(config.get<G4ThreeVector>("source_position"));
     }
 }
 
