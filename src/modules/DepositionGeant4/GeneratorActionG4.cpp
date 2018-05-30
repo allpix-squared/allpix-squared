@@ -67,55 +67,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
         // Get source specific parameters
         auto single_source = particle_source_->GetCurrentSource();
 
-        // Find Geant4 particle
-        auto pdg_table = G4ParticleTable::GetParticleTable();
-        auto particle_type = config.get<std::string>("particle_type", "");
-        std::transform(particle_type.begin(), particle_type.end(), particle_type.begin(), ::tolower);
-        auto particle_code = config.get<int>("particle_code", 0);
-        G4ParticleDefinition* particle = nullptr;
-
-        if(!particle_type.empty() && particle_code != 0) {
-            if(pdg_table->FindParticle(particle_type) == pdg_table->FindParticle(particle_code)) {
-                LOG(WARNING) << "particle_type and particle_code given. Continuing because they match.";
-                particle = pdg_table->FindParticle(particle_code);
-                if(particle == nullptr) {
-                    throw InvalidValueError(config, "particle_code", "particle code does not exist.");
-                }
-            } else {
-                throw InvalidValueError(
-                    config, "particle_type", "Given particle_type does not match particle_code. Please remove one of them.");
-            }
-        } else if(particle_type.empty() && particle_code == 0) {
-            throw InvalidValueError(config, "particle_code", "Please set particle_code or particle_type.");
-        } else if(particle_code != 0) {
-            particle = pdg_table->FindParticle(particle_code);
-            if(particle == nullptr) {
-                throw InvalidValueError(config, "particle_code", "particle code does not exist.");
-            }
-        } else {
-            particle = pdg_table->FindParticle(particle_type);
-            if(particle == nullptr) {
-                throw InvalidValueError(config, "particle_type", "particle type does not exist.");
-            }
-        }
-
-        LOG(DEBUG) << "Using particle " << particle->GetParticleName() << " (ID " << particle->GetPDGEncoding() << ").";
-
-        // Set global parameters of the source
-        single_source->SetNumberOfParticles(1);
-        single_source->SetParticleDefinition(particle);
-        // Set the primary track's start time in for the current event to zero:
-        single_source->SetParticleTime(0.0);
-
-        // Set energy parameters
-        single_source->GetEneDist()->SetEnergyDisType("Gauss");
-        single_source->GetEneDist()->SetMonoEnergy(config.get<double>("source_energy"));
-        single_source->GetEneDist()->SetBeamSigmaInE(config.get<double>("source_energy_spread", 0.));
-
-        // Set the centre coordinate of the source
-        single_source->GetPosDist()->SetCentreCoords(config.get<G4ThreeVector>("source_position"));
-
-        // Set other position and direction parameters according to shape
+        // Set position and direction parameters according to shape
         if(config.get<std::string>("source_type") == "beam") {
 
             // Set position parameters
@@ -167,8 +119,56 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
 
         } else {
 
-            throw InvalidValueError(config, "source_type", "The source type is not valid.");
+            throw InvalidValueError(config, "source_type", "");
         }
+
+        // Find Geant4 particle
+        auto pdg_table = G4ParticleTable::GetParticleTable();
+        auto particle_type = config.get<std::string>("particle_type", "");
+        std::transform(particle_type.begin(), particle_type.end(), particle_type.begin(), ::tolower);
+        auto particle_code = config.get<int>("particle_code", 0);
+        G4ParticleDefinition* particle = nullptr;
+
+        if(!particle_type.empty() && particle_code != 0) {
+            if(pdg_table->FindParticle(particle_type) == pdg_table->FindParticle(particle_code)) {
+                LOG(WARNING) << "particle_type and particle_code given. Continuing because they match.";
+                particle = pdg_table->FindParticle(particle_code);
+                if(particle == nullptr) {
+                    throw InvalidValueError(config, "particle_code", "particle code does not exist.");
+                }
+            } else {
+                throw InvalidValueError(
+                    config, "particle_type", "Given particle_type does not match particle_code. Please remove one of them.");
+            }
+        } else if(particle_type.empty() && particle_code == 0) {
+            throw InvalidValueError(config, "particle_code", "Please set particle_code or particle_type.");
+        } else if(particle_code != 0) {
+            particle = pdg_table->FindParticle(particle_code);
+            if(particle == nullptr) {
+                throw InvalidValueError(config, "particle_code", "particle code does not exist.");
+            }
+        } else {
+            particle = pdg_table->FindParticle(particle_type);
+            if(particle == nullptr) {
+                throw InvalidValueError(config, "particle_type", "particle type does not exist.");
+            }
+        }
+
+        LOG(DEBUG) << "Using particle " << particle->GetParticleName() << " (ID " << particle->GetPDGEncoding() << ").";
+
+        // Set global parameters of the source
+        single_source->SetNumberOfParticles(1);
+        single_source->SetParticleDefinition(particle);
+        // Set the primary track's start time in for the current event to zero:
+        single_source->SetParticleTime(0.0);
+
+        // Set energy parameters
+        single_source->GetEneDist()->SetEnergyDisType("Gauss");
+        single_source->GetEneDist()->SetMonoEnergy(config.get<double>("source_energy"));
+        single_source->GetEneDist()->SetBeamSigmaInE(config.get<double>("source_energy_spread", 0.));
+
+        // Set the centre coordinate of the source
+        single_source->GetPosDist()->SetCentreCoords(config.get<G4ThreeVector>("source_position"));
     }
 }
 
