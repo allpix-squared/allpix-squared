@@ -41,6 +41,7 @@ This module requires an installation Geant4.
 * `source_square_side` : if *source_type*=**square**, length of the square side.
 * `source_square_angle` : if *source_type*=**square**, maximum polar angle (default to pi, which means all angles are allowed).
 * `source_sphere_radius` : if *source_type*=**sphere**, radius of the sphere source.
+* `source_sphere_focus_point` : if *source_type*=**sphere**, focus point of the sphere source. Defaults to a random point inside the sphere (useful with 1 particle per event for radiation field simulations).
 * `number_of_particles` : Number of particles to generate in a single event. Defaults to one particle.
 * `output_plots` : Enables output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
 * `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 100ke.
