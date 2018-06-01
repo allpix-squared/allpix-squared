@@ -1,5 +1,5 @@
 # DepositionGeant4
-**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>), Tobias Bisanz (<tobias.bisanz@phys.uni-goettingen.de>)  
+**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>), Tobias Bisanz (<tobias.bisanz@phys.uni-goettingen.de>), Thomas Billoud (<thomas.billoud@cern.ch>)
 **Status**: Functional  
 **Output**: DepositedCharge, MCParticle, MCTrack
 
@@ -17,6 +17,10 @@ The module supports the propagation of charged particles in a magnetic field if 
 With the `output_plots` parameter activated, the module produces histograms of the total deposited charge per event for every sensor in units of kilo-electrons.
 The scale of the plot axis can be adjusted using the `output_plots_scale` parameter and defaults to a maximum of 100ke.
 
+The source can be defined in 2 different ways using the `source_type` parameter: with predefined shapes or with a macro file. 
+Predefined shapes are beam, point, sphere, or square and each have specific parameters to tune the angular distribution of particle directions.
+To define more complex sources or angular distributions, the user can create a macro file with Geant4 commands.
+These commands are those defined for the GPS source and are explained in the [Geant4 documentation](http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/ForApplicationDeveloper/html/GettingStarted/generalParticleSource.html)(only the source position and number of particles must still be defined in the main configuration file).
 ### Dependencies
 
 This module requires an installation Geant4.
@@ -33,18 +37,21 @@ This module requires an installation Geant4.
 * `source_energy` : Mean energy of the generated particles.
 * `source_energy_spread` : Energy spread of the source.
 * `source_position` : Position of the particle source in the world geometry.
-* `source_type` : Shape of the source: **beam** (default), **point**, **square**, **sphere**, **macro** (to define the source shape and angular distribution using a Geant4 macro, see below).
-* `file_name` : if source_type=**macro**, name of the file with Geant4 /gps commands. The source position and number of particles must still be defined in the main configuration file. Only /ene, /pos, /ang and /hist commands are accepted.
-* `source_beam_size` : if *source_type*=**beam**, width of the Gaussian beam profile.
-* `source_beam_divergence` : if *source_type*=**beam**, standard deviation of the particle angles in x and y from the particle beam
-* `source_beam_direction` : if *source_type*=**beam**, direction of the beam as a unit vector.
-* `source_square_side` : if *source_type*=**square**, length of the square side.
-* `source_square_angle` : if *source_type*=**square**, maximum polar angle (default to pi, which means all angles are allowed).
-* `source_sphere_radius` : if *source_type*=**sphere**, radius of the sphere source.
-* `source_sphere_focus_point` : if *source_type*=**sphere**, focus point of the sphere source. Defaults to a random point inside the sphere (useful with 1 particle per event for radiation field simulations).
+* `source_type` : Shape of the source: **beam** (default), **point**, **square**, **sphere**, **macro**.
+* `file_name` : Name of the macro file (if source_type=**macro**). 
 * `number_of_particles` : Number of particles to generate in a single event. Defaults to one particle.
 * `output_plots` : Enables output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
 * `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 100ke.
+#### Parameters for source `beam`
+* `source_beam_size` : Width of the Gaussian beam profile.
+* `source_beam_divergence` : Standard deviation of the particle angles in x and y from the particle beam
+* `source_beam_direction` : Direction of the beam as a unit vector.
+#### Parameters for source `square`
+* `source_square_side` : Length of the square side.
+* `source_square_angle` : Maximum polar angle (default to $\pi$, which means all angles are allowed).
+#### Parameters for source `sphere`
+* `source_sphere_radius` : Radius of the sphere source.
+* `source_sphere_focus_point` : Focus point of the sphere source. Defaults to a random point inside the sphere (useful with 1 particle per event for radiation field simulations).
 
 ### Usage
 A possible default configuration to use, simulating a beam of 120 GeV pions with a divergence in x, is the following:
