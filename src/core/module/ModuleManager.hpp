@@ -26,7 +26,7 @@
 
 namespace allpix {
 
-    using ModuleList = std::list<std::unique_ptr<Module>>;
+    using ModuleList = std::list<std::shared_ptr<Module>>;
 
     class ConfigManager;
     class Messenger;

@@ -21,10 +21,12 @@ namespace allpix {
          * @brief Construct Event
          * @param modules The modules that constitutes the event
          * @param event_num The event identifier
-         * @param terminate ...
+         * @param terminate TODO
+         * @param module_execution_time_ TODO
          */
-        explicit Event(ModuleList &modules, const unsigned int event_num,
-                std::atomic<bool> &terminate);
+        explicit Event(ModuleList modules, const unsigned int event_num,
+                std::atomic<bool> &terminate,
+                std::map<Module*, long double> &module_execution_time_);
         /**
          * @brief Use default destructor
          */
@@ -33,9 +35,10 @@ namespace allpix {
         /// @{
         /**
          * @brief Copying an event not allowed
+         * TODO: disallow this again
          */
-        Event(const Event&) = delete;
-        Event& operator=(const Event&) = delete;
+        Event(const Event&) = default;
+        Event& operator=(const Event&) = default;
         /**
          * @brief Moving an event is allowed
          */
@@ -54,7 +57,7 @@ namespace allpix {
          * @param module_execution_time The map that stores module execution times
          * @warning Should be called after the \ref Event::init "init function"
          */
-        void run(const unsigned int number_of_events, std::map<Module*, long double> &module_execution_time);
+        void run(const unsigned int number_of_events);
 
         /**
          * @brief Finalize the event
@@ -63,9 +66,12 @@ namespace allpix {
         void finalize();
 
     private:
-        ModuleList &modules_;
+        ModuleList modules_;
         const unsigned int event_num_;
         std::atomic<bool> &terminate_;
+
+        // XXX: must this be mutex protected?
+        std::map<Module*, long double> &module_execution_time_;
     };
 
 } // namespace allpix

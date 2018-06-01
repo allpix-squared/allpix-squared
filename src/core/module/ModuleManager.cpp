@@ -231,6 +231,8 @@ void ModuleManager::load(Messenger* messenger,
             // Save the identifier in the module
             mod->set_identifier(identifier);
 
+            LOG(WARNING) << "loaded module '" << mod->getUniqueName() << "'.";
+
             // Add the new module to the run list
             modules_.emplace_back(std::move(mod));
             id_to_module_[identifier] = --modules_.end();
@@ -604,13 +606,14 @@ void ModuleManager::run() {
     auto start_time = std::chrono::steady_clock::now();
     global_config.setDefault<unsigned int>("number_of_events", 1u);
     auto number_of_events = global_config.get<unsigned int>("number_of_events");
-    for(unsigned int i = 0; i < number_of_events; ++i) {
+    for(unsigned int i = 1; i < number_of_events; ++i) {
         // Create the event and submit it to the thread pool
         // TODO: clean up the forwarding of parameters. Can some be omitted?
-        auto event_function = [i, number_of_events, this]() {
-            Event event(modules_, i, terminate_);
-            // TODO: module_execution_time_ must be protected with a mutex.
-            event.run(number_of_events, module_execution_time_);
+        Event event(modules_, i, terminate_, module_execution_time_);
+        // Event initialization must be run on the main thread
+        event.init();
+        auto event_function = [e = std::move(event), number_of_events]() mutable {
+            e.run(number_of_events);
         };
         thread_pool->submit_event_function(std::move(event_function));
     }
@@ -619,10 +622,10 @@ void ModuleManager::run() {
 
     // Execute all remaining events
     // XXX: try running a single job only in the thread pool!
-    /* thread_pool->execute_all(); */
+    thread_pool->execute_all();
 
     // Wait for the thread pool to run all events
-    thread_pool->wait();
+    /* thread_pool->wait(); */
 
     // Check if the simulation was prematurely terminated
     // XXX: this must be checked in between execute_all(); make an execute for single task?
