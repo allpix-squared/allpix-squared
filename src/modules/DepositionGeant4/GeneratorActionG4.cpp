@@ -94,22 +94,18 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
         } else if(config.get<std::string>("source_type") == "sphere") {
 
             // Set position parameters
-            single_source->GetPosDist()->SetPosDisType("Volume");
+            single_source->GetPosDist()->SetPosDisType("Surface");
             single_source->GetPosDist()->SetPosDisShape("Sphere");
 
             // Set angle distribution parameters
             double radius = config.get<double>("sphere_radius");
             single_source->GetPosDist()->SetRadius(radius);
-            single_source->GetAngDist()->SetAngDistType("focused");
 
             if(config.has("sphere_focus_point")) {
+                single_source->GetAngDist()->SetAngDistType("focused");
                 single_source->GetAngDist()->SetFocusPoint(config.get<G4ThreeVector>("sphere_focus_point"));
             } else {
-                TRandom3 rand;
-                double x = rand.Uniform(source_pos.x() - radius, source_pos.x() + radius); // radius is in mm
-                double y = rand.Uniform(source_pos.y() - radius, source_pos.y() + radius); // radius is in mm
-                double z = rand.Uniform(source_pos.z() - radius, source_pos.z() + radius); // radius is in mm
-                single_source->GetAngDist()->SetFocusPoint(G4ThreeVector(x, y, z));        // argument in mm
+                single_source->GetAngDist()->SetAngDistType("cos");
             }
 
         } else if(config.get<std::string>("source_type") == "square") {

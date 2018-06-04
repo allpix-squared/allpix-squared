@@ -17,8 +17,11 @@ The module supports the propagation of charged particles in a magnetic field if 
 With the `output_plots` parameter activated, the module produces histograms of the total deposited charge per event for every sensor in units of kilo-electrons.
 The scale of the plot axis can be adjusted using the `output_plots_scale` parameter and defaults to a maximum of 100ke.
 
-The source can be defined in 2 different ways using the `source_type` parameter: with predefined shapes or with a macro file. 
-Predefined shapes are beam, point, sphere, or square and each have specific parameters to tune the angular distribution of particle directions.
+The source can be defined in 2 different ways using the `source_type` parameter: with pre-defined shapes or with a Geant4 macro file. 
+Pre-defined shapes are point, beam, square or sphere.
+For the square and sphere, the particle starting points are distributed homogeneously over the surfaces.
+By default, the particle directions for the square are random, as would be for a squared radioactive source.
+For the sphere, unless a focus point is set, the particle directions follow the cosine-law defined by Geant4 [@g4gps] and the field inside the sphere is hence isotropic. 
 To define more complex sources or angular distributions, the user can create a macro file with Geant4 commands.
 These commands are those defined for the GPS source and are explained in the Geant4 website [@g4gps] (only the source position and number of particles must still be defined in the main configuration file).
 ### Dependencies
@@ -48,10 +51,10 @@ This module requires an installation Geant4.
 * `beam_direction` : Direction of the beam as a unit vector.
 #### Parameters for source `square`
 * `square_side` : Length of the square side.
-* `square_angle` : Maximum polar angle (default to $\pi$, which means all angles are allowed).
+* `square_angle` : Maximum emission angle from the z-axis vector (defaults to $\pi$, which means all angles are allowed).
 #### Parameters for source `sphere`
-* `sphere_radius` : Radius of the sphere source.
-* `sphere_focus_point` : Focus point of the sphere source. Defaults to a random point inside the sphere (useful with 1 particle per event for radiation field simulations).
+* `sphere_radius` : Radius of the sphere source (particles start only from the surface).
+* `sphere_focus_point` : Focus point of the sphere source. If not specified, the radiation field is isotropic inside the sphere.
 
 ### Usage
 A possible default configuration to use, simulating a beam of 120 GeV pions with a divergence in x, is the following:
