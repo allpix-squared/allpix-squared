@@ -48,7 +48,7 @@ This module requires an installation Geant4.
 * `beam_direction` : Direction of the beam as a unit vector.
 #### Parameters for source `square`
 * `square_side` : Length of the square side.
-* `square_side` : Maximum polar angle (default to $\pi$, which means all angles are allowed).
+* `square_angle` : Maximum polar angle (default to $\pi$, which means all angles are allowed).
 #### Parameters for source `sphere`
 * `sphere_radius` : Radius of the sphere source.
 * `sphere_focus_point` : Focus point of the sphere source. Defaults to a random point inside the sphere (useful with 1 particle per event for radiation field simulations).
