@@ -1,5 +1,5 @@
 # DepositionGeant4
-**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>), Tobias Bisanz (<tobias.bisanz@phys.uni-goettingen.de>), Thomas Billoud (<thomas.billoud@cern.ch>)
+**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>), Tobias Bisanz (<tobias.bisanz@phys.uni-goettingen.de>), Thomas Billoud (<thomas.billoud@cern.ch>)  
 **Status**: Functional  
 **Output**: DepositedCharge, MCParticle, MCTrack
 
@@ -20,7 +20,7 @@ The scale of the plot axis can be adjusted using the `output_plots_scale` parame
 The source can be defined in 2 different ways using the `source_type` parameter: with predefined shapes or with a macro file. 
 Predefined shapes are beam, point, sphere, or square and each have specific parameters to tune the angular distribution of particle directions.
 To define more complex sources or angular distributions, the user can create a macro file with Geant4 commands.
-These commands are those defined for the GPS source and are explained in the [Geant4 documentation](http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/ForApplicationDeveloper/html/GettingStarted/generalParticleSource.html)(only the source position and number of particles must still be defined in the main configuration file).
+These commands are those defined for the GPS source and are explained in the Geant4 website [@g4gps] (only the source position and number of particles must still be defined in the main configuration file).
 ### Dependencies
 
 This module requires an installation Geant4.
@@ -69,5 +69,6 @@ number_of_particles = 1
 
 [@g4physicslists]: http://geant4.cern.ch/support/proc_mod_catalog/physics_lists/referencePL.shtml
 [@g4particles]: http://geant4.cern.ch/G4UsersDocuments/UsersGuides/ForApplicationDeveloper/html/TrackingAndPhysics/particle.html
+[@g4gps]: http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/ForApplicationDeveloper/html/GettingStarted/generalParticleSource.html
 [@pdg]: http://hepdata.cedar.ac.uk/lbl/2016/reviews/rpp2016-rev-monte-carlo-numbering.pdf
 [@pai]: https://doi.org/10.1016/S0168-9002(00)00457-5
