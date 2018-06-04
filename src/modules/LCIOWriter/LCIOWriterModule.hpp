@@ -59,10 +59,10 @@ namespace allpix {
         std::vector<std::shared_ptr<PixelHitMessage>> pixel_messages_;
         std::shared_ptr<MCTrackMessage> mctracks_message_;
 
-        std::vector<std::string> col_name_vec_;
-        std::map<unsigned, size_t> det_id_to_col_index_;
-        std::map<std::string, unsigned> det_name_to_id_;
-        std::map<std::string, std::vector<std::string>> col_to_dets_map_;
+        std::vector<std::string> collection_names_vector_;
+        std::map<unsigned, size_t> detector_ids_to_colllection_index_;
+        std::map<std::string, unsigned> detector_names_to_id_;
+        std::map<std::string, std::vector<std::string>> colllections_to_detectors_map_;
 
         std::shared_ptr<IO::LCWriter> lcWriter_{};
         int pixel_type_;

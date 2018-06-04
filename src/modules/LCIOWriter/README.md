@@ -20,7 +20,9 @@ Optionally, if `dump_mc_truth` is set to true, this module will create Monte Car
 Only one of the following options must be used, if none is specified `output_collection_name` will be used with its default value.
 
 * `output_collection_name`: Name of the LCIO collection containing the pixel data. Detectors will be assigned ascending sensor ids starting with 0. Default: "zsdata_m26"
-* `detector_assignment`: A matrix with three entries each row: ["detector_name", "output_collection", "sensor_id"], one row for each detector. This allows to assign different output collections and sensor ids within the same set-up. `detector_name` is the detector's name as specified in the geometry file, `output_collection` the desired LCIO collection name and `sensor_id` the id used in the exported LCIO data. Sensor ids must be unique.
+* `detector_assignment`: A matrix with three entries each row: `["detector_name", "output_collection", "sensor_id"]`, one row for each detector. This allows to assign different output collections and sensor ids within the same set-up. `detector_name` is the detector's name as specified in the geometry file, `output_collection` the desired LCIO collection name and `sensor_id` the id used in the exported LCIO data. Sensor ids must be unique.
+
+If only one detector is present in the `detector_assignment`, the value has to be encapsulated in extra quotes, i.e. `[["mydetector", "zsdata_test", "123"]]`.
 
 ### Usage
 ```ini
