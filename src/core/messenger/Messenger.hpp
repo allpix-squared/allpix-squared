@@ -109,13 +109,14 @@ namespace allpix {
 
         /**
          * @brief Dispatches a message
+         * @param event_id Event identifier for the message
          * @param source Module dispatching the message
          * @param message Pointer to the message to dispatch
          * @param name Optional message name (defaults to - indicating that it should dispatch to the module output
          * parameter)
          */
         template <typename T>
-        void dispatchMessage(Module* source, std::shared_ptr<T> message, const std::string& name = "-");
+        void dispatchMessage(unsigned int event_id, Module* source, std::shared_ptr<T> message, const std::string& name = "-");
 
         /**
          * @brief Removes the list of sent messages, clearing them from memory if not otherwise used

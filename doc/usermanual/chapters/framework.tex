@@ -564,7 +564,7 @@ void run(unsigned int event_id) {
     auto message = std::make_shared<Message<Object>>(data, detector_);
 
     // Send the message using the Messenger object
-    messenger->dispatchMessage(this, message);
+    messenger->dispatchMessage(event_id, this, message);
 }
 \end{minted}
 

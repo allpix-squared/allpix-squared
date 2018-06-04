@@ -42,7 +42,7 @@ SimpleTransferModule::SimpleTransferModule(Configuration& config, Messenger* mes
     messenger->bindSingle(this, &SimpleTransferModule::propagated_message_, MsgFlags::REQUIRED);
 }
 
-void SimpleTransferModule::run(unsigned int) {
+void SimpleTransferModule::run(unsigned int event_num) {
     // Find corresponding pixels for all propagated charges
     LOG(TRACE) << "Transferring charges to pixels";
     unsigned int transferred_charges_count = 0;
@@ -106,7 +106,7 @@ void SimpleTransferModule::run(unsigned int) {
 
     // Dispatch message of pixel charges
     auto pixel_message = std::make_shared<PixelChargeMessage>(pixel_charges, detector_);
-    messenger_->dispatchMessage(this, pixel_message);
+    messenger_->dispatchMessage(event_num, this, pixel_message);
 }
 
 void SimpleTransferModule::finalize() {

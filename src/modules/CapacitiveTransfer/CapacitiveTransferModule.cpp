@@ -262,7 +262,7 @@ void CapacitiveTransferModule::init() {
     }
 }
 
-void CapacitiveTransferModule::run(unsigned int) {
+void CapacitiveTransferModule::run(unsigned int event_num) {
 
     // Find corresponding pixels for all propagated charges
     LOG(TRACE) << "Transferring charges to pixels";
@@ -368,7 +368,7 @@ void CapacitiveTransferModule::run(unsigned int) {
 
     // Dispatch message of pixel charges
     auto pixel_message = std::make_shared<PixelChargeMessage>(pixel_charges, detector_);
-    messenger_->dispatchMessage(this, pixel_message);
+    messenger_->dispatchMessage(event_num, this, pixel_message);
 }
 
 void CapacitiveTransferModule::finalize() {
