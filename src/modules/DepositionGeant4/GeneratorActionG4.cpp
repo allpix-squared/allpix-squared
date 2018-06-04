@@ -77,15 +77,15 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
 
             // Set position parameters
             single_source->GetPosDist()->SetPosDisType("Beam");
-            single_source->GetPosDist()->SetBeamSigmaInR(config.get<double>("source_beam_size", 0));
+            single_source->GetPosDist()->SetBeamSigmaInR(config.get<double>("beam_size", 0));
 
             // Set angle distribution parameters
             single_source->GetAngDist()->SetAngDistType("beam2d");
             single_source->GetAngDist()->DefineAngRefAxes("angref1", G4ThreeVector(-1., 0, 0));
-            G4TwoVector divergence = config.get<G4TwoVector>("source_beam_divergence", G4TwoVector(0., 0.));
+            G4TwoVector divergence = config.get<G4TwoVector>("beam_divergence", G4TwoVector(0., 0.));
             single_source->GetAngDist()->SetBeamSigmaInAngX(divergence.x());
             single_source->GetAngDist()->SetBeamSigmaInAngY(divergence.y());
-            G4ThreeVector direction = config.get<G4ThreeVector>("source_beam_direction");
+            G4ThreeVector direction = config.get<G4ThreeVector>("beam_direction");
             if(fabs(direction.mag() - 1.0) > std::numeric_limits<double>::epsilon()) {
                 LOG(WARNING) << "Momentum direction is not a unit vector: magnitude is ignored";
             }
@@ -98,12 +98,12 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             single_source->GetPosDist()->SetPosDisShape("Sphere");
 
             // Set angle distribution parameters
-            double radius = config.get<double>("source_sphere_radius");
+            double radius = config.get<double>("sphere_radius");
             single_source->GetPosDist()->SetRadius(radius);
             single_source->GetAngDist()->SetAngDistType("focused");
 
-            if(config.has("source_sphere_focus_point")) {
-                single_source->GetAngDist()->SetFocusPoint(config.get<G4ThreeVector>("source_sphere_focus_point"));
+            if(config.has("sphere_focus_point")) {
+                single_source->GetAngDist()->SetFocusPoint(config.get<G4ThreeVector>("sphere_focus_point"));
             } else {
                 TRandom3 rand;
                 double x = rand.Uniform(source_pos.x() - radius, source_pos.x() + radius); // radius is in mm
@@ -117,12 +117,12 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             // Set position parameters
             single_source->GetPosDist()->SetPosDisType("Plane");
             single_source->GetPosDist()->SetPosDisShape("Square");
-            single_source->GetPosDist()->SetHalfX(config.get<double>("source_square_side") / 2);
-            single_source->GetPosDist()->SetHalfY(config.get<double>("source_square_side") / 2);
+            single_source->GetPosDist()->SetHalfX(config.get<double>("square_side") / 2);
+            single_source->GetPosDist()->SetHalfY(config.get<double>("square_side") / 2);
 
             // Set angle distribution parameters
             single_source->GetAngDist()->SetAngDistType("iso");
-            single_source->GetAngDist()->SetMaxTheta(config.get<double>("source_square_angle", ROOT::Math::Pi() / 2));
+            single_source->GetAngDist()->SetMaxTheta(config.get<double>("square_side", ROOT::Math::Pi() / 2));
 
         } else if(config.get<std::string>("source_type") == "point") {
 

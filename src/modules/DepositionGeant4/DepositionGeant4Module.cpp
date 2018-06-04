@@ -58,12 +58,6 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
     config_.setDefault<bool>("output_plots", false);
     config_.setDefault<int>("output_plots_scale", Units::get(100, "ke"));
 
-    // Set alias for support of old particle source definition
-    config_.setAlias("source_beam_position", "beam_position");
-    config_.setAlias("source_beam_size", "beam_size");
-    config_.setAlias("source_beam_divergence", "beam_divergence");
-    config_.setAlias("source_beam_direction", "beam_direction");
-
     // Add the particle source position to the geometry
     geo_manager_->addPoint(config_.get<ROOT::Math::XYZPoint>("source_position"));
 }

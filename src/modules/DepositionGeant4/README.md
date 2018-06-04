@@ -43,15 +43,15 @@ This module requires an installation Geant4.
 * `output_plots` : Enables output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
 * `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 100ke.
 #### Parameters for source `beam`
-* `source_beam_size` : Width of the Gaussian beam profile.
-* `source_beam_divergence` : Standard deviation of the particle angles in x and y from the particle beam
-* `source_beam_direction` : Direction of the beam as a unit vector.
+* `beam_size` : Width of the Gaussian beam profile.
+* `beam_divergence` : Standard deviation of the particle angles in x and y from the particle beam
+* `beam_direction` : Direction of the beam as a unit vector.
 #### Parameters for source `square`
-* `source_square_side` : Length of the square side.
-* `source_square_angle` : Maximum polar angle (default to $\pi$, which means all angles are allowed).
+* `square_side` : Length of the square side.
+* `square_side` : Maximum polar angle (default to $\pi$, which means all angles are allowed).
 #### Parameters for source `sphere`
-* `source_sphere_radius` : Radius of the sphere source.
-* `source_sphere_focus_point` : Focus point of the sphere source. Defaults to a random point inside the sphere (useful with 1 particle per event for radiation field simulations).
+* `sphere_radius` : Radius of the sphere source.
+* `sphere_focus_point` : Focus point of the sphere source. Defaults to a random point inside the sphere (useful with 1 particle per event for radiation field simulations).
 
 ### Usage
 A possible default configuration to use, simulating a beam of 120 GeV pions with a divergence in x, is the following:
@@ -62,8 +62,8 @@ physics_list = FTFP_BERT_LIV
 particle_type = "pi+"
 source_energy = 120GeV
 source_position = 0 0 -1mm
-source_beam_direction = 0 0 1
-source_beam_divergence = 3mrad 0mrad
+beam_direction = 0 0 1
+beam_divergence = 3mrad 0mrad
 number_of_particles = 1
 ```
 
