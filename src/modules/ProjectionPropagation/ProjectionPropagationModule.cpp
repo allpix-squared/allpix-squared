@@ -89,7 +89,7 @@ void ProjectionPropagationModule::run(unsigned int event_num) {
     double total_projected_charge = 0;
 
     // Loop over all deposits for propagation
-    for(auto& deposit : deposits_message_->getData()) {
+    for(auto& deposit : deposits_message_.at(event_num)->getData()) {
 
         auto position = deposit.getLocalPosition();
         auto type = deposit.getType();

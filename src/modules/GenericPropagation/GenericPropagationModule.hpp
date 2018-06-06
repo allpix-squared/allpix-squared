@@ -107,7 +107,7 @@ namespace allpix {
         ROOT::Math::XYZVector magnetic_field_;
 
         // Deposits for the bound detector in this event
-        std::shared_ptr<DepositedChargeMessage> deposits_message_;
+        MessageStorage<DepositedChargeMessage> deposits_message_;
 
         // Statistical information
         unsigned int total_propagated_charges_{};

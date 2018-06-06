@@ -64,6 +64,31 @@ namespace allpix {
         return static_cast<MsgFlags>(static_cast<uint32_t>(f1) & static_cast<uint32_t>(f2));
     }
 
+    template <typename T> class MessageStorage {
+        // TODO: assert T is inherited from BaseMessage
+    public:
+        MessageStorage() = default;
+
+        const std::shared_ptr<T>& at(const unsigned int key) {
+            std::lock_guard<std::mutex> lock(mutex_);
+            return map_.at(key);
+        }
+
+        void insert(const unsigned int key, std::shared_ptr<T> value) {
+            std::lock_guard<std::mutex> lock(mutex_);
+            map_[key] = value;
+        }
+
+        bool contains(const unsigned int key) {
+            return (map_.find(key) != map_.end());
+        }
+
+    private:
+        std::map<unsigned int, std::shared_ptr<T>> map_;
+        std::mutex mutex_;
+    };
+
+
     /**
      * @ingroup Delegates
      * @brief Base for all delegates
@@ -302,7 +327,7 @@ namespace allpix {
      */
     template <typename T, typename R> class SingleBindDelegate : public ModuleDelegate<T> {
     public:
-        using BindType = std::shared_ptr<R> T::*;
+        using BindType = MessageStorage<R> T::*;
 
         /**
          * @brief Construct a single bound delegate for the given module
@@ -327,12 +352,12 @@ namespace allpix {
             assert(typeid(*inst) == typeid(R));
 #endif
             // Raise an error if the message is overwritten (unless it is allowed)
-            if(this->obj_->*member_ != nullptr && (this->getFlags() & MsgFlags::ALLOW_OVERWRITE) == MsgFlags::NONE) {
+            if((this->obj_->*member_).contains(msg->event_id) && (this->getFlags() & MsgFlags::ALLOW_OVERWRITE) == MsgFlags::NONE) {
                 throw UnexpectedMessageException(this->obj_->getUniqueName(), typeid(R));
             }
 
             // Set the message and mark as processed
-            this->obj_->*member_ = std::static_pointer_cast<R>(msg);
+            (this->obj_->*member_).insert(msg->event_id, std::static_pointer_cast<R>(msg));
             this->set_processed();
         }
 
@@ -346,7 +371,7 @@ namespace allpix {
             BaseDelegate::reset();
 
             // Clear
-            this->obj_->*member_ = nullptr;
+            /* this->obj_->*member_ = nullptr; */
         }
 
     private:

@@ -47,7 +47,7 @@ void SimpleTransferModule::run(unsigned int event_num) {
     LOG(TRACE) << "Transferring charges to pixels";
     unsigned int transferred_charges_count = 0;
     std::map<Pixel::Index, std::vector<const PropagatedCharge*>, pixel_cmp> pixel_map;
-    for(auto& propagated_charge : propagated_message_->getData()) {
+    for(auto& propagated_charge : propagated_message_.at(event_num)->getData()) {
         auto position = propagated_charge.getLocalPosition();
         // Ignore if outside depth range of implant
         // FIXME This logic should be improved

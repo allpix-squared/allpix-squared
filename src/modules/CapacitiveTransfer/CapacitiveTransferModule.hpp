@@ -83,7 +83,7 @@ namespace allpix {
         };
 
         // Message containing the propagated charges
-        std::shared_ptr<PropagatedChargeMessage> propagated_message_;
+        MessageStorage<PropagatedChargeMessage> propagated_message_;
 
         // Statistical information
         unsigned int total_transferred_charges_{};

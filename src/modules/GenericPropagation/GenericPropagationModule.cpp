@@ -523,7 +523,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
     unsigned int propagated_charges_count = 0;
     unsigned int step_count = 0;
     long double total_time = 0;
-    for(auto& deposit : deposits_message_->getData()) {
+    for(auto& deposit : deposits_message_.at(event_num)->getData()) {
 
         if((deposit.getType() == CarrierType::ELECTRON && !config_.get<bool>("propagate_electrons")) ||
            (deposit.getType() == CarrierType::HOLE && !config_.get<bool>("propagate_holes"))) {

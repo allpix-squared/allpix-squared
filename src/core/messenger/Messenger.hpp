@@ -87,7 +87,7 @@ namespace allpix {
          *           \ref MsgFlags::ALLOW_OVERWRITE "ALLOW_OVERWRITE" flag is passed
          */
         template <typename T, typename R>
-        void bindSingle(T* receiver, std::shared_ptr<R> T::*member, MsgFlags flags = MsgFlags::NONE);
+        void bindSingle(T* receiver, MessageStorage<R> T::*member, MsgFlags flags = MsgFlags::NONE);
 
         /**
          * @brief Binds a pointer to a list of messages
