@@ -83,7 +83,13 @@ bool ThreadPool::execute_all() {
 
 void ThreadPool::wait() {
     std::unique_lock<std::mutex> lock{run_mutex_};
-    run_condition_.wait(lock, [this]() { return event_queue_.empty() && run_cnt_ == 0; });
+    run_condition_.wait(lock, [this]() { return exception_ptr_ || (event_queue_.empty() && run_cnt_ == 0); });
+
+    if (exception_ptr_) {
+        destroy();
+        Log::setSection("");
+        std::rethrow_exception(exception_ptr_);
+    }
 }
 
 /**

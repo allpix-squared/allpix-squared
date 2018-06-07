@@ -27,7 +27,7 @@ Event::Event(ModuleList modules, const unsigned int event_num, std::atomic<bool>
 
 void Event::init()
 {
-    LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Initializing event " << event_num_;
+    /* LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Initializing event " << event_num_; */
 
     // Get object count for linking objects in current event
     /* auto save_id = TProcessID::GetObjectCount(); */
@@ -80,7 +80,7 @@ void Event::init()
         auto end = std::chrono::steady_clock::now();
         module_execution_time_[module.get()] += static_cast<std::chrono::duration<long double>>(end - start).count();
 
-        module->reset_delegates();
+        /* module->reset_delegates(); */
         modules_.pop_front();
     }
 
@@ -99,10 +99,12 @@ void Event::run(const unsigned int number_of_events)
     LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Running event " << event_num_ << " of " << number_of_events;
 
     // Get object count for linking objects in current event
-    auto save_id = TProcessID::GetObjectCount();
+    /* auto save_id = TProcessID::GetObjectCount(); */
 
     for (auto& module : modules_) {
-        std::lock_guard<std::mutex> lock(module->run_mutex_);
+        auto lock = !module->canParallelize() ?
+            std::unique_lock<std::mutex>(module->run_mutex_) :
+            std::unique_lock<std::mutex>();
 
         LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << this->event_num_ << " of " << number_of_events << " ["
                                           << module->get_identifier().getUniqueName() << "]";
@@ -144,14 +146,14 @@ void Event::run(const unsigned int number_of_events)
     }
 
     // Resetting delegates
-    for(auto& module : modules_) {
-        LOG(TRACE) << "Resetting messages";
-        std::lock_guard<std::mutex> lock(module->run_mutex_);
-        module->reset_delegates();
-    }
+    /* for(auto& module : modules_) { */
+    /*     LOG(TRACE) << "Resetting messages"; */
+    /*     std::lock_guard<std::mutex> lock(module->run_mutex_); */
+    /*     module->reset_delegates(); */
+    /* } */
 
     // Reset object count for next event
-    TProcessID::SetObjectCount(save_id);
+    /* TProcessID::SetObjectCount(save_id); */
 }
 
 void Event::finalize()

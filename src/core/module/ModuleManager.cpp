@@ -606,6 +606,7 @@ void ModuleManager::run() {
     auto start_time = std::chrono::steady_clock::now();
     global_config.setDefault<unsigned int>("number_of_events", 1u);
     auto number_of_events = global_config.get<unsigned int>("number_of_events");
+    LOG(STATUS) << "Initializing events...";
     for(unsigned int i = 1; i < number_of_events; ++i) {
         // Create the event and submit it to the thread pool
         // TODO: clean up the forwarding of parameters. Can some be omitted?
@@ -618,14 +619,10 @@ void ModuleManager::run() {
         thread_pool->submit_event_function(std::move(event_function));
     }
 
-    LOG(TRACE) << "Pushed all events to the thread pool queue";
+    LOG(STATUS) << "All events have been initialized";
 
     // Execute all remaining events
-    // XXX: try running a single job only in the thread pool!
     thread_pool->execute_all();
-
-    // Wait for the thread pool to run all events
-    /* thread_pool->wait(); */
 
     // Check if the simulation was prematurely terminated
     // XXX: this must be checked in between execute_all(); make an execute for single task?
