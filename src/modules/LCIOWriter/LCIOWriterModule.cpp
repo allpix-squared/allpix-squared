@@ -130,7 +130,7 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
         unsigned sensor_id = 0;
         for(auto const& det : detectors) {
             auto const& det_name = det->getName();
-            colllections_to_detectors_map_[out_col_name].emplace_back(det_name);
+            collections_to_detectors_map_[out_col_name].emplace_back(det_name);
             detector_names_to_id_[det_name] = sensor_id++;
         }
     } else {
@@ -151,7 +151,7 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
                 auto const& sensor_id_str = setup_entry[2];
                 // This map will help determine how many setup we will create (keys) and what
                 // detectors write into that collection (values)
-                colllections_to_detectors_map_[col_name].emplace_back(det_name);
+                collections_to_detectors_map_[col_name].emplace_back(det_name);
 
                 unsigned sensor_id = 0;
                 try {
@@ -170,7 +170,8 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
                                             "detector_assignment",
                                             "The sensor id \"" + sensor_id_str +          // NOLINT
                                                 "\" which was provided for detector \"" + // NOLINT
-                                                det_name + "\" is not a valid integer");  // NOLINT
+                                                det_name +                                // NOLINT
+                                                "\" is not a valid integer");             // NOLINT
                 }
 
                 if(std::find(assigned_ids.begin(), assigned_ids.end(), sensor_id) == assigned_ids.end()) {
@@ -207,7 +208,7 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
         }
     }
     //
-    for(auto const& col_dets_pair : colllections_to_detectors_map_) {
+    for(auto const& col_dets_pair : collections_to_detectors_map_) {
         collection_names_vector_.emplace_back(col_dets_pair.first);
         LOG(DEBUG) << "Registered output collection \"" << col_dets_pair.first << "\" for sensors: ";
         for(auto const& det_name : col_dets_pair.second) {
