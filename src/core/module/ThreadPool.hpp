@@ -118,6 +118,8 @@ namespace allpix {
          */
         void submit_event_function(std::function<void()> event_function);
 
+        void check_exception();
+
         /**
          * @brief Execute jobs from the queue until all tasks are finished or an interrupt happened
          * @return True if module task queue finished, false if stopped for other reason

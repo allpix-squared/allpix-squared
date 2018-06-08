@@ -72,6 +72,14 @@ bool ThreadPool::execute_all() {
     return event_queue_.isValid();
 }
 
+void ThreadPool::check_exception() {
+    if (exception_ptr_) {
+        destroy();
+        Log::setSection("");
+        std::rethrow_exception(exception_ptr_);
+    }
+}
+
 void ThreadPool::wait() {
     // XXX: is this updated for geant4-before submit?
     std::unique_lock<std::mutex> lock{run_mutex_};

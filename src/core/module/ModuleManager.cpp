@@ -231,8 +231,6 @@ void ModuleManager::load(Messenger* messenger,
             // Save the identifier in the module
             mod->set_identifier(identifier);
 
-            LOG(WARNING) << "loaded module '" << mod->getUniqueName() << "'.";
-
             // Add the new module to the run list
             modules_.emplace_back(std::move(mod));
             id_to_module_[identifier] = --modules_.end();
@@ -617,6 +615,9 @@ void ModuleManager::run() {
             e.run(number_of_events);
         };
         thread_pool->submit_event_function(std::move(event_function));
+
+        // Check for premature exception
+        thread_pool->check_exception();
     }
 
     LOG(STATUS) << "All events have been initialized";

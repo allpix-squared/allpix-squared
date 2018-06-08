@@ -76,11 +76,17 @@ namespace allpix {
 
         void insert(const unsigned int key, std::shared_ptr<T> value) {
             std::lock_guard<std::mutex> lock(mutex_);
-            map_[key] = value;
+            map_.insert({key, value});
         }
 
         bool contains(const unsigned int key) {
+            std::lock_guard<std::mutex> lock(mutex_);
             return (map_.find(key) != map_.end());
+        }
+
+        size_t size() {
+            std::lock_guard<std::mutex> lock(mutex_);
+            return map_.size();
         }
 
     private:
