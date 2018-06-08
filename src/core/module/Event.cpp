@@ -134,6 +134,8 @@ void Event::run(const unsigned int number_of_events)
             // Terminate if the module threw the EndOfRun request exception:
             LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
             this->terminate_ = true;
+        } catch(std::out_of_range&) {
+            throw InvalidMessageIDException(module->getUniqueName(), event_num_);
         }
 
         // Reset logging

@@ -56,6 +56,15 @@ namespace allpix {
             error_message_ += " does not contain a valid object";
         }
     };
+
+    class InvalidMessageIDException : public RuntimeError {
+    public:
+        InvalidMessageIDException(const std::string& module, unsigned int event_id) {
+            error_message_ = "Module " + module;
+            error_message_ += " tried to fetch messages from invalid event ID ";
+            error_message_ += std::to_string(event_id);
+        }
+    };
 } // namespace allpix
 
 #endif /* ALLPIX_MESSENGER_EXCEPTIONS_H */
