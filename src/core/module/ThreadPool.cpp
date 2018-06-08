@@ -41,10 +41,10 @@ void ThreadPool::submit_event_function(std::function<void()> event_function) {
  * thrown by another thread, the exception will be propagated to the main thread by this function.
  */
 bool ThreadPool::execute_all() {
-    while (true) {
+    while (!event_queue_.empty()) {
         Task task{nullptr};
 
-        if (event_queue_.pop(task, false)) {
+        if (event_queue_.pop(task, true)) {
             try {
                 // Execute task
                 (*task)();
@@ -60,15 +60,6 @@ bool ThreadPool::execute_all() {
                 }
             }
         }
-
-        // Wait for the threads to complete their task, continue helping if a new task was pushed
-        std::unique_lock<std::mutex> lock{run_mutex_};
-        run_condition_.wait(lock, [this]() { return !event_queue_.empty() || run_cnt_ == 0; });
-
-        // Only stop when both the queue is empty and the run count is zero
-        if (event_queue_.empty() && run_cnt_ == 0) {
-            break;
-        }
     }
 
     // If exception has been thrown, destroy pool and propagate it
@@ -82,6 +73,7 @@ bool ThreadPool::execute_all() {
 }
 
 void ThreadPool::wait() {
+    // XXX: is this updated for geant4-before submit?
     std::unique_lock<std::mutex> lock{run_mutex_};
     run_condition_.wait(lock, [this]() { return exception_ptr_ || (event_queue_.empty() && run_cnt_ == 0); });
 
@@ -99,14 +91,10 @@ void ThreadPool::worker(const std::function<void()>& init_function) {
     // Initialize the worker
     init_function();
 
-    // Safe lambda to increase the atomic run count
-    auto increase_run_cnt_func = [this]() { ++run_cnt_; };
-
-    // Continue running until the thread pool is finished
     while (!done_) {
         Task task{nullptr};
 
-        if (event_queue_.pop(task, true, increase_run_cnt_func)) {
+        if (event_queue_.pop(task, true)) {
             // Try to run the task
             try {
                 // Execute task
@@ -116,18 +104,13 @@ void ThreadPool::worker(const std::function<void()>& init_function) {
             } catch (...) {
                 // Check if the first exception thrown
                 if (has_exception_.test_and_set()) {
-                    // Save first exception
+                    // Save the first exceptin
                     exception_ptr_ = std::current_exception();
                     // Invalidate the queue to terminate other threads
                     event_queue_.invalidate();
                 }
             }
         }
-
-        // Propagate that the task has been finished
-        std::lock_guard<std::mutex> lock{run_mutex_};
-        --run_cnt_;
-        run_condition_.notify_all();
     }
 }
 

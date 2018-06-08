@@ -7,7 +7,7 @@ namespace allpix {
     template <typename T> bool ThreadPool::SafeQueue<T>::pop(T& out, bool wait, const std::function<void()>& func) {
         // Lock the mutex
         std::unique_lock<std::mutex> lock{mutex_};
-        if(wait) {
+        if(queue_.empty() && wait) {
             // Wait for new item in the queue (unlocks the mutex while waiting)
             condition_.wait(lock, [this]() { return !queue_.empty() || !valid_; });
         }
