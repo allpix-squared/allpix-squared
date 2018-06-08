@@ -49,6 +49,9 @@ This module requires an installation Geant4.
 * `beam_size` : Width of the Gaussian beam profile.
 * `beam_divergence` : Standard deviation of the particle angles in x and y from the particle beam
 * `beam_direction` : Direction of the beam as a unit vector.
+
+NOTE: Old parameters from v.1.1.2 and before (beam_energy, beam_energy_spread and beam_position) are still supported but it is recommended to use the new corresponding ones.
+
 #### Parameters for source `square`
 * `square_side` : Length of the square side.
 * `square_angle` : Maximum emission angle from the z-axis vector (defaults to $\pi$, which means all angles are allowed).
