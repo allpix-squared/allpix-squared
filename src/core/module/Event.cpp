@@ -45,7 +45,7 @@ void Event::init()
         std::lock_guard<std::mutex> lock(module->run_mutex_);
 
         // Check if module is satisfied to run
-        if(!module->check_delegates()) {
+        if(!module->check_delegates(event_num_)) {
             LOG(TRACE) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
                        << ", skipping module!";
             return;
@@ -109,7 +109,7 @@ void Event::run(const unsigned int number_of_events)
         LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << this->event_num_ << " of " << number_of_events << " ["
                                           << module->get_identifier().getUniqueName() << "]";
         // Check if module is satisfied to run
-        if(!module->check_delegates()) {
+        if(!module->check_delegates(event_num_)) {
             LOG(TRACE) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
                        << ", skipping module!";
             return;

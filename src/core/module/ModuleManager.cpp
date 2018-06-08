@@ -556,7 +556,10 @@ void ModuleManager::init() {
         module->init();
         // Reset delegates
         LOG(TRACE) << "Resetting messages";
-        module->reset_delegates();
+
+        // XXX: omitted original code!
+        /* module->reset_delegates(); */
+
         // Reset logging
         Log::setSection(old_section_name);
         set_module_after(old_settings);

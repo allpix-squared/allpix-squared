@@ -107,7 +107,7 @@ namespace allpix {
          * @brief Construct a delegate with the supplied flags
          * @param flags Configuration flags
          */
-        explicit BaseDelegate(MsgFlags flags) : processed_(false), flags_(flags) {}
+        explicit BaseDelegate(MsgFlags flags) : flags_(flags) {}
         /**
          * @brief Essential virtual destructor
          */
@@ -136,11 +136,17 @@ namespace allpix {
          * The delegate is always satisfied if the \ref MsgFlags::REQUIRED "REQUIRED" flag has not been passed. Otherwise it
          * is up to the subclasses to determine if a delegate has been processed.
          */
-        bool isSatisfied() const {
+        bool isSatisfied(unsigned int event_id) const {
             if((getFlags() & MsgFlags::REQUIRED) == MsgFlags::NONE) {
                 return true;
             }
-            return processed_;
+
+            std::lock_guard<std::mutex> lock(mutex_);
+            try {
+                return processed_.at(event_id);
+            } catch (std::out_of_range&) {
+                return false;
+            }
         }
 
         /**
@@ -171,14 +177,21 @@ namespace allpix {
         /**
          * @brief Reset the delegate and set it not satisfied again
          */
-        virtual void reset() { processed_ = false; }
+        virtual void reset(unsigned int event_id) {
+            std::lock_guard<std::mutex> lock(mutex_);
+            processed_[event_id] = false;
+        }
 
     protected:
         /**
          * @brief Set the processed flag to signal that the delegate is satisfied
          */
-        void set_processed() { processed_ = true; }
-        bool processed_;
+        void set_processed(unsigned int event_id) {
+            std::lock_guard<std::mutex> lock(mutex_);
+            processed_[event_id] = true;
+        }
+        std::map<unsigned int, bool> processed_;
+        mutable std::mutex mutex_;
 
         MsgFlags flags_;
     };
@@ -244,9 +257,9 @@ namespace allpix {
          *
          * Always calls the BaseDelegate::reset first. Clears the storage of the messages
          */
-        void reset() override {
+        void reset(unsigned int event_id) override {
             // Always do base reset
-            BaseDelegate::reset();
+            BaseDelegate::reset(event_id);
             // Clear
             messages_.clear();
         }
@@ -320,7 +333,7 @@ namespace allpix {
         void process(std::shared_ptr<BaseMessage> msg, std::string name) override {
             // Pass the message and mark as processed
             (this->obj_->*method_)(std::static_pointer_cast<BaseMessage>(msg), name);
-            this->set_processed();
+            this->set_processed(msg->event_id);
         }
 
     private:
@@ -367,7 +380,7 @@ namespace allpix {
 
             // Set the message and mark as processed
             (this->obj_->*member_).insert(msg->event_id, std::static_pointer_cast<R>(msg));
-            this->set_processed();
+            this->set_processed(msg->event_id);
         }
 
         /**
@@ -375,9 +388,9 @@ namespace allpix {
          *
          * Always calls the BaseDelegate::reset first. Set the referenced member to a null pointer
          */
-        void reset() override {
+        void reset(unsigned int event_id) override {
             // Always do base reset
-            BaseDelegate::reset();
+            BaseDelegate::reset(event_id);
 
             // Clear
             /* this->obj_->*member_ = nullptr; */
@@ -415,16 +428,16 @@ namespace allpix {
 #endif
             // Add the message
             (this->obj_->*member_).push_back(std::static_pointer_cast<R>(msg));
-            this->set_processed();
+            this->set_processed(msg->event_id);
         }
 
         /**
          * @brief Reset the delegate by clearing the vector of messages
          *
          * Always calls the BaseDelegate::reset first. Clears the referenced vector to an empty state         */
-        void reset() override {
+        void reset(unsigned int event_id) override {
             // Always do base reset
-            BaseDelegate::reset();
+            BaseDelegate::reset(event_id);
 
             // Clear
             (this->obj_->*member_).clear();
