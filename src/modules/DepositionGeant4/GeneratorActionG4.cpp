@@ -14,12 +14,10 @@
 #include <memory>
 
 #include <G4Event.hh>
-#include <G4GeneralParticleSource.hh>
 #include <G4ParticleDefinition.hh>
 #include <G4ParticleTable.hh>
 #include <G4RunManager.hh>
 #include <G4UImanager.hh>
-#include <TRandom3.h>
 #include <core/module/exceptions.h>
 
 #include "core/config/exceptions.h"
@@ -38,8 +36,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     auto single_source = particle_source_->GetCurrentSource();
 
     // Set the centre coordinate of the source
-    G4ThreeVector source_pos = config.get<G4ThreeVector>("source_position");
-    single_source->GetPosDist()->SetCentreCoords(source_pos);
+    single_source->GetPosDist()->SetCentreCoords(config.get<G4ThreeVector>("source_position"));
 
     if(config.get<std::string>("source_type") == "macro") {
 
@@ -98,8 +95,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             single_source->GetPosDist()->SetPosDisShape("Sphere");
 
             // Set angle distribution parameters
-            double radius = config.get<double>("sphere_radius");
-            single_source->GetPosDist()->SetRadius(radius);
+            single_source->GetPosDist()->SetRadius(config.get<double>("sphere_radius"));
 
             if(config.has("sphere_focus_point")) {
                 single_source->GetAngDist()->SetAngDistType("focused");
