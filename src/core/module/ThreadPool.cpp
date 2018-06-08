@@ -41,16 +41,16 @@ void ThreadPool::submit_event_function(std::function<void()> event_function) {
  * thrown by another thread, the exception will be propagated to the main thread by this function.
  */
 bool ThreadPool::execute_all() {
-    while (!event_queue_.empty()) {
+    while(!event_queue_.empty()) {
         Task task{nullptr};
 
-        if (event_queue_.pop(task, true)) {
+        if(event_queue_.pop(task, true)) {
             try {
                 // Execute task
                 (*task)();
                 // Fetch the future to propagate exceptions
                 task->get_future().get();
-            } catch (...) {
+            } catch(...) {
                 // Check if the first exception thrown
                 if(has_exception_.test_and_set()) {
                     // Check if the first exception thrown
@@ -63,7 +63,7 @@ bool ThreadPool::execute_all() {
     }
 
     // If exception has been thrown, destroy pool and propagate it
-    if (exception_ptr_) {
+    if(exception_ptr_) {
         destroy();
         Log::setSection("");
         std::rethrow_exception(exception_ptr_);
@@ -73,7 +73,7 @@ bool ThreadPool::execute_all() {
 }
 
 void ThreadPool::check_exception() {
-    if (exception_ptr_) {
+    if(exception_ptr_) {
         destroy();
         Log::setSection("");
         std::rethrow_exception(exception_ptr_);
@@ -85,7 +85,7 @@ void ThreadPool::wait() {
     std::unique_lock<std::mutex> lock{run_mutex_};
     run_condition_.wait(lock, [this]() { return exception_ptr_ || (event_queue_.empty() && run_cnt_ == 0); });
 
-    if (exception_ptr_) {
+    if(exception_ptr_) {
         destroy();
         Log::setSection("");
         std::rethrow_exception(exception_ptr_);
@@ -99,19 +99,19 @@ void ThreadPool::worker(const std::function<void()>& init_function) {
     // Initialize the worker
     init_function();
 
-    while (!done_) {
+    while(!done_) {
         Task task{nullptr};
 
-        if (event_queue_.pop(task, true)) {
+        if(event_queue_.pop(task, true)) {
             // Try to run the task
             try {
                 // Execute task
                 (*task)();
                 // Fetch the future to propagate exceptions
                 task->get_future().get();
-            } catch (...) {
+            } catch(...) {
                 // Check if the first exception thrown
-                if (has_exception_.test_and_set()) {
+                if(has_exception_.test_and_set()) {
                     // Save the first exceptin
                     exception_ptr_ = std::current_exception();
                     // Invalidate the queue to terminate other threads

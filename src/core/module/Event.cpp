@@ -11,10 +11,10 @@
 #include "Event.hpp"
 #include "Module.hpp"
 
-#include <string>
 #include <chrono>
-#include <memory>
 #include <list>
+#include <memory>
+#include <string>
 
 #include <TProcessID.h>
 
@@ -22,11 +22,13 @@
 
 using namespace allpix;
 
-Event::Event(ModuleList modules, const unsigned int event_num, std::atomic<bool> &terminate, std::map<Module*, long double> &module_execution_time)
-    : modules_(modules), event_num_(event_num), terminate_(terminate), module_execution_time_(module_execution_time){}
+Event::Event(ModuleList modules,
+             const unsigned int event_num,
+             std::atomic<bool>& terminate,
+             std::map<Module*, long double>& module_execution_time)
+    : modules_(modules), event_num_(event_num), terminate_(terminate), module_execution_time_(module_execution_time) {}
 
-void Event::init()
-{
+void Event::init() {
     /* LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Initializing event " << event_num_; */
 
     // Get object count for linking objects in current event
@@ -34,10 +36,10 @@ void Event::init()
 
     // Execute every Geant4 module
     // XXX: Geant4 modules are only executed if they are at the start of modules_
-    while (true)   {
+    while(true) {
 
         auto module = modules_.front();
-        if (module->getUniqueName().find("Geant4") == std::string::npos) {
+        if(module->getUniqueName().find("Geant4") == std::string::npos) {
             // All Geant4 modules have been executed
             break;
         }
@@ -61,7 +63,8 @@ void Event::init()
         Log::setSection(section_name);
 
         // Set module specific settings
-        auto old_settings = ModuleManager::set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
+        auto old_settings =
+            ModuleManager::set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
 
         // Run module
         try {
@@ -94,17 +97,15 @@ void Event::init()
  * Sets the section header and logging settings before exeuting the \ref Module::run() function.
  * \ref Module::reset_delegates() "Resets" the delegates and the logging after initialization
  */
-void Event::run(const unsigned int number_of_events)
-{
+void Event::run(const unsigned int number_of_events) {
     LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Running event " << event_num_ << " of " << number_of_events;
 
     // Get object count for linking objects in current event
     /* auto save_id = TProcessID::GetObjectCount(); */
 
-    for (auto& module : modules_) {
-        auto lock = !module->canParallelize() ?
-            std::unique_lock<std::mutex>(module->run_mutex_) :
-            std::unique_lock<std::mutex>();
+    for(auto& module : modules_) {
+        auto lock =
+            !module->canParallelize() ? std::unique_lock<std::mutex>(module->run_mutex_) : std::unique_lock<std::mutex>();
 
         LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << this->event_num_ << " of " << number_of_events << " ["
                                           << module->get_identifier().getUniqueName() << "]";
@@ -125,7 +126,8 @@ void Event::run(const unsigned int number_of_events)
         Log::setSection(section_name);
 
         // Set module specific settings
-        auto old_settings = ModuleManager::set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
+        auto old_settings =
+            ModuleManager::set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
 
         // Run module
         try {
@@ -158,7 +160,6 @@ void Event::run(const unsigned int number_of_events)
     /* TProcessID::SetObjectCount(save_id); */
 }
 
-void Event::finalize()
-{
+void Event::finalize() {
     // stub
 }

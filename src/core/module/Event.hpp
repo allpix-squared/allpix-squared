@@ -24,9 +24,10 @@ namespace allpix {
          * @param terminate TODO
          * @param module_execution_time_ TODO
          */
-        explicit Event(ModuleList modules, const unsigned int event_num,
-                std::atomic<bool> &terminate,
-                std::map<Module*, long double> &module_execution_time_);
+        explicit Event(ModuleList modules,
+                       const unsigned int event_num,
+                       std::atomic<bool>& terminate,
+                       std::map<Module*, long double>& module_execution_time_);
         /**
          * @brief Use default destructor
          */
@@ -68,10 +69,10 @@ namespace allpix {
     private:
         ModuleList modules_;
         const unsigned int event_num_;
-        std::atomic<bool> &terminate_;
+        std::atomic<bool>& terminate_;
 
         // XXX: must this be mutex protected?
-        std::map<Module*, long double> &module_execution_time_;
+        std::map<Module*, long double>& module_execution_time_;
     };
 
 } // namespace allpix

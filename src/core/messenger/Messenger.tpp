@@ -1,6 +1,7 @@
 namespace allpix {
     template <typename T>
-    void Messenger::dispatchMessage(unsigned int event_id, Module* source, std::shared_ptr<T> message, const std::string& name) {
+    void
+    Messenger::dispatchMessage(unsigned int event_id, Module* source, std::shared_ptr<T> message, const std::string& name) {
         static_assert(std::is_base_of<BaseMessage, T>::value, "Dispatched message should inherit from Message class");
 
         // Tag the message
@@ -30,8 +31,7 @@ namespace allpix {
         add_delegate(typeid(R), receiver, std::move(delegate));
     }
 
-    template <typename T, typename R>
-    void Messenger::bindSingle(T* receiver, MessageStorage<R> T::*member, MsgFlags flags) {
+    template <typename T, typename R> void Messenger::bindSingle(T* receiver, MessageStorage<R> T::*member, MsgFlags flags) {
         static_assert(std::is_base_of<Module, T>::value, "Receiver should have Module as a base class");
         // TODO: update error message
         static_assert(std::is_base_of<BaseMessage, R>::value,

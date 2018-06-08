@@ -116,7 +116,8 @@ namespace allpix {
          * parameter)
          */
         template <typename T>
-        void dispatchMessage(unsigned int event_id, Module* source, std::shared_ptr<T> message, const std::string& name = "-");
+        void
+        dispatchMessage(unsigned int event_id, Module* source, std::shared_ptr<T> message, const std::string& name = "-");
 
         /**
          * @brief Removes the list of sent messages, clearing them from memory if not otherwise used

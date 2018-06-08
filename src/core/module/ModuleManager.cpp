@@ -614,9 +614,7 @@ void ModuleManager::run() {
         Event event(modules_, i, terminate_, module_execution_time_);
         // Event initialization must be run on the main thread
         event.init();
-        auto event_function = [e = std::move(event), number_of_events]() mutable {
-            e.run(number_of_events);
-        };
+        auto event_function = [ e = std::move(event), number_of_events ]() mutable { e.run(number_of_events); };
         thread_pool->submit_event_function(std::move(event_function));
 
         // Check for premature exception
@@ -630,7 +628,7 @@ void ModuleManager::run() {
 
     // Check if the simulation was prematurely terminated
     // XXX: this must be checked in between execute_all(); make an execute for single task?
-    if (terminate_) {
+    if(terminate_) {
         LOG(INFO) << "Interrupting prematurely because of request";
         /* number_of_events = i; */
         /* global_config.set<unsigned int>("number_of_events", i); */

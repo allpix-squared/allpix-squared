@@ -94,7 +94,6 @@ namespace allpix {
         std::mutex mutex_;
     };
 
-
     /**
      * @ingroup Delegates
      * @brief Base for all delegates
@@ -144,7 +143,7 @@ namespace allpix {
             std::lock_guard<std::mutex> lock(mutex_);
             try {
                 return processed_.at(event_id);
-            } catch (std::out_of_range&) {
+            } catch(std::out_of_range&) {
                 return false;
             }
         }
@@ -370,11 +369,12 @@ namespace allpix {
             const BaseMessage* inst = msg.get();
             assert(typeid(*inst) == typeid(R));
 #endif
-            if (msg->event_id == 0)
+            if(msg->event_id == 0)
                 throw RuntimeError("Encountered invalid message with ID 0");
 
             // Raise an error if the message is overwritten (unless it is allowed)
-            if((this->obj_->*member_).contains(msg->event_id) && (this->getFlags() & MsgFlags::ALLOW_OVERWRITE) == MsgFlags::NONE) {
+            if((this->obj_->*member_).contains(msg->event_id) &&
+               (this->getFlags() & MsgFlags::ALLOW_OVERWRITE) == MsgFlags::NONE) {
                 throw UnexpectedMessageException(this->obj_->getUniqueName(), typeid(R));
             }
 
