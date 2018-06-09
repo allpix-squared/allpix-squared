@@ -124,8 +124,8 @@ namespace allpix {
         /**
          * @brief Enable default move behaviour
          */
-        BaseDelegate(BaseDelegate&&) noexcept = default;
-        BaseDelegate& operator=(BaseDelegate&&) noexcept = default;
+        BaseDelegate(BaseDelegate&&) = default;
+        BaseDelegate& operator=(BaseDelegate&&) = default;
         /// @}
 
         /**
