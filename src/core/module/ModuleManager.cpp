@@ -603,6 +603,17 @@ void ModuleManager::run() {
     };
     std::shared_ptr<ThreadPool> thread_pool = std::make_unique<ThreadPool>(threads_num, init_function);
 
+    std::atomic<unsigned int> run_events{0};
+    auto premature_exit_function = [&]() {
+        if(terminate_) {
+            LOG(INFO) << "Interrupting prematurely because of request";
+            thread_pool->destroy();
+            global_config.set<unsigned int>("number_of_events", run_events);
+        }
+
+        return terminate_.load();
+    };
+
     // Push all events to the thread pool
     auto start_time = std::chrono::steady_clock::now();
     global_config.setDefault<unsigned int>("number_of_events", 1u);
@@ -614,32 +625,34 @@ void ModuleManager::run() {
         Event event(modules_, i, terminate_, module_execution_time_);
         // Event initialization must be run on the main thread
         event.init();
-        auto event_function = [ e = std::move(event), number_of_events ]() mutable { e.run(number_of_events); };
+        auto event_function = [ e = std::move(event), number_of_events, &run_events ]() mutable {
+            e.run(number_of_events);
+            ++run_events;
+        };
         thread_pool->submit_event_function(std::move(event_function));
 
-        // Check for premature exception
+        // Check for premature exception/termination
         thread_pool->check_exception();
+        if(premature_exit_function())
+            break;
     }
 
     LOG(STATUS) << "All events have been initialized";
 
     // Execute all remaining events
-    thread_pool->execute_all();
-
-    // Check if the simulation was prematurely terminated
-    // XXX: this must be checked in between execute_all(); make an execute for single task?
-    if(terminate_) {
-        LOG(INFO) << "Interrupting prematurely because of request";
-        /* number_of_events = i; */
-        /* global_config.set<unsigned int>("number_of_events", i); */
-        /* break; */
+    while(thread_pool->execute_one()) {
+        thread_pool->check_exception();
+        if(premature_exit_function())
+            break;
     }
 
-    LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of [FIXME]" /* << number_of_events */ << " events";
+    // Check exception for last event
+    thread_pool->check_exception();
+
+    LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of " << run_events << " events";
     auto end_time = std::chrono::steady_clock::now();
     total_time_ += static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
 
-    // Remove pool from modules, wait for the threads to finish and destroy pool
     LOG(TRACE) << "Destroying thread pool";
 }
 

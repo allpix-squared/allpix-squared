@@ -62,17 +62,38 @@ bool ThreadPool::execute_all() {
         }
     }
 
-    // If exception has been thrown, destroy pool and propagate it
-    if(exception_ptr_) {
-        destroy();
-        Log::setSection("");
-        std::rethrow_exception(exception_ptr_);
+    check_exception();
+    return event_queue_.isValid();
+}
+
+bool ThreadPool::execute_one() {
+    if(event_queue_.empty())
+        return false;
+
+    Task task{nullptr};
+    if(event_queue_.pop(task, true)) {
+        try {
+            // Execute task
+            (*task)();
+            // Fetch the future to propagate exceptions
+            task->get_future().get();
+        } catch(...) {
+            // Check if the first exception thrown
+            if(has_exception_.test_and_set()) {
+                // Check if the first exception thrown
+                exception_ptr_ = std::current_exception();
+                // Invalidate the queue to terminate other threads
+                event_queue_.invalidate();
+            }
+        }
     }
 
+    check_exception();
     return event_queue_.isValid();
 }
 
 void ThreadPool::check_exception() {
+    // If exception has been thrown, destroy pool and propagate it
     if(exception_ptr_) {
         destroy();
         Log::setSection("");

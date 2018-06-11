@@ -127,6 +127,13 @@ namespace allpix {
          */
         bool execute_all();
 
+        /**
+         * @brief Execute a single job from the queue
+         * @return True if event task was finished, false if stopeed for another reason
+         * @warning This method can only be alled by the \ref ModuleManager
+         */
+        bool execute_one();
+
         void wait();
 
         /**
