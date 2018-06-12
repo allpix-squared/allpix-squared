@@ -374,14 +374,14 @@ void LCIOWriterModule::run(unsigned int eventNb) {
             }
 
             mc_tracker_data->setChargeValues(truth_cluster_charge_vec);
-            mc_cluster_raw_encoder->operator[]("sensorID") = mcp_to_det_id[mc_particle];
-            mc_cluster_raw_encoder->operator[]("sparsePixelType") = pixel_type_;
+            (*mc_cluster_raw_encoder)["sensorID"] = mcp_to_det_id[mc_particle];
+            (*mc_cluster_raw_encoder)["sparsePixelType"] = pixel_type_;
             mc_cluster_raw_encoder->setCellID(mc_tracker_data);
             mc_cluster_raw_vec->push_back(mc_tracker_data);
 
             mc_tracker_pulse->setTrackerData(mc_tracker_data);
-            mc_cluster_encoder->operator[]("sensorID") = mcp_to_det_id[mc_particle];
-            mc_cluster_encoder->operator[]("type") = 1; // corresponds to kEUTelGenericSparseClusterImpl
+            (*mc_cluster_encoder)["sensorID"] = mcp_to_det_id[mc_particle];
+            (*mc_cluster_encoder)["type"] = 1; // corresponds to kEUTelGenericSparseClusterImpl
             mc_cluster_encoder->setCellID(mc_tracker_pulse);
             mc_cluster_vec->push_back(mc_tracker_pulse);
 
@@ -393,13 +393,13 @@ void LCIOWriterModule::run(unsigned int eventNb) {
                                                   0.5 * (hit_start_pos.z() + hit_end_pos.z())}};
             mc_tracker_hit->setPosition(pos_arr.data());
             mc_tracker_hit->setType(1); // corresponds to kEUTelGenericSparseClusterImpl
-            mc_hit_encoder->operator[]("sensorID") = mcp_to_det_id[mc_particle];
+            (*mc_hit_encoder)["sensorID"] = mcp_to_det_id[mc_particle];
 
             int hit_properties = eutelescope::HitProperties::kHitInGlobalCoord + eutelescope::HitProperties::kSimulatedHit;
             if(mc_particle->getTrack()->getParent() != nullptr) {
                 hit_properties += eutelescope::HitProperties::kDeltaHit;
             }
-            mc_hit_encoder->operator[]("properties") = hit_properties;
+            (*mc_hit_encoder)["properties"] = hit_properties;
 
             mc_hit_encoder->setCellID(mc_tracker_hit);
             mc_tracker_hit->rawHits() = std::vector<LCObject*>{mc_tracker_data};
@@ -413,8 +413,8 @@ void LCIOWriterModule::run(unsigned int eventNb) {
         auto hit = new TrackerDataImpl();
         hit->setChargeValues(charges[det_id]);
         auto col_index = detector_ids_to_colllection_index_[det_id];
-        output_col_encoder_vec[col_index]->operator[]("sensorID") = det_id;
-        output_col_encoder_vec[col_index]->operator[]("sparsePixelType") = pixel_type_;
+        (*output_col_encoder_vec[col_index])["sensorID"] = det_id;
+        (*output_col_encoder_vec[col_index])["sparsePixelType"] = pixel_type_;
         output_col_encoder_vec[col_index]->setCellID(hit);
         output_col_vec[col_index]->push_back(hit);
     }
