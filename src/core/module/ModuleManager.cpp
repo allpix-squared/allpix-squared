@@ -619,7 +619,7 @@ void ModuleManager::run() {
     global_config.setDefault<unsigned int>("number_of_events", 1u);
     auto number_of_events = global_config.get<unsigned int>("number_of_events");
     LOG(STATUS) << "Initializing events...";
-    for(unsigned int i = 1; i < number_of_events; ++i) {
+    for(unsigned int i = 1; i <= number_of_events; ++i) {
         // Create the event and submit it to the thread pool
         // TODO: clean up the forwarding of parameters. Can some be omitted?
         Event event(modules_, i, terminate_, module_execution_time_);
