@@ -94,6 +94,7 @@ The number of square brackets should be properly balanced, otherwise an error is
 Square brackets which should not be used for grouping should be enclosed in quotation marks.
 Every dimension is split at every whitespace sequence and comma character (\texttt{,}) not enclosed in quotation marks.
 Implicit square brackets are added to the begin and end of the value, if these are not explicitly added.
+A few situations require explicit addition of outer brackets such as matrices with only one column element, i.e. with dimension 1xN.
 \item The sections of the value which are interpreted as separate entities are named elements.
 For a single value the element is on the zeroth dimension, for arrays on the first dimension and for matrices on the second dimension.
 Elements can be forced by using quotation marks, either single or double quotes (\texttt{'} or \texttt{"}).

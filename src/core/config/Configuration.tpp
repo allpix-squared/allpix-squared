@@ -91,7 +91,7 @@ namespace allpix {
             auto node = parse_value(str);
             for(auto& child : node->children) {
                 if(child->children.empty()) {
-                    throw std::invalid_argument("matrix has less than two dimensions");
+                    throw std::invalid_argument("matrix has less than two dimensions, enclosing brackets might be missing");
                 }
 
                 std::vector<T> array;
