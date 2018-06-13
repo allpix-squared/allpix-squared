@@ -55,7 +55,7 @@ namespace corryvreckan {
         double m_timestamp{0};
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(Object, 2)
+        ClassDefOverride(Object, 2)
     };
 
     // Vector type declaration
