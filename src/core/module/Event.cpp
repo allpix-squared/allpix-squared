@@ -36,7 +36,7 @@ void Event::init() {
 
     // Execute every Geant4 module
     // XXX: Geant4 modules are only executed if they are at the start of modules_
-    while(true) {
+    while(modules_.size() > 0) {
 
         auto module = modules_.front();
         if(module->getUniqueName().find("Geant4") == std::string::npos) {

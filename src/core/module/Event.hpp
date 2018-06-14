@@ -69,6 +69,8 @@ namespace allpix {
     private:
         ModuleList modules_;
         const unsigned int event_num_;
+
+        // XXX: cannot be moved
         std::atomic<bool>& terminate_;
 
         // XXX: must this be mutex protected?
