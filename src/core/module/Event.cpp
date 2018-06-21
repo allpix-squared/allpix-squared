@@ -25,8 +25,9 @@ using namespace allpix;
 Event::Event(ModuleList modules,
              const unsigned int event_num,
              std::atomic<bool>& terminate,
-             std::map<Module*, long double>& module_execution_time)
-    : modules_(modules), event_num_(event_num), terminate_(terminate), module_execution_time_(module_execution_time) {}
+             std::map<Module*, long double>& module_execution_time,
+             Messenger* messenger)
+    : modules_(modules), message_storage_(messenger->delegates_), event_num_(event_num), terminate_(terminate), module_execution_time_(module_execution_time) {}
 
 void Event::init() {
     /* LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Initializing event " << event_num_; */

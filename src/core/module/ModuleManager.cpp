@@ -573,7 +573,7 @@ void ModuleManager::init() {
 /**
  * Initializes the thread pool for executing each event in parallel
  */
-void ModuleManager::run() {
+void ModuleManager::run(Messenger* messenger) {
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
 
     global_config.setDefault("experimental_multithreading", false);
@@ -622,7 +622,7 @@ void ModuleManager::run() {
     for(unsigned int i = 1; i <= number_of_events; ++i) {
         // Create the event and submit it to the thread pool
         // TODO: clean up the forwarding of parameters. Can some be omitted?
-        Event event(modules_, i, terminate_, module_execution_time_);
+        Event event(modules_, i, terminate_, module_execution_time_, messenger);
         // Event initialization must be run on the main thread
         event.init();
         auto event_function = [ e = std::move(event), number_of_events, &run_events ]() mutable {

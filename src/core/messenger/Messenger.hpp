@@ -31,6 +31,7 @@ namespace allpix {
      */
     class Messenger {
         friend class Module;
+        friend class Event;
 
     public:
         /**
@@ -160,10 +161,10 @@ namespace allpix {
                               const std::string& name,
                               const std::string& id);
 
-        using DelegateMap = std::map<std::type_index, std::map<std::string, std::list<std::unique_ptr<BaseDelegate>>>>;
+        using DelegateMap = std::map<std::type_index, std::map<std::string, std::list<std::shared_ptr<BaseDelegate>>>>;
         using DelegateIteratorMap =
             std::map<BaseDelegate*,
-                     std::tuple<std::type_index, std::string, std::list<std::unique_ptr<BaseDelegate>>::iterator>>;
+                     std::tuple<std::type_index, std::string, std::list<std::shared_ptr<BaseDelegate>>::iterator>>;
 
         DelegateMap delegates_;
         DelegateIteratorMap delegate_to_iterator_;

@@ -13,6 +13,8 @@
 // XXX: merely for ModuleList
 #include "ModuleManager.hpp"
 
+#include "../messenger/Messenger.hpp"
+
 namespace allpix {
 
     class Event {
@@ -27,7 +29,8 @@ namespace allpix {
         explicit Event(ModuleList modules,
                        const unsigned int event_num,
                        std::atomic<bool>& terminate,
-                       std::map<Module*, long double>& module_execution_time_);
+                       std::map<Module*, long double>& module_execution_time_,
+                       Messenger* messenger);
         /**
          * @brief Use default destructor
          */
@@ -67,7 +70,20 @@ namespace allpix {
         void finalize();
 
     private:
+        class MessageStorage {
+        public:
+            /**
+             * @brief Constructor
+             */
+            explicit MessageStorage(Messenger::DelegateMap delegates)
+                : delegates_(delegates) {}
+
+        private:
+            const Messenger::DelegateMap delegates_;
+        };
+
         ModuleList modules_;
+        MessageStorage message_storage_;
         const unsigned int event_num_;
 
         // XXX: cannot be moved
