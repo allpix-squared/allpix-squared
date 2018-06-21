@@ -150,11 +150,12 @@ void Event::run(const unsigned int number_of_events) {
     }
 
     // Resetting delegates
-    /* for(auto& module : modules_) { */
-    /*     LOG(TRACE) << "Resetting messages"; */
-    /*     std::lock_guard<std::mutex> lock(module->run_mutex_); */
-    /*     module->reset_delegates(); */
-    /* } */
+    for(auto& module : modules_) {
+        LOG(TRACE) << "Resetting messages";
+        auto lock =
+            !module->canParallelize() ? std::unique_lock<std::mutex>(module->run_mutex_) : std::unique_lock<std::mutex>();
+        module->reset_delegates(event_num_);
+    }
 
     // Reset object count for next event
     /* TProcessID::SetObjectCount(save_id); */

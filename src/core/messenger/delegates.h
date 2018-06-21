@@ -89,6 +89,11 @@ namespace allpix {
             return map_.size();
         }
 
+        void erase(const unsigned int key) {
+            std::lock_guard<std::mutex> lock(mutex_);
+            map_.erase(key);
+        }
+
     private:
         std::map<unsigned int, std::shared_ptr<T>> map_;
         std::mutex mutex_;
@@ -393,7 +398,7 @@ namespace allpix {
             BaseDelegate::reset(event_id);
 
             // Clear
-            /* this->obj_->*member_ = nullptr; */
+            (this->obj_->*member_).erase(event_id);
         }
 
     private:

@@ -189,7 +189,7 @@ void Module::add_delegate(Messenger* messenger, BaseDelegate* delegate) {
 }
 void Module::reset_delegates(unsigned int event_id) {
     for(auto& delegate : delegates_) {
-        delegate.first->clearMessages();
+        /* delegate.first->clearMessages(); */
         delegate.second->reset(event_id);
     }
 }
