@@ -148,7 +148,7 @@ bool Messenger::dispatch_message(Module* source,
     return send;
 }
 
-void Messenger::add_delegate(const std::type_info& message_type, Module* module, std::unique_ptr<BaseDelegate> delegate) {
+void Messenger::add_delegate(const std::type_info& message_type, Module* module, std::shared_ptr<BaseDelegate> delegate, const std::type_info& module_type) {
     std::lock_guard<std::mutex> lock(mutex_);
 
     // Register generic or specific delegate depending on flag
@@ -160,10 +160,13 @@ void Messenger::add_delegate(const std::type_info& message_type, Module* module,
     }
 
     // Register delegate internally
-    delegates_[std::type_index(message_type)][message_name].push_back(std::move(delegate));
+    delegates_[std::type_index(message_type)][message_name].push_back(delegate);
     auto delegate_iter = --delegates_[std::type_index(message_type)][message_name].end();
     delegate_to_iterator_.emplace(delegate_iter->get(),
                                   std::make_tuple(std::type_index(message_type), message_name, delegate_iter));
+
+    // Register delegate internally, for new message system
+    new_delegates_[std::type_index(module_type)][std::type_index(message_type)][message_name].push_back(delegate);
 
     // Add delegate to the module itself
     module->add_delegate(this, delegate_iter->get());

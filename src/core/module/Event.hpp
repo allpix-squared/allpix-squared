@@ -75,11 +75,11 @@ namespace allpix {
             /**
              * @brief Constructor
              */
-            explicit MessageStorage(Messenger::DelegateMap delegates)
+            explicit MessageStorage(Messenger::NewDelegateMap delegates)
                 : delegates_(delegates) {}
 
         private:
-            const Messenger::DelegateMap delegates_;
+            const Messenger::NewDelegateMap delegates_;
         };
 
         ModuleList modules_;

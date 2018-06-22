@@ -132,7 +132,7 @@ namespace allpix {
          * @param module Module linked to the delegate
          * @param delegate Delegate that listens to the message
          */
-        void add_delegate(const std::type_info& message_type, Module* module, std::unique_ptr<BaseDelegate> delegate);
+        void add_delegate(const std::type_info& message_type, Module* module, std::shared_ptr<BaseDelegate> delegate, const std::type_info& module_type);
 
         /**
          * @brief Removes a delegate from the listeners
@@ -161,11 +161,14 @@ namespace allpix {
                               const std::string& name,
                               const std::string& id);
 
+
+        using NewDelegateMap = std::map<std::type_index, std::map<std::type_index, std::map<std::string, std::list<std::shared_ptr<BaseDelegate>>>>>;
         using DelegateMap = std::map<std::type_index, std::map<std::string, std::list<std::shared_ptr<BaseDelegate>>>>;
         using DelegateIteratorMap =
             std::map<BaseDelegate*,
                      std::tuple<std::type_index, std::string, std::list<std::shared_ptr<BaseDelegate>>::iterator>>;
 
+        NewDelegateMap new_delegates_;
         DelegateMap delegates_;
         DelegateIteratorMap delegate_to_iterator_;
         std::vector<std::shared_ptr<BaseMessage>> sent_messages_;
