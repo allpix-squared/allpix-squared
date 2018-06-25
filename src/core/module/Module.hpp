@@ -144,7 +144,10 @@ namespace allpix {
          * Does nothing if not overloaded.
          */
         // TODO [doc] Start the sequence at 0 instead of 1?
-        virtual void run(unsigned int event_num) { (void)event_num; }
+        virtual std::vector<std::shared_ptr<BaseMessage>> run(unsigned int event_num) {
+            (void)event_num;
+            return {};
+        }
         //
         /**
          * @brief Finalize the module after the event sequence

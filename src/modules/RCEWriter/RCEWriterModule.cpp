@@ -135,7 +135,7 @@ void RCEWriterModule::init() {
     print_geo(geo_file, detector_names, geo_mgr_);
 }
 
-void RCEWriterModule::run(unsigned int event_id) {
+std::vector<std::shared_ptr<BaseMessage>> RCEWriterModule::run(unsigned int event_id) {
     // fill per-event data
     timestamp_ = 0;
     frame_number_ = event_id;
@@ -185,6 +185,8 @@ void RCEWriterModule::run(unsigned int event_id) {
         item.second.tree->Fill();
         LOG(TRACE) << "Wrote sensor event data for " << item.first;
     }
+
+    return {};
 }
 
 void RCEWriterModule::finalize() {

@@ -87,7 +87,7 @@ void CorryvreckanWriterModule::init() {
 }
 
 // Make instantiations of Corryvreckan pixels, and store these in the trees during run time
-void CorryvreckanWriterModule::run(unsigned int) {
+std::vector<std::shared_ptr<BaseMessage>> CorryvreckanWriterModule::run(unsigned int) {
 
     // Loop through all receieved messages
     for(auto& message : pixel_messages_) {
@@ -144,6 +144,8 @@ void CorryvreckanWriterModule::run(unsigned int) {
 
     // Increment the time till the next event
     time_ += 10;
+
+    return {};
 }
 
 // Save the output trees to file

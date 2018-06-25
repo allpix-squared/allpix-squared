@@ -266,7 +266,7 @@ void DepositionGeant4Module::init() {
     RELEASE_STREAM(G4cout);
 }
 
-void DepositionGeant4Module::run(unsigned int event_num) {
+std::vector<std::shared_ptr<BaseMessage>> DepositionGeant4Module::run(unsigned int event_num) {
     // Suppress output stream if not in debugging mode
     IFLOG(DEBUG);
     else {
@@ -294,8 +294,10 @@ void DepositionGeant4Module::run(unsigned int event_num) {
         }
     }
 
-    track_info_manager_->dispatchMessage(event_num, this, messenger_);
+    auto message = track_info_manager_->dispatchMessage(event_num, this, messenger_);
     track_info_manager_->resetTrackInfoManager();
+
+    return {message};
 }
 
 void DepositionGeant4Module::finalize() {

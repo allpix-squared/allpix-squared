@@ -73,7 +73,7 @@ void LCIOWriterModule::init() {
     lcWriter_->writeRunHeader(run.get());
 }
 
-void LCIOWriterModule::run(unsigned int eventNb) {
+std::vector<std::shared_ptr<BaseMessage>> LCIOWriterModule::run(unsigned int eventNb) {
 
     auto evt = std::make_unique<LCEventImpl>(); // create the event
     evt->setRunNumber(1);
@@ -140,6 +140,8 @@ void LCIOWriterModule::run(unsigned int eventNb) {
     evt->addCollection(hitVec, OutputCollectionName_); // add the collection with a name
     lcWriter_->writeEvent(evt.get());                  // write the event to the file
     write_cnt_++;
+
+    return {};
 }
 
 void LCIOWriterModule::finalize() {

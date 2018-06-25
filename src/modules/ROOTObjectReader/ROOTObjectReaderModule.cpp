@@ -219,7 +219,7 @@ void ROOTObjectReaderModule::init() {
     }
 }
 
-void ROOTObjectReaderModule::run(unsigned int event_num) {
+std::vector<std::shared_ptr<BaseMessage>> ROOTObjectReaderModule::run(unsigned int event_num) {
     --event_num;
     for(auto& tree : trees_) {
         if(event_num >= tree->GetEntries()) {
@@ -257,6 +257,8 @@ void ROOTObjectReaderModule::run(unsigned int event_num) {
         // Dispatch the message
         messenger_->dispatchMessage(event_num, this, message, message_inf.name);
     }
+
+    return {};
 }
 
 void ROOTObjectReaderModule::finalize() {

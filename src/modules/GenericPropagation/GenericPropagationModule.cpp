@@ -513,7 +513,7 @@ void GenericPropagationModule::init() {
     }
 }
 
-void GenericPropagationModule::run(unsigned int event_num) {
+std::vector<std::shared_ptr<BaseMessage>> GenericPropagationModule::run(unsigned int event_num) {
 
     // Create vector of propagated charges to output
     std::vector<PropagatedCharge> propagated_charges;
@@ -607,6 +607,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
 
     // Dispatch the message with propagated charges
     messenger_->dispatchMessage(event_num, this, propagated_charge_message);
+    return {propagated_charge_message};
 }
 
 /**

@@ -108,7 +108,7 @@ void TextWriterModule::receive(std::shared_ptr<BaseMessage> message, std::string
     }
 }
 
-void TextWriterModule::run(unsigned int event_num) {
+std::vector<std::shared_ptr<BaseMessage>> TextWriterModule::run(unsigned int event_num) {
     LOG(TRACE) << "Writing new objects to text file";
 
     // Print the current event:
@@ -131,6 +131,8 @@ void TextWriterModule::run(unsigned int event_num) {
 
     // Clear the messages we have to keep because they contain the internal pointers
     keep_messages_.clear();
+
+    return {};
 }
 
 void TextWriterModule::finalize() {

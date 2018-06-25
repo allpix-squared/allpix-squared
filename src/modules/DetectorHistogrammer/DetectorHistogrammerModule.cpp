@@ -108,7 +108,7 @@ void DetectorHistogrammerModule::init() {
     cluster_charge = new TH1D(cluster_charge_name.c_str(), cluster_charge_title.c_str(), 1000, 0., 50.);
 }
 
-void DetectorHistogrammerModule::run(unsigned int event_num) {
+std::vector<std::shared_ptr<BaseMessage>> DetectorHistogrammerModule::run(unsigned int event_num) {
     LOG(DEBUG) << "Adding hits in " << pixels_message_.at(event_num)->getData().size() << " pixels";
 
     // Fill 2D hitmap histogram
@@ -142,6 +142,8 @@ void DetectorHistogrammerModule::run(unsigned int event_num) {
     // Fill further histograms
     event_size->Fill(static_cast<double>(pixels_message_.at(event_num)->getData().size()));
     n_cluster->Fill(static_cast<double>(clusters.size()));
+
+    return {};
 }
 
 void DetectorHistogrammerModule::finalize() {

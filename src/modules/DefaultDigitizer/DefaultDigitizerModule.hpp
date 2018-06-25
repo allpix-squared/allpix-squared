@@ -51,7 +51,7 @@ namespace allpix {
         /**
          * @brief Simulate digitization process
          */
-        void run(unsigned int) override;
+        std::vector<std::shared_ptr<BaseMessage>> run(unsigned int) override;
 
         /**
          * @brief Finalize and write optional histograms

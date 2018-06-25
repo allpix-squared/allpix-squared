@@ -56,7 +56,7 @@ namespace allpix {
         /**
          * @brief Convert the objects stored for the current event to messages
          */
-        void run(unsigned int) override;
+        std::vector<std::shared_ptr<BaseMessage>> run(unsigned int) override;
 
         /**
          * @brief Output summary and close the ROOT file

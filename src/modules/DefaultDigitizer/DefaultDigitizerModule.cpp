@@ -97,7 +97,7 @@ void DefaultDigitizerModule::init() {
     }
 }
 
-void DefaultDigitizerModule::run(unsigned int event_num) {
+std::vector<std::shared_ptr<BaseMessage>> DefaultDigitizerModule::run(unsigned int event_num) {
     // Loop through all pixels with charges
     std::vector<PixelHit> hits;
     for(auto& pixel_charge : pixel_message_.at(event_num)->getData()) {
@@ -196,7 +196,10 @@ void DefaultDigitizerModule::run(unsigned int event_num) {
         // Create and dispatch hit message
         auto hits_message = std::make_shared<PixelHitMessage>(std::move(hits), getDetector());
         messenger_->dispatchMessage(event_num, this, hits_message);
+        return {hits_message};
     }
+
+    return {};
 }
 
 void DefaultDigitizerModule::finalize() {

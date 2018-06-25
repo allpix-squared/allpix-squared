@@ -46,7 +46,7 @@ namespace allpix {
         /**
          * @brief Receive pixel hit messages, create lcio event, add hit collection and write event to file.
          */
-        void run(unsigned int) override;
+        std::vector<std::shared_ptr<BaseMessage>> run(unsigned int) override;
 
         /**
          * @brief Close the output file

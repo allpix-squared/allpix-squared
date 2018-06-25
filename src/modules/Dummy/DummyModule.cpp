@@ -34,11 +34,13 @@ void DummyModule::init() {
     }
 }
 
-void DummyModule::run(unsigned int) {
+std::vector<std::shared_ptr<BaseMessage>> DummyModule::run(unsigned int) {
     // ... Implement ... (Typically uses the configuration to execute function and outputs an message)
     // Loop through all receieved messages and print some information
     for(auto& message : messages_) {
         std::string detectorName = message->getDetector()->getName();
         LOG(DEBUG) << "Picked up " << message->getData().size() << " objects from detector " << detectorName;
     }
+
+    return {};
 }

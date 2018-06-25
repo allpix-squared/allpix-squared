@@ -51,7 +51,7 @@ namespace allpix {
         /**
          * @brief Show visualization updates if not accumulating data
          */
-        void run(unsigned int) override;
+        std::vector<std::shared_ptr<BaseMessage>> run(unsigned int) override;
 
         /**
          * @brief Possibly start GUI or terminal and display the visualization

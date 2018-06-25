@@ -45,7 +45,7 @@ namespace allpix {
         /**
          * @brief [Run the function of this module]
          */
-        void run(unsigned int) override;
+        std::vector<std::shared_ptr<BaseMessage>> run(unsigned int) override;
 
     private:
         // General module members

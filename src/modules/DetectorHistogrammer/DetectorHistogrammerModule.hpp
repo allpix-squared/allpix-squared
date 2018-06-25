@@ -51,7 +51,7 @@ namespace allpix {
         /**
          * @brief Fill the histograms
          */
-        void run(unsigned int) override;
+        std::vector<std::shared_ptr<BaseMessage>> run(unsigned int) override;
 
         /**
          * @brief Write the histograms to the modules file

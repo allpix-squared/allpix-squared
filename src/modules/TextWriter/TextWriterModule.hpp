@@ -52,7 +52,7 @@ namespace allpix {
         /**
          * @brief Writes the objects fetched to their specific tree, constructing trees on the fly for new objects.
          */
-        void run(unsigned int) override;
+        std::vector<std::shared_ptr<BaseMessage>> run(unsigned int) override;
 
         /**
          * @brief Add the main configuration and the detector setup to the data file and write it, also write statistics
