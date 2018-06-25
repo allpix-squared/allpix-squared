@@ -17,7 +17,7 @@ namespace allpix {
                                      MsgFlags flags) {
         static_assert(std::is_base_of<Module, T>::value, "Receiver should have Module as a base class");
         auto delegate = std::make_shared<FunctionAllDelegate<T>>(flags, receiver, method);
-        add_delegate(typeid(BaseMessage), receiver, std::move(delegate), typeid(T));
+        add_delegate(typeid(BaseMessage), receiver, std::move(delegate));
     }
 
     template <typename T, typename R>
@@ -28,7 +28,7 @@ namespace allpix {
             "Notifier method should take a shared pointer to a message derived from the Message class as argument");
 
         auto delegate = std::make_shared<FunctionDelegate<T, R>>(flags, receiver, method);
-        add_delegate(typeid(R), receiver, std::move(delegate), typeid(T));
+        add_delegate(typeid(R), receiver, std::move(delegate));
     }
 
     template <typename T, typename R> void Messenger::bindSingle(T* receiver, MessageStorage<R> T::*member, MsgFlags flags) {
@@ -38,7 +38,7 @@ namespace allpix {
                       "Bound variable should be a shared pointer to a message derived from the Message class");
 
         auto delegate = std::make_shared<SingleBindDelegate<T, R>>(flags, receiver, member);
-        add_delegate(typeid(R), receiver, std::move(delegate), typeid(T));
+        add_delegate(typeid(R), receiver, std::move(delegate));
     }
 
     // FIXME: Allow binding other containers besides vector
@@ -49,6 +49,6 @@ namespace allpix {
                       "Bound variable should be a shared pointer to a message derived from the Message class");
 
         auto delegate = std::make_shared<VectorBindDelegate<T, R>>(flags, receiver, member);
-        add_delegate(typeid(R), receiver, std::move(delegate), typeid(T));
+        add_delegate(typeid(R), receiver, std::move(delegate));
     }
 } // namespace allpix
