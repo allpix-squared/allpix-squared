@@ -27,7 +27,84 @@ Event::Event(ModuleList modules,
              std::atomic<bool>& terminate,
              std::map<Module*, long double>& module_execution_time,
              Messenger* messenger)
-    : modules_(modules), message_storage_(messenger->new_delegates_), event_num_(event_num), terminate_(terminate), module_execution_time_(module_execution_time) {}
+    : modules_(modules), message_storage_(messenger->delegates_), event_num_(event_num), terminate_(terminate), module_execution_time_(module_execution_time) {}
+
+// Check if the detectors match for the message and the delegate
+static bool check_send(BaseMessage* message, BaseDelegate* delegate) {
+    if(delegate->getDetector() != nullptr &&
+       (message->getDetector() == nullptr || delegate->getDetector()->getName() != message->getDetector()->getName())) {
+        return false;
+    }
+    return true;
+}
+
+void Event::MessageStorage::append(Module* source, std::vector<std::shared_ptr<BaseMessage>> messages, std::string name) {
+    if(messages.empty()) {
+        return;
+    }
+
+    for(auto message : messages) {
+        dispatch_message(source, message, name);
+    }
+}
+
+void Event::MessageStorage::dispatch_message(Module* source, std::shared_ptr<BaseMessage> message, std::string name) {
+    // Get the name of the output message
+    if(name == "-") {
+        name = source->get_configuration().get<std::string>("output");
+    }
+
+    bool send = false;
+
+    // Send messages to specific listeners
+    send = dispatch_message(source, message, name, name) || send;
+
+    // Send to generic listeners
+    send = dispatch_message(source, message, name, "*") || send;
+
+    // Display a TRACE log message if the message is send to no receiver
+    if(!send) {
+        const BaseMessage* inst = message.get();
+        LOG(TRACE) << "Dispatched message " << allpix::demangle(typeid(*inst).name()) << " from " << source->getUniqueName()
+                   << " has no receivers!";
+    }
+
+    // Save a copy of the sent message
+    sent_messages_.emplace_back(message);
+}
+
+bool Event::MessageStorage::dispatch_message(Module* source, const std::shared_ptr<BaseMessage>& message, const std::string& name, const std::string& id) {
+    bool send = false;
+
+    // Create type identifier from the typeid
+    const BaseMessage* inst = message.get();
+    std::type_index type_idx = typeid(*inst);
+
+    // Send messages only to their specific listeners
+    for(auto& delegate : delegates_[type_idx][id]) {
+        if(check_send(message.get(), delegate.get())) {
+            LOG(TRACE) << "Sending message " << allpix::demangle(type_idx.name()) << " from " << source->getUniqueName()
+                       << " to " << delegate->getUniqueName();
+            // TODO: overload with new place to store the message!
+            delegate->process(message, name);
+            send = true;
+        }
+    }
+
+    // Dispatch to base message listeners
+    assert(typeid(BaseMessage) != typeid(*inst));
+    for(auto& delegate : delegates_[typeid(BaseMessage)][id]) {
+        if(check_send(message.get(), delegate.get())) {
+            LOG(TRACE) << "Sending message " << allpix::demangle(type_idx.name()) << " from " << source->getUniqueName()
+                       << " to generic listener " << delegate->getUniqueName();
+            // TODO: overload with new place to store the message!
+            delegate->process(message, name);
+            send = true;
+        }
+    }
+
+    return send;
+}
 
 void Event::init() {
     /* LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Initializing event " << event_num_; */
@@ -69,7 +146,8 @@ void Event::init() {
 
         // Run module
         try {
-            module->run(event_num_);
+            auto output_msgs = module->run(event_num_);
+            message_storage_.append(module.get(), output_msgs);
         } catch(EndOfRunException& e) {
             // Terminate if the module threw the EndOfRun request exception:
             LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
@@ -132,7 +210,8 @@ void Event::run(const unsigned int number_of_events) {
 
         // Run module
         try {
-            module->run(this->event_num_);
+            auto output_msgs = module->run(this->event_num_);
+            message_storage_.append(module.get(), output_msgs);
         } catch(EndOfRunException& e) {
             // Terminate if the module threw the EndOfRun request exception:
             LOG(WARNING) << "Request to terminate:" << std::endl << e.what();

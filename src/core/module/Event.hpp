@@ -75,11 +75,22 @@ namespace allpix {
             /**
              * @brief Constructor
              */
-            explicit MessageStorage(Messenger::NewDelegateMap delegates)
+            explicit MessageStorage(Messenger::DelegateMap delegates)
                 : delegates_(delegates) {}
 
+            void append(Module* source, std::vector<std::shared_ptr<BaseMessage>> messages, std::string name = "-");
+
         private:
-            const Messenger::NewDelegateMap delegates_;
+            void dispatch_message(Module* source, std::shared_ptr<BaseMessage> message, std::string name);
+            bool dispatch_message(Module* source, const std::shared_ptr<BaseMessage>& message, const std::string& name, const std::string& id);
+
+            // What are all modules listening to?
+            Messenger::DelegateMap delegates_;
+
+            // Can some BaseDelegate be used here insead?
+            std::map<std::string, std::shared_ptr<BaseMessage>> messages_;
+
+            std::vector<std::shared_ptr<BaseMessage>> sent_messages_;
         };
 
         ModuleList modules_;
