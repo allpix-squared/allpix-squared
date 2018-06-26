@@ -46,6 +46,8 @@ void Event::MessageStorage::append(Module* source, std::vector<std::shared_ptr<B
     for(auto message : messages) {
         dispatch_message(source, message, name);
     }
+
+    LOG(WARNING) << "Appended " << messages.size() << " messages to storage.";
 }
 
 void Event::MessageStorage::dispatch_message(Module* source, std::shared_ptr<BaseMessage> message, std::string name) {
@@ -85,8 +87,10 @@ bool Event::MessageStorage::dispatch_message(Module* source, const std::shared_p
         if(check_send(message.get(), delegate.get())) {
             LOG(TRACE) << "Sending message " << allpix::demangle(type_idx.name()) << " from " << source->getUniqueName()
                        << " to " << delegate->getUniqueName();
-            // TODO: overload with new place to store the message!
-            delegate->process(message, name);
+            // Construct BaseMessage where message should be stored
+            auto dest = messages_[delegate->getUniqueName()];
+
+            delegate->process(message, name, dest);
             send = true;
         }
     }
@@ -97,13 +101,17 @@ bool Event::MessageStorage::dispatch_message(Module* source, const std::shared_p
         if(check_send(message.get(), delegate.get())) {
             LOG(TRACE) << "Sending message " << allpix::demangle(type_idx.name()) << " from " << source->getUniqueName()
                        << " to generic listener " << delegate->getUniqueName();
-            // TODO: overload with new place to store the message!
-            delegate->process(message, name);
+            auto dest = messages_[delegate->getUniqueName()];
+            delegate->process(message, name, dest);
             send = true;
         }
     }
 
     return send;
+}
+
+DelegateVariants& Event::MessageStorage::fetch_for(Module* module) {
+    return messages_[module->getUniqueName()];
 }
 
 void Event::init() {

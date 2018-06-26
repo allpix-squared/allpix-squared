@@ -19,6 +19,7 @@
 #include <cassert>
 #include <memory>
 #include <typeinfo>
+#include "variant.hpp"
 
 #include "Message.hpp"
 #include "core/geometry/Detector.hpp"
@@ -27,6 +28,11 @@
 // TODO [doc] This should partly move to a source file
 
 namespace allpix {
+    // TODO [doc] Document this
+    using DelegateVariants = mpark::variant<std::shared_ptr<BaseMessage>,
+          std::vector<std::shared_ptr<BaseMessage>>,
+          std::function<void(std::shared_ptr<BaseMessage>, std::string)>>;
+
     /**
      * @ingroup Delegates
      * @brief Flags to change the behaviour of delegates
@@ -179,6 +185,14 @@ namespace allpix {
         virtual void process(std::shared_ptr<BaseMessage> msg, std::string name) = 0;
 
         /**
+         * @brief Process a message and forward it to its final destination
+         * @param msg Message to process
+         * @param name Name of the message
+         * @param dest Destination of the message
+         */
+        virtual void process(std::shared_ptr<BaseMessage> msg, std::string name, DelegateVariants& destv) = 0;
+
+        /**
          * @brief Reset the delegate and set it not satisfied again
          */
         virtual void reset(unsigned int event_id) {
@@ -251,6 +265,11 @@ namespace allpix {
          * @param msg Message to store
          */
         void process(std::shared_ptr<BaseMessage> msg, std::string) override {
+            // Store the message and mark as processed
+            messages_.push_back(msg);
+            this->set_processed();
+        }
+        void process(std::shared_ptr<BaseMessage> msg, std::string, DelegateVariants&) override {
             // Store the message and mark as processed
             messages_.push_back(msg);
             this->set_processed();
@@ -340,6 +359,20 @@ namespace allpix {
             this->set_processed(msg->event_id);
         }
 
+        /**
+         * @brief Calls the listener function with the supplied message
+         * @param msg Message to process
+         * @param name Name of the message to process
+         * @warning The listener function is called directly from the delegate, no heavy processing should be done in the
+         *          listener function
+         */
+        void process(std::shared_ptr<BaseMessage> msg, std::string name, DelegateVariants&) override {
+            // Pass the message and mark as processed
+            (this->obj_->*method_)(std::static_pointer_cast<BaseMessage>(msg), name);
+            this->set_processed(msg->event_id);
+        }
+
+
     private:
         ListenerFunction method_;
     };
@@ -389,6 +422,37 @@ namespace allpix {
         }
 
         /**
+         * @brief Saves the message to the bound message pointer
+         * @param msg Message to process
+         * @param dest Message destination
+         * @throws UnexpectedMessageException If this delegate has already received the message after the previous reset (not
+         *         thrown if the \ref MsgFlags::ALLOW_OVERWRITE "ALLOW_OVERWRITE" flag is passed)
+         *
+         * The saved value is overwritten if the \ref MsgFlags::ALLOW_OVERWRITE "ALLOW_OVERWRITE" flag is enabled.
+         */
+        void process(std::shared_ptr<BaseMessage> msg, std::string, DelegateVariants& destv) override {
+#ifndef NDEBUG
+            // The type names should have been correctly resolved earlier
+            const BaseMessage* inst = msg.get();
+            assert(typeid(*inst) == typeid(R));
+#endif
+            if(msg->event_id == 0)
+                throw RuntimeError("Encountered invalid message with ID 0");
+
+            auto dest = mpark::get<std::shared_ptr<BaseMessage>>(destv);
+
+            // Raise an error if the message is overwritten (unless it is allowed)
+            if(dest != nullptr && (this->getFlags() & MsgFlags::ALLOW_OVERWRITE) == MsgFlags::NONE) {
+                throw UnexpectedMessageException(this->obj_->getUniqueName(), typeid(R));
+            }
+
+            // Set the message and mark as processed
+            dest = std::static_pointer_cast<R>(msg);
+            this->set_processed(msg->event_id);
+        }
+
+
+        /**
          * @brief Reset the delegate by resetting the bound variable
          *
          * Always calls the BaseDelegate::reset first. Set the referenced member to a null pointer
@@ -435,6 +499,25 @@ namespace allpix {
             (this->obj_->*member_).push_back(std::static_pointer_cast<R>(msg));
             this->set_processed(msg->event_id);
         }
+
+        /**
+         * @brief Adds the message to the bound vector
+         * @param msg Message to process
+         * @param dest Message destination
+         */
+        void process(std::shared_ptr<BaseMessage> msg, std::string, DelegateVariants& destv) override {
+#ifndef NDEBUG
+            // The type names should have been correctly resolved earlier
+            const BaseMessage* inst = msg.get();
+            assert(typeid(*inst) == typeid(R));
+#endif
+            auto dest = mpark::get<std::vector<std::shared_ptr<BaseMessage>>>(destv);
+
+            // Add the message
+            dest.push_back(std::static_pointer_cast<R>(msg));
+            this->set_processed(msg->event_id);
+        }
+
 
         /**
          * @brief Reset the delegate by clearing the vector of messages

@@ -79,6 +79,7 @@ namespace allpix {
                 : delegates_(delegates) {}
 
             void append(Module* source, std::vector<std::shared_ptr<BaseMessage>> messages, std::string name = "-");
+            DelegateVariants& fetch_for(Module* module);
 
         private:
             void dispatch_message(Module* source, std::shared_ptr<BaseMessage> message, std::string name);
@@ -87,8 +88,7 @@ namespace allpix {
             // What are all modules listening to?
             Messenger::DelegateMap delegates_;
 
-            // Can some BaseDelegate be used here insead?
-            std::map<std::string, std::shared_ptr<BaseMessage>> messages_;
+            std::map<std::string, DelegateVariants> messages_;
 
             std::vector<std::shared_ptr<BaseMessage>> sent_messages_;
         };
