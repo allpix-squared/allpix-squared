@@ -48,7 +48,7 @@ namespace allpix {
         /**
          * @brief Projection of the electrons to the surface
          */
-        std::vector<std::shared_ptr<BaseMessage>> run(unsigned int) override;
+        std::vector<std::shared_ptr<BaseMessage>> run(unsigned int, DelegateVariants&) override;
 
         /**
          * @brief Write plots if needed

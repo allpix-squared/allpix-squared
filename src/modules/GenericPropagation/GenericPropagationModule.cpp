@@ -513,7 +513,8 @@ void GenericPropagationModule::init() {
     }
 }
 
-std::vector<std::shared_ptr<BaseMessage>> GenericPropagationModule::run(unsigned int event_num) {
+std::vector<std::shared_ptr<BaseMessage>> GenericPropagationModule::run(unsigned int event_num, DelegateVariants& message) {
+    auto deposits_message = std::dynamic_pointer_cast<DepositedChargeMessage>(mpark::get<std::shared_ptr<BaseMessage>>(message));
 
     // Create vector of propagated charges to output
     std::vector<PropagatedCharge> propagated_charges;
@@ -523,7 +524,7 @@ std::vector<std::shared_ptr<BaseMessage>> GenericPropagationModule::run(unsigned
     unsigned int propagated_charges_count = 0;
     unsigned int step_count = 0;
     long double total_time = 0;
-    for(auto& deposit : deposits_message_.at(event_num)->getData()) {
+    for(auto& deposit : deposits_message->getData()) {
 
         if((deposit.getType() == CarrierType::ELECTRON && !config_.get<bool>("propagate_electrons")) ||
            (deposit.getType() == CarrierType::HOLE && !config_.get<bool>("propagate_holes"))) {

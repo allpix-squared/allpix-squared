@@ -44,7 +44,7 @@ namespace allpix {
         /**
          * @brief Transfer the propagated charges to the pixels
          */
-        std::vector<std::shared_ptr<BaseMessage>> run(unsigned int) override;
+        std::vector<std::shared_ptr<BaseMessage>> run(unsigned int, DelegateVariants&) override;
 
         /**
          * @brief Display statistical summary

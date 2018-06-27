@@ -34,7 +34,7 @@ void DummyModule::init() {
     }
 }
 
-std::vector<std::shared_ptr<BaseMessage>> DummyModule::run(unsigned int) {
+std::vector<std::shared_ptr<BaseMessage>> DummyModule::run(unsigned int, DelegateVariants&) {
     // ... Implement ... (Typically uses the configuration to execute function and outputs an message)
     // Loop through all receieved messages and print some information
     for(auto& message : messages_) {

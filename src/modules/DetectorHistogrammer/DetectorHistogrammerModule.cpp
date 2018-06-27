@@ -108,11 +108,12 @@ void DetectorHistogrammerModule::init() {
     cluster_charge = new TH1D(cluster_charge_name.c_str(), cluster_charge_title.c_str(), 1000, 0., 50.);
 }
 
-std::vector<std::shared_ptr<BaseMessage>> DetectorHistogrammerModule::run(unsigned int event_num) {
-    LOG(DEBUG) << "Adding hits in " << pixels_message_.at(event_num)->getData().size() << " pixels";
+std::vector<std::shared_ptr<BaseMessage>> DetectorHistogrammerModule::run(unsigned int event_num, DelegateVariants& message) {
+    auto pixels_message = std::dynamic_pointer_cast<PixelHitMessage>(mpark::get<std::shared_ptr<BaseMessage>>(message));
+    LOG(DEBUG) << "Adding hits in " << pixels_message->getData().size() << " pixels";
 
     // Fill 2D hitmap histogram
-    for(auto& pixel_charge : pixels_message_.at(event_num)->getData()) {
+    for(auto& pixel_charge : pixels_message->getData()) {
         auto pixel_idx = pixel_charge.getPixel().getIndex();
 
         // Add pixel

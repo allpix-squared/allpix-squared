@@ -266,7 +266,7 @@ void DepositionGeant4Module::init() {
     RELEASE_STREAM(G4cout);
 }
 
-std::vector<std::shared_ptr<BaseMessage>> DepositionGeant4Module::run(unsigned int event_num) {
+std::vector<std::shared_ptr<BaseMessage>> DepositionGeant4Module::run(unsigned int event_num, DelegateVariants&) {
     // Suppress output stream if not in debugging mode
     IFLOG(DEBUG);
     else {

@@ -401,7 +401,7 @@ void VisualizationGeant4Module::set_visualization_attributes() {
     }
 }
 
-std::vector<std::shared_ptr<BaseMessage>> VisualizationGeant4Module::run(unsigned int) {
+std::vector<std::shared_ptr<BaseMessage>> VisualizationGeant4Module::run(unsigned int, DelegateVariants&) {
     if(!config_.get<bool>("accumulate")) {
         vis_manager_g4_->GetCurrentViewer()->ShowView();
         std::this_thread::sleep_for(

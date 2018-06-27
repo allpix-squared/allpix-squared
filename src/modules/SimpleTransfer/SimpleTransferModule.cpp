@@ -42,12 +42,14 @@ SimpleTransferModule::SimpleTransferModule(Configuration& config, Messenger* mes
     messenger->bindSingle(this, &SimpleTransferModule::propagated_message_, MsgFlags::REQUIRED);
 }
 
-std::vector<std::shared_ptr<BaseMessage>> SimpleTransferModule::run(unsigned int event_num) {
+std::vector<std::shared_ptr<BaseMessage>> SimpleTransferModule::run(unsigned int event_num, DelegateVariants& message) {
+    auto propagated_message = std::dynamic_pointer_cast<PropagatedChargeMessage>(mpark::get<std::shared_ptr<BaseMessage>>(message));
+
     // Find corresponding pixels for all propagated charges
     LOG(TRACE) << "Transferring charges to pixels";
     unsigned int transferred_charges_count = 0;
     std::map<Pixel::Index, std::vector<const PropagatedCharge*>, pixel_cmp> pixel_map;
-    for(auto& propagated_charge : propagated_message_.at(event_num)->getData()) {
+    for(auto& propagated_charge : propagated_message->getData()) {
         auto position = propagated_charge.getLocalPosition();
         // Ignore if outside depth range of implant
         // FIXME This logic should be improved

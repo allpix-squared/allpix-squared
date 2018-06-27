@@ -154,7 +154,8 @@ void Event::init() {
 
         // Run module
         try {
-            auto output_msgs = module->run(event_num_);
+            auto input_msgs = message_storage_.fetch_for(module.get());
+            auto output_msgs = module->run(event_num_, input_msgs);
             message_storage_.append(module.get(), output_msgs);
         } catch(EndOfRunException& e) {
             // Terminate if the module threw the EndOfRun request exception:
@@ -218,7 +219,8 @@ void Event::run(const unsigned int number_of_events) {
 
         // Run module
         try {
-            auto output_msgs = module->run(this->event_num_);
+            auto input_msgs = message_storage_.fetch_for(module.get());
+            auto output_msgs = module->run(this->event_num_, input_msgs);
             message_storage_.append(module.get(), output_msgs);
         } catch(EndOfRunException& e) {
             // Terminate if the module threw the EndOfRun request exception:

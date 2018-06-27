@@ -141,7 +141,7 @@ void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::
     }
 }
 
-std::vector<std::shared_ptr<BaseMessage>> ROOTObjectWriterModule::run(unsigned int) {
+std::vector<std::shared_ptr<BaseMessage>> ROOTObjectWriterModule::run(unsigned int, DelegateVariants&) {
     LOG(TRACE) << "Writing new objects to tree";
     output_file_->cd();
 

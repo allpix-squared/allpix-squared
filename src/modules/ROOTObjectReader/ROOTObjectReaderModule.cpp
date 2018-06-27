@@ -219,7 +219,7 @@ void ROOTObjectReaderModule::init() {
     }
 }
 
-std::vector<std::shared_ptr<BaseMessage>> ROOTObjectReaderModule::run(unsigned int event_num) {
+std::vector<std::shared_ptr<BaseMessage>> ROOTObjectReaderModule::run(unsigned int event_num, DelegateVariants&) {
     --event_num;
     for(auto& tree : trees_) {
         if(event_num >= tree->GetEntries()) {

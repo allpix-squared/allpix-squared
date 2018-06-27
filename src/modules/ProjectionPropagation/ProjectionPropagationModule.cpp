@@ -78,7 +78,8 @@ void ProjectionPropagationModule::init() {
     }
 }
 
-std::vector<std::shared_ptr<BaseMessage>> ProjectionPropagationModule::run(unsigned int event_num) {
+std::vector<std::shared_ptr<BaseMessage>> ProjectionPropagationModule::run(unsigned int event_num, DelegateVariants& message) {
+    auto deposits_message = std::dynamic_pointer_cast<DepositedChargeMessage>(mpark::get<std::shared_ptr<BaseMessage>>(message));
 
     // Create vector of propagated charges to output
     std::vector<PropagatedCharge> propagated_charges;
@@ -89,7 +90,7 @@ std::vector<std::shared_ptr<BaseMessage>> ProjectionPropagationModule::run(unsig
     double total_projected_charge = 0;
 
     // Loop over all deposits for propagation
-    for(auto& deposit : deposits_message_.at(event_num)->getData()) {
+    for(auto& deposit : deposits_message->getData()) {
 
         auto position = deposit.getLocalPosition();
         auto type = deposit.getType();

@@ -97,10 +97,12 @@ void DefaultDigitizerModule::init() {
     }
 }
 
-std::vector<std::shared_ptr<BaseMessage>> DefaultDigitizerModule::run(unsigned int event_num) {
+std::vector<std::shared_ptr<BaseMessage>> DefaultDigitizerModule::run(unsigned int event_num, DelegateVariants& message) {
+    auto pixel_message = std::dynamic_pointer_cast<PixelChargeMessage>(mpark::get<std::shared_ptr<BaseMessage>>(message));
+
     // Loop through all pixels with charges
     std::vector<PixelHit> hits;
-    for(auto& pixel_charge : pixel_message_.at(event_num)->getData()) {
+    for(auto& pixel_charge : pixel_message->getData()) {
         auto pixel = pixel_charge.getPixel();
         auto pixel_index = pixel.getIndex();
         auto charge = static_cast<double>(pixel_charge.getCharge());

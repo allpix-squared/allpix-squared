@@ -73,7 +73,14 @@ void LCIOWriterModule::init() {
     lcWriter_->writeRunHeader(run.get());
 }
 
-std::vector<std::shared_ptr<BaseMessage>> LCIOWriterModule::run(unsigned int eventNb) {
+std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> LCIOWriterModule::run(unsigned int eventNb, DelegateVariants& messages) {
+    auto base_messages = mpark::get<std::vector<std::shared_ptr<BaseMessage>>>(messages);
+    decltype(pixel_messages_) pixel_messages;
+    for (auto& message : base_messages) {
+        pixel_messages.push_back(std::dynamic_pointer_cast<PixelHitMessage>(message));
+    }
+
+    (void)eventNb;
 
     auto evt = std::make_unique<LCEventImpl>(); // create the event
     evt->setRunNumber(1);
@@ -88,7 +95,7 @@ std::vector<std::shared_ptr<BaseMessage>> LCIOWriterModule::run(unsigned int eve
     }
 
     // Receive all pixel messages, fill charge vectors
-    for(const auto& hit_msg : pixel_messages_) {
+    for(const auto& hit_msg : pixel_messages) {
         LOG(DEBUG) << hit_msg->getDetector()->getName();
         for(const auto& hitdata : hit_msg->getData()) {
             LOG(DEBUG) << "X: " << hitdata.getPixel().getIndex().x() << ", Y:" << hitdata.getPixel().getIndex().y()
