@@ -135,7 +135,7 @@ void RCEWriterModule::init() {
     print_geo(geo_file, detector_names, geo_mgr_);
 }
 
-std::vector<std::shared_ptr<BaseMessage>> RCEWriterModule::run(unsigned int event_id, DelegateVariants& messages) {
+std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> RCEWriterModule::run(unsigned int event_id, DelegateVariants& messages) {
     auto base_messages = mpark::get<std::vector<std::shared_ptr<BaseMessage>>>(messages);
     decltype(pixel_hit_messages_) pixel_hit_messages;
     for (auto& message : base_messages) {

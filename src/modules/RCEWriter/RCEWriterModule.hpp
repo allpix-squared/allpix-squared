@@ -53,7 +53,7 @@ namespace allpix {
         /**
          * @brief Writes the objects fetched to their specific tree
          */
-        std::vector<std::shared_ptr<BaseMessage>> run(unsigned int, DelegateVariants&) override;
+        std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> run(unsigned int, DelegateVariants&) override;
 
         /**
          * @brief Write the output file

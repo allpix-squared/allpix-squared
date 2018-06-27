@@ -128,7 +128,7 @@ unsigned int SensitiveDetectorActionG4::getDepositedCharge() {
     return deposited_charge_;
 }
 
-void SensitiveDetectorActionG4::dispatchMessages(unsigned int event_num) {
+std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> SensitiveDetectorActionG4::dispatchMessages(unsigned int event_num) {
     // Create the mc particles
     std::vector<MCParticle> mc_particles;
     for(auto& track_id_point : track_begin_) {
@@ -163,9 +163,12 @@ void SensitiveDetectorActionG4::dispatchMessages(unsigned int event_num) {
         mc_particles.at(track_idx).setParent(&mc_particles.at(parent_idx));
     }
 
+    std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> output_messages;
+
     // Send the mc particle information
     auto mc_particle_message = std::make_shared<MCParticleMessage>(std::move(mc_particles), detector_);
     messenger_->dispatchMessage(event_num, module_, mc_particle_message);
+    output_messages.emplace_back(mc_particle_message, "-");
 
     // Clear track data for the next event
     track_parents_.clear();
@@ -196,6 +199,7 @@ void SensitiveDetectorActionG4::dispatchMessages(unsigned int event_num) {
 
         // Dispatch the message
         messenger_->dispatchMessage(event_num, module_, deposit_message);
+        output_messages.emplace_back(deposit_message, "-");
     }
 
     // Clear deposits for next event
@@ -204,4 +208,6 @@ void SensitiveDetectorActionG4::dispatchMessages(unsigned int event_num) {
     // Clear link tables for next event
     deposit_to_id_.clear();
     id_to_particle_.clear();
+
+    return output_messages;
 }

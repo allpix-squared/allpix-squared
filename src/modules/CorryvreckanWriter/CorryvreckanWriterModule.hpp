@@ -50,7 +50,7 @@ namespace allpix {
         /**
          * @brief Take the digitised pixel hits and write them into the output file
          */
-        std::vector<std::shared_ptr<BaseMessage>> run(unsigned int, DelegateVariants&) override;
+        std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> run(unsigned int, DelegateVariants&) override;
 
         /**
          * @brief Write output trees to file

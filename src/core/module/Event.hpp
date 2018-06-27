@@ -78,7 +78,7 @@ namespace allpix {
             explicit MessageStorage(Messenger::DelegateMap delegates)
                 : delegates_(delegates) {}
 
-            void append(Module* source, std::vector<std::shared_ptr<BaseMessage>> messages, std::string name = "-");
+            void append(Module* source, std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> messages);
             DelegateVariants& fetch_for(Module* module);
 
         private:

@@ -266,7 +266,7 @@ void DepositionGeant4Module::init() {
     RELEASE_STREAM(G4cout);
 }
 
-std::vector<std::shared_ptr<BaseMessage>> DepositionGeant4Module::run(unsigned int event_num, DelegateVariants&) {
+std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> DepositionGeant4Module::run(unsigned int event_num, DelegateVariants&) {
     // Suppress output stream if not in debugging mode
     IFLOG(DEBUG);
     else {
@@ -283,9 +283,13 @@ std::vector<std::shared_ptr<BaseMessage>> DepositionGeant4Module::run(unsigned i
 
     track_info_manager_->createMCTracks();
 
+    std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> output_messages;
+
     // Dispatch the necessary messages
     for(auto& sensor : sensors_) {
-        sensor->dispatchMessages(event_num);
+        for(auto& message : sensor->dispatchMessages(event_num)) {
+            output_messages.push_back(message);
+        }
 
         // Fill output plots if requested:
         if(config_.get<bool>("output_plots")) {
@@ -296,8 +300,9 @@ std::vector<std::shared_ptr<BaseMessage>> DepositionGeant4Module::run(unsigned i
 
     auto message = track_info_manager_->dispatchMessage(event_num, this, messenger_);
     track_info_manager_->resetTrackInfoManager();
+    output_messages.emplace_back(message, "-");
 
-    return {message};
+    return output_messages;
 }
 
 void DepositionGeant4Module::finalize() {

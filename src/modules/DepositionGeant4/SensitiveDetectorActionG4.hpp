@@ -70,7 +70,7 @@ namespace allpix {
          * @brief Send the MCParticle and DepositedCharge messages
          * @param event_num Event from which the messages are dispatched from
          */
-        void dispatchMessages(unsigned int event_num);
+        std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> dispatchMessages(unsigned int event_num);
 
     private:
         // Instantatiation of the deposition module

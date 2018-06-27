@@ -219,7 +219,7 @@ void ROOTObjectReaderModule::init() {
     }
 }
 
-std::vector<std::shared_ptr<BaseMessage>> ROOTObjectReaderModule::run(unsigned int event_num, DelegateVariants&) {
+std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> ROOTObjectReaderModule::run(unsigned int event_num, DelegateVariants&) {
     --event_num;
     for(auto& tree : trees_) {
         if(event_num >= tree->GetEntries()) {
@@ -229,6 +229,8 @@ std::vector<std::shared_ptr<BaseMessage>> ROOTObjectReaderModule::run(unsigned i
         tree->GetEntry(event_num);
     }
     LOG(TRACE) << "Building messages from stored objects";
+
+    std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> output_messages;
 
     // Loop through all branches
     for(auto message_inf : message_info_array_) {
@@ -256,9 +258,10 @@ std::vector<std::shared_ptr<BaseMessage>> ROOTObjectReaderModule::run(unsigned i
 
         // Dispatch the message
         messenger_->dispatchMessage(event_num, this, message, message_inf.name);
+        output_messages.emplace_back(message, message_inf.name);
     }
 
-    return {};
+    return output_messages;
 }
 
 void ROOTObjectReaderModule::finalize() {

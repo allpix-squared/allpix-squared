@@ -262,7 +262,7 @@ void CapacitiveTransferModule::init() {
     }
 }
 
-std::vector<std::shared_ptr<BaseMessage>> CapacitiveTransferModule::run(unsigned int event_num, DelegateVariants& message) {
+std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> CapacitiveTransferModule::run(unsigned int event_num, DelegateVariants& message) {
     auto propagated_message = std::dynamic_pointer_cast<PropagatedChargeMessage>(mpark::get<std::shared_ptr<BaseMessage>>(message));
 
     // Find corresponding pixels for all propagated charges
@@ -370,7 +370,7 @@ std::vector<std::shared_ptr<BaseMessage>> CapacitiveTransferModule::run(unsigned
     // Dispatch message of pixel charges
     auto pixel_message = std::make_shared<PixelChargeMessage>(pixel_charges, detector_);
     messenger_->dispatchMessage(event_num, this, pixel_message);
-    return {pixel_message};
+    return {{pixel_message, "-"}};
 }
 
 void CapacitiveTransferModule::finalize() {

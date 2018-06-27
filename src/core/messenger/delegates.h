@@ -439,7 +439,7 @@ namespace allpix {
             if(msg->event_id == 0)
                 throw RuntimeError("Encountered invalid message with ID 0");
 
-            auto dest = mpark::get<std::shared_ptr<BaseMessage>>(destv);
+            auto& dest = mpark::get<std::shared_ptr<BaseMessage>>(destv);
 
             // Raise an error if the message is overwritten (unless it is allowed)
             if(dest != nullptr && (this->getFlags() & MsgFlags::ALLOW_OVERWRITE) == MsgFlags::NONE) {
@@ -511,7 +511,7 @@ namespace allpix {
             const BaseMessage* inst = msg.get();
             assert(typeid(*inst) == typeid(R));
 #endif
-            auto dest = mpark::get<std::vector<std::shared_ptr<BaseMessage>>>(destv);
+            auto& dest = mpark::get<std::vector<std::shared_ptr<BaseMessage>>>(destv);
 
             // Add the message
             dest.push_back(std::static_pointer_cast<R>(msg));

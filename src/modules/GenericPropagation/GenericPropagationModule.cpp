@@ -513,7 +513,7 @@ void GenericPropagationModule::init() {
     }
 }
 
-std::vector<std::shared_ptr<BaseMessage>> GenericPropagationModule::run(unsigned int event_num, DelegateVariants& message) {
+std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> GenericPropagationModule::run(unsigned int event_num, DelegateVariants& message) {
     auto deposits_message = std::dynamic_pointer_cast<DepositedChargeMessage>(mpark::get<std::shared_ptr<BaseMessage>>(message));
 
     // Create vector of propagated charges to output
@@ -608,7 +608,7 @@ std::vector<std::shared_ptr<BaseMessage>> GenericPropagationModule::run(unsigned
 
     // Dispatch the message with propagated charges
     messenger_->dispatchMessage(event_num, this, propagated_charge_message);
-    return {propagated_charge_message};
+    return {{propagated_charge_message, "-"}};
 }
 
 /**

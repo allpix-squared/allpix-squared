@@ -53,7 +53,7 @@ namespace allpix {
         /**
          * @brief Propagate all deposited charges through the sensor
          */
-        std::vector<std::shared_ptr<BaseMessage>> run(unsigned int event_num, DelegateVariants&) override;
+        std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> run(unsigned int event_num, DelegateVariants&) override;
 
         /**
          * @brief Write statistical summary
