@@ -70,41 +70,6 @@ namespace allpix {
         return static_cast<MsgFlags>(static_cast<uint32_t>(f1) & static_cast<uint32_t>(f2));
     }
 
-    template <typename T> class MessageStorage {
-        // TODO: assert T is inherited from BaseMessage
-    public:
-        MessageStorage() = default;
-
-        const std::shared_ptr<T>& at(const unsigned int key) {
-            std::lock_guard<std::mutex> lock(mutex_);
-            return map_.at(key);
-        }
-
-        void insert(const unsigned int key, std::shared_ptr<T> value) {
-            std::lock_guard<std::mutex> lock(mutex_);
-            map_.insert({key, value});
-        }
-
-        bool contains(const unsigned int key) {
-            std::lock_guard<std::mutex> lock(mutex_);
-            return (map_.find(key) != map_.end());
-        }
-
-        size_t size() {
-            std::lock_guard<std::mutex> lock(mutex_);
-            return map_.size();
-        }
-
-        void erase(const unsigned int key) {
-            std::lock_guard<std::mutex> lock(mutex_);
-            map_.erase(key);
-        }
-
-    private:
-        std::map<unsigned int, std::shared_ptr<T>> map_;
-        std::mutex mutex_;
-    };
-
     /**
      * @ingroup Delegates
      * @brief Base for all delegates
@@ -146,17 +111,12 @@ namespace allpix {
          * The delegate is always satisfied if the \ref MsgFlags::REQUIRED "REQUIRED" flag has not been passed. Otherwise it
          * is up to the subclasses to determine if a delegate has been processed.
          */
-        bool isSatisfied(unsigned int event_id) const {
+        bool isSatisfied() const {
             if((getFlags() & MsgFlags::REQUIRED) == MsgFlags::NONE) {
                 return true;
             }
 
-            std::lock_guard<std::mutex> lock(mutex_);
-            try {
-                return processed_.at(event_id);
-            } catch(std::out_of_range&) {
-                return false;
-            }
+            return processed_;
         }
 
         /**
@@ -195,21 +155,14 @@ namespace allpix {
         /**
          * @brief Reset the delegate and set it not satisfied again
          */
-        virtual void reset(unsigned int event_id) {
-            std::lock_guard<std::mutex> lock(mutex_);
-            processed_[event_id] = false;
-        }
+        virtual void reset() { processed_ = false; }
 
     protected:
         /**
          * @brief Set the processed flag to signal that the delegate is satisfied
          */
-        void set_processed(unsigned int event_id) {
-            std::lock_guard<std::mutex> lock(mutex_);
-            processed_[event_id] = true;
-        }
-        std::map<unsigned int, bool> processed_;
-        mutable std::mutex mutex_;
+        void set_processed() { processed_ = true; }
+        bool processed_;
 
         MsgFlags flags_;
     };
@@ -280,9 +233,9 @@ namespace allpix {
          *
          * Always calls the BaseDelegate::reset first. Clears the storage of the messages
          */
-        void reset(unsigned int event_id) override {
+        void reset() override {
             // Always do base reset
-            BaseDelegate::reset(event_id);
+            BaseDelegate::reset();
             // Clear
             messages_.clear();
         }
@@ -356,7 +309,7 @@ namespace allpix {
         void process(std::shared_ptr<BaseMessage> msg, std::string name) override {
             // Pass the message and mark as processed
             (this->obj_->*method_)(std::static_pointer_cast<BaseMessage>(msg), name);
-            this->set_processed(msg->event_id);
+            this->set_processed();
         }
 
         /**
@@ -369,7 +322,7 @@ namespace allpix {
         void process(std::shared_ptr<BaseMessage> msg, std::string name, DelegateVariants&) override {
             // Pass the message and mark as processed
             (this->obj_->*method_)(std::static_pointer_cast<BaseMessage>(msg), name);
-            this->set_processed(msg->event_id);
+            this->set_processed();
         }
 
 
@@ -383,7 +336,7 @@ namespace allpix {
      */
     template <typename T, typename R> class SingleBindDelegate : public ModuleDelegate<T> {
     public:
-        using BindType = MessageStorage<R> T::*;
+        using BindType = std::shared_ptr<R> T::*;
 
         /**
          * @brief Construct a single bound delegate for the given module
@@ -407,18 +360,14 @@ namespace allpix {
             const BaseMessage* inst = msg.get();
             assert(typeid(*inst) == typeid(R));
 #endif
-            if(msg->event_id == 0)
-                throw RuntimeError("Encountered invalid message with ID 0");
-
             // Raise an error if the message is overwritten (unless it is allowed)
-            if((this->obj_->*member_).contains(msg->event_id) &&
-               (this->getFlags() & MsgFlags::ALLOW_OVERWRITE) == MsgFlags::NONE) {
+            if(this->obj_->*member_ != nullptr && (this->getFlags() & MsgFlags::ALLOW_OVERWRITE) == MsgFlags::NONE) {
                 throw UnexpectedMessageException(this->obj_->getUniqueName(), typeid(R));
             }
 
             // Set the message and mark as processed
-            (this->obj_->*member_).insert(msg->event_id, std::static_pointer_cast<R>(msg));
-            this->set_processed(msg->event_id);
+            this->obj_->*member_ = std::static_pointer_cast<R>(msg);
+            this->set_processed();
         }
 
         /**
@@ -445,7 +394,7 @@ namespace allpix {
 
             // Set the message and mark as processed
             dest = std::static_pointer_cast<R>(msg);
-            this->set_processed(msg->event_id);
+            this->set_processed();
         }
 
 
@@ -454,12 +403,12 @@ namespace allpix {
          *
          * Always calls the BaseDelegate::reset first. Set the referenced member to a null pointer
          */
-        void reset(unsigned int event_id) override {
+        void reset() override {
             // Always do base reset
-            BaseDelegate::reset(event_id);
+            BaseDelegate::reset();
 
             // Clear
-            (this->obj_->*member_).erase(event_id);
+            this->obj_->*member_ = nullptr;
         }
 
     private:
@@ -494,7 +443,7 @@ namespace allpix {
 #endif
             // Add the message
             (this->obj_->*member_).push_back(std::static_pointer_cast<R>(msg));
-            this->set_processed(msg->event_id);
+            this->set_processed();
         }
 
         /**
@@ -512,7 +461,7 @@ namespace allpix {
 
             // Add the message
             dest.push_back(std::static_pointer_cast<R>(msg));
-            this->set_processed(msg->event_id);
+            this->set_processed();
         }
 
 
@@ -520,9 +469,9 @@ namespace allpix {
          * @brief Reset the delegate by clearing the vector of messages
          *
          * Always calls the BaseDelegate::reset first. Clears the referenced vector to an empty state         */
-        void reset(unsigned int event_id) override {
+        void reset() override {
             // Always do base reset
-            BaseDelegate::reset(event_id);
+            BaseDelegate::reset();
 
             // Clear
             (this->obj_->*member_).clear();

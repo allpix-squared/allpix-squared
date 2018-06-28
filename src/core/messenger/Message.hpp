@@ -52,11 +52,6 @@ namespace allpix {
          */
         virtual std::vector<std::reference_wrapper<Object>> getObjectArray();
 
-        /**
-         * @brief Identifies from which event the message originated
-         */
-        unsigned int event_id{0};
-
     protected:
         /**
          * @brief Construct a general message not linked to a detector

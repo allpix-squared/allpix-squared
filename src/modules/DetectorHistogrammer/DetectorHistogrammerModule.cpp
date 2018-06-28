@@ -127,7 +127,7 @@ std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> DetectorHistog
     }
 
     // Perform a clustering
-    std::vector<Cluster> clusters = doClustering(event_num);
+    std::vector<Cluster> clusters = doClustering(pixels_message);
 
     // Evaluate the clusters
     for(auto clus : clusters) {
@@ -143,7 +143,7 @@ std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> DetectorHistog
     }
 
     // Fill further histograms
-    event_size->Fill(static_cast<double>(pixels_message_.at(event_num)->getData().size()));
+    event_size->Fill(static_cast<double>(pixels_message->getData().size()));
     n_cluster->Fill(static_cast<double>(clusters.size()));
 
     return {};
@@ -233,12 +233,12 @@ void DetectorHistogrammerModule::finalize() {
     cluster_charge->Write();
 }
 
-std::vector<Cluster> DetectorHistogrammerModule::doClustering(unsigned int event_num) {
+std::vector<Cluster> DetectorHistogrammerModule::doClustering(std::shared_ptr<PixelHitMessage>& pixels_message) {
     std::vector<Cluster> clusters;
     std::map<const PixelHit*, bool> usedPixel;
 
-    auto pixel_it = pixels_message_.at(event_num)->getData().begin();
-    for(; pixel_it != pixels_message_.at(event_num)->getData().end(); pixel_it++) {
+    auto pixel_it = pixels_message->getData().begin();
+    for(; pixel_it != pixels_message->getData().end(); pixel_it++) {
         const PixelHit* pixel_hit = &(*pixel_it);
 
         // Check if the pixel has been used:
@@ -266,7 +266,7 @@ std::vector<Cluster> DetectorHistogrammerModule::doClustering(unsigned int event
         };
 
         // Keep adding pixels to the cluster:
-        for(auto other_pixel = pixel_it + 1; other_pixel != pixels_message_.at(event_num)->getData().end(); other_pixel++) {
+        for(auto other_pixel = pixel_it + 1; other_pixel != pixels_message->getData().end(); other_pixel++) {
             const PixelHit* neighbor = &(*other_pixel);
 
             // Check if neighbor has been used or if it touches the current cluster:

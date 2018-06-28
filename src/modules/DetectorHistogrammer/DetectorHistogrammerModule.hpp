@@ -62,12 +62,12 @@ namespace allpix {
         /**
          * @brief Perform a sparse clustering on the PixelHits
          */
-        std::vector<Cluster> doClustering(unsigned int event_num);
+        std::vector<Cluster> doClustering(std::shared_ptr<PixelHitMessage>& pixels_message);
 
         std::shared_ptr<Detector> detector_;
 
         // List of pixel hits
-        MessageStorage<PixelHitMessage> pixels_message_;
+        std::shared_ptr<PixelHitMessage> pixels_message_;
 
         // Statistics to compute mean position
         ROOT::Math::XYVector total_vector_{};

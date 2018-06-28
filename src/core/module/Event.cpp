@@ -201,11 +201,13 @@ void Event::run(const unsigned int number_of_events) {
         LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << this->event_num_ << " of " << number_of_events << " ["
                                           << module->get_identifier().getUniqueName() << "]";
         // Check if module is satisfied to run
+#if 0
         if(!module->check_delegates(event_num_)) {
             LOG(TRACE) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
                        << ", skipping module!";
             return;
         }
+#endif
 
         // Get current time
         auto start = std::chrono::steady_clock::now();
@@ -247,7 +249,7 @@ void Event::run(const unsigned int number_of_events) {
         LOG(TRACE) << "Resetting messages";
         auto lock =
             !module->canParallelize() ? std::unique_lock<std::mutex>(module->run_mutex_) : std::unique_lock<std::mutex>();
-        module->reset_delegates(event_num_);
+        module->reset_delegates();
     }
 
     // Reset object count for next event

@@ -64,7 +64,7 @@ namespace allpix {
         Messenger* messenger_;
 
         // Input message with the charges on the pixels
-        MessageStorage<PixelChargeMessage> pixel_message_;
+        std::shared_ptr<PixelChargeMessage> pixel_message_;
 
         // Statistics
         unsigned long long total_hits_{};

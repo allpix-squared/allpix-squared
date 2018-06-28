@@ -87,6 +87,6 @@ namespace allpix {
         TH1D* drift_time_histo;
 
         // Deposits for the bound detector in this event
-        MessageStorage<DepositedChargeMessage> deposits_message_;
+        std::shared_ptr<DepositedChargeMessage> deposits_message_;
     };
 } // namespace allpix

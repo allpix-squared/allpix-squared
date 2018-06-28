@@ -207,11 +207,11 @@ namespace allpix {
         /**
          * @brief Resets messenger delegates after every event
          */
-        void reset_delegates(unsigned int event_id);
+        void reset_delegates();
         /**
          * @brief Check if all delegates are satisfied
          */
-        bool check_delegates(unsigned int event_id);
+        bool check_delegates();
         std::vector<std::pair<Messenger*, BaseDelegate*>> delegates_;
 
         bool initialized_random_generator_{false};

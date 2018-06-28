@@ -187,16 +187,15 @@ ModuleIdentifier Module::get_identifier() const {
 void Module::add_delegate(Messenger* messenger, BaseDelegate* delegate) {
     delegates_.emplace_back(messenger, delegate);
 }
-void Module::reset_delegates(unsigned int event_id) {
+void Module::reset_delegates() {
     for(auto& delegate : delegates_) {
-        /* delegate.first->clearMessages(); */
-        delegate.second->reset(event_id);
+        delegate.second->reset();
     }
 }
-bool Module::check_delegates(unsigned int event_id) {
+bool Module::check_delegates() {
     for(auto& delegate : delegates_) {
         // Return false if any delegate is not satisfied
-        if(!delegate.second->isSatisfied(event_id)) {
+        if(!delegate.second->isSatisfied()) {
             return false;
         }
     }
