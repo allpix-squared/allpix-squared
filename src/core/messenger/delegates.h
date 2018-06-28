@@ -138,13 +138,6 @@ namespace allpix {
         virtual std::string getUniqueName() = 0;
 
         /**
-         * @brief Process a message and forwards it to its final destination
-         * @param msg Message to process
-         * @param name Name of the message
-         */
-        virtual void process(std::shared_ptr<BaseMessage> msg, std::string name) = 0;
-
-        /**
          * @brief Process a message and forward it to its final destination
          * @param msg Message to process
          * @param name Name of the message
@@ -217,11 +210,6 @@ namespace allpix {
          * @brief Stores the received message in the delegate until the end of the event
          * @param msg Message to store
          */
-        void process(std::shared_ptr<BaseMessage> msg, std::string) override {
-            // Store the message and mark as processed
-            messages_.push_back(msg);
-            this->set_processed();
-        }
         void process(std::shared_ptr<BaseMessage> msg, std::string, DelegateVariants&) override {
             // Store the message and mark as processed
             messages_.push_back(msg);
@@ -266,7 +254,7 @@ namespace allpix {
          * @warning The listener function is called directly from the delegate, no heavy processing should be done in the
          *          listener function
          */
-        void process(std::shared_ptr<BaseMessage> msg, std::string) override {
+        void process(std::shared_ptr<BaseMessage> msg, std::string, DelegateVariants&) override {
 #ifndef NDEBUG
             // The type names should have been correctly resolved earlier
             const BaseMessage* inst = msg.get();
@@ -306,19 +294,6 @@ namespace allpix {
          * @warning The listener function is called directly from the delegate, no heavy processing should be done in the
          *          listener function
          */
-        void process(std::shared_ptr<BaseMessage> msg, std::string name) override {
-            // Pass the message and mark as processed
-            (this->obj_->*method_)(std::static_pointer_cast<BaseMessage>(msg), name);
-            this->set_processed();
-        }
-
-        /**
-         * @brief Calls the listener function with the supplied message
-         * @param msg Message to process
-         * @param name Name of the message to process
-         * @warning The listener function is called directly from the delegate, no heavy processing should be done in the
-         *          listener function
-         */
         void process(std::shared_ptr<BaseMessage> msg, std::string name, DelegateVariants&) override {
             // Pass the message and mark as processed
             (this->obj_->*method_)(std::static_pointer_cast<BaseMessage>(msg), name);
@@ -345,30 +320,6 @@ namespace allpix {
          * @param member Member variable to assign the pointer to the message to
          */
         SingleBindDelegate(MsgFlags flags, T* obj, BindType member) : ModuleDelegate<T>(flags, obj), member_(member) {}
-
-        /**
-         * @brief Saves the message to the bound message pointer
-         * @param msg Message to process
-         * @throws UnexpectedMessageException If this delegate has already received the message after the previous reset (not
-         *         thrown if the \ref MsgFlags::ALLOW_OVERWRITE "ALLOW_OVERWRITE" flag is passed)
-         *
-         * The saved value is overwritten if the \ref MsgFlags::ALLOW_OVERWRITE "ALLOW_OVERWRITE" flag is enabled.
-         */
-        void process(std::shared_ptr<BaseMessage> msg, std::string) override {
-#ifndef NDEBUG
-            // The type names should have been correctly resolved earlier
-            const BaseMessage* inst = msg.get();
-            assert(typeid(*inst) == typeid(R));
-#endif
-            // Raise an error if the message is overwritten (unless it is allowed)
-            if(this->obj_->*member_ != nullptr && (this->getFlags() & MsgFlags::ALLOW_OVERWRITE) == MsgFlags::NONE) {
-                throw UnexpectedMessageException(this->obj_->getUniqueName(), typeid(R));
-            }
-
-            // Set the message and mark as processed
-            this->obj_->*member_ = std::static_pointer_cast<R>(msg);
-            this->set_processed();
-        }
 
         /**
          * @brief Saves the message to the bound message pointer
@@ -430,21 +381,6 @@ namespace allpix {
          * @param member Member variable vector to add the pointer to the message to
          */
         VectorBindDelegate(MsgFlags flags, T* obj, BindType member) : ModuleDelegate<T>(flags, obj), member_(member) {}
-
-        /**
-         * @brief Adds the message to the bound vector
-         * @param msg Message to process
-         */
-        void process(std::shared_ptr<BaseMessage> msg, std::string) override {
-#ifndef NDEBUG
-            // The type names should have been correctly resolved earlier
-            const BaseMessage* inst = msg.get();
-            assert(typeid(*inst) == typeid(R));
-#endif
-            // Add the message
-            (this->obj_->*member_).push_back(std::static_pointer_cast<R>(msg));
-            this->set_processed();
-        }
 
         /**
          * @brief Adds the message to the bound vector
