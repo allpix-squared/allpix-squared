@@ -266,14 +266,12 @@ void DepositionGeant4Module::init() {
     RELEASE_STREAM(G4cout);
 }
 
-std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> DepositionGeant4Module::run(unsigned int event_num, DelegateVariants&) {
+void DepositionGeant4Module::run(unsigned int event_num, DelegateVariants&, DispatchFunc dispatchMessage) {
     // Suppress output stream if not in debugging mode
     IFLOG(DEBUG);
     else {
         SUPPRESS_STREAM(G4cout);
     }
-
-    (void)event_num;
 
     // Start a single event from the beam
     LOG(TRACE) << "Enabling beam";
@@ -285,13 +283,9 @@ std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> DepositionGean
 
     track_info_manager_->createMCTracks();
 
-    std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> output_messages;
-
     // Dispatch the necessary messages
     for(auto& sensor : sensors_) {
-        for(auto& message : sensor->dispatchMessages(event_num)) {
-            output_messages.push_back(message);
-        }
+        sensor->dispatchMessages(dispatchMessage);
 
         // Fill output plots if requested:
         if(config_.get<bool>("output_plots")) {
@@ -300,11 +294,8 @@ std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> DepositionGean
         }
     }
 
-    auto message = track_info_manager_->dispatchMessage(event_num, this, messenger_);
+    track_info_manager_->dispatchMessage(this, dispatchMessage);
     track_info_manager_->resetTrackInfoManager();
-    output_messages.emplace_back(message, "-");
-
-    return output_messages;
 }
 
 void DepositionGeant4Module::finalize() {

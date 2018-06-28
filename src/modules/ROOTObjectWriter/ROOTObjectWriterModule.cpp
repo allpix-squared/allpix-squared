@@ -141,7 +141,7 @@ void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::
     }
 }
 
-std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> ROOTObjectWriterModule::run(unsigned int, DelegateVariants&) {
+void ROOTObjectWriterModule::run(unsigned int, DelegateVariants&, DispatchFunc) {
     LOG(TRACE) << "Writing new objects to tree";
     output_file_->cd();
 
@@ -157,8 +157,6 @@ std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> ROOTObjectWrit
     }
     // Clear the messages we have to keep because they contain the internal pointers
     keep_messages_.clear();
-
-    return {};
 }
 
 void ROOTObjectWriterModule::finalize() {

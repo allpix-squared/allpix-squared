@@ -73,14 +73,12 @@ void LCIOWriterModule::init() {
     lcWriter_->writeRunHeader(run.get());
 }
 
-std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> LCIOWriterModule::run(unsigned int eventNb, DelegateVariants& messages) {
+void LCIOWriterModule::run(unsigned int eventNb, DelegateVariants& messages, DispatchFunc) {
     auto base_messages = mpark::get<std::vector<std::shared_ptr<BaseMessage>>>(messages);
     decltype(pixel_messages_) pixel_messages;
     for (auto& message : base_messages) {
         pixel_messages.push_back(std::dynamic_pointer_cast<PixelHitMessage>(message));
     }
-
-    (void)eventNb;
 
     auto evt = std::make_unique<LCEventImpl>(); // create the event
     evt->setRunNumber(1);
@@ -147,8 +145,6 @@ std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> LCIOWriterModu
     evt->addCollection(hitVec, OutputCollectionName_); // add the collection with a name
     lcWriter_->writeEvent(evt.get());                  // write the event to the file
     write_cnt_++;
-
-    return {};
 }
 
 void LCIOWriterModule::finalize() {

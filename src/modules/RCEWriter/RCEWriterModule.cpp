@@ -135,7 +135,7 @@ void RCEWriterModule::init() {
     print_geo(geo_file, detector_names, geo_mgr_);
 }
 
-std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> RCEWriterModule::run(unsigned int event_id, DelegateVariants& messages) {
+void RCEWriterModule::run(unsigned int event_id, DelegateVariants& messages, DispatchFunc) {
     auto base_messages = mpark::get<std::vector<std::shared_ptr<BaseMessage>>>(messages);
     decltype(pixel_hit_messages_) pixel_hit_messages;
     for (auto& message : base_messages) {
@@ -191,8 +191,6 @@ std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> RCEWriterModul
         item.second.tree->Fill();
         LOG(TRACE) << "Wrote sensor event data for " << item.first;
     }
-
-    return {};
 }
 
 void RCEWriterModule::finalize() {

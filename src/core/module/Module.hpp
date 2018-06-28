@@ -137,6 +137,8 @@ namespace allpix {
          */
         virtual void init() {}
 
+        using DispatchFunc = std::function<void(Module*, std::shared_ptr<BaseMessage>, const std::string&)>;
+
         /**
          * @brief Execute the function of the module for every event
          * @param event_num Number of the event in the event sequence (starts at 1)
@@ -144,10 +146,11 @@ namespace allpix {
          * Does nothing if not overloaded.
          */
         // TODO [doc] Start the sequence at 0 instead of 1?
-        virtual std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> run(unsigned int event_num, DelegateVariants& messages) {
+        // TODO [doc] Document all new parameters
+        virtual void run(unsigned int event_num, DelegateVariants& messages, DispatchFunc dispatchMessage) {
             (void)event_num;
             (void)messages;
-            return {};
+            (void)dispatchMessage;
         }
         //
         /**

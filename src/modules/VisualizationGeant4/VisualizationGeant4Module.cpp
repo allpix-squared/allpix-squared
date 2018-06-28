@@ -401,14 +401,12 @@ void VisualizationGeant4Module::set_visualization_attributes() {
     }
 }
 
-std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> VisualizationGeant4Module::run(unsigned int, DelegateVariants&) {
+void VisualizationGeant4Module::run(unsigned int, DelegateVariants&, DispatchFunc) {
     if(!config_.get<bool>("accumulate")) {
         vis_manager_g4_->GetCurrentViewer()->ShowView();
         std::this_thread::sleep_for(
             std::chrono::nanoseconds(config_.get<unsigned long>("accumulate_time_step", Units::get(100ul, "ms"))));
     }
-
-    return {};
 }
 
 static bool has_gui = false;

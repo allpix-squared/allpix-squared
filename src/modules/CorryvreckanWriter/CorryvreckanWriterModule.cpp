@@ -87,7 +87,7 @@ void CorryvreckanWriterModule::init() {
 }
 
 // Make instantiations of Corryvreckan pixels, and store these in the trees during run time
-std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> CorryvreckanWriterModule::run(unsigned int, DelegateVariants& messages) {
+void CorryvreckanWriterModule::run(unsigned int, DelegateVariants& messages, DispatchFunc) {
     auto base_messages = mpark::get<std::vector<std::shared_ptr<BaseMessage>>>(messages);
     decltype(pixel_messages_) pixel_messages;
     for (auto& message : base_messages) {
@@ -149,8 +149,6 @@ std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> CorryvreckanWr
 
     // Increment the time till the next event
     time_ += 10;
-
-    return {};
 }
 
 // Save the output trees to file

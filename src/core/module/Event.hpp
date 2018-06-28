@@ -81,6 +81,18 @@ namespace allpix {
             void append(Module* source, std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> messages);
             DelegateVariants& fetch_for(Module* module);
 
+            /**
+             * @brief Dispatches a message
+             * @param source Module dispatching the message
+             * @param message Pointer to the message to dispatch
+             * @param name Optional message name (defaults to - indicating that it should dispatch to the module output
+             * parameter)
+             */
+            /* template <typename T> */
+            void dispatchMessage(Module* source, std::shared_ptr<BaseMessage> message, const std::string& name = "-") {
+                dispatch_message(source, message, name);
+            }
+
         private:
             void dispatch_message(Module* source, std::shared_ptr<BaseMessage> message, std::string name);
             bool dispatch_message(Module* source, const std::shared_ptr<BaseMessage>& message, const std::string& name, const std::string& id);
@@ -105,5 +117,8 @@ namespace allpix {
     };
 
 } // namespace allpix
+
+// Include template members
+/* #include "Event.tpp" */
 
 #endif /* ALLPIX_MODULE_EVENT_H */

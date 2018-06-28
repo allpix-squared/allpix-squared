@@ -128,9 +128,7 @@ unsigned int SensitiveDetectorActionG4::getDepositedCharge() {
     return deposited_charge_;
 }
 
-std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> SensitiveDetectorActionG4::dispatchMessages(unsigned int event_num) {
-
-    (void)event_num;
+void SensitiveDetectorActionG4::dispatchMessages(Module::DispatchFunc& dispatchMessage) {
     // Create the mc particles
     std::vector<MCParticle> mc_particles;
     for(auto& track_id_point : track_begin_) {
@@ -165,12 +163,9 @@ std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> SensitiveDetec
         mc_particles.at(track_idx).setParent(&mc_particles.at(parent_idx));
     }
 
-    std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> output_messages;
-
     // Send the mc particle information
     auto mc_particle_message = std::make_shared<MCParticleMessage>(std::move(mc_particles), detector_);
-    /* messenger_->dispatchMessage(event_num, module_, mc_particle_message); */
-    output_messages.emplace_back(mc_particle_message, "-");
+    dispatchMessage(module_, mc_particle_message, "-");
 
     // Clear track data for the next event
     track_parents_.clear();
@@ -200,8 +195,7 @@ std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> SensitiveDetec
         auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(deposits_), detector_);
 
         // Dispatch the message
-        /* messenger_->dispatchMessage(event_num, module_, deposit_message); */
-        output_messages.emplace_back(deposit_message, "-");
+        dispatchMessage(module_, deposit_message, "-");
     }
 
     // Clear deposits for next event
@@ -210,6 +204,4 @@ std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> SensitiveDetec
     // Clear link tables for next event
     deposit_to_id_.clear();
     id_to_particle_.clear();
-
-    return output_messages;
 }

@@ -158,8 +158,10 @@ void Event::init() {
         // Run module
         try {
             auto input_msgs = message_storage_.fetch_for(module.get());
-            auto output_msgs = module->run(event_num_, input_msgs);
-            message_storage_.append(module.get(), output_msgs);
+            module->run(event_num_, input_msgs,
+                    [this](Module* source, std::shared_ptr<BaseMessage> message, const std::string& name = "-") {
+                        message_storage_.dispatchMessage(source, message, name);
+                    });
         } catch(EndOfRunException& e) {
             // Terminate if the module threw the EndOfRun request exception:
             LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
@@ -225,8 +227,10 @@ void Event::run(const unsigned int number_of_events) {
         // Run module
         try {
             auto input_msgs = message_storage_.fetch_for(module.get());
-            auto output_msgs = module->run(this->event_num_, input_msgs);
-            message_storage_.append(module.get(), output_msgs);
+            module->run(event_num_, input_msgs,
+                    [this](Module* source, std::shared_ptr<BaseMessage> message, const std::string& name = "-") {
+                        message_storage_.dispatchMessage(source, message, name);
+                    });
         } catch(EndOfRunException& e) {
             // Terminate if the module threw the EndOfRun request exception:
             LOG(WARNING) << "Request to terminate:" << std::endl << e.what();

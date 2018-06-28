@@ -54,7 +54,7 @@ namespace allpix {
         /**
          * @brief Deposit charges for a single event
          */
-        std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> run(unsigned int, DelegateVariants&) override;
+        void run(unsigned int, DelegateVariants&, DispatchFunc) override;
 
         /**
          * @brief Display statistical summary

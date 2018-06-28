@@ -97,10 +97,8 @@ void DefaultDigitizerModule::init() {
     }
 }
 
-std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> DefaultDigitizerModule::run(unsigned int event_num, DelegateVariants& message) {
+void DefaultDigitizerModule::run(unsigned int, DelegateVariants& message, DispatchFunc dispatchMessage) {
     auto pixel_message = std::dynamic_pointer_cast<PixelChargeMessage>(mpark::get<std::shared_ptr<BaseMessage>>(message));
-
-    (void)event_num;
 
     // Loop through all pixels with charges
     std::vector<PixelHit> hits;
@@ -199,11 +197,8 @@ std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> DefaultDigitiz
     if(!hits.empty()) {
         // Create and dispatch hit message
         auto hits_message = std::make_shared<PixelHitMessage>(std::move(hits), getDetector());
-        /* messenger_->dispatchMessage(event_num, this, hits_message); */
-        return {{hits_message, "-"}};
+        dispatchMessage(this, hits_message, "-");
     }
-
-    return {};
 }
 
 void DefaultDigitizerModule::finalize() {
