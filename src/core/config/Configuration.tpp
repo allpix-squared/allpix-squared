@@ -133,10 +133,11 @@ namespace allpix {
         // NOTE: not the most elegant way to support arrays
         std::string str;
         for(auto& el : val) {
-            str += ",";
             str += allpix::to_string(el);
+            str += ",";
         }
-        set(key, str);
+        str.pop_back();
+        config_[key] = str;
     }
 
     template <typename T> void Configuration::setDefault(const std::string& key, const T& val) {
