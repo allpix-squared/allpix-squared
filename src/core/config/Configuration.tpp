@@ -134,7 +134,7 @@ namespace allpix {
         std::string str;
         for(auto& el : val) {
             str += ",";
-            str += allpix::to_string(val);
+            str += allpix::to_string(el);
         }
         set(key, str);
     }
