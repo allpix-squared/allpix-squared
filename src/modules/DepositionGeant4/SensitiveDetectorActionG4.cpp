@@ -35,11 +35,10 @@ using namespace allpix;
 
 SensitiveDetectorActionG4::SensitiveDetectorActionG4(Module* module,
                                                      const std::shared_ptr<Detector>& detector,
-                                                     Messenger* msg,
                                                      TrackInfoManager* track_info_manager,
                                                      double charge_creation_energy)
     : G4VSensitiveDetector("SensitiveDetector_" + detector->getName()), module_(module), detector_(detector),
-      messenger_(msg), track_info_manager_(track_info_manager), charge_creation_energy_(charge_creation_energy) {
+      track_info_manager_(track_info_manager), charge_creation_energy_(charge_creation_energy) {
 
     // Add the sensor to the internal sensitive detector manager
     G4SDManager* sd_man_g4 = G4SDManager::GetSDMpointer();
