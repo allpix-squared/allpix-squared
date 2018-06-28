@@ -1,17 +1,5 @@
 namespace allpix {
     template <typename T>
-    void
-    Messenger::dispatchMessage(unsigned int event_id, Module* source, std::shared_ptr<T> message, const std::string& name) {
-        static_assert(std::is_base_of<BaseMessage, T>::value, "Dispatched message should inherit from Message class");
-
-        // Tag the message
-        auto base_message = std::static_pointer_cast<BaseMessage>(message);
-        base_message->event_id = event_id;
-
-        dispatch_message(source, base_message, name);
-    }
-
-    template <typename T>
     void Messenger::registerListener(T* receiver,
                                      void (T::*method)(std::shared_ptr<BaseMessage>, std::string name),
                                      MsgFlags flags) {

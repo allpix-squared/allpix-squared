@@ -108,24 +108,6 @@ namespace allpix {
          */
         bool hasReceiver(Module* source, const std::shared_ptr<BaseMessage>& message);
 
-        /**
-         * @brief Dispatches a message
-         * @param event_id Event identifier for the message
-         * @param source Module dispatching the message
-         * @param message Pointer to the message to dispatch
-         * @param name Optional message name (defaults to - indicating that it should dispatch to the module output
-         * parameter)
-         */
-        template <typename T>
-        [[deprecated]]
-        void
-        dispatchMessage(unsigned int event_id, Module* source, std::shared_ptr<T> message, const std::string& name = "-");
-
-        /**
-         * @brief Removes the list of sent messages, clearing them from memory if not otherwise used
-         */
-        inline void clearMessages() { sent_messages_.clear(); }
-
     private:
         /**
          * @brief Add a delegate to the listeners
@@ -141,27 +123,6 @@ namespace allpix {
          * @note This should be called by the Module destructor to remove their delegates
          */
         void remove_delegate(BaseDelegate* delegate);
-
-        /**
-         * @brief Dispatch base message to the specific and general delegates
-         * @param source Dispatching module
-         * @param message Message to dispatch
-         * @param name Message name (- indicates to use module output parameter)
-         */
-        void dispatch_message(Module* source, const std::shared_ptr<BaseMessage>& message, std::string name);
-
-        /**
-         * @brief Dispatch base message to the exact delegates
-         * @param source Dispatching module
-         * @param message Message to dispatch
-         * @param name Name of the message
-         * @param id Identifier to dispatch to (either the name or '*' to dispatch to all)
-         */
-        bool dispatch_message(Module* source,
-                              const std::shared_ptr<BaseMessage>& message,
-                              const std::string& name,
-                              const std::string& id);
-
 
         using NewDelegateMap = std::map<Module*, std::map<std::type_index, std::map<std::string, std::list<std::shared_ptr<BaseDelegate>>>>>;
         using DelegateMap = std::map<std::type_index, std::map<std::string, std::list<std::shared_ptr<BaseDelegate>>>>;
