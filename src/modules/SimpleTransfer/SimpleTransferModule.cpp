@@ -45,6 +45,8 @@ SimpleTransferModule::SimpleTransferModule(Configuration& config, Messenger* mes
 std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> SimpleTransferModule::run(unsigned int event_num, DelegateVariants& message) {
     auto propagated_message = std::dynamic_pointer_cast<PropagatedChargeMessage>(mpark::get<std::shared_ptr<BaseMessage>>(message));
 
+    (void)event_num;
+
     // Find corresponding pixels for all propagated charges
     LOG(TRACE) << "Transferring charges to pixels";
     unsigned int transferred_charges_count = 0;
@@ -108,7 +110,7 @@ std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> SimpleTransfer
 
     // Dispatch message of pixel charges
     auto pixel_message = std::make_shared<PixelChargeMessage>(pixel_charges, detector_);
-    messenger_->dispatchMessage(event_num, this, pixel_message);
+    /* messenger_->dispatchMessage(event_num, this, pixel_message); */
     return {{pixel_message, "-"}};
 }
 

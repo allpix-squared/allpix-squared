@@ -110,6 +110,8 @@ void DetectorHistogrammerModule::init() {
 
 std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> DetectorHistogrammerModule::run(unsigned int event_num, DelegateVariants& message) {
     auto pixels_message = std::dynamic_pointer_cast<PixelHitMessage>(mpark::get<std::shared_ptr<BaseMessage>>(message));
+
+    (void)event_num;
     LOG(DEBUG) << "Adding hits in " << pixels_message->getData().size() << " pixels";
 
     // Fill 2D hitmap histogram

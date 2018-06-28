@@ -117,6 +117,7 @@ namespace allpix {
          * parameter)
          */
         template <typename T>
+        [[deprecated]]
         void
         dispatchMessage(unsigned int event_id, Module* source, std::shared_ptr<T> message, const std::string& name = "-");
 

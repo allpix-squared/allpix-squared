@@ -133,11 +133,14 @@ void Event::init() {
         std::lock_guard<std::mutex> lock(module->run_mutex_);
 
         // Check if module is satisfied to run
+        // TODO: rewrite this for event-local messages!
+#if 0
         if(!module->check_delegates(event_num_)) {
             LOG(TRACE) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
                        << ", skipping module!";
             return;
         }
+#endif
 
         // Get current time
         auto start = std::chrono::steady_clock::now();

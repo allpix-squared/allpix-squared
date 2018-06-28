@@ -436,9 +436,6 @@ namespace allpix {
             const BaseMessage* inst = msg.get();
             assert(typeid(*inst) == typeid(R));
 #endif
-            if(msg->event_id == 0)
-                throw RuntimeError("Encountered invalid message with ID 0");
-
             auto& dest = mpark::get<std::shared_ptr<BaseMessage>>(destv);
 
             // Raise an error if the message is overwritten (unless it is allowed)

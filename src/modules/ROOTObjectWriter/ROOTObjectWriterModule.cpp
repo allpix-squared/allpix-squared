@@ -145,6 +145,7 @@ std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> ROOTObjectWrit
     LOG(TRACE) << "Writing new objects to tree";
     output_file_->cd();
 
+
     // Fill the tree with the current received messages
     for(auto& tree : trees_) {
         tree.second->Fill();

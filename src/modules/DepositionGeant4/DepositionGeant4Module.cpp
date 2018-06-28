@@ -273,6 +273,8 @@ std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> DepositionGean
         SUPPRESS_STREAM(G4cout);
     }
 
+    (void)event_num;
+
     // Start a single event from the beam
     LOG(TRACE) << "Enabling beam";
     run_manager_g4_->BeamOn(static_cast<int>(config_.get<unsigned int>("number_of_particles", 1)));

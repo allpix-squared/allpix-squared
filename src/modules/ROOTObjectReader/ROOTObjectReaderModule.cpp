@@ -230,6 +230,9 @@ std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> ROOTObjectRead
     }
     LOG(TRACE) << "Building messages from stored objects";
 
+
+    (void)event_num;
+
     std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> output_messages;
 
     // Loop through all branches
@@ -257,7 +260,7 @@ std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> ROOTObjectRead
         std::shared_ptr<BaseMessage> message = iter->second(*objects, message_inf.detector);
 
         // Dispatch the message
-        messenger_->dispatchMessage(event_num, this, message, message_inf.name);
+        /* messenger_->dispatchMessage(event_num, this, message, message_inf.name); */
         output_messages.emplace_back(message, message_inf.name);
     }
 
