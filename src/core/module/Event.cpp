@@ -91,6 +91,7 @@ bool Event::MessageStorage::dispatch_message(Module* source, const std::shared_p
             auto& dest = messages_[delegate->getUniqueName()];
 
             delegate->process(message, name, dest);
+            satisfied_modules_[delegate->getUniqueName()] = true;
             send = true;
         }
     }
@@ -103,11 +104,25 @@ bool Event::MessageStorage::dispatch_message(Module* source, const std::shared_p
                        << " to generic listener " << delegate->getUniqueName();
             auto& dest = messages_[delegate->getUniqueName()];
             delegate->process(message, name, dest);
+            satisfied_modules_[delegate->getUniqueName()] = true;
             send = true;
         }
     }
 
     return send;
+}
+
+bool Event::MessageStorage::is_satisfied(Module* module) const {
+    // Check delegate flags. If false, check event-local satisfaction.
+    if(module->check_delegates()) {
+        return true;
+    }
+
+    try {
+        return satisfied_modules_.at(module->getUniqueName());
+    } catch (const std::out_of_range&) {
+        return false;
+    }
 }
 
 DelegateVariants& Event::MessageStorage::fetch_for(Module* module) {
@@ -133,14 +148,12 @@ void Event::init() {
         std::lock_guard<std::mutex> lock(module->run_mutex_);
 
         // Check if module is satisfied to run
-        // TODO: rewrite this for event-local messages!
-#if 0
-        if(!module->check_delegates(event_num_)) {
-            LOG(TRACE) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
+        if(!message_storage_.is_satisfied(module.get())) {
+        /* if(!module->check_delegates()) { */
+            LOG(WARNING) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
                        << ", skipping module!";
             return;
         }
-#endif
 
         // Get current time
         auto start = std::chrono::steady_clock::now();
@@ -203,13 +216,12 @@ void Event::run(const unsigned int number_of_events) {
         LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << this->event_num_ << " of " << number_of_events << " ["
                                           << module->get_identifier().getUniqueName() << "]";
         // Check if module is satisfied to run
-#if 0
-        if(!module->check_delegates(event_num_)) {
-            LOG(TRACE) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
+        if(!message_storage_.is_satisfied(module.get())) {
+        /* if(!module->check_delegates()) { */
+            LOG(WARNING) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
                        << ", skipping module!";
             return;
         }
-#endif
 
         // Get current time
         auto start = std::chrono::steady_clock::now();

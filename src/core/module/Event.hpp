@@ -81,6 +81,8 @@ namespace allpix {
             void append(Module* source, std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> messages);
             DelegateVariants& fetch_for(Module* module);
 
+            bool is_satisfied(Module* module) const;
+
             /**
              * @brief Dispatches a message
              * @param source Module dispatching the message
@@ -101,6 +103,7 @@ namespace allpix {
             Messenger::DelegateMap delegates_;
 
             std::map<std::string, DelegateVariants> messages_;
+            std::map<std::string, bool> satisfied_modules_;
 
             std::vector<std::shared_ptr<BaseMessage>> sent_messages_;
         };
