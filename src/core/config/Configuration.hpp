@@ -157,7 +157,7 @@ namespace allpix {
         template <typename T> void set(const std::string& key, const T& val);
 
         /**
-         * @brief Set value for a key in a given type with units
+         * @brief Store value for a key in a given type, including units
          * @param key Key to set value of
          * @param val Value to assign to the key
          * @param units List of possible output units
