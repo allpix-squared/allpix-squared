@@ -189,7 +189,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             if(sample == "Fe-55") {
                 double energy_fe[2] = {0.0059, 0.00649};
                 double intensity_fe[2] = {28., 2.85};
-                add_multiple_decay("gamma", "User", energy_fe, intensity_fe, 2);
+                add_multiple_decay("gamma", energy_fe, intensity_fe, 2);
             } else {
                 throw InvalidValueError(config, "sample", "Please set a sample.");
             }
@@ -208,7 +208,7 @@ void GeneratorActionG4::GeneratePrimaries(G4Event* event) {
     particle_source_->GeneratePrimaryVertex(event);
 }
 
-void GeneratorActionG4::add_single_decay(std::string particle_type, std::string EnergyType, double Energy, double Spread) {
+void GeneratorActionG4::add_single_decay(std::string particle_type, double Energy, double Spread) {
     std::transform(particle_type.begin(), particle_type.end(), particle_type.begin(), ::tolower);
     auto pdg_table = G4ParticleTable::GetParticleTable();
     G4ParticleDefinition* particle = pdg_table->FindParticle(particle_type);
@@ -216,15 +216,15 @@ void GeneratorActionG4::add_single_decay(std::string particle_type, std::string 
     single_source->SetNumberOfParticles(1);
     single_source->SetParticleDefinition(particle);
     single_source->SetParticleTime(0.0);
-    single_source->GetEneDist()->SetEnergyDisType(EnergyType);
-    if(EnergyType == "Gauss") {
-        single_source->GetEneDist()->SetMonoEnergy(Energy);
-        single_source->GetEneDist()->SetBeamSigmaInE(Spread);
-    }
+    single_source->GetEneDist()->SetEnergyDisType("Gauss");
+    single_source->GetEneDist()->SetMonoEnergy(Energy);
+    single_source->GetEneDist()->SetBeamSigmaInE(Spread);
 }
 
-void GeneratorActionG4::add_multiple_decay(
-    std::string particle_type, std::string EnergyType, const double* Energy, double* Intensity, int len) {
+void GeneratorActionG4::add_multiple_decay(std::string particle_type,
+                                           const double* Energy,
+                                           const double* Intensity,
+                                           int len) {
     std::transform(particle_type.begin(), particle_type.end(), particle_type.begin(), ::tolower);
     auto pdg_table = G4ParticleTable::GetParticleTable();
     G4ParticleDefinition* particle = pdg_table->FindParticle(particle_type);
@@ -232,16 +232,14 @@ void GeneratorActionG4::add_multiple_decay(
     single_source->SetNumberOfParticles(1);
     single_source->SetParticleDefinition(particle);
     single_source->SetParticleTime(0.0);
-    single_source->GetEneDist()->SetEnergyDisType(EnergyType);
-    if(EnergyType == "User") {
-        G4double energy_hist[10];
-        G4double intensity_hist[10];
-        for(G4int i = 0; i < len; i++) {
-            for(G4int j = 0; j < 10; j++) {
-                energy_hist[j] = Energy[i] + 0.0001 * gRandom->Gaus(0, 1);
-                intensity_hist[j] = Intensity[i] + 0.01 * gRandom->Gaus(0, 1);
-                single_source->GetEneDist()->UserEnergyHisto(G4ThreeVector(energy_hist[j], intensity_hist[j], 0.));
-            }
+    single_source->GetEneDist()->SetEnergyDisType("User");
+    G4double energy_hist[10];
+    G4double intensity_hist[10];
+    for(G4int i = 0; i < len; i++) {
+        for(G4int j = 0; j < 10; j++) {
+            energy_hist[j] = Energy[i] + 0.0001 * gRandom->Gaus(0, 1);
+            intensity_hist[j] = Intensity[i] + 0.01 * gRandom->Gaus(0, 1);
+            single_source->GetEneDist()->UserEnergyHisto(G4ThreeVector(energy_hist[j], intensity_hist[j], 0.));
         }
     }
 }
