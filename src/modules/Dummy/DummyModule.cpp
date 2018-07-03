@@ -34,7 +34,7 @@ void DummyModule::init() {
     }
 }
 
-void DummyModule::run(unsigned int, DelegateVariants&, DispatchFunc) {
+void DummyModule::run(unsigned int, MessageStorage&) {
     // ... Implement ... (Typically uses the configuration to execute function and outputs an message)
     // Loop through all receieved messages and print some information
     for(auto& message : messages_) {

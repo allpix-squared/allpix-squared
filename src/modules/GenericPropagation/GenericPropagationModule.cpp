@@ -513,8 +513,8 @@ void GenericPropagationModule::init() {
     }
 }
 
-void GenericPropagationModule::run(unsigned int event_num, DelegateVariants& message, DispatchFunc dispatchMessage) {
-    auto deposits_message = std::dynamic_pointer_cast<DepositedChargeMessage>(mpark::get<std::shared_ptr<BaseMessage>>(message));
+void GenericPropagationModule::run(unsigned int event_num, MessageStorage& messages) {
+    auto deposits_message = messages.fetchMessage<DepositedChargeMessage>();
 
     // Create vector of propagated charges to output
     std::vector<PropagatedCharge> propagated_charges;
@@ -607,7 +607,7 @@ void GenericPropagationModule::run(unsigned int event_num, DelegateVariants& mes
     auto propagated_charge_message = std::make_shared<PropagatedChargeMessage>(std::move(propagated_charges), detector_);
 
     // Dispatch the message with propagated charges
-    dispatchMessage(this, propagated_charge_message, "-");
+    messages.dispatchMessage(this, propagated_charge_message, "-");
 }
 
 /**

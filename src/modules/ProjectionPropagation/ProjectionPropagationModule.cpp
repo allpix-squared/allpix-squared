@@ -78,8 +78,8 @@ void ProjectionPropagationModule::init() {
     }
 }
 
-void ProjectionPropagationModule::run(unsigned int, DelegateVariants& message, DispatchFunc dispatchMessage) {
-    auto deposits_message = std::dynamic_pointer_cast<DepositedChargeMessage>(mpark::get<std::shared_ptr<BaseMessage>>(message));
+void ProjectionPropagationModule::run(unsigned int, MessageStorage& messages) {
+    auto deposits_message = messages.fetchMessage<DepositedChargeMessage>();
 
     // Create vector of propagated charges to output
     std::vector<PropagatedCharge> propagated_charges;
@@ -210,7 +210,7 @@ void ProjectionPropagationModule::run(unsigned int, DelegateVariants& message, D
     auto propagated_charge_message = std::make_shared<PropagatedChargeMessage>(std::move(propagated_charges), detector_);
 
     // Dispatch the message with propagated charges
-    dispatchMessage(this, propagated_charge_message, "-");
+    messages.dispatchMessage(this, propagated_charge_message, "-");
 }
 
 void ProjectionPropagationModule::finalize() {

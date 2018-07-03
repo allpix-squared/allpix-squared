@@ -51,7 +51,7 @@ namespace allpix {
         /**
          * @brief Show visualization updates if not accumulating data
          */
-        void run(unsigned int, DelegateVariants&, DispatchFunc) override;
+        void run(unsigned int, MessageStorage&) override;
 
         /**
          * @brief Possibly start GUI or terminal and display the visualization

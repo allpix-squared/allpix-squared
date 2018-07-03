@@ -53,7 +53,7 @@ namespace allpix {
         /**
          * @brief Propagate all deposited charges through the sensor
          */
-        void run(unsigned int event_num, DelegateVariants&, DispatchFunc) override;
+        void run(unsigned int event_num, MessageStorage&) override;
 
         /**
          * @brief Write statistical summary

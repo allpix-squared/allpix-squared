@@ -53,7 +53,7 @@ namespace allpix {
         /**
          * @brief Writes the objects fetched to their specific tree
          */
-        void run(unsigned int, DelegateVariants&, DispatchFunc) override;
+        void run(unsigned int, MessageStorage&) override;
 
         /**
          * @brief Write the output file

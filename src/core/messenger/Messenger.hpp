@@ -22,6 +22,8 @@
 
 namespace allpix {
 
+    using DelegateMap = std::map<std::type_index, std::map<std::string, std::list<std::shared_ptr<BaseDelegate>>>>;
+
     /**
      * @ingroup Managers
      * @brief Manager responsible for sending messages between objects
@@ -126,7 +128,7 @@ namespace allpix {
         void remove_delegate(BaseDelegate* delegate);
 
         using NewDelegateMap = std::map<Module*, std::map<std::type_index, std::map<std::string, std::list<std::shared_ptr<BaseDelegate>>>>>;
-        using DelegateMap = std::map<std::type_index, std::map<std::string, std::list<std::shared_ptr<BaseDelegate>>>>;
+        /* using DelegateMap = std::map<std::type_index, std::map<std::string, std::list<std::shared_ptr<BaseDelegate>>>>; */
         using DelegateIteratorMap =
             std::map<BaseDelegate*,
                      std::tuple<std::type_index, std::string, std::list<std::shared_ptr<BaseDelegate>>::iterator>>;

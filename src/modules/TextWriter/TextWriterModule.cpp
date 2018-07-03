@@ -108,7 +108,7 @@ void TextWriterModule::receive(std::shared_ptr<BaseMessage> message, std::string
     }
 }
 
-void TextWriterModule::run(unsigned int event_num, DelegateVariants&, DispatchFunc) {
+void TextWriterModule::run(unsigned int event_num, MessageStorage&) {
     LOG(TRACE) << "Writing new objects to text file";
 
     // Print the current event:

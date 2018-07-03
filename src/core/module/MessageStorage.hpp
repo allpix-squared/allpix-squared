@@ -4,13 +4,16 @@
 #include "../messenger/Messenger.hpp"
 
 namespace allpix {
+    class Module;
+
+    using DelegateMap = std::map<std::type_index, std::map<std::string, std::list<std::shared_ptr<BaseDelegate>>>>;
 
     class MessageStorage {
         public:
             /**
              * @brief Constructor
              */
-            explicit MessageStorage(Messenger::DelegateMap delegates)
+            explicit MessageStorage(DelegateMap delegates)
                 : delegates_(delegates) {}
 
             DelegateVariants& fetch_for(Module* module);
@@ -30,13 +33,13 @@ namespace allpix {
             }
 
             template <typename Msg>
-            std::shared_ptr<Msg> fetchMessage(Module* module) {
-                return std::dynamic_pointer_cast<Msg>(mpark::get<std::shared_ptr<BaseMessage>>(fetch_for(module)));
+            std::shared_ptr<Msg> fetchMessage() {
+                return std::dynamic_pointer_cast<Msg>(mpark::get<std::shared_ptr<BaseMessage>>(message_));
             }
 
             template <typename Msg>
-            std::vector<std::shared_ptr<Msg>> fetchMultiMessage(Module* module) {
-                auto base_messages = mpark::get<std::vector<std::shared_ptr<BaseMessage>>>(fetch_for(module));
+            std::vector<std::shared_ptr<Msg>> fetchMultiMessage() {
+                auto base_messages = mpark::get<std::vector<std::shared_ptr<BaseMessage>>>(message_);
                 std::vector<std::shared_ptr<Msg>> derived_messages;
                 for (auto& message : base_messages) {
                     derived_messages.push_back(std::dynamic_pointer_cast<Msg>(message));
@@ -45,14 +48,21 @@ namespace allpix {
                 return derived_messages;
             }
 
+            // ... nah..
+            MessageStorage& using_module(Module* module) {
+                message_ = fetch_for(module);
+                return *this;
+            }
+
         private:
             void dispatch_message(Module* source, std::shared_ptr<BaseMessage> message, std::string name);
             bool dispatch_message(Module* source, const std::shared_ptr<BaseMessage>& message, const std::string& name, const std::string& id);
 
             // What are all modules listening to?
-            Messenger::DelegateMap delegates_;
+            DelegateMap delegates_;
 
             std::map<std::string, DelegateVariants> messages_;
+            DelegateVariants message_;
             std::map<std::string, bool> satisfied_modules_;
 
             std::vector<std::shared_ptr<BaseMessage>> sent_messages_;

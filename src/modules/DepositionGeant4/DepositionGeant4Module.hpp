@@ -54,7 +54,7 @@ namespace allpix {
         /**
          * @brief Deposit charges for a single event
          */
-        void run(unsigned int, DelegateVariants&, DispatchFunc) override;
+        void run(unsigned int, MessageStorage&) override;
 
         /**
          * @brief Display statistical summary

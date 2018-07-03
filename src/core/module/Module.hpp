@@ -23,6 +23,7 @@
 #include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
 #include "core/messenger/delegates.h"
+#include "core/module/MessageStorage.hpp"
 #include "exceptions.h"
 
 namespace allpix {
@@ -148,10 +149,9 @@ namespace allpix {
          */
         // TODO [doc] Start the sequence at 0 instead of 1?
         // TODO [doc] Document all new parameters
-        virtual void run(unsigned int event_num, DelegateVariants& messages, DispatchFunc dispatchMessage) {
+        virtual void run(unsigned int event_num, MessageStorage& messages) {
             (void)event_num;
             (void)messages;
-            (void)dispatchMessage;
         }
         //
         /**

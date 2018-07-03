@@ -51,7 +51,7 @@ namespace allpix {
         /**
          * @brief Fill the histograms
          */
-        void run(unsigned int, DelegateVariants&, DispatchFunc) override;
+        void run(unsigned int, MessageStorage&) override;
 
         /**
          * @brief Write the histograms to the modules file

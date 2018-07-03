@@ -44,7 +44,7 @@ namespace allpix {
         /**
          * @brief Transfer the propagated charges to the pixels
          */
-        void run(unsigned int, DelegateVariants&, DispatchFunc) override;
+        void run(unsigned int, MessageStorage&) override;
 
         /**
          * @brief Display statistical summary

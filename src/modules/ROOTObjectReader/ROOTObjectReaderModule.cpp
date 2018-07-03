@@ -219,7 +219,7 @@ void ROOTObjectReaderModule::init() {
     }
 }
 
-void ROOTObjectReaderModule::run(unsigned int event_num, DelegateVariants&, DispatchFunc dispatchMessage) {
+void ROOTObjectReaderModule::run(unsigned int event_num, MessageStorage& messages) {
     --event_num;
     for(auto& tree : trees_) {
         if(event_num >= tree->GetEntries()) {
@@ -255,7 +255,7 @@ void ROOTObjectReaderModule::run(unsigned int event_num, DelegateVariants&, Disp
         std::shared_ptr<BaseMessage> message = iter->second(*objects, message_inf.detector);
 
         // Dispatch the message
-        dispatchMessage(this, message, message_inf.name);
+        messages.dispatchMessage(this, message, message_inf.name);
     }
 }
 

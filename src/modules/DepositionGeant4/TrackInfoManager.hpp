@@ -71,7 +71,7 @@ namespace allpix {
          * @param module The module which is responsible for dispatching the message
          * @param messenger The messenger used to dispatch it
          */
-        void dispatchMessage(Module* module, Module::DispatchFunc& dispatchMessage);
+        void dispatchMessage(Module* module, MessageStorage& messages);
 
         /**
          * @brief Populate the #stored_tracks_ with MCTrack objects

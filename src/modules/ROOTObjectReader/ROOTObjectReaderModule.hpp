@@ -56,7 +56,7 @@ namespace allpix {
         /**
          * @brief Convert the objects stored for the current event to messages
          */
-        void run(unsigned int, DelegateVariants&, DispatchFunc) override;
+        void run(unsigned int, MessageStorage&) override;
 
         /**
          * @brief Output summary and close the ROOT file

@@ -266,7 +266,7 @@ void DepositionGeant4Module::init() {
     RELEASE_STREAM(G4cout);
 }
 
-void DepositionGeant4Module::run(unsigned int event_num, DelegateVariants&, DispatchFunc dispatchMessage) {
+void DepositionGeant4Module::run(unsigned int event_num, MessageStorage& messages) {
     // Suppress output stream if not in debugging mode
     IFLOG(DEBUG);
     else {
@@ -285,7 +285,7 @@ void DepositionGeant4Module::run(unsigned int event_num, DelegateVariants&, Disp
 
     // Dispatch the necessary messages
     for(auto& sensor : sensors_) {
-        sensor->dispatchMessages(dispatchMessage);
+        sensor->dispatchMessages(messages);
 
         // Fill output plots if requested:
         if(config_.get<bool>("output_plots")) {
@@ -294,7 +294,7 @@ void DepositionGeant4Module::run(unsigned int event_num, DelegateVariants&, Disp
         }
     }
 
-    track_info_manager_->dispatchMessage(this, dispatchMessage);
+    track_info_manager_->dispatchMessage(this, messages);
     track_info_manager_->resetTrackInfoManager();
 }
 

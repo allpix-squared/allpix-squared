@@ -50,7 +50,7 @@ namespace allpix {
         /**
          * @brief Take the digitised pixel hits and write them into the output file
          */
-        void run(unsigned int, DelegateVariants&, DispatchFunc) override;
+        void run(unsigned int, MessageStorage&) override;
 
         /**
          * @brief Write output trees to file

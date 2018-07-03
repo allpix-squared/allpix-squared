@@ -108,8 +108,8 @@ void DetectorHistogrammerModule::init() {
     cluster_charge = new TH1D(cluster_charge_name.c_str(), cluster_charge_title.c_str(), 1000, 0., 50.);
 }
 
-void DetectorHistogrammerModule::run(unsigned int, DelegateVariants& message, DispatchFunc) {
-    auto pixels_message = std::dynamic_pointer_cast<PixelHitMessage>(mpark::get<std::shared_ptr<BaseMessage>>(message));
+void DetectorHistogrammerModule::run(unsigned int, MessageStorage& messages) {
+    auto pixels_message = messages.fetchMessage<PixelHitMessage>();
 
     LOG(DEBUG) << "Adding hits in " << pixels_message->getData().size() << " pixels";
 

@@ -48,7 +48,7 @@ namespace allpix {
         /**
          * @brief Projection of the electrons to the surface
          */
-        void run(unsigned int, DelegateVariants&, DispatchFunc) override;
+        void run(unsigned int, MessageStorage&) override;
 
         /**
          * @brief Write plots if needed

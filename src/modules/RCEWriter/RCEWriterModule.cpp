@@ -135,12 +135,8 @@ void RCEWriterModule::init() {
     print_geo(geo_file, detector_names, geo_mgr_);
 }
 
-void RCEWriterModule::run(unsigned int event_id, DelegateVariants& messages, DispatchFunc) {
-    auto base_messages = mpark::get<std::vector<std::shared_ptr<BaseMessage>>>(messages);
-    decltype(pixel_hit_messages_) pixel_hit_messages;
-    for (auto& message : base_messages) {
-        pixel_hit_messages.push_back(std::dynamic_pointer_cast<PixelHitMessage>(message));
-    }
+void RCEWriterModule::run(unsigned int event_id, MessageStorage& messages) {
+    auto pixel_hit_messages = messages.fetchMultiMessage<PixelHitMessage>();
 
     // fill per-event data
     timestamp_ = 0;

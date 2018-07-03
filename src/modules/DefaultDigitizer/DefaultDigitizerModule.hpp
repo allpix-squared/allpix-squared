@@ -51,7 +51,7 @@ namespace allpix {
         /**
          * @brief Simulate digitization process
          */
-        void run(unsigned int, DelegateVariants&, DispatchFunc) override;
+        void run(unsigned int, MessageStorage&) override;
 
         /**
          * @brief Finalize and write optional histograms

@@ -70,7 +70,7 @@ namespace allpix {
          * @brief Send the MCParticle and DepositedCharge messages
          * @param event_num Event from which the messages are dispatched from
          */
-        void dispatchMessages(Module::DispatchFunc& dispatchMessage);
+        void dispatchMessages(MessageStorage& messages);
 
     private:
         // Instantatiation of the deposition module

@@ -45,7 +45,7 @@ namespace allpix {
         /**
          * @brief [Run the function of this module]
          */
-        void run(unsigned int, DelegateVariants&, DispatchFunc) override;
+        void run(unsigned int, MessageStorage&) override;
 
     private:
         // General module members
