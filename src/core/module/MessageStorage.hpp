@@ -13,57 +13,46 @@ namespace allpix {
             /**
              * @brief Constructor
              */
-            explicit MessageStorage(DelegateMap delegates)
-                : delegates_(delegates) {}
+            explicit MessageStorage(DelegateMap& delegates);
 
-            DelegateVariants& fetch_for(Module* module);
-
+            /**
+             * @brief Check if a module is satisfied for running (all required messages received)
+             * @return True if satisfied, false otherwise
+             */
             bool is_satisfied(Module* module) const;
 
             /**
              * @brief Dispatches a message
-             * @param source Module dispatching the message
              * @param message Pointer to the message to dispatch
              * @param name Optional message name (defaults to - indicating that it should dispatch to the module output
              * parameter)
              */
             template <typename T>
-            void dispatchMessage(std::shared_ptr<T> message, const std::string& name = "-") {
-                static_assert(std::is_base_of<BaseMessage, T>::value, "Dispatched message should inherit from Message class");
-                dispatch_message(module_, message, name);
-            }
+            void dispatchMessage(std::shared_ptr<T> message, const std::string& name = "-");
 
+            /**
+             * @brief Fetches a message
+             */
             template <typename T>
-            std::shared_ptr<T> fetchMessage() {
-                static_assert(std::is_base_of<BaseMessage, T>::value, "Fetched message should inherit from Message class");
-                return std::dynamic_pointer_cast<T>(mpark::get<std::shared_ptr<BaseMessage>>(message_));
-            }
+            std::shared_ptr<T> fetchMessage();
 
+            /**
+             * @brief Fetches a vector of messages
+             */
             template <typename T>
-            std::vector<std::shared_ptr<T>> fetchMultiMessage() {
-                static_assert(std::is_base_of<BaseMessage, T>::value, "Fetched message should inherit from Message class");
-                auto base_messages = mpark::get<std::vector<std::shared_ptr<BaseMessage>>>(message_);
-                std::vector<std::shared_ptr<T>> derived_messages;
-                for (auto& message : base_messages) {
-                    derived_messages.push_back(std::dynamic_pointer_cast<T>(message));
-                }
+            std::vector<std::shared_ptr<T>> fetchMultiMessage();
 
-                return derived_messages;
-            }
-
-            // ... nah..
-            MessageStorage& using_module(Module* module) {
-                message_ = fetch_for(module);
-                module_ = module;
-                return *this;
-            }
+            /**
+             * @brief Prepare storage for a module
+             */
+            MessageStorage& using_module(Module* module);
 
         private:
             void dispatch_message(Module* source, std::shared_ptr<BaseMessage> message, std::string name);
             bool dispatch_message(Module* source, const std::shared_ptr<BaseMessage>& message, const std::string& name, const std::string& id);
 
             // What are all modules listening to?
-            DelegateMap delegates_;
+            DelegateMap& delegates_;
 
             std::map<std::string, DelegateVariants> messages_;
 
@@ -77,5 +66,8 @@ namespace allpix {
     };
 
 } // namespace allpix
+
+// Include template members
+#include "MessageStorage.tpp"
 
 #endif /* ALLPIX_MODULE_MESSAGESTORAGE_H */

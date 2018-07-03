@@ -98,9 +98,6 @@ void Messenger::add_delegate(const std::type_info& message_type, Module* module,
     delegate_to_iterator_.emplace(delegate_iter->get(),
                                   std::make_tuple(std::type_index(message_type), message_name, delegate_iter));
 
-    // Register delegate internally, for new message system
-    new_delegates_[module][std::type_index(message_type)][message_name].push_back(delegate);
-
     // Add delegate to the module itself
     module->add_delegate(this, delegate_iter->get());
 }

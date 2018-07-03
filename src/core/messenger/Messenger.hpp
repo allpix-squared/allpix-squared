@@ -127,13 +127,10 @@ namespace allpix {
          */
         void remove_delegate(BaseDelegate* delegate);
 
-        using NewDelegateMap = std::map<Module*, std::map<std::type_index, std::map<std::string, std::list<std::shared_ptr<BaseDelegate>>>>>;
-        /* using DelegateMap = std::map<std::type_index, std::map<std::string, std::list<std::shared_ptr<BaseDelegate>>>>; */
         using DelegateIteratorMap =
             std::map<BaseDelegate*,
                      std::tuple<std::type_index, std::string, std::list<std::shared_ptr<BaseDelegate>>::iterator>>;
 
-        NewDelegateMap new_delegates_;
         DelegateMap delegates_;
         DelegateIteratorMap delegate_to_iterator_;
         std::vector<std::shared_ptr<BaseMessage>> sent_messages_;

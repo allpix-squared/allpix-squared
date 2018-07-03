@@ -28,6 +28,7 @@
 
 namespace allpix {
     class Messenger;
+    class MessageStorage;
     /**
      * @defgroup Modules Modules
      * @brief Collection of modules included in the framework
