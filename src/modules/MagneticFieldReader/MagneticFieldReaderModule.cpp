@@ -51,15 +51,13 @@ void MagneticFieldReaderModule::init() {
         for(auto& detector : detectors) {
             // TODO the magnetic field is calculated once for the center position of the detector. This could be extended to
             // a function enabling a gradient in the magnetic field inside the sensor
-	  detector->setMagneticField(detector->getOrientation() *                 		   			    geometryManager_->getMagneticField(detector->getPosition()));
-	  LOG(DEBUG) << "Magnetic field in detector " 
-		     << detector->getName() << ": " 
-		     << Units::display(detector->getMagneticField(), {"T", "mT"});
+            detector->setMagneticField(detector->getOrientation() *
+                                       geometryManager_->getMagneticField(detector->getPosition()));
+            LOG(DEBUG) << "Magnetic field in detector " << detector->getName() << ": "
+                       << Units::display(detector->getMagneticField(), {"T", "mT"});
         }
         LOG(INFO) << "Set constant magnetic field: " << Units::display(b_field, {"T", "mT"});
     } else {
         throw InvalidValueError(config_, "model", "model can currently only be 'constant'");
     }
 }
-
-
