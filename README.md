@@ -80,6 +80,7 @@ Allpix<sup>2</sup> has been developed and is maintained by
 The following authors, in alphabetical order, have contributed to Allpix<sup>2</sup>:
 * Thomas Billoud, Université de Montréal, @tbilloud
 * Tobias Bisanz, Georg-August-Universität Göttingen, @tbisanz
+* Katharina Dort, CERN Summer Student, @kdort
 * Neal Gauvin, Université de Genève, @ngauvin
 * Moritz Kiehn, Université de Genève, @msmk
 * Salman Maqbool, CERN Summer Student, @smaqbool
