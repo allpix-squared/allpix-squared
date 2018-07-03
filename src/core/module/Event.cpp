@@ -9,6 +9,7 @@
  */
 
 #include "Event.hpp"
+#include "MessageStorage.hpp"
 #include "Module.hpp"
 
 #include <chrono>
@@ -40,19 +41,7 @@ static bool check_send(BaseMessage* message, BaseDelegate* delegate) {
     return true;
 }
 
-void Event::MessageStorage::append(Module* source, std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> messages) {
-    if(messages.empty()) {
-        return;
-    }
-
-    for(auto message : messages) {
-        dispatch_message(source, message.first, message.second);
-    }
-
-    /* LOG(WARNING) << "Appended " << messages.size() << " messages to storage."; */
-}
-
-void Event::MessageStorage::dispatch_message(Module* source, std::shared_ptr<BaseMessage> message, std::string name) {
+void MessageStorage::dispatch_message(Module* source, std::shared_ptr<BaseMessage> message, std::string name) {
     // Get the name of the output message
     if(name == "-") {
         name = source->get_configuration().get<std::string>("output");
@@ -77,7 +66,7 @@ void Event::MessageStorage::dispatch_message(Module* source, std::shared_ptr<Bas
     sent_messages_.emplace_back(message);
 }
 
-bool Event::MessageStorage::dispatch_message(Module* source, const std::shared_ptr<BaseMessage>& message, const std::string& name, const std::string& id) {
+bool MessageStorage::dispatch_message(Module* source, const std::shared_ptr<BaseMessage>& message, const std::string& name, const std::string& id) {
     bool send = false;
 
     // Create type identifier from the typeid
@@ -114,7 +103,7 @@ bool Event::MessageStorage::dispatch_message(Module* source, const std::shared_p
     return send;
 }
 
-bool Event::MessageStorage::is_satisfied(Module* module) const {
+bool MessageStorage::is_satisfied(Module* module) const {
     // Check delegate flags. If false, check event-local satisfaction.
     if(module->check_delegates()) {
         return true;
@@ -127,7 +116,7 @@ bool Event::MessageStorage::is_satisfied(Module* module) const {
     }
 }
 
-DelegateVariants& Event::MessageStorage::fetch_for(Module* module) {
+DelegateVariants& MessageStorage::fetch_for(Module* module) {
     return messages_[module->getUniqueName()];
 }
 

@@ -12,6 +12,7 @@
 
 // XXX: merely for ModuleList
 #include "ModuleManager.hpp"
+#include "MessageStorage.hpp"
 
 #include "../messenger/Messenger.hpp"
 
@@ -70,43 +71,6 @@ namespace allpix {
         void finalize();
 
     private:
-        class MessageStorage {
-        public:
-            /**
-             * @brief Constructor
-             */
-            explicit MessageStorage(Messenger::DelegateMap delegates)
-                : delegates_(delegates) {}
-
-            void append(Module* source, std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> messages);
-            DelegateVariants& fetch_for(Module* module);
-
-            bool is_satisfied(Module* module) const;
-
-            /**
-             * @brief Dispatches a message
-             * @param source Module dispatching the message
-             * @param message Pointer to the message to dispatch
-             * @param name Optional message name (defaults to - indicating that it should dispatch to the module output
-             * parameter)
-             */
-            /* template <typename T> */
-            void dispatchMessage(Module* source, std::shared_ptr<BaseMessage> message, const std::string& name = "-") {
-                dispatch_message(source, message, name);
-            }
-
-        private:
-            void dispatch_message(Module* source, std::shared_ptr<BaseMessage> message, std::string name);
-            bool dispatch_message(Module* source, const std::shared_ptr<BaseMessage>& message, const std::string& name, const std::string& id);
-
-            // What are all modules listening to?
-            Messenger::DelegateMap delegates_;
-
-            std::map<std::string, DelegateVariants> messages_;
-            std::map<std::string, bool> satisfied_modules_;
-
-            std::vector<std::shared_ptr<BaseMessage>> sent_messages_;
-        };
 
         ModuleList modules_;
         MessageStorage message_storage_;

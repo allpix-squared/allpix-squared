@@ -32,6 +32,7 @@ namespace allpix {
     class Messenger {
         friend class Module;
         friend class Event;
+        friend class MessageStorage;
 
     public:
         /**

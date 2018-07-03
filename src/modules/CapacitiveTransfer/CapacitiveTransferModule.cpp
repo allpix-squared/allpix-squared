@@ -265,6 +265,8 @@ void CapacitiveTransferModule::init() {
 void CapacitiveTransferModule::run(unsigned int, DelegateVariants& message, DispatchFunc dispatchMessage) {
     auto propagated_message = std::dynamic_pointer_cast<PropagatedChargeMessage>(mpark::get<std::shared_ptr<BaseMessage>>(message));
 
+    /* auto propagated_message = fetchMessage.fetch<PropagatedChargeMessage>(); */
+
     // Find corresponding pixels for all propagated charges
     LOG(TRACE) << "Transferring charges to pixels";
     unsigned int transferred_charges_count = 0;
