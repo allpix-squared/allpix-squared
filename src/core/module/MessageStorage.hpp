@@ -5,21 +5,18 @@
 
 namespace allpix {
     class Module;
+    class Event;
 
     using DelegateMap = std::map<std::type_index, std::map<std::string, std::list<std::shared_ptr<BaseDelegate>>>>;
 
     class MessageStorage {
+        friend class Event;
+
         public:
             /**
              * @brief Constructor
              */
             explicit MessageStorage(DelegateMap& delegates);
-
-            /**
-             * @brief Check if a module is satisfied for running (all required messages received)
-             * @return True if satisfied, false otherwise
-             */
-            bool is_satisfied(Module* module) const;
 
             /**
              * @brief Dispatches a message
@@ -42,12 +39,18 @@ namespace allpix {
             template <typename T>
             std::vector<std::shared_ptr<T>> fetchMultiMessage();
 
+        private:
             /**
              * @brief Prepare storage for a module
              */
             MessageStorage& using_module(Module* module);
 
-        private:
+            /**
+             * @brief Check if a module is satisfied for running (all required messages received)
+             * @return True if satisfied, false otherwise
+             */
+            bool is_satisfied(Module* module) const;
+
             void dispatch_message(Module* source, std::shared_ptr<BaseMessage> message, std::string name);
             bool dispatch_message(Module* source, const std::shared_ptr<BaseMessage>& message, const std::string& name, const std::string& id);
 
