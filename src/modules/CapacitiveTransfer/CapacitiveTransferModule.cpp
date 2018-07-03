@@ -369,7 +369,7 @@ void CapacitiveTransferModule::run(unsigned int, MessageStorage& messages) {
 
     // Dispatch message of pixel charges
     auto pixel_message = std::make_shared<PixelChargeMessage>(pixel_charges, detector_);
-    messages.dispatchMessage(this, pixel_message, "-");
+    messages.dispatchMessage(this, pixel_message);
 }
 
 void CapacitiveTransferModule::finalize() {

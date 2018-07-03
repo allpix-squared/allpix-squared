@@ -607,7 +607,7 @@ void GenericPropagationModule::run(unsigned int event_num, MessageStorage& messa
     auto propagated_charge_message = std::make_shared<PropagatedChargeMessage>(std::move(propagated_charges), detector_);
 
     // Dispatch the message with propagated charges
-    messages.dispatchMessage(this, propagated_charge_message, "-");
+    messages.dispatchMessage(this, propagated_charge_message);
 }
 
 /**

@@ -60,7 +60,7 @@ void TrackInfoManager::dispatchMessage(Module* module, MessageStorage& messages)
         }
     }
     auto mc_track_message = std::make_shared<MCTrackMessage>(std::move(stored_tracks_));
-    messages.dispatchMessage(module, mc_track_message, "-");
+    messages.dispatchMessage(module, mc_track_message);
 }
 
 MCTrack const* TrackInfoManager::findMCTrack(int track_id) const {

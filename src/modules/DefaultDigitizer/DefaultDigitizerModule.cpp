@@ -197,7 +197,7 @@ void DefaultDigitizerModule::run(unsigned int, MessageStorage& messages) {
     if(!hits.empty()) {
         // Create and dispatch hit message
         auto hits_message = std::make_shared<PixelHitMessage>(std::move(hits), getDetector());
-        messages.dispatchMessage(this, hits_message, "-");
+        messages.dispatchMessage(this, hits_message);
     }
 }
 

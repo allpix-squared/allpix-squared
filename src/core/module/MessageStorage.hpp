@@ -27,22 +27,25 @@ namespace allpix {
              * @param name Optional message name (defaults to - indicating that it should dispatch to the module output
              * parameter)
              */
-            /* template <typename T> */
-            void dispatchMessage(Module* source, std::shared_ptr<BaseMessage> message, const std::string& name = "-") {
+            template <typename T>
+            void dispatchMessage(Module* source, std::shared_ptr<T> message, const std::string& name = "-") {
+                static_assert(std::is_base_of<BaseMessage, T>::value, "Dispatched message should inherit from Message class");
                 dispatch_message(source, message, name);
             }
 
-            template <typename Msg>
-            std::shared_ptr<Msg> fetchMessage() {
-                return std::dynamic_pointer_cast<Msg>(mpark::get<std::shared_ptr<BaseMessage>>(message_));
+            template <typename T>
+            std::shared_ptr<T> fetchMessage() {
+                static_assert(std::is_base_of<BaseMessage, T>::value, "Fetched message should inherit from Message class");
+                return std::dynamic_pointer_cast<T>(mpark::get<std::shared_ptr<BaseMessage>>(message_));
             }
 
-            template <typename Msg>
-            std::vector<std::shared_ptr<Msg>> fetchMultiMessage() {
+            template <typename T>
+            std::vector<std::shared_ptr<T>> fetchMultiMessage() {
+                static_assert(std::is_base_of<BaseMessage, T>::value, "Fetched message should inherit from Message class");
                 auto base_messages = mpark::get<std::vector<std::shared_ptr<BaseMessage>>>(message_);
-                std::vector<std::shared_ptr<Msg>> derived_messages;
+                std::vector<std::shared_ptr<T>> derived_messages;
                 for (auto& message : base_messages) {
-                    derived_messages.push_back(std::dynamic_pointer_cast<Msg>(message));
+                    derived_messages.push_back(std::dynamic_pointer_cast<T>(message));
                 }
 
                 return derived_messages;
