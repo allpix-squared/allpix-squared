@@ -164,7 +164,7 @@ void SensitiveDetectorActionG4::dispatchMessages(MessageStorage& messages) {
 
     // Send the mc particle information
     auto mc_particle_message = std::make_shared<MCParticleMessage>(std::move(mc_particles), detector_);
-    messages.dispatchMessage(module_, mc_particle_message);
+    messages.dispatchMessage(mc_particle_message);
 
     // Clear track data for the next event
     track_parents_.clear();
@@ -194,7 +194,7 @@ void SensitiveDetectorActionG4::dispatchMessages(MessageStorage& messages) {
         auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(deposits_), detector_);
 
         // Dispatch the message
-        messages.dispatchMessage(module_, deposit_message);
+        messages.dispatchMessage(deposit_message);
     }
 
     // Clear deposits for next event

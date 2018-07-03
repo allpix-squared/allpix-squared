@@ -255,7 +255,7 @@ void ROOTObjectReaderModule::run(unsigned int event_num, MessageStorage& message
         std::shared_ptr<BaseMessage> message = iter->second(*objects, message_inf.detector);
 
         // Dispatch the message
-        messages.dispatchMessage(this, message, message_inf.name);
+        messages.dispatchMessage(message, message_inf.name);
     }
 }
 

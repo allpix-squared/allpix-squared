@@ -28,9 +28,9 @@ namespace allpix {
              * parameter)
              */
             template <typename T>
-            void dispatchMessage(Module* source, std::shared_ptr<T> message, const std::string& name = "-") {
+            void dispatchMessage(std::shared_ptr<T> message, const std::string& name = "-") {
                 static_assert(std::is_base_of<BaseMessage, T>::value, "Dispatched message should inherit from Message class");
-                dispatch_message(source, message, name);
+                dispatch_message(module_, message, name);
             }
 
             template <typename T>
@@ -54,6 +54,7 @@ namespace allpix {
             // ... nah..
             MessageStorage& using_module(Module* module) {
                 message_ = fetch_for(module);
+                module_ = module;
                 return *this;
             }
 
@@ -65,7 +66,11 @@ namespace allpix {
             DelegateMap delegates_;
 
             std::map<std::string, DelegateVariants> messages_;
+
+            // Currently active modules
             DelegateVariants message_;
+            Module* module_;
+
             std::map<std::string, bool> satisfied_modules_;
 
             std::vector<std::shared_ptr<BaseMessage>> sent_messages_;

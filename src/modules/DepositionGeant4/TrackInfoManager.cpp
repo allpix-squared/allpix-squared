@@ -50,7 +50,7 @@ void TrackInfoManager::resetTrackInfoManager() {
     id_to_track_.clear();
 }
 
-void TrackInfoManager::dispatchMessage(Module* module, MessageStorage& messages) {
+void TrackInfoManager::dispatchMessage(MessageStorage& messages) {
     setAllTrackParents();
     IFLOG(DEBUG) {
         LOG(DEBUG) << "Dispatching " << stored_tracks_.size() << " MCTrack(s) from TrackInfoManager::dispatchMessage()";
@@ -60,7 +60,7 @@ void TrackInfoManager::dispatchMessage(Module* module, MessageStorage& messages)
         }
     }
     auto mc_track_message = std::make_shared<MCTrackMessage>(std::move(stored_tracks_));
-    messages.dispatchMessage(module, mc_track_message);
+    messages.dispatchMessage(mc_track_message);
 }
 
 MCTrack const* TrackInfoManager::findMCTrack(int track_id) const {

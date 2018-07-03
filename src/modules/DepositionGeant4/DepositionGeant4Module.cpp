@@ -294,7 +294,7 @@ void DepositionGeant4Module::run(unsigned int event_num, MessageStorage& message
         }
     }
 
-    track_info_manager_->dispatchMessage(this, messages);
+    track_info_manager_->dispatchMessage(messages);
     track_info_manager_->resetTrackInfoManager();
 }
 
