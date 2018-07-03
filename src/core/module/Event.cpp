@@ -15,12 +15,14 @@
 #include <list>
 #include <memory>
 #include <string>
+#include <functional>
 
 #include <TProcessID.h>
 
 #include "core/utils/log.h"
 
 using namespace allpix;
+using namespace std::placeholders;
 
 Event::Event(ModuleList modules,
              const unsigned int event_num,
@@ -171,10 +173,8 @@ void Event::init() {
         // Run module
         try {
             auto input_msgs = message_storage_.fetch_for(module.get());
-            module->run(event_num_, input_msgs,
-                    [this](Module* source, std::shared_ptr<BaseMessage> message, const std::string& name = "-") {
-                        message_storage_.dispatchMessage(source, message, name);
-                    });
+            auto dispatch_function = std::bind(&MessageStorage::dispatchMessage, message_storage_, _1, _2, _3);
+            module->run(event_num_, input_msgs, dispatch_function);
         } catch(EndOfRunException& e) {
             // Terminate if the module threw the EndOfRun request exception:
             LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
@@ -239,10 +239,8 @@ void Event::run(const unsigned int number_of_events) {
         // Run module
         try {
             auto input_msgs = message_storage_.fetch_for(module.get());
-            module->run(event_num_, input_msgs,
-                    [this](Module* source, std::shared_ptr<BaseMessage> message, const std::string& name = "-") {
-                        message_storage_.dispatchMessage(source, message, name);
-                    });
+            auto dispatch_function = std::bind(&MessageStorage::dispatchMessage, message_storage_, _1, _2, _3);
+            module->run(event_num_, input_msgs, dispatch_function);
         } catch(EndOfRunException& e) {
             // Terminate if the module threw the EndOfRun request exception:
             LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
