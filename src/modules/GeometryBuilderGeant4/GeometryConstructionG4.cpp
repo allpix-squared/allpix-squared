@@ -240,7 +240,7 @@ void GeometryConstructionG4::build_detectors() {
         detector->setExternalObject("sensor_log", sensor_log);
 
         // Place the sensor box
-        auto sensor_pos = toG4Vector(model->getSensorCenter() - model->getCenter());
+        auto sensor_pos = toG4Vector(model->toGeoSystem(model->getSensorCenter()));
         LOG(DEBUG) << "  - Sensor\t\t:\t" << Units::display(sensor_pos, {"mm", "um"});
         auto sensor_phys = make_shared_no_delete<G4PVPlacement>(
             nullptr, sensor_pos, sensor_log.get(), "sensor_" + name + "_phys", wrapper_log.get(), false, 0, true);
@@ -287,7 +287,7 @@ void GeometryConstructionG4::build_detectors() {
             detector->setExternalObject("chip_log", chip_log);
 
             // Place the chip
-            auto chip_pos = toG4Vector(model->getChipCenter() - model->getCenter());
+            auto chip_pos = toG4Vector(model->toGeoSystem(model->getChipCenter()));
             LOG(DEBUG) << "  - Chip\t\t:\t" << Units::display(chip_pos, {"mm", "um"});
             auto chip_phys = make_shared_no_delete<G4PVPlacement>(
                 nullptr, chip_pos, chip_log.get(), "chip_" + name + "_phys", wrapper_log.get(), false, 0, true);
@@ -340,7 +340,7 @@ void GeometryConstructionG4::build_detectors() {
             supports_log->push_back(support_log);
 
             // Place the support
-            auto support_pos = toG4Vector(layer.getCenter() - model->getCenter());
+            auto support_pos = toG4Vector(model->toGeoSystem(layer.getCenter()));
             LOG(DEBUG) << "  - Support\t\t:\t" << Units::display(support_pos, {"mm", "um"});
             auto support_phys =
                 make_shared_no_delete<G4PVPlacement>(nullptr,
@@ -383,7 +383,7 @@ void GeometryConstructionG4::build_detectors() {
             detector->setExternalObject("bumps_wrapper_log", bumps_wrapper_log);
 
             // Place the general bumps volume
-            G4ThreeVector bumps_pos = toG4Vector(hybrid_model->getBumpsCenter() - hybrid_model->getCenter());
+            G4ThreeVector bumps_pos = toG4Vector(model->toGeoSystem(hybrid_model->getBumpsCenter()));
             LOG(DEBUG) << "  - Bumps\t\t:\t" << Units::display(bumps_pos, {"mm", "um"});
             auto bumps_wrapper_phys = make_shared_no_delete<G4PVPlacement>(nullptr,
                                                                            bumps_pos,

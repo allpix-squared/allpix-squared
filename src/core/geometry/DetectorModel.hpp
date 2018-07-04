@@ -254,6 +254,8 @@ namespace allpix {
             }
 
             // Support layers
+            // FIXME in case the support location is 'absolute' this might not calculate the right size (if there is empty
+            // spaces between layers)
             for(auto& support_layer : getSupportLayers()) {
                 auto size = support_layer.getSize();
                 auto center = support_layer.getCenter();
@@ -445,6 +447,39 @@ namespace allpix {
                                                    std::move(location),
                                                    full_hole_size,
                                                    std::move(hole_offset)));
+        }
+
+        /**
+         * @brief Translate a position vector to the z geometrical coordinate system
+         * @param point Vector in local coordinate system (whose center is the sensor center)
+         */
+        ROOT::Math::XYZPoint toGeoSystem(ROOT::Math::XYZPoint point) {
+
+            // Get the detector size in the z direction
+            double detector_thickness = getSize().z();
+
+            // Get the total thickness of support layers on the sensor side
+            double support_thickness = 0;
+            for(auto& support_layer : getSupportLayers()) {
+                // FIXME in case the support location is 'absolute' this might not calculate the right size (if there is
+                // empty spaces between layers)
+                if(support_layer.location_ == "sensor") {
+                    auto size = support_layer.getSize();
+                    support_thickness += size.z();
+                }
+            }
+
+            // Calculate the distance to translate in z
+            double d = detector_thickness / 2 - support_thickness - getSensorSize().Z() / 2;
+
+            // Translate the argument vector in z
+            point.SetZ(point.Z() - d);
+
+            // Remove the origin position vector as was done in the old way to place parts in the G4 wrapper
+            point = point - getCenter();
+
+            // return a copy of the argument parameter
+            return point;
         }
 
     protected:
