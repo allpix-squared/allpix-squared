@@ -20,11 +20,6 @@ namespace allpix {
 
         public:
             /**
-             * @brief Constructor
-             */
-            explicit MessageStorage(DelegateMap& delegates);
-
-            /**
              * @brief Dispatches a message
              * @param message Pointer to the message to dispatch
              * @param name Optional message name (defaults to - indicating that it should dispatch to the module output
@@ -46,6 +41,11 @@ namespace allpix {
             std::vector<std::shared_ptr<T>> fetchMultiMessage();
 
         private:
+            /**
+             * @brief Constructor
+             */
+            explicit MessageStorage(DelegateMap& delegates);
+
             /**
              * @brief Prepare storage for a module
              */
