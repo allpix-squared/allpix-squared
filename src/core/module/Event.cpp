@@ -28,7 +28,7 @@ Event::Event(ModuleList modules,
              std::atomic<bool>& terminate,
              std::map<Module*, long double>& module_execution_time,
              Messenger* messenger)
-    : modules_(modules), message_storage_(messenger->delegates_), event_num_(event_num), terminate_(terminate),
+    : modules_(std::move(modules)), message_storage_(messenger->delegates_), event_num_(event_num), terminate_(terminate),
       module_execution_time_(module_execution_time) {}
 
 void Event::init() {
@@ -39,7 +39,7 @@ void Event::init() {
 
     // Execute every Geant4 module
     // XXX: Geant4 modules are only executed if they are at the start of modules_
-    while(modules_.size() > 0) {
+    while(!modules_.empty()) {
 
         auto module = modules_.front();
         if(module->getUniqueName().find("Geant4") == std::string::npos) {

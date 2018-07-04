@@ -118,7 +118,7 @@ namespace allpix {
          * @param module Module linked to the delegate
          * @param delegate Delegate that listens to the message
          */
-        void add_delegate(const std::type_info& message_type, Module* module, std::shared_ptr<BaseDelegate> delegate);
+        void add_delegate(const std::type_info& message_type, Module* module, const std::shared_ptr<BaseDelegate>& delegate);
 
         /**
          * @brief Removes a delegate from the listeners

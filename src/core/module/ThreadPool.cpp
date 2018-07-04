@@ -67,8 +67,9 @@ bool ThreadPool::execute_all() {
 }
 
 bool ThreadPool::execute_one() {
-    if(event_queue_.empty())
+    if(event_queue_.empty()) {
         return false;
+    }
 
     Task task{nullptr};
     if(event_queue_.pop(task, true)) {

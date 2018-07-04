@@ -633,8 +633,9 @@ void ModuleManager::run(Messenger* messenger) {
 
         // Check for premature exception/termination
         thread_pool->check_exception();
-        if(premature_exit_function())
+        if(premature_exit_function()) {
             break;
+        }
     }
 
     LOG(STATUS) << "All events have been initialized";
@@ -642,8 +643,9 @@ void ModuleManager::run(Messenger* messenger) {
     // Execute all remaining events
     while(thread_pool->execute_one()) {
         thread_pool->check_exception();
-        if(premature_exit_function())
+        if(premature_exit_function()) {
             break;
+        }
     }
 
     // Check exception for last event

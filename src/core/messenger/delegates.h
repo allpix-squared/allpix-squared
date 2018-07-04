@@ -29,7 +29,8 @@
 
 namespace allpix {
     // TODO [doc] Document this
-    struct DelegateTypes {
+    class DelegateTypes {
+    public:
         std::shared_ptr<BaseMessage> single;
         std::vector<std::shared_ptr<BaseMessage>> multi;
     };

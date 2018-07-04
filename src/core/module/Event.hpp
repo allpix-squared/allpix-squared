@@ -35,20 +35,20 @@ namespace allpix {
         /**
          * @brief Use default destructor
          */
-        ~Event() = default;
+        /* ~Event() = default; */
 
+        // TODO: fix this
         /// @{
         /**
          * @brief Copying an event not allowed
-         * TODO: disallow this again
          */
-        Event(const Event&) = default;
-        Event& operator=(const Event&) = default;
+        /* Event(const Event&) = default; */
+        /* Event& operator=(const Event&) = default; */
         /**
          * @brief Moving an event is allowed
          */
-        Event(Event&&) = default;
-        Event& operator=(Event&&) = default;
+        /* Event(Event&&) = default; */
+        /* Event& operator=(Event&&) = default; */
         /// @}
 
         /**
