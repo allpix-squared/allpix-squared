@@ -213,7 +213,7 @@ void DepositionGeant4Module::init() {
 
         // Get model of the sensitive device
         auto sensitive_detector_action =
-            new SensitiveDetectorActionG4(this, detector, track_info_manager_.get(), charge_creation_energy);
+            new SensitiveDetectorActionG4(detector, track_info_manager_.get(), charge_creation_energy);
         auto logical_volume = detector->getExternalObject<G4LogicalVolume>("sensor_log");
         if(logical_volume == nullptr) {
             throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
