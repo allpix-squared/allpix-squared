@@ -11,8 +11,8 @@
 #define ALLPIX_MODULE_EVENT_H
 
 // XXX: merely for ModuleList
-#include "ModuleManager.hpp"
 #include "MessageStorage.hpp"
+#include "ModuleManager.hpp"
 
 #include "../messenger/Messenger.hpp"
 
@@ -71,7 +71,6 @@ namespace allpix {
         void finalize();
 
     private:
-
         ModuleList modules_;
         MessageStorage message_storage_;
         const unsigned int event_num_;
@@ -84,8 +83,5 @@ namespace allpix {
     };
 
 } // namespace allpix
-
-// Include template members
-/* #include "Event.tpp" */
 
 #endif /* ALLPIX_MODULE_EVENT_H */

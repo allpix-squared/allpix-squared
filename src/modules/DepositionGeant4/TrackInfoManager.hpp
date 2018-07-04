@@ -16,8 +16,8 @@
 #include "G4Track.hh"
 #include "TrackInfoG4.hpp"
 
-#include "core/module/Module.hpp"
 #include "core/module/MessageStorage.hpp"
+#include "core/module/Module.hpp"
 #include "objects/MCTrack.hpp"
 
 namespace allpix {

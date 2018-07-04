@@ -302,7 +302,6 @@ namespace allpix {
             this->set_processed();
         }
 
-
     private:
         ListenerFunction method_;
     };
@@ -347,7 +346,6 @@ namespace allpix {
             dest.single = std::static_pointer_cast<R>(msg);
             this->set_processed();
         }
-
 
         /**
          * @brief Reset the delegate by resetting the bound variable
@@ -397,7 +395,6 @@ namespace allpix {
             dest.multi.push_back(std::static_pointer_cast<R>(msg));
             this->set_processed();
         }
-
 
         /**
          * @brief Reset the delegate by clearing the vector of messages

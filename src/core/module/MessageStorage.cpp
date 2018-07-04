@@ -2,8 +2,7 @@
 
 using namespace allpix;
 
-MessageStorage::MessageStorage(DelegateMap& delegates)
-    : delegates_(delegates) {}
+MessageStorage::MessageStorage(DelegateMap& delegates) : delegates_(delegates) {}
 
 // Check if the detectors match for the message and the delegate
 static bool check_send(BaseMessage* message, BaseDelegate* delegate) {
@@ -39,7 +38,10 @@ void MessageStorage::dispatch_message(Module* source, std::shared_ptr<BaseMessag
     sent_messages_.emplace_back(message);
 }
 
-bool MessageStorage::dispatch_message(Module* source, const std::shared_ptr<BaseMessage>& message, const std::string& name, const std::string& id) {
+bool MessageStorage::dispatch_message(Module* source,
+                                      const std::shared_ptr<BaseMessage>& message,
+                                      const std::string& name,
+                                      const std::string& id) {
     bool send = false;
 
     // Create type identifier from the typeid
@@ -84,7 +86,7 @@ bool MessageStorage::is_satisfied(Module* module) const {
 
     try {
         return satisfied_modules_.at(module->getUniqueName());
-    } catch (const std::out_of_range&) {
+    } catch(const std::out_of_range&) {
         return false;
     }
 }

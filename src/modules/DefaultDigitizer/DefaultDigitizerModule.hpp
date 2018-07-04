@@ -16,8 +16,8 @@
 
 #include "core/config/Configuration.hpp"
 #include "core/messenger/Messenger.hpp"
-#include "core/module/Module.hpp"
 #include "core/module/MessageStorage.hpp"
+#include "core/module/Module.hpp"
 
 #include "objects/PixelCharge.hpp"
 
