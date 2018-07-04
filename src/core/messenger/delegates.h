@@ -30,8 +30,7 @@
 namespace allpix {
     // TODO [doc] Document this
     using DelegateVariants = mpark::variant<std::shared_ptr<BaseMessage>,
-          std::vector<std::shared_ptr<BaseMessage>>,
-          std::function<void(std::shared_ptr<BaseMessage>, std::string)>>;
+          std::vector<std::shared_ptr<BaseMessage>>>;
 
     /**
      * @ingroup Delegates
