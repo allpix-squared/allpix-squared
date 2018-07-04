@@ -20,6 +20,7 @@
 #include "core/geometry/DetectorModel.hpp"
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
+#include "core/module/MessageStorage.hpp"
 
 #include "objects/DepositedCharge.hpp"
 #include "objects/PropagatedCharge.hpp"

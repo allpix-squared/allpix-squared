@@ -18,6 +18,7 @@
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
+#include "core/module/MessageStorage.hpp"
 
 // Contains tuple of all defined objects
 #include "objects/objects.h"

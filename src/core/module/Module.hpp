@@ -23,7 +23,6 @@
 #include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
 #include "core/messenger/delegates.h"
-#include "core/module/MessageStorage.hpp"
 #include "exceptions.h"
 
 namespace allpix {

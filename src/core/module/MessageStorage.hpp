@@ -1,7 +1,13 @@
 #ifndef ALLPIX_MODULE_MESSAGESTORAGE_H
 #define ALLPIX_MODULE_MESSAGESTORAGE_H
 
-#include "../messenger/Messenger.hpp"
+#include <map>
+#include <string>
+#include <memory>
+#include <typeinfo>
+
+#include "../messenger/delegates.h"
+#include "Module.hpp"
 
 namespace allpix {
     class Module;
@@ -59,8 +65,7 @@ namespace allpix {
 
             std::map<std::string, DelegateVariants> messages_;
 
-            // Currently active modules
-            DelegateVariants message_;
+            // Currently active module
             Module* module_;
 
             std::map<std::string, bool> satisfied_modules_;

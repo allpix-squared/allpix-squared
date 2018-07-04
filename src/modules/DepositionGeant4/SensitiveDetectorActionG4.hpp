@@ -18,6 +18,7 @@
 #include "core/geometry/Detector.hpp"
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
+#include "core/module/MessageStorage.hpp"
 
 #include "objects/DepositedCharge.hpp"
 #include "objects/MCParticle.hpp"

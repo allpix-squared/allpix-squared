@@ -22,6 +22,7 @@
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
+#include "core/module/MessageStorage.hpp"
 
 #include "Cluster.hpp"
 #include "objects/PixelHit.hpp"
