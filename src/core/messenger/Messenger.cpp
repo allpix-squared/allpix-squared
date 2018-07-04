@@ -81,7 +81,9 @@ bool Messenger::hasReceiver(Module* source, const std::shared_ptr<BaseMessage>& 
     return false;
 }
 
-void Messenger::add_delegate(const std::type_info& message_type, Module* module, const std::shared_ptr<BaseDelegate>& delegate) {
+void Messenger::add_delegate(const std::type_info& message_type,
+                             Module* module,
+                             const std::shared_ptr<BaseDelegate>& delegate) {
     std::lock_guard<std::mutex> lock(mutex_);
 
     // Register generic or specific delegate depending on flag
