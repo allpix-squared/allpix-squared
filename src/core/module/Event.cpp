@@ -50,7 +50,7 @@ void Event::init() {
 
         // Check if module is satisfied to run
         if(!message_storage_.is_satisfied(module.get())) {
-            LOG(WARNING) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
+            LOG(TRACE) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
                        << ", skipping module!";
             return;
         }
@@ -113,7 +113,7 @@ void Event::run(const unsigned int number_of_events) {
                                           << module->get_identifier().getUniqueName() << "]";
         // Check if module is satisfied to run
         if(!message_storage_.is_satisfied(module.get())) {
-            LOG(WARNING) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
+            LOG(TRACE) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
                        << ", skipping module!";
             return;
         }
@@ -138,8 +138,6 @@ void Event::run(const unsigned int number_of_events) {
             // Terminate if the module threw the EndOfRun request exception:
             LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
             this->terminate_ = true;
-        } catch(std::out_of_range&) {
-            throw InvalidMessageIDException(module->getUniqueName(), event_num_);
         }
 
         // Reset logging

@@ -117,7 +117,8 @@ namespace allpix {
                 return true;
             }
 
-            return processed_;
+            /* return processed_; */
+            return false;
         }
 
         /**
