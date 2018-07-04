@@ -8,13 +8,13 @@ namespace allpix {
     template <typename T>
     std::shared_ptr<T> MessageStorage::fetchMessage() {
         static_assert(std::is_base_of<BaseMessage, T>::value, "Fetched message should inherit from Message class");
-        return std::dynamic_pointer_cast<T>(mpark::get<std::shared_ptr<BaseMessage>>(messages_[module_->getUniqueName()]));
+        return std::dynamic_pointer_cast<T>(messages_[module_->getUniqueName()].single);
     }
 
     template <typename T>
     std::vector<std::shared_ptr<T>> MessageStorage::fetchMultiMessage() {
         static_assert(std::is_base_of<BaseMessage, T>::value, "Fetched message should inherit from Message class");
-        auto base_messages = mpark::get<std::vector<std::shared_ptr<BaseMessage>>>(messages_[module_->getUniqueName()]);
+        auto base_messages = messages_[module_->getUniqueName()].multi;
         std::vector<std::shared_ptr<T>> derived_messages;
         for (auto& message : base_messages) {
             derived_messages.push_back(std::dynamic_pointer_cast<T>(message));

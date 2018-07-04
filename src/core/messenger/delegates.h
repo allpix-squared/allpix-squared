@@ -19,7 +19,7 @@
 #include <cassert>
 #include <memory>
 #include <typeinfo>
-#include "variant.hpp"
+#include <utility>
 
 #include "Message.hpp"
 #include "core/geometry/Detector.hpp"
@@ -29,8 +29,10 @@
 
 namespace allpix {
     // TODO [doc] Document this
-    using DelegateVariants = mpark::variant<std::shared_ptr<BaseMessage>,
-          std::vector<std::shared_ptr<BaseMessage>>>;
+    struct DelegateTypes {
+        std::shared_ptr<BaseMessage> single;
+        std::vector<std::shared_ptr<BaseMessage>> multi;
+    };
 
     /**
      * @ingroup Delegates
@@ -142,7 +144,7 @@ namespace allpix {
          * @param name Name of the message
          * @param dest Destination of the message
          */
-        virtual void process(std::shared_ptr<BaseMessage> msg, std::string name, DelegateVariants& destv) = 0;
+        virtual void process(std::shared_ptr<BaseMessage> msg, std::string name, DelegateTypes& dest) = 0;
 
         /**
          * @brief Reset the delegate and set it not satisfied again
@@ -209,7 +211,7 @@ namespace allpix {
          * @brief Stores the received message in the delegate until the end of the event
          * @param msg Message to store
          */
-        void process(std::shared_ptr<BaseMessage> msg, std::string, DelegateVariants&) override {
+        void process(std::shared_ptr<BaseMessage> msg, std::string, DelegateTypes&) override {
             // Store the message and mark as processed
             messages_.push_back(msg);
             this->set_processed();
@@ -253,7 +255,7 @@ namespace allpix {
          * @warning The listener function is called directly from the delegate, no heavy processing should be done in the
          *          listener function
          */
-        void process(std::shared_ptr<BaseMessage> msg, std::string, DelegateVariants&) override {
+        void process(std::shared_ptr<BaseMessage> msg, std::string, DelegateTypes&) override {
 #ifndef NDEBUG
             // The type names should have been correctly resolved earlier
             const BaseMessage* inst = msg.get();
@@ -293,7 +295,7 @@ namespace allpix {
          * @warning The listener function is called directly from the delegate, no heavy processing should be done in the
          *          listener function
          */
-        void process(std::shared_ptr<BaseMessage> msg, std::string name, DelegateVariants&) override {
+        void process(std::shared_ptr<BaseMessage> msg, std::string name, DelegateTypes&) override {
             // Pass the message and mark as processed
             (this->obj_->*method_)(std::static_pointer_cast<BaseMessage>(msg), name);
             this->set_processed();
@@ -329,21 +331,19 @@ namespace allpix {
          *
          * The saved value is overwritten if the \ref MsgFlags::ALLOW_OVERWRITE "ALLOW_OVERWRITE" flag is enabled.
          */
-        void process(std::shared_ptr<BaseMessage> msg, std::string, DelegateVariants& destv) override {
+        void process(std::shared_ptr<BaseMessage> msg, std::string, DelegateTypes& dest) override {
 #ifndef NDEBUG
             // The type names should have been correctly resolved earlier
             const BaseMessage* inst = msg.get();
             assert(typeid(*inst) == typeid(R));
 #endif
-            auto& dest = mpark::get<std::shared_ptr<BaseMessage>>(destv);
-
             // Raise an error if the message is overwritten (unless it is allowed)
-            if(dest != nullptr && (this->getFlags() & MsgFlags::ALLOW_OVERWRITE) == MsgFlags::NONE) {
+            if(dest.single != nullptr && (this->getFlags() & MsgFlags::ALLOW_OVERWRITE) == MsgFlags::NONE) {
                 throw UnexpectedMessageException(this->obj_->getUniqueName(), typeid(R));
             }
 
             // Set the message and mark as processed
-            dest = std::static_pointer_cast<R>(msg);
+            dest.single = std::static_pointer_cast<R>(msg);
             this->set_processed();
         }
 
@@ -386,16 +386,14 @@ namespace allpix {
          * @param msg Message to process
          * @param dest Message destination
          */
-        void process(std::shared_ptr<BaseMessage> msg, std::string, DelegateVariants& destv) override {
+        void process(std::shared_ptr<BaseMessage> msg, std::string, DelegateTypes& dest) override {
 #ifndef NDEBUG
             // The type names should have been correctly resolved earlier
             const BaseMessage* inst = msg.get();
             assert(typeid(*inst) == typeid(R));
 #endif
-            auto& dest = mpark::get<std::vector<std::shared_ptr<BaseMessage>>>(destv);
-
             // Add the message
-            dest.push_back(std::static_pointer_cast<R>(msg));
+            dest.multi.push_back(std::static_pointer_cast<R>(msg));
             this->set_processed();
         }
 

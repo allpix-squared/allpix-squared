@@ -63,7 +63,7 @@ namespace allpix {
             // What are all modules listening to?
             DelegateMap& delegates_;
 
-            std::map<std::string, DelegateVariants> messages_;
+            std::map<std::string, DelegateTypes> messages_;
 
             // Currently active module
             Module* module_;
