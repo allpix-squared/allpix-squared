@@ -20,12 +20,14 @@ DetectorModel::DetectorModel(std::string type, ConfigReader reader) : type_(std:
     // Number of pixels
     setNPixels(config.get<DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels"));
     // Size of the pixels
-    setPixelSize(config.get<XYVector>("pixel_size"));
+    auto pixel_size = config.get<XYVector>("pixel_size");
+    setPixelSize(pixel_size);
     // Size of the collection diode implant on each pixels, defaults to the full pixel size when not specified
-    setImplantSize(config.get<XYVector>("implant_size", getPixelSize()));
-    if(getImplantSize().x() > getPixelSize().x() || getImplantSize().y() > getPixelSize().y()) {
+    auto implant_size = config.get<XYVector>("implant_size", pixel_size);
+    if(implant_size.x() > pixel_size.x() || implant_size.y() > pixel_size.y()) {
         throw InvalidValueError(config, "implant_size", "implant size cannot be larger than pixel pitch");
     }
+    setImplantSize(implant_size);
 
     // Sensor thickness
     setSensorThickness(config.get<double>("sensor_thickness"));
