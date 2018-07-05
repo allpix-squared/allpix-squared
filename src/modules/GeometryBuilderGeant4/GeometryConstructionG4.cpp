@@ -214,7 +214,7 @@ void GeometryConstructionG4::build_detectors() {
 
         LOG(DEBUG) << " - Position\t\t:\t" << Units::display(position, {"mm", "um"});
 
-        G4ThreeVector posWrapper = toG4Vector(position);
+        G4ThreeVector posWrapper = toG4Vector(position + geoTranslation);
         auto rotWrapper = std::make_shared<G4RotationMatrix>(copy_vec.data());
         detector->setExternalObject("rotation_matrix", rotWrapper);
 
