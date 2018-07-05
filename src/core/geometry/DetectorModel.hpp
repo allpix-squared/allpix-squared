@@ -128,6 +128,8 @@ namespace allpix {
             setNPixels(config.get<DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels"));
             // Size of the pixels
             setPixelSize(config.get<XYVector>("pixel_size"));
+            // Size of the collection diode implant on each pixels, defaults to the full pixel size when not specified
+            setImplantSize(config.get<XYVector>("implant_size", getPixelSize()));
 
             // Sensor thickness
             setSensorThickness(config.get<double>("sensor_thickness"));
@@ -294,6 +296,16 @@ namespace allpix {
          */
         void setPixelSize(ROOT::Math::XYVector val) { pixel_size_ = std::move(val); }
         /**
+         * @brief Get size of the collection diode
+         * @return Size of the collection diode implant
+         */
+        virtual ROOT::Math::XYVector getImplantSize() const { return implant_size_; }
+        /**
+         * @brief Set the size of the implant (collection diode) within a pixel
+         * @param val Size of the collection diode implant
+         */
+        void setImplantSize(ROOT::Math::XYVector val) { implant_size_ = std::move(val); }
+        /**
          * @brief Get total size of the pixel grid
          * @return Size of the pixel grid
          *
@@ -447,6 +459,7 @@ namespace allpix {
 
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> number_of_pixels_;
         ROOT::Math::XYVector pixel_size_;
+        ROOT::Math::XYVector implant_size_;
 
         double sensor_thickness_{};
         std::array<double, 4> sensor_excess_{};
