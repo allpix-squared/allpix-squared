@@ -61,9 +61,11 @@ void Event::init() {
 
         // Set run module section header
         std::string old_section_name = Log::getSection();
+        unsigned int old_event_num = Log::getEventNum();
         std::string section_name = "R:";
         section_name += module->get_identifier().getUniqueName();
         Log::setSection(section_name);
+        Log::setEventNum(event_num_);
 
         // Set module specific settings
         auto old_settings =
@@ -80,6 +82,7 @@ void Event::init() {
 
         // Reset logging
         Log::setSection(old_section_name);
+        Log::setEventNum(old_event_num);
         ModuleManager::set_module_after(old_settings);
 
         // Update execution time
@@ -124,9 +127,11 @@ void Event::run(const unsigned int number_of_events) {
 
         // Set run module section header
         std::string old_section_name = Log::getSection();
+        unsigned int old_event_num = Log::getEventNum();
         std::string section_name = "R:";
         section_name += module->get_identifier().getUniqueName();
         Log::setSection(section_name);
+        Log::setEventNum(event_num_);
 
         // Set module specific settings
         auto old_settings =
@@ -143,6 +148,7 @@ void Event::run(const unsigned int number_of_events) {
 
         // Reset logging
         Log::setSection(old_section_name);
+        Log::setEventNum(old_event_num);
         ModuleManager::set_module_after(old_settings);
 
         // Update execution time
