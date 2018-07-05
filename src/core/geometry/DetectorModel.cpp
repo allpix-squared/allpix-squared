@@ -23,6 +23,9 @@ DetectorModel::DetectorModel(std::string type, ConfigReader reader) : type_(std:
     setPixelSize(config.get<XYVector>("pixel_size"));
     // Size of the collection diode implant on each pixels, defaults to the full pixel size when not specified
     setImplantSize(config.get<XYVector>("implant_size", getPixelSize()));
+    if(getImplantSize().x() > getPixelSize().x() || getImplantSize().y() > getPixelSize().y()) {
+        throw InvalidValueError(config, "implant_size", "implant size cannot be larger than pixel pitch");
+    }
 
     // Sensor thickness
     setSensorThickness(config.get<double>("sensor_thickness"));
