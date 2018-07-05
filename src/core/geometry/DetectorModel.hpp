@@ -450,10 +450,9 @@ namespace allpix {
         }
 
         /**
-         * @brief Translate a position vector to the z geometrical coordinate system
-         * @param point Vector in local coordinate system (whose center is the sensor center)
+         * @brief Returns the distance between the detector box geometrical center and the sensor center on the z axis
          */
-        ROOT::Math::XYZPoint toGeoSystem(ROOT::Math::XYZPoint point) {
+        double getTranslationToGeoCenter() {
 
             // Get the detector size in the z direction
             double detector_thickness = getSize().z();
@@ -472,14 +471,7 @@ namespace allpix {
             // Calculate the distance to translate in z
             double d = detector_thickness / 2 - support_thickness - getSensorSize().Z() / 2;
 
-            // Translate the argument vector in z
-            point.SetZ(point.Z() - d);
-
-            // Remove the origin position vector as was done in the old way to place parts in the G4 wrapper
-            point = point - getCenter();
-
-            // return a copy of the argument parameter
-            return point;
+            return d;
         }
 
     protected:
