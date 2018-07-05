@@ -437,6 +437,9 @@ Determines the base size of the sensor together with the \parameter{pixel_size} 
 \item \parameter{pixel_size}: The pitch of a single pixel in the pixel matrix.
 Provided as 2D parameter in the x-y-plane.
 This parameter is required for all models.
+\item \parameter{implant_size}: The size of the collection diode implant in each pixel of the matrix.
+Provided as 2D parameter in the x-y-plane.
+This parameter is optional, the implant size defaults to the pixel pitch if not specified otherwise.
 \item \parameter{sensor_thickness}: Thickness of the active area of the detector model containing the individual pixels.
 This parameter is required for all models.
 \item \texttt{\textbf{sensor\_excess\_\textit{direction}}}: With direction either \parameter{top}, \parameter{bottom}, \parameter{right} or \parameter{left}, where the top, bottom, right and left direction are the positive y-axis, the negative y-axis, the positive x-axis and the negative x-axis, respectively.
