@@ -648,7 +648,10 @@ void ModuleManager::run(Messenger* messenger) {
         }
     }
 
-    // Check exception for last event
+    // Wait for wokers to finish
+    thread_pool->wait();
+
+    // Check exception for last events
     thread_pool->check_exception();
 
     LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of " << run_events << " events";

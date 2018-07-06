@@ -121,10 +121,13 @@ void ThreadPool::worker(const std::function<void()>& init_function) {
     // Initialize the worker
     init_function();
 
+    // Safe lambda to increase the atomic run count
+    auto increase_run_cnt_func = [this]() { ++run_cnt_; };
+
     while(!done_) {
         Task task{nullptr};
 
-        if(event_queue_.pop(task, true)) {
+        if(event_queue_.pop(task, true, increase_run_cnt_func)) {
             // Try to run the task
             try {
                 // Execute task
@@ -141,6 +144,11 @@ void ThreadPool::worker(const std::function<void()>& init_function) {
                 }
             }
         }
+
+        // Propagate that the task has been finished
+        std::lock_guard<std::mutex> lock{run_mutex_};
+        --run_cnt_;
+        run_condition_.notify_all();
     }
 }
 
