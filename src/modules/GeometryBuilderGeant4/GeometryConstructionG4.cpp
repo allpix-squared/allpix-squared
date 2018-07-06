@@ -207,15 +207,17 @@ void GeometryConstructionG4::build_detectors() {
 
         // Get position and orientation
         auto position = detector->getPosition();
+        LOG(DEBUG) << " - Position\t\t:\t" << Units::display(position, {"mm", "um"});
         ROOT::Math::Rotation3D orientation = detector->getOrientation();
         std::vector<double> copy_vec(9);
         orientation.GetComponents(copy_vec.begin(), copy_vec.end());
         ROOT::Math::XYZVector geoTranslation(0., 0., model->getTranslationToGeoCenter());
-
-        LOG(DEBUG) << " - Position\t\t:\t" << Units::display(position, {"mm", "um"});
-
-        G4ThreeVector posWrapper = toG4Vector(position + geoTranslation);
+        ROOT::Math::XYZPoint vx, vy, vz;
+        orientation.GetComponents(vx, vy, vz);
         auto rotWrapper = std::make_shared<G4RotationMatrix>(copy_vec.data());
+        G4ThreeVector wrapperGeoTranslation = toG4Vector(-geoTranslation);
+        wrapperGeoTranslation *= rotWrapper->inverse();
+        G4ThreeVector posWrapper = toG4Vector(position) - wrapperGeoTranslation;
         detector->setExternalObject("rotation_matrix", rotWrapper);
 
         // Place the wrapper
