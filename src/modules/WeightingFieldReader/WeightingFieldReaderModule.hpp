@@ -62,7 +62,9 @@ namespace allpix {
          * @brief Get the weighting field from a file name, caching the result between
          * instantiations
          */
-        static FieldData get_by_file_name(const std::string& name, Detector&);
+        static FieldData get_by_file_name(const std::string& name,
+                                          Detector&,
+                                          ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> field_size);
         static std::map<std::string, FieldData> field_map_;
     };
 } // namespace allpix

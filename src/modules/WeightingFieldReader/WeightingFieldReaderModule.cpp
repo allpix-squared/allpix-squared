@@ -30,11 +30,13 @@
 using namespace allpix;
 
 WeightingFieldReaderModule::WeightingFieldReaderModule(Configuration& config, Messenger*, std::shared_ptr<Detector> detector)
-    : Module(config, detector), detector_(std::move(detector)) {}
+    : Module(config, detector), detector_(std::move(detector)) {
+    using namespace ROOT::Math;
+    config_.setDefault("field_size", DisplacementVector2D<Cartesian2D<int>>(3, 3));
+}
 
 void WeightingFieldReaderModule::init() {
 
-    // Check field strength
     auto field_model = config_.get<std::string>("model");
 
     // Calculate thickness domain
@@ -57,11 +59,15 @@ void WeightingFieldReaderModule::init() {
  * using the static WeightingFieldReaderModule::get_by_file_name method.
  */
 WeightingFieldReaderModule::FieldData WeightingFieldReaderModule::read_init_field() {
+    using namespace ROOT::Math;
+
     try {
         LOG(TRACE) << "Fetching weighting field from init file";
 
+        auto field_size = config_.get<DisplacementVector2D<Cartesian2D<int>>>("field_size");
+
         // Get field from file
-        auto field_data = get_by_file_name(config_.getPath("file_name", true), *detector_.get());
+        auto field_data = get_by_file_name(config_.getPath("file_name", true), *detector_.get(), field_size);
         LOG(INFO) << "Set weighting field with " << field_data.second.at(0) << "x" << field_data.second.at(1) << "x"
                   << field_data.second.at(2) << " cells";
 
@@ -79,7 +85,11 @@ WeightingFieldReaderModule::FieldData WeightingFieldReaderModule::read_init_fiel
 /**
  * @brief Check if the detector matches the file header
  */
-inline static void check_detector_match(Detector& detector, double thickness, double xpixsz, double ypixsz) {
+inline static void check_detector_match(Detector& detector,
+                                        double thickness,
+                                        double xpixsz,
+                                        double ypixsz,
+                                        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> field_size) {
     auto model = detector.getModel();
     // Do a several checks with the detector model
     if(model != nullptr) {
@@ -87,19 +97,24 @@ inline static void check_detector_match(Detector& detector, double thickness, do
             LOG(WARNING) << "Thickness of sensor in file is " << Units::display(thickness, "um")
                          << " but in the model it is " << Units::display(model->getSensorSize().z(), "um");
         }
-        if(std::fabs(xpixsz - model->getPixelSize().x()) > std::numeric_limits<double>::epsilon() ||
-           std::fabs(ypixsz - model->getPixelSize().y()) > std::numeric_limits<double>::epsilon()) {
-            LOG(WARNING) << "Pixel size is (" << Units::display(xpixsz, {"um", "mm"}) << ","
-                         << Units::display(ypixsz, {"um", "mm"}) << ") but in the model it is ("
-                         << Units::display(model->getPixelSize().x(), {"um", "mm"}) << ","
+
+        // Check that the total field size is n*pitch:
+        if(std::fabs(xpixsz - model->getPixelSize().x() * field_size.x()) > std::numeric_limits<double>::epsilon() ||
+           std::fabs(ypixsz - model->getPixelSize().y() * field_size.y()) > std::numeric_limits<double>::epsilon()) {
+            LOG(WARNING) << "Field size is (" << Units::display(xpixsz, {"um", "mm"}) << ","
+                         << Units::display(ypixsz, {"um", "mm"}) << ") but expecting (" << field_size.x() << " * "
+                         << Units::display(model->getPixelSize().x(), {"um", "mm"}) << ", " << field_size.y() << " * "
                          << Units::display(model->getPixelSize().y(), {"um", "mm"}) << ")";
         }
     }
 }
 
 std::map<std::string, WeightingFieldReaderModule::FieldData> WeightingFieldReaderModule::field_map_;
-WeightingFieldReaderModule::FieldData WeightingFieldReaderModule::get_by_file_name(const std::string& file_name,
-                                                                                   Detector& detector) {
+WeightingFieldReaderModule::FieldData
+WeightingFieldReaderModule::get_by_file_name(const std::string& file_name,
+                                             Detector& detector,
+                                             ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> field_size) {
+
     // Search in cache (NOTE: the path reached here is always a canonical name)
     auto iter = field_map_.find(file_name);
     if(iter != field_map_.end()) {
@@ -131,7 +146,7 @@ WeightingFieldReaderModule::FieldData WeightingFieldReaderModule::get_by_file_na
     file >> tmp;
 
     // Check if weighting field matches chip
-    check_detector_match(detector, thickness, xpixsz, ypixsz);
+    check_detector_match(detector, thickness, xpixsz, ypixsz, field_size);
 
     if(file.fail()) {
         throw std::runtime_error("invalid data or unexpected end of file");
