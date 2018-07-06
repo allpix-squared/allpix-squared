@@ -57,12 +57,10 @@ namespace allpix {
         void init();
 
         /**
-         * @brief Run the event, updating the recorded module execution time on the side
-         * @param number_of_events The total number of events in the simulation
-         * @param module_execution_time The map that stores module execution times
+         * @brief Run the event
          * @warning Should be called after the \ref Event::init "init function"
          */
-        void run(const unsigned int number_of_events);
+        void run();
 
         /**
          * @brief Finalize the event

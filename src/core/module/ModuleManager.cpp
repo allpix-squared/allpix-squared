@@ -625,9 +625,13 @@ void ModuleManager::run(Messenger* messenger) {
         Event event(modules_, i, terminate_, module_execution_time_, messenger);
         // Event initialization must be run on the main thread
         event.init();
-        auto event_function = [ e = std::move(event), number_of_events, &run_events ]() mutable {
-            e.run(number_of_events);
+        auto event_function = [ e = std::move(event), number_of_events, event_num = i, &run_events ]() mutable {
+            LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Running event " << event_num << " of " << number_of_events;
+
+            e.run();
             ++run_events;
+
+            LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished event " << event_num;
         };
         thread_pool->submit_event_function(std::move(event_function));
 

@@ -32,8 +32,6 @@ Event::Event(ModuleList modules,
       module_execution_time_(module_execution_time) {}
 
 void Event::init() {
-    /* LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Initializing event " << event_num_; */
-
     // Get object count for linking objects in current event
     /* auto save_id = TProcessID::GetObjectCount(); */
 
@@ -48,6 +46,9 @@ void Event::init() {
         }
 
         std::lock_guard<std::mutex> lock(module->run_mutex_);
+
+        LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Initializing event " << this->event_num_ << " ["
+                                          << module->get_identifier().getUniqueName() << "]";
 
         // Check if module is satisfied to run
         if(!message_storage_.is_satisfied(module.get())) {
@@ -103,9 +104,7 @@ void Event::init() {
  * Sets the section header and logging settings before exeuting the \ref Module::run() function.
  * \ref Module::reset_delegates() "Resets" the delegates and the logging after initialization
  */
-void Event::run(const unsigned int number_of_events) {
-    LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Running event " << event_num_ << " of " << number_of_events;
-
+void Event::run() {
     // Get object count for linking objects in current event
     /* auto save_id = TProcessID::GetObjectCount(); */
 
@@ -113,7 +112,7 @@ void Event::run(const unsigned int number_of_events) {
         auto lock =
             !module->canParallelize() ? std::unique_lock<std::mutex>(module->run_mutex_) : std::unique_lock<std::mutex>();
 
-        LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << this->event_num_ << " of " << number_of_events << " ["
+        LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << this->event_num_ << " ["
                                           << module->get_identifier().getUniqueName() << "]";
         // Check if module is satisfied to run
         if(!message_storage_.is_satisfied(module.get())) {
