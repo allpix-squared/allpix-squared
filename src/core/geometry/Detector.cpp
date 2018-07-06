@@ -275,7 +275,7 @@ bool Detector::hasWeightingField() const {
  */
 ROOT::Math::XYZVector Detector::getWeightingField(const ROOT::Math::XYZPoint& pos) const {
     // FIXME: We need to revisit this to be faster and not too specific
-    if(weighting_field_type_ == ElectricFieldType::NONE) {
+    if(weighting_field_type_ == WeightingFieldType::NONE) {
         return ROOT::Math::XYZVector(0, 0, 0);
     }
 
@@ -302,7 +302,7 @@ ROOT::Math::XYZVector Detector::getWeightingField(const ROOT::Math::XYZPoint& po
 
     // Compute using the grid or a function depending on the setting
     ROOT::Math::XYZVector ret_val;
-    if(weighting_field_type_ == ElectricFieldType::GRID) {
+    if(weighting_field_type_ == WeightingFieldType::GRID) {
         // Compute indices
         auto x_ind = static_cast<int>(std::floor(static_cast<double>(weighting_field_sizes_[0]) *
                                                  (x + model_->getPixelSize().x() / 2.0) / model_->getPixelSize().x()));
@@ -349,9 +349,9 @@ ROOT::Math::XYZVector Detector::getWeightingField(const ROOT::Math::XYZPoint& po
 /**
  * The type of the weighting field is set depending on the function used to apply it.
  */
-ElectricFieldType Detector::getWeightingFieldType() const {
+WeightingFieldType Detector::getWeightingFieldType() const {
     if(!hasWeightingField()) {
-        return ElectricFieldType::NONE;
+        return WeightingFieldType::NONE;
     }
     return weighting_field_type_;
 }
@@ -382,12 +382,12 @@ void Detector::setWeightingFieldGrid(std::shared_ptr<std::vector<double>> field,
     weighting_field_ = std::move(field);
     weighting_field_sizes_ = sizes;
     weighting_field_thickness_domain_ = std::move(thickness_domain);
-    weighting_field_type_ = ElectricFieldType::GRID;
+    weighting_field_type_ = WeightingFieldType::GRID;
 }
 
 void Detector::setWeightingFieldFunction(ElectricFieldFunction function,
                                          std::pair<double, double> thickness_domain,
-                                         ElectricFieldType type) {
+                                         WeightingFieldType type) {
     weighting_field_thickness_domain_ = std::move(thickness_domain);
     weighting_field_function_ = std::move(function);
     weighting_field_type_ = type;

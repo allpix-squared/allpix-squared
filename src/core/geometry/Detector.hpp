@@ -38,8 +38,18 @@ namespace allpix {
         NONE = 0, ///< No electric field is simulated
         CONSTANT, ///< Constant electric field (mostly for testing)
         LINEAR,   ///< Linear electric field (linearity determined by function)
-        GRID,     ///< Electric field supplied through a regularid grid
+        GRID,     ///< Electric field supplied through a regularized grid
         CUSTOM,   ///< Custom electric field function
+    };
+
+    /**
+     * @brief Type of the electric field
+     */
+    enum class WeightingFieldType {
+        NONE = 0,       ///< No weighting field is simulated
+        PLANECONDENSER, ///< Teh equivalent weighting field of a  pixel in a plane condenser
+        GRID,           ///< Weighting field supplied through a regularized grid
+        CUSTOM,         ///< Custom weighting field function
     };
 
     using ElectricFieldFunction = std::function<ROOT::Math::XYZVector(const ROOT::Math::XYZPoint&)>;
@@ -159,7 +169,7 @@ namespace allpix {
          * @brief Return the type of weighting field that is simulated.
          * @return The type of the weighting field
          */
-        ElectricFieldType getWeightingFieldType() const;
+        WeightingFieldType getWeightingFieldType() const;
         /**
          * @brief Get the weighting field in the sensor at a local position
          * @param pos Position in the local frame
@@ -184,7 +194,7 @@ namespace allpix {
          */
         void setWeightingFieldFunction(ElectricFieldFunction function,
                                        std::pair<double, double> thickness_domain,
-                                       ElectricFieldType type = ElectricFieldType::CUSTOM);
+                                       WeightingFieldType type = WeightingFieldType::CUSTOM);
 
         /**
          * @brief Set the magnetic field in the detector
@@ -264,7 +274,7 @@ namespace allpix {
         std::array<size_t, 3> weighting_field_sizes_;
         std::shared_ptr<std::vector<double>> weighting_field_;
         std::pair<double, double> weighting_field_thickness_domain_;
-        ElectricFieldType weighting_field_type_{ElectricFieldType::NONE};
+        WeightingFieldType weighting_field_type_{WeightingFieldType::NONE};
         ElectricFieldFunction weighting_field_function_;
 
         // Magnetic field at the position of the detector
