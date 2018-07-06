@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
     // Read parameters
     std::string file_name;
     std::string output_file_name;
-    std::string output_name_log = "";
+    std::string output_name_log;
     std::string plane = "yz";
     int slice_index = 0;
     bool flag_cut = false;
