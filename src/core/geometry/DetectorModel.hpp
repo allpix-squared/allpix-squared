@@ -83,6 +83,10 @@ namespace allpix {
              * @return Size of the hole
              */
             ROOT::Math::XYZVector getHoleSize() const { return hole_size_; }
+            /**
+             * @brief Get the location of the support layer
+             */
+            std::string getLocation() const { return location_; }
 
         private:
             /**
@@ -447,31 +451,6 @@ namespace allpix {
                                                    std::move(location),
                                                    full_hole_size,
                                                    std::move(hole_offset)));
-        }
-
-        /**
-         * @brief Returns the distance between the detector box geometrical center and the sensor center on the z axis
-         */
-        double getTranslationToGeoCenter() {
-
-            // Get the detector size in the z direction
-            double detector_thickness = getSize().z();
-
-            // Get the total thickness of support layers on the sensor side
-            double support_thickness = 0;
-            for(auto& support_layer : getSupportLayers()) {
-                // FIXME in case the support location is 'absolute' this might not calculate the right size (if there is
-                // empty spaces between layers)
-                if(support_layer.location_ == "sensor") {
-                    auto size = support_layer.getSize();
-                    support_thickness += size.z();
-                }
-            }
-
-            // Calculate the distance to translate in z
-            double d = detector_thickness / 2 - support_thickness - getSensorSize().Z() / 2;
-
-            return d;
         }
 
     protected:

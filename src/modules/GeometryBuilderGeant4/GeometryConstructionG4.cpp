@@ -205,13 +205,26 @@ void GeometryConstructionG4::build_detectors() {
             make_shared_no_delete<G4LogicalVolume>(wrapper_box.get(), world_material_, "wrapper_" + name + "_log");
         detector->setExternalObject("wrapper_log", wrapper_log);
 
+        // Get the distance, on the z axis, between the sensor center and the detector (box) geometrical center
+        double detector_thickness = model->getSize().z();
+        double support_thickness = 0; // total thickness of support layers on the sensor side
+        for(auto& support_layer : model->getSupportLayers()) {
+            // FIXME in case the support location is 'absolute' this might not calculate the right size (if there is
+            // empty spaces between layers)
+            if(support_layer.getLocation() == "sensor") {
+                auto size = support_layer.getSize();
+                support_thickness += size.z();
+            }
+        }
+        double zDistanceToGeoCenter = detector_thickness / 2 - support_thickness - model->getSensorSize().Z() / 2;
+
         // Get position and orientation
         auto position = detector->getPosition();
         LOG(DEBUG) << " - Position\t\t:\t" << Units::display(position, {"mm", "um"});
         ROOT::Math::Rotation3D orientation = detector->getOrientation();
         std::vector<double> copy_vec(9);
         orientation.GetComponents(copy_vec.begin(), copy_vec.end());
-        ROOT::Math::XYZVector geoTranslation(0., 0., model->getTranslationToGeoCenter());
+        ROOT::Math::XYZVector geoTranslation(0., 0., zDistanceToGeoCenter);
         ROOT::Math::XYZPoint vx, vy, vz;
         orientation.GetComponents(vx, vy, vz);
         auto rotWrapper = std::make_shared<G4RotationMatrix>(copy_vec.data());
