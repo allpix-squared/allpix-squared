@@ -40,7 +40,7 @@ namespace allpix {
         /**
          * @brief Read magnetic field, feed it back to the geometry manager and apply it to the bound detectors
          */
-        void init() override;
+        void init(uint64_t) override;
 
     private:
         GeometryManager* geometryManager_;

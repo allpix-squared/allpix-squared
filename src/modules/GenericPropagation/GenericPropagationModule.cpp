@@ -462,7 +462,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
     output_plot_points_.clear();
 }
 
-void GenericPropagationModule::init() {
+void GenericPropagationModule::init(uint64_t) {
 
     auto detector = getDetector();
 

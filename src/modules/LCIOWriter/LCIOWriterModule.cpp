@@ -59,7 +59,7 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
     OutputCollectionName_ = config_.get<std::string>("output_collection_name");
 }
 
-void LCIOWriterModule::init() {
+void LCIOWriterModule::init(uint64_t) {
     // Create the output GEAR file for the detector geometry
     geometry_file_name_ = createOutputFile(allpix::add_file_extension(config_.get<std::string>("geometry_file"), "xml"));
 

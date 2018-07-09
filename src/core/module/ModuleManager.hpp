@@ -83,9 +83,10 @@ namespace allpix {
 
         /**
          * @brief Initialize all modules before the event sequence
+         * @param seeder TODO
          * @warning Should be called after the \ref ModuleManager::load "load function"
          */
-        void init();
+        void init(std::mt19937_64& seeder);
 
         /**
          * @brief Run all modules for the number of events

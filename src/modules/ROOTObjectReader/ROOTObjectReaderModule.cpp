@@ -78,7 +78,7 @@ template <typename T> static ROOTObjectReaderModule::MessageCreatorMap gen_creat
     return ret_map;
 }
 
-void ROOTObjectReaderModule::init() {
+void ROOTObjectReaderModule::init(uint64_t) {
     // Read include and exclude list
     if(config_.has("include") && config_.has("exclude")) {
         throw InvalidCombinationError(

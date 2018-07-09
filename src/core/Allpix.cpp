@@ -200,7 +200,7 @@ void Allpix::load() {
 void Allpix::init() {
     if(!terminate_) {
         LOG(TRACE) << "Initializing Allpix";
-        mod_mgr_->init();
+        mod_mgr_->init(seeder_modules_);
     } else {
         LOG(INFO) << "Skip initializing modules because termination is requested";
     }

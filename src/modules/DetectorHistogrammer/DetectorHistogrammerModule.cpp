@@ -30,7 +30,7 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
     messenger->bindSingle(this, &DetectorHistogrammerModule::pixels_message_, MsgFlags::REQUIRED);
 }
 
-void DetectorHistogrammerModule::init() {
+void DetectorHistogrammerModule::init(uint64_t) {
     // Fetch detector model
     auto model = detector_->getModel();
 

@@ -50,7 +50,7 @@ namespace allpix {
         /**
          * @brief Initializes the physics list of processes and constructs the particle source
          */
-        void init() override;
+        void init(uint64_t) override;
 
         /**
          * @brief Deposit charges for a single event
@@ -83,6 +83,8 @@ namespace allpix {
 
         // Vector of histogram pointers for debugging plots
         std::map<std::string, TH1D*> charge_per_event_;
+
+        std::once_flag geant4_seed;
     };
 } // namespace allpix
 

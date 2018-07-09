@@ -506,7 +506,7 @@ void ModuleManager::set_module_after(std::tuple<LogLevel, LogFormat> prev) {
  * Sets the section header and logging settings before executing the  \ref Module::init() function.
  *  \ref Module::reset_delegates() "Resets" the delegates and the logging after initialization.
  */
-void ModuleManager::init() {
+void ModuleManager::init(std::mt19937_64& seeder) {
     LOG_PROGRESS(STATUS, "INIT_LOOP") << "Initializing " << modules_.size() << " module instantiations";
     for(auto& module : modules_) {
         LOG_PROGRESS(TRACE, "INIT_LOOP") << "Initializing " << module->get_identifier().getUniqueName();
@@ -553,7 +553,7 @@ void ModuleManager::init() {
         // Change to our ROOT directory
         module->getROOTDirectory()->cd();
         // Init module
-        module->init();
+        module->init(seeder());
         // Reset delegates
         LOG(TRACE) << "Resetting messages";
 

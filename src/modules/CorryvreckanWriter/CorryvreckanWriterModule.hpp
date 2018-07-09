@@ -46,7 +46,7 @@ namespace allpix {
         /**
          * @brief Set up output file and ntuple for filewriting
          */
-        void init() override;
+        void init(uint64_t) override;
 
         /**
          * @brief Take the digitised pixel hits and write them into the output file

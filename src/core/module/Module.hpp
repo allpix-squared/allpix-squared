@@ -134,10 +134,13 @@ namespace allpix {
 
         /**
          * @brief Initialize the module before the event sequence
+         * @param random_seed TODO
          *
          * Does nothing if not overloaded.
          */
-        virtual void init() {}
+        virtual void init(uint64_t random_seed) {
+            (void)random_seed;
+        }
 
         using DispatchFunc = std::function<void(Module*, std::shared_ptr<BaseMessage>, const std::string&)>;
 

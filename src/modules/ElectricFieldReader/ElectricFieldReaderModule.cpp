@@ -33,7 +33,7 @@ ElectricFieldReaderModule::ElectricFieldReaderModule(Configuration& config, Mess
     config_.setAlias("bias_voltage", "voltage");
 }
 
-void ElectricFieldReaderModule::init() {
+void ElectricFieldReaderModule::init(uint64_t) {
     ElectricFieldType type = ElectricFieldType::GRID;
 
     // Check field strength

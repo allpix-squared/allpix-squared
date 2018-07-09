@@ -52,7 +52,7 @@ namespace allpix {
         /**
          * @brief Open the ROOT file containing the stored output data
          */
-        void init() override;
+        void init(uint64_t) override;
 
         /**
          * @brief Convert the objects stored for the current event to messages
