@@ -132,9 +132,7 @@ namespace allpix {
          *
          * Does nothing if not overloaded.
          */
-        virtual void init(uint64_t random_seed) {
-            (void)random_seed;
-        }
+        virtual void init(uint64_t random_seed) { (void)random_seed; }
 
         using DispatchFunc = std::function<void(Module*, std::shared_ptr<BaseMessage>, const std::string&)>;
 

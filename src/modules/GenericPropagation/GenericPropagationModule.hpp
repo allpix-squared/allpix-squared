@@ -78,7 +78,8 @@ namespace allpix {
          * @param type Type of the carrier to propagate
          * @return Pair of the point where the deposit ended after propagation and the time the propagation took
          */
-        std::pair<ROOT::Math::XYZPoint, double> propagate(const ROOT::Math::XYZPoint& pos, const CarrierType& type, std::mt19937_64& random_generator);
+        std::pair<ROOT::Math::XYZPoint, double>
+        propagate(const ROOT::Math::XYZPoint& pos, const CarrierType& type, std::mt19937_64& random_generator);
 
         // Random generator for this module
         std::mt19937_64 random_generator_;
