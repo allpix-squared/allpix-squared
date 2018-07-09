@@ -188,7 +188,7 @@ void Allpix::load() {
 
     // Load the modules from the configuration
     if(!terminate_) {
-        mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get(), seeder_modules_);
+        mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get());
     } else {
         LOG(INFO) << "Skip loading modules because termination is requested";
     }
