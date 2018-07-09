@@ -119,22 +119,6 @@ std::string Module::createOutputFile(const std::string& path, bool global) {
 }
 
 /**
- * The framework will automatically create proper values for the seeds. Those are either generated from a predefined seed if
- * results have to be reproduced or from a high-entropy source to ensure a good quality of randomness
- */
-uint64_t Module::getRandomSeed() {
-    if(initialized_random_generator_ == false) {
-        auto seed = config_.get<uint64_t>("_seed");
-        std::seed_seq seed_seq({seed});
-        random_generator_.seed(seed_seq);
-
-        initialized_random_generator_ = true;
-    }
-
-    return random_generator_();
-}
-
-/**
  * @throws InvalidModuleActionException If this method is called from the constructor or destructor
  * @warning Cannot be used from the constructor, because the instantiation logic has not finished yet
  * @warning This method should not be accessed from the destructor (the file is then already closed)
