@@ -27,9 +27,12 @@ Event::Event(ModuleList modules,
              const unsigned int event_num,
              std::atomic<bool>& terminate,
              std::map<Module*, long double>& module_execution_time,
-             Messenger* messenger)
+             Messenger* messenger,
+             std::mt19937_64& seeder)
     : modules_(std::move(modules)), message_storage_(messenger->delegates_), event_num_(event_num), terminate_(terminate),
-      module_execution_time_(module_execution_time) {}
+      module_execution_time_(module_execution_time) {
+    random_generator_.seed(seeder());
+}
 
 void Event::init() {
     // Get object count for linking objects in current event
@@ -74,7 +77,7 @@ void Event::init() {
 
         // Run module
         try {
-            module->run(event_num_, message_storage_.using_module(module.get()));
+            module->run(event_num_, message_storage_.using_module(module.get()), random_generator_);
         } catch(EndOfRunException& e) {
             // Terminate if the module threw the EndOfRun request exception:
             LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
@@ -138,7 +141,7 @@ void Event::run() {
 
         // Run module
         try {
-            module->run(event_num_, message_storage_.using_module(module.get()));
+            module->run(event_num_, message_storage_.using_module(module.get()), random_generator_);
         } catch(EndOfRunException& e) {
             // Terminate if the module threw the EndOfRun request exception:
             LOG(WARNING) << "Request to terminate:" << std::endl << e.what();

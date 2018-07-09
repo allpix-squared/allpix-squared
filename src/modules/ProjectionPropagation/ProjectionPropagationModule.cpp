@@ -25,8 +25,6 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
     // Save detector model
     model_ = detector_->getModel();
 
-    random_generator_.seed(getRandomSeed());
-
     // Require deposits message for single detector
     messenger_->bindSingle(this, &ProjectionPropagationModule::deposits_message_, MsgFlags::REQUIRED);
 
@@ -78,7 +76,7 @@ void ProjectionPropagationModule::init() {
     }
 }
 
-void ProjectionPropagationModule::run(unsigned int, MessageStorage& messages) {
+void ProjectionPropagationModule::run(unsigned int, MessageStorage& messages, std::mt19937_64& random_generator) {
     auto deposits_message = messages.fetchMessage<DepositedChargeMessage>();
 
     // Create vector of propagated charges to output
@@ -174,8 +172,8 @@ void ProjectionPropagationModule::run(unsigned int, MessageStorage& messages) {
             charges_remaining -= charge_per_step;
 
             std::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
-            double diffusion_x = gauss_distribution(random_generator_);
-            double diffusion_y = gauss_distribution(random_generator_);
+            double diffusion_x = gauss_distribution(random_generator);
+            double diffusion_y = gauss_distribution(random_generator);
 
             auto projected_position = ROOT::Math::XYZPoint(
                 position.x() + diffusion_x, position.y() + diffusion_y, model->getSensorSize().z() / 2.);

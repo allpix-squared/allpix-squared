@@ -135,7 +135,7 @@ void RCEWriterModule::init() {
     print_geo(geo_file, detector_names, geo_mgr_);
 }
 
-void RCEWriterModule::run(unsigned int event_id, MessageStorage& messages) {
+void RCEWriterModule::run(unsigned int event_id, MessageStorage& messages, std::mt19937_64&) {
     auto pixel_hit_messages = messages.fetchMultiMessage<PixelHitMessage>();
 
     // fill per-event data

@@ -141,7 +141,7 @@ void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::
     }
 }
 
-void ROOTObjectWriterModule::run(unsigned int, MessageStorage&) {
+void ROOTObjectWriterModule::run(unsigned int, MessageStorage&, std::mt19937_64&) {
     LOG(TRACE) << "Writing new objects to tree";
     output_file_->cd();
 

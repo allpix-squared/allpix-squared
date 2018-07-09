@@ -219,7 +219,7 @@ void ROOTObjectReaderModule::init() {
     }
 }
 
-void ROOTObjectReaderModule::run(unsigned int event_num, MessageStorage& messages) {
+void ROOTObjectReaderModule::run(unsigned int event_num, MessageStorage& messages, std::mt19937_64&) {
     --event_num;
     for(auto& tree : trees_) {
         if(event_num >= tree->GetEntries()) {

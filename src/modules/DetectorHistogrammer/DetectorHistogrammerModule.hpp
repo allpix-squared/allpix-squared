@@ -52,7 +52,7 @@ namespace allpix {
         /**
          * @brief Fill the histograms
          */
-        void run(unsigned int, MessageStorage&) override;
+        void run(unsigned int, MessageStorage&, std::mt19937_64&) override;
 
         /**
          * @brief Write the histograms to the modules file

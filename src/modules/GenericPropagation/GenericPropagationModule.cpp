@@ -62,9 +62,6 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     // Require deposits message for single detector
     messenger_->bindSingle(this, &GenericPropagationModule::deposits_message_, MsgFlags::REQUIRED);
 
-    // Seed the random generator with the module seed
-    random_generator_.seed(getRandomSeed());
-
     // Set default value for config variables
     config_.setDefault<double>("spatial_precision", Units::get(0.25, "nm"));
     config_.setDefault<double>("timestep_start", Units::get(0.01, "ns"));
@@ -513,7 +510,7 @@ void GenericPropagationModule::init() {
     }
 }
 
-void GenericPropagationModule::run(unsigned int event_num, MessageStorage& messages) {
+void GenericPropagationModule::run(unsigned int event_num, MessageStorage& messages, std::mt19937_64& random_generator) {
     auto deposits_message = messages.fetchMessage<DepositedChargeMessage>();
 
     // Create vector of propagated charges to output
@@ -559,7 +556,7 @@ void GenericPropagationModule::run(unsigned int event_num, MessageStorage& messa
             }
 
             // Propagate a single charge deposit
-            auto prop_pair = propagate(position, deposit.getType());
+            auto prop_pair = propagate(position, deposit.getType(), random_generator);
             position = prop_pair.first;
 
             LOG(DEBUG) << " Propagated " << charge_per_step << " to " << Units::display(position, {"mm", "um"}) << " in "
@@ -616,7 +613,8 @@ void GenericPropagationModule::run(unsigned int event_num, MessageStorage& messa
  * multiple steps, adding a random diffusion to the propagating charge every step.
  */
 std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
-                                                                            const CarrierType& type) {
+                                                                            const CarrierType& type,
+                                                                            std::mt19937_64& random_generator) {
     // Create a runge kutta solver using the electric field as step function
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
 
@@ -644,7 +642,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         std::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
         Eigen::Vector3d diffusion;
         for(int i = 0; i < 3; ++i) {
-            diffusion[i] = gauss_distribution(random_generator_);
+            diffusion[i] = gauss_distribution(random_generator);
         }
         return diffusion;
     };

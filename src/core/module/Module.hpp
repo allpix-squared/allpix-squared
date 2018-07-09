@@ -149,9 +149,10 @@ namespace allpix {
          */
         // TODO [doc] Start the sequence at 0 instead of 1?
         // TODO [doc] Document all new parameters
-        virtual void run(unsigned int event_num, MessageStorage& messages) {
+        virtual void run(unsigned int event_num, MessageStorage& messages, std::mt19937_64& random_generator) {
             (void)event_num;
             (void)messages;
+            (void)random_generator;
         }
         //
         /**

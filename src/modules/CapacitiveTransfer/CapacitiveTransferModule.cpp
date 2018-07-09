@@ -262,7 +262,7 @@ void CapacitiveTransferModule::init() {
     }
 }
 
-void CapacitiveTransferModule::run(unsigned int, MessageStorage& messages) {
+void CapacitiveTransferModule::run(unsigned int, MessageStorage& messages, std::mt19937_64&) {
     auto propagated_message = messages.fetchMessage<PropagatedChargeMessage>();
 
     // Find corresponding pixels for all propagated charges

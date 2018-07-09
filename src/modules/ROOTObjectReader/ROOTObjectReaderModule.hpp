@@ -57,7 +57,7 @@ namespace allpix {
         /**
          * @brief Convert the objects stored for the current event to messages
          */
-        void run(unsigned int, MessageStorage&) override;
+        void run(unsigned int, MessageStorage&, std::mt19937_64&) override;
 
         /**
          * @brief Output summary and close the ROOT file

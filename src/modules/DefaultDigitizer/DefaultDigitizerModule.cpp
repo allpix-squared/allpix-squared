@@ -30,9 +30,6 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
     // Require PixelCharge message for single detector
     messenger_->bindSingle(this, &DefaultDigitizerModule::pixel_message_, MsgFlags::REQUIRED);
 
-    // Seed the random generator with the global seed
-    random_generator_.seed(getRandomSeed());
-
     // Set defaults for config variables
     config_.setDefault<int>("electronics_noise", Units::get(110, "e"));
     config_.setDefault<double>("gain", 1.0);
@@ -97,7 +94,7 @@ void DefaultDigitizerModule::init() {
     }
 }
 
-void DefaultDigitizerModule::run(unsigned int, MessageStorage& messages) {
+void DefaultDigitizerModule::run(unsigned int, MessageStorage& messages, std::mt19937_64& random_generator) {
     auto pixel_message = messages.fetchMessage<PixelChargeMessage>();
 
     // Loop through all pixels with charges
@@ -114,7 +111,7 @@ void DefaultDigitizerModule::run(unsigned int, MessageStorage& messages) {
 
         // Add electronics noise from Gaussian:
         std::normal_distribution<double> el_noise(0, config_.get<unsigned int>("electronics_noise"));
-        charge += el_noise(random_generator_);
+        charge += el_noise(random_generator);
 
         LOG(DEBUG) << "Charge with noise: " << Units::display(charge, "e");
         if(config_.get<bool>("output_plots")) {
@@ -123,7 +120,7 @@ void DefaultDigitizerModule::run(unsigned int, MessageStorage& messages) {
 
         // Smear the gain factor, Gaussian distribution around "gain" with width "gain_smearing"
         std::normal_distribution<double> gain_smearing(config_.get<double>("gain"), config_.get<double>("gain_smearing"));
-        double gain = gain_smearing(random_generator_);
+        double gain = gain_smearing(random_generator);
         if(config_.get<bool>("output_plots")) {
             h_gain->Fill(gain);
         }
@@ -138,7 +135,7 @@ void DefaultDigitizerModule::run(unsigned int, MessageStorage& messages) {
         // Smear the threshold, Gaussian distribution around "threshold" with width "threshold_smearing"
         std::normal_distribution<double> thr_smearing(config_.get<unsigned int>("threshold"),
                                                       config_.get<unsigned int>("threshold_smearing"));
-        double threshold = thr_smearing(random_generator_);
+        double threshold = thr_smearing(random_generator);
         if(config_.get<bool>("output_plots")) {
             h_thr->Fill(threshold / 1e3);
         }
@@ -162,7 +159,7 @@ void DefaultDigitizerModule::run(unsigned int, MessageStorage& messages) {
 
             // Add ADC smearing:
             std::normal_distribution<double> adc_smearing(0, config_.get<unsigned int>("adc_smearing"));
-            charge += adc_smearing(random_generator_);
+            charge += adc_smearing(random_generator);
             if(config_.get<bool>("output_plots")) {
                 h_pxq_adc_smear->Fill(charge / 1e3);
             }

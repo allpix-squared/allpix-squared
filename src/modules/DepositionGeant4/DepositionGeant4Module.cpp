@@ -266,7 +266,7 @@ void DepositionGeant4Module::init() {
     RELEASE_STREAM(G4cout);
 }
 
-void DepositionGeant4Module::run(unsigned int event_num, MessageStorage& messages) {
+void DepositionGeant4Module::run(unsigned int event_num, MessageStorage& messages, std::mt19937_64&) {
     // Suppress output stream if not in debugging mode
     IFLOG(DEBUG);
     else {

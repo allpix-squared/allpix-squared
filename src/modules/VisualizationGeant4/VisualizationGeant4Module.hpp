@@ -52,7 +52,7 @@ namespace allpix {
         /**
          * @brief Show visualization updates if not accumulating data
          */
-        void run(unsigned int, MessageStorage&) override;
+        void run(unsigned int, MessageStorage&, std::mt19937_64&) override;
 
         /**
          * @brief Possibly start GUI or terminal and display the visualization

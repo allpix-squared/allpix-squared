@@ -42,7 +42,7 @@ SimpleTransferModule::SimpleTransferModule(Configuration& config, Messenger* mes
     messenger->bindSingle(this, &SimpleTransferModule::propagated_message_, MsgFlags::REQUIRED);
 }
 
-void SimpleTransferModule::run(unsigned int, MessageStorage& messages) {
+void SimpleTransferModule::run(unsigned int, MessageStorage& messages, std::mt19937_64&) {
     auto propagated_message = messages.fetchMessage<PropagatedChargeMessage>();
 
     // Find corresponding pixels for all propagated charges

@@ -51,7 +51,7 @@ namespace allpix {
         /**
          * @brief Take the digitised pixel hits and write them into the output file
          */
-        void run(unsigned int, MessageStorage&) override;
+        void run(unsigned int, MessageStorage&, std::mt19937_64&) override;
 
         /**
          * @brief Write output trees to file

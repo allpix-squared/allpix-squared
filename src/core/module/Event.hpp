@@ -25,13 +25,15 @@ namespace allpix {
          * @param modules The modules that constitutes the event
          * @param event_num The event identifier
          * @param terminate TODO
-         * @param module_execution_time_ TODO
+         * @param module_execution_time TODO
+         * @param seeder TODO
          */
         explicit Event(ModuleList modules,
                        const unsigned int event_num,
                        std::atomic<bool>& terminate,
-                       std::map<Module*, long double>& module_execution_time_,
-                       Messenger* messenger);
+                       std::map<Module*, long double>& module_execution_time,
+                       Messenger* messenger,
+                       std::mt19937_64& seeder);
         /**
          * @brief Use default destructor
          */
@@ -78,6 +80,8 @@ namespace allpix {
 
         // XXX: must this be mutex protected?
         std::map<Module*, long double>& module_execution_time_;
+
+        std::mt19937_64 random_generator_;
     };
 
 } // namespace allpix

@@ -87,7 +87,7 @@ void CorryvreckanWriterModule::init() {
 }
 
 // Make instantiations of Corryvreckan pixels, and store these in the trees during run time
-void CorryvreckanWriterModule::run(unsigned int, MessageStorage& messages) {
+void CorryvreckanWriterModule::run(unsigned int, MessageStorage& messages, std::mt19937_64&) {
     auto pixel_messages = messages.fetchMultiMessage<PixelHitMessage>();
 
     // Loop through all receieved messages

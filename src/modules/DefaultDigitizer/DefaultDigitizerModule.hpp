@@ -52,7 +52,7 @@ namespace allpix {
         /**
          * @brief Simulate digitization process
          */
-        void run(unsigned int, MessageStorage&) override;
+        void run(unsigned int, MessageStorage&, std::mt19937_64&) override;
 
         /**
          * @brief Finalize and write optional histograms
