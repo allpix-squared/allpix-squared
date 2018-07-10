@@ -48,10 +48,11 @@ namespace allpix {
         std::shared_ptr<Detector> detector_;
 
         /**
-         * @brief Create and apply a linear field
+         * @brief Create and apply a weighting field equivalent to a pixel/pad in a plane condenser
          * @param thickness_domain Domain of the thickness where the field is defined
          */
-        ElectricFieldFunction get_linear_field_function(std::pair<double, double> thickness_domain);
+        ElectricFieldFunction get_pad_field_function(ROOT::Math::XYVector implant,
+                                                     std::pair<double, double> thickness_domain);
 
         /**
          * @brief Read field in the init format and apply it

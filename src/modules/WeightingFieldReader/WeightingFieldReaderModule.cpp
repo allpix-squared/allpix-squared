@@ -19,6 +19,7 @@
 #include <string>
 #include <utility>
 
+#include <Math/RotationZ.h>
 #include <Math/Vector3D.h>
 #include <TH2F.h>
 
@@ -49,9 +50,61 @@ void WeightingFieldReaderModule::init() {
         WeightingFieldReaderModule::FieldData field_data;
         field_data = read_init_field();
         detector_->setWeightingFieldGrid(field_data.first, field_data.second, thickness_domain);
+    } else if(field_model == "pad") {
+        LOG(TRACE) << "Adding weighting field from pad in plane condenser";
+
+        // Get pixel implant size from the detector model:
+        auto implant = model->getImplantSize();
+        ElectricFieldFunction function = get_pad_field_function(implant, thickness_domain);
+        detector_->setWeightingFieldFunction(function, thickness_domain, WeightingFieldType::PAD);
     } else {
-        throw InvalidValueError(config_, "model", "model should be 'init'");
+        throw InvalidValueError(config_, "model", "model should be 'init' or `pad`");
     }
+}
+
+/**
+ * Implement weighting field from doi:10.1016/j.nima.2014.08.44 and return it as a lookup function.
+ */
+ElectricFieldFunction WeightingFieldReaderModule::get_pad_field_function(ROOT::Math::XYVector implant,
+                                                                         std::pair<double, double> thickness_domain) {
+
+    LOG(TRACE) << "Calculating function for the plane condenser weighting field field." << std::endl;
+
+    return [implant, thickness_domain](const ROOT::Math::XYZPoint& pos) {
+        // Calculate values of the "g" function for all three components
+        auto g = [implant](double x, double y, double u) {
+            // Calculate terms derived from the arctan functions in the potential for all components
+            auto fraction = [](double a, double b, double c) {
+                // Three different components required since the derivatives have different solutions
+                return ROOT::Math::XYZVector(b * c / ((a * a + c * c) * std::sqrt(a * a + b * b + c * c)),
+                                             a * c / ((b * b + c * c) * std::sqrt(a * a + b * b + c * c)),
+                                             a * b * (a * a + b * b + 2 * c * c) /
+                                                 ((a * a + c * c) * (b * b + c * c) * std::sqrt(a * a + b * b + c * c)));
+            };
+
+            // Shift the x and y coordinates by plus/minus half the implant size:
+            double x1 = x - implant.x() / 2;
+            double x2 = x + implant.x() / 2;
+            double y1 = y - implant.y() / 2;
+            double y2 = y + implant.y() / 2;
+
+            // Sum the four components of the "g" function and return:
+            return (fraction(x1, y1, u) + fraction(x2, y2, u) - fraction(x1, y2, u) - fraction(x2, y1, u));
+        };
+
+        // Transform into coordinate system with sensor between d/2 < z < -d/2:
+        auto d = thickness_domain.second - thickness_domain.first;
+        auto local_z = -pos.z() + thickness_domain.second;
+
+        // Calculate the series expansion
+        ROOT::Math::XYZVector sum;
+        for(int n = 1; n <= 100; n++) {
+            sum += g(pos.x(), pos.y(), 2 * n * d - local_z) +
+                   ROOT::Math::RotationZ(M_PI) * g(pos.x(), pos.y(), 2 * n * d + local_z);
+        }
+
+        return (1 / (2 * M_PI) * (ROOT::Math::RotationZ(M_PI) * g(pos.x(), pos.y(), local_z) + sum));
+    };
 }
 
 /**
