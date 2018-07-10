@@ -250,6 +250,9 @@ void Allpix::terminate() {
 void Allpix::add_units() {
     LOG(TRACE) << "Adding physical units";
 
+    // UNITY
+    Units::add("1", 1);
+
     // LENGTH
     Units::add("nm", 1e-6);
     Units::add("um", 1e-3);
