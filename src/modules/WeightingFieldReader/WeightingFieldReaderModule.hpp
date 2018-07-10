@@ -51,7 +51,7 @@ namespace allpix {
          * @brief Create and apply a weighting field equivalent to a pixel/pad in a plane condenser
          * @param thickness_domain Domain of the thickness where the field is defined
          */
-        ElectricFieldFunction get_pad_field_function(ROOT::Math::XYVector implant,
+        ElectricFieldFunction get_pad_field_function(const ROOT::Math::XYVector& implant,
                                                      std::pair<double, double> thickness_domain);
 
         /**
@@ -65,7 +65,7 @@ namespace allpix {
          */
         static FieldData get_by_file_name(const std::string& name,
                                           Detector&,
-                                          ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> field_size);
+                                          const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>& field_size);
         static std::map<std::string, FieldData> field_map_;
     };
 } // namespace allpix

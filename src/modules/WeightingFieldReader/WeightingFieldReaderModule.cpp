@@ -65,7 +65,7 @@ void WeightingFieldReaderModule::init() {
 /**
  * Implement weighting field from doi:10.1016/j.nima.2014.08.44 and return it as a lookup function.
  */
-ElectricFieldFunction WeightingFieldReaderModule::get_pad_field_function(ROOT::Math::XYVector implant,
+ElectricFieldFunction WeightingFieldReaderModule::get_pad_field_function(const ROOT::Math::XYVector& implant,
                                                                          std::pair<double, double> thickness_domain) {
 
     LOG(TRACE) << "Calculating function for the plane condenser weighting field field." << std::endl;
@@ -163,10 +163,10 @@ inline static void check_detector_match(Detector& detector,
 }
 
 std::map<std::string, WeightingFieldReaderModule::FieldData> WeightingFieldReaderModule::field_map_;
-WeightingFieldReaderModule::FieldData
-WeightingFieldReaderModule::get_by_file_name(const std::string& file_name,
-                                             Detector& detector,
-                                             ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> field_size) {
+WeightingFieldReaderModule::FieldData WeightingFieldReaderModule::get_by_file_name(
+    const std::string& file_name,
+    Detector& detector,
+    const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>& field_size) {
 
     // Search in cache (NOTE: the path reached here is always a canonical name)
     auto iter = field_map_.find(file_name);
@@ -199,7 +199,7 @@ WeightingFieldReaderModule::get_by_file_name(const std::string& file_name,
     file >> tmp;
 
     // Check if weighting field matches chip
-    check_detector_match(detector, thickness, xpixsz, ypixsz, field_size);
+    check_detector_match(detector, thickness, xpixsz, ypixsz, std::move(field_size));
 
     if(file.fail()) {
         throw std::runtime_error("invalid data or unexpected end of file");
