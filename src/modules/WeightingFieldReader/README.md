@@ -19,7 +19,7 @@ $` g_z(x, y, u) = \frac{x_1 y_1 (x_1^2 + y_1^2 + 2u^2)}{(x_1^2 + u^2)(y_1^2 + u^
 
 where $`x_{1,2} = x \pm \frac{w_x}{2} \qquad y_{1,2} = y \pm \frac{w_y}{2}`$.
 
-Here, $`w_{x,y}`$ indicate the size of the collection electrode (i.e. the implant), $V_w$ is the potential of the electrode and *d* is the thickness of the sensor.
+Here, $`w_{x,y}`$ indicate the size of the collection electrode (i.e. the implant), $`V_w`$ is the potential of the electrode and *d* is the thickness of the sensor.
 
 The *x* and *y* components of the field are determined in the same way, i.e. by calculating the derivatives from the weighting potential as
 
