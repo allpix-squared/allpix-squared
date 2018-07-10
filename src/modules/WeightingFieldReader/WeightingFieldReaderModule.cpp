@@ -124,12 +124,12 @@ void WeightingFieldReaderModule::create_output_plots() {
     double max = model->getSensorCenter().z() + model->getSensorSize().z() / 2.0;
 
     // Create 1D histograms
-    auto histogramX = new TH1F(
-        "field1d_x", "electric field (x-component);x (mm);field strength (V/cm)", static_cast<int>(steps), min, max);
-    auto histogramY = new TH1F(
-        "field1d_y", "electric field (y-component);y (mm);field strength (V/cm)", static_cast<int>(steps), min, max);
-    auto histogramZ = new TH1F(
-        "field1d_z", "electric field (z-component);z (mm);field strength (V/cm)", static_cast<int>(steps), min, max);
+    auto histogramX =
+        new TH1F("field1d_x", "E_{w}/V_{w} (x-component);x (mm);field strength (1/cm)", static_cast<int>(steps), min, max);
+    auto histogramY =
+        new TH1F("field1d_y", "E_{w}/V_{w} (y-component);y (mm);field strength (1/cm)", static_cast<int>(steps), min, max);
+    auto histogramZ =
+        new TH1F("field1d_z", "E_{w}/V_{w} (z-component);z (mm);field strength (1/cm)", static_cast<int>(steps), min, max);
 
     // Get the weighting field at every index
     for(size_t j = 0; j < steps; ++j) {
@@ -139,14 +139,14 @@ void WeightingFieldReaderModule::create_output_plots() {
         auto field = detector_->getWeightingField(ROOT::Math::XYZPoint(position.x(), position.y(), z));
         // auto field_strength = Units::convert(std::sqrt(field.Mag2()), "V/cm");
 
-        // auto field_x_strength = Units::convert(field.x(), "V/cm");
-        // auto field_y_strength = Units::convert(field.y(), "V/cm");
-        // auto field_z_strength = Units::convert(field.z(), "V/cm");
+        auto field_x_strength = Units::convert(field.x(), "1/cm");
+        auto field_y_strength = Units::convert(field.y(), "1/cm");
+        auto field_z_strength = Units::convert(field.z(), "1/cm");
 
         // Fill the histograms
-        histogramX->Fill(z, static_cast<double>(field.x()));
-        histogramY->Fill(z, static_cast<double>(field.y()));
-        histogramZ->Fill(z, static_cast<double>(field.z()));
+        histogramX->Fill(z, static_cast<double>(field_x_strength));
+        histogramY->Fill(z, static_cast<double>(field_y_strength));
+        histogramZ->Fill(z, static_cast<double>(field_z_strength));
     }
 
     // Write the histogram to module file
