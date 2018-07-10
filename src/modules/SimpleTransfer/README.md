@@ -7,8 +7,12 @@
 ### Description
 Combines individual sets of propagated charges together to a set of charges on the sensor pixels and thus prepares them for processing by the detector front-end electronics. The module does a simple direct mapping to the nearest pixel, ignoring propagated charges that are too far away from the implants or outside the pixel grid. Timing information for the pixel charges is currently not yet produced, but can be fetched from the linked propagated charges.
 
+When a collection diode size is specified for the respective detector via its `implant_size` parameter, the `collect_from_implant` option can be turned on in order to only pick charge carriers from the implant region and ignore everything outside this region.
+Since this will lead to unexpected and undesired behavior when using linear electric fields, this option can only be used when using fields with a x/y dependence (i.e. field maps imported from TCAD).
+
 ### Parameters
-* `max_depth_distance` : Maximum distance in depth, i.e. normal to the sensor surface at the implant side, for a propagated charge to be taken into account. Defaults to 5um.
+* `max_depth_distance` : Maximum distance in depth, i.e. normal to the sensor surface at the implant side, for a propagated charge to be taken into account. Defaults to `5um`.
+* `collect_from_implant`: Only consider charge carriers within the implant region of the respective detector instead of the full surface of the sensor. Should only be used with non-linear electric fields and defaults to `false`.
 
 ### Usage
 For a typical simulation, a *max_depth_distance* a few micro meters should be sufficient, leading to the following configuration:

@@ -42,6 +42,11 @@ namespace allpix {
         SimpleTransferModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector);
 
         /**
+         * @brief Initialize - check for field configuration and implants
+         */
+        void init() override;
+
+        /**
          * @brief Transfer the propagated charges to the pixels
          */
         void run(unsigned int) override;
