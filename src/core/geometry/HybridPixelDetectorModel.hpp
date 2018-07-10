@@ -164,61 +164,6 @@ namespace allpix {
          */
         void setBumpOffset(ROOT::Math::XYVector val) { bump_offset_ = std::move(val); }
 
-        /**
-         * @brief Get size of the box around the model that contains all elements
-         * @return Size of the detector model
-         *
-         * All elements should be covered by a box with \ref DetectorModel::getCenter as center. This means that the size
-         * returned by this method is likely larger than the minimum possible size of a box around all elements. It will only
-         * return the minimum size if \ref DetectorModel::getCenter corresponds to the geometric center of the model.
-         */
-        ROOT::Math::XYZVector getSize() const override {
-            ROOT::Math::XYZVector max(std::numeric_limits<double>::lowest(),
-                                      std::numeric_limits<double>::lowest(),
-                                      std::numeric_limits<double>::lowest());
-            ROOT::Math::XYZVector min(
-                std::numeric_limits<double>::max(), std::numeric_limits<double>::max(), std::numeric_limits<double>::max());
-
-            std::array<ROOT::Math::XYZPoint, 2> centers = {{getSensorCenter(), getChipCenter()}};
-            std::array<ROOT::Math::XYZVector, 2> sizes = {{getSensorSize(), getChipSize()}};
-            double z_size = 0;
-
-            // Sensor and chip
-            for(size_t i = 0; i < 2; ++i) {
-                // z size
-                z_size += (sizes.at(i)).z();
-                // x and y sizes
-                max.SetX(std::max(max.x(), (centers.at(i) + sizes.at(i) / 2.0).x()));
-                max.SetY(std::max(max.y(), (centers.at(i) + sizes.at(i) / 2.0).y()));
-                min.SetX(std::min(min.x(), (centers.at(i) - sizes.at(i) / 2.0).x()));
-                min.SetY(std::min(min.y(), (centers.at(i) - sizes.at(i) / 2.0).y()));
-            }
-
-            // Support layers
-            // FIXME in case the support location is 'absolute' this might not calculate the right size (if there is empty
-            // spaces between layers)
-            for(auto& support_layer : getSupportLayers()) {
-                auto size = support_layer.getSize();
-                auto center = support_layer.getCenter();
-                // z size
-                z_size += size.z();
-                // x and y sizes
-                max.SetX(std::max(max.x(), (center + size / 2.0).x()));
-                max.SetY(std::max(max.y(), (center + size / 2.0).y()));
-                min.SetX(std::min(min.x(), (center - size / 2.0).x()));
-                min.SetY(std::min(min.y(), (center - size / 2.0).y()));
-            }
-
-            // Bump bonds
-            z_size += getBumpHeight();
-
-            ROOT::Math::XYZVector size;
-            size.SetX(2 * std::max(max.x() - getCenter().x(), getCenter().x() - min.x()));
-            size.SetY(2 * std::max(max.y() - getCenter().y(), getCenter().y() - min.y()));
-            size.SetZ(z_size);
-            return size;
-        }
-
     private:
         std::array<double, 4> chip_excess_{};
 

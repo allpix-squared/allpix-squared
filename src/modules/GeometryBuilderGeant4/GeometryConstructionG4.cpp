@@ -207,16 +207,20 @@ void GeometryConstructionG4::build_detectors() {
 
         // Get the distance, on the z axis, between the sensor center and the detector (box) geometrical center
         double detector_thickness = model->getSize().z();
-        double support_thickness = 0; // total thickness of support layers on the sensor side
+        double min_support_center = -model->getSensorSize().Z() /
+                                    2; // center (on the z axis) of the support (sensor side) with smallest z coordinate
+        double min_support_size = 0.;  // z size of the support (sensor side) with smallest z coordinate
         for(auto& support_layer : model->getSupportLayers()) {
-            // FIXME in case the support location is 'absolute' this might not calculate the right size (if there is
-            // empty spaces between layers)
-            if(support_layer.getLocation() == "sensor") {
-                auto size = support_layer.getSize();
-                support_thickness += size.z();
+            double centers_zDistance = (support_layer.getCenter()).z() - model->getSensorCenter().z();
+            if(centers_zDistance < min_support_center) { // selects supports on the sensor side only
+                min_support_center = centers_zDistance;
+                min_support_size = (support_layer.getSize()).z();
             }
         }
-        double zDistanceToGeoCenter = detector_thickness / 2 - support_thickness - model->getSensorSize().Z() / 2;
+        double support_sensorSide_thickness =
+            std::abs(min_support_center) + min_support_size / 2 -
+            model->getSensorSize().Z() / 2; // total thickness of support layers (including empty spaces) on the sensor side
+        double zDistanceToGeoCenter = detector_thickness / 2 - support_sensorSide_thickness - model->getSensorSize().Z() / 2;
 
         // Get position and orientation
         auto position = detector->getPosition();
