@@ -60,6 +60,11 @@ namespace allpix {
         FieldData read_init_field();
 
         /**
+         * @brief Create output plots of the electric field profile
+         */
+        void create_output_plots();
+
+        /**
          * @brief Get the weighting field from a file name, caching the result between
          * instantiations
          */

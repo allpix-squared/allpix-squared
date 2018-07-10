@@ -60,6 +60,11 @@ void WeightingFieldReaderModule::init() {
     } else {
         throw InvalidValueError(config_, "model", "model should be 'init' or `pad`");
     }
+
+    // Produce histograms if needed
+    if(config_.get<bool>("output_plots", false)) {
+        create_output_plots();
+    }
 }
 
 /**
@@ -105,6 +110,49 @@ ElectricFieldFunction WeightingFieldReaderModule::get_pad_field_function(const R
 
         return (1 / (2 * M_PI) * (ROOT::Math::RotationZ(M_PI) * g(pos.x(), pos.y(), local_z) + sum));
     };
+}
+
+void WeightingFieldReaderModule::create_output_plots() {
+    LOG(TRACE) << "Creating output plots";
+
+    auto steps = config_.get<size_t>("output_plots_steps", 500);
+    auto position = config_.get<ROOT::Math::XYPoint>("output_plots_position", ROOT::Math::XYPoint(0, 0));
+
+    auto model = detector_->getModel();
+
+    double min = model->getSensorCenter().z() - model->getSensorSize().z() / 2.0;
+    double max = model->getSensorCenter().z() + model->getSensorSize().z() / 2.0;
+
+    // Create 1D histograms
+    auto histogramX = new TH1F(
+        "field1d_x", "electric field (x-component);x (mm);field strength (V/cm)", static_cast<int>(steps), min, max);
+    auto histogramY = new TH1F(
+        "field1d_y", "electric field (y-component);y (mm);field strength (V/cm)", static_cast<int>(steps), min, max);
+    auto histogramZ = new TH1F(
+        "field1d_z", "electric field (z-component);z (mm);field strength (V/cm)", static_cast<int>(steps), min, max);
+
+    // Get the weighting field at every index
+    for(size_t j = 0; j < steps; ++j) {
+        double z = min + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * (max - min);
+
+        // Get field strength from detector
+        auto field = detector_->getWeightingField(ROOT::Math::XYZPoint(position.x(), position.y(), z));
+        // auto field_strength = Units::convert(std::sqrt(field.Mag2()), "V/cm");
+
+        // auto field_x_strength = Units::convert(field.x(), "V/cm");
+        // auto field_y_strength = Units::convert(field.y(), "V/cm");
+        // auto field_z_strength = Units::convert(field.z(), "V/cm");
+
+        // Fill the histograms
+        histogramX->Fill(z, static_cast<double>(field.x()));
+        histogramY->Fill(z, static_cast<double>(field.y()));
+        histogramZ->Fill(z, static_cast<double>(field.z()));
+    }
+
+    // Write the histogram to module file
+    histogramX->Write();
+    histogramY->Write();
+    histogramZ->Write();
 }
 
 /**
