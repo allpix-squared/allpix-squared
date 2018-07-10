@@ -142,7 +142,7 @@ inline static void check_detector_match(Detector& detector,
                                         double thickness,
                                         double xpixsz,
                                         double ypixsz,
-                                        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> field_size) {
+                                        const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>& field_size) {
     auto model = detector.getModel();
     // Do a several checks with the detector model
     if(model != nullptr) {
@@ -199,7 +199,7 @@ WeightingFieldReaderModule::FieldData WeightingFieldReaderModule::get_by_file_na
     file >> tmp;
 
     // Check if weighting field matches chip
-    check_detector_match(detector, thickness, xpixsz, ypixsz, std::move(field_size));
+    check_detector_match(detector, thickness, xpixsz, ypixsz, field_size);
 
     if(file.fail()) {
         throw std::runtime_error("invalid data or unexpected end of file");
