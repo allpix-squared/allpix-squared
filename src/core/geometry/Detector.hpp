@@ -46,10 +46,10 @@ namespace allpix {
      * @brief Type of the electric field
      */
     enum class WeightingFieldType {
-        NONE = 0,       ///< No weighting field is simulated
-        PLANECONDENSER, ///< Teh equivalent weighting field of a  pixel in a plane condenser
-        GRID,           ///< Weighting field supplied through a regularized grid
-        CUSTOM,         ///< Custom weighting field function
+        NONE = 0, ///< No weighting field is simulated
+        PAD,      ///< The equivalent weighting field of a pixel/pad in a plane condenser
+        GRID,     ///< Weighting field supplied through a regularized grid
+        CUSTOM,   ///< Custom weighting field function
     };
 
     using ElectricFieldFunction = std::function<ROOT::Math::XYZVector(const ROOT::Math::XYZPoint&)>;
