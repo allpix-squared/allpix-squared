@@ -80,11 +80,12 @@ ElectricFieldFunction WeightingFieldReaderModule::get_pad_field_function(const R
         auto g = [implant](double x, double y, double u) {
             // Calculate terms derived from the arctan functions in the potential for all components
             auto fraction = [](double a, double b, double c) {
+                double denominator = std::sqrt(a * a + b * b + c * c);
                 // Three different components required since the derivatives have different solutions
-                return ROOT::Math::XYZVector(b * c / ((a * a + c * c) * std::sqrt(a * a + b * b + c * c)),
-                                             a * c / ((b * b + c * c) * std::sqrt(a * a + b * b + c * c)),
+                return ROOT::Math::XYZVector(b * c / ((a * a + c * c) * denominator),
+                                             a * c / ((b * b + c * c) * denominator),
                                              a * b * (a * a + b * b + 2 * c * c) /
-                                                 ((a * a + c * c) * (b * b + c * c) * std::sqrt(a * a + b * b + c * c)));
+                                                 ((a * a + c * c) * (b * b + c * c) * denominator));
             };
 
             // Shift the x and y coordinates by plus/minus half the implant size:
