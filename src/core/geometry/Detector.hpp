@@ -179,9 +179,11 @@ namespace allpix {
         /**
          * @brief Get the weighting field in the sensor at a local position
          * @param pos Position in the local frame
+         * @param x x-coordinate of the pixel for which we want the weighting field
+         * @param y y-coordinate of the pixel for which we want the weighting field
          * @return Vector of the field at the queried point
          */
-        ROOT::Math::XYZVector getWeightingField(const ROOT::Math::XYZPoint& local_pos) const;
+        ROOT::Math::XYZVector getWeightingField(const ROOT::Math::XYZPoint& local_pos, unsigned int x, unsigned int y) const;
 
         /**
          * @brief Set the weighting field in a single pixel in the detector using a grid

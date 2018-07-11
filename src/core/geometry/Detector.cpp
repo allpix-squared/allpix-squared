@@ -284,10 +284,10 @@ bool Detector::hasWeightingField() const {
 }
 
 /**
- * The weighting field is replicated for all pixels and uses flipping at each boundary. Outside of the sensor the weighting
- * field is strictly zero by definition.
+ * The weighting field is retrieved relative to a reference pixel. Outside of the sensor the weighting field is strictly zero
+ * by definition.
  */
-ROOT::Math::XYZVector Detector::getWeightingField(const ROOT::Math::XYZPoint& pos) const {
+ROOT::Math::XYZVector Detector::getWeightingField(const ROOT::Math::XYZPoint& pos, unsigned int px, unsigned int py) const {
     // FIXME: We need to revisit this to be faster and not too specific
     if(weighting_field_type_ == WeightingFieldType::NONE) {
         return ROOT::Math::XYZVector(0, 0, 0);
@@ -297,48 +297,15 @@ ROOT::Math::XYZVector Detector::getWeightingField(const ROOT::Math::XYZPoint& po
     auto y = pos.y();
     auto z = pos.z();
 
-    // Compute corresponding pixel coordinates
+    // Compute distance from reference pixel:
     // WARNING This relies on the origin of the local coordinate system
-    auto pixel_x = static_cast<int>(std::round(x / model_->getPixelSize().x()));
-    auto pixel_y = static_cast<int>(std::round(y / model_->getPixelSize().y()));
-
-    // Convert to the pixel frame
-    x -= pixel_x * model_->getPixelSize().x();
-    y -= pixel_y * model_->getPixelSize().y();
-
-    // Do flipping if necessary
-    if((pixel_x % 2) == 1) {
-        x *= -1;
-    }
-    if((pixel_y % 2) == 1) {
-        y *= -1;
-    }
+    x -= px * model_->getPixelSize().x();
+    y -= py * model_->getPixelSize().y();
 
     // Compute using the grid or a function depending on the setting
     ROOT::Math::XYZVector ret_val;
     if(weighting_field_type_ == WeightingFieldType::GRID) {
-        // Compute indices
-        auto x_ind = static_cast<int>(std::floor(static_cast<double>(weighting_field_sizes_[0]) *
-                                                 (x + model_->getPixelSize().x() / 2.0) / model_->getPixelSize().x()));
-        auto y_ind = static_cast<int>(std::floor(static_cast<double>(weighting_field_sizes_[1]) *
-                                                 (y + model_->getPixelSize().y() / 2.0) / model_->getPixelSize().y()));
-        auto z_ind = static_cast<int>(
-            std::floor(static_cast<double>(weighting_field_sizes_[2]) * (z - weighting_field_thickness_domain_.first) /
-                       (weighting_field_thickness_domain_.second - weighting_field_thickness_domain_.first)));
-
-        // Check for indices within the sensor
-        if(x_ind < 0 || x_ind >= static_cast<int>(weighting_field_sizes_[0]) || y_ind < 0 ||
-           y_ind >= static_cast<int>(weighting_field_sizes_[1]) || z_ind < 0 ||
-           z_ind >= static_cast<int>(weighting_field_sizes_[2])) {
-            return ROOT::Math::XYZVector(0, 0, 0);
-        }
-
-        // Compute total index
-        size_t tot_ind = static_cast<size_t>(x_ind) * weighting_field_sizes_[1] * weighting_field_sizes_[2] * 3 +
-                         static_cast<size_t>(y_ind) * weighting_field_sizes_[2] * 3 + static_cast<size_t>(z_ind) * 3;
-
-        ret_val = ROOT::Math::XYZVector(
-            (*weighting_field_)[tot_ind], (*weighting_field_)[tot_ind + 1], (*weighting_field_)[tot_ind + 2]);
+        throw std::invalid_argument("not implemented yet");
     } else {
         // Check if inside the thickness domain
         if(z < weighting_field_thickness_domain_.first || weighting_field_thickness_domain_.second < z) {
@@ -347,14 +314,6 @@ ROOT::Math::XYZVector Detector::getWeightingField(const ROOT::Math::XYZPoint& po
 
         // Calculate the weighting field
         ret_val = weighting_field_function_(ROOT::Math::XYZPoint(x, y, z));
-    }
-
-    // Flip vector if necessary
-    if((pixel_x % 2) == 1) {
-        ret_val.SetX(-ret_val.x());
-    }
-    if((pixel_y % 2) == 1) {
-        ret_val.SetY(-ret_val.y());
     }
 
     return ret_val;

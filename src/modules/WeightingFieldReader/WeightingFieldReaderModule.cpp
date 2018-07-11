@@ -137,9 +137,7 @@ void WeightingFieldReaderModule::create_output_plots() {
         double z = min + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * (max - min);
 
         // Get field strength from detector
-        auto field = detector_->getWeightingField(ROOT::Math::XYZPoint(position.x(), position.y(), z));
-        // auto field_strength = Units::convert(std::sqrt(field.Mag2()), "V/cm");
-
+        auto field = detector_->getWeightingField(ROOT::Math::XYZPoint(position.x(), position.y(), z), 0, 0);
         auto field_x_strength = Units::convert(field.x(), "1/cm");
         auto field_y_strength = Units::convert(field.y(), "1/cm");
         auto field_z_strength = Units::convert(field.z(), "1/cm");
@@ -150,10 +148,40 @@ void WeightingFieldReaderModule::create_output_plots() {
         histogramZ->Fill(z, static_cast<double>(field_z_strength));
     }
 
+    // Create 2D histogram
+    auto histogram = new TH2F("field_z",
+                              "E_{w}/V_{w} (z-component);x (mm); z (mm); field strength (1/cm)",
+                              static_cast<int>(steps),
+                              -1.5 * model->getPixelSize().x(),
+                              1.5 * model->getPixelSize().x(),
+                              static_cast<int>(steps),
+                              min,
+                              max);
+    // histogram->SetMinimum(0);
+
+    // Get the weighting field at every index
+    for(size_t j = 0; j < steps; ++j) {
+        LOG_PROGRESS(INFO, "plotting") << "Plotting progress " << 100 * j * steps / (steps * steps) << "%";
+        for(size_t k = 0; k < steps; ++k) {
+            double z = min + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * (max - min);
+            double x = -0.5 * model->getPixelSize().x() +
+                       ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * 3 * model->getPixelSize().x();
+
+            // LOG(DEBUG) << "Requesting field ad local coords (" << Units::display(x, {"cm", "mm", "um"}) << "," << 0;
+            // Get field strength from detector
+            auto field = detector_->getWeightingField(ROOT::Math::XYZPoint(x, 0, z), 1, 0);
+            auto field_z_strength = Units::convert(field.z(), "1/cm");
+
+            // Fill the histograms, shift x-axis by one pixel so the reference electrode in centered.
+            histogram->Fill(x - model->getPixelSize().x(), z, static_cast<double>(field_z_strength));
+        }
+    }
+
     // Write the histogram to module file
     histogramX->Write();
     histogramY->Write();
     histogramZ->Write();
+    histogram->Write();
 }
 
 /**
