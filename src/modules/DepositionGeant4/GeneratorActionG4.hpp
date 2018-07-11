@@ -40,7 +40,6 @@ namespace allpix {
 
     private:
         std::unique_ptr<G4GeneralParticleSource> particle_source_;
-        void add_single_decay(std::string, double, double);
         void add_multiple_decay(std::string, const double*, const double*, int);
     };
 } // namespace allpix

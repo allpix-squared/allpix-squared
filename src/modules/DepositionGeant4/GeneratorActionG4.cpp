@@ -208,19 +208,6 @@ void GeneratorActionG4::GeneratePrimaries(G4Event* event) {
     particle_source_->GeneratePrimaryVertex(event);
 }
 
-void GeneratorActionG4::add_single_decay(std::string particle_type, double Energy, double Spread) {
-    std::transform(particle_type.begin(), particle_type.end(), particle_type.begin(), ::tolower);
-    auto pdg_table = G4ParticleTable::GetParticleTable();
-    G4ParticleDefinition* particle = pdg_table->FindParticle(particle_type);
-    auto single_source = particle_source_->GetCurrentSource();
-    single_source->SetNumberOfParticles(1);
-    single_source->SetParticleDefinition(particle);
-    single_source->SetParticleTime(0.0);
-    single_source->GetEneDist()->SetEnergyDisType("Gauss");
-    single_source->GetEneDist()->SetMonoEnergy(Energy);
-    single_source->GetEneDist()->SetBeamSigmaInE(Spread);
-}
-
 void GeneratorActionG4::add_multiple_decay(std::string particle_type,
                                            const double* Energy,
                                            const double* Intensity,
