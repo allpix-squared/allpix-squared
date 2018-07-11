@@ -277,8 +277,8 @@ inline static void check_detector_match(Detector& detector, double thickness, do
     // Do a several checks with the detector model
     if(model != nullptr) {
         if(std::fabs(thickness - model->getSensorSize().z()) > std::numeric_limits<double>::epsilon()) {
-            LOG(WARNING) << "Thickness of sensor in file is " << Units::display(thickness, "um")
-                         << " but in the model it is " << Units::display(model->getSensorSize().z(), "um");
+            LOG(WARNING) << "Thickness of sensor in field map file is " << Units::display(thickness, "um")
+                         << " but in the detector model it is " << Units::display(model->getSensorSize().z(), "um");
         }
         if(std::fabs(xpixsz - model->getPixelSize().x()) > std::numeric_limits<double>::epsilon() ||
            std::fabs(ypixsz - model->getPixelSize().y()) > std::numeric_limits<double>::epsilon()) {

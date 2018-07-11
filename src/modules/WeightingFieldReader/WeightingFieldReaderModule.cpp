@@ -215,8 +215,8 @@ inline static void check_detector_match(Detector& detector, double thickness, do
     // Do a several checks with the detector model
     if(model != nullptr) {
         if(std::fabs(thickness - model->getSensorSize().z()) > std::numeric_limits<double>::epsilon()) {
-            LOG(WARNING) << "Thickness of sensor in file is " << Units::display(thickness, "um")
-                         << " but in the model it is " << Units::display(model->getSensorSize().z(), "um");
+            LOG(WARNING) << "Thickness of sensor in field map file is " << Units::display(thickness, "um")
+                         << " but in the detector model it is " << Units::display(model->getSensorSize().z(), "um");
         }
 
         // Check that the total field size is n*pitch:
