@@ -37,13 +37,13 @@ The *x* and *y* components of the field are determined in the same way, i.e. by 
 Using the **init** model of this module allows reading in from a file in the INIT format, e.g. from an electrostatic TCAD simulation.
 A converter tool for fields from adaptive TCAD meshes is provided with the framework.
 
-In addition to the file with the field map, the expected size in pixels should be given using the `field_size` parameter.
+A warning is printed if the field size does not correspond to a multiple of the pixel size.
+While this is not a problem in general, it might hint at a wrong field map being used.
 
 
 ### Parameters
 * `model` : Type of the weighting field model, either **init** or **pad**.
 * `file_name` : Location of file containing the weighting field in the INIT format. Only used if the *model* parameter has the value **init**.
-* `field_size`: Number of pixels in x and y the weighting field is expected to cover. Defaults to a 3x3 field and is only used if the *model* parameter has the value **init**.
 * `output_plots`:  Determines if output plots should be generated. Disabled by default.
 * `output_plots_steps` : Number of bins along the z-direction for which the weighting field is evaluated. Defaults to 500 bins and is only used if `output_plots` is enabled.
 * `output_plots_position`: 2D Position in x and y at which the weighting field is evaluated along the z-axis. By default, the field is plotted for the position in the pixel center, i.e. (0, 0). Only used if `output_plots` is enabled.
