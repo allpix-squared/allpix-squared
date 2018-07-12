@@ -21,7 +21,7 @@
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
-#include "core/module/MessageStorage.hpp"
+#include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
 
 #include "Cluster.hpp"
@@ -52,7 +52,7 @@ namespace allpix {
         /**
          * @brief Fill the histograms
          */
-        void run(unsigned int, MessageStorage&, std::mt19937_64&) override;
+        void run(Event*) override;
 
         /**
          * @brief Write the histograms to the modules file

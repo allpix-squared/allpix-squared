@@ -266,7 +266,7 @@ void DepositionGeant4Module::init(uint64_t random_seed) {
     RELEASE_STREAM(G4cout);
 }
 
-void DepositionGeant4Module::run(unsigned int event_num, MessageStorage& messages, std::mt19937_64&) {
+void DepositionGeant4Module::run(Event* event) {
     // Suppress output stream if not in debugging mode
     IFLOG(DEBUG);
     else {
@@ -276,7 +276,7 @@ void DepositionGeant4Module::run(unsigned int event_num, MessageStorage& message
     // Start a single event from the beam
     LOG(TRACE) << "Enabling beam";
     run_manager_g4_->BeamOn(static_cast<int>(config_.get<unsigned int>("number_of_particles", 1)));
-    last_event_num_ = event_num;
+    last_event_num_ = event->number;
 
     // Release the stream (if it was suspended)
     RELEASE_STREAM(G4cout);
@@ -285,7 +285,7 @@ void DepositionGeant4Module::run(unsigned int event_num, MessageStorage& message
 
     // Dispatch the necessary messages
     for(auto& sensor : sensors_) {
-        sensor->dispatchMessages(messages);
+        sensor->dispatchMessages(event);
 
         // Fill output plots if requested:
         if(config_.get<bool>("output_plots")) {
@@ -294,7 +294,7 @@ void DepositionGeant4Module::run(unsigned int event_num, MessageStorage& message
         }
     }
 
-    track_info_manager_->dispatchMessage(messages);
+    track_info_manager_->dispatchMessage(event);
     track_info_manager_->resetTrackInfoManager();
 }
 

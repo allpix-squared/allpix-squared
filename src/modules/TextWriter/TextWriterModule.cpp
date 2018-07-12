@@ -108,11 +108,11 @@ void TextWriterModule::receive(std::shared_ptr<BaseMessage> message, std::string
     }
 }
 
-void TextWriterModule::run(unsigned int event_num, MessageStorage&, std::mt19937_64&) {
+void TextWriterModule::run(Event* event) {
     LOG(TRACE) << "Writing new objects to text file";
 
     // Print the current event:
-    *output_file_ << "=== " << event_num << " ===" << std::endl;
+    *output_file_ << "=== " << event->number << " ===" << std::endl;
 
     for(auto& message : keep_messages_) {
         // Print the current detector:

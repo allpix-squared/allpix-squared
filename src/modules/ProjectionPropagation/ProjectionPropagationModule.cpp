@@ -76,8 +76,8 @@ void ProjectionPropagationModule::init(uint64_t) {
     }
 }
 
-void ProjectionPropagationModule::run(unsigned int, MessageStorage& messages, std::mt19937_64& random_generator) {
-    auto deposits_message = messages.fetchMessage<DepositedChargeMessage>();
+void ProjectionPropagationModule::run(Event* event) {
+    auto deposits_message = event->fetchMessage<DepositedChargeMessage>();
 
     // Create vector of propagated charges to output
     std::vector<PropagatedCharge> propagated_charges;
@@ -172,8 +172,8 @@ void ProjectionPropagationModule::run(unsigned int, MessageStorage& messages, st
             charges_remaining -= charge_per_step;
 
             std::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
-            double diffusion_x = gauss_distribution(random_generator);
-            double diffusion_y = gauss_distribution(random_generator);
+            double diffusion_x = gauss_distribution(event->getRandomEngine());
+            double diffusion_y = gauss_distribution(event->getRandomEngine());
 
             auto projected_position = ROOT::Math::XYZPoint(
                 position.x() + diffusion_x, position.y() + diffusion_y, model->getSensorSize().z() / 2.);
@@ -208,7 +208,7 @@ void ProjectionPropagationModule::run(unsigned int, MessageStorage& messages, st
     auto propagated_charge_message = std::make_shared<PropagatedChargeMessage>(std::move(propagated_charges), detector_);
 
     // Dispatch the message with propagated charges
-    messages.dispatchMessage(propagated_charge_message);
+    event->dispatchMessage(propagated_charge_message);
 }
 
 void ProjectionPropagationModule::finalize() {

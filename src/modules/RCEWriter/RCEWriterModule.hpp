@@ -17,8 +17,8 @@
 
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
-#include "core/module/MessageStorage.hpp"
 
+#include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
 #include "objects/PixelHit.hpp"
 
@@ -54,7 +54,7 @@ namespace allpix {
         /**
          * @brief Writes the objects fetched to their specific tree
          */
-        void run(unsigned int, MessageStorage&, std::mt19937_64&) override;
+        void run(Event*) override;
 
         /**
          * @brief Write the output file

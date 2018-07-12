@@ -510,8 +510,8 @@ void GenericPropagationModule::init(uint64_t) {
     }
 }
 
-void GenericPropagationModule::run(unsigned int event_num, MessageStorage& messages, std::mt19937_64& random_generator) {
-    auto deposits_message = messages.fetchMessage<DepositedChargeMessage>();
+void GenericPropagationModule::run(Event* event) {
+    auto deposits_message = event->fetchMessage<DepositedChargeMessage>();
 
     // Create vector of propagated charges to output
     std::vector<PropagatedCharge> propagated_charges;
@@ -556,7 +556,7 @@ void GenericPropagationModule::run(unsigned int event_num, MessageStorage& messa
             }
 
             // Propagate a single charge deposit
-            auto prop_pair = propagate(position, deposit.getType(), random_generator);
+            auto prop_pair = propagate(position, deposit.getType(), event->getRandomEngine());
             position = prop_pair.first;
 
             LOG(DEBUG) << " Propagated " << charge_per_step << " to " << Units::display(position, {"mm", "um"}) << " in "
@@ -589,7 +589,7 @@ void GenericPropagationModule::run(unsigned int event_num, MessageStorage& messa
 
     // Output plots if required
     if(output_plots_) {
-        create_output_plots(event_num);
+        create_output_plots(event->number);
     }
 
     // Write summary and update statistics
@@ -604,7 +604,7 @@ void GenericPropagationModule::run(unsigned int event_num, MessageStorage& messa
     auto propagated_charge_message = std::make_shared<PropagatedChargeMessage>(std::move(propagated_charges), detector_);
 
     // Dispatch the message with propagated charges
-    messages.dispatchMessage(propagated_charge_message);
+    event->dispatchMessage(propagated_charge_message);
 }
 
 /**

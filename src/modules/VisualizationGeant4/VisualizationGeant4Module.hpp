@@ -16,7 +16,7 @@
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
-#include "core/module/MessageStorage.hpp"
+#include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
 
 class G4UIsession;
@@ -52,7 +52,7 @@ namespace allpix {
         /**
          * @brief Show visualization updates if not accumulating data
          */
-        void run(unsigned int, MessageStorage&, std::mt19937_64&) override;
+        void run(Event*) override;
 
         /**
          * @brief Possibly start GUI or terminal and display the visualization

@@ -24,9 +24,6 @@
 #include <iostream>
 
 namespace allpix {
-    class Module;
-    class Event;
-
     /**
      * @brief Pool of threads where module tasks can be submitted to
      */

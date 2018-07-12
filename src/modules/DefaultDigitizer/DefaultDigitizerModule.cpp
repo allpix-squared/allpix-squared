@@ -94,8 +94,8 @@ void DefaultDigitizerModule::init(uint64_t) {
     }
 }
 
-void DefaultDigitizerModule::run(unsigned int, MessageStorage& messages, std::mt19937_64& random_generator) {
-    auto pixel_message = messages.fetchMessage<PixelChargeMessage>();
+void DefaultDigitizerModule::run(Event* event) {
+    auto pixel_message = event->fetchMessage<PixelChargeMessage>();
 
     // Loop through all pixels with charges
     std::vector<PixelHit> hits;
@@ -111,7 +111,7 @@ void DefaultDigitizerModule::run(unsigned int, MessageStorage& messages, std::mt
 
         // Add electronics noise from Gaussian:
         std::normal_distribution<double> el_noise(0, config_.get<unsigned int>("electronics_noise"));
-        charge += el_noise(random_generator);
+        charge += el_noise(event->getRandomEngine());
 
         LOG(DEBUG) << "Charge with noise: " << Units::display(charge, "e");
         if(config_.get<bool>("output_plots")) {
@@ -120,7 +120,7 @@ void DefaultDigitizerModule::run(unsigned int, MessageStorage& messages, std::mt
 
         // Smear the gain factor, Gaussian distribution around "gain" with width "gain_smearing"
         std::normal_distribution<double> gain_smearing(config_.get<double>("gain"), config_.get<double>("gain_smearing"));
-        double gain = gain_smearing(random_generator);
+        double gain = gain_smearing(event->getRandomEngine());
         if(config_.get<bool>("output_plots")) {
             h_gain->Fill(gain);
         }
@@ -135,7 +135,7 @@ void DefaultDigitizerModule::run(unsigned int, MessageStorage& messages, std::mt
         // Smear the threshold, Gaussian distribution around "threshold" with width "threshold_smearing"
         std::normal_distribution<double> thr_smearing(config_.get<unsigned int>("threshold"),
                                                       config_.get<unsigned int>("threshold_smearing"));
-        double threshold = thr_smearing(random_generator);
+        double threshold = thr_smearing(event->getRandomEngine());
         if(config_.get<bool>("output_plots")) {
             h_thr->Fill(threshold / 1e3);
         }
@@ -159,7 +159,7 @@ void DefaultDigitizerModule::run(unsigned int, MessageStorage& messages, std::mt
 
             // Add ADC smearing:
             std::normal_distribution<double> adc_smearing(0, config_.get<unsigned int>("adc_smearing"));
-            charge += adc_smearing(random_generator);
+            charge += adc_smearing(event->getRandomEngine());
             if(config_.get<bool>("output_plots")) {
                 h_pxq_adc_smear->Fill(charge / 1e3);
             }
@@ -194,7 +194,7 @@ void DefaultDigitizerModule::run(unsigned int, MessageStorage& messages, std::mt
     if(!hits.empty()) {
         // Create and dispatch hit message
         auto hits_message = std::make_shared<PixelHitMessage>(std::move(hits), getDetector());
-        messages.dispatchMessage(hits_message);
+        event->dispatchMessage(hits_message);
     }
 }
 

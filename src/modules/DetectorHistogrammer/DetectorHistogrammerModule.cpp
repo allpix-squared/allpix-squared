@@ -108,8 +108,8 @@ void DetectorHistogrammerModule::init(uint64_t) {
     cluster_charge = new TH1D(cluster_charge_name.c_str(), cluster_charge_title.c_str(), 1000, 0., 50.);
 }
 
-void DetectorHistogrammerModule::run(unsigned int, MessageStorage& messages, std::mt19937_64&) {
-    auto pixels_message = messages.fetchMessage<PixelHitMessage>();
+void DetectorHistogrammerModule::run(Event* event) {
+    auto pixels_message = event->fetchMessage<PixelHitMessage>();
 
     LOG(DEBUG) << "Adding hits in " << pixels_message->getData().size() << " pixels";
 

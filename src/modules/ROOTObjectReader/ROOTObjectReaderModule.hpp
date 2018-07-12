@@ -17,7 +17,7 @@
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
-#include "core/module/MessageStorage.hpp"
+#include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
 
 // Contains tuple of all defined objects
@@ -57,7 +57,7 @@ namespace allpix {
         /**
          * @brief Convert the objects stored for the current event to messages
          */
-        void run(unsigned int, MessageStorage&, std::mt19937_64&) override;
+        void run(Event*) override;
 
         /**
          * @brief Output summary and close the ROOT file

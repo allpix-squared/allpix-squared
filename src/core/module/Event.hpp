@@ -17,9 +17,42 @@
 #include "../messenger/Messenger.hpp"
 
 namespace allpix {
-
     class Event {
+        friend class ModuleManager;
+
     public:
+        /**
+         * @brief Identifier of this event
+         */
+        const unsigned int number;
+
+        /**
+         * @brief Dispatches a message
+         * @param message Pointer to the message to dispatch
+         * @param name Optional message name (defaults to - indicating that it should dispatch to the module output
+         * parameter)
+         */
+        template <typename T> void dispatchMessage(std::shared_ptr<T> message, const std::string& name = "-") {
+            message_storage_.dispatchMessage(message, name);
+        }
+
+        /**
+         * @brief Fetches a message
+         */
+        template <typename T> std::shared_ptr<T> fetchMessage() { return message_storage_.fetchMessage<T>(); }
+
+        /**
+         * @brief Fetches a vector of messages
+         */
+        template <typename T> std::vector<std::shared_ptr<T>> fetchMultiMessage() {
+            return message_storage_.fetchMultiMessage<T>();
+        }
+
+        std::mt19937_64& getRandomEngine() { return random_generator_; }
+
+        uint64_t getRandomNumber() { return random_generator_(); }
+
+    private:
         /**
          * @brief Construct Event
          * @param modules The modules that constitutes the event
@@ -70,10 +103,8 @@ namespace allpix {
          */
         void finalize();
 
-    private:
         ModuleList modules_;
         MessageStorage message_storage_;
-        const unsigned int event_num_;
 
         // XXX: cannot be moved
         std::atomic<bool>& terminate_;

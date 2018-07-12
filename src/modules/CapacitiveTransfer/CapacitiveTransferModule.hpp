@@ -20,7 +20,7 @@
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
-#include "core/module/MessageStorage.hpp"
+#include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
 
 #include "objects/Pixel.hpp"
@@ -58,7 +58,7 @@ namespace allpix {
         /**
          * @brief Transfer the propagated charges to the pixels and its neighbours
          */
-        void run(unsigned int, MessageStorage&, std::mt19937_64&) override;
+        void run(Event*) override;
 
         /**
          * @brief Display statistical summary

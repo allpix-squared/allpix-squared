@@ -29,7 +29,7 @@ Event::Event(ModuleList modules,
              std::map<Module*, long double>& module_execution_time,
              Messenger* messenger,
              std::mt19937_64& seeder)
-    : modules_(std::move(modules)), message_storage_(messenger->delegates_), event_num_(event_num), terminate_(terminate),
+    : number(event_num), modules_(std::move(modules)), message_storage_(messenger->delegates_), terminate_(terminate),
       module_execution_time_(module_execution_time) {
     random_generator_.seed(seeder());
 }
@@ -50,7 +50,7 @@ void Event::init() {
 
         std::lock_guard<std::mutex> lock(module->run_mutex_);
 
-        LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Initializing event " << this->event_num_ << " ["
+        LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Initializing event " << this->number << " ["
                                           << module->get_identifier().getUniqueName() << "]";
 
         // Check if module is satisfied to run
@@ -69,7 +69,7 @@ void Event::init() {
         std::string section_name = "R:";
         section_name += module->get_identifier().getUniqueName();
         Log::setSection(section_name);
-        Log::setEventNum(event_num_);
+        Log::setEventNum(this->number);
 
         // Set module specific settings
         auto old_settings =
@@ -77,7 +77,10 @@ void Event::init() {
 
         // Run module
         try {
-            module->run(event_num_, message_storage_.using_module(module.get()), random_generator_);
+            /* module->run(event_num_, message_storage_.using_module(module.get()), random_generator_); */
+            // TODO: rename to set_context
+            message_storage_.using_module(module.get());
+            module->run(this);
         } catch(EndOfRunException& e) {
             // Terminate if the module threw the EndOfRun request exception:
             LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
@@ -115,7 +118,7 @@ void Event::run() {
         auto lock =
             !module->canParallelize() ? std::unique_lock<std::mutex>(module->run_mutex_) : std::unique_lock<std::mutex>();
 
-        LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << this->event_num_ << " ["
+        LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << this->number << " ["
                                           << module->get_identifier().getUniqueName() << "]";
         // Check if module is satisfied to run
         if(!message_storage_.is_satisfied(module.get())) {
@@ -133,7 +136,7 @@ void Event::run() {
         std::string section_name = "R:";
         section_name += module->get_identifier().getUniqueName();
         Log::setSection(section_name);
-        Log::setEventNum(event_num_);
+        Log::setEventNum(this->number);
 
         // Set module specific settings
         auto old_settings =
@@ -141,7 +144,9 @@ void Event::run() {
 
         // Run module
         try {
-            module->run(event_num_, message_storage_.using_module(module.get()), random_generator_);
+            /* module->run(event_num_, message_storage_.using_module(module.get())); */
+            message_storage_.using_module(module.get());
+            module->run(this);
         } catch(EndOfRunException& e) {
             // Terminate if the module threw the EndOfRun request exception:
             LOG(WARNING) << "Request to terminate:" << std::endl << e.what();

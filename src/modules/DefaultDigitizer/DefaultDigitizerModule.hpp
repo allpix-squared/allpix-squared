@@ -16,7 +16,7 @@
 
 #include "core/config/Configuration.hpp"
 #include "core/messenger/Messenger.hpp"
-#include "core/module/MessageStorage.hpp"
+#include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
 
 #include "objects/PixelCharge.hpp"
@@ -52,7 +52,7 @@ namespace allpix {
         /**
          * @brief Simulate digitization process
          */
-        void run(unsigned int, MessageStorage&, std::mt19937_64&) override;
+        void run(Event*) override;
 
         /**
          * @brief Finalize and write optional histograms

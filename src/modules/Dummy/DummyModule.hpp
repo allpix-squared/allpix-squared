@@ -16,7 +16,7 @@
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
-#include "core/module/MessageStorage.hpp"
+#include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
 
 #include "objects/PixelHit.hpp"
@@ -46,7 +46,7 @@ namespace allpix {
         /**
          * @brief [Run the function of this module]
          */
-        void run(unsigned int, MessageStorage&, std::mt19937_64&) override;
+        void run(Event* event) override;
 
     private:
         // General module members

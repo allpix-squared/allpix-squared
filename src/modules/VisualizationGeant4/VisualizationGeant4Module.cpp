@@ -401,7 +401,7 @@ void VisualizationGeant4Module::set_visualization_attributes() {
     }
 }
 
-void VisualizationGeant4Module::run(unsigned int, MessageStorage&, std::mt19937_64&) {
+void VisualizationGeant4Module::run(Event*) {
     if(!config_.get<bool>("accumulate")) {
         vis_manager_g4_->GetCurrentViewer()->ShowView();
         std::this_thread::sleep_for(

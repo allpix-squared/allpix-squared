@@ -50,9 +50,7 @@ ModuleManager::ModuleManager() : terminate_(false) {}
  * Loads the modules specified in the configuration file. Each module is contained within its own library which is loaded
  * automatically. After that the required modules are created from the configuration.
  */
-void ModuleManager::load(Messenger* messenger,
-                         ConfigManager* conf_manager,
-                         GeometryManager* geo_manager) {
+void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager) {
     // Store config manager and get configurations
     conf_manager_ = conf_manager;
     auto& configs = conf_manager_->getModuleConfigurations();
@@ -193,8 +191,7 @@ void ModuleManager::load(Messenger* messenger,
         // Create the modules from the library depending on the module type
         std::vector<std::pair<ModuleIdentifier, Module*>> mod_list;
         if(unique) {
-            mod_list.emplace_back(
-                create_unique_modules(loaded_libraries_[lib_name], config, messenger, geo_manager));
+            mod_list.emplace_back(create_unique_modules(loaded_libraries_[lib_name], config, messenger, geo_manager));
         } else {
             mod_list = create_detector_modules(loaded_libraries_[lib_name], config, messenger, geo_manager);
         }
