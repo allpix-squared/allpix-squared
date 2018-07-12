@@ -32,21 +32,17 @@ namespace allpix {
          * @param name Optional message name (defaults to - indicating that it should dispatch to the module output
          * parameter)
          */
-        template <typename T> void dispatchMessage(std::shared_ptr<T> message, const std::string& name = "-") {
-            message_storage_.dispatchMessage(message, name);
-        }
+        template <typename T> void dispatchMessage(std::shared_ptr<T> message, const std::string& name = "-");
 
         /**
          * @brief Fetches a message
          */
-        template <typename T> std::shared_ptr<T> fetchMessage() { return message_storage_.fetchMessage<T>(); }
+        template <typename T> std::shared_ptr<T> fetchMessage();
 
         /**
          * @brief Fetches a vector of messages
          */
-        template <typename T> std::vector<std::shared_ptr<T>> fetchMultiMessage() {
-            return message_storage_.fetchMultiMessage<T>();
-        }
+        template <typename T> std::vector<std::shared_ptr<T>> fetchMultiMessage();
 
         std::mt19937_64& getRandomEngine() { return random_generator_; }
 
@@ -116,5 +112,8 @@ namespace allpix {
     };
 
 } // namespace allpix
+
+// Include template members
+#include "Event.tpp"
 
 #endif /* ALLPIX_MODULE_EVENT_H */

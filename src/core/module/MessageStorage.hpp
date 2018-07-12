@@ -18,25 +18,6 @@ namespace allpix {
     class MessageStorage {
         friend class Event;
 
-    public:
-        /**
-         * @brief Dispatches a message
-         * @param message Pointer to the message to dispatch
-         * @param name Optional message name (defaults to - indicating that it should dispatch to the module output
-         * parameter)
-         */
-        template <typename T> void dispatchMessage(std::shared_ptr<T> message, const std::string& name = "-");
-
-        /**
-         * @brief Fetches a message
-         */
-        template <typename T> std::shared_ptr<T> fetchMessage();
-
-        /**
-         * @brief Fetches a vector of messages
-         */
-        template <typename T> std::vector<std::shared_ptr<T>> fetchMultiMessage();
-
     private:
         /**
          * @brief Constructor
@@ -74,8 +55,5 @@ namespace allpix {
     };
 
 } // namespace allpix
-
-// Include template members
-#include "MessageStorage.tpp"
 
 #endif /* ALLPIX_MODULE_MESSAGESTORAGE_H */
