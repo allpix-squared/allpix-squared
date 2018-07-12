@@ -193,8 +193,8 @@ WeightingFieldReaderModule::FieldData WeightingFieldReaderModule::read_init_fiel
 
         // Get field from file
         auto field_data = get_by_file_name(config_.getPath("file_name", true), *detector_.get());
-        LOG(INFO) << "Set weighting field with " << field_data.second.at(0) << "x" << field_data.second.at(1) << "x"
-                  << field_data.second.at(2) << " cells";
+        LOG(INFO) << "Set weighting field with " << field_data.second.second.at(0) << "x" << field_data.second.second.at(1)
+                  << "x" << field_data.second.second.at(2) << " cells";
 
         // Return the field data
         return field_data;
@@ -300,5 +300,7 @@ WeightingFieldReaderModule::FieldData WeightingFieldReaderModule::get_by_file_na
         }
     }
 
-    return std::make_pair(field, std::array<size_t, 3>{{xsize, ysize, zsize}});
+    return std::make_pair(
+        field,
+        std::make_pair(std::array<double, 3>{{xpixsz, ypixsz, thickness}}, std::array<size_t, 3>{{xsize, ysize, zsize}}));
 }

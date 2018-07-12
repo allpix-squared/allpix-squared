@@ -192,7 +192,7 @@ namespace allpix {
          * @param thickness_domain Domain in local coordinates in the thickness direction where the field holds
          */
         void setWeightingFieldGrid(std::shared_ptr<std::vector<double>> field,
-                                   std::array<size_t, 3> sizes,
+                                   std::pair<std::array<double, 3>, std::array<size_t, 3>> sizes,
                                    std::pair<double, double> thickness_domain);
         /**
          * @brief Set the weighting field in a single pixel using a function
@@ -280,6 +280,7 @@ namespace allpix {
 
         // Weighting field of the detector
         std::array<size_t, 3> weighting_field_sizes_;
+        std::array<double, 3> weighting_field_extent_;
         std::shared_ptr<std::vector<double>> weighting_field_;
         std::pair<double, double> weighting_field_thickness_domain_;
         WeightingFieldType weighting_field_type_{WeightingFieldType::NONE};

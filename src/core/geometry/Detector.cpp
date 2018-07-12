@@ -339,9 +339,9 @@ WeightingFieldType Detector::getWeightingFieldType() const {
  * - x*Y_SIZE*Z_SIZE*3+y*Z_SIZE*3+z*3+2: the z-component of the weighting field
  */
 void Detector::setWeightingFieldGrid(std::shared_ptr<std::vector<double>> field,
-                                     std::array<size_t, 3> sizes,
+                                     std::pair<std::array<double, 3>, std::array<size_t, 3>> sizes,
                                      std::pair<double, double> thickness_domain) {
-    if(sizes[0] * sizes[1] * sizes[2] * 3 != field->size()) {
+    if(sizes.second[0] * sizes.second[1] * sizes.second[2] * 3 != field->size()) {
         throw std::invalid_argument("weighting field does not match the given sizes");
     }
     if(thickness_domain.first + 1e-9 < model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0 ||
@@ -353,7 +353,8 @@ void Detector::setWeightingFieldGrid(std::shared_ptr<std::vector<double>> field,
     }
 
     weighting_field_ = std::move(field);
-    weighting_field_sizes_ = sizes;
+    weighting_field_extent_ = sizes.first;
+    weighting_field_sizes_ = sizes.second;
     weighting_field_thickness_domain_ = std::move(thickness_domain);
     weighting_field_type_ = WeightingFieldType::GRID;
 }

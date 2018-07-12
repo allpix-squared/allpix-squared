@@ -36,6 +36,7 @@ The *x* and *y* components of the field are determined in the same way, i.e. by 
 
 Using the **init** model of this module allows reading in from a file in the INIT format, e.g. from an electrostatic TCAD simulation.
 A converter tool for fields from adaptive TCAD meshes is provided with the framework.
+The field is expected to be symmetric around the reference pixel the weighting field is calculated for.
 
 A warning is printed if the field size does not correspond to a multiple of the pixel size.
 While this is not a problem in general, it might hint at a wrong field map being used.

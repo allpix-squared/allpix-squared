@@ -26,7 +26,8 @@ namespace allpix {
      * @brief Module to read weighting fields from INIT format
      */
     class WeightingFieldReaderModule : public Module {
-        using FieldData = std::pair<std::shared_ptr<std::vector<double>>, std::array<size_t, 3>>;
+        using FieldData =
+            std::pair<std::shared_ptr<std::vector<double>>, std::pair<std::array<double, 3>, std::array<size_t, 3>>>;
 
     public:
         /**
