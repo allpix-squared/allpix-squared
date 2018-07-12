@@ -99,6 +99,8 @@ namespace allpix {
          */
         void finalize();
 
+        void run_module(std::shared_ptr<Module>& module);
+
         ModuleList modules_;
         MessageStorage message_storage_;
 

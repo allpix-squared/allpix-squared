@@ -34,6 +34,56 @@ Event::Event(ModuleList modules,
     random_generator_.seed(seeder());
 }
 
+void Event::run_module(std::shared_ptr<Module>& module) {
+    auto lock =
+        !module->canParallelize() ? std::unique_lock<std::mutex>(module->run_mutex_) : std::unique_lock<std::mutex>();
+
+    LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << this->number << " ["
+                                      << module->get_identifier().getUniqueName() << "]";
+
+    // Check if module is satisfied to run
+    if(!message_storage_.is_satisfied(module.get())) {
+        LOG(TRACE) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
+                   << ", skipping module!";
+        return;
+    }
+
+    // Get current time
+    auto start = std::chrono::steady_clock::now();
+
+    // Set run module section header
+    std::string old_section_name = Log::getSection();
+    unsigned int old_event_num = Log::getEventNum();
+    std::string section_name = "R:";
+    section_name += module->get_identifier().getUniqueName();
+    Log::setSection(section_name);
+    Log::setEventNum(this->number);
+
+    // Set module specific settings
+    auto old_settings =
+        ModuleManager::set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
+
+    // Run module
+    try {
+        // TODO: rename to set_context?
+        message_storage_.using_module(module.get());
+        module->run(this);
+    } catch(EndOfRunException& e) {
+        // Terminate if the module threw the EndOfRun request exception:
+        LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
+        this->terminate_ = true;
+    }
+
+    // Reset logging
+    Log::setSection(old_section_name);
+    Log::setEventNum(old_event_num);
+    ModuleManager::set_module_after(old_settings);
+
+    // Update execution time
+    auto end = std::chrono::steady_clock::now();
+    module_execution_time_[module.get()] += static_cast<std::chrono::duration<long double>>(end - start).count();
+}
+
 void Event::init() {
     // Get object count for linking objects in current event
     /* auto save_id = TProcessID::GetObjectCount(); */
@@ -48,55 +98,8 @@ void Event::init() {
             break;
         }
 
-        std::lock_guard<std::mutex> lock(module->run_mutex_);
+        run_module(module);
 
-        LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Initializing event " << this->number << " ["
-                                          << module->get_identifier().getUniqueName() << "]";
-
-        // Check if module is satisfied to run
-        if(!message_storage_.is_satisfied(module.get())) {
-            LOG(TRACE) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
-                       << ", skipping module!";
-            return;
-        }
-
-        // Get current time
-        auto start = std::chrono::steady_clock::now();
-
-        // Set run module section header
-        std::string old_section_name = Log::getSection();
-        unsigned int old_event_num = Log::getEventNum();
-        std::string section_name = "R:";
-        section_name += module->get_identifier().getUniqueName();
-        Log::setSection(section_name);
-        Log::setEventNum(this->number);
-
-        // Set module specific settings
-        auto old_settings =
-            ModuleManager::set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
-
-        // Run module
-        try {
-            /* module->run(event_num_, message_storage_.using_module(module.get()), random_generator_); */
-            // TODO: rename to set_context
-            message_storage_.using_module(module.get());
-            module->run(this);
-        } catch(EndOfRunException& e) {
-            // Terminate if the module threw the EndOfRun request exception:
-            LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
-            this->terminate_ = true;
-        }
-
-        // Reset logging
-        Log::setSection(old_section_name);
-        Log::setEventNum(old_event_num);
-        ModuleManager::set_module_after(old_settings);
-
-        // Update execution time
-        auto end = std::chrono::steady_clock::now();
-        module_execution_time_[module.get()] += static_cast<std::chrono::duration<long double>>(end - start).count();
-
-        /* module->reset_delegates(); */
         modules_.pop_front();
     }
 
@@ -115,55 +118,11 @@ void Event::run() {
     /* auto save_id = TProcessID::GetObjectCount(); */
 
     for(auto& module : modules_) {
-        auto lock =
-            !module->canParallelize() ? std::unique_lock<std::mutex>(module->run_mutex_) : std::unique_lock<std::mutex>();
-
-        LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << this->number << " ["
-                                          << module->get_identifier().getUniqueName() << "]";
-        // Check if module is satisfied to run
-        if(!message_storage_.is_satisfied(module.get())) {
-            LOG(TRACE) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
-                       << ", skipping module!";
-            return;
-        }
-
-        // Get current time
-        auto start = std::chrono::steady_clock::now();
-
-        // Set run module section header
-        std::string old_section_name = Log::getSection();
-        unsigned int old_event_num = Log::getEventNum();
-        std::string section_name = "R:";
-        section_name += module->get_identifier().getUniqueName();
-        Log::setSection(section_name);
-        Log::setEventNum(this->number);
-
-        // Set module specific settings
-        auto old_settings =
-            ModuleManager::set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
-
-        // Run module
-        try {
-            /* module->run(event_num_, message_storage_.using_module(module.get())); */
-            message_storage_.using_module(module.get());
-            module->run(this);
-        } catch(EndOfRunException& e) {
-            // Terminate if the module threw the EndOfRun request exception:
-            LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
-            this->terminate_ = true;
-        }
-
-        // Reset logging
-        Log::setSection(old_section_name);
-        Log::setEventNum(old_event_num);
-        ModuleManager::set_module_after(old_settings);
-
-        // Update execution time
-        auto end = std::chrono::steady_clock::now();
-        module_execution_time_[module.get()] += static_cast<std::chrono::duration<long double>>(end - start).count();
+        run_module(module);
     }
 
     // Resetting delegates
+    // XXX: is this required?
     for(auto& module : modules_) {
         LOG(TRACE) << "Resetting messages";
         auto lock =
