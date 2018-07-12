@@ -402,7 +402,8 @@ void GeometryConstructionG4::build_detectors() {
             detector->setExternalObject("bumps_wrapper_log", bumps_wrapper_log);
 
             // Place the general bumps volume
-            G4ThreeVector bumps_pos = toG4Vector(hybrid_model->getBumpsCenter() - model->getCenter() - geoTranslation);
+            G4ThreeVector bumps_pos =
+                toG4Vector(hybrid_model->getBumpsCenter() - hybrid_model->getCenter() - geoTranslation);
             LOG(DEBUG) << "  - Bumps\t\t:\t" << Units::display(bumps_pos, {"mm", "um"});
             auto bumps_wrapper_phys = make_shared_no_delete<G4PVPlacement>(nullptr,
                                                                            bumps_pos,
