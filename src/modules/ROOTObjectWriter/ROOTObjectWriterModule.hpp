@@ -28,7 +28,7 @@ namespace allpix {
      * saves the data in those objects to tree for every event. The tree name is the class name of the object. A separate
      * branch is created for every combination of detector name and message name that outputs this object.
      */
-    class ROOTObjectWriterModule : public Module {
+    class ROOTObjectWriterModule : public IOModule {
     public:
         /**
          * @brief Constructor for this unique module

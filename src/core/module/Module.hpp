@@ -216,6 +216,28 @@ namespace allpix {
         std::mutex run_mutex_;
     };
 
+    class IOModule : public Module {
+        friend class Event;
+        friend class ModuleManager;
+        friend class Messenger;
+        friend class MessageStorage;
+
+    public:
+        /**
+         * @brief Base constructor for unique modules
+         * @param config Configuration for this module
+         */
+        explicit IOModule(Configuration& config) : Module(config) {}
+        /**
+         * @brief Base constructor for detector modules
+         * @param config Configuration for this module
+         * @param detector Detector bound to this module
+         * @warning Detector modules should not forget to forward their detector to the base constructor. An
+         *          \ref InvalidModuleStateException will be raised if the module failed to so.
+         */
+        explicit IOModule(Configuration& config, std::shared_ptr<Detector> detector) : Module(config, detector) {}
+    };
+
 } // namespace allpix
 
 #endif /* ALLPIX_MODULE_H */
