@@ -305,7 +305,35 @@ ROOT::Math::XYZVector Detector::getWeightingField(const ROOT::Math::XYZPoint& po
     // Compute using the grid or a function depending on the setting
     ROOT::Math::XYZVector ret_val;
     if(weighting_field_type_ == WeightingFieldType::GRID) {
-        throw std::invalid_argument("not implemented yet");
+        // If outside the extent of the given weighting field, return zero:
+        if(std::fabs(x) > weighting_field_extent_[0] / 2 || std::fabs(y) > weighting_field_extent_[1] / 2) {
+            return ROOT::Math::XYZVector(0, 0, 0);
+        }
+
+        // The field is centered around the reference pixel, so we need to translate its coordinates:
+        auto x_ind = static_cast<int>(std::floor(static_cast<double>(weighting_field_sizes_[0]) *
+                                                 (x + weighting_field_extent_[0] / 2) / weighting_field_extent_[0]));
+        auto y_ind = static_cast<int>(std::floor(static_cast<double>(weighting_field_sizes_[1]) *
+                                                 (y + weighting_field_extent_[1] / 2.0) / weighting_field_extent_[1]));
+        auto z_ind = static_cast<int>(
+            std::floor(static_cast<double>(weighting_field_sizes_[2]) * (z - weighting_field_thickness_domain_.first) /
+                       (weighting_field_thickness_domain_.second - weighting_field_thickness_domain_.first)));
+
+        // Check for indices within the field
+        // FIXME this is sort of redundant as we check the position above already. Serves as validity check for the indices
+        // only
+        if(x_ind < 0 || x_ind >= static_cast<int>(weighting_field_sizes_[0]) || y_ind < 0 ||
+           y_ind >= static_cast<int>(weighting_field_sizes_[1]) || z_ind < 0 ||
+           z_ind >= static_cast<int>(weighting_field_sizes_[2])) {
+            return ROOT::Math::XYZVector(0, 0, 0);
+        }
+
+        // Compute total index
+        size_t tot_ind = static_cast<size_t>(x_ind) * weighting_field_sizes_[1] * weighting_field_sizes_[2] * 3 +
+                         static_cast<size_t>(y_ind) * weighting_field_sizes_[2] * 3 + static_cast<size_t>(z_ind) * 3;
+
+        ret_val = ROOT::Math::XYZVector(
+            (*electric_field_)[tot_ind], (*electric_field_)[tot_ind + 1], (*electric_field_)[tot_ind + 2]);
     } else {
         // Check if inside the thickness domain
         if(z < weighting_field_thickness_domain_.first || weighting_field_thickness_domain_.second < z) {
