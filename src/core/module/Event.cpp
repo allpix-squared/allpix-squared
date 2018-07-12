@@ -28,13 +28,24 @@ Event::Event(ModuleList modules,
              std::atomic<bool>& terminate,
              std::map<Module*, long double>& module_execution_time,
              Messenger* messenger,
-             std::mt19937_64& seeder)
+             std::mt19937_64& seeder,
+             std::mutex& io_mutex,
+             std::condition_variable& io_condition,
+             std::atomic<unsigned int>& current_io_event)
     : number(event_num), modules_(std::move(modules)), message_storage_(messenger->delegates_), terminate_(terminate),
-      module_execution_time_(module_execution_time) {
+      module_execution_time_(module_execution_time), io_mutex_(io_mutex), io_condition_(io_condition), current_io_event_(current_io_event) {
     random_generator_.seed(seeder());
 }
 
-void Event::run_module(std::shared_ptr<Module>& module) {
+void Event::run(std::shared_ptr<Module>& module) {
+    // Run IOModules in order by event numbers
+    const bool io_required = dynamic_cast<IOModule*>(module.get());
+    auto io_lock =
+        io_required ? std::unique_lock<std::mutex>(io_mutex_) : std::unique_lock<std::mutex>();
+    if (io_required) {
+        io_condition_.wait(io_lock, [this]() { return this->number == current_io_event_.load(); });
+    }
+
     auto lock =
         !module->canParallelize() ? std::unique_lock<std::mutex>(module->run_mutex_) : std::unique_lock<std::mutex>();
 
@@ -98,7 +109,7 @@ void Event::init() {
             break;
         }
 
-        run_module(module);
+        run(module);
 
         modules_.pop_front();
     }
@@ -118,7 +129,7 @@ void Event::run() {
     /* auto save_id = TProcessID::GetObjectCount(); */
 
     for(auto& module : modules_) {
-        run_module(module);
+        run(module);
     }
 
     // Resetting delegates
@@ -132,6 +143,10 @@ void Event::run() {
 
     // Reset object count for next event
     /* TProcessID::SetObjectCount(save_id); */
+
+    // Notify other events that all IOModules for this event are done
+    current_io_event_++;
+    io_condition_.notify_all();
 }
 
 void Event::finalize() {

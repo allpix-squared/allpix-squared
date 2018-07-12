@@ -56,13 +56,18 @@ namespace allpix {
          * @param terminate TODO
          * @param module_execution_time TODO
          * @param seeder TODO
+         * @param io_mutex TODO
+         * @param io_condition TODO
          */
         explicit Event(ModuleList modules,
                        const unsigned int event_num,
                        std::atomic<bool>& terminate,
                        std::map<Module*, long double>& module_execution_time,
                        Messenger* messenger,
-                       std::mt19937_64& seeder);
+                       std::mt19937_64& seeder,
+                       std::mutex& io_mutex,
+                       std::condition_variable& io_condition,
+                       std::atomic<unsigned int>& current_io_event);
         /**
          * @brief Use default destructor
          */
@@ -92,6 +97,7 @@ namespace allpix {
          * @warning Should be called after the \ref Event::init "init function"
          */
         void run();
+        void run(std::shared_ptr<Module>& module);
 
         /**
          * @brief Finalize the event
@@ -99,7 +105,6 @@ namespace allpix {
          */
         void finalize();
 
-        void run_module(std::shared_ptr<Module>& module);
 
         ModuleList modules_;
         MessageStorage message_storage_;
@@ -111,6 +116,11 @@ namespace allpix {
         std::map<Module*, long double>& module_execution_time_;
 
         std::mt19937_64 random_generator_;
+
+        // For IOModule execution
+        std::mutex& io_mutex_;
+        std::condition_variable& io_condition_;
+        std::atomic<unsigned int>& current_io_event_;
     };
 
 } // namespace allpix
