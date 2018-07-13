@@ -26,7 +26,7 @@
 
 using namespace allpix;
 
-TextWriterModule::TextWriterModule(Configuration& config, Messenger* messenger, GeometryManager*) : IOModule(config) {
+TextWriterModule::TextWriterModule(Configuration& config, Messenger* messenger, GeometryManager*) : WriterModule(config) {
     // Bind to all messages
     messenger->registerListener(this, &TextWriterModule::receive);
 }

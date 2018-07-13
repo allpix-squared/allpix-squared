@@ -27,7 +27,7 @@ namespace allpix {
      *
      * Create LCIO file, compatible to EUTelescope analysis framework.
      */
-    class LCIOWriterModule : public IOModule {
+    class LCIOWriterModule : public Module {
     public:
         /**
          * @brief Constructor for this unique module

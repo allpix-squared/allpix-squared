@@ -29,7 +29,7 @@
 using namespace allpix;
 
 MagneticFieldReaderModule::MagneticFieldReaderModule(Configuration& config, Messenger*, GeometryManager* geoManager)
-    : IOModule(config), geometryManager_(geoManager) {}
+    : Module(config), geometryManager_(geoManager) {}
 
 void MagneticFieldReaderModule::init(uint64_t) {
     MagneticFieldType type = MagneticFieldType::NONE;

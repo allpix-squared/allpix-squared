@@ -216,7 +216,7 @@ namespace allpix {
         std::mutex run_mutex_;
     };
 
-    class IOModule : public Module {
+    class WriterModule : public Module {
         friend class Event;
         friend class ModuleManager;
         friend class Messenger;
@@ -227,7 +227,7 @@ namespace allpix {
          * @brief Base constructor for unique modules
          * @param config Configuration for this module
          */
-        explicit IOModule(Configuration& config) : Module(config) {}
+        explicit WriterModule(Configuration& config) : Module(config) {}
         /**
          * @brief Base constructor for detector modules
          * @param config Configuration for this module
@@ -235,8 +235,31 @@ namespace allpix {
          * @warning Detector modules should not forget to forward their detector to the base constructor. An
          *          \ref InvalidModuleStateException will be raised if the module failed to so.
          */
-        explicit IOModule(Configuration& config, std::shared_ptr<Detector> detector) : Module(config, detector) {}
+        explicit WriterModule(Configuration& config, std::shared_ptr<Detector> detector) : Module(config, detector) {}
     };
+
+    class ReaderModule : public Module {
+        friend class Event;
+        friend class ModuleManager;
+        friend class Messenger;
+        friend class MessageStorage;
+
+    public:
+        /**
+         * @brief Base constructor for unique modules
+         * @param config Configuration for this module
+         */
+        explicit ReaderModule(Configuration& config) : Module(config) {}
+        /**
+         * @brief Base constructor for detector modules
+         * @param config Configuration for this module
+         * @param detector Detector bound to this module
+         * @warning Detector modules should not forget to forward their detector to the base constructor. An
+         *          \ref InvalidModuleStateException will be raised if the module failed to so.
+         */
+        explicit ReaderModule(Configuration& config, std::shared_ptr<Detector> detector) : Module(config, detector) {}
+    };
+
 
 } // namespace allpix
 

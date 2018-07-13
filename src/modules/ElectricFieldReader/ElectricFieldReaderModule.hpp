@@ -27,7 +27,7 @@ namespace allpix {
      * - For a linear field create a constant electric field to apply over the whole sensitive device
      * - For the INIT format, reads the specified file and add the electric field grid to the bound detectors
      */
-    class ElectricFieldReaderModule : public IOModule {
+    class ElectricFieldReaderModule : public Module {
         using FieldData = std::pair<std::shared_ptr<std::vector<double>>, std::array<size_t, 3>>;
 
     public:

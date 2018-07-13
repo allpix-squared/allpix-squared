@@ -28,7 +28,7 @@
 using namespace allpix;
 
 ElectricFieldReaderModule::ElectricFieldReaderModule(Configuration& config, Messenger*, std::shared_ptr<Detector> detector)
-    : IOModule(config, detector), detector_(std::move(detector)) {
+    : Module(config, detector), detector_(std::move(detector)) {
     // NOTE use voltage as a synonym for bias voltage
     config_.setAlias("bias_voltage", "voltage");
 }

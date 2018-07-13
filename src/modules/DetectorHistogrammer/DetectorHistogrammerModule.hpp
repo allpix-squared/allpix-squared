@@ -34,7 +34,7 @@ namespace allpix {
      *
      * Generates a hitmap of all the produced pixel hits, together with a histogram of the cluster size
      */
-    class DetectorHistogrammerModule : public IOModule {
+    class DetectorHistogrammerModule : public Module {
     public:
         /**
          * @brief Constructor for this detector-specific module

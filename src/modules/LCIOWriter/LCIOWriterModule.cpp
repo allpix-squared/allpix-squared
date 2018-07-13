@@ -33,7 +33,7 @@ using namespace allpix;
 using namespace lcio;
 
 LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo)
-    : IOModule(config), geo_mgr_(geo) {
+    : Module(config), geo_mgr_(geo) {
 
     // Bind pixel hits message
     messenger->bindMulti(this, &LCIOWriterModule::pixel_messages_, MsgFlags::REQUIRED);

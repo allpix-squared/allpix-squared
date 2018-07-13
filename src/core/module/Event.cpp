@@ -29,25 +29,24 @@ Event::Event(ModuleList modules,
              std::map<Module*, long double>& module_execution_time,
              Messenger* messenger,
              std::mt19937_64& seeder,
-             std::mutex& io_mutex,
-             std::condition_variable& io_condition,
-             std::atomic<unsigned int>& current_io_event)
+             IOLock& reader_lock,
+             IOLock& writer_lock)
     : number(event_num), modules_(std::move(modules)), message_storage_(messenger->delegates_), terminate_(terminate),
-      module_execution_time_(module_execution_time), io_mutex_(io_mutex), io_condition_(io_condition), current_io_event_(current_io_event) {
+      module_execution_time_(module_execution_time), reader_lock_(reader_lock), writer_lock_(writer_lock) {
     random_generator_.seed(seeder());
 }
 
 void Event::run(std::shared_ptr<Module>& module) {
-    // Run IOModules in order by event numbers
-    const bool io_required = dynamic_cast<IOModule*>(module.get());
+    // Run WriterModules in order by event numbers
+    const bool io_required = dynamic_cast<WriterModule*>(module.get());
     auto io_lock =
-        io_required ? std::unique_lock<std::mutex>(io_mutex_) : std::unique_lock<std::mutex>();
+        io_required ? std::unique_lock<std::mutex>(writer_lock_.mutex) : std::unique_lock<std::mutex>();
     if (io_required) {
-        io_condition_.wait(io_lock, [this]() { return this->number == current_io_event_.load(); });
+        writer_lock_.condition.wait(io_lock, [this]() { return this->number == writer_lock_.current_event.load(); });
     }
 
     auto lock =
-        !module->canParallelize() ? std::unique_lock<std::mutex>(module->run_mutex_) : std::unique_lock<std::mutex>();
+        !module->canParallelize() && !io_required ? std::unique_lock<std::mutex>(module->run_mutex_) : std::unique_lock<std::mutex>();
 
     LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << this->number << " ["
                                       << module->get_identifier().getUniqueName() << "]";
@@ -144,9 +143,9 @@ void Event::run() {
     // Reset object count for next event
     /* TProcessID::SetObjectCount(save_id); */
 
-    // Notify other events that all IOModules for this event are done
-    current_io_event_++;
-    io_condition_.notify_all();
+    // Notify other events that all writers for this event are done
+    writer_lock_.current_event++;
+    writer_lock_.condition.notify_all();
 }
 
 void Event::finalize() {

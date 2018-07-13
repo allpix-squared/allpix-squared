@@ -17,6 +17,12 @@
 #include "../messenger/Messenger.hpp"
 
 namespace allpix {
+    struct IOLock {
+        std::mutex mutex;
+        std::condition_variable condition;
+        std::atomic<unsigned int> current_event{1};
+    };
+
     class Event {
         friend class ModuleManager;
 
@@ -65,9 +71,8 @@ namespace allpix {
                        std::map<Module*, long double>& module_execution_time,
                        Messenger* messenger,
                        std::mt19937_64& seeder,
-                       std::mutex& io_mutex,
-                       std::condition_variable& io_condition,
-                       std::atomic<unsigned int>& current_io_event);
+                       IOLock& reader_lock,
+                       IOLock& writer_lock);
         /**
          * @brief Use default destructor
          */
@@ -117,11 +122,11 @@ namespace allpix {
 
         std::mt19937_64 random_generator_;
 
-        // For IOModule execution
-        std::mutex& io_mutex_;
-        std::condition_variable& io_condition_;
-        std::atomic<unsigned int>& current_io_event_;
+        // For Readers/Writers execution
+        IOLock& reader_lock_;
+        IOLock& writer_lock_;
     };
+
 
 } // namespace allpix
 

@@ -26,7 +26,7 @@ namespace allpix {
      * Read the model of the magnetic field from the config during initialization and apply a constant field throughout the
      * whole volume
      */
-    class MagneticFieldReaderModule : public IOModule {
+    class MagneticFieldReaderModule : public Module {
     public:
         /**
          * @brief Constructor for this unique module
