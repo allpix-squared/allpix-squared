@@ -296,16 +296,14 @@ ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::get_by_file_name
     // Search in cache (NOTE: the path reached here is always a canonical name)
     auto iter = field_map_.find(file_name);
     if(iter != field_map_.end()) {
-        // FIXME Check detector match here as well
+        LOG(INFO) << "Using cached electric field data";
         return iter->second;
     }
 
     // Load file
     std::ifstream file(file_name);
-
     std::string header;
     std::getline(file, header);
-
     LOG(TRACE) << "Header of file " << file_name << " is " << header;
 
     // Read the header
