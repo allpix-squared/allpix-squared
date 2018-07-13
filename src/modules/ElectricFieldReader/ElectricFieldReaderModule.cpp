@@ -363,5 +363,9 @@ ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::get_by_file_name
         }
     }
 
-    return std::make_pair(field, std::array<size_t, 3>{{xsize, ysize, zsize}});
+    FieldData field_data = std::make_pair(field, std::array<size_t, 3>{{xsize, ysize, zsize}});
+
+    // Store the parsed field data for further reference:
+    field_map_[file_name] = field_data;
+    return field_data;
 }
