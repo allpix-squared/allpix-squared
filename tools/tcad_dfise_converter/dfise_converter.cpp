@@ -200,11 +200,11 @@ int main(int argc, char** argv) {
         index_cut_flag = true;
     }
 
-    XYZVector divisions;
+    XYZVectorInt divisions;
     auto dimension = config.get<int>("dimension", 3);
     if(dimension == 2) {
         auto divisions_yz = config.get<XYVectorInt>("divisions", XYVectorInt(100, 100));
-        divisions = XYZVector(1, divisions_yz.x(), divisions_yz.y());
+        divisions = XYZVectorInt(1, divisions_yz.x(), divisions_yz.y());
     } else {
         divisions = config.get<XYZVectorInt>("divisions", XYZVectorInt(100, 100, 100));
     }
