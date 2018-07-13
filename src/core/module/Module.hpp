@@ -260,7 +260,6 @@ namespace allpix {
         explicit ReaderModule(Configuration& config, std::shared_ptr<Detector> detector) : Module(config, detector) {}
     };
 
-
 } // namespace allpix
 
 #endif /* ALLPIX_MODULE_H */

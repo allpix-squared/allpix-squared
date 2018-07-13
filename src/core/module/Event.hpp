@@ -104,12 +104,13 @@ namespace allpix {
         void run();
         void run(std::shared_ptr<Module>& module);
 
+        bool handle_iomodule(const std::shared_ptr<Module>& module);
+
         /**
          * @brief Finalize the event
          * @warning Should be called after the \ref Event::run "run function"
          */
         void finalize();
-
 
         ModuleList modules_;
         MessageStorage message_storage_;
@@ -125,8 +126,8 @@ namespace allpix {
         // For Readers/Writers execution
         IOLock& reader_lock_;
         IOLock& writer_lock_;
+        bool previous_was_reader_{false};
     };
-
 
 } // namespace allpix
 
