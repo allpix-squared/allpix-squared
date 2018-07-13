@@ -616,7 +616,7 @@ int main(int argc, char** argv) {
     init_file << "0.0" << std::endl;                                                   // UNUSED
 
     // Write INIT file data
-    long long max_points = xdiv * ydiv * zdiv;
+    long long max_points = static_cast<long long>(xdiv) * ydiv * zdiv;
     for(int i = 0; i < xdiv; ++i) {
         for(int j = 0; j < ydiv; ++j) {
             for(int k = 0; k < zdiv; ++k) {
@@ -624,7 +624,7 @@ int main(int argc, char** argv) {
                 init_file << i + 1 << " " << j + 1 << " " << k + 1 << " " << point.x << " " << point.y << " " << point.z
                           << std::endl;
             }
-            long long curr_point = i * ydiv * zdiv + j * zdiv;
+            long long curr_point = static_cast<long long>(i) * ydiv * zdiv + j * zdiv;
             LOG_PROGRESS(INFO, "INIT") << "Writing to INIT file: " << (100 * curr_point / max_points) << "%";
         }
     }
