@@ -238,8 +238,8 @@ int main(int argc, char** argv) {
 
     auto start = std::chrono::system_clock::now();
 
-    LOG(STATUS) << "Reading mesh grid from grid file";
     std::string grid_file = file_prefix + ".grd";
+    LOG(STATUS) << "Reading mesh grid from grid file \"" << grid_file << "\"";
 
     std::vector<Point> points;
     try {
@@ -259,8 +259,9 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    LOG(STATUS) << "Reading electric field from data file";
     std::string data_file = file_prefix + ".dat";
+    LOG(STATUS) << "Reading electric field from data file \"" << data_file << "\"";
+
     std::vector<Point> field;
     try {
         auto region_fields = read_electric_field(data_file);
@@ -594,12 +595,11 @@ int main(int argc, char** argv) {
     elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
     LOG(INFO) << "New mesh created in " << elapsed_seconds << " seconds.";
 
-    LOG(STATUS) << "Writing INIT file";
-
     std::ofstream init_file;
     std::stringstream init_file_name;
     init_file_name << init_file_prefix << "_" << observable << ".init";
     init_file.open(init_file_name.str());
+    LOG(STATUS) << "Writing INIT file \"" << init_file_name.str() << "\"";
 
     // Write INIT file h"eader
     init_file << "tcad_dfise_converter, ";                                             // NAME
