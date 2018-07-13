@@ -82,6 +82,9 @@ The following authors, in alphabetical order, have contributed to Allpix<sup>2</
 * Tobias Bisanz, Georg-August-Universität Göttingen, @tbisanz
 * Neal Gauvin, Université de Genève, @ngauvin
 * Moritz Kiehn, Université de Genève, @msmk
+* Liejian Chen, Institute of High Energy Physics, @chenlj
+* Maoqiang Jing, University of South China, Institute of High Energy Physics, @mjing
+* Xin Shi, Institute of High Energy Physics, @xshi
 * Salman Maqbool, CERN Summer Student, @smaqbool
 * Andreas Matthias Nürnberg, CERN, @nurnberg
 * Marko Petric, CERN, @mpetric
