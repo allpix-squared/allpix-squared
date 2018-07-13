@@ -28,7 +28,7 @@ namespace allpix {
      * - For the INIT format, reads the specified file and add the electric field grid to the bound detectors
      */
     class ElectricFieldReaderModule : public Module {
-        using FieldData = std::pair<std::shared_ptr<std::vector<double>>, std::array<size_t, 3>>;
+        using FieldData = std::tuple<std::shared_ptr<std::vector<double>>, std::array<size_t, 3>, std::array<double, 3>>;
 
     public:
         /**
@@ -65,9 +65,14 @@ namespace allpix {
         void create_output_plots();
 
         /**
+         * @brief Compare the dimensions of the detector with the field, print warnings
+         */
+        void check_detector_match(std::array<double, 3> dimensions);
+
+        /**
          * @brief Get the electric field from a file name, caching the result between instantiations
          */
-        static FieldData get_by_file_name(const std::string& name, Detector&);
+        static FieldData get_by_file_name(const std::string& name);
         static std::map<std::string, FieldData> field_map_;
     };
 } // namespace allpix

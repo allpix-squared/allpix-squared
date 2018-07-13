@@ -65,7 +65,7 @@ void ElectricFieldReaderModule::init() {
     if(field_model == "init") {
         ElectricFieldReaderModule::FieldData field_data;
         field_data = read_init_field();
-        detector_->setElectricFieldGrid(field_data.first, field_data.second, thickness_domain);
+        detector_->setElectricFieldGrid(std::get<0>(field_data), std::get<1>(field_data), thickness_domain);
     } else if(field_model == "constant") {
         LOG(TRACE) << "Adding constant electric field";
         type = ElectricFieldType::CONSTANT;
@@ -130,9 +130,13 @@ ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::read_init_field(
         LOG(TRACE) << "Fetching electric field from init file";
 
         // Get field from file
-        auto field_data = get_by_file_name(config_.getPath("file_name", true), *detector_.get());
-        LOG(INFO) << "Set electric field with " << field_data.second.at(0) << "x" << field_data.second.at(1) << "x"
-                  << field_data.second.at(2) << " cells";
+        auto field_data = get_by_file_name(config_.getPath("file_name", true));
+
+        // Check if electric field matches chip
+        check_detector_match(std::get<2>(field_data));
+
+        LOG(INFO) << "Set electric field with " << std::get<1>(field_data).at(0) << "x" << std::get<1>(field_data).at(1)
+                  << "x" << std::get<1>(field_data).at(2) << " cells";
 
         // Return the field data
         return field_data;
@@ -272,8 +276,12 @@ void ElectricFieldReaderModule::create_output_plots() {
 /**
  * @brief Check if the detector matches the file header
  */
-inline static void check_detector_match(Detector& detector, double thickness, double xpixsz, double ypixsz) {
-    auto model = detector.getModel();
+void ElectricFieldReaderModule::check_detector_match(std::array<double, 3> dimensions) {
+    auto xpixsz = dimensions[0];
+    auto ypixsz = dimensions[1];
+    auto thickness = dimensions[2];
+
+    auto model = detector_->getModel();
     // Do a several checks with the detector model
     if(model != nullptr) {
         if(std::fabs(thickness - model->getSensorSize().z()) > std::numeric_limits<double>::epsilon()) {
@@ -291,8 +299,7 @@ inline static void check_detector_match(Detector& detector, double thickness, do
 }
 
 std::map<std::string, ElectricFieldReaderModule::FieldData> ElectricFieldReaderModule::field_map_;
-ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::get_by_file_name(const std::string& file_name,
-                                                                                 Detector& detector) {
+ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::get_by_file_name(const std::string& file_name) {
     // Search in cache (NOTE: the path reached here is always a canonical name)
     auto iter = field_map_.find(file_name);
     if(iter != field_map_.end()) {
@@ -320,9 +327,6 @@ ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::get_by_file_name
     size_t xsize, ysize, zsize;
     file >> xsize >> ysize >> zsize;
     file >> tmp;
-
-    // Check if electric field matches chip
-    check_detector_match(detector, thickness, xpixsz, ypixsz);
 
     if(file.fail()) {
         throw std::runtime_error("invalid data or unexpected end of file");
@@ -361,7 +365,8 @@ ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::get_by_file_name
         }
     }
 
-    FieldData field_data = std::make_pair(field, std::array<size_t, 3>{{xsize, ysize, zsize}});
+    FieldData field_data = std::make_tuple(
+        field, std::array<size_t, 3>{{xsize, ysize, zsize}}, std::array<double, 3>{{xpixsz, ypixsz, thickness}});
 
     // Store the parsed field data for further reference:
     field_map_[file_name] = field_data;
