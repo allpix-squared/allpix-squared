@@ -64,7 +64,7 @@ void ElectricFieldReaderModule::init() {
     // Calculate the field depending on the configuration
     if(field_model == "init") {
         ElectricFieldReaderModule::FieldData field_data;
-        field_data = read_init_field();
+        field_data = read_init_field(thickness_domain);
         detector_->setElectricFieldGrid(std::get<0>(field_data), std::get<1>(field_data), thickness_domain);
     } else if(field_model == "constant") {
         LOG(TRACE) << "Adding constant electric field";
@@ -125,7 +125,7 @@ ElectricFieldFunction ElectricFieldReaderModule::get_linear_field_function(doubl
  * The field read from the INIT format are shared between module instantiations using the static
  * ElectricFieldReaderModuleget_by_file_name method.
  */
-ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::read_init_field() {
+ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::read_init_field(std::pair<double, double> thickness_domain) {
     try {
         LOG(TRACE) << "Fetching electric field from init file";
 
@@ -133,7 +133,7 @@ ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::read_init_field(
         auto field_data = get_by_file_name(config_.getPath("file_name", true));
 
         // Check if electric field matches chip
-        check_detector_match(std::get<2>(field_data));
+        check_detector_match(std::get<2>(field_data), thickness_domain);
 
         LOG(INFO) << "Set electric field with " << std::get<1>(field_data).at(0) << "x" << std::get<1>(field_data).at(1)
                   << "x" << std::get<1>(field_data).at(2) << " cells";
@@ -276,7 +276,8 @@ void ElectricFieldReaderModule::create_output_plots() {
 /**
  * @brief Check if the detector matches the file header
  */
-void ElectricFieldReaderModule::check_detector_match(std::array<double, 3> dimensions) {
+void ElectricFieldReaderModule::check_detector_match(std::array<double, 3> dimensions,
+                                                     std::pair<double, double> thickness_domain) {
     auto xpixsz = dimensions[0];
     auto ypixsz = dimensions[1];
     auto thickness = dimensions[2];
@@ -284,14 +285,17 @@ void ElectricFieldReaderModule::check_detector_match(std::array<double, 3> dimen
     auto model = detector_->getModel();
     // Do a several checks with the detector model
     if(model != nullptr) {
-        if(std::fabs(thickness - model->getSensorSize().z()) > std::numeric_limits<double>::epsilon()) {
-            LOG(WARNING) << "Thickness of sensor in file is " << Units::display(thickness, "um")
-                         << " but in the model it is " << Units::display(model->getSensorSize().z(), "um");
+        // Check field dimension in z versus the requested thickness domain:
+        auto eff_thickness = thickness_domain.second - thickness_domain.first;
+        if(std::fabs(thickness - eff_thickness) > std::numeric_limits<double>::epsilon()) {
+            LOG(WARNING) << "Thickness of electric field is " << Units::display(thickness, "um")
+                         << " but in the depleted region should be " << Units::display(eff_thickness, "um");
         }
+        // Check the field extent along the pixel pitch in x and y:
         if(std::fabs(xpixsz - model->getPixelSize().x()) > std::numeric_limits<double>::epsilon() ||
            std::fabs(ypixsz - model->getPixelSize().y()) > std::numeric_limits<double>::epsilon()) {
-            LOG(WARNING) << "Pixel size is (" << Units::display(xpixsz, {"um", "mm"}) << ","
-                         << Units::display(ypixsz, {"um", "mm"}) << ") but in the model it is ("
+            LOG(WARNING) << "Electric field size is (" << Units::display(xpixsz, {"um", "mm"}) << ","
+                         << Units::display(ypixsz, {"um", "mm"}) << ") but the pixel pitch is ("
                          << Units::display(model->getPixelSize().x(), {"um", "mm"}) << ","
                          << Units::display(model->getPixelSize().y(), {"um", "mm"}) << ")";
         }
