@@ -334,6 +334,10 @@ ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::get_by_file_name
 
     // Loop through all the field data
     for(size_t i = 0; i < xsize * ysize * zsize; ++i) {
+        if(i % 100 == 0) {
+            LOG_PROGRESS(INFO, "read_init") << "Reading electric field data: " << (100 * i / (xsize * ysize * zsize)) << "%";
+        }
+
         if(file.eof()) {
             throw std::runtime_error("unexpected end of file");
         }
