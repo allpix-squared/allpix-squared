@@ -12,6 +12,7 @@
 #include <string>
 #include <utility>
 
+#include <Math/Vector3D.h>
 #include "TCanvas.h"
 #include "TFile.h"
 #include "TGraph2D.h"
@@ -24,12 +25,14 @@
 #include "core/config/Configuration.hpp"
 #include "core/config/exceptions.h"
 #include "core/utils/log.h"
+#include "tools/ROOT.h"
 
 #include "MeshElement.h"
 #include "Octree.hpp"
 #include "read_dfise.h"
 
 using namespace mesh_converter;
+using namespace ROOT::Math;
 
 void interrupt_handler(int);
 
@@ -92,6 +95,9 @@ void mesh_converter::mesh_plotter(const std::string& grid_file,
 }
 
 int main(int argc, char** argv) {
+    using XYZVectorInt = DisplacementVector3D<Cartesian3D<int>>;
+    using XYVectorInt = DisplacementVector2D<Cartesian2D<int>>;
+
     // If no arguments are provided, print the help:
     bool print_help = false;
     int return_code = 0;
@@ -194,12 +200,13 @@ int main(int argc, char** argv) {
         index_cut_flag = true;
     }
 
-    auto xdiv = config.get<int>("xdiv", 100);
-    auto ydiv = config.get<int>("ydiv", 100);
-    auto zdiv = config.get<int>("zdiv", 100);
+    XYZVector divisions;
     auto dimension = config.get<int>("dimension", 3);
     if(dimension == 2) {
-        xdiv = 1;
+        auto divisions_yz = config.get<XYVectorInt>("divisions", XYVectorInt(100, 100));
+        divisions = XYZVector(1, divisions_yz.x(), divisions_yz.y());
+    } else {
+        divisions = config.get<XYZVectorInt>("divisions", XYZVectorInt(100, 100, 100));
     }
 
     std::vector<std::string> rot = {"x", "y", "z"};
@@ -338,9 +345,9 @@ int main(int argc, char** argv) {
     }
 
     // Creating a new mesh points cloud with a regular pitch
-    double xstep = (maxx - minx) / static_cast<double>(xdiv);
-    double ystep = (maxy - miny) / static_cast<double>(ydiv);
-    double zstep = (maxz - minz) / static_cast<double>(zdiv);
+    double xstep = (maxx - minx) / static_cast<double>(divisions.x());
+    double ystep = (maxy - miny) / static_cast<double>(divisions.y());
+    double zstep = (maxz - minz) / static_cast<double>(divisions.z());
     double cell_volume = xstep * ystep * zstep;
 
     if(rot.at(0) != "x" || rot.at(1) != "y" || rot.at(2) != "z") {
@@ -388,11 +395,11 @@ int main(int argc, char** argv) {
     std::vector<Point> e_field_new_mesh;
 
     double x = minx + xstep / 2.0;
-    for(int i = 0; i < xdiv; ++i) {
+    for(int i = 0; i < divisions.x(); ++i) {
         double y = miny + ystep / 2.0;
-        for(int j = 0; j < ydiv; ++j) {
+        for(int j = 0; j < divisions.y(); ++j) {
             double z = minz + zstep / 2.0;
-            for(int k = 0; k < zdiv; ++k) {
+            for(int k = 0; k < divisions.z(); ++k) {
                 Point q, e;
                 if(ss_flag) {
                     std::map<std::string, int> map;
@@ -593,14 +600,15 @@ int main(int argc, char** argv) {
     init_file << "0.0 0.0 0.0" << std::endl;                                           // MAGNETIC FIELD (UNUSED)
     init_file << (maxz - minz) << " " << (maxx - minx) << " " << (maxy - miny) << " "; // PIXEL DIMENSIONS
     init_file << "0.0 0.0 0.0 0.0 ";                                                   // UNUSED
-    init_file << xdiv << " " << ydiv << " " << zdiv << " ";                            // GRID SIZE
+    init_file << divisions.x() << " " << divisions.y() << " " << divisions.z() << " "; // GRID SIZE
     init_file << "0.0" << std::endl;                                                   // UNUSED
 
     // Write INIT file data
-    for(int i = 0; i < xdiv; ++i) {
-        for(int j = 0; j < ydiv; ++j) {
-            for(int k = 0; k < zdiv; ++k) {
-                auto& point = e_field_new_mesh[static_cast<unsigned int>(i * ydiv * zdiv + j * zdiv + k)];
+    for(int i = 0; i < divisions.x(); ++i) {
+        for(int j = 0; j < divisions.y(); ++j) {
+            for(int k = 0; k < divisions.z(); ++k) {
+                auto& point =
+                    e_field_new_mesh[static_cast<unsigned int>(i * divisions.y() * divisions.z() + j * divisions.z() + k)];
                 init_file << i + 1 << " " << j + 1 << " " << k + 1 << " " << point.x << " " << point.y << " " << point.z
                           << std::endl;
             }
