@@ -437,8 +437,11 @@ int main(int argc, char** argv) {
                 }
                 bool valid = false;
 
-                LOG_PROGRESS(INFO, "POINT") << "Interpolating point X=" << i + 1 << " Y=" << j + 1 << " Z=" << k + 1 << " ("
-                                            << q.x << "," << q.y << "," << q.z << ")";
+                if(j * k % 1000 == 0) {
+                    LOG_PROGRESS(INFO, "POINT")
+                        << "Interpolating point (" << std::setw(3) << (i + 1) << "," << std::setw(3) << (j + 1) << ","
+                        << std::setw(3) << (k + 1) << ") at (" << q.x << "," << q.y << "," << q.z << ")";
+                }
 
                 size_t prev_neighbours = 0;
                 double radius = initial_radius;
@@ -613,6 +616,7 @@ int main(int argc, char** argv) {
     init_file << "0.0" << std::endl;                                                   // UNUSED
 
     // Write INIT file data
+    long long max_points = xdiv * ydiv * zdiv;
     for(int i = 0; i < xdiv; ++i) {
         for(int j = 0; j < ydiv; ++j) {
             for(int k = 0; k < zdiv; ++k) {
@@ -620,9 +624,12 @@ int main(int argc, char** argv) {
                 init_file << i + 1 << " " << j + 1 << " " << k + 1 << " " << point.x << " " << point.y << " " << point.z
                           << std::endl;
             }
+            long long curr_point = i * ydiv * zdiv + j * zdiv;
+            LOG_PROGRESS(INFO, "INIT") << "Writing to INIT file: " << (100 * curr_point / max_points) << "%";
         }
     }
     init_file.close();
+    LOG_PROGRESS(INFO, "INIT") << "Writing to INIT file: done.";
 
     end = std::chrono::system_clock::now();
     elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
