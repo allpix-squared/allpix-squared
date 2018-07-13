@@ -28,6 +28,12 @@ namespace allpix {
      * - For the INIT format, reads the specified file and add the electric field grid to the bound detectors
      */
     class ElectricFieldReaderModule : public Module {
+        /**
+         * Electric field data with three components
+         * * The actual field data as shared pointer to vector
+         * * An array specifying the number of bins in each dimension
+         * * An array containing the physical extent of the field as specified in the file
+         */
         using FieldData = std::tuple<std::shared_ptr<std::vector<double>>, std::array<size_t, 3>, std::array<double, 3>>;
 
     public:
