@@ -251,6 +251,10 @@ int main(int argc, char** argv) {
     std::vector<Point> points;
     try {
         auto region_grid = read_grid(grid_file, mesh_tree);
+        LOG(INFO) << "Grid sizes for all regions:";
+        for(auto& reg : region_grid) {
+            LOG(INFO) << "\t" << std::left << std::setw(25) << reg.first << " " << reg.second.size();
+        }
         points = region_grid[region];
         if(points.empty()) {
             throw std::runtime_error("Empty grid");
@@ -268,6 +272,13 @@ int main(int argc, char** argv) {
     try {
         auto region_fields = read_electric_field(data_file);
         field = region_fields[region][observable];
+        LOG(INFO) << "Field sizes for all regions and observables:";
+        for(auto& reg : region_fields) {
+            LOG(INFO) << " " << reg.first << ":";
+            for(auto& fld : reg.second) {
+                LOG(INFO) << "\t" << std::left << std::setw(25) << fld.first << " " << fld.second.size();
+            }
+        }
         if(field.empty()) {
             throw std::runtime_error("Empty observable data");
         }
