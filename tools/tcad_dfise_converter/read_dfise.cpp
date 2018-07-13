@@ -358,6 +358,7 @@ std::map<std::string, std::vector<Point>> mesh_converter::read_grid(const std::s
             break;
         }
     }
+    LOG_PROGRESS(INFO, "gridlines") << "Parsing grid file: done.";
 
     std::map<std::string, std::vector<Point>> ret_map;
     for(auto& name_region_vertices : regions_vertices) {
@@ -740,6 +741,7 @@ mesh_converter::read_electric_field(const std::string& file_name) {
             }
         }
     }
+    LOG_PROGRESS(INFO, "fieldlines") << "Parsing field data file: done.";
 
     return region_electric_field_map;
 }
