@@ -289,7 +289,7 @@ void ElectricFieldReaderModule::check_detector_match(std::array<double, 3> dimen
         auto eff_thickness = thickness_domain.second - thickness_domain.first;
         if(std::fabs(thickness - eff_thickness) > std::numeric_limits<double>::epsilon()) {
             LOG(WARNING) << "Thickness of electric field is " << Units::display(thickness, "um")
-                         << " but in the depleted region should be " << Units::display(eff_thickness, "um");
+                         << " but the depleted region is " << Units::display(eff_thickness, "um");
         }
         // Check the field extent along the pixel pitch in x and y:
         if(std::fabs(xpixsz - model->getPixelSize().x()) > std::numeric_limits<double>::epsilon() ||
