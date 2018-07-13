@@ -245,10 +245,12 @@ int main(int argc, char** argv) {
     try {
         auto region_grid = read_grid(grid_file, mesh_tree);
         points = region_grid[region];
+        if(points.empty()) {
+            throw std::runtime_error("Empty grid");
+        }
         LOG(DEBUG) << "Grid with " << points.size() << " points";
     } catch(std::runtime_error& e) {
-        LOG(FATAL) << "Failed to parse grid file " << grid_file;
-        LOG(FATAL) << " " << e.what();
+        LOG(FATAL) << "Failed to parse grid file \"" << grid_file << "\":\n" << e.what();
         allpix::Log::finish();
         return 1;
     }
@@ -259,16 +261,19 @@ int main(int argc, char** argv) {
     try {
         auto region_fields = read_electric_field(data_file);
         field = region_fields[region][observable];
+        if(field.empty()) {
+            throw std::runtime_error("Empty observable data");
+        }
         LOG(DEBUG) << "Field with " << field.size() << " points";
     } catch(std::runtime_error& e) {
-        LOG(FATAL) << "Failed to parse data file " << data_file;
-        LOG(FATAL) << " " << e.what();
+        LOG(FATAL) << "Failed to parse data file \"" << data_file << "\":\n" << e.what();
         allpix::Log::finish();
         return 1;
     }
 
     if(points.size() != field.size()) {
-        LOG(FATAL) << "Field and grid file do not match";
+        LOG(FATAL) << "Field and grid file do not match, found " << points.size() << " and " << field.size()
+                   << " data points, respectively.";
         allpix::Log::finish();
         return 1;
     }
