@@ -38,26 +38,23 @@ Event::Event(ModuleList modules,
 
 bool Event::handle_iomodule(const std::shared_ptr<Module>& module) {
     const bool reader = dynamic_cast<ReaderModule*>(module.get()), writer = dynamic_cast<WriterModule*>(module.get());
-
     if(previous_was_reader_ && !reader) {
         // All readers have been run, notify other threads
         reader_lock_.current_event++;
         reader_lock_.condition.notify_all();
     }
-
     previous_was_reader_ = reader;
 
     if(!reader && !writer) {
+        // Module doesn't require IO; nothing else to do
         return false;
     }
+    LOG(TRACE) << module->getUniqueName() << " is a " << (reader ? "reader" : "writer") << "; running in order of event number";
 
-    auto lock = reader ? std::unique_lock<std::mutex>(reader_lock_.mutex) : std::unique_lock<std::mutex>(writer_lock_.mutex);
-
-    if(reader) {
-        reader_lock_.condition.wait(lock, [this]() { return this->number == reader_lock_.current_event.load(); });
-    } else {
-        writer_lock_.condition.wait(lock, [this]() { return this->number == writer_lock_.current_event.load(); });
-    }
+    // Acquire reader/writer lock
+    auto& typelock = reader ? reader_lock_ : writer_lock_;
+    auto lock = std::unique_lock<std::mutex>(typelock.mutex);
+    typelock.condition.wait(lock, [this, &typelock]() { return this->number == typelock.current_event.load(); });
 
     return true;
 }
