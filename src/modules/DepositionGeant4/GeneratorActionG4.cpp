@@ -36,6 +36,13 @@ using namespace allpix;
 GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     : particle_source_(std::make_unique<G4GeneralParticleSource>()) {
 
+    // Define radioactive isotopes:
+    static std::map<std::string, std::tuple<int, int, int, double>> isotopes = {
+        {"fe55", std::make_tuple(26, 55, 0, 0.)},
+        {"am241", std::make_tuple(95, 241, 0, 0.)},
+        {"sr90", std::make_tuple(38, 90, 0, 0.)},
+    };
+
     // Set verbosity of source to off
     particle_source_->SetVerbosity(0);
 
@@ -162,19 +169,14 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             if(particle == nullptr) {
                 throw InvalidValueError(config, "particle_code", "particle code does not exist.");
             }
+        } else if(isotopes.find(particle_type) != isotopes.end()) {
+            auto isotope = isotopes[particle_type];
+            // Set radioactive isotope:
+            particle = G4IonTable::GetIonTable()->GetIon(std::get<0>(isotope), std::get<1>(isotope), std::get<3>(isotope));
         } else {
             particle = pdg_table->FindParticle(particle_type);
             if(particle == nullptr) {
-                // Try ion sources:
-                if(particle_type == "fe55") {
-                    particle = G4IonTable::GetIonTable()->GetIon(26, 55, 0.);
-                } else if(particle_type == "am241") {
-                    particle = G4IonTable::GetIonTable()->GetIon(95, 241, 0.);
-                } else if(particle_type == "sr90") {
-                    particle = G4IonTable::GetIonTable()->GetIon(38, 90, 0.);
-                } else {
-                    throw InvalidValueError(config, "particle_type", "particle type does not exist.");
-                }
+                throw InvalidValueError(config, "particle_type", "particle type does not exist.");
             }
         }
 
