@@ -146,8 +146,7 @@ void DepositionGeant4Module::init() {
     // Register a step limiter (uses the user limits defined earlier)
     physicsList->RegisterPhysics(new G4StepLimiterPhysics());
 
-    // Radioactive decay
-    physicsList->RegisterPhysics(new G4DecayPhysics());
+    // Register radioactive decay physics lists
     physicsList->RegisterPhysics(new G4RadioactiveDecayPhysics());
 
     // Set the range-cut off threshold for secondary production:
