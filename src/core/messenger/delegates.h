@@ -151,16 +151,16 @@ namespace allpix {
         /**
          * @brief Reset the delegate and set it not satisfied again
          */
-        virtual void reset() { processed_ = false; }
+        virtual void reset() { /* processed_ = false; */ }
 
     protected:
         /**
          * @brief Set the processed flag to signal that the delegate is satisfied
          */
-        void set_processed() { processed_ = true; }
+        void set_processed() { /* processed_ = true; */ }
         bool processed_;
 
-        MsgFlags flags_;
+        const MsgFlags flags_;
     };
 
     /**
@@ -193,7 +193,7 @@ namespace allpix {
         std::shared_ptr<Detector> getDetector() const override { return obj_->getDetector(); }
 
     protected:
-        T* obj_;
+        T* const obj_;
     };
 
     /**
@@ -215,6 +215,7 @@ namespace allpix {
          */
         void process(std::shared_ptr<BaseMessage> msg, std::string, DelegateTypes&) override {
             // Store the message and mark as processed
+            std::lock_guard<std::mutex> lock{mutex_};
             messages_.push_back(msg);
             this->set_processed();
         }
@@ -225,6 +226,7 @@ namespace allpix {
          * Always calls the BaseDelegate::reset first. Clears the storage of the messages
          */
         void reset() override {
+            std::lock_guard<std::mutex> lock{mutex_};
             // Always do base reset
             BaseDelegate::reset();
             // Clear
@@ -233,6 +235,9 @@ namespace allpix {
 
     private:
         std::vector<std::shared_ptr<BaseMessage>> messages_;
+
+    private:
+        std::mutex mutex_;
     };
 
     /**
@@ -265,12 +270,14 @@ namespace allpix {
 #endif
 
             // Pass the message and mark as processed
+            std::lock_guard<std::mutex> lock{mutex_};
             (this->obj_->*method_)(std::static_pointer_cast<R>(msg));
             this->set_processed();
         }
 
     private:
         ListenerFunction method_;
+        std::mutex mutex_;
     };
 
     /**
@@ -299,12 +306,14 @@ namespace allpix {
          */
         void process(std::shared_ptr<BaseMessage> msg, std::string name, DelegateTypes&) override {
             // Pass the message and mark as processed
+            std::lock_guard<std::mutex> lock{mutex_};
             (this->obj_->*method_)(std::static_pointer_cast<BaseMessage>(msg), name);
             this->set_processed();
         }
 
     private:
         ListenerFunction method_;
+        std::mutex mutex_;
     };
 
     /**
@@ -354,6 +363,7 @@ namespace allpix {
          * Always calls the BaseDelegate::reset first. Set the referenced member to a null pointer
          */
         void reset() override {
+            std::lock_guard<std::mutex> lock{mutex_};
             // Always do base reset
             BaseDelegate::reset();
 
@@ -363,6 +373,9 @@ namespace allpix {
 
     private:
         BindType member_;
+
+    private:
+        std::mutex mutex_;
     };
 
     /**
@@ -402,6 +415,7 @@ namespace allpix {
          *
          * Always calls the BaseDelegate::reset first. Clears the referenced vector to an empty state         */
         void reset() override {
+            std::lock_guard<std::mutex> lock{mutex_};
             // Always do base reset
             BaseDelegate::reset();
 
@@ -411,6 +425,7 @@ namespace allpix {
 
     private:
         BindType member_;
+        std::mutex mutex_;
     };
 } // namespace allpix
 
