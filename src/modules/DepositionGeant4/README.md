@@ -4,18 +4,11 @@
 **Output**: DepositedCharge, MCParticle, MCTrack
 
 ### Description
-Module which deposits charge carriers in the active volume of all detectors. It acts as wrapper around the Geant4 logic and depends on the global geometry constructed by the GeometryBuilderGeant4 module. It initializes the physical processes to simulate a particle beam that will deposit charges in every event.
+Module which deposits charge carriers in the active volume of all detectors.
+It acts as wrapper around the Geant4 logic and depends on the global geometry constructed by the GeometryBuilderGeant4 module.
+It initializes the physical processes to simulate a particle source that will deposit charge carriers for every event simulated.
 
-The particle type can be set via a string (particle_type) or by the respective PDG code (particle_code). Refer to the Geant4 webpage [@g4particles] for information about the available types of particles and the PDG particle code definition [@pdg] for a list of the available particles and PDG codes.
-
-For all particles passing the sensitive device of the detectors, the energy loss is converted into deposited charge carriers in every step of the Geant4 simulation. Optionally, the Photoabsorption Ionization model (PAI) can be activated to improve the modeling of very thin sensors [@pai]. The information about the truth particle passage is also fully available, with every deposit linked to a MCParticle. Each trajectory which passes through at least one detector is also registered and stored as a global MCTrack. MCParticles are linked to their respectice tracks and each track is linked to its parent track, if available.
-
-A range cut-off threshold for the production of gammas, electrons and positrons is necessary to avoid infrared divergence. By default, Geant4 sets this value to 700um or even 1mm, which is most likely too coarse for precise detector simulation. In this module, the range cut-off is automatically calculated as a fifth of the minimal feature size of a single pixel, i.e. either to a fifth of the smallest pitch of a fifth of the sensor thickness, if smaller. This behavior can be overwritten by explicitly specifying the range cut via the `range_cut` parameter.
-
-The module supports the propagation of charged particles in a magnetic field if defined via the MagneticFieldReader module.
-
-With the `output_plots` parameter activated, the module produces histograms of the total deposited charge per event for every sensor in units of kilo-electrons.
-The scale of the plot axis can be adjusted using the `output_plots_scale` parameter and defaults to a maximum of 100ke.
+#### Source Shapes
 
 The source can be defined in two different ways using the `source_type` parameter: with pre-defined shapes or with a Geant4 macro file.
 Pre-defined shapes are point, beam, square or sphere.
@@ -25,6 +18,31 @@ For the sphere, unless a focus point is set, the particle directions follow the 
 
 To define more complex sources or angular distributions, the user can create a macro file with Geant4 commands.
 These commands are those defined for the GPS source and are explained in the Geant4 website [@g4gps] (only the source position and number of particles must still be defined in the main configuration file).
+
+#### Particles, Ions and Radioactive Decays
+
+The particle type can be set via a string (`particle_type`) or by the respective PDG code (`particle_code`). Refer to the Geant4 webpage [@g4particles] for information about the available types of particles and the PDG particle code definition [@pdg] for a list of the available particles and PDG codes.
+
+Radioactive sources can be simulated simply by setting their isotope name in the `particle_type` parameter, and optionally by setting the source energy to zero for a decay in rest.
+Secondary ions from the decay are not further treated and the decay chain is interrupted, e.g. Am241 only undergoes its alpha decay without the decay of its daughter nucleus of Np237 being simulated.
+
+#### Energy Deposition and Charge Carrier creation
+
+For all particles passing the sensitive device of the detectors, the energy loss is converted into deposited charge carriers in every step of the Geant4 simulation.
+Optionally, the Photoabsorption Ionization model (PAI) can be activated to improve the modeling of very thin sensors [@pai].
+The information about the truth particle passage is also fully available, with every deposit linked to a MCParticle.
+Each trajectory which passes through at least one detector is also registered and stored as a global MCTrack.
+MCParticles are linked to their respective tracks and each track is linked to its parent track, if available.
+
+A range cut-off threshold for the production of gammas, electrons and positrons is necessary to avoid infrared divergence.
+By default, Geant4 sets this value to 700um or even 1mm, which is most likely too coarse for precise detector simulation.
+In this module, the range cut-off is automatically calculated as a fifth of the minimal feature size of a single pixel, i.e. either to a fifth of the smallest pitch of a fifth of the sensor thickness, if smaller.
+This behavior can be overwritten by explicitly specifying the range cut via the `range_cut` parameter.
+
+The module supports the propagation of charged particles in a magnetic field if defined via the MagneticFieldReader module.
+
+With the `output_plots` parameter activated, the module produces histograms of the total deposited charge per event for every sensor in units of kilo-electrons.
+The scale of the plot axis can be adjusted using the `output_plots_scale` parameter and defaults to a maximum of 100ke.
 
 ### Dependencies
 
@@ -77,6 +95,20 @@ beam_direction = 0 0 1
 beam_divergence = 3mrad 0mrad
 number_of_particles = 1
 ```
+
+A radioactive point source of Iron-55 could be simulated by the following configuration:
+
+```ini
+[DepositionGeant4]
+physics_list = FTFP_BERT_LIV
+particle_type = "Fe55"
+source_energy = 0eV
+source_position = 0 0 -1mm
+source_type = "point"
+number_of_particles = 1
+```
+
+
 
 [@g4physicslists]: http://geant4.cern.ch/support/proc_mod_catalog/physics_lists/referencePL.shtml
 [@g4particles]: http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/ForApplicationDeveloper/html/TrackingAndPhysics/particle.html
