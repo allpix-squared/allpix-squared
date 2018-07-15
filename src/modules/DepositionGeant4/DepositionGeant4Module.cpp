@@ -14,7 +14,6 @@
 #include <string>
 #include <utility>
 
-#include <G4DecayPhysics.hh>
 #include <G4EmParameters.hh>
 #include <G4HadronicProcessStore.hh>
 #include <G4LogicalVolume.hh>

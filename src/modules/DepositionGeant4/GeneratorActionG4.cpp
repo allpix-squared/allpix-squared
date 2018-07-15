@@ -3,10 +3,8 @@
  * @brief Implements the particle generator
  * @remark Based on code from John Idarraga
  * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
- * This software is distributed under the terms of the MIT License, copied
- * verbatim in the file "LICENSE.md".
- * In applying this license, CERN does not waive the privileges and immunities
- * granted to it by virtue of its status as an
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
@@ -17,16 +15,12 @@
 #include <regex>
 
 #include <G4Event.hh>
-#include <G4GeneralParticleSource.hh>
 #include <G4IonTable.hh>
 #include <G4ParticleDefinition.hh>
 #include <G4ParticleTable.hh>
 #include <G4RunManager.hh>
 #include <G4UImanager.hh>
 #include <core/module/exceptions.h>
-
-#include <TROOT.h>
-#include <TRandom.h>
 
 #include "core/config/exceptions.h"
 #include "core/utils/log.h"
@@ -49,12 +43,12 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
 
     // Get source specific parameters
     auto single_source = particle_source_->GetCurrentSource();
-    auto source_type = config.get<std::string>("source_type", "");
+    auto source_type = config.get<std::string>("source_type");
 
     // Set the centre coordinate of the source
     single_source->GetPosDist()->SetCentreCoords(config.get<G4ThreeVector>("source_position"));
 
-    if(config.get<std::string>("source_type") == "macro") {
+    if(source_type == "macro") {
 
         LOG(INFO) << "Using user macro for particle source.";
 
@@ -86,7 +80,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     } else {
 
         // Set position and direction parameters according to shape
-        if(config.get<std::string>("source_type") == "beam") {
+        if(source_type == "beam") {
 
             // Set position parameters
             single_source->GetPosDist()->SetPosDisType("Beam");
@@ -104,7 +98,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             }
             single_source->GetAngDist()->SetParticleMomentumDirection(direction);
 
-        } else if(config.get<std::string>("source_type") == "sphere") {
+        } else if(source_type == "sphere") {
 
             // Set position parameters
             single_source->GetPosDist()->SetPosDisType("Surface");
@@ -120,7 +114,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
                 single_source->GetAngDist()->SetAngDistType("cos");
             }
 
-        } else if(config.get<std::string>("source_type") == "square") {
+        } else if(source_type == "square") {
 
             // Set position parameters
             single_source->GetPosDist()->SetPosDisType("Plane");
@@ -132,7 +126,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             single_source->GetAngDist()->SetAngDistType("iso");
             single_source->GetAngDist()->SetMaxTheta(config.get<double>("square_angle", ROOT::Math::Pi() / 2));
 
-        } else if(config.get<std::string>("source_type") == "point") {
+        } else if(source_type == "point") {
 
             // Set position parameters
             single_source->GetPosDist()->SetPosDisType("Point");
