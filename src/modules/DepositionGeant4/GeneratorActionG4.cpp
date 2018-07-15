@@ -17,6 +17,7 @@
 
 #include <G4Event.hh>
 #include <G4GeneralParticleSource.hh>
+#include <G4IonTable.hh>
 #include <G4ParticleDefinition.hh>
 #include <G4ParticleTable.hh>
 #include <G4RunManager.hh>
@@ -164,7 +165,16 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
         } else {
             particle = pdg_table->FindParticle(particle_type);
             if(particle == nullptr) {
-                throw InvalidValueError(config, "particle_type", "particle type does not exist.");
+                // Try ion sources:
+                if(particle_type == "fe55") {
+                    particle = G4IonTable::GetIonTable()->GetIon(26, 55, 0.);
+                } else if(particle_type == "am241") {
+                    particle = G4IonTable::GetIonTable()->GetIon(95, 241, 0.);
+                } else if(particle_type == "sr90") {
+                    particle = G4IonTable::GetIonTable()->GetIon(38, 90, 0.);
+                } else {
+                    throw InvalidValueError(config, "particle_type", "particle type does not exist.");
+                }
             }
         }
 
