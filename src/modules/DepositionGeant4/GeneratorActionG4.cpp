@@ -141,10 +141,9 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
         auto particle_type = config.get<std::string>("particle_type", "");
         std::transform(particle_type.begin(), particle_type.end(), particle_type.begin(), ::tolower);
         auto particle_code = config.get<int>("particle_code", 0);
-        auto energy_source_type = config.get<std::string>("energy_source_type", "");
         G4ParticleDefinition* particle = nullptr;
 
-        if(energy_source_type.empty() && !particle_type.empty() && particle_code != 0) {
+        if(!particle_type.empty() && particle_code != 0) {
             if(pdg_table->FindParticle(particle_type) == pdg_table->FindParticle(particle_code)) {
                 LOG(WARNING) << "particle_type and particle_code given. Continuing because they match.";
                 particle = pdg_table->FindParticle(particle_code);
@@ -155,49 +154,32 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
                 throw InvalidValueError(
                     config, "particle_type", "Given particle_type does not match particle_code. Please remove one of them.");
             }
-        } else if(energy_source_type.empty() && particle_type.empty() && particle_code == 0) {
+        } else if(particle_type.empty() && particle_code == 0) {
             throw InvalidValueError(config, "particle_code", "Please set particle_code or particle_type.");
-        } else if(energy_source_type.empty() && particle_code != 0) {
+        } else if(particle_code != 0) {
             particle = pdg_table->FindParticle(particle_code);
             if(particle == nullptr) {
                 throw InvalidValueError(config, "particle_code", "particle code does not exist.");
             }
-        } else if(energy_source_type.empty() && !particle_type.empty()) {
+        } else {
             particle = pdg_table->FindParticle(particle_type);
             if(particle == nullptr) {
                 throw InvalidValueError(config, "particle_type", "particle type does not exist.");
-            }
-        } else {
-            if(energy_source_type.empty()) {
-                throw InvalidValueError(config, "energy_source_type", "Please set source type.");
             }
         }
 
         LOG(DEBUG) << "Using particle " << particle->GetParticleName() << " (ID " << particle->GetPDGEncoding() << ").";
 
         // Set global parameters of the source
-        if(!particle_type.empty() || particle_code != 0) {
-            single_source->SetNumberOfParticles(1);
-            single_source->SetParticleDefinition(particle);
-            // Set the primary track's start time in for the current event to zero:
-            single_source->SetParticleTime(0.0);
-        }
+        single_source->SetNumberOfParticles(1);
+        single_source->SetParticleDefinition(particle);
+        // Set the primary track's start time in for the current event to zero:
+        single_source->SetParticleTime(0.0);
 
         // Set energy parameters
-        if(energy_source_type == "radioactive_source") {
-            auto sample = config.get<std::string>("sample", "");
-            if(sample == "Fe-55") {
-                double energy_fe[2] = {0.0059, 0.00649};
-                double intensity_fe[2] = {28., 2.85};
-                add_multiple_decay("gamma", energy_fe, intensity_fe, 2);
-            } else {
-                throw InvalidValueError(config, "sample", "Please set a sample.");
-            }
-        } else {
-            single_source->GetEneDist()->SetEnergyDisType("Gauss");
-            single_source->GetEneDist()->SetMonoEnergy(config.get<double>("source_energy"));
-            single_source->GetEneDist()->SetBeamSigmaInE(config.get<double>("source_energy_spread", 0.));
-        }
+        single_source->GetEneDist()->SetEnergyDisType("Gauss");
+        single_source->GetEneDist()->SetMonoEnergy(config.get<double>("source_energy"));
+        single_source->GetEneDist()->SetBeamSigmaInE(config.get<double>("source_energy_spread", 0.));
     }
 }
 
@@ -206,27 +188,4 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
  */
 void GeneratorActionG4::GeneratePrimaries(G4Event* event) {
     particle_source_->GeneratePrimaryVertex(event);
-}
-
-void GeneratorActionG4::add_multiple_decay(std::string particle_type,
-                                           const double* Energy,
-                                           const double* Intensity,
-                                           int len) {
-    std::transform(particle_type.begin(), particle_type.end(), particle_type.begin(), ::tolower);
-    auto pdg_table = G4ParticleTable::GetParticleTable();
-    G4ParticleDefinition* particle = pdg_table->FindParticle(particle_type);
-    auto single_source = particle_source_->GetCurrentSource();
-    single_source->SetNumberOfParticles(1);
-    single_source->SetParticleDefinition(particle);
-    single_source->SetParticleTime(0.0);
-    single_source->GetEneDist()->SetEnergyDisType("User");
-    G4double energy_hist[10];
-    G4double intensity_hist[10];
-    for(G4int i = 0; i < len; i++) {
-        for(G4int j = 0; j < 10; j++) {
-            energy_hist[j] = Energy[i] + 0.0001 * gRandom->Gaus(0, 1);
-            intensity_hist[j] = Intensity[i] + 0.01 * gRandom->Gaus(0, 1);
-            single_source->GetEneDist()->UserEnergyHisto(G4ThreeVector(energy_hist[j], intensity_hist[j], 0.));
-        }
-    }
 }
