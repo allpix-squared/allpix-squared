@@ -5,6 +5,13 @@ using namespace allpix;
 
 void SetTrackInfoUserHookG4::PreUserTrackingAction(const G4Track* aTrack) {
     auto theTrack = const_cast<G4Track*>(aTrack); // NOLINT
+    auto particle = aTrack->GetDefinition();
+
+    // Check if this is an ion (charge larger than an alpha particle) and kill if it is not the primary ion:
+    if(particle->GetPDGCharge() > 2. && aTrack->GetTrackID() > 1) {
+        theTrack->SetTrackStatus(fStopAndKill);
+    }
+
     if(aTrack->GetUserInformation() == nullptr) {
         auto trackInfo = track_info_mgr_ptr_->makeTrackInfo(aTrack);
         // Release ownership of the TrackInfoG4 instance
