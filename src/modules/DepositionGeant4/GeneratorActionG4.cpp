@@ -174,13 +174,15 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             auto isotope = isotopes[particle_type];
             // Set radioactive isotope:
             particle = G4IonTable::GetIonTable()->GetIon(std::get<0>(isotope), std::get<1>(isotope), std::get<3>(isotope));
+            single_source->SetParticleCharge(std::get<2>(isotope));
         } else if(particle_type.substr(0, 3) == "ion") {
             // Parse particle type as ion with components /Z/A/Q/E
             std::smatch ion;
             if(std::regex_match(particle_type, ion, std::regex("ion/([0-9]+)/([0-9]+)/([0-9+-]+)/([0-9.]+[a-zA-Z]+)")) &&
                ion.ready()) {
                 particle = G4IonTable::GetIonTable()->GetIon(
-                    std::stoi(ion[1]), std::stoi(ion[2]), allpix::from_string<double>(ion[4]));
+                    allpix::from_string<int>(ion[1]), allpix::from_string<int>(ion[2]), allpix::from_string<double>(ion[4]));
+                single_source->SetParticleCharge(allpix::from_string<int>(ion[3]));
             } else {
                 throw InvalidValueError(config, "particle_type", "cannot parse parameters for ion.");
             }
