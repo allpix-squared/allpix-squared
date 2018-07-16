@@ -114,6 +114,11 @@ namespace allpix {
 
         bool handle_iomodule(const std::shared_ptr<Module>& module);
 
+        Event* with_context(const std::shared_ptr<Module>& module) {
+            message_storage_.using_module(module.get());
+            return this;
+        }
+
         /**
          * @brief Finalize the event
          * @warning Should be called after the \ref Event::run "run function"

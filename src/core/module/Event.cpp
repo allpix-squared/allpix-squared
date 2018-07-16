@@ -97,10 +97,8 @@ void Event::run(std::shared_ptr<Module>& module) {
 
     // Run module
     try {
-        // TODO: rename to set_context?
-        message_storage_.using_module(module.get());
-        module->run(this);
-    } catch(EndOfRunException& e) {
+        module->run(with_context(module));
+    } catch(const EndOfRunException& e) {
         // Terminate if the module threw the EndOfRun request exception:
         LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
         this->terminate_ = true;
