@@ -60,6 +60,9 @@ void TextWriterModule::init(uint64_t) {
     }
 }
 
+// List of messages to keep so they can be stored in the tree
+static thread_local std::vector<std::shared_ptr<BaseMessage>> keep_messages;
+
 void TextWriterModule::receive(std::shared_ptr<BaseMessage> message, std::string message_name) { // NOLINT
     try {
         const BaseMessage* inst = message.get();
@@ -98,7 +101,7 @@ void TextWriterModule::receive(std::shared_ptr<BaseMessage> message, std::string
             }
 
             // Store message for later reference
-            keep_messages_.push_back(message);
+            keep_messages.push_back(message);
         }
 
     } catch(MessageWithoutObjectException& e) {
@@ -114,7 +117,7 @@ void TextWriterModule::run(Event* event) {
     // Print the current event:
     *output_file_ << "=== " << event->number << " ===" << std::endl;
 
-    for(auto& message : keep_messages_) {
+    for(auto& message : keep_messages) {
         // Print the current detector:
         if(message->getDetector() != nullptr) {
             *output_file_ << "--- " << message->getDetector()->getName() << " ---" << std::endl;
@@ -130,7 +133,7 @@ void TextWriterModule::run(Event* event) {
     }
 
     // Clear the messages we have to keep because they contain the internal pointers
-    keep_messages_.clear();
+    keep_messages.clear();
 }
 
 void TextWriterModule::finalize() {

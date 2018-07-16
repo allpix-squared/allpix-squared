@@ -70,8 +70,6 @@ namespace allpix {
         std::string output_file_name_{};
         std::unique_ptr<std::ofstream> output_file_;
 
-        // List of messages to keep so they can be stored in the tree
-        std::vector<std::shared_ptr<BaseMessage>> keep_messages_;
         // List of objects of a particular type, bound to a specific detector and having a particular name
         std::map<std::tuple<std::type_index, std::string, std::string>, std::vector<Object*>*> write_list_;
 
