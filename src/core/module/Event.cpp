@@ -22,6 +22,7 @@
 #include "core/utils/log.h"
 
 using namespace allpix;
+using namespace std::chrono_literals;
 
 Event::Event(ModuleList modules,
              const unsigned int event_num,
@@ -49,19 +50,23 @@ bool Event::handle_iomodule(const std::shared_ptr<Module>& module) {
         // Module doesn't require IO; nothing else to do
         return false;
     }
-    LOG(TRACE) << module->getUniqueName() << " is a " << (reader ? "reader" : "writer") << "; running in order of event number";
+    LOG(TRACE) << module->getUniqueName() << " is a " << (reader ? "reader" : "writer")
+               << "; running in order of event number";
 
     // Acquire reader/writer lock
     auto& typelock = reader ? reader_lock_ : writer_lock_;
     auto lock = std::unique_lock<std::mutex>(typelock.mutex);
-    typelock.condition.wait(lock, [this, &typelock]() { return this->number == typelock.current_event.load(); });
+    // Check eveyr 50ms if it's this event's turn to run; fixes deadlock
+    while(!typelock.condition.wait_for(
+        lock, 50ms, [this, &typelock]() { return this->number == typelock.current_event.load(); }))
+        ;
 
     return true;
 }
 
 void Event::run(std::shared_ptr<Module>& module) {
     // Modules that read/write files must be run in order of event number
-    bool io_module = handle_iomodule(module);
+    const bool io_module = handle_iomodule(module);
 
     auto lock = (!module->canParallelize() || io_module) ? std::unique_lock<std::mutex>(module->run_mutex_)
                                                          : std::unique_lock<std::mutex>();
