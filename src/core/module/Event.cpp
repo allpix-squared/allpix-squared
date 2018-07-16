@@ -40,9 +40,8 @@ Event::Event(ModuleList modules,
 bool Event::handle_iomodule(const std::shared_ptr<Module>& module) {
     const bool reader = dynamic_cast<ReaderModule*>(module.get()), writer = dynamic_cast<WriterModule*>(module.get());
     if(previous_was_reader_ && !reader) {
-        // All readers have been run, notify other threads
-        reader_lock_.current_event++;
-        reader_lock_.condition.notify_all();
+        // All readers have been run for this event, let the next event run its readers
+        reader_lock_.next();
     }
     previous_was_reader_ = reader;
 
@@ -56,7 +55,7 @@ bool Event::handle_iomodule(const std::shared_ptr<Module>& module) {
     // Acquire reader/writer lock
     auto& typelock = reader ? reader_lock_ : writer_lock_;
     auto lock = std::unique_lock<std::mutex>(typelock.mutex);
-    // Check eveyr 50ms if it's this event's turn to run; fixes deadlock
+    // Check every 50ms if it's this event's turn to run
     while(!typelock.condition.wait_for(
         lock, 50ms, [this, &typelock]() { return this->number == typelock.current_event.load(); }))
         ;
@@ -166,10 +165,8 @@ void Event::run() {
     // Reset object count for next event
     /* TProcessID::SetObjectCount(save_id); */
 
-    // Notify other events that all writers for this event are done.
-    // Writers are always at the end of an event, hence the incremention here.
-    writer_lock_.current_event++;
-    writer_lock_.condition.notify_all();
+    // All writers have been run for this event, let the next event run its writers
+    writer_lock_.next();
 }
 
 void Event::finalize() {

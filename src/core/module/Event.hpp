@@ -21,6 +21,14 @@ namespace allpix {
         std::mutex mutex;
         std::condition_variable condition;
         std::atomic<unsigned int> current_event{1};
+
+        /**
+         * @brief Increment the current event and notify all waiting threads
+         */
+        void next() {
+            current_event++;
+            condition.notify_all();
+        }
     };
 
     class Event {
