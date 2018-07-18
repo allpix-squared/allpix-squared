@@ -178,7 +178,8 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
         } else if(particle_type.substr(0, 3) == "ion") {
             // Parse particle type as ion with components /Z/A/Q/E
             std::smatch ion;
-            if(std::regex_match(particle_type, ion, std::regex("ion/([0-9]+)/([0-9]+)/([0-9+-]+)/([0-9.]+[a-zA-Z]+)")) &&
+            if(std::regex_match(
+                   particle_type, ion, std::regex("ion/([0-9]+)/([0-9]+)/([-+]?[0-9]+)/([0-9.]+(?:[a-zA-Z]+)?)")) &&
                ion.ready()) {
                 particle = G4IonTable::GetIonTable()->GetIon(
                     allpix::from_string<int>(ion[1]), allpix::from_string<int>(ion[2]), allpix::from_string<double>(ion[4]));
