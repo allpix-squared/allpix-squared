@@ -58,6 +58,10 @@ namespace allpix {
          */
         template <typename T> std::vector<std::shared_ptr<T>> fetchMultiMessage();
 
+        std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> fetchFilteredMessages() {
+            return message_storage_.messages_[message_storage_.module_->getUniqueName()].filter_multi;
+        }
+
         std::mt19937_64& getRandomEngine() { return random_generator_; }
 
         uint64_t getRandomNumber() { return random_generator_(); }

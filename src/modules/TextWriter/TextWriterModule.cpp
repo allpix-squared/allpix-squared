@@ -110,13 +110,15 @@ bool TextWriterModule::filter(const std::shared_ptr<BaseMessage>& message, const
 }
 
 void TextWriterModule::run(Event* event) {
-    auto messages = event->fetchMultiMessage<BaseMessage>();
+    auto messages = event->fetchFilteredMessages();
     LOG(TRACE) << "Writing new objects to text file";
 
     // Print the current event:
     *output_file_ << "=== " << event->number << " ===" << std::endl;
 
-    for(auto& message : messages) {
+    for(auto& pair : messages) {
+        auto& message = pair.first;
+
         // Print the current detector:
         if(message->getDetector() != nullptr) {
             *output_file_ << "--- " << message->getDetector()->getName() << " ---" << std::endl;

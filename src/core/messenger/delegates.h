@@ -33,6 +33,7 @@ namespace allpix {
     public:
         std::shared_ptr<BaseMessage> single;
         std::vector<std::shared_ptr<BaseMessage>> multi;
+        std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> filter_multi;
     };
 
     /**
@@ -311,7 +312,7 @@ namespace allpix {
             // Pass the message and mark as processed
             std::lock_guard<std::mutex> lock{mutex_};
             if((this->obj_->*method_)(std::static_pointer_cast<BaseMessage>(msg), name)) {
-                dest.multi.push_back(std::static_pointer_cast<BaseMessage>(msg));
+                dest.filter_multi.emplace_back(std::static_pointer_cast<BaseMessage>(msg), name);
             }
             this->set_processed();
         }

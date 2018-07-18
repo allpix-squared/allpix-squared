@@ -58,6 +58,7 @@ namespace allpix {
          * @brief Writes the objects fetched to their specific tree, constructing trees on the fly for new objects.
          */
         void run(Event*) override;
+        void pre_run(Event*);
 
         /**
          * @brief Add the main configuration and the detector setup to the data file and write it, also write statistics
@@ -77,14 +78,12 @@ namespace allpix {
         std::string output_file_name_{};
 
         // List of trees that are stored in data file
-        mutable std::map<std::string, std::unique_ptr<TTree>> trees_;
+        std::map<std::string, std::unique_ptr<TTree>> trees_;
 
-        // List of messages to keep so they can be stored in the tree
-        mutable std::vector<std::shared_ptr<BaseMessage>> keep_messages_;
         // List of objects of a particular type, bound to a specific detector and having a particular name
-        mutable std::map<std::tuple<std::type_index, std::string, std::string>, std::vector<Object*>*> write_list_;
+        std::map<std::tuple<std::type_index, std::string, std::string>, std::vector<Object*>*> write_list_;
 
         // Statistical information about number of objects
-        mutable unsigned long write_cnt_{};
+        unsigned long write_cnt_{};
     };
 } // namespace allpix

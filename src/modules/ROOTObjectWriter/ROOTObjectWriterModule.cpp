@@ -78,75 +78,105 @@ bool ROOTObjectWriterModule::filter(const std::shared_ptr<BaseMessage>& message,
 
         // Read the object
         auto object_array = message->getObjectArray();
-        if(!object_array.empty()) {
-            keep_messages_.push_back(message);
+        if(object_array.empty()) {
+            return false;
+        }
+        const Object& first_object = object_array[0];
+        auto* cls = TClass::GetClass(typeid(first_object));
 
-            const Object& first_object = object_array[0];
-            std::type_index type_idx = typeid(first_object);
-
-            // Create a new branch of the correct type if this message was not received before
-            auto index_tuple = std::make_tuple(type_idx, detector_name, message_name);
-            if(write_list_.find(index_tuple) == write_list_.end()) {
-
-                auto* cls = TClass::GetClass(typeid(first_object));
-
-                // Remove the allpix prefix
-                std::string class_name = cls->GetName();
-                std::string apx_namespace = "allpix::";
-                size_t ap_idx = class_name.find(apx_namespace);
-                if(ap_idx != std::string::npos) {
-                    class_name.replace(ap_idx, apx_namespace.size(), "");
-                }
-
-                // Check if this message should be kept
-                if((!include_.empty() && include_.find(class_name) == include_.end()) ||
-                   (!exclude_.empty() && exclude_.find(class_name) != exclude_.end())) {
-                    LOG(TRACE) << "ROOT object writer ignored message with object " << allpix::demangle(typeid(*inst).name())
-                               << " because it has been excluded or not explicitly included";
-                    return false;
-                }
-
-                // Add vector of objects to write to the write list
-                write_list_[index_tuple] = new std::vector<Object*>();
-                auto addr = &write_list_[index_tuple];
-
-                if(trees_.find(class_name) == trees_.end()) {
-                    // Create new tree
-                    output_file_->cd();
-                    trees_.emplace(
-                        class_name,
-                        std::make_unique<TTree>(class_name.c_str(), (std::string("Tree of ") + class_name).c_str()));
-                }
-
-                std::string branch_name = detector_name.empty() ? "global" : detector_name;
-                if(!message_name.empty()) {
-                    branch_name += "_";
-                    branch_name += message_name;
-                }
-
-                trees_[class_name]->Bronch(
-                    branch_name.c_str(), (std::string("std::vector<") + cls->GetName() + "*>").c_str(), addr);
-            }
-
-            // Fill the branch vector
-            for(Object& object : object_array) {
-                ++write_cnt_;
-                write_list_[index_tuple]->push_back(&object);
-            }
+        // Remove the allpix prefix
+        std::string class_name = cls->GetName();
+        std::string apx_namespace = "allpix::";
+        size_t ap_idx = class_name.find(apx_namespace);
+        if(ap_idx != std::string::npos) {
+            class_name.replace(ap_idx, apx_namespace.size(), "");
         }
 
-        return true;
-
+        // Check if this message should be kept
+        if((!include_.empty() && include_.find(class_name) == include_.cend()) ||
+           (!exclude_.empty() && exclude_.find(class_name) != exclude_.cend())) {
+            LOG(TRACE) << "ROOT object writer ignored message with object " << allpix::demangle(typeid(*inst).name())
+                       << " because it has been excluded or not explicitly included";
+            return false;
+        }
     } catch(MessageWithoutObjectException& e) {
         const BaseMessage* inst = message.get();
         LOG(WARNING) << "ROOT object writer cannot process message of type" << allpix::demangle(typeid(*inst).name())
                      << " with name " << message_name;
+        return false;
     }
 
-    return false;
+    return true;
 }
 
-void ROOTObjectWriterModule::run(Event*) {
+void ROOTObjectWriterModule::pre_run(Event* event) {
+    auto messages = event->fetchFilteredMessages();
+
+    for (auto& pair : messages) {
+        auto &message = pair.first;
+        auto &message_name = pair.second;
+
+        // Get the detector name
+        std::string detector_name;
+        if(message->getDetector() != nullptr) {
+            detector_name = message->getDetector()->getName();
+        }
+
+        // Read the object
+        auto object_array = message->getObjectArray();
+        // object_array emptiness is checked in the filter
+        const Object& first_object = object_array[0];
+        std::type_index type_idx = typeid(first_object);
+
+        // Create a new branch of the correct type if this message was not received before
+        auto index_tuple = std::make_tuple(type_idx, detector_name, message_name);
+        if(write_list_.find(index_tuple) == write_list_.end()) {
+
+            auto* cls = TClass::GetClass(typeid(first_object));
+
+            // Remove the allpix prefix
+            std::string class_name = cls->GetName();
+            std::string apx_namespace = "allpix::";
+            size_t ap_idx = class_name.find(apx_namespace);
+            if(ap_idx != std::string::npos) {
+                class_name.replace(ap_idx, apx_namespace.size(), "");
+            }
+
+            // Add vector of objects to write to the write list
+            write_list_[index_tuple] = new std::vector<Object*>();
+            auto addr = &write_list_[index_tuple];
+
+            if(trees_.find(class_name) == trees_.end()) {
+                // Create new tree
+                output_file_->cd();
+                trees_.emplace(
+                    class_name,
+                    std::make_unique<TTree>(class_name.c_str(), (std::string("Tree of ") + class_name).c_str()));
+            }
+
+            std::string branch_name = detector_name.empty() ? "global" : detector_name;
+            if(!message_name.empty()) {
+                branch_name += "_";
+                branch_name += message_name;
+            }
+
+            trees_[class_name]->Bronch(
+                branch_name.c_str(), (std::string("std::vector<") + cls->GetName() + "*>").c_str(), addr);
+        }
+
+        // Fill the branch vector
+        for(Object& object : object_array) {
+            ++write_cnt_;
+            write_list_[index_tuple]->push_back(&object);
+        }
+
+    }
+}
+
+void ROOTObjectWriterModule::run(Event* event) {
+    // Generate trees and index data
+    pre_run(event);
+
     LOG(TRACE) << "Writing new objects to tree";
     output_file_->cd();
 
@@ -159,8 +189,6 @@ void ROOTObjectWriterModule::run(Event*) {
     for(auto& index_data : write_list_) {
         index_data.second->clear();
     }
-    // Clear the messages we have to keep because they contain the internal pointers
-    keep_messages_.clear();
 }
 
 void ROOTObjectWriterModule::finalize() {
