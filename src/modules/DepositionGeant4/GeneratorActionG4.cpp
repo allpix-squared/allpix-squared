@@ -169,6 +169,12 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             // Set radioactive isotope:
             particle = G4IonTable::GetIonTable()->GetIon(std::get<0>(isotope), std::get<1>(isotope), std::get<3>(isotope));
             single_source->SetParticleCharge(std::get<2>(isotope));
+
+            // Warn about non-zero source energy:
+            if(config.get<double>("source_energy") > 0) {
+                LOG(WARNING)
+                    << "A radioactive isotope is used as particle source, but the source energy is not set to zero.";
+            }
         } else if(particle_type.substr(0, 3) == "ion") {
             // Parse particle type as ion with components /Z/A/Q/E
             std::smatch ion;
