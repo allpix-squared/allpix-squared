@@ -43,7 +43,7 @@ namespace allpix {
          * @param message Message dispatched in the framework
          * @param name Name of the message
          */
-        void receive(std::shared_ptr<BaseMessage> message, std::string name);
+        bool filter(const std::shared_ptr<BaseMessage>& message, const std::string& name) const;
 
         /**
          * @brief Opens the file to write the objects to

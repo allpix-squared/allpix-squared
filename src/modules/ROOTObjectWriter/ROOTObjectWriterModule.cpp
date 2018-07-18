@@ -28,8 +28,8 @@ using namespace allpix;
 
 ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
     : WriterModule(config), geo_mgr_(geo_mgr) {
-    // Bind to all messages
-    messenger->registerListener(this, &ROOTObjectWriterModule::receive);
+    // Bind to all messages with filter
+    messenger->registerFilter(this, &ROOTObjectWriterModule::filter);
 }
 /**
  * @note Objects cannot be stored in smart pointers due to internal ROOT logic
@@ -60,7 +60,8 @@ void ROOTObjectWriterModule::init(uint64_t) {
     }
 }
 
-void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::string message_name) { // NOLINT
+bool ROOTObjectWriterModule::filter(const std::shared_ptr<BaseMessage>& message,
+                                    const std::string& message_name) const { // NOLINT
     try {
         const BaseMessage* inst = message.get();
         std::string name_str = " without a name";
@@ -102,7 +103,7 @@ void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::
                    (!exclude_.empty() && exclude_.find(class_name) != exclude_.end())) {
                     LOG(TRACE) << "ROOT object writer ignored message with object " << allpix::demangle(typeid(*inst).name())
                                << " because it has been excluded or not explicitly included";
-                    return;
+                    return false;
                 }
 
                 // Add vector of objects to write to the write list
@@ -134,11 +135,15 @@ void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::
             }
         }
 
+        return true;
+
     } catch(MessageWithoutObjectException& e) {
         const BaseMessage* inst = message.get();
         LOG(WARNING) << "ROOT object writer cannot process message of type" << allpix::demangle(typeid(*inst).name())
                      << " with name " << message_name;
     }
+
+    return false;
 }
 
 void ROOTObjectWriterModule::run(Event*) {

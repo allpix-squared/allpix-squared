@@ -151,13 +151,15 @@ namespace allpix {
         /**
          * @brief Reset the delegate and set it not satisfied again
          */
-        virtual void reset() { /* processed_ = false; */ }
+        virtual void reset() { /* processed_ = false; */
+        }
 
     protected:
         /**
          * @brief Set the processed flag to signal that the delegate is satisfied
          */
-        void set_processed() { /* processed_ = true; */ }
+        void set_processed() { /* processed_ = true; */
+        }
         bool processed_;
 
         const MsgFlags flags_;
@@ -244,9 +246,9 @@ namespace allpix {
      * @ingroup Delegates
      * @brief Delegate for invoking a function in the module
      */
-    template <typename T, typename R> class FunctionDelegate : public ModuleDelegate<T> {
+    template <typename T, typename R> class FilterDelegate : public ModuleDelegate<T> {
     public:
-        using ListenerFunction = void (T::*)(std::shared_ptr<R>);
+        using FilterFunction = bool (T::*)(const std::shared_ptr<R>&) const;
 
         /**
          * @brief Construct a function delegate for the given module
@@ -254,7 +256,7 @@ namespace allpix {
          * @param obj Module object this delegate should operate on
          * @param method A function taking a shared_ptr to the message to listen to
          */
-        FunctionDelegate(MsgFlags flags, T* obj, ListenerFunction method) : ModuleDelegate<T>(flags, obj), method_(method) {}
+        FilterDelegate(MsgFlags flags, T* obj, FilterFunction method) : ModuleDelegate<T>(flags, obj), method_(method) {}
 
         /**
          * @brief Calls the listener function with the supplied message
@@ -262,7 +264,7 @@ namespace allpix {
          * @warning The listener function is called directly from the delegate, no heavy processing should be done in the
          *          listener function
          */
-        void process(std::shared_ptr<BaseMessage> msg, std::string, DelegateTypes&) override {
+        void process(std::shared_ptr<BaseMessage> msg, std::string, DelegateTypes& dest) override {
 #ifndef NDEBUG
             // The type names should have been correctly resolved earlier
             const BaseMessage* inst = msg.get();
@@ -271,12 +273,14 @@ namespace allpix {
 
             // Pass the message and mark as processed
             std::lock_guard<std::mutex> lock{mutex_};
-            (this->obj_->*method_)(std::static_pointer_cast<R>(msg));
+            if((this->obj_->*method_)(std::static_pointer_cast<R>(msg))) {
+                dest.multi.push_back(std::static_pointer_cast<R>(msg));
+            }
             this->set_processed();
         }
 
     private:
-        ListenerFunction method_;
+        FilterFunction method_;
         std::mutex mutex_;
     };
 
@@ -284,9 +288,9 @@ namespace allpix {
      * @ingroup Delegates
      * @brief Delegate for invoking a function listening to all messages also getting the name
      */
-    template <typename T> class FunctionAllDelegate : public ModuleDelegate<T> {
+    template <typename T> class FilterAllDelegate : public ModuleDelegate<T> {
     public:
-        using ListenerFunction = void (T::*)(std::shared_ptr<BaseMessage>, std::string);
+        using FilterFunction = bool (T::*)(const std::shared_ptr<BaseMessage>&, const std::string&) const;
 
         /**
          * @brief Construct a function delegate for the given module
@@ -294,8 +298,7 @@ namespace allpix {
          * @param obj Module object this delegate should operate on
          * @param method A function taking a shared_ptr to the message to listen to
          */
-        FunctionAllDelegate(MsgFlags flags, T* obj, ListenerFunction method)
-            : ModuleDelegate<T>(flags, obj), method_(method) {}
+        FilterAllDelegate(MsgFlags flags, T* obj, FilterFunction method) : ModuleDelegate<T>(flags, obj), method_(method) {}
 
         /**
          * @brief Calls the listener function with the supplied message
@@ -304,15 +307,17 @@ namespace allpix {
          * @warning The listener function is called directly from the delegate, no heavy processing should be done in the
          *          listener function
          */
-        void process(std::shared_ptr<BaseMessage> msg, std::string name, DelegateTypes&) override {
+        void process(std::shared_ptr<BaseMessage> msg, std::string name, DelegateTypes& dest) override {
             // Pass the message and mark as processed
             std::lock_guard<std::mutex> lock{mutex_};
-            (this->obj_->*method_)(std::static_pointer_cast<BaseMessage>(msg), name);
+            if((this->obj_->*method_)(std::static_pointer_cast<BaseMessage>(msg), name)) {
+                dest.multi.push_back(std::static_pointer_cast<BaseMessage>(msg));
+            }
             this->set_processed();
         }
 
     private:
-        ListenerFunction method_;
+        FilterFunction method_;
         std::mutex mutex_;
     };
 

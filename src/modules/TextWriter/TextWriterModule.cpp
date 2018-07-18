@@ -27,8 +27,8 @@
 using namespace allpix;
 
 TextWriterModule::TextWriterModule(Configuration& config, Messenger* messenger, GeometryManager*) : WriterModule(config) {
-    // Bind to all messages
-    messenger->registerListener(this, &TextWriterModule::receive);
+    // Bind to all messages with filter
+    messenger->registerFilter(this, &TextWriterModule::filter);
 }
 /**
  * @note Objects cannot be stored in smart pointers due to internal ROOT logic
@@ -60,10 +60,7 @@ void TextWriterModule::init(uint64_t) {
     }
 }
 
-// List of messages to keep so they can be stored in the tree
-static thread_local std::vector<std::shared_ptr<BaseMessage>> keep_messages;
-
-void TextWriterModule::receive(std::shared_ptr<BaseMessage> message, std::string message_name) { // NOLINT
+bool TextWriterModule::filter(const std::shared_ptr<BaseMessage>& message, const std::string& message_name) const { // NOLINT
     try {
         const BaseMessage* inst = message.get();
         std::string name_str = " without a name";
@@ -97,11 +94,10 @@ void TextWriterModule::receive(std::shared_ptr<BaseMessage> message, std::string
                (!exclude_.empty() && exclude_.find(class_name) != exclude_.end())) {
                 LOG(TRACE) << "Text writer ignored message with object " << allpix::demangle(typeid(*inst).name())
                            << " because it has been excluded or not explicitly included";
-                return;
+                return false;
             }
 
-            // Store message for later reference
-            keep_messages.push_back(message);
+            return true;
         }
 
     } catch(MessageWithoutObjectException& e) {
@@ -109,15 +105,18 @@ void TextWriterModule::receive(std::shared_ptr<BaseMessage> message, std::string
         LOG(WARNING) << "Text writer cannot process message of type" << allpix::demangle(typeid(*inst).name())
                      << " with name " << message_name;
     }
+
+    return false;
 }
 
 void TextWriterModule::run(Event* event) {
+    auto messages = event->fetchMultiMessage<BaseMessage>();
     LOG(TRACE) << "Writing new objects to text file";
 
     // Print the current event:
     *output_file_ << "=== " << event->number << " ===" << std::endl;
 
-    for(auto& message : keep_messages) {
+    for(auto& message : messages) {
         // Print the current detector:
         if(message->getDetector() != nullptr) {
             *output_file_ << "--- " << message->getDetector()->getName() << " ---" << std::endl;
@@ -131,9 +130,6 @@ void TextWriterModule::run(Event* event) {
         }
         msg_cnt_++;
     }
-
-    // Clear the messages we have to keep because they contain the internal pointers
-    keep_messages.clear();
 }
 
 void TextWriterModule::finalize() {

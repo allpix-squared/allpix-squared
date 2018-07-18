@@ -69,9 +69,9 @@ namespace allpix {
          * @param flags Message configuration flags (defaults to \ref MsgFlags::IGNORE_NAME "ignoring the message name")
          */
         template <typename T>
-        void registerListener(T* receiver,
-                              void (T::*method)(std::shared_ptr<BaseMessage>, std::string name),
-                              MsgFlags flags = MsgFlags::IGNORE_NAME);
+        void registerFilter(T* receiver,
+                            bool (T::*method)(const std::shared_ptr<BaseMessage>&, const std::string& name) const,
+                            MsgFlags flags = MsgFlags::IGNORE_NAME);
 
         /**
          * @brief Register a function listening for a particular message
@@ -80,7 +80,8 @@ namespace allpix {
          * @param flags Message configuration flags
          */
         template <typename T, typename R>
-        void registerListener(T* receiver, void (T::*method)(std::shared_ptr<R>), MsgFlags flags = MsgFlags::NONE);
+        void
+        registerFilter(T* receiver, bool (T::*method)(const std::shared_ptr<R>&) const, MsgFlags flags = MsgFlags::NONE);
 
         /**
          * @brief Binds a pointer to a single message
