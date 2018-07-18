@@ -36,6 +36,8 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
         {"fe55", std::make_tuple(26, 55, 0, 0.)},
         {"am241", std::make_tuple(95, 241, 0, 0.)},
         {"sr90", std::make_tuple(38, 90, 0, 0.)},
+        {"co60", std::make_tuple(27, 60, 0, 0.)},
+        {"cs137", std::make_tuple(55, 137, 0, 0.)},
     };
 
     // Set verbosity of source to off
