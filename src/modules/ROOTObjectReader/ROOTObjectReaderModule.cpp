@@ -219,7 +219,7 @@ void ROOTObjectReaderModule::init(uint64_t) {
     }
 }
 
-void ROOTObjectReaderModule::run(Event* event) {
+void ROOTObjectReaderModule::run(Event* event) const {
     unsigned int event_num = event->number;
     --event_num;
     for(auto& tree : trees_) {
@@ -250,7 +250,10 @@ void ROOTObjectReaderModule::run(Event* event) {
         }
 
         // Update statistics
-        read_cnt_ += objects->size();
+        {
+            std::lock_guard<std::mutex> lock{stats_mutex_};
+            read_cnt_ += objects->size();
+        }
 
         // Create a message
         std::shared_ptr<BaseMessage> message = iter->second(*objects, message_inf.detector);
