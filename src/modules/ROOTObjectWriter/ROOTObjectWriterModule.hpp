@@ -58,7 +58,7 @@ namespace allpix {
         /**
          * @brief Writes the objects fetched to their specific tree, constructing trees on the fly for new objects.
          */
-        void run(Event*) override;
+        void run(Event*) const override;
 
         /**
          * @brief Add the main configuration and the detector setup to the data file and write it, also write statistics
@@ -78,9 +78,9 @@ namespace allpix {
         std::string output_file_name_{};
 
         // Statistical information about number of objects and branch count
-        std::atomic<unsigned long> write_cnt_{0};
-        std::atomic<int> branch_count_{0};
+        mutable unsigned long write_cnt_{0};
+        mutable int branch_count_{0};
 
-        std::pair<Trees, WriteList> pre_run(Event*);
+        std::pair<Trees, WriteList> pre_run(Event*) const;
     };
 } // namespace allpix

@@ -100,7 +100,7 @@ bool ROOTObjectWriterModule::filter(const std::shared_ptr<BaseMessage>& message,
     return true;
 }
 
-std::pair<Trees, WriteList> ROOTObjectWriterModule::pre_run(Event* event) {
+std::pair<Trees, WriteList> ROOTObjectWriterModule::pre_run(Event* event) const {
     auto messages = event->fetchFilteredMessages();
 
     Trees trees;
@@ -160,6 +160,7 @@ std::pair<Trees, WriteList> ROOTObjectWriterModule::pre_run(Event* event) {
 
         // Fill the branch vector
         for(Object& object : object_array) {
+            std::lock_guard<std::mutex> lock{stats_mutex_};
             ++write_cnt_;
             write_list[index_tuple]->push_back(&object);
         }
@@ -168,7 +169,7 @@ std::pair<Trees, WriteList> ROOTObjectWriterModule::pre_run(Event* event) {
     return {std::move(trees), std::move(write_list)};
 }
 
-void ROOTObjectWriterModule::run(Event* event) {
+void ROOTObjectWriterModule::run(Event* event) const {
     // Generate trees and index data
     auto data = pre_run(event);
     auto& trees = data.first;
@@ -195,6 +196,7 @@ void ROOTObjectWriterModule::run(Event* event) {
 
     // Update statistics
     for(auto& tree : trees) {
+        std::lock_guard<std::mutex> lock{stats_mutex_};
         branch_count_ += tree.second->GetListOfBranches()->GetEntries();
     }
 }
@@ -282,6 +284,6 @@ void ROOTObjectWriterModule::finalize() {
     output_file_->Write();
 
     // Print statistics
-    LOG(STATUS) << "Wrote " << write_cnt_ << " objects to " << branch_count_.load() << " branches in file:" << std::endl
+    LOG(STATUS) << "Wrote " << write_cnt_ << " objects to " << branch_count_ << " branches in file:" << std::endl
                 << output_file_name_;
 }
