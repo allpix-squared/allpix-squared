@@ -52,7 +52,7 @@ namespace allpix {
         /**
          * @brief Simulate digitization process
          */
-        void run(Event*) override;
+        void run(Event*) const override;
 
         /**
          * @brief Finalize and write optional histograms
@@ -68,7 +68,7 @@ namespace allpix {
         std::shared_ptr<PixelChargeMessage> pixel_message_;
 
         // Statistics
-        unsigned long long total_hits_{};
+        mutable unsigned long long total_hits_{};
 
         // Output histograms
         TH1D *h_pxq{}, *h_pxq_noise{}, *h_gain{}, *h_pxq_gain{}, *h_thr{}, *h_pxq_thr{}, *h_pxq_adc_smear{}, *h_pxq_adc{};

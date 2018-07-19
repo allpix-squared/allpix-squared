@@ -94,7 +94,7 @@ void DefaultDigitizerModule::init(uint64_t) {
     }
 }
 
-void DefaultDigitizerModule::run(Event* event) {
+void DefaultDigitizerModule::run(Event* event) const {
     auto pixel_message = event->fetchMessage<PixelChargeMessage>();
 
     // Loop through all pixels with charges
@@ -189,7 +189,10 @@ void DefaultDigitizerModule::run(Event* event) {
 
     // Output summary and update statistics
     LOG(INFO) << "Digitized " << hits.size() << " pixel hits";
-    total_hits_ += hits.size();
+    {
+        std::lock_guard<std::mutex> lock{stats_mutex_};
+        total_hits_ += hits.size();
+    }
 
     if(!hits.empty()) {
         // Create and dispatch hit message
