@@ -266,7 +266,7 @@ void DepositionGeant4Module::init(uint64_t random_seed) {
     RELEASE_STREAM(G4cout);
 }
 
-void DepositionGeant4Module::run(Event* event) {
+void DepositionGeant4Module::run(Event* event) const {
     // Suppress output stream if not in debugging mode
     IFLOG(DEBUG);
     else {
