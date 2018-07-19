@@ -45,7 +45,7 @@ namespace allpix {
         /**
          * @brief Transfer the propagated charges to the pixels
          */
-        void run(Event*) override;
+        void run(Event*) const override;
 
         /**
          * @brief Display statistical summary
@@ -72,7 +72,7 @@ namespace allpix {
         std::shared_ptr<PropagatedChargeMessage> propagated_message_;
 
         // Statistical information
-        unsigned int total_transferred_charges_{};
-        std::set<Pixel::Index, pixel_cmp> unique_pixels_;
+        mutable unsigned int total_transferred_charges_{};
+        mutable std::set<Pixel::Index, pixel_cmp> unique_pixels_;
     };
 } // namespace allpix

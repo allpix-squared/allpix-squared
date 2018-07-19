@@ -42,7 +42,7 @@ SimpleTransferModule::SimpleTransferModule(Configuration& config, Messenger* mes
     messenger->bindSingle(this, &SimpleTransferModule::propagated_message_, MsgFlags::REQUIRED);
 }
 
-void SimpleTransferModule::run(Event* event) {
+void SimpleTransferModule::run(Event* event) const {
     auto propagated_message = event->fetchMessage<PropagatedChargeMessage>();
 
     // Find corresponding pixels for all propagated charges
@@ -75,7 +75,10 @@ void SimpleTransferModule::run(Event* event) {
         Pixel::Index pixel_index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel));
 
         // Update statistics
-        unique_pixels_.insert(pixel_index);
+        {
+            std::lock_guard<std::mutex> lock{stats_mutex_};
+            unique_pixels_.insert(pixel_index);
+        }
         transferred_charges_count += propagated_charge.getCharge();
 
         LOG(DEBUG) << "Set of " << propagated_charge.getCharge() << " propagated charges at "
@@ -104,7 +107,10 @@ void SimpleTransferModule::run(Event* event) {
 
     // Writing summary and update statistics
     LOG(INFO) << "Transferred " << transferred_charges_count << " charges to " << pixel_map.size() << " pixels";
-    total_transferred_charges_ += transferred_charges_count;
+    {
+        std::lock_guard<std::mutex> lock{stats_mutex_};
+        total_transferred_charges_ += transferred_charges_count;
+    }
 
     // Dispatch message of pixel charges
     auto pixel_message = std::make_shared<PixelChargeMessage>(pixel_charges, detector_);
