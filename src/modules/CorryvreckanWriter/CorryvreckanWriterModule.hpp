@@ -33,7 +33,7 @@ namespace allpix {
      * More detailed explanation of module
      */
 
-    class CorryvreckanWriterModule : public Module {
+    class CorryvreckanWriterModule : public WriterModule {
     public:
         /**
          * @brief Constructor for this unique module
@@ -51,7 +51,7 @@ namespace allpix {
         /**
          * @brief Take the digitised pixel hits and write them into the output file
          */
-        void run(Event*) override;
+        void run(Event*) const override;
 
         /**
          * @brief Write output trees to file
@@ -65,15 +65,15 @@ namespace allpix {
         GeometryManager* geometryManager_;
 
         // Parameters for output writing
-        std::string fileName_;                                   // Output filename
-        std::string geometryFileName_;                           // Output geometry filename
-        std::unique_ptr<TFile> outputFile_;                      // Output file
-        long long int time_;                                     // Event time being written
-        std::map<std::string, TTree*> outputTrees_;              // Output trees
-        std::map<std::string, corryvreckan::Pixel*> treePixels_; // Objects attached to trees for writing
+        std::string fileName_;                                           // Output filename
+        std::string geometryFileName_;                                   // Output geometry filename
+        std::unique_ptr<TFile> outputFile_;                              // Output file
+        mutable long long int time_;                                     // Event time being written
+        mutable std::map<std::string, TTree*> outputTrees_;              // Output trees
+        mutable std::map<std::string, corryvreckan::Pixel*> treePixels_; // Objects attached to trees for writing
 
-        bool outputMCtruth_;                                               // Decision to write out MC particle info
-        std::map<std::string, TTree*> outputTreesMC_;                      // Output trees for MC particles
-        std::map<std::string, corryvreckan::MCParticle*> treeMCParticles_; // Objects attached to trees for writing
+        bool outputMCtruth_;                                                       // Decision to write out MC particle info
+        mutable std::map<std::string, TTree*> outputTreesMC_;                      // Output trees for MC particles
+        mutable std::map<std::string, corryvreckan::MCParticle*> treeMCParticles_; // Objects attached to trees for writing
     };
 } // namespace allpix

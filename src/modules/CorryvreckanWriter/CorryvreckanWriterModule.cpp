@@ -21,7 +21,7 @@
 using namespace allpix;
 
 CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geoManager)
-    : Module(config), messenger_(messenger), geometryManager_(geoManager) {
+    : WriterModule(config), messenger_(messenger), geometryManager_(geoManager) {
 
     // Require PixelCharge messages for single detector
     messenger_->bindMulti(this, &CorryvreckanWriterModule::pixel_messages_, MsgFlags::REQUIRED);
@@ -87,7 +87,7 @@ void CorryvreckanWriterModule::init(uint64_t) {
 }
 
 // Make instantiations of Corryvreckan pixels, and store these in the trees during run time
-void CorryvreckanWriterModule::run(Event* event) {
+void CorryvreckanWriterModule::run(Event* event) const {
     auto pixel_messages = event->fetchMultiMessage<PixelHitMessage>();
 
     // Loop through all receieved messages
