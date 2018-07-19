@@ -58,7 +58,7 @@ namespace allpix {
         /**
          * @brief Transfer the propagated charges to the pixels and its neighbours
          */
-        void run(Event*) override;
+        void run(Event*) const override;
 
         /**
          * @brief Display statistical summary
@@ -87,8 +87,8 @@ namespace allpix {
         std::shared_ptr<PropagatedChargeMessage> propagated_message_;
 
         // Statistical information
-        unsigned int total_transferred_charges_{};
-        std::set<Pixel::Index, pixel_cmp> unique_pixels_;
+        mutable unsigned int total_transferred_charges_{};
+        mutable std::set<Pixel::Index, pixel_cmp> unique_pixels_;
 
         // Matrix to store cross-coupling values
         std::vector<std::vector<double>> relative_coupling;
@@ -111,7 +111,6 @@ namespace allpix {
 
         double center[2] = {0.0, 0.0};
         double angles[2] = {0.0, 0.0};
-        double pixel_gap = 1.0;
 
         TH2D* coupling_map;
         TH2D* gap_map;

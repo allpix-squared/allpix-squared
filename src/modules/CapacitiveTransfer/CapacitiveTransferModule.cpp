@@ -239,7 +239,7 @@ void CapacitiveTransferModule::init(uint64_t) {
 
                     Eigen::Vector3d pixel_point(local_x, local_y, 0);
                     Eigen::Vector3d pixel_projection = plane.projection(pixel_point);
-                    pixel_gap = pixel_projection[2];
+                    double pixel_gap = pixel_projection[2];
 
                     gap_map->Fill(col, row, static_cast<double>(Units::convert(pixel_gap, "um")));
                     capacitance_map->Fill(
@@ -262,7 +262,7 @@ void CapacitiveTransferModule::init(uint64_t) {
     }
 }
 
-void CapacitiveTransferModule::run(Event* event) {
+void CapacitiveTransferModule::run(Event* event) const {
     auto propagated_message = event->fetchMessage<PropagatedChargeMessage>();
 
     // Find corresponding pixels for all propagated charges
@@ -320,11 +320,11 @@ void CapacitiveTransferModule::run(Event* event) {
                     double local_y = pixel_index.y() * model_->getPixelSize().y();
                     pixel_point = Eigen::Vector3d(local_x, local_y, 0);
                     pixel_projection = plane.projection(pixel_point);
-                    pixel_gap = pixel_projection[2];
+                    double pixel_gap = pixel_projection[2];
 
-                    ccpd_factor = capacitances[row * 3 + col]->Eval(
-                                      static_cast<double>(Units::convert(pixel_gap, "um")), nullptr, "S") *
-                                  normalization;
+                    ccpd_factor =
+                        capacitances[row * 3 + col]->Eval(static_cast<double>(Units::convert(pixel_gap, "um")), nullptr, "S") *
+                        normalization;
                 } else if(config_.has("coupling_file")) {
                     ccpd_factor = relative_coupling[col][row];
                 } else if(config_.has("coupling_matrix")) {
@@ -335,8 +335,10 @@ void CapacitiveTransferModule::run(Event* event) {
                 }
 
                 // Update statistics
-                unique_pixels_.insert(pixel_index);
-
+                {
+                    std::lock_guard<std::mutex> lock{stats_mutex_};
+                    unique_pixels_.insert(pixel_index);
+                }
                 transferred_charges_count += static_cast<unsigned int>(propagated_charge.getCharge() * ccpd_factor);
                 neighbour_charge = propagated_charge.getCharge() * ccpd_factor;
 
@@ -365,7 +367,10 @@ void CapacitiveTransferModule::run(Event* event) {
 
     // Writing summary and update statistics
     LOG(INFO) << "Transferred " << transferred_charges_count << " charges to " << pixel_map.size() << " pixels";
-    total_transferred_charges_ += transferred_charges_count;
+    {
+        std::lock_guard<std::mutex> lock{stats_mutex_};
+        total_transferred_charges_ += transferred_charges_count;
+    }
 
     // Dispatch message of pixel charges
     auto pixel_message = std::make_shared<PixelChargeMessage>(pixel_charges, detector_);
