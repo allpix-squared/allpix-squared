@@ -25,7 +25,7 @@ using namespace allpix;
 DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
-    : Module(config, detector), detector_(std::move(detector)) {
+    : WriterModule(config, detector), detector_(std::move(detector)) {
     // Bind pixel hits message
     messenger->bindSingle(this, &DetectorHistogrammerModule::pixels_message_, MsgFlags::REQUIRED);
 }
@@ -108,7 +108,60 @@ void DetectorHistogrammerModule::init(uint64_t) {
     cluster_charge = new TH1D(cluster_charge_name.c_str(), cluster_charge_title.c_str(), 1000, 0., 50.);
 }
 
-void DetectorHistogrammerModule::run(Event* event) {
+/**
+ * @brief Perform a sparse clustering on the PixelHits
+ */
+static std::vector<Cluster> doClustering(std::shared_ptr<PixelHitMessage>& pixels_message) {
+    std::vector<Cluster> clusters;
+    std::map<const PixelHit*, bool> usedPixel;
+
+    auto pixel_it = pixels_message->getData().begin();
+    for(; pixel_it != pixels_message->getData().end(); pixel_it++) {
+        const PixelHit* pixel_hit = &(*pixel_it);
+
+        // Check if the pixel has been used:
+        if(usedPixel[pixel_hit]) {
+            continue;
+        }
+
+        // Create new cluster
+        Cluster cluster(pixel_hit);
+        usedPixel[pixel_hit] = true;
+        LOG(DEBUG) << "Creating new cluster with seed: " << pixel_hit->getPixel().getIndex();
+
+        auto touching = [&](const PixelHit* pixel) {
+            auto pxi1 = pixel->getIndex();
+            for(auto& cluster_pixel : cluster.getPixelHits()) {
+
+                auto distance = [](unsigned int lhs, unsigned int rhs) { return (lhs > rhs ? lhs - rhs : rhs - lhs); };
+
+                auto pxi2 = cluster_pixel->getIndex();
+                if(distance(pxi1.x(), pxi2.x()) <= 1 && distance(pxi1.y(), pxi2.y()) <= 1) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        // Keep adding pixels to the cluster:
+        for(auto other_pixel = pixel_it + 1; other_pixel != pixels_message->getData().end(); other_pixel++) {
+            const PixelHit* neighbor = &(*other_pixel);
+
+            // Check if neighbor has been used or if it touches the current cluster:
+            if(usedPixel[neighbor] || !touching(neighbor)) {
+                continue;
+            }
+
+            cluster.addPixelHit(neighbor);
+            LOG(DEBUG) << "Adding pixel: " << neighbor->getPixel().getIndex();
+            usedPixel[neighbor] = true;
+        }
+        clusters.push_back(cluster);
+    }
+    return clusters;
+}
+
+void DetectorHistogrammerModule::run(Event* event) const {
     auto pixels_message = event->fetchMessage<PixelHitMessage>();
 
     LOG(DEBUG) << "Adding hits in " << pixels_message->getData().size() << " pixels";
@@ -228,54 +281,4 @@ void DetectorHistogrammerModule::finalize() {
     event_size->Write();
     n_cluster->Write();
     cluster_charge->Write();
-}
-
-std::vector<Cluster> DetectorHistogrammerModule::doClustering(std::shared_ptr<PixelHitMessage>& pixels_message) {
-    std::vector<Cluster> clusters;
-    std::map<const PixelHit*, bool> usedPixel;
-
-    auto pixel_it = pixels_message->getData().begin();
-    for(; pixel_it != pixels_message->getData().end(); pixel_it++) {
-        const PixelHit* pixel_hit = &(*pixel_it);
-
-        // Check if the pixel has been used:
-        if(usedPixel[pixel_hit]) {
-            continue;
-        }
-
-        // Create new cluster
-        Cluster cluster(pixel_hit);
-        usedPixel[pixel_hit] = true;
-        LOG(DEBUG) << "Creating new cluster with seed: " << pixel_hit->getPixel().getIndex();
-
-        auto touching = [&](const PixelHit* pixel) {
-            auto pxi1 = pixel->getIndex();
-            for(auto& cluster_pixel : cluster.getPixelHits()) {
-
-                auto distance = [](unsigned int lhs, unsigned int rhs) { return (lhs > rhs ? lhs - rhs : rhs - lhs); };
-
-                auto pxi2 = cluster_pixel->getIndex();
-                if(distance(pxi1.x(), pxi2.x()) <= 1 && distance(pxi1.y(), pxi2.y()) <= 1) {
-                    return true;
-                }
-            }
-            return false;
-        };
-
-        // Keep adding pixels to the cluster:
-        for(auto other_pixel = pixel_it + 1; other_pixel != pixels_message->getData().end(); other_pixel++) {
-            const PixelHit* neighbor = &(*other_pixel);
-
-            // Check if neighbor has been used or if it touches the current cluster:
-            if(usedPixel[neighbor] || !touching(neighbor)) {
-                continue;
-            }
-
-            cluster.addPixelHit(neighbor);
-            LOG(DEBUG) << "Adding pixel: " << neighbor->getPixel().getIndex();
-            usedPixel[neighbor] = true;
-        }
-        clusters.push_back(cluster);
-    }
-    return clusters;
 }

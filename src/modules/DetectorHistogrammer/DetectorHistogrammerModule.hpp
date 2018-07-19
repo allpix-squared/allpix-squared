@@ -34,7 +34,7 @@ namespace allpix {
      *
      * Generates a hitmap of all the produced pixel hits, together with a histogram of the cluster size
      */
-    class DetectorHistogrammerModule : public Module {
+    class DetectorHistogrammerModule : public WriterModule {
     public:
         /**
          * @brief Constructor for this detector-specific module
@@ -52,7 +52,7 @@ namespace allpix {
         /**
          * @brief Fill the histograms
          */
-        void run(Event*) override;
+        void run(Event*) const override;
 
         /**
          * @brief Write the histograms to the modules file
@@ -60,19 +60,14 @@ namespace allpix {
         void finalize() override;
 
     private:
-        /**
-         * @brief Perform a sparse clustering on the PixelHits
-         */
-        std::vector<Cluster> doClustering(std::shared_ptr<PixelHitMessage>& pixels_message);
-
         std::shared_ptr<Detector> detector_;
 
         // List of pixel hits
         std::shared_ptr<PixelHitMessage> pixels_message_;
 
         // Statistics to compute mean position
-        ROOT::Math::XYVector total_vector_{};
-        unsigned long total_hits_{};
+        mutable ROOT::Math::XYVector total_vector_{};
+        mutable unsigned long total_hits_{};
 
         // Histograms to output
         TH2D* hit_map;
