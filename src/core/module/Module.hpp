@@ -144,7 +144,7 @@ namespace allpix {
          */
         // TODO [doc] Start the sequence at 0 instead of 1?
         // TODO [doc] Document all new parameters
-        virtual void run(Event* event) { (void)event; }
+        virtual void run(Event* event) const { (void)event; }
         //
         /**
          * @brief Finalize the module after the event sequence
@@ -166,6 +166,8 @@ namespace allpix {
          */
         Configuration& get_configuration();
         Configuration& config_;
+
+        mutable std::mutex stats_mutex_;
 
     private:
         /**
