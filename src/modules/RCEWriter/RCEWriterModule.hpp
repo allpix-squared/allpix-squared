@@ -54,7 +54,7 @@ namespace allpix {
         /**
          * @brief Writes the objects fetched to their specific tree
          */
-        void run(Event*) override;
+        void run(Event*) const override;
 
         /**
          * @brief Write the output file
@@ -76,15 +76,15 @@ namespace allpix {
             Int_t hit_in_cluster_[kMaxHits];
         };
         // The map from detector names to the respective sensor_data struct
-        std::map<std::string, sensor_data> sensors_;
+        mutable std::map<std::string, sensor_data> sensors_;
 
         // Relevant information for the Event tree
-        ULong64_t timestamp_;
-        ULong64_t frame_number_;
-        ULong64_t trigger_time_;
-        Int_t trigger_offset_;
-        Int_t trigger_info_;
-        Bool_t invalid_;
+        mutable ULong64_t timestamp_;
+        mutable ULong64_t frame_number_;
+        mutable ULong64_t trigger_time_;
+        mutable Int_t trigger_offset_;
+        mutable Int_t trigger_info_;
+        mutable Bool_t invalid_;
         // The Event tree
         TTree* event_tree_; // no unique_ptr, ROOT takes ownership
 
