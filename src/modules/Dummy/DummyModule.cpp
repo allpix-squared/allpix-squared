@@ -34,7 +34,7 @@ void DummyModule::init(uint64_t) {
     }
 }
 
-void DummyModule::run(Event*) {
+void DummyModule::run(Event*) const {
     // ... Implement ... (Typically uses the configuration to execute function and outputs an message)
     // Loop through all receieved messages and print some information
     for(auto& message : messages_) {
