@@ -109,7 +109,7 @@ bool TextWriterModule::filter(const std::shared_ptr<BaseMessage>& message, const
     return false;
 }
 
-void TextWriterModule::run(Event* event) {
+void TextWriterModule::run(Event* event) const {
     auto messages = event->fetchFilteredMessages();
     LOG(TRACE) << "Writing new objects to text file";
 
@@ -118,6 +118,7 @@ void TextWriterModule::run(Event* event) {
 
     for(auto& pair : messages) {
         auto& message = pair.first;
+        std::lock_guard<std::mutex> lock{stats_mutex_};
 
         // Print the current detector:
         if(message->getDetector() != nullptr) {

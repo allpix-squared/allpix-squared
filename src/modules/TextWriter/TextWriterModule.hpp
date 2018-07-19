@@ -53,7 +53,7 @@ namespace allpix {
         /**
          * @brief Writes the objects fetched to their specific tree, constructing trees on the fly for new objects.
          */
-        void run(Event*) override;
+        void run(Event*) const override;
 
         /**
          * @brief Add the main configuration and the detector setup to the data file and write it, also write statistics
@@ -74,7 +74,7 @@ namespace allpix {
         std::map<std::tuple<std::type_index, std::string, std::string>, std::vector<Object*>*> write_list_;
 
         // Statistical information about number of objects
-        unsigned long write_cnt_{};
-        unsigned long msg_cnt_{};
+        mutable unsigned long write_cnt_{};
+        mutable unsigned long msg_cnt_{};
     };
 } // namespace allpix
