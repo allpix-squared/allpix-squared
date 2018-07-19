@@ -49,7 +49,7 @@ namespace allpix {
         /**
          * @brief Projection of the electrons to the surface
          */
-        void run(Event*) override;
+        void run(Event*) const override;
 
         /**
          * @brief Write plots if needed
@@ -77,9 +77,6 @@ namespace allpix {
         double electron_Vm_;
         double electron_Ec_;
         double electron_Beta_;
-
-        // Calculated slope of the electric field
-        double slope_efield_;
 
         // Precalculated value for Boltzmann constant:
         double boltzmann_kT_;

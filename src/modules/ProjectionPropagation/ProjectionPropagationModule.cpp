@@ -76,7 +76,7 @@ void ProjectionPropagationModule::init(uint64_t) {
     }
 }
 
-void ProjectionPropagationModule::run(Event* event) {
+void ProjectionPropagationModule::run(Event* event) const {
     auto deposits_message = event->fetchMessage<DepositedChargeMessage>();
 
     // Create vector of propagated charges to output
@@ -124,14 +124,15 @@ void ProjectionPropagationModule::run(Event* event) {
         LOG(TRACE) << "Electric field at carrier position / top of the sensor: " << Units::display(efield_mag_top, "V/cm")
                    << " , " << Units::display(efield_mag, "V/cm");
 
-        slope_efield_ = (efield_mag_top - efield_mag) / (model->getSensorSize().z() / 2. - position.z());
+        // Calculated slope of the electric field
+        double slope_efield = (efield_mag_top - efield_mag) / (model->getSensorSize().z() / 2. - position.z());
 
         // Calculate the drift time
         auto calc_drift_time = [&]() {
             double Ec = (type == CarrierType::ELECTRON ? electron_Ec_ : hole_Ec_);
             double zero_mobility = (type == CarrierType::ELECTRON ? electron_Vm_ / electron_Ec_ : hole_Vm_ / hole_Ec_);
 
-            return ((log(efield_mag_top) - log(efield_mag)) / slope_efield_ +
+            return ((log(efield_mag_top) - log(efield_mag)) / slope_efield +
                     (model->getSensorSize().z() / 2. - position.z()) / Ec) /
                    zero_mobility;
         };
