@@ -26,6 +26,8 @@
 #include "objects/PropagatedCharge.hpp"
 
 namespace allpix {
+    using OutputPlotPoints = std::vector<std::pair<PropagatedCharge, std::vector<ROOT::Math::XYZPoint>>>;
+
     /**
      * @ingroup Modules
      * @brief Generic module for Runge-Kutta propagation of charge deposits in the sensitive device
@@ -54,7 +56,7 @@ namespace allpix {
         /**
          * @brief Propagate all deposited charges through the sensor
          */
-        void run(Event*) override;
+        void run(Event*) const override;
 
         /**
          * @brief Write statistical summary
@@ -70,7 +72,7 @@ namespace allpix {
          * @brief Create output plots in every event
          * @param event_num Index for this event
          */
-        void create_output_plots(unsigned int event_num);
+        void create_output_plots(unsigned int event_num, OutputPlotPoints& output_plot_points) const;
 
         /**
          * @brief Propagate a single set of charges through the sensor
@@ -78,8 +80,10 @@ namespace allpix {
          * @param type Type of the carrier to propagate
          * @return Pair of the point where the deposit ended after propagation and the time the propagation took
          */
-        std::pair<ROOT::Math::XYZPoint, double>
-        propagate(const ROOT::Math::XYZPoint& pos, const CarrierType& type, std::mt19937_64& random_generator);
+        std::pair<ROOT::Math::XYZPoint, double> propagate(const ROOT::Math::XYZPoint& pos,
+                                                          const CarrierType& type,
+                                                          std::mt19937_64& random_generator,
+                                                          OutputPlotPoints& output_plot_points) const;
 
         // Random generator for this module
         std::mt19937_64 random_generator_;
@@ -112,15 +116,12 @@ namespace allpix {
         std::shared_ptr<DepositedChargeMessage> deposits_message_;
 
         // Statistical information
-        unsigned int total_propagated_charges_{};
-        unsigned int total_steps_{};
-        long double total_time_{};
+        mutable unsigned int total_propagated_charges_{};
+        mutable unsigned int total_steps_{};
+        mutable long double total_time_{};
 
         // Output plot for drift time
         TH1D* drift_time_histo;
-
-        // List of points to plot to plot for output plots
-        std::vector<std::pair<PropagatedCharge, std::vector<ROOT::Math::XYZPoint>>> output_plot_points_;
     };
 
 } // namespace allpix

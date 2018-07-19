@@ -69,7 +69,7 @@ std::shared_ptr<Detector> Module::getDetector() const {
  * The output path is automatically created if it does not exists. The path is always accessible if this functions returns.
  * Obeys the "deny_overwrite" parameter of the module.
  */
-std::string Module::createOutputFile(const std::string& path, bool global) {
+std::string Module::createOutputFile(const std::string& path, bool global) const {
     std::string file;
     if(global) {
         file = config_.get<std::string>("_global_dir", std::string());
@@ -140,7 +140,7 @@ void Module::set_ROOT_directory(TDirectory* directory) {
  * @throws InvalidModuleActionException If this method is called from the constructor or destructor
  * @warning This function technically allows to write to the configurations of other modules, but this should never be done
  */
-ConfigManager* Module::getConfigManager() {
+ConfigManager* Module::getConfigManager() const {
     if(conf_manager_ == nullptr) {
         throw InvalidModuleActionException("Cannot access the config manager in constructor or destructor.");
     };

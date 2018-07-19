@@ -106,7 +106,7 @@ namespace allpix {
          * @param global True if the global output directory should be used instead of the module-specific version
          * @return Canonical path to an output file
          */
-        std::string createOutputFile(const std::string& path, bool global = false);
+        std::string createOutputFile(const std::string& path, bool global = false) const;
 
         /**
          * @brief Get ROOT directory which should be used to output histograms et cetera
@@ -118,7 +118,7 @@ namespace allpix {
          * @brief Get the config manager object to allow to read the global and other module configurations
          * @return Pointer to the config manager
          */
-        ConfigManager* getConfigManager();
+        ConfigManager* getConfigManager() const;
 
         /**
          * @brief Returns if parallelization of this module is enabled
