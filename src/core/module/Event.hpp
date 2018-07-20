@@ -17,19 +17,6 @@
 #include "../messenger/Messenger.hpp"
 
 namespace allpix {
-    struct IOLock {
-        std::mutex mutex;
-        std::condition_variable condition;
-        std::atomic<unsigned int> current_event{1};
-
-        /**
-         * @brief Increment the current event and notify all waiting threads
-         */
-        void next() {
-            current_event++;
-            condition.notify_all();
-        }
-    };
 
     class Event {
         friend class ModuleManager;
@@ -67,6 +54,21 @@ namespace allpix {
         uint64_t getRandomNumber() { return random_generator_(); }
 
     private:
+        struct IOLock {
+            std::mutex mutex;
+            std::condition_variable condition;
+            std::atomic<unsigned int> current_event{1};
+
+            /**
+             * @brief Increment the current event and notify all waiting threads
+             */
+            void next() {
+                current_event++;
+                condition.notify_all();
+            }
+        };
+
+
         /**
          * @brief Construct Event
          * @param modules The modules that constitutes the event
@@ -82,26 +84,24 @@ namespace allpix {
                        std::atomic<bool>& terminate,
                        std::map<Module*, long double>& module_execution_time,
                        Messenger* messenger,
-                       std::mt19937_64& seeder,
-                       IOLock& reader_lock,
-                       IOLock& writer_lock);
+                       std::mt19937_64& seeder);
         /**
          * @brief Use default destructor
          */
-        /* ~Event() = default; */
+        ~Event() = default;
 
-        // TODO: fix this
+        // TODO: delete copy constructor
         /// @{
         /**
          * @brief Copying an event not allowed
          */
-        /* Event(const Event&) = default; */
-        /* Event& operator=(const Event&) = default; */
+        Event(const Event&) = default;
+        Event& operator=(const Event&) = default;
         /**
          * @brief Moving an event is allowed
          */
-        /* Event(Event&&) = default; */
-        /* Event& operator=(Event&&) = default; */
+        Event(Event&&) = default;
+        Event& operator=(Event&&) = default;
         /// @}
 
         /**
@@ -135,14 +135,14 @@ namespace allpix {
         // XXX: cannot be moved
         std::atomic<bool>& terminate_;
 
-        // XXX: must this be mutex protected?
+        static std::mutex stats_mutex_;
         std::map<Module*, long double>& module_execution_time_;
 
         std::mt19937_64 random_generator_;
 
         // For Readers/Writers execution
-        IOLock& reader_lock_;
-        IOLock& writer_lock_;
+        static IOLock reader_lock_;
+        static IOLock writer_lock_;
         bool previous_was_reader_{false};
     };
 

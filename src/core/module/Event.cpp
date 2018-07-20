@@ -24,16 +24,18 @@
 using namespace allpix;
 using namespace std::chrono_literals;
 
+std::mutex Event::stats_mutex_;
+Event::IOLock Event::reader_lock_;
+Event::IOLock Event::writer_lock_;
+
 Event::Event(ModuleList modules,
              const unsigned int event_num,
              std::atomic<bool>& terminate,
              std::map<Module*, long double>& module_execution_time,
              Messenger* messenger,
-             std::mt19937_64& seeder,
-             IOLock& reader_lock,
-             IOLock& writer_lock)
+             std::mt19937_64& seeder)
     : number(event_num), modules_(std::move(modules)), message_storage_(messenger->delegates_), terminate_(terminate),
-      module_execution_time_(module_execution_time), reader_lock_(reader_lock), writer_lock_(writer_lock) {
+      module_execution_time_(module_execution_time) {
     random_generator_.seed(seeder());
 }
 
@@ -111,6 +113,7 @@ void Event::run(std::shared_ptr<Module>& module) {
 
     // Update execution time
     auto end = std::chrono::steady_clock::now();
+    std::lock_guard<std::mutex> stat_lock{stats_mutex_};
     module_execution_time_[module.get()] += static_cast<std::chrono::duration<long double>>(end - start).count();
 }
 

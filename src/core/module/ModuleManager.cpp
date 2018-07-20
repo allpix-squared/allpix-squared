@@ -612,11 +612,6 @@ void ModuleManager::run(Messenger* messenger, std::mt19937_64& seeder) {
         return terminate_.load();
     };
 
-    // For in-Event Reader/Writer execution
-    // TODO: wrap this in a struct?
-    IOLock writer_lock;
-    IOLock reader_lock;
-
     // Push all events to the thread pool
     auto start_time = std::chrono::steady_clock::now();
     global_config.setDefault<unsigned int>("number_of_events", 1u);
@@ -625,7 +620,7 @@ void ModuleManager::run(Messenger* messenger, std::mt19937_64& seeder) {
     for(unsigned int i = 1; i <= number_of_events; ++i) {
         // Create the event and submit it to the thread pool
         // TODO: clean up the forwarding of parameters. Can some be omitted?
-        Event event(modules_, i, terminate_, module_execution_time_, messenger, seeder, reader_lock, writer_lock);
+        Event event(modules_, i, terminate_, module_execution_time_, messenger, seeder);
         // Event initialization must be run on the main thread
         event.init();
         auto event_function = [ e = std::move(event), number_of_events, event_num = i, &run_events ]() mutable {
