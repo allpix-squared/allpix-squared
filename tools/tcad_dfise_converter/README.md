@@ -38,11 +38,9 @@ It should be noted that the TCAD DF-ISE mesh converter depends on the core utili
 * `radius_threshold`: Minimum distance from node to new mesh point (defaults to 0 um).
 * `volume_cut`: Minimum volume for tetrahedron for non-coplanar vertices (defaults to minimum double value).
 * `index_cut`: Index cut during permutation on vertex neighbours (disabled by default).
-* `xdiv`: New regular mesh X pitch (defaults to 100 for 3D mesh, and 1 for 2D mesh).
-* `ydiv`: New regular mesh Y pitch (defaults to 100).
-* `zdiv`: New regular mesh Z pitch (defaults to 100).
-* `xyz`: Array to replace the system coordinates of the mesh. 
-* `screen_shot`: Enables "screen-shot" of mesh points, point being interpolated (in red) and neighbouring pixels (in blue) (defaults to -1 -1 -1, disabling the screen-shot). 
+* `divisions`: Number of divisions of the new regular mesh for each dimension, 2D or 3D vector depending on the `dimension` setting. Defaults to 100 bins in each dimension.
+* `xyz`: Array to replace the system coordinates of the mesh.
+* `screen_shot`: Enables "screen-shot" of mesh points, point being interpolated (in red) and neighbouring pixels (in blue) (defaults to -1 -1 -1, disabling the screen-shot).
 * `ss_radius`: Sets a region of interest around the point being interpolated to show the mesh points.
 * `mesh_tree`: Switch enabling the creation of a root file with the TCAD mesh nodes stored in a ROOT::TTree (automatically enabled if screen-shot is activated).
 
@@ -65,7 +63,7 @@ Possible options and their default values are:
 Observables currently implemented for interpolation are: *ElectrostaticPotential*, *ElectricField*, *DopingConcentration*, *DonorConcentration* and *AcceptorConcentration*.
 The output INIT file will be saved with the same *file_prefix* as the .grd and .dat files, +*_observable_interpolated.init*.
 
-The new coordinate system of the mesh can be changed by providing an array for the *xyz* keyword in the configuration file. The first entry of the array, representing the new mesh *x* coordinate, should indicate the TCAD original mesh coordinate (*x*, *y* or *z*), and so on for the second (*y*) and third (*z*) array entry. For example, if one wants to have the TCAD *x*, *y* and *z* mesh coordinates mapped into the *y*, *z* and *x* coordinates of the new mesh, respectiviely, the configuration file should have *xyz = z x y*. If one wants to flip one of the coordinates, the minus symbol ("-") can be used in front of one of the coordinates (such as *xyz = z x -y*).  
+The new coordinate system of the mesh can be changed by providing an array for the *xyz* keyword in the configuration file. The first entry of the array, representing the new mesh *x* coordinate, should indicate the TCAD original mesh coordinate (*x*, *y* or *z*), and so on for the second (*y*) and third (*z*) array entry. For example, if one wants to have the TCAD *x*, *y* and *z* mesh coordinates mapped into the *y*, *z* and *x* coordinates of the new mesh, respectiviely, the configuration file should have *xyz = z x y*. If one wants to flip one of the coordinates, the minus symbol ("-") can be used in front of one of the coordinates (such as *xyz = z x -y*).
 
 The program can be used to convert 3D and 2D TCAD mesh files. Note that when converting 2D meshes, the *x* coordinate will be fixed to 1 and the interpolation will happen over the *yz* plane.
 The keyword mesh_tree can be used as a switch to enable or disable the creation of a root file with the original TCAD mesh points stored as a ROOT::TTree for later, fast, inspection.

@@ -24,6 +24,7 @@ int main(int argc, char** argv) {
     // Read parameters
     std::string file_name;
     std::string output_file_name;
+    std::string output_name_log;
     std::string plane = "yz";
     int slice_index = 0;
     bool flag_cut = false;
@@ -31,6 +32,7 @@ int main(int argc, char** argv) {
     int xdiv = 100;
     int ydiv = 100;
     int zdiv = 100;
+    bool log_scale = false;
     for(int i = 1; i < argc; i++) {
         if(strcmp(argv[i], "-h") == 0) {
             print_help = true;
@@ -49,6 +51,8 @@ int main(int argc, char** argv) {
             ydiv = std::atoi(argv[++i]);
         } else if(strcmp(argv[i], "-z") == 0 && (i + 1 < argc)) {
             zdiv = std::atoi(argv[++i]);
+        } else if(strcmp(argv[i], "-l") == 0) {
+            log_scale = true;
         } else {
             std::cout << "Unrecognized command line argument or missing value\"" << argv[i] << std::endl;
             print_help = true;
@@ -70,6 +74,7 @@ int main(int argc, char** argv) {
         std::cout << "\t -x <mesh x_pitch>      plot regular mesh X binning (default is 100)" << std::endl;
         std::cout << "\t -y <mesh_y_pitch>      plot regular mesh Y binning (default is 100)" << std::endl;
         std::cout << "\t -z <mesh_z_pitch>      plot regular mesh Z binning (default is 100)" << std::endl;
+        std::cout << "\t -l                     plot with logarithmic scale if set" << std::endl;
         return return_code;
     }
 
@@ -152,7 +157,13 @@ int main(int argc, char** argv) {
                                 y_bin + 1,
                                 1,
                                 y_bin + 1);
+
     auto c1 = new TCanvas();
+
+    if(log_scale) {
+        c1->SetLogz();
+        output_name_log = "_log";
+    }
 
     double dummy;
     double vector[6];
@@ -181,7 +192,7 @@ int main(int argc, char** argv) {
 
     if(output_file_name.empty()) {
         output_file_name = file_name.substr(0, lastindex);
-        output_file_name = output_file_name + "_" + plane + "_" + std::to_string(slice_cut) + ".png";
+        output_file_name = output_file_name + "_" + plane + "_" + std::to_string(slice_cut) + output_name_log + ".png";
     }
 
     std::string root_file_name = file_name.substr(0, lastindex);
