@@ -382,8 +382,8 @@ void Detector::setWeightingFieldGrid(std::shared_ptr<std::vector<double>> field,
     }
 
     weighting_field_ = std::move(field);
-    weighting_field_extent_ = std::move(extent);
-    weighting_field_sizes_ = std::move(sizes);
+    weighting_field_extent_ = extent;
+    weighting_field_sizes_ = sizes;
     weighting_field_thickness_domain_ = std::move(thickness_domain);
     weighting_field_type_ = WeightingFieldType::GRID;
 }
