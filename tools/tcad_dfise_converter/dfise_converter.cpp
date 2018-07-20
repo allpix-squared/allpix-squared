@@ -12,6 +12,7 @@
 #include <string>
 #include <utility>
 
+#include <Math/Vector3D.h>
 #include "TCanvas.h"
 #include "TFile.h"
 #include "TGraph2D.h"
@@ -24,12 +25,14 @@
 #include "core/config/Configuration.hpp"
 #include "core/config/exceptions.h"
 #include "core/utils/log.h"
+#include "tools/ROOT.h"
 
 #include "MeshElement.h"
 #include "Octree.hpp"
 #include "read_dfise.h"
 
 using namespace mesh_converter;
+using namespace ROOT::Math;
 
 void interrupt_handler(int);
 
@@ -92,6 +95,9 @@ void mesh_converter::mesh_plotter(const std::string& grid_file,
 }
 
 int main(int argc, char** argv) {
+    using XYZVectorInt = DisplacementVector3D<Cartesian3D<int>>;
+    using XYVectorInt = DisplacementVector2D<Cartesian2D<int>>;
+
     // If no arguments are provided, print the help:
     bool print_help = false;
     int return_code = 0;
@@ -194,12 +200,13 @@ int main(int argc, char** argv) {
         index_cut_flag = true;
     }
 
-    auto xdiv = config.get<int>("xdiv", 100);
-    auto ydiv = config.get<int>("ydiv", 100);
-    auto zdiv = config.get<int>("zdiv", 100);
+    XYZVectorInt divisions;
     auto dimension = config.get<int>("dimension", 3);
     if(dimension == 2) {
-        xdiv = 1;
+        auto divisions_yz = config.get<XYVectorInt>("divisions", XYVectorInt(100, 100));
+        divisions = XYZVectorInt(1, divisions_yz.x(), divisions_yz.y());
+    } else {
+        divisions = config.get<XYZVectorInt>("divisions", XYZVectorInt(100, 100, 100));
     }
 
     std::vector<std::string> rot = {"x", "y", "z"};
@@ -238,37 +245,54 @@ int main(int argc, char** argv) {
 
     auto start = std::chrono::system_clock::now();
 
-    LOG(STATUS) << "Reading mesh grid from grid file";
     std::string grid_file = file_prefix + ".grd";
+    LOG(STATUS) << "Reading mesh grid from grid file \"" << grid_file << "\"";
 
     std::vector<Point> points;
     try {
         auto region_grid = read_grid(grid_file, mesh_tree);
+        LOG(INFO) << "Grid sizes for all regions:";
+        for(auto& reg : region_grid) {
+            LOG(INFO) << "\t" << std::left << std::setw(25) << reg.first << " " << reg.second.size();
+        }
         points = region_grid[region];
+        if(points.empty()) {
+            throw std::runtime_error("Empty grid");
+        }
         LOG(DEBUG) << "Grid with " << points.size() << " points";
     } catch(std::runtime_error& e) {
-        LOG(FATAL) << "Failed to parse grid file " << grid_file;
-        LOG(FATAL) << " " << e.what();
+        LOG(FATAL) << "Failed to parse grid file \"" << grid_file << "\":\n" << e.what();
         allpix::Log::finish();
         return 1;
     }
 
-    LOG(STATUS) << "Reading electric field from data file";
     std::string data_file = file_prefix + ".dat";
+    LOG(STATUS) << "Reading electric field from data file \"" << data_file << "\"";
+
     std::vector<Point> field;
     try {
         auto region_fields = read_electric_field(data_file);
         field = region_fields[region][observable];
+        LOG(INFO) << "Field sizes for all regions and observables:";
+        for(auto& reg : region_fields) {
+            LOG(INFO) << " " << reg.first << ":";
+            for(auto& fld : reg.second) {
+                LOG(INFO) << "\t" << std::left << std::setw(25) << fld.first << " " << fld.second.size();
+            }
+        }
+        if(field.empty()) {
+            throw std::runtime_error("Empty observable data");
+        }
         LOG(DEBUG) << "Field with " << field.size() << " points";
     } catch(std::runtime_error& e) {
-        LOG(FATAL) << "Failed to parse data file " << data_file;
-        LOG(FATAL) << " " << e.what();
+        LOG(FATAL) << "Failed to parse data file \"" << data_file << "\":\n" << e.what();
         allpix::Log::finish();
         return 1;
     }
 
     if(points.size() != field.size()) {
-        LOG(FATAL) << "Field and grid file do not match";
+        LOG(FATAL) << "Field and grid file do not match, found " << points.size() << " and " << field.size()
+                   << " data points, respectively.";
         allpix::Log::finish();
         return 1;
     }
@@ -338,9 +362,9 @@ int main(int argc, char** argv) {
     }
 
     // Creating a new mesh points cloud with a regular pitch
-    double xstep = (maxx - minx) / static_cast<double>(xdiv);
-    double ystep = (maxy - miny) / static_cast<double>(ydiv);
-    double zstep = (maxz - minz) / static_cast<double>(zdiv);
+    double xstep = (maxx - minx) / static_cast<double>(divisions.x());
+    double ystep = (maxy - miny) / static_cast<double>(divisions.y());
+    double zstep = (maxz - minz) / static_cast<double>(divisions.z());
     double cell_volume = xstep * ystep * zstep;
 
     if(rot.at(0) != "x" || rot.at(1) != "y" || rot.at(2) != "z") {
@@ -388,11 +412,11 @@ int main(int argc, char** argv) {
     std::vector<Point> e_field_new_mesh;
 
     double x = minx + xstep / 2.0;
-    for(int i = 0; i < xdiv; ++i) {
+    for(int i = 0; i < divisions.x(); ++i) {
         double y = miny + ystep / 2.0;
-        for(int j = 0; j < ydiv; ++j) {
+        for(int j = 0; j < divisions.y(); ++j) {
             double z = minz + zstep / 2.0;
-            for(int k = 0; k < zdiv; ++k) {
+            for(int k = 0; k < divisions.z(); ++k) {
                 Point q, e;
                 if(ss_flag) {
                     std::map<std::string, int> map;
@@ -420,8 +444,11 @@ int main(int argc, char** argv) {
                 }
                 bool valid = false;
 
-                LOG_PROGRESS(INFO, "POINT") << "Interpolating point X=" << i + 1 << " Y=" << j + 1 << " Z=" << k + 1 << " ("
-                                            << q.x << "," << q.y << "," << q.z << ")";
+                if(j * k % 1000 == 0) {
+                    LOG_PROGRESS(INFO, "POINT")
+                        << "Interpolating point (" << std::setw(3) << (i + 1) << "," << std::setw(3) << (j + 1) << ","
+                        << std::setw(3) << (k + 1) << ") at (" << q.x << "," << q.y << "," << q.z << ")";
+                }
 
                 size_t prev_neighbours = 0;
                 double radius = initial_radius;
@@ -578,12 +605,11 @@ int main(int argc, char** argv) {
     elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
     LOG(INFO) << "New mesh created in " << elapsed_seconds << " seconds.";
 
-    LOG(STATUS) << "Writing INIT file";
-
     std::ofstream init_file;
     std::stringstream init_file_name;
     init_file_name << init_file_prefix << "_" << observable << ".init";
     init_file.open(init_file_name.str());
+    LOG(STATUS) << "Writing INIT file \"" << init_file_name.str() << "\"";
 
     // Write INIT file h"eader
     init_file << "tcad_dfise_converter, ";                                             // NAME
@@ -593,20 +619,25 @@ int main(int argc, char** argv) {
     init_file << "0.0 0.0 0.0" << std::endl;                                           // MAGNETIC FIELD (UNUSED)
     init_file << (maxz - minz) << " " << (maxx - minx) << " " << (maxy - miny) << " "; // PIXEL DIMENSIONS
     init_file << "0.0 0.0 0.0 0.0 ";                                                   // UNUSED
-    init_file << xdiv << " " << ydiv << " " << zdiv << " ";                            // GRID SIZE
+    init_file << divisions.x() << " " << divisions.y() << " " << divisions.z() << " "; // GRID SIZE
     init_file << "0.0" << std::endl;                                                   // UNUSED
 
     // Write INIT file data
-    for(int i = 0; i < xdiv; ++i) {
-        for(int j = 0; j < ydiv; ++j) {
-            for(int k = 0; k < zdiv; ++k) {
-                auto& point = e_field_new_mesh[static_cast<unsigned int>(i * ydiv * zdiv + j * zdiv + k)];
+    long long max_points = static_cast<long long>(divisions.x()) * divisions.y() * divisions.z();
+    for(int i = 0; i < divisions.x(); ++i) {
+        for(int j = 0; j < divisions.y(); ++j) {
+            for(int k = 0; k < divisions.z(); ++k) {
+                auto& point =
+                    e_field_new_mesh[static_cast<unsigned int>(i * divisions.y() * divisions.z() + j * divisions.z() + k)];
                 init_file << i + 1 << " " << j + 1 << " " << k + 1 << " " << point.x << " " << point.y << " " << point.z
                           << std::endl;
             }
+            long long curr_point = static_cast<long long>(i) * divisions.y() * divisions.z() + j * divisions.z();
+            LOG_PROGRESS(INFO, "INIT") << "Writing to INIT file: " << (100 * curr_point / max_points) << "%";
         }
     }
     init_file.close();
+    LOG_PROGRESS(INFO, "INIT") << "Writing to INIT file: done.";
 
     end = std::chrono::system_clock::now();
     elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
