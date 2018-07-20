@@ -57,7 +57,6 @@ An example to add a weighting field via an INIT file to the detector called "dut
 name = "dut"
 model = "init"
 file_name = "example_weighting_field.init"
-field_size = 3 3
 ```
 
 [@planecondenser]: https://doi.org/10.1016/j.nima.2014.08.044
