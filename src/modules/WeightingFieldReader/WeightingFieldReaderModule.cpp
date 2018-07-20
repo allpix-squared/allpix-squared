@@ -45,8 +45,9 @@ void WeightingFieldReaderModule::init() {
     // Calculate the field depending on the configuration
     if(field_model == "init") {
         WeightingFieldReaderModule::FieldData field_data;
-        field_data = read_init_field();
-        detector_->setWeightingFieldGrid(field_data.first, field_data.second, thickness_domain);
+        field_data = read_init_field(thickness_domain);
+        detector_->setWeightingFieldGrid(
+            std::get<0>(field_data), std::get<1>(field_data), std::get<2>(field_data), thickness_domain);
     } else if(field_model == "pad") {
         LOG(TRACE) << "Adding weighting field from pad in plane condenser";
 
@@ -185,16 +186,21 @@ void WeightingFieldReaderModule::create_output_plots() {
  * The field read from the INIT format are shared between module instantiations
  * using the static WeightingFieldReaderModule::get_by_file_name method.
  */
-WeightingFieldReaderModule::FieldData WeightingFieldReaderModule::read_init_field() {
+WeightingFieldReaderModule::FieldData
+WeightingFieldReaderModule::read_init_field(std::pair<double, double> thickness_domain) {
     using namespace ROOT::Math;
 
     try {
         LOG(TRACE) << "Fetching weighting field from init file";
 
         // Get field from file
-        auto field_data = get_by_file_name(config_.getPath("file_name", true), *detector_.get());
-        LOG(INFO) << "Set weighting field with " << field_data.second.second.at(0) << "x" << field_data.second.second.at(1)
-                  << "x" << field_data.second.second.at(2) << " cells";
+        auto field_data = get_by_file_name(config_.getPath("file_name", true));
+
+        // Check if electric field matches chip
+        check_detector_match(std::get<2>(field_data), thickness_domain);
+
+        LOG(INFO) << "Set weighting field with " << std::get<1>(field_data).at(0) << "x" << std::get<1>(field_data).at(1)
+                  << "x" << std::get<1>(field_data).at(2) << " cells";
 
         // Return the field data
         return field_data;
@@ -210,13 +216,20 @@ WeightingFieldReaderModule::FieldData WeightingFieldReaderModule::read_init_fiel
 /**
  * @brief Check if the detector matches the file header
  */
-inline static void check_detector_match(Detector& detector, double thickness, double xpixsz, double ypixsz) {
-    auto model = detector.getModel();
+void WeightingFieldReaderModule::check_detector_match(std::array<double, 3> dimensions,
+                                                      std::pair<double, double> thickness_domain) {
+    auto xpixsz = dimensions[0];
+    auto ypixsz = dimensions[1];
+    auto thickness = dimensions[2];
+
+    auto model = detector_->getModel();
     // Do a several checks with the detector model
     if(model != nullptr) {
-        if(std::fabs(thickness - model->getSensorSize().z()) > std::numeric_limits<double>::epsilon()) {
-            LOG(WARNING) << "Thickness of sensor in field map file is " << Units::display(thickness, "um")
-                         << " but in the detector model it is " << Units::display(model->getSensorSize().z(), "um");
+        // Check field dimension in z versus the requested thickness domain:
+        auto eff_thickness = thickness_domain.second - thickness_domain.first;
+        if(std::fabs(thickness - eff_thickness) > std::numeric_limits<double>::epsilon()) {
+            LOG(WARNING) << "Thickness of weighting field is " << Units::display(thickness, "um")
+                         << " but the depleted region is " << Units::display(eff_thickness, "um");
         }
 
         // Check that the total field size is n*pitch:
@@ -231,22 +244,19 @@ inline static void check_detector_match(Detector& detector, double thickness, do
 }
 
 std::map<std::string, WeightingFieldReaderModule::FieldData> WeightingFieldReaderModule::field_map_;
-WeightingFieldReaderModule::FieldData WeightingFieldReaderModule::get_by_file_name(const std::string& file_name,
-                                                                                   Detector& detector) {
+WeightingFieldReaderModule::FieldData WeightingFieldReaderModule::get_by_file_name(const std::string& file_name) {
 
     // Search in cache (NOTE: the path reached here is always a canonical name)
     auto iter = field_map_.find(file_name);
     if(iter != field_map_.end()) {
-        // FIXME Check detector match here as well
+        LOG(INFO) << "Using cached weighting field data";
         return iter->second;
     }
 
     // Load file
     std::ifstream file(file_name);
-
     std::string header;
     std::getline(file, header);
-
     LOG(TRACE) << "Header of file " << file_name << " is " << header;
 
     // Read the header
@@ -264,9 +274,6 @@ WeightingFieldReaderModule::FieldData WeightingFieldReaderModule::get_by_file_na
     file >> xsize >> ysize >> zsize;
     file >> tmp;
 
-    // Check if weighting field matches chip
-    check_detector_match(detector, thickness, xpixsz, ypixsz);
-
     if(file.fail()) {
         throw std::runtime_error("invalid data or unexpected end of file");
     }
@@ -275,6 +282,11 @@ WeightingFieldReaderModule::FieldData WeightingFieldReaderModule::get_by_file_na
 
     // Loop through all the field data
     for(size_t i = 0; i < xsize * ysize * zsize; ++i) {
+        if(i % 100 == 0) {
+            LOG_PROGRESS(INFO, "read_init")
+                << "Reading weighting field data: " << (100 * i / (xsize * ysize * zsize)) << "%";
+        }
+
         if(file.eof()) {
             throw std::runtime_error("unexpected end of file");
         }
@@ -300,7 +312,10 @@ WeightingFieldReaderModule::FieldData WeightingFieldReaderModule::get_by_file_na
         }
     }
 
-    return std::make_pair(
-        field,
-        std::make_pair(std::array<double, 3>{{xpixsz, ypixsz, thickness}}, std::array<size_t, 3>{{xsize, ysize, zsize}}));
+    FieldData field_data = std::make_tuple(
+        field, std::array<size_t, 3>{{xsize, ysize, zsize}}, std::array<double, 3>{{xpixsz, ypixsz, thickness}});
+
+    // Store the parsed field data for further reference:
+    field_map_[file_name] = field_data;
+    return field_data;
 }

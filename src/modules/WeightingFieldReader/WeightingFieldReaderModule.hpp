@@ -26,8 +26,13 @@ namespace allpix {
      * @brief Module to read weighting fields from INIT format
      */
     class WeightingFieldReaderModule : public Module {
-        using FieldData =
-            std::pair<std::shared_ptr<std::vector<double>>, std::pair<std::array<double, 3>, std::array<size_t, 3>>>;
+        /**
+         * Electric field data with three components
+         * * The actual field data as shared pointer to vector
+         * * An array specifying the number of bins in each dimension
+         * * An array containing the physical extent of the field as specified in the file
+         */
+        using FieldData = std::tuple<std::shared_ptr<std::vector<double>>, std::array<size_t, 3>, std::array<double, 3>>;
 
     public:
         /**
@@ -57,19 +62,26 @@ namespace allpix {
 
         /**
          * @brief Read field in the init format and apply it
+         * @param thickness_domain Domain of the thickness where the field is defined
          */
-        FieldData read_init_field();
-
+        FieldData read_init_field(std::pair<double, double> thickness_domain);
         /**
          * @brief Create output plots of the electric field profile
          */
         void create_output_plots();
 
         /**
+         * @brief Compare the dimensions of the detector with the field, print warnings
+         * @param dimensions Dimensions of the field read from file
+         * @param thickness_domain Domain of the thickness where the field is defined
+         */
+        void check_detector_match(std::array<double, 3> dimensions, std::pair<double, double> thickness_domain);
+
+        /**
          * @brief Get the weighting field from a file name, caching the result between
          * instantiations
          */
-        static FieldData get_by_file_name(const std::string& name, Detector&);
+        static FieldData get_by_file_name(const std::string& name);
         static std::map<std::string, FieldData> field_map_;
     };
 } // namespace allpix
