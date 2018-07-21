@@ -156,6 +156,44 @@ void DetectorHistogrammerModule::init() {
     residual_y = new TH1D(
         residual_y_name.c_str(), residual_y_title.c_str(), static_cast<int>(12 * pitch_y), -2 * pitch_y, 2 * pitch_y);
 
+    // Residual maps
+    std::string residual_map_name = "residual_map";
+    std::string residual_map_title = "Mean absolute deviation of residual as function of in-pixel impact position for " +
+                                     detector_->getName() +
+                                     ";x%pitch [#mum];y%pitch [#mum];MAD(#sqrt{#Deltax^{2}+#Deltay^{2}}) [#mum]";
+    residual_map = new TProfile2D(residual_map_name.c_str(),
+                                  residual_map_title.c_str(),
+                                  static_cast<int>(pitch_x),
+                                  0.,
+                                  pitch_x,
+                                  static_cast<int>(pitch_y),
+                                  0.,
+                                  pitch_y);
+    std::string residual_x_map_name = "residual_x_map";
+    std::string residual_x_map_title =
+        "Mean absolute deviation of residual in X as function of in-pixel impact position for " + detector_->getName() +
+        ";x%pitch [#mum];y%pitch [#mum];MAD(#Deltax) [#mum]";
+    residual_x_map = new TProfile2D(residual_x_map_name.c_str(),
+                                    residual_x_map_title.c_str(),
+                                    static_cast<int>(pitch_x),
+                                    0.,
+                                    pitch_x,
+                                    static_cast<int>(pitch_y),
+                                    0.,
+                                    pitch_y);
+    std::string residual_y_map_name = "residual_y_map";
+    std::string residual_y_map_title =
+        "Mean absolute deviation of residual in Y as function of in-pixel impact position for " + detector_->getName() +
+        ";x%pitch [#mum];y%pitch [#mum];MAD(#Deltay) [#mum]";
+    residual_y_map = new TProfile2D(residual_y_map_name.c_str(),
+                                    residual_y_map_title.c_str(),
+                                    static_cast<int>(pitch_x),
+                                    0.,
+                                    pitch_x,
+                                    static_cast<int>(pitch_y),
+                                    0.,
+                                    pitch_y);
+
     // Create number of clusters plot
     std::string n_cluster_name = "n_cluster";
     std::string n_cluster_title = "Number of clusters for " + detector_->getName() + ";clusters;events";
@@ -240,8 +278,15 @@ void DetectorHistogrammerModule::run(unsigned int) {
                 inPixel_um_x, inPixel_um_y, static_cast<double>(Units::convert(clus.getClusterCharge(), "ke")));
 
             // Calculate residual with cluster position:
-            residual_x->Fill(static_cast<double>(Units::convert(particlePos.x() - clusterPos.x() * pitch.x(), "um")));
-            residual_y->Fill(static_cast<double>(Units::convert(particlePos.y() - clusterPos.y() * pitch.y(), "um")));
+            auto residual_um_x = static_cast<double>(Units::convert(particlePos.x() - clusterPos.x() * pitch.x(), "um"));
+            auto residual_um_y = static_cast<double>(Units::convert(particlePos.y() - clusterPos.y() * pitch.y(), "um"));
+            residual_x->Fill(residual_um_x);
+            residual_y->Fill(residual_um_y);
+            residual_map->Fill(inPixel_um_x,
+                               inPixel_um_y,
+                               std::fabs(std::sqrt(residual_um_x * residual_um_x + residual_um_y * residual_um_y)));
+            residual_x_map->Fill(inPixel_um_x, inPixel_um_y, std::fabs(residual_um_x));
+            residual_y_map->Fill(inPixel_um_x, inPixel_um_y, std::fabs(residual_um_y));
         }
     }
 
@@ -335,6 +380,9 @@ void DetectorHistogrammerModule::finalize() {
     event_size->Write();
     residual_x->Write();
     residual_y->Write();
+    residual_map->Write();
+    residual_x_map->Write();
+    residual_y_map->Write();
     n_cluster->Write();
     cluster_charge->Write();
     cluster_charge_map->Write();
