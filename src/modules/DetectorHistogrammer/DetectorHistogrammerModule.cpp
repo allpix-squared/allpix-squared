@@ -137,11 +137,11 @@ void DetectorHistogrammerModule::init() {
     std::string residual_x_name = "residual_x";
     std::string residual_x_title = "Residual in X for " + detector_->getName() + ";x_{track} - x_{cluster} [#mum];events";
     residual_x = new TH1D(
-        residual_x_name.c_str(), residual_x_title.c_str(), static_cast<int>(12 * pitch_x), -3 * pitch_x, 3 * pitch_x);
+        residual_x_name.c_str(), residual_x_title.c_str(), static_cast<int>(12 * pitch_x), -2 * pitch_x, 2 * pitch_x);
     std::string residual_y_name = "residual_y";
     std::string residual_y_title = "Residual in Y for " + detector_->getName() + ";y_{track} - y_{cluster} [#mum];events";
     residual_y = new TH1D(
-        residual_y_name.c_str(), residual_y_title.c_str(), static_cast<int>(12 * pitch_y), -3 * pitch_y, 3 * pitch_y);
+        residual_y_name.c_str(), residual_y_title.c_str(), static_cast<int>(12 * pitch_y), -2 * pitch_y, 2 * pitch_y);
 
     // Create number of clusters plot
     std::string n_cluster_name = "n_cluster";
