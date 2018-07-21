@@ -34,8 +34,8 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
 void DetectorHistogrammerModule::init() {
     // Fetch detector model
     auto model = detector_->getModel();
-    auto pitch_x = Units::convert(model->getPixelSize().x(), "um");
-    auto pitch_y = Units::convert(model->getPixelSize().y(), "um");
+    auto pitch_x = static_cast<double>(Units::convert(model->getPixelSize().x(), "um"));
+    auto pitch_y = static_cast<double>(Units::convert(model->getPixelSize().y(), "um"));
 
     // Create histogram of hitmap
     LOG(TRACE) << "Creating histograms";
@@ -70,10 +70,10 @@ void DetectorHistogrammerModule::init() {
                                       cluster_size_map_title.c_str(),
                                       static_cast<int>(pitch_x),
                                       0.,
-                                      static_cast<double>(pitch_x),
+                                      pitch_x,
                                       static_cast<int>(pitch_y),
                                       0.,
-                                      static_cast<double>(pitch_y));
+                                      pitch_y);
 
     std::string cluster_size_x_map_name = "cluster_size_x_map";
     std::string cluster_size_x_map_title = "Cluster size in X as function of in-pixel impact position for " +
@@ -82,10 +82,10 @@ void DetectorHistogrammerModule::init() {
                                         cluster_size_x_map_title.c_str(),
                                         static_cast<int>(pitch_x),
                                         0.,
-                                        static_cast<double>(pitch_x),
+                                        pitch_x,
                                         static_cast<int>(pitch_y),
                                         0.,
-                                        static_cast<double>(pitch_y));
+                                        pitch_y);
 
     std::string cluster_size_y_map_name = "cluster_size_y_map";
     std::string cluster_size_y_map_title = "Cluster size in Y as function of in-pixel impact position for " +
@@ -94,10 +94,10 @@ void DetectorHistogrammerModule::init() {
                                         cluster_size_y_map_title.c_str(),
                                         static_cast<int>(pitch_x),
                                         0.,
-                                        static_cast<double>(pitch_x),
+                                        pitch_x,
                                         static_cast<int>(pitch_y),
                                         0.,
-                                        static_cast<double>(pitch_y));
+                                        pitch_y);
 
     // Create cluster size plots
     std::string cluster_size_name = "cluster_size";
