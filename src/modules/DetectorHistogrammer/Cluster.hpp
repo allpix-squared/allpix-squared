@@ -69,10 +69,14 @@ namespace allpix {
          */
         std::set<const PixelHit*> getPixelHits() const { return pixelHits_; }
 
+        std::vector<const MCParticle*> getMCParticles() const;
+
     private:
         const PixelHit* seedPixelHit_;
 
         std::set<const PixelHit*> pixelHits_;
+        std::set<const MCParticle*> mc_particles_;
+
         double clusterCharge_{};
 
         unsigned int minX_, minY_, maxX_, maxY_;
