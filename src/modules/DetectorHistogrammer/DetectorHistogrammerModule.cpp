@@ -111,6 +111,17 @@ void DetectorHistogrammerModule::init() {
                                         static_cast<int>(pitch_y),
                                         0.,
                                         pitch_y);
+    std::string seed_charge_map_name = "seed_charge_map";
+    std::string seed_charge_map_title = "Seed pixel charge as function of in-pixel impact position for " +
+                                        detector_->getName() + ";x%pitch [#mum];y%pitch [#mum];<seed pixel charge> [ke]";
+    seed_charge_map = new TProfile2D(seed_charge_map_name.c_str(),
+                                     seed_charge_map_title.c_str(),
+                                     static_cast<int>(pitch_x),
+                                     0.,
+                                     pitch_x,
+                                     static_cast<int>(pitch_y),
+                                     0.,
+                                     pitch_y);
 
     // Create cluster size plots
     std::string cluster_size_name = "cluster_size";
@@ -277,6 +288,17 @@ void DetectorHistogrammerModule::run(unsigned int) {
             cluster_charge_map->Fill(
                 inPixel_um_x, inPixel_um_y, static_cast<double>(Units::convert(clus.getClusterCharge(), "ke")));
 
+            // Find the nearest pixel
+            auto xpixel = static_cast<unsigned int>(std::round(particlePos.x() / pitch.x()));
+            auto ypixel = static_cast<unsigned int>(std::round(particlePos.y() / pitch.y()));
+
+            // Retrieve the pixel to which this MCParticle points:
+            auto pixel = clus.getPixelHit(xpixel, ypixel);
+            if(pixel != nullptr) {
+                seed_charge_map->Fill(
+                    inPixel_um_x, inPixel_um_y, static_cast<double>(Units::convert(pixel->getSignal(), "ke")));
+            }
+
             // Calculate residual with cluster position:
             auto residual_um_x = static_cast<double>(Units::convert(particlePos.x() - clusterPos.x() * pitch.x(), "um"));
             auto residual_um_y = static_cast<double>(Units::convert(particlePos.y() - clusterPos.y() * pitch.y(), "um"));
@@ -386,6 +408,7 @@ void DetectorHistogrammerModule::finalize() {
     n_cluster->Write();
     cluster_charge->Write();
     cluster_charge_map->Write();
+    seed_charge_map->Write();
 }
 
 std::vector<Cluster> DetectorHistogrammerModule::doClustering() {

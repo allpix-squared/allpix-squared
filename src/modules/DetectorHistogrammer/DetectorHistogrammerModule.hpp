@@ -85,7 +85,7 @@ namespace allpix {
         TH2D* hit_map;
         TH2D* cluster_map;
         TProfile2D *cluster_size_map, *cluster_size_x_map, *cluster_size_y_map;
-        TProfile2D* cluster_charge_map;
+        TProfile2D *cluster_charge_map, *seed_charge_map;
         TProfile2D *residual_map, *residual_x_map, *residual_y_map;
         TH1D *residual_x, *residual_y;
         TH1D* event_size;
