@@ -133,6 +133,16 @@ void DetectorHistogrammerModule::init() {
                           0.5,
                           model->getNPixels().x() * model->getNPixels().y() + 0.5);
 
+    // Create residual plots
+    std::string residual_x_name = "residual_x";
+    std::string residual_x_title = "Residual in X for " + detector_->getName() + ";x_{track} - x_{cluster} [#mum];events";
+    residual_x = new TH1D(
+        residual_x_name.c_str(), residual_x_title.c_str(), static_cast<int>(12 * pitch_x), -3 * pitch_x, 3 * pitch_x);
+    std::string residual_y_name = "residual_y";
+    std::string residual_y_title = "Residual in Y for " + detector_->getName() + ";y_{track} - y_{cluster} [#mum];events";
+    residual_y = new TH1D(
+        residual_y_name.c_str(), residual_y_title.c_str(), static_cast<int>(12 * pitch_y), -3 * pitch_y, 3 * pitch_y);
+
     // Create number of clusters plot
     std::string n_cluster_name = "n_cluster";
     std::string n_cluster_title = "Number of clusters for " + detector_->getName() + ";clusters;events";
@@ -149,6 +159,7 @@ void DetectorHistogrammerModule::init() {
 }
 
 void DetectorHistogrammerModule::run(unsigned int) {
+    using namespace ROOT::Math;
     LOG(DEBUG) << "Adding hits in " << pixels_message_->getData().size() << " pixels";
 
     // Fill 2D hitmap histogram
@@ -178,8 +189,9 @@ void DetectorHistogrammerModule::run(unsigned int) {
         cluster_size_x->Fill(clusSizesXY.first);
         cluster_size_y->Fill(clusSizesXY.second);
 
-        auto clusPos = clus.getClusterPosition();
-        cluster_map->Fill(clusPos.x(), clusPos.y());
+        auto clusterPos = clus.getClusterPosition();
+        LOG(TRACE) << "Cluster at coordinates " << clusterPos;
+        cluster_map->Fill(clusterPos.x(), clusterPos.y());
         cluster_charge->Fill(clus.getClusterCharge() * 1.e-3);
 
         auto cluster_particles = clus.getMCParticles();
@@ -197,18 +209,22 @@ void DetectorHistogrammerModule::run(unsigned int) {
         for(auto& particle : intersection) {
             auto pitch = detector_->getModel()->getPixelSize();
 
-            auto particlePosX = (particle->getLocalStartPoint().x() + particle->getLocalEndPoint().x()) / 2.0;
-            auto particlePosY = (particle->getLocalStartPoint().y() + particle->getLocalEndPoint().y()) / 2.0;
-            LOG(DEBUG) << "MCParticle at " << Units::display(particlePosX, {"mm", "um"}) << ","
-                       << Units::display(particlePosY, {"mm", "um"});
+            auto particlePos = (static_cast<XYZVector>(particle->getLocalStartPoint()) + particle->getLocalEndPoint()) / 2.0;
+            LOG(DEBUG) << "MCParticle at " << Units::display(particlePos, {"mm", "um"});
 
-            auto inPixelPosX = static_cast<double>(Units::convert(std::fmod(particlePosX + pitch.x() / 2, pitch.x()), "um"));
-            auto inPixelPosY = static_cast<double>(Units::convert(std::fmod(particlePosY + pitch.y() / 2, pitch.y()), "um"));
-            LOG(DEBUG) << "MCParticle in pixel at " << Units::display(inPixelPosX, {"mm", "um"});
+            auto inPixelPos = XYVector(std::fmod(particlePos.x() + pitch.x() / 2, pitch.x()),
+                                       std::fmod(particlePos.y() + pitch.y() / 2, pitch.y()));
+            LOG(TRACE) << "MCParticle in pixel at " << Units::display(inPixelPos, {"mm", "um"});
 
-            cluster_size_map->Fill(inPixelPosX, inPixelPosY, static_cast<double>(clus.getClusterSize()));
-            cluster_size_x_map->Fill(inPixelPosX, inPixelPosY, clusSizesXY.first);
-            cluster_size_y_map->Fill(inPixelPosX, inPixelPosY, clusSizesXY.second);
+            auto inPixel_um_x = static_cast<double>(Units::convert(inPixelPos.x(), "um"));
+            auto inPixel_um_y = static_cast<double>(Units::convert(inPixelPos.y(), "um"));
+            cluster_size_map->Fill(inPixel_um_x, inPixel_um_y, static_cast<double>(clus.getClusterSize()));
+            cluster_size_x_map->Fill(inPixel_um_x, inPixel_um_y, clusSizesXY.first);
+            cluster_size_y_map->Fill(inPixel_um_x, inPixel_um_y, clusSizesXY.second);
+
+            // Calculate residual with cluster position:
+            residual_x->Fill(static_cast<double>(Units::convert(particlePos.x() - clusterPos.x() * pitch.x(), "um")));
+            residual_y->Fill(static_cast<double>(Units::convert(particlePos.y() - clusterPos.y() * pitch.y(), "um")));
         }
     }
 
@@ -300,6 +316,8 @@ void DetectorHistogrammerModule::finalize() {
     cluster_size_x->Write();
     cluster_size_y->Write();
     event_size->Write();
+    residual_x->Write();
+    residual_y->Write();
     n_cluster->Write();
     cluster_charge->Write();
 }
