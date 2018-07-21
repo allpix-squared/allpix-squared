@@ -64,6 +64,12 @@ namespace allpix {
          */
         std::vector<Cluster> doClustering();
 
+        /**
+         * @brief analyze the available MCParticles and return the all particles identified as primary (i.e. that do not have
+         * a parent). This might be several particles.
+         */
+        std::vector<const MCParticle*> getPrimaryParticles() const;
+
         std::shared_ptr<Detector> detector_;
 
         // List of pixel hits and MC particles

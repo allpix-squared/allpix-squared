@@ -127,6 +127,10 @@ void DetectorHistogrammerModule::run(unsigned int) {
     // Perform a clustering
     std::vector<Cluster> clusters = doClustering();
 
+    // Retrieve all MC particles in this detector which are primary particles (not produced within the sensor):
+    auto primary_particles = getPrimaryParticles();
+    LOG(DEBUG) << "Found " << primary_particles.size() << " primary particles in this event";
+
     // Evaluate the clusters
     for(auto clus : clusters) {
         // Fill cluster histograms
@@ -277,4 +281,24 @@ std::vector<Cluster> DetectorHistogrammerModule::doClustering() {
         clusters.push_back(cluster);
     }
     return clusters;
+}
+
+std::vector<const MCParticle*> DetectorHistogrammerModule::getPrimaryParticles() const {
+    std::vector<const MCParticle*> primaries;
+
+    // Loop over all MCParticles available
+    for(auto& mc_particle : mcparticle_message_->getData()) {
+        // Check for possible parents:
+        auto parent = mc_particle.getParent();
+        if(parent != nullptr) {
+            LOG(DEBUG) << "MCParticle " << mc_particle.getParticleID();
+            continue;
+        }
+
+        // This particle has no parent particles in the regarded sensor, return it.
+        LOG(DEBUG) << "MCParticle " << mc_particle.getParticleID() << " (primary)";
+        primaries.push_back(&mc_particle);
+    }
+
+    return primaries;
 }
