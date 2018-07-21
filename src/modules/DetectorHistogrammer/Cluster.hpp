@@ -64,6 +64,14 @@ namespace allpix {
         const PixelHit* getSeedPixelHit() const { return seedPixelHit_; }
 
         /**
+         * @brief Get the PixelHit at coordinates x and y
+         * @param  x Coordinate of the pixel in x direction
+         * @param  y Coordinate of the pixel in y direction
+         * @return Pointer to matching PixelHit if available or a nullptr if not part of the cluster
+         */
+        const PixelHit* getPixelHit(unsigned int x, unsigned int y) const;
+
+        /**
          * @brief Get the PixelHits contained in this cluster
          * @return List of all contained PixelHits
          */

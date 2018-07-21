@@ -84,3 +84,12 @@ std::vector<const MCParticle*> Cluster::getMCParticles() const {
     // Return as a vector of mc particles
     return mc_particles;
 }
+
+const PixelHit* Cluster::getPixelHit(unsigned int x, unsigned int y) const {
+    for(auto& pixel : this->getPixelHits()) {
+        if(pixel->getPixel().getIndex().x() == x && pixel->getPixel().getIndex().y() == y) {
+            return pixel;
+        }
+    }
+    return nullptr;
+}
