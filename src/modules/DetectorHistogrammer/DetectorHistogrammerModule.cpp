@@ -26,8 +26,9 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
     : Module(config, detector), detector_(std::move(detector)), pixels_message_(nullptr) {
-    // Bind pixel hits message
+    // Bind messages
     messenger->bindSingle(this, &DetectorHistogrammerModule::pixels_message_, MsgFlags::REQUIRED);
+    messenger->bindSingle(this, &DetectorHistogrammerModule::mcparticle_message_, MsgFlags::REQUIRED);
 }
 
 void DetectorHistogrammerModule::init() {

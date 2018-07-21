@@ -66,8 +66,9 @@ namespace allpix {
 
         std::shared_ptr<Detector> detector_;
 
-        // List of pixel hits
+        // List of pixel hits and MC particles
         std::shared_ptr<PixelHitMessage> pixels_message_;
+        std::shared_ptr<MCParticleMessage> mcparticle_message_;
 
         // Statistics to compute mean position
         ROOT::Math::XYVector total_vector_{};
