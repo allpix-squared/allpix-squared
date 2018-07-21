@@ -99,6 +99,19 @@ void DetectorHistogrammerModule::init() {
                                         0.,
                                         pitch_y);
 
+    // Charge maps:
+    std::string cluster_charge_map_name = "cluster_charge_map";
+    std::string cluster_charge_map_title = "Cluster charge as function of in-pixel impact position for " +
+                                           detector_->getName() + ";x%pitch [#mum];y%pitch [#mum];<cluster charge> [ke]";
+    cluster_charge_map = new TProfile2D(cluster_charge_map_name.c_str(),
+                                        cluster_charge_map_title.c_str(),
+                                        static_cast<int>(pitch_x),
+                                        0.,
+                                        pitch_x,
+                                        static_cast<int>(pitch_y),
+                                        0.,
+                                        pitch_y);
+
     // Create cluster size plots
     std::string cluster_size_name = "cluster_size";
     std::string cluster_size_title = "Cluster size for " + detector_->getName() + ";cluster size [px];clusters";
@@ -192,7 +205,7 @@ void DetectorHistogrammerModule::run(unsigned int) {
         auto clusterPos = clus.getClusterPosition();
         LOG(TRACE) << "Cluster at coordinates " << clusterPos;
         cluster_map->Fill(clusterPos.x(), clusterPos.y());
-        cluster_charge->Fill(clus.getClusterCharge() * 1.e-3);
+        cluster_charge->Fill(static_cast<double>(Units::convert(clus.getClusterCharge(), "ke")));
 
         auto cluster_particles = clus.getMCParticles();
         LOG(DEBUG) << "This cluster is connected to " << cluster_particles.size() << " MC particles";
@@ -221,6 +234,10 @@ void DetectorHistogrammerModule::run(unsigned int) {
             cluster_size_map->Fill(inPixel_um_x, inPixel_um_y, static_cast<double>(clus.getClusterSize()));
             cluster_size_x_map->Fill(inPixel_um_x, inPixel_um_y, clusSizesXY.first);
             cluster_size_y_map->Fill(inPixel_um_x, inPixel_um_y, clusSizesXY.second);
+
+            // Charge maps:
+            cluster_charge_map->Fill(
+                inPixel_um_x, inPixel_um_y, static_cast<double>(Units::convert(clus.getClusterCharge(), "ke")));
 
             // Calculate residual with cluster position:
             residual_x->Fill(static_cast<double>(Units::convert(particlePos.x() - clusterPos.x() * pitch.x(), "um")));
@@ -320,6 +337,7 @@ void DetectorHistogrammerModule::finalize() {
     residual_y->Write();
     n_cluster->Write();
     cluster_charge->Write();
+    cluster_charge_map->Write();
 }
 
 std::vector<Cluster> DetectorHistogrammerModule::doClustering() {
