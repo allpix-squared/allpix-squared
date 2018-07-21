@@ -34,6 +34,8 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
 void DetectorHistogrammerModule::init() {
     // Fetch detector model
     auto model = detector_->getModel();
+    auto pitch_x = Units::convert(model->getPixelSize().x(), "um");
+    auto pitch_y = Units::convert(model->getPixelSize().y(), "um");
 
     // Create histogram of hitmap
     LOG(TRACE) << "Creating histograms";
@@ -59,6 +61,43 @@ void DetectorHistogrammerModule::init() {
                            model->getNPixels().y(),
                            -0.5,
                            model->getNPixels().y() - 0.5);
+
+    // Create histogram of cluster map
+    std::string cluster_size_map_name = "cluster_size_map";
+    std::string cluster_size_map_title = "Cluster size as function of in-pixel impact position for " + detector_->getName() +
+                                         ";x%pitch [#mum];y%pitch [#mum]";
+    cluster_size_map = new TProfile2D(cluster_size_map_name.c_str(),
+                                      cluster_size_map_title.c_str(),
+                                      static_cast<int>(pitch_x),
+                                      0.,
+                                      static_cast<double>(pitch_x),
+                                      static_cast<int>(pitch_y),
+                                      0.,
+                                      static_cast<double>(pitch_y));
+
+    std::string cluster_size_x_map_name = "cluster_size_x_map";
+    std::string cluster_size_x_map_title = "Cluster size in X as function of in-pixel impact position for " +
+                                           detector_->getName() + ";x%pitch [#mum];y%pitch [#mum]";
+    cluster_size_x_map = new TProfile2D(cluster_size_x_map_name.c_str(),
+                                        cluster_size_x_map_title.c_str(),
+                                        static_cast<int>(pitch_x),
+                                        0.,
+                                        static_cast<double>(pitch_x),
+                                        static_cast<int>(pitch_y),
+                                        0.,
+                                        static_cast<double>(pitch_y));
+
+    std::string cluster_size_y_map_name = "cluster_size_y_map";
+    std::string cluster_size_y_map_title = "Cluster size in Y as function of in-pixel impact position for " +
+                                           detector_->getName() + ";x%pitch [#mum];y%pitch [#mum]";
+    cluster_size_y_map = new TProfile2D(cluster_size_y_map_name.c_str(),
+                                        cluster_size_y_map_title.c_str(),
+                                        static_cast<int>(pitch_x),
+                                        0.,
+                                        static_cast<double>(pitch_x),
+                                        static_cast<int>(pitch_y),
+                                        0.,
+                                        static_cast<double>(pitch_y));
 
     // Create cluster size plots
     std::string cluster_size_name = "cluster_size";
@@ -142,6 +181,35 @@ void DetectorHistogrammerModule::run(unsigned int) {
         auto clusPos = clus.getClusterPosition();
         cluster_map->Fill(clusPos.x(), clusPos.y());
         cluster_charge->Fill(clus.getClusterCharge() * 1.e-3);
+
+        auto cluster_particles = clus.getMCParticles();
+        LOG(DEBUG) << "This cluster is connected to " << cluster_particles.size() << " MC particles";
+
+        // Find all particles connected to this cluster which are also primaries:
+        std::vector<const MCParticle*> intersection;
+        std::set_intersection(primary_particles.begin(),
+                              primary_particles.end(),
+                              cluster_particles.begin(),
+                              cluster_particles.end(),
+                              std::back_inserter(intersection));
+
+        LOG(TRACE) << "Matching primaries: " << intersection.size();
+        for(auto& particle : intersection) {
+            auto pitch = detector_->getModel()->getPixelSize();
+
+            auto particlePosX = (particle->getLocalStartPoint().x() + particle->getLocalEndPoint().x()) / 2.0;
+            auto particlePosY = (particle->getLocalStartPoint().y() + particle->getLocalEndPoint().y()) / 2.0;
+            LOG(DEBUG) << "MCParticle at " << Units::display(particlePosX, {"mm", "um"}) << ","
+                       << Units::display(particlePosY, {"mm", "um"});
+
+            auto inPixelPosX = static_cast<double>(Units::convert(std::fmod(particlePosX + pitch.x() / 2, pitch.x()), "um"));
+            auto inPixelPosY = static_cast<double>(Units::convert(std::fmod(particlePosY + pitch.y() / 2, pitch.y()), "um"));
+            LOG(DEBUG) << "MCParticle in pixel at " << Units::display(inPixelPosX, {"mm", "um"});
+
+            cluster_size_map->Fill(inPixelPosX, inPixelPosY, static_cast<double>(clus.getClusterSize()));
+            cluster_size_x_map->Fill(inPixelPosX, inPixelPosY, clusSizesXY.first);
+            cluster_size_y_map->Fill(inPixelPosX, inPixelPosY, clusSizesXY.second);
+        }
     }
 
     // Fill further histograms
@@ -225,6 +293,9 @@ void DetectorHistogrammerModule::finalize() {
     LOG(TRACE) << "Writing histograms to file";
     hit_map->Write();
     cluster_map->Write();
+    cluster_size_map->Write();
+    cluster_size_x_map->Write();
+    cluster_size_y_map->Write();
     cluster_size->Write();
     cluster_size_x->Write();
     cluster_size_y->Write();

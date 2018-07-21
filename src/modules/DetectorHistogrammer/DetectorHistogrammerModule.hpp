@@ -17,6 +17,7 @@
 
 #include <TH1I.h>
 #include <TH2I.h>
+#include <TProfile2D.h>
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
@@ -83,6 +84,7 @@ namespace allpix {
         // Histograms to output
         TH2D* hit_map;
         TH2D* cluster_map;
+        TProfile2D *cluster_size_map, *cluster_size_x_map, *cluster_size_y_map;
         TH1D* event_size;
         TH1D* cluster_size;
         TH1D* cluster_size_x;
