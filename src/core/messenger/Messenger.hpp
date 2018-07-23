@@ -17,12 +17,12 @@
 #include <utility>
 
 #include "Message.hpp"
-#include "core/module/Module.hpp"
 #include "delegates.h"
 
 namespace allpix {
 
     using DelegateMap = std::map<std::type_index, std::map<std::string, std::list<std::shared_ptr<BaseDelegate>>>>;
+    class Module;
 
     /**
      * @ingroup Managers
@@ -34,7 +34,6 @@ namespace allpix {
     class Messenger {
         friend class Module;
         friend class Event;
-        friend class MessageStorage;
 
     public:
         /**

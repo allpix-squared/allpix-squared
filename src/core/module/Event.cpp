@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Implementation of the event wrapper
+ * @brief Implementation of event
  *
  * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
@@ -9,7 +9,6 @@
  */
 
 #include "Event.hpp"
-#include "Module.hpp"
 
 #include <chrono>
 #include <list>
@@ -18,14 +17,23 @@
 
 #include <TProcessID.h>
 
+#include "Module.hpp"
 #include "core/utils/log.h"
 
 using namespace allpix;
-using namespace std::chrono_literals;
 
 std::mutex Event::stats_mutex_;
-Event::IOLock Event::reader_lock_;
-Event::IOLock Event::writer_lock_;
+Event::IOOrderLock Event::reader_lock_;
+Event::IOOrderLock Event::writer_lock_;
+
+// Check if the detectors match for the message and the delegate
+static bool check_send(BaseMessage* message, BaseDelegate* delegate) {
+    if(delegate->getDetector() != nullptr &&
+       (message->getDetector() == nullptr || delegate->getDetector()->getName() != message->getDetector()->getName())) {
+        return false;
+    }
+    return true;
+}
 
 Event::Event(ModuleList modules,
              const unsigned int event_num,
@@ -35,10 +43,46 @@ Event::Event(ModuleList modules,
              std::mt19937_64& seeder)
     : number(event_num), modules_(std::move(modules)), terminate_(terminate), module_execution_time_(module_execution_time),
       delegates_(messenger->delegates_) {
-    random_generator_.seed(seeder());
+    random_engine_.seed(seeder());
 }
 
+/**
+ * Geant4 modules must be run single-threaded on the main thread.
+ * Pops and executes Geant4 modules from the \ref Event::modules_ "list of modules".
+ */
+void Event::init() {
+    // Get object count for linking objects in current event
+    /* auto save_id = TProcessID::GetObjectCount(); */
+
+    // Execute every Geant4 module
+    // XXX: Geant4 modules are only executed if they are at the start of modules_
+    while(!modules_.empty()) {
+
+        auto module = modules_.front();
+        if(module->getUniqueName().find("Geant4") == std::string::npos) {
+            // All Geant4 modules have been executed
+            break;
+        }
+
+        run(module);
+
+        modules_.pop_front();
+    }
+
+    // Reset object count for next event
+    /* TProcessID::SetObjectCount(save_id); */
+}
+
+/**
+ * Runs modules that read from or write to files.
+ * The appropriate \ref Event::IOOrderLock "order lock" is operated upon -- counter read/modified and condition watched -- to
+ * achieve this.
+ * When a previous event has yet to write to file, the current event waits until it's its own turn to write.
+ * No work is done while waiting.
+ */
 bool Event::handle_iomodule(const std::shared_ptr<Module>& module) {
+    using namespace std::chrono_literals;
+
     const bool reader = dynamic_cast<ReaderModule*>(module.get()), writer = dynamic_cast<WriterModule*>(module.get());
     if(previous_was_reader_ && !reader) {
         // All readers have been run for this event, let the next event run its readers
@@ -64,6 +108,11 @@ bool Event::handle_iomodule(const std::shared_ptr<Module>& module) {
     return true;
 }
 
+/**
+ * Runs a single module.
+ * The run for a module is skipped if its delegates are not \ref Event::is_satisfied() "satisfied".
+ * Sets the section header and logging settings before exeuting the \ref Module::run() function.
+ */
 void Event::run(std::shared_ptr<Module>& module) {
     // Modules that read/write files must be run in order of event number
     const bool io_module = handle_iomodule(module);
@@ -116,33 +165,8 @@ void Event::run(std::shared_ptr<Module>& module) {
     module_execution_time_[module.get()] += static_cast<std::chrono::duration<long double>>(end - start).count();
 }
 
-void Event::init() {
-    // Get object count for linking objects in current event
-    /* auto save_id = TProcessID::GetObjectCount(); */
-
-    // Execute every Geant4 module
-    // XXX: Geant4 modules are only executed if they are at the start of modules_
-    while(!modules_.empty()) {
-
-        auto module = modules_.front();
-        if(module->getUniqueName().find("Geant4") == std::string::npos) {
-            // All Geant4 modules have been executed
-            break;
-        }
-
-        run(module);
-
-        modules_.pop_front();
-    }
-
-    // Reset object count for next event
-    /* TProcessID::SetObjectCount(save_id); */
-}
-
 /**
  * Sequentially runs the modules that constitutes the event.
- * The run for a module is skipped if its delegates are not \ref Module::check_delegates() "satisfied".
- * Sets the section header and logging settings before exeuting the \ref Module::run() function.
  * \ref Module::reset_delegates() "Resets" the delegates and the logging after initialization
  */
 void Event::run() {
@@ -171,15 +195,6 @@ void Event::run() {
 
 void Event::finalize() {
     // stub
-}
-
-// Check if the detectors match for the message and the delegate
-static bool check_send(BaseMessage* message, BaseDelegate* delegate) {
-    if(delegate->getDetector() != nullptr &&
-       (message->getDetector() == nullptr || delegate->getDetector()->getName() != message->getDetector()->getName())) {
-        return false;
-    }
-    return true;
 }
 
 void Event::dispatch_message(Module* source, std::shared_ptr<BaseMessage> message, std::string name) {
@@ -258,4 +273,8 @@ bool Event::is_satisfied(Module* module) const {
     } catch(const std::out_of_range&) {
         return false;
     }
+}
+
+std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> Event::fetchFilteredMessages() {
+    return messages_[current_module_->getUniqueName()].filter_multi;
 }

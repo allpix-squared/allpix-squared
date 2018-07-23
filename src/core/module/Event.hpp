@@ -14,12 +14,16 @@
 #include "ModuleManager.hpp"
 
 #include "../messenger/Messenger.hpp"
-#include "../messenger/delegates.h"
 
 namespace allpix {
 
-    using DelegateMap = std::map<std::type_index, std::map<std::string, std::list<std::shared_ptr<BaseDelegate>>>>;
-
+    /**
+     * @ingroup Managers
+     * @brief Manager responsible for the execution of a single event
+     *
+     * Executes a single event, storing messages independent from other events.
+     * Exposes an API for usage by the modules' \ref Module::run "run functions".
+     */
     class Event {
         friend class ModuleManager;
 
@@ -38,37 +42,40 @@ namespace allpix {
         template <typename T> void dispatchMessage(std::shared_ptr<T> message, const std::string& name = "-");
 
         /**
-         * @brief Fetches a message
+         * @brief Fetches a single message of specified type
+         * @return Shared pointer to message
          */
         template <typename T> std::shared_ptr<T> fetchMessage();
 
         /**
-         * @brief Fetches a vector of messages
+         * @brief Fetches multiple messages of specified type
+         * @return Vector of shared pointers to messages
          */
         template <typename T> std::vector<std::shared_ptr<T>> fetchMultiMessage();
 
-        std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> fetchFilteredMessages() {
-            return messages_[current_module_->getUniqueName()].filter_multi;
-        }
+        /**
+         * @brief Fetches filtered messages
+         * @return Vector of pairs containing shared pointer to and name of message
+         */
+        std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> fetchFilteredMessages();
 
-        std::mt19937_64& getRandomEngine() { return random_generator_; }
+        /**
+         * @brief Access the random engine of this event
+         * @return Reference to this event's random engine
+         */
+        std::mt19937_64& getRandomEngine() { return random_engine_; }
 
-        uint64_t getRandomNumber() { return random_generator_(); }
+        /**
+         * @brief Advances the random engine's state one step
+         * @return The generated value
+         */
+        uint64_t getRandomNumber() { return random_engine_(); }
 
     private:
         /**
-         * @brief Check if a module is satisfied for running (all required messages received)
-         * @return True if satisfied, false otherwise
+         * @brief Helper struct used to read from and writer to files in order of event number
          */
-        bool is_satisfied(Module* module) const;
-
-        void dispatch_message(Module* source, std::shared_ptr<BaseMessage> message, std::string name);
-        bool dispatch_message(Module* source,
-                              const std::shared_ptr<BaseMessage>& message,
-                              const std::string& name,
-                              const std::string& id);
-
-        struct IOLock {
+        struct IOOrderLock {
             std::mutex mutex;
             std::condition_variable condition;
             std::atomic<unsigned int> current_event{1};
@@ -86,11 +93,9 @@ namespace allpix {
          * @brief Construct Event
          * @param modules The modules that constitutes the event
          * @param event_num The event identifier
-         * @param terminate TODO
-         * @param module_execution_time TODO
-         * @param seeder TODO
-         * @param io_mutex TODO
-         * @param io_condition TODO
+         * @param terminate Reference to simulation-global termination flag
+         * @param module_execution_time Map to store module statistics
+         * @param seeder Seeder to seed the random engine
          */
         explicit Event(ModuleList modules,
                        const unsigned int event_num,
@@ -98,6 +103,7 @@ namespace allpix {
                        std::map<Module*, long double>& module_execution_time,
                        Messenger* messenger,
                        std::mt19937_64& seeder);
+
         /**
          * @brief Use default destructor
          */
@@ -118,7 +124,7 @@ namespace allpix {
         /// @}
 
         /**
-         * @brief Inialize the event
+         * @brief Run all Geant4 module, initializing the event
          */
         void init();
 
@@ -127,10 +133,25 @@ namespace allpix {
          * @warning Should be called after the \ref Event::init "init function"
          */
         void run();
+
+        /**
+         * Handle the execution of a single module
+         * @param module The module to execute
+         */
         void run(std::shared_ptr<Module>& module);
 
+        /**
+         * @brief Handles the execution of modules requiring I/O operations
+         * @param module The module to execute
+         * @warning This function should be called for every module in \ref Event::modules_
+         */
         bool handle_iomodule(const std::shared_ptr<Module>& module);
 
+        /**
+         * @brief Changes the current context to the given module, used for message handling
+         * @param module The new context
+         * @warning This function should be called before calling the same module's \ref Module::run "run function"
+         */
         Event* with_context(const std::shared_ptr<Module>& module) {
             current_module_ = module.get();
             return this;
@@ -142,24 +163,36 @@ namespace allpix {
          */
         void finalize();
 
+        void dispatch_message(Module* source, std::shared_ptr<BaseMessage> message, std::string name);
+        bool dispatch_message(Module* source,
+                              const std::shared_ptr<BaseMessage>& message,
+                              const std::string& name,
+                              const std::string& id);
+        /**
+         * @brief Check if a module is satisfied for running (all required messages received)
+         * @return True if satisfied, false otherwise
+         */
+        bool is_satisfied(Module* module) const;
+
+        // List of modules that constitutes this event
         ModuleList modules_;
 
-        // XXX: cannot be moved
+        // Simulation-global termination flag
         std::atomic<bool>& terminate_;
 
+        // Storage of module run-time statistics
         static std::mutex stats_mutex_;
         std::map<Module*, long double>& module_execution_time_;
 
-        std::mt19937_64 random_generator_;
+        // Random engine accessed by all modules in this event
+        std::mt19937_64 random_engine_;
 
-        // For Readers/Writers execution
-        static IOLock reader_lock_;
-        static IOLock writer_lock_;
+        // For execution of readers/writers
+        static IOOrderLock reader_lock_;
+        static IOOrderLock writer_lock_;
         bool previous_was_reader_{false};
 
         // For module messages
-
-        // What are all modules listening to?
         DelegateMap& delegates_;
         std::map<std::string, DelegateTypes> messages_;
         std::map<std::string, bool> satisfied_modules_;
