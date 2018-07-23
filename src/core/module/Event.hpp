@@ -11,12 +11,14 @@
 #define ALLPIX_MODULE_EVENT_H
 
 // XXX: merely for ModuleList
-#include "MessageStorage.hpp"
 #include "ModuleManager.hpp"
 
 #include "../messenger/Messenger.hpp"
+#include "../messenger/delegates.h"
 
 namespace allpix {
+
+    using DelegateMap = std::map<std::type_index, std::map<std::string, std::list<std::shared_ptr<BaseDelegate>>>>;
 
     class Event {
         friend class ModuleManager;
@@ -46,7 +48,7 @@ namespace allpix {
         template <typename T> std::vector<std::shared_ptr<T>> fetchMultiMessage();
 
         std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> fetchFilteredMessages() {
-            return message_storage_.messages_[message_storage_.module_->getUniqueName()].filter_multi;
+            return messages_[current_module_->getUniqueName()].filter_multi;
         }
 
         std::mt19937_64& getRandomEngine() { return random_generator_; }
@@ -54,6 +56,18 @@ namespace allpix {
         uint64_t getRandomNumber() { return random_generator_(); }
 
     private:
+        /**
+         * @brief Check if a module is satisfied for running (all required messages received)
+         * @return True if satisfied, false otherwise
+         */
+        bool is_satisfied(Module* module) const;
+
+        void dispatch_message(Module* source, std::shared_ptr<BaseMessage> message, std::string name);
+        bool dispatch_message(Module* source,
+                              const std::shared_ptr<BaseMessage>& message,
+                              const std::string& name,
+                              const std::string& id);
+
         struct IOLock {
             std::mutex mutex;
             std::condition_variable condition;
@@ -67,7 +81,6 @@ namespace allpix {
                 condition.notify_all();
             }
         };
-
 
         /**
          * @brief Construct Event
@@ -119,7 +132,7 @@ namespace allpix {
         bool handle_iomodule(const std::shared_ptr<Module>& module);
 
         Event* with_context(const std::shared_ptr<Module>& module) {
-            message_storage_.using_module(module.get());
+            current_module_ = module.get();
             return this;
         }
 
@@ -130,7 +143,6 @@ namespace allpix {
         void finalize();
 
         ModuleList modules_;
-        MessageStorage message_storage_;
 
         // XXX: cannot be moved
         std::atomic<bool>& terminate_;
@@ -144,6 +156,15 @@ namespace allpix {
         static IOLock reader_lock_;
         static IOLock writer_lock_;
         bool previous_was_reader_{false};
+
+        // For module messages
+
+        // What are all modules listening to?
+        DelegateMap& delegates_;
+        std::map<std::string, DelegateTypes> messages_;
+        std::map<std::string, bool> satisfied_modules_;
+        Module* current_module_;
+        std::vector<std::shared_ptr<BaseMessage>> sent_messages_;
     };
 
 } // namespace allpix
