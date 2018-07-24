@@ -228,6 +228,32 @@ namespace allpix {
         }
 
         /**
+         * @brief Get local coordinate of the geometric center of the model
+         */
+        virtual ROOT::Math::XYZPoint getGeoCenter() const {
+            // Get the distance, on the z axis, between the sensor center and the detector (box) geometrical center
+            double detector_thickness = getSize().z();
+            double min_support_center =
+                -getSensorSize().Z() / 2; // center (on the z axis) of the support (sensor side) with smallest z coordinate
+            double min_support_size = 0.; // z size of the support (sensor side) with smallest z coordinate
+            for(auto& support_layer : getSupportLayers()) {
+                double centers_zDistance = (support_layer.getCenter()).z() - getSensorCenter().z();
+                if(centers_zDistance < min_support_center) { // selects supports on the sensor side only
+                    min_support_center = centers_zDistance;
+                    min_support_size = (support_layer.getSize()).z();
+                }
+            }
+            double support_sensorSide_thickness =
+                std::abs(min_support_center) + min_support_size / 2 -
+                getSensorSize().Z() / 2; // total thickness of support layers (including empty spaces) on the sensor side
+            double zDistanceToGeoCenter = detector_thickness / 2 - support_sensorSide_thickness - getSensorSize().Z() / 2;
+
+            return ROOT::Math::XYZPoint(getGridSize().x() / 2.0 - getPixelSize().x() / 2.0,
+                                        getGridSize().y() / 2.0 - getPixelSize().y() / 2.0,
+                                        zDistanceToGeoCenter);
+        }
+
+        /**
          * @brief Get size of the box around the model that contains all elements
          * @return Size of the detector model
          *
@@ -268,9 +294,8 @@ namespace allpix {
             ROOT::Math::XYZVector size;
             size.SetX(2 * std::max(max.x() - getCenter().x(), getCenter().x() - min.x()));
             size.SetY(2 * std::max(max.y() - getCenter().y(), getCenter().y() - min.y()));
-            size.SetZ(
-                (max.z() - getCenter().z()) +
-                (getCenter().z() - min.z())); // max.z() is positive (chip side) and min.z() is negative or 0 (sensor side)
+            size.SetZ((max.z() - getCenter().z()) +
+                      (getCenter().z() - min.z())); // max.z() is positive (chip side) and min.z() is negative (sensor side)
             return size;
         }
 
