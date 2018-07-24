@@ -20,11 +20,6 @@
 #include "core/module/Module.hpp"
 
 namespace allpix {
-    // List of trees that are stored in data file
-    using Trees = std::map<std::string, std::unique_ptr<TTree>>;
-    // List of objects of a particular type, bound to a specific detector and having a particular name
-    using WriteList = std::map<std::tuple<std::type_index, std::string, std::string>, std::vector<Object*>*>;
-
     /**
      * @ingroup Modules
      * @brief Module to write object data to ROOT trees in file for persistent storage
@@ -42,6 +37,10 @@ namespace allpix {
          * @param geo_mgr Pointer to the geometry manager, containing the detectors
          */
         ROOTObjectWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr);
+        /**
+         * @brief Destructor deletes the internal objects used to build the ROOT Tree
+         */
+        ~ROOTObjectWriterModule() override;
 
         /**
          * @brief Receive a single message containing objects of arbitrary type
@@ -59,6 +58,7 @@ namespace allpix {
          * @brief Writes the objects fetched to their specific tree, constructing trees on the fly for new objects.
          */
         void run(Event*) const override;
+        void pre_run(Event*) const;
 
         /**
          * @brief Add the main configuration and the detector setup to the data file and write it, also write statistics
@@ -77,10 +77,13 @@ namespace allpix {
         std::unique_ptr<TFile> output_file_;
         std::string output_file_name_{};
 
-        // Statistical information about number of objects and branch count
-        mutable unsigned long write_cnt_{0};
-        mutable int branch_count_{0};
+        // List of trees that are stored in data file
+        mutable std::map<std::string, std::unique_ptr<TTree>> trees_;
 
-        std::pair<Trees, WriteList> pre_run(Event*) const;
+        // List of objects of a particular type, bound to a specific detector and having a particular name
+        mutable std::map<std::tuple<std::type_index, std::string, std::string>, std::vector<Object*>*> write_list_;
+
+        // Statistical information about number of objects
+        mutable unsigned long write_cnt_{};
     };
 } // namespace allpix

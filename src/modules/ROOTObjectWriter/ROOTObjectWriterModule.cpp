@@ -31,6 +31,15 @@ ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration& config, Messenger*
     // Bind to all messages with filter
     messenger->registerFilter(this, &ROOTObjectWriterModule::filter);
 }
+/**
+ * @note Objects cannot be stored in smart pointers due to internal ROOT logic
+ */
+ROOTObjectWriterModule::~ROOTObjectWriterModule() {
+    // Delete all object pointers
+    for(auto& index_data : write_list_) {
+        delete index_data.second;
+    }
+}
 
 void ROOTObjectWriterModule::init(uint64_t) {
     // Create output file
@@ -100,15 +109,12 @@ bool ROOTObjectWriterModule::filter(const std::shared_ptr<BaseMessage>& message,
     return true;
 }
 
-std::pair<Trees, WriteList> ROOTObjectWriterModule::pre_run(Event* event) const {
+void ROOTObjectWriterModule::pre_run(Event* event) const {
     auto messages = event->fetchFilteredMessages();
 
-    Trees trees;
-    WriteList write_list;
-
-    for(auto& pair : messages) {
-        auto& message = pair.first;
-        auto& message_name = pair.second;
+    for (auto& pair : messages) {
+        auto &message = pair.first;
+        auto &message_name = pair.second;
 
         // Get the detector name
         std::string detector_name;
@@ -119,13 +125,12 @@ std::pair<Trees, WriteList> ROOTObjectWriterModule::pre_run(Event* event) const 
         // Read the object
         auto object_array = message->getObjectArray();
         // object_array emptiness is checked in the filter
-        assert(!object_array.empty());
         const Object& first_object = object_array[0];
         std::type_index type_idx = typeid(first_object);
 
         // Create a new branch of the correct type if this message was not received before
         auto index_tuple = std::make_tuple(type_idx, detector_name, message_name);
-        if(write_list.find(index_tuple) == write_list.end()) {
+        if(write_list_.find(index_tuple) == write_list_.end()) {
 
             auto* cls = TClass::GetClass(typeid(first_object));
 
@@ -138,14 +143,15 @@ std::pair<Trees, WriteList> ROOTObjectWriterModule::pre_run(Event* event) const 
             }
 
             // Add vector of objects to write to the write list
-            write_list[index_tuple] = new std::vector<Object*>();
-            auto addr = &write_list[index_tuple];
+            write_list_[index_tuple] = new std::vector<Object*>();
+            auto addr = &write_list_[index_tuple];
 
-            if(trees.find(class_name) == trees.end()) {
+            if(trees_.find(class_name) == trees_.end()) {
                 // Create new tree
                 output_file_->cd();
-                trees.emplace(class_name,
-                              std::make_unique<TTree>(class_name.c_str(), (std::string("Tree of ") + class_name).c_str()));
+                trees_.emplace(
+                    class_name,
+                    std::make_unique<TTree>(class_name.c_str(), (std::string("Tree of ") + class_name).c_str()));
             }
 
             std::string branch_name = detector_name.empty() ? "global" : detector_name;
@@ -154,7 +160,7 @@ std::pair<Trees, WriteList> ROOTObjectWriterModule::pre_run(Event* event) const 
                 branch_name += message_name;
             }
 
-            trees[class_name]->Bronch(
+            trees_[class_name]->Bronch(
                 branch_name.c_str(), (std::string("std::vector<") + cls->GetName() + "*>").c_str(), addr);
         }
 
@@ -162,48 +168,39 @@ std::pair<Trees, WriteList> ROOTObjectWriterModule::pre_run(Event* event) const 
         for(Object& object : object_array) {
             std::lock_guard<std::mutex> lock{stats_mutex_};
             ++write_cnt_;
-            write_list[index_tuple]->push_back(&object);
+            write_list_[index_tuple]->push_back(&object);
         }
-    }
 
-    return {std::move(trees), std::move(write_list)};
+    }
 }
 
 void ROOTObjectWriterModule::run(Event* event) const {
     // Generate trees and index data
-    auto data = pre_run(event);
-    auto& trees = data.first;
-    auto& write_list = data.second;
+    pre_run(event);
 
     LOG(TRACE) << "Writing new objects to tree";
     output_file_->cd();
 
     // Fill the tree with the current received messages
-    for(auto& tree : trees) {
+    for(auto& tree : trees_) {
         tree.second->Fill();
     }
 
     // Clear the current message list
-    for(auto& index_data : write_list) {
+    for(auto& index_data : write_list_) {
         index_data.second->clear();
-    }
-
-    // Delete all object pointers.
-    // Objects cannot be stored in smart pointers due to internal ROOT logic
-    for(auto& index_data : write_list) {
-        delete index_data.second;
-    }
-
-    // Update statistics
-    for(auto& tree : trees) {
-        std::lock_guard<std::mutex> lock{stats_mutex_};
-        branch_count_ += tree.second->GetListOfBranches()->GetEntries();
     }
 }
 
 void ROOTObjectWriterModule::finalize() {
     LOG(TRACE) << "Writing objects to file";
     output_file_->cd();
+
+    int branch_count = 0;
+    for(auto& tree : trees_) {
+        // Update statistics
+        branch_count += tree.second->GetListOfBranches()->GetEntries();
+    }
 
     // Create main config directory
     TDirectory* config_dir = output_file_->mkdir("config");
@@ -284,6 +281,6 @@ void ROOTObjectWriterModule::finalize() {
     output_file_->Write();
 
     // Print statistics
-    LOG(STATUS) << "Wrote " << write_cnt_ << " objects to " << branch_count_ << " branches in file:" << std::endl
+    LOG(STATUS) << "Wrote " << write_cnt_ << " objects to " << branch_count << " branches in file:" << std::endl
                 << output_file_name_;
 }
