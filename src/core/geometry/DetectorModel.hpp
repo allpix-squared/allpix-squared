@@ -248,9 +248,7 @@ namespace allpix {
                 getSensorSize().Z() / 2; // total thickness of support layers (including empty spaces) on the sensor side
             double zDistanceToGeoCenter = detector_thickness / 2 - support_sensorSide_thickness - getSensorSize().Z() / 2;
 
-            return ROOT::Math::XYZPoint(getGridSize().x() / 2.0 - getPixelSize().x() / 2.0,
-                                        getGridSize().y() / 2.0 - getPixelSize().y() / 2.0,
-                                        zDistanceToGeoCenter);
+            return ROOT::Math::XYZPoint(getCenter().x(), getCenter().y(), zDistanceToGeoCenter);
         }
 
         /**

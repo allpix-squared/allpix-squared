@@ -205,34 +205,16 @@ void GeometryConstructionG4::build_detectors() {
             make_shared_no_delete<G4LogicalVolume>(wrapper_box.get(), world_material_, "wrapper_" + name + "_log");
         detector->setExternalObject("wrapper_log", wrapper_log);
 
-        // Get the distance, on the z axis, between the sensor center and the detector (box) geometrical center
-        double detector_thickness = model->getSize().z();
-        double min_support_center = -model->getSensorSize().Z() /
-                                    2; // center (on the z axis) of the support (sensor side) with smallest z coordinate
-        double min_support_size = 0.;  // z size of the support (sensor side) with smallest z coordinate
-        for(auto& support_layer : model->getSupportLayers()) {
-            double centers_zDistance = (support_layer.getCenter()).z() - model->getSensorCenter().z();
-            if(centers_zDistance < min_support_center) { // selects supports on the sensor side only
-                min_support_center = centers_zDistance;
-                min_support_size = (support_layer.getSize()).z();
-            }
-        }
-        double support_sensorSide_thickness =
-            std::abs(min_support_center) + min_support_size / 2 -
-            model->getSensorSize().Z() / 2; // total thickness of support layers (including empty spaces) on the sensor side
-        double zDistanceToGeoCenter = detector_thickness / 2 - support_sensorSide_thickness - model->getSensorSize().Z() / 2;
-
         // Get position and orientation
         auto position = detector->getPosition();
         LOG(DEBUG) << " - Position\t\t:\t" << Units::display(position, {"mm", "um"});
         ROOT::Math::Rotation3D orientation = detector->getOrientation();
         std::vector<double> copy_vec(9);
         orientation.GetComponents(copy_vec.begin(), copy_vec.end());
-        ROOT::Math::XYZVector geoTranslation(0., 0., zDistanceToGeoCenter);
         ROOT::Math::XYZPoint vx, vy, vz;
         orientation.GetComponents(vx, vy, vz);
         auto rotWrapper = std::make_shared<G4RotationMatrix>(copy_vec.data());
-        G4ThreeVector wrapperGeoTranslation = toG4Vector(-geoTranslation);
+        G4ThreeVector wrapperGeoTranslation(0, 0, -model->getGeoCenter().z());
         wrapperGeoTranslation *= rotWrapper->inverse();
         G4ThreeVector posWrapper = toG4Vector(position) - wrapperGeoTranslation;
         detector->setExternalObject("rotation_matrix", rotWrapper);
@@ -242,7 +224,7 @@ void GeometryConstructionG4::build_detectors() {
             rotWrapper.get(), posWrapper, wrapper_log.get(), "wrapper_" + name + "_phys", world_log_.get(), false, 0, true);
         detector->setExternalObject("wrapper_phys", wrapper_phys);
 
-        LOG(DEBUG) << " Center of the geometry parts relative to the origin:";
+        LOG(DEBUG) << " Center of the geometry parts relative to the detector wrapper geometric center:";
 
         /* SENSOR
          * the sensitive detector is the part that collects the deposits
@@ -259,7 +241,7 @@ void GeometryConstructionG4::build_detectors() {
         detector->setExternalObject("sensor_log", sensor_log);
 
         // Place the sensor box
-        auto sensor_pos = toG4Vector(model->getSensorCenter() - model->getCenter() - geoTranslation);
+        auto sensor_pos = toG4Vector(model->getSensorCenter() - model->getGeoCenter());
         LOG(DEBUG) << "  - Sensor\t\t:\t" << Units::display(sensor_pos, {"mm", "um"});
         auto sensor_phys = make_shared_no_delete<G4PVPlacement>(
             nullptr, sensor_pos, sensor_log.get(), "sensor_" + name + "_phys", wrapper_log.get(), false, 0, true);
@@ -306,7 +288,7 @@ void GeometryConstructionG4::build_detectors() {
             detector->setExternalObject("chip_log", chip_log);
 
             // Place the chip
-            auto chip_pos = toG4Vector(model->getChipCenter() - model->getCenter() - geoTranslation);
+            auto chip_pos = toG4Vector(model->getChipCenter() - model->getGeoCenter());
             LOG(DEBUG) << "  - Chip\t\t:\t" << Units::display(chip_pos, {"mm", "um"});
             auto chip_phys = make_shared_no_delete<G4PVPlacement>(
                 nullptr, chip_pos, chip_log.get(), "chip_" + name + "_phys", wrapper_log.get(), false, 0, true);
@@ -359,7 +341,7 @@ void GeometryConstructionG4::build_detectors() {
             supports_log->push_back(support_log);
 
             // Place the support
-            auto support_pos = toG4Vector(layer.getCenter() - model->getCenter() - geoTranslation);
+            auto support_pos = toG4Vector(layer.getCenter() - model->getGeoCenter());
             LOG(DEBUG) << "  - Support\t\t:\t" << Units::display(support_pos, {"mm", "um"});
             auto support_phys =
                 make_shared_no_delete<G4PVPlacement>(nullptr,
@@ -402,8 +384,7 @@ void GeometryConstructionG4::build_detectors() {
             detector->setExternalObject("bumps_wrapper_log", bumps_wrapper_log);
 
             // Place the general bumps volume
-            G4ThreeVector bumps_pos =
-                toG4Vector(hybrid_model->getBumpsCenter() - hybrid_model->getCenter() - geoTranslation);
+            G4ThreeVector bumps_pos = toG4Vector(hybrid_model->getBumpsCenter() - hybrid_model->getGeoCenter());
             LOG(DEBUG) << "  - Bumps\t\t:\t" << Units::display(bumps_pos, {"mm", "um"});
             auto bumps_wrapper_phys = make_shared_no_delete<G4PVPlacement>(nullptr,
                                                                            bumps_pos,
