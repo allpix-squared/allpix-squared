@@ -30,7 +30,7 @@ void PixelPulse::addCurrent(CarrierType type, double time, double current, const
         pulse_.at(bin) += current;
     }
 
-    deposited_charges_.Add(const_cast<DepositedCharge*>(deposited_charge)); // NOLINT
+    deposited_charges_.push_back(const_cast<DepositedCharge*>(deposited_charge)); // NOLINT
 }
 
 /**
@@ -41,11 +41,11 @@ void PixelPulse::addCurrent(CarrierType type, double time, double current, const
 std::vector<const DepositedCharge*> PixelPulse::getDepositedCharges() const {
     // FIXME: This is not very efficient unfortunately
     std::vector<const DepositedCharge*> deposited_charges;
-    for(int i = 0; i < deposited_charges_.GetEntries(); ++i) {
-        deposited_charges.emplace_back(dynamic_cast<DepositedCharge*>(deposited_charges_[i]));
-        if(deposited_charges.back() == nullptr) {
+    for(auto& deposited_charge : deposited_charges_) {
+        if(deposited_charge == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(DepositedCharge));
         }
+        deposited_charges.emplace_back(dynamic_cast<DepositedCharge*>(deposited_charge.GetObject()));
     }
     return deposited_charges;
 }

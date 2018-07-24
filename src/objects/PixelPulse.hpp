@@ -10,7 +10,7 @@
 #ifndef ALLPIX_PIXEL_PULSE_H
 #define ALLPIX_PIXEL_PULSE_H
 
-#include <TRefArray.h>
+#include <TRef.h>
 
 #include "DepositedCharge.hpp"
 #include "MCParticle.hpp"
@@ -61,7 +61,7 @@ namespace allpix {
         double resolution_;
         std::vector<double> pulse_;
 
-        TRefArray deposited_charges_;
+        std::vector<TRef> deposited_charges_;
     };
 
     /**
