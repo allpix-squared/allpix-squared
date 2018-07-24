@@ -10,6 +10,7 @@
 
 #include "Event.hpp"
 
+#include <algorithm>
 #include <chrono>
 #include <list>
 #include <memory>
@@ -48,24 +49,31 @@ Event::Event(ModuleList modules,
 
 /**
  * Geant4 modules must be run single-threaded on the main thread.
- * Pops and executes Geant4 modules from the \ref Event::modules_ "list of modules".
+ * Runs all modules up to and including the last Geant4 module and pops them from the \ref Event::modules_ "list of modules".
  */
 void Event::run_geant4() {
     // Get object count for linking objects in current event
     /* auto save_id = TProcessID::GetObjectCount(); */
 
-    // Execute every Geant4 module
-    // XXX: Geant4 modules are only executed if they are at the start of modules_
-    while(!modules_.empty()) {
+    auto first_after_last_geant4 = [&]() {
+        // Find the last Geant4 module from the bottom of the list up
+        auto last_geant4 = std::find_if(modules_.crbegin(), modules_.crend(), [](const auto& module) {
+            return module->getUniqueName().find("Geant4") != std::string::npos;
+        });
 
+        // The first module after the last Geant4 module is where we can safely run the event on another thread
+        return *std::prev(last_geant4, 1);
+    }();
+
+    // Execute every module up to and including the last Geant4 module
+    while(!modules_.empty()) {
         auto module = modules_.front();
-        if(module->getUniqueName().find("Geant4") == std::string::npos) {
-            // All Geant4 modules have been executed
+        if(module == first_after_last_geant4) {
+            // All Geant4 module have been executed
             break;
         }
 
         run(module);
-
         modules_.pop_front();
     }
 
