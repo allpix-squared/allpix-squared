@@ -126,11 +126,11 @@ namespace allpix {
         /**
          * @brief Run all Geant4 module, initializing the event
          */
-        void init();
+        void run_geant4();
 
         /**
          * @brief Run the event
-         * @warning Should be called after the \ref Event::init "init function"
+         * @warning Should be called after the \ref Event::run_geant4 "init function"
          */
         void run();
 

@@ -584,10 +584,9 @@ void ModuleManager::run(Messenger* messenger, std::mt19937_64& seeder) {
             throw InvalidValueError(global_config, "workers", "number of workers should be strictly more than zero");
         }
         LOG(WARNING) << "Experimental multithreading enabled - using " << threads_num << " worker threads.";
-        --threads_num;
     } else {
         // Default to no additional thread without multithreading
-        threads_num = 0;
+        threads_num = 1;
     }
 
     // Creates the thread pool
@@ -599,64 +598,52 @@ void ModuleManager::run(Messenger* messenger, std::mt19937_64& seeder) {
         Log::setReportingLevel(log_level);
         Log::setFormat(log_format);
     };
-    std::shared_ptr<ThreadPool> thread_pool = std::make_unique<ThreadPool>(threads_num, init_function);
+    std::condition_variable buffer_condition;
+    std::shared_ptr<ThreadPool> thread_pool = std::make_unique<ThreadPool>(threads_num, init_function, buffer_condition);
 
-    std::atomic<unsigned int> run_events{0};
-    auto premature_exit_function = [&]() {
-        if(terminate_) {
-            LOG(INFO) << "Interrupting prematurely because of request";
-            thread_pool->destroy();
-            global_config.set<unsigned int>("number_of_events", run_events);
-        }
+    std::atomic<unsigned int> finished_events{0};
 
-        return terminate_.load();
-    };
-
-    // Push all events to the thread pool
     auto start_time = std::chrono::steady_clock::now();
     global_config.setDefault<unsigned int>("number_of_events", 1u);
     auto number_of_events = global_config.get<unsigned int>("number_of_events");
-    LOG(STATUS) << "Initializing " << number_of_events << " events...";
-    for(unsigned int i = 1; i <= number_of_events; ++i) {
-        // Create the event and submit it to the thread pool
-        // TODO: clean up the forwarding of parameters. Can some be omitted?
+
+    // Push all events to the thread pool
+    std::mutex mutex;
+    std::unique_lock<std::mutex> lock{mutex};
+    for(unsigned int i = 1; i <= number_of_events; i++) {
+        // Don't initialize all events directly; that would take up too much memory.
+        // 4x thread_num should give us a sufficient buffer (meaning that workers should never end up idle).
+        buffer_condition.wait(lock, [&]() { return thread_pool->queue_size() < threads_num * 4 || terminate_; });
+
+        if(terminate_) {
+            LOG(INFO) << "Interrupting prematurely because of request";
+            thread_pool->destroy();
+            global_config.set<unsigned int>("number_of_events", finished_events);
+            break;
+        }
+
+        // Create an event, initialize it, and submit it wrapped in a lambda to the thread pool
         Event event(modules_, i, terminate_, module_execution_time_, messenger, seeder);
-        // Event initialization must be run on the main thread
-        event.init();
-        auto event_function = [ e = std::move(event), number_of_events, event_num = i, &run_events ]() mutable {
+        // Event initialization must be done on the main thread
+        event.run_geant4();
+        auto event_function = [ e = std::move(event), number_of_events, event_num = i, &finished_events ]() mutable {
             LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Running event " << event_num << " of " << number_of_events;
-
             e.run();
-            ++run_events;
-
+            finished_events++;
             LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished event " << event_num;
         };
         thread_pool->submit_event_function(std::move(event_function));
-
-        // Check for premature exception/termination
-        thread_pool->check_exception();
-        if(premature_exit_function()) {
-            break;
-        }
     }
 
-    LOG(STATUS) << "All events have been initialized";
+    LOG(STATUS) << "All events have been initialized. Waiting for thread pool to finish...";
 
-    // Execute all remaining events
-    while(thread_pool->execute_one()) {
-        thread_pool->check_exception();
-        if(premature_exit_function()) {
-            break;
-        }
-    }
-
-    // Wait for wokers to finish
+    // Wait for workers to finish
     thread_pool->wait();
 
     // Check exception for last events
     thread_pool->check_exception();
 
-    LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of " << run_events << " events";
+    LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of " << finished_events << " events";
     auto end_time = std::chrono::steady_clock::now();
     total_time_ += static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
 

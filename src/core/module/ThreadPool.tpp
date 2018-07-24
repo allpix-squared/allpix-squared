@@ -41,6 +41,11 @@ namespace allpix {
         return !valid_ || queue_.empty();
     }
 
+    template <typename T> size_t ThreadPool::SafeQueue<T>::size() const {
+        std::lock_guard<std::mutex> lock{mutex_};
+        return queue_.size();
+    }
+
     /*
      * Used to ensure no conditions are being waited for in pop when a thread or the application is trying to exit. The queue
      * is invalid after calling this method and it is an error to continue using a queue after this method has been called.

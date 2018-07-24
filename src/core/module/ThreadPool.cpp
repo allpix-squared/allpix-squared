@@ -13,7 +13,10 @@ using namespace allpix;
 /**
  * The threads are created in an exception-safe way and all of them will be destroyed when creation of one fails
  */
-ThreadPool::ThreadPool(unsigned int num_threads, std::function<void()> worker_init_function) {
+ThreadPool::ThreadPool(unsigned int num_threads,
+                       std::function<void()> worker_init_function,
+                       std::condition_variable& queue_condition)
+    : queue_condition_(queue_condition) {
     // Create threads
     try {
         for(unsigned int i = 0u; i < num_threads; ++i) {
@@ -33,6 +36,10 @@ ThreadPool::~ThreadPool() {
 
 void ThreadPool::submit_event_function(std::function<void()> event_function) {
     event_queue_.push(std::make_unique<std::packaged_task<void()>>(std::move(event_function)));
+}
+
+size_t ThreadPool::queue_size() const {
+    return event_queue_.size();
 }
 
 /**
@@ -121,8 +128,11 @@ void ThreadPool::worker(const std::function<void()>& init_function) {
     // Initialize the worker
     init_function();
 
-    // Safe lambda to increase the atomic run count
-    auto increase_run_cnt_func = [this]() { ++run_cnt_; };
+    // Increase the atomic run count and notify the ModuleManager that we popped an event
+    auto increase_run_cnt_func = [this]() {
+        ++run_cnt_;
+        queue_condition_.notify_one();
+    };
 
     while(!done_) {
         Task task{nullptr};

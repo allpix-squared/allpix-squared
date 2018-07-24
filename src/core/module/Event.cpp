@@ -50,7 +50,7 @@ Event::Event(ModuleList modules,
  * Geant4 modules must be run single-threaded on the main thread.
  * Pops and executes Geant4 modules from the \ref Event::modules_ "list of modules".
  */
-void Event::init() {
+void Event::run_geant4() {
     // Get object count for linking objects in current event
     /* auto save_id = TProcessID::GetObjectCount(); */
 

@@ -73,6 +73,8 @@ namespace allpix {
              */
             bool empty() const;
 
+            size_t size() const;
+
             /**
              * @brief Invalidate the queue
              */
@@ -92,7 +94,9 @@ namespace allpix {
          * @param worker_init_function Function run by all the workers to initialize
          * @warning Only module instantiations that are registered in this constructor can spawn tasks
          */
-        explicit ThreadPool(unsigned int num_threads, std::function<void()> worker_init_function);
+        explicit ThreadPool(unsigned int num_threads,
+                            std::function<void()> worker_init_function,
+                            std::condition_variable& queue_condition);
 
         /// @{
         /**
@@ -114,6 +118,8 @@ namespace allpix {
          * @warning This method can only be called by the \ref ModuleManager
          */
         void submit_event_function(std::function<void()> event_function);
+
+        size_t queue_size() const;
 
         void check_exception();
 
@@ -157,6 +163,8 @@ namespace allpix {
 
         std::atomic_flag has_exception_;
         std::exception_ptr exception_ptr_{nullptr};
+
+        std::condition_variable& queue_condition_;
     };
 } // namespace allpix
 
