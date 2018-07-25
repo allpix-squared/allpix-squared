@@ -2,7 +2,7 @@
  * @file
  * @brief List of internal messenger delegates
  *
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2018 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -10,7 +10,7 @@
 
 /**
  * @defgroup Delegates Delegate classes
- * @brief  Collection of delegates serving as interface between messages and their receivers
+ * @brief Collection of delegates serving as interface between messages and their receivers
  */
 
 #ifndef ALLPIX_DELEGATE_H
@@ -28,22 +28,25 @@
 // TODO [doc] This should partly move to a source file
 
 namespace allpix {
-    // TODO [doc] Document this
-    class DelegateTypes {
-    public:
+    /**
+     * @ingroup Delegates
+     * @brief Container of the different delegate types
+     *
+     * A properly implemented delegate should only touch one of these fields.
+     */
+    struct DelegateTypes {
         std::shared_ptr<BaseMessage> single;
         std::vector<std::shared_ptr<BaseMessage>> multi;
         std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> filter_multi;
     };
-
     /**
      * @ingroup Delegates
      * @brief Flags to change the behaviour of delegates
      *
      * All flags are distinct and can be combined using the | (OR) operator. The flags should be passed to the
-     * \ref Messenger when \ref Messenger::registerListener "registering" a listener or when binding either a \ref
+     * \ref Messenger when \ref Messenger::registerFiltering "registering" a filter or when binding either a \ref
      * Messenger::bindSingle "single" or \ref Messenger::bindMulti "multiple" messages. It depends on the delegate which
-     * combination is flags is valid.
+     * combination of flags is valid.
      */
     // TODO [doc] Is DelegateFlags or MessengerFlags a better name (and in separate file?)
     enum class MsgFlags : uint32_t {
@@ -113,9 +116,7 @@ namespace allpix {
          *
          * The delegate is always satisfied if the \ref MsgFlags::REQUIRED "REQUIRED" flag has not been passed.
          */
-        bool isSatisfied() const {
-            return (getFlags() & MsgFlags::REQUIRED) == MsgFlags::NONE;
-        }
+        bool isSatisfied() const { return (getFlags() & MsgFlags::REQUIRED) == MsgFlags::NONE; }
 
         /**
          * @brief Get the flags for this delegate
@@ -151,7 +152,7 @@ namespace allpix {
      * @ingroup Delegates
      * @brief Base for all delegates operating on modules
      *
-     * As all delegates currently operate on modules (as messages should be dispatched to modules), this class is in fact the
+     * As all delegates currently operate on modules, this class is in fact the
      * templated base class of all delegates.
      */
     template <typename T> class ModuleDelegate : public BaseDelegate {
@@ -212,7 +213,7 @@ namespace allpix {
 
     /**
      * @ingroup Delegates
-     * @brief Delegate for invoking a function in the module
+     * @brief Delegate for filtering messages using a function
      */
     template <typename T, typename R> class FilterDelegate : public ModuleDelegate<T> {
     public:
@@ -224,13 +225,13 @@ namespace allpix {
          * @param obj Module object this delegate should operate on
          * @param method A function taking a shared_ptr to the message to listen to
          */
-        FilterDelegate(MsgFlags flags, T* obj, FilterFunction method) : ModuleDelegate<T>(flags, obj), method_(method) {}
+        FilterDelegate(MsgFlags flags, T* obj, FilterFunction filter) : ModuleDelegate<T>(flags, obj), filter_(filter) {}
 
         /**
-         * @brief Calls the listener function with the supplied message
+         * @brief Calls the filter function with the supplied message
          * @param msg Message to process
-         * @warning The listener function is called directly from the delegate, no heavy processing should be done in the
-         *          listener function
+         * @warning The filter function is called directly from the delegate, no heavy processing should be done in the
+         * filer function
          */
         void process(std::shared_ptr<BaseMessage> msg, std::string, DelegateTypes& dest) override {
 #ifndef NDEBUG
@@ -238,52 +239,51 @@ namespace allpix {
             const BaseMessage* inst = msg.get();
             assert(typeid(*inst) == typeid(R));
 #endif
-
-            // Pass the message and mark as processed
+            // Filter the message, and store it if it should be kept
             std::lock_guard<std::mutex> lock{mutex_};
-            if((this->obj_->*method_)(std::static_pointer_cast<R>(msg))) {
-                dest.multi.push_back(std::static_pointer_cast<R>(msg));
+            if((this->obj_->*filter_)(std::static_pointer_cast<R>(msg))) {
+                dest.filter_multi.emplace_back(std::static_pointer_cast<R>(msg), "");
             }
         }
 
     private:
-        FilterFunction method_;
+        FilterFunction filter_;
         std::mutex mutex_;
     };
 
     /**
      * @ingroup Delegates
-     * @brief Delegate for invoking a function listening to all messages also getting the name
+     * @brief Delegate for invoking a filter listening to all messages also getting the name
      */
     template <typename T> class FilterAllDelegate : public ModuleDelegate<T> {
     public:
         using FilterFunction = bool (T::*)(const std::shared_ptr<BaseMessage>&, const std::string&) const;
 
         /**
-         * @brief Construct a function delegate for the given module
+         * @brief Construct a filter delegate for the given module
          * @param flags Messenger flags
          * @param obj Module object this delegate should operate on
          * @param method A function taking a shared_ptr to the message to listen to
          */
-        FilterAllDelegate(MsgFlags flags, T* obj, FilterFunction method) : ModuleDelegate<T>(flags, obj), method_(method) {}
+        FilterAllDelegate(MsgFlags flags, T* obj, FilterFunction filter) : ModuleDelegate<T>(flags, obj), filter_(filter) {}
 
         /**
-         * @brief Calls the listener function with the supplied message
+         * @brief Calls the filter function with the supplied message
          * @param msg Message to process
          * @param name Name of the message to process
-         * @warning The listener function is called directly from the delegate, no heavy processing should be done in the
-         *          listener function
+         * @warning The filter function is called directly from the delegate, no heavy processing should be done in the
+         * filter function
          */
         void process(std::shared_ptr<BaseMessage> msg, std::string name, DelegateTypes& dest) override {
-            // Pass the message and mark as processed
+            // Filter the message, and store it if it should be kept
             std::lock_guard<std::mutex> lock{mutex_};
-            if((this->obj_->*method_)(std::static_pointer_cast<BaseMessage>(msg), name)) {
+            if((this->obj_->*filter_)(std::static_pointer_cast<BaseMessage>(msg), name)) {
                 dest.filter_multi.emplace_back(std::static_pointer_cast<BaseMessage>(msg), name);
             }
         }
 
     private:
-        FilterFunction method_;
+        FilterFunction filter_;
         std::mutex mutex_;
     };
 
@@ -293,22 +293,19 @@ namespace allpix {
      */
     template <typename T, typename R> class SingleBindDelegate : public ModuleDelegate<T> {
     public:
-        using BindType = std::shared_ptr<R> T::*;
-
         /**
          * @brief Construct a single bound delegate for the given module
          * @param flags Messenger flags
          * @param obj Module object this delegate should operate on
-         * @param member Member variable to assign the pointer to the message to
          */
-        SingleBindDelegate(MsgFlags flags, T* obj, BindType member) : ModuleDelegate<T>(flags, obj), member_(member) {}
+        SingleBindDelegate(MsgFlags flags, T* obj) : ModuleDelegate<T>(flags, obj) {}
 
         /**
-         * @brief Saves the message to the bound message pointer
+         * @brief Saves the message in the passed destination
          * @param msg Message to process
          * @param dest Message destination
          * @throws UnexpectedMessageException If this delegate has already received the message after the previous reset (not
-         *         thrown if the \ref MsgFlags::ALLOW_OVERWRITE "ALLOW_OVERWRITE" flag is passed)
+         * thrown if the \ref MsgFlags::ALLOW_OVERWRITE "ALLOW_OVERWRITE" flag is passed)
          *
          * The saved value is overwritten if the \ref MsgFlags::ALLOW_OVERWRITE "ALLOW_OVERWRITE" flag is enabled.
          */
@@ -323,12 +320,9 @@ namespace allpix {
                 throw UnexpectedMessageException(this->obj_->getUniqueName(), typeid(R));
             }
 
-            // Set the message and mark as processed
+            // Save the message
             dest.single = std::static_pointer_cast<R>(msg);
         }
-
-    private:
-        BindType member_;
 
     private:
         std::mutex mutex_;
@@ -340,15 +334,12 @@ namespace allpix {
      */
     template <typename T, typename R> class VectorBindDelegate : public ModuleDelegate<T> {
     public:
-        using BindType = std::vector<std::shared_ptr<R>> T::*;
-
         /**
          * @brief Construct a vector bound delegate for the given module
          * @param flags Messenger flags
          * @param obj Module object this delegate should operate on
-         * @param member Member variable vector to add the pointer to the message to
          */
-        VectorBindDelegate(MsgFlags flags, T* obj, BindType member) : ModuleDelegate<T>(flags, obj), member_(member) {}
+        VectorBindDelegate(MsgFlags flags, T* obj) : ModuleDelegate<T>(flags, obj) {}
 
         /**
          * @brief Adds the message to the bound vector
@@ -361,12 +352,11 @@ namespace allpix {
             const BaseMessage* inst = msg.get();
             assert(typeid(*inst) == typeid(R));
 #endif
-            // Add the message
+            // Add the message to the vector
             dest.multi.push_back(std::static_pointer_cast<R>(msg));
         }
 
     private:
-        BindType member_;
         std::mutex mutex_;
     };
 } // namespace allpix
