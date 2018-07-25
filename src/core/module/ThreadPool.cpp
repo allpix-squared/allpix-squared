@@ -137,6 +137,7 @@ void ThreadPool::worker(const std::function<void()>& init_function) {
     while(!done_) {
         Task task{nullptr};
 
+        queue_condition_.notify_one();
         if(event_queue_.pop(task, true, increase_run_cnt_func)) {
             // Try to run the task
             try {
