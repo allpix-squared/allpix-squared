@@ -322,9 +322,9 @@ void CapacitiveTransferModule::run(Event* event) const {
                     pixel_projection = plane.projection(pixel_point);
                     double pixel_gap = pixel_projection[2];
 
-                    ccpd_factor =
-                        capacitances[row * 3 + col]->Eval(static_cast<double>(Units::convert(pixel_gap, "um")), nullptr, "S") *
-                        normalization;
+                    ccpd_factor = capacitances[row * 3 + col]->Eval(
+                                      static_cast<double>(Units::convert(pixel_gap, "um")), nullptr, "S") *
+                                  normalization;
                 } else if(config_.has("coupling_file")) {
                     ccpd_factor = relative_coupling[col][row];
                 } else if(config_.has("coupling_matrix")) {

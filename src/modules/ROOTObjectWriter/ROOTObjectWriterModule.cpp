@@ -112,9 +112,9 @@ bool ROOTObjectWriterModule::filter(const std::shared_ptr<BaseMessage>& message,
 void ROOTObjectWriterModule::pre_run(Event* event) const {
     auto messages = event->fetchFilteredMessages();
 
-    for (auto& pair : messages) {
-        auto &message = pair.first;
-        auto &message_name = pair.second;
+    for(auto& pair : messages) {
+        auto& message = pair.first;
+        auto& message_name = pair.second;
 
         // Get the detector name
         std::string detector_name;
@@ -149,9 +149,8 @@ void ROOTObjectWriterModule::pre_run(Event* event) const {
             if(trees_.find(class_name) == trees_.end()) {
                 // Create new tree
                 output_file_->cd();
-                trees_.emplace(
-                    class_name,
-                    std::make_unique<TTree>(class_name.c_str(), (std::string("Tree of ") + class_name).c_str()));
+                trees_.emplace(class_name,
+                               std::make_unique<TTree>(class_name.c_str(), (std::string("Tree of ") + class_name).c_str()));
             }
 
             std::string branch_name = detector_name.empty() ? "global" : detector_name;
@@ -170,7 +169,6 @@ void ROOTObjectWriterModule::pre_run(Event* event) const {
             ++write_cnt_;
             write_list_[index_tuple]->push_back(&object);
         }
-
     }
 }
 
