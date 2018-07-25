@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of messenger
  *
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2018 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -95,7 +95,7 @@ void Messenger::add_delegate(const std::type_info& message_type,
     }
 
     // Register delegate internally
-    delegates_[std::type_index(message_type)][message_name].push_back(delegate);
+    delegates_[std::type_index(message_type)][message_name].push_back(std::move(delegate));
     auto delegate_iter = --delegates_[std::type_index(message_type)][message_name].end();
     delegate_to_iterator_.emplace(delegate_iter->get(),
                                   std::make_tuple(std::type_index(message_type), message_name, delegate_iter));

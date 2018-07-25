@@ -1,7 +1,7 @@
 /**
  * @file
- * @brief Send objects between modules using a messenger
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @brief Setup communicatio between modules using a messenger
+ * @copyright Copyright (c) 2017-2018 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -26,10 +26,11 @@ namespace allpix {
 
     /**
      * @ingroup Managers
-     * @brief Manager responsible for sending messages between objects
+     * @brief Manager responsible for setting up communicatio between objects
      *
-     * Dispatches messages from modules to other listening modules. There are various way to receive the messages using
-     * \ref Delegates. Messages are only send to modules listening to the exact same type of message.
+     * Registers and sets up communication (delegates) from modules to other listening modules. There are various way to
+     * receive the messages using \ref Delegates. Messages are only send to modules listening to the exact same type of
+     * message.
      */
     class Messenger {
         friend class Module;
@@ -41,7 +42,7 @@ namespace allpix {
          */
         Messenger();
         /**
-         * @brief Default destructor (checks if delegates are removed)
+         * @brief Default destructor (checks if delegates are removed in DEBUG)
          */
         ~Messenger();
 
@@ -62,28 +63,28 @@ namespace allpix {
         /// @}
 
         /**
-         * @brief Register a function listening to all dispatched messages
+         * @brief Register a function filtering all dispatched messages
          * @param receiver Receiving module
-         * @param method Listener function in the module (fetching a pointer to the base message and the name of the message)
+         * @param filter Filter function in the module (fetching a pointer to the base message and the name of the message)
          * @param flags Message configuration flags (defaults to \ref MsgFlags::IGNORE_NAME "ignoring the message name")
          */
         template <typename T>
         void registerFilter(T* receiver,
-                            bool (T::*method)(const std::shared_ptr<BaseMessage>&, const std::string& name) const,
+                            bool (T::*filter)(const std::shared_ptr<BaseMessage>&, const std::string& name) const,
                             MsgFlags flags = MsgFlags::IGNORE_NAME);
 
         /**
-         * @brief Register a function listening for a particular message
+         * @brief Register a function filtering a particular message
          * @param receiver Receiving module
-         * @param method Listener function in the module (fetching a pointer to the message)
+         * @param filter Filter function in the module (fetching a pointer to the message)
          * @param flags Message configuration flags
          */
         template <typename T, typename R>
         void
-        registerFilter(T* receiver, bool (T::*method)(const std::shared_ptr<R>&) const, MsgFlags flags = MsgFlags::NONE);
+        registerFilter(T* receiver, bool (T::*filter)(const std::shared_ptr<R>&) const, MsgFlags flags = MsgFlags::NONE);
 
         /**
-         * @brief Binds a pointer to a single message
+         * @brief Register subscription for a single message
          * @param receiver Receiving module
          * @param member Pointer to the message to listen to
          * @param flags Message configuration flags
@@ -94,7 +95,7 @@ namespace allpix {
         void bindSingle(T* receiver, std::shared_ptr<R> T::*member, MsgFlags flags = MsgFlags::NONE);
 
         /**
-         * @brief Binds a pointer to a list of messages
+         * @brief Register subscription for multiple messages
          * @param receiver Receiving module
          * @param member Pointer to the vector of messages to listen to
          * @param flags Message configuration flags
