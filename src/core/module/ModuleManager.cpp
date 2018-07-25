@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of module manager
  *
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2018 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -552,12 +552,6 @@ void ModuleManager::init(std::mt19937_64& seeder) {
         module->getROOTDirectory()->cd();
         // Init module
         module->init(seeder());
-        // Reset delegates
-        LOG(TRACE) << "Resetting messages";
-
-        // XXX: omitted original code!
-        /* module->reset_delegates(); */
-
         // Reset logging
         Log::setSection(old_section_name);
         set_module_after(old_settings);
@@ -569,7 +563,7 @@ void ModuleManager::init(std::mt19937_64& seeder) {
 }
 
 /**
- * Initializes the thread pool for executing each event in parallel
+ * Initializes the thread pool and executes each event in parallel.
  */
 void ModuleManager::run(Messenger* messenger, std::mt19937_64& seeder) {
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
@@ -584,13 +578,19 @@ void ModuleManager::run(Messenger* messenger, std::mt19937_64& seeder) {
             throw InvalidValueError(global_config, "workers", "number of workers should be strictly more than zero");
         }
         LOG(WARNING) << "Experimental multithreading enabled - using " << threads_num << " worker threads.";
+        if(threads_num > 8) {
+            LOG(WARNING) << "Using more than 8 worker threads may severely impact simulation performance due to ROOT "
+                            "internals. See "
+                            "<https://root-forum.cern.ch/t/copying-trefs-and-accessing-tref-data-from-multiple-threads/"
+                            "29417/7> for more info.";
+        }
     } else {
         // Default to no additional thread without multithreading
         threads_num = 1;
     }
 
     // Creates the thread pool
-    LOG(DEBUG) << "Initializing thread pool with " << threads_num << " additional thread(s)";
+    LOG(DEBUG) << "Initializing thread pool with " << threads_num << " thread";
     // clang-format off
     auto init_function = [log_level = Log::getReportingLevel(), log_format = Log::getFormat()]() {
         // clang-format on
@@ -611,7 +611,7 @@ void ModuleManager::run(Messenger* messenger, std::mt19937_64& seeder) {
     std::mutex mutex;
     std::unique_lock<std::mutex> lock{mutex};
     for(unsigned int i = 1; i <= number_of_events; i++) {
-        // Don't initialize all events directly; that would take up too much memory.
+        // Don't initialize all events directly. That would take up too much memory.
         // 4x thread_num should give us a sufficient buffer (meaning that workers should never end up idle).
         buffer_condition.wait(lock, [&]() { return thread_pool->queue_size() < threads_num * 4 || terminate_; });
 
@@ -710,6 +710,7 @@ void ModuleManager::finalize() {
     modules_file_->Close();
     LOG_PROGRESS(STATUS, "FINALIZE_LOOP") << "Finalization completed";
 
+    // TODO: fix this for concurrent events
     long double slowest_time = 0;
     std::string slowest_module;
     for(auto& module_time : module_execution_time_) {
