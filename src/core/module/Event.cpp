@@ -73,6 +73,7 @@ void Event::run_geant4() {
             break;
         }
 
+        LOG(DEBUG) << module->getUniqueName() << " is a Geant4 module; running on main thread";
         run(module);
         modules_.pop_front();
     }
@@ -102,7 +103,7 @@ bool Event::handle_iomodule(const std::shared_ptr<Module>& module) {
         // Module doesn't require IO; nothing else to do
         return false;
     }
-    LOG(TRACE) << module->getUniqueName() << " is a " << (reader ? "reader" : "writer")
+    LOG(DEBUG) << module->getUniqueName() << " is a " << (reader ? "reader" : "writer")
                << "; running in order of event number";
 
     // Acquire reader/writer lock
