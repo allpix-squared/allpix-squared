@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of event
  *
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2018 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -16,9 +16,8 @@
 #include <memory>
 #include <string>
 
-#include <TProcessID.h>
-
 #include "Module.hpp"
+#include "ModuleManager.hpp"
 #include "core/utils/log.h"
 
 using namespace allpix;
@@ -26,6 +25,10 @@ using namespace allpix;
 std::mutex Event::stats_mutex_;
 Event::IOOrderLock Event::reader_lock_;
 Event::IOOrderLock Event::writer_lock_;
+
+#ifndef NDEBUG
+std::set<unsigned int> Event::unique_ids_;
+#endif
 
 // Check if the detectors match for the message and the delegate
 static bool check_send(BaseMessage* message, BaseDelegate* delegate) {
@@ -45,6 +48,11 @@ Event::Event(ModuleList modules,
     : number(event_num), modules_(std::move(modules)), terminate_(terminate), module_execution_time_(module_execution_time),
       delegates_(messenger->delegates_) {
     random_engine_.seed(seeder());
+#ifndef NDEBUG
+    // Ensure that the ID is unique
+    assert(unique_ids_.find(event_num) == unique_ids_.end());
+    unique_ids_.insert(event_num);
+#endif
 }
 
 /**
@@ -52,9 +60,6 @@ Event::Event(ModuleList modules,
  * Runs all modules up to and including the last Geant4 module and pops them from the \ref Event::modules_ "list of modules".
  */
 void Event::run_geant4() {
-    // Get object count for linking objects in current event
-    /* auto save_id = TProcessID::GetObjectCount(); */
-
     auto first_after_last_geant4 = [&]() {
         // Find the last Geant4 module from the bottom of the list up
         auto last_geant4 = std::find_if(modules_.crbegin(), modules_.crend(), [](const auto& module) {
@@ -75,15 +80,22 @@ void Event::run_geant4() {
 
         LOG(DEBUG) << module->getUniqueName() << " is a Geant4 module; running on main thread";
         run(module);
+
+        // XXX: Could this be the cause of the GitLab segfaults? Removing elements invalidating stuff?
+        // Try removing stuff after everything has been run
         modules_.pop_front();
     }
 
-    // Reset object count for next event
-    /* TProcessID::SetObjectCount(save_id); */
+#ifndef NDEBUG
+    // Ensure all Geant4 modules have been removed
+    for(auto& module : modules_) {
+        assert(module->getUniqueName().find("Geant4") == std::string::npos);
+    }
+#endif
 }
 
 /**
- * Runs modules that read from or write to files.
+ * Runs modules that read from or write to files in order of increasing event number.
  * The appropriate \ref Event::IOOrderLock "order lock" is operated upon -- counter read/modified and condition watched -- to
  * achieve this.
  * When a previous event has yet to write to file, the current event waits until it's its own turn to write.
@@ -119,7 +131,7 @@ bool Event::handle_iomodule(const std::shared_ptr<Module>& module) {
 
 /**
  * Runs a single module.
- * The run for a module is skipped if its delegates are not \ref Event::is_satisfied() "satisfied".
+ * The run for a module is skipped if it isn't \ref Event::is_satisfied() "satisfied".
  * Sets the section header and logging settings before exeuting the \ref Module::run() function.
  */
 void Event::run(std::shared_ptr<Module>& module) {
@@ -132,7 +144,7 @@ void Event::run(std::shared_ptr<Module>& module) {
     LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << this->number << " [" << module->get_identifier().getUniqueName()
                                       << "]";
 
-    // Check if module is satisfied to run
+    // Check if the module is satisfied to run
     if(!is_satisfied(module.get())) {
         LOG(TRACE) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
                    << ", skipping module!";
@@ -174,27 +186,13 @@ void Event::run(std::shared_ptr<Module>& module) {
     module_execution_time_[module.get()] += static_cast<std::chrono::duration<long double>>(end - start).count();
 }
 
-/**
- * Sequentially runs the modules that constitutes the event.
- * \ref Module::reset_delegates() "Resets" the delegates and the logging after initialization
- */
 void Event::run() {
-    // Get object count for linking objects in current event
-    /* auto save_id = TProcessID::GetObjectCount(); */
-
     for(auto& module : modules_) {
         run(module);
     }
 
-    // Reset object count for next event
-    /* TProcessID::SetObjectCount(save_id); */
-
     // All writers have been run for this event, let the next event run its writers
     writer_lock_.next();
-}
-
-void Event::finalize() {
-    // stub
 }
 
 void Event::dispatch_message(Module* source, std::shared_ptr<BaseMessage> message, std::string name) {
@@ -264,12 +262,8 @@ bool Event::dispatch_message(Module* source,
 
 bool Event::is_satisfied(Module* module) const {
     // Check delegate flags. If false, check event-local satisfaction.
-    if(module->check_delegates()) {
-        return true;
-    }
-
     try {
-        return satisfied_modules_.at(module->getUniqueName());
+        return module->check_delegates() || satisfied_modules_.at(module->getUniqueName());
     } catch(const std::out_of_range&) {
         return false;
     }

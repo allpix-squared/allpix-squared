@@ -12,11 +12,9 @@ namespace allpix {
     template <typename T> std::vector<std::shared_ptr<T>> Event::fetchMultiMessage() {
         static_assert(std::is_base_of<BaseMessage, T>::value, "Fetched message should inherit from Message class");
 
-        // TODO: do nothing if T == BaseMessage
+        // TODO: do nothing if T == BaseMessage; there is no need to cast (optimized out)?
 
-        // Yes, use operator[] here to construct empty vector in case none exist already.
-        // This mirrors the case when a listening multiMessage-module receieves no messages, so it's target vector would be
-        // empty.
+        // Construct an empty vector in case no previous modules created one during dispatch
         auto base_messages = messages_[current_module_->getUniqueName()].multi;
 
         std::vector<std::shared_ptr<T>> derived_messages;
