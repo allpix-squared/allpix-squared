@@ -111,16 +111,10 @@ namespace allpix {
          * @brief Check if delegate satisfied its requirements
          * @return True if satisfied, false otherwise
          *
-         * The delegate is always satisfied if the \ref MsgFlags::REQUIRED "REQUIRED" flag has not been passed. Otherwise it
-         * is up to the subclasses to determine if a delegate has been processed.
+         * The delegate is always satisfied if the \ref MsgFlags::REQUIRED "REQUIRED" flag has not been passed.
          */
         bool isSatisfied() const {
-            if((getFlags() & MsgFlags::REQUIRED) == MsgFlags::NONE) {
-                return true;
-            }
-
-            /* return processed_; */
-            return false;
+            return (getFlags() & MsgFlags::REQUIRED) == MsgFlags::NONE;
         }
 
         /**
@@ -149,20 +143,7 @@ namespace allpix {
          */
         virtual void process(std::shared_ptr<BaseMessage> msg, std::string name, DelegateTypes& dest) = 0;
 
-        /**
-         * @brief Reset the delegate and set it not satisfied again
-         */
-        virtual void reset() { /* processed_ = false; */
-        }
-
     protected:
-        /**
-         * @brief Set the processed flag to signal that the delegate is satisfied
-         */
-        void set_processed() { /* processed_ = true; */
-        }
-        bool processed_;
-
         const MsgFlags flags_;
     };
 
@@ -220,20 +201,6 @@ namespace allpix {
             // Store the message and mark as processed
             std::lock_guard<std::mutex> lock{mutex_};
             messages_.push_back(msg);
-            this->set_processed();
-        }
-
-        /**
-         * @brief Reset the delegate by clearing the list of stored messages
-         *
-         * Always calls the BaseDelegate::reset first. Clears the storage of the messages
-         */
-        void reset() override {
-            std::lock_guard<std::mutex> lock{mutex_};
-            // Always do base reset
-            BaseDelegate::reset();
-            // Clear
-            messages_.clear();
         }
 
     private:
@@ -277,7 +244,6 @@ namespace allpix {
             if((this->obj_->*method_)(std::static_pointer_cast<R>(msg))) {
                 dest.multi.push_back(std::static_pointer_cast<R>(msg));
             }
-            this->set_processed();
         }
 
     private:
@@ -314,7 +280,6 @@ namespace allpix {
             if((this->obj_->*method_)(std::static_pointer_cast<BaseMessage>(msg), name)) {
                 dest.filter_multi.emplace_back(std::static_pointer_cast<BaseMessage>(msg), name);
             }
-            this->set_processed();
         }
 
     private:
@@ -360,21 +325,6 @@ namespace allpix {
 
             // Set the message and mark as processed
             dest.single = std::static_pointer_cast<R>(msg);
-            this->set_processed();
-        }
-
-        /**
-         * @brief Reset the delegate by resetting the bound variable
-         *
-         * Always calls the BaseDelegate::reset first. Set the referenced member to a null pointer
-         */
-        void reset() override {
-            std::lock_guard<std::mutex> lock{mutex_};
-            // Always do base reset
-            BaseDelegate::reset();
-
-            // Clear
-            this->obj_->*member_ = nullptr;
         }
 
     private:
@@ -413,20 +363,6 @@ namespace allpix {
 #endif
             // Add the message
             dest.multi.push_back(std::static_pointer_cast<R>(msg));
-            this->set_processed();
-        }
-
-        /**
-         * @brief Reset the delegate by clearing the vector of messages
-         *
-         * Always calls the BaseDelegate::reset first. Clears the referenced vector to an empty state         */
-        void reset() override {
-            std::lock_guard<std::mutex> lock{mutex_};
-            // Always do base reset
-            BaseDelegate::reset();
-
-            // Clear
-            (this->obj_->*member_).clear();
         }
 
     private:

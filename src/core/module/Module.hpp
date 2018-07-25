@@ -203,10 +203,6 @@ namespace allpix {
          */
         void add_delegate(Messenger* messenger, BaseDelegate* delegate);
         /**
-         * @brief Resets messenger delegates after every event
-         */
-        void reset_delegates();
-        /**
          * @brief Check if all delegates are satisfied
          */
         bool check_delegates();

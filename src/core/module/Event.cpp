@@ -186,15 +186,6 @@ void Event::run() {
         run(module);
     }
 
-    // Resetting delegates
-    // XXX: is this required?
-    for(auto& module : modules_) {
-        LOG(TRACE) << "Resetting messages";
-        auto lock =
-            !module->canParallelize() ? std::unique_lock<std::mutex>(module->run_mutex_) : std::unique_lock<std::mutex>();
-        module->reset_delegates();
-    }
-
     // Reset object count for next event
     /* TProcessID::SetObjectCount(save_id); */
 

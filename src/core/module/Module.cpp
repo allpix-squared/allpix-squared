@@ -171,11 +171,6 @@ ModuleIdentifier Module::get_identifier() const {
 void Module::add_delegate(Messenger* messenger, BaseDelegate* delegate) {
     delegates_.emplace_back(messenger, delegate);
 }
-void Module::reset_delegates() {
-    for(auto& delegate : delegates_) {
-        delegate.second->reset();
-    }
-}
 bool Module::check_delegates() {
     for(auto& delegate : delegates_) {
         // Return false if any delegate is not satisfied
