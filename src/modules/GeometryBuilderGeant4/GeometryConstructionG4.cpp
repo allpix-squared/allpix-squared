@@ -446,7 +446,8 @@ void GeometryConstructionG4::check_overlaps() {
 
     bool overlapFlag = false;
     for(auto volume : (*phys_volume_store)) {
-        overlapFlag = volume->CheckOverlaps(1000, 0., false) | overlapFlag;
+        LOG(TRACE) << "Checking overlaps for physical volume \"" << volume->GetName() << "\"";
+        overlapFlag = volume->CheckOverlaps(1000, 0., false) || overlapFlag;
     }
     if(overlapFlag) {
         LOG(ERROR) << "Overlapping volumes detected.";

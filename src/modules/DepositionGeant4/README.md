@@ -17,11 +17,11 @@ The module supports the propagation of charged particles in a magnetic field if 
 With the `output_plots` parameter activated, the module produces histograms of the total deposited charge per event for every sensor in units of kilo-electrons.
 The scale of the plot axis can be adjusted using the `output_plots_scale` parameter and defaults to a maximum of 100ke.
 
-The source can be defined in two different ways using the `source_type` parameter: with pre-defined shapes or with a Geant4 macro file. 
+The source can be defined in two different ways using the `source_type` parameter: with pre-defined shapes or with a Geant4 macro file.
 Pre-defined shapes are point, beam, square or sphere.
 For the square and sphere, the particle starting points are distributed homogeneously over the surfaces.
 By default, the particle directions for the square are random, as would be for a squared radioactive source.
-For the sphere, unless a focus point is set, the particle directions follow the cosine-law defined by Geant4 [@g4gps] and the field inside the sphere is hence isotropic. 
+For the sphere, unless a focus point is set, the particle directions follow the cosine-law defined by Geant4 [@g4gps] and the field inside the sphere is hence isotropic.
 
 To define more complex sources or angular distributions, the user can create a macro file with Geant4 commands.
 These commands are those defined for the GPS source and are explained in the Geant4 website [@g4gps] (only the source position and number of particles must still be defined in the main configuration file).
@@ -43,7 +43,7 @@ This module requires an installation Geant4.
 * `source_energy_spread` : Energy spread of the source.
 * `source_position` : Position of the particle source in the world geometry.
 * `source_type` : Shape of the source: **beam** (default), **point**, **square**, **sphere**, **macro**.
-* `file_name` : Name of the macro file (if source_type=**macro**). 
+* `file_name` : Name of the macro file (if source_type=**macro**).
 * `number_of_particles` : Number of particles to generate in a single event. Defaults to one particle.
 * `output_plots` : Enables output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
 * `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 100ke.
@@ -79,7 +79,7 @@ number_of_particles = 1
 ```
 
 [@g4physicslists]: http://geant4.cern.ch/support/proc_mod_catalog/physics_lists/referencePL.shtml
-[@g4particles]: http://geant4.cern.ch/G4UsersDocuments/UsersGuides/ForApplicationDeveloper/html/TrackingAndPhysics/particle.html
+[@g4particles]: http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/ForApplicationDeveloper/html/TrackingAndPhysics/particle.html
 [@g4gps]: http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/ForApplicationDeveloper/html/GettingStarted/generalParticleSource.html
 [@pdg]: http://hepdata.cedar.ac.uk/lbl/2016/reviews/rpp2016-rev-monte-carlo-numbering.pdf
 [@pai]: https://doi.org/10.1016/S0168-9002(00)00457-5
