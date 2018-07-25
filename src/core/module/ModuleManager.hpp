@@ -21,6 +21,7 @@
 #include <TFile.h>
 
 #include "Module.hpp"
+#include "ThreadPool.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/utils/log.h"
 

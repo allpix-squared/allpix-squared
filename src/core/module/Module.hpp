@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Base for the module implementation
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2018 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -18,7 +18,6 @@
 #include <TDirectory.h>
 
 #include "ModuleIdentifier.hpp"
-#include "ThreadPool.hpp"
 #include "core/config/ConfigManager.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
@@ -37,8 +36,8 @@ namespace allpix {
      *
      * The module base is the core of the modular framework. All modules should be descendants of this class. The base class
      * defines the methods the children can implement:
-     * - Module::init(): for initializing the module at the start
-     * - Module::run(unsigned int): for doing the job of every module for every event
+     * - Module::init(uint_64t): for initializing the module at the start
+     * - Module::run(Event*): for doing the job of every module for every event
      * - Module::finalize(): for finalizing the module at the end
      *
      * The module class also provides a few utility methods and stores internal data of instantations. The internal data is
@@ -48,7 +47,6 @@ namespace allpix {
         friend class Event;
         friend class ModuleManager;
         friend class Messenger;
-        friend class MessageStorage;
 
     public:
         /**
@@ -128,22 +126,18 @@ namespace allpix {
 
         /**
          * @brief Initialize the module before the event sequence
-         * @param random_seed TODO
+         * @param random_seed Random seed, if required
          *
          * Does nothing if not overloaded.
          */
         virtual void init(uint64_t random_seed) { (void)random_seed; }
 
-        using DispatchFunc = std::function<void(Module*, std::shared_ptr<BaseMessage>, const std::string&)>;
-
         /**
          * @brief Execute the function of the module for every event
-         * @param event_num Number of the event in the event sequence (starts at 1)
+         * @param Event Pointer to the event the module is running
          *
          * Does nothing if not overloaded.
          */
-        // TODO [doc] Start the sequence at 0 instead of 1?
-        // TODO [doc] Document all new parameters
         virtual void run(Event* event) const { (void)event; }
         //
         /**
@@ -214,47 +208,35 @@ namespace allpix {
         std::mutex run_mutex_;
     };
 
+    /**
+     * @brief Simple wrapper around Module to define a module that writes data to file
+     * @warning All modules that writes data to files must inherit from this class
+     *
+     * Used to simplify the ordered execution of modules requiring I/O operations.
+     */
     class WriterModule : public Module {
         friend class Event;
         friend class ModuleManager;
         friend class Messenger;
-        friend class MessageStorage;
 
     public:
-        /**
-         * @brief Base constructor for unique modules
-         * @param config Configuration for this module
-         */
         explicit WriterModule(Configuration& config) : Module(config) {}
-        /**
-         * @brief Base constructor for detector modules
-         * @param config Configuration for this module
-         * @param detector Detector bound to this module
-         * @warning Detector modules should not forget to forward their detector to the base constructor. An
-         *          \ref InvalidModuleStateException will be raised if the module failed to so.
-         */
         explicit WriterModule(Configuration& config, std::shared_ptr<Detector> detector) : Module(config, detector) {}
     };
 
+    /**
+     * @brief Simple wrapper around Module to define a module that reads data from file
+     * @warning All modules that reads data from files must inherit from this class
+     *
+     * Used to simplify the ordered execution of modules requiring I/O operations.
+     */
     class ReaderModule : public Module {
         friend class Event;
         friend class ModuleManager;
         friend class Messenger;
-        friend class MessageStorage;
 
     public:
-        /**
-         * @brief Base constructor for unique modules
-         * @param config Configuration for this module
-         */
         explicit ReaderModule(Configuration& config) : Module(config) {}
-        /**
-         * @brief Base constructor for detector modules
-         * @param config Configuration for this module
-         * @param detector Detector bound to this module
-         * @warning Detector modules should not forget to forward their detector to the base constructor. An
-         *          \ref InvalidModuleStateException will be raised if the module failed to so.
-         */
         explicit ReaderModule(Configuration& config, std::shared_ptr<Detector> detector) : Module(config, detector) {}
     };
 
