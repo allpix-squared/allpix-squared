@@ -1,11 +1,10 @@
 /**
  * @file
- * @brief Definition of thread pool used for module multithreading
+ * @brief Definition of thread pool for concurrent events
  * @copyright MIT License
  */
 
 #include "ThreadPool.hpp"
-
 #include "Module.hpp"
 
 using namespace allpix;
@@ -27,6 +26,7 @@ ThreadPool::ThreadPool(unsigned int num_threads,
         throw;
     }
 
+    // No threads are currently working
     run_cnt_ = 0;
 }
 
@@ -42,64 +42,6 @@ size_t ThreadPool::queue_size() const {
     return event_queue_.size();
 }
 
-/**
- * Run by the \ref ModuleManager to ensure all tasks and modules are completed before moving to the next instantiations.
- * Besides waiting for the queue to empty this will also wait for all the tasks to be completed. If an exception is
- * thrown by another thread, the exception will be propagated to the main thread by this function.
- */
-bool ThreadPool::execute_all() {
-    while(!event_queue_.empty()) {
-        Task task{nullptr};
-
-        if(event_queue_.pop(task, true)) {
-            try {
-                // Execute task
-                (*task)();
-                // Fetch the future to propagate exceptions
-                task->get_future().get();
-            } catch(...) {
-                // Check if the first exception thrown
-                if(has_exception_.test_and_set()) {
-                    // Check if the first exception thrown
-                    exception_ptr_ = std::current_exception();
-                    // Invalidate the queue to terminate other threads
-                    event_queue_.invalidate();
-                }
-            }
-        }
-    }
-
-    check_exception();
-    return event_queue_.isValid();
-}
-
-bool ThreadPool::execute_one() {
-    if(event_queue_.empty()) {
-        return false;
-    }
-
-    Task task{nullptr};
-    if(event_queue_.pop(task, true)) {
-        try {
-            // Execute task
-            (*task)();
-            // Fetch the future to propagate exceptions
-            task->get_future().get();
-        } catch(...) {
-            // Check if the first exception thrown
-            if(has_exception_.test_and_set()) {
-                // Check if the first exception thrown
-                exception_ptr_ = std::current_exception();
-                // Invalidate the queue to terminate other threads
-                event_queue_.invalidate();
-            }
-        }
-    }
-
-    check_exception();
-    return event_queue_.isValid();
-}
-
 void ThreadPool::check_exception() {
     // If exception has been thrown, destroy pool and propagate it
     if(exception_ptr_) {
@@ -110,15 +52,9 @@ void ThreadPool::check_exception() {
 }
 
 void ThreadPool::wait() {
-    // XXX: is this updated for geant4-before submit?
     std::unique_lock<std::mutex> lock{run_mutex_};
     run_condition_.wait(lock, [this]() { return exception_ptr_ || (event_queue_.empty() && run_cnt_ == 0); });
-
-    if(exception_ptr_) {
-        destroy();
-        Log::setSection("");
-        std::rethrow_exception(exception_ptr_);
-    }
+    check_exception();
 }
 
 /**

@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Definition of thread pool for module multithreading
+ * @brief Definition of thread pool for concurrent events
  * @copyright MIT License
  */
 
@@ -9,23 +9,16 @@
 
 #include <algorithm>
 #include <atomic>
-#include <cstdint>
 #include <exception>
-#include <functional>
 #include <future>
-#include <map>
 #include <memory>
 #include <queue>
 #include <thread>
-#include <type_traits>
 #include <utility>
-#include <vector>
-
-#include <iostream>
 
 namespace allpix {
     /**
-     * @brief Pool of threads where module tasks can be submitted to
+     * @brief Pool of threads where event tasks can be submitted to
      */
     class ThreadPool {
         friend class ModuleManager;
@@ -73,6 +66,10 @@ namespace allpix {
              */
             bool empty() const;
 
+            /**
+             * @brief Return size of internal queue
+             * @return Size of the size of the internal queue
+             */
             size_t size() const;
 
             /**
@@ -92,7 +89,7 @@ namespace allpix {
          * @brief Construct thread pool with provided number of threads
          * @param num_threads Number of threads in the pool
          * @param worker_init_function Function run by all the workers to initialize
-         * @warning Only module instantiations that are registered in this constructor can spawn tasks
+         * @param queue_condition Condition to notify when accessing event queue
          */
         explicit ThreadPool(unsigned int num_threads,
                             std::function<void()> worker_init_function,
@@ -113,30 +110,26 @@ namespace allpix {
 
     private:
         /**
-         * @brief Function to run a single event by the \ref ModuleManager
+         * @brief Submit wrapped event function for worker execution
          * @param event_function Function to execute (should call the run-method of the event)
-         * @warning This method can only be called by the \ref ModuleManager
          */
         void submit_event_function(std::function<void()> event_function);
 
+        /**
+         * @brief Return the number of enqueued events
+         * @return The number of enqueued events
+         */
         size_t queue_size() const;
 
+        /**
+         * @brief Check if any worker thread has thrown an exception
+         * @throw Exception thrown by worker thread, if any
+         */
         void check_exception();
 
         /**
-         * @brief Execute jobs from the queue until all tasks are finished or an interrupt happened
-         * @return True if module task queue finished, false if stopped for other reason
-         * @warning This method can only be called by the \ref ModuleManager
+         * @brief Waits for the worker threads to finish
          */
-        bool execute_all();
-
-        /**
-         * @brief Execute a single job from the queue
-         * @return True if event task was finished, false if stopeed for another reason
-         * @warning This method can only be alled by the \ref ModuleManager
-         */
-        bool execute_one();
-
         void wait();
 
         /**
