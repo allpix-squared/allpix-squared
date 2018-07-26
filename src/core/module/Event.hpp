@@ -94,12 +94,14 @@ namespace allpix {
          * @param modules The modules that constitutes the event
          * @param event_num The unique event identifier
          * @param terminate Reference to simulation-global termination flag
+         * @param master_condition Condition to notify when terminate is modified
          * @param module_execution_time Map to store module statistics
          * @param seeder Seeder to seed the random engine
          */
         explicit Event(ModuleList modules,
                        const unsigned int event_num,
                        std::atomic<bool>& terminate,
+                       std::condition_variable& master_condition,
                        std::map<Module*, long double>& module_execution_time,
                        Messenger* messenger,
                        std::mt19937_64& seeder);
@@ -183,6 +185,7 @@ namespace allpix {
 
         // Simulation-global termination flag
         std::atomic<bool>& terminate_;
+        std::condition_variable& master_condition_;
 
         // Storage of module run-time statistics
         static std::mutex stats_mutex_;

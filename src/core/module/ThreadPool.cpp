@@ -14,8 +14,8 @@ using namespace allpix;
  */
 ThreadPool::ThreadPool(unsigned int num_threads,
                        std::function<void()> worker_init_function,
-                       std::condition_variable& queue_condition)
-    : queue_condition_(queue_condition) {
+                       std::condition_variable& master_condition)
+    : master_condition_(master_condition) {
     // Create threads
     try {
         for(unsigned int i = 0u; i < num_threads; ++i) {
@@ -54,7 +54,6 @@ void ThreadPool::check_exception() {
 void ThreadPool::wait() {
     std::unique_lock<std::mutex> lock{run_mutex_};
     run_condition_.wait(lock, [this]() { return exception_ptr_ || (event_queue_.empty() && run_cnt_ == 0); });
-    check_exception();
 }
 
 /**
@@ -64,16 +63,16 @@ void ThreadPool::worker(const std::function<void()>& init_function) {
     // Initialize the worker
     init_function();
 
-    // Increase the atomic run count and notify the ModuleManager that we popped an event
+    // Increase the atomic run count and notify the master thread that we popped an event
     auto increase_run_cnt_func = [this]() {
         ++run_cnt_;
-        queue_condition_.notify_one();
+        master_condition_.notify_one();
     };
 
     while(!done_) {
         Task task{nullptr};
 
-        queue_condition_.notify_one();
+        master_condition_.notify_one();
         if(event_queue_.pop(task, true, increase_run_cnt_func)) {
             // Try to run the task
             try {
@@ -88,6 +87,8 @@ void ThreadPool::worker(const std::function<void()>& init_function) {
                     exception_ptr_ = std::current_exception();
                     // Invalidate the queue to terminate other threads
                     event_queue_.invalidate();
+                    // Notify master thread that an exception has thrown
+                    master_condition_.notify_one();
                 }
             }
         }

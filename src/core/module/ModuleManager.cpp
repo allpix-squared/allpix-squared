@@ -566,6 +566,8 @@ void ModuleManager::init(std::mt19937_64& seeder) {
  * Initializes the thread pool and executes each event in parallel.
  */
 void ModuleManager::run(Messenger* messenger, std::mt19937_64& seeder) {
+    using namespace std::chrono_literals;
+
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
 
     global_config.setDefault("experimental_multithreading", false);
@@ -598,8 +600,8 @@ void ModuleManager::run(Messenger* messenger, std::mt19937_64& seeder) {
         Log::setReportingLevel(log_level);
         Log::setFormat(log_format);
     };
-    std::condition_variable buffer_condition;
-    std::shared_ptr<ThreadPool> thread_pool = std::make_unique<ThreadPool>(threads_num, init_function, buffer_condition);
+    std::condition_variable master_condition;
+    std::shared_ptr<ThreadPool> thread_pool = std::make_unique<ThreadPool>(threads_num, init_function, master_condition);
 
     std::atomic<unsigned int> finished_events{0};
 
@@ -613,7 +615,11 @@ void ModuleManager::run(Messenger* messenger, std::mt19937_64& seeder) {
     for(unsigned int i = 1; i <= number_of_events; i++) {
         // Don't initialize all events directly. That would take up too much memory.
         // 4x thread_num should give us a sufficient buffer (meaning that workers should never end up idle).
-        buffer_condition.wait(lock, [&]() { return thread_pool->queue_size() < threads_num * 4 || terminate_; });
+        // TODO: don't pseudo-busy loop here
+        master_condition.wait_for(lock, 50ms, [&]() {
+            thread_pool->check_exception();
+            return thread_pool->queue_size() < threads_num * 4 || terminate_;
+        });
 
         if(terminate_) {
             LOG(INFO) << "Interrupting prematurely because of request";
@@ -624,7 +630,8 @@ void ModuleManager::run(Messenger* messenger, std::mt19937_64& seeder) {
 
         // Create an event, initialize it, and submit it wrapped in a lambda to the thread pool
         // TODO: make this a unique pointer
-        auto event = std::make_shared<ConcreteEvent>(modules_, i, terminate_, module_execution_time_, messenger, seeder);
+        auto event = std::make_shared<ConcreteEvent>(
+            modules_, i, terminate_, master_condition, module_execution_time_, messenger, seeder);
         // Event initialization must be done on the main thread
         event->run_geant4();
         auto event_function = [ event = std::move(event), number_of_events, event_num = i, &finished_events ]() mutable {
