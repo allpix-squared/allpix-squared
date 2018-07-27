@@ -504,13 +504,6 @@ void GenericPropagationModule::init() {
             magnetic_field_ = detector_->getMagneticField();
         }
     }
-
-    if(output_plots_) {
-        auto time_bins =
-            static_cast<int>(Units::convert(integration_time_ / config_.get<long double>("output_plots_step"), "ns"));
-        drift_time_histo = new TH1D(
-            "drift_time_histo", "Drift time;t[ns];charge carriers", time_bins, 0., static_cast<int>(integration_time_));
-    }
 }
 
 void GenericPropagationModule::run(unsigned int event_num) {
@@ -579,13 +572,6 @@ void GenericPropagationModule::run(unsigned int event_num) {
             ++step_count;
             propagated_charges_count += charge_per_step;
             total_time += charge_per_step * prop_pair.second;
-
-            // Fill plot for drift time
-            if(output_plots_) {
-                drift_time_histo->SetBinContent(
-                    drift_time_histo->FindBin(prop_pair.second),
-                    drift_time_histo->GetBinContent(drift_time_histo->FindBin(prop_pair.second)) + charge_per_step);
-            }
         }
     }
 
@@ -766,8 +752,4 @@ void GenericPropagationModule::finalize() {
     long double average_time = total_time_ / std::max(1u, total_propagated_charges_);
     LOG(INFO) << "Propagated total of " << total_propagated_charges_ << " charges in " << total_steps_
               << " steps in average time of " << Units::display(average_time, "ns");
-
-    if(output_plots_) {
-        drift_time_histo->Write();
-    }
 }

@@ -19,6 +19,7 @@
 #include <G4NistManager.hh>
 #include <G4PVDivision.hh>
 #include <G4PVPlacement.hh>
+#include <G4PhysicalVolumeStore.hh>
 #include <G4Sphere.hh>
 #include <G4StepLimiterPhysics.hh>
 #include <G4SubtractionSolid.hh>
@@ -113,6 +114,9 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
 
     // Build all the detectors in the world
     build_detectors();
+
+    // Check for overlaps:
+    check_overlaps();
 
     return world_phys_.get();
 }
@@ -432,5 +436,21 @@ void GeometryConstructionG4::build_detectors() {
         // ALERT: NO COVER LAYER YET
 
         LOG(TRACE) << " Constructed detector " << detector->getName() << " succesfully";
+    }
+}
+
+void GeometryConstructionG4::check_overlaps() {
+    G4PhysicalVolumeStore* phys_volume_store = G4PhysicalVolumeStore::GetInstance();
+    LOG(DEBUG) << phys_volume_store->size() << " physical volumes are defined";
+
+    bool overlapFlag = false;
+    for(auto volume : (*phys_volume_store)) {
+        LOG(TRACE) << "Checking overlaps for physical volume \"" << volume->GetName() << "\"";
+        overlapFlag = volume->CheckOverlaps(1000, 0., false) || overlapFlag;
+    }
+    if(overlapFlag) {
+        LOG(ERROR) << "Overlapping volumes detected.";
+    } else {
+        LOG(INFO) << "No overlapping volumes detected.";
     }
 }

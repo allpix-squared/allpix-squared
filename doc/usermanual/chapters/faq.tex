@@ -4,13 +4,47 @@
 \begin{description}
 \item[How do I run a module only for one detector?]
 This is only possible for detector modules (which are constructed to work on individual detectors).
-To run it on a single detector, one should add a parameter \parameter{name} specifying the name of the detector (as defined in the detector configuration file).
+To run it on a single detector, one should add a parameter \parameter{name} specifying the name of the detector (as defined in the detector configuration file):
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+[ElectricFieldReader]
+name = "dut"
+model = "init"
+file_name = "../example_electric_field.init"
+\end{minted}
 \item[How do I run a module only for a specific detector type?]
 This is only possible for detector modules (which are constructed to work on individual detectors).
-To run it for a specific type of detector, one should add a parameter \parameter{type} with the type of the detector model (as set in the detector configuration file by the \parameter{model} parameter).
+To run it for a specific type of detector, one should add a parameter \parameter{type} with the type of the detector model (as set in the detector configuration file by the \parameter{model} parameter):
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+[ElectricFieldReader]
+type = "timepix"
+model = "linear"
+bias_voltage = -50V
+depletion_voltage = -30V
+\end{minted}
 Please refer to Section~\ref{sec:module_instantiation} for more information.
-\item[How can I run the exact same type of module with different settings?] This is possible by using the \parameter{input} and \parameter{output} parameters of a module that specify the messages of the module.
+\item[How can I run the exact same type of module with different settings?] This is possible by using the \parameter{input} and \parameter{output} parameters of a module that specify the messages of the module:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+[DefaultDigitizer]
+name = "dut0"
+adc_resolution = 4
+output = "low_adc_resolution"
+
+[DefaultDigitizer]
+name = "dut0"
+adc_resolution = 12
+output = "high_adc_resolution"
+\end{minted}
 By default, both the input and the output of module are messages with an empty name.
+In order to further process the data, subsequent modules require the \parameter{input} parameter to not receive multiple messages:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+[DetectorHistogrammer]
+input = "low_adc_resolution"
+name = "dut0"
+
+[DetectorHistogrammer]
+input = "high_adc_resolution"
+name = "dut0"
+\end{minted}
 Please refer to Section~\ref{sec:objects_messages} for more information.
 \item[How can I temporarily ignore a module during development?]
 The section header of a particular module in the configuration file can be replaced by the string \parameter{Ignore}.
@@ -34,9 +68,8 @@ Please refer to Section~\ref{sec:objhistory} for more information.
 \item[How do I access the Monte Carlo truth of a specific PixelHit?]
 The Monte Carlo truth is part of the history of a PixelHit.
 This means that the Monte Carlo truth can be retrieved as described in the question above.
-However take notice that there are multiple layers between a PixelHit and its MCParticles, which are the PixelCharge, PropagatedCharge and DepositedCharge.
-These should all be loaded in memory to make it possible to fetch the history.
-Because getting the Monte Carlo truth of a PixelHit is quite a common thing a \parameter{getMCParticles} method is available which searches all layers of the history and returns an exception if any of the in between steps is not available or not loaded.
+Because accessing the Monte Carlo truth of a PixelHit is quite a common task, these references are stored directly for every new object created.
+This allows to retain the information without the necessity to keep the full object history including all intermediate steps in memory.
 Please refer to Section~\ref{sec:objhistory} for more information.
 \item[Can I import an electric field from TCAD and use it for simulating propagation?]
 Yes, the framework includes a tool to convert DF-ISE files from TCAD to an internal format which \apsq can parse.
