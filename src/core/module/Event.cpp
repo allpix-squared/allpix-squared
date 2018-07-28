@@ -66,6 +66,8 @@ void Event::run_geant4() {
     for(auto module = modules_.crbegin(); module != modules_.crend(); module++) {
         if((*module)->getUniqueName().find("Geant4") == std::string::npos) {
             remove_modules--;
+        } else {
+            break;
         }
     }
 
