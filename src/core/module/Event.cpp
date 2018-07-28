@@ -61,6 +61,27 @@ Event::Event(ModuleList modules,
  * Runs all modules up to and including the last Geant4 module and pops them from the \ref Event::modules_ "list of modules".
  */
 void Event::run_geant4() {
+    // Figure out how many modules must run on the main thread
+    auto remove_modules = modules_.size();
+    for(auto module = modules_.crbegin(); module != modules_.crend(); module++) {
+        if((*module)->getUniqueName().find("Geant4") == std::string::npos) {
+            remove_modules--;
+        }
+    }
+
+    // Ensure we didn't wrap around
+    assert(remove_modules < modules_.size());
+
+    for(auto i = remove_modules; i != 0; i--) {
+        auto module = modules_.front();
+        LOG(DEBUG) << module->getUniqueName() << " is a Geant4 module; running on main thread";
+        run(module);
+        modules_.pop_front();
+    }
+
+        // Below implementation is a modern approach, which works locally, but segfaults constantly on the GitLab CI. Might
+        // be worth investigating why.
+#if 0
     auto first_after_last_geant4 = [&]() {
         // Find the last Geant4 module from the bottom of the list up
         auto last_geant4 = std::find_if(modules_.crbegin(), modules_.crend(), [](const auto& module) {
@@ -82,10 +103,9 @@ void Event::run_geant4() {
         LOG(DEBUG) << module->getUniqueName() << " is a Geant4 module; running on main thread";
         run(module);
 
-        // XXX: Could this be the cause of the GitLab segfaults? Removing elements invalidating stuff?
-        // Try removing stuff after everything has been run
         modules_.pop_front();
     }
+#endif
 
 #ifndef NDEBUG
     // Ensure all Geant4 modules have been removed
