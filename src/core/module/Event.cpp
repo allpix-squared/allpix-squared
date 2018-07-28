@@ -71,9 +71,6 @@ void Event::run_geant4() {
         }
     }
 
-    // Ensure we didn't wrap around
-    assert(remove_modules < modules_.size());
-
     for(auto i = remove_modules; i != 0; i--) {
         auto module = modules_.front();
         LOG(DEBUG) << module->getUniqueName() << " is a Geant4 module; running on main thread";
@@ -127,7 +124,8 @@ void Event::run_geant4() {
 bool Event::handle_iomodule(const std::shared_ptr<Module>& module) {
     using namespace std::chrono_literals;
 
-    const bool reader = dynamic_cast<ReaderModule*>(module.get()), writer = dynamic_cast<WriterModule*>(module.get());
+    const bool reader = dynamic_cast<ReaderModule*>(module.get()) != nullptr,
+               writer = dynamic_cast<WriterModule*>(module.get()) != nullptr;
     if(previous_was_reader_ && !reader) {
         // All readers have been run for this event, let the next event run its readers
         reader_lock_.next();
@@ -146,8 +144,8 @@ bool Event::handle_iomodule(const std::shared_ptr<Module>& module) {
     auto lock = std::unique_lock<std::mutex>(typelock.mutex);
     // Check every 50ms if it's this event's turn to run
     while(!typelock.condition.wait_for(
-        lock, 50ms, [this, &typelock]() { return this->number == typelock.current_event.load(); }))
-        ;
+        lock, 50ms, [this, &typelock]() { return this->number == typelock.current_event.load(); })) {
+    };
 
     return true;
 }

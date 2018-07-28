@@ -571,7 +571,7 @@ void ModuleManager::run(Messenger* messenger, std::mt19937_64& seeder) {
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
 
     global_config.setDefault("experimental_multithreading", false);
-    unsigned int threads_num;
+    size_t threads_num;
 
     if(global_config.get<bool>("experimental_multithreading")) {
         // Try to fetch a suitable number of workers if multithreading is enabled

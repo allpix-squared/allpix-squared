@@ -28,6 +28,19 @@ namespace allpix {
         friend struct ConcreteEvent;
 
     public:
+        /// @{
+        /**
+         * @brief Copying an event not allowed
+         */
+        Event(const Event&) = delete;
+        Event& operator=(const Event&) = delete;
+        /**
+         * @brief Disallow move because of mutexes and atomics (?)
+         */
+        Event(Event&&) = delete;
+        Event& operator=(Event&&) = delete;
+        /// @}
+
         /**
          * @brief Unique identifier of this event
          */
@@ -75,7 +88,7 @@ namespace allpix {
         /**
          * @brief Helper struct used to run modules requiring I/O operations in order of event number
          */
-        struct IOOrderLock {
+        struct IOOrderLock { // NOLINT
             std::mutex mutex;
             std::condition_variable condition;
             std::atomic<unsigned int> current_event{1};
@@ -110,19 +123,6 @@ namespace allpix {
          * @brief Use default destructor
          */
         ~Event() = default;
-
-        /// @{
-        /**
-         * @brief Copying an event not allowed
-         */
-        Event(const Event&) = delete;
-        Event& operator=(const Event&) = delete;
-        /**
-         * @brief Disallow move because of mutexes and atomics (?)
-         */
-        Event(Event&&) = delete;
-        Event& operator=(Event&&) = delete;
-        /// @}
 
         /**
          * @brief Run all Geant4 module, initializing the event
@@ -218,8 +218,12 @@ namespace allpix {
      * "modules' run functions" to not overwrite the passed Event pointer.
      */
     struct ConcreteEvent : public Event {
-        template <typename... Params> ConcreteEvent(Params&&... params) : Event(std::forward<Params>(params)...) {}
+        friend class ModuleManager;
 
+    public:
+        template <typename... Params> explicit ConcreteEvent(Params&&... params) : Event(std::forward<Params>(params)...) {}
+
+    private:
         void run_geant4() { Event::run_geant4(); }
         void run() { Event::run(); }
     };

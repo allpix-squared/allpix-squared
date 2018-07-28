@@ -221,7 +221,8 @@ namespace allpix {
 
     public:
         explicit WriterModule(Configuration& config) : Module(config) {}
-        explicit WriterModule(Configuration& config, std::shared_ptr<Detector> detector) : Module(config, detector) {}
+        explicit WriterModule(Configuration& config, std::shared_ptr<Detector> detector)
+            : Module(config, std::move(detector)) {}
     };
 
     /**
@@ -237,7 +238,8 @@ namespace allpix {
 
     public:
         explicit ReaderModule(Configuration& config) : Module(config) {}
-        explicit ReaderModule(Configuration& config, std::shared_ptr<Detector> detector) : Module(config, detector) {}
+        explicit ReaderModule(Configuration& config, std::shared_ptr<Detector> detector)
+            : Module(config, std::move(detector)) {}
     };
 
 } // namespace allpix

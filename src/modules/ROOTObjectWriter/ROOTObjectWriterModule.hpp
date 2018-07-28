@@ -58,7 +58,6 @@ namespace allpix {
          * @brief Writes the objects fetched to their specific tree, constructing trees on the fly for new objects.
          */
         void run(Event*) const override;
-        void pre_run(Event*) const;
 
         /**
          * @brief Add the main configuration and the detector setup to the data file and write it, also write statistics
@@ -67,6 +66,8 @@ namespace allpix {
         void finalize() override;
 
     private:
+        void pre_run(Event*) const;
+
         GeometryManager* geo_mgr_;
 
         // Object names to include or exclude from writing
