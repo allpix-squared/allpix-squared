@@ -47,7 +47,7 @@ It should be noted that the TCAD DF-ISE mesh converter depends on the core utili
 ### Usage
 To run the program, the following command should be executed from the installation folder:
 ```bash
-bin/tcad_dfise_converter/dfise_converter -f <file_prefix> [<options>] [<arguments>]
+mesh_converter -f <file_prefix> [<options>] [<arguments>]
 ```
 The converter will look for a configuration file with `<file_prefix>` and `.conf` extension. This default configuration file name can be replaced with the `-c` option.
 The list with options can be accessed using the `-h` option.
@@ -73,7 +73,7 @@ It is possible to visualize the position of the new mesh point to be interpolate
 
 In addition, the `mesh_plotter` tool can be used, in order to visualize the new mesh interpolation results, from the installation folder as follows:
 ```bash
-bin/tcad_dfise_converter/mesh_plotter -f <file_name> [<options>] [<arguments>]
+mesh_plotter -f <file_name> [<options>] [<arguments>]
 ```
 The following command-line options are supported:
 ```
