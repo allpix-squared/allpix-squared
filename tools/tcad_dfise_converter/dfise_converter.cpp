@@ -202,7 +202,7 @@ int main(int argc, char** argv) {
 
     // Only use index cut if set.
     const bool index_cut_flag = config.has("index_cut");
-    const auto index_cut = config.get<size_t>("index_cut", 999999);
+    auto index_cut = config.get<size_t>("index_cut", 999999);
 
     XYZVectorInt divisions;
     const auto dimension = config.get<int>("dimension", 3);
