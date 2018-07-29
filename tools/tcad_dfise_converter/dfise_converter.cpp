@@ -165,13 +165,17 @@ int main(int argc, char** argv) {
 
     // Print help if requested or no arguments given
     if(print_help) {
-        std::cerr << "Usage: ./tcad_dfise_reader -f <file_name> [<options>]" << std::endl;
-        std::cout << "\t -f <file_prefix>       common prefix of DF-ISE grid (.grd) and data (.dat) files" << std::endl;
-        std::cout << "\t -c <config_file>       configuration file name" << std::endl;
-        std::cout << "\t -o <init_file_prefix>  output file prefix without .init (defaults to file name of <file_prefix>)"
-                  << std::endl;
-        std::cout << "\t -l <file>              file to log to besides standard output (disabled by default)" << std::endl;
-        std::cout << "\t -v <level>             verbosity level (default reporiting level is INFO)" << std::endl;
+        std::cerr << "Usage: ./dfise_converter -f <file_name> [<options>]" << std::endl;
+        std::cout << "Required parameters:" << std::endl;
+        std::cout << "\t -f <file_prefix>  common prefix of DF-ISE grid (.grd) and data (.dat) files" << std::endl;
+        std::cout << "Optional parameters:" << std::endl;
+        std::cout << "\t -c <config_file>  configuration file name" << std::endl;
+        std::cout << "\t -h                display this help text" << std::endl;
+        std::cout << "\t -l <file>         file to log to besides standard output (disabled by default)" << std::endl;
+        std::cout
+            << "\t -o <file_prefix>  output file prefix without .init extentsion (defaults to file name of <file_prefix>)"
+            << std::endl;
+        std::cout << "\t -v <level>        verbosity level (default reporiting level is INFO)" << std::endl;
 
         allpix::Log::finish();
         return return_code;

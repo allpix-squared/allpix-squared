@@ -55,8 +55,9 @@ Possible options and their default values are:
 ```
 -f <file_prefix>       common prefix of DF-ISE grid (.grd) and data (.dat) files
 -c <config_file>	   configuration file setting mesh conversion parameters
--o <init_file_prefix>  output file prefix without .init (defaults to file name of <file_prefix>)
+-h                     display this help text
 -l <file>              file to log to besides standard output (disabled by default)
+-o <init_file_prefix>  output file prefix without .init (defaults to file name of <file_prefix>)
 -v <level>             verbosity level (default reporting level is INFO)
 ```
 
@@ -74,8 +75,21 @@ In addition, the `mesh_plotter` tool can be used, in order to visualize the new 
 ```bash
 bin/tcad_dfise_converter/mesh_plotter -f <file_name> [<options>] [<arguments>]
 ```
+The following command-line options are supported:
+```
+-f <file_name>         init file name
+-c <cut>               projection height index (default is mesh_pitch / 2)
+-h                     display this help text
+-l                     plot with logarithmic scale if set
+-o <output_file_name>  name of the file to output (default is efield.png)
+-p <plane>             plane to be ploted. xy, yz or zx (default is yz)
+-x <mesh x_pitch>      plot regular mesh X binning (default is 100)
+-y <mesh_y_pitch>      plot regular mesh Y binning (default is 100)
+-z <mesh_z_pitch>      plot regular mesh Z binning (default is 100)
+```
+
 The list with options and defaults is displayed with the `-h` option.
-In a 3D mesh, the plane to be plotted must be identified by using the option -p with argument *xy*, *yz* or *zx*, defaulting to *yz*.
+In a 3D mesh, the plane to be plotted must be identified by using the option `-p` with argument *xy*, *yz* or *zx*, defaulting to *yz*.
 The data to be plotted can be selected with the `-d` option, the arguments are *ex*, *ey*, *ez* for the vector components or the default value *n* for the norm of the electric field.
 
 
