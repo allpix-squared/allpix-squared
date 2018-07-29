@@ -190,13 +190,13 @@ int main(int argc, char** argv) {
     const auto max_radius = config.get<double>("max_radius", 10);
 
     // Only use a radius threshold if requested
-    const bool threshold_flag = config.has<double>("radius_threshold");
+    const bool threshold_flag = config.has("radius_threshold");
     const auto radius_threshold = config.get<double>("radius_threshold", -1);
 
     const auto volume_cut = config.get<double>("volume_cut", 10e-9);
 
     // Only use index cut if set.
-    const bool index_cut_flag = config.has<size_t>("index_cut");
+    const bool index_cut_flag = config.has("index_cut");
     const auto index_cut = config.get<size_t>("index_cut", 999999);
 
     XYZVectorInt divisions;
