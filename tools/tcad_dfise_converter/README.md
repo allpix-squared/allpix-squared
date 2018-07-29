@@ -30,19 +30,19 @@ It should be noted that the TCAD DF-ISE mesh converter depends on the core utili
 
 ### Parameters
 * `dimension`: Specify mesh dimensionality (defaults to 3).
-* `region`: Region name to be meshed (defaults to 'bulk').
-* `observable`: Observable to be interpolated (defaults Electric Field).
-* `radius`: Initial node neighbors search radius in um (defaults to 1 um).
-* `radius_step`: Radius step if no neighbor is found (defaults to 0.5 um).
-* `max_radius`: Maximum search radius (default is 10 um).
-* `radius_threshold`: Minimum distance from node to new mesh point (defaults to 0 um).
+* `region`: Region name to be meshed (defaults to `bulk`).
+* `observable`: Observable to be interpolated (defaults to `ElectricField`).
+* `initial_radius`: Initial node neighbors search radius in micro meters (defaults to `1um`).
+* `radius_step`: Radius step if no neighbor is found (defaults to `0.5um`).
+* `max_radius`: Maximum search radius (default is `10um`).
+* `radius_threshold`: Minimum distance from node to new mesh point. By default, no threshold is applied.
 * `volume_cut`: Minimum volume for tetrahedron for non-coplanar vertices (defaults to minimum double value).
 * `index_cut`: Index cut during permutation on vertex neighbours (disabled by default).
 * `divisions`: Number of divisions of the new regular mesh for each dimension, 2D or 3D vector depending on the `dimension` setting. Defaults to 100 bins in each dimension.
-* `xyz`: Array to replace the system coordinates of the mesh.
+* `xyz`: Array to replace the system coordinates of the mesh. A detailed description of how to use this parameter is given below.
 * `screen_shot`: Enables "screen-shot" of mesh points, point being interpolated (in red) and neighbouring pixels (in blue) (defaults to -1 -1 -1, disabling the screen-shot).
 * `ss_radius`: Sets a region of interest around the point being interpolated to show the mesh points.
-* `mesh_tree`: Switch enabling the creation of a root file with the TCAD mesh nodes stored in a ROOT::TTree (automatically enabled if screen-shot is activated).
+* `mesh_tree`: Boolean to enable creation of a root file with the TCAD mesh nodes stored in a ROOT::TTree. This setting is automatically enabled if screen-shot is activated and deactivated by default.
 
 ### Usage
 To run the program, the following command should be executed from the installation folder:
