@@ -74,6 +74,7 @@ int main(int argc, char** argv) {
     }
 
     // Read file
+    std::cout << "Welcome to the Mesh Plotter Tool of Allpix^2 " << ALLPIX_PROJECT_VERSION << std::endl;
     std::cout << "Reading file: " << file_name;
 
     size_t firstindex = file_name.find_last_of('_');

@@ -169,6 +169,7 @@ int main(int argc, char** argv) {
         return return_code;
     }
 
+    LOG(STATUS) << "Welcome to the Mesh Converter Tool of Allpix^2 " << ALLPIX_PROJECT_VERSION;
     LOG(STATUS) << "Using " << conf_file_name << " configuration file";
     std::ifstream file(conf_file_name);
     allpix::ConfigReader reader(file, conf_file_name);
