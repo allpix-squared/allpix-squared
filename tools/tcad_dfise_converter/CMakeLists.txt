@@ -36,7 +36,7 @@ ADD_EXECUTABLE(mesh_converter
 )
 
 # Link the dependency libraries
-TARGET_LINK_LIBRARIES(dfise_converter ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES})
+TARGET_LINK_LIBRARIES(mesh_converter ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES})
 
 # Include Eigen dependency
 FIND_PACKAGE(Eigen3 REQUIRED)
