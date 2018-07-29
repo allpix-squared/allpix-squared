@@ -43,6 +43,7 @@ It should be noted that the TCAD DF-ISE mesh converter depends on the core utili
 * `screen_shot`: Enables "screen-shot" of mesh points, point being interpolated (in red) and neighboring pixels (in blue) (defaults to -1 -1 -1, disabling the screen-shot).
 * `ss_radius`: Sets a region of interest around the point being interpolated to show the mesh points.
 * `mesh_tree`: Boolean to enable creation of a root file with the TCAD mesh nodes stored in a `ROOT::TTree`. This setting is automatically enabled if screen-shot is activated and deactivated by default.
+* `workers`: Number of worker threads to be used for the interpolation. Defaults to the available number of cores on the machine (hardware concurrency).
 
 ### Usage
 To run the program, the following command should be executed from the installation folder:
