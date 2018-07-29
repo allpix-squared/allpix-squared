@@ -5,6 +5,11 @@ IF(COMMAND CMAKE_POLICY)
   CMAKE_POLICY(SET CMP0048 NEW) # set project version
 ENDIF(COMMAND CMAKE_POLICY)
 
+# Check if a version number is set - if not, just default to an empty string
+IF(NOT ALLPIX_VERSION)
+  ADD_DEFINITIONS(-DALLPIX_PROJECT_VERSION="")
+ENDIF()
+
 # ROOT is required for vector and persistency etc
 FIND_PACKAGE(ROOT REQUIRED)
 IF(NOT ROOT_FOUND)
