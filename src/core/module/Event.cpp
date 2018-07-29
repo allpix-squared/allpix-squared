@@ -78,8 +78,8 @@ void Event::run_geant4() {
         modules_.pop_front();
     }
 
-        // Below implementation is a modern approach, which works locally, but segfaults constantly on the GitLab CI. Might
-        // be worth investigating why.
+// Below implementation is a modern approach, which works locally, but segfaults constantly on the GitLab CI. Might
+// be worth investigating why.
 #if 0
     auto first_after_last_geant4 = [&]() {
         // Find the last Geant4 module from the bottom of the list up
