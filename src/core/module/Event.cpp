@@ -121,7 +121,7 @@ void Event::run_geant4() {
  * When a previous event has yet to write to file, the current event waits until it's its own turn to write.
  * No work is done while waiting.
  */
-bool Event::handle_iomodule(const std::shared_ptr<Module>& module) {
+void Event::handle_iomodule(const std::shared_ptr<Module>& module) {
     using namespace std::chrono_literals;
 
     const bool reader = dynamic_cast<ReaderModule*>(module.get()) != nullptr,
@@ -134,7 +134,7 @@ bool Event::handle_iomodule(const std::shared_ptr<Module>& module) {
 
     if(!reader && !writer) {
         // Module doesn't require IO; nothing else to do
-        return false;
+        return;
     }
     LOG(DEBUG) << module->getUniqueName() << " is a " << (reader ? "reader" : "writer")
                << "; running in order of event number";
@@ -146,8 +146,6 @@ bool Event::handle_iomodule(const std::shared_ptr<Module>& module) {
     while(!typelock.condition.wait_for(
         lock, 50ms, [this, &typelock]() { return this->number == typelock.current_event.load(); })) {
     };
-
-    return true;
 }
 
 /**
@@ -157,10 +155,7 @@ bool Event::handle_iomodule(const std::shared_ptr<Module>& module) {
  */
 void Event::run(std::shared_ptr<Module>& module) {
     // Modules that read/write files must be run in order of event number
-    const bool io_module = handle_iomodule(module);
-
-    auto lock = (!module->canParallelize() || io_module) ? std::unique_lock<std::mutex>(module->run_mutex_)
-                                                         : std::unique_lock<std::mutex>();
+    handle_iomodule(module);
 
     LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << this->number << " [" << module->get_identifier().getUniqueName()
                                       << "]";

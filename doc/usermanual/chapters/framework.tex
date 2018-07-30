@@ -324,28 +324,18 @@ In the end, only a single instance for every unique name is allowed.
 If there are multiple instantiations with the same unique name, the instantiation with the highest priority is kept.
 If multiple instantiations with the same unique name and the same priority exist, an exception is raised.
 
-\subsection{Parallel execution of modules}
+\subsection{Parallel execution of events}
 \label{sec:multithreading}
 The framework has experimental support for running several events in parallel.
 This feature is disabled for new modules by default, and has to be both supported by the module and enabled by the user as described in Section~\ref{sec:framework_parameters}.
 A significant speed improvement can be achieved if the simulations heavier modules are parallelizable.
 
-The framework allows to parallelize the execution of the same module for multiple events if the module supports it.
-If not, the module is run for a single event as a time.
+The framework allows to parallelize the execution of the same module for multiple events if explicitly enabled.
+If not, a module is run for a single event as a time.
 To yield the same output files between two simulations with the same configuration, reader and writer modules are never run concurrently, and are run in-order.
 If an event reaches a writer in the module sequence before a previous event, the current event will block execution until the previous event has writte to file.
 The instanced events are then distributed to a set of worker threads as specified in the configuration or determined from system parameters, which will execute the individual events.
 The module manager will wait for all events to finish before exiting.
-
-To enable parallelization for a module, the following line of code has to be added to the constructor of a module:
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
-// Enable parallelization of this module if multithreading is enabled
-enable_parallelization();
-\end{minted}
-By adding this, the module promises that it will work correctly if the run-method is executed multiple times in parallel, in separate event instantiations.
-This means in particular that the module will safely handle access to shared (for example static) variables and it will properly bind ROOT histograms to their directory before the \parameter{run()}-method.
-Access to constant operations in the GeometryManager, Detector and DetectorModel is always valid between various threads. In addition, sending and receiving messages is thread-safe.
-It is recommended that a module does not access/modify any member variables in its \parameter{run()}-method for increased performance.
 
 \section{Geometry and Detectors}
 \label{sec:models_geometry}

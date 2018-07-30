@@ -155,7 +155,7 @@ namespace allpix {
          * this function in order of increasgin event number. This ensures that readers and writers run in the same order
          * between two same-configuration simulations.
          */
-        bool handle_iomodule(const std::shared_ptr<Module>& module);
+        void handle_iomodule(const std::shared_ptr<Module>& module);
 
         /**
          * @brief Changes the current context of the event to that of the given module

@@ -150,13 +150,6 @@ void Module::set_config_manager(ConfigManager* conf_manager) {
     conf_manager_ = conf_manager;
 }
 
-bool Module::canParallelize() {
-    return parallelize_;
-}
-void Module::enable_parallelization() {
-    parallelize_ = true;
-}
-
 Configuration& Module::get_configuration() {
     return config_;
 }
