@@ -8,46 +8,11 @@
 #include <utility>
 #include <vector>
 
+#include "core/module/ThreadPool.hpp"
 #include "core/utils/log.h"
 
 class ThreadPool {
 private:
-    // Thread safe implementation of a Queue using a std::queue
-    template <typename T> class SafeQueue {
-    private:
-        std::queue<T> m_queue;
-        std::mutex m_mutex;
-
-    public:
-        SafeQueue() = default;
-        ~SafeQueue() = default;
-
-        bool empty() {
-            std::unique_lock<std::mutex> lock(m_mutex);
-            return m_queue.empty();
-        }
-
-        int size() {
-            std::unique_lock<std::mutex> lock(m_mutex);
-            return m_queue.size();
-        }
-
-        void enqueue(T& t) {
-            std::unique_lock<std::mutex> lock(m_mutex);
-            m_queue.push(t);
-        }
-
-        bool dequeue(T& t) {
-            std::unique_lock<std::mutex> lock(m_mutex);
-            if(m_queue.empty()) {
-                return false;
-            }
-            t = std::move(m_queue.front());
-            m_queue.pop();
-            return true;
-        }
-    };
-
     class ThreadWorker {
     private:
         unsigned int m_id;
@@ -67,7 +32,7 @@ private:
                     if(m_pool->m_queue.empty()) {
                         m_pool->m_conditional_lock.wait(lock);
                     }
-                    dequeued = m_pool->m_queue.dequeue(func);
+                    dequeued = m_pool->m_queue.pop(func);
                 }
                 if(dequeued) {
                     func();
@@ -77,7 +42,7 @@ private:
     };
 
     bool m_shutdown;
-    SafeQueue<std::function<void()>> m_queue;
+    allpix::ThreadPool::SafeQueue<std::function<void()>> m_queue;
     std::vector<std::thread> m_threads;
     std::mutex m_conditional_mutex;
     std::condition_variable m_conditional_lock;
@@ -100,6 +65,7 @@ public:
     void shutdown() {
         m_shutdown = true;
         m_conditional_lock.notify_all();
+        m_queue.invalidate();
 
         for(auto& thrd : m_threads) {
             if(thrd.joinable()) {
@@ -119,7 +85,7 @@ public:
         std::function<void()> wrapper_func = [task_ptr]() { (*task_ptr)(); };
 
         // Enqueue generic wrapper function
-        m_queue.enqueue(wrapper_func);
+        m_queue.push(wrapper_func);
 
         // Wake up one thread if its waiting
         m_conditional_lock.notify_one();
