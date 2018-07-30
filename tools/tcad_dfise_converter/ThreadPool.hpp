@@ -19,8 +19,8 @@ private:
         std::mutex m_mutex;
 
     public:
-        SafeQueue() {}
-        ~SafeQueue() {}
+        SafeQueue() = default;
+        ~SafeQueue() = default;
 
         bool empty() {
             std::unique_lock<std::mutex> lock(m_mutex);
@@ -101,9 +101,9 @@ public:
         m_shutdown = true;
         m_conditional_lock.notify_all();
 
-        for(unsigned int i = 0; i < m_threads.size(); ++i) {
-            if(m_threads[i].joinable()) {
-                m_threads[i].join();
+        for(auto& thrd : m_threads) {
+            if(thrd.joinable()) {
+                thrd.join();
             }
         }
     }
