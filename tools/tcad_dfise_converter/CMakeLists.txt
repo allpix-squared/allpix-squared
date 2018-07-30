@@ -28,8 +28,8 @@ INCLUDE_DIRECTORIES(${ALLPIX_SRC})
 # Add TCAD dfise converter executable
 ADD_EXECUTABLE(mesh_converter
     MeshElement.cpp
-    dfise_converter.cpp
-    read_dfise.cpp
+    MeshConverter.cpp
+    DFISEParser.cpp
     ${ALLPIX_SRC}/core/utils/log.cpp
     ${ALLPIX_SRC}/core/utils/text.cpp
     ${ALLPIX_SRC}/core/utils/unit.cpp
@@ -52,7 +52,7 @@ INSTALL(TARGETS mesh_converter
 
 
 # Add mesh_plotter executable
-ADD_EXECUTABLE(mesh_plotter mesh_plotter.cpp)
+ADD_EXECUTABLE(mesh_plotter MeshPlotter.cpp)
 
 # Link libraries
 TARGET_LINK_LIBRARIES(mesh_plotter ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES})

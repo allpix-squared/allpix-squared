@@ -1,8 +1,8 @@
 #include <string>
 #include <vector>
 
+#include "DFISEParser.hpp"
 #include "Octree.hpp"
-#include "read_dfise.h"
 
 #include "core/utils/log.h"
 

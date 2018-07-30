@@ -1,4 +1,4 @@
-#include "dfise_converter.h"
+#include "MeshConverter.hpp"
 
 #include <algorithm>
 #include <cfloat>
@@ -28,10 +28,10 @@
 #include "core/utils/log.h"
 #include "tools/ROOT.h"
 
-#include "MeshElement.h"
+#include "DFISEParser.hpp"
+#include "MeshElement.hpp"
 #include "Octree.hpp"
-#include "ThreadPool.h"
-#include "read_dfise.h"
+#include "ThreadPool.hpp"
 
 using namespace mesh_converter;
 using namespace ROOT::Math;
@@ -166,7 +166,7 @@ int main(int argc, char** argv) {
 
     // Print help if requested or no arguments given
     if(print_help) {
-        std::cerr << "Usage: ./dfise_converter -f <file_name> [<options>]" << std::endl;
+        std::cerr << "Usage: mesh_converter -f <file_name> [<options>]" << std::endl;
         std::cout << "Required parameters:" << std::endl;
         std::cout << "\t -f <file_prefix>  common prefix of DF-ISE grid (.grd) and data (.dat) files" << std::endl;
         std::cout << "Optional parameters:" << std::endl;
