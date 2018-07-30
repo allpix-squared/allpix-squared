@@ -88,6 +88,7 @@ The following authors, in alphabetical order, have contributed to Allpix<sup>2</
 * Edoardo Rossi, DESY, @edrossi
 * Andre Sailer, CERN, @sailer
 * Paul Schütze, DESY, @pschutze
+* Viktor Sonesten, GSOC18 Student, @tmplt
 * Mateus Vicente Barreto Pinto, Université de Genève, @mvicente
 
 The authors would also like to express their thanks to the developers of [AllPix](https://twiki.cern.ch/twiki/bin/view/Main/AllPix).
