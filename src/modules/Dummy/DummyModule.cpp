@@ -34,10 +34,11 @@ void DummyModule::init(uint64_t) {
     }
 }
 
-void DummyModule::run(Event*) const {
+void DummyModule::run(Event* event) const {
+    auto messages = event->fetchMultiMessage<PixelHitMessage>();
     // ... Implement ... (Typically uses the configuration to execute function and outputs an message)
     // Loop through all receieved messages and print some information
-    for(auto& message : messages_) {
+    for(auto& message : messages) {
         std::string detectorName = message->getDetector()->getName();
         LOG(DEBUG) << "Picked up " << message->getData().size() << " objects from detector " << detectorName;
     }
