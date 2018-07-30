@@ -7,8 +7,8 @@ void SetTrackInfoUserHookG4::PreUserTrackingAction(const G4Track* aTrack) {
     auto theTrack = const_cast<G4Track*>(aTrack); // NOLINT
     auto particle = aTrack->GetDefinition();
 
-    // Check if this is an ion (charge larger than an alpha particle) and kill if it is not the primary ion:
-    if((particle->GetPDGCharge() > 2. + std::numeric_limits<double>::epsilon()) && aTrack->GetTrackID() > 1) {
+    // Unstable particles which are not the primary particle should be killed to stop the decay chain:
+    if(!particle->GetPDGStable() && aTrack->GetTrackID() > 1) {
         theTrack->SetTrackStatus(fStopAndKill);
     }
 
