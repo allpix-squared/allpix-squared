@@ -1,4 +1,4 @@
-#include "dfise_converter.h"
+#include "MeshConverter.hpp"
 
 #include <algorithm>
 #include <cfloat>
@@ -28,9 +28,10 @@
 #include "core/utils/log.h"
 #include "tools/ROOT.h"
 
-#include "MeshElement.h"
+#include "DFISEParser.hpp"
+#include "MeshElement.hpp"
 #include "Octree.hpp"
-#include "read_dfise.h"
+#include "ThreadPool.hpp"
 
 using namespace mesh_converter;
 using namespace ROOT::Math;
@@ -165,7 +166,7 @@ int main(int argc, char** argv) {
 
     // Print help if requested or no arguments given
     if(print_help) {
-        std::cerr << "Usage: ./dfise_converter -f <file_name> [<options>]" << std::endl;
+        std::cerr << "Usage: mesh_converter -f <file_name> [<options>]" << std::endl;
         std::cout << "Required parameters:" << std::endl;
         std::cout << "\t -f <file_prefix>  common prefix of DF-ISE grid (.grd) and data (.dat) files" << std::endl;
         std::cout << "Optional parameters:" << std::endl;
@@ -409,14 +410,19 @@ int main(int argc, char** argv) {
     auto elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
     LOG(INFO) << "Reading the files took " << elapsed_seconds << " seconds.";
 
-    LOG(STATUS) << "Starting regular grid interpolation";
     // Initializing the Octree with points from mesh cloud.
     unibn::Octree<Point> octree;
     octree.initialize(points);
-    std::vector<Point> e_field_new_mesh;
 
-    double x = minx + xstep / 2.0;
-    for(int i = 0; i < divisions.x(); ++i) {
+    auto mesh_section = [&](double x) {
+        allpix::Log::setReportingLevel(log_level);
+
+        // New mesh slice
+        std::vector<Point> new_mesh;
+
+        // Local index cut used:
+        auto my_index_cut = index_cut;
+
         double y = miny + ystep / 2.0;
         for(int j = 0; j < divisions.y(); ++j) {
             double z = minz + zstep / 2.0;
@@ -447,12 +453,6 @@ int main(int argc, char** argv) {
                     e.z = z; // Corresponding, to be interpolated, electric field
                 }
                 bool valid = false;
-
-                if(j * k % 1000 == 0) {
-                    LOG_PROGRESS(INFO, "POINT")
-                        << "Interpolating point (" << std::setw(3) << (i + 1) << "," << std::setw(3) << (j + 1) << ","
-                        << std::setw(3) << (k + 1) << ") at (" << q.x << "," << q.y << "," << q.z << ")";
-                }
 
                 size_t prev_neighbours = 0;
                 double radius = initial_radius;
@@ -504,7 +504,7 @@ int main(int argc, char** argv) {
 
                     if(ss_flag) {
                         mesh_plotter(grid_file, ss_radius, radius, x, y, z, points, results);
-                        return 1;
+                        throw std::runtime_error("aborted interpolation, mesh point snapshot taken");
                     }
 
                     // Finding tetrahedrons
@@ -524,9 +524,9 @@ int main(int argc, char** argv) {
                     std::vector<size_t> index;
 
                     if(!index_cut_flag) {
-                        index_cut = results.size();
+                        my_index_cut = results.size();
                     }
-                    index_cut_up = index_cut;
+                    index_cut_up = my_index_cut;
                     while(index_cut_up <= results.size()) {
                         do {
                             valid = false;
@@ -581,7 +581,7 @@ int main(int argc, char** argv) {
 
                         LOG(DEBUG) << "All combinations tried up to index " << index_cut_up
                                    << " done. Increasing the index cut.";
-                        index_cut_up = index_cut_up + index_cut;
+                        index_cut_up = index_cut_up + my_index_cut;
                     }
 
                     if(valid) {
@@ -593,16 +593,48 @@ int main(int argc, char** argv) {
                 }
 
                 if(!valid) {
-                    LOG(FATAL) << "Couldn't interpolate new mesh point, probably the grid is too irregular";
-                    return 1;
+                    throw std::runtime_error("Couldn't interpolate new mesh point, the grid might be too irregular");
                 }
 
-                e_field_new_mesh.push_back(e);
+                new_mesh.push_back(e);
                 z += zstep;
             }
             y += ystep;
         }
-        x += xstep;
+
+        return new_mesh;
+    };
+
+    // Start the interpolation on many threads:
+    auto num_threads = config.get<unsigned int>("workers", std::max(std::thread::hardware_concurrency(), 1u));
+    LOG(STATUS) << "Starting regular grid interpolation with " << num_threads << " threads.";
+    std::vector<Point> e_field_new_mesh;
+
+    try {
+        ThreadPool pool(num_threads, log_level);
+        std::vector<std::future<std::vector<Point>>> mesh_futures;
+        // Set starting point
+        double x = minx + xstep / 2.0;
+        // Loop over x coordinate, add tasks for each coorinate to the queue
+        for(int i = 0; i < divisions.x(); ++i) {
+            mesh_futures.push_back(pool.submit(mesh_section, x));
+            x += xstep;
+        }
+
+        // Merge the result vectors:
+        unsigned int mesh_slices_done = 0;
+        for(auto& mesh_future : mesh_futures) {
+            auto mesh_slice = mesh_future.get();
+            e_field_new_mesh.insert(e_field_new_mesh.end(), mesh_slice.begin(), mesh_slice.end());
+            LOG_PROGRESS(INFO, "meshing") << "Interpolating new mesh: " << (100 * mesh_slices_done / mesh_futures.size())
+                                          << "%";
+            mesh_slices_done++;
+        }
+        pool.shutdown();
+    } catch(std::runtime_error& e) {
+        LOG(FATAL) << "Failed to interpolate new mesh:\n" << e.what();
+        allpix::Log::finish();
+        return 1;
     }
 
     end = std::chrono::system_clock::now();

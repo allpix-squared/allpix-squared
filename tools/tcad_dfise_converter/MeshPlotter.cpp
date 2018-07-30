@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
     }
 
     if(print_help) {
-        std::cerr << "Usage: ./mesh_plotter -f <file_name> [<options>]" << std::endl;
+        std::cerr << "Usage: mesh_plotter -f <file_name> [<options>]" << std::endl;
         std::cout << "Required parameters:" << std::endl;
         std::cout << "\t -f <file_name>         init file name" << std::endl;
         std::cout << "Optional parameters:" << std::endl;

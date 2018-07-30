@@ -18,6 +18,9 @@ IF(NOT ROOT_FOUND)
 ENDIF()
 INCLUDE_DIRECTORIES(SYSTEM ${ROOT_INCLUDE_DIRS})
 
+# Find Threading library
+FIND_PACKAGE(Threads REQUIRED)
+
 # Find required Allpix Squared tools
 GET_FILENAME_COMPONENT(ALLPIX_SRC "${CMAKE_CURRENT_SOURCE_DIR}/../../src/" ABSOLUTE)
 INCLUDE_DIRECTORIES(${ALLPIX_SRC})
@@ -25,8 +28,8 @@ INCLUDE_DIRECTORIES(${ALLPIX_SRC})
 # Add TCAD dfise converter executable
 ADD_EXECUTABLE(mesh_converter
     MeshElement.cpp
-    dfise_converter.cpp
-    read_dfise.cpp
+    MeshConverter.cpp
+    DFISEParser.cpp
     ${ALLPIX_SRC}/core/utils/log.cpp
     ${ALLPIX_SRC}/core/utils/text.cpp
     ${ALLPIX_SRC}/core/utils/unit.cpp
@@ -36,7 +39,7 @@ ADD_EXECUTABLE(mesh_converter
 )
 
 # Link the dependency libraries
-TARGET_LINK_LIBRARIES(mesh_converter ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES})
+TARGET_LINK_LIBRARIES(mesh_converter ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES} Threads::Threads)
 
 # Include Eigen dependency
 FIND_PACKAGE(Eigen3 REQUIRED)
@@ -49,7 +52,7 @@ INSTALL(TARGETS mesh_converter
 
 
 # Add mesh_plotter executable
-ADD_EXECUTABLE(mesh_plotter mesh_plotter.cpp)
+ADD_EXECUTABLE(mesh_plotter MeshPlotter.cpp)
 
 # Link libraries
 TARGET_LINK_LIBRARIES(mesh_plotter ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES})
