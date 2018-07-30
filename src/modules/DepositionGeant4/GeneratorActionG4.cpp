@@ -170,6 +170,10 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             auto isotope = isotopes[particle_type];
             // Set radioactive isotope:
             particle = G4IonTable::GetIonTable()->GetIon(std::get<0>(isotope), std::get<1>(isotope), std::get<3>(isotope));
+
+            // Force the radioactive isotope to decay immediately:
+            particle->SetPDGLifeTime(0.);
+
             single_source->SetParticleCharge(std::get<2>(isotope));
 
             // Warn about non-zero source energy:
