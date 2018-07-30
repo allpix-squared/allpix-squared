@@ -171,11 +171,9 @@ void Allpix::load() {
                    << ". Using current directory instead.";
     }
 
-    // Enable relevant multithreading if needed (disabled by default)
-    if(global_config.get<bool>("experimental_multithreading", false)) {
-        // Enable thread safety for ROOT
-        ROOT::EnableThreadSafety();
-    }
+    // Enable relevant multithreading safety in ROOT
+    // Required for spawned threads, even with a single worker
+    ROOT::EnableThreadSafety();
 
     // Set the default units to use
     add_units();
