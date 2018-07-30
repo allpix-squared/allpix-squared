@@ -575,7 +575,7 @@ void ModuleManager::run(Messenger* messenger, std::mt19937_64& seeder) {
 
     if(global_config.get<bool>("experimental_multithreading")) {
         // Try to fetch a suitable number of workers if multithreading is enabled
-        threads_num = global_config.get<unsigned int>("workers", std::max(std::thread::hardware_concurrency(), 1u));
+        threads_num = global_config.get<size_t>("workers", std::max(std::thread::hardware_concurrency(), 1u));
         if(threads_num == 0) {
             throw InvalidValueError(global_config, "workers", "number of workers should be strictly more than zero");
         }
@@ -590,6 +590,7 @@ void ModuleManager::run(Messenger* messenger, std::mt19937_64& seeder) {
         // Default to no additional thread without multithreading
         threads_num = 1;
     }
+    global_config.set<size_t>("workers", threads_num);
 
     // Creates the thread pool
     LOG(DEBUG) << "Initializing thread pool with " << threads_num << " thread";
@@ -717,24 +718,29 @@ void ModuleManager::finalize() {
     modules_file_->Close();
     LOG_PROGRESS(STATUS, "FINALIZE_LOOP") << "Finalization completed";
 
-    // TODO: fix this for concurrent events
-    long double slowest_time = 0;
-    std::string slowest_module;
-    for(auto& module_time : module_execution_time_) {
-        if(module_time.second > slowest_time) {
-            slowest_time = module_time.second;
-            slowest_module = module_time.first->getUniqueName();
-        }
-    }
+    // Find the slowest module
+    const auto slowest_entry = *std::max_element(module_execution_time_.cbegin(),
+                                                 module_execution_time_.cend(),
+                                                 [](const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
+    const std::string slowest_module = slowest_entry.first->getUniqueName();
+    const long double slowest_time = slowest_entry.second;
+
+    // Accumulate run-times of all modules
+    const auto total_module_time =
+        std::accumulate(module_execution_time_.cbegin(),
+                        module_execution_time_.cend(),
+                        0ul,
+                        [](const std::size_t previous, const auto& entry) { return previous + entry.second; });
+
     LOG(STATUS) << "Executed " << modules_.size() << " instantiations in " << seconds_to_time(total_time_) << ", spending "
-                << std::round((100 * slowest_time) / std::max(1.0l, total_time_)) << "% of time in slowest instantiation "
-                << slowest_module;
+                << std::round((100 * slowest_time) / std::max(1ul, total_module_time))
+                << "% of time in slowest instantiation " << slowest_module;
     for(auto& module : modules_) {
         LOG(INFO) << " Module " << module->getUniqueName() << " took " << module_execution_time_[module.get()] << " seconds";
     }
 
-    Configuration& global_config = conf_manager_->getGlobalConfiguration();
     long double processing_time = 0;
+    const Configuration& global_config = conf_manager_->getGlobalConfiguration();
     if(global_config.get<unsigned int>("number_of_events") > 0) {
         processing_time = std::round((1000 * total_time_) / global_config.get<unsigned int>("number_of_events"));
     }
