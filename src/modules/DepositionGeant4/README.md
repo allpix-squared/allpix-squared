@@ -119,7 +119,18 @@ source_type = "point"
 number_of_particles = 1
 ```
 
+A Xenon-132 ion beam could be simulated using the following configuration:
 
+```ini
+[DepositionGeant4]
+physics_list = FTFP_BERT_LIV
+particle_type = "ion/54/132/0/0eV"
+source_energy = 10MeV
+source_position = 0 0 -1mm
+source_type = "beam"
+beam_direction = 0 0 1
+number_of_particles = 1
+```
 
 [@g4physicslists]: http://geant4.cern.ch/support/proc_mod_catalog/physics_lists/referencePL.shtml
 [@g4particles]: http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/ForApplicationDeveloper/html/TrackingAndPhysics/particle.html
