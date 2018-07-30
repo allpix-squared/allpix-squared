@@ -109,7 +109,6 @@ int main(int argc, char** argv) {
 
     // Add stream and set default logging level
     allpix::Log::addStream(std::cout);
-    allpix::Log::setReportingLevel(allpix::LogLevel::INFO);
 
     // Install abort handler (CTRL+\) and interrupt handler (CTRL+C)
     std::signal(SIGQUIT, interrupt_handler);
@@ -120,14 +119,14 @@ int main(int argc, char** argv) {
     std::string log_file_name;
 
     std::string conf_file_name;
+    allpix::LogLevel log_level = allpix::LogLevel::INFO;
 
     for(int i = 1; i < argc; i++) {
         if(strcmp(argv[i], "-h") == 0) {
             print_help = true;
         } else if(strcmp(argv[i], "-v") == 0 && (i + 1 < argc)) {
             try {
-                allpix::LogLevel log_level = allpix::Log::getLevelFromString(std::string(argv[++i]));
-                allpix::Log::setReportingLevel(log_level);
+                log_level = allpix::Log::getLevelFromString(std::string(argv[++i]));
             } catch(std::invalid_argument& e) {
                 LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
                 return_code = 1;
@@ -148,6 +147,9 @@ int main(int argc, char** argv) {
         }
     }
 
+    // Set log level:
+    allpix::Log::setReportingLevel(log_level);
+
     if(file_prefix.empty()) {
         print_help = true;
         return_code = 1;
@@ -163,18 +165,23 @@ int main(int argc, char** argv) {
 
     // Print help if requested or no arguments given
     if(print_help) {
-        std::cerr << "Usage: ./tcad_dfise_reader -f <file_name> [<options>]" << std::endl;
-        std::cout << "\t -f <file_prefix>       common prefix of DF-ISE grid (.grd) and data (.dat) files" << std::endl;
-        std::cout << "\t -c <config_file>       configuration file name" << std::endl;
-        std::cout << "\t -o <init_file_prefix>  output file prefix without .init (defaults to file name of <file_prefix>)"
-                  << std::endl;
-        std::cout << "\t -l <file>              file to log to besides standard output (disabled by default)" << std::endl;
-        std::cout << "\t -v <level>             verbosity level (default reporiting level is INFO)" << std::endl;
+        std::cerr << "Usage: ./dfise_converter -f <file_name> [<options>]" << std::endl;
+        std::cout << "Required parameters:" << std::endl;
+        std::cout << "\t -f <file_prefix>  common prefix of DF-ISE grid (.grd) and data (.dat) files" << std::endl;
+        std::cout << "Optional parameters:" << std::endl;
+        std::cout << "\t -c <config_file>  configuration file name" << std::endl;
+        std::cout << "\t -h                display this help text" << std::endl;
+        std::cout << "\t -l <file>         file to log to besides standard output (disabled by default)" << std::endl;
+        std::cout
+            << "\t -o <file_prefix>  output file prefix without .init extentsion (defaults to file name of <file_prefix>)"
+            << std::endl;
+        std::cout << "\t -v <level>        verbosity level (default reporiting level is INFO)" << std::endl;
 
         allpix::Log::finish();
         return return_code;
     }
 
+    LOG(STATUS) << "Welcome to the Mesh Converter Tool of Allpix^2 " << ALLPIX_PROJECT_VERSION;
     LOG(STATUS) << "Using " << conf_file_name << " configuration file";
     std::ifstream file(conf_file_name);
     allpix::ConfigReader reader(file, conf_file_name);
@@ -183,26 +190,22 @@ int main(int argc, char** argv) {
     std::string region = config.get<std::string>("region", "bulk");
     std::string observable = config.get<std::string>("observable", "ElectricField");
 
-    auto initial_radius = config.get<double>("initial_radius", 1);
-    auto radius_step = config.get<double>("radius_step", 0.5);
-    auto max_radius = config.get<double>("max_radius", 10);
+    const auto initial_radius = config.get<double>("initial_radius", 1);
+    const auto radius_step = config.get<double>("radius_step", 0.5);
+    const auto max_radius = config.get<double>("max_radius", 10);
 
-    bool threshold_flag = false;
-    auto radius_threshold = config.get<double>("radius_threshold", -1);
-    if(radius_threshold != -1) {
-        threshold_flag = true;
-    }
+    // Only use a radius threshold if requested
+    const bool threshold_flag = config.has("radius_threshold");
+    const auto radius_threshold = config.get<double>("radius_threshold", -1);
 
-    auto volume_cut = config.get<double>("volume_cut", 10e-9);
+    const auto volume_cut = config.get<double>("volume_cut", 10e-9);
 
-    bool index_cut_flag = false;
+    // Only use index cut if set.
+    const bool index_cut_flag = config.has("index_cut");
     auto index_cut = config.get<size_t>("index_cut", 999999);
-    if(index_cut != 999999) {
-        index_cut_flag = true;
-    }
 
     XYZVectorInt divisions;
-    auto dimension = config.get<int>("dimension", 3);
+    const auto dimension = config.get<int>("dimension", 3);
     if(dimension == 2) {
         auto divisions_yz = config.get<XYVectorInt>("divisions", XYVectorInt(100, 100));
         divisions = XYZVectorInt(1, divisions_yz.x(), divisions_yz.y());
@@ -220,10 +223,10 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    auto mesh_tree = config.get<bool>("mesh_tree", false);
+    const auto mesh_tree = config.get<bool>("mesh_tree", false);
 
     bool ss_flag = false;
-    auto ss_radius = config.get<double>("ss_radius", -1);
+    const auto ss_radius = config.get<double>("ss_radius", -1);
     std::vector<int> ss_point = {-1, -1, -1};
     if(config.has("screen_shot")) {
         ss_point = config.getArray<int>("screen_shot");
@@ -363,10 +366,10 @@ int main(int argc, char** argv) {
     }
 
     // Creating a new mesh points cloud with a regular pitch
-    double xstep = (maxx - minx) / static_cast<double>(divisions.x());
-    double ystep = (maxy - miny) / static_cast<double>(divisions.y());
-    double zstep = (maxz - minz) / static_cast<double>(divisions.z());
-    double cell_volume = xstep * ystep * zstep;
+    const double xstep = (maxx - minx) / static_cast<double>(divisions.x());
+    const double ystep = (maxy - miny) / static_cast<double>(divisions.y());
+    const double zstep = (maxz - minz) / static_cast<double>(divisions.z());
+    const double cell_volume = xstep * ystep * zstep;
 
     if(rot.at(0) != "x" || rot.at(1) != "y" || rot.at(2) != "z") {
         LOG(STATUS) << "TCAD mesh (x,y,z) coords. transformation into: (" << rot.at(0) << "," << rot.at(1) << ","
