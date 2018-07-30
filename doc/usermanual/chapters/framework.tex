@@ -262,6 +262,11 @@ For unique modules, the constructor for a \texttt{TestModule} should be:
 TestModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager): Module(config) {}
 \end{minted}
 
+\begin{warning}
+    If a module reads from an input file or writes to an output file, the module should instead inherit from \texttt{ReaderModule} or \texttt{WriterModule} instead, respectively.
+    This is required so that events are read from/written to file in the same order.
+\end{warning}
+
 For detector modules, the first two arguments are the same, but the last argument is a \texttt{std::shared\_ptr} to the linked detector.
 It should always forward this detector to the base class together with the configuration object.
 Thus, the constructor of a detector module is:
@@ -269,15 +274,15 @@ Thus, the constructor of a detector module is:
 TestModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector): Module(config, std::move(detector)) {}
 \end{minted}
 
-The pointer to a Messenger can be used to bind variables to either receive or dispatch messages as explained in Section~\ref{sec:objects_messages}.
+The pointer to a Messenger can be used to bind variables to receive messages as explained in Section~\ref{sec:objects_messages}.
 The constructor should be used to bind required messages, set configuration defaults and to throw exceptions in case of failures.
 Unique modules can access the GeometryManager to fetch all detector descriptions, while detector modules directly receive a link to their respective detector.
 
 In addition to the constructor, each module can override the following methods:
 \begin{itemize}
-\item \parameter{init()}: Called after loading and constructing all modules and before starting the event loop.
+\item \parameter{init(uint64_t random_seed)}: Called after loading and constructing all modules and before starting the event loop, with a random seed.
 This method can for example be used to initialize histograms.
-\item \parameter{run(unsigned int event_number)}: Called for every event in the simulation, with the event number (starting from one).
+\item \parameter{run(Event* event)}: Called for every event in the simulation, with the event instance.
 An exception should be thrown for serious errors, otherwise a warning should be logged.
 \item \parameter{finalize()}: Called after processing all events in the run and before destructing the module.
 Typically used to save the output data (like histograms).
@@ -321,23 +326,26 @@ If multiple instantiations with the same unique name and the same priority exist
 
 \subsection{Parallel execution of modules}
 \label{sec:multithreading}
-The framework has experimental support for running several modules in parallel.
+The framework has experimental support for running several events in parallel.
 This feature is disabled for new modules by default, and has to be both supported by the module and enabled by the user as described in Section~\ref{sec:framework_parameters}.
-A significant speed improvement can be achieved if the simulation contains multiple detectors or simulates the same module using different parameters.
+A significant speed improvement can be achieved if the simulations heavier modules are parallelizable.
 
-The framework allows to parallelize the execution of the same type of module, if these would otherwise be executed directly after each other in a linear order.
-Thus, as long as the name of the module remains the same, while going through the execution order of all \parameter{run()} methods, all instances are added to a work queue.
-The instances are then distributed to a set of worker threads as specified in the configuration or determined from system parameters, which will execute the individual modules.
-The module manager will wait for all jobs to finish before continuing to process the next type of module.
+The framework allows to parallelize the execution of the same module for multiple events if the module supports it.
+If not, the module is run for a single event as a time.
+To yield the same output files between two simulations with the same configuration, reader and writer modules are never run concurrently, and are run in-order.
+If an event reaches a writer in the module sequence before a previous event, the current event will block execution until the previous event has writte to file.
+The instanced events are then distributed to a set of worker threads as specified in the configuration or determined from system parameters, which will execute the individual events.
+The module manager will wait for all events to finish before exiting.
 
 To enable parallelization for a module, the following line of code has to be added to the constructor of a module:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 // Enable parallelization of this module if multithreading is enabled
 enable_parallelization();
 \end{minted}
-By adding this, the module promises that it will work correctly if the run-method is executed multiple times in parallel, in separate instantiations.
+By adding this, the module promises that it will work correctly if the run-method is executed multiple times in parallel, in separate event instantiations.
 This means in particular that the module will safely handle access to shared (for example static) variables and it will properly bind ROOT histograms to their directory before the \parameter{run()}-method.
 Access to constant operations in the GeometryManager, Detector and DetectorModel is always valid between various threads. In addition, sending and receiving messages is thread-safe.
+It is recommended that a module does not access/modify any member variables in its \parameter{run()}-method for increased performance.
 
 \section{Geometry and Detectors}
 \label{sec:models_geometry}
@@ -556,7 +564,7 @@ Dispatching messages to their receivers is then performed following these rules:
 An example of how to dispatch a message containing an array of \parameter{Object} types bound to a detector named \texttt{dut} is provided below.
 As usual, the message is dispatched at the end of the \parameter{run()} function of the module.
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
-void run(unsigned int event_id) {
+void run(Event* event) const {
     std::vector<Object> data;
     // ..fill the data vector with objects ...
 
@@ -564,7 +572,7 @@ void run(unsigned int event_id) {
     auto message = std::make_shared<Message<Object>>(data, detector_);
 
     // Send the message using the Messenger object
-    messenger->dispatchMessage(event_id, this, message);
+    event->dispatchMessage(event_id, this, message);
 }
 \end{minted}
 
@@ -572,7 +580,7 @@ void run(unsigned int event_id) {
 The message system has multiple methods to process received messages.
 The first two are the most common methods and the third should be avoided in almost every instance.
 \begin{enumerate}
-\item Bind a \textbf{single message} to a variable.
+\item Bind a \textbf{single message}.
 This should usually be the preferred method, where a module expects only a single message to arrive per event containing the list of all relevant objects.
 The following example binds to a message containing an array of objects and is placed in the constructor of a detector-type \parameter{TestModule}:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
@@ -585,7 +593,7 @@ TestModule(Configuration&, Messenger* messenger, std::shared_ptr<Detector>) {
 }
 std::shared_ptr<Message<Object>> message;
 \end{minted}
-\item Bind a \textbf{set of messages} to a \texttt{std::vector} variable.
+\item Bind a \textbf{set of messages}.
 This method should be used if the module can (and expects to) receive the same message multiple times (possibly because it wants to receive the same type of message for all detectors).
 An example to bind multiple messages containing an array of objects in the constructor of a unique-type \parameter{TestModule} would be:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
@@ -598,22 +606,23 @@ TestModule(Configuration&, Messenger* messenger, GeometryManager* geo_manager) {
 }
 std::vector<std::shared_ptr<Message<Object>>> messages;
 \end{minted}
-\item Listen to a particular message type and execute a \textbf{listener function} as soon as an object is received.
+\item Listen to a particular message type and execute a \textbf{filter function} as soon as an object is received.
 This can be used for more advanced strategies of retrieving messages, but the other methods should be preferred whenever possible.
 The listening module should \underline{not} do any heavy work in the listening function as this is supposed to take place in the module \command{run} method instead.
-Using a listener function can lead to unexpected behaviour because the function is executed during the run method of the dispatching module.
+The filter function should return a boolean, indicating whether the message is wanted or not.
+Using a filter function can lead to unexpected behaviour because the function is executed during the run method of the dispatching module.
 This means that logging is performed at the level of the dispatching module and that the listener method can be accessed from multiple threads if the dispatching module is parallelized.
 Listening to a message containing an array of objects in a detector-specific \parameter{TestModule} could be performed as follows:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 TestModule(Configuration&, Messenger* messenger, std::shared_ptr<Detector>) {
-    messenger->registerListener(this,
-                                /* Pointer to the listener method */
-                                &TestModule::listener,
-                                /* No special message flags */
-                                MsgFlags::NONE);
+    messenger->registerFilter(this,
+                              /* Pointer to the listener method */
+                              &TestModule::listener,
+                              /* No special message flags */
+                              MsgFlags::NONE);
 }
-void listener(std::shared_ptr<Message<Object>> message) {
-    // Do something with the received message ...
+bool listener(std::shared_ptr<Message<Object>> message) const {
+    // Decide if the message is wanted ...
 }
 \end{minted}
 \end{enumerate}
@@ -633,7 +642,7 @@ Flags can be added to the bind and listening methods which enable a particular b
 
 \subsection{Persistency}
 \label{ch:objects_persistency}
-As objects may contain information relating to other objects, in particular for storing their corresponding Monte Carlo history (see Section~\ref{sec:objhistory}), objects are by default persistent until the end of each event. All messages are stored as shared pointers by the modules which send them, and are released at the end of each event. If no other copies of the shared message pointer are created, then these will be subsequently deleted, including the objects stored therein. Where a module requires access to data from a previous event (such as to simulate the effects of pile-up etc.), local copies of the data objects must be created. Note that at the point of creating copies the corresponding history will be lost.
+As objects may contain information relating to other objects, in particular for storing their corresponding Monte Carlo history (see Section~\ref{sec:objhistory}), objects are by default persistent until the end of each event. All messages are stored as shared pointers by the event from the modules which send them, and are released at the end of each event. If no other copies of the shared message pointer are created, then these will be subsequently deleted, including the objects stored therein. Where a module requires access to data from a previous event (such as to simulate the effects of pile-up etc.), local copies of the data objects must be created. Note that at the point of creating copies the corresponding history will be lost.
 
 
 \section{Redirect Module Inputs and Outputs}
