@@ -635,10 +635,10 @@ void ModuleManager::run(Messenger* messenger, std::mt19937_64& seeder) {
         // Event initialization must be done on the main thread
         event->run_geant4();
         auto event_function = [ event = std::move(event), number_of_events, event_num = i, &finished_events ]() mutable {
-            LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Running event " << event_num << " of " << number_of_events;
+            LOG(STATUS) << "Running event " << event_num << " of " << number_of_events;
             event->run();
             finished_events++;
-            LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished event " << event_num;
+            LOG(STATUS) << "Finished event " << event_num;
         };
         thread_pool->submit_event_function(std::move(event_function));
     }
@@ -651,7 +651,7 @@ void ModuleManager::run(Messenger* messenger, std::mt19937_64& seeder) {
     // Check exception for last events
     thread_pool->check_exception();
 
-    LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of " << finished_events << " events";
+    LOG(STATUS) << "Finished run of " << finished_events << " events";
     auto end_time = std::chrono::steady_clock::now();
     total_time_ += static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
 
