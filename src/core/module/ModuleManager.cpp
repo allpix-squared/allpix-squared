@@ -590,6 +590,7 @@ void ModuleManager::run(Messenger* messenger, std::mt19937_64& seeder) {
         // Default to no additional thread without multithreading
         threads_num = 1;
     }
+    global_config.set<size_t>("workers", threads_num);
 
     // Creates the thread pool
     LOG(DEBUG) << "Initializing thread pool with " << threads_num << " thread";
@@ -717,18 +718,19 @@ void ModuleManager::finalize() {
     modules_file_->Close();
     LOG_PROGRESS(STATUS, "FINALIZE_LOOP") << "Finalization completed";
 
-    // TODO: fix this for concurrent events
-    long double slowest_time = 0;
+    // Find the slowest module, and accumulate the total run-time for all modules
+    long double slowest_time = 0, total_module_time = 0;
     std::string slowest_module;
     for(auto& module_time : module_execution_time_) {
+        total_module_time += module_time.second;
         if(module_time.second > slowest_time) {
             slowest_time = module_time.second;
             slowest_module = module_time.first->getUniqueName();
         }
     }
     LOG(STATUS) << "Executed " << modules_.size() << " instantiations in " << seconds_to_time(total_time_) << ", spending "
-                << std::round((100 * slowest_time) / std::max(1.0l, total_time_)) << "% of time in slowest instantiation "
-                << slowest_module;
+                << std::round((100 * slowest_time) / std::max(1.0l, total_module_time))
+                << "% of time in slowest instantiation " << slowest_module;
     for(auto& module : modules_) {
         LOG(INFO) << " Module " << module->getUniqueName() << " took " << module_execution_time_[module.get()] << " seconds";
     }
