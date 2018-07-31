@@ -30,7 +30,7 @@ using namespace allpix;
 RCEWriterModule::RCEWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
     : WriterModule(config), geo_mgr_(geo_mgr) {
     // Bind to PixelHitMessage
-    messenger->bindMulti(this, &RCEWriterModule::pixel_hit_messages_);
+    messenger->bindMulti<RCEWriterModule, PixelHitMessage>(this);
 
     config_.setDefault("file_name", "rce-data.root");
     config_.setDefault("geometry_file", "rce-geo.toml");

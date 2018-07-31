@@ -83,8 +83,5 @@ namespace allpix {
 
         // Output plot for drift time
         TH1D* drift_time_histo;
-
-        // Deposits for the bound detector in this event
-        std::shared_ptr<DepositedChargeMessage> deposits_message_;
     };
 } // namespace allpix

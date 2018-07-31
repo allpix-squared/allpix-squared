@@ -38,7 +38,7 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration& config,
     config_.setDefault("minimum_gap", config_.get<double>("nominal_gap"));
 
     // Require propagated deposits for single detector
-    messenger->bindSingle(this, &CapacitiveTransferModule::propagated_message_, MsgFlags::REQUIRED);
+    messenger->bindSingle<CapacitiveTransferModule, PropagatedChargeMessage, MsgFlags::REQUIRED>(this);
 }
 
 void CapacitiveTransferModule::init(uint64_t) {

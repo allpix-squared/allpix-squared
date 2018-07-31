@@ -90,8 +90,5 @@ namespace allpix {
 
         // Output data file to write
         std::unique_ptr<TFile> output_file_;
-
-        // retrieve message containing collected pixel hits for all detectors
-        std::vector<std::shared_ptr<PixelHitMessage>> pixel_hit_messages_;
     };
 } // namespace allpix

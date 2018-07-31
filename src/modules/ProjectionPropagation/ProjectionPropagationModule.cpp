@@ -26,7 +26,7 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
     model_ = detector_->getModel();
 
     // Require deposits message for single detector
-    messenger_->bindSingle(this, &ProjectionPropagationModule::deposits_message_, MsgFlags::REQUIRED);
+    messenger_->bindSingle<ProjectionPropagationModule, DepositedChargeMessage, MsgFlags::REQUIRED>(this);
 
     // Set default value for config variables
     config_.setDefault<int>("charge_per_step", 10);

@@ -112,9 +112,6 @@ namespace allpix {
         bool has_magnetic_field_;
         ROOT::Math::XYZVector magnetic_field_;
 
-        // Deposits for the bound detector in this event
-        std::shared_ptr<DepositedChargeMessage> deposits_message_;
-
         // Statistical information
         mutable unsigned int total_propagated_charges_{};
         mutable unsigned int total_steps_{};

@@ -86,13 +86,12 @@ namespace allpix {
         /**
          * @brief Register subscription for a single message
          * @param receiver Receiving module
-         * @param member Pointer to the message to listen to
          * @param flags Message configuration flags
          * @warning This allows to only receive a single message of the type per run unless the
          *           \ref MsgFlags::ALLOW_OVERWRITE "ALLOW_OVERWRITE" flag is passed
          */
-        template <typename T, typename R>
-        void bindSingle(T* receiver, std::shared_ptr<R> T::*member, MsgFlags flags = MsgFlags::NONE);
+        // TODO: flip T and R
+        template <typename T, typename R, MsgFlags flags = MsgFlags::NONE> void bindSingle(T* receiver);
 
         /**
          * @brief Register subscription for multiple messages
@@ -100,9 +99,7 @@ namespace allpix {
          * @param member Pointer to the vector of messages to listen to
          * @param flags Message configuration flags
          */
-        // TODO [doc] Better name?
-        template <typename T, typename R>
-        void bindMulti(T* receiver, std::vector<std::shared_ptr<R>> T::*member, MsgFlags flags = MsgFlags::NONE);
+        template <typename T, typename R, MsgFlags flags = MsgFlags::NONE> void bindMulti(T* receiver);
 
         /**
          * @brief Check if a specific message has a receiver

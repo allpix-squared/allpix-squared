@@ -68,9 +68,6 @@ namespace allpix {
             }
         };
 
-        // Message containing the propagated charges
-        std::shared_ptr<PropagatedChargeMessage> propagated_message_;
-
         // Statistical information
         mutable unsigned int total_transferred_charges_{};
         mutable std::set<Pixel::Index, pixel_cmp> unique_pixels_;

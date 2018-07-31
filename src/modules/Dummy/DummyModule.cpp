@@ -21,7 +21,7 @@ DummyModule::DummyModule(Configuration& config, Messenger* messenger, GeometryMa
 
     // ... Implement ... (Typically bounds the required messages and optionally sets configuration defaults)
     // Input required by this module
-    messenger_->bindMulti(this, &DummyModule::messages_, MsgFlags::REQUIRED);
+    messenger_->bindMulti<DummyModule, PixelHitMessage, MsgFlags::REQUIRED>(this);
 }
 
 void DummyModule::init(uint64_t) {

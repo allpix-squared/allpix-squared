@@ -27,7 +27,7 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
                                                        std::shared_ptr<Detector> detector)
     : WriterModule(config, detector), detector_(std::move(detector)) {
     // Bind pixel hits message
-    messenger->bindSingle(this, &DetectorHistogrammerModule::pixels_message_, MsgFlags::REQUIRED);
+    messenger->bindSingle<DetectorHistogrammerModule, PixelHitMessage, MsgFlags::REQUIRED>(this);
 }
 
 void DetectorHistogrammerModule::init(uint64_t) {

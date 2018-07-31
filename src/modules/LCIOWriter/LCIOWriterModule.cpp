@@ -36,7 +36,7 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
     : WriterModule(config), geo_mgr_(geo) {
 
     // Bind pixel hits message
-    messenger->bindMulti(this, &LCIOWriterModule::pixel_messages_, MsgFlags::REQUIRED);
+    messenger->bindMulti<LCIOWriterModule, PixelHitMessage, MsgFlags::REQUIRED>(this);
 
     // get all detector names and assign id.
     auto detectors = geo_mgr_->getDetectors();

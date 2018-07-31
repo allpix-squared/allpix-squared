@@ -62,9 +62,6 @@ namespace allpix {
     private:
         std::shared_ptr<Detector> detector_;
 
-        // List of pixel hits
-        std::shared_ptr<PixelHitMessage> pixels_message_;
-
         // Statistics to compute mean position
         mutable ROOT::Math::XYVector total_vector_{};
         mutable unsigned long total_hits_{};

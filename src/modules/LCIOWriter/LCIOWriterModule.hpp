@@ -56,7 +56,6 @@ namespace allpix {
 
     private:
         GeometryManager* geo_mgr_{};
-        std::vector<std::shared_ptr<PixelHitMessage>> pixel_messages_;
         mutable std::shared_ptr<IO::LCWriter> lcWriter_{};
         mutable std::map<std::string, unsigned int> detectorIDs_;
         int pixelType_;
