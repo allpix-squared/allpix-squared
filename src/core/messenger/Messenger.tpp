@@ -19,7 +19,7 @@ namespace allpix {
         add_delegate(typeid(R), receiver, std::move(delegate));
     }
 
-    template <typename T, typename R, MsgFlags flags = MsgFlags::NONE> void Messenger::bindSingle(T* receiver) {
+    template <typename T, typename R, MsgFlags flags> void Messenger::bindSingle(T* receiver) {
         static_assert(std::is_base_of<Module, T>::value, "Receiver should have Module as a base class");
         static_assert(std::is_base_of<BaseMessage, R>::value,
                       "Bound variable should be a shared pointer to a message derived from the Message class");
@@ -28,7 +28,7 @@ namespace allpix {
         add_delegate(typeid(R), receiver, std::move(delegate));
     }
 
-    template <typename T, typename R, MsgFlags flags = MsgFlags::NONE> void Messenger::bindMulti(T* receiver) {
+    template <typename T, typename R, MsgFlags flags> void Messenger::bindMulti(T* receiver) {
         static_assert(std::is_base_of<Module, T>::value, "Receiver should have Module as a base class");
         static_assert(std::is_base_of<BaseMessage, R>::value,
                       "Bound variable should be a shared pointer to a message derived from the Message class");
