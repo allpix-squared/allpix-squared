@@ -145,7 +145,7 @@ void SensitiveDetectorActionG4::dispatchMessages() {
         mc_particles.back().setTrack(track_info_manager_->findMCTrack(track_id));
         id_to_particle_[track_id] = mc_particles.size() - 1;
 
-        LOG(DEBUG) << "Found MC particle " << pdg_code << " crossing detector from "
+        LOG(DEBUG) << "Found MC particle " << pdg_code << " crossing detector " << detector_->getName() << " from "
                    << Units::display(local_begin, {"mm", "um"}) << " to " << Units::display(local_end, {"mm", "um"})
                    << " (local coordinates)";
     }
