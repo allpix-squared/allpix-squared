@@ -174,12 +174,6 @@ namespace allpix {
             return this;
         }
 
-        /**
-         * @brief Check if a module is satisfied for running (all required messages received)
-         * @return True if satisfied, false otherwise
-         */
-        bool is_satisfied(Module* module) const;
-
         // List of modules that constitutes this event
         ModuleList modules_;
 

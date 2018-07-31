@@ -135,7 +135,7 @@ namespace allpix {
          * @brief Check if a module is satisfied for running (all required messages received)
          * @return True if satisfied, false otherwise
          */
-        bool is_satisfied(Module* module) const;
+        bool isSatisfied(Module* module) const;
 
     private:
         /**

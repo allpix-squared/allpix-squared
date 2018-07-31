@@ -151,7 +151,7 @@ void Event::run(std::shared_ptr<Module>& module) {
                                       << "]";
 
     // Check if the module is satisfied to run
-    if(!is_satisfied(module.get())) {
+    if(!messenger_.isSatisfied(module.get())) {
         LOG(TRACE) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
                    << ", skipping module!";
         return;
@@ -201,8 +201,4 @@ void Event::run() {
 
     // All writers have been run for this event, let the next event run its writers
     writer_lock_.next();
-}
-
-bool Event::is_satisfied(Module* module) const {
-    return messenger_.is_satisfied(module);
 }

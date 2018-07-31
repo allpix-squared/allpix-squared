@@ -90,7 +90,7 @@ bool Messenger::hasReceiver(Module* source, const std::shared_ptr<BaseMessage>& 
     return false;
 }
 
-bool Messenger::is_satisfied(Module* module) const {
+bool Messenger::isSatisfied(Module* module) const {
     // Check delegate flags. If false, check event-local satisfaction.
     try {
         return module->check_delegates() || satisfied_modules_.at(module->getUniqueName());

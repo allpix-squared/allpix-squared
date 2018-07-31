@@ -34,7 +34,7 @@ namespace allpix {
      *
      * A properly implemented delegate should only touch one of these fields.
      */
-    struct DelegateTypes {
+    struct DelegateTypes { // NOLINT
         std::shared_ptr<BaseMessage> single;
         std::vector<std::shared_ptr<BaseMessage>> multi;
         std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> filter_multi;
@@ -145,7 +145,7 @@ namespace allpix {
         virtual void process(std::shared_ptr<BaseMessage> msg, std::string name, DelegateTypes& dest) = 0;
 
     protected:
-        const MsgFlags flags_;
+        MsgFlags flags_;
     };
 
     /**
