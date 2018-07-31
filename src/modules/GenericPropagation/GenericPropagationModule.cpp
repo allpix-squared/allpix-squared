@@ -82,6 +82,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     config_.setDefault<bool>("output_plots_align_pixels", false);
     config_.setDefault<double>("output_plots_theta", 0.0f);
     config_.setDefault<double>("output_plots_phi", 0.0f);
+    config_.setDefault<bool>("output_plots_lines_at_implants", false);
 
     // Set defaults for charge carrier propagation:
     config_.setDefault<bool>("propagate_electrons", true);
@@ -104,6 +105,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     target_spatial_precision_ = config_.get<double>("spatial_precision");
     output_plots_ = config_.get<bool>("output_plots");
     output_plots_step_ = config_.get<double>("output_plots_step");
+    output_plots_lines_at_implants_ = config_.get<bool>("output_plots_lines_at_implants");
 
     // Parameterization variables from https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2)
     electron_Vm_ = Units::get(1.53e9 * std::pow(temperature_, -0.87), "cm/s");
@@ -741,6 +743,14 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
             // Carrier left sensor on any order border, use last position inside instead
             position = last_position;
             time = last_time;
+        }
+    }
+
+    // If requested, remove charge drift lines from plots if they did not reach the implant side within the integration time:
+    if(output_plots_ && output_plots_lines_at_implants_) {
+        // If drift time is larger than integration time or the charge carriers have been collected at the backside, remove
+        if(time >= integration_time_ || last_position.z() < -model_->getSensorSize().z() * 0.45) {
+            output_plot_points_.pop_back();
         }
     }
 
