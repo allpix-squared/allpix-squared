@@ -565,7 +565,7 @@ void ModuleManager::init(std::mt19937_64& seeder) {
 /**
  * Initializes the thread pool and executes each event in parallel.
  */
-void ModuleManager::run(Messenger* messenger, std::mt19937_64& seeder) {
+void ModuleManager::run(std::mt19937_64& seeder) {
     using namespace std::chrono_literals;
 
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
@@ -631,8 +631,8 @@ void ModuleManager::run(Messenger* messenger, std::mt19937_64& seeder) {
 
         // Create an event, initialize it, and submit it wrapped in a lambda to the thread pool
         // TODO: make this a unique pointer
-        auto event = std::make_shared<ConcreteEvent>(
-            modules_, i, terminate_, master_condition, module_execution_time_, messenger, seeder);
+        auto event =
+            std::make_shared<ConcreteEvent>(modules_, i, terminate_, master_condition, module_execution_time_, seeder);
         // Event initialization must be done on the main thread
         event->run_geant4();
         auto event_function = [ event = std::move(event), number_of_events, event_num = i, &finished_events ]() mutable {

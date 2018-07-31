@@ -90,11 +90,10 @@ namespace allpix {
 
         /**
          * @brief Run all modules for the number of events
-         * @param messenger Pointer to the messenger
          * @param seeder Reference to the seeder
          * @warning Should be called after the \ref ModuleManager::init "init function"
          */
-        void run(Messenger* messenger, std::mt19937_64& seeder);
+        void run(std::mt19937_64& seeder);
 
         /**
          * @brief Finalize all modules after the event sequence

@@ -52,25 +52,31 @@ namespace allpix {
          * @param name Optional message name (defaults to - indicating that it should dispatch to the module output
          * parameter)
          */
-        template <typename T> void dispatchMessage(std::shared_ptr<T> message, const std::string& name = "-");
+        template <typename T> void dispatchMessage(std::shared_ptr<T> message, const std::string& name = "-") {
+            return messenger_.dispatchMessage(current_module_, message, name);
+        }
 
         /**
          * @brief Fetches a single message of specified type meant for the calling module
          * @return Shared pointer to message
          */
-        template <typename T> std::shared_ptr<T> fetchMessage();
+        template <typename T> std::shared_ptr<T> fetchMessage() { return messenger_.fetchMessage<T>(current_module_); }
 
         /**
          * @brief Fetches multiple messages of specified type meant for the calling module
          * @return Vector of shared pointers to messages
          */
-        template <typename T> std::vector<std::shared_ptr<T>> fetchMultiMessage();
+        template <typename T> std::vector<std::shared_ptr<T>> fetchMultiMessage() {
+            return messenger_.fetchMultiMessage<T>(current_module_);
+        }
 
         /**
          * @brief Fetches filtered messages meant for the calling module
          * @return Vector of pairs containing shared pointer to and name of message
          */
-        std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> fetchFilteredMessages();
+        std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> fetchFilteredMessages() {
+            return messenger_.fetchFilteredMessages(current_module_);
+        }
 
         /**
          * @brief Access the random engine of this event
@@ -116,7 +122,6 @@ namespace allpix {
                        std::atomic<bool>& terminate,
                        std::condition_variable& master_condition,
                        std::map<Module*, long double>& module_execution_time,
-                       Messenger* messenger,
                        std::mt19937_64& seeder);
 
         /**
@@ -169,11 +174,6 @@ namespace allpix {
             return this;
         }
 
-        void dispatch_message(Module* source, std::shared_ptr<BaseMessage> message, std::string name);
-        bool dispatch_message(Module* source,
-                              const std::shared_ptr<BaseMessage>& message,
-                              const std::string& name,
-                              const std::string& id);
         /**
          * @brief Check if a module is satisfied for running (all required messages received)
          * @return True if satisfied, false otherwise
@@ -200,11 +200,8 @@ namespace allpix {
         bool previous_was_reader_{false};
 
         // For module messages
-        DelegateMap& delegates_;
-        std::map<std::string, DelegateTypes> messages_;
-        std::map<std::string, bool> satisfied_modules_;
+        Messenger messenger_;
         Module* current_module_;
-        std::vector<std::shared_ptr<BaseMessage>> sent_messages_;
 
 #ifndef NDEBUG
         static std::set<unsigned int> unique_ids_;
@@ -229,8 +226,5 @@ namespace allpix {
     };
 
 } // namespace allpix
-
-// Include template members
-#include "Event.tpp"
 
 #endif /* ALLPIX_MODULE_EVENT_H */

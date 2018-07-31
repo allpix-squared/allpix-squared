@@ -209,7 +209,7 @@ void Allpix::init() {
 void Allpix::run() {
     if(!terminate_) {
         LOG(TRACE) << "Running Allpix";
-        mod_mgr_->run(msg_.get(), seeder_modules_);
+        mod_mgr_->run(seeder_modules_);
 
         // Set that we have run and want to finalize as well
         has_run_ = true;
