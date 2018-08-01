@@ -57,7 +57,7 @@ Please note that the old source parameters from version v1.1.2 and before (`beam
 
 #### Parameters for source `square`
 * `square_side` : Length of the square side.
-* `square_angle` : Maximum emission angle from the z-axis vector (defaults to $\pi$, which means all angles are allowed).
+* `square_angle` : Maximum emission angle from the z-axis vector (defaults to `$\pi$`, which means all angles are allowed).
 
 #### Parameters for source `sphere`
 * `sphere_radius` : Radius of the sphere source (particles start only from the surface).
