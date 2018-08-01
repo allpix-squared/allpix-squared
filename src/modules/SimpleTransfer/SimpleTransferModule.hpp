@@ -44,7 +44,7 @@ namespace allpix {
         SimpleTransferModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector);
 
         /**
-         * @brief Initialize the module and check field configuration
+         * @brief Initialize - check for field configuration and implants
          */
         void init() override;
 
