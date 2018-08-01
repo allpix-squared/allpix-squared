@@ -327,15 +327,13 @@ If multiple instantiations with the same unique name and the same priority exist
 \subsection{Parallel execution of events}
 \label{sec:multithreading}
 The framework has experimental support for running several events in parallel.
-This feature is disabled for new modules by default, and has to be both supported by the module and enabled by the user as described in Section~\ref{sec:framework_parameters}.
-A significant speed improvement can be achieved if the simulations heavier modules are parallelizable.
+A significant speed improvement can be achieved if the used modules' \texttt{run()}-functions do not modify shared member fields.
 
-The framework allows to parallelize the execution of the same module for multiple events if explicitly enabled.
+The framework allows to parallelize the execution of the same module for multiple events if the module is not a reader of writer.
 If not, a module is run for a single event as a time.
 To yield the same output files between two simulations with the same configuration, reader and writer modules are never run concurrently, and are run in-order.
-If an event reaches a writer in the module sequence before a previous event, the current event will block execution until the previous event has writte to file.
-The instanced events are then distributed to a set of worker threads as specified in the configuration or determined from system parameters, which will execute the individual events.
-The module manager will wait for all events to finish before exiting.
+
+For a more detailed look into the multithreading approach of \apsq, refer to Section~\ref{sec:multithreading_approach}.
 
 \section{Geometry and Detectors}
 \label{sec:models_geometry}
@@ -773,7 +771,7 @@ Signals any problem with the value of a configuration parameter not related to p
 Can for example be used for parameters where the possible valid values are limited, like the set of logging levels, or for paths that do not exist.
 An example is shown below:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
-void run(unsigned int event_id) {
+void run(Event* event) const {
     // Fetch a key from the configuration
     std::string value = config.get("key");
 
@@ -810,3 +808,66 @@ Should be used to request the end of event processing in the current run, e.g. i
 \end{itemize}
 
 \todo{add more info about error reporting style?}
+
+\section{Multithreading approach}
+\label{sec:multithreading_approach}
+\apsq supports experimental multithreading by running events in parallel.
+The module manager, responsible for the execution of a simulation reads the configuration and loads the requested modules.
+A thread pool is the created with the configured amount of workers or alternatively determined from system parameters.
+(E.g., for a system with four cores, four workers are spawned.)
+After this, for the number of events configured, an \texttt{Event} instance is constructed and submitted to the thread pool.
+As soon as an event is pushed to the thread pool a free worker will pick it up and execute it;
+when done it will pick up the next event.
+When all events have been executed \apsq begins terminating.
+
+\subsection{Module thread safety}
+An event is constructed with a shared list of the loaded modules.
+Inside an event, and thus for each worker, these modules are run sequentially, modifying the \texttt{Event} instance given to them.
+In the context of an event, the only module function used it the \texttt{run()}-method.
+To enable thread safety, this function is made constant;
+the \texttt{run()}-function may not access or modify member fields of the module unless the module-author has explicitly allowed this.
+If a module's \texttt{run()}-function does access a member field
+(which is then accessed by multiple workers)
+it must be appropriately protected with a mutex and should for performance reasons only be used to record module statistics.
+
+\subsection{Reader and writers}
+Modules that read from and write to files are not subject to the rule presented in the previous section.
+Between two simulations using the same configuration, if the simulated events are to be written to file,
+the two simulations must produce the same output file.
+To achieve this, a module author will appropriately mark their module as a reader or writer via inheritance.
+During run-time, \apsq checks whether the module is a reader, writer or neither;
+if it does access files, it will be run in order of increasing event number.
+E.g. a reader/writer of event 4 will be run before the same module(s) for event 5.
+If it isn't this events turn to run this module, the thread will block and wait for its turn.
+While blocking, the thread does no work.
+A reader and a writer may run in parallel, as they do not access the same files.
+
+\subsection{Seed distribution}
+To enable two matching simulations to produce the same output, the seed distribution must also match.
+Each event owns a random engine that can be accessed and modified in whatever manner a module wishes.
+For a stable seed distribution, \apsq holds a master random engine that seeds every event's engine in a sequential manner,
+in order of increasing event number.
+This ensures that two matching simulations produce the same output, even when the number of workers do not match.
+
+\subsection{Messages}
+As mentioned, modules communicate with each other via messages.
+Considering that events are independent of each other, messages from a module to another must be local to the event.
+Subscription to specific messages are done in the modules' constructors and is thus global,
+but this read-only delegate information is then shared with all event-local messengers.
+These are then responsible for dispatching and fetching messages in the event.
+Upon the termination of an event, all messages local to that event are deleted.
+
+\subsection{Geant4 and ROOT}
+Unfortunately, because of the dependencies on Geant4 and ROOT and their incorporation into event execution,
+\apsq cannot simply spawn $n$ workers and expect a performance improvement of $n$ magnitudes.
+
+Geant4 is responsible for building the simulation geometry and depositing charges in the detectors.
+When working in a multithreaded context, Geant4 expects to handle the parallel work internally;
+this clashes with the design of \apsq.
+Because of this, all modules that runs Geant4 code may not run on spawned threads, lest the program will segfault.
+In \apsq, all instanced events are thus initialized by the master thread by running these modules before submission to the thread pool.
+To prevent workers from being idle, a buffer of initialized events is maintained by the module manager.
+
+ROOT, specifically the \texttt{TObject} and \text{TRef} classes, are used by all objects in \apsq to relate to other events,
+but because of legacy reasons, does not scale well to a high number of threads.
+For this reason, it is not currently recommended to use more than 8 workers during simulation as this will greatly impact performance negatively.
