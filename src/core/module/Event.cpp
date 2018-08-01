@@ -54,7 +54,7 @@ void Event::run_geant4() {
     // Figure out how many modules must run on the main thread
     auto remove_modules = modules_.size();
     for(auto module = modules_.crbegin(); module != modules_.crend(); module++) {
-        if((*module)->getUniqueName().find("Geant4") == std::string::npos) {
+        if(dynamic_cast<Geant4Module*>((*module).get()) == nullptr) {
             remove_modules--;
         } else {
             break;
@@ -74,7 +74,7 @@ void Event::run_geant4() {
     auto first_after_last_geant4 = [&]() {
         // Find the last Geant4 module from the bottom of the list up
         auto last_geant4 = std::find_if(modules_.crbegin(), modules_.crend(), [](const auto& module) {
-            return module->getUniqueName().find("Geant4") != std::string::npos;
+            return dynamic_cast<Geant4Module*>((*module).get()) != nullptr;
         });
 
         // The first module after the last Geant4 module is where we can safely run the event on another thread

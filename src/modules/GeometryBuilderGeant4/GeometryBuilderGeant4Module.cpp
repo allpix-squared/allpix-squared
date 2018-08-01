@@ -40,7 +40,7 @@ using namespace allpix;
 using namespace ROOT;
 
 GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config, Messenger*, GeometryManager* geo_manager)
-    : Module(config), geo_manager_(geo_manager), run_manager_g4_(nullptr) {}
+    : Geant4Module(config), geo_manager_(geo_manager), run_manager_g4_(nullptr) {}
 
 /**
  * @brief Checks if a particular Geant4 dataset is available in the environment

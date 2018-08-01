@@ -228,6 +228,23 @@ namespace allpix {
             : Module(config, std::move(detector)) {}
     };
 
+    /**
+     * @brief Simple wrapper around Module to define a module that runs Geant4 code
+     * @warning All modules that runs Geant4 code in its \ref Module::run() "run function" must inherit from this class
+     *
+     * Used to figure out which modules must run on main thread.
+     */
+    class Geant4Module : public Module {
+        friend class Event;
+        friend class ModuleManager;
+        friend class Messenger;
+
+    public:
+        explicit Geant4Module(Configuration& config) : Module(config) {}
+        explicit Geant4Module(Configuration& config, std::shared_ptr<Detector> detector)
+            : Module(config, std::move(detector)) {}
+    };
+
 } // namespace allpix
 
 #endif /* ALLPIX_MODULE_H */
