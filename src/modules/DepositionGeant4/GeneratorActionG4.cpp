@@ -126,7 +126,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
 
             // Set angle distribution parameters
             single_source->GetAngDist()->SetAngDistType("iso");
-            single_source->GetAngDist()->SetMaxTheta(config.get<double>("square_angle", ROOT::Math::Pi() / 2));
+            single_source->GetAngDist()->SetMaxTheta(config.get<double>("square_angle", ROOT::Math::Pi()) / 2);
 
         } else if(source_type == "point") {
 
