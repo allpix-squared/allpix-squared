@@ -169,10 +169,7 @@ namespace allpix {
          *
          * Simplifies message handling.
          */
-        Event* with_context(const std::shared_ptr<Module>& module) {
-            current_module_ = module.get();
-            return this;
-        }
+        Event* with_context(const std::shared_ptr<Module>& module);
 
         // List of modules that constitutes this event
         ModuleList modules_;
@@ -185,7 +182,7 @@ namespace allpix {
         static std::mutex stats_mutex_;
         std::map<Module*, long double>& module_execution_time_;
 
-        // Random engine usable by all modules in this event
+        // Random engine for usage by modules
         std::mt19937_64 random_engine_;
 
         // For executing readers/writers in order of event number
@@ -203,7 +200,7 @@ namespace allpix {
     };
 
     /**
-     * @brief Wrapper for Event for compatibility with shared pointers
+     * @brief Wrapper for Event for compatibility with smart pointers
      *
      * This wrapper allows the Event's constructor's and destructor's privacy while also enforcing \ref Module::run()
      * "modules' run functions" to not overwrite the passed Event pointer.

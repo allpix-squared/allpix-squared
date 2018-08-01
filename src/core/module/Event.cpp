@@ -54,7 +54,7 @@ void Event::run_geant4() {
     // Figure out how many modules must run on the main thread
     auto remove_modules = modules_.size();
     for(auto module = modules_.crbegin(); module != modules_.crend(); module++) {
-        if(dynamic_cast<Geant4Module*>((*module).get()) == nullptr) {
+        if(dynamic_cast<Geant4Module*>(module->get()) == nullptr) {
             remove_modules--;
         } else {
             break;
@@ -67,34 +67,6 @@ void Event::run_geant4() {
         run(module);
         modules_.pop_front();
     }
-
-// Below implementation is a modern approach, which works locally, but segfaults constantly on the GitLab CI. Might
-// be worth investigating why.
-#if 0
-    auto first_after_last_geant4 = [&]() {
-        // Find the last Geant4 module from the bottom of the list up
-        auto last_geant4 = std::find_if(modules_.crbegin(), modules_.crend(), [](const auto& module) {
-            return dynamic_cast<Geant4Module*>((*module).get()) != nullptr;
-        });
-
-        // The first module after the last Geant4 module is where we can safely run the event on another thread
-        return *std::prev(last_geant4, 1);
-    }();
-
-    // Execute every module up to and including the last Geant4 module
-    while(!modules_.empty()) {
-        auto module = modules_.front();
-        if(module == first_after_last_geant4) {
-            // All Geant4 module have been executed
-            break;
-        }
-
-        LOG(DEBUG) << module->getUniqueName() << " is a Geant4 module; running on main thread";
-        run(module);
-
-        modules_.pop_front();
-    }
-#endif
 
 #ifndef NDEBUG
     // Ensure all Geant4 modules have been removed
@@ -133,9 +105,15 @@ void Event::handle_iomodule(const std::shared_ptr<Module>& module) {
     auto& typelock = reader ? reader_lock_ : writer_lock_;
     auto lock = std::unique_lock<std::mutex>(typelock.mutex);
     // Check every 50ms if it's this event's turn to run
+    // TODO [doc] don't pseudo-busy loop
     while(!typelock.condition.wait_for(
         lock, 50ms, [this, &typelock]() { return this->number == typelock.current_event.load(); })) {
     };
+}
+
+Event* Event::with_context(const std::shared_ptr<Module>& module) {
+    current_module_ = module.get();
+    return this;
 }
 
 /**
