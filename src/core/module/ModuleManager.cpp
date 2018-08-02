@@ -619,7 +619,7 @@ void ModuleManager::run(std::mt19937_64& seeder) {
         // TODO [doc] don't pseudo-busy loop here
         master_condition.wait_for(lock, 50ms, [&]() {
             thread_pool->check_exception();
-            return (thread_pool->queue_size() >= threads_num * 4) || terminate_;
+            return thread_pool->queue_size() < threads_num * 4 || terminate_;
         });
 
         if(terminate_) {
@@ -642,7 +642,6 @@ void ModuleManager::run(std::mt19937_64& seeder) {
             LOG(STATUS) << "Finished event " << event_num;
         };
         thread_pool->submit_event_function(std::move(event_function));
-        assert(thread_pool->queue_size() <= threads_num * 4);
     }
 
     LOG(STATUS) << "All events have been initialized. Waiting for thread pool to finish...";
