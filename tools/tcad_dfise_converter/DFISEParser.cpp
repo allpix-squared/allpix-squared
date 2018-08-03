@@ -1,4 +1,4 @@
-#include "read_dfise.h"
+#include "DFISEParser.hpp"
 
 #include <cassert>
 #include <cstdlib>
@@ -22,6 +22,12 @@ std::map<std::string, std::vector<Point>> mesh_converter::read_grid(const std::s
         throw std::runtime_error("file cannot be accessed");
     }
 
+    // Get the total number of lines to parse and reset file to the start:
+    auto num_lines = std::count(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>(), '\n');
+    file.clear();
+    file.seekg(0, std::ios::beg);
+    LOG(DEBUG) << "Grid file contains " << num_lines << " lines to parse";
+
     DFSection main_section = DFSection::HEADER;
     DFSection sub_section = DFSection::NONE;
 
@@ -42,9 +48,17 @@ std::map<std::string, std::vector<Point>> mesh_converter::read_grid(const std::s
     long unsigned int dimension = 1;
     long unsigned int data_count = 0;
     bool in_data_block = false;
+    long long num_lines_parsed = 0;
     while(!file.eof()) {
         std::string line;
         std::getline(file, line);
+
+        // Log the parsing progress:
+        if(num_lines_parsed % 1000 == 0) {
+            LOG_PROGRESS(INFO, "gridlines") << "Parsing grid file: " << (100 * num_lines_parsed / num_lines) << "%";
+        }
+        num_lines_parsed++;
+
         line = allpix::trim(line);
         if(line.empty()) {
             continue;
@@ -344,6 +358,7 @@ std::map<std::string, std::vector<Point>> mesh_converter::read_grid(const std::s
             break;
         }
     }
+    LOG_PROGRESS(INFO, "gridlines") << "Parsing grid file: done.";
 
     std::map<std::string, std::vector<Point>> ret_map;
     for(auto& name_region_vertices : regions_vertices) {
@@ -379,7 +394,12 @@ mesh_converter::read_electric_field(const std::string& file_name) {
     if(!file) {
         throw std::runtime_error("file cannot be accessed");
     }
-    LOG(INFO) << "Reading field data...";
+
+    // Get the total number of lines to parse and reset file to the start:
+    auto num_lines = std::count(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>(), '\n');
+    file.clear();
+    file.seekg(0, std::ios::beg);
+    LOG(DEBUG) << "Field data file contains " << num_lines << " lines to parse";
 
     DFSection main_section = DFSection::HEADER;
     DFSection sub_section = DFSection::NONE;
@@ -393,10 +413,18 @@ mesh_converter::read_electric_field(const std::string& file_name) {
     long unsigned int dimension = 1;
     long unsigned int data_count = 0;
     bool in_data_block = false;
+    long long num_lines_parsed = 0;
     while(!file.eof()) {
         std::string line;
         std::getline(file, line);
         line = allpix::trim(line);
+
+        // Log the parsing progress:
+        if(num_lines_parsed % 1000 == 0) {
+            LOG_PROGRESS(INFO, "fieldlines") << "Parsing field data file: " << (100 * num_lines_parsed / num_lines) << "%";
+        }
+        num_lines_parsed++;
+
         if(line.empty()) {
             continue;
         }
@@ -713,6 +741,7 @@ mesh_converter::read_electric_field(const std::string& file_name) {
             }
         }
     }
+    LOG_PROGRESS(INFO, "fieldlines") << "Parsing field data file: done.";
 
     return region_electric_field_map;
 }

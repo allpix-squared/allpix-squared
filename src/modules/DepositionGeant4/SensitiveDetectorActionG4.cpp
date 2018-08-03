@@ -80,6 +80,7 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
         auto start_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(preStepPoint->GetPosition()));
         track_begin_.emplace(trackID, start_position);
         track_parents_.emplace(trackID, parentTrackID);
+        track_time_.emplace(trackID, mid_time);
         track_pdg_.emplace(trackID, step->GetTrack()->GetDynamicParticle()->GetPDGcode());
     }
 
@@ -136,16 +137,17 @@ void SensitiveDetectorActionG4::dispatchMessages(Event* event) {
         ROOT::Math::XYZPoint end_point;
         auto local_end = track_end_.at(track_id);
         auto pdg_code = track_pdg_.at(track_id);
+        auto track_time = track_time_.at(track_id);
 
         auto global_begin = detector_->getGlobalPosition(local_begin);
         auto global_end = detector_->getGlobalPosition(local_end);
-        mc_particles.emplace_back(local_begin, global_begin, local_end, global_end, pdg_code);
+        mc_particles.emplace_back(local_begin, global_begin, local_end, global_end, pdg_code, track_time);
         mc_particles.back().setTrack(track_info_manager_->findMCTrack(track_id));
         id_to_particle_[track_id] = mc_particles.size() - 1;
 
-        LOG(DEBUG) << "Found MC particle " << pdg_code << " crossing detector from "
+        LOG(DEBUG) << "Found MC particle " << pdg_code << " crossing detector " << detector_->getName() << " from "
                    << Units::display(local_begin, {"mm", "um"}) << " to " << Units::display(local_end, {"mm", "um"})
-                   << " (local coordinates)";
+                   << " (local coordinates) at " << Units::display(track_time, {"us", "ns", "ps"});
     }
 
     for(auto& track_parent : track_parents_) {

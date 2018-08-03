@@ -54,11 +54,17 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
     // Set default physics list
     config_.setDefault("physics_list", "FTFP_BERT_LIV");
 
+    config_.setDefault("source_type", "beam");
     config_.setDefault<bool>("output_plots", false);
     config_.setDefault<int>("output_plots_scale", Units::get(100, "ke"));
 
+    // Set alias for support of old particle source definition
+    config_.setAlias("source_position", "beam_position");
+    config_.setAlias("source_energy", "beam_energy");
+    config_.setAlias("source_energy_spread", "beam_energy_spread");
+
     // Add the particle source position to the geometry
-    geo_manager_->addPoint(config_.get<ROOT::Math::XYZPoint>("beam_position"));
+    geo_manager_->addPoint(config_.get<ROOT::Math::XYZPoint>("source_position"));
 }
 
 /**

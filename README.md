@@ -93,6 +93,19 @@ The following authors, in alphabetical order, have contributed to Allpix<sup>2</
 
 The authors would also like to express their thanks to the developers of [AllPix](https://twiki.cern.ch/twiki/bin/view/Main/AllPix).
 
+## Citations
+The reference paper of Allpix Squared describing the framework and providing first validation results using test beam data has been published in *Nuclear Instrumentations and Methods in Physics Research A*.
+The paper is published with open access and can be obtained from here:
+
+https://doi.org/10.1016/j.nima.2018.06.020
+
+Please cite this paper when publishing your work using Allpix Squared as:
+
+> S. Spannagel et al., “Allpix<sup>2</sup>: A modular simulation framework for silicon detectors”, Nucl. Instr.
+> Meth. A 901 (2018) 164 – 172, doi:10.1016/j.nima.2018.06.020, arXiv:1806.05813
+
+A preprint version is available on [arxiv.org](https://arxiv.org/abs/1806.05813).
+
 ## Contributing
 All types of contributions, being it minor and major, are very welcome. Please refer to our [contribution guidelines](CONTRIBUTING.md) for a description on how to get started.
 

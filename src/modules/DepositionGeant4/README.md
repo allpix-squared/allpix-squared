@@ -1,5 +1,5 @@
 # DepositionGeant4
-**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>), Tobias Bisanz (<tobias.bisanz@phys.uni-goettingen.de>)  
+**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>), Tobias Bisanz (<tobias.bisanz@phys.uni-goettingen.de>), Thomas Billoud (<thomas.billoud@cern.ch>)  
 **Status**: Functional  
 **Output**: DepositedCharge, MCParticle, MCTrack
 
@@ -17,6 +17,15 @@ The module supports the propagation of charged particles in a magnetic field if 
 With the `output_plots` parameter activated, the module produces histograms of the total deposited charge per event for every sensor in units of kilo-electrons.
 The scale of the plot axis can be adjusted using the `output_plots_scale` parameter and defaults to a maximum of 100ke.
 
+The source can be defined in two different ways using the `source_type` parameter: with pre-defined shapes or with a Geant4 macro file.
+Pre-defined shapes are point, beam, square or sphere.
+For the square and sphere, the particle starting points are distributed homogeneously over the surfaces.
+By default, the particle directions for the square are random, as would be for a squared radioactive source.
+For the sphere, unless a focus point is set, the particle directions follow the cosine-law defined by Geant4 [@g4gps] and the field inside the sphere is hence isotropic.
+
+To define more complex sources or angular distributions, the user can create a macro file with Geant4 commands.
+These commands are those defined for the GPS source and are explained in the Geant4 website [@g4gps] (only the source position and number of particles must still be defined in the main configuration file).
+
 ### Dependencies
 
 This module requires an installation Geant4.
@@ -30,15 +39,29 @@ This module requires an installation Geant4.
 * `range_cut` : Geant4 range cut-off threshold for the production of gammas, electrons and positrons to avoid infrared divergence. Defaults to a fifth of the shortest pixel feature, i.e. either pitch or thickness.
 * `particle_type` : Type of the Geant4 particle to use in the source (string). Refer to the Geant4 documentation [@g4particles] for information about the available types of particles.
 * `particle_code` : PDG code of the Geant4 particle to use in the source.
-* `beam_energy` : Mean energy of the generated particles.
-* `beam_energy_spread` : Energy spread of the generated particle beam.
-* `beam_position` : Position of the particle beam/source in the world geometry.
-* `beam_size` : Width of the Gaussian beam profile.
-* `beam_divergence` : Standard deviation of the particle angles in x and y from the particle beam
-* `beam_direction` : Direction of the particle as a unit vector.
+* `source_energy` : Mean energy of the generated particles.
+* `source_energy_spread` : Energy spread of the source.
+* `source_position` : Position of the particle source in the world geometry.
+* `source_type` : Shape of the source: **beam** (default), **point**, **square**, **sphere**, **macro**.
+* `file_name` : Name of the macro file (if source_type=**macro**).
 * `number_of_particles` : Number of particles to generate in a single event. Defaults to one particle.
 * `output_plots` : Enables output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
 * `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 100ke.
+
+#### Parameters for source `beam`
+* `beam_size` : Width of the Gaussian beam profile.
+* `beam_divergence` : Standard deviation of the particle angles in x and y from the particle beam
+* `beam_direction` : Direction of the beam as a unit vector.
+
+Please note that the old source parameters from version v1.1.2 and before (`beam_energy`, `beam_energy_spread` and `beam_position`) are still supported but it is recommended to use the new corresponding ones.
+
+#### Parameters for source `square`
+* `square_side` : Length of the square side.
+* `square_angle` : Maximum emission angle from the z-axis vector (defaults to $\pi$, which means all angles are allowed).
+
+#### Parameters for source `sphere`
+* `sphere_radius` : Radius of the sphere source (particles start only from the surface).
+* `sphere_focus_point` : Focus point of the sphere source. If not specified, the radiation field is isotropic inside the sphere.
 
 ### Usage
 A possible default configuration to use, simulating a beam of 120 GeV pions with a divergence in x, is the following:
@@ -47,14 +70,16 @@ A possible default configuration to use, simulating a beam of 120 GeV pions with
 [DepositionGeant4]
 physics_list = FTFP_BERT_LIV
 particle_type = "pi+"
-beam_energy = 120GeV
-beam_position = 0 0 -1mm
+source_energy = 120GeV
+source_position = 0 0 -1mm
+source_type = "beam"
 beam_direction = 0 0 1
 beam_divergence = 3mrad 0mrad
 number_of_particles = 1
 ```
 
 [@g4physicslists]: http://geant4.cern.ch/support/proc_mod_catalog/physics_lists/referencePL.shtml
-[@g4particles]: http://geant4.cern.ch/G4UsersDocuments/UsersGuides/ForApplicationDeveloper/html/TrackingAndPhysics/particle.html
+[@g4particles]: http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/ForApplicationDeveloper/html/TrackingAndPhysics/particle.html
+[@g4gps]: http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/ForApplicationDeveloper/html/GettingStarted/generalParticleSource.html
 [@pdg]: http://hepdata.cedar.ac.uk/lbl/2016/reviews/rpp2016-rev-monte-carlo-numbering.pdf
 [@pai]: https://doi.org/10.1016/S0168-9002(00)00457-5

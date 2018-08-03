@@ -57,10 +57,16 @@ namespace allpix {
     private:
         GeometryManager* geo_mgr_{};
         mutable std::shared_ptr<IO::LCWriter> lcWriter_{};
-        mutable std::map<std::string, unsigned int> detectorIDs_;
-        int pixelType_;
-        std::string OutputCollectionName_;
-        std::string DetectorName_;
+
+        std::vector<std::string> collection_names_vector_;
+        std::map<unsigned, size_t> detector_ids_to_colllection_index_;
+        std::map<std::string, unsigned> detector_names_to_id_;
+        std::map<std::string, std::vector<std::string>> collections_to_detectors_map_;
+
+        int pixel_type_;
+
+        bool dump_mc_truth_;
+        std::string detector_name_;
         std::string lcio_file_name_;
         std::string geometry_file_name_;
         mutable int write_cnt_{0};

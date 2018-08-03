@@ -5,6 +5,11 @@ IF(COMMAND CMAKE_POLICY)
   CMAKE_POLICY(SET CMP0048 NEW) # set project version
 ENDIF(COMMAND CMAKE_POLICY)
 
+# Check if a version number is set - if not, just default to an empty string
+IF(NOT ALLPIX_VERSION)
+  ADD_DEFINITIONS(-DALLPIX_PROJECT_VERSION="")
+ENDIF()
+
 # ROOT is required for vector and persistency etc
 FIND_PACKAGE(ROOT REQUIRED)
 IF(NOT ROOT_FOUND)
@@ -13,15 +18,18 @@ IF(NOT ROOT_FOUND)
 ENDIF()
 INCLUDE_DIRECTORIES(SYSTEM ${ROOT_INCLUDE_DIRS})
 
+# Find Threading library
+FIND_PACKAGE(Threads REQUIRED)
+
 # Find required Allpix Squared tools
 GET_FILENAME_COMPONENT(ALLPIX_SRC "${CMAKE_CURRENT_SOURCE_DIR}/../../src/" ABSOLUTE)
 INCLUDE_DIRECTORIES(${ALLPIX_SRC})
 
 # Add TCAD dfise converter executable
-ADD_EXECUTABLE(dfise_converter
+ADD_EXECUTABLE(mesh_converter
     MeshElement.cpp
-    dfise_converter.cpp
-    read_dfise.cpp
+    MeshConverter.cpp
+    DFISEParser.cpp
     ${ALLPIX_SRC}/core/utils/log.cpp
     ${ALLPIX_SRC}/core/utils/text.cpp
     ${ALLPIX_SRC}/core/utils/unit.cpp
@@ -30,16 +38,26 @@ ADD_EXECUTABLE(dfise_converter
     ${ALLPIX_SRC}/core/config/exceptions.cpp
 )
 
-#Build the TCAD converter
-ADD_SUBDIRECTORY(data)
+# Link the dependency libraries
+TARGET_LINK_LIBRARIES(mesh_converter ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES} Threads::Threads)
 
 # Include Eigen dependency
 FIND_PACKAGE(Eigen3 REQUIRED)
-
-# Link the dependency libraries
-TARGET_LINK_LIBRARIES(dfise_converter ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES} Eigen3::Eigen)
+INCLUDE_DIRECTORIES(SYSTEM ${EIGEN3_INCLUDE_DIR})
 
 # Create install target
-INSTALL(TARGETS dfise_converter
+INSTALL(TARGETS mesh_converter
     COMPONENT tools
-    RUNTIME DESTINATION bin/tcad_dfise_converter)
+    RUNTIME DESTINATION bin)
+
+
+# Add mesh_plotter executable
+ADD_EXECUTABLE(mesh_plotter MeshPlotter.cpp)
+
+# Link libraries
+TARGET_LINK_LIBRARIES(mesh_plotter ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES})
+INCLUDE_DIRECTORIES(SYSTEM ${ROOT_INCLUDE_DIRS})
+
+INSTALL(TARGETS mesh_plotter
+    COMPONENT tools
+    RUNTIME DESTINATION bin)

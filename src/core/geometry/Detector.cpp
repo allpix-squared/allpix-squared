@@ -113,6 +113,22 @@ bool Detector::isWithinSensor(const ROOT::Math::XYZPoint& local_pos) const {
 }
 
 /**
+ * The definition of inside the implant region is determined by the detector model
+ *
+ * @note The pixel implant currently is always positioned symmetrically, in the center of the pixel cell.
+ */
+bool Detector::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const {
+
+    auto x_mod_pixel = std::fmod(local_pos.x() + model_->getPixelSize().x() / 2, model_->getPixelSize().x()) -
+                       model_->getPixelSize().x() / 2;
+    auto y_mod_pixel = std::fmod(local_pos.y() + model_->getPixelSize().y() / 2, model_->getPixelSize().y()) -
+                       model_->getPixelSize().y() / 2;
+
+    return (std::fabs(x_mod_pixel) <= std::fabs(model_->getImplantSize().x() / 2) &&
+            std::fabs(y_mod_pixel) <= std::fabs(model_->getImplantSize().y() / 2));
+}
+
+/**
  * The pixel has internal information about the size and location specific for this detector
  */
 Pixel Detector::getPixel(unsigned int x, unsigned int y) {

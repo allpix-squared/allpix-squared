@@ -14,7 +14,7 @@ The list of currently supported objects comprises:
 \nlparagraph{MCTrack}
 The MCTrack objects reflects the state of a particle's trajectory when it was created and when it terminates.
 Moreover, it allows to retrieve the hierarchy of secondary tracks.
-This can be done via the parent-child relations the MCTrack objects store, allowing retrieval of the primary track for a given track. 
+This can be done via the parent-child relations the MCTrack objects store, allowing retrieval of the primary track for a given track.
 Combining this information with MCParticles allows the Monte-Carlo trajectory to be fully reconstructed.
 In addition to these relational information, the MCTrack stores information on the initial and final point of the trajectory (in \underline{global} coordinates), the energies (total as well as kinetic only) at those points, the creation process type, name, and the volume it took place in.
 Furthermore, the particle's PDG id is stored.
@@ -23,7 +23,7 @@ Furthermore, the particle's PDG id is stored.
 The Monte-Carlo truth information about the particle passage through the sensor.
 A start and end point are stored in the object: for events involving a single MCParticle passing through the sensor, the start and end points correspond to the entry and exit points.
 The exact handling of non-linear particle trajectories due to multiple scattering is up to module.
-The MCParticle also stores an identifier of the particle type, using the PDG particle codes~\cite{pdg}.
+The MCParticle also stores an identifier of the particle type, using the PDG particle codes~\cite{pdg}, as well as the time it has first been observed in the respective sensor.
 The MCParticle additionally stores a parent MCParticle object, if available.
 The lack of a parent doesn't guarantee that this MCParticle originates from a primary particle, but only means that no parent on the given detector exists.
 Also, the MCParticle stores a reference to the MCTrack it is associated with.
@@ -68,5 +68,5 @@ Whenever the related object is not in memory (either because it is not available
 A MCTrack which originated from another MCTrack is linked via a reference to this track, this way the track hierarchy can be obtained.
 Every MCParticle is linked to the MCTrack it is associated with.
 A MCParticle can furthermore be linked to another MCParticle on the same detector.
-This will be the case if there are MCParticles from a primary (parent) and secondary (child) track on one detector. 
+This will be the case if there are MCParticles from a primary (parent) and secondary (child) track on one detector.
 The corresponding child MCParticles will then carry a reference to the parent MCParticle.

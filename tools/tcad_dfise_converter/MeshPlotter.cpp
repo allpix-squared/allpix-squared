@@ -24,6 +24,7 @@ int main(int argc, char** argv) {
     // Read parameters
     std::string file_name;
     std::string output_file_name;
+    std::string output_name_log;
     std::string plane = "yz";
     int slice_index = 0;
     bool flag_cut = false;
@@ -31,6 +32,7 @@ int main(int argc, char** argv) {
     int xdiv = 100;
     int ydiv = 100;
     int zdiv = 100;
+    bool log_scale = false;
     for(int i = 1; i < argc; i++) {
         if(strcmp(argv[i], "-h") == 0) {
             print_help = true;
@@ -49,6 +51,8 @@ int main(int argc, char** argv) {
             ydiv = std::atoi(argv[++i]);
         } else if(strcmp(argv[i], "-z") == 0 && (i + 1 < argc)) {
             zdiv = std::atoi(argv[++i]);
+        } else if(strcmp(argv[i], "-l") == 0) {
+            log_scale = true;
         } else {
             std::cout << "Unrecognized command line argument or missing value\"" << argv[i] << std::endl;
             print_help = true;
@@ -62,11 +66,15 @@ int main(int argc, char** argv) {
     }
 
     if(print_help) {
-        std::cerr << "Usage: ./mesh_ploter -f <file_name> [<options>]" << std::endl;
+        std::cerr << "Usage: mesh_plotter -f <file_name> [<options>]" << std::endl;
+        std::cout << "Required parameters:" << std::endl;
         std::cout << "\t -f <file_name>         init file name" << std::endl;
+        std::cout << "Optional parameters:" << std::endl;
+        std::cout << "\t -c <cut>               projection height index (default is mesh_pitch / 2)" << std::endl;
+        std::cout << "\t -h                     display this help text" << std::endl;
+        std::cout << "\t -l                     plot with logarithmic scale if set" << std::endl;
         std::cout << "\t -o <output_file_name>  name of the file to output (default is efield.png)" << std::endl;
         std::cout << "\t -p <plane>             plane to be ploted. xy, yz or zx (default is yz)" << std::endl;
-        std::cout << "\t -c <cut>               projection height index (default is mesh_pitch / 2)" << std::endl;
         std::cout << "\t -x <mesh x_pitch>      plot regular mesh X binning (default is 100)" << std::endl;
         std::cout << "\t -y <mesh_y_pitch>      plot regular mesh Y binning (default is 100)" << std::endl;
         std::cout << "\t -z <mesh_z_pitch>      plot regular mesh Z binning (default is 100)" << std::endl;
@@ -74,6 +82,7 @@ int main(int argc, char** argv) {
     }
 
     // Read file
+    std::cout << "Welcome to the Mesh Plotter Tool of Allpix^2 " << ALLPIX_PROJECT_VERSION << std::endl;
     std::cout << "Reading file: " << file_name;
 
     size_t firstindex = file_name.find_last_of('_');
@@ -152,7 +161,13 @@ int main(int argc, char** argv) {
                                 y_bin + 1,
                                 1,
                                 y_bin + 1);
+
     auto c1 = new TCanvas();
+
+    if(log_scale) {
+        c1->SetLogz();
+        output_name_log = "_log";
+    }
 
     double dummy;
     double vector[6];
@@ -181,7 +196,7 @@ int main(int argc, char** argv) {
 
     if(output_file_name.empty()) {
         output_file_name = file_name.substr(0, lastindex);
-        output_file_name = output_file_name + "_" + plane + "_" + std::to_string(slice_cut) + ".png";
+        output_file_name = output_file_name + "_" + plane + "_" + std::to_string(slice_cut) + output_name_log + ".png";
     }
 
     std::string root_file_name = file_name.substr(0, lastindex);

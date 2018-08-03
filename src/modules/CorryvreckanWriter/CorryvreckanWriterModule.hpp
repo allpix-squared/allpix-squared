@@ -17,8 +17,8 @@
 
 // Local includes
 #include "corryvreckan/MCParticle.h"
+#include "corryvreckan/Object.hpp"
 #include "corryvreckan/Pixel.h"
-#include "corryvreckan/TestBeamObject.h"
 #include "objects/PixelHit.hpp"
 
 // ROOT includes

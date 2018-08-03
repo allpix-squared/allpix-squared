@@ -7,3 +7,10 @@
 1508511411|Extended CI with Unit Tests
 1512051313|Optional output of simulated geometry
 1515689532|Stable Release: Allpix Squared v1.1
+1518103248|Automatic CVMFS deployment
+1520947826|Automatic creation of Docker images
+1523628530|Rework of MCParticle system
+1523958029|Support for magnetic fields
+1524578480|Addition of MCTrack objects
+1528805419|Support for different particle sources
+1528888016|Stable Release: Allpix Squared v1.2

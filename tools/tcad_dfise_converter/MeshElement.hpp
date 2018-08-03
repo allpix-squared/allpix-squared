@@ -2,8 +2,8 @@
 #include <utility>
 #include <vector>
 
+#include "DFISEParser.hpp"
 #include "Octree.hpp"
-#include "read_dfise.h"
 
 namespace mesh_converter {
     /**

@@ -55,10 +55,11 @@ void CorryvreckanWriterModule::init(uint64_t) {
 
         // Get the detector ID and type
         std::string detectorID = detector->getName();
+        std::string detectorModel = detector->getModel()->getType();
 
         // Create the tree
         std::string objectID = detectorID + "_pixels";
-        std::string treeName = detectorID + "_Timepix3_pixels";
+        std::string treeName = detectorID + "_" + detectorModel + "_pixels"; // NOLINT
         outputTrees_[objectID] = new TTree(treeName.c_str(), treeName.c_str());
         outputTrees_[objectID]->Branch("time", &time_);
 
@@ -73,7 +74,7 @@ void CorryvreckanWriterModule::init(uint64_t) {
 
         // Create the tree
         std::string objectID_MC = detectorID + "_mcparticles";
-        std::string treeName_MC = detectorID + "_Timepix3_mcparticles";
+        std::string treeName_MC = detectorID + "_" + detectorModel + "_mcparticles"; // NOLINT
         outputTreesMC_[objectID_MC] = new TTree(treeName_MC.c_str(), treeName_MC.c_str());
         outputTreesMC_[objectID_MC]->Branch("time", &time_);
 
@@ -105,7 +106,7 @@ void CorryvreckanWriterModule::run(Event* event) const {
             unsigned int pixelX = allpix_pixel.getPixel().getIndex().X();
             unsigned int pixelY = allpix_pixel.getPixel().getIndex().Y();
             double adc = allpix_pixel.getSignal();
-            long long int time(time_);
+            double time = static_cast<double>(time_);
             auto outputPixel = new corryvreckan::Pixel(detectorID, int(pixelY), int(pixelX), int(adc), time);
 
             LOG(DEBUG) << "Pixel (" << pixelX << "," << pixelY << ") written to device " << detectorID;
@@ -126,8 +127,11 @@ void CorryvreckanWriterModule::run(Event* event) const {
 
                 // Create a new particle object
                 std::string objectID_MC = detectorID + "_mcparticles";
-                auto mcParticle = new corryvreckan::MCParticle(
-                    particle->getParticleID(), particle->getLocalStartPoint(), particle->getLocalEndPoint());
+                auto mcParticle = new corryvreckan::MCParticle(detectorID,
+                                                               particle->getParticleID(),
+                                                               particle->getLocalStartPoint(),
+                                                               particle->getLocalEndPoint(),
+                                                               time);
 
                 // Map the mc particle to the output tree and write it
                 treeMCParticles_[objectID_MC] = mcParticle;
