@@ -66,7 +66,7 @@ static void check_dataset_g4(const std::string& env_name) {
     // FIXME: check if file does actually contain a correct dataset
 }
 
-void GeometryBuilderGeant4Module::init(uint64_t) {
+void GeometryBuilderGeant4Module::init(std::mt19937_64&) {
     // Check if all the required geant4 datasets are defined
     LOG(DEBUG) << "Checking Geant4 datasets";
     check_dataset_g4("G4LEVELGAMMADATA");

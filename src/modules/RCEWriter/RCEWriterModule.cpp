@@ -83,7 +83,7 @@ static void print_geo(std::ostream& os, const std::vector<std::string>& names, G
     }
 }
 
-void RCEWriterModule::init(uint64_t) {
+void RCEWriterModule::init(std::mt19937_64&) {
     // We need a sorted list of names to assign monotonic, numeric ids
     std::vector<std::string> detector_names;
     for(const auto& detector : geo_mgr_->getDetectors()) {

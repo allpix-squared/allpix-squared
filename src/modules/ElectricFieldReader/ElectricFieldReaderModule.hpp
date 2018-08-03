@@ -48,7 +48,7 @@ namespace allpix {
         /**
          * @brief Read electric field and apply it to the bound detectors
          */
-        void init(uint64_t) override;
+        void init(std::mt19937_64&) override;
 
     private:
         std::shared_ptr<Detector> detector_;

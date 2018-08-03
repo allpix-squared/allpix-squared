@@ -124,7 +124,7 @@ namespace allpix {
          *
          * Does nothing if not overloaded.
          */
-        virtual void init(uint64_t random_seed) { (void)random_seed; }
+        virtual void init(std::mt19937_64& seeder) { (void)seeder; }
 
         /**
          * @brief Execute the function of the module for every event

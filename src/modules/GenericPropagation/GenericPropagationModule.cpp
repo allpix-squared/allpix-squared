@@ -460,7 +460,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num, Outpu
     }
 }
 
-void GenericPropagationModule::init(uint64_t) {
+void GenericPropagationModule::init(std::mt19937_64&) {
 
     auto detector = getDetector();
 

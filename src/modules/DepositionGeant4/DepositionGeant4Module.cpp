@@ -70,7 +70,7 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
 /**
  * Module depends on \ref GeometryBuilderGeant4Module loaded first, because it owns the pointer to the Geant4 run manager.
  */
-void DepositionGeant4Module::init(uint64_t random_seed) {
+void DepositionGeant4Module::init(std::mt19937_64& seeder) {
     // Load the G4 run manager (which is owned by the geometry builder)
     run_manager_g4_ = G4RunManager::GetRunManager();
     if(run_manager_g4_ == nullptr) {
@@ -261,7 +261,7 @@ void DepositionGeant4Module::init(uint64_t random_seed) {
     // NOTE Assumes this is the only Geant4 module using random numbers
     std::string seed_command = "/random/setSeeds ";
     for(int i = 0; i < G4_NUM_SEEDS; ++i) {
-        seed_command += std::to_string(static_cast<uint32_t>(random_seed % INT_MAX));
+        seed_command += std::to_string(static_cast<uint32_t>(seeder() % INT_MAX));
         if(i != G4_NUM_SEEDS - 1) {
             seed_command += " ";
         }

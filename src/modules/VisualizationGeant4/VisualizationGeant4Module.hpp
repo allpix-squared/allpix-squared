@@ -47,7 +47,7 @@ namespace allpix {
         /**
          * @brief Initializes visualization and apply configuration parameters
          */
-        void init(uint64_t) override;
+        void init(std::mt19937_64&) override;
 
         /**
          * @brief Show visualization updates if not accumulating data

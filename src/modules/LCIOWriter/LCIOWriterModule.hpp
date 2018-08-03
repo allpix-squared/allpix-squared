@@ -42,7 +42,7 @@ namespace allpix {
         /**
          * @brief Initialize LCIO and GEAR output files
          */
-        void init(uint64_t) override;
+        void init(std::mt19937_64&) override;
 
         /**
          * @brief Receive pixel hit messages, create lcio event, add hit collection and write event to file.

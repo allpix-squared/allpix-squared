@@ -41,7 +41,7 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration& config,
     messenger->bindSingle<CapacitiveTransferModule, PropagatedChargeMessage, MsgFlags::REQUIRED>(this);
 }
 
-void CapacitiveTransferModule::init(uint64_t) {
+void CapacitiveTransferModule::init(std::mt19937_64&) {
 
     if(config_.count({"coupling_matrix", "coupling_file", "coupling_scan_file"}) > 1) {
         throw InvalidCombinationError(

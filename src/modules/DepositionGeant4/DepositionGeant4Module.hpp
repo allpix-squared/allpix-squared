@@ -50,7 +50,7 @@ namespace allpix {
         /**
          * @brief Initializes the physics list of processes and constructs the particle source
          */
-        void init(uint64_t) override;
+        void init(std::mt19937_64&) override;
 
         /**
          * @brief Deposit charges for a single event

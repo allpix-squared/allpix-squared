@@ -32,7 +32,7 @@ CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration& config, Messen
 }
 
 // Set up the output trees
-void CorryvreckanWriterModule::init(uint64_t) {
+void CorryvreckanWriterModule::init(std::mt19937_64&) {
 
     // Check if MC data to be saved
     outputMCtruth_ = config_.get<bool>("output_mctruth", false);

@@ -47,7 +47,7 @@ namespace allpix {
         /**
          * @brief Initialize the histograms
          */
-        void init(uint64_t) override;
+        void init(std::mt19937_64&) override;
 
         /**
          * @brief Fill the histograms

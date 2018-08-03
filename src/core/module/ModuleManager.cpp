@@ -551,7 +551,7 @@ void ModuleManager::init(std::mt19937_64& seeder) {
         // Change to our ROOT directory
         module->getROOTDirectory()->cd();
         // Init module
-        module->init(seeder());
+        module->init(seeder);
         // Reset logging
         Log::setSection(old_section_name);
         set_module_after(old_settings);

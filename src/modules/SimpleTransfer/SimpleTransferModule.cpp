@@ -50,7 +50,7 @@ SimpleTransferModule::SimpleTransferModule(Configuration& config, Messenger* mes
     messenger->bindSingle<SimpleTransferModule, PropagatedChargeMessage, MsgFlags::REQUIRED>(this);
 }
 
-void SimpleTransferModule::init(uint64_t) {
+void SimpleTransferModule::init(std::mt19937_64&) {
 
     if(config_.get<bool>("collect_from_implant")) {
         if(detector_->getElectricFieldType() == ElectricFieldType::LINEAR) {
