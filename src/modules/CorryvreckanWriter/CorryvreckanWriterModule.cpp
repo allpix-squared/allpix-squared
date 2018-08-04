@@ -106,7 +106,7 @@ void CorryvreckanWriterModule::run(Event* event) const {
             unsigned int pixelX = allpix_pixel.getPixel().getIndex().X();
             unsigned int pixelY = allpix_pixel.getPixel().getIndex().Y();
             double adc = allpix_pixel.getSignal();
-            double time = static_cast<double>(time_);
+            auto time = static_cast<double>(time_);
             auto outputPixel = new corryvreckan::Pixel(detectorID, int(pixelY), int(pixelX), int(adc), time);
 
             LOG(DEBUG) << "Pixel (" << pixelX << "," << pixelY << ") written to device " << detectorID;
