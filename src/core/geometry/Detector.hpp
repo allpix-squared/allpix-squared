@@ -109,6 +109,12 @@ namespace allpix {
         bool isWithinSensor(const ROOT::Math::XYZPoint& local_pos) const;
 
         /**
+         * @brief Returns if a local position is within the pixel implant region of the sensitive device
+         * @return True if a local position is within the pixel implant, false otherwise
+         */
+        bool isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const;
+
+        /**
          * @brief Return a pixel object from the x- and y-index values
          * @return Pixel object
          */
