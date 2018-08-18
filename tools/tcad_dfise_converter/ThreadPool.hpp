@@ -1,4 +1,7 @@
-#pragma once
+#ifndef DFISE_THREADPOOL_H
+#define DFISE_THREADPOOL_H
+
+// NOTE: class is added here temporarily as the allpix ThreadPool cannot be used and threading will be redesigned
 
 #include <functional>
 #include <future>
@@ -15,11 +18,10 @@ class ThreadPool {
 private:
     class ThreadWorker {
     private:
-        unsigned int m_id;
         ThreadPool* m_pool;
 
     public:
-        ThreadWorker(ThreadPool* pool, const unsigned int id, allpix::LogLevel log_level) : m_id(id), m_pool(pool) {
+        ThreadWorker(ThreadPool* pool, allpix::LogLevel log_level) : m_pool(pool) {
             // Set logging level
             allpix::Log::setReportingLevel(log_level);
         }
@@ -51,7 +53,7 @@ public:
     ThreadPool(const unsigned int n_threads, allpix::LogLevel log_level)
         : m_shutdown(false), m_threads(std::vector<std::thread>(n_threads)) {
         for(unsigned int i = 0; i < m_threads.size(); ++i) {
-            m_threads[i] = std::thread(ThreadWorker(this, i, log_level));
+            m_threads[i] = std::thread(ThreadWorker(this, log_level));
         }
     }
 
@@ -94,3 +96,5 @@ public:
         return task_ptr->get_future();
     }
 };
+
+#endif
