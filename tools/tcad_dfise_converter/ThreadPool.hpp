@@ -18,23 +18,23 @@ class ThreadPool {
 private:
     class ThreadWorker {
     private:
-        ThreadPool* m_pool;
+        ThreadPool* pool_;
 
     public:
-        ThreadWorker(ThreadPool* pool, allpix::LogLevel log_level) : m_pool(pool) {
+        ThreadWorker(ThreadPool* pool, allpix::LogLevel log_level) : pool_(pool) {
             // Set logging level
             allpix::Log::setReportingLevel(log_level);
         }
         void operator()() {
             std::function<void()> func;
             bool dequeued;
-            while(!m_pool->m_shutdown) {
+            while(!pool_->shutdown_) {
                 {
-                    std::unique_lock<std::mutex> lock(m_pool->m_conditional_mutex);
-                    if(m_pool->m_queue.empty()) {
-                        m_pool->m_conditional_lock.wait(lock);
+                    std::unique_lock<std::mutex> lock(pool_->conditional_mutex_);
+                    if(pool_->queue_.empty()) {
+                        pool_->conditional_lock_.wait(lock);
                     }
-                    dequeued = m_pool->m_queue.pop(func);
+                    dequeued = pool_->queue_.pop(func);
                 }
                 if(dequeued) {
                     func();
@@ -43,17 +43,17 @@ private:
         }
     };
 
-    bool m_shutdown;
-    allpix::ThreadPool::SafeQueue<std::function<void()>> m_queue;
-    std::vector<std::thread> m_threads;
-    std::mutex m_conditional_mutex;
-    std::condition_variable m_conditional_lock;
+    bool shutdown_;
+    allpix::ThreadPool::SafeQueue<std::function<void()>> queue_;
+    std::vector<std::thread> threads_;
+    std::mutex conditional_mutex_;
+    std::condition_variable conditional_lock_;
 
 public:
     ThreadPool(const unsigned int n_threads, allpix::LogLevel log_level)
-        : m_shutdown(false), m_threads(std::vector<std::thread>(n_threads)) {
-        for(unsigned int i = 0; i < m_threads.size(); ++i) {
-            m_threads[i] = std::thread(ThreadWorker(this, log_level));
+        : shutdown_(false), threads_(std::vector<std::thread>(n_threads)) {
+        for(unsigned int i = 0; i < threads_.size(); ++i) {
+            threads_[i] = std::thread(ThreadWorker(this, log_level));
         }
     }
 
@@ -65,11 +65,11 @@ public:
 
     // Waits until threads finish their current task and shutdowns the pool
     void shutdown() {
-        m_shutdown = true;
-        m_conditional_lock.notify_all();
-        m_queue.invalidate();
+        shutdown_ = true;
+        conditional_lock_.notify_all();
+        queue_.invalidate();
 
-        for(auto& thrd : m_threads) {
+        for(auto& thrd : threads_) {
             if(thrd.joinable()) {
                 thrd.join();
             }
@@ -87,10 +87,10 @@ public:
         std::function<void()> wrapper_func = [task_ptr]() { (*task_ptr)(); };
 
         // Enqueue generic wrapper function
-        m_queue.push(wrapper_func);
+        queue_.push(wrapper_func);
 
         // Wake up one thread if its waiting
-        m_conditional_lock.notify_one();
+        conditional_lock_.notify_one();
 
         // Return future from promise
         return task_ptr->get_future();
