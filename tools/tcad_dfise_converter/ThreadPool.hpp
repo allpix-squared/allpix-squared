@@ -52,8 +52,8 @@ private:
 public:
     ThreadPool(const unsigned int n_threads, allpix::LogLevel log_level)
         : shutdown_(false), threads_(std::vector<std::thread>(n_threads)) {
-        for(unsigned int i = 0; i < threads_.size(); ++i) {
-            threads_[i] = std::thread(ThreadWorker(this, log_level));
+        for(auto& thread : threads_) {
+            thread = std::thread(ThreadWorker(this, log_level));
         }
     }
 

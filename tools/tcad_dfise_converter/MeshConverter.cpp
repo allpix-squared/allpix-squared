@@ -174,7 +174,7 @@ int main(int argc, char** argv) {
         std::cout << "\t -h                display this help text" << std::endl;
         std::cout << "\t -l <file>         file to log to besides standard output (disabled by default)" << std::endl;
         std::cout
-            << "\t -o <file_prefix>  output file prefix without .init extentsion (defaults to file name of <file_prefix>)"
+            << "\t -o <file_prefix>  output file prefix without .init extension (defaults to file name of <file_prefix>)"
             << std::endl;
         std::cout << "\t -v <level>        verbosity level (default reporiting level is INFO)" << std::endl;
 
