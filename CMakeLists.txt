@@ -88,24 +88,30 @@ ENDIF("${IsSystemDir}" STREQUAL "-1")
 # Set standard build flags
 SET(COMPILER_FLAGS -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wconversion -Wuseless-cast -Wctor-dtor-privacy -Wzero-as-null-pointer-constant -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Werror -Wshadow -Wformat-security -Wdeprecated -fdiagnostics-color=auto -Wheader-hygiene)
 
-# Require a C++14 compiler but do allow extensions
-SET(CMAKE_CXX_STANDARD 14)
+INCLUDE("cmake/compiler-flag-checks.cmake")
+
+# Check for C++17 and require C++17 if available else fallback to C++14 (should currently be sufficient)
+CHECK_CXX_COMPILER_FLAG(-std=c++17 SUPPORT_STD_CXX17)
+IF(SUPPORT_STD_CXX17)
+    SET(CMAKE_CXX_STANDARD 17)
+ELSE()
+    SET(CMAKE_CXX_STANDARD 14)
+ENDIF()
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
 
-# Include Threads
-FIND_PACKAGE(Threads REQUIRED)
-
-INCLUDE("cmake/compiler-flag-checks.cmake")
 
 # Set some debug flags
 # FIXME: not using the flag checker now because it wrongly rejects a sanitizer flag..
 IF(CMAKE_BUILD_TYPE MATCHES Debug AND ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")))
-    MESSAGE(STATUS "Running debug build - Adding extra sanitizer flags")
+    MESSAGE(STATUS "Running debug build, adding extra sanitizer flags")
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined")
     # FIXME: remove earlier shared linker flags, because they can break the sanitizer debug build
     SET(CMAKE_SHARED_LINKER_FLAGS "-fsanitize=address -fsanitize=undefined")
 ENDIF()
+
+# Include Threads
+FIND_PACKAGE(Threads REQUIRED)
 
 ###################################
 # Prerequisistes for allpix       #
