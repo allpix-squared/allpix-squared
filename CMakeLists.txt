@@ -100,7 +100,6 @@ ENDIF()
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
 
-
 # Set some debug flags
 # FIXME: not using the flag checker now because it wrongly rejects a sanitizer flag..
 IF(CMAKE_BUILD_TYPE MATCHES Debug AND ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")))
@@ -125,6 +124,11 @@ FIND_PACKAGE(ROOT REQUIRED COMPONENTS Geom GenVector)
 IF(NOT ROOT_FOUND)
     MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
     "$ source YOUR_ROOT_DIR/bin/thisroot.sh")
+ENDIF()
+
+# Downgrade to C++14 if ROOT is not build with C++17 support
+IF(NOT ROOT_cxx17_FOUND)
+    SET(CMAKE_CXX_STANDARD 14)
 ENDIF()
 
 # Check ROOT version
