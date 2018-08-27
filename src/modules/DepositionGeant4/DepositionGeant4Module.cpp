@@ -18,6 +18,7 @@
 #include <G4HadronicProcessStore.hh>
 #include <G4LogicalVolume.hh>
 #include <G4PhysListFactory.hh>
+#include <G4RadioactiveDecayPhysics.hh>
 #include <G4RunManager.hh>
 #include <G4StepLimiterPhysics.hh>
 #include <G4UImanager.hh>
@@ -143,6 +144,9 @@ void DepositionGeant4Module::init() {
     }
     // Register a step limiter (uses the user limits defined earlier)
     physicsList->RegisterPhysics(new G4StepLimiterPhysics());
+
+    // Register radioactive decay physics lists
+    physicsList->RegisterPhysics(new G4RadioactiveDecayPhysics());
 
     // Set the range-cut off threshold for secondary production:
     double production_cut;

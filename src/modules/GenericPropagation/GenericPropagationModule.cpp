@@ -82,6 +82,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     config_.setDefault<bool>("output_plots_align_pixels", false);
     config_.setDefault<double>("output_plots_theta", 0.0f);
     config_.setDefault<double>("output_plots_phi", 0.0f);
+    config_.setDefault<bool>("output_plots_lines_at_implants", false);
 
     // Set defaults for charge carrier propagation:
     config_.setDefault<bool>("propagate_electrons", true);
@@ -104,6 +105,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     target_spatial_precision_ = config_.get<double>("spatial_precision");
     output_plots_ = config_.get<bool>("output_plots");
     output_plots_step_ = config_.get<double>("output_plots_step");
+    output_plots_lines_at_implants_ = config_.get<bool>("output_plots_lines_at_implants");
 
     // Parameterization variables from https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2)
     electron_Vm_ = Units::get(1.53e9 * std::pow(temperature_, -0.87), "cm/s");
@@ -504,13 +506,6 @@ void GenericPropagationModule::init() {
             magnetic_field_ = detector_->getMagneticField();
         }
     }
-
-    if(output_plots_) {
-        auto time_bins =
-            static_cast<int>(Units::convert(integration_time_ / config_.get<long double>("output_plots_step"), "ns"));
-        drift_time_histo = new TH1D(
-            "drift_time_histo", "Drift time;t[ns];charge carriers", time_bins, 0., static_cast<int>(integration_time_));
-    }
 }
 
 void GenericPropagationModule::run(unsigned int event_num) {
@@ -579,13 +574,6 @@ void GenericPropagationModule::run(unsigned int event_num) {
             ++step_count;
             propagated_charges_count += charge_per_step;
             total_time += charge_per_step * prop_pair.second;
-
-            // Fill plot for drift time
-            if(output_plots_) {
-                drift_time_histo->SetBinContent(
-                    drift_time_histo->FindBin(prop_pair.second),
-                    drift_time_histo->GetBinContent(drift_time_histo->FindBin(prop_pair.second)) + charge_per_step);
-            }
         }
     }
 
@@ -758,6 +746,14 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         }
     }
 
+    // If requested, remove charge drift lines from plots if they did not reach the implant side within the integration time:
+    if(output_plots_ && output_plots_lines_at_implants_) {
+        // If drift time is larger than integration time or the charge carriers have been collected at the backside, remove
+        if(time >= integration_time_ || last_position.z() < -model_->getSensorSize().z() * 0.45) {
+            output_plot_points_.pop_back();
+        }
+    }
+
     // Return the final position of the propagated charge
     return std::make_pair(static_cast<ROOT::Math::XYZPoint>(position), time);
 }
@@ -766,8 +762,4 @@ void GenericPropagationModule::finalize() {
     long double average_time = total_time_ / std::max(1u, total_propagated_charges_);
     LOG(INFO) << "Propagated total of " << total_propagated_charges_ << " charges in " << total_steps_
               << " steps in average time of " << Units::display(average_time, "ns");
-
-    if(output_plots_) {
-        drift_time_histo->Write();
-    }
 }

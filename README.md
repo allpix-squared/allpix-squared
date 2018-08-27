@@ -80,14 +80,17 @@ Allpix<sup>2</sup> has been developed and is maintained by
 The following authors, in alphabetical order, have contributed to Allpix<sup>2</sup>:
 * Thomas Billoud, Université de Montréal, @tbilloud
 * Tobias Bisanz, Georg-August-Universität Göttingen, @tbisanz
+* Liejian Chen, Institute of High Energy Physics Beijing, @chenlj
 * Neal Gauvin, Université de Genève, @ngauvin
 * Moritz Kiehn, Université de Genève, @msmk
+* Maoqiang Jing, University of South China, Institute of High Energy Physics Beijing, @mjing
 * Salman Maqbool, CERN Summer Student, @smaqbool
 * Andreas Matthias Nürnberg, CERN, @nurnberg
 * Marko Petric, CERN, @mpetric
 * Edoardo Rossi, DESY, @edrossi
 * Andre Sailer, CERN, @sailer
 * Paul Schütze, DESY, @pschutze
+* Xin Shi, Institute of High Energy Physics Beijing, @xshi
 * Mateus Vicente Barreto Pinto, Université de Genève, @mvicente
 
 The authors would also like to express their thanks to the developers of [AllPix](https://twiki.cern.ch/twiki/bin/view/Main/AllPix).

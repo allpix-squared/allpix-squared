@@ -32,7 +32,7 @@ namespace allpix {
     class ThreadPool {
         friend class ModuleManager;
 
-    private:
+    public:
         /**
          * @brief Internal thread-safe queue
          */
@@ -87,7 +87,6 @@ namespace allpix {
             std::condition_variable condition_;
         };
 
-    public:
         /**
          * @brief Construct thread pool with provided number of threads
          * @param num_threads Number of threads in the pool
