@@ -67,22 +67,10 @@ std::pair<unsigned int, unsigned int> Cluster::getClusterSizeXY() {
 }
 
 /**
- * @throws MissingReferenceException If the pointed object is not in scope
- *
  * MCParticles can only be fetched if the full history of objects are in scope and stored
  */
-std::vector<const MCParticle*> Cluster::getMCParticles() const {
-
-    std::vector<const MCParticle*> mc_particles;
-    for(auto& mc_particle : mc_particles_) {
-        if(mc_particle == nullptr) {
-            throw MissingReferenceException(typeid(*this), typeid(MCParticle));
-        }
-        mc_particles.emplace_back(mc_particle);
-    }
-
-    // Return as a vector of mc particles
-    return mc_particles;
+std::set<const MCParticle*> Cluster::getMCParticles() const {
+    return mc_particles_;
 }
 
 const PixelHit* Cluster::getPixelHit(unsigned int x, unsigned int y) const {

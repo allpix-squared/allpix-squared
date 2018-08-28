@@ -77,7 +77,11 @@ namespace allpix {
          */
         std::set<const PixelHit*> getPixelHits() const { return pixelHits_; }
 
-        std::vector<const MCParticle*> getMCParticles() const;
+        /**
+         * @brief Get all MCParticles related to the cluster
+         * @return Vector of all related MCParticles
+         */
+        std::set<const MCParticle*> getMCParticles() const;
 
     private:
         const PixelHit* seedPixelHit_;
