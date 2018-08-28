@@ -91,6 +91,11 @@ void ROOTObjectReaderModule::init() {
         exclude_.insert(exc_arr.begin(), exc_arr.end());
     }
 
+    // check if mismatch between random seed core in config and in input file should be ignored
+    bool ignore_seed_mismatch = false;
+    if(config_.get<bool>("ignore_seed_mismatch", false)) {
+        ignore_seed_mismatch = true;
+    }
     // Initialize the call map from the tuple of available objects
     message_creator_map_ = gen_creator_map<allpix::OBJECTS>();
 
@@ -145,11 +150,16 @@ void ROOTObjectReaderModule::init() {
 
     auto file_seed = allpix::from_string<uint64_t>(*str);
     if(config_seed != file_seed) {
-        throw InvalidValueError(global_config,
-                                "random_seed_core",
-                                "mismatch between core random seed in configuration file and input data - this "
-                                "might lead to unexpected behavior. Set to value configured in the input data file: " +
-                                    (*str));
+        if(ignore_seed_mismatch) {
+            LOG(WARNING) << "Mismatch between core random seed in configuration file and input data"
+                         << " - this might lead to unexpected behavior.";
+        } else {
+            throw InvalidValueError(global_config,
+                                    "random_seed_core",
+                                    "mismatch between core random seed in configuration file and input data - this "
+                                    "might lead to unexpected behavior. Set to value configured in the input data file: " +
+                                        (*str));
+        }
     }
 
     // Cross-check version, print warning only in case of a mismatch:
