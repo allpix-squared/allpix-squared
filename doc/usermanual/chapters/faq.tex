@@ -74,6 +74,31 @@ Please refer to Section~\ref{sec:objhistory} for more information.
 \item[Can I import an electric field from TCAD and use it for simulating propagation?]
 Yes, the framework includes a tool to convert DF-ISE files from TCAD to an internal format which \apsq can parse.
 More information about this tool can be found in Section~\ref{sec:tcad_electric_field_converter}, instructions to import the generated field are provided in Section~\ref{sec:module_electric_field}.
+\item[How do I find out, which Monte Carlo particles are primary particles and which have been generated in the sensor?]
+The Monte Carlo truth information is stored per-sensor as MCParticle objects. Each MCParticle stores, among other information, a reference to its parent. Particles which have entered the sensor from the outside world do not have parent MCParticles in the respective sensor and are thus primaries.
+
+Using this approach it is possible, to e.g.\ treat a secondary particle produced in one detector as primary in a following detector.
+
+Below is some pseudo-code to filter a list of MCParticle objects for primaries based on their parent relationship:
+
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+// Collect all primary particles of the event:
+std::vector<const MCParticle*> primaries;
+
+// Loop over all MCParticles available
+for(auto& mc_particle : my_mc_particles) {
+    // Check for possible parents:
+    if(mc_particle.getParent() != nullptr) {
+        // Has a parent, thus was created inside this sensor.
+        continue;
+    }
+
+    // Has no parent particles in this sensor, add to primary list.
+    primaries.push_back(&mc_particle);
+}
+\end{minted}
+
+A similar function is used e.g.\ in the DetectorHistogrammer module to filter primary particles and create position-resolved graphs.
 \end{description}
 
 \todo{Add more questions}
