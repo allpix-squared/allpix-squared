@@ -141,7 +141,7 @@ IF(LATEX_COMPILER)
             cc-by.png
             usermanual/figures/telescope.png
             usermanual/figures/ci.png
-            usermanual/figures/linegraph_hrcmos_collected.pdf
+            usermanual/figures/linegraph_hrcmos_collected.png
             INPUTS
             usermanual/chapters/introduction.tex
             usermanual/chapters/quick_start.tex
