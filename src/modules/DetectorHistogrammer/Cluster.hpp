@@ -64,15 +64,31 @@ namespace allpix {
         const PixelHit* getSeedPixelHit() const { return seedPixelHit_; }
 
         /**
+         * @brief Get the PixelHit at coordinates x and y
+         * @param  x Coordinate of the pixel in x direction
+         * @param  y Coordinate of the pixel in y direction
+         * @return Pointer to matching PixelHit if available or a nullptr if not part of the cluster
+         */
+        const PixelHit* getPixelHit(unsigned int x, unsigned int y) const;
+
+        /**
          * @brief Get the PixelHits contained in this cluster
          * @return List of all contained PixelHits
          */
         std::set<const PixelHit*> getPixelHits() const { return pixelHits_; }
 
+        /**
+         * @brief Get all MCParticles related to the cluster
+         * @return Vector of all related MCParticles
+         */
+        std::set<const MCParticle*> getMCParticles() const;
+
     private:
         const PixelHit* seedPixelHit_;
 
         std::set<const PixelHit*> pixelHits_;
+        std::set<const MCParticle*> mc_particles_;
+
         double clusterCharge_{};
 
         unsigned int minX_, minY_, maxX_, maxY_;

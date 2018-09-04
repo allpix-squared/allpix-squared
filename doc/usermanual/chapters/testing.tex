@@ -90,13 +90,13 @@ export LD_LIBRARY_PATH="<library directory>:$LD_LIBRARY_PATH"
 \label{sec:ci}
 
 Quality and compatibility of the \apsq framework is ensured by an elaborate continuous integration (CI) which builds and tests the software on all supported platforms.
-The \apsq CI uses the GitLab Continuous Integration features and consists of five distinct stages as depicted in Figure~\ref{fig:ci}.
+The \apsq CI uses the GitLab Continuous Integration features and consists of seven distinct stages as depicted in Figure~\ref{fig:ci}.
 It is configured via the \file{.gitlab-ci.yml} file in the repository's root directory, while additional setup scripts for the GitLab Ci Runner machines and the Docker instances can be found in the \dir{.gitlab-ci.d} directory.
 
 \begin{figure}[btp]
   \centering
   \includegraphics[width=\textwidth]{ci.png}
-  \caption{Typical \apsq continous integration pipeline with 20 jobs distributed over five distinct stages. In this example, all jobs passed.}
+  \caption{Typical \apsq continous integration pipeline with 32 jobs distributed over seven distinct stages. In this example, all jobs passed.}
   \label{fig:ci}
 \end{figure}
 
@@ -118,8 +118,7 @@ The build is always performed with the default compiler flags enabled for the pr
 
 The \textbf{testing} stage executes the framework system and unit tests described in Section~\ref{sec:tests}.
 Different jobs are used to run different test types.
-This allows to optimize the CI setup depending on the demands of the test to be executed, i.e.\ the performance jobs are executed on native operating systems only with one concurrent job per machine.
-This ensures maximal performance and reproducible results for execution durations.
+This allows to optimize the CI setup depending on the demands of the test to be executed.
 All tests are expected to pass, and no code that fails to satisfy all tests will be merged into the repository.
 
 The \textbf{formatting} stage ensures proper formatting of the source code using the \command{clang-format} and following the coding conventions defined in the \file{.clang-format} file in the repository.
@@ -128,8 +127,17 @@ This means, the source code undergoes a static code analysis in order to identif
 Tests are marked as failed if either of the CMake targets \command{make check-format} or \command{make check-lint} fail.
 No code that fails to satisfy the coding conventions and formatting tests will be merged into the repository.
 
+The \textbf{performance} stage runs a longer simulation with several thousand events and measures the execution time.
+This facilitates monitoring of the simulation performance, a failing job would indicate a degradation in speed.
+These CI jobs run on dedicated machines with only one concurrent job as described in Section~\ref{sec:tests}.
+Performance tests are separated into their own CI stage because their execution is time consuming and they should only be started once proper  formatting of the new code is established.
+
 The \textbf{documentation} stage prepares this user manual as well as the Doxygen source code documentation for publication.
 This also allows to identify e.g.\ failing compilation of the \LaTeX documents or additional files which accidentally have not been committed to the repository.
+
+The \textbf{packaging} stage wraps the compiled binaries up into distributable tarballs for several platforms.
+This includes adding all libraries and executables to the tarball as well as preparing the \file{setup.sh} script to prepare run-time dependencies using the information provided to the build system.
+This procedure is described in more detail in Section~\ref{sec:packaging}.
 
 Finally, the \textbf{deployment} stage is only executed for new tags in the repository.
 Whenever a tag is pushed, this stages receives the build artifacts of previous stages and publishes them to the \apsq project website through the EOS file system~\cite{eos}. More detailed information on deployments is provided in the following.
@@ -322,6 +330,8 @@ Currently implemented tests comprise:
     \item[\file{test_08-4_writer_corryvreckan.conf}] ensures proper functionality of the Corryvreckan file writer module. The monitored output comprises the coordinates of the pixel produced in the simulation.
     \item[\file{test_08-5_writer_corryvreckan_mc.conf}] ensures the correct storage of Monte Carlo truth particle information in the Corryvreckan file writer module by monitoring the local coordinates of the MC particle associated to the pixel hit.
     \item[\file{test_08-6_writer_text.conf}] ensures proper functionality of the ASCII text writer module by monitoring the total number of objects and messages written to the text file..
+    \item[\file{test_08-7_writer_lcio_detector_assignment.conf}] exercises the assignment of detector IDs to \apsq detectors in the LCIO output file. A fixed ID and collection name is assigned to the simulated detector.
+    \item[\file{test_08-8_writer_lcio_no_mc_truth.conf}] ensures that simulation results are properly converted to LCIO and stored even without the Monte Carlo truth information available.
     \item[\file{test_09-1_reader_root.conf}] tests the capability of the framework to read data back in and to dispatch messages for all objects found in the input tree. The monitored output comprises the total number of objects read from all branches.
     \item[\file{test_09-2_reader_root_seed.conf}] tests the capability of the framework to detect different random seeds for misalignment set in a data file to be read back in. The monitored output comprises the error message including the two different random seed values.
 \end{description}

@@ -145,11 +145,17 @@ void ROOTObjectReaderModule::init(std::mt19937_64&) {
 
     auto file_seed = allpix::from_string<uint64_t>(*str);
     if(config_seed != file_seed) {
-        throw InvalidValueError(global_config,
-                                "random_seed_core",
-                                "mismatch between core random seed in configuration file and input data - this "
-                                "might lead to unexpected behavior. Set to value configured in the input data file: " +
-                                    (*str));
+        // check if mismatch between random seed core in config and in input file should be ignored
+        if(config_.get<bool>("ignore_seed_mismatch", false)) {
+            LOG(WARNING) << "Mismatch between core random seed in configuration file and input data"
+                         << " - this might lead to unexpected behavior.";
+        } else {
+            throw InvalidValueError(global_config,
+                                    "random_seed_core",
+                                    "mismatch between core random seed in configuration file and input data - this "
+                                    "might lead to unexpected behavior. Set to value configured in the input data file: " +
+                                        (*str));
+        }
     }
 
     // Cross-check version, print warning only in case of a mismatch:

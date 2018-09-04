@@ -25,10 +25,16 @@ using namespace allpix;
 DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
+<<<<<<< HEAD
     : WriterModule(config, detector), detector_(std::move(detector)) {
-    // Bind messages
+    // Bind pixel hits message
     messenger->bindSingle<DetectorHistogrammerModule, PixelHitMessage, MsgFlags::REQUIRED>(this);
-    messenger->bindSingle<DetectorHistogrammerModule, MCParticleMessage, MsgFlags::REQUIRED>(this);
+=======
+    : Module(config, detector), detector_(std::move(detector)), pixels_message_(nullptr) {
+    // Bind messages
+    messenger->bindSingle(this, &DetectorHistogrammerModule::pixels_message_, MsgFlags::REQUIRED);
+    messenger->bindSingle(this, &DetectorHistogrammerModule::mcparticle_message_, MsgFlags::REQUIRED);
+>>>>>>> master
 }
 
 void DetectorHistogrammerModule::init(std::mt19937_64&) {
@@ -220,10 +226,11 @@ void DetectorHistogrammerModule::init(std::mt19937_64&) {
     cluster_charge = new TH1D(cluster_charge_name.c_str(), cluster_charge_title.c_str(), 1000, 0., 50.);
 }
 
+<<<<<<< HEAD
 /**
  * @brief Perform a sparse clustering on the PixelHits
  */
-std::vector<Cluster> DetectorHistogrammerModule::doClustering(std::shared_ptr<PixelHitMessage>& pixels_message) {
+static std::vector<Cluster> doClustering(std::shared_ptr<PixelHitMessage>& pixels_message) {
     std::vector<Cluster> clusters;
     std::map<const PixelHit*, bool> usedPixel;
 
@@ -274,11 +281,14 @@ std::vector<Cluster> DetectorHistogrammerModule::doClustering(std::shared_ptr<Pi
 }
 
 void DetectorHistogrammerModule::run(Event* event) const {
-    using namespace ROOT::Math;
     auto pixels_message = event->fetchMessage<PixelHitMessage>();
-    auto mcparticle_message = event->fetchMessage<MCParticleMessage>();
 
     LOG(DEBUG) << "Adding hits in " << pixels_message->getData().size() << " pixels";
+=======
+void DetectorHistogrammerModule::run(unsigned int) {
+    using namespace ROOT::Math;
+    LOG(DEBUG) << "Adding hits in " << pixels_message_->getData().size() << " pixels";
+>>>>>>> master
 
     // Fill 2D hitmap histogram
     for(auto& pixel_charge : pixels_message->getData()) {
@@ -296,7 +306,7 @@ void DetectorHistogrammerModule::run(Event* event) const {
     std::vector<Cluster> clusters = doClustering(pixels_message);
 
     // Retrieve all MC particles in this detector which are primary particles (not produced within the sensor):
-    auto primary_particles = getPrimaryParticles(mcparticle_message);
+    auto primary_particles = getPrimaryParticles();
     LOG(DEBUG) << "Found " << primary_particles.size() << " primary particles in this event";
 
     // Evaluate the clusters
@@ -466,13 +476,64 @@ void DetectorHistogrammerModule::finalize() {
     cluster_charge_map->Write();
     seed_charge_map->Write();
 }
+<<<<<<< HEAD
+=======
 
-std::vector<const MCParticle*>
-DetectorHistogrammerModule::getPrimaryParticles(std::shared_ptr<MCParticleMessage>& mcparticle_message) {
+std::vector<Cluster> DetectorHistogrammerModule::doClustering() {
+    std::vector<Cluster> clusters;
+    std::map<const PixelHit*, bool> usedPixel;
+
+    auto pixel_it = pixels_message_->getData().begin();
+    for(; pixel_it != pixels_message_->getData().end(); pixel_it++) {
+        const PixelHit* pixel_hit = &(*pixel_it);
+
+        // Check if the pixel has been used:
+        if(usedPixel[pixel_hit]) {
+            continue;
+        }
+
+        // Create new cluster
+        Cluster cluster(pixel_hit);
+        usedPixel[pixel_hit] = true;
+        LOG(DEBUG) << "Creating new cluster with seed: " << pixel_hit->getPixel().getIndex();
+
+        auto touching = [&](const PixelHit* pixel) {
+            auto pxi1 = pixel->getIndex();
+            for(auto& cluster_pixel : cluster.getPixelHits()) {
+
+                auto distance = [](unsigned int lhs, unsigned int rhs) { return (lhs > rhs ? lhs - rhs : rhs - lhs); };
+
+                auto pxi2 = cluster_pixel->getIndex();
+                if(distance(pxi1.x(), pxi2.x()) <= 1 && distance(pxi1.y(), pxi2.y()) <= 1) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        // Keep adding pixels to the cluster:
+        for(auto other_pixel = pixel_it + 1; other_pixel != pixels_message_->getData().end(); other_pixel++) {
+            const PixelHit* neighbor = &(*other_pixel);
+
+            // Check if neighbor has been used or if it touches the current cluster:
+            if(usedPixel[neighbor] || !touching(neighbor)) {
+                continue;
+            }
+
+            cluster.addPixelHit(neighbor);
+            LOG(DEBUG) << "Adding pixel: " << neighbor->getPixel().getIndex();
+            usedPixel[neighbor] = true;
+        }
+        clusters.push_back(cluster);
+    }
+    return clusters;
+}
+
+std::vector<const MCParticle*> DetectorHistogrammerModule::getPrimaryParticles() const {
     std::vector<const MCParticle*> primaries;
 
     // Loop over all MCParticles available
-    for(auto& mc_particle : mcparticle_message->getData()) {
+    for(auto& mc_particle : mcparticle_message_->getData()) {
         // Check for possible parents:
         auto parent = mc_particle.getParent();
         if(parent != nullptr) {
@@ -487,3 +548,4 @@ DetectorHistogrammerModule::getPrimaryParticles(std::shared_ptr<MCParticleMessag
 
     return primaries;
 }
+>>>>>>> master
