@@ -1,11 +1,11 @@
 /**
-* @file
-* @brief Implementation of ROOT data file reader module
-* @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
-* This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
-* In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
-* Intergovernmental Organization or submit itself to any jurisdiction.
-*/
+ * @file
+ * @brief Implementation of ROOT data file reader module
+ * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
 
 #include "ROOTObjectReaderModule.hpp"
 
@@ -33,8 +33,8 @@ ROOTObjectReaderModule::ROOTObjectReaderModule(Configuration& config, Messenger*
     : Module(config), messenger_(messenger), geo_mgr_(geo_mgr) {}
 
 /**
-* @note Objects cannot be stored in smart pointers due to internal ROOT logic
-*/
+ * @note Objects cannot be stored in smart pointers due to internal ROOT logic
+ */
 ROOTObjectReaderModule::~ROOTObjectReaderModule() {
     for(auto message_inf : message_info_array_) {
         delete message_inf.objects;
@@ -42,9 +42,9 @@ ROOTObjectReaderModule::~ROOTObjectReaderModule() {
 }
 
 /**
-* Adds lambda function map to convert a vector of generic objects to a templated message containing this particular type of
-* object from its typeid.
-*/
+ * Adds lambda function map to convert a vector of generic objects to a templated message containing this particular type of
+ * object from its typeid.
+ */
 template <typename T> static void add_creator(ROOTObjectReaderModule::MessageCreatorMap& map) {
     map[typeid(T)] = [&](std::vector<Object*> objects, std::shared_ptr<Detector> detector = nullptr) {
         std::vector<T> data;
@@ -60,9 +60,9 @@ template <typename T> static void add_creator(ROOTObjectReaderModule::MessageCre
 }
 
 /**
-* Uses SFINAE trick to call the add_creator function for all template arguments of a container class. Used to add creators
-* for every object in a tuple of objects.
-*/
+ * Uses SFINAE trick to call the add_creator function for all template arguments of a container class. Used to add creators
+ * for every object in a tuple of objects.
+ */
 template <template <typename...> class T, typename... Args>
 static void gen_creator_map_from_tag(ROOTObjectReaderModule::MessageCreatorMap& map, type_tag<T<Args...>>) {
     std::initializer_list<int> value{(add_creator<Args>(map), 0)...};
@@ -70,8 +70,8 @@ static void gen_creator_map_from_tag(ROOTObjectReaderModule::MessageCreatorMap& 
 }
 
 /**
-* Wrapper function to make the SFINAE trick in \ref gen_creator_map_from_tag work.
-*/
+ * Wrapper function to make the SFINAE trick in \ref gen_creator_map_from_tag work.
+ */
 template <typename T> static ROOTObjectReaderModule::MessageCreatorMap gen_creator_map() {
     ROOTObjectReaderModule::MessageCreatorMap ret_map;
     gen_creator_map_from_tag(ret_map, type_tag<T>());
