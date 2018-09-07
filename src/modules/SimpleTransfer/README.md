@@ -1,7 +1,7 @@
 # SimpleTransfer
-**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>)
-**Status**: Functional
-**Input**: PropagatedCharge
+**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>)  
+**Status**: Functional  
+**Input**: PropagatedCharge  
 **Output**: PixelCharge
 
 ### Description

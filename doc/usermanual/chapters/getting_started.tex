@@ -23,7 +23,7 @@ More details and a more thorough example are found in Section~\ref{sec:main_conf
 Describes the detector setup, containing the position, orientation and model type of all detectors.
 An example is available in the repository at \file{examples/example_detector.conf}.
 Introduced in Section~\ref{sec:detector_config}.
-\item The detector \textbf{models} configuration.
+\item The detector \textbf{model} configuration.
 Contains the parameters describing a particular type of detector.
 Several models are already provided by the framework, but new types of detectors can easily be added.
 See \textit{models/test.conf} in the repository for an example.
@@ -111,22 +111,25 @@ first_string =   string_without_quotation
 second_string = "  string with quotation marks  "
 # Keys are split on whitespace and commas
 string_array = "first element" "second element","third element"
-# Elements of matrices with more than one dimension are separated using square brackets:
-string_matrix_3x3 = [["1", "0", "0"], ["0", "cos", "-sin"], ["0", "sin", cos]]
-# If the matrix is of dimension 1xN, the outer brackets have to be added explicitly:
+# Elements of matrices with more than one dimension are separated
+# using square brackets
+string_matrix_3x3 = [["1","0","0"], ["0","cos","-sin"], ["0","sin",cos]]
+# If the matrix is of dimension 1xN, the outer brackets have to be
+# added explicitly
 integer_matrix_1x3 = [[10, 11, 12]]
 # Integer and floats can be specified in standard formats
 int_value = 42
 float_value = 123.456e9
-# Units can be passed to arithmetic type
+# Units can be passed to arithmetic types
 energy_value = 1.23MeV
 time_value = 42ns
-# Units are combined in linear order
+# Units are combined in linear order without grouping or implicit brackets
 acceleration_value = 1.0m/s/s
 # Thus the quantity below is the same as 1.0deg*kV*K/m/s
 random_quantity = 1.0deg*kV/m/s*K
-# Relative paths are expanded to absolute
-# Path below will be /home/user/test if the config file is in /home/user
+# Relative paths are expanded to absolute paths, e.g. the following value
+# will become "/home/user/test" if the configuration file is located
+# at "/home/user"
 output_path = "test"
 # Booleans can be represented in numerical or textual style
 my_switch = true
@@ -139,10 +142,10 @@ The main configuration consists of a set of sections specifying the modules used
 All modules are executed in the \emph{linear} order in which they are defined.
 There are a few section names which have a special meaning in the main configuration, namely the following:
 \begin{itemize}
-\item The \textbf{global} (framework) header sections: These are all zero-length section headers (including the one at the beginning of the file) and all sections marked with the header \texttt{[Allpix]} (case-insensitive).
+\item The \textbf{global} (framework) header sections: These are all zero-length section headers (including the one at the beginning of the file) and all sections marked with the header \parameter{[Allpix]} (case-insensitive).
 These are combined and accessed together as the global configuration, which contain all parameters of the framework itself (see Section~\ref{sec:framework_parameters} for details).
 All key-value pairs defined in this section are also inherited by all individual configurations as long the key is not defined in the module configuration itself.
-\item The \textbf{ignore} header sections: All sections with name \texttt{[Ignore]} are ignored.
+\item The \textbf{ignore} header sections: All sections with name \parameter{[Ignore]} (case-insensitive) are ignored.
 Key-value pairs defined in the section as well as the section itself are discarded by the parser.
 These section headers are useful for quickly enabling and disabling individual modules by replacing their actual name by an ignore section header.
 \end{itemize}
@@ -189,7 +192,7 @@ another_random_string = "example2"
 type = "timepix"
 int_value = 1
 # Replace the module above for `dut` with a specialized version
-#   this does not inherit any parameters from earlier modules
+# It does not inherit any parameters from earlier modules
 [MyDetectorModule]
 name = "dut"
 int_value = 2

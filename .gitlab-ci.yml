@@ -1,5 +1,6 @@
 variables:
     EOS_PATH: "/eos/project/a/allpix-squared/www/"
+    DOCKER_FILE: etc/docker/Dockerfile
 
 stages:
     - compilation
@@ -33,7 +34,7 @@ cmp:slc6-gcc:
             - build
             - bin
             - lib
-        expire_in: 3 hour
+        expire_in: 24 hour
 
 cmp:slc6-llvm:
     stage: compilation
@@ -53,7 +54,7 @@ cmp:slc6-llvm:
             - build
             - bin
             - lib
-        expire_in: 3 hour
+        expire_in: 24 hour
 
 # Ensure that our LXPLUS setup script is functional:
 cmp:lxplus-gcc:
@@ -74,7 +75,7 @@ cmp:lxplus-gcc:
             - build
             - bin
             - lib
-        expire_in: 3 hour
+        expire_in: 24 hour
 
 cmp:cc7-gcc:
     stage: compilation
@@ -95,7 +96,7 @@ cmp:cc7-gcc:
             - build
             - bin
             - lib
-        expire_in: 3 hour
+        expire_in: 24 hour
 
 cmp:cc7-llvm:
     stage: compilation
@@ -115,7 +116,7 @@ cmp:cc7-llvm:
             - build
             - bin
             - lib
-        expire_in: 3 hour
+        expire_in: 24 hour
 
 cmp:mac1013-clang:
     stage: compilation
@@ -134,7 +135,7 @@ cmp:mac1013-clang:
             - build
             - bin
             - lib
-        expire_in: 3 hour
+        expire_in: 24 hour
 
 
 
@@ -462,7 +463,7 @@ cmp:doxygen:
     artifacts:
         paths:
             - public
-        expire_in: 3 hour
+        expire_in: 24 hour
 
 # Compile LaTeX user manual:
 cmp:usermanual:
@@ -490,7 +491,7 @@ cmp:usermanual:
     artifacts:
         paths:
           - public
-        expire_in: 3 hour
+        expire_in: 24 hour
 
 ################################
 # Packaging of Binary Tarballs #
@@ -503,8 +504,7 @@ pkg:slc6-gcc:
     image: clicdp/slc6-base
     only:
         - tags
-        - deploy-cvmfs
-        - deploy-eos
+        - schedules
     dependencies:
         - cmp:slc6-gcc
     script:
@@ -519,7 +519,7 @@ pkg:slc6-gcc:
     artifacts:
         paths:
             - public
-        expire_in: 3 hour
+        expire_in: 24 hour
 
 pkg:cc7-gcc:
     stage: packaging
@@ -528,8 +528,7 @@ pkg:cc7-gcc:
     image: clicdp/cc7-base
     only:
         - tags
-        - deploy-cvmfs
-        - deploy-eos
+        - schedules
     dependencies:
         - cmp:cc7-gcc
     script:
@@ -544,7 +543,7 @@ pkg:cc7-gcc:
     artifacts:
         paths:
             - public
-        expire_in: 3 hour
+        expire_in: 24 hour
 
 
 ############################
@@ -560,7 +559,6 @@ deploy-documentation:
     # Only run for new tags:
     only:
         - tags
-        - deploy-usermanual
     dependencies:
         - cmp:usermanual
         - cmp:doxygen
@@ -579,7 +577,7 @@ deploy-eos:
     # Only run for new tags:
     only:
         - tags
-        - deploy-eos
+        - schedules # Only execute this on scheduled "nightly" pipelines
     dependencies:
         - pkg:cc7-gcc
         - pkg:slc6-gcc
@@ -600,13 +598,14 @@ deploy-cvmfs:
         - cvmfs-deploy
     only:
         - tags
-        - deploy-cvmfs
+        - schedules # Only execute this on scheduled "nightly" pipelines
     script:
         - ./.gitlab-ci.d/download_artifacts.py $API_TOKEN $CI_PROJECT_ID $CI_PIPELINE_ID
         - export RUNNER_LOCATION=$(pwd)
         - if [ -z ${CI_COMMIT_TAG} ]; then export BUILD_PATH='latest'; else export BUILD_PATH=${CI_COMMIT_TAG}; fi
         - sudo -u cvclicdp -i $RUNNER_LOCATION/.gitlab-ci.d/gitlab_deploy.sh $RUNNER_LOCATION $BUILD_PATH
         - rm -f allpix-squared-*.tar.gz
+    retry: 1
 
 deploy-docker-latest:
     stage: deployment
@@ -614,12 +613,11 @@ deploy-docker-latest:
         - docker-image-build
     dependencies: []
     only:
-        - deploy-docker
+        - schedules # Only execute this on scheduled "nightly" pipelines
     script:
         - "echo" # unused but this line is required by GitLab CI
     variables:
         TO: gitlab-registry.cern.ch/allpix-squared/allpix-squared
-        DOCKER_FILE: etc/docker/Dockerfile
 
 deploy-docker-tag:
     stage: deployment
@@ -632,4 +630,3 @@ deploy-docker-tag:
         - "echo" # unused but this line is required by GitLab CI
     variables:
         TO: gitlab-registry.cern.ch/allpix-squared/allpix-squared:${CI_COMMIT_TAG}
-        DOCKER_FILE: etc/docker/Dockerfile
