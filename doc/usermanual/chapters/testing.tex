@@ -146,14 +146,16 @@ Whenever a tag is pushed, this stages receives the build artifacts of previous s
 
 The CI is configured to automatically deploy new versions of \apsq and its user manual and code reference to different places to make them available to users.
 This section briefly describes the different deployment end-points currently configured and in use.
-The individual targets can be triggered by a push into the respective branches.
-In order to prevent accidental publications, these branches are protected and can only be updated by users with \emph{Master} privileges.
+The individual targets are triggered either by automatic nightly builds or by publishing new tags.
+In order to prevent accidental publications, the creation of tags is protected.
+Only users with \emph{Maintainer} privileges can push new tags to the repository.
 For new tagged versions, all deployment targets are executed.
 
 \subsection{Software deployment to CVMFS}
 
-The software is automatically deployed to CERN's VM file system (CVMFS)~\cite{cvmfs} for every new tag and for every update of the \parameter{deploy-cvmfs} branch.
-New versions are published to the folder \dir{/cvmfs/clicdp.cern.ch/software/allpix-squared/} where a new folder is created for every new tag, while updates via the branch are always stored in the \dir{latest} folder.
+The software is automatically deployed to CERN's VM file system (CVMFS)~\cite{cvmfs} for every new tag.
+In addition, the \parameter{master} branch is built and deployed every night.
+New versions are published to the folder \dir{/cvmfs/clicdp.cern.ch/software/allpix-squared/} where a new folder is created for every new tag, while updates via the \parameter{master} branch are always stored in the \dir{latest} folder.
 
 The deployed version currently comprises all modules as well as the detector models shipped with the framework.
 An additional \file{setup.sh} is placed in the root folder of the respective release, which allows to set up all runtime dependencies necessary for executing this version.
@@ -161,37 +163,37 @@ Versions both for SLC\,6 and CentOS\,7 are provided.
 
 The deployment CI job runs on a dedicated computer with a GitLab SSH runner.
 Job artifacts from the packaging stage of the CI are downloaded via their ID using the script found in \dir{.gitlab-ci.d/download_artifacts.py}, and are made available to the \emph{cvclicdp} user which has access to the CVMFS interface.
-The job checks for concurrent deployments to CVMFS and then unpacks arr tarball releases and publishes the to the CLICdp experiment CVMFS space, the corresponding script for the deployment can be found in \dir{.gitlab-ci.d/gitlab_deployment.sh}.
+The job checks for concurrent deployments to CVMFS and then unpacks the tarball releases and publishes them to the CLICdp experiment CVMFS space, the corresponding script for the deployment can be found in \dir{.gitlab-ci.d/gitlab_deployment.sh}.
 This job requires a private API token to be set as secret project variable through the GitLab interface, currently this token belongs to the service account user \emph{ap2}.
 
-\subsection{User manual deployment to EOS}
+\subsection{Documentation deployment to EOS}
 
-The user manual is deployed to the project's EOS space at \dir{/eos/project/a/allpix-squared/www/usermanual} for publication on the project website.
-This comprises both the PDF and HTMl versions of the manual as well as the Doxygen code reference.
-New versions are published for tags and updates of the \parameter{deploy-usermanual} branch.
+The project documentation is deployed to the project's EOS space at \dir{/eos/project/a/allpix-squared/www/} for publication on the project website.
+This comprises both the PDF and HTML versions of the user manual (subdirectory \dir{usermanual}) as well as the Doxygen code reference (subdirectory \dir{reference/}).
+The documentation is only published only for new tagged versions of the framework.
+
 The CI jobs uses the \parameter{ci-web-deployer} Docker image from the CERN GitLab CI tools to access EOS, which requires a specific file structure of the artifact.
 All files in the artifact's \dir{public/} folder will be published to the \dir{www/} folder of the given project.
-
 This job requires the secret project variables \parameter{EOS_ACCOUNT_USERNAME} and \parameter{EOS_ACCOUNT_PASSWORD} to be set via the GitLab web interface.
 Currently, this uses the credentials of the service account user \emph{ap2}.
 
 \subsection{Release tarball deployment to EOS}
 
 Binary release tarballs are deployed to EOS to serve as downloads from the website to the directory \dir{/eos/project/a/allpix-squared/www/releases}.
-New tarballs are produced for every tag as well as for any update of the \parameter{deploy-eos} branch.
-The files are taken from the packaging jobs and published via the \parameter{ci-web-deployer} Docker image from the CERN GitLab CI tools.
+New tarballs are produced for every tag as well as for nightly builds of the \parameter{master} branch, which are deployed with the name \file{allpix-squared-latest-<system-tag>-opt.tar.gz}.
 
+The files are taken from the packaging jobs and published via the \parameter{ci-web-deployer} Docker image from the CERN GitLab CI tools.
 This job requires the secret project variables \parameter{EOS_ACCOUNT_USERNAME} and \parameter{EOS_ACCOUNT_PASSWORD} to be set via the GitLab web interface.
 Currently, this uses the credentials of the service account user \emph{ap2}.
 
 \subsection{Building Docker images}
 \label{sec:build-docker}
 
-New \apsq Docker images are automatically created and deployed by the CI for every new tag and for every update of the \parameter{deploy-docker} branch.
+New \apsq Docker images are automatically created and deployed by the CI for every new tag and as a nightly build from the \parameter{master} branch.
 New versions are published to project Docker container registry~\cite{ap2-container-registry}.
-Tagged versions can be found via their respective tag name, while updates via the branch are always stored with the \parameter{latest} tag attached.
+Tagged versions can be found via their respective tag name, while updates via the nightly build are always stored with the \parameter{latest} tag attached.
 
-The final Docker image is built from three consecutive images with different layers of software added.
+The final Docker image is formed from three consecutive images with different layers of software added.
 The `base` image contains all build dependencies such as compilers, CMake, and git.
 It derives from a CentOS7 Docker image and can be build using the \file{etc/docker/Dockerfile.base} file via the following commands:
 
