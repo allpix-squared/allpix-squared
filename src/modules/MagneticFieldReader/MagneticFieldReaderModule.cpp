@@ -51,7 +51,7 @@ void MagneticFieldReaderModule::init() {
         for(auto& detector : detectors) {
             // TODO the magnetic field is calculated once for the center position of the detector. This could be extended to
             // a function enabling a gradient in the magnetic field inside the sensor
-            detector->setMagneticField(detector->getOrientation() *
+            detector->setMagneticField(detector->getOrientation().Inverse() *
                                        geometryManager_->getMagneticField(detector->getPosition()));
             LOG(DEBUG) << "Magnetic field in detector " << detector->getName() << ": "
                        << Units::display(detector->getMagneticField(), {"T", "mT"});

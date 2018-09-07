@@ -217,10 +217,11 @@ void GeometryConstructionG4::build_detectors() {
         G4ThreeVector posWrapper = toG4Vector(position);
         auto rotWrapper = std::make_shared<G4RotationMatrix>(copy_vec.data());
         detector->setExternalObject("rotation_matrix", rotWrapper);
+        G4Transform3D transform_phys(*rotWrapper, posWrapper);
 
         // Place the wrapper
         auto wrapper_phys = make_shared_no_delete<G4PVPlacement>(
-            rotWrapper.get(), posWrapper, wrapper_log.get(), "wrapper_" + name + "_phys", world_log_.get(), false, 0, true);
+            transform_phys, wrapper_log.get(), "wrapper_" + name + "_phys", world_log_.get(), false, 0, true);
         detector->setExternalObject("wrapper_phys", wrapper_phys);
 
         LOG(DEBUG) << " Center of the geometry parts relative to the origin:";
