@@ -1,5 +1,6 @@
 variables:
     EOS_PATH: "/eos/project/a/allpix-squared/www/"
+    DOCKER_FILE: etc/docker/Dockerfile
 
 stages:
     - compilation
@@ -619,7 +620,6 @@ deploy-docker-latest:
         - "echo" # unused but this line is required by GitLab CI
     variables:
         TO: gitlab-registry.cern.ch/allpix-squared/allpix-squared
-        DOCKER_FILE: etc/docker/Dockerfile
 
 deploy-docker-tag:
     stage: deployment
@@ -632,4 +632,3 @@ deploy-docker-tag:
         - "echo" # unused but this line is required by GitLab CI
     variables:
         TO: gitlab-registry.cern.ch/allpix-squared/allpix-squared:${CI_COMMIT_TAG}
-        DOCKER_FILE: etc/docker/Dockerfile
