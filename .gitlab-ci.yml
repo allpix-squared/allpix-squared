@@ -33,7 +33,7 @@ cmp:slc6-gcc:
             - build
             - bin
             - lib
-        expire_in: 3 hour
+        expire_in: 24 hour
 
 cmp:slc6-llvm:
     stage: compilation
@@ -53,7 +53,7 @@ cmp:slc6-llvm:
             - build
             - bin
             - lib
-        expire_in: 3 hour
+        expire_in: 24 hour
 
 # Ensure that our LXPLUS setup script is functional:
 cmp:lxplus-gcc:
@@ -74,7 +74,7 @@ cmp:lxplus-gcc:
             - build
             - bin
             - lib
-        expire_in: 3 hour
+        expire_in: 24 hour
 
 cmp:cc7-gcc:
     stage: compilation
@@ -95,7 +95,7 @@ cmp:cc7-gcc:
             - build
             - bin
             - lib
-        expire_in: 3 hour
+        expire_in: 24 hour
 
 cmp:cc7-llvm:
     stage: compilation
@@ -115,7 +115,7 @@ cmp:cc7-llvm:
             - build
             - bin
             - lib
-        expire_in: 3 hour
+        expire_in: 24 hour
 
 cmp:mac1013-clang:
     stage: compilation
@@ -134,7 +134,7 @@ cmp:mac1013-clang:
             - build
             - bin
             - lib
-        expire_in: 3 hour
+        expire_in: 24 hour
 
 
 
@@ -462,7 +462,7 @@ cmp:doxygen:
     artifacts:
         paths:
             - public
-        expire_in: 3 hour
+        expire_in: 24 hour
 
 # Compile LaTeX user manual:
 cmp:usermanual:
@@ -490,7 +490,7 @@ cmp:usermanual:
     artifacts:
         paths:
           - public
-        expire_in: 3 hour
+        expire_in: 24 hour
 
 ################################
 # Packaging of Binary Tarballs #
@@ -519,7 +519,7 @@ pkg:slc6-gcc:
     artifacts:
         paths:
             - public
-        expire_in: 3 hour
+        expire_in: 24 hour
 
 pkg:cc7-gcc:
     stage: packaging
@@ -544,7 +544,7 @@ pkg:cc7-gcc:
     artifacts:
         paths:
             - public
-        expire_in: 3 hour
+        expire_in: 24 hour
 
 
 ############################
