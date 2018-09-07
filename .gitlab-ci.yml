@@ -504,8 +504,7 @@ pkg:slc6-gcc:
     image: clicdp/slc6-base
     only:
         - tags
-        - deploy-cvmfs
-        - deploy-eos
+        - schedules
     dependencies:
         - cmp:slc6-gcc
     script:
@@ -529,8 +528,7 @@ pkg:cc7-gcc:
     image: clicdp/cc7-base
     only:
         - tags
-        - deploy-cvmfs
-        - deploy-eos
+        - schedules
     dependencies:
         - cmp:cc7-gcc
     script:
