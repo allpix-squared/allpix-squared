@@ -185,24 +185,18 @@ void DetectorHistogrammerModule::init() {
     std::string residual_map_title = "Mean absolute deviation of residual as function of in-pixel impact position for " +
                                      detector_->getName() +
                                      ";x%pitch [#mum];y%pitch [#mum];MAD(#sqrt{#Deltax^{2}+#Deltay^{2}}) [#mum]";
-    residual_map = new TProfile2D(residual_map_name.c_str(),
-                                  residual_map_title.c_str(),
-                                  static_cast<int>(pitch_x),
-                                  0.,
-                                  pitch_x,
-                                  static_cast<int>(pitch_y),
-                                  0.,
-                                  pitch_y);
+    residual_map = new TProfile2D(
+        residual_map_name.c_str(), residual_map_title.c_str(), inpixel_bins.x(), 0., pitch_x, inpixel_bins.y(), 0., pitch_y);
     std::string residual_x_map_name = "residual_x_map";
     std::string residual_x_map_title =
         "Mean absolute deviation of residual in X as function of in-pixel impact position for " + detector_->getName() +
         ";x%pitch [#mum];y%pitch [#mum];MAD(#Deltax) [#mum]";
     residual_x_map = new TProfile2D(residual_x_map_name.c_str(),
                                     residual_x_map_title.c_str(),
-                                    static_cast<int>(pitch_x),
+                                    inpixel_bins.x(),
                                     0.,
                                     pitch_x,
-                                    static_cast<int>(pitch_y),
+                                    inpixel_bins.y(),
                                     0.,
                                     pitch_y);
     std::string residual_y_map_name = "residual_y_map";
@@ -211,10 +205,10 @@ void DetectorHistogrammerModule::init() {
         ";x%pitch [#mum];y%pitch [#mum];MAD(#Deltay) [#mum]";
     residual_y_map = new TProfile2D(residual_y_map_name.c_str(),
                                     residual_y_map_title.c_str(),
-                                    static_cast<int>(pitch_x),
+                                    inpixel_bins.x(),
                                     0.,
                                     pitch_x,
-                                    static_cast<int>(pitch_y),
+                                    inpixel_bins.y(),
                                     0.,
                                     pitch_y);
 
