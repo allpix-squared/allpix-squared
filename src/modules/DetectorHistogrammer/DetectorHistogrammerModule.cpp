@@ -32,6 +32,8 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
 }
 
 void DetectorHistogrammerModule::init() {
+    using namespace ROOT::Math;
+
     // Fetch detector model
     auto model = detector_->getModel();
     auto pitch_x = static_cast<double>(Units::convert(model->getPixelSize().x(), "um"));
@@ -62,16 +64,27 @@ void DetectorHistogrammerModule::init() {
                            -0.5,
                            model->getNPixels().y() - 0.5);
 
+    // Calculate the granularity of in-pixel maps:
+    auto inpixel_bins = config_.get<DisplacementVector2D<Cartesian2D<int>>>(
+        "granularity", DisplacementVector2D<Cartesian2D<int>>(static_cast<int>(pitch_x), static_cast<int>(pitch_y)));
+    if(inpixel_bins.x() * inpixel_bins.y() > 250000) {
+        LOG(WARNING) << "Selected plotting granularity of " << inpixel_bins << " bins creates very large histograms."
+                     << std::endl
+                     << "Consider reducing the number of bins using the granularity parameter.";
+    } else {
+        LOG(DEBUG) << "In-pixel plot granularity: " << inpixel_bins;
+    }
+
     // Create histogram of cluster map
     std::string cluster_size_map_name = "cluster_size_map";
     std::string cluster_size_map_title = "Cluster size as function of in-pixel impact position for " + detector_->getName() +
                                          ";x%pitch [#mum];y%pitch [#mum]";
     cluster_size_map = new TProfile2D(cluster_size_map_name.c_str(),
                                       cluster_size_map_title.c_str(),
-                                      static_cast<int>(pitch_x),
+                                      inpixel_bins.x(),
                                       0.,
                                       pitch_x,
-                                      static_cast<int>(pitch_y),
+                                      inpixel_bins.y(),
                                       0.,
                                       pitch_y);
 
@@ -80,10 +93,10 @@ void DetectorHistogrammerModule::init() {
                                            detector_->getName() + ";x%pitch [#mum];y%pitch [#mum]";
     cluster_size_x_map = new TProfile2D(cluster_size_x_map_name.c_str(),
                                         cluster_size_x_map_title.c_str(),
-                                        static_cast<int>(pitch_x),
+                                        inpixel_bins.x(),
                                         0.,
                                         pitch_x,
-                                        static_cast<int>(pitch_y),
+                                        inpixel_bins.y(),
                                         0.,
                                         pitch_y);
 
@@ -92,10 +105,10 @@ void DetectorHistogrammerModule::init() {
                                            detector_->getName() + ";x%pitch [#mum];y%pitch [#mum]";
     cluster_size_y_map = new TProfile2D(cluster_size_y_map_name.c_str(),
                                         cluster_size_y_map_title.c_str(),
-                                        static_cast<int>(pitch_x),
+                                        inpixel_bins.x(),
                                         0.,
                                         pitch_x,
-                                        static_cast<int>(pitch_y),
+                                        inpixel_bins.y(),
                                         0.,
                                         pitch_y);
 
@@ -105,10 +118,10 @@ void DetectorHistogrammerModule::init() {
                                            detector_->getName() + ";x%pitch [#mum];y%pitch [#mum];<cluster charge> [ke]";
     cluster_charge_map = new TProfile2D(cluster_charge_map_name.c_str(),
                                         cluster_charge_map_title.c_str(),
-                                        static_cast<int>(pitch_x),
+                                        inpixel_bins.x(),
                                         0.,
                                         pitch_x,
-                                        static_cast<int>(pitch_y),
+                                        inpixel_bins.y(),
                                         0.,
                                         pitch_y);
     std::string seed_charge_map_name = "seed_charge_map";
@@ -116,21 +129,21 @@ void DetectorHistogrammerModule::init() {
                                         detector_->getName() + ";x%pitch [#mum];y%pitch [#mum];<seed pixel charge> [ke]";
     seed_charge_map = new TProfile2D(seed_charge_map_name.c_str(),
                                      seed_charge_map_title.c_str(),
-                                     static_cast<int>(pitch_x),
+                                     inpixel_bins.x(),
                                      0.,
                                      pitch_x,
-                                     static_cast<int>(pitch_y),
+                                     inpixel_bins.y(),
                                      0.,
                                      pitch_y);
 
-    // Create cluster size plots
+    // Create cluster size plots, preventing a zero-bin histogram by scaling with integer ceiling: (x + y - 1) / y
     std::string cluster_size_name = "cluster_size";
     std::string cluster_size_title = "Cluster size for " + detector_->getName() + ";cluster size [px];clusters";
     cluster_size = new TH1D(cluster_size_name.c_str(),
                             cluster_size_title.c_str(),
-                            model->getNPixels().x() * model->getNPixels().y() / 10,
+                            (model->getNPixels().x() * model->getNPixels().y() + 9) / 10,
                             0.5,
-                            model->getNPixels().x() * model->getNPixels().y() / 10 + 0.5);
+                            (model->getNPixels().x() * model->getNPixels().y() + 9) / 10 + 0.5);
 
     std::string cluster_size_x_name = "cluster_size_x";
     std::string cluster_size_x_title = "Cluster size X for " + detector_->getName() + ";cluster size x [px];clusters";
