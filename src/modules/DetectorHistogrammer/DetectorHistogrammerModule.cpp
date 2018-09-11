@@ -230,7 +230,8 @@ void DetectorHistogrammerModule::init() {
     // Create cluster charge plot
     std::string cluster_charge_name = "cluster_charge";
     std::string cluster_charge_title = "Cluster charge for " + detector_->getName() + ";cluster charge [ke];clusters";
-    cluster_charge = new TH1D(cluster_charge_name.c_str(), cluster_charge_title.c_str(), 1000, 0., 50.);
+    cluster_charge = new TH1D(
+        cluster_charge_name.c_str(), cluster_charge_title.c_str(), 1000, 0., config_.get<double>("max_cluster_charge", 50.));
 }
 
 void DetectorHistogrammerModule::run(unsigned int) {
