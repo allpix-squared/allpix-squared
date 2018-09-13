@@ -147,6 +147,20 @@ void DetectorHistogrammerModule::init() {
     std::string residual_y_title = "Residual in Y for " + detector_->getName() + ";y_{track} - y_{cluster} [#mum];events";
     residual_y = new TH1D("residual_y", residual_y_title.c_str(), static_cast<int>(12 * pitch_y), -2 * pitch_y, 2 * pitch_y);
 
+    // Residual projections
+    std::string residual_x_vs_x_title = "Mean absolute deviation of residual in X as function of in-pixel X position for " +
+                                        detector_->getName() + ";x%pitch [#mum];MAD(#Deltax) [#mum]";
+    residual_x_vs_x = new TProfile("residual_x_vs_x", residual_x_vs_x_title.c_str(), inpixel_bins.x(), 0., pitch_x);
+    std::string residual_y_vs_y_title = "Mean absolute deviation of residual in Y as function of in-pixel Y position for " +
+                                        detector_->getName() + ";y%pitch [#mum];MAD(#Deltay) [#mum]";
+    residual_y_vs_y = new TProfile("residual_y_vs_y", residual_y_vs_y_title.c_str(), inpixel_bins.y(), 0., pitch_y);
+    std::string residual_x_vs_y_title = "Mean absolute deviation of residual in X as function of in-pixel Y position for " +
+                                        detector_->getName() + ";y%pitch [#mum];MAD(#Deltax) [#mum]";
+    residual_x_vs_y = new TProfile("residual_x_vs_y", residual_x_vs_y_title.c_str(), inpixel_bins.y(), 0., pitch_y);
+    std::string residual_y_vs_x_title = "Mean absolute deviation of residual in Y as function of in-pixel X position for " +
+                                        detector_->getName() + ";x%pitch [#mum];MAD(#Deltay) [#mum]";
+    residual_y_vs_x = new TProfile("residual_y_vs_x", residual_y_vs_x_title.c_str(), inpixel_bins.x(), 0., pitch_x);
+
     // Residual maps
     std::string residual_map_title = "Mean absolute deviation of residual as function of in-pixel impact position for " +
                                      detector_->getName() +
@@ -262,6 +276,10 @@ void DetectorHistogrammerModule::run(unsigned int) {
             auto residual_um_y = static_cast<double>(Units::convert(particlePos.y() - clusterPos.y() * pitch.y(), "um"));
             residual_x->Fill(residual_um_x);
             residual_y->Fill(residual_um_y);
+            residual_x_vs_x->Fill(inPixel_um_x, std::fabs(residual_um_x));
+            residual_y_vs_y->Fill(inPixel_um_y, std::fabs(residual_um_y));
+            residual_x_vs_y->Fill(inPixel_um_y, std::fabs(residual_um_x));
+            residual_y_vs_x->Fill(inPixel_um_x, std::fabs(residual_um_y));
             residual_map->Fill(inPixel_um_x,
                                inPixel_um_y,
                                std::fabs(std::sqrt(residual_um_x * residual_um_x + residual_um_y * residual_um_y)));
@@ -360,6 +378,10 @@ void DetectorHistogrammerModule::finalize() {
     event_size->Write();
     residual_x->Write();
     residual_y->Write();
+    residual_x_vs_x->Write();
+    residual_y_vs_y->Write();
+    residual_x_vs_y->Write();
+    residual_y_vs_x->Write();
     residual_map->Write();
     residual_x_map->Write();
     residual_y_map->Write();

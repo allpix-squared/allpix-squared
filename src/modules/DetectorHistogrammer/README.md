@@ -18,7 +18,7 @@ If no MCParticle information is available, some of the plots might not be filled
 * Distributions of the cluster size in x, y and the total cluster size.
 * Mean cluster size and cluster sizes in x and y as function of the in-pixel impact position of the primary particle.
 * Residual distribution in x and y between the center-of-gravity position of the cluster and the primary particle.
-* Mean absolute deviations of the residual as function of the in-pixel impact position of the primary particle.
+* Mean absolute deviations of the residual as function of the in-pixel impact position of the primary particle. Histograms both for a 2D representation of the pixel cell as well as the projections (residual X vs position X, residual Y vs position Y, residual X vs position Y, residual Y vs position X) are produced.
 * Total cluster charge distribution.
 * Mean total cluster charge as function of the in-pixel impact position of the primary particle.
 * Mean seed pixel charge as a function  of the in-pixel impact position of the primary particle.
