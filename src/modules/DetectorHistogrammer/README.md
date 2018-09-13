@@ -27,6 +27,7 @@ If no MCParticle information is available, some of the plots might not be filled
 
 * `granularity`: 2D integer vector defining the number of bins along the *x* and *y* axis for in-pixel maps. Defaults to the pixel pitch in micro meters, e.g. a detector with 100um x 100um pixels would be represented in a histogram with `100 * 100 = 10000` bins.
 * `max_cluster_charge`: Upper limit for the cluster charge histogram, defaults to `50ke`.
+* `matching_cut`: Required maximum matching distance between cluster position and particle position for the efficiency measurement. Expected two values and defaults to three times the pixel pitch in each dimension.
 
 ### Usage
 This module is normally bound to a specific detector to plot, for example to the 'dut':

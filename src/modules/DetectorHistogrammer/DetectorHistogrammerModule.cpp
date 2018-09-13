@@ -29,6 +29,9 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
     // Bind messages
     messenger->bindSingle(this, &DetectorHistogrammerModule::pixels_message_, MsgFlags::REQUIRED);
     messenger->bindSingle(this, &DetectorHistogrammerModule::mcparticle_message_, MsgFlags::REQUIRED);
+
+    auto model = detector_->getModel();
+    matching_cut_ = config.get<ROOT::Math::XYVector>("matching_cut", model->getPixelSize() * 3);
 }
 
 void DetectorHistogrammerModule::init() {
@@ -178,6 +181,30 @@ void DetectorHistogrammerModule::init() {
     residual_y_map = new TProfile2D(
         "residual_y_map", residual_y_map_title.c_str(), inpixel_bins.x(), 0., pitch_x, inpixel_bins.y(), 0., pitch_y);
 
+    // Efficiency maps:
+    std::string efficiency_map_title = "Efficiency as function of in-pixel impact position for " + detector_->getName() +
+                                       ";x%pitch [#mum];y%pitch [#mum];efficiency";
+    efficiency_map = new TProfile2D(
+        "efficiency_map", efficiency_map_title.c_str(), inpixel_bins.x(), 0, pitch_x, inpixel_bins.y(), 0, pitch_y, 0, 1);
+    std::string efficiency_detector_title = "Efficiency of " + detector_->getName() + ";x (pixels);y (pixels);efficiency";
+    efficiency_detector = new TProfile2D("efficiency_detector",
+                                         efficiency_detector_title.c_str(),
+                                         model->getNPixels().x(),
+                                         -0.5,
+                                         model->getNPixels().x() - 0.5,
+                                         model->getNPixels().y(),
+                                         -0.5,
+                                         model->getNPixels().y() - 0.5,
+                                         0,
+                                         1);
+    // Efficiency projections
+    std::string efficiency_vs_x_title =
+        "Efficiency as function of in-pixel X position for " + detector_->getName() + ";x%pitch [#mum];efficiency";
+    efficiency_vs_x = new TProfile("efficiency_vs_x", efficiency_vs_x_title.c_str(), inpixel_bins.x(), 0., pitch_x, 0, 1);
+    std::string efficiency_vs_y_title =
+        "Efficiency as function of in-pixel Y position for " + detector_->getName() + ";y%pitch [#mum];efficiency";
+    efficiency_vs_y = new TProfile("efficiency_vs_y", efficiency_vs_y_title.c_str(), inpixel_bins.y(), 0., pitch_y, 0, 1);
+
     // Create number of clusters plot
     std::string n_cluster_title = "Number of clusters for " + detector_->getName() + ";clusters;events";
     n_cluster = new TH1D("n_cluster",
@@ -289,6 +316,39 @@ void DetectorHistogrammerModule::run(unsigned int) {
         }
     }
 
+    // Calculate efficiency: search for matching clusters for all primary MCParticles
+    for(auto& particle : primary_particles) {
+        auto pitch = detector_->getModel()->getPixelSize();
+
+        // Calculate 2D local position of particle:
+        auto particlePos3D = (static_cast<XYZVector>(particle->getLocalStartPoint()) + particle->getLocalEndPoint()) / 2.0;
+        auto particlePos = XYVector(particlePos3D.x(), particlePos3D.y());
+        auto inPixelPos = XYVector(std::fmod(particlePos.x() + pitch.x() / 2, pitch.x()),
+                                   std::fmod(particlePos.y() + pitch.y() / 2, pitch.y()));
+        auto inPixel_um_x = static_cast<double>(Units::convert(inPixelPos.x(), "um"));
+        auto inPixel_um_y = static_cast<double>(Units::convert(inPixelPos.y(), "um"));
+
+        // Find the nearest pixel
+        auto xpixel = static_cast<unsigned int>(std::round(particlePos.x() / pitch.x()));
+        auto ypixel = static_cast<unsigned int>(std::round(particlePos.y() / pitch.y()));
+
+        auto matched_cluster =
+            std::find_if(clusters.begin(), clusters.end(), [this, &particlePos, &pitch](const Cluster& clus) {
+                return (std::fabs(clus.getPosition().x() * pitch.x() - particlePos.x()) < matching_cut_.x()) &&
+                       (std::fabs(clus.getPosition().y() * pitch.y() - particlePos.y()) < matching_cut_.y());
+            });
+
+        // Do we have a match?
+        bool matched = matched_cluster != clusters.end();
+        LOG(DEBUG) << "Particle at " << Units::display(particlePos, {"mm", "um"})
+                   << (matched ? " has a matching cluster" : " has no matching cluster");
+
+        efficiency_vs_x->Fill(inPixel_um_x, matched);
+        efficiency_vs_y->Fill(inPixel_um_y, matched);
+        efficiency_map->Fill(inPixel_um_x, inPixel_um_y, matched);
+        efficiency_detector->Fill(xpixel, ypixel, matched);
+    }
+
     // Fill further histograms
     event_size->Fill(static_cast<double>(pixels_message_->getData().size()));
     n_cluster->Fill(static_cast<double>(clusters.size()));
@@ -386,6 +446,10 @@ void DetectorHistogrammerModule::finalize() {
     residual_map->Write();
     residual_x_map->Write();
     residual_y_map->Write();
+    efficiency_vs_x->Write();
+    efficiency_vs_y->Write();
+    efficiency_detector->Write();
+    efficiency_map->Write();
     n_cluster->Write();
     cluster_charge->Write();
     cluster_charge_map->Write();
