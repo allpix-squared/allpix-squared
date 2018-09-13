@@ -31,7 +31,7 @@ namespace allpix {
          * @brief Get the signal data for the hit
          * @return Digitized signal
          */
-        double getClusterCharge() const { return clusterCharge_; }
+        double getCharge() const { return clusterCharge_; }
 
         /**
          * @brief Add PixelHit to the cluster
@@ -43,19 +43,19 @@ namespace allpix {
          * @brief Get the cluster size
          * @return cluster size
          */
-        unsigned long int getClusterSize() const { return pixelHits_.size(); }
+        unsigned long int getSize() const { return pixelHits_.size(); }
 
         /**
          * @brief Get the cluster sizes in x and y
          * @return pair of cluster size x and y
          */
-        std::pair<unsigned int, unsigned int> getClusterSizeXY();
+        std::pair<unsigned int, unsigned int> getSizeXY();
 
         /**
          * @brief Get the weighted mean cluster position
          * @return weighted mean cluster position
          */
-        ROOT::Math::XYVectorD getClusterPosition();
+        ROOT::Math::XYVectorD getPosition();
 
         /**
          * @brief Get the seed PixelHit

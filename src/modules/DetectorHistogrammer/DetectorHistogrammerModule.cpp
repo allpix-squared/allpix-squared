@@ -218,15 +218,15 @@ void DetectorHistogrammerModule::run(unsigned int) {
     // Evaluate the clusters
     for(auto clus : clusters) {
         // Fill cluster histograms
-        cluster_size->Fill(static_cast<double>(clus.getClusterSize()));
-        auto clusSizesXY = clus.getClusterSizeXY();
+        cluster_size->Fill(static_cast<double>(clus.getSize()));
+        auto clusSizesXY = clus.getSizeXY();
         cluster_size_x->Fill(clusSizesXY.first);
         cluster_size_y->Fill(clusSizesXY.second);
 
-        auto clusterPos = clus.getClusterPosition();
+        auto clusterPos = clus.getPosition();
         LOG(TRACE) << "Cluster at coordinates " << clusterPos;
         cluster_map->Fill(clusterPos.x(), clusterPos.y());
-        cluster_charge->Fill(static_cast<double>(Units::convert(clus.getClusterCharge(), "ke")));
+        cluster_charge->Fill(static_cast<double>(Units::convert(clus.getCharge(), "ke")));
 
         auto cluster_particles = clus.getMCParticles();
         LOG(DEBUG) << "This cluster is connected to " << cluster_particles.size() << " MC particles";
@@ -252,13 +252,13 @@ void DetectorHistogrammerModule::run(unsigned int) {
 
             auto inPixel_um_x = static_cast<double>(Units::convert(inPixelPos.x(), "um"));
             auto inPixel_um_y = static_cast<double>(Units::convert(inPixelPos.y(), "um"));
-            cluster_size_map->Fill(inPixel_um_x, inPixel_um_y, static_cast<double>(clus.getClusterSize()));
+            cluster_size_map->Fill(inPixel_um_x, inPixel_um_y, static_cast<double>(clus.getSize()));
             cluster_size_x_map->Fill(inPixel_um_x, inPixel_um_y, clusSizesXY.first);
             cluster_size_y_map->Fill(inPixel_um_x, inPixel_um_y, clusSizesXY.second);
 
             // Charge maps:
             cluster_charge_map->Fill(
-                inPixel_um_x, inPixel_um_y, static_cast<double>(Units::convert(clus.getClusterCharge(), "ke")));
+                inPixel_um_x, inPixel_um_y, static_cast<double>(Units::convert(clus.getCharge(), "ke")));
 
             // Find the nearest pixel
             auto xpixel = static_cast<unsigned int>(std::round(particlePos.x() / pitch.x()));
