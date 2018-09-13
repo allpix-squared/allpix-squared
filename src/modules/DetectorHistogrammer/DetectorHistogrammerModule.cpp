@@ -187,9 +187,10 @@ void DetectorHistogrammerModule::init() {
                          model->getNPixels().x() * model->getNPixels().y() + 0.5);
 
     // Create cluster charge plot
+    auto max_cluster_charge = Units::convert(config_.get<double>("max_cluster_charge", 50.), "ke");
     std::string cluster_charge_title = "Cluster charge for " + detector_->getName() + ";cluster charge [ke];clusters";
     cluster_charge =
-        new TH1D("cluster_charge", cluster_charge_title.c_str(), 1000, 0., config_.get<double>("max_cluster_charge", 50.));
+        new TH1D("cluster_charge", cluster_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
 }
 
 void DetectorHistogrammerModule::run(unsigned int) {
@@ -224,7 +225,7 @@ void DetectorHistogrammerModule::run(unsigned int) {
         cluster_size_y->Fill(clusSizesXY.second);
 
         auto clusterPos = clus.getPosition();
-        LOG(TRACE) << "Cluster at coordinates " << clusterPos;
+        LOG(DEBUG) << "Cluster at coordinates " << clusterPos;
         cluster_map->Fill(clusterPos.x(), clusterPos.y());
         cluster_charge->Fill(static_cast<double>(Units::convert(clus.getCharge(), "ke")));
 
@@ -407,7 +408,7 @@ std::vector<Cluster> DetectorHistogrammerModule::doClustering() {
         // Create new cluster
         Cluster cluster(pixel_hit);
         usedPixel[pixel_hit] = true;
-        LOG(DEBUG) << "Creating new cluster with seed: " << pixel_hit->getPixel().getIndex();
+        LOG(TRACE) << "Creating new cluster with seed: " << pixel_hit->getPixel().getIndex();
 
         auto touching = [&](const PixelHit* pixel) {
             auto pxi1 = pixel->getIndex();
@@ -433,7 +434,7 @@ std::vector<Cluster> DetectorHistogrammerModule::doClustering() {
             }
 
             cluster.addPixelHit(neighbor);
-            LOG(DEBUG) << "Adding pixel: " << neighbor->getPixel().getIndex();
+            LOG(TRACE) << "Adding pixel: " << neighbor->getPixel().getIndex();
             usedPixel[neighbor] = true;
         }
         clusters.push_back(cluster);
@@ -449,12 +450,12 @@ std::vector<const MCParticle*> DetectorHistogrammerModule::getPrimaryParticles()
         // Check for possible parents:
         auto parent = mc_particle.getParent();
         if(parent != nullptr) {
-            LOG(DEBUG) << "MCParticle " << mc_particle.getParticleID();
+            LOG(TRACE) << "MCParticle " << mc_particle.getParticleID();
             continue;
         }
 
         // This particle has no parent particles in the regarded sensor, return it.
-        LOG(DEBUG) << "MCParticle " << mc_particle.getParticleID() << " (primary)";
+        LOG(TRACE) << "MCParticle " << mc_particle.getParticleID() << " (primary)";
         primaries.push_back(&mc_particle);
     }
 
