@@ -49,13 +49,13 @@ namespace allpix {
          * @brief Get the cluster sizes in x and y
          * @return pair of cluster size x and y
          */
-        std::pair<unsigned int, unsigned int> getSizeXY();
+        std::pair<unsigned int, unsigned int> getSizeXY() const;
 
         /**
          * @brief Get the weighted mean cluster position
          * @return weighted mean cluster position
          */
-        ROOT::Math::XYVectorD getPosition();
+        ROOT::Math::XYVectorD getPosition() const;
 
         /**
          * @brief Get the seed PixelHit
