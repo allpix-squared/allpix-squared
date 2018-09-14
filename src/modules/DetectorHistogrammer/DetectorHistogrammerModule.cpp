@@ -248,7 +248,7 @@ void DetectorHistogrammerModule::run(unsigned int) {
     LOG(DEBUG) << "Found " << primary_particles.size() << " primary particles in this event";
 
     // Evaluate the clusters
-    for(auto clus : clusters) {
+    for(const auto& clus : clusters) {
         // Fill cluster histograms
         cluster_size->Fill(static_cast<double>(clus.getSize()));
         auto clusSizesXY = clus.getSizeXY();
@@ -272,7 +272,7 @@ void DetectorHistogrammerModule::run(unsigned int) {
                               std::back_inserter(intersection));
 
         LOG(TRACE) << "Matching primaries: " << intersection.size();
-        for(auto& particle : intersection) {
+        for(const auto& particle : intersection) {
             auto pitch = detector_->getModel()->getPixelSize();
 
             auto particlePos = (static_cast<XYZVector>(particle->getLocalStartPoint()) + particle->getLocalEndPoint()) / 2.0;
@@ -347,10 +347,10 @@ void DetectorHistogrammerModule::run(unsigned int) {
         LOG(DEBUG) << "Particle at " << Units::display(particlePos, {"mm", "um"})
                    << (matched ? " has a matching cluster" : " has no matching cluster");
 
-        efficiency_vs_x->Fill(inPixel_um_x, matched);
-        efficiency_vs_y->Fill(inPixel_um_y, matched);
-        efficiency_map->Fill(inPixel_um_x, inPixel_um_y, matched);
-        efficiency_detector->Fill(xpixel, ypixel, matched);
+        efficiency_vs_x->Fill(inPixel_um_x, static_cast<double>(matched));
+        efficiency_vs_y->Fill(inPixel_um_y, static_cast<double>(matched));
+        efficiency_map->Fill(inPixel_um_x, inPixel_um_y, static_cast<double>(matched));
+        efficiency_detector->Fill(xpixel, ypixel, static_cast<double>(matched));
     }
 
     // Fill further histograms
