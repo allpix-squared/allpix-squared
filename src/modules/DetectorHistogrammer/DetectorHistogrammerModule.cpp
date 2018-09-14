@@ -27,7 +27,7 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
                                                        std::shared_ptr<Detector> detector)
     : Module(config, detector), detector_(std::move(detector)), pixels_message_(nullptr) {
     // Bind messages
-    messenger->bindSingle(this, &DetectorHistogrammerModule::pixels_message_, MsgFlags::REQUIRED);
+    messenger->bindSingle(this, &DetectorHistogrammerModule::pixels_message_);
     messenger->bindSingle(this, &DetectorHistogrammerModule::mcparticle_message_, MsgFlags::REQUIRED);
 
     auto model = detector_->getModel();
@@ -222,18 +222,22 @@ void DetectorHistogrammerModule::init() {
 
 void DetectorHistogrammerModule::run(unsigned int) {
     using namespace ROOT::Math;
-    LOG(DEBUG) << "Adding hits in " << pixels_message_->getData().size() << " pixels";
 
-    // Fill 2D hitmap histogram
-    for(auto& pixel_charge : pixels_message_->getData()) {
-        auto pixel_idx = pixel_charge.getPixel().getIndex();
+    // Check that we actually received pixel hits - we might have none and just received MCParticles!
+    if(pixels_message_ != nullptr) {
+        LOG(DEBUG) << "Received " << pixels_message_->getData().size() << " pixel hits";
 
-        // Add pixel
-        hit_map->Fill(pixel_idx.x(), pixel_idx.y());
+        // Fill 2D hitmap histogram
+        for(auto& pixel_charge : pixels_message_->getData()) {
+            auto pixel_idx = pixel_charge.getPixel().getIndex();
 
-        // Update statistics
-        total_vector_ += pixel_idx;
-        total_hits_ += 1;
+            // Add pixel
+            hit_map->Fill(pixel_idx.x(), pixel_idx.y());
+
+            // Update statistics
+            total_vector_ += pixel_idx;
+            total_hits_ += 1;
+        }
     }
 
     // Perform a clustering
@@ -350,7 +354,7 @@ void DetectorHistogrammerModule::run(unsigned int) {
     }
 
     // Fill further histograms
-    event_size->Fill(static_cast<double>(pixels_message_->getData().size()));
+    event_size->Fill(pixels_message_ != nullptr ? static_cast<double>(pixels_message_->getData().size()) : 0.);
     n_cluster->Fill(static_cast<double>(clusters.size()));
 }
 
@@ -459,6 +463,10 @@ void DetectorHistogrammerModule::finalize() {
 std::vector<Cluster> DetectorHistogrammerModule::doClustering() {
     std::vector<Cluster> clusters;
     std::map<const PixelHit*, bool> usedPixel;
+
+    if(pixels_message_ == nullptr) {
+        return clusters;
+    }
 
     auto pixel_it = pixels_message_->getData().begin();
     for(; pixel_it != pixels_message_->getData().end(); pixel_it++) {
