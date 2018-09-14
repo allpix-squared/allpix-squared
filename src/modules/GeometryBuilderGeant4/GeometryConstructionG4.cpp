@@ -436,7 +436,7 @@ void GeometryConstructionG4::build_detectors() {
 
         // ALERT: NO COVER LAYER YET
 
-        LOG(TRACE) << " Constructed detector " << detector->getName() << " succesfully";
+        LOG(TRACE) << " Constructed detector " << detector->getName() << " successfully";
     }
 }
 
