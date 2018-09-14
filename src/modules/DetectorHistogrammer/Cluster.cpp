@@ -13,6 +13,7 @@
 #include <set>
 
 #include "core/utils/log.h"
+#include "objects/exceptions.h"
 
 using namespace allpix;
 
@@ -24,6 +25,10 @@ Cluster::Cluster(const PixelHit* seedPixelHit) : seedPixelHit_(seedPixelHit) {
     maxX_ = minX_;
     minY_ = seedPixelHit->getPixel().getIndex().y();
     maxY_ = minY_;
+
+    for(auto mc_particle : seedPixelHit->getMCParticles()) {
+        mc_particles_.insert(mc_particle);
+    }
 }
 
 bool Cluster::addPixelHit(const PixelHit* pixelHit) {
@@ -36,6 +41,11 @@ bool Cluster::addPixelHit(const PixelHit* pixelHit) {
         maxX_ = std::max(pixX, maxX_);
         minY_ = std::min(pixY, minY_);
         maxY_ = std::max(pixY, maxY_);
+
+        for(auto mc_particle : pixelHit->getMCParticles()) {
+            mc_particles_.insert(mc_particle);
+        }
+
         return true;
     }
     return false;
@@ -54,4 +64,20 @@ ROOT::Math::XYVectorD Cluster::getClusterPosition() {
 std::pair<unsigned int, unsigned int> Cluster::getClusterSizeXY() {
     std::pair<unsigned int, unsigned int> sizes = std::make_pair(maxX_ - minX_ + 1, maxY_ - minY_ + 1);
     return sizes;
+}
+
+/**
+ * MCParticles can only be fetched if the full history of objects are in scope and stored
+ */
+std::set<const MCParticle*> Cluster::getMCParticles() const {
+    return mc_particles_;
+}
+
+const PixelHit* Cluster::getPixelHit(unsigned int x, unsigned int y) const {
+    for(auto& pixel : this->getPixelHits()) {
+        if(pixel->getPixel().getIndex().x() == x && pixel->getPixel().getIndex().y() == y) {
+            return pixel;
+        }
+    }
+    return nullptr;
 }

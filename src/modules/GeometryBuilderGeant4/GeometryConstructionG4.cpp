@@ -19,6 +19,7 @@
 #include <G4NistManager.hh>
 #include <G4PVDivision.hh>
 #include <G4PVPlacement.hh>
+#include <G4PhysicalVolumeStore.hh>
 #include <G4Sphere.hh>
 #include <G4StepLimiterPhysics.hh>
 #include <G4SubtractionSolid.hh>
@@ -114,6 +115,9 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     // Build all the detectors in the world
     build_detectors();
 
+    // Check for overlaps:
+    check_overlaps();
+
     return world_phys_.get();
 }
 
@@ -148,7 +152,7 @@ void GeometryConstructionG4::init_materials() {
     G4Element* Pb = new G4Element("Lead", "Pb", 82., 207.2 * CLHEP::g / CLHEP::mole);
 
     // Add vacuum
-    materials_["vacuum"] = new G4Material("Vacuum", 1, 1.01 * CLHEP::g / CLHEP::mole, 0.0001 * CLHEP::g / CLHEP::cm3);
+    materials_["vacuum"] = new G4Material("Vacuum", 1, 1.008 * CLHEP::g / CLHEP::mole, CLHEP::universe_mean_density);
 
     // Create Epoxy material
     G4Material* Epoxy = new G4Material("Epoxy", 1.3 * CLHEP::g / CLHEP::cm3, 3);
@@ -432,5 +436,21 @@ void GeometryConstructionG4::build_detectors() {
         // ALERT: NO COVER LAYER YET
 
         LOG(TRACE) << " Constructed detector " << detector->getName() << " succesfully";
+    }
+}
+
+void GeometryConstructionG4::check_overlaps() {
+    G4PhysicalVolumeStore* phys_volume_store = G4PhysicalVolumeStore::GetInstance();
+    LOG(DEBUG) << phys_volume_store->size() << " physical volumes are defined";
+
+    bool overlapFlag = false;
+    for(auto volume : (*phys_volume_store)) {
+        LOG(TRACE) << "Checking overlaps for physical volume \"" << volume->GetName() << "\"";
+        overlapFlag = volume->CheckOverlaps(1000, 0., false) || overlapFlag;
+    }
+    if(overlapFlag) {
+        LOG(ERROR) << "Overlapping volumes detected.";
+    } else {
+        LOG(INFO) << "No overlapping volumes detected.";
     }
 }

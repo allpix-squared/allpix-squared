@@ -99,6 +99,7 @@ int main(int argc, const char* argv[]) {
             std::cout << "In applying this license, CERN does not waive the privileges and immunities" << std::endl;
             std::cout << "granted to it by virtue of its status as an Intergovernmental Organization" << std::endl;
             std::cout << "or submit itself to any jurisdiction." << std::endl;
+            clean();
             return 0;
         } else if(strcmp(argv[i], "-v") == 0 && (i + 1 < argc)) {
             try {

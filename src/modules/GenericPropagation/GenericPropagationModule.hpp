@@ -85,7 +85,7 @@ namespace allpix {
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_min_{}, timestep_max_{}, timestep_start_{}, integration_time_{},
             target_spatial_precision_{}, output_plots_step_{};
-        bool output_plots_{};
+        bool output_plots_{}, output_plots_lines_at_implants_{};
 
         // Precalculated values for electron and hole mobility
         double electron_Vm_;
@@ -113,9 +113,6 @@ namespace allpix {
         unsigned int total_propagated_charges_{};
         unsigned int total_steps_{};
         long double total_time_{};
-
-        // Output plot for drift time
-        TH1D* drift_time_histo;
 
         // List of points to plot to plot for output plots
         std::vector<std::pair<PropagatedCharge, std::vector<ROOT::Math::XYZPoint>>> output_plot_points_;

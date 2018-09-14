@@ -52,6 +52,11 @@ namespace allpix {
          */
         void build_detectors();
 
+        /**
+         * @brief Check all placed volumes for overlaps
+         */
+        void check_overlaps();
+
         // List of all materials
         std::map<std::string, G4Material*> materials_;
 

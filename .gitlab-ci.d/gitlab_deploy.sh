@@ -48,6 +48,7 @@ if [[ $clicdp_status == *"(stratum0 / local)"* ]]; then
   # Check if we found any version and flavor to be installed:
   if [[ -z $version || -z $flavor ]]; then
     echo "Did not find suitable version or flavor to install."
+    cvmfs_server abort clicdp.cern.ch
     exit 1
   fi
 

@@ -4,13 +4,47 @@
 \begin{description}
 \item[How do I run a module only for one detector?]
 This is only possible for detector modules (which are constructed to work on individual detectors).
-To run it on a single detector, one should add a parameter \parameter{name} specifying the name of the detector (as defined in the detector configuration file).
+To run it on a single detector, one should add a parameter \parameter{name} specifying the name of the detector (as defined in the detector configuration file):
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+[ElectricFieldReader]
+name = "dut"
+model = "init"
+file_name = "../example_electric_field.init"
+\end{minted}
 \item[How do I run a module only for a specific detector type?]
 This is only possible for detector modules (which are constructed to work on individual detectors).
-To run it for a specific type of detector, one should add a parameter \parameter{type} with the type of the detector model (as set in the detector configuration file by the \parameter{model} parameter).
+To run it for a specific type of detector, one should add a parameter \parameter{type} with the type of the detector model (as set in the detector configuration file by the \parameter{model} parameter):
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+[ElectricFieldReader]
+type = "timepix"
+model = "linear"
+bias_voltage = -50V
+depletion_voltage = -30V
+\end{minted}
 Please refer to Section~\ref{sec:module_instantiation} for more information.
-\item[How can I run the exact same type of module with different settings?] This is possible by using the \parameter{input} and \parameter{output} parameters of a module that specify the messages of the module.
+\item[How can I run the exact same type of module with different settings?] This is possible by using the \parameter{input} and \parameter{output} parameters of a module that specify the messages of the module:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+[DefaultDigitizer]
+name = "dut0"
+adc_resolution = 4
+output = "low_adc_resolution"
+
+[DefaultDigitizer]
+name = "dut0"
+adc_resolution = 12
+output = "high_adc_resolution"
+\end{minted}
 By default, both the input and the output of module are messages with an empty name.
+In order to further process the data, subsequent modules require the \parameter{input} parameter to not receive multiple messages:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+[DetectorHistogrammer]
+input = "low_adc_resolution"
+name = "dut0"
+
+[DetectorHistogrammer]
+input = "high_adc_resolution"
+name = "dut0"
+\end{minted}
 Please refer to Section~\ref{sec:objects_messages} for more information.
 \item[How can I temporarily ignore a module during development?]
 The section header of a particular module in the configuration file can be replaced by the string \parameter{Ignore}.
@@ -34,13 +68,75 @@ Please refer to Section~\ref{sec:objhistory} for more information.
 \item[How do I access the Monte Carlo truth of a specific PixelHit?]
 The Monte Carlo truth is part of the history of a PixelHit.
 This means that the Monte Carlo truth can be retrieved as described in the question above.
-However take notice that there are multiple layers between a PixelHit and its MCParticles, which are the PixelCharge, PropagatedCharge and DepositedCharge.
-These should all be loaded in memory to make it possible to fetch the history.
-Because getting the Monte Carlo truth of a PixelHit is quite a common thing a \parameter{getMCParticles} method is available which searches all layers of the history and returns an exception if any of the in between steps is not available or not loaded.
+Because accessing the Monte Carlo truth of a PixelHit is quite a common task, these references are stored directly for every new object created.
+This allows to retain the information without the necessity to keep the full object history including all intermediate steps in memory.
 Please refer to Section~\ref{sec:objhistory} for more information.
 \item[Can I import an electric field from TCAD and use it for simulating propagation?]
 Yes, the framework includes a tool to convert DF-ISE files from TCAD to an internal format which \apsq can parse.
 More information about this tool can be found in Section~\ref{sec:tcad_electric_field_converter}, instructions to import the generated field are provided in Section~\ref{sec:module_electric_field}.
+\item[How do I find out, which Monte Carlo particles are primary particles and which have been generated in the sensor?]
+The Monte Carlo truth information is stored per-sensor as MCParticle objects. Each MCParticle stores, among other information, a reference to its parent. Particles which have entered the sensor from the outside world do not have parent MCParticles in the respective sensor and are thus primaries.
+
+Using this approach it is possible, to e.g.\ treat a secondary particle produced in one detector as primary in a following detector.
+
+Below is some pseudo-code to filter a list of MCParticle objects for primaries based on their parent relationship:
+
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+// Collect all primary particles of the event:
+std::vector<const MCParticle*> primaries;
+
+// Loop over all MCParticles available
+for(auto& mc_particle : my_mc_particles) {
+    // Check for possible parents:
+    if(mc_particle.getParent() != nullptr) {
+        // Has a parent, thus was created inside this sensor.
+        continue;
+    }
+
+    // Has no parent particles in this sensor, add to primary list.
+    primaries.push_back(&mc_particle);
+}
+\end{minted}
+
+A similar function is used e.g.\ in the DetectorHistogrammer module to filter primary particles and create position-resolved graphs.
+
+\item[How can I produce nicely looking drift-diffusion line graphs?]
+The GenericPropagation module offers the possibility to produce line graphs depicting the path each of the charge carrier groups have taken during the simulation. This is a very useful way to visualize the drift and diffusion along field lines.
+
+An optional parameter allows to reduce the lines drawn to those charge carrier groups which have reached the sensor surface to provide some insight into where from the collected charge carriers originate and how they reached the implants.
+One graph is written per event simulated, usually this option should thus only be used when simulating one or a few events but not during a production run.
+
+In order to produce a precise enough line graph, the integration time steps have to be chosen carefully - usually finer than necessary for the actual simulation. Below is a set of settings used to simulate the drift and diffusion in a high resistivity CMOS silicon sensor.
+Settings of the module irrelevant for the line graph production have been omitted.
+
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+[GenericPropagation]
+charge_per_step = 5
+timestep_min = 1ps
+timestep_max = 5ps
+timestep_start = 1ps
+spatial_precision = 0.1nm
+
+output_plots = true
+output_plots_step = 100ps
+output_plots_align_pixels = true
+output_plots_use_pixel_units = true
+
+# Optional to only draw charge carrier groups which reached the implant side:
+# output_plots_lines_at_implants = true
+\end{minted}
+
+\begin{figure}[tbp]
+    \centering
+  \includegraphics[width=0.7\textwidth]{linegraph_hrcmos_collected.png}
+  \caption{Drift and diffusion visualization of charge carrier groups being transported through a high-resistivity CMOS silicon sensor. The plot shows the situation after an integration time of \SI{20}{\nano \second}, only charge carrier groups which reached the implant side of the sensor are drawn.}
+  \label{fig:linegraph}
+\end{figure}
+
+With these settings, a graph of similar precision to the one presented in Figure~\ref{fig:linegraph} can be produced.
+The required time stepping size and number of output plot steps varies greatly with the sensor and its applied electric field.
+The number of charge carriers per group can be used to vary the density of lines drawn. Larger groups result in fewer lines.
+
 \end{description}
 
 \todo{Add more questions}

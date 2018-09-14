@@ -114,6 +114,8 @@ bool Detector::isWithinSensor(const ROOT::Math::XYZPoint& local_pos) const {
 
 /**
  * The definition of inside the implant region is determined by the detector model
+ *
+ * @note The pixel implant currently is always positioned symmetrically, in the center of the pixel cell.
  */
 bool Detector::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const {
 
