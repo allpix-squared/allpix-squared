@@ -386,8 +386,10 @@ Local coordinate systems for each detector and a global frame of reference for t
 The global coordinate system is chosen as a right-handed Cartesian system, and the rotations of individual devices are performed around the geometrical center of their sensor.
 
 Local coordinate systems for the detectors are also right-handed Cartesian systems, with the x- and y-axes defining the sensor plane.
-The origin of this coordinate system is the centre of the lower left pixel in the grid, i.e.\ the pixel with indices (0,0).
+The origin of this coordinate system is the center of the lower left pixel in the grid, i.e.\ the pixel with indices (0,0).
 This simplifies calculations in the local coordinate system as all positions can either be stated in absolute numbers or in fractions of the pixel pitch.
+
+A sketch of the actual coordinate transformations performed, including the order of transformations, is provided in Figure~\ref{fig:transformations}. The global coordinate system used for tracking of particles through detetector setup is shown on the left side, while the local coordinate system used to describe the individual sensors is located at the right.
 
 \begin{figure}[tbp]
   \center
