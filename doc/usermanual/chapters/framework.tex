@@ -389,6 +389,13 @@ Local coordinate systems for the detectors are also right-handed Cartesian syste
 The origin of this coordinate system is the centre of the lower left pixel in the grid, i.e.\ the pixel with indices (0,0).
 This simplifies calculations in the local coordinate system as all positions can either be stated in absolute numbers or in fractions of the pixel pitch.
 
+\begin{figure}[tbp]
+  \center
+  \input{tikz/transformations}
+  \caption{Coordinate transoformations from global to local and revers. The first row shows the detector positions in the repective coordinate systems in top view, the second row in side view.}
+  \label{fig:transformations}
+\end{figure}
+
 \subsection{Changing and accessing the geometry}
 The geometry is needed at a very early stage because it determines the number of detector module instantiations as explained in Section~\ref{sec:module_instantiation}.
 The procedure of finding and loading the appropriate detector models is explained in more detail in Section~\ref{sec:detector_models}.
