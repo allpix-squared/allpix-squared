@@ -51,17 +51,17 @@ bool Cluster::addPixelHit(const PixelHit* pixelHit) {
     return false;
 }
 
-ROOT::Math::XYVectorD Cluster::getClusterPosition() {
+ROOT::Math::XYVectorD Cluster::getPosition() const {
     ROOT::Math::XYVectorD meanPos = ROOT::Math::XYVectorD(0., 0.);
     for(auto& pixel : this->getPixelHits()) {
         meanPos += ROOT::Math::XYVectorD(pixel->getPixel().getIndex().x() * pixel->getSignal(),
                                          pixel->getPixel().getIndex().y() * pixel->getSignal());
     }
-    meanPos /= getClusterCharge();
+    meanPos /= getCharge();
     return meanPos;
 }
 
-std::pair<unsigned int, unsigned int> Cluster::getClusterSizeXY() {
+std::pair<unsigned int, unsigned int> Cluster::getSizeXY() const {
     std::pair<unsigned int, unsigned int> sizes = std::make_pair(maxX_ - minX_ + 1, maxY_ - minY_ + 1);
     return sizes;
 }

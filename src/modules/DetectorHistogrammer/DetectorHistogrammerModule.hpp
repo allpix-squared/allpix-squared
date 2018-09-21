@@ -17,6 +17,7 @@
 
 #include <TH1I.h>
 #include <TH2I.h>
+#include <TProfile.h>
 #include <TProfile2D.h>
 
 #include "core/config/Configuration.hpp"
@@ -81,6 +82,9 @@ namespace allpix {
         ROOT::Math::XYVector total_vector_{};
         unsigned long total_hits_{};
 
+        // Cut criteria for efficiency measurement:
+        ROOT::Math::XYVector matching_cut_{};
+
         // Histograms to output
         TH2D* hit_map;
         TH2D* cluster_map;
@@ -88,6 +92,9 @@ namespace allpix {
         TProfile2D *cluster_charge_map, *seed_charge_map;
         TProfile2D *residual_map, *residual_x_map, *residual_y_map;
         TH1D *residual_x, *residual_y;
+        TProfile *residual_x_vs_x, *residual_y_vs_y, *residual_x_vs_y, *residual_y_vs_x;
+        TProfile2D *efficiency_map, *efficiency_detector;
+        TProfile *efficiency_vs_x, *efficiency_vs_y;
         TH1D* event_size;
         TH1D *cluster_size, *cluster_size_x, *cluster_size_y;
         TH1D* n_cluster;
