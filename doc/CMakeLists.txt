@@ -159,6 +159,8 @@ IF(LATEX_COMPILER)
             usermanual/appendices/example_output.tex
             usermanual/config.tex
 
+            usermanual/tikz/transformations.tex
+
             usermanual/html/allpix.cfg
             usermanual/html/tools.sty
             usermanual/html/js/fw.js
