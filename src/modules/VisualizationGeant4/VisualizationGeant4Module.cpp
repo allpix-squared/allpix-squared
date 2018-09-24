@@ -489,6 +489,6 @@ void VisualizationGeant4Module::finalize() {
         vis_manager_g4_->GetCurrentViewer()->ShowView();
     }
 
-    // Set that we did succesfully visualize
+    // Set that we did successfully visualize
     has_run_ = true;
 }
