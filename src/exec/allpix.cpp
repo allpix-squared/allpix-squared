@@ -94,7 +94,7 @@ int main(int argc, const char* argv[]) {
             std::cout << "Allpix Squared version " << ALLPIX_PROJECT_VERSION << std::endl;
             std::cout << "               built on " << ALLPIX_BUILD_TIME << std::endl;
             std::cout << std::endl;
-            std::cout << "Copyright (c) 2017 CERN and the Allpix Squared authors." << std::endl << std::endl;
+            std::cout << "Copyright (c) 2017-2018 CERN and the Allpix Squared authors." << std::endl << std::endl;
             std::cout << "This software is distributed under the terms of the MIT License." << std::endl;
             std::cout << "In applying this license, CERN does not waive the privileges and immunities" << std::endl;
             std::cout << "granted to it by virtue of its status as an Intergovernmental Organization" << std::endl;
@@ -123,8 +123,10 @@ int main(int argc, const char* argv[]) {
 
     // Print help if requested or no arguments given
     if(print_help) {
+        std::cout << "Allpix Squared" << std::endl;
+        std::cout << "Generic Pixel Detector Simulation Framework" << std::endl;
+        std::cout << std::endl;
         std::cout << "Usage: allpix -c <file> [OPTIONS]" << std::endl;
-        std::cout << "Generic pixel detector simulation framework" << std::endl;
         std::cout << std::endl;
         std::cout << "Options:" << std::endl;
         std::cout << "  -c <file>    configuration file to be used" << std::endl;
