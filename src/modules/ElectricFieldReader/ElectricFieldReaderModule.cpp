@@ -336,12 +336,13 @@ ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::get_by_file_name
         throw std::runtime_error("invalid data or unexpected end of file");
     }
     auto field = std::make_shared<std::vector<double>>();
-    field->resize(xsize * ysize * zsize * 3);
+    auto vertices = xsize * ysize * zsize;
+    field->resize(vertices * 3);
 
     // Loop through all the field data
-    for(size_t i = 0; i < xsize * ysize * zsize; ++i) {
-        if(i % 100 == 0) {
-            LOG_PROGRESS(INFO, "read_init") << "Reading electric field data: " << (100 * i / (xsize * ysize * zsize)) << "%";
+    for(size_t i = 0; i < vertices; ++i) {
+        if(i % (vertices / 100) == 0) {
+            LOG_PROGRESS(INFO, "read_init") << "Reading electric field data: " << (100 * i / vertices) << "%";
         }
 
         if(file.eof()) {
@@ -368,6 +369,7 @@ ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::get_by_file_name
             (*field)[xind * ysize * zsize * 3 + yind * zsize * 3 + zind * 3 + j] = Units::get(input, "V/cm");
         }
     }
+    LOG_PROGRESS(INFO, "read_init") << "Reading electric field data: finished.";
 
     FieldData field_data = std::make_tuple(
         field, std::array<size_t, 3>{{xsize, ysize, zsize}}, std::array<double, 3>{{xpixsz, ypixsz, thickness}});
