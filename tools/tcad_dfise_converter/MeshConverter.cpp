@@ -491,8 +491,7 @@ int main(int argc, char** argv) {
                     // If after a radius step no new neighbours are found, go to the next radius step
                     if(results.size() <= prev_neighbours || results.empty()) {
                         prev_neighbours = results.size();
-                        LOG(WARNING) << "No (new) neighbour found with radius " << radius << ". Increasing search radius."
-                                     << std::endl;
+                        LOG(WARNING) << "No (new) neighbour found with radius " << radius << ". Increasing search radius.";
                         radius = radius + radius_step;
                         continue;
                     }
