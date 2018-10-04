@@ -651,15 +651,15 @@ int main(int argc, char** argv) {
     LOG(STATUS) << "Writing INIT file \"" << init_file_name.str() << "\"";
 
     // Write INIT file h"eader
-    init_file << "tcad_dfise_converter, ";                                             // NAME
-    init_file << "observable: " << observable << std::endl;                            // OBSERVABLE INTERPOLATED
-    init_file << "##SEED## ##EVENTS##" << std::endl;                                   // UNUSED
-    init_file << "##TURN## ##TILT## 1.0" << std::endl;                                 // UNUSED
-    init_file << "0.0 0.0 0.0" << std::endl;                                           // MAGNETIC FIELD (UNUSED)
-    init_file << (maxz - minz) << " " << (maxx - minx) << " " << (maxy - miny) << " "; // PIXEL DIMENSIONS
-    init_file << "0.0 0.0 0.0 0.0 ";                                                   // UNUSED
-    init_file << divisions.x() << " " << divisions.y() << " " << divisions.z() << " "; // GRID SIZE
-    init_file << "0.0" << std::endl;                                                   // UNUSED
+    init_file << "Allpix Squared " << ALLPIX_PROJECT_VERSION << " TCAD Mesh Converter, "; // NAME
+    init_file << "observable: " << observable << std::endl;                               // OBSERVABLE INTERPOLATED
+    init_file << "##SEED## ##EVENTS##" << std::endl;                                      // UNUSED
+    init_file << "##TURN## ##TILT## 1.0" << std::endl;                                    // UNUSED
+    init_file << "0.0 0.0 0.0" << std::endl;                                              // MAGNETIC FIELD (UNUSED)
+    init_file << (maxz - minz) << " " << (maxx - minx) << " " << (maxy - miny) << " ";    // PIXEL DIMENSIONS
+    init_file << "0.0 0.0 0.0 0.0 ";                                                      // UNUSED
+    init_file << divisions.x() << " " << divisions.y() << " " << divisions.z() << " ";    // GRID SIZE
+    init_file << "0.0" << std::endl;                                                      // UNUSED
 
     // Write INIT file data
     long long max_points = static_cast<long long>(divisions.x()) * divisions.y() * divisions.z();
