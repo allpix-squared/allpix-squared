@@ -134,7 +134,11 @@ int main(int argc, char** argv) {
             }
         } else if(strcmp(argv[i], "-f") == 0 && (i + 1 < argc)) {
             file_prefix = std::string(argv[++i]);
-            conf_file_name = file_prefix + ".conf";
+
+            // Pre-fill config file name if not set yet:
+            if(conf_file_name.empty()) {
+                conf_file_name = file_prefix + ".conf";
+            }
         } else if(strcmp(argv[i], "-c") == 0 && (i + 1 < argc)) {
             conf_file_name = std::string(argv[++i]);
         } else if(strcmp(argv[i], "-o") == 0 && (i + 1 < argc)) {
