@@ -255,6 +255,7 @@ ElectricFieldType Detector::getElectricFieldType() const {
  */
 void Detector::setElectricFieldGrid(std::shared_ptr<std::vector<double>> field,
                                     std::array<size_t, 3> sizes,
+                                    std::array<double, 2> scales,
                                     std::pair<double, double> thickness_domain) {
     if(sizes[0] * sizes[1] * sizes[2] * 3 != field->size()) {
         throw std::invalid_argument("electric field does not match the given sizes");
@@ -269,6 +270,7 @@ void Detector::setElectricFieldGrid(std::shared_ptr<std::vector<double>> field,
 
     electric_field_ = std::move(field);
     electric_field_sizes_ = sizes;
+    electric_field_scales_ = scales;
     electric_field_thickness_domain_ = std::move(thickness_domain);
     electric_field_type_ = ElectricFieldType::GRID;
 }
