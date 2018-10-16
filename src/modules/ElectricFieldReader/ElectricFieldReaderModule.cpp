@@ -63,9 +63,18 @@ void ElectricFieldReaderModule::init() {
 
     // Calculate the field depending on the configuration
     if(field_model == "init") {
+        // Read the field scales from the configuration, defaulting to 1.0x1.0 pixel cell:
+        auto scales = config_.get<ROOT::Math::XYVector>("field_scale", {1.0, 1.0});
+
+        // FIXME Add sanity checks for scales here
+
+        LOG(DEBUG) << "Electric field will be scaled with factors " << scales;
+        std::array<double, 2> field_scale{{scales.x(), scales.y()}};
+
         ElectricFieldReaderModule::FieldData field_data;
-        field_data = read_init_field(thickness_domain);
-        detector_->setElectricFieldGrid(std::get<0>(field_data), std::get<1>(field_data), thickness_domain);
+        field_data = read_init_field(thickness_domain, field_scale);
+
+        detector_->setElectricFieldGrid(std::get<0>(field_data), std::get<1>(field_data), field_scale, thickness_domain);
     } else if(field_model == "constant") {
         LOG(TRACE) << "Adding constant electric field";
         type = ElectricFieldType::CONSTANT;
@@ -125,7 +134,8 @@ ElectricFieldFunction ElectricFieldReaderModule::get_linear_field_function(doubl
  * The field read from the INIT format are shared between module instantiations using the static
  * ElectricFieldReaderModuleget_by_file_name method.
  */
-ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::read_init_field(std::pair<double, double> thickness_domain) {
+ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::read_init_field(std::pair<double, double> thickness_domain,
+                                                                                std::array<double, 2> field_scale) {
     try {
         LOG(TRACE) << "Fetching electric field from init file";
 
@@ -133,7 +143,7 @@ ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::read_init_field(
         auto field_data = get_by_file_name(config_.getPath("file_name", true));
 
         // Check if electric field matches chip
-        check_detector_match(std::get<2>(field_data), thickness_domain);
+        check_detector_match(std::get<2>(field_data), thickness_domain, field_scale);
 
         LOG(INFO) << "Set electric field with " << std::get<1>(field_data).at(0) << "x" << std::get<1>(field_data).at(1)
                   << "x" << std::get<1>(field_data).at(2) << " cells";
@@ -277,7 +287,8 @@ void ElectricFieldReaderModule::create_output_plots() {
  * @brief Check if the detector matches the file header
  */
 void ElectricFieldReaderModule::check_detector_match(std::array<double, 3> dimensions,
-                                                     std::pair<double, double> thickness_domain) {
+                                                     std::pair<double, double> thickness_domain,
+                                                     std::array<double, 2> field_scale) {
     auto xpixsz = dimensions[0];
     auto ypixsz = dimensions[1];
     auto thickness = dimensions[2];
@@ -291,13 +302,17 @@ void ElectricFieldReaderModule::check_detector_match(std::array<double, 3> dimen
             LOG(WARNING) << "Thickness of electric field is " << Units::display(thickness, "um")
                          << " but the depleted region is " << Units::display(eff_thickness, "um");
         }
+
         // Check the field extent along the pixel pitch in x and y:
-        if(std::fabs(xpixsz - model->getPixelSize().x()) > std::numeric_limits<double>::epsilon() ||
-           std::fabs(ypixsz - model->getPixelSize().y()) > std::numeric_limits<double>::epsilon()) {
+        if(std::fabs(xpixsz - model->getPixelSize().x() * field_scale[0]) > std::numeric_limits<double>::epsilon() ||
+           std::fabs(ypixsz - model->getPixelSize().y() * field_scale[1]) > std::numeric_limits<double>::epsilon()) {
             LOG(WARNING) << "Electric field size is (" << Units::display(xpixsz, {"um", "mm"}) << ","
-                         << Units::display(ypixsz, {"um", "mm"}) << ") but the pixel pitch is ("
-                         << Units::display(model->getPixelSize().x(), {"um", "mm"}) << ","
-                         << Units::display(model->getPixelSize().y(), {"um", "mm"}) << ")";
+                         << Units::display(ypixsz, {"um", "mm"})
+                         << ") but current configuration results in an field area of ("
+                         << Units::display(model->getPixelSize().x() * field_scale[0], {"um", "mm"}) << ","
+                         << Units::display(model->getPixelSize().y() * field_scale[1], {"um", "mm"}) << ")" << std::endl
+                         << "The size of the area to which the electric field is applied can be changes using the "
+                            "field_scale parameter.";
         }
     }
 }
