@@ -227,7 +227,7 @@ namespace allpix {
         ROOT::Math::Transform3D transform_;
 
         std::array<size_t, 3> electric_field_sizes_;
-        std::array<double_t, 2> electric_field_scales_{1., 1.};
+        std::array<double_t, 2> electric_field_scales_{{1., 1.}};
         std::shared_ptr<std::vector<double>> electric_field_;
         std::pair<double, double> electric_field_thickness_domain_;
         ElectricFieldType electric_field_type_{ElectricFieldType::NONE};
