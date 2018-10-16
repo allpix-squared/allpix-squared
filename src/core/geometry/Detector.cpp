@@ -171,20 +171,24 @@ ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZPoint& pos
     auto y = pos.y();
     auto z = pos.z();
 
-    // Compute corresponding pixel coordinates
-    // WARNING This relies on the origin of the local coordinate system
-    auto pixel_x = static_cast<int>(std::round(x / model_->getPixelSize().x()));
-    auto pixel_y = static_cast<int>(std::round(y / model_->getPixelSize().y()));
+    // Calculate the actual size of the field:
+    auto field_size_x = model_->getPixelSize().x() * electric_field_scales_[0];
+    auto field_size_y = model_->getPixelSize().y() * electric_field_scales_[1];
 
-    // Convert to the pixel frame
-    x -= pixel_x * model_->getPixelSize().x();
-    y -= pixel_y * model_->getPixelSize().y();
+    // Compute corresponding field replica coordinates:
+    // WARNING This relies on the origin of the local coordinate system
+    auto replica_x = static_cast<int>((x + 0.5 * model_->getPixelSize().x()) / field_size_x);
+    auto replica_y = static_cast<int>((y + 0.5 * model_->getPixelSize().y()) / field_size_y);
+
+    // Convert to the replica frame:
+    x -= (replica_x + 0.5) * field_size_x - 0.5 * model_->getPixelSize().x();
+    y -= (replica_y + 0.5) * field_size_y - 0.5 * model_->getPixelSize().y();
 
     // Do flipping if necessary
-    if((pixel_x % 2) == 1) {
+    if((replica_x % 2) == 1) {
         x *= -1;
     }
-    if((pixel_y % 2) == 1) {
+    if((replica_y % 2) == 1) {
         y *= -1;
     }
 
@@ -192,10 +196,10 @@ ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZPoint& pos
     ROOT::Math::XYZVector ret_val;
     if(electric_field_type_ == ElectricFieldType::GRID) {
         // Compute indices
-        auto x_ind = static_cast<int>(std::floor(static_cast<double>(electric_field_sizes_[0]) *
-                                                 (x + model_->getPixelSize().x() / 2.0) / model_->getPixelSize().x()));
-        auto y_ind = static_cast<int>(std::floor(static_cast<double>(electric_field_sizes_[1]) *
-                                                 (y + model_->getPixelSize().y() / 2.0) / model_->getPixelSize().y()));
+        auto x_ind = static_cast<int>(
+            std::floor(static_cast<double>(electric_field_sizes_[0]) * (x + field_size_x / 2.0) / field_size_x));
+        auto y_ind = static_cast<int>(
+            std::floor(static_cast<double>(electric_field_sizes_[1]) * (y + field_size_y / 2.0) / field_size_y));
         auto z_ind = static_cast<int>(
             std::floor(static_cast<double>(electric_field_sizes_[2]) * (z - electric_field_thickness_domain_.first) /
                        (electric_field_thickness_domain_.second - electric_field_thickness_domain_.first)));
@@ -224,10 +228,10 @@ ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZPoint& pos
     }
 
     // Flip vector if necessary
-    if((pixel_x % 2) == 1) {
+    if((replica_x % 2) == 1) {
         ret_val.SetX(-ret_val.x());
     }
-    if((pixel_y % 2) == 1) {
+    if((replica_y % 2) == 1) {
         ret_val.SetY(-ret_val.y());
     }
 
