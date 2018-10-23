@@ -65,16 +65,24 @@ void ElectricFieldReaderModule::init() {
     if(field_model == "init") {
         // Read the field scales from the configuration, defaulting to 1.0x1.0 pixel cell:
         auto scales = config_.get<ROOT::Math::XYVector>("field_scale", {1.0, 1.0});
-
         // FIXME Add sanity checks for scales here
-
         LOG(DEBUG) << "Electric field will be scaled with factors " << scales;
         std::array<double, 2> field_scale{{scales.x(), scales.y()}};
+
+        // Get the field offset in fractions of the pixel pitch, default is 0.0x0.0, i.e. starting at pixel boundary:
+        auto offset = config_.get<ROOT::Math::XYVector>("field_offset", {0.0, 0.0});
+        if(offset.x() > 1.0 || offset.y() > 1.0) {
+            throw InvalidValueError(
+                config_, "field_offset", "shifting electric field by more than one pixel (offset > 1.0) is not allowed");
+        }
+        LOG(DEBUG) << "Electric field starts with offset " << offset << " to pixel boundary";
+        std::array<double, 2> field_offset{{offset.x(), offset.y()}};
 
         ElectricFieldReaderModule::FieldData field_data;
         field_data = read_init_field(thickness_domain, field_scale);
 
-        detector_->setElectricFieldGrid(std::get<0>(field_data), std::get<1>(field_data), field_scale, thickness_domain);
+        detector_->setElectricFieldGrid(
+            std::get<0>(field_data), std::get<1>(field_data), field_scale, field_offset, thickness_domain);
     } else if(field_model == "constant") {
         LOG(TRACE) << "Adding constant electric field";
         type = ElectricFieldType::CONSTANT;

@@ -171,14 +171,18 @@ ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZPoint& pos
     auto y = pos.y();
     auto z = pos.z();
 
+    // Shift the coordinates by the offset configured for the electric field:
+    x -= model_->getPixelSize().x() * electric_field_offset_[0];
+    y -= model_->getPixelSize().y() * electric_field_offset_[1];
+
     // Calculate the actual size of the field:
     auto field_size_x = model_->getPixelSize().x() * electric_field_scales_[0];
     auto field_size_y = model_->getPixelSize().y() * electric_field_scales_[1];
 
     // Compute corresponding field replica coordinates:
     // WARNING This relies on the origin of the local coordinate system
-    auto replica_x = static_cast<int>((x + 0.5 * model_->getPixelSize().x()) / field_size_x);
-    auto replica_y = static_cast<int>((y + 0.5 * model_->getPixelSize().y()) / field_size_y);
+    auto replica_x = static_cast<int>(std::floor((x + 0.5 * model_->getPixelSize().x()) / field_size_x));
+    auto replica_y = static_cast<int>(std::floor((y + 0.5 * model_->getPixelSize().y()) / field_size_y));
 
     // Convert to the replica frame:
     x -= (replica_x + 0.5) * field_size_x - 0.5 * model_->getPixelSize().x();
@@ -260,6 +264,7 @@ ElectricFieldType Detector::getElectricFieldType() const {
 void Detector::setElectricFieldGrid(std::shared_ptr<std::vector<double>> field,
                                     std::array<size_t, 3> sizes,
                                     std::array<double, 2> scales,
+                                    std::array<double, 2> offset,
                                     std::pair<double, double> thickness_domain) {
     if(sizes[0] * sizes[1] * sizes[2] * 3 != field->size()) {
         throw std::invalid_argument("electric field does not match the given sizes");
@@ -275,6 +280,7 @@ void Detector::setElectricFieldGrid(std::shared_ptr<std::vector<double>> field,
     electric_field_ = std::move(field);
     electric_field_sizes_ = sizes;
     electric_field_scales_ = scales;
+    electric_field_offset_ = offset;
     electric_field_thickness_domain_ = std::move(thickness_domain);
     electric_field_type_ = ElectricFieldType::GRID;
 }

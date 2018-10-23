@@ -147,6 +147,7 @@ namespace allpix {
         void setElectricFieldGrid(std::shared_ptr<std::vector<double>> field,
                                   std::array<size_t, 3> sizes,
                                   std::array<double, 2> scales,
+                                  std::array<double, 2> offset,
                                   std::pair<double, double> thickness_domain);
         /**
          * @brief Set the electric field in a single pixel using a function
@@ -228,6 +229,7 @@ namespace allpix {
 
         std::array<size_t, 3> electric_field_sizes_;
         std::array<double_t, 2> electric_field_scales_{{1., 1.}};
+        std::array<double_t, 2> electric_field_offset_{{0., 0.}};
         std::shared_ptr<std::vector<double>> electric_field_;
         std::pair<double, double> electric_field_thickness_domain_;
         ElectricFieldType electric_field_type_{ElectricFieldType::NONE};
