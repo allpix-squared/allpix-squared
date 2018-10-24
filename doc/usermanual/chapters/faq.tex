@@ -7,7 +7,7 @@ This chapter provides answers to some of the most frequently asked questions con
 
 \begin{description}
 \item[What is the easiest way to use \apsq on CERN's LXPLUS?]
-Central installations of \apsq on LXPLUS is provided via CVMFS for both supported LXPLUS operating systems, SLC6 and CERN CentOS7. Please refer to Section~\ref{sec:cvmfs} for the details of how to access these installations.
+Central installations of \apsq on LXPLUS are provided via CVMFS for both supported LXPLUS operating systems, SLC6 and CERN CentOS7. Please refer to Section~\ref{sec:cvmfs} for the details of how to access these installations.
 \item[What is the quickest way to get a local installation of \apsq?]
 The project provides ready-to-use Docker containers which contain all dependencies such as Geant4 and ROOT. Please refer to Section~\ref{sec:docker} for more information on how to start and use these containers.
 \end{description}
@@ -147,7 +147,7 @@ std::vector<std::shared_ptr<PixelHitMessage>> messages;
 The correct detectors have then to be selected in the \command{run} function of the module implementation.
 \item[How do I calculate an efficiency in a module?]
 Calculating efficiencies always requires a reference.
-For hit detection efficiencies in \apsq, this could the the Monte Carlo truth information available via the \emph{MCParticle} objects.
+For hit detection efficiencies in \apsq, this could be the Monte Carlo truth information available via the \emph{MCParticle} objects.
 Since the framework only runs modules, if all input message requirements are satisfied, the message flags described in Section~\ref{sec:messageflags} have to be set up accordingly.
 For the hit efficiency example, two different message types are required, and the Monte Carlo truth should always be required (using \command{MsgFlags::REQUIRED}) while the \emph{PixelHit} message should be optional:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
