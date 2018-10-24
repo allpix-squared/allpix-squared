@@ -212,7 +212,7 @@ void ElectricFieldReaderModule::create_output_plots() {
         max2 = model->getSensorCenter().y() + model->getSensorSize().y() / 2.0;
     }
 
-    // Create 2D histogram
+    // Create 2D histograms
     auto histogram = new TH2F("field_magnitude",
                               "electric field magnitude",
                               static_cast<int>(steps),
@@ -222,6 +222,17 @@ void ElectricFieldReaderModule::create_output_plots() {
                               min2,
                               max2);
     histogram->SetMinimum(0);
+    histogram->SetOption("colz");
+
+    auto histogram_x = new TH2F(
+        "field_x", "electric field (x-component)", static_cast<int>(steps), min1, max1, static_cast<int>(steps), min2, max2);
+    auto histogram_y = new TH2F(
+        "field_y", "electric field (y-component)", static_cast<int>(steps), min1, max1, static_cast<int>(steps), min2, max2);
+    auto histogram_z = new TH2F(
+        "field_z", "electric field (z-component)", static_cast<int>(steps), min1, max1, static_cast<int>(steps), min2, max2);
+    histogram_x->SetOption("colz");
+    histogram_y->SetOption("colz");
+    histogram_z->SetOption("colz");
 
     // Create 1D histogram
     auto histogram1D = new TH1F(
@@ -245,26 +256,44 @@ void ElectricFieldReaderModule::create_output_plots() {
             y = model->getSensorCenter().y() - model->getSensorSize().y() / 2.0 +
                 ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().y();
             histogram->GetXaxis()->SetTitle("y (mm)");
+            histogram_x->GetXaxis()->SetTitle("y (mm)");
+            histogram_y->GetXaxis()->SetTitle("y (mm)");
+            histogram_z->GetXaxis()->SetTitle("y (mm)");
         } else if(project == 'y') {
             x = model->getSensorCenter().x() - model->getSensorSize().x() / 2.0 +
                 ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().x();
             histogram->GetXaxis()->SetTitle("x (mm)");
+            histogram_x->GetXaxis()->SetTitle("x (mm)");
+            histogram_y->GetXaxis()->SetTitle("x (mm)");
+            histogram_z->GetXaxis()->SetTitle("x (mm)");
         } else {
             x = model->getSensorCenter().x() - model->getSensorSize().x() / 2.0 +
                 ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().x();
             histogram->GetXaxis()->SetTitle("x (mm)");
+            histogram_x->GetXaxis()->SetTitle("x (mm)");
+            histogram_y->GetXaxis()->SetTitle("x (mm)");
+            histogram_z->GetXaxis()->SetTitle("x (mm)");
         }
         for(size_t k = 0; k < steps; ++k) {
             if(project == 'x') {
                 z = z_min + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * (z_max - z_min);
                 histogram->GetYaxis()->SetTitle("z (mm)");
+                histogram_x->GetYaxis()->SetTitle("z (mm)");
+                histogram_y->GetYaxis()->SetTitle("z (mm)");
+                histogram_z->GetYaxis()->SetTitle("z (mm)");
             } else if(project == 'y') {
                 z = z_min + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * (z_max - z_min);
                 histogram->GetYaxis()->SetTitle("z (mm)");
+                histogram_x->GetYaxis()->SetTitle("z (mm)");
+                histogram_y->GetYaxis()->SetTitle("z (mm)");
+                histogram_z->GetYaxis()->SetTitle("z (mm)");
             } else {
                 y = model->getSensorCenter().y() - model->getSensorSize().y() / 2.0 +
                     ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().y();
                 histogram->GetYaxis()->SetTitle("y (mm)");
+                histogram_x->GetYaxis()->SetTitle("y (mm)");
+                histogram_y->GetYaxis()->SetTitle("y (mm)");
+                histogram_z->GetYaxis()->SetTitle("y (mm)");
             }
 
             // Get field strength from detector
@@ -274,10 +303,19 @@ void ElectricFieldReaderModule::create_output_plots() {
             // Fill the main histogram
             if(project == 'x') {
                 histogram->Fill(y, z, static_cast<double>(field_strength));
+                histogram_x->Fill(y, z, field.x());
+                histogram_y->Fill(y, z, field.y());
+                histogram_z->Fill(y, z, field.z());
             } else if(project == 'y') {
                 histogram->Fill(x, z, static_cast<double>(field_strength));
+                histogram_x->Fill(x, z, field.x());
+                histogram_y->Fill(x, z, field.y());
+                histogram_z->Fill(x, z, field.z());
             } else {
                 histogram->Fill(x, y, static_cast<double>(field_strength));
+                histogram_x->Fill(x, y, field.x());
+                histogram_y->Fill(x, y, field.y());
+                histogram_z->Fill(x, y, field.z());
             }
             // Fill the 1d histogram
             if(j == steps / 2) {
@@ -286,8 +324,11 @@ void ElectricFieldReaderModule::create_output_plots() {
         }
     }
 
-    // Write the histogram to module file
+    // Write the histograms to module file
     histogram->Write();
+    histogram_x->Write();
+    histogram_y->Write();
+    histogram_z->Write();
     histogram1D->Write();
 }
 
