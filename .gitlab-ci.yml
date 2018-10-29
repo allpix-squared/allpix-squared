@@ -182,7 +182,7 @@ core:coverage:
         - source .gitlab-ci.d/load_deps.sh
         - mkdir build
         - cd build
-        - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=debug -DCOVERAGE=ON -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
+        - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - ninja
         - ninja install
         - ninja coverage_gcovr
