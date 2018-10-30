@@ -131,10 +131,10 @@ IF(CMAKE_BUILD_TYPE MATCHES Debug AND ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") 
         APPEND_COVERAGE_COMPILER_FLAGS()
         SET(COVERAGE_GCOVR_EXCLUDES "${PROJECT_SOURCE_DIR}/src/modules" "${PROJECT_SOURCE_DIR}/tools")
         SETUP_TARGET_FOR_COVERAGE_GCOVR(NAME coverage_gcovr
-                                        EXECUTABLE ctest -R core
+                                        EXECUTABLE ctest -L coverage
                                         DEPENDENCIES allpix AllpixCore)
         SETUP_TARGET_FOR_COVERAGE_GCOVR_HTML(NAME coverage_gcovr_html
-                                             EXECUTABLE ctest -R core
+                                             EXECUTABLE ctest -L coverage
                                              DEPENDENCIES allpix AllpixCore)
     ENDIF()
 ENDIF()
