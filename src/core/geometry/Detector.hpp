@@ -229,6 +229,7 @@ namespace allpix {
 
         std::array<size_t, 3> electric_field_sizes_;
         std::array<double_t, 2> electric_field_scales_{{1., 1.}};
+        std::array<double_t, 2> electric_field_scales_inverse_{{1., 1.}};
         std::array<double_t, 2> electric_field_offset_{{0., 0.}};
         std::shared_ptr<std::vector<double>> electric_field_;
         std::pair<double, double> electric_field_thickness_domain_;
