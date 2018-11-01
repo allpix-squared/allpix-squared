@@ -85,6 +85,10 @@ namespace allpix {
         // Cut criteria for efficiency measurement:
         ROOT::Math::XYVector matching_cut_{};
 
+        // Reference track resolution
+        ROOT::Math::XYVector track_resolution_{};
+        std::mt19937_64 random_generator_;
+
         // Histograms to output
         TH2D* hit_map;
         TH2D* cluster_map;

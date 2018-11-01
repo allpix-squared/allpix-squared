@@ -30,8 +30,13 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
     messenger->bindSingle(this, &DetectorHistogrammerModule::pixels_message_);
     messenger->bindSingle(this, &DetectorHistogrammerModule::mcparticle_message_, MsgFlags::REQUIRED);
 
+    // Seed the random generator with the global seed
+    random_generator_.seed(getRandomSeed());
+
     auto model = detector_->getModel();
     matching_cut_ = config.get<ROOT::Math::XYVector>("matching_cut", model->getPixelSize() * 3);
+    track_resolution_ = config.get<ROOT::Math::XYVector>("track_resolution",
+                                                         ROOT::Math::XYVector(Units::get(2.0, "um"), Units::get(2.0, "um")));
 }
 
 void DetectorHistogrammerModule::init() {
@@ -243,6 +248,13 @@ void DetectorHistogrammerModule::run(unsigned int) {
     // Perform a clustering
     std::vector<Cluster> clusters = doClustering();
 
+    // Lambda for smearing the Monte Carlo truth position with the track resolution
+    auto track_smearing = [&](auto residuals) {
+        double dx = std::normal_distribution<double>(0, residuals.x())(random_generator_);
+        double dy = std::normal_distribution<double>(0, residuals.y())(random_generator_);
+        return DisplacementVector3D<Cartesian3D<double>>(dx, dy, 0);
+    };
+
     // Retrieve all MC particles in this detector which are primary particles (not produced within the sensor):
     auto primary_particles = getPrimaryParticles();
     LOG(DEBUG) << "Found " << primary_particles.size() << " primary particles in this event";
@@ -276,6 +288,7 @@ void DetectorHistogrammerModule::run(unsigned int) {
             auto pitch = detector_->getModel()->getPixelSize();
 
             auto particlePos = (static_cast<XYZVector>(particle->getLocalStartPoint()) + particle->getLocalEndPoint()) / 2.0;
+            particlePos += track_smearing(track_resolution_);
             LOG(DEBUG) << "MCParticle at " << Units::display(particlePos, {"mm", "um"});
 
             auto inPixelPos = XYVector(std::fmod(particlePos.x() + pitch.x() / 2, pitch.x()),
@@ -325,8 +338,8 @@ void DetectorHistogrammerModule::run(unsigned int) {
         auto pitch = detector_->getModel()->getPixelSize();
 
         // Calculate 2D local position of particle:
-        auto particlePos3D = (static_cast<XYZVector>(particle->getLocalStartPoint()) + particle->getLocalEndPoint()) / 2.0;
-        auto particlePos = XYVector(particlePos3D.x(), particlePos3D.y());
+        auto particlePos = (static_cast<XYZVector>(particle->getLocalStartPoint()) + particle->getLocalEndPoint()) / 2.0;
+        particlePos += track_smearing(track_resolution_);
         auto inPixelPos = XYVector(std::fmod(particlePos.x() + pitch.x() / 2, pitch.x()),
                                    std::fmod(particlePos.y() + pitch.y() / 2, pitch.y()));
         auto inPixel_um_x = static_cast<double>(Units::convert(inPixelPos.x(), "um"));
