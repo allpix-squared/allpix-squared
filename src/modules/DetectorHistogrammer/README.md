@@ -7,9 +7,15 @@
 This module provides an overview of the produced simulation data for a quick inspection and simple checks.
 For more sophisticated analyses, the output from one of the output writers should be used to make the necessary information available.
 
-Within the module, clustering of the input hits is performed. Looping over the PixelHits, hits being adjacent to an existing cluster are added to this cluster. Clusters are merged if there are multiple adjacent clusters. If the PixelHit is free-standing, a new cluster is created.
+Within the module, clustering of the input hits is performed. 
+Looping over the PixelHits, hits being adjacent to an existing cluster are added to this cluster. 
+Clusters are merged if there are multiple adjacent clusters. 
+If the PixelHit is free-standing, a new cluster is created.
 
 This module serves as a quick "mini-analysis" and creates the histograms listed below.
+The Monte Carlo truth position provided by the `MCParticle` objects is used as track reference position.
+An additional uncertainty can be added by configuring a track resolution, with which every cluster residual is convoled. 
+For technical reasons, this offset is drawn randomly from a Gauss distribution independently for the resolution and the efficiency measurement.
 
 * A hitmap of all pixels in the pixel grid, displaying the number of times a pixel has been hit during the simulation run.
 * A cluster map indicating the cluster positions for the whole simulation run.
@@ -29,6 +35,7 @@ This module serves as a quick "mini-analysis" and creates the histograms listed 
 
 * `granularity`: 2D integer vector defining the number of bins along the *x* and *y* axis for in-pixel maps. Defaults to the pixel pitch in micro meters, e.g. a detector with 100um x 100um pixels would be represented in a histogram with `100 * 100 = 10000` bins.
 * `max_cluster_charge`: Upper limit for the cluster charge histogram, defaults to `50ke`.
+* `track_resolution`: Assumed track resolution the Monte Carlo truth is smeared with. Expects two values for the resolution in local-x and local-y directions and defaults to `2um 2um`.
 * `matching_cut`: Required maximum matching distance between cluster position and particle position for the efficiency measurement. Expected two values and defaults to three times the pixel pitch in each dimension.
 
 ### Usage
