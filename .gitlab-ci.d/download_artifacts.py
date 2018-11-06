@@ -21,5 +21,5 @@ for i in range(0, len(data)):
     continue
 
   print "Downloading artifact for job %s" % data[i]['id']
-  os.system("curl --header \"PRIVATE-TOKEN:%s\" \"https://gitlab.cern.ch/api/v4/projects/14102/jobs/%s/artifacts\" -o artifact.zip" % (api_token, data[i]['id']) )
+  os.system("curl --location --header \"PRIVATE-TOKEN:%s\" \"https://gitlab.cern.ch/api/v4/projects/%s/jobs/%s/artifacts\" -o artifact.zip" % (api_token, ci_project_id, data[i]['id']))
   os.system("unzip -j artifact.zip; rm artifact.zip")

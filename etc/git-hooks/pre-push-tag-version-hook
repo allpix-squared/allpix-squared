@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+# git pre-push hook that checks that the hard-coded CMake version matches the tag name
+
+##################################################################
+# SETTINGS
+# set file containing the version number:
+VERSIONFILE="CMakeLists.txt"
+
+# get the name of the tag to be pushed
+TAGREF=$(grep -Po 'refs/tags/([^ ]*) ' </dev/stdin | head -n1 | cut -c11- | tr -d '[:space:]')
+
+# if true also displays the changes and inform if no changes have to be made
+VERBOSE=0
+
+##################################################################
+
+# A push without tag -- exit normally
+if [ ! -s "$TAGREF" ]; then
+    if [ "$VERBOSE" -ne 0 ] ; then
+        printf "No tag to be pushed, allowing push.\n"
+    fi
+    exit 0
+fi
+
+# retrieve the version number from the VERSIONFILE
+VERSION=$(git cat-file blob master:"$VERSIONFILE" | grep -m 1 'ALLPIX_VERSION' | sed 's/^[^"]*"//;s/"[^"]*$//')
+
+# The tag name matches the version number -- exit normally
+if [ "$TAGREF" == "$VERSION" ]; then
+    if [ "$VERBOSE" -ne 0 ] ; then
+        printf "Tag name matches version number, allowing push.\n"
+    fi
+    exit 0
+fi
+
+echo "Tag name doesn't match version file. Preventing push."
+echo "Tag name: $TAGREF"
+echo "Version: $VERSION (from file $VERSIONFILE)"
+exit 1

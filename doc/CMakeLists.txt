@@ -141,6 +141,7 @@ IF(LATEX_COMPILER)
             cc-by.png
             usermanual/figures/telescope.png
             usermanual/figures/ci.png
+            usermanual/figures/linegraph_hrcmos_collected.png
             INPUTS
             usermanual/chapters/introduction.tex
             usermanual/chapters/quick_start.tex
@@ -157,6 +158,8 @@ IF(LATEX_COMPILER)
             usermanual/chapters/acknowledgements.tex
             usermanual/appendices/example_output.tex
             usermanual/config.tex
+
+            usermanual/tikz/transformations.tex
 
             usermanual/html/allpix.cfg
             usermanual/html/tools.sty

@@ -1,5 +1,6 @@
 variables:
     EOS_PATH: "/eos/project/a/allpix-squared/www/"
+    DOCKER_FILE: etc/docker/Dockerfile
 
 stages:
     - compilation
@@ -14,188 +15,133 @@ stages:
 # Compilation targets #
 #######################
 
-cmp:slc6-gcc:
+# Hidden key to define the default compile job:
+.compile:
     stage: compilation
     tags:
         - docker
-    image: clicdp/slc6-base
     script:
+        - mkdir build
+        - cd build
+        - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
+        - ninja
+        - ninja install
+    artifacts:
+        paths:
+            - build
+            - bin
+            - lib
+        expire_in: 24 hour
+
+cmp:slc6-gcc:
+    extends: .compile
+    image: clicdp/slc6-base
+    before_script:
         - export COMPILER_TYPE="gcc"
         - source .gitlab-ci.d/init_x86_64.sh
         - source .gitlab-ci.d/load_deps.sh
-        - mkdir build
-        - cd build
-        - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
-        - ninja
-        - ninja install
-    artifacts:
-        paths:
-            - build
-            - bin
-            - lib
-        expire_in: 3 hour
 
 cmp:slc6-llvm:
-    stage: compilation
-    tags:
-        - docker
+    extends: .compile
     image: clicdp/slc6-base
-    script:
+    before_script:
         - export COMPILER_TYPE="llvm"
         - source .gitlab-ci.d/init_x86_64.sh
-        - mkdir build
-        - cd build
-        - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
-        - ninja
-        - ninja install
-    artifacts:
-        paths:
-            - build
-            - bin
-            - lib
-        expire_in: 3 hour
 
 # Ensure that our LXPLUS setup script is functional:
 cmp:lxplus-gcc:
-    stage: compilation
-    tags:
-        - docker
+    extends: .compile
     image: clicdp/slc6-base
-    script:
+    before_script:
         - export COMPILER_TYPE="gcc"
         - source etc/scripts/setup_lxplus.sh
+    script:
         - mkdir build
         - cd build
         - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
         - ninja
         - ninja install
-    artifacts:
-        paths:
-            - build
-            - bin
-            - lib
-        expire_in: 3 hour
 
 cmp:cc7-gcc:
-    stage: compilation
-    tags:
-        - docker
+    extends: .compile
     image: clicdp/cc7-base
-    script:
+    before_script:
         - export COMPILER_TYPE="gcc"
         - source .gitlab-ci.d/init_x86_64.sh
         - source .gitlab-ci.d/load_deps.sh
-        - mkdir build
-        - cd build
-        - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
-        - ninja
-        - ninja install
-    artifacts:
-        paths:
-            - build
-            - bin
-            - lib
-        expire_in: 3 hour
 
 cmp:cc7-llvm:
-    stage: compilation
-    tags:
-        - docker
+    extends: .compile
     image: clicdp/cc7-base
-    script:
+    before_script:
         - export COMPILER_TYPE="llvm"
         - source .gitlab-ci.d/init_x86_64.sh
-        - mkdir build
-        - cd build
-        - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
-        - ninja
-        - ninja install
-    artifacts:
-        paths:
-            - build
-            - bin
-            - lib
-        expire_in: 3 hour
 
 cmp:mac1013-clang:
-    stage: compilation
+    extends: .compile
     tags:
         - mac
-    script:
+    before_script:
         - source .gitlab-ci.d/init_mac.sh
         - source .gitlab-ci.d/load_deps.sh
+    script:
         - mkdir build
         - cd build
         - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -DCMAKE_USE_RELATIVE_PATHS=TRUE ..
         - ninja
         - ninja install
-    artifacts:
-        paths:
-            - build
-            - bin
-            - lib
-        expire_in: 3 hour
-
 
 
 ############################
 # Format and Lint Checking #
 ############################
 
-# SLC 6
-
-fmt:slc6-llvm-format:
+# Hidden key to define the basis for linting and formatting:
+.format:
     stage: formatting
     tags:
         - docker
+    before_script:
+        - export COMPILER_TYPE="llvm"
+        - source .gitlab-ci.d/init_x86_64.sh
+
+# SLC 6
+
+fmt:slc6-llvm-format:
+    extends: .format
     dependencies:
         - cmp:slc6-llvm
     image: clicdp/slc6-base
     script:
-        - export COMPILER_TYPE="llvm"
-        - source .gitlab-ci.d/init_x86_64.sh
         - cd build/
         - ninja check-format
 
 fmt:slc6-llvm-lint:
-    stage: formatting
-    tags:
-        - docker
+    extends: .format
     dependencies:
         - cmp:slc6-llvm
     image: clicdp/slc6-base
     script:
-        - export COMPILER_TYPE="llvm"
-        - source .gitlab-ci.d/init_x86_64.sh
         - cd build/
         - ninja check-lint
-
 
 # CentOS 7
 
 fmt:cc7-llvm-format:
-    stage: formatting
-    tags:
-        - docker
+    extends: .format
     dependencies:
         - cmp:cc7-llvm
     image: clicdp/cc7-base
     script:
-        - export COMPILER_TYPE="llvm"
-        - source .gitlab-ci.d/init_x86_64.sh
         - cd build/
         - ninja check-format
 
 fmt:cc7-llvm-lint:
-    stage: formatting
-    tags:
-        - docker
+    extends: .format
     dependencies:
         - cmp:cc7-llvm
     image: clicdp/cc7-base
     script:
-        - export COMPILER_TYPE="llvm"
-        - source .gitlab-ci.d/init_x86_64.sh
         - cd build/
         - ninja check-lint
 
@@ -205,180 +151,151 @@ fmt:cc7-llvm-lint:
 # Unit tests #
 ##############
 
-# Test if examples still execute fine:
-
-
-examples:
+.test:
     stage: testing
     tags:
         - docker
+
+.testmod:
+    extends: .test
+    script:
+        - cd build/
+        - ctest -R test_modules --output-on-failure -j4
+
+.testcore:
+    extends: .test
+    script:
+        - cd build/
+        - ctest -R test_core --output-on-failure -j4
+
+
+# Test if examples still execute fine:
+
+examples:
+    extends: .test
     dependencies:
         - cmp:cc7-gcc
     image: clicdp/cc7-base
-    script:
+    before_script:
         - source .gitlab-ci.d/init_x86_64.sh
         - source .gitlab-ci.d/load_deps.sh
+    script:
         - cd build/
         - ctest -R examples --output-on-failure -j4
-
 
 # SLC 6
 
 mod:slc6-gcc:
-    stage: testing
-    tags:
-        - docker
+    extends: .testmod
     dependencies:
         - cmp:slc6-gcc
     image: clicdp/slc6-base
-    script:
+    before_script:
         - source .gitlab-ci.d/init_x86_64.sh
-        - cd build/
-        - ctest -R test_modules --output-on-failure -j4
 
 core:slc6-gcc:
-    stage: testing
-    tags:
-        - docker
+    extends: .testcore
     dependencies:
         - cmp:slc6-gcc
     image: clicdp/slc6-base
-    script:
+    before_script:
         - source .gitlab-ci.d/init_x86_64.sh
-        - cd build/
-        - ctest -R test_core --output-on-failure -j4
 
 mod:lxplus-gcc:
-    stage: testing
-    tags:
-        - docker
+    extends: .testmod
     dependencies:
         - cmp:lxplus-gcc
     image: clicdp/slc6-base
-    script:
+    before_script:
         - source etc/scripts/setup_lxplus.sh
-        - cd build/
-        - ctest -R test_modules --output-on-failure -j4
 
 core:lxplus-gcc:
-    stage: testing
-    tags:
-        - docker
+    extends: .testcore
     dependencies:
         - cmp:lxplus-gcc
     image: clicdp/slc6-base
-    script:
+    before_script:
         - source etc/scripts/setup_lxplus.sh
-        - cd build/
-        - ctest -R test_core --output-on-failure -j4
 
 mod:slc6-llvm:
-    stage: testing
-    tags:
-        - docker
+    extends: .testmod
     dependencies:
-        - cmp:slc6-gcc
+        - cmp:slc6-llvm
     image: clicdp/slc6-base
-    script:
+    before_script:
         - export COMPILER_TYPE="llvm"
         - source .gitlab-ci.d/init_x86_64.sh
-        - cd build/
-        - ctest -R test_modules --output-on-failure -j4
 
 core:slc6-llvm:
-    stage: testing
-    tags:
-        - docker
+    extends: .testcore
     dependencies:
-        - cmp:slc6-gcc
+        - cmp:slc6-llvm
     image: clicdp/slc6-base
-    script:
+    before_script:
         - export COMPILER_TYPE="llvm"
         - source .gitlab-ci.d/init_x86_64.sh
-        - cd build/
-        - ctest -R test_core --output-on-failure -j4
 
 
 # CentOS 7
 
 mod:cc7-gcc:
-    stage: testing
-    tags:
-        - docker
+    extends: .testmod
     dependencies:
         - cmp:cc7-gcc
     image: clicdp/cc7-base
-    script:
+    before_script:
         - source .gitlab-ci.d/init_x86_64.sh
         - source .gitlab-ci.d/load_deps.sh
-        - cd build/
-        - ctest -R test_modules --output-on-failure -j4
 
 core:cc7-gcc:
-    stage: testing
-    tags:
-        - docker
+    extends: .testcore
     dependencies:
         - cmp:cc7-gcc
     image: clicdp/cc7-base
-    script:
+    before_script:
         - source .gitlab-ci.d/init_x86_64.sh
         - source .gitlab-ci.d/load_deps.sh
-        - cd build/
-        - ctest -R test_core --output-on-failure -j4
 
 mod:cc7-llvm:
-    stage: testing
-    tags:
-        - docker
+    extends: .testmod
     dependencies:
         - cmp:cc7-llvm
     image: clicdp/cc7-base
-    script:
+    before_script:
         - export COMPILER_TYPE="llvm"
         - source .gitlab-ci.d/init_x86_64.sh
-        - cd build/
-        - ctest -R test_modules --output-on-failure -j4
 
 core:cc7-llvm:
-    stage: testing
-    tags:
-        - docker
+    extends: .testcore
     dependencies:
         - cmp:cc7-llvm
     image: clicdp/cc7-base
-    script:
+    before_script:
         - export COMPILER_TYPE="llvm"
         - source .gitlab-ci.d/init_x86_64.sh
-        - cd build/
-        - ctest -R test_core --output-on-failure -j4
 
 
 # Mac OS X
 
 mod:mac1013-clang:
-    stage: testing
+    extends: .testmod
     tags:
         - mac
     dependencies:
         - cmp:mac1013-clang
-    script:
+    before_script:
         - source .gitlab-ci.d/init_mac.sh
         - source .gitlab-ci.d/load_deps.sh
-        - cd build/
-        - ctest -R test_modules --output-on-failure -j4
 
 core:mac1013-clang:
-    stage: testing
+    extends: .testcore
     tags:
         - mac
     dependencies:
         - cmp:mac1013-clang
-    script:
+    before_script:
         - source .gitlab-ci.d/init_mac.sh
         - source .gitlab-ci.d/load_deps.sh
-        - cd build/
-        - ctest -R test_core --output-on-failure -j4
 
 
 #####################
@@ -388,66 +305,65 @@ core:mac1013-clang:
 # Performance tests are only run on Mac OS X and on a native CentOS7 installation. Otherwise we have no control
 # about how many CI jobs are performed on the same machine in parallel via the hypervisor.
 
+.testperf:
+    stage: performance
+    tags:
+        - benchmark
+    script:
+        - cd build/
+        - ctest -R test_performance --output-on-failure
+    allow_failure: true
+    retry: 1
+
 # CentOS7
 
 perf:cc7-gcc:
-    stage: performance
-    tags:
-        - benchmark
+    extends: .testperf
     dependencies:
         - cmp:cc7-gcc
     image: clicdp/cc7-base
-    script:
+    before_script:
         - source .gitlab-ci.d/init_x86_64.sh
         - source .gitlab-ci.d/load_deps.sh
-        - cd build/
-        - ctest -R test_performance --output-on-failure
-    allow_failure: true
-    retry: 1
 
 # Temporarily hide LLVM job, have to find out why this is so slow.
 .perf:cc7-llvm:
-    stage: performance
-    tags:
-        - benchmark
+    extends: .testperf
     dependencies:
         - cmp:cc7-llvm
     image: clicdp/cc7-base
-    script:
+    before_script:
         - export COMPILER_TYPE="llvm"
         - source .gitlab-ci.d/init_x86_64.sh
-        - cd build/
-        - ctest -R test_performance --output-on-failure
-    allow_failure: true
-    retry: 1
 
 # Mac OS X
 # Temporarily disable Mac OS X performance until tests are adapted to actual performance
 .perf:mac1013-clang:
-    stage: performance
-    tags:
-        - mac
+    extends: .testperf
     dependencies:
         - cmp:mac1013-clang
-    script:
+    before_script:
         - source .gitlab-ci.d/init_mac.sh
         - source .gitlab-ci.d/load_deps.sh
-        - cd build/
-        - ctest -R test_performance --output-on-failure
-    allow_failure: true
-    retry: 1
 
 
 #############################
 # Documentation Compilation #
 #############################
 
-
-# Compile Doxygen reference
-cmp:doxygen:
+.doc:
     stage: documentation
     tags:
         - docker
+    artifacts:
+        paths:
+            - public
+        expire_in: 24 hour
+
+
+# Compile Doxygen reference
+cmp:doxygen:
+    extends: .doc
     image: clicdp/cc7-base
     dependencies: []
     script:
@@ -459,16 +375,10 @@ cmp:doxygen:
         - cmake -DBUILD_DOCS_ONLY=ON ..
         - make reference
         - mv reference/html ../public/reference
-    artifacts:
-        paths:
-            - public
-        expire_in: 3 hour
 
 # Compile LaTeX user manual:
 cmp:usermanual:
-    stage: documentation
-    tags:
-      - docker
+    extends: .doc
     image: gitlab-registry.cern.ch/clicdp/publications/templates/custom_ci_worker:fedora-latex-latest
     dependencies: []
     script:
@@ -487,64 +397,48 @@ cmp:usermanual:
         - mv usermanual/usermanual/html/css ../public/usermanual/usermanual/html/
         - mv usermanual/usermanual/html/js ../public/usermanual/usermanual/html/
         - mv usermanual/usermanual/figures ../public/usermanual/usermanual/
-    artifacts:
-        paths:
-          - public
-        expire_in: 3 hour
 
 ################################
 # Packaging of Binary Tarballs #
 ################################
 
-pkg:slc6-gcc:
+.pack:
     stage: packaging
     tags:
         - docker
-    image: clicdp/slc6-base
     only:
         - tags
-        - deploy-cvmfs
-        - deploy-eos
+        - schedules
+    script:
+        - mkdir -p public/releases
+        - cd build
+        - cmake -GNinja -DCMAKE_SKIP_RPATH=ON -DCMAKE_INSTALL_PREFIX=/tmp ..
+        - ninja package
+        - mv *.tar.gz ../public/releases
+    artifacts:
+        paths:
+            - public
+        expire_in: 24 hour
+
+pkg:slc6-gcc:
+    extends: .pack
+    image: clicdp/slc6-base
     dependencies:
         - cmp:slc6-gcc
-    script:
+    before_script:
         - export COMPILER_TYPE="gcc"
         - source .gitlab-ci.d/init_x86_64.sh
         - source .gitlab-ci.d/load_deps.sh
-        - mkdir -p public/releases
-        - cd build
-        - cmake -GNinja -DCMAKE_SKIP_RPATH=ON -DCMAKE_INSTALL_PREFIX=/tmp ..
-        - ninja package
-        - mv *.tar.gz ../public/releases
-    artifacts:
-        paths:
-            - public
-        expire_in: 3 hour
 
 pkg:cc7-gcc:
-    stage: packaging
-    tags:
-        - docker
+    extends: .pack
     image: clicdp/cc7-base
-    only:
-        - tags
-        - deploy-cvmfs
-        - deploy-eos
     dependencies:
         - cmp:cc7-gcc
-    script:
+    before_script:
         - export COMPILER_TYPE="gcc"
         - source .gitlab-ci.d/init_x86_64.sh
         - source .gitlab-ci.d/load_deps.sh
-        - mkdir -p public/releases
-        - cd build
-        - cmake -GNinja -DCMAKE_SKIP_RPATH=ON -DCMAKE_INSTALL_PREFIX=/tmp ..
-        - ninja package
-        - mv *.tar.gz ../public/releases
-    artifacts:
-        paths:
-            - public
-        expire_in: 3 hour
 
 
 ############################
@@ -557,10 +451,11 @@ deploy-documentation:
     stage: deployment
     tags:
       - docker
+    variables:
+        GIT_STRATEGY: none
     # Only run for new tags:
     only:
         - tags
-        - deploy-usermanual
     dependencies:
         - cmp:usermanual
         - cmp:doxygen
@@ -576,10 +471,12 @@ deploy-eos:
     stage: deployment
     tags:
       - docker
+    variables:
+        GIT_STRATEGY: none
     # Only run for new tags:
     only:
         - tags
-        - deploy-eos
+        - schedules # Only execute this on scheduled "nightly" pipelines
     dependencies:
         - pkg:cc7-gcc
         - pkg:slc6-gcc
@@ -596,17 +493,20 @@ deploy-cvmfs:
     dependencies:
         - pkg:cc7-gcc
         - pkg:slc6-gcc
+    variables:
+        GIT_STRATEGY: none
     tags:
         - cvmfs-deploy
     only:
         - tags
-        - deploy-cvmfs
+        - schedules # Only execute this on scheduled "nightly" pipelines
     script:
         - ./.gitlab-ci.d/download_artifacts.py $API_TOKEN $CI_PROJECT_ID $CI_PIPELINE_ID
         - export RUNNER_LOCATION=$(pwd)
         - if [ -z ${CI_COMMIT_TAG} ]; then export BUILD_PATH='latest'; else export BUILD_PATH=${CI_COMMIT_TAG}; fi
         - sudo -u cvclicdp -i $RUNNER_LOCATION/.gitlab-ci.d/gitlab_deploy.sh $RUNNER_LOCATION $BUILD_PATH
         - rm -f allpix-squared-*.tar.gz
+    retry: 1
 
 deploy-docker-latest:
     stage: deployment
@@ -614,12 +514,11 @@ deploy-docker-latest:
         - docker-image-build
     dependencies: []
     only:
-        - deploy-docker
+        - schedules # Only execute this on scheduled "nightly" pipelines
     script:
         - "echo" # unused but this line is required by GitLab CI
     variables:
         TO: gitlab-registry.cern.ch/allpix-squared/allpix-squared
-        DOCKER_FILE: etc/docker/Dockerfile
 
 deploy-docker-tag:
     stage: deployment
@@ -632,4 +531,3 @@ deploy-docker-tag:
         - "echo" # unused but this line is required by GitLab CI
     variables:
         TO: gitlab-registry.cern.ch/allpix-squared/allpix-squared:${CI_COMMIT_TAG}
-        DOCKER_FILE: etc/docker/Dockerfile

@@ -1,4 +1,4 @@
-#include "MeshElement.h"
+#include "MeshElement.hpp"
 
 #include "core/utils/log.h"
 
@@ -114,7 +114,7 @@ Point MeshElement::getObservable(Point& qp) {
         new_observable.z = new_observable.z + (sub_volume * e_field_[index].z) / this->getVolume();
     }
     LOG(DEBUG) << "Interpolated electric field: (" << new_observable.x << "," << new_observable.y << "," << new_observable.z
-               << ")" << std::endl;
+               << ")";
     return new_observable;
 }
 

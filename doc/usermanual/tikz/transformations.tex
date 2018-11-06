@@ -1,0 +1,76 @@
+\tikzset{%
+  >=latex
+}
+\begin{tikzpicture}
+
+  % Labels
+  \node[font=\bfseries] at (1.5,4) {Global Coordinates};
+  \node[font=\bfseries] at (7.5,4) {At Origin};
+  \node[font=\bfseries] at (12.5,4) {Local Coordinates};
+  % \node[rotate=90,font=\bfseries] at (-1.5,1.5) {Top view};
+  % \node[rotate=90,font=\bfseries] at (-1.5,-3.5) {Side view};
+
+  % Detectors
+  \draw [teal, line width=0.15cm] (-0.6, 0.5)  -- (0.6, 1.5) node [right,black] {\textbf{DUT}};
+  \draw [teal, line width=0.15cm] (5.1, 0)  -- (6.9, 0);
+  \draw [teal, line width=0.15cm] (10.9, 0)  -- (12.7, 0);
+
+  \fill [teal] (-0.6,-4.7) rectangle (0.6,-2.3);
+  \fill [teal] (5.1,-6.2) rectangle (6.9,-3.8);
+  \fill [teal] (10.9,-5.1) rectangle (12.7,-2.7);
+
+  % Explanations
+  \draw [ultra thick, gray, ->] (2.5, 1.5) -- (3.5, 1.5) node [above, black, yshift=10] {
+    \begin{varwidth}{\linewidth}
+      \small
+      \begin{itemize}
+        \item Shift to origin
+        \item Apply inverse rotation
+      \end{itemize}
+    \end{varwidth}
+  } -- (5.5, 1.5);
+
+  \draw [ultra thick, gray, ->] (7.5, 1.5) -- (8.5, 1.5) node [above, black, yshift=10] {
+    \begin{varwidth}{\linewidth}
+      \small
+      \begin{itemize}
+        \item Shift to origin
+      \end{itemize}
+    \end{varwidth}
+  } -- (10.5, 1.5);
+
+  \draw [ultra thick, gray, ->] (10.5, -3.5) -- (8.5, -3.5) node [above, black, yshift=10] {
+    \begin{varwidth}{\linewidth}
+      \small
+      \begin{itemize}
+        \item Shift to sensor center
+      \end{itemize}
+    \end{varwidth}
+  } -- (7.5, -3.5);
+
+  \draw [ultra thick, gray, ->] (5.5, -3.5) -- (3, -3.5) node [above, black, yshift=10] {
+    \begin{varwidth}{\linewidth}
+      \small
+      \begin{itemize}
+        \item Apply rotation
+        \item Shift to detector position
+      \end{itemize}
+    \end{varwidth}
+  } -- (2.5, -3.5);
+
+  % Coordinates
+  \draw [black, dotted, thick, ->] (0, 0) -- (0, 3) node [above] {$z$};
+  \draw [black, dotted, thick, ->] (0, 0) -- (3, 0) node [right] {$x$};
+  \draw [black, dotted, thick, ->] (6, 0) -- (6, 3) node [above] {$z$};
+  \draw [black, dotted, thick, ->] (6, 0) -- (9, 0) node [right] {$x$};
+  \draw [black, dotted, thick, ->] (11, 0) -- (11, 3) node [above] {$z$};
+  \draw [black, dotted, thick, ->] (11, 0) -- (14, 0) node [right] {$x$};
+
+  \draw [black, dotted, thick, ->] (0, -5) -- (0, -2) node [above] {$y$};
+  \draw [black, dotted, thick, ->] (0, -5) -- (3, -5) node [right] {$x$};
+  \draw [black, dotted, thick, ->] (6, -5) -- (6, -2) node [above] {$y$};
+  \draw [black, dotted, thick, ->] (6, -5) -- (9, -5) node [right] {$x$};
+  \draw [black, dotted, thick, ->] (11, -5) -- (11, -2) node [above] {$y$};
+  \draw [black, dotted, thick, ->] (11, -5) -- (14, -5) node [right] {$x$};
+
+\end{tikzpicture}

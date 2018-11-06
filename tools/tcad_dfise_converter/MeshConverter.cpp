@@ -1,4 +1,4 @@
-#include "dfise_converter.h"
+#include "MeshConverter.hpp"
 
 #include <algorithm>
 #include <cfloat>
@@ -7,6 +7,7 @@
 #include <csignal>
 #include <cstdlib>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -27,9 +28,10 @@
 #include "core/utils/log.h"
 #include "tools/ROOT.h"
 
-#include "MeshElement.h"
+#include "DFISEParser.hpp"
+#include "MeshElement.hpp"
 #include "Octree.hpp"
-#include "read_dfise.h"
+#include "ThreadPool.hpp"
 
 using namespace mesh_converter;
 using namespace ROOT::Math;
@@ -108,7 +110,6 @@ int main(int argc, char** argv) {
 
     // Add stream and set default logging level
     allpix::Log::addStream(std::cout);
-    allpix::Log::setReportingLevel(allpix::LogLevel::INFO);
 
     // Install abort handler (CTRL+\) and interrupt handler (CTRL+C)
     std::signal(SIGQUIT, interrupt_handler);
@@ -119,21 +120,25 @@ int main(int argc, char** argv) {
     std::string log_file_name;
 
     std::string conf_file_name;
+    allpix::LogLevel log_level = allpix::LogLevel::INFO;
 
     for(int i = 1; i < argc; i++) {
         if(strcmp(argv[i], "-h") == 0) {
             print_help = true;
         } else if(strcmp(argv[i], "-v") == 0 && (i + 1 < argc)) {
             try {
-                allpix::LogLevel log_level = allpix::Log::getLevelFromString(std::string(argv[++i]));
-                allpix::Log::setReportingLevel(log_level);
+                log_level = allpix::Log::getLevelFromString(std::string(argv[++i]));
             } catch(std::invalid_argument& e) {
                 LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
                 return_code = 1;
             }
         } else if(strcmp(argv[i], "-f") == 0 && (i + 1 < argc)) {
             file_prefix = std::string(argv[++i]);
-            conf_file_name = file_prefix + ".conf";
+
+            // Pre-fill config file name if not set yet:
+            if(conf_file_name.empty()) {
+                conf_file_name = file_prefix + ".conf";
+            }
         } else if(strcmp(argv[i], "-c") == 0 && (i + 1 < argc)) {
             conf_file_name = std::string(argv[++i]);
         } else if(strcmp(argv[i], "-o") == 0 && (i + 1 < argc)) {
@@ -146,6 +151,9 @@ int main(int argc, char** argv) {
             return_code = 1;
         }
     }
+
+    // Set log level:
+    allpix::Log::setReportingLevel(log_level);
 
     if(file_prefix.empty()) {
         print_help = true;
@@ -162,18 +170,23 @@ int main(int argc, char** argv) {
 
     // Print help if requested or no arguments given
     if(print_help) {
-        std::cerr << "Usage: ./tcad_dfise_reader -f <file_name> [<options>]" << std::endl;
-        std::cout << "\t -f <file_prefix>       common prefix of DF-ISE grid (.grd) and data (.dat) files" << std::endl;
-        std::cout << "\t -c <config_file>       configuration file name" << std::endl;
-        std::cout << "\t -o <init_file_prefix>  output file prefix without .init (defaults to file name of <file_prefix>)"
-                  << std::endl;
-        std::cout << "\t -l <file>              file to log to besides standard output (disabled by default)" << std::endl;
-        std::cout << "\t -v <level>             verbosity level (default reporiting level is INFO)" << std::endl;
+        std::cerr << "Usage: mesh_converter -f <file_name> [<options>]" << std::endl;
+        std::cout << "Required parameters:" << std::endl;
+        std::cout << "\t -f <file_prefix>  common prefix of DF-ISE grid (.grd) and data (.dat) files" << std::endl;
+        std::cout << "Optional parameters:" << std::endl;
+        std::cout << "\t -c <config_file>  configuration file name" << std::endl;
+        std::cout << "\t -h                display this help text" << std::endl;
+        std::cout << "\t -l <file>         file to log to besides standard output (disabled by default)" << std::endl;
+        std::cout
+            << "\t -o <file_prefix>  output file prefix without .init extension (defaults to file name of <file_prefix>)"
+            << std::endl;
+        std::cout << "\t -v <level>        verbosity level (default reporiting level is INFO)" << std::endl;
 
         allpix::Log::finish();
         return return_code;
     }
 
+    LOG(STATUS) << "Welcome to the Mesh Converter Tool of Allpix^2 " << ALLPIX_PROJECT_VERSION;
     LOG(STATUS) << "Using " << conf_file_name << " configuration file";
     std::ifstream file(conf_file_name);
     allpix::ConfigReader reader(file, conf_file_name);
@@ -182,26 +195,22 @@ int main(int argc, char** argv) {
     std::string region = config.get<std::string>("region", "bulk");
     std::string observable = config.get<std::string>("observable", "ElectricField");
 
-    auto initial_radius = config.get<double>("initial_radius", 1);
-    auto radius_step = config.get<double>("radius_step", 0.5);
-    auto max_radius = config.get<double>("max_radius", 10);
+    const auto initial_radius = config.get<double>("initial_radius", 1);
+    const auto radius_step = config.get<double>("radius_step", 0.5);
+    const auto max_radius = config.get<double>("max_radius", 10);
 
-    bool threshold_flag = false;
-    auto radius_threshold = config.get<double>("radius_threshold", -1);
-    if(radius_threshold != -1) {
-        threshold_flag = true;
-    }
+    // Only use a radius threshold if requested
+    const bool threshold_flag = config.has("radius_threshold");
+    const auto radius_threshold = config.get<double>("radius_threshold", -1);
 
-    auto volume_cut = config.get<double>("volume_cut", 10e-9);
+    const auto volume_cut = config.get<double>("volume_cut", 10e-9);
 
-    bool index_cut_flag = false;
+    // Only use index cut if set.
+    const bool index_cut_flag = config.has("index_cut");
     auto index_cut = config.get<size_t>("index_cut", 999999);
-    if(index_cut != 999999) {
-        index_cut_flag = true;
-    }
 
     XYZVectorInt divisions;
-    auto dimension = config.get<int>("dimension", 3);
+    const auto dimension = config.get<int>("dimension", 3);
     if(dimension == 2) {
         auto divisions_yz = config.get<XYVectorInt>("divisions", XYVectorInt(100, 100));
         divisions = XYZVectorInt(1, divisions_yz.x(), divisions_yz.y());
@@ -219,10 +228,10 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    auto mesh_tree = config.get<bool>("mesh_tree", false);
+    const auto mesh_tree = config.get<bool>("mesh_tree", false);
 
     bool ss_flag = false;
-    auto ss_radius = config.get<double>("ss_radius", -1);
+    const auto ss_radius = config.get<double>("ss_radius", -1);
     std::vector<int> ss_point = {-1, -1, -1};
     if(config.has("screen_shot")) {
         ss_point = config.getArray<int>("screen_shot");
@@ -362,10 +371,10 @@ int main(int argc, char** argv) {
     }
 
     // Creating a new mesh points cloud with a regular pitch
-    double xstep = (maxx - minx) / static_cast<double>(divisions.x());
-    double ystep = (maxy - miny) / static_cast<double>(divisions.y());
-    double zstep = (maxz - minz) / static_cast<double>(divisions.z());
-    double cell_volume = xstep * ystep * zstep;
+    const double xstep = (maxx - minx) / static_cast<double>(divisions.x());
+    const double ystep = (maxy - miny) / static_cast<double>(divisions.y());
+    const double zstep = (maxz - minz) / static_cast<double>(divisions.z());
+    const double cell_volume = xstep * ystep * zstep;
 
     if(rot.at(0) != "x" || rot.at(1) != "y" || rot.at(2) != "z") {
         LOG(STATUS) << "TCAD mesh (x,y,z) coords. transformation into: (" << rot.at(0) << "," << rot.at(1) << ","
@@ -405,14 +414,19 @@ int main(int argc, char** argv) {
     auto elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
     LOG(INFO) << "Reading the files took " << elapsed_seconds << " seconds.";
 
-    LOG(STATUS) << "Starting regular grid interpolation";
     // Initializing the Octree with points from mesh cloud.
     unibn::Octree<Point> octree;
     octree.initialize(points);
-    std::vector<Point> e_field_new_mesh;
 
-    double x = minx + xstep / 2.0;
-    for(int i = 0; i < divisions.x(); ++i) {
+    auto mesh_section = [&](double x) {
+        allpix::Log::setReportingLevel(log_level);
+
+        // New mesh slice
+        std::vector<Point> new_mesh;
+
+        // Local index cut used:
+        auto my_index_cut = index_cut;
+
         double y = miny + ystep / 2.0;
         for(int j = 0; j < divisions.y(); ++j) {
             double z = minz + zstep / 2.0;
@@ -443,12 +457,6 @@ int main(int argc, char** argv) {
                     e.z = z; // Corresponding, to be interpolated, electric field
                 }
                 bool valid = false;
-
-                if(j * k % 1000 == 0) {
-                    LOG_PROGRESS(INFO, "POINT")
-                        << "Interpolating point (" << std::setw(3) << (i + 1) << "," << std::setw(3) << (j + 1) << ","
-                        << std::setw(3) << (k + 1) << ") at (" << q.x << "," << q.y << "," << q.z << ")";
-                }
 
                 size_t prev_neighbours = 0;
                 double radius = initial_radius;
@@ -483,8 +491,7 @@ int main(int argc, char** argv) {
                     // If after a radius step no new neighbours are found, go to the next radius step
                     if(results.size() <= prev_neighbours || results.empty()) {
                         prev_neighbours = results.size();
-                        LOG(WARNING) << "No (new) neighbour found with radius " << radius << ". Increasing search radius."
-                                     << std::endl;
+                        LOG(WARNING) << "No (new) neighbour found with radius " << radius << ". Increasing search radius.";
                         radius = radius + radius_step;
                         continue;
                     }
@@ -500,7 +507,7 @@ int main(int argc, char** argv) {
 
                     if(ss_flag) {
                         mesh_plotter(grid_file, ss_radius, radius, x, y, z, points, results);
-                        return 1;
+                        throw std::runtime_error("aborted interpolation, mesh point snapshot taken");
                     }
 
                     // Finding tetrahedrons
@@ -520,9 +527,9 @@ int main(int argc, char** argv) {
                     std::vector<size_t> index;
 
                     if(!index_cut_flag) {
-                        index_cut = results.size();
+                        my_index_cut = results.size();
                     }
-                    index_cut_up = index_cut;
+                    index_cut_up = my_index_cut;
                     while(index_cut_up <= results.size()) {
                         do {
                             valid = false;
@@ -577,7 +584,7 @@ int main(int argc, char** argv) {
 
                         LOG(DEBUG) << "All combinations tried up to index " << index_cut_up
                                    << " done. Increasing the index cut.";
-                        index_cut_up = index_cut_up + index_cut;
+                        index_cut_up = index_cut_up + my_index_cut;
                     }
 
                     if(valid) {
@@ -589,16 +596,48 @@ int main(int argc, char** argv) {
                 }
 
                 if(!valid) {
-                    LOG(FATAL) << "Couldn't interpolate new mesh point, probably the grid is too irregular";
-                    return 1;
+                    throw std::runtime_error("Couldn't interpolate new mesh point, the grid might be too irregular");
                 }
 
-                e_field_new_mesh.push_back(e);
+                new_mesh.push_back(e);
                 z += zstep;
             }
             y += ystep;
         }
-        x += xstep;
+
+        return new_mesh;
+    };
+
+    // Start the interpolation on many threads:
+    auto num_threads = config.get<unsigned int>("workers", std::max(std::thread::hardware_concurrency(), 1u));
+    LOG(STATUS) << "Starting regular grid interpolation with " << num_threads << " threads.";
+    std::vector<Point> e_field_new_mesh;
+
+    try {
+        ThreadPool pool(num_threads, log_level);
+        std::vector<std::future<std::vector<Point>>> mesh_futures;
+        // Set starting point
+        double x = minx + xstep / 2.0;
+        // Loop over x coordinate, add tasks for each coorinate to the queue
+        for(int i = 0; i < divisions.x(); ++i) {
+            mesh_futures.push_back(pool.submit(mesh_section, x));
+            x += xstep;
+        }
+
+        // Merge the result vectors:
+        unsigned int mesh_slices_done = 0;
+        for(auto& mesh_future : mesh_futures) {
+            auto mesh_slice = mesh_future.get();
+            e_field_new_mesh.insert(e_field_new_mesh.end(), mesh_slice.begin(), mesh_slice.end());
+            LOG_PROGRESS(INFO, "meshing") << "Interpolating new mesh: " << (100 * mesh_slices_done / mesh_futures.size())
+                                          << "%";
+            mesh_slices_done++;
+        }
+        pool.shutdown();
+    } catch(std::runtime_error& e) {
+        LOG(FATAL) << "Failed to interpolate new mesh:\n" << e.what();
+        allpix::Log::finish();
+        return 1;
     }
 
     end = std::chrono::system_clock::now();
@@ -612,15 +651,15 @@ int main(int argc, char** argv) {
     LOG(STATUS) << "Writing INIT file \"" << init_file_name.str() << "\"";
 
     // Write INIT file h"eader
-    init_file << "tcad_dfise_converter, ";                                             // NAME
-    init_file << "observable: " << observable << std::endl;                            // OBSERVABLE INTERPOLATED
-    init_file << "##SEED## ##EVENTS##" << std::endl;                                   // UNUSED
-    init_file << "##TURN## ##TILT## 1.0" << std::endl;                                 // UNUSED
-    init_file << "0.0 0.0 0.0" << std::endl;                                           // MAGNETIC FIELD (UNUSED)
-    init_file << (maxz - minz) << " " << (maxx - minx) << " " << (maxy - miny) << " "; // PIXEL DIMENSIONS
-    init_file << "0.0 0.0 0.0 0.0 ";                                                   // UNUSED
-    init_file << divisions.x() << " " << divisions.y() << " " << divisions.z() << " "; // GRID SIZE
-    init_file << "0.0" << std::endl;                                                   // UNUSED
+    init_file << "Allpix Squared " << ALLPIX_PROJECT_VERSION << " TCAD Mesh Converter, "; // NAME
+    init_file << "observable: " << observable << std::endl;                               // OBSERVABLE INTERPOLATED
+    init_file << "##SEED## ##EVENTS##" << std::endl;                                      // UNUSED
+    init_file << "##TURN## ##TILT## 1.0" << std::endl;                                    // UNUSED
+    init_file << "0.0 0.0 0.0" << std::endl;                                              // MAGNETIC FIELD (UNUSED)
+    init_file << (maxz - minz) << " " << (maxx - minx) << " " << (maxy - miny) << " ";    // PIXEL DIMENSIONS
+    init_file << "0.0 0.0 0.0 0.0 ";                                                      // UNUSED
+    init_file << divisions.x() << " " << divisions.y() << " " << divisions.z() << " ";    // GRID SIZE
+    init_file << "0.0" << std::endl;                                                      // UNUSED
 
     // Write INIT file data
     long long max_points = static_cast<long long>(divisions.x()) * divisions.y() * divisions.z();

@@ -35,11 +35,44 @@ SimpleTransferModule::SimpleTransferModule(Configuration& config, Messenger* mes
     // Set default value for the maximum depth distance to transfer
     config_.setDefault("max_depth_distance", Units::get(5.0, "um"));
 
+    // By default, collect from the full sensor surface, not the implant region
+    config_.setDefault("collect_from_implant", false);
+
+    // Plotting parameters
+    config_.setDefault<bool>("output_plots", false);
+    config_.setDefault<double>("output_plots_step", Units::get(0.1, "ns"));
+    config_.setDefault<double>("output_plots_range", Units::get(100, "ns"));
+
     // Save detector model
     model_ = detector_->getModel();
 
+    // Cache flag for output plots:
+    output_plots_ = config_.get<bool>("output_plots");
+
     // Require propagated deposits for single detector
     messenger->bindSingle(this, &SimpleTransferModule::propagated_message_, MsgFlags::REQUIRED);
+}
+
+void SimpleTransferModule::init() {
+
+    if(config_.get<bool>("collect_from_implant")) {
+        if(detector_->getElectricFieldType() == ElectricFieldType::LINEAR) {
+            throw ModuleError("Charge collection from implant region should not be used with linear electric fields.");
+        } else {
+            auto model = detector_->getModel();
+            LOG(INFO) << "Collecting charges from implants with size " << Units::display(model->getImplantSize(), {"um"});
+        }
+    }
+
+    if(output_plots_) {
+        auto time_bins =
+            static_cast<int>(config_.get<double>("output_plots_range") / config_.get<double>("output_plots_step"));
+        drift_time_histo = new TH1D("drift_time_histo",
+                                    "Charge carrier arrival time;t[ns];charge carriers",
+                                    time_bins,
+                                    0.,
+                                    config_.get<double>("output_plots_range"));
+    }
 }
 
 void SimpleTransferModule::run(unsigned int) {
@@ -70,11 +103,24 @@ void SimpleTransferModule::run(unsigned int) {
                        << " because their nearest pixel (" << xpixel << "," << ypixel << ") is outside the grid";
             continue;
         }
+
+        // Ignore if outside the implant region:
+        if(config_.get<bool>("collect_from_implant") && !detector_->isWithinImplant(position)) {
+            LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
+                       << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
+                       << " because it is outside the pixel implant.";
+            continue;
+        }
+
         Pixel::Index pixel_index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel));
 
         // Update statistics
         unique_pixels_.insert(pixel_index);
         transferred_charges_count += propagated_charge.getCharge();
+
+        if(output_plots_) {
+            drift_time_histo->Fill(propagated_charge.getEventTime(), propagated_charge.getCharge());
+        }
 
         LOG(DEBUG) << "Set of " << propagated_charge.getCharge() << " propagated charges at "
                    << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"}) << " brought to pixel "
@@ -113,4 +159,8 @@ void SimpleTransferModule::finalize() {
     // Print statistics
     LOG(INFO) << "Transferred total of " << total_transferred_charges_ << " charges to " << unique_pixels_.size()
               << " different pixels";
+
+    if(output_plots_) {
+        drift_time_histo->Write();
+    }
 }

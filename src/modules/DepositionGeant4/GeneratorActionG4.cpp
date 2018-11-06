@@ -12,8 +12,10 @@
 
 #include <limits>
 #include <memory>
+#include <regex>
 
 #include <G4Event.hh>
+#include <G4IonTable.hh>
 #include <G4ParticleDefinition.hh>
 #include <G4ParticleTable.hh>
 #include <G4RunManager.hh>
@@ -29,16 +31,26 @@ using namespace allpix;
 GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     : particle_source_(std::make_unique<G4GeneralParticleSource>()) {
 
+    // Define radioactive isotopes:
+    static std::map<std::string, std::tuple<int, int, int, double>> isotopes = {
+        {"fe55", std::make_tuple(26, 55, 0, 0.)},
+        {"am241", std::make_tuple(95, 241, 0, 0.)},
+        {"sr90", std::make_tuple(38, 90, 0, 0.)},
+        {"co60", std::make_tuple(27, 60, 0, 0.)},
+        {"cs137", std::make_tuple(55, 137, 0, 0.)},
+    };
+
     // Set verbosity of source to off
     particle_source_->SetVerbosity(0);
 
     // Get source specific parameters
     auto single_source = particle_source_->GetCurrentSource();
+    auto source_type = config.get<std::string>("source_type");
 
     // Set the centre coordinate of the source
     single_source->GetPosDist()->SetCentreCoords(config.get<G4ThreeVector>("source_position"));
 
-    if(config.get<std::string>("source_type") == "macro") {
+    if(source_type == "macro") {
 
         LOG(INFO) << "Using user macro for particle source.";
 
@@ -70,7 +82,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     } else {
 
         // Set position and direction parameters according to shape
-        if(config.get<std::string>("source_type") == "beam") {
+        if(source_type == "beam") {
 
             // Set position parameters
             single_source->GetPosDist()->SetPosDisType("Beam");
@@ -88,7 +100,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             }
             single_source->GetAngDist()->SetParticleMomentumDirection(direction);
 
-        } else if(config.get<std::string>("source_type") == "sphere") {
+        } else if(source_type == "sphere") {
 
             // Set position parameters
             single_source->GetPosDist()->SetPosDisType("Surface");
@@ -104,7 +116,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
                 single_source->GetAngDist()->SetAngDistType("cos");
             }
 
-        } else if(config.get<std::string>("source_type") == "square") {
+        } else if(source_type == "square") {
 
             // Set position parameters
             single_source->GetPosDist()->SetPosDisType("Plane");
@@ -114,9 +126,9 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
 
             // Set angle distribution parameters
             single_source->GetAngDist()->SetAngDistType("iso");
-            single_source->GetAngDist()->SetMaxTheta(config.get<double>("square_angle", ROOT::Math::Pi() / 2));
+            single_source->GetAngDist()->SetMaxTheta(config.get<double>("square_angle", ROOT::Math::Pi()) / 2);
 
-        } else if(config.get<std::string>("source_type") == "point") {
+        } else if(source_type == "point") {
 
             // Set position parameters
             single_source->GetPosDist()->SetPosDisType("Point");
@@ -153,6 +165,33 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             particle = pdg_table->FindParticle(particle_code);
             if(particle == nullptr) {
                 throw InvalidValueError(config, "particle_code", "particle code does not exist.");
+            }
+        } else if(isotopes.find(particle_type) != isotopes.end()) {
+            auto isotope = isotopes[particle_type];
+            // Set radioactive isotope:
+            particle = G4IonTable::GetIonTable()->GetIon(std::get<0>(isotope), std::get<1>(isotope), std::get<3>(isotope));
+
+            // Force the radioactive isotope to decay immediately:
+            particle->SetPDGLifeTime(0.);
+
+            single_source->SetParticleCharge(std::get<2>(isotope));
+
+            // Warn about non-zero source energy:
+            if(config.get<double>("source_energy") > 0) {
+                LOG(WARNING)
+                    << "A radioactive isotope is used as particle source, but the source energy is not set to zero.";
+            }
+        } else if(particle_type.substr(0, 3) == "ion") {
+            // Parse particle type as ion with components /Z/A/Q/E
+            std::smatch ion;
+            if(std::regex_match(
+                   particle_type, ion, std::regex("ion/([0-9]+)/([0-9]+)/([-+]?[0-9]+)/([0-9.]+(?:[a-zA-Z]+)?)")) &&
+               ion.ready()) {
+                particle = G4IonTable::GetIonTable()->GetIon(
+                    allpix::from_string<int>(ion[1]), allpix::from_string<int>(ion[2]), allpix::from_string<double>(ion[4]));
+                single_source->SetParticleCharge(allpix::from_string<int>(ion[3]));
+            } else {
+                throw InvalidValueError(config, "particle_type", "cannot parse parameters for ion.");
             }
         } else {
             particle = pdg_table->FindParticle(particle_type);

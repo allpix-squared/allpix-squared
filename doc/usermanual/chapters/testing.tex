@@ -90,13 +90,13 @@ export LD_LIBRARY_PATH="<library directory>:$LD_LIBRARY_PATH"
 \label{sec:ci}
 
 Quality and compatibility of the \apsq framework is ensured by an elaborate continuous integration (CI) which builds and tests the software on all supported platforms.
-The \apsq CI uses the GitLab Continuous Integration features and consists of five distinct stages as depicted in Figure~\ref{fig:ci}.
+The \apsq CI uses the GitLab Continuous Integration features and consists of seven distinct stages as depicted in Figure~\ref{fig:ci}.
 It is configured via the \file{.gitlab-ci.yml} file in the repository's root directory, while additional setup scripts for the GitLab Ci Runner machines and the Docker instances can be found in the \dir{.gitlab-ci.d} directory.
 
 \begin{figure}[btp]
   \centering
   \includegraphics[width=\textwidth]{ci.png}
-  \caption{Typical \apsq continous integration pipeline with 20 jobs distributed over five distinct stages. In this example, all jobs passed.}
+  \caption{Typical \apsq continous integration pipeline with 32 jobs distributed over seven distinct stages. In this example, all jobs passed.}
   \label{fig:ci}
 \end{figure}
 
@@ -118,8 +118,7 @@ The build is always performed with the default compiler flags enabled for the pr
 
 The \textbf{testing} stage executes the framework system and unit tests described in Section~\ref{sec:tests}.
 Different jobs are used to run different test types.
-This allows to optimize the CI setup depending on the demands of the test to be executed, i.e.\ the performance jobs are executed on native operating systems only with one concurrent job per machine.
-This ensures maximal performance and reproducible results for execution durations.
+This allows to optimize the CI setup depending on the demands of the test to be executed.
 All tests are expected to pass, and no code that fails to satisfy all tests will be merged into the repository.
 
 The \textbf{formatting} stage ensures proper formatting of the source code using the \command{clang-format} and following the coding conventions defined in the \file{.clang-format} file in the repository.
@@ -128,8 +127,17 @@ This means, the source code undergoes a static code analysis in order to identif
 Tests are marked as failed if either of the CMake targets \command{make check-format} or \command{make check-lint} fail.
 No code that fails to satisfy the coding conventions and formatting tests will be merged into the repository.
 
+The \textbf{performance} stage runs a longer simulation with several thousand events and measures the execution time.
+This facilitates monitoring of the simulation performance, a failing job would indicate a degradation in speed.
+These CI jobs run on dedicated machines with only one concurrent job as described in Section~\ref{sec:tests}.
+Performance tests are separated into their own CI stage because their execution is time consuming and they should only be started once proper  formatting of the new code is established.
+
 The \textbf{documentation} stage prepares this user manual as well as the Doxygen source code documentation for publication.
 This also allows to identify e.g.\ failing compilation of the \LaTeX documents or additional files which accidentally have not been committed to the repository.
+
+The \textbf{packaging} stage wraps the compiled binaries up into distributable tarballs for several platforms.
+This includes adding all libraries and executables to the tarball as well as preparing the \file{setup.sh} script to prepare run-time dependencies using the information provided to the build system.
+This procedure is described in more detail in Section~\ref{sec:packaging}.
 
 Finally, the \textbf{deployment} stage is only executed for new tags in the repository.
 Whenever a tag is pushed, this stages receives the build artifacts of previous stages and publishes them to the \apsq project website through the EOS file system~\cite{eos}. More detailed information on deployments is provided in the following.
@@ -138,14 +146,17 @@ Whenever a tag is pushed, this stages receives the build artifacts of previous s
 
 The CI is configured to automatically deploy new versions of \apsq and its user manual and code reference to different places to make them available to users.
 This section briefly describes the different deployment end-points currently configured and in use.
-The individual targets can be triggered by a push into the respective branches.
-In order to prevent accidental publications, these branches are protected and can only be updated by users with \emph{Master} privileges.
+The individual targets are triggered either by automatic nightly builds or by publishing new tags.
+In order to prevent accidental publications, the creation of tags is protected.
+Only users with \emph{Maintainer} privileges can push new tags to the repository.
 For new tagged versions, all deployment targets are executed.
 
 \subsection{Software deployment to CVMFS}
+\label{sec:cvmfs}
 
-The software is automatically deployed to CERN's VM file system (CVMFS)~\cite{cvmfs} for every new tag and for every update of the \parameter{deploy-cvmfs} branch.
-New versions are published to the folder \dir{/cvmfs/clicdp.cern.ch/software/allpix-squared/} where a new folder is created for every new tag, while updates via the branch are always stored in the \dir{latest} folder.
+The software is automatically deployed to CERN's VM file system (CVMFS)~\cite{cvmfs} for every new tag.
+In addition, the \parameter{master} branch is built and deployed every night.
+New versions are published to the folder \dir{/cvmfs/clicdp.cern.ch/software/allpix-squared/} where a new folder is created for every new tag, while updates via the \parameter{master} branch are always stored in the \dir{latest} folder.
 
 The deployed version currently comprises all modules as well as the detector models shipped with the framework.
 An additional \file{setup.sh} is placed in the root folder of the respective release, which allows to set up all runtime dependencies necessary for executing this version.
@@ -153,37 +164,37 @@ Versions both for SLC\,6 and CentOS\,7 are provided.
 
 The deployment CI job runs on a dedicated computer with a GitLab SSH runner.
 Job artifacts from the packaging stage of the CI are downloaded via their ID using the script found in \dir{.gitlab-ci.d/download_artifacts.py}, and are made available to the \emph{cvclicdp} user which has access to the CVMFS interface.
-The job checks for concurrent deployments to CVMFS and then unpacks arr tarball releases and publishes the to the CLICdp experiment CVMFS space, the corresponding script for the deployment can be found in \dir{.gitlab-ci.d/gitlab_deployment.sh}.
+The job checks for concurrent deployments to CVMFS and then unpacks the tarball releases and publishes them to the CLICdp experiment CVMFS space, the corresponding script for the deployment can be found in \dir{.gitlab-ci.d/gitlab_deployment.sh}.
 This job requires a private API token to be set as secret project variable through the GitLab interface, currently this token belongs to the service account user \emph{ap2}.
 
-\subsection{User manual deployment to EOS}
+\subsection{Documentation deployment to EOS}
 
-The user manual is deployed to the project's EOS space at \dir{/eos/project/a/allpix-squared/www/usermanual} for publication on the project website.
-This comprises both the PDF and HTMl versions of the manual as well as the Doxygen code reference.
-New versions are published for tags and updates of the \parameter{deploy-usermanual} branch.
+The project documentation is deployed to the project's EOS space at \dir{/eos/project/a/allpix-squared/www/} for publication on the project website.
+This comprises both the PDF and HTML versions of the user manual (subdirectory \dir{usermanual}) as well as the Doxygen code reference (subdirectory \dir{reference/}).
+The documentation is only published only for new tagged versions of the framework.
+
 The CI jobs uses the \parameter{ci-web-deployer} Docker image from the CERN GitLab CI tools to access EOS, which requires a specific file structure of the artifact.
 All files in the artifact's \dir{public/} folder will be published to the \dir{www/} folder of the given project.
-
 This job requires the secret project variables \parameter{EOS_ACCOUNT_USERNAME} and \parameter{EOS_ACCOUNT_PASSWORD} to be set via the GitLab web interface.
 Currently, this uses the credentials of the service account user \emph{ap2}.
 
 \subsection{Release tarball deployment to EOS}
 
 Binary release tarballs are deployed to EOS to serve as downloads from the website to the directory \dir{/eos/project/a/allpix-squared/www/releases}.
-New tarballs are produced for every tag as well as for any update of the \parameter{deploy-eos} branch.
-The files are taken from the packaging jobs and published via the \parameter{ci-web-deployer} Docker image from the CERN GitLab CI tools.
+New tarballs are produced for every tag as well as for nightly builds of the \parameter{master} branch, which are deployed with the name \file{allpix-squared-latest-<system-tag>-opt.tar.gz}.
 
+The files are taken from the packaging jobs and published via the \parameter{ci-web-deployer} Docker image from the CERN GitLab CI tools.
 This job requires the secret project variables \parameter{EOS_ACCOUNT_USERNAME} and \parameter{EOS_ACCOUNT_PASSWORD} to be set via the GitLab web interface.
 Currently, this uses the credentials of the service account user \emph{ap2}.
 
 \subsection{Building Docker images}
 \label{sec:build-docker}
 
-New \apsq Docker images are automatically created and deployed by the CI for every new tag and for every update of the \parameter{deploy-docker} branch.
+New \apsq Docker images are automatically created and deployed by the CI for every new tag and as a nightly build from the \parameter{master} branch.
 New versions are published to project Docker container registry~\cite{ap2-container-registry}.
-Tagged versions can be found via their respective tag name, while updates via the branch are always stored with the \parameter{latest} tag attached.
+Tagged versions can be found via their respective tag name, while updates via the nightly build are always stored with the \parameter{latest} tag attached.
 
-The final Docker image is built from three consecutive images with different layers of software added.
+The final Docker image is formed from three consecutive images with different layers of software added.
 The `base` image contains all build dependencies such as compilers, CMake, and git.
 It derives from a CentOS7 Docker image and can be build using the \file{etc/docker/Dockerfile.base} file via the following commands:
 
@@ -322,8 +333,11 @@ Currently implemented tests comprise:
     \item[\file{test_08-4_writer_corryvreckan.conf}] ensures proper functionality of the Corryvreckan file writer module. The monitored output comprises the coordinates of the pixel produced in the simulation.
     \item[\file{test_08-5_writer_corryvreckan_mc.conf}] ensures the correct storage of Monte Carlo truth particle information in the Corryvreckan file writer module by monitoring the local coordinates of the MC particle associated to the pixel hit.
     \item[\file{test_08-6_writer_text.conf}] ensures proper functionality of the ASCII text writer module by monitoring the total number of objects and messages written to the text file..
+    \item[\file{test_08-7_writer_lcio_detector_assignment.conf}] exercises the assignment of detector IDs to \apsq detectors in the LCIO output file. A fixed ID and collection name is assigned to the simulated detector.
+    \item[\file{test_08-8_writer_lcio_no_mc_truth.conf}] ensures that simulation results are properly converted to LCIO and stored even without the Monte Carlo truth information available.
     \item[\file{test_09-1_reader_root.conf}] tests the capability of the framework to read data back in and to dispatch messages for all objects found in the input tree. The monitored output comprises the total number of objects read from all branches.
     \item[\file{test_09-2_reader_root_seed.conf}] tests the capability of the framework to detect different random seeds for misalignment set in a data file to be read back in. The monitored output comprises the error message including the two different random seed values.
+    \item[\file{test_09-3_reader_root_ignoreseed.conf}] tests if core random seeds are properly ignored by the ROOTObjectReader module if requested by the configuration. The monitored output comprises the warning message emitted if a difference in seed values is discovered.
 \end{description}
 
 \paragraph{Performance Tests}

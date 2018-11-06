@@ -386,8 +386,17 @@ Local coordinate systems for each detector and a global frame of reference for t
 The global coordinate system is chosen as a right-handed Cartesian system, and the rotations of individual devices are performed around the geometrical center of their sensor.
 
 Local coordinate systems for the detectors are also right-handed Cartesian systems, with the x- and y-axes defining the sensor plane.
-The origin of this coordinate system is the centre of the lower left pixel in the grid, i.e.\ the pixel with indices (0,0).
+The origin of this coordinate system is the center of the lower left pixel in the grid, i.e.\ the pixel with indices (0,0).
 This simplifies calculations in the local coordinate system as all positions can either be stated in absolute numbers or in fractions of the pixel pitch.
+
+A sketch of the actual coordinate transformations performed, including the order of transformations, is provided in Figure~\ref{fig:transformations}. The global coordinate system used for tracking of particles through detetector setup is shown on the left side, while the local coordinate system used to describe the individual sensors is located at the right.
+
+\begin{figure}[tbp]
+  \center
+  \input{tikz/transformations}
+  \caption{Coordinate transoformations from global to local and revers. The first row shows the detector positions in the repective coordinate systems in top view, the second row in side view.}
+  \label{fig:transformations}
+\end{figure}
 
 \subsection{Changing and accessing the geometry}
 The geometry is needed at a very early stage because it determines the number of detector module instantiations as explained in Section~\ref{sec:module_instantiation}.
@@ -437,6 +446,9 @@ Determines the base size of the sensor together with the \parameter{pixel_size} 
 \item \parameter{pixel_size}: The pitch of a single pixel in the pixel matrix.
 Provided as 2D parameter in the x-y-plane.
 This parameter is required for all models.
+\item \parameter{implant_size}: The size of the collection diode implant in each pixel of the matrix.
+Provided as 2D parameter in the x-y-plane.
+This parameter is optional, the implant size defaults to the pixel pitch if not specified otherwise.
 \item \parameter{sensor_thickness}: Thickness of the active area of the detector model containing the individual pixels.
 This parameter is required for all models.
 \item \texttt{\textbf{sensor\_excess\_\textit{direction}}}: With direction either \parameter{top}, \parameter{bottom}, \parameter{right} or \parameter{left}, where the top, bottom, right and left direction are the positive y-axis, the negative y-axis, the positive x-axis and the negative x-axis, respectively.
@@ -619,6 +631,7 @@ void listener(std::shared_ptr<Message<Object>> message) {
 \end{enumerate}
 
 \subsection{Message flags}
+\label{sec:messageflags}
 Flags can be added to the bind and listening methods which enable a particular behaviour of the framework.
 \begin{itemize}
     \item \textbf{REQUIRED}: Specifies that this message is required during the event processing.

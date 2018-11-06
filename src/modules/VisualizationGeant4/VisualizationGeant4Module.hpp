@@ -74,7 +74,7 @@ namespace allpix {
          */
         void add_visualization_volumes();
 
-        // Check if we did run succesfully, used to apply workaround in destructor if needed
+        // Check if we did run successfully, used to apply workaround in destructor if needed
         bool has_run_;
 
         // Own the Geant4 visualization manager

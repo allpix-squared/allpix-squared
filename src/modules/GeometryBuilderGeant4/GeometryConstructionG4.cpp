@@ -152,7 +152,7 @@ void GeometryConstructionG4::init_materials() {
     G4Element* Pb = new G4Element("Lead", "Pb", 82., 207.2 * CLHEP::g / CLHEP::mole);
 
     // Add vacuum
-    materials_["vacuum"] = new G4Material("Vacuum", 1, 1.01 * CLHEP::g / CLHEP::mole, 0.0001 * CLHEP::g / CLHEP::cm3);
+    materials_["vacuum"] = new G4Material("Vacuum", 1, 1.008 * CLHEP::g / CLHEP::mole, CLHEP::universe_mean_density);
 
     // Create Epoxy material
     G4Material* Epoxy = new G4Material("Epoxy", 1.3 * CLHEP::g / CLHEP::cm3, 3);
@@ -218,10 +218,11 @@ void GeometryConstructionG4::build_detectors() {
         wrapperGeoTranslation *= rotWrapper->inverse();
         G4ThreeVector posWrapper = toG4Vector(position) - wrapperGeoTranslation;
         detector->setExternalObject("rotation_matrix", rotWrapper);
+        G4Transform3D transform_phys(*rotWrapper, posWrapper);
 
         // Place the wrapper
         auto wrapper_phys = make_shared_no_delete<G4PVPlacement>(
-            rotWrapper.get(), posWrapper, wrapper_log.get(), "wrapper_" + name + "_phys", world_log_.get(), false, 0, true);
+            transform_phys, wrapper_log.get(), "wrapper_" + name + "_phys", world_log_.get(), false, 0, true);
         detector->setExternalObject("wrapper_phys", wrapper_phys);
 
         LOG(DEBUG) << " Center of the geometry parts relative to the detector wrapper geometric center:";
@@ -436,7 +437,7 @@ void GeometryConstructionG4::build_detectors() {
 
         // ALERT: NO COVER LAYER YET
 
-        LOG(TRACE) << " Constructed detector " << detector->getName() << " succesfully";
+        LOG(TRACE) << " Constructed detector " << detector->getName() << " successfully";
     }
 }
 

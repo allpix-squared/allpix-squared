@@ -12,6 +12,8 @@
 #include <string>
 #include <vector>
 
+#include <TH1D.h>
+
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
@@ -42,6 +44,11 @@ namespace allpix {
         SimpleTransferModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector);
 
         /**
+         * @brief Initialize - check for field configuration and implants
+         */
+        void init() override;
+
+        /**
          * @brief Transfer the propagated charges to the pixels
          */
         void run(unsigned int) override;
@@ -70,6 +77,11 @@ namespace allpix {
 
         // Message containing the propagated charges
         std::shared_ptr<PropagatedChargeMessage> propagated_message_;
+
+        TH1D* drift_time_histo;
+
+        // Flag whether to store output plots:
+        bool output_plots_{};
 
         // Statistical information
         unsigned int total_transferred_charges_{};
