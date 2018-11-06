@@ -7,9 +7,15 @@
 This module provides an overview of the produced simulation data for a quick inspection and simple checks.
 For more sophisticated analyses, the output from one of the output writers should be used to make the necessary information available.
 
-Within the module, clustering of the input hits is performed. Looping over the PixelHits, hits being adjacent to an existing cluster are added to this cluster. Clusters are merged if there are multiple adjacent clusters. If the PixelHit is free-standing, a new cluster is created.
+Within the module, clustering of the input hits is performed. 
+Looping over the PixelHits, hits being adjacent to an existing cluster are added to this cluster. 
+Clusters are merged if there are multiple adjacent clusters. 
+If the PixelHit is free-standing, a new cluster is created.
 
 This module serves as a quick "mini-analysis" and creates the histograms listed below.
+The Monte Carlo truth position provided by the `MCParticle` objects is used as track reference position.
+An additional uncertainty can be added by configuring a track resolution, with which every cluster residual is colvoled. 
+For technical reasons, this offset is drawn randomly from a Gauss distribution independently for the resolution and the efficiency measurement.
 
 * A hitmap of all pixels in the pixel grid, displaying the number of times a pixel has been hit during the simulation run.
 * A cluster map indicating the cluster positions for the whole simulation run.
