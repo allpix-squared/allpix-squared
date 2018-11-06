@@ -158,7 +158,7 @@ ROOT::Math::XYZPoint GeometryManager::getMinimumCoordinate() {
         std::array<int, 8> offset_z = {{1, -1, 1, -1, 1, -1, 1, -1}};
 
         for(size_t i = 0; i < 8; ++i) {
-            auto point = model->getGeoCenter();
+            auto point = model->getGeometricalCenter();
             point.SetX(point.x() + offset_x.at(i) * model->getSize().x() / 2.0);
             point.SetY(point.y() + offset_y.at(i) * model->getSize().y() / 2.0);
             point.SetZ(point.z() + offset_z.at(i) * model->getSize().z() / 2.0);
@@ -200,7 +200,7 @@ ROOT::Math::XYZPoint GeometryManager::getMaximumCoordinate() {
         std::array<int, 8> offset_z = {{1, -1, 1, -1, 1, -1, 1, -1}};
 
         for(size_t i = 0; i < 8; ++i) {
-            auto point = model->getGeoCenter();
+            auto point = model->getGeometricalCenter();
             point.SetX(point.x() + offset_x.at(i) * model->getSize().x() / 2.0);
             point.SetY(point.y() + offset_y.at(i) * model->getSize().y() / 2.0);
             point.SetZ(point.z() + offset_z.at(i) * model->getSize().z() / 2.0);

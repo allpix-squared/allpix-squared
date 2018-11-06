@@ -168,7 +168,7 @@ namespace allpix {
         /**
          * @brief Get local coordinate of the geometric center of the model
          */
-        virtual ROOT::Math::XYZPoint getGeoCenter() const {
+        virtual ROOT::Math::XYZPoint getGeometricalCenter() const {
             // Get the distance, on the z axis, between the sensor center and the detector (box) geometrical center
             double detector_thickness = getSize().z();
             double min_support_center =
