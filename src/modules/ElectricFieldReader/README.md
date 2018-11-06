@@ -1,5 +1,5 @@
 # ElectricFieldReader
-**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>)   
+**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>)  
 **Status**: Functional
 
 ### Description
@@ -9,7 +9,7 @@ The reader provides the following models for electric fields:
 
 * For *constant* electric fields it add a constant electric field in the z-direction towards the pixel implants. This is not very physical but might aid in developing and testing new charge propagation algorithms.
 * For *linear* electric fields, the field has a constant slope determined by the bias voltage and the depletion voltage. The sensor is always depleted from the implant side, the direction of the electric field depends on the sign of the bias voltage (with negative bias voltage the electric field vector points towards the backplane and vice versa). The electric field is calculated using the formula $`E(z) = \frac{U_{bias} - U_{depl}}{d} + 2 \frac{U_{depl}}{d}\left( 1- \frac{z}{d} \right)`$, where d is the thickness of the sensor, and $`U_{depl}`$, $`U_{bias}`$ are the depletion and bias voltages, respectively.
-* For electric fields in the *INIT* format it parses a file containing an electric field map in the INIT format also used by the PixelAV software [@pixelav]. An example of a electric field in this format can be found in *etc/example_electric_field.init* in the repository. An explanation of the format is available in the source code of this module, a converter tool for electric fields from adaptive TCAD meshes is provided with the framework.
+* For electric fields in the *INIT* format it parses a file containing an electric field map in the INIT format also used by the PixelAV software [@pixelav]. An example of a electric field in this format can be found in *etc/example_electric_field.init* in the repository. An explanation of the format is available in the source code of this module, a converter tool for electric fields from adaptive TCAD meshes is provided with the framework. Fields of different sizes can be used and mapped onto the pixel matrix using the `field_scale` parameter. By default, the module assumes the field represents a single pixel unit cell. If the field size and pixel pitch do not match, a warning is printed and the field is scaled to the pixel pitch.
 
 The `depletion_depth` parameter can be used to control the thickness of the depleted region inside the sensor.
 This can be useful for devices such as HV-CMOS sensors, where the typical depletion depth but not necessarily the full depletion voltage are know.
@@ -23,6 +23,8 @@ Furthermore the module can produce a plot the electric field profile on an proje
 * `depletion_voltage` : Indicates the voltage at which the sensor is fully depleted. Used to calculate the electric field if the *model* parameter is equal to **linear**.
 * `depletion_depth` : Thickness of the depleted region. Used for all electric fields. When using the depletion depth in **linear** mode, no depletion voltage can be specified.
 * `file_name` : Location of file containing the electric field in the INIT format. Only used if the *model* parameter has the value **init**.
+* `field_scale` : Scale of the electric field in x- and y-direction. This parameter allows to use electric fields for fractions or multiple pixels. For example, an electric field calculated for a quarter pixel cell can be used by setting this parameter to `0.5 0.5` (half pitch in both directions) while a field calculated for four pixel cells in y and a single cell in x could be mapped to the pixel grid using `1 4`. Defaults to `1.0 1.0`. Only used if the *model* parameter has the value **init**.
+* `field_offset`: Offset of the field from the pixel edge in x- and y-direction. By default, the framework assumes that the provided electric field starts at the edge of the pixel, i.e. with an offset of `0.0`. With this parameter, the field can be shifted e.g. by half a pixel pitch to accommodate for fields which have been simulated starting from the pixel center. In this case, a parameter of `0.5 0.5` should be used. Only used if the *model* parameter has the value **init**.
 * `output_plots` : Determines if output plots should be generated. Disabled by default.
 * `output_plots_steps` : Number of bins in both x- and y-direction in the 2D histogram used to plot the electric field in the detectors. Only used if `output_plots` is enabled.
 * `output_plots_project` : Axis to project the 3D electric field on to create the 2D histogram. Either **x**, **y** or **z**. Only used if `output_plots` is enabled.

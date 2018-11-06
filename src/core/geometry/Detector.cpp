@@ -167,24 +167,27 @@ ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZPoint& pos
         return ROOT::Math::XYZVector(0, 0, 0);
     }
 
-    auto x = pos.x();
-    auto y = pos.y();
+    // Shift the coordinates by the offset configured for the electric field:
+    auto x = pos.x() - electric_field_offset_[0];
+    auto y = pos.y() - electric_field_offset_[1];
     auto z = pos.z();
 
-    // Compute corresponding pixel coordinates
+    // Compute corresponding field replica coordinates:
     // WARNING This relies on the origin of the local coordinate system
-    auto pixel_x = static_cast<int>(std::round(x / model_->getPixelSize().x()));
-    auto pixel_y = static_cast<int>(std::round(y / model_->getPixelSize().y()));
+    auto replica_x =
+        static_cast<int>(std::floor((x + 0.5 * model_->getPixelSize().x()) * electric_field_scales_inverse_[0]));
+    auto replica_y =
+        static_cast<int>(std::floor((y + 0.5 * model_->getPixelSize().y()) * electric_field_scales_inverse_[1]));
 
-    // Convert to the pixel frame
-    x -= pixel_x * model_->getPixelSize().x();
-    y -= pixel_y * model_->getPixelSize().y();
+    // Convert to the replica frame:
+    x -= (replica_x + 0.5) * electric_field_scales_[0] - 0.5 * model_->getPixelSize().x();
+    y -= (replica_y + 0.5) * electric_field_scales_[1] - 0.5 * model_->getPixelSize().y();
 
     // Do flipping if necessary
-    if((pixel_x % 2) == 1) {
+    if((replica_x % 2) == 1) {
         x *= -1;
     }
-    if((pixel_y % 2) == 1) {
+    if((replica_y % 2) == 1) {
         y *= -1;
     }
 
@@ -193,9 +196,9 @@ ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZPoint& pos
     if(electric_field_type_ == ElectricFieldType::GRID) {
         // Compute indices
         auto x_ind = static_cast<int>(std::floor(static_cast<double>(electric_field_sizes_[0]) *
-                                                 (x + model_->getPixelSize().x() / 2.0) / model_->getPixelSize().x()));
+                                                 (x + electric_field_scales_[0] / 2.0) * electric_field_scales_inverse_[0]));
         auto y_ind = static_cast<int>(std::floor(static_cast<double>(electric_field_sizes_[1]) *
-                                                 (y + model_->getPixelSize().y() / 2.0) / model_->getPixelSize().y()));
+                                                 (y + electric_field_scales_[1] / 2.0) * electric_field_scales_inverse_[1]));
         auto z_ind = static_cast<int>(
             std::floor(static_cast<double>(electric_field_sizes_[2]) * (z - electric_field_thickness_domain_.first) /
                        (electric_field_thickness_domain_.second - electric_field_thickness_domain_.first)));
@@ -224,10 +227,10 @@ ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZPoint& pos
     }
 
     // Flip vector if necessary
-    if((pixel_x % 2) == 1) {
+    if((replica_x % 2) == 1) {
         ret_val.SetX(-ret_val.x());
     }
-    if((pixel_y % 2) == 1) {
+    if((replica_y % 2) == 1) {
         ret_val.SetY(-ret_val.y());
     }
 
@@ -255,6 +258,8 @@ ElectricFieldType Detector::getElectricFieldType() const {
  */
 void Detector::setElectricFieldGrid(std::shared_ptr<std::vector<double>> field,
                                     std::array<size_t, 3> sizes,
+                                    std::array<double, 2> scales,
+                                    std::array<double, 2> offset,
                                     std::pair<double, double> thickness_domain) {
     if(sizes[0] * sizes[1] * sizes[2] * 3 != field->size()) {
         throw std::invalid_argument("electric field does not match the given sizes");
@@ -269,6 +274,14 @@ void Detector::setElectricFieldGrid(std::shared_ptr<std::vector<double>> field,
 
     electric_field_ = std::move(field);
     electric_field_sizes_ = sizes;
+
+    // Precalculate the offset and scale of the field relative to the pixel pitch:
+    electric_field_scales_ =
+        std::array<double, 2>{{model_->getPixelSize().x() * scales[0], model_->getPixelSize().y() * scales[1]}};
+    electric_field_scales_inverse_ = std::array<double, 2>{{1 / electric_field_scales_[0], 1 / electric_field_scales_[1]}};
+    electric_field_offset_ =
+        std::array<double, 2>{{model_->getPixelSize().x() * offset[0], model_->getPixelSize().y() * offset[1]}};
+
     electric_field_thickness_domain_ = std::move(thickness_domain);
     electric_field_type_ = ElectricFieldType::GRID;
 }
