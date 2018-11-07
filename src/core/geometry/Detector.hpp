@@ -32,14 +32,14 @@
 namespace allpix {
 
     /**
-     * @brief Type of the electric field
+     * @brief Type of fields
      */
-    enum class ElectricFieldType {
-        NONE = 0, ///< No electric field is simulated
-        CONSTANT, ///< Constant electric field (mostly for testing)
-        LINEAR,   ///< Linear electric field (linearity determined by function)
-        GRID,     ///< Electric field supplied through a regularized grid
-        CUSTOM,   ///< Custom electric field function
+    enum class FieldType {
+        NONE = 0, ///< No field is applied
+        CONSTANT, ///< Constant field
+        LINEAR,   ///< Linear field (linearity determined by function)
+        GRID,     ///< Field supplied through a regularized grid
+        CUSTOM,   ///< Custom field function
     };
 
     using ElectricFieldFunction = std::function<ROOT::Math::XYZVector(const ROOT::Math::XYZPoint&)>;
@@ -129,7 +129,7 @@ namespace allpix {
          * @brief Return the type of electric field that is simulated.
          * @return The type of the electric field
          */
-        ElectricFieldType getElectricFieldType() const;
+        FieldType getElectricFieldType() const;
         /**
          * @brief Get the electric field in the sensor at a local position
          * @param pos Position in the local frame
@@ -157,7 +157,7 @@ namespace allpix {
          */
         void setElectricFieldFunction(ElectricFieldFunction function,
                                       std::pair<double, double> thickness_domain,
-                                      ElectricFieldType type = ElectricFieldType::CUSTOM);
+                                      FieldType type = FieldType::CUSTOM);
 
         /**
              * @brief Set the magnetic field in the detector
@@ -233,7 +233,7 @@ namespace allpix {
         std::array<double_t, 2> electric_field_offset_{{0., 0.}};
         std::shared_ptr<std::vector<double>> electric_field_;
         std::pair<double, double> electric_field_thickness_domain_;
-        ElectricFieldType electric_field_type_{ElectricFieldType::NONE};
+        FieldType electric_field_type_{FieldType::NONE};
         ElectricFieldFunction electric_field_function_;
 
         ROOT::Math::XYZVector magnetic_field_;

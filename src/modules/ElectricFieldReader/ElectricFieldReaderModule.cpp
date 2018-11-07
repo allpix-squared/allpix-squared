@@ -34,7 +34,7 @@ ElectricFieldReaderModule::ElectricFieldReaderModule(Configuration& config, Mess
 }
 
 void ElectricFieldReaderModule::init() {
-    ElectricFieldType type = ElectricFieldType::GRID;
+    FieldType type = FieldType::GRID;
 
     // Check field strength
     auto field_model = config_.get<std::string>("model");
@@ -84,7 +84,7 @@ void ElectricFieldReaderModule::init() {
             std::get<0>(field_data), std::get<1>(field_data), field_scale, field_offset, thickness_domain);
     } else if(field_model == "constant") {
         LOG(TRACE) << "Adding constant electric field";
-        type = ElectricFieldType::CONSTANT;
+        type = FieldType::CONSTANT;
 
         auto field_z = config_.get<double>("bias_voltage") / getDetector()->getModel()->getSensorSize().z();
         LOG(INFO) << "Set constant electric field with magnitude " << Units::display(field_z, {"V/um", "V/mm"});
@@ -94,7 +94,7 @@ void ElectricFieldReaderModule::init() {
         detector_->setElectricFieldFunction(function, thickness_domain, type);
     } else if(field_model == "linear") {
         LOG(TRACE) << "Adding linear electric field";
-        type = ElectricFieldType::LINEAR;
+        type = FieldType::LINEAR;
 
         // Get depletion voltage, defaults to bias voltage:
         auto depletion_voltage = config_.get<double>("depletion_voltage", config_.get<double>("bias_voltage"));

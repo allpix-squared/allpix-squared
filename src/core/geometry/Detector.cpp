@@ -163,7 +163,7 @@ bool Detector::hasElectricField() const {
  */
 ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZPoint& pos) const {
     // FIXME: We need to revisit this to be faster and not too specific
-    if(electric_field_type_ == ElectricFieldType::NONE) {
+    if(electric_field_type_ == FieldType::NONE) {
         return ROOT::Math::XYZVector(0, 0, 0);
     }
 
@@ -193,7 +193,7 @@ ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZPoint& pos
 
     // Compute using the grid or a function depending on the setting
     ROOT::Math::XYZVector ret_val;
-    if(electric_field_type_ == ElectricFieldType::GRID) {
+    if(electric_field_type_ == FieldType::GRID) {
         // Compute indices
         auto x_ind = static_cast<int>(std::floor(static_cast<double>(electric_field_sizes_[0]) *
                                                  (x + electric_field_scales_[0] / 2.0) * electric_field_scales_inverse_[0]));
@@ -240,9 +240,9 @@ ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZPoint& pos
 /**
  * The type of the electric field is set depending on the function used to apply it.
  */
-ElectricFieldType Detector::getElectricFieldType() const {
+FieldType Detector::getElectricFieldType() const {
     if(!hasElectricField()) {
-        return ElectricFieldType::NONE;
+        return FieldType::NONE;
     }
     return electric_field_type_;
 }
@@ -283,12 +283,12 @@ void Detector::setElectricFieldGrid(std::shared_ptr<std::vector<double>> field,
         std::array<double, 2>{{model_->getPixelSize().x() * offset[0], model_->getPixelSize().y() * offset[1]}};
 
     electric_field_thickness_domain_ = std::move(thickness_domain);
-    electric_field_type_ = ElectricFieldType::GRID;
+    electric_field_type_ = FieldType::GRID;
 }
 
 void Detector::setElectricFieldFunction(ElectricFieldFunction function,
                                         std::pair<double, double> thickness_domain,
-                                        ElectricFieldType type) {
+                                        FieldType type) {
     electric_field_thickness_domain_ = std::move(thickness_domain);
     electric_field_function_ = std::move(function);
     electric_field_type_ = type;
