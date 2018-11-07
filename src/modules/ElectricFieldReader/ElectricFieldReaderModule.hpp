@@ -15,6 +15,7 @@
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
+#include "tools/field_parser.h"
 
 #include "core/module/Module.hpp"
 
@@ -28,14 +29,6 @@ namespace allpix {
      * - For the INIT format, reads the specified file and add the electric field grid to the bound detectors
      */
     class ElectricFieldReaderModule : public Module {
-        /**
-         * Electric field data with three components
-         * * The actual field data as shared pointer to vector
-         * * An array specifying the number of bins in each dimension
-         * * An array containing the physical extent of the field as specified in the file
-         */
-        using FieldData = std::tuple<std::shared_ptr<std::vector<double>>, std::array<size_t, 3>, std::array<double, 3>>;
-
     public:
         /**
          * @brief Constructor for this detector-specific module
@@ -65,7 +58,8 @@ namespace allpix {
          * @param thickness_domain Domain of the thickness where the field is defined
          * @param field_scale Scaling parameters for the field size in x and y
          */
-        FieldData read_init_field(std::pair<double, double> thickness_domain, std::array<double, 2> field_scale);
+        FieldData<double> read_init_field(std::pair<double, double> thickness_domain, std::array<double, 2> field_scale);
+        static FieldParser<double, 3> field_parser_;
 
         /**
          * @brief Create output plots of the electric field profile
@@ -81,11 +75,5 @@ namespace allpix {
         void check_detector_match(std::array<double, 3> dimensions,
                                   std::pair<double, double> thickness_domain,
                                   std::array<double, 2> field_scale);
-
-        /**
-         * @brief Get the electric field from a file name, caching the result between instantiations
-         */
-        static FieldData get_by_file_name(const std::string& name);
-        static std::map<std::string, FieldData> field_map_;
     };
 } // namespace allpix
