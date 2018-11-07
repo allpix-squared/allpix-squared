@@ -26,24 +26,24 @@ namespace allpix {
          * @brief Constructor taking a TrackInfoManager*
          * @param track_info_mgr_ptr Pointer to TrackInfoManager which must be used to create the TrackInfoG4 instances
          */
-        SetTrackInfoUserHookG4(TrackInfoManager* track_info_mgr_ptr) : track_info_mgr_ptr_(track_info_mgr_ptr){};
+        explicit SetTrackInfoUserHookG4(TrackInfoManager* track_info_mgr_ptr) : track_info_mgr_ptr_(track_info_mgr_ptr){};
 
         /**
          * @brief Default destructor
          */
-        ~SetTrackInfoUserHookG4() = default;
+        ~SetTrackInfoUserHookG4() override = default;
 
         /**
          * @brief Called for every G4Track at beginning
          * @param aTrack The pointer to the G4Track for which this routine is called
          */
-        void PreUserTrackingAction(const G4Track* aTrack);
+        void PreUserTrackingAction(const G4Track* aTrack) override;
 
         /**
          * @brief Called for every G4Track at end
          * @param aTrack The pointer to the G4Track for which this routine is called
          */
-        void PostUserTrackingAction(const G4Track* aTrack);
+        void PostUserTrackingAction(const G4Track* aTrack) override;
 
     private:
         // Raw ptr to track info manager to create instances of TrackInfoG4
