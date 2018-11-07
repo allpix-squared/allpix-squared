@@ -28,7 +28,7 @@ void OptionParser::parseOption(std::string line) {
     auto dot_pos = key.find('.');
     if(dot_pos == std::string::npos) {
         // Global option, add to the global options list
-        global_options_.push_back(std::make_pair(key, value));
+        global_options_.emplace_back(key, value);
     } else {
         // Other identifier bound option is passed
         auto identifier = key.substr(0, dot_pos);
