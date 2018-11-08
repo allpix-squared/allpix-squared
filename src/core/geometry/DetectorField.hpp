@@ -51,7 +51,9 @@ namespace allpix {
         DetectorField(std::shared_ptr<DetectorModel> model) : model_(model), field_type_(FieldType::NONE){};
         DetectorField() : model_(), field_type_(FieldType::NONE){};
 
-        bool isValid() const { return initialized_; };
+        bool isValid() const {
+            return field_function_ || (field_sizes_[0] != 0 && field_sizes_[1] != 0 && field_sizes_[2] != 0);
+        };
 
         /**
          * @brief Return the type of field
@@ -88,7 +90,6 @@ namespace allpix {
                          FieldType type = FieldType::CUSTOM);
 
     private:
-        bool initialized_{false};
         const std::shared_ptr<DetectorModel> model_;
 
         /*
