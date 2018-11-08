@@ -145,7 +145,7 @@ Pixel Detector::getPixel(unsigned int x, unsigned int y) {
     auto local_center = ROOT::Math::XYZPoint(local_x, local_y, local_z);
     auto global_center = getGlobalPosition(local_center);
 
-    return Pixel(index, local_center, global_center, size);
+    return {index, local_center, global_center, size};
 }
 
 /**
@@ -164,7 +164,7 @@ bool Detector::hasElectricField() const {
 ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZPoint& pos) const {
     // FIXME: We need to revisit this to be faster and not too specific
     if(electric_field_type_ == FieldType::NONE) {
-        return ROOT::Math::XYZVector(0, 0, 0);
+        return {0, 0, 0};
     }
 
     // Shift the coordinates by the offset configured for the electric field:
@@ -207,7 +207,7 @@ ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZPoint& pos
         if(x_ind < 0 || x_ind >= static_cast<int>(electric_field_sizes_[0]) || y_ind < 0 ||
            y_ind >= static_cast<int>(electric_field_sizes_[1]) || z_ind < 0 ||
            z_ind >= static_cast<int>(electric_field_sizes_[2])) {
-            return ROOT::Math::XYZVector(0, 0, 0);
+            return {0, 0, 0};
         }
 
         // Compute total index
@@ -219,7 +219,7 @@ ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZPoint& pos
     } else {
         // Check if inside the thickness domain
         if(z < electric_field_thickness_domain_.first || electric_field_thickness_domain_.second < z) {
-            return ROOT::Math::XYZVector(0, 0, 0);
+            return {0, 0, 0};
         }
 
         // Calculate the electric field
