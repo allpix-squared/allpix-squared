@@ -91,11 +91,29 @@ namespace allpix {
         bool initialized_{false};
         const std::shared_ptr<DetectorModel> model_;
 
+        /*
+         * @brief Helper function to retrieve the return type from a calculated index
+         * @param a the field data vector
+         * @param offset the calcilated global index to start from
+         * @param index sequence expanded to the number of elements requested, depending on the template instance
+         */
+        template <std::size_t... I> auto get_impl(size_t offset, std::index_sequence<I...>) const;
+
         // Field properties
         std::array<size_t, 3> field_sizes_;
+
+        /*
+         * Scale of the field in x and y direction, defaults to 1, 1, i.e. to one full pixel cell
+         * The inverse of the field scales is pre-calculated for convenience
+         */
         std::array<double_t, 2> field_scales_{{1., 1.}};
         std::array<double_t, 2> field_scales_inverse_{{1., 1.}};
+
+        /*
+         * Offset of the field from the pixel edge, e.g. when using fields centered at a pixel corner instead of the center
+         */
         std::array<double_t, 2> field_offset_{{0., 0.}};
+
         std::shared_ptr<std::vector<double>> field_;
         std::pair<double, double> field_thickness_domain_;
         FieldType field_type_{FieldType::NONE};

@@ -1,8 +1,8 @@
 
 namespace allpix {
     /**
-     * The electric field is replicated for all pixels and uses flipping at each boundary (side effects are not modeled in
-     * this stage). Outside of the sensor the electric field is strictly zero by definition.
+     * The field is replicated for all pixels and uses flipping at each boundary (side effects are not modeled in
+     * this stage). Outside of the sensor the field is strictly zero by definition.
      */
     template <typename T, size_t N> T DetectorField<T, N>::get(const ROOT::Math::XYZPoint& pos) const {
         // FIXME: We need to revisit this to be faster and not too specific
@@ -10,7 +10,7 @@ namespace allpix {
             return {};
         }
 
-        // Shift the coordinates by the offset configured for the electric field:
+        // Shift the coordinates by the offset configured for the field:
         auto x = pos.x() - field_offset_[0];
         auto y = pos.y() - field_offset_[1];
         auto z = pos.z();
@@ -54,17 +54,14 @@ namespace allpix {
             size_t tot_ind = static_cast<size_t>(x_ind) * field_sizes_[1] * field_sizes_[2] * N +
                              static_cast<size_t>(y_ind) * field_sizes_[2] * N + static_cast<size_t>(z_ind) * N;
 
-            // FIXME how to do in templated class?
-            // ret_val = T((*field_)[tot_ind], (*field_)[tot_ind + 1], (*field_)[tot_ind + 2]);
-            // auto test = ;
-            ret_val = T(); //{get_impl(*field_, tot_ind, std::make_index_sequence<N>{})};
+            ret_val = get_impl(tot_ind, std::make_index_sequence<N>{});
         } else {
             // Check if inside the thickness domain
             if(z < field_thickness_domain_.first || field_thickness_domain_.second < z) {
                 return {};
             }
 
-            // Calculate the electric field
+            // Calculate the field from the configured function:
             ret_val = field_function_(ROOT::Math::XYZPoint(x, y, z));
         }
 
@@ -80,19 +77,23 @@ namespace allpix {
         return ret_val;
     }
 
+    template <typename T, size_t N>
+    template <std::size_t... I>
+    auto DetectorField<T, N>::get_impl(size_t offset, std::index_sequence<I...>) const {
+        return T{(*field_)[offset + I]...};
+    }
+
     /**
-     * The type of the electric field is set depending on the function used to apply it.
+     * The type of the field is set depending on the function used to apply it.
      */
     template <typename T, size_t N> FieldType DetectorField<T, N>::getType() const { return field_type_; }
 
     /**
-     * @throws std::invalid_argument If the electric field sizes are incorrect or the thickness domain is outside the sensor
+     * @throws std::invalid_argument If the field sizes are incorrect or the thickness domain is outside the sensor
      *
-     * The electric field is stored as a large flat array. If the sizes are denoted as respectively X_SIZE, Y_ SIZE and
-     * Z_SIZE, each position (x, y, z) has three indices:
-     * - x*Y_SIZE*Z_SIZE*3+y*Z_SIZE*3+z*3: the x-component of the electric field
-     * - x*Y_SIZE*Z_SIZE*3+y*Z_SIZE*3+z*3+1: the y-component of the electric field
-     * - x*Y_SIZE*Z_SIZE*3+y*Z_SIZE*3+z*3+2: the z-component of the electric field
+     * The field is stored as a large flat array. If the sizes are denoted as respectively X_SIZE, Y_ SIZE and
+     * Z_SIZE, each position (x, y, z) has N indices, calculated as:
+     * x * Y_SIZE* Z_SIZE * N + y * Z_SIZE * + z * N + i: the i-th ccomponent of the field
      */
     template <typename T, size_t N>
     void DetectorField<T, N>::setGrid(std::shared_ptr<std::vector<double>> field,
