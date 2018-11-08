@@ -50,8 +50,8 @@ namespace allpix {
          * @brief Create and apply a linear field
          * @param thickness_domain Domain of the thickness where the field is defined
          */
-        ElectricFieldFunction get_linear_field_function(double depletion_voltage,
-                                                        std::pair<double, double> thickness_domain);
+        FieldFunction<ROOT::Math::XYZVector> get_linear_field_function(double depletion_voltage,
+                                                                       std::pair<double, double> thickness_domain);
 
         /**
          * @brief Read field in the init format and apply it

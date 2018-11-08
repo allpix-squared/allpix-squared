@@ -88,7 +88,7 @@ void ElectricFieldReaderModule::init() {
 
         auto field_z = config_.get<double>("bias_voltage") / getDetector()->getModel()->getSensorSize().z();
         LOG(INFO) << "Set constant electric field with magnitude " << Units::display(field_z, {"V/um", "V/mm"});
-        ElectricFieldFunction function = [field_z](const ROOT::Math::XYZPoint&) {
+        FieldFunction<ROOT::Math::XYZVector> function = [field_z](const ROOT::Math::XYZPoint&) {
             return ROOT::Math::XYZVector(0, 0, -field_z);
         };
         detector_->setElectricFieldFunction(function, thickness_domain, type);
@@ -101,7 +101,7 @@ void ElectricFieldReaderModule::init() {
 
         LOG(INFO) << "Setting linear electric field from " << Units::display(config_.get<double>("bias_voltage"), "V")
                   << " bias voltage and " << Units::display(depletion_voltage, "V") << " depletion voltage";
-        ElectricFieldFunction function = get_linear_field_function(depletion_voltage, thickness_domain);
+        FieldFunction<ROOT::Math::XYZVector> function = get_linear_field_function(depletion_voltage, thickness_domain);
         detector_->setElectricFieldFunction(function, thickness_domain, type);
     } else {
         throw InvalidValueError(config_, "model", "model should be 'linear', 'constant' or 'init'");
@@ -113,8 +113,8 @@ void ElectricFieldReaderModule::init() {
     }
 }
 
-ElectricFieldFunction ElectricFieldReaderModule::get_linear_field_function(double depletion_voltage,
-                                                                           std::pair<double, double> thickness_domain) {
+FieldFunction<ROOT::Math::XYZVector>
+ElectricFieldReaderModule::get_linear_field_function(double depletion_voltage, std::pair<double, double> thickness_domain) {
     LOG(TRACE) << "Calculating function for the linear electric field.";
     // We always deplete from the implants:
     auto bias_voltage = std::fabs(config_.get<double>("bias_voltage"));
