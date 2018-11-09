@@ -215,7 +215,7 @@ void GeometryConstructionG4::build_detectors() {
         orientation.GetComponents(vx, vy, vz);
         auto rotWrapper = std::make_shared<G4RotationMatrix>(copy_vec.data());
         G4ThreeVector wrapperGeoTranslation(0, 0, -model->getGeometricalCenter().z());
-        wrapperGeoTranslation *= rotWrapper->inverse();
+        wrapperGeoTranslation *= *rotWrapper;
         G4ThreeVector posWrapper = toG4Vector(position) - wrapperGeoTranslation;
         detector->setExternalObject("rotation_matrix", rotWrapper);
         G4Transform3D transform_phys(*rotWrapper, posWrapper);
