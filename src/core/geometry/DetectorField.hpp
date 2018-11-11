@@ -34,6 +34,7 @@ namespace allpix {
     };
 
     template <typename T = ROOT::Math::XYZVector> using FieldFunction = std::function<T(const ROOT::Math::XYZPoint&)>;
+    template <typename T> void flip_vector_components(T&, bool x, bool y);
 
     /**
      * @brief Field instance of a detector
@@ -46,10 +47,13 @@ namespace allpix {
     public:
         /**
          * @brief Constructs a detector field
-         * @param model Model of the detector
          */
-        DetectorField(std::shared_ptr<DetectorModel> model) : model_(model), field_type_(FieldType::NONE){};
-        DetectorField() : model_(), field_type_(FieldType::NONE){};
+        DetectorField() : field_type_(FieldType::NONE){};
+
+        void setModelParameters(ROOT::Math::XYVector pixel_pitch, ROOT::Math::XYVector thickness) {
+            pixel_size_ = pixel_pitch;
+            sensor_thickness_ = thickness;
+        }
 
         bool isValid() const {
             return field_function_ || (field_sizes_[0] != 0 && field_sizes_[1] != 0 && field_sizes_[2] != 0);
@@ -90,8 +94,6 @@ namespace allpix {
                          FieldType type = FieldType::CUSTOM);
 
     private:
-        const std::shared_ptr<DetectorModel> model_;
-
         /*
          * @brief Helper function to retrieve the return type from a calculated index
          * @param a the field data vector
@@ -119,6 +121,9 @@ namespace allpix {
         std::pair<double, double> field_thickness_domain_;
         FieldType field_type_{FieldType::NONE};
         FieldFunction<T> field_function_;
+
+        ROOT::Math::XYVector pixel_size_;
+        ROOT::Math::XYVector sensor_thickness_;
     };
 } // namespace allpix
 

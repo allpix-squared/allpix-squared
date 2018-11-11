@@ -17,12 +17,12 @@ namespace allpix {
 
         // Compute corresponding field replica coordinates:
         // WARNING This relies on the origin of the local coordinate system
-        auto replica_x = static_cast<int>(std::floor((x + 0.5 * model_->getPixelSize().x()) * field_scales_inverse_[0]));
-        auto replica_y = static_cast<int>(std::floor((y + 0.5 * model_->getPixelSize().y()) * field_scales_inverse_[1]));
+        auto replica_x = static_cast<int>(std::floor((x + 0.5 * pixel_size_.x()) * field_scales_inverse_[0]));
+        auto replica_y = static_cast<int>(std::floor((y + 0.5 * pixel_size_.y()) * field_scales_inverse_[1]));
 
         // Convert to the replica frame:
-        x -= (replica_x + 0.5) * field_scales_[0] - 0.5 * model_->getPixelSize().x();
-        y -= (replica_y + 0.5) * field_scales_[1] - 0.5 * model_->getPixelSize().y();
+        x -= (replica_x + 0.5) * field_scales_[0] - 0.5 * pixel_size_.x();
+        y -= (replica_y + 0.5) * field_scales_[1] - 0.5 * pixel_size_.y();
 
         // Do flipping if necessary
         if((replica_x % 2) == 1) {
@@ -65,14 +65,8 @@ namespace allpix {
             ret_val = field_function_(ROOT::Math::XYZPoint(x, y, z));
         }
 
-        // FIXME - how to do this in templated class?
         // Flip vector if necessary
-        // if((replica_x % 2) == 1) {
-        //     ret_val.SetX(-ret_val.x());
-        // }
-        // if((replica_y % 2) == 1) {
-        //     ret_val.SetY(-ret_val.y());
-        // }
+        flip_vector_components(ret_val, replica_x % 2, replica_y % 2);
 
         return ret_val;
     }
@@ -104,8 +98,8 @@ namespace allpix {
         if(sizes[0] * sizes[1] * sizes[2] * N != field->size()) {
             throw std::invalid_argument("field does not match the given sizes");
         }
-        if(thickness_domain.first + 1e-9 < model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0 ||
-           model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0 < thickness_domain.second - 1e-9) {
+        if(thickness_domain.first + 1e-9 < sensor_thickness_.x() / 2.0 ||
+           sensor_thickness_.y() / 2.0 < thickness_domain.second - 1e-9) {
             throw std::invalid_argument("thickness domain is outside sensor dimensions");
         }
         if(thickness_domain.first >= thickness_domain.second) {
@@ -116,11 +110,9 @@ namespace allpix {
         field_sizes_ = sizes;
 
         // Precalculate the offset and scale of the field relative to the pixel pitch:
-        field_scales_ =
-            std::array<double, 2>{{model_->getPixelSize().x() * scales[0], model_->getPixelSize().y() * scales[1]}};
+        field_scales_ = std::array<double, 2>{{pixel_size_.x() * scales[0], pixel_size_.y() * scales[1]}};
         field_scales_inverse_ = std::array<double, 2>{{1 / field_scales_[0], 1 / field_scales_[1]}};
-        field_offset_ =
-            std::array<double, 2>{{model_->getPixelSize().x() * offset[0], model_->getPixelSize().y() * offset[1]}};
+        field_offset_ = std::array<double, 2>{{pixel_size_.x() * offset[0], pixel_size_.y() * offset[1]}};
 
         field_thickness_domain_ = std::move(thickness_domain);
         field_type_ = FieldType::GRID;
