@@ -182,13 +182,13 @@ void Detector::setElectricFieldGrid(std::shared_ptr<std::vector<double>> field,
                                     std::array<double, 2> scales,
                                     std::array<double, 2> offset,
                                     std::pair<double, double> thickness_domain) {
-    electric_field_.setGrid(field, sizes, scales, offset, thickness_domain);
+    electric_field_.setGrid(std::move(field), sizes, scales, offset, thickness_domain);
 }
 
 void Detector::setElectricFieldFunction(FieldFunction<ROOT::Math::XYZVector> function,
                                         std::pair<double, double> thickness_domain,
                                         FieldType type) {
-    electric_field_.setFunction(function, thickness_domain, type);
+    electric_field_.setFunction(std::move(function), thickness_domain, type);
 }
 
 bool Detector::hasMagneticField() const {

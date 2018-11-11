@@ -48,7 +48,7 @@ namespace allpix {
         /**
          * @brief Constructs a detector field
          */
-        DetectorField() : field_type_(FieldType::NONE){};
+        DetectorField() = default;
 
         void setModelParameters(ROOT::Math::XYVector pixel_pitch, ROOT::Math::XYVector thickness) {
             pixel_size_ = pixel_pitch;
