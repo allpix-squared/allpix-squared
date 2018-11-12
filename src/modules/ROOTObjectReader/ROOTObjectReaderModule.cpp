@@ -136,20 +136,30 @@ void ROOTObjectReaderModule::init() {
 
     std::string* str = nullptr;
     input_file_->GetObject("config/Allpix/random_seed_core", str);
-    if(str == nullptr) {
-        throw InvalidValueError(global_config,
-                                "random_seed_core",
-                                "no random seed for core set in the input data file, cross-check with configured value "
-                                "impossible - this might lead to unexpected behavior.");
-    }
 
-    auto file_seed = allpix::from_string<uint64_t>(*str);
-    if(config_seed != file_seed) {
-        throw InvalidValueError(global_config,
-                                "random_seed_core",
-                                "mismatch between core random seed in configuration file and input data - this "
-                                "might lead to unexpected behavior. Set to value configured in the input data file: " +
-                                    (*str));
+    if(str == nullptr) {
+        // check if missing random seed core in config file should be ignored
+        if(config_.get<bool>("ignore_seed_mismatch", false)) {
+            LOG(WARNING) << "No random seed for core set in the input data file, cross-check with configured value - "
+                         << "this might lead to unexpected behavior. Random seed core from the input data is used.";
+        } else {
+            throw InvalidValueError(global_config,
+                                    "random_seed_core",
+                                    "no random seed for core set in the input data file, cross-check with configured value "
+                                    "impossible - this might lead to unexpected behavior.");
+        }
+    } else if(config_seed != allpix::from_string<uint64_t>(*str)) {
+        // check if mismatch between random seed core in config and in input file should be ignored
+        if(config_.get<bool>("ignore_seed_mismatch", false)) {
+            LOG(WARNING) << "Mismatch between core random seed in configuration file and input data"
+                         << " - this might lead to unexpected behavior.";
+        } else {
+            throw InvalidValueError(global_config,
+                                    "random_seed_core",
+                                    "mismatch between core random seed in configuration file and input data - this "
+                                    "might lead to unexpected behavior. Set to value configured in the input data file: " +
+                                        (*str));
+        }
     }
 
     // Cross-check version, print warning only in case of a mismatch:

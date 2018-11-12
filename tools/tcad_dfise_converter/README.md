@@ -84,15 +84,12 @@ The following command-line options are supported:
 -l                     plot with logarithmic scale if set
 -o <output_file_name>  name of the file to output (default is efield.png)
 -p <plane>             plane to be ploted. xy, yz or zx (default is yz)
--x <mesh x_pitch>      plot regular mesh X binning (default is 100)
--y <mesh_y_pitch>      plot regular mesh Y binning (default is 100)
--z <mesh_z_pitch>      plot regular mesh Z binning (default is 100)
 ```
 
 The list with options and defaults is displayed with the `-h` option.
 In a 3D mesh, the plane to be plotted must be identified by using the option `-p` with argument *xy*, *yz* or *zx*, defaulting to *yz*.
 The data to be plotted can be selected with the `-d` option, the arguments are *ex*, *ey*, *ez* for the vector components or the default value *n* for the norm of the electric field.
-
+The number of mesh divisions in each dimension is automatically read from the `init` file, by default the cut in the third dimension is done in the center but can be shifted using the `-c` option described above.
 
 ### Octree
 J. Behley, V. Steinhage, A.B. Cremers. *Efficient Radius Neighbor Search in Three-dimensional Point Clouds*, Proc. of the IEEE International Conference on Robotics and Automation (ICRA), 2015 [@octree].

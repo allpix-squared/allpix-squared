@@ -18,6 +18,7 @@ ENDIF()
 INSTALL(
     FILES
     constructComparisonTree.C
+    recoverConfiguration.C
     remakeProject.C
     DESTINATION ${MACRO_DIRECTORY}
     COMPONENT tools)

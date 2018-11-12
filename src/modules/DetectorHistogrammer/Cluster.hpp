@@ -31,7 +31,7 @@ namespace allpix {
          * @brief Get the signal data for the hit
          * @return Digitized signal
          */
-        double getClusterCharge() const { return clusterCharge_; }
+        double getCharge() const { return clusterCharge_; }
 
         /**
          * @brief Add PixelHit to the cluster
@@ -43,19 +43,19 @@ namespace allpix {
          * @brief Get the cluster size
          * @return cluster size
          */
-        unsigned long int getClusterSize() const { return pixelHits_.size(); }
+        unsigned long int getSize() const { return pixelHits_.size(); }
 
         /**
          * @brief Get the cluster sizes in x and y
          * @return pair of cluster size x and y
          */
-        std::pair<unsigned int, unsigned int> getClusterSizeXY();
+        std::pair<unsigned int, unsigned int> getSizeXY() const;
 
         /**
          * @brief Get the weighted mean cluster position
          * @return weighted mean cluster position
          */
-        ROOT::Math::XYVectorD getClusterPosition();
+        ROOT::Math::XYVectorD getPosition() const;
 
         /**
          * @brief Get the seed PixelHit
@@ -64,15 +64,31 @@ namespace allpix {
         const PixelHit* getSeedPixelHit() const { return seedPixelHit_; }
 
         /**
+         * @brief Get the PixelHit at coordinates x and y
+         * @param  x Coordinate of the pixel in x direction
+         * @param  y Coordinate of the pixel in y direction
+         * @return Pointer to matching PixelHit if available or a nullptr if not part of the cluster
+         */
+        const PixelHit* getPixelHit(unsigned int x, unsigned int y) const;
+
+        /**
          * @brief Get the PixelHits contained in this cluster
          * @return List of all contained PixelHits
          */
         std::set<const PixelHit*> getPixelHits() const { return pixelHits_; }
 
+        /**
+         * @brief Get all MCParticles related to the cluster
+         * @return Vector of all related MCParticles
+         */
+        std::set<const MCParticle*> getMCParticles() const;
+
     private:
         const PixelHit* seedPixelHit_;
 
         std::set<const PixelHit*> pixelHits_;
+        std::set<const MCParticle*> mc_particles_;
+
         double clusterCharge_{};
 
         unsigned int minX_, minY_, maxX_, maxY_;

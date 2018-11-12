@@ -498,6 +498,23 @@ mesh_converter::read_electric_field(const std::string& file_name) {
                 auto key = base_match[1].str();
                 auto value = allpix::trim(base_match[2].str());
 
+                // Regular expression for matching validity region:
+                base_regex = std::regex("\\[\\s+\"([-\\w\\.]+)\"\\s+\\]");
+                if(key == "validity") {
+                    // Ignore any electric field valid for multiple regions
+                    if(std::regex_match(value, base_match, base_regex) && base_match.ready()) {
+                        region = base_match[1].str();
+                    } else {
+                        LOG(INFO) << "Could not determine validity region for string \"" << value << "\", ignoring.";
+                        main_section = DFSection::IGNORED;
+                    }
+                }
+
+                // Only use vertex locations:
+                if(key == "location" && value != "vertex") {
+                    main_section = DFSection::IGNORED;
+                }
+
                 // Filter correct electric field type
                 if(main_section == DFSection::ELECTRIC_FIELD) {
                     observable = "ElectricField";
@@ -509,19 +526,6 @@ mesh_converter::read_electric_field(const std::string& file_name) {
                     }
                     if(key == "dimension" && (std::stoul(value) != 3 && std::stoul(value) != 2)) {
                         main_section = DFSection::IGNORED;
-                    }
-                    if(key == "location" && value != "vertex") {
-                        main_section = DFSection::IGNORED;
-                    }
-                    if(key == "validity") {
-                        // Ignore any electric field valid for multiple regions
-                        base_regex = std::regex("\\[\\s+\"([\\w\\.]+)\"\\s+\\]");
-                        if(std::regex_match(value, base_match, base_regex) && base_match.ready()) {
-                            region = base_match[1].str();
-                        } else {
-                            LOG(INFO) << "Could not determine validity region, ignoring.";
-                            main_section = DFSection::IGNORED;
-                        }
                     }
                 }
 
@@ -537,19 +541,6 @@ mesh_converter::read_electric_field(const std::string& file_name) {
                     if(key == "dimension" && std::stoul(value) != 1) {
                         main_section = DFSection::IGNORED;
                     }
-                    if(key == "location" && value != "vertex") {
-                        main_section = DFSection::IGNORED;
-                    }
-                    if(key == "validity") {
-                        // Ignore any electric field valid for multiple regions
-                        base_regex = std::regex("\\[\\s+\"([\\w\\.]+)\"\\s+\\]");
-                        if(std::regex_match(value, base_match, base_regex) && base_match.ready()) {
-                            region = base_match[1].str();
-                        } else {
-                            LOG(INFO) << "Could not determine validity region, ignoring.";
-                            main_section = DFSection::IGNORED;
-                        }
-                    }
                 }
                 // Filter correct electric field type
                 if(main_section == DFSection::DOPING_CONCENTRATION) {
@@ -562,19 +553,6 @@ mesh_converter::read_electric_field(const std::string& file_name) {
                     }
                     if(key == "dimension" && std::stoul(value) != 1) {
                         main_section = DFSection::IGNORED;
-                    }
-                    if(key == "location" && value != "vertex") {
-                        main_section = DFSection::IGNORED;
-                    }
-                    if(key == "validity") {
-                        // Ignore any electric field valid for multiple regions
-                        base_regex = std::regex("\\[\\s+\"([\\w\\.]+)\"\\s+\\]");
-                        if(std::regex_match(value, base_match, base_regex) && base_match.ready()) {
-                            region = base_match[1].str();
-                        } else {
-                            LOG(INFO) << "Could not determine validity region, ignoring.";
-                            main_section = DFSection::IGNORED;
-                        }
                     }
                 }
 
@@ -590,19 +568,6 @@ mesh_converter::read_electric_field(const std::string& file_name) {
                     if(key == "dimension" && std::stoul(value) != 1) {
                         main_section = DFSection::IGNORED;
                     }
-                    if(key == "location" && value != "vertex") {
-                        main_section = DFSection::IGNORED;
-                    }
-                    if(key == "validity") {
-                        // Ignore any electric field valid for multiple regions
-                        base_regex = std::regex("\\[\\s+\"([\\w\\.]+)\"\\s+\\]");
-                        if(std::regex_match(value, base_match, base_regex) && base_match.ready()) {
-                            region = base_match[1].str();
-                        } else {
-                            LOG(INFO) << "Could not determine validity region, ignoring.";
-                            main_section = DFSection::IGNORED;
-                        }
-                    }
                 }
 
                 // Filter correct electric field type
@@ -616,19 +581,6 @@ mesh_converter::read_electric_field(const std::string& file_name) {
                     }
                     if(key == "dimension" && std::stoul(value) != 1) {
                         main_section = DFSection::IGNORED;
-                    }
-                    if(key == "location" && value != "vertex") {
-                        main_section = DFSection::IGNORED;
-                    }
-                    if(key == "validity") {
-                        // Ignore any electric field valid for multiple regions
-                        base_regex = std::regex("\\[\\s+\"([\\w\\.]+)\"\\s+\\]");
-                        if(std::regex_match(value, base_match, base_regex) && base_match.ready()) {
-                            region = base_match[1].str();
-                        } else {
-                            LOG(INFO) << "Could not determine validity region, ignoring.";
-                            main_section = DFSection::IGNORED;
-                        }
                     }
                 }
             }

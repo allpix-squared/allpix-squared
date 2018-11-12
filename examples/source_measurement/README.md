@@ -1,6 +1,7 @@
 # Source Measurement with Shielding
 
-This example simulates an (admittedly not very physical) source emitting electrons with Gaussian distributed energy of $`N(0.56MeV, 0.20MeV)`$.
+This example simulates an Iron-55 source using Geant4's radioactive decay simulation. The particle type is set to `Fe55` to use the isotope, the source energy configured as `0eV` for a decay in rest. A point-like particle source is used.
+
 A Medipix-type detector is placed below the source, shielded with an additional sheet of aluminum with a thickness of 8mm.
 No misalignment is added but the absolute position and orientation of the detector is specified.
 
