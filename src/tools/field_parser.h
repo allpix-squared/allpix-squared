@@ -26,7 +26,7 @@ namespace allpix {
 
     template <typename T = double, int N = 3> class FieldParser {
     public:
-        FieldParser() = default;
+        FieldParser(const std::string units) : units_(std::move(units)){};
         ~FieldParser() = default;
 
         /**
@@ -95,7 +95,7 @@ namespace allpix {
                     file >> input;
 
                     // Set the field at a position
-                    (*field)[xind * ysize * zsize * N + yind * zsize * N + zind * N + j] = Units::get(input, "V/cm");
+                    (*field)[xind * ysize * zsize * N + yind * zsize * N + zind * N + j] = Units::get(input, units_);
                 }
             }
             LOG_PROGRESS(INFO, "read_init") << "Reading field data: finished.";
@@ -109,6 +109,7 @@ namespace allpix {
         }
 
     private:
+        std::string units_;
         std::map<std::string, FieldData<T>> field_map_;
     };
 } // namespace allpix

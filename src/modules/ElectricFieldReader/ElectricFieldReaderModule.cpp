@@ -141,7 +141,7 @@ ElectricFieldReaderModule::get_linear_field_function(double depletion_voltage, s
  * The field read from the INIT format are shared between module instantiations using the static
  * ElectricFieldReaderModuleget_by_file_name method.
  */
-FieldParser<double, 3> ElectricFieldReaderModule::field_parser_;
+FieldParser<double, 3> ElectricFieldReaderModule::field_parser_("V/cm");
 FieldData<double> ElectricFieldReaderModule::read_init_field(std::pair<double, double> thickness_domain,
                                                              std::array<double, 2> field_scale) {
     try {
