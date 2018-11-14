@@ -180,7 +180,7 @@ core:coverage:
         - export COMPILER_TYPE="gcc"
         - source .gitlab-ci.d/init_x86_64.sh
         - source .gitlab-ci.d/load_deps.sh
-        - pip install --user gcovr
+        - pip install --trusted-host=pypi.org --user gcovr
         - mkdir build
         - cd build
         - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
