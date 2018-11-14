@@ -98,6 +98,12 @@ namespace allpix {
         // Precalculated value for Boltzmann constant:
         double boltzmann_kT_;
 
+        // Predefined values for reference charge carrier lifetime and doping concentration
+        double electron_lifetime_reference_;
+        double hole_lifetime_reference_;
+        double electron_doping_reference_;
+        double hole_doping_reference_;
+
         // Predefined values for electron/hole velocity calculation in magnetic fields
         double electron_Hall_;
         double hole_Hall_;
@@ -105,6 +111,9 @@ namespace allpix {
         // Magnetic field
         bool has_magnetic_field_;
         ROOT::Math::XYZVector magnetic_field_;
+
+        // Doping profile available?
+        bool has_doping_profile_;
 
         // Deposits for the bound detector in this event
         std::shared_ptr<DepositedChargeMessage> deposits_message_;

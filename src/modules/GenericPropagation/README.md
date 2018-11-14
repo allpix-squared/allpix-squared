@@ -18,6 +18,14 @@ $`\sigma = \sqrt{\frac{2k_b T}{e}\mu t}`$
 
 using the carrier mobility $`\mu`$, the temperature $`T`$ and the time step $`t`$. The propagation stops when the set of charges reaches any surface of the sensor.
 
+Charge carrier life time can be simulated using the doping concentration of the sensor. This feature is only enabled if a doping profile is loaded for the respective detector using the DopingProfileReader module.
+The life time is then calculated using the relation [@fossum-lee]
+
+$`\tau = \frac{\tau_0}{1 + \frac{N_d}{N_{d0}}}`$
+
+where $`\tau_0`$ and $`\N_{d0}`$ are reference life time and doping concentration taken from literature [@fossum].
+The survival probability is calculated at each step of the propagation by drawing a random number from an uniform distribution with $`0 \leq r \leq 1`$ and comparing it to the expression $`t/\tau`$, where $`t`$ is the time since the creation of the charge carrier.
+
 The propagation module also produces a variety of output plots. These include a 3D line plot of the path of all separately propagated charge carrier sets from their point of deposition to the end of their drift, with nearby paths having different colors. In this coloring scheme, electrons are marked in blue colors, while holes are presented in different shades of orange.
 In addition, a 3D GIF animation for the drift of all individual sets of charges (with the size of the point proportional to the number of charges in the set) can be produced. Finally, the module produces 2D contour animations in all the planes normal to the X, Y and Z axis, showing the concentration flow in the sensor.
 It should be noted that generating the animations is very time-consuming and should be switched off even when investigating drift behavior.
@@ -66,3 +74,5 @@ charge_per_step = 25
 
 [@jacoboni]: https://doi.org/10.1016/0038-1101(77)90054-5
 [@fehlberg]: https://ntrs.nasa.gov/search.jsp?R=19690021375
+[@fossum-lee]: https://doi.org/10.1016/0038-1101(82)90203-9
+[@fossum]: https://doi.org/10.1016/0038-1101(76)90022-8
