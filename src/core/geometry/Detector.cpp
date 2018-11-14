@@ -205,3 +205,51 @@ void Detector::setMagneticField(ROOT::Math::XYZVector b_field) {
 ROOT::Math::XYZVector Detector::getMagneticField() const {
     return magnetic_field_;
 }
+
+/**
+ * The doping profile is replicated for all pixels and uses flipping at each boundary (side effects are not modeled in this
+ * stage). Outside of the sensor the doping profile is strictly zero by definition.
+ */
+bool Detector::hasDopingProfile() const {
+    return doping_profile_.isValid();
+}
+
+/**
+ * The doping profile is replicated for all pixels and uses flipping at each boundary (side effects are not modeled in this
+ * stage). Outside of the sensor the doping profile is strictly zero by definition.
+ */
+double Detector::getDopingProfile(const ROOT::Math::XYZPoint& pos) const {
+    return doping_profile_.get(pos);
+}
+
+/**
+ * The type of the doping profile is set depending on the function used to apply it.
+ */
+FieldType Detector::getDopingProfileType() const {
+    return doping_profile_.getType();
+}
+
+/**
+ * @throws std::invalid_argument If the dpong profile sizes are incorrect
+ *
+ * The doping profile is stored as a large flat array. If the sizes are denoted as respectively X_SIZE, Y_ SIZE and Z_SIZE,
+ * each position (x, y, z) has one index, calculated as x*Y_SIZE*Z_SIZE+y*Z_SIZE+z
+ */
+void Detector::setDopingProfileGrid(std::shared_ptr<std::vector<double>> field,
+                                    std::array<size_t, 3> sizes,
+                                    std::array<double, 2> scales,
+                                    std::array<double, 2> offset) {
+    doping_profile_.setGrid(std::move(field),
+                            sizes,
+                            scales,
+                            offset,
+                            {model_->getSensorCenter().z() - model_->getSensorSize().z(),
+                             model_->getSensorCenter().z() + model_->getSensorSize().z()});
+}
+
+void Detector::setDopingProfileFunction(FieldFunction<double> function, FieldType type) {
+    doping_profile_.setFunction(std::move(function),
+                                {model_->getSensorCenter().z() - model_->getSensorSize().z(),
+                                 model_->getSensorCenter().z() + model_->getSensorSize().z()},
+                                type);
+}
