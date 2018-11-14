@@ -17,8 +17,8 @@ namespace allpix {
 
         // Compute corresponding field replica coordinates:
         // WARNING This relies on the origin of the local coordinate system
-        auto replica_x = static_cast<int>(std::floor((x + 0.5 * pixel_size_.x()) * scales_inverse_[0]));
-        auto replica_y = static_cast<int>(std::floor((y + 0.5 * pixel_size_.y()) * scales_inverse_[1]));
+        auto replica_x = static_cast<int>(std::floor((x + 0.5 * pixel_size_.x()) / scales_[0]));
+        auto replica_y = static_cast<int>(std::floor((y + 0.5 * pixel_size_.y()) / scales_[1]));
 
         // Convert to the replica frame:
         x -= (replica_x + 0.5) * scales_[0] - 0.5 * pixel_size_.x();
@@ -36,10 +36,8 @@ namespace allpix {
         T ret_val;
         if(type_ == FieldType::GRID) {
             // Compute indices
-            auto x_ind =
-                static_cast<int>(std::floor(static_cast<double>(sizes_[0]) * (x + scales_[0] / 2.0) * scales_inverse_[0]));
-            auto y_ind =
-                static_cast<int>(std::floor(static_cast<double>(sizes_[1]) * (y + scales_[1] / 2.0) * scales_inverse_[1]));
+            auto x_ind = static_cast<int>(std::floor(static_cast<double>(sizes_[0]) * (x + scales_[0] / 2.0) / scales_[0]));
+            auto y_ind = static_cast<int>(std::floor(static_cast<double>(sizes_[1]) * (y + scales_[1] / 2.0) / scales_[1]));
             auto z_ind = static_cast<int>(std::floor(static_cast<double>(sizes_[2]) * (z - thickness_domain_.first) /
                                                      (thickness_domain_.second - thickness_domain_.first)));
 
@@ -110,7 +108,6 @@ namespace allpix {
 
         // Precalculate the offset and scale of the field relative to the pixel pitch:
         scales_ = std::array<double, 2>{{pixel_size_.x() * scales[0], pixel_size_.y() * scales[1]}};
-        scales_inverse_ = std::array<double, 2>{{1 / scales_[0], 1 / scales_[1]}};
         offset_ = std::array<double, 2>{{pixel_size_.x() * offset[0], pixel_size_.y() * offset[1]}};
 
         thickness_domain_ = std::move(thickness_domain);

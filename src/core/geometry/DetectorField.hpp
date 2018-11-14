@@ -105,10 +105,8 @@ namespace allpix {
 
         /*
          * Scale of the field in x and y direction, defaults to 1, 1, i.e. to one full pixel cell
-         * The inverse of the field scales is pre-calculated for convenience
          */
         std::array<double_t, 2> scales_{{1., 1.}};
-        std::array<double_t, 2> scales_inverse_{{1., 1.}};
 
         /*
          * Offset of the field from the pixel edge, e.g. when using fields centered at a pixel corner instead of the center
