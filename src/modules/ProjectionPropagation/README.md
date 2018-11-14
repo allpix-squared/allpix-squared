@@ -17,6 +17,14 @@ $` t = \frac {1}{\mu_0}\int\left( \frac{1}{E(s)} + \frac{1}{E_c} \right) ds = \f
 
 Since the approximation of the drift time assumes a linear electric field, this module cannot be used with any other electric field configuration.
 
+Charge carrier life time can be simulated using the doping concentration of the sensor. This feature is only enabled if a doping profile is loaded for the respective detector using the DopingProfileReader module.
+The life time is then calculated using the relation [@fossum-lee]
+
+$`\tau = \frac{\tau_0}{1 + \frac{N_d}{N_{d0}}}`$
+
+where $`\tau_0`$ and $`N_{d0}`$ are reference life time and doping concentration taken from literature [@fossum].
+The survival probability is calculated for the total drift time of the charge carrier by drawing a random number from an uniform distribution with $`0 \leq r \leq 1`$ and comparing it to the expression $`t/\tau`$, where $`t`$ is the previously estimated drift time.
+
 Lorentz drift in a magnetic field is not supported. Hence, in order to use this module with a magnetic field present, the parameter `ignore_magnetic_field` can be set.
 
 ### Parameters

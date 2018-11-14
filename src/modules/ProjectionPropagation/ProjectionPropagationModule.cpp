@@ -57,12 +57,24 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
 
     boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * temperature;
 
+    // Reference lifetime and doping concentrations, taken from:
+    // https://doi.org/10.1016/0038-1101(82)90203-9
+    // https://doi.org/10.1016/0038-1101(76)90022-8
+    electron_lifetime_reference_ = Units::get(1e-5, "s");
+    hole_lifetime_reference_ = Units::get(4.0e-4, "s");
+    electron_doping_reference_ = Units::get(1e16, "/cm/cm/cm");
+    hole_doping_reference_ = Units::get(7.1e15, "/cm/cm/cm");
+
     config_.setDefault<bool>("ignore_magnetic_field", false);
 }
 
 void ProjectionPropagationModule::init() {
     if(detector_->getElectricFieldType() != FieldType::LINEAR) {
         throw ModuleError("This module should only be used with linear electric fields.");
+    }
+
+    if(detector_->hasDopingProfile() && detector_->getDopingProfileType() != FieldType::CONSTANT) {
+        throw ModuleError("This module should only be used with constant doping concentration.");
     }
 
     if(detector_->hasMagneticField() && !config_.get<bool>("ignore_magnetic_field")) {
@@ -114,6 +126,15 @@ void ProjectionPropagationModule::run(unsigned int) {
                 denominator = std::pow(1. + std::pow(efield_mag / hole_Ec_, hole_Beta_), 1.0 / hole_Beta_);
             }
             return numerator / denominator;
+        };
+
+        auto carrier_alive = [&](double doping_concentration, double time) -> bool {
+            // Roll dice for charge carrier survival
+            std::uniform_real_distribution<double> survival(0, 1);
+            auto lifetime = (type == CarrierType::ELECTRON ? electron_lifetime_reference_ : hole_lifetime_reference_) /
+                            (1 + std::fabs(doping_concentration) /
+                                     (type == CarrierType::ELECTRON ? electron_doping_reference_ : hole_doping_reference_));
+            return survival(random_generator_) > (time / lifetime);
         };
 
         // Get the electric field at the position of the deposited charge and the top of the sensor:
@@ -171,6 +192,13 @@ void ProjectionPropagationModule::run(unsigned int) {
                 charge_per_step = charges_remaining;
             }
             charges_remaining -= charge_per_step;
+
+            // Check if charge carrier is still alive:
+            if(has_doping_profile_ && !carrier_alive(detector_->getDopingProfile(position), drift_time)) {
+                LOG(DEBUG) << "Recombined " << charge_per_step << " charge carriers (" << type << ") at "
+                           << Units::display(position, {"mm", "um"});
+                continue;
+            }
 
             std::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
             double diffusion_x = gauss_distribution(random_generator_);
