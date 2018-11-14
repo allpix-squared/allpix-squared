@@ -148,6 +148,40 @@ namespace allpix {
                                       FieldType type = FieldType::CUSTOM);
 
         /**
+         * @brief Returns if the detector has a doping profile in the sensor
+         * @return True if the detector has a doping profile, false otherwise
+         */
+        bool hasDopingProfile() const;
+        /**
+         * @brief Return the type of doping profile that is simulated.
+         * @return The type of the doping profile
+         */
+        FieldType getDopingProfileType() const;
+        /**
+         * @brief Get the doping profile in the sensor at a local position
+         * @param pos Position in the local frame
+         * @return Value of the field at the queried point
+         */
+        double getDopingProfile(const ROOT::Math::XYZPoint& local_pos) const;
+
+        /**
+         * @brief Set the doping profile in a single pixel in the detector using a grid
+         * @param field Flat array of the field (see detailed description)
+         * @param sizes The dimensions of the flat doping profile array
+         * @param scales Scaling factors for the field size, given in fractions of a pixel unit cell in x and y
+         */
+        void setDopingProfileGrid(std::shared_ptr<std::vector<double>> field,
+                                  std::array<size_t, 3> sizes,
+                                  std::array<double, 2> scales,
+                                  std::array<double, 2> offset);
+        /**
+         * @brief Set the doping profile in a single pixel using a function
+         * @param function Function used to retrieve the doping profile
+         * @param type Type of the doping profile function used
+         */
+        void setDopingProfileFunction(FieldFunction<double> function, FieldType type = FieldType::CUSTOM);
+
+        /**
              * @brief Set the magnetic field in the detector
              * @param function Function used to retrieve the magnetic field
              * @param type Type of the magnetic field function used
@@ -221,6 +255,9 @@ namespace allpix {
         // Magnetic field properties
         ROOT::Math::XYZVector magnetic_field_;
         bool magnetic_field_on_;
+
+        // Doping profile properties
+        DetectorField<double, 1> doping_profile_;
 
         std::map<std::type_index, std::map<std::string, std::shared_ptr<void>>> external_objects_;
     };
