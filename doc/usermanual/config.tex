@@ -12,6 +12,9 @@
 
 \newcommand{\wip}{\textit{This section is not written yet.}}
 
+% Allow compilation with recent pandoc versions:
+\newcommand{\passthrough}[1]{\lstset{mathescape=false}#1\lstset{mathescape=true}}
+
 % Paragraph with new line
 \newcommand{\nlparagraph}[1]{\paragraph{#1}\mbox{}\\}
 
