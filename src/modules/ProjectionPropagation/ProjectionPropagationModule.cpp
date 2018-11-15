@@ -64,6 +64,7 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
     hole_lifetime_reference_ = Units::get(4.0e-4, "s");
     electron_doping_reference_ = Units::get(1e16, "/cm/cm/cm");
     hole_doping_reference_ = Units::get(7.1e15, "/cm/cm/cm");
+    has_doping_profile_ = detector_->hasDopingProfile();
 
     config_.setDefault<bool>("ignore_magnetic_field", false);
 }
@@ -73,7 +74,7 @@ void ProjectionPropagationModule::init() {
         throw ModuleError("This module should only be used with linear electric fields.");
     }
 
-    if(detector_->hasDopingProfile() && detector_->getDopingProfileType() != FieldType::CONSTANT) {
+    if(has_doping_profile_ && detector_->getDopingProfileType() != FieldType::CONSTANT) {
         throw ModuleError("This module should only be used with constant doping concentration.");
     }
 
