@@ -56,6 +56,9 @@ void Detector::set_model(std::shared_ptr<DetectorModel> model) {
     electric_field_.setModelParameters(model_->getPixelSize(),
                                        {model_->getSensorCenter().z() - model_->getSensorSize().z() / 2,
                                         model_->getSensorCenter().z() + model_->getSensorSize().z() / 2});
+    doping_profile_.setModelParameters(model_->getPixelSize(),
+                                       {model_->getSensorCenter().z() - model_->getSensorSize().z() / 2,
+                                        model_->getSensorCenter().z() + model_->getSensorSize().z() / 2});
     magnetic_field_on_ = false;
     build_transform();
 }
@@ -246,13 +249,13 @@ void Detector::setDopingProfileGrid(std::shared_ptr<std::vector<double>> field,
                             sizes,
                             scales,
                             offset,
-                            {model_->getSensorCenter().z() - model_->getSensorSize().z(),
-                             model_->getSensorCenter().z() + model_->getSensorSize().z()});
+                            {model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0,
+                             model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0});
 }
 
 void Detector::setDopingProfileFunction(FieldFunction<double> function, FieldType type) {
     doping_profile_.setFunction(std::move(function),
-                                {model_->getSensorCenter().z() - model_->getSensorSize().z(),
-                                 model_->getSensorCenter().z() + model_->getSensorSize().z()},
+                                {model_->getSensorCenter().z() - model_->getSensorSize().z() / 2,
+                                 model_->getSensorCenter().z() + model_->getSensorSize().z() / 2},
                                 type);
 }
