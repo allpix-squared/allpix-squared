@@ -156,7 +156,9 @@ namespace allpix {
 
         /**
          * @brief Get local coordinate of the position and rotation center in global frame
-         * @note It can be a counter intuitive that this is not usually the origin, neither the geometric center of the model
+         * @note It can be a bit counter intuitive that this is not usually the origin, neither the geometric center of the
+         * model, but the geometric center of the sensitive part. This way, the position of the sensing element is invariant
+         * under rotations
          *
          * The center coordinate corresponds to the \ref Detector::getPosition "position" in the global frame.
          */
@@ -167,6 +169,8 @@ namespace allpix {
 
         /**
          * @brief Get local coordinate of the geometric center of the model
+         * @note This returns the center of the geometry model, i.e. including all support layers, passive readout chips et
+         * cetera.
          */
         virtual ROOT::Math::XYZPoint getGeometricalCenter() const {
             // Get the distance, on the z axis, between the sensor center and the detector (box) geometrical center
@@ -190,12 +194,12 @@ namespace allpix {
         }
 
         /**
-         * @brief Get size of the box around the model that contains all elements
+         * @brief Get size of the wrapper box around the model that contains all elements
          * @return Size of the detector model
          *
-         * All elements should be covered by a box with \ref DetectorModel::getCenter as center. This means that the size
-         * returned by this method is likely larger than the minimum possible size of a box around all elements. It will only
-         * return the minimum size if \ref DetectorModel::getCenter corresponds to the geometric center of the model.
+         * All elements of the model are covered by a box centered around \ref DetectorModel::getGeometricalCenter. This
+         * means that the extend of the model should be calculated using the geometrical center as reference, not the positon
+         * returned by \ref DetectorModel::getCenter.
          */
         virtual ROOT::Math::XYZVector getSize() const;
 
