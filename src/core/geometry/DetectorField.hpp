@@ -101,7 +101,7 @@ namespace allpix {
         template <std::size_t... I> auto get_impl(size_t offset, std::index_sequence<I...>) const;
 
         // Field properties
-        std::array<size_t, 3> sizes_;
+        std::array<size_t, 3> sizes_{};
 
         /*
          * Scale of the field in x and y direction, defaults to 1, 1, i.e. to one full pixel cell
@@ -114,12 +114,12 @@ namespace allpix {
         std::array<double_t, 2> offset_{{0., 0.}};
 
         std::shared_ptr<std::vector<double>> field_;
-        std::pair<double, double> thickness_domain_;
+        std::pair<double, double> thickness_domain_{};
         FieldType type_{FieldType::NONE};
         FieldFunction<T> function_;
 
-        ROOT::Math::XYVector pixel_size_;
-        ROOT::Math::XYVector sensor_thickness_;
+        ROOT::Math::XYVector pixel_size_{};
+        ROOT::Math::XYVector sensor_thickness_{};
     };
 } // namespace allpix
 
