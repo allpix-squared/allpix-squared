@@ -55,9 +55,7 @@ namespace allpix {
             sensor_thickness_ = thickness;
         }
 
-        bool isValid() const {
-            return field_function_ || (field_sizes_[0] != 0 && field_sizes_[1] != 0 && field_sizes_[2] != 0);
-        };
+        bool isValid() const { return function_ || (sizes_[0] != 0 && sizes_[1] != 0 && sizes_[2] != 0); };
 
         /**
          * @brief Return the type of field
@@ -103,24 +101,22 @@ namespace allpix {
         template <std::size_t... I> auto get_impl(size_t offset, std::index_sequence<I...>) const;
 
         // Field properties
-        std::array<size_t, 3> field_sizes_;
+        std::array<size_t, 3> sizes_;
 
         /*
          * Scale of the field in x and y direction, defaults to 1, 1, i.e. to one full pixel cell
-         * The inverse of the field scales is pre-calculated for convenience
          */
-        std::array<double_t, 2> field_scales_{{1., 1.}};
-        std::array<double_t, 2> field_scales_inverse_{{1., 1.}};
+        std::array<double_t, 2> scales_{{1., 1.}};
 
         /*
          * Offset of the field from the pixel edge, e.g. when using fields centered at a pixel corner instead of the center
          */
-        std::array<double_t, 2> field_offset_{{0., 0.}};
+        std::array<double_t, 2> offset_{{0., 0.}};
 
         std::shared_ptr<std::vector<double>> field_;
-        std::pair<double, double> field_thickness_domain_;
-        FieldType field_type_{FieldType::NONE};
-        FieldFunction<T> field_function_;
+        std::pair<double, double> thickness_domain_;
+        FieldType type_{FieldType::NONE};
+        FieldFunction<T> function_;
 
         ROOT::Math::XYVector pixel_size_;
         ROOT::Math::XYVector sensor_thickness_;
