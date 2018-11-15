@@ -43,17 +43,13 @@ namespace allpix {
      * scaling or offset parameters.
      */
     template <typename T, size_t N = 3> class DetectorField {
+        friend class Detector;
 
     public:
         /**
          * @brief Constructs a detector field
          */
         DetectorField() = default;
-
-        void setModelParameters(ROOT::Math::XYVector pixel_pitch, ROOT::Math::XYVector thickness) {
-            pixel_size_ = pixel_pitch;
-            sensor_thickness_ = thickness;
-        }
 
         bool isValid() const { return function_ || (sizes_[0] != 0 && sizes_[1] != 0 && sizes_[2] != 0); };
 
@@ -62,6 +58,7 @@ namespace allpix {
          * @return The type of the field
          */
         FieldType getType() const;
+
         /**
          * @brief Get the field value in the sensor at a local position
          * @param pos Position in the local frame
@@ -93,6 +90,20 @@ namespace allpix {
 
     private:
         /*
+         * @brief Set the relevant parameters from the detector model this field is used for
+         * @param sensor_center The center of the sensor in local coordinates
+         * @param sensor_size The extend of the sensor
+         * @param pixel_pitch the pitch in X and Y of a single pixel
+         */
+        void set_model_parameters(ROOT::Math::XYZPoint sensor_center,
+                                  ROOT::Math::XYZVector sensor_size,
+                                  ROOT::Math::XYVector pixel_pitch) {
+            sensor_center_ = sensor_center;
+            sensor_size_ = sensor_size;
+            pixel_size_ = pixel_pitch;
+        }
+
+        /*
          * @brief Helper function to retrieve the return type from a calculated index
          * @param a the field data vector
          * @param offset the calcilated global index to start from
@@ -100,17 +111,14 @@ namespace allpix {
          */
         template <std::size_t... I> auto get_impl(size_t offset, std::index_sequence<I...>) const;
 
-        // Field properties
+        /*
+         * Field properties
+         * * Size of the field map (bins in x, y, z)
+         * * Scale of the field in x and y direction, defaults to 1, 1, i.e. to one full pixel cell
+         * * Offset of the field from the pixel edge, e.g. when using fields centered at a pixel corner instead of the center
+         */
         std::array<size_t, 3> sizes_{};
-
-        /*
-         * Scale of the field in x and y direction, defaults to 1, 1, i.e. to one full pixel cell
-         */
         std::array<double_t, 2> scales_{{1., 1.}};
-
-        /*
-         * Offset of the field from the pixel edge, e.g. when using fields centered at a pixel corner instead of the center
-         */
         std::array<double_t, 2> offset_{{0., 0.}};
 
         std::shared_ptr<std::vector<double>> field_;
@@ -118,8 +126,12 @@ namespace allpix {
         FieldType type_{FieldType::NONE};
         FieldFunction<T> function_;
 
+        /*
+         * Relevant parameters from the detector model for this field
+         */
         ROOT::Math::XYVector pixel_size_{};
-        ROOT::Math::XYVector sensor_thickness_{};
+        ROOT::Math::XYZPoint sensor_center_{};
+        ROOT::Math::XYZVector sensor_size_{};
     };
 } // namespace allpix
 

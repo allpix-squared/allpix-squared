@@ -95,7 +95,8 @@ namespace allpix {
         if(sizes[0] * sizes[1] * sizes[2] * N != field->size()) {
             throw std::invalid_argument("field does not match the given sizes");
         }
-        if(thickness_domain.first + 1e-9 < sensor_thickness_.x() || sensor_thickness_.y() < thickness_domain.second - 1e-9) {
+        if(thickness_domain.first + 1e-9 < sensor_center_.z() - sensor_size_.z() / 2.0 ||
+           sensor_center_.z() + sensor_size_.z() / 2.0 < thickness_domain.second - 1e-9) {
             throw std::invalid_argument("thickness domain is outside sensor dimensions");
         }
         if(thickness_domain.first >= thickness_domain.second) {
