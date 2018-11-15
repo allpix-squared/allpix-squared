@@ -157,8 +157,8 @@ namespace allpix {
          * The center coordinate corresponds to the \ref Detector::getPosition "position" in the global frame.
          */
         virtual ROOT::Math::XYZPoint getCenter() const {
-            return ROOT::Math::XYZPoint(
-                getGridSize().x() / 2.0 - getPixelSize().x() / 2.0, getGridSize().y() / 2.0 - getPixelSize().y() / 2.0, 0);
+            return {
+                getGridSize().x() / 2.0 - getPixelSize().x() / 2.0, getGridSize().y() / 2.0 - getPixelSize().y() / 2.0, 0};
         }
 
         /**
@@ -214,7 +214,7 @@ namespace allpix {
          * @note This is basically a 2D method, but provided in 3D because it is primarily used there
          */
         ROOT::Math::XYZVector getGridSize() const {
-            return ROOT::Math::XYZVector(getNPixels().x() * getPixelSize().x(), getNPixels().y() * getPixelSize().y(), 0);
+            return {getNPixels().x() * getPixelSize().x(), getNPixels().y() * getPixelSize().y(), 0};
         }
 
         /* SENSOR */
