@@ -47,12 +47,12 @@ In conjunction with a static instance of the field parser class in a module, thi
 class MyVectorFieldModule(...) : Module(...) {
 private:
     void some_function(std::string canonical_path);
-    // Define static fiel parser instance
+    // Define static field parser instance
     static FieldParser<double, 3> field_parser_;
 }
 
 // Create static instance of field parses in the translation unit:
-FieldParser<double, 3> MyVectorFieldModule::field_parser_;
+FieldParser<double, 3> MyVectorFieldModule::field_parser_("V/cm");
 
 void MyVectorFieldModule::some_function(std::string canonical_path) {
     // Get vector field from file:
@@ -60,7 +60,7 @@ void MyVectorFieldModule::some_function(std::string canonical_path) {
 }
 \end{minted}
 
-The file path provided to the field parser should always be canonical, if the file is not found or cannot be parsed, a \command{std::runtime_error} exception is thrown.
+The constructor of the parser takes the units in which the field data should be interpreted, it is automatically converted to the framework base units described in Section~\ref{sec:config_values}. The file path provided to the field parser should always be canonical, if the file is not found or cannot be parsed, a \command{std::runtime_error} exception is thrown.
 
 \inputmd{tools/tcad_dfise_converter.tex}
 % FIXME This label is not required to bind correctly
