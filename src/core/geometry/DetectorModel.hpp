@@ -83,6 +83,10 @@ namespace allpix {
              * @return Size of the hole
              */
             ROOT::Math::XYZVector getHoleSize() const { return hole_size_; }
+            /**
+             * @brief Get the location of the support layer
+             */
+            std::string getLocation() const { return location_; }
 
         private:
             /**
@@ -152,7 +156,9 @@ namespace allpix {
 
         /**
          * @brief Get local coordinate of the position and rotation center in global frame
-         * @note It can be a counter intuitive that this is not usually the origin, neither the geometric center of the model
+         * @note It can be a bit counter intuitive that this is not usually the origin, neither the geometric center of the
+         * model, but the geometric center of the sensitive part. This way, the position of the sensing element is invariant
+         * under rotations
          *
          * The center coordinate corresponds to the \ref Detector::getPosition "position" in the global frame.
          */
@@ -162,12 +168,38 @@ namespace allpix {
         }
 
         /**
-         * @brief Get size of the box around the model that contains all elements
+         * @brief Get local coordinate of the geometric center of the model
+         * @note This returns the center of the geometry model, i.e. including all support layers, passive readout chips et
+         * cetera.
+         */
+        virtual ROOT::Math::XYZPoint getGeometricalCenter() const {
+            // Get the distance, on the z axis, between the sensor center and the detector (box) geometrical center
+            double detector_thickness = getSize().z();
+            double min_support_center =
+                -getSensorSize().Z() / 2; // center (on the z axis) of the support (sensor side) with smallest z coordinate
+            double min_support_size = 0.; // z size of the support (sensor side) with smallest z coordinate
+            for(auto& support_layer : getSupportLayers()) {
+                double centers_zDistance = (support_layer.getCenter()).z() - getSensorCenter().z();
+                if(centers_zDistance < min_support_center) { // selects supports on the sensor side only
+                    min_support_center = centers_zDistance;
+                    min_support_size = (support_layer.getSize()).z();
+                }
+            }
+            double support_sensorSide_thickness =
+                std::abs(min_support_center) + min_support_size / 2 -
+                getSensorSize().Z() / 2; // total thickness of support layers (including empty spaces) on the sensor side
+            double zDistanceToGeoCenter = detector_thickness / 2 - support_sensorSide_thickness - getSensorSize().Z() / 2;
+
+            return ROOT::Math::XYZPoint(getCenter().x(), getCenter().y(), zDistanceToGeoCenter);
+        }
+
+        /**
+         * @brief Get size of the wrapper box around the model that contains all elements
          * @return Size of the detector model
          *
-         * All elements should be covered by a box with \ref DetectorModel::getCenter as center. This means that the size
-         * returned by this method is likely larger than the minimum possible size of a box around all elements. It will only
-         * return the minimum size if \ref DetectorModel::getCenter corresponds to the geometric center of the model.
+         * All elements of the model are covered by a box centered around \ref DetectorModel::getGeometricalCenter. This
+         * means that the extend of the model should be calculated using the geometrical center as reference, not the positon
+         * returned by \ref DetectorModel::getCenter.
          */
         virtual ROOT::Math::XYZVector getSize() const;
 
