@@ -35,8 +35,19 @@ namespace allpix {
         CUSTOM,   ///< Custom field function
     };
 
-    template <typename T = ROOT::Math::XYZVector> using FieldFunction = std::function<T(const ROOT::Math::XYZPoint&)>;
-    template <typename T> void flip_vector_components(T&, bool x, bool y);
+    /**
+     * @brief Functor returning the field at a given position
+     * @param pos Position in local coordinates at which the field should be evaluated
+     */
+    template <typename T = ROOT::Math::XYZVector> using FieldFunction = std::function<T(const ROOT::Math::XYZPoint& pos)>;
+
+    /**
+     * @brief Helper function to invert the field vector when flipping the field direction at pixel/field boundaries
+     * @param field Field value, templated to support vector fields and scalar fields
+     * @param x     Boolean to indicate flipping in x-direction
+     * @param y     Boolean to indicate flipping in y-direction
+     */
+    template <typename T> void flip_vector_components(T& field, bool x, bool y);
 
     /**
      * @brief Field instance of a detector
@@ -53,6 +64,10 @@ namespace allpix {
          */
         DetectorField() = default;
 
+        /**
+         * @brief Check if the field is valid and either a field grid or a field function is configured
+         * @return Boolean indicating field validity
+         */
         bool isValid() const { return function_ || (sizes_[0] != 0 && sizes_[1] != 0 && sizes_[2] != 0); };
 
         /**
@@ -62,7 +77,7 @@ namespace allpix {
         FieldType getType() const;
 
         /**
-         * @brief Get the field value in the sensor at a local position
+         * @brief Get the field value in the sensor at a position provided in local coordinates
          * @param pos Position in the local frame
          * @return Value(s) of the field at the queried point
          */
@@ -70,7 +85,7 @@ namespace allpix {
 
         /**
          * @brief Set the field in the detector using a grid
-         * @param field Flat array of the field (see detailed description)
+         * @param field Flat array of the field
          * @param sizes The dimensions of the flat field array
          * @param scales Scaling factors for the field size, given in fractions of a pixel unit cell in x and y
          * @param thickness_domain Domain in local coordinates in the thickness direction where the field holds
@@ -91,7 +106,7 @@ namespace allpix {
                          FieldType type = FieldType::CUSTOM);
 
     private:
-        /*
+        /**
          * @brief Set the relevant parameters from the detector model this field is used for
          * @param sensor_center The center of the sensor in local coordinates
          * @param sensor_size The extend of the sensor
@@ -105,7 +120,7 @@ namespace allpix {
             pixel_size_ = pixel_pitch;
         }
 
-        /*
+        /**
          * @brief Helper function to retrieve the return type from a calculated index
          * @param a the field data vector
          * @param offset the calcilated global index to start from
@@ -113,7 +128,7 @@ namespace allpix {
          */
         template <std::size_t... I> auto get_impl(size_t offset, std::index_sequence<I...>) const;
 
-        /*
+        /**
          * Field properties
          * * Size of the field map (bins in x, y, z)
          * * Scale of the field in x and y direction, defaults to 1, 1, i.e. to one full pixel cell
@@ -123,6 +138,12 @@ namespace allpix {
         std::array<double_t, 2> scales_{{1., 1.}};
         std::array<double_t, 2> offset_{{0., 0.}};
 
+        /**
+         * Field definition
+         * The field is either specified through a field grid, which is stored in a flat vector, or as field function
+         * returning the value at each position given in local coordinates. The field is valid within the thickness domain
+         * specified, the configured type is stored to allow additional checks in the modules requesting the field.
+         */
         std::shared_ptr<std::vector<double>> field_;
         std::pair<double, double> thickness_domain_{};
         FieldType type_{FieldType::NONE};
