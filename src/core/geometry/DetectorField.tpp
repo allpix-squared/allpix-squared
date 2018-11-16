@@ -1,8 +1,8 @@
 
 namespace allpix {
     /**
-     * The field is replicated for all pixels and uses flipping at each boundary (side effects are not modeled in
-     * this stage). Outside of the sensor the field is strictly zero by definition.
+     * The field is replicated for all pixels and uses flipping at each boundary (edge effects are currently not modeled.
+     * Outside of the sensor the field is strictly zero by definition.
      */
     template <typename T, size_t N> T DetectorField<T, N>::get(const ROOT::Math::XYZPoint& pos) const {
         // FIXME: We need to revisit this to be faster and not too specific
@@ -64,10 +64,14 @@ namespace allpix {
 
         // Flip vector if necessary
         flip_vector_components(ret_val, replica_x % 2, replica_y % 2);
-
         return ret_val;
     }
 
+    /**
+     * Woohoo, template magic! Using an index_sequence to construct the templated return type with a variable number of
+     * elements from the flat field vector, e.g. 3 for a vector field and 1 for a scalar field. Using a braced-init-list
+     * allows to call the appropriate constructor of the return type, e.g. ROOT::Math::XYZVector or simply a double.
+     */
     template <typename T, size_t N>
     template <std::size_t... I>
     auto DetectorField<T, N>::get_impl(size_t offset, std::index_sequence<I...>) const {
@@ -81,10 +85,6 @@ namespace allpix {
 
     /**
      * @throws std::invalid_argument If the field sizes are incorrect or the thickness domain is outside the sensor
-     *
-     * The field is stored as a large flat array. If the sizes are denoted as respectively X_SIZE, Y_ SIZE and
-     * Z_SIZE, each position (x, y, z) has N indices, calculated as:
-     * x * Y_SIZE* Z_SIZE * N + y * Z_SIZE * + z * N + i: the i-th ccomponent of the field
      */
     template <typename T, size_t N>
     void DetectorField<T, N>::setGrid(std::shared_ptr<std::vector<double>> field,

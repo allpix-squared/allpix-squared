@@ -143,6 +143,12 @@ namespace allpix {
          * The field is either specified through a field grid, which is stored in a flat vector, or as field function
          * returning the value at each position given in local coordinates. The field is valid within the thickness domain
          * specified, the configured type is stored to allow additional checks in the modules requesting the field.
+         *
+         * In case of using a field grid, the field is stored as a large flat array. If the sizes are denoted as X_SIZE, Y_
+         * SIZE and Z_SIZE, respectively, and each position (x, y, z) has N indices, the element position of the i-th field
+         * component in the flat field vector can be calculated as:
+         *
+         *   field_i(x, y, z) =  x * Y_SIZE* Z_SIZE * N + y * Z_SIZE * + z * N + i
          */
         std::shared_ptr<std::vector<double>> field_;
         std::pair<double, double> thickness_domain_{};
