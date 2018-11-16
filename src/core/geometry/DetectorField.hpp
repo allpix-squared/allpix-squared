@@ -13,12 +13,14 @@
 
 #include <array>
 #include <functional>
-#include <map>
-#include <tuple>
-#include <typeindex>
 #include <vector>
 
-#include "core/geometry/DetectorModel.hpp"
+#include <Math/Point2D.h>
+#include <Math/Point3D.h>
+#include <Math/Vector2D.h>
+#include <Math/Vector3D.h>
+
+#include "tools/ROOT.h"
 
 namespace allpix {
 
@@ -33,8 +35,19 @@ namespace allpix {
         CUSTOM,   ///< Custom field function
     };
 
-    template <typename T = ROOT::Math::XYZVector> using FieldFunction = std::function<T(const ROOT::Math::XYZPoint&)>;
-    template <typename T> void flip_vector_components(T&, bool x, bool y);
+    /**
+     * @brief Functor returning the field at a given position
+     * @param pos Position in local coordinates at which the field should be evaluated
+     */
+    template <typename T = ROOT::Math::XYZVector> using FieldFunction = std::function<T(const ROOT::Math::XYZPoint& pos)>;
+
+    /**
+     * @brief Helper function to invert the field vector when flipping the field direction at pixel/field boundaries
+     * @param field Field value, templated to support vector fields and scalar fields
+     * @param x     Boolean to indicate flipping in x-direction
+     * @param y     Boolean to indicate flipping in y-direction
+     */
+    template <typename T> void flip_vector_components(T& field, bool x, bool y);
 
     /**
      * @brief Field instance of a detector
@@ -43,6 +56,7 @@ namespace allpix {
      * scaling or offset parameters.
      */
     template <typename T, size_t N = 3> class DetectorField {
+        friend class Detector;
 
     public:
         /**
@@ -50,11 +64,10 @@ namespace allpix {
          */
         DetectorField() = default;
 
-        void setModelParameters(ROOT::Math::XYVector pixel_pitch, ROOT::Math::XYVector thickness) {
-            pixel_size_ = pixel_pitch;
-            sensor_thickness_ = thickness;
-        }
-
+        /**
+         * @brief Check if the field is valid and either a field grid or a field function is configured
+         * @return Boolean indicating field validity
+         */
         bool isValid() const { return function_ || (sizes_[0] != 0 && sizes_[1] != 0 && sizes_[2] != 0); };
 
         /**
@@ -62,8 +75,9 @@ namespace allpix {
          * @return The type of the field
          */
         FieldType getType() const;
+
         /**
-         * @brief Get the field value in the sensor at a local position
+         * @brief Get the field value in the sensor at a position provided in local coordinates
          * @param pos Position in the local frame
          * @return Value(s) of the field at the queried point
          */
@@ -71,7 +85,7 @@ namespace allpix {
 
         /**
          * @brief Set the field in the detector using a grid
-         * @param field Flat array of the field (see detailed description)
+         * @param field Flat array of the field
          * @param sizes The dimensions of the flat field array
          * @param scales Scaling factors for the field size, given in fractions of a pixel unit cell in x and y
          * @param thickness_domain Domain in local coordinates in the thickness direction where the field holds
@@ -92,7 +106,21 @@ namespace allpix {
                          FieldType type = FieldType::CUSTOM);
 
     private:
-        /*
+        /**
+         * @brief Set the relevant parameters from the detector model this field is used for
+         * @param sensor_center The center of the sensor in local coordinates
+         * @param sensor_size The extend of the sensor
+         * @param pixel_pitch the pitch in X and Y of a single pixel
+         */
+        void set_model_parameters(ROOT::Math::XYZPoint sensor_center,
+                                  ROOT::Math::XYZVector sensor_size,
+                                  ROOT::Math::XYVector pixel_pitch) {
+            sensor_center_ = sensor_center;
+            sensor_size_ = sensor_size;
+            pixel_size_ = pixel_pitch;
+        }
+
+        /**
          * @brief Helper function to retrieve the return type from a calculated index
          * @param a the field data vector
          * @param offset the calcilated global index to start from
@@ -100,26 +128,39 @@ namespace allpix {
          */
         template <std::size_t... I> auto get_impl(size_t offset, std::index_sequence<I...>) const;
 
-        // Field properties
+        /**
+         * Field properties
+         * * Size of the field map (bins in x, y, z)
+         * * Scale of the field in x and y direction, defaults to 1, 1, i.e. to one full pixel cell
+         * * Offset of the field from the pixel edge, e.g. when using fields centered at a pixel corner instead of the center
+         */
         std::array<size_t, 3> sizes_{};
-
-        /*
-         * Scale of the field in x and y direction, defaults to 1, 1, i.e. to one full pixel cell
-         */
         std::array<double_t, 2> scales_{{1., 1.}};
-
-        /*
-         * Offset of the field from the pixel edge, e.g. when using fields centered at a pixel corner instead of the center
-         */
         std::array<double_t, 2> offset_{{0., 0.}};
 
+        /**
+         * Field definition
+         * The field is either specified through a field grid, which is stored in a flat vector, or as field function
+         * returning the value at each position given in local coordinates. The field is valid within the thickness domain
+         * specified, the configured type is stored to allow additional checks in the modules requesting the field.
+         *
+         * In case of using a field grid, the field is stored as a large flat array. If the sizes are denoted as X_SIZE, Y_
+         * SIZE and Z_SIZE, respectively, and each position (x, y, z) has N indices, the element position of the i-th field
+         * component in the flat field vector can be calculated as:
+         *
+         *   field_i(x, y, z) =  x * Y_SIZE* Z_SIZE * N + y * Z_SIZE * + z * N + i
+         */
         std::shared_ptr<std::vector<double>> field_;
         std::pair<double, double> thickness_domain_{};
         FieldType type_{FieldType::NONE};
         FieldFunction<T> function_;
 
+        /*
+         * Relevant parameters from the detector model for this field
+         */
         ROOT::Math::XYVector pixel_size_{};
-        ROOT::Math::XYVector sensor_thickness_{};
+        ROOT::Math::XYZPoint sensor_center_{};
+        ROOT::Math::XYZVector sensor_size_{};
     };
 } // namespace allpix
 
