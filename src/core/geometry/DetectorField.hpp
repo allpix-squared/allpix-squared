@@ -13,12 +13,14 @@
 
 #include <array>
 #include <functional>
-#include <map>
-#include <tuple>
-#include <typeindex>
 #include <vector>
 
-#include "core/geometry/DetectorModel.hpp"
+#include <Math/Point2D.h>
+#include <Math/Point3D.h>
+#include <Math/Vector2D.h>
+#include <Math/Vector3D.h>
+
+#include "tools/ROOT.h"
 
 namespace allpix {
 
