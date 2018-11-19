@@ -182,19 +182,17 @@ void ProjectionPropagationModule::run(unsigned int) {
             // Only add if within sensor volume:
             auto local_position =
                 ROOT::Math::XYZPoint(projected_position.x(), projected_position.y(), model->getSensorSize().z() / 2.);
+            auto event_time = deposit.getEventTime() + drift_time;
             if(!detector_->isWithinSensor(local_position)) {
-                continue;
+                local_position = position;
+                event_time = deposit.getEventTime();
             }
 
             auto global_position = detector_->getGlobalPosition(local_position);
 
             // Produce charge carrier at this position
-            propagated_charges.emplace_back(projected_position,
-                                            global_position,
-                                            deposit.getType(),
-                                            charge_per_step,
-                                            deposit.getEventTime() + drift_time,
-                                            &deposit);
+            propagated_charges.emplace_back(
+                projected_position, global_position, deposit.getType(), charge_per_step, event_time, &deposit);
 
             LOG(DEBUG) << "Propagated " << charge_per_step << " charge carriers (" << type << ") to "
                        << Units::display(projected_position, {"mm", "um"});
