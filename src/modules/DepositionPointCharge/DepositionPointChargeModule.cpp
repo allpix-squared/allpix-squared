@@ -22,7 +22,7 @@ using namespace allpix;
 DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
                                                          Messenger* messenger,
                                                          std::shared_ptr<Detector> detector)
-    : Module(config, detector), detector_(detector), messenger_(messenger) {
+    : Module(config, detector), detector_(std::move(detector)), messenger_(messenger) {
 
     // Set default value for the number of charges deposited
     config_.setDefault("number_of_charges", 1);
@@ -43,7 +43,7 @@ void DepositionPointChargeModule::run(unsigned int) {
     mcparticles.emplace_back(position_local, position_global, position_local, position_global, -1, 0.);
     LOG(DEBUG) << "Generated MCParticle at global position " << position_global << " in detector " << detector_->getName();
 
-    unsigned int carriers = config_.get<unsigned int>("number_of_charges");
+    auto carriers = config_.get<unsigned int>("number_of_charges");
     charges.emplace_back(position_local, position_global, CarrierType::ELECTRON, carriers, 0., &(mcparticles.back()));
     charges.emplace_back(position_local, position_global, CarrierType::HOLE, carriers, 0., &(mcparticles.back()));
     LOG(DEBUG) << "Deposited " << carriers << " charge carriers of both types at global position " << position_global
