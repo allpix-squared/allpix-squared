@@ -22,8 +22,9 @@ FUNCTION(get_version PROJECT_VERSION)
                 MESSAGE(STATUS "Git project directory is dirty:\n ${PROJECT_STATUS}.")
             ENDIF(PROJECT_STATUS STREQUAL "")
 
-            EXEC_PROGRAM(git ${CMAKE_CURRENT_SOURCE_DIR} ARGS describe --exact-match --tags HEAD OUTPUT_VARIABLE GIT_TAG RETURN_VALUE GIT_RETURN)
-            IF(GIT_RETURN EQUAL 0)
+            # Check if commit flag has been set by the CI:
+            IF(DEFINED ENV{CI_COMMIT_TAG})
+                MESSAGE(STATUS "Found CI tag flag, building tagged version")
                 SET(TAG_FOUND TRUE)
             ENDIF()
         ELSE(GIT_FOUND)
