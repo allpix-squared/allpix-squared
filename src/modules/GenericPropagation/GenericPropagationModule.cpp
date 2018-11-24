@@ -76,6 +76,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
 
     config_.setDefault<bool>("output_plots", false);
     config_.setDefault<bool>("output_animations", false);
+    config_.setDefault<bool>("output_plots_step_length", config_.get<bool>("output_plots"));
     config_.setDefault<bool>("output_animations_color_markers", false);
     config_.setDefault<double>("output_plots_step", config_.get<double>("timestep_max"));
     config_.setDefault<bool>("output_plots_use_pixel_units", false);
@@ -105,6 +106,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     target_spatial_precision_ = config_.get<double>("spatial_precision");
     output_plots_ = config_.get<bool>("output_plots");
     output_plots_step_ = config_.get<double>("output_plots_step");
+    output_plots_step_length_ = config_.get<bool>("output_plots_step_length");
     output_plots_lines_at_implants_ = config_.get<bool>("output_plots_lines_at_implants");
 
     // Parameterization variables from https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2)
@@ -386,7 +388,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
                 auto marker = std::make_unique<TPolyMarker3D>();
                 marker->SetMarkerStyle(kFullCircle);
                 marker->SetMarkerSize(static_cast<float>(deposit_points.first.getCharge() *
-                                                         config_.get<unsigned int>("output_animations_marker_size", 1)) /
+                                                         config_.get<double>("output_animations_marker_size", 1)) /
                                       static_cast<float>(max_charge));
                 auto initial_z_perc = static_cast<int>(
                     ((points[0].z() + model_->getSensorSize().z() / 2.0) / model_->getSensorSize().z()) * 80);
@@ -447,7 +449,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
                     }
                     histogram_contour[i]->SetMinimum(1);
                     histogram_contour[i]->SetMaximum(total_charge /
-                                                     config_.get<double>("output_plots_contour_max_scaling", 10));
+                                                     config_.get<double>("output_animations_contour_max_scaling", 10));
                     histogram_contour[i]->Draw("CONTZ 0");
                     if(point_cnt < tot_point_cnt - 1) {
                         canvas->Print((file_name_contour[i] + "+" + std::to_string(animation_time)).c_str());
@@ -505,6 +507,15 @@ void GenericPropagationModule::init() {
             LOG(DEBUG) << "This detector sees a magnetic field.";
             magnetic_field_ = detector_->getMagneticField();
         }
+    }
+
+    if(output_plots_step_length_) {
+        // Initialize output plot
+        step_length_histo_ = new TH1D("step_length_histo",
+                                      "Step length;length[um];integration steps",
+                                      100,
+                                      0,
+                                      static_cast<double>(Units::convert(0.25 * model_->getSensorSize().z(), "um")));
     }
 }
 
@@ -708,6 +719,12 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         // Adapt step size to match target precision
         double uncertainty = step.error.norm();
 
+        // Update step length histogram
+        if(output_plots_step_length_) {
+            step_length_histo_->AddBinContent(
+                step_length_histo_->FindBin(static_cast<double>(Units::convert(step.value.norm(), "um"))));
+        }
+
         // Lower timestep when reaching the sensor edge
         if(std::fabs(model_->getSensorSize().z() / 2.0 - position.z()) < 2 * step.value.z()) {
             timestep *= 0.75;
@@ -724,6 +741,8 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         } else if(timestep < timestep_min_) {
             timestep = timestep_min_;
         }
+        // LOG(ERROR) << Units::display(runge_kutta.getTime(), "ns") << " " << Units::display(uncertainty, "nm") << " "
+        //            << Units::display(timestep, "ns") << " " << Units::display(step.value.z(), "um");
         runge_kutta.setTimeStep(timestep);
     }
 
@@ -759,6 +778,10 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
 }
 
 void GenericPropagationModule::finalize() {
+    if(output_plots_step_length_) {
+        step_length_histo_->Write();
+    }
+
     long double average_time = total_time_ / std::max(1u, total_propagated_charges_);
     LOG(INFO) << "Propagated total of " << total_propagated_charges_ << " charges in " << total_steps_
               << " steps in average time of " << Units::display(average_time, "ns");
