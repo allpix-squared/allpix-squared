@@ -741,8 +741,6 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         } else if(timestep < timestep_min_) {
             timestep = timestep_min_;
         }
-        // LOG(ERROR) << Units::display(runge_kutta.getTime(), "ns") << " " << Units::display(uncertainty, "nm") << " "
-        //            << Units::display(timestep, "ns") << " " << Units::display(step.value.z(), "um");
         runge_kutta.setTimeStep(timestep);
     }
 
