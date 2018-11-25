@@ -68,6 +68,8 @@ namespace allpix {
 
         // Carrier type to be propagated
         CarrierType propagate_type_;
+        // Side to propagate too
+        double top_z_;
 
         // Precalculated values for electron and hole mobility
         double hole_Vm_;
