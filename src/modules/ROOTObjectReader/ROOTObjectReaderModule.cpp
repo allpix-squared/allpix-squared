@@ -16,6 +16,7 @@
 #include <TBranch.h>
 #include <TKey.h>
 #include <TObjArray.h>
+#include <TProcessID.h>
 #include <TTree.h>
 
 #include "core/messenger/Messenger.hpp"
@@ -46,10 +47,23 @@ ROOTObjectReaderModule::~ROOTObjectReaderModule() {
  * object from its typeid.
  */
 template <typename T> static void add_creator(ROOTObjectReaderModule::MessageCreatorMap& map) {
-    map[typeid(T)] = [&](std::vector<Object*> objects, std::shared_ptr<Detector> detector = nullptr) {
+    map[typeid(T)] = [&](std::vector<Object*> objects, std::shared_ptr<Detector> detector) {
         std::vector<T> data;
         for(auto& object : objects) {
-            data.emplace_back(std::move(*static_cast<T*>(object)));
+            auto& cur_obj = *static_cast<T*>(object);
+            data.emplace_back(cur_obj);
+            auto& new_obj = data.back();
+
+            // Fix the object that history points to the new object
+            if(cur_obj.TestBit(kIsReferenced)) {
+                auto pid = TProcessID::GetProcessWithUID(&new_obj);
+                if(pid->GetObjectWithID(cur_obj.GetUniqueID()) != &cur_obj) {
+                    LOG(ERROR) << "Duplicate object IDs, cannot correctly resolve previous history!";
+                }
+                cur_obj.SetBit(kIsReferenced);
+                new_obj.SetBit(kIsReferenced);
+                pid->PutObjectWithID(&new_obj);
+            }
         }
 
         if(detector == nullptr) {
