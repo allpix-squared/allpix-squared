@@ -721,8 +721,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
 
         // Update step length histogram
         if(output_plots_step_length_) {
-            step_length_histo_->AddBinContent(
-                step_length_histo_->FindBin(static_cast<double>(Units::convert(step.value.norm(), "um"))));
+            step_length_histo_->Fill(static_cast<double>(Units::convert(step.value.norm(), "um")));
         }
 
         // Lower timestep when reaching the sensor edge
