@@ -16,3 +16,17 @@ else
     cp $ROOT/etc/git-hooks/pre-commit-hook $ROOT/.git/hooks/pre-commit
     chmod +x $ROOT/.git/hooks/pre-commit
 fi
+
+# install the push hooks
+if [ -f $ROOT/.git/hooks/pre-push-tag-version ];then
+    echo "WARNING: File .git/hooks/pre-push-tag-version already exists! Overwriting previous version..."
+fi
+cp $ROOT/etc/git-hooks/pre-push-tag-version-hook $ROOT/.git/hooks/pre-push-tag-version
+chmod +x $ROOT/.git/hooks/pre-push-tag-version
+
+if [ -f $ROOT/.git/hooks/pre-push ];then
+    echo "ERROR: File .git/hooks/pre-push already exists! Will not overwrite, add script manually if needed."
+else
+    cp $ROOT/etc/git-hooks/pre-push-hook $ROOT/.git/hooks/pre-push
+    chmod +x $ROOT/.git/hooks/pre-push
+fi

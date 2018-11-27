@@ -63,8 +63,9 @@ namespace allpix {
         /**
          * @brief Read field in the init format and apply it
          * @param thickness_domain Domain of the thickness where the field is defined
+         * @param field_scale Scaling parameters for the field size in x and y
          */
-        FieldData read_init_field(std::pair<double, double> thickness_domain);
+        FieldData read_init_field(std::pair<double, double> thickness_domain, std::array<double, 2> field_scale);
 
         /**
          * @brief Create output plots of the electric field profile
@@ -75,8 +76,11 @@ namespace allpix {
          * @brief Compare the dimensions of the detector with the field, print warnings
          * @param dimensions Dimensions of the field read from file
          * @param thickness_domain Domain of the thickness where the field is defined
+         * @param field_scale The configured scaling parameters of the electric field in x and y
          */
-        void check_detector_match(std::array<double, 3> dimensions, std::pair<double, double> thickness_domain);
+        void check_detector_match(std::array<double, 3> dimensions,
+                                  std::pair<double, double> thickness_domain,
+                                  std::array<double, 2> field_scale);
 
         /**
          * @brief Get the electric field from a file name, caching the result between instantiations

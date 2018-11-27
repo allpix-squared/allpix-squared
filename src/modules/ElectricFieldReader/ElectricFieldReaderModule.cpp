@@ -63,9 +63,26 @@ void ElectricFieldReaderModule::init() {
 
     // Calculate the field depending on the configuration
     if(field_model == "init") {
+        // Read the field scales from the configuration, defaulting to 1.0x1.0 pixel cell:
+        auto scales = config_.get<ROOT::Math::XYVector>("field_scale", {1.0, 1.0});
+        // FIXME Add sanity checks for scales here
+        LOG(DEBUG) << "Electric field will be scaled with factors " << scales;
+        std::array<double, 2> field_scale{{scales.x(), scales.y()}};
+
+        // Get the field offset in fractions of the pixel pitch, default is 0.0x0.0, i.e. starting at pixel boundary:
+        auto offset = config_.get<ROOT::Math::XYVector>("field_offset", {0.0, 0.0});
+        if(offset.x() > 1.0 || offset.y() > 1.0) {
+            throw InvalidValueError(
+                config_, "field_offset", "shifting electric field by more than one pixel (offset > 1.0) is not allowed");
+        }
+        LOG(DEBUG) << "Electric field starts with offset " << offset << " to pixel boundary";
+        std::array<double, 2> field_offset{{offset.x(), offset.y()}};
+
         ElectricFieldReaderModule::FieldData field_data;
-        field_data = read_init_field(thickness_domain);
-        detector_->setElectricFieldGrid(std::get<0>(field_data), std::get<1>(field_data), thickness_domain);
+        field_data = read_init_field(thickness_domain, field_scale);
+
+        detector_->setElectricFieldGrid(
+            std::get<0>(field_data), std::get<1>(field_data), field_scale, field_offset, thickness_domain);
     } else if(field_model == "constant") {
         LOG(TRACE) << "Adding constant electric field";
         type = ElectricFieldType::CONSTANT;
@@ -125,7 +142,8 @@ ElectricFieldFunction ElectricFieldReaderModule::get_linear_field_function(doubl
  * The field read from the INIT format are shared between module instantiations using the static
  * ElectricFieldReaderModuleget_by_file_name method.
  */
-ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::read_init_field(std::pair<double, double> thickness_domain) {
+ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::read_init_field(std::pair<double, double> thickness_domain,
+                                                                                std::array<double, 2> field_scale) {
     try {
         LOG(TRACE) << "Fetching electric field from init file";
 
@@ -133,7 +151,7 @@ ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::read_init_field(
         auto field_data = get_by_file_name(config_.getPath("file_name", true));
 
         // Check if electric field matches chip
-        check_detector_match(std::get<2>(field_data), thickness_domain);
+        check_detector_match(std::get<2>(field_data), thickness_domain, field_scale);
 
         LOG(INFO) << "Set electric field with " << std::get<1>(field_data).at(0) << "x" << std::get<1>(field_data).at(1)
                   << "x" << std::get<1>(field_data).at(2) << " cells";
@@ -194,7 +212,7 @@ void ElectricFieldReaderModule::create_output_plots() {
         max2 = model->getSensorCenter().y() + model->getSensorSize().y() / 2.0;
     }
 
-    // Create 2D histogram
+    // Create 2D histograms
     auto histogram = new TH2F("field_magnitude",
                               "electric field magnitude",
                               static_cast<int>(steps),
@@ -204,6 +222,17 @@ void ElectricFieldReaderModule::create_output_plots() {
                               min2,
                               max2);
     histogram->SetMinimum(0);
+    histogram->SetOption("colz");
+
+    auto histogram_x = new TH2F(
+        "field_x", "electric field (x-component)", static_cast<int>(steps), min1, max1, static_cast<int>(steps), min2, max2);
+    auto histogram_y = new TH2F(
+        "field_y", "electric field (y-component)", static_cast<int>(steps), min1, max1, static_cast<int>(steps), min2, max2);
+    auto histogram_z = new TH2F(
+        "field_z", "electric field (z-component)", static_cast<int>(steps), min1, max1, static_cast<int>(steps), min2, max2);
+    histogram_x->SetOption("colz");
+    histogram_y->SetOption("colz");
+    histogram_z->SetOption("colz");
 
     // Create 1D histogram
     auto histogram1D = new TH1F(
@@ -227,26 +256,44 @@ void ElectricFieldReaderModule::create_output_plots() {
             y = model->getSensorCenter().y() - model->getSensorSize().y() / 2.0 +
                 ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().y();
             histogram->GetXaxis()->SetTitle("y (mm)");
+            histogram_x->GetXaxis()->SetTitle("y (mm)");
+            histogram_y->GetXaxis()->SetTitle("y (mm)");
+            histogram_z->GetXaxis()->SetTitle("y (mm)");
         } else if(project == 'y') {
             x = model->getSensorCenter().x() - model->getSensorSize().x() / 2.0 +
                 ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().x();
             histogram->GetXaxis()->SetTitle("x (mm)");
+            histogram_x->GetXaxis()->SetTitle("x (mm)");
+            histogram_y->GetXaxis()->SetTitle("x (mm)");
+            histogram_z->GetXaxis()->SetTitle("x (mm)");
         } else {
             x = model->getSensorCenter().x() - model->getSensorSize().x() / 2.0 +
                 ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().x();
             histogram->GetXaxis()->SetTitle("x (mm)");
+            histogram_x->GetXaxis()->SetTitle("x (mm)");
+            histogram_y->GetXaxis()->SetTitle("x (mm)");
+            histogram_z->GetXaxis()->SetTitle("x (mm)");
         }
         for(size_t k = 0; k < steps; ++k) {
             if(project == 'x') {
                 z = z_min + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * (z_max - z_min);
                 histogram->GetYaxis()->SetTitle("z (mm)");
+                histogram_x->GetYaxis()->SetTitle("z (mm)");
+                histogram_y->GetYaxis()->SetTitle("z (mm)");
+                histogram_z->GetYaxis()->SetTitle("z (mm)");
             } else if(project == 'y') {
                 z = z_min + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * (z_max - z_min);
                 histogram->GetYaxis()->SetTitle("z (mm)");
+                histogram_x->GetYaxis()->SetTitle("z (mm)");
+                histogram_y->GetYaxis()->SetTitle("z (mm)");
+                histogram_z->GetYaxis()->SetTitle("z (mm)");
             } else {
                 y = model->getSensorCenter().y() - model->getSensorSize().y() / 2.0 +
                     ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().y();
                 histogram->GetYaxis()->SetTitle("y (mm)");
+                histogram_x->GetYaxis()->SetTitle("y (mm)");
+                histogram_y->GetYaxis()->SetTitle("y (mm)");
+                histogram_z->GetYaxis()->SetTitle("y (mm)");
             }
 
             // Get field strength from detector
@@ -256,10 +303,19 @@ void ElectricFieldReaderModule::create_output_plots() {
             // Fill the main histogram
             if(project == 'x') {
                 histogram->Fill(y, z, static_cast<double>(field_strength));
+                histogram_x->Fill(y, z, field.x());
+                histogram_y->Fill(y, z, field.y());
+                histogram_z->Fill(y, z, field.z());
             } else if(project == 'y') {
                 histogram->Fill(x, z, static_cast<double>(field_strength));
+                histogram_x->Fill(x, z, field.x());
+                histogram_y->Fill(x, z, field.y());
+                histogram_z->Fill(x, z, field.z());
             } else {
                 histogram->Fill(x, y, static_cast<double>(field_strength));
+                histogram_x->Fill(x, y, field.x());
+                histogram_y->Fill(x, y, field.y());
+                histogram_z->Fill(x, y, field.z());
             }
             // Fill the 1d histogram
             if(j == steps / 2) {
@@ -268,8 +324,11 @@ void ElectricFieldReaderModule::create_output_plots() {
         }
     }
 
-    // Write the histogram to module file
+    // Write the histograms to module file
     histogram->Write();
+    histogram_x->Write();
+    histogram_y->Write();
+    histogram_z->Write();
     histogram1D->Write();
 }
 
@@ -277,7 +336,8 @@ void ElectricFieldReaderModule::create_output_plots() {
  * @brief Check if the detector matches the file header
  */
 void ElectricFieldReaderModule::check_detector_match(std::array<double, 3> dimensions,
-                                                     std::pair<double, double> thickness_domain) {
+                                                     std::pair<double, double> thickness_domain,
+                                                     std::array<double, 2> field_scale) {
     auto xpixsz = dimensions[0];
     auto ypixsz = dimensions[1];
     auto thickness = dimensions[2];
@@ -291,13 +351,17 @@ void ElectricFieldReaderModule::check_detector_match(std::array<double, 3> dimen
             LOG(WARNING) << "Thickness of electric field is " << Units::display(thickness, "um")
                          << " but the depleted region is " << Units::display(eff_thickness, "um");
         }
+
         // Check the field extent along the pixel pitch in x and y:
-        if(std::fabs(xpixsz - model->getPixelSize().x()) > std::numeric_limits<double>::epsilon() ||
-           std::fabs(ypixsz - model->getPixelSize().y()) > std::numeric_limits<double>::epsilon()) {
+        if(std::fabs(xpixsz - model->getPixelSize().x() * field_scale[0]) > std::numeric_limits<double>::epsilon() ||
+           std::fabs(ypixsz - model->getPixelSize().y() * field_scale[1]) > std::numeric_limits<double>::epsilon()) {
             LOG(WARNING) << "Electric field size is (" << Units::display(xpixsz, {"um", "mm"}) << ","
-                         << Units::display(ypixsz, {"um", "mm"}) << ") but the pixel pitch is ("
-                         << Units::display(model->getPixelSize().x(), {"um", "mm"}) << ","
-                         << Units::display(model->getPixelSize().y(), {"um", "mm"}) << ")";
+                         << Units::display(ypixsz, {"um", "mm"})
+                         << ") but current configuration results in an field area of ("
+                         << Units::display(model->getPixelSize().x() * field_scale[0], {"um", "mm"}) << ","
+                         << Units::display(model->getPixelSize().y() * field_scale[1], {"um", "mm"}) << ")" << std::endl
+                         << "The size of the area to which the electric field is applied can be changes using the "
+                            "field_scale parameter.";
         }
     }
 }
@@ -336,12 +400,13 @@ ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::get_by_file_name
         throw std::runtime_error("invalid data or unexpected end of file");
     }
     auto field = std::make_shared<std::vector<double>>();
-    field->resize(xsize * ysize * zsize * 3);
+    auto vertices = xsize * ysize * zsize;
+    field->resize(vertices * 3);
 
     // Loop through all the field data
-    for(size_t i = 0; i < xsize * ysize * zsize; ++i) {
-        if(i % 100 == 0) {
-            LOG_PROGRESS(INFO, "read_init") << "Reading electric field data: " << (100 * i / (xsize * ysize * zsize)) << "%";
+    for(size_t i = 0; i < vertices; ++i) {
+        if(i % (vertices / 100) == 0) {
+            LOG_PROGRESS(INFO, "read_init") << "Reading electric field data: " << (100 * i / vertices) << "%";
         }
 
         if(file.eof()) {
@@ -368,6 +433,7 @@ ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::get_by_file_name
             (*field)[xind * ysize * zsize * 3 + yind * zsize * 3 + zind * 3 + j] = Units::get(input, "V/cm");
         }
     }
+    LOG_PROGRESS(INFO, "read_init") << "Reading electric field data: finished.";
 
     FieldData field_data = std::make_tuple(
         field, std::array<size_t, 3>{{xsize, ysize, zsize}}, std::array<double, 3>{{xpixsz, ypixsz, thickness}});
