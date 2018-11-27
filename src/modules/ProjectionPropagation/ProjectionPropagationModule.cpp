@@ -165,9 +165,7 @@ void ProjectionPropagationModule::run(unsigned int) {
         LOG(TRACE) << "Drift time is " << Units::display(drift_time, "ns");
 
         if(output_plots_) {
-            drift_time_histo_->SetBinContent(drift_time_histo_->FindBin(drift_time),
-                                             drift_time_histo_->GetBinContent(drift_time_histo_->FindBin(drift_time)) +
-                                                 deposit.getCharge());
+            drift_time_histo_->Fill(drift_time, deposit.getCharge());
         }
 
         double diffusion_std_dev = std::sqrt(2. * diffusion_constant * drift_time);
