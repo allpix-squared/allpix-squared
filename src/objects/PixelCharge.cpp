@@ -50,7 +50,7 @@ std::vector<const PropagatedCharge*> PixelCharge::getPropagatedCharges() const {
     // FIXME: This is not very efficient unfortunately
     std::vector<const PropagatedCharge*> propagated_charges;
     for(auto& propagated_charge : propagated_charges_) {
-        if(propagated_charge == nullptr) {
+        if(!propagated_charge.IsValid() || propagated_charge.GetObject() == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(PropagatedCharge));
         }
         propagated_charges.emplace_back(dynamic_cast<PropagatedCharge*>(propagated_charge.GetObject()));
@@ -67,7 +67,7 @@ std::vector<const MCParticle*> PixelCharge::getMCParticles() const {
 
     std::vector<const MCParticle*> mc_particles;
     for(auto& mc_particle : mc_particles_) {
-        if(mc_particle == nullptr) {
+        if(!mc_particle.IsValid() || mc_particle.GetObject() == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(MCParticle));
         }
         mc_particles.emplace_back(dynamic_cast<MCParticle*>(mc_particle.GetObject()));

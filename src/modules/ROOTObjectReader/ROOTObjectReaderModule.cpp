@@ -49,27 +49,32 @@ ROOTObjectReaderModule::~ROOTObjectReaderModule() {
 template <typename T> static void add_creator(ROOTObjectReaderModule::MessageCreatorMap& map) {
     map[typeid(T)] = [&](std::vector<Object*> objects, std::shared_ptr<Detector> detector) {
         std::vector<T> data;
+        // Copy the objects to data vector
         for(auto& object : objects) {
-            auto& cur_obj = *static_cast<T*>(object);
-            data.emplace_back(cur_obj);
-            auto& new_obj = data.back();
+            data.emplace_back(*static_cast<T*>(object));
+        }
 
-            // Fix the object that history points to the new object
-            if(cur_obj.TestBit(kIsReferenced)) {
+        // Fix the object references (NOTE: we do this after insertion as otherwise the objects could have been relocated)
+        for(size_t i = 0; i < objects.size(); ++i) {
+            auto& prev_obj = *objects[i];
+            auto& new_obj = data[i];
+
+            // Only update the reference for objects that have been referenced before
+            if(prev_obj.TestBit(kIsReferenced)) {
                 auto pid = TProcessID::GetProcessWithUID(&new_obj);
-                if(pid->GetObjectWithID(cur_obj.GetUniqueID()) != &cur_obj) {
+                if(pid->GetObjectWithID(prev_obj.GetUniqueID()) != &prev_obj) {
                     LOG(ERROR) << "Duplicate object IDs, cannot correctly resolve previous history!";
                 }
-                cur_obj.SetBit(kIsReferenced);
+                prev_obj.ResetBit(kIsReferenced);
                 new_obj.SetBit(kIsReferenced);
                 pid->PutObjectWithID(&new_obj);
             }
         }
 
         if(detector == nullptr) {
-            return std::make_shared<Message<T>>(data);
+            return std::make_shared<Message<T>>(std::move(data));
         }
-        return std::make_shared<Message<T>>(data, detector);
+        return std::make_shared<Message<T>>(std::move(data), detector);
     };
 }
 
