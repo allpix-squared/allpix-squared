@@ -193,10 +193,9 @@ void ProjectionPropagationModule::run(unsigned int) {
             // Only add if within sensor volume:
             auto event_time = deposit.getEventTime() + drift_time;
             if(!detector_->isWithinSensor(local_position)) {
-                local_position = position;
-                event_time = deposit.getEventTime();
+                // FIXME: drop charges if it ends up outside the sensor, could be optimized to estimate position on border
+                continue;
             }
-
             auto global_position = detector_->getGlobalPosition(local_position);
 
             // Produce charge carrier at this position
