@@ -21,6 +21,8 @@ namespace allpix {
      * @brief Charge deposit in sensor of detector
      */
     class DepositedCharge : public SensorCharge {
+        friend class PropagatedCharge;
+
     public:
         /**
          * @brief Construct a charge deposit

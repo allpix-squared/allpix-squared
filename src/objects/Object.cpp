@@ -16,6 +16,13 @@ std::ostream& allpix::operator<<(std::ostream& out, const Object& obj) {
     return out;
 }
 
+bool operator<(const TRef& ref1, const TRef& ref2) {
+    if(ref1.GetPID() == ref2.GetPID()) {
+        return ref1.GetUniqueID() < ref2.GetUniqueID();
+    }
+    return ref1.GetPID() < ref2.GetPID();
+}
+
 Object::Object(const Object&) = default;
 Object& Object::operator=(const Object&) = default;
 
