@@ -61,7 +61,7 @@ std::vector<const MCParticle*> PixelHit::getMCParticles() const {
 
     std::vector<const MCParticle*> mc_particles;
     for(auto& mc_particle : mc_particles_) {
-        if(mc_particle == nullptr) {
+        if(!mc_particle.IsValid() || mc_particle.GetObject() == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(MCParticle));
         }
         mc_particles.emplace_back(dynamic_cast<MCParticle*>(mc_particle.GetObject()));
