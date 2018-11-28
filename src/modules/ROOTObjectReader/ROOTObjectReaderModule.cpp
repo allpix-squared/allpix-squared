@@ -21,6 +21,7 @@
 
 #include "core/messenger/Messenger.hpp"
 #include "core/utils/log.h"
+#include "core/utils/text.h"
 #include "core/utils/type.h"
 
 #include "objects/Object.hpp"
@@ -184,7 +185,7 @@ void ROOTObjectReaderModule::init() {
     // Cross-check version, print warning only in case of a mismatch:
     std::string* version_str = nullptr;
     input_file_->GetObject("config/Allpix/version", version_str);
-    if(version_str != nullptr && (*version_str) != ALLPIX_PROJECT_VERSION) {
+    if(version_str != nullptr && allpix::from_string<std::string>(*version_str) != ALLPIX_PROJECT_VERSION) {
         LOG(WARNING) << "Reading data produced with different version " << (*version_str)
                      << " - this might lead to unexpected behavior.";
     }
