@@ -17,6 +17,7 @@
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
+#include "tools/field_parser.h"
 
 #include "core/module/Module.hpp"
 
@@ -26,14 +27,6 @@ namespace allpix {
      * @brief Module to read weighting fields from INIT format
      */
     class WeightingFieldReaderModule : public Module {
-        /**
-         * Electric field data with three components
-         * * The actual field data as shared pointer to vector
-         * * An array specifying the number of bins in each dimension
-         * * An array containing the physical extent of the field as specified in the file
-         */
-        using FieldData = std::tuple<std::shared_ptr<std::vector<double>>, std::array<size_t, 3>, std::array<double, 3>>;
-
     public:
         /**
          * @brief Constructor for this detector-specific module
@@ -57,14 +50,16 @@ namespace allpix {
          * @brief Create and apply a weighting field equivalent to a pixel/pad in a plane condenser
          * @param thickness_domain Domain of the thickness where the field is defined
          */
-        ElectricFieldFunction get_pad_field_function(const ROOT::Math::XYVector& implant,
-                                                     std::pair<double, double> thickness_domain);
+        FieldFunction<ROOT::Math::XYZVector> get_pad_field_function(const ROOT::Math::XYVector& implant,
+                                                                    std::pair<double, double> thickness_domain);
 
         /**
          * @brief Read field in the init format and apply it
          * @param thickness_domain Domain of the thickness where the field is defined
          */
-        FieldData read_init_field(std::pair<double, double> thickness_domain);
+        FieldData<double> read_init_field(std::pair<double, double> thickness_domain);
+        static FieldParser<double, 3> field_parser_;
+
         /**
          * @brief Create output plots of the electric field profile
          */
@@ -76,12 +71,5 @@ namespace allpix {
          * @param thickness_domain Domain of the thickness where the field is defined
          */
         void check_detector_match(std::array<double, 3> dimensions, std::pair<double, double> thickness_domain);
-
-        /**
-         * @brief Get the weighting field from a file name, caching the result between
-         * instantiations
-         */
-        static FieldData get_by_file_name(const std::string& name);
-        static std::map<std::string, FieldData> field_map_;
     };
 } // namespace allpix

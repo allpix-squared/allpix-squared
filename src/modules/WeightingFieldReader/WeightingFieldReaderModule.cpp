@@ -44,8 +44,7 @@ void WeightingFieldReaderModule::init() {
 
     // Calculate the field depending on the configuration
     if(field_model == "init") {
-        WeightingFieldReaderModule::FieldData field_data;
-        field_data = read_init_field(thickness_domain);
+        auto field_data = read_init_field(thickness_domain);
         detector_->setWeightingFieldGrid(
             std::get<0>(field_data), std::get<1>(field_data), std::get<2>(field_data), thickness_domain);
     } else if(field_model == "pad") {
@@ -53,8 +52,8 @@ void WeightingFieldReaderModule::init() {
 
         // Get pixel implant size from the detector model:
         auto implant = model->getImplantSize();
-        ElectricFieldFunction function = get_pad_field_function(implant, thickness_domain);
-        detector_->setWeightingFieldFunction(function, thickness_domain, WeightingFieldType::PAD);
+        FieldFunction<ROOT::Math::XYZVector> function = get_pad_field_function(implant, thickness_domain);
+        detector_->setWeightingFieldFunction(function, thickness_domain, FieldType::CUSTOM);
     } else {
         throw InvalidValueError(config_, "model", "model should be 'init' or `pad`");
     }
@@ -68,8 +67,9 @@ void WeightingFieldReaderModule::init() {
 /**
  * Implement weighting field from doi:10.1016/j.nima.2014.08.44 and return it as a lookup function.
  */
-ElectricFieldFunction WeightingFieldReaderModule::get_pad_field_function(const ROOT::Math::XYVector& implant,
-                                                                         std::pair<double, double> thickness_domain) {
+FieldFunction<ROOT::Math::XYZVector>
+WeightingFieldReaderModule::get_pad_field_function(const ROOT::Math::XYVector& implant,
+                                                   std::pair<double, double> thickness_domain) {
 
     LOG(TRACE) << "Calculating function for the plane condenser weighting field field." << std::endl;
 
@@ -186,15 +186,15 @@ void WeightingFieldReaderModule::create_output_plots() {
  * The field read from the INIT format are shared between module instantiations
  * using the static WeightingFieldReaderModule::get_by_file_name method.
  */
-WeightingFieldReaderModule::FieldData
-WeightingFieldReaderModule::read_init_field(std::pair<double, double> thickness_domain) {
+FieldParser<double, 3> WeightingFieldReaderModule::field_parser_("");
+FieldData<double> WeightingFieldReaderModule::read_init_field(std::pair<double, double> thickness_domain) {
     using namespace ROOT::Math;
 
     try {
         LOG(TRACE) << "Fetching weighting field from init file";
 
         // Get field from file
-        auto field_data = get_by_file_name(config_.getPath("file_name", true));
+        auto field_data = field_parser_.get_by_file_name(config_.getPath("file_name", true));
 
         // Check if electric field matches chip
         check_detector_match(std::get<2>(field_data), thickness_domain);
@@ -241,81 +241,4 @@ void WeightingFieldReaderModule::check_detector_match(std::array<double, 3> dime
                          << Units::display(model->getPixelSize().y(), {"um", "mm"}) << ")";
         }
     }
-}
-
-std::map<std::string, WeightingFieldReaderModule::FieldData> WeightingFieldReaderModule::field_map_;
-WeightingFieldReaderModule::FieldData WeightingFieldReaderModule::get_by_file_name(const std::string& file_name) {
-
-    // Search in cache (NOTE: the path reached here is always a canonical name)
-    auto iter = field_map_.find(file_name);
-    if(iter != field_map_.end()) {
-        LOG(INFO) << "Using cached weighting field data";
-        return iter->second;
-    }
-
-    // Load file
-    std::ifstream file(file_name);
-    std::string header;
-    std::getline(file, header);
-    LOG(TRACE) << "Header of file " << file_name << " is " << header;
-
-    // Read the header
-    std::string tmp;
-    file >> tmp >> tmp;        // ignore the init seed and cluster length
-    file >> tmp >> tmp >> tmp; // ignore the incident pion direction
-    file >> tmp >> tmp >> tmp; // ignore the magnetic field (specify separately)
-    double thickness, xpixsz, ypixsz;
-    file >> thickness >> xpixsz >> ypixsz;
-    thickness = Units::get(thickness, "um");
-    xpixsz = Units::get(xpixsz, "um");
-    ypixsz = Units::get(ypixsz, "um");
-    file >> tmp >> tmp >> tmp >> tmp; // ignore temperature, flux, rhe (?) and new_drde (?)
-    size_t xsize, ysize, zsize;
-    file >> xsize >> ysize >> zsize;
-    file >> tmp;
-
-    if(file.fail()) {
-        throw std::runtime_error("invalid data or unexpected end of file");
-    }
-    auto field = std::make_shared<std::vector<double>>();
-    field->resize(xsize * ysize * zsize * 3);
-
-    // Loop through all the field data
-    for(size_t i = 0; i < xsize * ysize * zsize; ++i) {
-        if(i % 100 == 0) {
-            LOG_PROGRESS(INFO, "read_init")
-                << "Reading weighting field data: " << (100 * i / (xsize * ysize * zsize)) << "%";
-        }
-
-        if(file.eof()) {
-            throw std::runtime_error("unexpected end of file");
-        }
-
-        // Get index of weighting field
-        size_t xind, yind, zind;
-        file >> xind >> yind >> zind;
-
-        if(file.fail() || xind > xsize || yind > ysize || zind > zsize) {
-            throw std::runtime_error("invalid data");
-        }
-        xind--;
-        yind--;
-        zind--;
-
-        // Loop through components of weighting field
-        for(size_t j = 0; j < 3; ++j) {
-            double input;
-            file >> input;
-
-            // Set the weighting field at a position
-            (*field)[xind * ysize * zsize * 3 + yind * zsize * 3 + zind * 3 + j] = Units::get(input, "V/cm");
-        }
-    }
-
-    FieldData field_data = std::make_tuple(
-        field, std::array<size_t, 3>{{xsize, ysize, zsize}}, std::array<double, 3>{{xpixsz, ypixsz, thickness}});
-
-    // Store the parsed field data for further reference:
-    field_map_[file_name] = field_data;
-    return field_data;
 }

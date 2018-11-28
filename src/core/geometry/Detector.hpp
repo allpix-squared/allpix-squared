@@ -156,7 +156,7 @@ namespace allpix {
          * @brief Return the type of weighting field that is simulated.
          * @return The type of the weighting field
          */
-        WeightingFieldType getWeightingFieldType() const;
+        FieldType getWeightingFieldType() const;
         /**
          * @brief Get the weighting field in the sensor at a local position
          * @param pos Position in the local frame
