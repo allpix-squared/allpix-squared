@@ -50,7 +50,8 @@ void Units::add(std::string str, UnitType value) {
  */
 allpix::Units::UnitType Units::getSingle(std::string str) {
     if(allpix::trim(str).empty()) {
-        throw std::invalid_argument("empty unit is not defined");
+        // An empty unit equals a multiplication with one:
+        return 1.;
     }
     // Do not distinguish between different case for units
     std::transform(str.begin(), str.end(), str.begin(), ::tolower);

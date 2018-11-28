@@ -72,9 +72,24 @@ void ProjectionPropagationModule::init() {
         LOG(WARNING) << "A magnetic field is switched on, but is set to be ignored for this module.";
     }
 
+    // Find correct top side
+    top_z_ = model_->getSensorSize().z() / 2;
+    if(detector_->getElectricField({0, 0, top_z_}).z() > detector_->getElectricField({0, 0, -top_z_}).z()) {
+        top_z_ *= -1;
+    }
+    if(propagate_type_ == CarrierType::HOLE) {
+        top_z_ *= -1;
+    }
+
+    if(top_z_ < 0) {
+        LOG(WARNING)
+            << "Selected carriers are not propagated to the implant side, combination of propagated carrier and electric "
+               "field is wrong!";
+    }
+
     if(output_plots_) {
         // Initialize output plot
-        drift_time_histo = new TH1D("drift_time_histo", "Drift time;t[ns];particles", 75, 0., 25.);
+        drift_time_histo_ = new TH1D("drift_time_histo", "Drift time;t[ns];particles", 75, 0., 25.);
     }
 }
 
@@ -82,7 +97,6 @@ void ProjectionPropagationModule::run(unsigned int) {
 
     // Create vector of propagated charges to output
     std::vector<PropagatedCharge> propagated_charges;
-    auto model = detector_->getModel();
 
     double charge_lost = 0;
     double total_charge = 0;
@@ -119,21 +133,20 @@ void ProjectionPropagationModule::run(unsigned int) {
         // Get the electric field at the position of the deposited charge and the top of the sensor:
         auto efield = detector_->getElectricField(position);
         double efield_mag = std::sqrt(efield.Mag2());
-        auto efield_top = detector_->getElectricField(ROOT::Math::XYZPoint(0., 0., model->getSensorSize().z() / 2.));
+        auto efield_top = detector_->getElectricField(ROOT::Math::XYZPoint(0., 0., top_z_));
         double efield_mag_top = std::sqrt(efield_top.Mag2());
 
         LOG(TRACE) << "Electric field at carrier position / top of the sensor: " << Units::display(efield_mag_top, "V/cm")
                    << " , " << Units::display(efield_mag, "V/cm");
 
-        slope_efield_ = (efield_mag_top - efield_mag) / (model->getSensorSize().z() / 2. - position.z());
+        slope_efield_ = (efield_mag_top - efield_mag) / (std::abs(top_z_ - position.z()));
 
         // Calculate the drift time
         auto calc_drift_time = [&]() {
             double Ec = (type == CarrierType::ELECTRON ? electron_Ec_ : hole_Ec_);
             double zero_mobility = (type == CarrierType::ELECTRON ? electron_Vm_ / electron_Ec_ : hole_Vm_ / hole_Ec_);
 
-            return ((log(efield_mag_top) - log(efield_mag)) / slope_efield_ +
-                    (model->getSensorSize().z() / 2. - position.z()) / Ec) /
+            return ((log(efield_mag_top) - log(efield_mag)) / slope_efield_ + std::abs(top_z_ - position.z()) / Ec) /
                    zero_mobility;
         };
 
@@ -152,9 +165,7 @@ void ProjectionPropagationModule::run(unsigned int) {
         LOG(TRACE) << "Drift time is " << Units::display(drift_time, "ns");
 
         if(output_plots_) {
-            drift_time_histo->SetBinContent(drift_time_histo->FindBin(drift_time),
-                                            drift_time_histo->GetBinContent(drift_time_histo->FindBin(drift_time)) +
-                                                deposit.getCharge());
+            drift_time_histo_->Fill(drift_time, deposit.getCharge());
         }
 
         double diffusion_std_dev = std::sqrt(2. * diffusion_constant * drift_time);
@@ -176,28 +187,23 @@ void ProjectionPropagationModule::run(unsigned int) {
             double diffusion_x = gauss_distribution(random_generator_);
             double diffusion_y = gauss_distribution(random_generator_);
 
-            auto projected_position = ROOT::Math::XYZPoint(
-                position.x() + diffusion_x, position.y() + diffusion_y, model->getSensorSize().z() / 2.);
+            // Find projected position
+            auto local_position = ROOT::Math::XYZPoint(position.x() + diffusion_x, position.y() + diffusion_y, top_z_);
 
             // Only add if within sensor volume:
-            auto local_position =
-                ROOT::Math::XYZPoint(projected_position.x(), projected_position.y(), model->getSensorSize().z() / 2.);
+            auto event_time = deposit.getEventTime() + drift_time;
             if(!detector_->isWithinSensor(local_position)) {
+                // FIXME: drop charges if it ends up outside the sensor, could be optimized to estimate position on border
                 continue;
             }
-
             auto global_position = detector_->getGlobalPosition(local_position);
 
             // Produce charge carrier at this position
-            propagated_charges.emplace_back(projected_position,
-                                            global_position,
-                                            deposit.getType(),
-                                            charge_per_step,
-                                            deposit.getEventTime() + drift_time,
-                                            &deposit);
+            propagated_charges.emplace_back(
+                local_position, global_position, deposit.getType(), charge_per_step, event_time, &deposit);
 
             LOG(DEBUG) << "Propagated " << charge_per_step << " charge carriers (" << type << ") to "
-                       << Units::display(projected_position, {"mm", "um"});
+                       << Units::display(local_position, {"mm", "um"});
 
             projected_charge += charge_per_step;
         }
@@ -219,6 +225,6 @@ void ProjectionPropagationModule::run(unsigned int) {
 void ProjectionPropagationModule::finalize() {
     if(output_plots_) {
         // Write output plot
-        drift_time_histo->Write();
+        drift_time_histo_->Write();
     }
 }
