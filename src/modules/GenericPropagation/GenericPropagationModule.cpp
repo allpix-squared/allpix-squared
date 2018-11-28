@@ -53,9 +53,6 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
                                                    Messenger* messenger,
                                                    std::shared_ptr<Detector> detector)
     : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
-    // Enable parallelization of this module if multithreading is enabled
-    enable_parallelization();
-
     // Save detector model
     model_ = detector_->getModel();
 
@@ -108,6 +105,11 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     output_plots_step_ = config_.get<double>("output_plots_step");
     output_plots_step_length_ = config_.get<bool>("output_plots_step_length");
     output_plots_lines_at_implants_ = config_.get<bool>("output_plots_lines_at_implants");
+
+    // Enable parallelization of this module if multithreading is enabled and no output plots are requested:
+    if(!output_plots_) {
+        enable_parallelization();
+    }
 
     // Parameterization variables from https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2)
     electron_Vm_ = Units::get(1.53e9 * std::pow(temperature_, -0.87), "cm/s");
