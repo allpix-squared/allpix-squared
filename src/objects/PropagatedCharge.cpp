@@ -22,7 +22,7 @@ PropagatedCharge::PropagatedCharge(ROOT::Math::XYZPoint local_position,
     : SensorCharge(std::move(local_position), std::move(global_position), type, charge, event_time) {
     deposited_charge_ = const_cast<DepositedCharge*>(deposited_charge); // NOLINT
     if(deposited_charge != nullptr) {
-        mc_particle_ = const_cast<MCParticle*>(deposited_charge->getMCParticle()); // NOLINT
+        mc_particle_ = deposited_charge->mc_particle_;
     }
 }
 

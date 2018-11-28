@@ -25,6 +25,8 @@ namespace allpix {
      * @brief Set of charges at a pixel
      */
     class PixelCharge : public Object {
+        friend class PixelHit;
+
     public:
         /**
          * @brief Construct a set of charges at a pixel

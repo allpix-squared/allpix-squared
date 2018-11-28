@@ -21,13 +21,13 @@ PixelHit::PixelHit(Pixel pixel, double time, double signal, const PixelCharge* p
     : pixel_(std::move(pixel)), time_(time), signal_(signal) {
     pixel_charge_ = const_cast<PixelCharge*>(pixel_charge); // NOLINT
     // Get the unique set of MC particles
-    std::set<const MCParticle*> unique_particles;
-    for(auto mc_particle : pixel_charge->getMCParticles()) {
+    std::set<TRef> unique_particles;
+    for(auto& mc_particle : pixel_charge->mc_particles_) {
         unique_particles.insert(mc_particle);
     }
     // Store the MC particle references
-    for(auto mc_particle : unique_particles) {
-        mc_particles_.push_back(const_cast<MCParticle*>(mc_particle)); // NOLINT
+    for(auto& mc_particle : unique_particles) {
+        mc_particles_.push_back(mc_particle);
     }
 }
 

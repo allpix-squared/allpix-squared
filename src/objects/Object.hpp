@@ -18,6 +18,7 @@
 #include <iostream>
 
 #include <TObject.h>
+#include <TRef.h>
 
 namespace allpix {
     template <typename T> class Message;
@@ -84,7 +85,14 @@ namespace allpix {
      * @return Stream where output was written to
      */
     std::ostream& operator<<(std::ostream& out, const allpix::Object& obj);
-
 } // namespace allpix
+
+/**
+ * @brief Missing comparison operator for TRef (to filter out unique)
+ * @param ref1 First TRef
+ * @param ref2 Second TRef
+ * @return bool Returns true if first TRef should be ordered before second TRef
+ */
+bool operator<(const TRef& ref1, const TRef& ref2);
 
 #endif
