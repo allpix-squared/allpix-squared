@@ -219,7 +219,7 @@ void DetectorHistogrammerModule::init(std::mt19937_64&) {
                          model->getNPixels().x() * model->getNPixels().y() + 0.5);
 
     // Create cluster charge plot
-    auto max_cluster_charge = Units::convert(config_.get<double>("max_cluster_charge", 50.), "ke");
+    auto max_cluster_charge = Units::convert(config_.get<double>("max_cluster_charge", Units::get(50., "ke")), "ke");
     std::string cluster_charge_title = "Cluster charge for " + detector_->getName() + ";cluster charge [ke];clusters";
     cluster_charge =
         new TH1D("cluster_charge", cluster_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));

@@ -119,7 +119,8 @@ ROOT::Math::XYZVector DetectorModel::getSize() const {
     ROOT::Math::XYZVector size;
     size.SetX(2 * std::max(max.x() - getCenter().x(), getCenter().x() - min.x()));
     size.SetY(2 * std::max(max.y() - getCenter().y(), getCenter().y() - min.y()));
-    size.SetZ(2 * std::max(max.z() - getCenter().z(), getCenter().z() - min.z()));
+    size.SetZ((max.z() - getCenter().z()) +
+              (getCenter().z() - min.z())); // max.z() is positive (chip side) and min.z() is negative (sensor side)
     return size;
 }
 

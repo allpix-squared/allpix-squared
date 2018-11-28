@@ -69,6 +69,8 @@ namespace allpix {
 
         // Carrier type to be propagated
         CarrierType propagate_type_;
+        // Side to propagate too
+        double top_z_;
 
         // Precalculated values for electron and hole mobility
         double hole_Vm_;
@@ -78,10 +80,13 @@ namespace allpix {
         double electron_Ec_;
         double electron_Beta_;
 
+        // Calculated slope of the electric field
+        double slope_efield_;
+
         // Precalculated value for Boltzmann constant:
         double boltzmann_kT_;
 
         // Output plot for drift time
-        TH1D* drift_time_histo;
+        TH1D* drift_time_histo_;
     };
 } // namespace allpix

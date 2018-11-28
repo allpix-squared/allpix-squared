@@ -9,8 +9,15 @@
 1515689532|Stable Release: Allpix Squared v1.1
 1518103248|Automatic CVMFS deployment
 1520947826|Automatic creation of Docker images
-1523628530|Rework of MCParticle system
-1523958029|Support for magnetic fields
-1524578480|Addition of MCTrack objects
-1528805419|Support for different particle sources
+1523628530|MR!125: Rework of MCParticle system
+1523958029|MR!124: Support for magnetic fields
+1524578480|MR!129: Addition of MCTrack objects
+1528805419|MR!144: Support for different particle sources
 1528888016|Stable Release: Allpix Squared v1.2
+1532957077|MR!156: Multi-Threaded Mesh Converter
+1533118352|MR!148: Definition of Pixel Implants
+1533823478|MR!110: Radioactive Decays & Ion Source
+1535543314|MR!160: Extend DetectorHistogrammer
+1541489096|MR!168: Scaling and Shifting of Electric Fields
+1542358071|MR!150: Detector Model Wrapper and Overlap Check
+1542791646|Stable Release: Allpix Squared v1.3

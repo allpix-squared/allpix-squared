@@ -172,6 +172,7 @@ void SensitiveDetectorActionG4::dispatchMessages(Event* event) {
     track_begin_.clear();
     track_end_.clear();
     track_pdg_.clear();
+    track_time_.clear();
 
     // Send a deposit message if we have any deposits
     if(!deposits_.empty()) {
