@@ -477,7 +477,7 @@ void GenericPropagationModule::init() {
     }
 
     // For linear fields we can in addition check if the correct carriers are propagated
-    if(detector->getElectricFieldType() == ElectricFieldType::LINEAR) {
+    if(detector->getElectricFieldType() == FieldType::LINEAR) {
         auto model = detector_->getModel();
         auto probe_point = ROOT::Math::XYZPoint(model->getSensorCenter().x(),
                                                 model->getSensorCenter().y(),
