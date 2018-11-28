@@ -40,6 +40,7 @@ This module requires an installation of Eigen3.
 
 ### Plotting parameters
 * `output_plots` : Determines if output plots should be generated for every event. This causes a significant slow down of the simulation, it is not recommended to enable this option for runs with more than a couple of events. Disabled by default.
+* `output_plots_step_length` : Determines if a global histogram should be created with all the step lengths used during integration. Default to `output_plots`, but could be enabled separately as it has much lower performance impact.
 * `output_plots_step` : Timestep to use between two points plotted. Indirectly determines the amount of points plotted. Defaults to *timestep_max* if not explicitly specified.
 * `output_plots_theta` : Viewpoint angle of the 3D animation and the 3D line graph around the world X-axis. Defaults to zero.
 * `output_plots_phi` : Viewpoint angle of the 3D animation and the 3D line graph around the world Z-axis. Defaults to zero.
