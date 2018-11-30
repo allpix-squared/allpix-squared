@@ -16,10 +16,12 @@
 #include <TBranch.h>
 #include <TKey.h>
 #include <TObjArray.h>
+#include <TProcessID.h>
 #include <TTree.h>
 
 #include "core/messenger/Messenger.hpp"
 #include "core/utils/log.h"
+#include "core/utils/text.h"
 #include "core/utils/type.h"
 
 #include "objects/Object.hpp"
@@ -46,16 +48,34 @@ ROOTObjectReaderModule::~ROOTObjectReaderModule() {
  * object from its typeid.
  */
 template <typename T> static void add_creator(ROOTObjectReaderModule::MessageCreatorMap& map) {
-    map[typeid(T)] = [&](std::vector<Object*> objects, std::shared_ptr<Detector> detector = nullptr) {
+    map[typeid(T)] = [&](std::vector<Object*> objects, std::shared_ptr<Detector> detector) {
         std::vector<T> data;
+        // Copy the objects to data vector
         for(auto& object : objects) {
-            data.emplace_back(std::move(*static_cast<T*>(object)));
+            data.emplace_back(*static_cast<T*>(object));
+        }
+
+        // Fix the object references (NOTE: we do this after insertion as otherwise the objects could have been relocated)
+        for(size_t i = 0; i < objects.size(); ++i) {
+            auto& prev_obj = *objects[i];
+            auto& new_obj = data[i];
+
+            // Only update the reference for objects that have been referenced before
+            if(prev_obj.TestBit(kIsReferenced)) {
+                auto pid = TProcessID::GetProcessWithUID(&new_obj);
+                if(pid->GetObjectWithID(prev_obj.GetUniqueID()) != &prev_obj) {
+                    LOG(ERROR) << "Duplicate object IDs, cannot correctly resolve previous history!";
+                }
+                prev_obj.ResetBit(kIsReferenced);
+                new_obj.SetBit(kIsReferenced);
+                pid->PutObjectWithID(&new_obj);
+            }
         }
 
         if(detector == nullptr) {
-            return std::make_shared<Message<T>>(data);
+            return std::make_shared<Message<T>>(std::move(data));
         }
-        return std::make_shared<Message<T>>(data, detector);
+        return std::make_shared<Message<T>>(std::move(data), detector);
     };
 }
 
@@ -165,7 +185,7 @@ void ROOTObjectReaderModule::init(std::mt19937_64&) {
     // Cross-check version, print warning only in case of a mismatch:
     std::string* version_str = nullptr;
     input_file_->GetObject("config/Allpix/version", version_str);
-    if(version_str != nullptr && (*version_str) != ALLPIX_PROJECT_VERSION) {
+    if(version_str != nullptr && allpix::from_string<std::string>(*version_str) != ALLPIX_PROJECT_VERSION) {
         LOG(WARNING) << "Reading data produced with different version " << (*version_str)
                      << " - this might lead to unexpected behavior.";
     }
