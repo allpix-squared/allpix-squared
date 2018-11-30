@@ -295,7 +295,7 @@ This is the only \underline{required} argument, the simulation will fail to star
 Possible values are \texttt{FATAL}, \texttt{STATUS}, \texttt{ERROR}, \texttt{WARNING}, \texttt{INFO} and \texttt{DEBUG}, where all options are case-insensitive.
 The module specific logging level introduced in Section~\ref{sec:logging_verbosity} is not overwritten.
 \item \texttt{-{}-version}: Prints the version and build time of the executable and terminates the program.
-\item \texttt{-o <option>}: Passes extra options which are added and overwritten in the main configuration file.
+\item \texttt{-o <option>}: Passes extra module options which are added and overwritten in the main configuration file.
 This argument may be specified multiple times, to add multiple options.
 Options are specified as key/value pairs in the same syntax as used in the configuration files (refer to Section~\ref{sec:config_file_format} for more details), but the key is extended to include a reference to a configuration section or instantiation in shorthand notation.
 There are three types of keys that can be specified:
@@ -305,6 +305,10 @@ There are three types of keys that can be specified:
 \item Keys to specify values for a particular \textbf{module instantiation}. The identifier of the instantiation and the name of the actual key are split by a dot (\texttt{.}), in the same way as for keys for module configurations (thus \textit{identifier}.\textit{key}). The unique identifier for a module can contains one or more colons (\texttt{:}) to distinguish between various instantiations of the same module. The exact name of an identifier depends on the name of the detector and the optional input and output name. Those identifiers can be extracted from the logging section headers. An example to change the temperature of propagation for a particular instantiation for a detector named \textit{dut} could be \texttt{allpix -c <file> -o GenericPropagation:dut.temperature=273K}.
 \end{itemize}
 Note that only the single argument directly following the \texttt{-o} is interpreted as the option. If there is whitespace in the key/value pair this should be properly enclosed in quotation marks to ensure the argument is parsed correctly.
+\item \texttt{-g <option>}: Passes extra detector options which are added and overwritten in the detector configuration file.
+This argument can be specified multiple times, to add multiple options.
+The options are parsed in the same way as described above for module options, but only one type of key can be specified to overwrite an option for a single detector.
+These are specified by adding a dot (\texttt{.}) between the module and the actual key as it would be given in the detector configuration file (thus \textit{detector}.\textit{key}). This method also works for customizing detector models as described in Section \ref{sec:detector_models}. An example to overwrite the sensor thickness for a particular detector named \texttt{detector1} to \texttt{50um} would be \texttt{allpix -c <file> -g detector1.sensor\_thickness=50um}.
 \end{itemize}
 
 No interaction with the framework is possible during the simulation. Signals can however be send using keyboard shortcuts to terminate the simulation, either gracefully or with force. The executable understand the following signals:
