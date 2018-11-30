@@ -74,6 +74,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     config_.setDefault<bool>("output_plots", false);
     config_.setDefault<bool>("output_animations", false);
     config_.setDefault<bool>("output_plots_step_length", config_.get<bool>("output_plots"));
+    config_.setDefault<bool>("output_plots_drift_time", config_.get<bool>("output_plots"));
     config_.setDefault<bool>("output_animations_color_markers", false);
     config_.setDefault<double>("output_plots_step", config_.get<double>("timestep_max"));
     config_.setDefault<bool>("output_plots_use_pixel_units", false);
@@ -104,6 +105,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     output_plots_ = config_.get<bool>("output_plots");
     output_plots_step_ = config_.get<double>("output_plots_step");
     output_plots_step_length_ = config_.get<bool>("output_plots_step_length");
+    output_plots_drift_time_ = config_.get<bool>("output_plots_drift_time");
     output_plots_lines_at_implants_ = config_.get<bool>("output_plots_lines_at_implants");
 
     // Enable parallelization of this module if multithreading is enabled and no output plots are requested:
@@ -519,6 +521,15 @@ void GenericPropagationModule::init() {
                                       0,
                                       static_cast<double>(Units::convert(0.25 * model_->getSensorSize().z(), "um")));
     }
+
+    if(output_plots_drift_time_) {
+        // Initialize output plot
+        drift_time_histo_ = new TH1D("drift_time_histo",
+                                     "Drift time;Drift time [ns];charge carriers",
+                                     75,
+                                     0,
+                                     static_cast<double>(Units::get(25, "ns")));
+    }
 }
 
 void GenericPropagationModule::run(unsigned int event_num) {
@@ -587,6 +598,9 @@ void GenericPropagationModule::run(unsigned int event_num) {
             ++step_count;
             propagated_charges_count += charge_per_step;
             total_time += charge_per_step * prop_pair.second;
+            if(output_plots_drift_time_) {
+                drift_time_histo_->Fill(static_cast<double>(Units::convert(prop_pair.second, "ns")), charge_per_step);
+            }
         }
     }
 
@@ -779,6 +793,9 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
 void GenericPropagationModule::finalize() {
     if(output_plots_step_length_) {
         step_length_histo_->Write();
+    }
+    if(output_plots_drift_time_) {
+        drift_time_histo_->Write();
     }
 
     long double average_time = total_time_ / std::max(1u, total_propagated_charges_);
