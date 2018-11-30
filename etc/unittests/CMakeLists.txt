@@ -47,11 +47,17 @@ FUNCTION(ESCAPE_REGEX INP OUTPUT)
 ENDFUNCTION()
 
 FUNCTION(ADD_ALLPIX_TEST TEST)
-    # Allow the test to specify additional CLI parameters:
+    # Allow the test to specify additional module CLI parameters:
     FILE(STRINGS ${TEST} OPTS REGEX "#OPTION ")
     FOREACH(OPT ${OPTS})
         STRING(REPLACE "#OPTION " "" OPT "${OPT}")
         SET(CLIOPTIONS "${CLIOPTIONS} -o ${OPT}")
+    ENDFOREACH()
+    # Allow the test to specify additional geometry CLI parameters:
+    FILE(STRINGS ${TEST} OPTS REGEX "#DETOPTION ")
+    FOREACH(OPT ${OPTS})
+        STRING(REPLACE "#DETOPTION " "" OPT "${OPT}")
+        SET(CLIOPTIONS "${CLIOPTIONS} -g ${OPT}")
     ENDFOREACH()
 
     ADD_TEST(NAME ${TEST}
