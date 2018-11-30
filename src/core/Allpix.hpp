@@ -39,7 +39,9 @@ namespace allpix {
          * @param config_file_name Path of the main configuration file
          * @param options List of extra configuration options
          */
-        explicit Allpix(std::string config_file_name, const std::vector<std::string>& options = std::vector<std::string>());
+        explicit Allpix(std::string config_file_name,
+                        const std::vector<std::string>& module_options = std::vector<std::string>(),
+                        const std::vector<std::string>& detector_options = std::vector<std::string>());
 
         /**
          * @brief Load modules from the main configuration and construct them
