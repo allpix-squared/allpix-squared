@@ -25,24 +25,12 @@
 #include <Math/Transform3D.h>
 
 #include "Detector.hpp"
+#include "DetectorField.hpp"
 #include "DetectorModel.hpp"
 
 #include "objects/Pixel.hpp"
 
 namespace allpix {
-
-    /**
-     * @brief Type of the electric field
-     */
-    enum class ElectricFieldType {
-        NONE = 0, ///< No electric field is simulated
-        CONSTANT, ///< Constant electric field (mostly for testing)
-        LINEAR,   ///< Linear electric field (linearity determined by function)
-        GRID,     ///< Electric field supplied through a regularized grid
-        CUSTOM,   ///< Custom electric field function
-    };
-
-    using ElectricFieldFunction = std::function<ROOT::Math::XYZVector(const ROOT::Math::XYZPoint&)>;
 
     /**
      * @brief Instantiation of a detector model in the world
@@ -129,7 +117,7 @@ namespace allpix {
          * @brief Return the type of electric field that is simulated.
          * @return The type of the electric field
          */
-        ElectricFieldType getElectricFieldType() const;
+        FieldType getElectricFieldType() const;
         /**
          * @brief Get the electric field in the sensor at a local position
          * @param pos Position in the local frame
@@ -155,9 +143,9 @@ namespace allpix {
          * @param type Type of the electric field function used
          * @param thickness_domain Domain in local coordinates in the thickness direction where the field holds
          */
-        void setElectricFieldFunction(ElectricFieldFunction function,
+        void setElectricFieldFunction(FieldFunction<ROOT::Math::XYZVector> function,
                                       std::pair<double, double> thickness_domain,
-                                      ElectricFieldType type = ElectricFieldType::CUSTOM);
+                                      FieldType type = FieldType::CUSTOM);
 
         /**
              * @brief Set the magnetic field in the detector
@@ -227,15 +215,10 @@ namespace allpix {
         // Transform matrix from global to local coordinates
         ROOT::Math::Transform3D transform_;
 
-        std::array<size_t, 3> electric_field_sizes_;
-        std::array<double_t, 2> electric_field_scales_{{1., 1.}};
-        std::array<double_t, 2> electric_field_scales_inverse_{{1., 1.}};
-        std::array<double_t, 2> electric_field_offset_{{0., 0.}};
-        std::shared_ptr<std::vector<double>> electric_field_;
-        std::pair<double, double> electric_field_thickness_domain_;
-        ElectricFieldType electric_field_type_{ElectricFieldType::NONE};
-        ElectricFieldFunction electric_field_function_;
+        // Electric field
+        DetectorField<ROOT::Math::XYZVector, 3> electric_field_;
 
+        // Magnetic field properties
         ROOT::Math::XYZVector magnetic_field_;
         bool magnetic_field_on_;
 

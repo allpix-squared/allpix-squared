@@ -56,7 +56,7 @@ SimpleTransferModule::SimpleTransferModule(Configuration& config, Messenger* mes
 void SimpleTransferModule::init() {
 
     if(config_.get<bool>("collect_from_implant")) {
-        if(detector_->getElectricFieldType() == ElectricFieldType::LINEAR) {
+        if(detector_->getElectricFieldType() == FieldType::LINEAR) {
             throw ModuleError("Charge collection from implant region should not be used with linear electric fields.");
         } else {
             auto model = detector_->getModel();
