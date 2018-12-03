@@ -107,12 +107,11 @@ ROOT::Math::XYZPoint Detector::getGlobalPosition(const ROOT::Math::XYZPoint& loc
  * The definition of inside the sensor is determined by the detector model
  */
 bool Detector::isWithinSensor(const ROOT::Math::XYZPoint& local_pos) const {
-    return ((local_pos.x() >= model_->getSensorCenter().x() - model_->getSensorSize().x() / 2.0) &&
-            (local_pos.x() <= model_->getSensorCenter().x() + model_->getSensorSize().x() / 2.0) &&
-            (local_pos.y() >= model_->getSensorCenter().y() - model_->getSensorSize().y() / 2.0) &&
-            (local_pos.y() <= model_->getSensorCenter().y() + model_->getSensorSize().y() / 2.0) &&
-            (local_pos.z() >= model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0) &&
-            (local_pos.z() <= model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0));
+    auto sensor_center = model_->getSensorCenter();
+    auto sensor_size = model_->getSensorSize();
+    return (2 * std::fabs(local_pos.z() - sensor_center.z()) <= sensor_size.z()) &&
+           (2 * std::fabs(local_pos.y() - sensor_center.y()) <= sensor_size.y()) &&
+           (2 * std::fabs(local_pos.x() - sensor_center.x()) <= sensor_size.x());
 }
 
 /**

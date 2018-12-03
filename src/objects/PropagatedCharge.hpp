@@ -20,6 +20,8 @@ namespace allpix {
      * @brief Set of charges propagated through the sensor
      */
     class PropagatedCharge : public SensorCharge {
+        friend class PixelCharge;
+
     public:
         /**
          * @brief Construct a set of propagated charges

@@ -15,9 +15,9 @@ using namespace allpix;
 
 /**
  * Option is split in a key / value pair, an error is thrown if that is not possible. When the key contains at least one dot
- * it is interpreted as a relative configuration with the module identified by the first dot. In that case the option is
- * applied during module loading when either the unique or the configuration name match. Otherwise the key is interpreted as
- * global key and is added to the global header.
+ * it is interpreted as a relative configuration with the module / detector identified by the first dot. In that case the
+ * option is applied during loading when either the unique or the configuration name match. Otherwise the key is interpreted
+ * as global key and is added to the global header.
  */
 void OptionParser::parseOption(std::string line) {
     line = allpix::trim(line);

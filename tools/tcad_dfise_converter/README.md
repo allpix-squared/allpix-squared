@@ -14,7 +14,8 @@ When compiling the Allpix Squared framework, the TCAD DF-ISE mesh converter is a
 
 It is also possible to compile the converter separately as stand-alone tool within this directory:
 ```bash
-$ mkdir build && cd build
+$ mkdir build
+$ cd build
 $ cmake ..
 $ make
 ```

@@ -86,7 +86,8 @@ int main(int argc, const char* argv[]) {
     // Parse arguments
     std::string config_file_name;
     std::string log_file_name;
-    std::vector<std::string> options;
+    std::vector<std::string> module_options;
+    std::vector<std::string> detector_options;
     for(int i = 1; i < argc; i++) {
         if(strcmp(argv[i], "-h") == 0) {
             print_help = true;
@@ -113,7 +114,9 @@ int main(int argc, const char* argv[]) {
         } else if(strcmp(argv[i], "-l") == 0 && (i + 1 < argc)) {
             log_file_name = std::string(argv[++i]);
         } else if(strcmp(argv[i], "-o") == 0 && (i + 1 < argc)) {
-            options.emplace_back(std::string(argv[++i]));
+            module_options.emplace_back(std::string(argv[++i]));
+        } else if(strcmp(argv[i], "-g") == 0 && (i + 1 < argc)) {
+            detector_options.emplace_back(std::string(argv[++i]));
         } else {
             LOG(ERROR) << "Unrecognized command line argument \"" << argv[i] << "\"";
             print_help = true;
@@ -131,7 +134,8 @@ int main(int argc, const char* argv[]) {
         std::cout << "Options:" << std::endl;
         std::cout << "  -c <file>    configuration file to be used" << std::endl;
         std::cout << "  -l <file>    file to log to besides standard output" << std::endl;
-        std::cout << "  -o <option>  extra configuration option(s) to pass" << std::endl;
+        std::cout << "  -o <option>  extra module configuration option(s) to pass" << std::endl;
+        std::cout << "  -g <option>  extra detector configuration options(s) to pass" << std::endl;
         std::cout << "  -v <level>   verbosity level, overwriting the global level" << std::endl;
         std::cout << "  --version    print version information and quit" << std::endl;
         std::cout << std::endl;
@@ -163,7 +167,7 @@ int main(int argc, const char* argv[]) {
 
     try {
         // Construct main Allpix object
-        apx = std::make_unique<Allpix>(config_file_name, options);
+        apx = std::make_unique<Allpix>(config_file_name, module_options, detector_options);
         apx_ready = true;
 
         // Load modules
