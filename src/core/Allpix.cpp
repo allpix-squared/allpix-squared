@@ -34,7 +34,9 @@ using namespace allpix;
  * - Set the log level and log format as requested.
  * - Load the detector configuration and parse it
  */
-Allpix::Allpix(std::string config_file_name, const std::vector<std::string>& options)
+Allpix::Allpix(std::string config_file_name,
+               const std::vector<std::string>& module_options,
+               const std::vector<std::string>& detector_options)
     : terminate_(false), has_run_(false), msg_(std::make_unique<Messenger>()), mod_mgr_(std::make_unique<ModuleManager>()),
       geo_mgr_(std::make_unique<GeometryManager>()) {
     // Load the global configuration
@@ -42,8 +44,11 @@ Allpix::Allpix(std::string config_file_name, const std::vector<std::string>& opt
                                                 std::initializer_list<std::string>({"Allpix", ""}),
                                                 std::initializer_list<std::string>({"Ignore"}));
 
-    // Load and apply the provided options
-    conf_mgr_->loadOptions(options);
+    // Load and apply the provided module options
+    conf_mgr_->loadModuleOptions(module_options);
+
+    // Load and apply the provided detector options
+    conf_mgr_->loadDetectorOptions(detector_options);
 
     // Fetch the global configuration
     Configuration& global_config = conf_mgr_->getGlobalConfiguration();

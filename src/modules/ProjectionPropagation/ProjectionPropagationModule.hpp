@@ -68,6 +68,8 @@ namespace allpix {
 
         // Carrier type to be propagated
         CarrierType propagate_type_;
+        // Side to propagate too
+        double top_z_;
 
         // Precalculated values for electron and hole mobility
         double hole_Vm_;
@@ -84,7 +86,7 @@ namespace allpix {
         double boltzmann_kT_;
 
         // Output plot for drift time
-        TH1D* drift_time_histo;
+        TH1D* drift_time_histo_;
 
         // Deposits for the bound detector in this event
         std::shared_ptr<DepositedChargeMessage> deposits_message_;

@@ -17,15 +17,15 @@ using namespace allpix;
 PixelCharge::PixelCharge(Pixel pixel, unsigned int charge, std::vector<const PropagatedCharge*> propagated_charges)
     : pixel_(std::move(pixel)), charge_(charge) {
     // Unique set of MC particles
-    std::set<const MCParticle*> unique_particles;
+    std::set<TRef> unique_particles;
     // Store all propagated charges and their MC particles
     for(auto& propagated_charge : propagated_charges) {
         propagated_charges_.push_back(const_cast<PropagatedCharge*>(propagated_charge)); // NOLINT
-        unique_particles.insert(propagated_charge->getMCParticle());
+        unique_particles.insert(propagated_charge->mc_particle_);
     }
     // Store the MC particle references
-    for(auto mc_particle : unique_particles) {
-        mc_particles_.push_back(const_cast<MCParticle*>(mc_particle)); // NOLINT
+    for(auto& mc_particle : unique_particles) {
+        mc_particles_.push_back(mc_particle);
     }
 }
 
@@ -50,7 +50,7 @@ std::vector<const PropagatedCharge*> PixelCharge::getPropagatedCharges() const {
     // FIXME: This is not very efficient unfortunately
     std::vector<const PropagatedCharge*> propagated_charges;
     for(auto& propagated_charge : propagated_charges_) {
-        if(propagated_charge == nullptr) {
+        if(!propagated_charge.IsValid() || propagated_charge.GetObject() == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(PropagatedCharge));
         }
         propagated_charges.emplace_back(dynamic_cast<PropagatedCharge*>(propagated_charge.GetObject()));
@@ -67,7 +67,7 @@ std::vector<const MCParticle*> PixelCharge::getMCParticles() const {
 
     std::vector<const MCParticle*> mc_particles;
     for(auto& mc_particle : mc_particles_) {
-        if(mc_particle == nullptr) {
+        if(!mc_particle.IsValid() || mc_particle.GetObject() == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(MCParticle));
         }
         mc_particles.emplace_back(dynamic_cast<MCParticle*>(mc_particle.GetObject()));

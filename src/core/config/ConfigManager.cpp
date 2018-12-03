@@ -91,20 +91,44 @@ Configuration& ConfigManager::getGlobalConfiguration() {
  * Load all extra options that should be added on top of the configuration in the file. The options loaded here are
  * automatically applied to the module instance when these are added later.
  */
-bool ConfigManager::loadOptions(const std::vector<std::string>& options) {
+bool ConfigManager::loadModuleOptions(const std::vector<std::string>& options) {
     bool optionsApplied = false;
 
     // Parse the options
     for(auto& option : options) {
-        option_parser_.parseOption(option);
+        module_option_parser_.parseOption(option);
     }
 
     // Apply global options
-    optionsApplied = option_parser_.applyGlobalOptions(global_config_) || optionsApplied;
+    optionsApplied = module_option_parser_.applyGlobalOptions(global_config_) || optionsApplied;
 
     // Apply module options
     for(auto& config : module_configs_) {
-        optionsApplied = option_parser_.applyOptions(config.getName(), config) || optionsApplied;
+        optionsApplied = module_option_parser_.applyOptions(config.getName(), config) || optionsApplied;
+    }
+
+    return optionsApplied;
+}
+
+/**
+ * Load all extra options that should be added on top of the detector configuration in the file. The options loaded here are
+ * automatically applied to the detector instance when these are added later and will be taken into account when possibly
+ * loading customized detector models.
+ */
+bool ConfigManager::loadDetectorOptions(const std::vector<std::string>& options) {
+    bool optionsApplied = false;
+
+    // Create the parser
+    OptionParser detector_option_parser;
+
+    // Parse the options
+    for(auto& option : options) {
+        detector_option_parser.parseOption(option);
+    }
+
+    // Apply detector options
+    for(auto& config : detector_configs_) {
+        optionsApplied = detector_option_parser.applyOptions(config.getName(), config) || optionsApplied;
     }
 
     return optionsApplied;
@@ -145,7 +169,7 @@ Configuration& ConfigManager::addInstanceConfiguration(const ModuleIdentifier& i
     ret_config.set<std::string>("identifier", identifier.getIdentifier());
 
     // Apply instance options
-    option_parser_.applyOptions(unique_name, ret_config);
+    module_option_parser_.applyOptions(unique_name, ret_config);
     return ret_config;
 }
 
