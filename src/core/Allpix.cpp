@@ -278,7 +278,8 @@ void Allpix::add_units() {
     // CHARGE
     Units::add("e", 1);
     Units::add("ke", 1e3);
-    Units::add("C", 1.6021766208e-19);
+    Units::add("fC", 1/1.6021766208e-4);
+    Units::add("C", 1/1.6021766208e-19);
 
     // VOLTAGE
     // NOTE: fixed by above
