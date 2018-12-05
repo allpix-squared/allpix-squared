@@ -39,8 +39,8 @@ This module requires an installation of Eigen3.
 * `ignore_magnetic_field`: The magnetic field, if present, is ignored for this module. Defaults to false.
 
 ### Plotting parameters
-* `output_plots` : Determines if output plots should be generated for every event. This causes a significant slow down of the simulation, it is not recommended to enable this option for runs with more than a couple of events. Disabled by default.
-* `output_plots_step_length` : Determines if a global histogram should be created with all the step lengths used during integration. Default to `output_plots`, but could be enabled separately as it has much lower performance impact.
+* `output_plots` : Determines if simple output plots should be generated for a monitoring of the simulation flow. Disabled by default.
+* `output_linegraphs` : Determines if linegraphs should be generated for every event. This causes a significant slow down of the simulation, it is not recommended to enable this option for runs with more than a couple of events. Disabled by default.
 * `output_plots_step` : Timestep to use between two points plotted. Indirectly determines the amount of points plotted. Defaults to *timestep_max* if not explicitly specified.
 * `output_plots_theta` : Viewpoint angle of the 3D animation and the 3D line graph around the world X-axis. Defaults to zero.
 * `output_plots_phi` : Viewpoint angle of the 3D animation and the 3D line graph around the world Z-axis. Defaults to zero.
@@ -48,7 +48,7 @@ This module requires an installation of Eigen3.
 * `output_plots_use_equal_scaling` : Determines if the plots should be produced with equal distance scales on every axis (also if this implies that some points will fall out of the graph). Defaults to true.
 * `output_plots_align_pixels` : Determines if the plot should be aligned on pixels, defaults to false. If enabled the start and the end of the axis will be at the split point between pixels.
 * `output_plots_lines_at_implants` : Determine whether to plot all charge carrier drift lines (`false`) or to just plot lines from charge carriers which reached the implant side within the allotted integration time (`true`). Defaults to `false`, i.e. all charge carrier drift lines are drawn.
-* `output_animations` : In addition to the other output plots, also write a GIF animation of the charges drifting towards the electrodes. This is very slow and writing the animation takes a considerable amount of time, therefore defaults to false. This option also requires `output_plots` to be enabled.
+* `output_animations` : In addition to the other output plots, also write a GIF animation of the charges drifting towards the electrodes. This is very slow and writing the animation takes a considerable amount of time, therefore defaults to false. This option also requires `output_linegraphs` to be enabled.
 * `output_animations_time_scaling` : Scaling for the animation used to convert the actual simulation time to the time step in the animation. Defaults to 1.0e9, meaning that every nanosecond of the simulation is equal to an animation step of a single second.
 * `output_animations_marker_size` : Scaling for the markers on the animation, defaults to one. The markers are already internally scaled to the charge of their step, normalized to the maximum charge.
 * `output_animations_contour_max_scaling` : Scaling to use for the contour color axis from the theoretical maximum charge at every single plot step. Default is 10, meaning that the maximum of the color scale axis is equal to the total amount of charges divided by ten (values above this are displayed in the same maximum color). Parameter can be used to improve the color scale of the contour plots.
