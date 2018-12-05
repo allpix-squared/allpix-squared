@@ -71,10 +71,10 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     config_.setDefault<unsigned int>("charge_per_step", 10);
     config_.setDefault<double>("temperature", 293.15);
 
-    config_.setDefault<bool>("output_plots", false);
+    config_.setDefault<bool>("output_linegraphs", false);
     config_.setDefault<bool>("output_animations", false);
-    config_.setDefault<bool>("output_plots_step_length", config_.get<bool>("output_plots"));
-    config_.setDefault<bool>("output_plots_drift_time", config_.get<bool>("output_plots"));
+    config_.setDefault<bool>("output_plots",
+                             config_.get<bool>("output_linegraphs") || config_.get<bool>("output_animations"));
     config_.setDefault<bool>("output_animations_color_markers", false);
     config_.setDefault<double>("output_plots_step", config_.get<double>("timestep_max"));
     config_.setDefault<bool>("output_plots_use_pixel_units", false);
@@ -103,13 +103,13 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     integration_time_ = config_.get<double>("integration_time");
     target_spatial_precision_ = config_.get<double>("spatial_precision");
     output_plots_ = config_.get<bool>("output_plots");
+    output_linegraphs_ = config_.get<bool>("output_linegraphs");
+    output_animations_ = config_.get<bool>("output_animations");
     output_plots_step_ = config_.get<double>("output_plots_step");
-    output_plots_step_length_ = config_.get<bool>("output_plots_step_length");
-    output_plots_drift_time_ = config_.get<bool>("output_plots_drift_time");
     output_plots_lines_at_implants_ = config_.get<bool>("output_plots_lines_at_implants");
 
     // Enable parallelization of this module if multithreading is enabled and no output plots are requested:
-    if(!output_plots_) {
+    if(!(output_plots_ || output_animations_ || output_linegraphs_)) {
         enable_parallelization();
     }
 
@@ -281,7 +281,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
     // Draw frame on canvas
     histogram_frame->Draw();
 
-    if(config_.get<bool>("output_animations")) {
+    if(output_animations_) {
         // Create the contour histogram
         std::vector<std::string> file_name_contour;
         std::vector<TH2F*> histogram_contour;
@@ -513,17 +513,13 @@ void GenericPropagationModule::init() {
         }
     }
 
-    if(output_plots_step_length_) {
-        // Initialize output plot
+    if(output_plots_) {
         step_length_histo_ = new TH1D("step_length_histo",
                                       "Step length;length[um];integration steps",
                                       100,
                                       0,
                                       static_cast<double>(Units::convert(0.25 * model_->getSensorSize().z(), "um")));
-    }
 
-    if(output_plots_drift_time_) {
-        // Initialize output plot
         drift_time_histo_ = new TH1D("drift_time_histo",
                                      "Drift time;Drift time [ns];charge carriers",
                                      75,
@@ -569,7 +565,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
             auto position = deposit.getLocalPosition();
 
             // Add point of deposition to the output plots if requested
-            if(output_plots_) {
+            if(output_linegraphs_) {
                 auto global_position = detector_->getGlobalPosition(position);
                 output_plot_points_.emplace_back(
                     PropagatedCharge(position, global_position, deposit.getType(), charge_per_step, deposit.getEventTime()),
@@ -598,14 +594,14 @@ void GenericPropagationModule::run(unsigned int event_num) {
             ++step_count;
             propagated_charges_count += charge_per_step;
             total_time += charge_per_step * prop_pair.second;
-            if(output_plots_drift_time_) {
+            if(output_plots_) {
                 drift_time_histo_->Fill(static_cast<double>(Units::convert(prop_pair.second, "ns")), charge_per_step);
             }
         }
     }
 
     // Output plots if required
-    if(output_plots_) {
+    if(output_linegraphs_) {
         create_output_plots(event_num);
     }
 
@@ -705,7 +701,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
     while(detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position)) &&
           runge_kutta.getTime() < integration_time_) {
         // Update output plots if necessary (depending on the plot step)
-        if(output_plots_) {
+        if(output_linegraphs_) {
             auto time_idx = static_cast<size_t>(runge_kutta.getTime() / output_plots_step_);
             while(next_idx <= time_idx) {
                 output_plot_points_.back().second.push_back(static_cast<ROOT::Math::XYZPoint>(position));
@@ -736,7 +732,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         double uncertainty = step.error.norm();
 
         // Update step length histogram
-        if(output_plots_step_length_) {
+        if(output_plots_) {
             step_length_histo_->Fill(static_cast<double>(Units::convert(step.value.norm(), "um")));
         }
 
@@ -779,7 +775,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
     }
 
     // If requested, remove charge drift lines from plots if they did not reach the implant side within the integration time:
-    if(output_plots_ && output_plots_lines_at_implants_) {
+    if(output_linegraphs_ && output_plots_lines_at_implants_) {
         // If drift time is larger than integration time or the charge carriers have been collected at the backside, remove
         if(time >= integration_time_ || last_position.z() < -model_->getSensorSize().z() * 0.45) {
             output_plot_points_.pop_back();
@@ -791,10 +787,8 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
 }
 
 void GenericPropagationModule::finalize() {
-    if(output_plots_step_length_) {
+    if(output_plots_) {
         step_length_histo_->Write();
-    }
-    if(output_plots_drift_time_) {
         drift_time_histo_->Write();
     }
 
