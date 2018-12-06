@@ -108,8 +108,8 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     output_plots_step_ = config_.get<double>("output_plots_step");
     output_plots_lines_at_implants_ = config_.get<bool>("output_plots_lines_at_implants");
 
-    // Enable parallelization of this module if multithreading is enabled and no output plots are requested:
-    if(!(output_plots_ || output_animations_ || output_linegraphs_)) {
+    // Enable parallelization of this module if multithreading is enabled and no per-event output plots are requested:
+    if(!(output_animations_ || output_linegraphs_)) {
         enable_parallelization();
     }
 
