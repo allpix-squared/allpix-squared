@@ -529,6 +529,19 @@ void GenericPropagationModule::init() {
                                      static_cast<int>(Units::get(integration_time_, "ns") * 5),
                                      0,
                                      static_cast<double>(Units::convert(integration_time_, "ns")));
+
+        uncertainty_histo_ =
+            new TH1D("uncertainty_histo",
+                     "Position uncertainty;uncertainty [nm];integration steps",
+                     100,
+                     0,
+                     static_cast<double>(4 * Units::convert(config_.get<double>("spatial_precision"), "nm")));
+
+        group_size_histo_ = new TH1D("group_size_histo",
+                                     "Charge carrier group size;group size;number of groups trasnported",
+                                     config_.get<int>("charge_per_step") - 1,
+                                     1,
+                                     static_cast<double>(config_.get<unsigned int>("charge_per_step")));
     }
 }
 
@@ -600,6 +613,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
             total_time += charge_per_step * prop_pair.second;
             if(output_plots_drift_time_) {
                 drift_time_histo_->Fill(static_cast<double>(Units::convert(prop_pair.second, "ns")), charge_per_step);
+                group_size_histo_->Fill(charge_per_step);
             }
         }
     }
@@ -738,6 +752,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         // Update step length histogram
         if(output_plots_step_length_) {
             step_length_histo_->Fill(static_cast<double>(Units::convert(step.value.norm(), "um")));
+            uncertainty_histo_->Fill(static_cast<double>(Units::convert(step.error.norm(), "nm")));
         }
 
         // Lower timestep when reaching the sensor edge
@@ -796,6 +811,8 @@ void GenericPropagationModule::finalize() {
     }
     if(output_plots_drift_time_) {
         drift_time_histo_->Write();
+        uncertainty_histo_->Write();
+        group_size_histo_->Write();
     }
 
     long double average_time = total_time_ / std::max(1u, total_propagated_charges_);
