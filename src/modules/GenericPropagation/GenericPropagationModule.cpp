@@ -516,7 +516,7 @@ void GenericPropagationModule::init() {
     if(output_plots_step_length_) {
         // Initialize output plot
         step_length_histo_ = new TH1D("step_length_histo",
-                                      "Step length;length[um];integration steps",
+                                      "Step length;length [#mum];integration steps",
                                       100,
                                       0,
                                       static_cast<double>(Units::convert(0.25 * model_->getSensorSize().z(), "um")));
