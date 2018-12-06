@@ -528,7 +528,7 @@ void GenericPropagationModule::init() {
 
         drift_time_histo_ = new TH1D("drift_time_histo",
                                      "Drift time;Drift time [ns];charge carriers",
-                                     static_cast<int>(Units::get(integration_time_, "ns") * 5),
+                                     static_cast<int>(Units::convert(integration_time_, "ns") * 5),
                                      0,
                                      static_cast<double>(Units::convert(integration_time_, "ns")));
     }
