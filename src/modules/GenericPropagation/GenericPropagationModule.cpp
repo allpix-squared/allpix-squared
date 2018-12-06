@@ -76,12 +76,12 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     config_.setDefault<bool>("output_plots",
                              config_.get<bool>("output_linegraphs") || config_.get<bool>("output_animations"));
     config_.setDefault<bool>("output_animations_color_markers", false);
-    config_.setDefault<double>("output_linegraphs_step", config_.get<double>("timestep_max"));
-    config_.setDefault<bool>("output_linegraphs_use_pixel_units", false);
-    config_.setDefault<bool>("output_linegraphs_align_pixels", false);
-    config_.setDefault<double>("output_linegraphs_theta", 0.0f);
-    config_.setDefault<double>("output_linegraphs_phi", 0.0f);
-    config_.setDefault<bool>("output_linegraphs_lines_at_implants", false);
+    config_.setDefault<double>("output_plots_step", config_.get<double>("timestep_max"));
+    config_.setDefault<bool>("output_plots_use_pixel_units", false);
+    config_.setDefault<bool>("output_plots_align_pixels", false);
+    config_.setDefault<double>("output_plots_theta", 0.0f);
+    config_.setDefault<double>("output_plots_phi", 0.0f);
+    config_.setDefault<bool>("output_plots_lines_at_implants", false);
 
     // Set defaults for charge carrier propagation:
     config_.setDefault<bool>("propagate_electrons", true);
@@ -105,8 +105,8 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     output_plots_ = config_.get<bool>("output_plots");
     output_linegraphs_ = config_.get<bool>("output_linegraphs");
     output_animations_ = config_.get<bool>("output_animations");
-    output_linegraphs_step_ = config_.get<double>("output_linegraphs_step");
-    output_linegraphs_lines_at_implants_ = config_.get<bool>("output_linegraphs_lines_at_implants");
+    output_plots_step_ = config_.get<double>("output_plots_step");
+    output_plots_lines_at_implants_ = config_.get<bool>("output_plots_lines_at_implants");
 
     // Enable parallelization of this module if multithreading is enabled and no output plots are requested:
     if(!(output_plots_ || output_animations_ || output_linegraphs_)) {
@@ -134,7 +134,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
     LOG(TRACE) << "Writing output plots";
 
     // Convert to pixel units if necessary
-    if(config_.get<bool>("output_linegraphs_use_pixel_units")) {
+    if(config_.get<bool>("output_plots_use_pixel_units")) {
         for(auto& deposit_points : output_plot_points_) {
             for(auto& point : deposit_points.second) {
                 point.SetX((point.x() / model_->getPixelSize().x()) + 1);
@@ -166,10 +166,10 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
     }
 
     // Compute frame axis sizes if equal scaling is requested
-    if(config_.get<bool>("output_linegraphs_use_equal_scaling", true)) {
+    if(config_.get<bool>("output_plots_use_equal_scaling", true)) {
         double centerX = (minX + maxX) / 2.0;
         double centerY = (minY + maxY) / 2.0;
-        if(config_.get<bool>("output_linegraphs_use_pixel_units")) {
+        if(config_.get<bool>("output_plots_use_pixel_units")) {
             minX = centerX - model_->getSensorSize().z() / model_->getPixelSize().x() / 2.0;
             maxX = centerX + model_->getSensorSize().z() / model_->getPixelSize().x() / 2.0;
 
@@ -185,8 +185,8 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
     }
 
     // Align on pixels if requested
-    if(config_.get<bool>("output_linegraphs_align_pixels")) {
-        if(config_.get<bool>("output_linegraphs_use_pixel_units")) {
+    if(config_.get<bool>("output_plots_align_pixels")) {
+        if(config_.get<bool>("output_plots_use_pixel_units")) {
             minX = std::floor(minX - 0.5) + 0.5;
             minY = std::floor(minY + 0.5) - 0.5;
             maxX = std::ceil(maxX - 0.5) + 0.5;
@@ -224,14 +224,14 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
                                             1280,
                                             1024);
     canvas->cd();
-    canvas->SetTheta(config_.get<float>("output_linegraphs_theta") * 180.0f / ROOT::Math::Pi());
-    canvas->SetPhi(config_.get<float>("output_linegraphs_phi") * 180.0f / ROOT::Math::Pi());
+    canvas->SetTheta(config_.get<float>("output_plots_theta") * 180.0f / ROOT::Math::Pi());
+    canvas->SetPhi(config_.get<float>("output_plots_phi") * 180.0f / ROOT::Math::Pi());
 
     // Draw the frame on the canvas
     histogram_frame->GetXaxis()->SetTitle(
-        (std::string("x ") + (config_.get<bool>("output_linegraphs_use_pixel_units") ? "(pixels)" : "(mm)")).c_str());
+        (std::string("x ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)")).c_str());
     histogram_frame->GetYaxis()->SetTitle(
-        (std::string("y ") + (config_.get<bool>("output_linegraphs_use_pixel_units") ? "(pixels)" : "(mm)")).c_str());
+        (std::string("y ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)")).c_str());
     histogram_frame->GetZaxis()->SetTitle("z (mm)");
     histogram_frame->Draw();
 
@@ -267,10 +267,10 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
     canvas->cd();
 
     // Change axis labels if close to zero or PI as they behave different here
-    if(std::fabs(config_.get<double>("output_linegraphs_theta") / (ROOT::Math::Pi() / 2.0) -
-                 std::round(config_.get<double>("output_linegraphs_theta") / (ROOT::Math::Pi() / 2.0))) < 1e-6 ||
-       std::fabs(config_.get<double>("output_linegraphs_phi") / (ROOT::Math::Pi() / 2.0) -
-                 std::round(config_.get<double>("output_linegraphs_phi") / (ROOT::Math::Pi() / 2.0))) < 1e-6) {
+    if(std::fabs(config_.get<double>("output_plots_theta") / (ROOT::Math::Pi() / 2.0) -
+                 std::round(config_.get<double>("output_plots_theta") / (ROOT::Math::Pi() / 2.0))) < 1e-6 ||
+       std::fabs(config_.get<double>("output_plots_phi") / (ROOT::Math::Pi() / 2.0) -
+                 std::round(config_.get<double>("output_plots_phi") / (ROOT::Math::Pi() / 2.0))) < 1e-6) {
         histogram_frame->GetXaxis()->SetLabelOffset(-0.1f);
         histogram_frame->GetYaxis()->SetLabelOffset(-0.075f);
     } else {
@@ -340,7 +340,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
 
         // Create animation of moving charges
         auto animation_time = static_cast<unsigned int>(
-            std::round((Units::convert(config_.get<long double>("output_linegraphs_step"), "ms") / 10.0) *
+            std::round((Units::convert(config_.get<long double>("output_plots_step"), "ms") / 10.0) *
                        config_.get<long double>("output_animations_time_scaling", 1e9)));
         unsigned long plot_idx = 0;
         unsigned int point_cnt = 0;
@@ -351,23 +351,21 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
 
             // Reset the canvas
             canvas->Clear();
-            canvas->SetTheta(config_.get<float>("output_linegraphs_theta") * 180.0f / ROOT::Math::Pi());
-            canvas->SetPhi(config_.get<float>("output_linegraphs_phi") * 180.0f / ROOT::Math::Pi());
+            canvas->SetTheta(config_.get<float>("output_plots_theta") * 180.0f / ROOT::Math::Pi());
+            canvas->SetPhi(config_.get<float>("output_plots_phi") * 180.0f / ROOT::Math::Pi());
             canvas->Draw();
 
             // Reset the histogram frame
             histogram_frame->SetTitle("Charge propagation in sensor");
             histogram_frame->GetXaxis()->SetTitle(
-                (std::string("x ") + (config_.get<bool>("output_linegraphs_use_pixel_units") ? "(pixels)" : "(mm)"))
-                    .c_str());
+                (std::string("x ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)")).c_str());
             histogram_frame->GetYaxis()->SetTitle(
-                (std::string("y ") + (config_.get<bool>("output_linegraphs_use_pixel_units") ? "(pixels)" : "(mm)"))
-                    .c_str());
+                (std::string("y ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)")).c_str());
             histogram_frame->GetZaxis()->SetTitle("z (mm)");
             histogram_frame->Draw();
 
             auto text = std::make_unique<TPaveText>(-0.75, -0.75, -0.60, -0.65);
-            auto time_ns = Units::convert(plot_idx * config_.get<long double>("output_linegraphs_step"), "ns");
+            auto time_ns = Units::convert(plot_idx * config_.get<long double>("output_plots_step"), "ns");
             std::stringstream sstr;
             sstr << std::fixed << std::setprecision(2) << time_ns << "ns";
             auto time_str = std::string(8 - sstr.str().size(), ' ');
@@ -380,7 +378,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
                 auto points = deposit_points.second;
 
                 auto diff = static_cast<unsigned long>(std::round((deposit_points.first.getEventTime() - start_time) /
-                                                                  config_.get<long double>("output_linegraphs_step")));
+                                                                  config_.get<long double>("output_plots_step")));
                 if(static_cast<long>(plot_idx) - static_cast<long>(diff) < 0) {
                     min_idx_diff = std::min(min_idx_diff, diff - plot_idx);
                     continue;
@@ -433,26 +431,22 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
                     switch(i) {
                     case 0 /* x */:
                         histogram_contour[i]->GetXaxis()->SetTitle(
-                            (std::string("y ") +
-                             (config_.get<bool>("output_linegraphs_use_pixel_units") ? "(pixels)" : "(mm)"))
+                            (std::string("y ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
                                 .c_str());
                         histogram_contour[i]->GetYaxis()->SetTitle("z (mm)");
                         break;
                     case 1 /* y */:
                         histogram_contour[i]->GetXaxis()->SetTitle(
-                            (std::string("x ") +
-                             (config_.get<bool>("output_linegraphs_use_pixel_units") ? "(pixels)" : "(mm)"))
+                            (std::string("x ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
                                 .c_str());
                         histogram_contour[i]->GetYaxis()->SetTitle("z (mm)");
                         break;
                     case 2 /* z */:
                         histogram_contour[i]->GetXaxis()->SetTitle(
-                            (std::string("x ") +
-                             (config_.get<bool>("output_linegraphs_use_pixel_units") ? "(pixels)" : "(mm)"))
+                            (std::string("x ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
                                 .c_str());
                         histogram_contour[i]->GetYaxis()->SetTitle(
-                            (std::string("y ") +
-                             (config_.get<bool>("output_linegraphs_use_pixel_units") ? "(pixels)" : "(mm)"))
+                            (std::string("y ") + (config_.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)"))
                                 .c_str());
                         break;
                     default:;
@@ -708,7 +702,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
           runge_kutta.getTime() < integration_time_) {
         // Update output plots if necessary (depending on the plot step)
         if(output_linegraphs_) {
-            auto time_idx = static_cast<size_t>(runge_kutta.getTime() / output_linegraphs_step_);
+            auto time_idx = static_cast<size_t>(runge_kutta.getTime() / output_plots_step_);
             while(next_idx <= time_idx) {
                 output_plot_points_.back().second.push_back(static_cast<ROOT::Math::XYZPoint>(position));
                 next_idx = output_plot_points_.back().second.size();
@@ -781,7 +775,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
     }
 
     // If requested, remove charge drift lines from plots if they did not reach the implant side within the integration time:
-    if(output_linegraphs_ && output_linegraphs_lines_at_implants_) {
+    if(output_linegraphs_ && output_plots_lines_at_implants_) {
         // If drift time is larger than integration time or the charge carriers have been collected at the backside, remove
         if(time >= integration_time_ || last_position.z() < -model_->getSensorSize().z() * 0.45) {
             output_plot_points_.pop_back();
