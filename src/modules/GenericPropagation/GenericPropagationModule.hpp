@@ -118,6 +118,8 @@ namespace allpix {
         std::vector<std::pair<PropagatedCharge, std::vector<ROOT::Math::XYZPoint>>> output_plot_points_;
         TH1D* step_length_histo_;
         TH1D* drift_time_histo_;
+        TH1D* uncertainty_histo_;
+        TH1D* group_size_histo_;
     };
 
 } // namespace allpix
