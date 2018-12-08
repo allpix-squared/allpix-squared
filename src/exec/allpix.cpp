@@ -75,6 +75,9 @@ int main(int argc, const char* argv[]) {
     // Install interrupt handler (CTRL+C)
     std::signal(SIGINT, interrupt_handler);
 
+    // Install termination handler (e.g. from "kill"). Gracefully exit, finish last event and quit
+    std::signal(SIGTERM, interrupt_handler);
+
     // If no arguments are provided, print the help:
     bool print_help = false;
     int return_code = 0;
