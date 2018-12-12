@@ -38,8 +38,18 @@ The following coding and naming conventions should be adhered to when writing co
 
 \subsection{Formatting}
 
-as mentioned in Section~\ref{sec:ci}.
-formatting of the source code using the \command{clang-format} and following the coding conventions defined in the \file{.clang-format} file in the repository.
+A set of formatting rules is applied to the code base in order to avoid unnecessary changes from different editors and to maintain readable code.
+The formatting rules are defined in the \file{.clang-format} file in the repository in machine-readable form (for \command{clang-format}, that is) but can be summarized as follows:
+
+\begin{itemize}
+  \item The column width should be 125 characters, with a line break afterwards.
+  \item New scopes are indented by four whitespaces, no tab characters are to be used.
+  \item Namespaces are indented just as other code is.
+  \item No spaces should be introduced before parentheses ().
+  \item Included header files should be sorted alphabetically.
+  \item The pointer asterisk should be left-aligned, i.e. \command{int* foo} instead of \command{int *foo}.
+\end{itemize}
+The continuous integration automatically checks if the code adheres to the defined format as described in Section~\ref{sec:ci}.
 
 \section{Implementing a New Module}
 \label{sec:building_new_module}
