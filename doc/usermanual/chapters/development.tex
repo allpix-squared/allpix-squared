@@ -13,11 +13,43 @@ The following general rules, also know as \textswab{Koen's: Coding Commandments:
   \includegraphics[width=\textwidth]{coding_commandments.png}
 \end{figure}
 
+\section{Coding and Naming Conventions}
+
+The code base of the \apsq is well-documented and follows concise rules on naming schemes and coding conventions.
+This enables maintaining a high quality of code and ensures maintainability over a longer period of time.
+In the following, some of the most important conventions are described.
+In case of doubt, existing code should be used to infer the coding style from.
+
+\subsection{Naming Schemes}
+
+The following coding and naming conventions should be adhered to when writing code which eventually should be merged into the main repository.
+
+\begin{description}
+    \item[Namespace] The \parameter{allpix} namespace is to be used for all classes which are part of the framework, nested namespaces may be defined. It is encouraged to make use of \command{using namespace allpix;} in implementation files only for this namespace. Especially the namespace \parameter{std} should always be referred to directly at the function to be called, e.g.\ \command{std::string test}. In a few other cases, such as \parameter{ROOT::Math}, the \command{using} directive may be used to improve readability of the code.
+
+    \item[Class names] Class names are typeset in CamelCase, starting with a capital letter, e.g.\ \command{class ModuleManager{}}. Every class should provide sensible Doxygen documentation for the class itself as well as for all member functions.
+
+    \item[Member functions] Naming conventions are different for public and private class members. Public member function names are typeset as camelCase names without underscores, e.g.\ \command{getElectricFieldType()}. Private member functions use lower-case names, separating individual words by an underscore, e.g.\ \command{create_detector_modules(...)}. This allows to visually distinguish between public and restricted access when reading code.
+
+    In general, public member function names should follow the \command{get}/\command{set} convention, i.e.\ functions which retrieve information and alter the state of an object should be marked accordingly. Getter functions should be made \parameter{const} where possible to allow usage of constant objects of the respective class.
+
+    \item[Member variables] Member variables of classes should always be private and accessed only via respective public member functions. This allows to change the class implementation and its internal members without requiring to rewrite code which accesses them. Member names should be typeset in lower-case letters, a trailing underscore is used to mark them as member variables, e.g.\ \parameter{bool terminate_}. This immediately sets them apart from local variables declared within a function.
+\end{description}
+
+\subsection{Formatting}
+
+as mentioned in Section~\ref{sec:ci}.
+formatting of the source code using the \command{clang-format} and following the coding conventions defined in the \file{.clang-format} file in the repository.
+
 \section{Implementing a New Module}
 \label{sec:building_new_module}
 
-\todo{add description of what should be a module and what not (aka analysis)}
-It is essential to carefully read the framework module manager documentation in Section~\ref{sec:module_manager}, the information about the directory structure in Section~\ref{sec:module_files} and the details of the module structure in Section~\ref{sec:module_structure} before creating a new module.
+Owing to its modular structure, the functionality of the \apsq can easily be extended by adding additional modules which can be placed in the simulation chain.
+Since the framework serves a wide
+
+Before starting the development of a new module, it is essential to carefully read the documentation of the framework module manager which can be found in Section~\ref{sec:module_manager}.
+
+, the information about the directory structure in Section~\ref{sec:module_files} and the details of the module structure in Section~\ref{sec:module_structure} before creating a new module.
 Thereafter, the steps below should provide enough details for starting a new module, hereafter called \parameter{ModuleName}:
 \begin{enumerate}
     \item Run the module initialization script at \file{etc/scripts/make_module.sh} in the repository.
