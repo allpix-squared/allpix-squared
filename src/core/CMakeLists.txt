@@ -18,6 +18,7 @@ ADD_LIBRARY(AllpixCore SHARED
     config/ConfigManager.cpp
     config/OptionParser.cpp
     geometry/Detector.cpp
+    geometry/DetectorField.cpp
     geometry/DetectorModel.cpp
     geometry/GeometryManager.cpp
     Allpix.cpp

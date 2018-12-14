@@ -59,7 +59,7 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
 }
 
 void ProjectionPropagationModule::init(std::mt19937_64&) {
-    if(detector_->getElectricFieldType() != ElectricFieldType::LINEAR) {
+    if(detector_->getElectricFieldType() != FieldType::LINEAR) {
         throw ModuleError("This module should only be used with linear electric fields.");
     }
 

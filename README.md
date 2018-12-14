@@ -93,6 +93,7 @@ The following authors, in alphabetical order, have contributed to Allpix<sup>2</
 * Paul Schütze, DESY, @pschutze
 * Xin Shi, Institute of High Energy Physics Beijing, @xshi
 * Viktor Sonesten, GSOC18 Student, @tmplt
+* Ondrej Theiner, Charles University, @otheiner
 * Mateus Vicente Barreto Pinto, Université de Genève, @mvicente
 
 The authors would also like to express their thanks to the developers of [AllPix](https://twiki.cern.ch/twiki/bin/view/Main/AllPix).

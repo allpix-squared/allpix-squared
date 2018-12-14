@@ -72,8 +72,8 @@ if [[ $clicdp_status == *"(stratum0 / local)"* ]]; then
   exit 0
 else
   (>&2 echo "#################################")
-  (>&2 echo "### CVMFS Transastion ongoing ###")
-  (>&2 echo "### Nightly deploy cancelled  ###")
+  (>&2 echo "### CVMFS Transaction ongoing ###")
+  (>&2 echo "######## Deploy cancelled #######")
   (>&2 echo "#################################")
   exit 1
 fi

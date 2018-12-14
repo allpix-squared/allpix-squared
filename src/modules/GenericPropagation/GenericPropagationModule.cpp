@@ -68,9 +68,10 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     config_.setDefault<unsigned int>("charge_per_step", 10);
     config_.setDefault<double>("temperature", 293.15);
 
-    config_.setDefault<bool>("output_plots", false);
+    config_.setDefault<bool>("output_linegraphs", false);
     config_.setDefault<bool>("output_animations", false);
-    config_.setDefault<bool>("output_plots_step_length", config_.get<bool>("output_plots"));
+    config_.setDefault<bool>("output_plots",
+                             config_.get<bool>("output_linegraphs") || config_.get<bool>("output_animations"));
     config_.setDefault<bool>("output_animations_color_markers", false);
     config_.setDefault<double>("output_plots_step", config_.get<double>("timestep_max"));
     config_.setDefault<bool>("output_plots_use_pixel_units", false);
@@ -99,12 +100,13 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     integration_time_ = config_.get<double>("integration_time");
     target_spatial_precision_ = config_.get<double>("spatial_precision");
     output_plots_ = config_.get<bool>("output_plots");
+    output_linegraphs_ = config_.get<bool>("output_linegraphs");
+    output_animations_ = config_.get<bool>("output_animations");
     output_plots_step_ = config_.get<double>("output_plots_step");
-    output_plots_step_length_ = config_.get<bool>("output_plots_step_length");
     output_plots_lines_at_implants_ = config_.get<bool>("output_plots_lines_at_implants");
 
-    // Enable parallelization of this module if multithreading is enabled and no output plots are requested:
-    if(!output_plots_) {
+    // Enable parallelization of this module if multithreading is enabled and no per-event output plots are requested:
+    if(!(output_animations_ || output_linegraphs_)) {
         enable_parallelization();
     }
 
@@ -276,7 +278,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num, Outpu
     // Draw frame on canvas
     histogram_frame->Draw();
 
-    if(config_.get<bool>("output_animations")) {
+    if(output_animations_) {
         // Create the contour histogram
         std::vector<std::string> file_name_contour;
         std::vector<TH2F*> histogram_contour;
@@ -477,7 +479,7 @@ void GenericPropagationModule::init(std::mt19937_64&) {
     }
 
     // For linear fields we can in addition check if the correct carriers are propagated
-    if(detector->getElectricFieldType() == ElectricFieldType::LINEAR) {
+    if(detector->getElectricFieldType() == FieldType::LINEAR) {
         auto model = detector_->getModel();
         auto probe_point = ROOT::Math::XYZPoint(model->getSensorCenter().x(),
                                                 model->getSensorCenter().y(),
@@ -507,13 +509,31 @@ void GenericPropagationModule::init(std::mt19937_64&) {
         }
     }
 
-    if(output_plots_step_length_) {
-        // Initialize output plot
+    if(output_plots_) {
         step_length_histo_ = new TH1D("step_length_histo",
-                                      "Step length;length[um];integration steps",
+                                      "Step length;length [#mum];integration steps",
                                       100,
                                       0,
                                       static_cast<double>(Units::convert(0.25 * model_->getSensorSize().z(), "um")));
+
+        drift_time_histo_ = new TH1D("drift_time_histo",
+                                     "Drift time;Drift time [ns];charge carriers",
+                                     static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                     0,
+                                     static_cast<double>(Units::convert(integration_time_, "ns")));
+
+        uncertainty_histo_ =
+            new TH1D("uncertainty_histo",
+                     "Position uncertainty;uncertainty [nm];integration steps",
+                     100,
+                     0,
+                     static_cast<double>(4 * Units::convert(config_.get<double>("spatial_precision"), "nm")));
+
+        group_size_histo_ = new TH1D("group_size_histo",
+                                     "Charge carrier group size;group size;number of groups trasnported",
+                                     config_.get<int>("charge_per_step") - 1,
+                                     1,
+                                     static_cast<double>(config_.get<unsigned int>("charge_per_step")));
     }
 }
 
@@ -558,7 +578,7 @@ void GenericPropagationModule::run(Event* event) const {
             auto position = deposit.getLocalPosition();
 
             // Add point of deposition to the output plots if requested
-            if(output_plots_) {
+            if(output_linegraphs_) {
                 auto global_position = detector_->getGlobalPosition(position);
                 std::lock_guard<std::mutex> lock{stats_mutex_};
                 output_plot_points.emplace_back(
@@ -588,11 +608,15 @@ void GenericPropagationModule::run(Event* event) const {
             ++step_count;
             propagated_charges_count += charge_per_step;
             total_time += charge_per_step * prop_pair.second;
+            if(output_plots_) {
+                drift_time_histo_->Fill(static_cast<double>(Units::convert(prop_pair.second, "ns")), charge_per_step);
+                group_size_histo_->Fill(charge_per_step);
+            }
         }
     }
 
     // Output plots if required
-    if(output_plots_) {
+    if(output_linegraphs_) {
         create_output_plots(event->number, output_plot_points);
     }
 
@@ -697,7 +721,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
     while(detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position)) &&
           runge_kutta.getTime() < integration_time_) {
         // Update output plots if necessary (depending on the plot step)
-        if(output_plots_) {
+        if(output_linegraphs_) {
             auto time_idx = static_cast<size_t>(runge_kutta.getTime() / output_plots_step_);
             while(next_idx <= time_idx) {
                 output_plot_points.back().second.push_back(static_cast<ROOT::Math::XYZPoint>(position));
@@ -728,8 +752,9 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         double uncertainty = step.error.norm();
 
         // Update step length histogram
-        if(output_plots_step_length_) {
+        if(output_plots_) {
             step_length_histo_->Fill(static_cast<double>(Units::convert(step.value.norm(), "um")));
+            uncertainty_histo_->Fill(static_cast<double>(Units::convert(step.error.norm(), "nm")));
         }
 
         // Lower timestep when reaching the sensor edge
@@ -771,7 +796,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
     }
 
     // If requested, remove charge drift lines from plots if they did not reach the implant side within the integration time:
-    if(output_plots_ && output_plots_lines_at_implants_) {
+    if(output_linegraphs_ && output_plots_lines_at_implants_) {
         // If drift time is larger than integration time or the charge carriers have been collected at the backside, remove
         if(time >= integration_time_ || last_position.z() < -model_->getSensorSize().z() * 0.45) {
             output_plot_points.pop_back();
@@ -783,8 +808,11 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
 }
 
 void GenericPropagationModule::finalize() {
-    if(output_plots_step_length_) {
+    if(output_plots_) {
         step_length_histo_->Write();
+        drift_time_histo_->Write();
+        uncertainty_histo_->Write();
+        group_size_histo_->Write();
     }
 
     long double average_time = total_time_ / std::max(1u, total_propagated_charges_);

@@ -526,6 +526,7 @@ std::vector<Cluster> DetectorHistogrammerModule::doClustering(std::shared_ptr<Pi
             cluster.addPixelHit(neighbor);
             LOG(TRACE) << "Adding pixel: " << neighbor->getPixel().getIndex();
             usedPixel[neighbor] = true;
+            other_pixel = pixel_it;
         }
         clusters.push_back(cluster);
     }

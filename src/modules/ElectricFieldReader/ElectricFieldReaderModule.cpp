@@ -34,7 +34,7 @@ ElectricFieldReaderModule::ElectricFieldReaderModule(Configuration& config, Mess
 }
 
 void ElectricFieldReaderModule::init(std::mt19937_64&) {
-    ElectricFieldType type = ElectricFieldType::GRID;
+    FieldType type = FieldType::GRID;
 
     // Check field strength
     auto field_model = config_.get<std::string>("model");
@@ -78,31 +78,30 @@ void ElectricFieldReaderModule::init(std::mt19937_64&) {
         LOG(DEBUG) << "Electric field starts with offset " << offset << " to pixel boundary";
         std::array<double, 2> field_offset{{offset.x(), offset.y()}};
 
-        ElectricFieldReaderModule::FieldData field_data;
-        field_data = read_init_field(thickness_domain, field_scale);
+        auto field_data = read_init_field(thickness_domain, field_scale);
 
         detector_->setElectricFieldGrid(
             std::get<0>(field_data), std::get<1>(field_data), field_scale, field_offset, thickness_domain);
     } else if(field_model == "constant") {
         LOG(TRACE) << "Adding constant electric field";
-        type = ElectricFieldType::CONSTANT;
+        type = FieldType::CONSTANT;
 
         auto field_z = config_.get<double>("bias_voltage") / getDetector()->getModel()->getSensorSize().z();
         LOG(INFO) << "Set constant electric field with magnitude " << Units::display(field_z, {"V/um", "V/mm"});
-        ElectricFieldFunction function = [field_z](const ROOT::Math::XYZPoint&) {
+        FieldFunction<ROOT::Math::XYZVector> function = [field_z](const ROOT::Math::XYZPoint&) {
             return ROOT::Math::XYZVector(0, 0, -field_z);
         };
         detector_->setElectricFieldFunction(function, thickness_domain, type);
     } else if(field_model == "linear") {
         LOG(TRACE) << "Adding linear electric field";
-        type = ElectricFieldType::LINEAR;
+        type = FieldType::LINEAR;
 
         // Get depletion voltage, defaults to bias voltage:
         auto depletion_voltage = config_.get<double>("depletion_voltage", config_.get<double>("bias_voltage"));
 
         LOG(INFO) << "Setting linear electric field from " << Units::display(config_.get<double>("bias_voltage"), "V")
                   << " bias voltage and " << Units::display(depletion_voltage, "V") << " depletion voltage";
-        ElectricFieldFunction function = get_linear_field_function(depletion_voltage, thickness_domain);
+        FieldFunction<ROOT::Math::XYZVector> function = get_linear_field_function(depletion_voltage, thickness_domain);
         detector_->setElectricFieldFunction(function, thickness_domain, type);
     } else {
         throw InvalidValueError(config_, "model", "model should be 'linear', 'constant' or 'init'");
@@ -114,8 +113,8 @@ void ElectricFieldReaderModule::init(std::mt19937_64&) {
     }
 }
 
-ElectricFieldFunction ElectricFieldReaderModule::get_linear_field_function(double depletion_voltage,
-                                                                           std::pair<double, double> thickness_domain) {
+FieldFunction<ROOT::Math::XYZVector>
+ElectricFieldReaderModule::get_linear_field_function(double depletion_voltage, std::pair<double, double> thickness_domain) {
     LOG(TRACE) << "Calculating function for the linear electric field.";
     // We always deplete from the implants:
     auto bias_voltage = std::fabs(config_.get<double>("bias_voltage"));
@@ -142,13 +141,14 @@ ElectricFieldFunction ElectricFieldReaderModule::get_linear_field_function(doubl
  * The field read from the INIT format are shared between module instantiations using the static
  * ElectricFieldReaderModuleget_by_file_name method.
  */
-ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::read_init_field(std::pair<double, double> thickness_domain,
-                                                                                std::array<double, 2> field_scale) {
+FieldParser<double, 3> ElectricFieldReaderModule::field_parser_("V/cm");
+FieldData<double> ElectricFieldReaderModule::read_init_field(std::pair<double, double> thickness_domain,
+                                                             std::array<double, 2> field_scale) {
     try {
         LOG(TRACE) << "Fetching electric field from init file";
 
         // Get field from file
-        auto field_data = get_by_file_name(config_.getPath("file_name", true));
+        auto field_data = field_parser_.get_by_file_name(config_.getPath("file_name", true));
 
         // Check if electric field matches chip
         check_detector_match(std::get<2>(field_data), thickness_domain, field_scale);
@@ -364,81 +364,4 @@ void ElectricFieldReaderModule::check_detector_match(std::array<double, 3> dimen
                             "field_scale parameter.";
         }
     }
-}
-
-std::map<std::string, ElectricFieldReaderModule::FieldData> ElectricFieldReaderModule::field_map_;
-ElectricFieldReaderModule::FieldData ElectricFieldReaderModule::get_by_file_name(const std::string& file_name) {
-    // Search in cache (NOTE: the path reached here is always a canonical name)
-    auto iter = field_map_.find(file_name);
-    if(iter != field_map_.end()) {
-        LOG(INFO) << "Using cached electric field data";
-        return iter->second;
-    }
-
-    // Load file
-    std::ifstream file(file_name);
-    std::string header;
-    std::getline(file, header);
-    LOG(TRACE) << "Header of file " << file_name << " is " << header;
-
-    // Read the header
-    std::string tmp;
-    file >> tmp >> tmp;        // ignore the init seed and cluster length
-    file >> tmp >> tmp >> tmp; // ignore the incident pion direction
-    file >> tmp >> tmp >> tmp; // ignore the magnetic field (specify separately)
-    double thickness, xpixsz, ypixsz;
-    file >> thickness >> xpixsz >> ypixsz;
-    thickness = Units::get(thickness, "um");
-    xpixsz = Units::get(xpixsz, "um");
-    ypixsz = Units::get(ypixsz, "um");
-    file >> tmp >> tmp >> tmp >> tmp; // ignore temperature, flux, rhe (?) and new_drde (?)
-    size_t xsize, ysize, zsize;
-    file >> xsize >> ysize >> zsize;
-    file >> tmp;
-
-    if(file.fail()) {
-        throw std::runtime_error("invalid data or unexpected end of file");
-    }
-    auto field = std::make_shared<std::vector<double>>();
-    auto vertices = xsize * ysize * zsize;
-    field->resize(vertices * 3);
-
-    // Loop through all the field data
-    for(size_t i = 0; i < vertices; ++i) {
-        if(i % (vertices / 100) == 0) {
-            LOG_PROGRESS(INFO, "read_init") << "Reading electric field data: " << (100 * i / vertices) << "%";
-        }
-
-        if(file.eof()) {
-            throw std::runtime_error("unexpected end of file");
-        }
-
-        // Get index of electric field
-        size_t xind, yind, zind;
-        file >> xind >> yind >> zind;
-
-        if(file.fail() || xind > xsize || yind > ysize || zind > zsize) {
-            throw std::runtime_error("invalid data");
-        }
-        xind--;
-        yind--;
-        zind--;
-
-        // Loop through components of electric field
-        for(size_t j = 0; j < 3; ++j) {
-            double input;
-            file >> input;
-
-            // Set the electric field at a position
-            (*field)[xind * ysize * zsize * 3 + yind * zsize * 3 + zind * 3 + j] = Units::get(input, "V/cm");
-        }
-    }
-    LOG_PROGRESS(INFO, "read_init") << "Reading electric field data: finished.";
-
-    FieldData field_data = std::make_tuple(
-        field, std::array<size_t, 3>{{xsize, ysize, zsize}}, std::array<double, 3>{{xpixsz, ypixsz, thickness}});
-
-    // Store the parsed field data for further reference:
-    field_map_[file_name] = field_data;
-    return field_data;
 }
