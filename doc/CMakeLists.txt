@@ -142,7 +142,6 @@ IF(LATEX_COMPILER)
             usermanual/figures/telescope.png
             usermanual/figures/ci.png
             usermanual/figures/linegraph_hrcmos_collected.png
-            usermanual/figures/coding_commandments.png
             INPUTS
             usermanual/chapters/introduction.tex
             usermanual/chapters/quick_start.tex
