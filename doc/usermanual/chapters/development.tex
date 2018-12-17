@@ -30,6 +30,18 @@ The following coding and naming conventions should be adhered to when writing co
 \subsection{Formatting}
 
 A set of formatting rules is applied to the code base in order to avoid unnecessary changes from different editors and to maintain readable code.
+It is vital to follow these rules during development in order to avoid additional changes to the code, just to adhere to the formatting.
+There are several options to integrate this into the development workflow:
+
+\begin{itemize}
+  \item Many popular editors feature direct integration either with \command{clang-format} or their own formatting facilities.
+  \item A build target called \command{make format} is provided if the \command{clang-format} tool is installed. Running this command before committing code will ensure correct formatting.
+  \item This can be further simplified by installing the \emph{git hook} provided in the directory \dir{/etc/git-hooks/}. A hook is a script called by \command{git} before a certain action. In this case, it is a pre-commit hook which automatically runs \command{clang-format} in the background and offers to update the formatting of the code to be committed. It can be installed by calling
+  \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{bash}
+  ./etc/git-hooks/install-hooks.sh
+  \end{minted}
+  once.
+\end{itemize}
 The formatting rules are defined in the \file{.clang-format} file in the repository in machine-readable form (for \command{clang-format}, that is) but can be summarized as follows:
 
 \begin{itemize}
