@@ -118,6 +118,8 @@ namespace allpix {
         std::list<Configuration> module_configs_;
         Configuration global_config_;
 
+        // Helper function for delayed parsing of detectors file
+        void parse_detectors();
         std::list<Configuration> detector_configs_;
 
         std::list<Configuration> instance_configs_;
