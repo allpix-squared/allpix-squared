@@ -4,11 +4,11 @@ ABSOLUTE_PATH="$( cd "$( dirname "${BASH_SOURCE}" )" && pwd )"
 # FIXME: This is needed because of broken RPATH on Mac
 if [ -n "${CI}" ]; then
     if [ "$(uname)" == "Darwin" ]; then
-        source $ABSOLUTE_PATH/../../.gitlab-ci.d/init_mac.sh
+        source $ABSOLUTE_PATH/../../.gitlab/ci/init_mac.sh
     else
-        source $ABSOLUTE_PATH/../../.gitlab-ci.d/init_x86_64.sh
+        source $ABSOLUTE_PATH/../../.gitlab/ci/init_x86_64.sh
     fi
-    source $ABSOLUTE_PATH/../../.gitlab-ci.d/load_deps.sh
+    source $ABSOLUTE_PATH/../../.gitlab/ci/load_deps.sh
 fi
 
 # Run the second argument in the directory created from the first argument

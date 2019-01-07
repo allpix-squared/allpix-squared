@@ -81,13 +81,14 @@ The internal base units of the framework are not chosen for user convenience but
                                   &                                         & ms (millisecond)         \\
                                   &                                         & s (second)               \\
 \midrule
-\multirow{4}{*}{\textit{Energy}}  & \multirow{4}{*}{MeV (megaelectronvolt)} & eV (electronvolt)        \\
+\multirow{3}{*}{\textit{Energy}}  & \multirow{3}{*}{MeV (megaelectronvolt)} & eV (electronvolt)        \\
                                   &                                         & keV (kiloelectronvolt)   \\
                                   &                                         & GeV (gigaelectronvolt)   \\
 \midrule
 \textit{Temperature}              & K (kelvin)                              & ---                      \\
 \midrule
-\multirow{2}{*}{\textit{Charge}}  & \multirow{2}{*}{e (elementary charge)}  & ke (kiloelectrons)       \\
+\multirow{3}{*}{\textit{Charge}}  & \multirow{3}{*}{e (elementary charge)}  & ke (kiloelectrons)       \\
+                                  &                                         & fC (femtocoulomb)        \\
                                   &                                         & C (coulomb)              \\
 \midrule
 \multirow{2}{*}{\textit{Voltage}} & \multirow{2}{*}{MV (megavolt)}          & V (volt)                 \\
@@ -315,8 +316,9 @@ These are specified by adding a dot (\texttt{.}) between the detector and the ac
 
 No interaction with the framework is possible during the simulation. Signals can however be send using keyboard shortcuts to terminate the simulation, either gracefully or with force. The executable understand the following signals:
 \begin{itemize}
-\item \texttt{CTRL+C} (SIGINT): Request a graceful shutdown of the simulation. This means the current simulated event is finished, while all other events requested in the configuration file are ignored. After finishing the event, the finalization stage is run for every module to ensure all modules finish properly. This signal can be very useful when too many events are specified and the simulation takes too long to finish entirely, but the output generated so far should still be kept.
-\item \texttt{CTRL+\textbackslash} (SIGQUIT): Forcefully terminates the simulation. It is not recommmended to use this signal as it will normally lead to the loss of all generated data. This signal should only be used when graceful termination is for any reason not possible.
+    \item SIGINT (\texttt{CTRL+C}): Request a graceful shutdown of the simulation. This means the current simulated event is finished, while all other events requested in the configuration file are ignored. After finishing the event, the finalization stage is run for every module to ensure all modules finish properly. This signal can be very useful when too many events are specified and the simulation takes too long to finish entirely, but the output generated so far should still be kept.
+    \item SIGTERM: Same as SIGINT, request a graceful shutdown of the simulation. This signal is emitted e.g.\ by the \command{kill} command or by cluster computing schedulers to ask for a termination of the job.
+    \item SIGQUIT (\texttt{CTRL+\textbackslash}): Forcefully terminates the simulation. It is not recommmended to use this signal as it will normally lead to the loss of all generated data. This signal should only be used when graceful termination is for any reason not possible.
 \end{itemize}
 
 

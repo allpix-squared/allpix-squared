@@ -10,7 +10,7 @@ ABSOLUTE_PATH=`dirname $(readlink -f ${BASH_SOURCE[0]})`
 export COMPILER_TYPE="llvm"
 
 # Load default configuration
-source $ABSOLUTE_PATH/../../.gitlab-ci.d/init_x86_64.sh
+source $ABSOLUTE_PATH/../../.gitlab/ci/init_x86_64.sh
 
 # Load different Geant for the moment, because CLICdp version does not have QT
 # FIXME: This should not be a fixed directory
