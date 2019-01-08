@@ -58,14 +58,13 @@ The continuous integration automatically checks if the code adheres to the defin
 \label{sec:building_new_module}
 
 Owing to its modular structure, the functionality of the \apsq can easily be extended by adding additional modules which can be placed in the simulation chain.
-Since the framework serves a wide
+Since the framework serves a wide community, modules should be as generic as possible, i.e.\ not only serve the simulation of a single detector prototype but implement the necessary algorithms such that they are re-usable for other applications.
+Furthermore, it may be beneficial to split up modules to support the modular design of \apsq.
 
 Before starting the development of a new module, it is essential to carefully read the documentation of the framework module manager which can be found in Section~\ref{sec:module_manager}.
-
-, the information about the directory structure in Section~\ref{sec:module_files} and the details of the module structure in Section~\ref{sec:module_structure} before creating a new module.
-Thereafter, the steps below should provide enough details for starting a new module, hereafter called \parameter{ModuleName}:
+The basic steps ti implement a new module, hereafter referred to as \parameter{ModuleName}, are the following:
 \begin{enumerate}
-    \item Run the module initialization script at \file{etc/scripts/make_module.sh} in the repository.
+    \item Initialization of the code for the new module, using the script \file{etc/scripts/make_module.sh} in the repository.
     The script will ask for the name of the model and the type (unique or detector-specific).
     It creates the directory with a minimal example to get started together with the rough outline of its documentation in \textit{README.md}.
     \item Before starting to implement the actual module, it is recommended to update the introductory documentation in \textit{README.md}.
@@ -75,10 +74,6 @@ Thereafter, the steps below should provide enough details for starting a new mod
     \item Finally, the constructor and \command{init}, \command{run} and/or \command{finalize} methods can be written, depending on the requirements of the new module.
 \end{enumerate}
 
-After this, it is up to the developer to implement all required functionality.
-
-It should be kept in mind that writing more generic modules, which are not tied to a specific detector type or simulation, will allow other users to benefit from the development.
-Furthermore, it may be beneficial to split up modules to support the modular design of \apsq.
 Additional sources of documentation which may be useful during the development of a module include:
 \begin{itemize}
 \item The framework documentation in Chapter~\ref{ch:framework} for an introduction to the different parts of the framework.
