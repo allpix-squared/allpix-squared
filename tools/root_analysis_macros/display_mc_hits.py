@@ -1,5 +1,3 @@
-#
-
 #ROOT imports
 import ROOT
 from ROOT import gROOT, TCanvas, TF1, gApplication
@@ -131,49 +129,6 @@ plt.hist(hit_signal,100)
 plt.yscale('log')
 plt.subplot(223)
 plt.hist2d(hit_x,hit_y,100)
-
-# mc histograms various x,y,z endpoints
-mc_histograms=plt.figure(figsize=(12,8))
-plt.subplot(331)
-plt.hist(mc_local_endpoint_x,100)
-plt.title("MC local end point x coordinate")
-plt.xlabel("x_local [mm]")
-
-plt.subplot(332)
-plt.hist(mc_global_endpoint_x,100)
-plt.xlabel("x_global [mm]")
-
-plt.subplot(333)
-plt.hist(mc_local_endpoint_y,100)
-plt.title("MC local end point y coordinate")
-plt.xlabel("y_local [mm]")
-
-plt.subplot(334)
-plt.hist(mc_global_endpoint_y,100)
-plt.title("MC local end point y coordinate")
-plt.xlabel("y_global [mm]")
-
-plt.subplot(335)
-plt.hist(mc_local_endpoint_z,100)
-plt.title("MC local end point z coordinate")
-plt.xlabel("z_local [mm]")
-
-plt.subplot(336)
-plt.hist(mc_global_endpoint_z,100)
-plt.title("MC global end point z coordinate")
-plt.xlabel("z_global [mm]")
-
-plt.subplot(337)
-plt.hist(hit_signal,100)
-plt.title("hit signal")
-plt.yscale('log')
-plt.xlabel("charge [electrons]")
-
-plt.subplot(338)
-plt.hist2d(mc_global_endpoint_x,mc_global_endpoint_z,100)
-plt.xlabel('x')
-plt.ylabel('z')
-plt.subplots_adjust(wspace=0.5, hspace=0.5)
 
 # plot pixel collected charge versus MC parcticle endpoint coordinates
 mc_hit_histogram=plt.figure(figsize=(11,7))
