@@ -42,5 +42,5 @@ Simple macro that reads the required trees to plot Monte Carlo hits in pixel ver
 A few relevant histograms are displayed at the end of the run.
 Requires PyROOT, numpy, matplotlib. To execute:
 * Replace the paths to libAllpixObjects.so and data.root in the macro 
-* run $Python display_mc_hits.py
+* run `$Python display_mc_hits.py`
 
