@@ -172,14 +172,14 @@ FieldType Detector::getElectricFieldType() const {
 }
 
 /**
- * @throws std::invalid_argument If the electric field sizes are incorrect or the thickness domain is outside the sensor
+ * @throws std::invalid_argument If the electric field dimensions are incorrect or the thickness domain is outside the sensor
  */
 void Detector::setElectricFieldGrid(std::shared_ptr<std::vector<double>> field,
-                                    std::array<size_t, 3> sizes,
+                                    std::array<size_t, 3> dimensions,
                                     std::array<double, 2> scales,
                                     std::array<double, 2> offset,
                                     std::pair<double, double> thickness_domain) {
-    electric_field_.setGrid(std::move(field), sizes, scales, offset, thickness_domain);
+    electric_field_.setGrid(std::move(field), dimensions, scales, offset, thickness_domain);
 }
 
 void Detector::setElectricFieldFunction(FieldFunction<ROOT::Math::XYZVector> function,
@@ -209,14 +209,15 @@ FieldType Detector::getWeightingFieldType() const {
 }
 
 /**
- * @throws std::invalid_argument If the weighting field sizes are incorrect or the thickness domain is outside the sensor
+ * @throws std::invalid_argument If the weighting field dimensions are incorrect or the thickness domain is outside the
+ * sensor
  */
 void Detector::setWeightingFieldGrid(std::shared_ptr<std::vector<double>> field,
-                                     std::array<size_t, 3> sizes,
+                                     std::array<size_t, 3> dimensions,
                                      std::array<double, 2> scales,
                                      std::array<double, 2> offset,
                                      std::pair<double, double> thickness_domain) {
-    weighting_field_.setGrid(std::move(field), sizes, scales, offset, thickness_domain);
+    weighting_field_.setGrid(std::move(field), dimensions, scales, offset, thickness_domain);
 }
 
 void Detector::setWeightingFieldFunction(FieldFunction<ROOT::Math::XYZVector> function,

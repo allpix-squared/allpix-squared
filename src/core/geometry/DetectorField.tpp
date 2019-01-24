@@ -36,20 +36,22 @@ namespace allpix {
         T ret_val;
         if(type_ == FieldType::GRID) {
             // Compute indices
-            auto x_ind = static_cast<int>(std::floor(static_cast<double>(sizes_[0]) * (x + scales_[0] / 2.0) / scales_[0]));
-            auto y_ind = static_cast<int>(std::floor(static_cast<double>(sizes_[1]) * (y + scales_[1] / 2.0) / scales_[1]));
-            auto z_ind = static_cast<int>(std::floor(static_cast<double>(sizes_[2]) * (z - thickness_domain_.first) /
+            auto x_ind =
+                static_cast<int>(std::floor(static_cast<double>(dimensions_[0]) * (x + scales_[0] / 2.0) / scales_[0]));
+            auto y_ind =
+                static_cast<int>(std::floor(static_cast<double>(dimensions_[1]) * (y + scales_[1] / 2.0) / scales_[1]));
+            auto z_ind = static_cast<int>(std::floor(static_cast<double>(dimensions_[2]) * (z - thickness_domain_.first) /
                                                      (thickness_domain_.second - thickness_domain_.first)));
 
             // Check for indices within the sensor
-            if(x_ind < 0 || x_ind >= static_cast<int>(sizes_[0]) || y_ind < 0 || y_ind >= static_cast<int>(sizes_[1]) ||
-               z_ind < 0 || z_ind >= static_cast<int>(sizes_[2])) {
+            if(x_ind < 0 || x_ind >= static_cast<int>(dimensions_[0]) || y_ind < 0 ||
+               y_ind >= static_cast<int>(dimensions_[1]) || z_ind < 0 || z_ind >= static_cast<int>(dimensions_[2])) {
                 return {};
             }
 
             // Compute total index
-            size_t tot_ind = static_cast<size_t>(x_ind) * sizes_[1] * sizes_[2] * N +
-                             static_cast<size_t>(y_ind) * sizes_[2] * N + static_cast<size_t>(z_ind) * N;
+            size_t tot_ind = static_cast<size_t>(x_ind) * dimensions_[1] * dimensions_[2] * N +
+                             static_cast<size_t>(y_ind) * dimensions_[2] * N + static_cast<size_t>(z_ind) * N;
 
             ret_val = get_impl(tot_ind, std::make_index_sequence<N>{});
         } else {
@@ -84,16 +86,16 @@ namespace allpix {
     template <typename T, size_t N> FieldType DetectorField<T, N>::getType() const { return type_; }
 
     /**
-     * @throws std::invalid_argument If the field sizes are incorrect or the thickness domain is outside the sensor
+     * @throws std::invalid_argument If the field dimensions are incorrect or the thickness domain is outside the sensor
      */
     template <typename T, size_t N>
     void DetectorField<T, N>::setGrid(std::shared_ptr<std::vector<double>> field,
-                                      std::array<size_t, 3> sizes,
+                                      std::array<size_t, 3> dimensions,
                                       std::array<double, 2> scales,
                                       std::array<double, 2> offset,
                                       std::pair<double, double> thickness_domain) {
-        if(sizes[0] * sizes[1] * sizes[2] * N != field->size()) {
-            throw std::invalid_argument("field does not match the given sizes");
+        if(dimensions[0] * dimensions[1] * dimensions[2] * N != field->size()) {
+            throw std::invalid_argument("field does not match the given dimensions");
         }
         if(thickness_domain.first + 1e-9 < sensor_center_.z() - sensor_size_.z() / 2.0 ||
            sensor_center_.z() + sensor_size_.z() / 2.0 < thickness_domain.second - 1e-9) {
@@ -104,7 +106,7 @@ namespace allpix {
         }
 
         field_ = std::move(field);
-        sizes_ = sizes;
+        dimensions_ = dimensions;
 
         // Precalculate the offset and scale of the field relative to the pixel pitch:
         scales_ = std::array<double, 2>{{pixel_size_.x() * scales[0], pixel_size_.y() * scales[1]}};

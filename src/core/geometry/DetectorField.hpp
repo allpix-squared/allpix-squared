@@ -68,7 +68,7 @@ namespace allpix {
          * @brief Check if the field is valid and either a field grid or a field function is configured
          * @return Boolean indicating field validity
          */
-        bool isValid() const { return function_ || (sizes_[0] != 0 && sizes_[1] != 0 && sizes_[2] != 0); };
+        bool isValid() const { return function_ || (dimensions_[0] != 0 && dimensions_[1] != 0 && dimensions_[2] != 0); };
 
         /**
          * @brief Return the type of field
@@ -86,12 +86,12 @@ namespace allpix {
         /**
          * @brief Set the field in the detector using a grid
          * @param field Flat array of the field
-         * @param sizes The dimensions of the flat field array
+         * @param dimensions The dimensions of the flat field array
          * @param scales Scaling factors for the field size, given in fractions of a pixel unit cell in x and y
          * @param thickness_domain Domain in local coordinates in the thickness direction where the field holds
          */
         void setGrid(std::shared_ptr<std::vector<double>> field,
-                     std::array<size_t, 3> sizes,
+                     std::array<size_t, 3> dimensions,
                      std::array<double, 2> scales,
                      std::array<double, 2> offset,
                      std::pair<double, double> thickness_domain);
@@ -130,11 +130,11 @@ namespace allpix {
 
         /**
          * Field properties
-         * * Size of the field map (bins in x, y, z)
+         * * Dimensions of the field map (bins in x, y, z)
          * * Scale of the field in x and y direction, defaults to 1, 1, i.e. to one full pixel cell
          * * Offset of the field from the pixel edge, e.g. when using fields centered at a pixel corner instead of the center
          */
-        std::array<size_t, 3> sizes_{};
+        std::array<size_t, 3> dimensions_{};
         std::array<double_t, 2> scales_{{1., 1.}};
         std::array<double_t, 2> offset_{{0., 0.}};
 
