@@ -156,7 +156,6 @@ IF(LATEX_COMPILER)
             usermanual/chapters/faq.tex
             usermanual/chapters/additional.tex
             usermanual/chapters/acknowledgements.tex
-            usermanual/appendices/example_output.tex
             usermanual/config.tex
 
             usermanual/tikz/transformations.tex
