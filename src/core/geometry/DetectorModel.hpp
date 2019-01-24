@@ -198,6 +198,16 @@ namespace allpix {
          */
         void setImplantMaterial(std::string material) { implant_material_ = std::move(material); }
         /**
+         * @brief Get offset of the collection diode from the pixel center
+         * @return Offset of the collection diode implant
+         */
+        virtual ROOT::Math::XYVector getImplantOffset() const { return implant_offset_; }
+        /**
+         * @brief Set the offset of the implant (collection diode) from the pixel center
+         * @param val Offset of the collection diode implant
+         */
+        void setImplantOffset(ROOT::Math::XYVector val) { implant_offset_ = std::move(val); }
+        /**
          * @brief Get total size of the pixel grid
          * @return Size of the pixel grid
          *
@@ -439,8 +449,9 @@ namespace allpix {
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>> number_of_pixels_;
         ROOT::Math::XYVector pixel_size_;
         ROOT::Math::XYZVector implant_size_;
-        Pixel::Type pixel_type_{Pixel::Type::RECTANGLE};
+        ROOT::Math::XYVector implant_offset_;
         std::string implant_material_;
+        Pixel::Type pixel_type_{Pixel::Type::RECTANGLE};
 
         double sensor_thickness_{};
         std::array<double, 4> sensor_excess_{};
