@@ -38,15 +38,15 @@ cmp:slc6-gcc:
     image: clicdp/slc6-base
     before_script:
         - export COMPILER_TYPE="gcc"
-        - source .gitlab-ci.d/init_x86_64.sh
-        - source .gitlab-ci.d/load_deps.sh
+        - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
 
 cmp:slc6-llvm:
     extends: .compile
     image: clicdp/slc6-base
     before_script:
         - export COMPILER_TYPE="llvm"
-        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab/ci/init_x86_64.sh
 
 # Ensure that our LXPLUS setup script is functional:
 cmp:lxplus-gcc:
@@ -67,23 +67,23 @@ cmp:cc7-gcc:
     image: clicdp/cc7-base
     before_script:
         - export COMPILER_TYPE="gcc"
-        - source .gitlab-ci.d/init_x86_64.sh
-        - source .gitlab-ci.d/load_deps.sh
+        - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
 
 cmp:cc7-llvm:
     extends: .compile
     image: clicdp/cc7-base
     before_script:
         - export COMPILER_TYPE="llvm"
-        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab/ci/init_x86_64.sh
 
 cmp:mac1013-clang:
     extends: .compile
     tags:
         - mac
     before_script:
-        - source .gitlab-ci.d/init_mac.sh
-        - source .gitlab-ci.d/load_deps.sh
+        - source .gitlab/ci/init_mac.sh
+        - source .gitlab/ci/load_deps.sh
     script:
         - mkdir build
         - cd build
@@ -103,7 +103,7 @@ cmp:mac1013-clang:
         - docker
     before_script:
         - export COMPILER_TYPE="llvm"
-        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab/ci/init_x86_64.sh
 
 # SLC 6
 
@@ -177,8 +177,8 @@ examples:
         - cmp:cc7-gcc
     image: clicdp/cc7-base
     before_script:
-        - source .gitlab-ci.d/init_x86_64.sh
-        - source .gitlab-ci.d/load_deps.sh
+        - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
     script:
         - cd build/
         - ctest -R examples --output-on-failure -j4
@@ -191,7 +191,7 @@ mod:slc6-gcc:
         - cmp:slc6-gcc
     image: clicdp/slc6-base
     before_script:
-        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab/ci/init_x86_64.sh
 
 core:slc6-gcc:
     extends: .testcore
@@ -199,7 +199,7 @@ core:slc6-gcc:
         - cmp:slc6-gcc
     image: clicdp/slc6-base
     before_script:
-        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab/ci/init_x86_64.sh
 
 mod:lxplus-gcc:
     extends: .testmod
@@ -224,7 +224,7 @@ mod:slc6-llvm:
     image: clicdp/slc6-base
     before_script:
         - export COMPILER_TYPE="llvm"
-        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab/ci/init_x86_64.sh
 
 core:slc6-llvm:
     extends: .testcore
@@ -233,7 +233,7 @@ core:slc6-llvm:
     image: clicdp/slc6-base
     before_script:
         - export COMPILER_TYPE="llvm"
-        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab/ci/init_x86_64.sh
 
 
 # CentOS 7
@@ -244,8 +244,8 @@ mod:cc7-gcc:
         - cmp:cc7-gcc
     image: clicdp/cc7-base
     before_script:
-        - source .gitlab-ci.d/init_x86_64.sh
-        - source .gitlab-ci.d/load_deps.sh
+        - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
 
 core:cc7-gcc:
     extends: .testcore
@@ -253,8 +253,8 @@ core:cc7-gcc:
         - cmp:cc7-gcc
     image: clicdp/cc7-base
     before_script:
-        - source .gitlab-ci.d/init_x86_64.sh
-        - source .gitlab-ci.d/load_deps.sh
+        - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
 
 mod:cc7-llvm:
     extends: .testmod
@@ -263,7 +263,7 @@ mod:cc7-llvm:
     image: clicdp/cc7-base
     before_script:
         - export COMPILER_TYPE="llvm"
-        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab/ci/init_x86_64.sh
 
 core:cc7-llvm:
     extends: .testcore
@@ -272,7 +272,7 @@ core:cc7-llvm:
     image: clicdp/cc7-base
     before_script:
         - export COMPILER_TYPE="llvm"
-        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab/ci/init_x86_64.sh
 
 
 # Mac OS X
@@ -284,8 +284,8 @@ mod:mac1013-clang:
     dependencies:
         - cmp:mac1013-clang
     before_script:
-        - source .gitlab-ci.d/init_mac.sh
-        - source .gitlab-ci.d/load_deps.sh
+        - source .gitlab/ci/init_mac.sh
+        - source .gitlab/ci/load_deps.sh
 
 core:mac1013-clang:
     extends: .testcore
@@ -294,8 +294,8 @@ core:mac1013-clang:
     dependencies:
         - cmp:mac1013-clang
     before_script:
-        - source .gitlab-ci.d/init_mac.sh
-        - source .gitlab-ci.d/load_deps.sh
+        - source .gitlab/ci/init_mac.sh
+        - source .gitlab/ci/load_deps.sh
 
 
 #####################
@@ -323,8 +323,8 @@ perf:cc7-gcc:
         - cmp:cc7-gcc
     image: clicdp/cc7-base
     before_script:
-        - source .gitlab-ci.d/init_x86_64.sh
-        - source .gitlab-ci.d/load_deps.sh
+        - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
 
 # Temporarily hide LLVM job, have to find out why this is so slow.
 .perf:cc7-llvm:
@@ -334,7 +334,7 @@ perf:cc7-gcc:
     image: clicdp/cc7-base
     before_script:
         - export COMPILER_TYPE="llvm"
-        - source .gitlab-ci.d/init_x86_64.sh
+        - source .gitlab/ci/init_x86_64.sh
 
 # Mac OS X
 # Temporarily disable Mac OS X performance until tests are adapted to actual performance
@@ -343,8 +343,8 @@ perf:cc7-gcc:
     dependencies:
         - cmp:mac1013-clang
     before_script:
-        - source .gitlab-ci.d/init_mac.sh
-        - source .gitlab-ci.d/load_deps.sh
+        - source .gitlab/ci/init_mac.sh
+        - source .gitlab/ci/load_deps.sh
 
 
 #############################
@@ -367,8 +367,8 @@ cmp:doxygen:
     image: clicdp/cc7-base
     dependencies: []
     script:
-        - source .gitlab-ci.d/init_x86_64.sh
-        - source .gitlab-ci.d/load_deps.sh
+        - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
         - mkdir -p public/usermanual
         - mkdir build
         - cd build
@@ -427,8 +427,8 @@ pkg:slc6-gcc:
         - cmp:slc6-gcc
     before_script:
         - export COMPILER_TYPE="gcc"
-        - source .gitlab-ci.d/init_x86_64.sh
-        - source .gitlab-ci.d/load_deps.sh
+        - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
 
 pkg:cc7-gcc:
     extends: .pack
@@ -437,8 +437,8 @@ pkg:cc7-gcc:
         - cmp:cc7-gcc
     before_script:
         - export COMPILER_TYPE="gcc"
-        - source .gitlab-ci.d/init_x86_64.sh
-        - source .gitlab-ci.d/load_deps.sh
+        - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
 
 
 ############################
@@ -493,18 +493,16 @@ deploy-cvmfs:
     dependencies:
         - pkg:cc7-gcc
         - pkg:slc6-gcc
-    variables:
-        GIT_STRATEGY: none
     tags:
         - cvmfs-deploy
     only:
         - tags
         - schedules # Only execute this on scheduled "nightly" pipelines
     script:
-        - ./.gitlab-ci.d/download_artifacts.py $API_TOKEN $CI_PROJECT_ID $CI_PIPELINE_ID
+        - ./.gitlab/ci/download_artifacts.py $API_TOKEN $CI_PROJECT_ID $CI_PIPELINE_ID
         - export RUNNER_LOCATION=$(pwd)
         - if [ -z ${CI_COMMIT_TAG} ]; then export BUILD_PATH='latest'; else export BUILD_PATH=${CI_COMMIT_TAG}; fi
-        - sudo -u cvclicdp -i $RUNNER_LOCATION/.gitlab-ci.d/gitlab_deploy.sh $RUNNER_LOCATION $BUILD_PATH
+        - sudo -u cvclicdp -i $RUNNER_LOCATION/.gitlab/ci/gitlab_deploy.sh $RUNNER_LOCATION $BUILD_PATH
         - rm -f allpix-squared-*.tar.gz
     retry: 1
 

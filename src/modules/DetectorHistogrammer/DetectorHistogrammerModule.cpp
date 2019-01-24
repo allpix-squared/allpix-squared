@@ -49,7 +49,7 @@ void DetectorHistogrammerModule::init() {
 
     // Create histogram of hitmap
     LOG(TRACE) << "Creating histograms";
-    std::string hit_map_title = "Hitmap for " + detector_->getName() + ";x (pixels);y (pixels)";
+    std::string hit_map_title = "Hitmap for " + detector_->getName() + ";x (pixels);y (pixels);hits";
     hit_map = new TH2D("hit_map",
                        hit_map_title.c_str(),
                        model->getNPixels().x(),
@@ -59,8 +59,18 @@ void DetectorHistogrammerModule::init() {
                        -0.5,
                        model->getNPixels().y() - 0.5);
 
+    std::string charge_map_title = "Charge map for " + detector_->getName() + ";x (pixels);y (pixels); charge [ke]";
+    charge_map = new TH2D("charge_map",
+                          charge_map_title.c_str(),
+                          model->getNPixels().x(),
+                          -0.5,
+                          model->getNPixels().x() - 0.5,
+                          model->getNPixels().y(),
+                          -0.5,
+                          model->getNPixels().y() - 0.5);
+
     // Create histogram of cluster map
-    std::string cluster_map_title = "Cluster map for " + detector_->getName() + ";x (pixels);y (pixels)";
+    std::string cluster_map_title = "Cluster map for " + detector_->getName() + ";x (pixels);y (pixels); clusters";
     cluster_map = new TH2D("cluster_map",
                            cluster_map_title.c_str(),
                            model->getNPixels().x(),
@@ -238,6 +248,8 @@ void DetectorHistogrammerModule::run(unsigned int) {
 
             // Add pixel
             hit_map->Fill(pixel_idx.x(), pixel_idx.y());
+            charge_map->Fill(
+                pixel_idx.x(), pixel_idx.y(), static_cast<double>(Units::convert(pixel_charge.getSignal(), "ke")));
 
             // Update statistics
             total_vector_ += pixel_idx;
@@ -434,6 +446,15 @@ void DetectorHistogrammerModule::finalize() {
         hit_map->GetYaxis()->SetNdivisions(static_cast<int>(hit_map->GetYaxis()->GetXmax()) + 1, 0, 0, true);
     }
 
+    charge_map->SetOption("colz");
+    // Set hit_map axis spacing
+    if(static_cast<int>(charge_map->GetXaxis()->GetXmax()) < 10) {
+        charge_map->GetXaxis()->SetNdivisions(static_cast<int>(charge_map->GetXaxis()->GetXmax()) + 1, 0, 0, true);
+    }
+    if(static_cast<int>(charge_map->GetYaxis()->GetXmax()) < 10) {
+        charge_map->GetYaxis()->SetNdivisions(static_cast<int>(charge_map->GetYaxis()->GetXmax()) + 1, 0, 0, true);
+    }
+
     cluster_map->SetOption("colz");
     // Set cluster_map axis spacing
     if(static_cast<int>(cluster_map->GetXaxis()->GetXmax()) < 10) {
@@ -446,6 +467,7 @@ void DetectorHistogrammerModule::finalize() {
     // Write histograms
     LOG(TRACE) << "Writing histograms to file";
     hit_map->Write();
+    charge_map->Write();
     cluster_map->Write();
     cluster_size_map->Write();
     cluster_size_x_map->Write();
@@ -521,6 +543,7 @@ std::vector<Cluster> DetectorHistogrammerModule::doClustering() {
             cluster.addPixelHit(neighbor);
             LOG(TRACE) << "Adding pixel: " << neighbor->getPixel().getIndex();
             usedPixel[neighbor] = true;
+            other_pixel = pixel_it;
         }
         clusters.push_back(cluster);
     }

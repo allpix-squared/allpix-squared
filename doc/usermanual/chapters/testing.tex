@@ -91,7 +91,7 @@ export LD_LIBRARY_PATH="<library directory>:$LD_LIBRARY_PATH"
 
 Quality and compatibility of the \apsq framework is ensured by an elaborate continuous integration (CI) which builds and tests the software on all supported platforms.
 The \apsq CI uses the GitLab Continuous Integration features and consists of seven distinct stages as depicted in Figure~\ref{fig:ci}.
-It is configured via the \file{.gitlab-ci.yml} file in the repository's root directory, while additional setup scripts for the GitLab Ci Runner machines and the Docker instances can be found in the \dir{.gitlab-ci.d} directory.
+It is configured via the \file{.gitlab-ci.yml} file in the repository's root directory, while additional setup scripts for the GitLab Ci Runner machines and the Docker instances can be found in the \dir{.gitlab/ci} directory.
 
 \begin{figure}[btp]
   \centering
@@ -163,8 +163,8 @@ An additional \file{setup.sh} is placed in the root folder of the respective rel
 Versions both for SLC\,6 and CentOS\,7 are provided.
 
 The deployment CI job runs on a dedicated computer with a GitLab SSH runner.
-Job artifacts from the packaging stage of the CI are downloaded via their ID using the script found in \dir{.gitlab-ci.d/download_artifacts.py}, and are made available to the \emph{cvclicdp} user which has access to the CVMFS interface.
-The job checks for concurrent deployments to CVMFS and then unpacks the tarball releases and publishes them to the CLICdp experiment CVMFS space, the corresponding script for the deployment can be found in \dir{.gitlab-ci.d/gitlab_deployment.sh}.
+Job artifacts from the packaging stage of the CI are downloaded via their ID using the script found in \dir{.gitlab/ci/download_artifacts.py}, and are made available to the \emph{cvclicdp} user which has access to the CVMFS interface.
+The job checks for concurrent deployments to CVMFS and then unpacks the tarball releases and publishes them to the CLICdp experiment CVMFS space, the corresponding script for the deployment can be found in \dir{.gitlab/ci/gitlab_deployment.sh}.
 This job requires a private API token to be set as secret project variable through the GitLab interface, currently this token belongs to the service account user \emph{ap2}.
 
 \subsection{Documentation deployment to EOS}
