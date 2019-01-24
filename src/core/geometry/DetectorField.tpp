@@ -1,5 +1,27 @@
 
 namespace allpix {
+    template <typename T, size_t N> T DetectorField<T, N>::getFieldFromGrid(const ROOT::Math::XYZPoint pos) const {
+        // Compute indices
+        auto x_ind =
+            static_cast<int>(std::floor(static_cast<double>(dimensions_[0]) * (pos.x() + scales_[0] / 2.0) / scales_[0]));
+        auto y_ind =
+            static_cast<int>(std::floor(static_cast<double>(dimensions_[1]) * (pos.y() + scales_[1] / 2.0) / scales_[1]));
+        auto z_ind = static_cast<int>(std::floor(static_cast<double>(dimensions_[2]) * (pos.z() - thickness_domain_.first) /
+                                                 (thickness_domain_.second - thickness_domain_.first)));
+
+        // Check for indices within the sensor
+        if(x_ind < 0 || x_ind >= static_cast<int>(dimensions_[0]) || y_ind < 0 ||
+           y_ind >= static_cast<int>(dimensions_[1]) || z_ind < 0 || z_ind >= static_cast<int>(dimensions_[2])) {
+            return {};
+        }
+
+        // Compute total index
+        size_t tot_ind = static_cast<size_t>(x_ind) * dimensions_[1] * dimensions_[2] * N +
+                         static_cast<size_t>(y_ind) * dimensions_[2] * N + static_cast<size_t>(z_ind) * N;
+
+        return get_impl(tot_ind, std::make_index_sequence<N>{});
+    }
+
     /**
      * The field is replicated for all pixels and uses flipping at each boundary (edge effects are currently not modeled.
      * Outside of the sensor the field is strictly zero by definition.
@@ -35,25 +57,7 @@ namespace allpix {
         // Compute using the grid or a function depending on the setting
         T ret_val;
         if(type_ == FieldType::GRID) {
-            // Compute indices
-            auto x_ind =
-                static_cast<int>(std::floor(static_cast<double>(dimensions_[0]) * (x + scales_[0] / 2.0) / scales_[0]));
-            auto y_ind =
-                static_cast<int>(std::floor(static_cast<double>(dimensions_[1]) * (y + scales_[1] / 2.0) / scales_[1]));
-            auto z_ind = static_cast<int>(std::floor(static_cast<double>(dimensions_[2]) * (z - thickness_domain_.first) /
-                                                     (thickness_domain_.second - thickness_domain_.first)));
-
-            // Check for indices within the sensor
-            if(x_ind < 0 || x_ind >= static_cast<int>(dimensions_[0]) || y_ind < 0 ||
-               y_ind >= static_cast<int>(dimensions_[1]) || z_ind < 0 || z_ind >= static_cast<int>(dimensions_[2])) {
-                return {};
-            }
-
-            // Compute total index
-            size_t tot_ind = static_cast<size_t>(x_ind) * dimensions_[1] * dimensions_[2] * N +
-                             static_cast<size_t>(y_ind) * dimensions_[2] * N + static_cast<size_t>(z_ind) * N;
-
-            ret_val = get_impl(tot_ind, std::make_index_sequence<N>{});
+            ret_val = getFieldFromGrid(ROOT::Math::XYZPoint(x, y, z));
         } else {
             // Check if inside the thickness domain
             if(z < thickness_domain_.first || thickness_domain_.second < z) {
