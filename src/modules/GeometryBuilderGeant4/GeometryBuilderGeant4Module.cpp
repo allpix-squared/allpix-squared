@@ -17,6 +17,7 @@
 #include <G4RunManager.hh>
 #include <G4UImanager.hh>
 #include <G4UIterminal.hh>
+#include <G4Version.hh>
 #include <G4VisManager.hh>
 
 #include <Math/Vector3D.h>
@@ -76,9 +77,13 @@ void GeometryBuilderGeant4Module::init() {
     check_dataset_g4("G4ABLADATA");
     check_dataset_g4("G4REALSURFACEDATA");
     check_dataset_g4("G4NEUTRONHPDATA");
-    check_dataset_g4("G4NEUTRONXSDATA");
     check_dataset_g4("G4ENSDFSTATEDATA");
     check_dataset_g4("G4LEDATA");
+
+// Check for Neutron XS data only for Geant4 version prior to 10.5, deprecated dataset from 10.5
+#if G4VERSION_NUMBER < 1050
+    check_dataset_g4("G4NEUTRONXSDATA");
+#endif
 
     // Suppress all output (also stdout due to a part in Geant4 where G4cout is not used)
     SUPPRESS_STREAM(std::cout);
