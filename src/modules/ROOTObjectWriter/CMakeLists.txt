@@ -1,7 +1,3 @@
-########################
-# Allpix2 Dummy Module #
-########################
-
 # Define module
 ALLPIX_UNIQUE_MODULE(MODULE_NAME)
 
