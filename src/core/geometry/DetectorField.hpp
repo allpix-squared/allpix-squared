@@ -133,7 +133,7 @@ namespace allpix {
          * @param  pos Position in local coordinates to look up the field for
          * @return     Vlaue(s) of the field at the queried point
          */
-        T getFieldFromGrid(const ROOT::Math::XYZPoint pos) const;
+        T getFieldFromGrid(const ROOT::Math::XYZPoint& pos) const;
 
         /**
          * Field properties

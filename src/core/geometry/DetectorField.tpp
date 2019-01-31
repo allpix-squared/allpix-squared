@@ -1,6 +1,6 @@
 
 namespace allpix {
-    template <typename T, size_t N> T DetectorField<T, N>::getFieldFromGrid(const ROOT::Math::XYZPoint pos) const {
+    template <typename T, size_t N> T DetectorField<T, N>::getFieldFromGrid(const ROOT::Math::XYZPoint& pos) const {
         // Compute indices
         auto x_ind =
             static_cast<int>(std::floor(static_cast<double>(dimensions_[0]) * (pos.x() + scales_[0] / 2.0) / scales_[0]));
