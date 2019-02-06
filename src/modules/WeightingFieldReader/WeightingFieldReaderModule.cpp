@@ -141,7 +141,7 @@ void WeightingFieldReaderModule::create_output_plots() {
         double z = min + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * (max - min);
 
         // Get field strength from detector
-        auto field = detector_->getWeightingField(ROOT::Math::XYZPoint(position.x(), position.y(), z), 0, 0);
+        auto field = detector_->getWeightingField(ROOT::Math::XYZPoint(position.x(), position.y(), z), Pixel::Index(0, 0));
         auto field_x_strength = Units::convert(field.x(), "1/cm");
         auto field_y_strength = Units::convert(field.y(), "1/cm");
         auto field_z_strength = Units::convert(field.z(), "1/cm");
@@ -173,7 +173,7 @@ void WeightingFieldReaderModule::create_output_plots() {
 
             // LOG(DEBUG) << "Requesting field ad local coords (" << Units::display(x, {"cm", "mm", "um"}) << "," << 0;
             // Get field strength from detector
-            auto field = detector_->getWeightingField(ROOT::Math::XYZPoint(x, 0, z), 1, 0);
+            auto field = detector_->getWeightingField(ROOT::Math::XYZPoint(x, 0, z), Pixel::Index(1, 0));
             auto field_z_strength = Units::convert(field.z(), "1/cm");
 
             // Fill the histograms, shift x-axis by one pixel so the reference electrode in centered.
