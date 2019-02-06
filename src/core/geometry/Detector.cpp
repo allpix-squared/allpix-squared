@@ -140,7 +140,7 @@ Pixel Detector::getPixel(unsigned int x, unsigned int y) const {
 /**
  * The pixel has internal information about the size and location specific for this detector
  */
-Pixel Detector::getPixel(Pixel::Index index) const {
+Pixel Detector::getPixel(const Pixel::Index& index) const {
     auto size = model_->getPixelSize();
 
     // WARNING This relies on the origin of the local coordinate system

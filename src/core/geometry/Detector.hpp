@@ -112,7 +112,7 @@ namespace allpix {
          * @brief Return a pixel object from the pixel index
          * @return Pixel object
          */
-        Pixel getPixel(Pixel::Index index) const;
+        Pixel getPixel(const Pixel::Index& index) const;
 
         /**
          * @brief Returns if the detector has an electric field in the sensor
