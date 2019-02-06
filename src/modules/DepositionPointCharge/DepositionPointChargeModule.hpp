@@ -19,6 +19,15 @@ namespace allpix {
      * This module can deposit charge carriers at defined positions inside the sensitive volume of the detector
      */
     class DepositionPointChargeModule : public Module {
+        /**
+         * @brief Types of deposition
+         */
+        enum class DepositionModel {
+            NONE = 0, ///< No deposition
+            POINT,    ///< Deposition at a specific point
+            SCAN,     ///< Scan through the volume of a pixel
+        };
+
     public:
         /**
          * @brief Constructor for a module to deposit charges at a specific point in the detector's active sensor volume
@@ -36,5 +45,7 @@ namespace allpix {
     private:
         std::shared_ptr<Detector> detector_;
         Messenger* messenger_;
+
+        DepositionModel model_;
     };
 } // namespace allpix

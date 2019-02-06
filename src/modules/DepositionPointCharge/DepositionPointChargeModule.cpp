@@ -27,6 +27,18 @@ DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
     // Set default value for the number of charges deposited
     config_.setDefault("number_of_charges", 1);
     config_.setDefault("position", ROOT::Math::XYZPoint(0., 0., 0.));
+    config_.setDefault("model", "point");
+
+    // Read model
+    auto model = config_.get<std::string>("model");
+    std::transform(model.begin(), model.end(), model.begin(), ::tolower);
+    if(model == "point") {
+        model_ = DepositionModel::POINT;
+    } else if(model == "scan") {
+        model_ = DepositionModel::SCAN;
+    } else {
+        throw InvalidValueError(config_, "model", "Invalid deposition model, only 'point' and 'scan' are supported.");
+    }
 }
 
 void DepositionPointChargeModule::run(unsigned int) {
@@ -37,6 +49,7 @@ void DepositionPointChargeModule::run(unsigned int) {
 
     // Local and global position of the MCParticle
     auto position_local = config_.get<ROOT::Math::XYZPoint>("position");
+
     auto position_global = detector_->getGlobalPosition(position_local);
 
     // Start and stop position is the same for the MCParticle
