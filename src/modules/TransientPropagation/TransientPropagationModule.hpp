@@ -14,6 +14,7 @@
 #include <string>
 
 #include <Math/Point3D.h>
+#include <TH1D.h>
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/DetectorModel.hpp"
@@ -51,6 +52,11 @@ namespace allpix {
          */
         void run(unsigned int) override;
 
+        /**
+         * @brief Write statistical summary
+         */
+        void finalize() override;
+
     private:
         // General module members
         std::shared_ptr<const Detector> detector_;
@@ -74,6 +80,7 @@ namespace allpix {
 
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_{}, integration_time_{};
+        bool output_plots_{};
 
         // Precalculated values for electron and hole mobility
         double electron_Vm_;
@@ -85,5 +92,8 @@ namespace allpix {
 
         // Precalculated value for Boltzmann constant:
         double boltzmann_kT_;
+
+        // Output plots
+        TH1D *induced_charge_e_histo_, *induced_charge_h_histo_;
     };
 } // namespace allpix

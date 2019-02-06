@@ -41,11 +41,13 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     config_.setDefault<double>("integration_time", Units::get(25, "ns"));
     config_.setDefault<unsigned int>("charge_per_step", 10);
     config_.setDefault<double>("temperature", 293.15);
+    config_.setDefault<bool>("output_plots", false);
 
     // Copy some variables from configuration to avoid lookups:
     temperature_ = config_.get<double>("temperature");
     timestep_ = config_.get<double>("timestep");
     integration_time_ = config_.get<double>("integration_time");
+    output_plots_ = config_.get<bool>("output_plots");
 
     // Parameterization variables from https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2)
     electron_Vm_ = Units::get(1.53e9 * std::pow(temperature_, -0.87), "cm/s");
@@ -61,7 +63,29 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
 
 void TransientPropagationModule::init() {
 
-    // FIXME check that we have a Ramo Weighting field for the detector!
+    auto detector = getDetector();
+
+    // Check for electric field
+    if(!detector->hasElectricField()) {
+        LOG(WARNING) << "This detector does not have an electric field.";
+    }
+
+    if(!detector_->hasWeightingPotential()) {
+        throw ModuleError("This module requires a weighting potential.");
+    }
+
+    if(output_plots_) {
+        induced_charge_e_histo_ = new TH1D("induced_charge_e_histo",
+                                           "Induced charge per time;Drift time [ns];charge [e]",
+                                           static_cast<int>(integration_time_ / timestep_),
+                                           0,
+                                           static_cast<double>(Units::convert(integration_time_, "ns")));
+        induced_charge_h_histo_ = new TH1D("induced_charge_h_histo",
+                                           "Induced charge per time;Drift time [ns];charge [e]",
+                                           static_cast<int>(integration_time_ / timestep_),
+                                           0,
+                                           static_cast<double>(Units::convert(integration_time_, "ns")));
+    }
 }
 
 void TransientPropagationModule::run(unsigned int) {
@@ -92,6 +116,7 @@ void TransientPropagationModule::run(unsigned int) {
 
             // Propagate a single charge deposit
             propagate(position, deposit.getType(), charge_per_step, pixel_map);
+            LOG(DEBUG) << " Propagated " << charge_per_step << " from " << Units::display(position, {"mm", "um"});
         }
     }
 
@@ -115,7 +140,7 @@ void TransientPropagationModule::run(unsigned int) {
  */
 void TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                                            const CarrierType& type,
-                                           const unsigned int,
+                                           const unsigned int charge,
                                            std::map<Pixel::Index, PixelPulse>&) {
 
     // Create a runge kutta solver using the electric field as step function
@@ -184,9 +209,46 @@ void TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         // Apply diffusion step
         auto diffusion = carrier_diffusion(std::sqrt(efield.Mag2()), timestep_);
         position += diffusion;
+        runge_kutta.setValue(position);
 
-        // TODO implement calculation of Ramo induced charge
-        // TODO loop over NxN pixels and add it to their respective pulses
+        // Find the nearest pixel
+        auto xpixel = static_cast<int>(std::round(position.x() / model_->getPixelSize().x()));
+        auto ypixel = static_cast<int>(std::round(position.y() / model_->getPixelSize().y()));
+        LOG(TRACE) << "Found deposition in pixel "
+                   << Pixel::Index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel)) << " at "
+                   << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"}) << ", "
+                   << Units::display(runge_kutta.getTime(), "ns");
+
+        // Loop over NxN pixels:
+        for(int x = xpixel - 1; x <= xpixel + 1; x++) {
+            for(int y = ypixel - 1; y <= ypixel + 1; y++) {
+
+                // Ignore if out of pixel grid
+                if(x < 0 || x >= model_->getNPixels().x() || y < 0 || y >= model_->getNPixels().y()) {
+                    LOG(TRACE) << "Skipping calculation for pixel (" << x << "," << y << ") which is outside the grid";
+                    continue;
+                }
+
+                Pixel::Index pixel_index(static_cast<unsigned int>(x), static_cast<unsigned int>(y));
+                LOG(TRACE) << "Getting potential for pixel " << pixel_index;
+
+                auto ramo = detector_->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(position), pixel_index);
+                auto last_ramo =
+                    detector_->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(last_position), pixel_index);
+
+                LOG(TRACE) << "Ramo: " << (ramo - last_ramo);
+                // Induced charge on electrode is q_int = q * (phi(x1) - phi(x0))
+                auto induced = charge * (ramo - last_ramo);
+                LOG(TRACE) << "Induced " << type << " q = " << Units::display(induced, "e");
+                if(output_plots_ && x == 0 && y == 0) {
+                    if(type == CarrierType::ELECTRON) {
+                        induced_charge_e_histo_->Fill(runge_kutta.getTime(), induced);
+                    } else {
+                        induced_charge_h_histo_->Fill(runge_kutta.getTime(), induced);
+                    }
+                }
+            }
+        }
     }
 
     // Find proper final position in the sensor
@@ -206,6 +268,13 @@ void TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
             position = last_position;
             time = last_time;
         }
-        LOG(TRACE) << "Time: " << Units::display(time, {"ps", "ns"});
+    }
+    LOG(TRACE) << "Time: " << Units::display(time, {"ps", "ns"});
+}
+
+void TransientPropagationModule::finalize() {
+    if(output_plots_) {
+        induced_charge_e_histo_->Write();
+        induced_charge_h_histo_->Write();
     }
 }
