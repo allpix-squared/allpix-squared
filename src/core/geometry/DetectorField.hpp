@@ -96,6 +96,7 @@ namespace allpix {
          * @brief Set the field in the detector using a grid
          * @param field Flat array of the field
          * @param dimensions The dimensions of the flat field array
+         * @param sizes The actual physical extent of the field in each direction
          * @param scales Scaling factors for the field size, given in fractions of a pixel unit cell in x and y
          * @param thickness_domain Domain in local coordinates in the thickness direction where the field holds
          */
