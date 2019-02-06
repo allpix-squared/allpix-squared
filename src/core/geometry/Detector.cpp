@@ -196,9 +196,8 @@ bool Detector::hasWeightingField() const {
  * The weighting field is retrieved relative to a reference pixel. Outside of the sensor the weighting field is strictly zero
  * by definition.
  */
-ROOT::Math::XYZVector Detector::getWeightingField(const ROOT::Math::XYZPoint& pos, unsigned int, unsigned int) const {
-    // FIXME
-    return weighting_field_.get(pos);
+ROOT::Math::XYZVector Detector::getWeightingField(const ROOT::Math::XYZPoint& pos, const Pixel::Index& reference) const {
+    return weighting_field_.getRelativeTo(pos, reference);
 }
 
 /**

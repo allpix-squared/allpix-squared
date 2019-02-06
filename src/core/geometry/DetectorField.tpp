@@ -1,5 +1,32 @@
 
 namespace allpix {
+    /**
+     * Get a value from the field assigned to a specific pixel. This means, we cannot wrap around at the pixel edges and
+     * start using the field of the adjacent pixel, but need to calculate the total distance from the lookup point in local
+     * coordinates to the field origin in the given pixel.
+     */
+    template <typename T, size_t N>
+    T DetectorField<T, N>::getRelativeTo(const ROOT::Math::XYZPoint& pos, const Pixel::Index&) const {
+        if(type_ == FieldType::NONE) {
+            return {};
+        }
+
+        T ret_val;
+        if(type_ == FieldType::GRID) {
+            // Compute distance from field origin
+        } else {
+            // Check if inside the thickness domain
+            if(pos.z() < thickness_domain_.first || thickness_domain_.second < pos.z()) {
+                return {};
+            }
+
+            // Calculate the field from the configured function:
+            ret_val = function_(pos);
+        }
+
+        return ret_val;
+    }
+
     template <typename T, size_t N> T DetectorField<T, N>::getFieldFromGrid(const ROOT::Math::XYZPoint& pos) const {
         // Compute indices
         auto x_ind =
