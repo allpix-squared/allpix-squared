@@ -149,19 +149,21 @@ void WeightingPotentialReaderModule::create_output_plots() {
     // Get the weighting potential at every index
     for(size_t j = 0; j < steps; ++j) {
         LOG_PROGRESS(INFO, "plotting") << "Plotting progress " << 100 * j * steps / (steps * steps) << "%";
+        double z = min + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * (max - min);
+
+        // Scan horizontally over three pixels (from -1.5 pitch to +1.5 pitch)
         for(size_t k = 0; k < steps; ++k) {
-            double z = min + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * (max - min);
-            double x = -0.5 * model->getPixelSize().x() +
+            double x = -1.5 * model->getPixelSize().x() +
                        ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * 3 * model->getPixelSize().x();
 
-            // LOG(DEBUG) << "Requesting field ad local coords (" << Units::display(x, {"cm", "mm", "um"}) << "," << 0;
-            // Get potential from detector
+            // Get potential from detector and fill histogram
             auto potential = detector_->getWeightingPotential(ROOT::Math::XYZPoint(x, 0, z), Pixel::Index(1, 0));
-
-            // Fill the histograms, shift x-axis by one pixel so the reference electrode in centered.
-            histogram2D->Fill(x - model->getPixelSize().x(), z, potential);
+            histogram2D->Fill(x, z, potential);
         }
     }
+
+    histogram->SetOption("hist");
+    histogram2D->SetOption("colz");
 
     // Write the histogram to module file
     histogram->Write();
