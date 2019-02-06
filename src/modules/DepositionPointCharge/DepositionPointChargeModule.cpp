@@ -49,7 +49,7 @@ void DepositionPointChargeModule::init() {
     if(model_ == DepositionModel::SCAN) {
         // Get the config manager and retrieve total number of events:
         ConfigManager* conf_manager = getConfigManager();
-        unsigned int events = conf_manager->getGlobalConfiguration().get<unsigned int>("number_of_events");
+        auto events = conf_manager->getGlobalConfiguration().get<unsigned int>("number_of_events");
         root_ = static_cast<unsigned int>(std::round(std::cbrt(events)));
         if(events != root_ * root_ * root_) {
             LOG(WARNING) << "Number of events is no perfect cube, pixel cell volume cannot fully be covered in scan. "
@@ -85,18 +85,19 @@ void DepositionPointChargeModule::run(unsigned int event) {
         position_local = config_.get<ROOT::Math::XYZPoint>("position");
     }
 
-    LOG(DEBUG) << "Position (local coordinates): " << Units::display(position_local, {"um"});
+    LOG(DEBUG) << "Position (local coordinates): " << Units::display(position_local, {"um", "mm"});
     auto position_global = detector_->getGlobalPosition(position_local);
 
     // Start and stop position is the same for the MCParticle
     mcparticles.emplace_back(position_local, position_global, position_local, position_global, -1, 0.);
-    LOG(DEBUG) << "Generated MCParticle at global position " << position_global << " in detector " << detector_->getName();
+    LOG(DEBUG) << "Generated MCParticle at global position " << Units::display(position_global, {"um", "mm"})
+               << " in detector " << detector_->getName();
 
     auto carriers = config_.get<unsigned int>("number_of_charges");
     charges.emplace_back(position_local, position_global, CarrierType::ELECTRON, carriers, 0., &(mcparticles.back()));
     charges.emplace_back(position_local, position_global, CarrierType::HOLE, carriers, 0., &(mcparticles.back()));
-    LOG(DEBUG) << "Deposited " << carriers << " charge carriers of both types at global position " << position_global
-               << " in detector " << detector_->getName();
+    LOG(DEBUG) << "Deposited " << carriers << " charge carriers of both types at global position "
+               << Units::display(position_global, {"um", "mm"}) << " in detector " << detector_->getName();
 
     // Dispatch the messages to the framework
     auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(charges), detector_);
