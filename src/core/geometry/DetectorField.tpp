@@ -6,22 +6,29 @@ namespace allpix {
      * coordinates to the field origin in the given pixel.
      */
     template <typename T, size_t N>
-    T DetectorField<T, N>::getRelativeTo(const ROOT::Math::XYZPoint& pos, const Pixel::Index&) const {
+    T DetectorField<T, N>::getRelativeTo(const ROOT::Math::XYZPoint& pos, const ROOT::Math::XYZPoint& ref) const {
         if(type_ == FieldType::NONE) {
             return {};
         }
 
+        // Calculate the coordinates relative to the reference point:
+        auto x = pos.x() - ref.x();
+        auto y = pos.y() - ref.y();
+        auto z = pos.z();
+
         T ret_val;
         if(type_ == FieldType::GRID) {
-            // Compute distance from field origin
+            // Compute distance from origin of the field map:
+            // distance = scales_[0] / 2.0 - pos.x()
+            return {};
         } else {
             // Check if inside the thickness domain
-            if(pos.z() < thickness_domain_.first || thickness_domain_.second < pos.z()) {
+            if(z < thickness_domain_.first || thickness_domain_.second < z) {
                 return {};
             }
 
             // Calculate the field from the configured function:
-            ret_val = function_(pos);
+            ret_val = function_(ROOT::Math::XYZPoint(x, y, z));
         }
 
         return ret_val;

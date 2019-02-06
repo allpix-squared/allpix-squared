@@ -203,7 +203,7 @@ bool Detector::hasWeightingPotential() const {
  * strictly zero by definition.
  */
 double Detector::getWeightingPotential(const ROOT::Math::XYZPoint& pos, const Pixel::Index& reference) const {
-    return weighting_potential_.getRelativeTo(pos, reference);
+    return weighting_potential_.getRelativeTo(pos, getPixel(reference).getLocalCenter());
 }
 
 /**
