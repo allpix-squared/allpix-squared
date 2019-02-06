@@ -42,10 +42,17 @@ namespace allpix {
          */
         void run(unsigned int) override;
 
+        /**
+         * @brief Initialize the histograms
+         */
+        void init() override;
+
     private:
         std::shared_ptr<Detector> detector_;
         Messenger* messenger_;
 
         DepositionModel model_;
+        ROOT::Math::XYZVector voxel_;
+        unsigned int root_;
     };
 } // namespace allpix

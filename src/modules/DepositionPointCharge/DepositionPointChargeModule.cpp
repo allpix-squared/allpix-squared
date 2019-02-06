@@ -9,6 +9,7 @@
 
 #include "DepositionPointChargeModule.hpp"
 
+#include <cmath>
 #include <string>
 #include <utility>
 
@@ -41,15 +42,50 @@ DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
     }
 }
 
-void DepositionPointChargeModule::run(unsigned int) {
+void DepositionPointChargeModule::init() {
+
+    auto model = detector_->getModel();
+
+    if(model_ == DepositionModel::SCAN) {
+        // Get the config manager and retrieve total number of events:
+        ConfigManager* conf_manager = getConfigManager();
+        unsigned int events = conf_manager->getGlobalConfiguration().get<unsigned int>("number_of_events");
+        root_ = static_cast<unsigned int>(std::round(std::cbrt(events)));
+        if(events != root_ * root_ * root_) {
+            LOG(WARNING) << "Number of events is no perfect cube, pixel cell volume cannot fully be covered in scan. "
+                         << "Closest cube is " << root_ * root_ * root_;
+        }
+
+        // Calculate voxel size:
+        voxel_ = ROOT::Math::XYZVector(
+            model->getPixelSize().x() / root_, model->getPixelSize().y() / root_, model->getSensorSize().z() / root_);
+        LOG(INFO) << "Voxel size for scan of pixel volume: " << Units::display(voxel_, {"um", "mm"});
+    }
+}
+
+void DepositionPointChargeModule::run(unsigned int event) {
 
     // Vector of deposited charges and their "MCParticle"
     std::vector<DepositedCharge> charges;
     std::vector<MCParticle> mcparticles;
 
     // Local and global position of the MCParticle
-    auto position_local = config_.get<ROOT::Math::XYZPoint>("position");
+    ROOT::Math::XYZPoint position_local;
+    if(model_ == DepositionModel::SCAN) {
+        auto model = detector_->getModel();
+        // Center the volume to be scanned in the center of the sensor,
+        // reference point is lower left corner of one pixel volume
+        auto ref =
+            model->getGridSize() / 2.0 - ROOT::Math::XYZVector(model->getPixelSize().x(), model->getPixelSize().y(), 0);
+        position_local = ROOT::Math::XYZPoint(voxel_.x() * ((event - 1) % root_),
+                                              voxel_.y() * (((event - 1) / root_) % root_),
+                                              voxel_.z() * (((event - 1) / root_ / root_) % root_)) +
+                         ref;
+    } else {
+        position_local = config_.get<ROOT::Math::XYZPoint>("position");
+    }
 
+    LOG(DEBUG) << "Position (local coordinates): " << Units::display(position_local, {"um"});
     auto position_global = detector_->getGlobalPosition(position_local);
 
     // Start and stop position is the same for the MCParticle
