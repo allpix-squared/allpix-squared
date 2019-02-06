@@ -83,7 +83,7 @@ WeightingPotentialReaderModule::get_pad_potential_function(const ROOT::Math::XYV
     return [implant, thickness_domain](const ROOT::Math::XYZPoint& pos) {
         // Calculate values of the "f" function
         auto f = [implant](double x, double y, double u) {
-            // Calculate fractions to be put into the arctan functions
+            // Calculate arctan fractions
             auto arctan = [](double a, double b, double c) {
                 return std::atan(a * b / c / std::sqrt(a * a + b * b + c * c));
             };
@@ -129,10 +129,10 @@ void WeightingPotentialReaderModule::create_output_plots() {
     // Get the weighting potential at every index
     for(size_t j = 0; j < steps; ++j) {
         double z = min + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * (max - min);
+        auto pos = ROOT::Math::XYZPoint(position.x(), position.y(), z);
 
         // Get potential from detector and fill the histogram
-        auto potential =
-            detector_->getWeightingPotential(ROOT::Math::XYZPoint(position.x(), position.y(), z), Pixel::Index(0, 0));
+        auto potential = detector_->getWeightingPotential(pos, Pixel::Index(0, 0));
         histogram->Fill(z, potential);
     }
 
