@@ -18,6 +18,7 @@
 #include <Eigen/Core>
 
 #include "core/utils/log.h"
+#include "objects/PixelCharge.hpp"
 #include "tools/runge_kutta.h"
 
 using namespace allpix;
@@ -91,7 +92,7 @@ void TransientPropagationModule::init() {
 void TransientPropagationModule::run(unsigned int) {
 
     // Create map for all pixels
-    std::map<Pixel::Index, PixelPulse> pixel_map;
+    std::map<Pixel::Index, Pulse> pixel_map;
 
     // Loop over all deposits for propagation
     LOG(TRACE) << "Propagating charges in sensor";
@@ -121,16 +122,16 @@ void TransientPropagationModule::run(unsigned int) {
     }
 
     // Create vector of pixel pulses to return for this detector
-    std::vector<PixelPulse> pixel_pulses;
+    std::vector<PixelCharge> pixel_charges;
     for(auto& pixel_index_pulse : pixel_map) {
-        pixel_pulses.push_back(std::move(pixel_index_pulse.second));
+        pixel_charges.emplace_back(detector_->getPixel(pixel_index_pulse.first), std::move(pixel_index_pulse.second));
     }
 
     // Create a new message with pixel pulses
-    auto pixel_pulse_message = std::make_shared<PixelPulseMessage>(std::move(pixel_pulses), detector_);
+    auto pixel_charge_message = std::make_shared<PixelChargeMessage>(std::move(pixel_charges), detector_);
 
-    // Dispatch the message with pixel pulses
-    messenger_->dispatchMessage(this, pixel_pulse_message);
+    // Dispatch the message with pixel charges
+    messenger_->dispatchMessage(this, pixel_charge_message);
 }
 
 /**
@@ -141,7 +142,7 @@ void TransientPropagationModule::run(unsigned int) {
 void TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                                            const CarrierType& type,
                                            const unsigned int charge,
-                                           std::map<Pixel::Index, PixelPulse>&) {
+                                           std::map<Pixel::Index, Pulse>& pixel_map) {
 
     // Create a runge kutta solver using the electric field as step function
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
@@ -240,6 +241,10 @@ void TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                 // Induced charge on electrode is q_int = q * (phi(x1) - phi(x0))
                 auto induced = charge * (ramo - last_ramo);
                 LOG(TRACE) << "Induced " << type << " q = " << Units::display(induced, "e");
+
+                // Store htis in the respective pixel pulse:
+                pixel_map[pixel_index].addCharge(induced, runge_kutta.getTime());
+
                 if(output_plots_ && x == 0 && y == 0) {
                     if(type == CarrierType::ELECTRON) {
                         induced_charge_e_histo_->Fill(runge_kutta.getTime(), induced);

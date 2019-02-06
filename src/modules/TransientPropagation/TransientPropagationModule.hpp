@@ -22,7 +22,7 @@
 #include "core/module/Module.hpp"
 
 #include "objects/DepositedCharge.hpp"
-#include "objects/PixelPulse.hpp"
+#include "objects/Pulse.hpp"
 #include "tools/ROOT.h"
 
 namespace allpix {
@@ -73,7 +73,7 @@ namespace allpix {
         void propagate(const ROOT::Math::XYZPoint& pos,
                        const CarrierType& type,
                        const unsigned int charge,
-                       std::map<Pixel::Index, PixelPulse>& pixel_map);
+                       std::map<Pixel::Index, Pulse>& pixel_map);
 
         // Random generator for this module
         std::mt19937_64 random_generator_;
