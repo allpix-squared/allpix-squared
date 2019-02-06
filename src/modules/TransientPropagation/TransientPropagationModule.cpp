@@ -37,11 +37,15 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     random_generator_.seed(getRandomSeed());
 
     // Set default value for config variables
-    config_.setDefault<double>("spatial_precision", Units::get(0.25, "nm"));
     config_.setDefault<double>("timestep", Units::get(0.01, "ns"));
     config_.setDefault<double>("integration_time", Units::get(25, "ns"));
     config_.setDefault<unsigned int>("charge_per_step", 10);
     config_.setDefault<double>("temperature", 293.15);
+
+    // Copy some variables from configuration to avoid lookups:
+    temperature_ = config_.get<double>("temperature");
+    timestep_ = config_.get<double>("timestep");
+    integration_time_ = config_.get<double>("integration_time");
 
     // Parameterization variables from https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2)
     electron_Vm_ = Units::get(1.53e9 * std::pow(temperature_, -0.87), "cm/s");
@@ -169,8 +173,7 @@ void TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         last_time = runge_kutta.getTime();
 
         // Execute a Runge Kutta step
-        // FIXME the central call to the RKF integrator:
-        // auto step = runge_kutta.step();
+        runge_kutta.step();
 
         // Get the current result
         position = runge_kutta.getValue();
