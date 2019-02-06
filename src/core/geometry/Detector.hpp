@@ -148,45 +148,45 @@ namespace allpix {
                                       FieldType type = FieldType::CUSTOM);
 
         /**
-         * @brief Returns if the detector has a weighting field in the sensor
-         * @return True if the detector has a weighting field, false otherwise
+         * @brief Returns if the detector has a weighting potential in the sensor
+         * @return True if the detector has a weighting potential, false otherwise
          */
-        bool hasWeightingField() const;
+        bool hasWeightingPotential() const;
         /**
-         * @brief Return the type of weighting field that is simulated.
-         * @return The type of the weighting field
+         * @brief Return the type of weighting potential that is simulated.
+         * @return The type of the weighting potential
          */
-        FieldType getWeightingFieldType() const;
+        FieldType getWeightingPotentialType() const;
 
         /**
-         * @brief Get the weighting field in the sensor at a local position
+         * @brief Get the weighting potential in the sensor at a local position
          * @param pos Position in the local frame
-         * @param x x-coordinate of the pixel for which we want the weighting field
-         * @param y y-coordinate of the pixel for which we want the weighting field
-         * @return Vector of the field at the queried point
+         * @param x x-coordinate of the pixel for which we want the weighting potential
+         * @param y y-coordinate of the pixel for which we want the weighting potential
+         * @return Value of the potential at the queried point
          */
-        ROOT::Math::XYZVector getWeightingField(const ROOT::Math::XYZPoint& local_pos, const Pixel::Index& reference) const;
+        double getWeightingPotential(const ROOT::Math::XYZPoint& local_pos, const Pixel::Index& reference) const;
 
         /**
-         * @brief Set the weighting field in a single pixel in the detector using a grid
-         * @param field Flat array of the field vectors (see detailed description)
-         * @param sizes The dimensions of the flat weighting field array
-         * @param thickness_domain Domain in local coordinates in the thickness direction where the field holds
+         * @brief Set the weighting potential in a single pixel in the detector using a grid
+         * @param potential Flat array of the potential vectors (see detailed description)
+         * @param sizes The dimensions of the flat weighting potential array
+         * @param thickness_domain Domain in local coordinates in the thickness direction where the potential holds
          */
-        void setWeightingFieldGrid(std::shared_ptr<std::vector<double>> field,
-                                   std::array<size_t, 3> sizes,
-                                   std::array<double, 2> scales,
-                                   std::array<double, 2> offset,
-                                   std::pair<double, double> thickness_domain);
+        void setWeightingPotentialGrid(std::shared_ptr<std::vector<double>> potential,
+                                       std::array<size_t, 3> sizes,
+                                       std::array<double, 2> scales,
+                                       std::array<double, 2> offset,
+                                       std::pair<double, double> thickness_domain);
         /**
-         * @brief Set the weighting field in a single pixel using a function
-         * @param function Function used to retrieve the weighting field
-         * @param type Type of the weighting field function used
-         * @param thickness_domain Domain in local coordinates in the thickness direction where the field holds
+         * @brief Set the weighting potential in a single pixel using a function
+         * @param function Function used to retrieve the weighting potential
+         * @param type Type of the weighting potential function used
+         * @param thickness_domain Domain in local coordinates in the thickness direction where the potential holds
          */
-        void setWeightingFieldFunction(FieldFunction<ROOT::Math::XYZVector> function,
-                                       std::pair<double, double> thickness_domain,
-                                       FieldType type = FieldType::CUSTOM);
+        void setWeightingPotentialFunction(FieldFunction<double> function,
+                                           std::pair<double, double> thickness_domain,
+                                           FieldType type = FieldType::CUSTOM);
 
         /**
          * @brief Set the magnetic field in the detector
@@ -258,8 +258,8 @@ namespace allpix {
         // Electric field
         DetectorField<ROOT::Math::XYZVector, 3> electric_field_;
 
-        // Weighting field
-        DetectorField<ROOT::Math::XYZVector, 3> weighting_field_;
+        // Weighting potential
+        DetectorField<double, 1> weighting_potential_;
 
         // Magnetic field properties
         ROOT::Math::XYZVector magnetic_field_;

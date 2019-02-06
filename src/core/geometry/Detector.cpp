@@ -188,41 +188,41 @@ void Detector::setElectricFieldFunction(FieldFunction<ROOT::Math::XYZVector> fun
     electric_field_.setFunction(std::move(function), thickness_domain, type);
 }
 
-bool Detector::hasWeightingField() const {
-    return weighting_field_.isValid();
+bool Detector::hasWeightingPotential() const {
+    return weighting_potential_.isValid();
 }
 
 /**
- * The weighting field is retrieved relative to a reference pixel. Outside of the sensor the weighting field is strictly zero
- * by definition.
+ * The weighting potential is retrieved relative to a reference pixel. Outside of the sensor the weighting potential is
+ * strictly zero by definition.
  */
-ROOT::Math::XYZVector Detector::getWeightingField(const ROOT::Math::XYZPoint& pos, const Pixel::Index& reference) const {
-    return weighting_field_.getRelativeTo(pos, reference);
+double Detector::getWeightingPotential(const ROOT::Math::XYZPoint& pos, const Pixel::Index& reference) const {
+    return weighting_potential_.getRelativeTo(pos, reference);
 }
 
 /**
- * The type of the weighting field is set depending on the function used to apply it.
+ * The type of the weighting potential is set depending on the function used to apply it.
  */
-FieldType Detector::getWeightingFieldType() const {
-    return weighting_field_.getType();
+FieldType Detector::getWeightingPotentialType() const {
+    return weighting_potential_.getType();
 }
 
 /**
- * @throws std::invalid_argument If the weighting field dimensions are incorrect or the thickness domain is outside the
+ * @throws std::invalid_argument If the weighting potential dimensions are incorrect or the thickness domain is outside the
  * sensor
  */
-void Detector::setWeightingFieldGrid(std::shared_ptr<std::vector<double>> field,
-                                     std::array<size_t, 3> dimensions,
-                                     std::array<double, 2> scales,
-                                     std::array<double, 2> offset,
-                                     std::pair<double, double> thickness_domain) {
-    weighting_field_.setGrid(std::move(field), dimensions, scales, offset, thickness_domain);
+void Detector::setWeightingPotentialGrid(std::shared_ptr<std::vector<double>> potential,
+                                         std::array<size_t, 3> dimensions,
+                                         std::array<double, 2> scales,
+                                         std::array<double, 2> offset,
+                                         std::pair<double, double> thickness_domain) {
+    weighting_potential_.setGrid(std::move(potential), dimensions, scales, offset, thickness_domain);
 }
 
-void Detector::setWeightingFieldFunction(FieldFunction<ROOT::Math::XYZVector> function,
-                                         std::pair<double, double> thickness_domain,
-                                         FieldType type) {
-    weighting_field_.setFunction(std::move(function), thickness_domain, type);
+void Detector::setWeightingPotentialFunction(FieldFunction<double> function,
+                                             std::pair<double, double> thickness_domain,
+                                             FieldType type) {
+    weighting_potential_.setFunction(std::move(function), thickness_domain, type);
 }
 
 bool Detector::hasMagneticField() const {
