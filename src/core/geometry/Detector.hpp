@@ -106,7 +106,13 @@ namespace allpix {
          * @brief Return a pixel object from the x- and y-index values
          * @return Pixel object
          */
-        Pixel getPixel(unsigned int x, unsigned int y);
+        Pixel getPixel(unsigned int x, unsigned int y) const;
+
+        /**
+         * @brief Return a pixel object from the pixel index
+         * @return Pixel object
+         */
+        Pixel getPixel(Pixel::Index index) const;
 
         /**
          * @brief Returns if the detector has an electric field in the sensor

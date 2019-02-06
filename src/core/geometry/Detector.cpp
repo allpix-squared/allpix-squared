@@ -132,14 +132,20 @@ bool Detector::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const {
 /**
  * The pixel has internal information about the size and location specific for this detector
  */
-Pixel Detector::getPixel(unsigned int x, unsigned int y) {
+Pixel Detector::getPixel(unsigned int x, unsigned int y) const {
     Pixel::Index index(x, y);
+    return getPixel(index);
+}
 
+/**
+ * The pixel has internal information about the size and location specific for this detector
+ */
+Pixel Detector::getPixel(Pixel::Index index) const {
     auto size = model_->getPixelSize();
 
     // WARNING This relies on the origin of the local coordinate system
-    auto local_x = size.x() * x;
-    auto local_y = size.y() * y;
+    auto local_x = size.x() * index.x();
+    auto local_y = size.y() * index.y();
     auto local_z = model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0;
 
     auto local_center = ROOT::Math::XYZPoint(local_x, local_y, local_z);
