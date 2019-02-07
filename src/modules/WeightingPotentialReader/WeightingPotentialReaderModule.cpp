@@ -153,12 +153,12 @@ void WeightingPotentialReaderModule::create_output_plots() {
 
         // Scan horizontally over three pixels (from -1.5 pitch to +1.5 pitch)
         for(size_t k = 0; k < steps; ++k) {
-            double x = -1.5 * model->getPixelSize().x() +
+            double x = -0.5 * model->getPixelSize().x() +
                        ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * 3 * model->getPixelSize().x();
 
-            // Get potential from detector and fill histogram
+            // Get potential from detector and fill histogram. We calculate relative to pixel (1,0) so we need to shift x:
             auto potential = detector_->getWeightingPotential(ROOT::Math::XYZPoint(x, 0, z), Pixel::Index(1, 0));
-            histogram2D->Fill(x, z, potential);
+            histogram2D->Fill(x - model->getPixelSize().x(), z, potential);
         }
     }
 
