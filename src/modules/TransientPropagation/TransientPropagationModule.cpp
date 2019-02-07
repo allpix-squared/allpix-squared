@@ -245,7 +245,12 @@ void TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                 LOG(TRACE) << "Pixel " << pixel_index << " dPhi = " << (ramo - last_ramo) << ", induced " << type
                            << " q = " << Units::display(induced, "e");
 
-                // Store htis in the respective pixel pulse:
+                // Check if this pulse exists already:
+                if(pixel_map.find(pixel_index) == pixel_map.end()) {
+                    pixel_map[pixel_index] = Pulse(integration_time_, timestep_);
+                }
+
+                // Store induced charge in the respective pixel pulse:
                 pixel_map[pixel_index].addCharge(induced, runge_kutta.getTime());
 
                 if(output_plots_ && x == 0 && y == 0) {
