@@ -27,6 +27,7 @@ DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
 
     // Set default value for the number of charges deposited
     config_.setDefault("number_of_charges", 1);
+    config_.setDefault("number_of_steps", 100);
     config_.setDefault("position", ROOT::Math::XYZPoint(0., 0., 0.));
     config_.setDefault("model", "point");
 
@@ -37,8 +38,10 @@ DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
         model_ = DepositionModel::POINT;
     } else if(model == "scan") {
         model_ = DepositionModel::SCAN;
+    } else if(model == "mip") {
+        model_ = DepositionModel::MIP;
     } else {
-        throw InvalidValueError(config_, "model", "Invalid deposition model, only 'point' and 'scan' are supported.");
+        throw InvalidValueError(config_, "model", "Invalid deposition model, only 'point', 'scan' and `mip` are supported.");
     }
 }
 
@@ -46,6 +49,7 @@ void DepositionPointChargeModule::init() {
 
     auto model = detector_->getModel();
 
+    carriers_ = config_.get<unsigned int>("number_of_charges");
     if(model_ == DepositionModel::SCAN) {
         // Get the config manager and retrieve total number of events:
         ConfigManager* conf_manager = getConfigManager();
@@ -60,11 +64,28 @@ void DepositionPointChargeModule::init() {
         voxel_ = ROOT::Math::XYZVector(
             model->getPixelSize().x() / root_, model->getPixelSize().y() / root_, model->getSensorSize().z() / root_);
         LOG(INFO) << "Voxel size for scan of pixel volume: " << Units::display(voxel_, {"um", "mm"});
+    } else if(model_ == DepositionModel::MIP) {
+        // Calculate voxel size:
+        auto granularity = config_.get<unsigned int>("number_of_steps");
+        voxel_ = ROOT::Math::XYZVector(0, 0, model->getSensorSize().z() / granularity);
+
+        // We should deposit the equivalent of about 80 e/h pairs per micro meter (80`000 per mm):
+        carriers_ = static_cast<unsigned int>(80000 * voxel_.z());
+        LOG(INFO) << "Step size for MIP energy deposition: " << Units::display(voxel_.z(), {"um", "mm"}) << ", depositing "
+                  << carriers_ << " e/h pairs per step";
     }
 }
 
 void DepositionPointChargeModule::run(unsigned int event) {
 
+    if(model_ == DepositionModel::MIP) {
+        DepositLine(event);
+    } else {
+        DepositPoint(event);
+    }
+}
+
+void DepositionPointChargeModule::DepositPoint(unsigned int event) {
     // Vector of deposited charges and their "MCParticle"
     std::vector<DepositedCharge> charges;
     std::vector<MCParticle> mcparticles;
@@ -93,11 +114,49 @@ void DepositionPointChargeModule::run(unsigned int event) {
     LOG(DEBUG) << "Generated MCParticle at global position " << Units::display(position_global, {"um", "mm"})
                << " in detector " << detector_->getName();
 
-    auto carriers = config_.get<unsigned int>("number_of_charges");
-    charges.emplace_back(position_local, position_global, CarrierType::ELECTRON, carriers, 0., &(mcparticles.back()));
-    charges.emplace_back(position_local, position_global, CarrierType::HOLE, carriers, 0., &(mcparticles.back()));
-    LOG(DEBUG) << "Deposited " << carriers << " charge carriers of both types at global position "
+    charges.emplace_back(position_local, position_global, CarrierType::ELECTRON, carriers_, 0., &(mcparticles.back()));
+    charges.emplace_back(position_local, position_global, CarrierType::HOLE, carriers_, 0., &(mcparticles.back()));
+    LOG(DEBUG) << "Deposited " << carriers_ << " charge carriers of both types at global position "
                << Units::display(position_global, {"um", "mm"}) << " in detector " << detector_->getName();
+
+    // Dispatch the messages to the framework
+    auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(charges), detector_);
+    auto mcparticle_message = std::make_shared<MCParticleMessage>(std::move(mcparticles), detector_);
+    messenger_->dispatchMessage(this, deposit_message);
+    messenger_->dispatchMessage(this, mcparticle_message);
+}
+
+void DepositionPointChargeModule::DepositLine(unsigned int) {
+    auto model = detector_->getModel();
+
+    // Vector of deposited charges and their "MCParticle"
+    std::vector<DepositedCharge> charges;
+    std::vector<MCParticle> mcparticles;
+
+    auto position = config_.get<ROOT::Math::XYZPoint>("position");
+
+    // Start and end position of MCParticle:
+    auto start_local = ROOT::Math::XYZPoint(position.x(), position.y(), -model->getSensorSize().z() / 2.0);
+    auto end_local = ROOT::Math::XYZPoint(position.x(), position.y(), model->getSensorSize().z() / 2.0);
+    auto start_global = detector_->getGlobalPosition(start_local);
+    auto end_global = detector_->getGlobalPosition(end_local);
+
+    // Create MCParticle:
+    mcparticles.emplace_back(start_local, start_global, end_local, end_global, -1, 0.);
+    LOG(DEBUG) << "Generated MCParticle with start " << Units::display(start_global, {"um", "mm"}) << " and end "
+               << Units::display(end_global, {"um", "mm"}) << " in detector " << detector_->getName();
+
+    // Deposit the charge carriers:
+    auto position_local = start_local;
+    while(position_local.z() < model->getSensorSize().z() / 2.0) {
+        position_local += voxel_;
+        auto position_global = detector_->getGlobalPosition(position_local);
+
+        charges.emplace_back(position_local, position_global, CarrierType::ELECTRON, carriers_, 0., &(mcparticles.back()));
+        charges.emplace_back(position_local, position_global, CarrierType::HOLE, carriers_, 0., &(mcparticles.back()));
+        LOG(TRACE) << "Deposited " << carriers_ << " charge carriers of both types at global position "
+                   << Units::display(position_global, {"um", "mm"}) << " in detector " << detector_->getName();
+    }
 
     // Dispatch the messages to the framework
     auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(charges), detector_);

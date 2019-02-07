@@ -26,6 +26,7 @@ namespace allpix {
             NONE = 0, ///< No deposition
             POINT,    ///< Deposition at a specific point
             SCAN,     ///< Scan through the volume of a pixel
+            MIP,      ///< MIP-like linear deposition of charge carriers
         };
 
     public:
@@ -48,11 +49,23 @@ namespace allpix {
         void init() override;
 
     private:
+        /**
+         * @brief Helper function to deposit charges at a single point
+         * @param event event number
+         */
+        void DepositPoint(unsigned int event);
+
+        /**
+         * @brief Helper function to deposit charges along a line
+         * @param event event number
+         */
+        void DepositLine(unsigned int event);
+
         std::shared_ptr<Detector> detector_;
         Messenger* messenger_;
 
         DepositionModel model_;
         ROOT::Math::XYZVector voxel_;
-        unsigned int root_;
+        unsigned int root_, carriers_;
     };
 } // namespace allpix
