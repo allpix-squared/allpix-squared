@@ -30,7 +30,7 @@ PixelCharge::PixelCharge(Pixel pixel, unsigned int charge, std::vector<const Pro
 }
 
 PixelCharge::PixelCharge(Pixel pixel, Pulse pulse, std::vector<const PropagatedCharge*> propagated_charges)
-    : PixelCharge(pixel, pulse.getCharge(), propagated_charges) {
+    : PixelCharge(std::move(pixel), pulse.getCharge(), std::move(propagated_charges)) {
     pulse_ = std::move(pulse);
 }
 
