@@ -76,6 +76,11 @@ void TransientPropagationModule::init() {
     }
 
     if(output_plots_) {
+        induced_charge_histo_ = new TH1D("induced_charge_histo",
+                                         "Induced charge per time;Drift time [ns];charge [e]",
+                                         static_cast<int>(integration_time_ / timestep_),
+                                         0,
+                                         static_cast<double>(Units::convert(integration_time_, "ns")));
         induced_charge_e_histo_ = new TH1D("induced_charge_e_histo",
                                            "Induced charge per time;Drift time [ns];charge [e]",
                                            static_cast<int>(integration_time_ / timestep_),
@@ -215,37 +220,36 @@ void TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         // Find the nearest pixel
         auto xpixel = static_cast<int>(std::round(position.x() / model_->getPixelSize().x()));
         auto ypixel = static_cast<int>(std::round(position.y() / model_->getPixelSize().y()));
-        LOG(TRACE) << "Found deposition in pixel "
-                   << Pixel::Index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel)) << " at "
+        LOG(TRACE) << "Transporting carriers below pixel "
+                   << Pixel::Index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel)) << " from "
+                   << Units::display(static_cast<ROOT::Math::XYZPoint>(last_position), {"um", "mm"}) << " to "
                    << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"}) << ", "
                    << Units::display(runge_kutta.getTime(), "ns");
 
         // Loop over NxN pixels:
         for(int x = xpixel - 1; x <= xpixel + 1; x++) {
             for(int y = ypixel - 1; y <= ypixel + 1; y++) {
-
                 // Ignore if out of pixel grid
                 if(x < 0 || x >= model_->getNPixels().x() || y < 0 || y >= model_->getNPixels().y()) {
-                    LOG(TRACE) << "Skipping calculation for pixel (" << x << "," << y << ") which is outside the grid";
+                    LOG(TRACE) << "Pixel (" << x << "," << y << ") skipped, outside the grid";
                     continue;
                 }
 
                 Pixel::Index pixel_index(static_cast<unsigned int>(x), static_cast<unsigned int>(y));
-                LOG(TRACE) << "Getting potential for pixel " << pixel_index;
-
                 auto ramo = detector_->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(position), pixel_index);
                 auto last_ramo =
                     detector_->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(last_position), pixel_index);
 
-                LOG(TRACE) << "Ramo: " << (ramo - last_ramo);
                 // Induced charge on electrode is q_int = q * (phi(x1) - phi(x0))
                 auto induced = charge * (ramo - last_ramo);
-                LOG(TRACE) << "Induced " << type << " q = " << Units::display(induced, "e");
+                LOG(TRACE) << "Pixel " << pixel_index << " dPhi = " << (ramo - last_ramo) << ", induced " << type
+                           << " q = " << Units::display(induced, "e");
 
                 // Store htis in the respective pixel pulse:
                 pixel_map[pixel_index].addCharge(induced, runge_kutta.getTime());
 
                 if(output_plots_ && x == 0 && y == 0) {
+                    induced_charge_histo_->Fill(runge_kutta.getTime(), induced);
                     if(type == CarrierType::ELECTRON) {
                         induced_charge_e_histo_->Fill(runge_kutta.getTime(), induced);
                     } else {
@@ -279,6 +283,7 @@ void TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
 
 void TransientPropagationModule::finalize() {
     if(output_plots_) {
+        induced_charge_histo_->Write();
         induced_charge_e_histo_->Write();
         induced_charge_h_histo_->Write();
     }

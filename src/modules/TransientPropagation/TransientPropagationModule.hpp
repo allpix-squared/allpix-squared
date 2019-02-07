@@ -94,6 +94,6 @@ namespace allpix {
         double boltzmann_kT_;
 
         // Output plots
-        TH1D *induced_charge_e_histo_, *induced_charge_h_histo_;
+        TH1D *induced_charge_histo_, *induced_charge_e_histo_, *induced_charge_h_histo_;
     };
 } // namespace allpix
