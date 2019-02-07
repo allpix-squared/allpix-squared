@@ -22,7 +22,7 @@ $`\phi_w/V_w = \frac{1}{2\pi}f(x, y, z) - \frac{1}{2\pi}\sum_{n = 1}^N\left[f(x,
 
 with
 
-$` f(x, y, u) = \atan\left( \frac{x_1 y_1}{u\sqrt{x_1^2 + y_1^2 + u^2}} \right) + \atan\left( \frac{x_2 y_2}{u\sqrt{x_2^2 + y_2^2 + u^2}} \right) - \atan\left( \frac{x_1 y_2}{u\sqrt{x_1^2 + y_2^2 + u^2}} \right) - \atan\left( \frac{x_2 y_1}{u\sqrt{x_2^2 + y_1^2 + u^2}} \right)`$
+$` f(x, y, u) = \arctan\left( \frac{x_1 y_1}{u\sqrt{x_1^2 + y_1^2 + u^2}} \right) + \arctan\left( \frac{x_2 y_2}{u\sqrt{x_2^2 + y_2^2 + u^2}} \right) - \arctan\left( \frac{x_1 y_2}{u\sqrt{x_1^2 + y_2^2 + u^2}} \right) - \arctan\left( \frac{x_2 y_1}{u\sqrt{x_2^2 + y_1^2 + u^2}} \right)`$
 
 with $`x_{1,2} = x \pm \frac{w_x}{2} \qquad y_{1,2} = y \pm \frac{w_y}{2}`$. The parameters $`w_{x,y}`$ indicate the size of the collection electrode (i.e. the implant), $`V_w`$ is the potential of the electrode and *d* is the thickness of the sensor.
 
