@@ -29,6 +29,11 @@ namespace allpix {
         Pulse(double integration_time, double time_bin);
 
         /**
+         * @brief Construct default pulse with one bin only
+         */
+        Pulse();
+
+        /**
          * @brief adding induced charge to the pulse
          * @param charge induced charge
          * @param time   time when it has been induced
@@ -47,10 +52,6 @@ namespace allpix {
          */
         const std::vector<double>& getPulse() const;
 
-        /**
-         * @brief ROOT class definition
-         */
-        Pulse() = default;
         /**
          * @brief Default constructor for ROOT I/O
          */

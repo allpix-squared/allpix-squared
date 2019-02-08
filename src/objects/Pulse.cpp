@@ -17,6 +17,8 @@ Pulse::Pulse(double integration_time, double time_bin) : time_(integration_time)
     pulse_.resize(bins);
 }
 
+Pulse::Pulse() : Pulse(1, 1) {}
+
 void Pulse::addCharge(double charge, double time) {
     auto bin = static_cast<size_t>(time / bin_);
     if(bin < pulse_.size()) {

@@ -27,6 +27,9 @@ PixelCharge::PixelCharge(Pixel pixel, unsigned int charge, std::vector<const Pro
     for(auto& mc_particle : unique_particles) {
         mc_particles_.push_back(mc_particle);
     }
+
+    // No pulse provided, set full charge in first bin:
+    pulse_.addCharge(charge, 0);
 }
 
 PixelCharge::PixelCharge(Pixel pixel, Pulse pulse, std::vector<const PropagatedCharge*> propagated_charges)
