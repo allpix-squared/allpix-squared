@@ -223,13 +223,10 @@ void TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
 
     // Continue propagation until the deposit is outside the sensor
     Eigen::Vector3d last_position = position;
-    double last_time = 0;
     bool within_sensor = true;
     while(within_sensor && runge_kutta.getTime() < integration_time_) {
-
         // Save previous position and time
         last_position = position;
-        last_time = runge_kutta.getTime();
 
         // Execute a Runge Kutta step
         runge_kutta.step();
@@ -305,26 +302,6 @@ void TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
             }
         }
     }
-
-    // Find proper final position in the sensor
-    auto time = runge_kutta.getTime();
-    if(!detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
-        auto check_position = position;
-        check_position.z() = last_position.z();
-        if(position.z() > 0 && detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(check_position))) {
-            // Carrier left sensor on the side of the pixel grid, interpolate end point on surface
-            auto z_cur_border = std::fabs(position.z() - model_->getSensorSize().z() / 2.0);
-            auto z_last_border = std::fabs(model_->getSensorSize().z() / 2.0 - last_position.z());
-            auto z_total = z_cur_border + z_last_border;
-            position = (z_last_border / z_total) * position + (z_cur_border / z_total) * last_position;
-            time = (z_last_border / z_total) * time + (z_cur_border / z_total) * last_time;
-        } else {
-            // Carrier left sensor on any order border, use last position inside instead
-            position = last_position;
-            time = last_time;
-        }
-    }
-    LOG(TRACE) << "Time: " << Units::display(time, {"ps", "ns"});
 }
 
 void TransientPropagationModule::finalize() {
