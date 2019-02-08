@@ -196,8 +196,8 @@ void TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
     // Continue propagation until the deposit is outside the sensor
     Eigen::Vector3d last_position = position;
     double last_time = 0;
-    while(detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position)) &&
-          runge_kutta.getTime() < integration_time_) {
+    bool within_sensor = true;
+    while(within_sensor && runge_kutta.getTime() < integration_time_) {
 
         // Save previous position and time
         last_position = position;
@@ -217,10 +217,24 @@ void TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         position += diffusion;
         runge_kutta.setValue(position);
 
+        // Check for overshooting outside the sensor and correct for it:
+        if(!detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
+            LOG(TRACE) << "Found position outside: "
+                       << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"});
+            // FIXME this simply changes the z coordinate to be within the sensor - maybe we can be more clever
+            if(model_->getSensorSize().z() / 2.0 - position.z() < 0) {
+                position = Eigen::Vector3d(position.x(), position.y(), model_->getSensorSize().z() / 2.0 - 1e-9);
+            } else if(position.z() - model_->getSensorSize().z() / 2.0 < 0) {
+                position = Eigen::Vector3d(position.x(), position.y(), -model_->getSensorSize().z() / 2.0 + 1e-9);
+            }
+            LOG(TRACE) << "New position: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"});
+            within_sensor = false;
+        }
+
         // Find the nearest pixel
         auto xpixel = static_cast<int>(std::round(position.x() / model_->getPixelSize().x()));
         auto ypixel = static_cast<int>(std::round(position.y() / model_->getPixelSize().y()));
-        LOG(TRACE) << "Transporting carriers below pixel "
+        LOG(TRACE) << "Moving carriers below pixel "
                    << Pixel::Index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel)) << " from "
                    << Units::display(static_cast<ROOT::Math::XYZPoint>(last_position), {"um", "mm"}) << " to "
                    << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"}) << ", "
