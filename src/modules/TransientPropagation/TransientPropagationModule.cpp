@@ -219,15 +219,16 @@ void TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
 
         // Check for overshooting outside the sensor and correct for it:
         if(!detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
-            LOG(TRACE) << "Found position outside: "
-                       << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"});
+            LOG(TRACE) << "Position outside sensor: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
             // FIXME this simply changes the z coordinate to be within the sensor - maybe we can be more clever
-            if(model_->getSensorSize().z() / 2.0 - position.z() < 0) {
-                position = Eigen::Vector3d(position.x(), position.y(), model_->getSensorSize().z() / 2.0 - 1e-9);
-            } else if(position.z() - model_->getSensorSize().z() / 2.0 < 0) {
-                position = Eigen::Vector3d(position.x(), position.y(), -model_->getSensorSize().z() / 2.0 + 1e-9);
+            if(position.z() - model_->getSensorSize().z() / 2.0 > 1e-9) {
+                position = Eigen::Vector3d(position.x(), position.y(), model_->getSensorSize().z() / 2.0 - 1e-4);
+            } else if(position.z() + model_->getSensorSize().z() / 2.0 < -1e-9) {
+                position = Eigen::Vector3d(position.x(), position.y(), -model_->getSensorSize().z() / 2.0 + 1e-4);
             }
-            LOG(TRACE) << "New position: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"});
+            LOG(TRACE) << "Moved carrier to position: "
+                       << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
+
             within_sensor = false;
         }
 
