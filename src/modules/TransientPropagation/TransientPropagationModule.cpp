@@ -17,6 +17,8 @@
 
 #include <Eigen/Core>
 
+#include <TGraph.h>
+
 #include "core/utils/log.h"
 #include "objects/PixelCharge.hpp"
 #include "tools/runge_kutta.h"
@@ -42,13 +44,16 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     config_.setDefault<double>("integration_time", Units::get(25, "ns"));
     config_.setDefault<unsigned int>("charge_per_step", 10);
     config_.setDefault<double>("temperature", 293.15);
-    config_.setDefault<bool>("output_plots", false);
+    config_.setDefault<bool>("output_pulsegraphs", false);
+    config_.setDefault<bool>("output_plots", config_.get<bool>("output_pulsegraphs"));
 
     // Copy some variables from configuration to avoid lookups:
     temperature_ = config_.get<double>("temperature");
     timestep_ = config_.get<double>("timestep");
     integration_time_ = config_.get<double>("integration_time");
+
     output_plots_ = config_.get<bool>("output_plots");
+    output_pulsegraphs_ = config_.get<bool>("output_pulsegraphs");
 
     // Parameterization variables from https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2)
     electron_Vm_ = Units::get(1.53e9 * std::pow(temperature_, -0.87), "cm/s");
@@ -77,24 +82,24 @@ void TransientPropagationModule::init() {
 
     if(output_plots_) {
         induced_charge_histo_ = new TH1D("induced_charge_histo",
-                                         "Induced charge per time;Drift time [ns];charge [e]",
+                                         "Induced charge per time, all pixels;Drift time [ns];charge [e]",
                                          static_cast<int>(integration_time_ / timestep_),
                                          0,
                                          static_cast<double>(Units::convert(integration_time_, "ns")));
         induced_charge_e_histo_ = new TH1D("induced_charge_e_histo",
-                                           "Induced charge per time;Drift time [ns];charge [e]",
+                                           "Induced charge per time, electrons only, all pixels;Drift time [ns];charge [e]",
                                            static_cast<int>(integration_time_ / timestep_),
                                            0,
                                            static_cast<double>(Units::convert(integration_time_, "ns")));
         induced_charge_h_histo_ = new TH1D("induced_charge_h_histo",
-                                           "Induced charge per time;Drift time [ns];charge [e]",
+                                           "Induced charge per time, holes only, all pixels;Drift time [ns];charge [e]",
                                            static_cast<int>(integration_time_ / timestep_),
                                            0,
                                            static_cast<double>(Units::convert(integration_time_, "ns")));
     }
 }
 
-void TransientPropagationModule::run(unsigned int) {
+void TransientPropagationModule::run(unsigned int event_num) {
 
     // Create map for all pixels
     std::map<Pixel::Index, Pulse> pixel_map;
@@ -129,6 +134,29 @@ void TransientPropagationModule::run(unsigned int) {
     // Create vector of pixel pulses to return for this detector
     std::vector<PixelCharge> pixel_charges;
     for(auto& pixel_index_pulse : pixel_map) {
+
+        // Fill a graphs with the individual pixel pulses:
+        if(output_pulsegraphs_) {
+            auto index = pixel_index_pulse.first;
+            auto pulse = pixel_index_pulse.second.getPulse();
+            std::string name =
+                "pulse_px" + std::to_string(index.x()) + "-" + std::to_string(index.y()) + "_" + std::to_string(event_num);
+
+            // Generate x-axis:
+            std::vector<double> time(pulse.size());
+            std::generate(time.begin(), time.end(), [n = 0.0, step = timestep_]() mutable { return n += step; });
+
+            TGraph* pulse_graph = new TGraph(static_cast<int>(pulse.size()), &time[0], &pulse[0]);
+            pulse_graph->GetXaxis()->SetTitle("t [ns]");
+            pulse_graph->GetYaxis()->SetTitle("Q_{ind} [e]");
+            pulse_graph->SetTitle(("Induced charge in pixel (" + std::to_string(index.x()) + "," +
+                                   std::to_string(index.y()) +
+                                   "), Q_{tot} = " + std::to_string(pixel_index_pulse.second.getCharge()) + " e")
+                                      .c_str());
+            pulse_graph->Write(name.c_str());
+        }
+
+        // Store the pulse:
         pixel_charges.emplace_back(detector_->getPixel(pixel_index_pulse.first), std::move(pixel_index_pulse.second));
     }
 
@@ -268,13 +296,11 @@ void TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                 // Store induced charge in the respective pixel pulse:
                 pixel_map[pixel_index].addCharge(induced, runge_kutta.getTime());
 
-                if(output_plots_ && x == 0 && y == 0) {
-                    induced_charge_histo_->Fill(runge_kutta.getTime(), induced);
-                    if(type == CarrierType::ELECTRON) {
-                        induced_charge_e_histo_->Fill(runge_kutta.getTime(), induced);
-                    } else {
-                        induced_charge_h_histo_->Fill(runge_kutta.getTime(), induced);
-                    }
+                induced_charge_histo_->Fill(runge_kutta.getTime(), induced);
+                if(type == CarrierType::ELECTRON) {
+                    induced_charge_e_histo_->Fill(runge_kutta.getTime(), induced);
+                } else {
+                    induced_charge_h_histo_->Fill(runge_kutta.getTime(), induced);
                 }
             }
         }

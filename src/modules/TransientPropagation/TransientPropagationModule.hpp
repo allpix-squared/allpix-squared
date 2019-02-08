@@ -80,7 +80,7 @@ namespace allpix {
 
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_{}, integration_time_{};
-        bool output_plots_{};
+        bool output_plots_{}, output_pulsegraphs_{};
 
         // Precalculated values for electron and hole mobility
         double electron_Vm_;
