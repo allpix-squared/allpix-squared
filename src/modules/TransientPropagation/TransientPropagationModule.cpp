@@ -255,7 +255,7 @@ void TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                     detector_->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(last_position), pixel_index);
 
                 // Induced charge on electrode is q_int = q * (phi(x1) - phi(x0))
-                auto induced = charge * (ramo - last_ramo);
+                auto induced = charge * (ramo - last_ramo) * (-static_cast<std::underlying_type<CarrierType>::type>(type));
                 LOG(TRACE) << "Pixel " << pixel_index << " dPhi = " << (ramo - last_ramo) << ", induced " << type
                            << " q = " << Units::display(induced, "e");
 
