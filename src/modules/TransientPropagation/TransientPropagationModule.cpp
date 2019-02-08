@@ -144,9 +144,9 @@ void TransientPropagationModule::run(unsigned int event_num) {
 
             // Generate x-axis:
             std::vector<double> time(pulse.size());
-            std::generate(time.begin(), time.end(), [n = 0.0, step = timestep_]() mutable { return n += step; });
+            std::generate(time.begin(), time.end(), [ n = 0.0, step = timestep_ ]() mutable { return n += step; });
 
-            TGraph* pulse_graph = new TGraph(static_cast<int>(pulse.size()), &time[0], &pulse[0]);
+            auto pulse_graph = new TGraph(static_cast<int>(pulse.size()), &time[0], &pulse[0]);
             pulse_graph->GetXaxis()->SetTitle("t [ns]");
             pulse_graph->GetYaxis()->SetTitle("Q_{ind} [e]");
             pulse_graph->SetTitle(("Induced charge in pixel (" + std::to_string(index.x()) + "," +
