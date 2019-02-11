@@ -110,6 +110,17 @@ void TransientPropagationModule::init() {
                                            static_cast<int>(integration_time_ / timestep_),
                                            0,
                                            static_cast<double>(Units::convert(integration_time_, "ns")));
+        step_length_histo_ = new TH1D("step_length_histo",
+                                      "Step length;length [#mum];integration steps",
+                                      100,
+                                      0,
+                                      static_cast<double>(Units::convert(0.25 * model_->getSensorSize().z(), "um")));
+
+        drift_time_histo_ = new TH1D("drift_time_histo",
+                                     "Drift time;Drift time [ns];charge carriers",
+                                     static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                     0,
+                                     static_cast<double>(Units::convert(integration_time_, "ns")));
     }
 }
 
@@ -141,8 +152,12 @@ void TransientPropagationModule::run(unsigned int event_num) {
             auto position = deposit.getLocalPosition();
 
             // Propagate a single charge deposit
-            propagate(position, deposit.getType(), charge_per_step, pixel_map);
+            auto prop_pair = propagate(position, deposit.getType(), charge_per_step, pixel_map);
             LOG(DEBUG) << " Propagated " << charge_per_step << " from " << Units::display(position, {"mm", "um"});
+
+            if(output_plots_) {
+                drift_time_histo_->Fill(static_cast<double>(Units::convert(prop_pair.second, "ns")), charge_per_step);
+            }
         }
     }
 
@@ -190,10 +205,10 @@ void TransientPropagationModule::run(unsigned int event_num) {
  * velocity at every point with help of the electric field map of the detector. A Runge-Kutta integration is applied in
  * multiple steps, adding a random diffusion to the propagating charge every step.
  */
-void TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
-                                           const CarrierType& type,
-                                           const unsigned int charge,
-                                           std::map<Pixel::Index, Pulse>& pixel_map) {
+std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
+                                                                              const CarrierType& type,
+                                                                              const unsigned int charge,
+                                                                              std::map<Pixel::Index, Pulse>& pixel_map) {
 
     // Create a runge kutta solver using the electric field as step function
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
@@ -247,7 +262,7 @@ void TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         last_position = position;
 
         // Execute a Runge Kutta step
-        runge_kutta.step();
+        auto step = runge_kutta.step();
 
         // Get the current result
         position = runge_kutta.getValue();
@@ -259,6 +274,11 @@ void TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         auto diffusion = carrier_diffusion(std::sqrt(efield.Mag2()), timestep_);
         position += diffusion;
         runge_kutta.setValue(position);
+
+        // Update step length histogram
+        if(output_plots_) {
+            step_length_histo_->Fill(static_cast<double>(Units::convert(step.value.norm(), "um")));
+        }
 
         // Check for overshooting outside the sensor and correct for it:
         if(!detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
@@ -323,11 +343,16 @@ void TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
             }
         }
     }
+
+    // Return the final position of the propagated charge
+    return std::make_pair(static_cast<ROOT::Math::XYZPoint>(position), runge_kutta.getTime());
 }
 
 void TransientPropagationModule::finalize() {
     if(output_plots_) {
         potential_difference_->Write();
+        step_length_histo_->Write();
+        drift_time_histo_->Write();
         induced_charge_histo_->Write();
         induced_charge_e_histo_->Write();
         induced_charge_h_histo_->Write();

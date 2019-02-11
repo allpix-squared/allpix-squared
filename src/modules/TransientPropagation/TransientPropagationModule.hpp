@@ -71,10 +71,10 @@ namespace allpix {
          * @param type Type of the carrier to propagate
          * @return Pair of the point where the deposit ended after propagation and the time the propagation took
          */
-        void propagate(const ROOT::Math::XYZPoint& pos,
-                       const CarrierType& type,
-                       const unsigned int charge,
-                       std::map<Pixel::Index, Pulse>& pixel_map);
+        std::pair<ROOT::Math::XYZPoint, double> propagate(const ROOT::Math::XYZPoint& pos,
+                                                          const CarrierType& type,
+                                                          const unsigned int charge,
+                                                          std::map<Pixel::Index, Pulse>& pixel_map);
 
         // Random generator for this module
         std::mt19937_64 random_generator_;
@@ -97,5 +97,7 @@ namespace allpix {
 
         // Output plots
         TH1D *potential_difference_, *induced_charge_histo_, *induced_charge_e_histo_, *induced_charge_h_histo_;
+        TH1D* step_length_histo_;
+        TH1D* drift_time_histo_;
     };
 } // namespace allpix
