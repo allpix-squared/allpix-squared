@@ -37,7 +37,14 @@ It should be noted that generating per-pixel pulses will generate several pulse 
 
 
 #### Usage
-*Example how to use this module*
+```toml
+[TransientPropagation]
+temperature = 293K
+charge_per_step = 10
+output_plots = true
+output_pulsegraphs = false
+timestep = 0.02ns
+```
 
 [@jacoboni]: https://doi.org/10.1016/0038-1101(77)90054-5
 [@fehlberg]: https://ntrs.nasa.gov/search.jsp?R=19690021375
