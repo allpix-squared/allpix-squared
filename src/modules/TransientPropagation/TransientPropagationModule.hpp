@@ -13,6 +13,7 @@
 
 #include <string>
 
+#include <Math/DisplacementVector2D.h>
 #include <Math/Point3D.h>
 #include <TH1D.h>
 
@@ -81,6 +82,7 @@ namespace allpix {
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_{}, integration_time_{};
         bool output_plots_{}, output_pulsegraphs_{};
+        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> matrix_;
 
         // Precalculated values for electron and hole mobility
         double electron_Vm_;

@@ -24,11 +24,13 @@
 #include "tools/runge_kutta.h"
 
 using namespace allpix;
+using namespace ROOT::Math;
 
 TransientPropagationModule::TransientPropagationModule(Configuration& config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
     : Module(config, detector), detector_(std::move(detector)), messenger_(messenger) {
+    using XYVectorInt = DisplacementVector2D<Cartesian2D<int>>;
 
     // Save detector model
     model_ = detector_->getModel();
@@ -46,11 +48,17 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     config_.setDefault<double>("temperature", 293.15);
     config_.setDefault<bool>("output_pulsegraphs", false);
     config_.setDefault<bool>("output_plots", config_.get<bool>("output_pulsegraphs"));
+    config_.setDefault<XYVectorInt>("induction_matrix", XYVectorInt(3, 3));
 
     // Copy some variables from configuration to avoid lookups:
     temperature_ = config_.get<double>("temperature");
     timestep_ = config_.get<double>("timestep");
     integration_time_ = config_.get<double>("integration_time");
+    matrix_ = config_.get<XYVectorInt>("induction_matrix");
+
+    if(matrix_.x() % 2 == 0 || matrix_.y() % 2 == 0) {
+        throw InvalidValueError(config_, "induction_matrix", "Odd number of pixels in x and y required.");
+    }
 
     output_plots_ = config_.get<bool>("output_plots");
     output_pulsegraphs_ = config_.get<bool>("output_pulsegraphs");
@@ -273,8 +281,8 @@ void TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                    << Units::display(runge_kutta.getTime(), "ns");
 
         // Loop over NxN pixels:
-        for(int x = xpixel - 1; x <= xpixel + 1; x++) {
-            for(int y = ypixel - 1; y <= ypixel + 1; y++) {
+        for(int x = xpixel - matrix_.x() / 2; x <= xpixel + matrix_.x() / 2; x++) {
+            for(int y = ypixel - matrix_.y() / 2; y <= ypixel + matrix_.y() / 2; y++) {
                 // Ignore if out of pixel grid
                 if(x < 0 || x >= model_->getNPixels().x() || y < 0 || y >= model_->getNPixels().y()) {
                     LOG(TRACE) << "Pixel (" << x << "," << y << ") skipped, outside the grid";
