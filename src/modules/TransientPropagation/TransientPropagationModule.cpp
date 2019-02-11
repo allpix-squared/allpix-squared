@@ -117,6 +117,7 @@ void TransientPropagationModule::run(unsigned int event_num) {
 
     // Create map for all pixels
     std::map<Pixel::Index, Pulse> pixel_map;
+    Pulse total_pulse(integration_time_, timestep_);
 
     // Loop over all deposits for propagation
     LOG(TRACE) << "Propagating charges in sensor";
@@ -148,6 +149,7 @@ void TransientPropagationModule::run(unsigned int event_num) {
     // Create vector of pixel pulses to return for this detector
     std::vector<PixelCharge> pixel_charges;
     for(auto& pixel_index_pulse : pixel_map) {
+        total_pulse += pixel_index_pulse.second;
 
         // Fill a graphs with the individual pixel pulses:
         if(output_pulsegraphs_) {
@@ -173,6 +175,8 @@ void TransientPropagationModule::run(unsigned int event_num) {
         // Store the pulse:
         pixel_charges.emplace_back(detector_->getPixel(pixel_index_pulse.first), std::move(pixel_index_pulse.second));
     }
+
+    LOG(INFO) << "Total charge induced on all pixels: " << Units::display(total_pulse.getCharge(), "e");
 
     // Create a new message with pixel pulses
     auto pixel_charge_message = std::make_shared<PixelChargeMessage>(std::move(pixel_charges), detector_);
