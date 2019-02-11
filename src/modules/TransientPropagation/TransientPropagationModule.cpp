@@ -81,6 +81,12 @@ void TransientPropagationModule::init() {
     }
 
     if(output_plots_) {
+        potential_difference_ =
+            new TH1D("potential_difference",
+                     "Weighting potential difference between two steps;#left|#Delta#phi_{w}#right| [a.u.];events",
+                     500,
+                     0,
+                     1);
         induced_charge_histo_ = new TH1D("induced_charge_histo",
                                          "Induced charge per time, all pixels;Drift time [ns];charge [e]",
                                          static_cast<int>(integration_time_ / timestep_),
@@ -293,11 +299,14 @@ void TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                 // Store induced charge in the respective pixel pulse:
                 pixel_map[pixel_index].addCharge(induced, runge_kutta.getTime());
 
-                induced_charge_histo_->Fill(runge_kutta.getTime(), induced);
-                if(type == CarrierType::ELECTRON) {
-                    induced_charge_e_histo_->Fill(runge_kutta.getTime(), induced);
-                } else {
-                    induced_charge_h_histo_->Fill(runge_kutta.getTime(), induced);
+                if(output_plots_) {
+                    potential_difference_->Fill(std::fabs(ramo - last_ramo));
+                    induced_charge_histo_->Fill(runge_kutta.getTime(), induced);
+                    if(type == CarrierType::ELECTRON) {
+                        induced_charge_e_histo_->Fill(runge_kutta.getTime(), induced);
+                    } else {
+                        induced_charge_h_histo_->Fill(runge_kutta.getTime(), induced);
+                    }
                 }
             }
         }
@@ -306,6 +315,7 @@ void TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
 
 void TransientPropagationModule::finalize() {
     if(output_plots_) {
+        potential_difference_->Write();
         induced_charge_histo_->Write();
         induced_charge_e_histo_->Write();
         induced_charge_h_histo_->Write();
