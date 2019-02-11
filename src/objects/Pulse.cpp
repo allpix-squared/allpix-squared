@@ -8,6 +8,9 @@
  */
 
 #include "Pulse.hpp"
+#include "exceptions.h"
+
+#include <cmath>
 
 using namespace allpix;
 
@@ -36,4 +39,27 @@ unsigned int Pulse::getCharge() const {
 
 const std::vector<double>& Pulse::getPulse() const {
     return pulse_;
+}
+
+double Pulse::getBinning() const {
+    return bin_;
+}
+
+Pulse& Pulse::operator+=(const Pulse& rhs) {
+    auto rhs_pulse = rhs.getPulse();
+
+    if(this->getBinning() != rhs.getBinning()) {
+        throw IncompatibleDatatypesException(typeid(*this), typeid(rhs), "different time binning");
+    } else {
+        // If new pulse is longer, extend:
+        if(this->pulse_.size() < rhs_pulse.size()) {
+            this->pulse_.resize(rhs_pulse.size());
+        }
+
+        // Add up the individual bins:
+        for(size_t bin = 0; bin < rhs_pulse.size(); bin++) {
+            this->pulse_.at(bin) += rhs_pulse.at(bin);
+        }
+    }
+    return *this;
 }

@@ -10,9 +10,8 @@
 #ifndef ALLPIX_PULSE_H
 #define ALLPIX_PULSE_H
 
-#include <Math/DisplacementVector2D.h>
-#include <Math/Point3D.h>
-#include <Math/Vector2D.h>
+#include <vector>
+
 #include <TObject.h>
 
 namespace allpix {
@@ -51,6 +50,18 @@ namespace allpix {
          * @return Constant reference to the pulse vector
          */
         const std::vector<double>& getPulse() const;
+
+        /**
+         * @brief Function to retrieve time binning of pulse
+         * @return Width of one pulse bin in nanoseconds
+         */
+        double getBinning() const;
+
+        /**
+         * @brief compound assignment operator to sum different pulses
+         * @throws IncompatibleDatatypesException If the binning of the pulses does not match
+         */
+        Pulse& operator+=(const Pulse& rhs);
 
         /**
          * @brief Default constructor for ROOT I/O
