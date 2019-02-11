@@ -133,7 +133,12 @@ void DepositionPointChargeModule::DepositLine(unsigned int) {
     std::vector<DepositedCharge> charges;
     std::vector<MCParticle> mcparticles;
 
-    auto position = config_.get<ROOT::Math::XYZPoint>("position");
+    ROOT::Math::XYPoint position;
+    try {
+        position = config_.get<ROOT::Math::XYPoint>("position");
+    } catch(InvalidKeyError&) {
+        position = static_cast<ROOT::Math::XYPoint>(config_.get<ROOT::Math::XYZPoint>("position"));
+    }
 
     // Start and end position of MCParticle:
     auto start_local = ROOT::Math::XYZPoint(position.x(), position.y(), -model->getSensorSize().z() / 2.0);

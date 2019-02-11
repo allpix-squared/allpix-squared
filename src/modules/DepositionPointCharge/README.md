@@ -20,7 +20,7 @@ All charge carriers are deposited at time zero, i.e. at the beginning of the eve
 * `number_of_charges`: Number of charges to deposit inside the sensor. Defaults to 1. Only used for models `point` and `scan`.
 * `number_of_steps`: Number of steps over the full sensor thickness at which charge carriers are deposited. Only used for `mip` model. Defaults to 100.
 * `model`: Model according to which charge carriers are deposited. For `point`, charge carriers are deposited at a specific point for every event. For `scan`, the point where charge carriers are deposited changes for every event. For `mip`, charge carriers are deposited along a line through the full sensor thickness. Defaults to `point`.
-* `position`: Position in local coordinates of the sensor, where charge carriers should be deposited. Expects three values for local-x, local-y and local-z position in the sensor volume and defaults to `0um 0um 0um`, i.e. the center of first (lower left) pixel. Only used for the `point` and `mip` models, the latter only uses the x and y coordinates.
+* `position`: Position in local coordinates of the sensor, where charge carriers should be deposited. Expects three values for local-x, local-y and local-z position in the sensor volume and defaults to `0um 0um 0um`, i.e. the center of first (lower left) pixel. Only used for the `point` and `mip` models, for the latter providing a 2D position is sufficient since it only uses the x and y coordinates.
 
 ### Usage
 
