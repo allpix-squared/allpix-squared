@@ -134,9 +134,9 @@ void DepositionPointChargeModule::DepositLine(unsigned int) {
     std::vector<MCParticle> mcparticles;
 
     ROOT::Math::XYPoint position;
-    try {
+    if(config_.getArray<double>("position").size() == 2) {
         position = config_.get<ROOT::Math::XYPoint>("position");
-    } catch(InvalidKeyError&) {
+    } else {
         position = static_cast<ROOT::Math::XYPoint>(config_.get<ROOT::Math::XYZPoint>("position"));
     }
 
