@@ -140,11 +140,11 @@ namespace allpix {
         template <std::size_t... I> auto get_impl(size_t offset, std::index_sequence<I...>) const;
 
         /**
-         * @brief Helper function to calculate the field index inside one pixel, look up the field values and return them
-         * @param  pos Position in local coordinates to look up the field for
-         * @return     Vlaue(s) of the field at the queried point
+         * @brief Helper function to calculate the field index based on the distance from its center and to return the values
+         * @param  dist Distance from the center of the field to obtain the values for, given in local coordinates
+         * @return     Value(s) of the field at the queried point
          */
-        T getFieldFromGrid(const ROOT::Math::XYZPoint& pos) const;
+        T getFieldFromGrid(const ROOT::Math::XYZPoint& dist) const;
 
         /**
          * Field properties

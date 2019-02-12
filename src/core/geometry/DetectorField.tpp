@@ -34,16 +34,18 @@ namespace allpix {
         return ret_val;
     }
 
-    template <typename T, size_t N> T DetectorField<T, N>::getFieldFromGrid(const ROOT::Math::XYZPoint& pos) const {
+    // Maps the field indices onto the range of -d/2 < x < d/2, where d is the scale of the field in coordinate x.
+    // This means, x = 0 is in the center of the field.
+    template <typename T, size_t N> T DetectorField<T, N>::getFieldFromGrid(const ROOT::Math::XYZPoint& dist) const {
         // Compute indices
         auto x_ind =
-            static_cast<int>(std::floor(static_cast<double>(dimensions_[0]) * (pos.x() + scales_[0] / 2.0) / scales_[0]));
+            static_cast<int>(std::floor(static_cast<double>(dimensions_[0]) * (dist.x() + scales_[0] / 2.0) / scales_[0]));
         auto y_ind =
-            static_cast<int>(std::floor(static_cast<double>(dimensions_[1]) * (pos.y() + scales_[1] / 2.0) / scales_[1]));
-        auto z_ind = static_cast<int>(std::floor(static_cast<double>(dimensions_[2]) * (pos.z() - thickness_domain_.first) /
+            static_cast<int>(std::floor(static_cast<double>(dimensions_[1]) * (dist.y() + scales_[1] / 2.0) / scales_[1]));
+        auto z_ind = static_cast<int>(std::floor(static_cast<double>(dimensions_[2]) * (dist.z() - thickness_domain_.first) /
                                                  (thickness_domain_.second - thickness_domain_.first)));
 
-        // Check for indices within the sensor
+        // Check for indices within the field map
         if(x_ind < 0 || x_ind >= static_cast<int>(dimensions_[0]) || y_ind < 0 ||
            y_ind >= static_cast<int>(dimensions_[1]) || z_ind < 0 || z_ind >= static_cast<int>(dimensions_[2])) {
             return {};
