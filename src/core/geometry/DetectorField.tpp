@@ -18,9 +18,7 @@ namespace allpix {
 
         T ret_val;
         if(type_ == FieldType::GRID) {
-            // Compute distance from origin of the field map:
-            // distance = scales_[0] / 2.0 - pos.x()
-            return {};
+            ret_val = getFieldFromGrid(ROOT::Math::XYZPoint(x, y, z));
         } else {
             // Check if inside the thickness domain
             if(z < thickness_domain_.first || thickness_domain_.second < z) {
