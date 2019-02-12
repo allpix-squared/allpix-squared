@@ -53,8 +53,12 @@ Detector::Detector(std::string name, ROOT::Math::XYZPoint position, const ROOT::
 
 void Detector::set_model(std::shared_ptr<DetectorModel> model) {
     model_ = std::move(model);
+
+    // Initialize the detector fields with the model parameters:
     electric_field_.set_model_parameters(model_->getSensorCenter(), model_->getSensorSize(), model_->getPixelSize());
+    weighting_potential_.set_model_parameters(model_->getSensorCenter(), model_->getSensorSize(), model_->getPixelSize());
     magnetic_field_on_ = false;
+
     build_transform();
 }
 void Detector::build_transform() {
