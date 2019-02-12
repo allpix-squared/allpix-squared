@@ -128,6 +128,7 @@ namespace allpix {
             sensor_center_ = sensor_center;
             sensor_size_ = sensor_size;
             pixel_size_ = pixel_pitch;
+            model_initialized_ = true;
         }
 
         /**
@@ -178,6 +179,7 @@ namespace allpix {
         ROOT::Math::XYVector pixel_size_{};
         ROOT::Math::XYZPoint sensor_center_{};
         ROOT::Math::XYZVector sensor_size_{};
+        bool model_initialized_{};
     };
 } // namespace allpix
 

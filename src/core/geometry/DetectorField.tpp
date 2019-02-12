@@ -132,6 +132,9 @@ namespace allpix {
                                       std::array<double, 2> scales,
                                       std::array<double, 2> offset,
                                       std::pair<double, double> thickness_domain) {
+        if(!model_initialized_) {
+            throw std::invalid_argument("field not initialized with detector model parameters");
+        }
         if(dimensions[0] * dimensions[1] * dimensions[2] * N != field->size()) {
             throw std::invalid_argument("field does not match the given dimensions");
         }
