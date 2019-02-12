@@ -182,6 +182,15 @@ FieldData<double> WeightingPotentialReaderModule::read_init_field(std::pair<doub
         // Get field from file
         auto field_data = field_parser_.get_by_file_name(config_.getPath("file_name", true));
 
+        // Check maximum/minimum values of the potential:
+        auto elements = std::minmax_element(std::get<0>(field_data)->begin(), std::get<0>(field_data)->end());
+        if(*elements.first < 0 || *elements.second > 1) {
+            throw InvalidValueError(config_,
+                                    "file_name",
+                                    "Unphysical weighting potential detected, found " + std::to_string(*elements.first) +
+                                        " < phi < " + std::to_string(*elements.second) + ", expected 0 < phi < 1");
+        }
+
         // Check if electric field matches chip
         check_detector_match(std::get<2>(field_data), thickness_domain);
 
