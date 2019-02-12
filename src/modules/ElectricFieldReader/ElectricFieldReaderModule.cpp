@@ -67,7 +67,7 @@ void ElectricFieldReaderModule::init() {
         auto scales = config_.get<ROOT::Math::XYVector>("field_scale", {1.0, 1.0});
         // FIXME Add sanity checks for scales here
         LOG(DEBUG) << "Electric field will be scaled with factors " << scales;
-        std::array<double, 2> field_scale{{scales.x(), scales.y()}};
+        std::array<double, 2> field_scale{{model->getPixelSize().x() * scales.x(), model->getPixelSize().y() * scales.y()}};
 
         // Get the field offset in fractions of the pixel pitch, default is 0.0x0.0, i.e. starting at pixel boundary:
         auto offset = config_.get<ROOT::Math::XYVector>("field_offset", {0.0, 0.0});
@@ -76,7 +76,7 @@ void ElectricFieldReaderModule::init() {
                 config_, "field_offset", "shifting electric field by more than one pixel (offset > 1.0) is not allowed");
         }
         LOG(DEBUG) << "Electric field starts with offset " << offset << " to pixel boundary";
-        std::array<double, 2> field_offset{{offset.x(), offset.y()}};
+        std::array<double, 2> field_offset{{model->getPixelSize().x() * offset.x(), model->getPixelSize().y() * offset.y()}};
 
         auto field_data = read_init_field(thickness_domain, field_scale);
 

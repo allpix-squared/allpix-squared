@@ -145,10 +145,8 @@ namespace allpix {
 
         field_ = std::move(field);
         dimensions_ = dimensions;
-
-        // Precalculate the offset and scale of the field relative to the pixel pitch:
-        scales_ = std::array<double, 2>{{pixel_size_.x() * scales[0], pixel_size_.y() * scales[1]}};
-        offset_ = std::array<double, 2>{{pixel_size_.x() * offset[0], pixel_size_.y() * offset[1]}};
+        scales_ = scales;
+        offset_ = offset;
 
         thickness_domain_ = std::move(thickness_domain);
         type_ = FieldType::GRID;

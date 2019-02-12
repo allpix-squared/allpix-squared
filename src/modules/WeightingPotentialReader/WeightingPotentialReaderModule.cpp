@@ -47,10 +47,8 @@ void WeightingPotentialReaderModule::init() {
     if(field_model == "init") {
         auto field_data = read_init_field(thickness_domain);
 
-        // Calculate scale from field size and pixel pitch:
-        auto pixel_size = model->getPixelSize();
-        std::array<double, 2> field_scale{
-            {std::get<2>(field_data)[0] / pixel_size.x(), std::get<2>(field_data)[1] / pixel_size.y()}};
+        // Get field scale from physical size read form the field data:
+        std::array<double, 2> field_scale{{std::get<2>(field_data)[0], std::get<2>(field_data)[1]}};
 
         detector_->setWeightingPotentialGrid(
             std::get<0>(field_data), std::get<1>(field_data), field_scale, std::array<double, 2>{{0, 0}}, thickness_domain);
