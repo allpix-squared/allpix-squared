@@ -1,6 +1,6 @@
 # WeightingPotentialReader
-**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)
-**Status**: Development
+**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)  
+**Status**: Functional
 
 ### Description
 Adds a weighting potential (Ramo potential) to the detector from one of the supported sources. By default, detectors do not have a weighting potential applied.
@@ -9,7 +9,9 @@ This module support two types of weighting potentials.
 #### Weighting potential of a pad
 
 When setting the **pad** model, the weighting potential of a pixel in a plane condenser is calculated numerically from first principles, following the procedure described in detail in [@planecondenser].
-The weighting potential via Green's reciprocity theorem, the integral part of the expression are ignored.
+It should be noted that this calculation is comparatively **slow and takes about a factor 100 longer** than a lookup from a pre-calculated field map.
+
+The weighting potential is calculated via Green's reciprocity theorem, the integral part of the expression are ignored.
 In [@planecondenser] it has been shown that the uncertainty on the weighting potential is smaller than
 
 $`| \Delta \phi_w | < \frac{V_w}{8\pi} \frac{w_x w_y}{d^2} \frac{1}{N^2} \frac{z}{d}`$,
@@ -30,7 +32,7 @@ with $`x_{1,2} = x \pm \frac{w_x}{2} \qquad y_{1,2} = y \pm \frac{w_y}{2}`$. The
 
 Using the **init** model of this module allows reading in from a file in the INIT format, e.g. from an electrostatic TCAD simulation.
 A converter tool for fields from adaptive TCAD meshes is provided with the framework.
-The map is expected to be symmetric around the reference pixel the weighting potential is calculated for.
+The map is expected to be symmetric around the reference pixel the weighting potential is calculated for, the size of the field is taken from the INIT file header.
 
 A warning is printed if the size does not correspond to a multiple of the pixel size.
 While this is not a problem in general, it might hint at a wrong potential map being used.
