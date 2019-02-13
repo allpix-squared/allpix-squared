@@ -339,6 +339,15 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(co
                 LOG(TRACE) << "Pixel " << pixel_index << " dPhi = " << (ramo - last_ramo) << ", induced " << type
                            << " q = " << Units::display(induced, "e");
 
+                // We require a smooth weighting potential, i.e. differences > 0.9 are unphysical and are ignored.
+                // They are numerical artifacts from charge carriers crossing the sensor boundary
+                if(std::fabs(ramo - last_ramo) > 0.9) {
+                    LOG(INFO) << "Potential difference of " << (ramo - last_ramo) << " when moving " << type << " from "
+                              << Units::display(static_cast<ROOT::Math::XYZPoint>(last_position), {"um", "mm"}) << " to "
+                              << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"}) << ", skipping";
+                    continue;
+                }
+
                 // Check if this pulse exists already:
                 if(pixel_map.find(pixel_index) == pixel_map.end()) {
                     pixel_map[pixel_index] = Pulse(integration_time_, timestep_);
