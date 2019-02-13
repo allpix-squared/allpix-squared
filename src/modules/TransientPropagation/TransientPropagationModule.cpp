@@ -282,17 +282,33 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(co
 
         // Check for overshooting outside the sensor and correct for it:
         if(!detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
-            LOG(TRACE) << "Position outside sensor: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
-            // FIXME this simply changes the z coordinate to be within the sensor - maybe we can be more clever
-            if(position.z() - model_->getSensorSize().z() / 2.0 > 1e-9) {
-                position = Eigen::Vector3d(position.x(), position.y(), model_->getSensorSize().z() / 2.0 - 1e-4);
-            } else if(position.z() + model_->getSensorSize().z() / 2.0 < -1e-9) {
-                position = Eigen::Vector3d(position.x(), position.y(), -model_->getSensorSize().z() / 2.0 + 1e-4);
-            }
-            LOG(TRACE) << "Moved carrier to position: "
-                       << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
+            LOG(TRACE) << "Carrier outside sensor: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
+            // within_sensor = false;
 
-            within_sensor = false;
+            auto check_position = position;
+            check_position.z() = last_position.z();
+            // Correct for position in z by interpolation to increase precision:
+            if(detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(check_position))) {
+                // FIXME this currently depends in the direction of the drift
+                if(position.z() > 0 && type == CarrierType::HOLE) {
+                    LOG(WARNING) << "Not stopping carrier " << type << " at "
+                                 << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um"});
+                } else if(position.z() < 0 && type == CarrierType::ELECTRON) {
+                    LOG(WARNING) << "Not stopping carrier " << type << " at "
+                                 << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um"});
+                } else {
+                    within_sensor = false;
+                }
+
+                // Carrier left sensor on top or bottom surface, interpolate
+                auto z_cur_border = std::fabs(position.z() - model_->getSensorSize().z() / 2.0) + 1e-9;
+                auto z_last_border = std::fabs(model_->getSensorSize().z() / 2.0 - last_position.z()) - 1e-9;
+                auto z_total = z_cur_border + z_last_border;
+                position = (z_last_border / z_total) * position + (z_cur_border / z_total) * last_position;
+                LOG(TRACE) << "Moved carrier to: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
+            } else {
+                within_sensor = false;
+            }
         }
 
         // Find the nearest pixel
