@@ -153,7 +153,8 @@ void TransientPropagationModule::run(unsigned int event_num) {
 
             // Propagate a single charge deposit
             auto prop_pair = propagate(position, deposit.getType(), charge_per_step, pixel_map);
-            LOG(DEBUG) << " Propagated " << charge_per_step << " from " << Units::display(position, {"mm", "um"});
+            LOG(DEBUG) << " Propagated " << charge_per_step << " from " << Units::display(position, {"mm", "um"}) << " to "
+                       << Units::display(prop_pair.first, {"mm", "um"});
 
             if(output_plots_) {
                 drift_time_histo_->Fill(static_cast<double>(Units::convert(prop_pair.second, "ns")), charge_per_step);
@@ -344,7 +345,8 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(co
                 if(std::fabs(ramo - last_ramo) > 0.9) {
                     LOG(INFO) << "Potential difference of " << (ramo - last_ramo) << " when moving " << type << " from "
                               << Units::display(static_cast<ROOT::Math::XYZPoint>(last_position), {"um", "mm"}) << " to "
-                              << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"}) << ", skipping";
+                              << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"})
+                              << ", skipping calculation of current.";
                     continue;
                 }
 
