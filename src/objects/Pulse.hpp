@@ -43,7 +43,7 @@ namespace allpix {
          * @brief Function to retrieve the integral (net) charge from the full pulse
          * @return Integrated charge
          */
-        unsigned int getCharge() const;
+        int getCharge() const;
 
         /**
          * @brief Function to retrieve the full pulse shape

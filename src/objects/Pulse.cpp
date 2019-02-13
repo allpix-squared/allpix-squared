@@ -29,12 +29,12 @@ void Pulse::addCharge(double charge, double time) {
     }
 }
 
-unsigned int Pulse::getCharge() const {
+int Pulse::getCharge() const {
     double charge = 0;
     for(auto& i : pulse_) {
         charge += i;
     }
-    return static_cast<unsigned int>(charge);
+    return static_cast<int>(charge);
 }
 
 const std::vector<double>& Pulse::getPulse() const {
