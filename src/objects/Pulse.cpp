@@ -34,7 +34,7 @@ int Pulse::getCharge() const {
     for(auto& i : pulse_) {
         charge += i;
     }
-    return static_cast<int>(charge);
+    return static_cast<int>(std::round(charge));
 }
 
 const std::vector<double>& Pulse::getPulse() const {
