@@ -188,6 +188,92 @@ namespace allpix {
         std::string units_;
         std::map<std::string, FieldData<T>> field_map_;
     };
+
+    template <typename T = double, int N = 3> class FieldWriter {
+    public:
+        FieldWriter(const std::string units) : units_(std::move(units)){};
+        ~FieldWriter() = default;
+
+        /**
+         * @brief Write the field to a file
+         */
+        void write_file(const FieldData<T>& field_data, const std::string& file_name, const FileType& file_type) {
+            auto dimensions = field_data.getDimensions();
+            if(field_data.getData()->size() != N * dimensions[0] * dimensions[1] * dimensions[2]) {
+                throw std::runtime_error("invalid field dimensions");
+            }
+
+            switch(file_type) {
+            case FileType::INIT:
+                write_init_file(field_data, file_name);
+                break;
+            case FileType::APF:
+                write_apf_file(field_data, file_name);
+                break;
+            default:
+                throw std::runtime_error("unknown file format");
+            }
+        }
+
+    private:
+        void write_apf_file(const FieldData<T>& field_data, const std::string& file_name) {
+            std::ofstream file(file_name, std::ios::binary);
+
+            // Write the file with cereal:
+            cereal::PortableBinaryOutputArchive archive(file);
+            archive(field_data);
+        }
+
+        void write_init_file(const FieldData<T>& field_data, const std::string& file_name) {
+            std::ofstream file(file_name);
+
+            LOG(TRACE) << "Writing INIT file \"" << file_name << "\"";
+
+            // Write INIT file header
+            file << field_data.getHeader() << std::endl;  // Header line
+            file << "##SEED## ##EVENTS##" << std::endl;   // Unused
+            file << "##TURN## ##TILT## 1.0" << std::endl; // Unused
+            file << "0.0 0.0 0.0" << std::endl;           // Magnetic field (unused)
+
+            auto size = field_data.getSize();
+            file << Units::convert(size[2], "um") << " " << Units::convert(size[0], "um") << " "
+                 << Units::convert(size[1], "um") << " "; // Field size: (z, x, y)
+            file << "0.0 0.0 0.0 0.0 ";                   // Unused
+
+            auto dimensions = field_data.getDimensions();
+            file << dimensions[0] << " " << dimensions[1] << " " << dimensions[2] << " "; // Field grid dimensions (x, y, z)
+            file << "0.0" << std::endl;                                                   // Unused
+
+            // Write the data block:
+            auto data = field_data.getData();
+            auto max_points = data->size() / N;
+
+            for(size_t xind = 0; xind < dimensions[0]; ++xind) {
+                for(size_t yind = 0; yind < dimensions[1]; ++yind) {
+                    for(size_t zind = 0; zind < dimensions[2]; ++zind) {
+                        // Write field point index
+                        file << xind + 1 << " " << yind + 1 << " " << zind + 1;
+
+                        // Vector or scalar field:
+                        for(size_t j = 0; j < N; j++) {
+                            file << " " << Units::convert(data->at(xind * dimensions[1] * dimensions[2] * N +
+                                                                   yind * dimensions[2] * N + zind * N + j),
+                                                          units_);
+                        }
+
+                        // End this line
+                        file << std::endl;
+                    }
+
+                    auto curr_point = xind * dimensions[1] * dimensions[2] + yind * dimensions[2];
+                    LOG_PROGRESS(INFO, "write_init") << "Writing field data: " << (100 * curr_point / max_points) << "%";
+                }
+            }
+            LOG_PROGRESS(INFO, "write_init") << "Writing field data: finished.";
+        }
+
+        std::string units_;
+    };
 } // namespace allpix
 
 #endif /* ALLPIX_FIELD_PARSER_H */
