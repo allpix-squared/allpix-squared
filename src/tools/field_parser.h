@@ -12,17 +12,53 @@
 
 #include <fstream>
 #include <iostream>
+#include <map>
+
+#include <cereal/types/array.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/types/string.hpp>
+#include <cereal/types/vector.hpp>
 
 namespace allpix {
 
     /**
-     * Three-dimensional field data with N components, containing
+     * Class to hold raw, three-dimensional field data with N components, containing
      * * The actual field data as shared pointer to vector
      * * An array specifying the number of bins in each dimension
      * * An array containing the physical extent of the field in each dimension, as specified in the file
      */
-    template <typename T = double>
-    using FieldData = std::tuple<std::shared_ptr<std::vector<T>>, std::array<size_t, 3>, std::array<T, 3>>;
+    template <typename T = double> class FieldData {
+    public:
+        FieldData() = default;
+        FieldData(std::string header,
+                  std::array<size_t, 3> dimensions,
+                  std::array<T, 3> size,
+                  std::shared_ptr<std::vector<T>> data)
+            : header_(header), dimensions_(dimensions), size_(size), data_(data){};
+
+        std::string getHeader() const { return header_; }
+
+        std::array<size_t, 3> getDimensions() const { return dimensions_; }
+
+        std::array<T, 3> getSize() const { return size_; }
+
+        std::shared_ptr<std::vector<T>> getData() const { return data_; }
+
+    private:
+        std::string header_;
+        std::array<size_t, 3> dimensions_{};
+        std::array<T, 3> size_{};
+        std::shared_ptr<std::vector<T>> data_;
+
+        friend class cereal::access;
+
+        template <class Archive> void serialize(Archive& archive) {
+            archive(header_);
+            archive(dimensions_);
+            archive(size_);
+            archive(data_);
+        }
+    };
 
     template <typename T = double, int N = 3> class FieldParser {
     public:
@@ -100,8 +136,8 @@ namespace allpix {
             }
             LOG_PROGRESS(INFO, "read_init") << "Reading field data: finished.";
 
-            FieldData<T> field_data = std::make_tuple(
-                field, std::array<size_t, 3>{{xsize, ysize, zsize}}, std::array<double, 3>{{xpixsz, ypixsz, thickness}});
+            FieldData<T> field_data(
+                header, std::array<size_t, 3>{{xsize, ysize, zsize}}, std::array<T, 3>{{xpixsz, ypixsz, thickness}}, field);
 
             // Store the parsed field data for further reference:
             field_map_[file_name] = field_data;
