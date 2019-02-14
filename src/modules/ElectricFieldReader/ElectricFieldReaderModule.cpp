@@ -144,7 +144,7 @@ ElectricFieldReaderModule::get_linear_field_function(double depletion_voltage, s
 FieldParser<double, 3> ElectricFieldReaderModule::field_parser_("V/cm");
 FieldData<double> ElectricFieldReaderModule::read_field(std::pair<double, double> thickness_domain,
                                                         std::array<double, 2> field_scale,
-                                                        std::string format) {
+                                                        const std::string& format) {
 
     FileType type = (format == "init" ? FileType::INIT : format == "apf" ? FileType::APF : FileType::UNKNOWN);
 
