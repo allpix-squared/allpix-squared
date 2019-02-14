@@ -81,7 +81,7 @@ void ElectricFieldReaderModule::init() {
         auto field_data = read_init_field(thickness_domain, field_scale);
 
         detector_->setElectricFieldGrid(
-            std::get<0>(field_data), std::get<1>(field_data), field_scale, field_offset, thickness_domain);
+            field_data.getData(), field_data.getDimensions(), field_scale, field_offset, thickness_domain);
     } else if(field_model == "constant") {
         LOG(TRACE) << "Adding constant electric field";
         type = FieldType::CONSTANT;
@@ -151,10 +151,10 @@ FieldData<double> ElectricFieldReaderModule::read_init_field(std::pair<double, d
         auto field_data = field_parser_.get_by_file_name(config_.getPath("file_name", true));
 
         // Check if electric field matches chip
-        check_detector_match(std::get<2>(field_data), thickness_domain, field_scale);
+        check_detector_match(field_data.getSize(), thickness_domain, field_scale);
 
-        LOG(INFO) << "Set electric field with " << std::get<1>(field_data).at(0) << "x" << std::get<1>(field_data).at(1)
-                  << "x" << std::get<1>(field_data).at(2) << " cells";
+        LOG(INFO) << "Set electric field with " << field_data.getDimensions().at(0) << "x"
+                  << field_data.getDimensions().at(1) << "x" << field_data.getDimensions().at(2) << " cells";
 
         // Return the field data
         return field_data;
