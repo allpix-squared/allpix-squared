@@ -62,7 +62,7 @@ void ElectricFieldReaderModule::init() {
     auto thickness_domain = std::make_pair(sensor_max_z - depletion_depth, sensor_max_z);
 
     // Calculate the field depending on the configuration
-    if(field_model == "init") {
+    if(field_model == "init" || field_model == "apf") {
         // Read the field scales from the configuration, defaulting to 1.0x1.0 pixel cell:
         auto scales = config_.get<ROOT::Math::XYVector>("field_scale", {1.0, 1.0});
         // FIXME Add sanity checks for scales here
@@ -78,7 +78,7 @@ void ElectricFieldReaderModule::init() {
         LOG(DEBUG) << "Electric field starts with offset " << offset << " to pixel boundary";
         std::array<double, 2> field_offset{{offset.x(), offset.y()}};
 
-        auto field_data = read_init_field(thickness_domain, field_scale);
+        auto field_data = read_field(thickness_domain, field_scale, field_model);
 
         detector_->setElectricFieldGrid(
             field_data.getData(), field_data.getDimensions(), field_scale, field_offset, thickness_domain);
@@ -142,13 +142,17 @@ ElectricFieldReaderModule::get_linear_field_function(double depletion_voltage, s
  * ElectricFieldReaderModuleget_by_file_name method.
  */
 FieldParser<double, 3> ElectricFieldReaderModule::field_parser_("V/cm");
-FieldData<double> ElectricFieldReaderModule::read_init_field(std::pair<double, double> thickness_domain,
-                                                             std::array<double, 2> field_scale) {
+FieldData<double> ElectricFieldReaderModule::read_field(std::pair<double, double> thickness_domain,
+                                                        std::array<double, 2> field_scale,
+                                                        std::string format) {
+
+    FileType type = (format == "init" ? FileType::INIT : format == "apf" ? FileType::APF : FileType::UNKNOWN);
+
     try {
         LOG(TRACE) << "Fetching electric field from init file";
 
         // Get field from file
-        auto field_data = field_parser_.get_by_file_name(config_.getPath("file_name", true));
+        auto field_data = field_parser_.get_by_file_name(config_.getPath("file_name", true), type);
 
         // Check if electric field matches chip
         check_detector_match(field_data.getSize(), thickness_domain, field_scale);
