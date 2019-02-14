@@ -14,12 +14,23 @@
 #include <iostream>
 #include <map>
 
+#include <cereal/archives/portable_binary.hpp>
+
 #include <cereal/types/array.hpp>
 #include <cereal/types/memory.hpp>
 #include <cereal/types/string.hpp>
 #include <cereal/types/vector.hpp>
 
 namespace allpix {
+
+    /**
+     * @brief Type of file formats
+     */
+    enum class FileType {
+        UNKNOWN = 0, ///< Unknown file format
+        INIT,        ///< Leagcy file format, values stored in plain-text ASCII
+        APF,         ///< Binary Allpix Squared format serialized using the cereal library
+    };
 
     /**
      * Class to hold raw, three-dimensional field data with N components, containing
@@ -37,11 +48,8 @@ namespace allpix {
             : header_(header), dimensions_(dimensions), size_(size), data_(data){};
 
         std::string getHeader() const { return header_; }
-
         std::array<size_t, 3> getDimensions() const { return dimensions_; }
-
         std::array<T, 3> getSize() const { return size_; }
-
         std::shared_ptr<std::vector<T>> getData() const { return data_; }
 
     private:
@@ -68,7 +76,7 @@ namespace allpix {
         /**
          * @brief Get the field from a file name, caching the result
          */
-        FieldData<T> get_by_file_name(const std::string& file_name) {
+        FieldData<T> get_by_file_name(const std::string& file_name, const FileType& file_type) {
             // Search in cache (NOTE: the path reached here is always a canonical name)
             auto iter = field_map_.find(file_name);
             if(iter != field_map_.end()) {
@@ -76,6 +84,37 @@ namespace allpix {
                 return iter->second;
             }
 
+            switch(file_type) {
+            case FileType::INIT:
+                return parse_init_file(file_name);
+            case FileType::APF:
+                return parse_apf_file(file_name);
+            default:
+                throw std::runtime_error("unknown file format");
+            }
+        }
+
+    private:
+        FieldData<T> parse_apf_file(const std::string& file_name) {
+            std::ifstream file(file_name, std::ios::binary);
+            FieldData<double> field_data;
+
+            // Parse the file with cereal, add manual scope to ensure flushing:
+            {
+                cereal::PortableBinaryInputArchive archive(file);
+                archive(field_data);
+            }
+
+            // Check that we have the right number of vector entries
+            auto dimensions = field_data.getDimensions();
+            if(field_data.getData()->size() != dimensions[0] * dimensions[1] * dimensions[2]) {
+                throw std::runtime_error("invalid data");
+            }
+
+            return field_data;
+        }
+
+        FieldData<T> parse_init_file(const std::string& file_name) {
             // Load file
             std::ifstream file(file_name);
             std::string header;
@@ -144,7 +183,6 @@ namespace allpix {
             return field_data;
         }
 
-    private:
         std::string units_;
         std::map<std::string, FieldData<T>> field_map_;
     };
