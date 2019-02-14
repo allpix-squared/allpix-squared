@@ -168,6 +168,7 @@ ADD_DEFINITIONS(-DALLPIX_MODEL_DIRECTORY="${MODEL_DIRECTORY}" -DALLPIX_MODEL_SUF
 
 # Always include sources from top directory
 INCLUDE_DIRECTORIES(src)
+INCLUDE_DIRECTORIES(SYSTEM src/tools)
 
 # Build objects library
 ADD_SUBDIRECTORY(src/objects)
