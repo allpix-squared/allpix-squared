@@ -14,6 +14,8 @@
 #include <iostream>
 #include <map>
 
+#include "core/utils/unit.h"
+
 #include <cereal/archives/portable_binary.hpp>
 
 #include <cereal/types/array.hpp>
@@ -107,7 +109,7 @@ namespace allpix {
 
             // Check that we have the right number of vector entries
             auto dimensions = field_data.getDimensions();
-            if(field_data.getData()->size() != dimensions[0] * dimensions[1] * dimensions[2]) {
+            if(field_data.getData()->size() != dimensions[0] * dimensions[1] * dimensions[2] * N) {
                 throw std::runtime_error("invalid data");
             }
 
