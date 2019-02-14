@@ -53,6 +53,7 @@
 #include <typeindex>
 #include "cereal/details/polymorphic_impl_fwd.hpp"
 #include "cereal/details/static_object.hpp"
+#include "cereal/details/util.hpp"
 #include "cereal/types/memory.hpp"
 #include "cereal/types/string.hpp"
 
@@ -586,9 +587,9 @@ namespace cereal {
 #ifdef _MSC_VER
                     savePolymorphicSharedPtr(
                         ar, ptr, ::cereal::traits::has_shared_from_this<T>::type()); // MSVC doesn't like typename here
-#else // not _MSC_VER
+#else                                                                                // not _MSC_VER
                     savePolymorphicSharedPtr(ar, ptr, typename ::cereal::traits::has_shared_from_this<T>::type());
-#endif // _MSC_VER
+#endif                                                                               // _MSC_VER
                 };
 
                 serializers.unique_ptr = [&](void* arptr, void const* dptr, std::type_info const& baseInfo) {
