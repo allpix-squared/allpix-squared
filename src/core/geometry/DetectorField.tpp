@@ -33,15 +33,19 @@ namespace allpix {
     }
 
     // Maps the field indices onto the range of -d/2 < x < d/2, where d is the scale of the field in coordinate x.
-    // This means, x = 0 is in the center of the field.
+    // This means, {x,y,z} = (0,0,0) is in the center of the field.
     template <typename T, size_t N> T DetectorField<T, N>::getFieldFromGrid(const ROOT::Math::XYZPoint& dist) const {
         // Compute indices
-        auto x_ind =
-            static_cast<int>(std::floor(static_cast<double>(dimensions_[0]) * (dist.x() + scales_[0] / 2.0) / scales_[0]));
-        auto y_ind =
-            static_cast<int>(std::floor(static_cast<double>(dimensions_[1]) * (dist.y() + scales_[1] / 2.0) / scales_[1]));
-        auto z_ind = static_cast<int>(std::floor(static_cast<double>(dimensions_[2]) * (dist.z() - thickness_domain_.first) /
-                                                 (thickness_domain_.second - thickness_domain_.first)));
+        // If the dimension in a certain direction is 1, the field is assumed to be 2-dimensional and the respective index
+        // is forced to zero. This circumvents that the field size in the respective dimension would otherwise be zero
+        auto x_ind = (dimensions_[0] == 1 ? 0 : static_cast<int>(std::floor(static_cast<double>(dimensions_[0]) *
+                                                                            (dist.x() + scales_[0] / 2.0) / scales_[0])));
+        auto y_ind = (dimensions_[1] == 1 ? 0 : static_cast<int>(std::floor(static_cast<double>(dimensions_[1]) *
+                                                                            (dist.y() + scales_[1] / 2.0) / scales_[1])));
+        auto z_ind =
+            (dimensions_[2] == 1 ? 0 : static_cast<int>(std::floor(static_cast<double>(dimensions_[2]) *
+                                                                   (dist.z() - thickness_domain_.first) /
+                                                                   (thickness_domain_.second - thickness_domain_.first))));
 
         // Check for indices within the field map
         if(x_ind < 0 || x_ind >= static_cast<int>(dimensions_[0]) || y_ind < 0 ||
