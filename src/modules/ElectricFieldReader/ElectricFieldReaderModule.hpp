@@ -60,7 +60,7 @@ namespace allpix {
          */
         FieldData<double>
         read_field(std::pair<double, double> thickness_domain, std::array<double, 2> field_scale, const std::string& format);
-        static FieldParser<double, 3> field_parser_;
+        static FieldParser<double> field_parser_;
 
         /**
          * @brief Create output plots of the electric field profile

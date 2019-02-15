@@ -26,6 +26,15 @@
 namespace allpix {
 
     /**
+     * @brief Field quantities
+     */
+    enum class FieldQuantity : size_t {
+        UNKNOWN = 0, ///< Unknown fiield quantity
+        SCALAR = 1,  ///< Scalar field, i.e. one entry per field position
+        VECTOR = 3,  ///< Vector field, i.e. three entries per field position
+    };
+
+    /**
      * @brief Type of file formats
      */
     enum class FileType {
@@ -70,9 +79,12 @@ namespace allpix {
         }
     };
 
-    template <typename T = double, int N = 3> class FieldParser {
+    template <typename T = double> class FieldParser {
     public:
-        FieldParser(const std::string units) : units_(std::move(units)){};
+        FieldParser(const FieldQuantity quantity, const std::string units) : units_(std::move(units)) {
+            // Store quantity: vector or scalar field:
+            N_ = static_cast<std::underlying_type<FieldQuantity>::type>(quantity);
+        };
         ~FieldParser() = default;
 
         /**
@@ -109,7 +121,7 @@ namespace allpix {
 
             // Check that we have the right number of vector entries
             auto dimensions = field_data.getDimensions();
-            if(field_data.getData()->size() != dimensions[0] * dimensions[1] * dimensions[2] * N) {
+            if(field_data.getData()->size() != dimensions[0] * dimensions[1] * dimensions[2] * N_) {
                 throw std::runtime_error("invalid data");
             }
 
@@ -143,7 +155,7 @@ namespace allpix {
             }
             auto field = std::make_shared<std::vector<double>>();
             auto vertices = xsize * ysize * zsize;
-            field->resize(vertices * N);
+            field->resize(vertices * N_);
 
             // Loop through all the field data
             for(size_t i = 0; i < vertices; ++i) {
@@ -167,12 +179,12 @@ namespace allpix {
                 zind--;
 
                 // Loop through components of field
-                for(size_t j = 0; j < N; ++j) {
+                for(size_t j = 0; j < N_; ++j) {
                     double input;
                     file >> input;
 
                     // Set the field at a position
-                    (*field)[xind * ysize * zsize * N + yind * zsize * N + zind * N + j] = Units::get(input, units_);
+                    (*field)[xind * ysize * zsize * N_ + yind * zsize * N_ + zind * N_ + j] = Units::get(input, units_);
                 }
             }
             LOG_PROGRESS(INFO, "read_init") << "Reading field data: finished.";
@@ -185,13 +197,17 @@ namespace allpix {
             return field_data;
         }
 
+        size_t N_;
         std::string units_;
         std::map<std::string, FieldData<T>> field_map_;
     };
 
-    template <typename T = double, int N = 3> class FieldWriter {
+    template <typename T = double> class FieldWriter {
     public:
-        FieldWriter(const std::string units) : units_(std::move(units)){};
+        FieldWriter(const FieldQuantity quantity, const std::string units) : units_(std::move(units)) {
+            // Store quantity: vector or scalar field:
+            N_ = static_cast<std::underlying_type<FieldQuantity>::type>(quantity);
+        };
         ~FieldWriter() = default;
 
         /**
@@ -199,7 +215,7 @@ namespace allpix {
          */
         void write_file(const FieldData<T>& field_data, const std::string& file_name, const FileType& file_type) {
             auto dimensions = field_data.getDimensions();
-            if(field_data.getData()->size() != N * dimensions[0] * dimensions[1] * dimensions[2]) {
+            if(field_data.getData()->size() != N_ * dimensions[0] * dimensions[1] * dimensions[2]) {
                 throw std::runtime_error("invalid field dimensions");
             }
 
@@ -246,7 +262,7 @@ namespace allpix {
 
             // Write the data block:
             auto data = field_data.getData();
-            auto max_points = data->size() / N;
+            auto max_points = data->size() / N_;
 
             for(size_t xind = 0; xind < dimensions[0]; ++xind) {
                 for(size_t yind = 0; yind < dimensions[1]; ++yind) {
@@ -255,9 +271,9 @@ namespace allpix {
                         file << xind + 1 << " " << yind + 1 << " " << zind + 1;
 
                         // Vector or scalar field:
-                        for(size_t j = 0; j < N; j++) {
-                            file << " " << Units::convert(data->at(xind * dimensions[1] * dimensions[2] * N +
-                                                                   yind * dimensions[2] * N + zind * N + j),
+                        for(size_t j = 0; j < N_; j++) {
+                            file << " " << Units::convert(data->at(xind * dimensions[1] * dimensions[2] * N_ +
+                                                                   yind * dimensions[2] * N_ + zind * N_ + j),
                                                           units_);
                         }
 
@@ -272,6 +288,7 @@ namespace allpix {
             LOG_PROGRESS(INFO, "write_init") << "Writing field data: finished.";
         }
 
+        size_t N_;
         std::string units_;
     };
 } // namespace allpix
