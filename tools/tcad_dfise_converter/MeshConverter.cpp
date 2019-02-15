@@ -27,6 +27,7 @@
 #include "core/config/exceptions.h"
 #include "core/utils/log.h"
 #include "tools/ROOT.h"
+#include "tools/add_units.h"
 #include "tools/field_parser.h"
 
 #include "DFISEParser.hpp"
@@ -102,6 +103,9 @@ int main(int argc, char** argv) {
     using XYVectorInt = DisplacementVector2D<Cartesian2D<int>>;
     using FileType = allpix::FileType;
     using FieldQuantity = allpix::FieldQuantity;
+
+    // Register the default set of units with this executable:
+    allpix::add_units();
 
     // If no arguments are provided, print the help:
     bool print_help = false;
