@@ -26,12 +26,6 @@ from matplotlib.colors import LinearSegmentedColormap
 #scipy
 from scipy import stats
 
-# root numpy imports if one wishes to convert the root files to pandas (need to install root_numpy)
-#import root_nmmpy
-#from root_nmmpy import root2array, tree2array
-#from root_nmmpy import testdata
-#from root_pandas import read_root
-
 gStyle.SetPalette(109)
 
 #load AP2 object library and open file, change below with appropriate paths and filename
