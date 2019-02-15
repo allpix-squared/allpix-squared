@@ -9,6 +9,10 @@
 #include "TH2.h"
 #include "TStyle.h"
 
+#include "core/utils/unit.h"
+#include "tools/field_parser.h"
+
+using namespace allpix;
 int main(int argc, char** argv) {
     // Set ROOT params
     gStyle->SetOptStat(0);
@@ -26,9 +30,8 @@ int main(int argc, char** argv) {
     std::string output_file_name;
     std::string output_name_log;
     std::string plane = "yz";
-    int slice_index = 0;
     bool flag_cut = false;
-    int slice_cut = 0;
+    size_t slice_cut = 0;
     bool log_scale = false;
     for(int i = 1; i < argc; i++) {
         if(strcmp(argv[i], "-h") == 0) {
@@ -40,7 +43,7 @@ int main(int argc, char** argv) {
         } else if(strcmp(argv[i], "-p") == 0 && (i + 1 < argc)) {
             plane = std::string(argv[++i]);
         } else if(strcmp(argv[i], "-c") == 0 && (i + 1 < argc)) {
-            slice_cut = std::atoi(argv[++i]);
+            slice_cut = static_cast<size_t>(std::atoi(argv[++i]));
             flag_cut = true;
         } else if(strcmp(argv[i], "-l") == 0) {
             log_scale = true;
@@ -59,7 +62,7 @@ int main(int argc, char** argv) {
     if(print_help) {
         std::cerr << "Usage: mesh_plotter -f <file_name> [<options>]" << std::endl;
         std::cout << "Required parameters:" << std::endl;
-        std::cout << "\t -f <file_name>         init file name" << std::endl;
+        std::cout << "\t -f <file_name>         name of the interpolated file in INIT or APF format" << std::endl;
         std::cout << "Optional parameters:" << std::endl;
         std::cout << "\t -c <cut>               projection height index (default is mesh_pitch / 2)" << std::endl;
         std::cout << "\t -h                     display this help text" << std::endl;
@@ -74,68 +77,59 @@ int main(int argc, char** argv) {
     std::cout << "Reading file: " << file_name;
 
     size_t firstindex = file_name.find_last_of('_');
-    size_t lastindex = file_name.find('.');
+    size_t lastindex = file_name.find_last_of('.');
     std::string observable = file_name.substr(firstindex + 1, lastindex - (firstindex + 1));
+    std::string extension = file_name.substr(lastindex + 1, file_name.size() - lastindex);
 
-    std::ifstream input_file;
-    input_file.open(file_name);
-    if(input_file.is_open() != false) {
-        std::cout << "  OK" << std::endl;
-    } else {
-        std::cout << "  FAILED" << std::endl;
-        return 1;
-    }
-    std::string header;
-    std::getline(input_file, header);
-    std::cout << "Header of file " << file_name << " is \"" << header << "\"" << std::endl;
+    // FIXME this should be done in a more elegant way
+    FieldQuantity quantity = (observable == "ElectricField" ? FieldQuantity::VECTOR : FieldQuantity::SCALAR);
+    FileType type = (extension == "apf" ? FileType::APF : FileType::INIT);
 
-    // Read the header
-    std::string tmp;
-    input_file >> tmp >> tmp;               // ignore the init seed and cluster length
-    input_file >> tmp >> tmp >> tmp;        // ignore the incident pion direction
-    input_file >> tmp >> tmp >> tmp;        // ignore the magnetic field (specify separately)
-    input_file >> tmp >> tmp >> tmp;        // ignore thickness, xpixsz, ypixsz;
-    input_file >> tmp >> tmp >> tmp >> tmp; // ignore temperature, flux, rhe (?) and new_drde (?)
-    int xdiv, ydiv, zdiv;
-    input_file >> xdiv >> ydiv >> zdiv;
-    input_file >> tmp;
+    FieldParser<double> field_parser(quantity, "");
+    auto field_data = field_parser.get_by_file_name(file_name, type);
+    size_t xdiv = field_data.getDimensions()[0], ydiv = field_data.getDimensions()[1], zdiv = field_data.getDimensions()[2];
 
     std::cout << "Number of divisions in x/y/z: " << xdiv << "/" << ydiv << "/" << zdiv << std::endl;
 
     // Find plotting indices
     int x_bin = 0;
     int y_bin = 0;
-    int x_bin_index = 0;
-    int y_bin_index = 0;
-    if(strcmp(plane.c_str(), "xy") == 0) {
-        x_bin = xdiv;
-        y_bin = ydiv;
+    size_t start_x = 0, start_y = 0, start_z = 0;
+    size_t stop_x = xdiv, stop_y = ydiv, stop_z = zdiv;
+    if(plane == "xy") {
         if(!flag_cut) {
-            slice_cut = static_cast<int>(std::ceil(0.5 * zdiv));
+            slice_cut = (zdiv + 1) / 2;
         }
-        x_bin_index = 0;
-        y_bin_index = 1;
-        slice_index = 2;
-    }
-    if(strcmp(plane.c_str(), "yz") == 0) {
-        x_bin = ydiv;
-        y_bin = zdiv;
+
+        // z is the slice:
+        start_z = slice_cut;
+        stop_z = start_z + 1;
+
+        // scale the plot axes:
+        x_bin = static_cast<int>(xdiv);
+        y_bin = static_cast<int>(ydiv);
+    } else if(plane == "yz") {
         if(!flag_cut) {
-            slice_cut = static_cast<int>(std::ceil(0.5 * xdiv));
+            slice_cut = (xdiv + 1) / 2;
         }
-        x_bin_index = 1;
-        y_bin_index = 2;
-        slice_index = 0;
-    }
-    if(strcmp(plane.c_str(), "zx") == 0) {
-        x_bin = zdiv;
-        y_bin = xdiv;
+
+        // x is the slice:
+        start_x = slice_cut;
+        stop_x = start_x + 1;
+
+        x_bin = static_cast<int>(ydiv);
+        y_bin = static_cast<int>(zdiv);
+    } else {
         if(!flag_cut) {
-            slice_cut = static_cast<int>(std::ceil(0.5 * ydiv));
+            slice_cut = (ydiv + 1) / 2;
         }
-        x_bin_index = 2;
-        y_bin_index = 0;
-        slice_index = 1;
+
+        // y is the slice:
+        start_y = slice_cut;
+        stop_y = start_y + 1;
+
+        x_bin = static_cast<int>(zdiv);
+        y_bin = static_cast<int>(xdiv);
     }
 
     // Create and fill histogram
@@ -173,29 +167,40 @@ int main(int argc, char** argv) {
         output_name_log = "_log";
     }
 
-    double dummy;
-    double vector[6];
-    int line = 1;
-    std::string file_line;
-    while(getline(input_file, file_line)) {
-        int p = 0;
-        if(line < 7) {
-            line++;
-            continue;
+    int plot_x, plot_y;
+    auto data = field_data.getData();
+    for(size_t x = start_x; x < stop_x; x++) {
+        for(size_t y = start_y; y < stop_y; y++) {
+            for(size_t z = start_z; z < stop_z; z++) {
+                // Select the indices for plotting:
+                if(plane == "xy") {
+                    plot_x = static_cast<int>(x);
+                    plot_y = static_cast<int>(y);
+                } else if(plane == "yz") {
+                    plot_x = static_cast<int>(y);
+                    plot_y = static_cast<int>(z);
+                } else {
+                    plot_x = static_cast<int>(z);
+                    plot_y = static_cast<int>(x);
+                }
+
+                if(quantity == FieldQuantity::VECTOR) {
+                    // Fill field maps for the individual vector components as well as the magnitude
+                    auto base = x * ydiv * zdiv * 3 + y * zdiv * 3 + z * 3;
+                    efield_map->Fill(
+                        plot_x,
+                        plot_y,
+                        sqrt(pow(data->at(base + 0), 2) + pow(data->at(base + 1), 2) + pow(data->at(base + 2), 2)));
+                    exfield_map->Fill(plot_x, plot_y, data->at(base + 0));
+                    eyfield_map->Fill(plot_x, plot_y, data->at(base + 1));
+                    ezfield_map->Fill(plot_x, plot_y, data->at(base + 2));
+
+                } else {
+                    // Fill one map with the scalar quantity
+                    efield_map->Fill(plot_x, plot_y, data->at(x * ydiv * zdiv + y * zdiv + z));
+                }
+            }
         }
-        std::stringstream mystream(file_line);
-        while(mystream >> dummy) {
-            vector[p] = dummy;
-            p++;
-        }
-        if(vector[slice_index] == slice_cut) {
-            efield_map->Fill(
-                vector[x_bin_index], vector[y_bin_index], sqrt(pow(vector[3], 2) + pow(vector[4], 2) + pow(vector[5], 2)));
-            exfield_map->Fill(vector[x_bin_index], vector[y_bin_index], vector[3]);
-            eyfield_map->Fill(vector[x_bin_index], vector[y_bin_index], vector[4]);
-            ezfield_map->Fill(vector[x_bin_index], vector[y_bin_index], vector[5]);
-        }
-        line++;
     }
 
     if(output_file_name.empty()) {
@@ -206,9 +211,13 @@ int main(int argc, char** argv) {
     std::string root_file_name = file_name.substr(0, lastindex);
     root_file_name = root_file_name + "_Interpolation_plots_" + plane + "_" + std::to_string(slice_cut) + ".root";
     auto* tf = new TFile(root_file_name.c_str(), "RECREATE");
-    exfield_map->Write(Form("%s X component", observable.c_str()));
-    eyfield_map->Write(Form("%s Y component", observable.c_str()));
-    ezfield_map->Write(Form("%s Z component", observable.c_str()));
+
+    if(quantity == FieldQuantity::VECTOR) {
+        exfield_map->Write(Form("%s X component", observable.c_str()));
+        eyfield_map->Write(Form("%s Y component", observable.c_str()));
+        ezfield_map->Write(Form("%s Z component", observable.c_str()));
+    }
+
     efield_map->Write(Form("%s Norm", observable.c_str()));
     c1->cd();
     efield_map->Draw("colz");

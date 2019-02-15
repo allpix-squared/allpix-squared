@@ -52,7 +52,12 @@ INSTALL(TARGETS mesh_converter
 
 
 # Add mesh_plotter executable
-ADD_EXECUTABLE(mesh_plotter MeshPlotter.cpp)
+ADD_EXECUTABLE(mesh_plotter
+    MeshPlotter.cpp
+    ${ALLPIX_SRC}/core/utils/log.cpp
+    ${ALLPIX_SRC}/core/utils/text.cpp
+    ${ALLPIX_SRC}/core/utils/unit.cpp
+)
 
 # Link libraries
 TARGET_LINK_LIBRARIES(mesh_plotter ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES})
