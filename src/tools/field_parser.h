@@ -14,6 +14,7 @@
 #include <iostream>
 #include <map>
 
+#include "core/utils/log.h"
 #include "core/utils/unit.h"
 
 #include <cereal/archives/portable_binary.hpp>
