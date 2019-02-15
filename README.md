@@ -86,6 +86,7 @@ The following authors, in alphabetical order, have contributed to Allpix<sup>2</
 * Maoqiang Jing, University of South China, Institute of High Energy Physics Beijing, @mjing
 * Moritz Kiehn, Université de Genève, @msmk
 * Salman Maqbool, CERN Summer Student, @smaqbool
+* Sebastien Murphy, ETHZ, @smurphy
 * Andreas Matthias Nürnberg, CERN, @nurnberg
 * Marko Petric, CERN, @mpetric
 * Edoardo Rossi, DESY, @edrossi
