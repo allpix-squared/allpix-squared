@@ -27,6 +27,7 @@
 #include "core/config/exceptions.h"
 #include "core/utils/log.h"
 #include "tools/ROOT.h"
+#include "tools/field_parser.h"
 
 #include "DFISEParser.hpp"
 #include "MeshElement.hpp"
@@ -99,6 +100,8 @@ void mesh_converter::mesh_plotter(const std::string& grid_file,
 int main(int argc, char** argv) {
     using XYZVectorInt = DisplacementVector3D<Cartesian3D<int>>;
     using XYVectorInt = DisplacementVector2D<Cartesian2D<int>>;
+    using FileType = allpix::FileType;
+    using FieldQuantity = allpix::FieldQuantity;
 
     // If no arguments are provided, print the help:
     bool print_help = false;
@@ -191,6 +194,10 @@ int main(int argc, char** argv) {
     std::ifstream file(conf_file_name);
     allpix::ConfigReader reader(file, conf_file_name);
     allpix::Configuration config = reader.getHeaderConfiguration();
+
+    std::string format = config.get<std::string>("model", "apf");
+    std::transform(format.begin(), format.end(), format.begin(), ::tolower);
+    FileType file_type = (format == "init" ? FileType::INIT : format == "apf" ? FileType::APF : FileType::UNKNOWN);
 
     std::string region = config.get<std::string>("region", "bulk");
     std::string observable = config.get<std::string>("observable", "ElectricField");
@@ -644,39 +651,38 @@ int main(int argc, char** argv) {
     elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
     LOG(INFO) << "New mesh created in " << elapsed_seconds << " seconds.";
 
-    std::ofstream init_file;
-    std::stringstream init_file_name;
-    init_file_name << init_file_prefix << "_" << observable << ".init";
-    init_file.open(init_file_name.str());
-    LOG(STATUS) << "Writing INIT file \"" << init_file_name.str() << "\"";
+    // Prepare header and auxiliary information:
+    std::string header =
+        "Allpix Squared " + std::string(ALLPIX_PROJECT_VERSION) + " TCAD Mesh Converter, observable: " + observable;
+    std::array<double, 3> size{{(maxx - minx), (maxy - miny), (maxz - minz)}};
+    std::array<size_t, 3> gridsize{
+        {static_cast<size_t>(divisions.x()), static_cast<size_t>(divisions.y()), static_cast<size_t>(divisions.z())}};
 
-    // Write INIT file h"eader
-    init_file << "Allpix Squared " << ALLPIX_PROJECT_VERSION << " TCAD Mesh Converter, "; // NAME
-    init_file << "observable: " << observable << std::endl;                               // OBSERVABLE INTERPOLATED
-    init_file << "##SEED## ##EVENTS##" << std::endl;                                      // UNUSED
-    init_file << "##TURN## ##TILT## 1.0" << std::endl;                                    // UNUSED
-    init_file << "0.0 0.0 0.0" << std::endl;                                              // MAGNETIC FIELD (UNUSED)
-    init_file << (maxz - minz) << " " << (maxx - minx) << " " << (maxy - miny) << " ";    // PIXEL DIMENSIONS
-    init_file << "0.0 0.0 0.0 0.0 ";                                                      // UNUSED
-    init_file << divisions.x() << " " << divisions.y() << " " << divisions.z() << " ";    // GRID SIZE
-    init_file << "0.0" << std::endl;                                                      // UNUSED
+    // FIXME this should be done in a more elegant way
+    FieldQuantity quantity = (observable == "ElectricField" ? FieldQuantity::VECTOR : FieldQuantity::SCALAR);
 
-    // Write INIT file data
-    long long max_points = static_cast<long long>(divisions.x()) * divisions.y() * divisions.z();
+    // Prepare data:
+    auto data = std::make_shared<std::vector<double>>();
     for(int i = 0; i < divisions.x(); ++i) {
         for(int j = 0; j < divisions.y(); ++j) {
             for(int k = 0; k < divisions.z(); ++k) {
                 auto& point =
                     e_field_new_mesh[static_cast<unsigned int>(i * divisions.y() * divisions.z() + j * divisions.z() + k)];
-                init_file << i + 1 << " " << j + 1 << " " << k + 1 << " " << point.x << " " << point.y << " " << point.z
-                          << std::endl;
+                data->push_back(point.x);
+                // For a vector field, we push three values:
+                if(quantity == FieldQuantity::VECTOR) {
+                    data->push_back(point.y);
+                    data->push_back(point.z);
+                }
             }
-            long long curr_point = static_cast<long long>(i) * divisions.y() * divisions.z() + j * divisions.z();
-            LOG_PROGRESS(INFO, "INIT") << "Writing to INIT file: " << (100 * curr_point / max_points) << "%";
         }
     }
-    init_file.close();
-    LOG_PROGRESS(INFO, "INIT") << "Writing to INIT file: done.";
+
+    allpix::FieldData<double> field_data(header, gridsize, size, data);
+    std::string init_file_name = init_file_prefix + "_" + observable + (file_type == FileType::INIT ? ".init" : ".apf");
+
+    allpix::FieldWriter<double> field_writer(quantity, "");
+    field_writer.write_file(field_data, init_file_name, file_type);
 
     end = std::chrono::system_clock::now();
     elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
