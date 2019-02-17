@@ -154,9 +154,13 @@ void TransientPropagationModule::run(unsigned int) {
                        << " in " << Units::display(prop_pair.second, "ns") << " time";
 
             // Create a new propagated charge and add it to the list
-            auto global_position = detector_->getGlobalPosition(position);
-            PropagatedCharge propagated_charge(
-                position, global_position, deposit.getType(), px_map, deposit.getEventTime() + prop_pair.second, &deposit);
+            auto global_position = detector_->getGlobalPosition(prop_pair.first);
+            PropagatedCharge propagated_charge(prop_pair.first,
+                                               global_position,
+                                               deposit.getType(),
+                                               px_map,
+                                               deposit.getEventTime() + prop_pair.second,
+                                               &deposit);
 
             propagated_charges.push_back(std::move(propagated_charge));
 
