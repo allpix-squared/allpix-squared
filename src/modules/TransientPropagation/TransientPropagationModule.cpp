@@ -170,24 +170,6 @@ void TransientPropagationModule::run(unsigned int) {
         }
     }
 
-    // Create map for all pixels
-    std::map<Pixel::Index, Pulse> pixel_map;
-    Pulse total_pulse;
-
-    for(const auto& prop : propagated_charges) {
-        auto pulses = prop.getPulses();
-        pixel_map =
-            std::accumulate(pulses.begin(), pulses.end(), pixel_map, [](std::map<Pixel::Index, Pulse>& m, const auto& p) {
-                return (m[p.first] += p.second, m);
-            });
-    }
-
-    for(auto& pixel_index_pulse : pixel_map) {
-        total_pulse += pixel_index_pulse.second;
-    }
-
-    LOG(INFO) << "Total charge induced on all pixels: " << Units::display(total_pulse.getCharge(), "e");
-
     // Create a new message with propagated charges
     auto propagated_charge_message = std::make_shared<PropagatedChargeMessage>(std::move(propagated_charges), detector_);
 
