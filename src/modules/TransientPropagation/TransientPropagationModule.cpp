@@ -21,6 +21,7 @@
 
 #include "core/utils/log.h"
 #include "objects/PixelCharge.hpp"
+#include "objects/PropagatedCharge.hpp"
 #include "tools/runge_kutta.h"
 
 using namespace allpix;
@@ -126,9 +127,8 @@ void TransientPropagationModule::init() {
 
 void TransientPropagationModule::run(unsigned int event_num) {
 
-    // Create map for all pixels
-    std::map<Pixel::Index, Pulse> pixel_map;
-    Pulse total_pulse(integration_time_, timestep_);
+    // Create vector of propagated charges to output
+    std::vector<PropagatedCharge> propagated_charges;
 
     // Loop over all deposits for propagation
     LOG(TRACE) << "Propagating charges in sensor";
@@ -152,9 +152,17 @@ void TransientPropagationModule::run(unsigned int event_num) {
             auto position = deposit.getLocalPosition();
 
             // Propagate a single charge deposit
-            auto prop_pair = propagate(position, deposit.getType(), charge_per_step, pixel_map);
-            LOG(DEBUG) << " Propagated " << charge_per_step << " from " << Units::display(position, {"mm", "um"}) << " to "
-                       << Units::display(prop_pair.first, {"mm", "um"});
+            std::map<Pixel::Index, Pulse> px_map;
+            auto prop_pair = propagate(position, deposit.getType(), charge_per_step, px_map);
+            LOG(DEBUG) << " Propagated " << charge_per_step << " to " << Units::display(prop_pair.first, {"mm", "um"})
+                       << " in " << Units::display(prop_pair.second, "ns") << " time";
+
+            // Create a new propagated charge and add it to the list
+            auto global_position = detector_->getGlobalPosition(position);
+            PropagatedCharge propagated_charge(
+                position, global_position, deposit.getType(), px_map, deposit.getEventTime() + prop_pair.second, &deposit);
+
+            propagated_charges.push_back(std::move(propagated_charge));
 
             if(output_plots_) {
                 drift_time_histo_->Fill(static_cast<double>(Units::convert(prop_pair.second, "ns")), charge_per_step);
@@ -162,8 +170,22 @@ void TransientPropagationModule::run(unsigned int event_num) {
         }
     }
 
-    // Create vector of pixel pulses to return for this detector
-    std::vector<PixelCharge> pixel_charges;
+    // Create map for all pixels
+    std::map<Pixel::Index, Pulse> pixel_map;
+    Pulse total_pulse(integration_time_, timestep_);
+
+    for(const auto& prop : propagated_charges) {
+        auto pulses = prop.getPulses();
+        pixel_map = std::accumulate(
+            pulses.begin(), pulses.end(), pixel_map, [ t = integration_time_,
+                                                       b = timestep_ ](std::map<Pixel::Index, Pulse> & m, const auto& p) {
+                if(m.find(p.first) == m.end()) {
+                    m[p.first] = Pulse(t, b);
+                }
+                return (m[p.first] += p.second, m);
+            });
+    }
+
     for(auto& pixel_index_pulse : pixel_map) {
         total_pulse += pixel_index_pulse.second;
 
@@ -187,18 +209,15 @@ void TransientPropagationModule::run(unsigned int event_num) {
                                       .c_str());
             pulse_graph->Write(name.c_str());
         }
-
-        // Store the pulse:
-        pixel_charges.emplace_back(detector_->getPixel(pixel_index_pulse.first), std::move(pixel_index_pulse.second));
     }
 
     LOG(INFO) << "Total charge induced on all pixels: " << Units::display(total_pulse.getCharge(), "e");
 
-    // Create a new message with pixel pulses
-    auto pixel_charge_message = std::make_shared<PixelChargeMessage>(std::move(pixel_charges), detector_);
+    // Create a new message with propagated charges
+    auto propagated_charge_message = std::make_shared<PropagatedChargeMessage>(std::move(propagated_charges), detector_);
 
-    // Dispatch the message with pixel charges
-    messenger_->dispatchMessage(this, pixel_charge_message);
+    // Dispatch the message with propagated charges
+    messenger_->dispatchMessage(this, propagated_charge_message);
 }
 
 /**
