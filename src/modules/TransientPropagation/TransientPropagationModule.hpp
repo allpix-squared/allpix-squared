@@ -81,7 +81,7 @@ namespace allpix {
 
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_{}, integration_time_{};
-        bool output_plots_{}, output_pulsegraphs_{};
+        bool output_plots_{};
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> matrix_;
 
         // Precalculated values for electron and hole mobility

@@ -17,8 +17,6 @@
 
 #include <Eigen/Core>
 
-#include <TGraph.h>
-
 #include "core/utils/log.h"
 #include "objects/PixelCharge.hpp"
 #include "objects/PropagatedCharge.hpp"
@@ -47,8 +45,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     config_.setDefault<double>("integration_time", Units::get(25, "ns"));
     config_.setDefault<unsigned int>("charge_per_step", 10);
     config_.setDefault<double>("temperature", 293.15);
-    config_.setDefault<bool>("output_pulsegraphs", false);
-    config_.setDefault<bool>("output_plots", config_.get<bool>("output_pulsegraphs"));
+    config_.setDefault<bool>("output_plots", false);
     config_.setDefault<XYVectorInt>("induction_matrix", XYVectorInt(3, 3));
 
     // Copy some variables from configuration to avoid lookups:
@@ -62,7 +59,6 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     }
 
     output_plots_ = config_.get<bool>("output_plots");
-    output_pulsegraphs_ = config_.get<bool>("output_pulsegraphs");
 
     // Parameterization variables from https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2)
     electron_Vm_ = Units::get(1.53e9 * std::pow(temperature_, -0.87), "cm/s");
@@ -125,7 +121,7 @@ void TransientPropagationModule::init() {
     }
 }
 
-void TransientPropagationModule::run(unsigned int event_num) {
+void TransientPropagationModule::run(unsigned int) {
 
     // Create vector of propagated charges to output
     std::vector<PropagatedCharge> propagated_charges;
@@ -172,43 +168,18 @@ void TransientPropagationModule::run(unsigned int event_num) {
 
     // Create map for all pixels
     std::map<Pixel::Index, Pulse> pixel_map;
-    Pulse total_pulse(integration_time_, timestep_);
+    Pulse total_pulse;
 
     for(const auto& prop : propagated_charges) {
         auto pulses = prop.getPulses();
-        pixel_map = std::accumulate(
-            pulses.begin(), pulses.end(), pixel_map, [ t = integration_time_,
-                                                       b = timestep_ ](std::map<Pixel::Index, Pulse> & m, const auto& p) {
-                if(m.find(p.first) == m.end()) {
-                    m[p.first] = Pulse(t, b);
-                }
+        pixel_map =
+            std::accumulate(pulses.begin(), pulses.end(), pixel_map, [](std::map<Pixel::Index, Pulse>& m, const auto& p) {
                 return (m[p.first] += p.second, m);
             });
     }
 
     for(auto& pixel_index_pulse : pixel_map) {
         total_pulse += pixel_index_pulse.second;
-
-        // Fill a graphs with the individual pixel pulses:
-        if(output_pulsegraphs_) {
-            auto index = pixel_index_pulse.first;
-            auto pulse = pixel_index_pulse.second.getPulse();
-            std::string name =
-                "pulse_px" + std::to_string(index.x()) + "-" + std::to_string(index.y()) + "_" + std::to_string(event_num);
-
-            // Generate x-axis:
-            std::vector<double> time(pulse.size());
-            std::generate(time.begin(), time.end(), [ n = 0.0, step = timestep_ ]() mutable { return n += step; });
-
-            auto pulse_graph = new TGraph(static_cast<int>(pulse.size()), &time[0], &pulse[0]);
-            pulse_graph->GetXaxis()->SetTitle("t [ns]");
-            pulse_graph->GetYaxis()->SetTitle("Q_{ind} [e]");
-            pulse_graph->SetTitle(("Induced charge in pixel (" + std::to_string(index.x()) + "," +
-                                   std::to_string(index.y()) +
-                                   "), Q_{tot} = " + std::to_string(pixel_index_pulse.second.getCharge()) + " e")
-                                      .c_str());
-            pulse_graph->Write(name.c_str());
-        }
     }
 
     LOG(INFO) << "Total charge induced on all pixels: " << Units::display(total_pulse.getCharge(), "e");
