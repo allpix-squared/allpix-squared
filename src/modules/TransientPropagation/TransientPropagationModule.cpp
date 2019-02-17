@@ -150,8 +150,6 @@ void TransientPropagationModule::run(unsigned int) {
             // Propagate a single charge deposit
             std::map<Pixel::Index, Pulse> px_map;
             auto prop_pair = propagate(position, deposit.getType(), charge_per_step, px_map);
-            LOG(DEBUG) << " Propagated " << charge_per_step << " to " << Units::display(prop_pair.first, {"mm", "um"})
-                       << " in " << Units::display(prop_pair.second, "ns") << " time";
 
             // Create a new propagated charge and add it to the list
             auto global_position = detector_->getGlobalPosition(prop_pair.first);
@@ -161,6 +159,10 @@ void TransientPropagationModule::run(unsigned int) {
                                                px_map,
                                                deposit.getEventTime() + prop_pair.second,
                                                &deposit);
+
+            LOG(DEBUG) << " Propagated " << charge_per_step << " to " << Units::display(prop_pair.first, {"mm", "um"})
+                       << " in " << Units::display(prop_pair.second, "ns") << " time, induced "
+                       << Units::display(propagated_charge.getCharge(), {"e"});
 
             propagated_charges.push_back(std::move(propagated_charge));
 
