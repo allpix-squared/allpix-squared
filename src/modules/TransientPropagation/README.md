@@ -22,8 +22,7 @@ $` Q_n^{ind}  = \int_{t_0}^{t_1} I_n^{ind} = q \left( \phi (x_1) - \phi(x_0) \ri
 
 and multiplying it with the charge. The resulting pulses are stored for every pixel individually.
 
-The module can produces a variety of plots, including induced charge pulses for individual pixels for every event as well as total integrated charge plots and
-It should be noted that generating per-pixel pulses will generate several pulse graphs per event and might result in a slow-down of the simulation process.
+The module can produces a variety of plots such as total integrated charge plots as well as histograms on the step length and observed potential differences.
 
 #### Parameters
 * `temperature`: Temperature of the sensitive device, used to estimate the diffusion constant and therefore the strength of the diffusion. Defaults to room temperature (293.15K).
@@ -31,10 +30,7 @@ It should be noted that generating per-pixel pulses will generate several pulse 
 * `timestep`: Time step for the Runge-Kutta integration, representing the granularity with which the induced charge is calculated. Default value is 0.01ns.
 * `integration_time`: Time within which charge carriers are propagated. After exceeding this time, no further propagation is performed for the respective carriers. Defaults to the LHC bunch crossing time of 25ns.
 * `induction_matrix`: Size of the pixel sub-matrix for which the induced charge is calculated, provided as number of pixels in x and y. The numbers have to be odd and default to `3, 3`. It should be noted that the time required for simulating a single event depends almost linearly on the number of pixels the induced charge is calculated for. Usually, a 3x3 grid (9 pixels) should suffice since the weighting potential at a distance of more than one pixel pitch normally is small enough to be neglected while time simulation time is almost tripled.
-
-### Plotting parameters
 * `output_plots` : Determines if simple output plots should be generated for a monitoring of the simulation flow. Disabled by default.
-* `output_pulsegraphs` : Determines if pulse graphs should be generated for every event. This creates several graphs per event, depending on how many pixels see a signal, and can slow down the simulation. It is not recommended to enable this option for runs with more than a couple of events. Disabled by default.
 
 
 #### Usage
