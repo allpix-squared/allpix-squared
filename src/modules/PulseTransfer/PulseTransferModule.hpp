@@ -36,7 +36,7 @@ namespace allpix {
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
          * @param detector Pointer to the detector for this module instance
          */
-        PulseTransferModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector);
+        PulseTransferModule(Configuration& config, Messenger* messenger, const std::shared_ptr<Detector>& detector);
 
         /**
          * @brief Combine pulses from propagated charges and transfer them to the pixels
