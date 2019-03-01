@@ -328,13 +328,9 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(co
                     continue;
                 }
 
-                // Check if this pulse exists already:
-                if(pixel_map.find(pixel_index) == pixel_map.end()) {
-                    pixel_map[pixel_index] = Pulse(timestep_);
-                }
-
-                // Store induced charge in the respective pixel pulse:
-                pixel_map[pixel_index].addCharge(induced, runge_kutta.getTime());
+                // Create pulse if it doesn't exist. Store induced charge in the returned pulse iterator
+                auto pixel_map_iterator = pixel_map.emplace(pixel_index, Pulse(timestep_));
+                pixel_map_iterator.first->second.addCharge(induced, runge_kutta.getTime());
 
                 if(output_plots_) {
                     potential_difference_->Fill(std::fabs(ramo - last_ramo));
