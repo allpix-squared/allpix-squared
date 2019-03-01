@@ -41,6 +41,7 @@ void PulseTransferModule::run(unsigned int event_num) {
 
     Pulse total_pulse;
 
+    // Accumulate all pulses from input message data:
     for(const auto& prop : message_->getData()) {
         auto pulses = prop.getPulses();
         pixel_map =
@@ -52,6 +53,10 @@ void PulseTransferModule::run(unsigned int event_num) {
     // Create vector of pixel pulses to return for this detector
     std::vector<PixelCharge> pixel_charges;
     for(auto& pixel_index_pulse : pixel_map) {
+        // Store the pulse:
+        pixel_charges.emplace_back(detector_->getPixel(pixel_index_pulse.first), std::move(pixel_index_pulse.second));
+
+        // Sum all pulses for informational output:
         total_pulse += pixel_index_pulse.second;
 
         // Fill a graphs with the individual pixel pulses:
@@ -76,15 +81,10 @@ void PulseTransferModule::run(unsigned int event_num) {
                                       .c_str());
             pulse_graph->Write(name.c_str());
         }
-
-        // Store the pulse:
-        pixel_charges.emplace_back(detector_->getPixel(pixel_index_pulse.first), std::move(pixel_index_pulse.second));
     }
 
-    // Create a new message with pixel pulses
+    // Create a new message with pixel pulses and dispatch:
     auto pixel_charge_message = std::make_shared<PixelChargeMessage>(std::move(pixel_charges), detector_);
-
-    // Dispatch the message with pixel charges
     messenger_->dispatchMessage(this, pixel_charge_message);
 
     LOG(INFO) << "Total charge induced on all pixels: " << Units::display(total_pulse.getCharge(), "e");
