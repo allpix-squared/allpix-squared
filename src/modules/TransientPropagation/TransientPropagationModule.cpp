@@ -330,7 +330,7 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(co
 
                 // Check if this pulse exists already:
                 if(pixel_map.find(pixel_index) == pixel_map.end()) {
-                    pixel_map[pixel_index] = Pulse(integration_time_, timestep_);
+                    pixel_map[pixel_index] = Pulse(timestep_);
                 }
 
                 // Store induced charge in the respective pixel pulse:
