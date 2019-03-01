@@ -25,12 +25,12 @@ namespace allpix {
         /**
          * @brief Construct a new pulse
          */
-        Pulse(double integration_time, double time_bin);
+        Pulse(double time_bin);
 
         /**
-         * @brief Construct default pulse with one bin only
+         * @brief Construct default pulse, uninitialized
          */
-        Pulse();
+        Pulse() = default;
 
         /**
          * @brief adding induced charge to the pulse
@@ -66,11 +66,12 @@ namespace allpix {
         /**
          * @brief Default constructor for ROOT I/O
          */
-        ClassDef(Pulse, 1);
+        ClassDef(Pulse, 2);
 
     private:
         std::vector<double> pulse_;
-        double time_, bin_;
+        double bin_;
+        bool initialized_{};
     };
 
 } // namespace allpix

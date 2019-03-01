@@ -11,29 +11,25 @@
 #include "exceptions.h"
 
 #include <cmath>
+#include <numeric>
 
 using namespace allpix;
 
-Pulse::Pulse(double integration_time, double time_bin) : time_(integration_time), bin_(time_bin) {
-    // Prepare storage
-    auto bins = static_cast<size_t>(std::ceil(time_ / bin_));
-    pulse_.resize(bins);
-}
-
-Pulse::Pulse() : Pulse(1, 1) {}
+Pulse::Pulse(double time_bin) : bin_(time_bin), initialized_(true) {}
 
 void Pulse::addCharge(double charge, double time) {
-    auto bin = static_cast<size_t>(time / bin_);
-    if(bin < pulse_.size()) {
-        pulse_.at(bin) += charge;
+    // For uninitialized pulses, store all charge in the first bin:
+    auto bin = (initialized_ ? static_cast<size_t>(time / bin_) : 0);
+
+    // Adapt pulse storage vector:
+    if(bin >= pulse_.size()) {
+        pulse_.resize(bin + 1);
     }
+    pulse_.at(bin) += charge;
 }
 
 int Pulse::getCharge() const {
-    double charge = 0;
-    for(auto& i : pulse_) {
-        charge += i;
-    }
+    double charge = std::accumulate(pulse_.begin(), pulse_.end(), 0.0);
     return static_cast<int>(std::round(charge));
 }
 
@@ -48,18 +44,26 @@ double Pulse::getBinning() const {
 Pulse& Pulse::operator+=(const Pulse& rhs) {
     auto rhs_pulse = rhs.getPulse();
 
+    // Allow to initialize uninitialized pulse
+    if(!this->initialized_) {
+        this->bin_ = rhs.getBinning();
+        this->initialized_ = true;
+    }
+
+    // Check that the pulses are compatible by having the same binning:
     if(this->getBinning() != rhs.getBinning()) {
         throw IncompatibleDatatypesException(typeid(*this), typeid(rhs), "different time binning");
-    } else {
-        // If new pulse is longer, extend:
-        if(this->pulse_.size() < rhs_pulse.size()) {
-            this->pulse_.resize(rhs_pulse.size());
-        }
-
-        // Add up the individual bins:
-        for(size_t bin = 0; bin < rhs_pulse.size(); bin++) {
-            this->pulse_.at(bin) += rhs_pulse.at(bin);
-        }
     }
+
+    // If new pulse is longer, extend:
+    if(this->pulse_.size() < rhs_pulse.size()) {
+        this->pulse_.resize(rhs_pulse.size());
+    }
+
+    // Add up the individual bins:
+    for(size_t bin = 0; bin < rhs_pulse.size(); bin++) {
+        this->pulse_.at(bin) += rhs_pulse.at(bin);
+    }
+
     return *this;
 }
