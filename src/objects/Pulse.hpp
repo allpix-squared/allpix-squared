@@ -25,7 +25,7 @@ namespace allpix {
         /**
          * @brief Construct a new pulse
          */
-        Pulse(double time_bin);
+        explicit Pulse(double time_bin);
 
         /**
          * @brief Construct default pulse, uninitialized
