@@ -8,6 +8,7 @@
  */
 
 #include "PulseTransferModule.hpp"
+#include "core/utils/log.h"
 #include "objects/PixelCharge.hpp"
 
 #include <string>
@@ -15,8 +16,6 @@
 
 #include <TAxis.h>
 #include <TGraph.h>
-
-#include "core/utils/log.h"
 
 using namespace allpix;
 
@@ -36,43 +35,49 @@ PulseTransferModule::PulseTransferModule(Configuration& config,
 
 void PulseTransferModule::run(unsigned int event_num) {
 
-    // Create map for all pixels
-    std::map<Pixel::Index, Pulse> pixel_map;
+    // Create map for all pixels: pulse and propagated charges
+    std::map<Pixel::Index, Pulse> pixel_pulse_map;
+    std::map<Pixel::Index, std::vector<const PropagatedCharge*>> pixel_charge_map;
 
-    Pulse total_pulse;
+    LOG(DEBUG) << "Received " << message_->getData().size() << " propagated charge objects.";
+    for(const auto& propagated_charge : message_->getData()) {
+        for(auto& pulse : propagated_charge.getPulses()) {
+            auto pixel_index = pulse.first;
 
-    // Accumulate all pulses from input message data:
-    for(const auto& prop : message_->getData()) {
-        auto pulses = prop.getPulses();
-        pixel_map =
-            std::accumulate(pulses.begin(), pulses.end(), pixel_map, [](std::map<Pixel::Index, Pulse>& m, const auto& p) {
-                return (m[p.first] += p.second, m);
-            });
+            // Accumulate all pulses from input message data:
+            pixel_pulse_map[pixel_index] += pulse.second;
+
+            auto px = pixel_charge_map[pixel_index];
+            // For each pulse, store the corresponding propagated charges to preserve history:
+            if(std::find(px.begin(), px.end(), &propagated_charge) == px.end()) {
+                pixel_charge_map[pixel_index].emplace_back(&propagated_charge);
+            }
+        }
     }
 
     // Create vector of pixel pulses to return for this detector
     std::vector<PixelCharge> pixel_charges;
-    for(auto& pixel_index_pulse : pixel_map) {
-        // Store the pulse:
-        pixel_charges.emplace_back(detector_->getPixel(pixel_index_pulse.first), std::move(pixel_index_pulse.second));
+    Pulse total_pulse;
+    for(auto& pixel_index_pulse : pixel_pulse_map) {
+        auto index = pixel_index_pulse.first;
+        auto pulse = pixel_index_pulse.second;
 
         // Sum all pulses for informational output:
-        total_pulse += pixel_index_pulse.second;
+        total_pulse += pulse;
 
         // Fill a graphs with the individual pixel pulses:
         if(output_pulsegraphs_) {
-            auto index = pixel_index_pulse.first;
-            auto pulse = pixel_index_pulse.second.getPulse();
-            auto step = pixel_index_pulse.second.getBinning();
+            auto step = pulse.getBinning();
+            auto pulse_vec = pulse.getPulse();
 
             std::string name =
                 "pulse_px" + std::to_string(index.x()) + "-" + std::to_string(index.y()) + "_" + std::to_string(event_num);
 
             // Generate x-axis:
-            std::vector<double> time(pulse.size());
+            std::vector<double> time(pulse_vec.size());
             std::generate(time.begin(), time.end(), [ n = 0.0, step ]() mutable { return n += step; });
 
-            auto pulse_graph = new TGraph(static_cast<int>(pulse.size()), &time[0], &pulse[0]);
+            auto pulse_graph = new TGraph(static_cast<int>(pulse_vec.size()), &time[0], &pulse_vec[0]);
             pulse_graph->GetXaxis()->SetTitle("t [ns]");
             pulse_graph->GetYaxis()->SetTitle("Q_{ind} [e]");
             pulse_graph->SetTitle(("Induced charge in pixel (" + std::to_string(index.x()) + "," +
@@ -81,6 +86,10 @@ void PulseTransferModule::run(unsigned int event_num) {
                                       .c_str());
             pulse_graph->Write(name.c_str());
         }
+        LOG(DEBUG) << "Index " << index << " has " << pixel_charge_map[index].size() << " ancestors";
+
+        // Store the pulse:
+        pixel_charges.emplace_back(detector_->getPixel(index), std::move(pulse), pixel_charge_map[index]);
     }
 
     // Create a new message with pixel pulses and dispatch:
