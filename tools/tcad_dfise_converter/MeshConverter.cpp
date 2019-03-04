@@ -33,7 +33,6 @@
 
 #include "DFISEParser.hpp"
 #include "MeshElement.hpp"
-#include "Octree.hpp"
 #include "ThreadPool.hpp"
 
 using namespace mesh_converter;

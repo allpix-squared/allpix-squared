@@ -2,7 +2,7 @@
 #include <vector>
 
 #include "DFISEParser.hpp"
-#include "Octree.hpp"
+#include "octree/Octree.hpp"
 
 #include "core/utils/log.h"
 
