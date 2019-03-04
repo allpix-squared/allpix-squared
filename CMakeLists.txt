@@ -156,7 +156,6 @@ FILE(GLOB_RECURSE
         src/*.[tch]pp src/*.h
         tools/*.C tools/*.[tch]pp tools/*.h
      )
-LIST(FILTER CHECK_CXX_SOURCE_FILES EXCLUDE REGEX ".*tools/cereal/.*")
 INCLUDE("cmake/clang-cpp-checks.cmake")
 
 ###################################
