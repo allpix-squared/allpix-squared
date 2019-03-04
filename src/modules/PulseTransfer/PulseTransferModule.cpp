@@ -86,7 +86,7 @@ void PulseTransferModule::run(unsigned int event_num) {
                                       .c_str());
             pulse_graph->Write(name.c_str());
         }
-        LOG(DEBUG) << "Index " << index << " has " << pixel_charge_map[index].size() << " ancestors";
+        LOG(DEBUG) << "Charge on pixel " << index << " has " << pixel_charge_map[index].size() << " ancestors";
 
         // Store the pulse:
         pixel_charges.emplace_back(detector_->getPixel(index), std::move(pulse), pixel_charge_map[index]);
