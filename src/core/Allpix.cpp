@@ -26,7 +26,7 @@
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 
-#include "tools/add_units.h"
+#include "tools/units.h"
 
 using namespace allpix;
 

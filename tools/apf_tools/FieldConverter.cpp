@@ -8,8 +8,8 @@
 #include <string>
 
 #include "core/utils/log.h"
-#include "tools/add_units.h"
 #include "tools/field_parser.h"
+#include "tools/units.h"
 
 using namespace allpix;
 
