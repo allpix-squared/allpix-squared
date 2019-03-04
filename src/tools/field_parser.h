@@ -82,7 +82,7 @@ namespace allpix {
 
     template <typename T = double> class FieldParser {
     public:
-        FieldParser(const FieldQuantity quantity, const std::string units) : units_(std::move(units)) {
+        FieldParser(const FieldQuantity quantity, const std::string units = std::string()) : units_(std::move(units)) {
             // Store quantity: vector or scalar field:
             N_ = static_cast<std::underlying_type<FieldQuantity>::type>(quantity);
         };
@@ -113,6 +113,9 @@ namespace allpix {
         FieldData<T> parse_apf_file(const std::string& file_name) {
             std::ifstream file(file_name, std::ios::binary);
             FieldData<double> field_data;
+            if(!units_.empty()) {
+                LOG(WARNING) << "Units will be ignored, APF file content is interpreted in internal units.";
+            }
 
             // Parse the file with cereal, add manual scope to ensure flushing:
             {
@@ -205,7 +208,7 @@ namespace allpix {
 
     template <typename T = double> class FieldWriter {
     public:
-        FieldWriter(const FieldQuantity quantity, const std::string units) : units_(std::move(units)) {
+        FieldWriter(const FieldQuantity quantity, const std::string units = std::string()) : units_(std::move(units)) {
             // Store quantity: vector or scalar field:
             N_ = static_cast<std::underlying_type<FieldQuantity>::type>(quantity);
         };
@@ -234,6 +237,10 @@ namespace allpix {
 
     private:
         void write_apf_file(const FieldData<T>& field_data, const std::string& file_name) {
+            if(!units_.empty()) {
+                LOG(WARNING) << "Units will be ignored, APF file content is written in internal units.";
+            }
+
             std::ofstream file(file_name, std::ios::binary);
 
             // Write the file with cereal:
