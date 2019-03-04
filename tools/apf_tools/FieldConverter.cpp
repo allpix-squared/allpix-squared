@@ -37,6 +37,7 @@ int main(int argc, const char* argv[]) {
     FileType format_to;
     std::string file_input;
     std::string file_output;
+    std::string units;
     bool scalar = false;
     for(int i = 1; i < argc; i++) {
         if(strcmp(argv[i], "-h") == 0) {
@@ -60,6 +61,8 @@ int main(int argc, const char* argv[]) {
             file_input = std::string(argv[++i]);
         } else if(strcmp(argv[i], "--output") == 0 && (i + 1 < argc)) {
             file_output = std::string(argv[++i]);
+        } else if(strcmp(argv[i], "--units") == 0 && (i + 1 < argc)) {
+            units = std::string(argv[++i]);
         } else if(strcmp(argv[i], "--scalar") == 0) {
             scalar = true;
         } else {
@@ -79,7 +82,8 @@ int main(int argc, const char* argv[]) {
         std::cout << "  --from <format>  file format of the input file" << std::endl;
         std::cout << "  --to <format>    file format of the output file" << std::endl;
         std::cout << "  --input <file>   input field file" << std::endl;
-        std::cout << "  --output <file>  output field file" << std::endl << std::endl;
+        std::cout << "  --output <file>  output field file" << std::endl;
+        std::cout << "  --units <units>  units the field is provided in" << std::endl << std::endl;
         std::cout << "Options:" << std::endl;
         std::cout << "  --scalar         Convert scalar field. Default is vector field" << std::endl;
         std::cout << std::endl;
@@ -90,9 +94,9 @@ int main(int argc, const char* argv[]) {
     try {
         FieldQuantity quantity = (scalar ? FieldQuantity::SCALAR : FieldQuantity::VECTOR);
 
-        FieldParser<double> field_parser(quantity, "");
+        FieldParser<double> field_parser(quantity, (format_from == FileType::INIT ? units : ""));
         auto field_data = field_parser.get_by_file_name(file_input, format_from);
-        FieldWriter<double> field_writer(quantity, "");
+        FieldWriter<double> field_writer(quantity, (format_from == FileType::INIT ? units : ""));
         field_writer.write_file(field_data, file_output, format_to);
     } catch(std::exception& e) {
         LOG(FATAL) << "Fatal internal error" << std::endl << e.what() << std::endl << "Cannot continue.";

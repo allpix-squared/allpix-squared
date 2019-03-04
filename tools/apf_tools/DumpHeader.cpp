@@ -13,7 +13,7 @@
 
 using namespace allpix;
 
-template <typename T> static void print_info(allpix::FieldData<T> field_data, size_t n) {
+template <typename T> static void print_info(allpix::FieldData<T> field_data, size_t n, std::string units) {
     std::cout << "Header:     \"" << field_data.getHeader() << "\"" << std::endl;
     std::cout << "Field size: " << field_data.getSize()[0] << "x" << field_data.getSize()[1] << "x"
               << field_data.getSize()[2] << "um" << std::endl;
@@ -24,7 +24,7 @@ template <typename T> static void print_info(allpix::FieldData<T> field_data, si
     if(n > 0) {
         std::cout << "First " << n << " entries of field data:" << std::endl;
         for(size_t i = 0; i < field_data.getData()->size() && i < n; i++) {
-            std::cout << field_data.getData()->at(i) << " ";
+            std::cout << Units::display(field_data.getData()->at(i), units) << " ";
         }
         std::cout << std::endl;
     }
@@ -40,7 +40,6 @@ int main(int argc, const char* argv[]) {
 
     // Add cout as the default logging stream
     Log::addStream(std::cout);
-    Units::add("um", 1e-3);
 
     // If no arguments are provided, print the help:
     bool print_help = false;
@@ -52,6 +51,7 @@ int main(int argc, const char* argv[]) {
 
     // Parse arguments
     std::vector<std::string> file_names;
+    std::string units;
     size_t n = 0;
     for(int i = 1; i < argc; i++) {
         if(strcmp(argv[i], "-h") == 0) {
@@ -65,6 +65,8 @@ int main(int argc, const char* argv[]) {
             }
         } else if(strcmp(argv[i], "--values") == 0 && (i + 1 < argc)) {
             n = static_cast<size_t>(std::atoi(argv[++i]));
+        } else if(strcmp(argv[i], "--units") == 0 && (i + 1 < argc)) {
+            units = std::string(argv[++i]);
         } else {
             file_names.emplace_back(std::string(argv[i]));
         }
@@ -78,6 +80,7 @@ int main(int argc, const char* argv[]) {
         std::cout << std::endl;
         std::cout << "Options:" << std::endl;
         std::cout << "  --values <N>     also print the first N values from the file" << std::endl;
+        std::cout << "  --units  <units> units the field should be represented in" << std::endl;
         std::cout << std::endl;
         std::cout << "For more help, please see <https://cern.ch/allpix-squared>" << std::endl;
         return return_code;
@@ -86,13 +89,13 @@ int main(int argc, const char* argv[]) {
     for(auto& file_input : file_names) {
         std::cout << "FILE:       " << file_input << std::endl;
         try {
-            FieldParser<double> field_parser(FieldQuantity::VECTOR, "");
+            FieldParser<double> field_parser(FieldQuantity::VECTOR);
             auto field_data = field_parser.get_by_file_name(file_input, FileType::APF);
-            print_info(field_data, n);
+            print_info(field_data, n, units);
         } catch(std::runtime_error& e) {
-            FieldParser<double> field_parser(FieldQuantity::SCALAR, "");
+            FieldParser<double> field_parser(FieldQuantity::SCALAR);
             auto field_data = field_parser.get_by_file_name(file_input, FileType::APF);
-            print_info(field_data, n);
+            print_info(field_data, n, units);
         } catch(std::exception& e) {
             LOG(FATAL) << "Fatal internal error" << std::endl << e.what() << std::endl << "Cannot continue.";
             return_code = 127;
