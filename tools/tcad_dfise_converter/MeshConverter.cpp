@@ -688,8 +688,8 @@ int main(int argc, char** argv) {
     allpix::FieldData<double> field_data(header, gridsize, size, data);
     std::string init_file_name = init_file_prefix + "_" + observable + (file_type == FileType::INIT ? ".init" : ".apf");
 
-    allpix::FieldWriter<double> field_writer(quantity, units);
-    field_writer.write_file(field_data, init_file_name, file_type);
+    allpix::FieldWriter<double> field_writer(quantity);
+    field_writer.write_file(field_data, init_file_name, file_type, units);
 
     end = std::chrono::system_clock::now();
     elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();

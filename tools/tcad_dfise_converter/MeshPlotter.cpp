@@ -30,6 +30,7 @@ int main(int argc, char** argv) {
     std::string output_file_name;
     std::string output_name_log;
     std::string plane = "yz";
+    std::string units;
     bool flag_cut = false;
     size_t slice_cut = 0;
     bool log_scale = false;
@@ -42,6 +43,8 @@ int main(int argc, char** argv) {
             output_file_name = std::string(argv[++i]);
         } else if(strcmp(argv[i], "-p") == 0 && (i + 1 < argc)) {
             plane = std::string(argv[++i]);
+        } else if(strcmp(argv[i], "-u") == 0 && (i + 1 < argc)) {
+            units = std::string(argv[++i]);
         } else if(strcmp(argv[i], "-c") == 0 && (i + 1 < argc)) {
             slice_cut = static_cast<size_t>(std::atoi(argv[++i]));
             flag_cut = true;
@@ -69,6 +72,7 @@ int main(int argc, char** argv) {
         std::cout << "\t -l                     plot with logarithmic scale if set" << std::endl;
         std::cout << "\t -o <output_file_name>  name of the file to output (default is efield.png)" << std::endl;
         std::cout << "\t -p <plane>             plane to be ploted. xy, yz or zx (default is yz)" << std::endl;
+        std::cout << "\t -u <units>             units to interpret the field data in" << std::endl;
         return return_code;
     }
 
@@ -85,8 +89,8 @@ int main(int argc, char** argv) {
     FieldQuantity quantity = (observable == "ElectricField" ? FieldQuantity::VECTOR : FieldQuantity::SCALAR);
     FileType type = (extension == "apf" ? FileType::APF : FileType::INIT);
 
-    FieldParser<double> field_parser(quantity, "");
-    auto field_data = field_parser.get_by_file_name(file_name, type);
+    FieldParser<double> field_parser(quantity);
+    auto field_data = field_parser.get_by_file_name(file_name, type, units);
     size_t xdiv = field_data.getDimensions()[0], ydiv = field_data.getDimensions()[1], zdiv = field_data.getDimensions()[2];
 
     std::cout << "Number of divisions in x/y/z: " << xdiv << "/" << ydiv << "/" << zdiv << std::endl;

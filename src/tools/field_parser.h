@@ -82,7 +82,7 @@ namespace allpix {
 
     template <typename T = double> class FieldParser {
     public:
-        FieldParser(const FieldQuantity quantity, const std::string units = std::string()) : units_(std::move(units)) {
+        FieldParser(const FieldQuantity quantity) {
             // Store quantity: vector or scalar field:
             N_ = static_cast<std::underlying_type<FieldQuantity>::type>(quantity);
         };
@@ -91,7 +91,8 @@ namespace allpix {
         /**
          * @brief Get the field from a file name, caching the result
          */
-        FieldData<T> get_by_file_name(const std::string& file_name, const FileType& file_type) {
+        FieldData<T>
+        get_by_file_name(const std::string& file_name, const FileType& file_type, const std::string units = std::string()) {
             // Search in cache (NOTE: the path reached here is always a canonical name)
             auto iter = field_map_.find(file_name);
             if(iter != field_map_.end()) {
@@ -101,8 +102,11 @@ namespace allpix {
 
             switch(file_type) {
             case FileType::INIT:
-                return parse_init_file(file_name);
+                return parse_init_file(file_name, units);
             case FileType::APF:
+                if(!units.empty()) {
+                    LOG(WARNING) << "Units will be ignored, APF file content is interpreted in internal units.";
+                }
                 return parse_apf_file(file_name);
             default:
                 throw std::runtime_error("unknown file format");
@@ -113,9 +117,6 @@ namespace allpix {
         FieldData<T> parse_apf_file(const std::string& file_name) {
             std::ifstream file(file_name, std::ios::binary);
             FieldData<double> field_data;
-            if(!units_.empty()) {
-                LOG(WARNING) << "Units will be ignored, APF file content is interpreted in internal units.";
-            }
 
             // Parse the file with cereal, add manual scope to ensure flushing:
             {
@@ -132,7 +133,7 @@ namespace allpix {
             return field_data;
         }
 
-        FieldData<T> parse_init_file(const std::string& file_name) {
+        FieldData<T> parse_init_file(const std::string& file_name, const std::string units) {
             // Load file
             std::ifstream file(file_name);
             std::string header;
@@ -188,7 +189,7 @@ namespace allpix {
                     file >> input;
 
                     // Set the field at a position
-                    (*field)[xind * ysize * zsize * N_ + yind * zsize * N_ + zind * N_ + j] = Units::get(input, units_);
+                    (*field)[xind * ysize * zsize * N_ + yind * zsize * N_ + zind * N_ + j] = Units::get(input, units);
                 }
             }
             LOG_PROGRESS(INFO, "read_init") << "Reading field data: finished.";
@@ -202,13 +203,12 @@ namespace allpix {
         }
 
         size_t N_;
-        std::string units_;
         std::map<std::string, FieldData<T>> field_map_;
     };
 
     template <typename T = double> class FieldWriter {
     public:
-        FieldWriter(const FieldQuantity quantity, const std::string units = std::string()) : units_(std::move(units)) {
+        FieldWriter(const FieldQuantity quantity) {
             // Store quantity: vector or scalar field:
             N_ = static_cast<std::underlying_type<FieldQuantity>::type>(quantity);
         };
@@ -217,7 +217,10 @@ namespace allpix {
         /**
          * @brief Write the field to a file
          */
-        void write_file(const FieldData<T>& field_data, const std::string& file_name, const FileType& file_type) {
+        void write_file(const FieldData<T>& field_data,
+                        const std::string& file_name,
+                        const FileType& file_type,
+                        const std::string units = std::string()) {
             auto dimensions = field_data.getDimensions();
             if(field_data.getData()->size() != N_ * dimensions[0] * dimensions[1] * dimensions[2]) {
                 throw std::runtime_error("invalid field dimensions");
@@ -225,9 +228,12 @@ namespace allpix {
 
             switch(file_type) {
             case FileType::INIT:
-                write_init_file(field_data, file_name);
+                write_init_file(field_data, file_name, units);
                 break;
             case FileType::APF:
+                if(!units.empty()) {
+                    LOG(WARNING) << "Units will be ignored, APF file content is written in internal units.";
+                }
                 write_apf_file(field_data, file_name);
                 break;
             default:
@@ -237,10 +243,6 @@ namespace allpix {
 
     private:
         void write_apf_file(const FieldData<T>& field_data, const std::string& file_name) {
-            if(!units_.empty()) {
-                LOG(WARNING) << "Units will be ignored, APF file content is written in internal units.";
-            }
-
             std::ofstream file(file_name, std::ios::binary);
 
             // Write the file with cereal:
@@ -248,7 +250,7 @@ namespace allpix {
             archive(field_data);
         }
 
-        void write_init_file(const FieldData<T>& field_data, const std::string& file_name) {
+        void write_init_file(const FieldData<T>& field_data, const std::string& file_name, const std::string units) {
             std::ofstream file(file_name);
 
             LOG(TRACE) << "Writing INIT file \"" << file_name << "\"";
@@ -282,7 +284,7 @@ namespace allpix {
                         for(size_t j = 0; j < N_; j++) {
                             file << " " << Units::convert(data->at(xind * dimensions[1] * dimensions[2] * N_ +
                                                                    yind * dimensions[2] * N_ + zind * N_ + j),
-                                                          units_);
+                                                          units);
                         }
 
                         // End this line
@@ -297,7 +299,6 @@ namespace allpix {
         }
 
         size_t N_;
-        std::string units_;
     };
 } // namespace allpix
 

@@ -141,7 +141,7 @@ ElectricFieldReaderModule::get_linear_field_function(double depletion_voltage, s
  * The field read from the INIT format are shared between module instantiations using the static
  * ElectricFieldReaderModuleget_by_file_name method.
  */
-FieldParser<double> ElectricFieldReaderModule::field_parser_(FieldQuantity::VECTOR, "V/cm");
+FieldParser<double> ElectricFieldReaderModule::field_parser_(FieldQuantity::VECTOR);
 FieldData<double> ElectricFieldReaderModule::read_field(std::pair<double, double> thickness_domain,
                                                         std::array<double, 2> field_scale,
                                                         const std::string& format) {
@@ -152,7 +152,7 @@ FieldData<double> ElectricFieldReaderModule::read_field(std::pair<double, double
         LOG(TRACE) << "Fetching electric field from init file";
 
         // Get field from file
-        auto field_data = field_parser_.get_by_file_name(config_.getPath("file_name", true), type);
+        auto field_data = field_parser_.get_by_file_name(config_.getPath("file_name", true), type, "V/cm");
 
         // Check if electric field matches chip
         check_detector_match(field_data.getSize(), thickness_domain, field_scale);

@@ -94,10 +94,11 @@ int main(int argc, const char* argv[]) {
     try {
         FieldQuantity quantity = (scalar ? FieldQuantity::SCALAR : FieldQuantity::VECTOR);
 
-        FieldParser<double> field_parser(quantity, (format_from == FileType::INIT ? units : ""));
-        auto field_data = field_parser.get_by_file_name(file_input, format_from);
-        FieldWriter<double> field_writer(quantity, (format_from == FileType::INIT ? units : ""));
-        field_writer.write_file(field_data, file_output, format_to);
+        FieldParser<double> field_parser(quantity);
+        auto field_data =
+            field_parser.get_by_file_name(file_input, format_from, (format_from == FileType::INIT ? units : ""));
+        FieldWriter<double> field_writer(quantity);
+        field_writer.write_file(field_data, file_output, format_to, (format_from == FileType::INIT ? units : ""));
     } catch(std::exception& e) {
         LOG(FATAL) << "Fatal internal error" << std::endl << e.what() << std::endl << "Cannot continue.";
         return_code = 127;
