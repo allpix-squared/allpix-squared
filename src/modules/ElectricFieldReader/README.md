@@ -18,7 +18,7 @@ It should be noted that `depletion_voltage` and `depletion_depth` are mutually e
 Furthermore the module can produce a plot the electric field profile on an projection axis normal to the x,y or z-axis at a particular plane in the sensor.
 
 ### Parameters
-* `model` : Type of the electric field model, either **linear**, **constant**, **init** or **apf*.
+* `model` : Type of the electric field model, either **linear**, **constant**, **init** or **apf**.
 * `bias_voltage` : Voltage over the whole sensor thickness. Used to calculate the electric field if the *model* parameter is equal to **constant** or **linear**.
 * `depletion_voltage` : Indicates the voltage at which the sensor is fully depleted. Used to calculate the electric field if the *model* parameter is equal to **linear**.
 * `depletion_depth` : Thickness of the depleted region. Used for all electric fields. When using the depletion depth in **linear** mode, no depletion voltage can be specified.
