@@ -26,6 +26,7 @@
 #include "core/config/Configuration.hpp"
 #include "core/config/exceptions.h"
 #include "core/utils/log.h"
+#include "core/utils/unit.h"
 #include "tools/ROOT.h"
 #include "tools/field_parser.h"
 #include "tools/units.h"
@@ -664,6 +665,7 @@ int main(int argc, char** argv) {
 
     // FIXME this should be done in a more elegant way
     FieldQuantity quantity = (observable == "ElectricField" ? FieldQuantity::VECTOR : FieldQuantity::SCALAR);
+    std::string units = (observable == "ElectricField" ? "V/cm" : "");
 
     // Prepare data:
     auto data = std::make_shared<std::vector<double>>();
@@ -672,11 +674,12 @@ int main(int argc, char** argv) {
             for(int k = 0; k < divisions.z(); ++k) {
                 auto& point =
                     e_field_new_mesh[static_cast<unsigned int>(i * divisions.y() * divisions.z() + j * divisions.z() + k)];
-                data->push_back(point.x);
+                // We need to convert to framework-internal units:
+                data->push_back(allpix::Units::get(point.x, units));
                 // For a vector field, we push three values:
                 if(quantity == FieldQuantity::VECTOR) {
-                    data->push_back(point.y);
-                    data->push_back(point.z);
+                    data->push_back(allpix::Units::get(point.y, units));
+                    data->push_back(allpix::Units::get(point.z, units));
                 }
             }
         }
@@ -685,12 +688,12 @@ int main(int argc, char** argv) {
     allpix::FieldData<double> field_data(header, gridsize, size, data);
     std::string init_file_name = init_file_prefix + "_" + observable + (file_type == FileType::INIT ? ".init" : ".apf");
 
-    allpix::FieldWriter<double> field_writer(quantity, "");
+    allpix::FieldWriter<double> field_writer(quantity, units);
     field_writer.write_file(field_data, init_file_name, file_type);
 
     end = std::chrono::system_clock::now();
     elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
-    LOG(STATUS) << "Conversion completed in " << elapsed_seconds << " seconds.";
+    LOG(STATUS) << "Interpolation and conversion completed in " << elapsed_seconds << " seconds.";
 
     allpix::Log::finish();
     return 1;
