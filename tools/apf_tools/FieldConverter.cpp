@@ -19,11 +19,10 @@ using namespace allpix;
 int main(int argc, const char* argv[]) {
 
     // Register the default set of units with this executable:
-    add_units();
+    register_units();
 
     // Add cout as the default logging stream
     Log::addStream(std::cout);
-    add_units();
 
     // If no arguments are provided, print the help:
     bool print_help = false;

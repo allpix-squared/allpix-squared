@@ -36,7 +36,7 @@ template <typename T> static void print_info(allpix::FieldData<T> field_data, si
 int main(int argc, const char* argv[]) {
 
     // Register the default set of units with this executable:
-    add_units();
+    register_units();
 
     // Add cout as the default logging stream
     Log::addStream(std::cout);

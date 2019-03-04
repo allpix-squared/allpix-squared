@@ -105,7 +105,7 @@ int main(int argc, char** argv) {
     using FieldQuantity = allpix::FieldQuantity;
 
     // Register the default set of units with this executable:
-    allpix::add_units();
+    allpix::register_units();
 
     // If no arguments are provided, print the help:
     bool print_help = false;

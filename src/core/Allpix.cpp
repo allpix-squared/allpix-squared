@@ -192,7 +192,7 @@ void Allpix::load() {
     }
 
     // Set the default units to use
-    add_units();
+    register_units();
 
     // Set the ROOT style
     set_style();
