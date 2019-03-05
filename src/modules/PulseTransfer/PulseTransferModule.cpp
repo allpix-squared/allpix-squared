@@ -75,7 +75,9 @@ void PulseTransferModule::run(unsigned int event_num) {
 
             // Generate x-axis:
             std::vector<double> time(pulse_vec.size());
-            std::generate(time.begin(), time.end(), [ n = 0.0, step ]() mutable { return n += step; });
+            // clang-format off
+            std::generate(time.begin(), time.end(), [n = 0.0, step]() mutable { return n += step; });
+            // clang-format on
 
             auto pulse_graph = new TGraph(static_cast<int>(pulse_vec.size()), &time[0], &pulse_vec[0]);
             pulse_graph->GetXaxis()->SetTitle("t [ns]");
