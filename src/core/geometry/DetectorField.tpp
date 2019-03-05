@@ -6,7 +6,7 @@ namespace allpix {
      * coordinates to the field origin in the given pixel.
      */
     template <typename T, size_t N>
-    T DetectorField<T, N>::getRelativeTo(const ROOT::Math::XYZPoint& pos, const ROOT::Math::XYZPoint& ref) const {
+    T DetectorField<T, N>::getRelativeTo(const ROOT::Math::XYZPoint& pos, const ROOT::Math::XYPoint& ref) const {
         if(type_ == FieldType::NONE) {
             return {};
         }

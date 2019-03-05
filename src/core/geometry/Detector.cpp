@@ -207,7 +207,13 @@ bool Detector::hasWeightingPotential() const {
  * strictly zero by definition.
  */
 double Detector::getWeightingPotential(const ROOT::Math::XYZPoint& pos, const Pixel::Index& reference) const {
-    return weighting_potential_.getRelativeTo(pos, getPixel(reference).getLocalCenter());
+    auto size = model_->getPixelSize();
+
+    // WARNING This relies on the origin of the local coordinate system
+    auto local_x = size.x() * reference.x();
+    auto local_y = size.y() * reference.y();
+
+    return weighting_potential_.getRelativeTo(pos, {local_x, local_y});
 }
 
 /**

@@ -87,10 +87,10 @@ namespace allpix {
         /**
          * @brief Get the value of the field at a position provided in local coordinates with respect to the reference
          * @param pos       Position in the local frame
-         * @param reference Reference position to calculate the field for
+         * @param reference Reference position to calculate the field for, x and y coordinate only
          * @return Value(s) of the field assigned to the reference pixel at the queried point
          */
-        T getRelativeTo(const ROOT::Math::XYZPoint& local_pos, const ROOT::Math::XYZPoint& reference) const;
+        T getRelativeTo(const ROOT::Math::XYZPoint& local_pos, const ROOT::Math::XYPoint& reference) const;
 
         /**
          * @brief Set the field in the detector using a grid
