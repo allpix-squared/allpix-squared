@@ -147,12 +147,13 @@ FieldData<double> ElectricFieldReaderModule::read_field(std::pair<double, double
                                                         const std::string& format) {
 
     FileType type = (format == "init" ? FileType::INIT : format == "apf" ? FileType::APF : FileType::UNKNOWN);
+    std::string units = (type == FileType::INIT ? "V/cm" : "");
 
     try {
         LOG(TRACE) << "Fetching electric field from init file";
 
         // Get field from file
-        auto field_data = field_parser_.get_by_file_name(config_.getPath("file_name", true), type, "V/cm");
+        auto field_data = field_parser_.get_by_file_name(config_.getPath("file_name", true), type, units);
 
         // Check if electric field matches chip
         check_detector_match(field_data.getSize(), thickness_domain, field_scale);
