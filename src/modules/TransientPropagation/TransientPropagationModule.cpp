@@ -270,11 +270,11 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(co
             if(detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(check_position))) {
                 // FIXME this currently depends in the direction of the drift
                 if(position.z() > 0 && type == CarrierType::HOLE) {
-                    LOG(WARNING) << "Not stopping carrier " << type << " at "
-                                 << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um"});
+                    LOG(DEBUG) << "Not stopping carrier " << type << " at "
+                               << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um"});
                 } else if(position.z() < 0 && type == CarrierType::ELECTRON) {
-                    LOG(WARNING) << "Not stopping carrier " << type << " at "
-                                 << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um"});
+                    LOG(DEBUG) << "Not stopping carrier " << type << " at "
+                               << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um"});
                 } else {
                     within_sensor = false;
                 }
