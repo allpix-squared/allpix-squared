@@ -80,8 +80,20 @@ namespace allpix {
         }
     };
 
+    /**
+     * @brief Class to parse Allpix Squared field data from files
+     *
+     * This class can be used to deserialize and parse FieldData objects from files of different format. The FieldData
+     * objects read from file are cached, and a cache hit will be returned when trying to re-read a file with the same
+     * canoncial path.
+     */
     template <typename T = double> class FieldParser {
     public:
+        /**
+         * Construct a FieldParser
+         * @param quantity Quantity of individual field points, vector (three values per point) or scalar (one value per
+         * point)
+         */
         FieldParser(const FieldQuantity quantity) {
             // Store quantity: vector or scalar field:
             N_ = static_cast<std::underlying_type<FieldQuantity>::type>(quantity);
@@ -89,7 +101,11 @@ namespace allpix {
         ~FieldParser() = default;
 
         /**
-         * @brief Get the field from a file name, caching the result
+         * @brief Parse a file and retrieve the field data.
+         * @param file_name  File name (as canonical path) of the input file to be parsed
+         * @param file_type  Type of file (file format) to be parsed
+         * @param units      Optional units to convert the field from after reading from file. Only used by some formats.
+         * @return           Field data object read from file or internal cache
          */
         FieldData<T>
         get_by_file_name(const std::string& file_name, const FileType& file_type, const std::string units = std::string()) {
@@ -114,6 +130,12 @@ namespace allpix {
         }
 
     private:
+        /**
+         * @brief Function to deserialize FieldData from an APF file, using the cereal library. This does not convert any
+         * units, i.e. all values stored in APF files are given framework-internal base units. This includes the field data
+         * itself as well as the field size.
+         * @param file_name  File name (as canonical path) of the input file to be parsed
+         */
         FieldData<T> parse_apf_file(const std::string& file_name) {
             std::ifstream file(file_name, std::ios::binary);
             FieldData<double> field_data;
@@ -133,6 +155,13 @@ namespace allpix {
             return field_data;
         }
 
+        /**
+         * @brief Function to read FieldData from INIT-formatted ASCII files. Values are interpreted in the units provided by
+         * the argument and converted to the framework-internal base units. The size of the field given in the file is always
+         * interpreted as micrometers.
+         * @param file_name  File name (as canonical path) of the input file to be parsed
+         * @param units      Units to convert the values of the field data from
+         */
         FieldData<T> parse_init_file(const std::string& file_name, const std::string units) {
             // Load file
             std::ifstream file(file_name);
@@ -206,8 +235,19 @@ namespace allpix {
         std::map<std::string, FieldData<T>> field_map_;
     };
 
+    /**
+     * @brief Class to write Allpix Squared field data to files
+     *
+     * This class can be used to serialize FieldData objects into files using different formats. Scalar as well as vector
+     * fields are supported.
+     */
     template <typename T = double> class FieldWriter {
     public:
+        /**
+         * @brief Construct a FileWriter
+         * @param quantity Quantity of individual field points, vector (three values per point) or scalar (one value per
+         * point)
+         */
         FieldWriter(const FieldQuantity quantity) {
             // Store quantity: vector or scalar field:
             N_ = static_cast<std::underlying_type<FieldQuantity>::type>(quantity);
@@ -216,6 +256,10 @@ namespace allpix {
 
         /**
          * @brief Write the field to a file
+         * @param field_data Field data object to store
+         * @param file_name  File name (as canonical path) of the output file to be created
+         * @param file_type  Type of file (file format) to be produced
+         * @param units      Optional units to convert the field into before writing. Only used by some formats.
          */
         void write_file(const FieldData<T>& field_data,
                         const std::string& file_name,
@@ -242,6 +286,13 @@ namespace allpix {
         }
 
     private:
+        /**
+         * @brief Function to serialize FieldData into an APF file, using the cereal library. This does not convert any
+         * units, i.e. all values stored in APF files are given framework-internal base units. This includes the field data
+         * itself as well as the field size.
+         * @param field_data Field data object to store
+         * @param file_name  File name (as canonical path) of the output file to be created
+         */
         void write_apf_file(const FieldData<T>& field_data, const std::string& file_name) {
             std::ofstream file(file_name, std::ios::binary);
 
@@ -250,6 +301,14 @@ namespace allpix {
             archive(field_data);
         }
 
+        /**
+         * @brief Function to write FieldData objects out to INIT-formatted ASCII files. Values are converted from the
+         * framework-internal base units in which the data is stored in FieldData into the units provided by the units
+         * parameter. The size of the field is always converted to micrometers.
+         * @param field_data Field data object to store
+         * @param file_name  File name (as canonical path) of the output file to be created
+         * @param units      Units to convert the values of the field data to.
+         */
         void write_init_file(const FieldData<T>& field_data, const std::string& file_name, const std::string units) {
             std::ofstream file(file_name);
 
