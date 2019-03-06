@@ -138,14 +138,14 @@ void ProjectionPropagationModule::run(Event* event) const {
         LOG(TRACE) << "Electric field at carrier position / top of the sensor: " << Units::display(efield_mag_top, "V/cm")
                    << " , " << Units::display(efield_mag, "V/cm");
 
-        slope_efield_ = (efield_mag_top - efield_mag) / (std::abs(top_z_ - position.z()));
+        auto slope_efield = (efield_mag_top - efield_mag) / (std::abs(top_z_ - position.z()));
 
         // Calculate the drift time
-        auto calc_drift_time = [&]() {
+        auto calc_drift_time = [&, slope_efield]() {
             double Ec = (type == CarrierType::ELECTRON ? electron_Ec_ : hole_Ec_);
             double zero_mobility = (type == CarrierType::ELECTRON ? electron_Vm_ / electron_Ec_ : hole_Vm_ / hole_Ec_);
 
-            return ((log(efield_mag_top) - log(efield_mag)) / slope_efield_ + std::abs(top_z_ - position.z()) / Ec) /
+            return ((log(efield_mag_top) - log(efield_mag)) / slope_efield + std::abs(top_z_ - position.z()) / Ec) /
                    zero_mobility;
         };
 

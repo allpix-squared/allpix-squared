@@ -80,9 +80,6 @@ namespace allpix {
         double electron_Ec_;
         double electron_Beta_;
 
-        // Calculated slope of the electric field
-        double slope_efield_;
-
         // Precalculated value for Boltzmann constant:
         double boltzmann_kT_;
 
