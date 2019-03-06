@@ -87,8 +87,7 @@ namespace allpix {
         std::mt19937_64 random_generator_;
 
         // Histograms to output
-        TH2D* hit_map;
-        TH2D* cluster_map;
+        TH2D *hit_map, *charge_map, *cluster_map;
         TProfile2D *cluster_size_map, *cluster_size_x_map, *cluster_size_y_map;
         TProfile2D *cluster_charge_map, *seed_charge_map;
         TProfile2D *residual_map, *residual_x_map, *residual_y_map;

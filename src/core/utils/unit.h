@@ -22,7 +22,7 @@ namespace allpix {
 
     /**
      * @brief Static class to access units
-     * @see The list of framework units defined in \ref Allpix::add_units
+     * @see The list of framework units defined in \ref allpix::register_units
      *
      * Units are short, unique and case-insensitive strings that indicate a particular multiplication factor from the base
      * unit in the framework. The unit system can convert external types to the system units and vise-versa for displaying

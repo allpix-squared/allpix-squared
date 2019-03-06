@@ -314,8 +314,9 @@ These are specified by adding a dot (\texttt{.}) between the detector and the ac
 
 No interaction with the framework is possible during the simulation. Signals can however be send using keyboard shortcuts to terminate the simulation, either gracefully or with force. The executable understand the following signals:
 \begin{itemize}
-\item \texttt{CTRL+C} (SIGINT): Request a graceful shutdown of the simulation. This means the current simulated events are finished, while all other events requested in the configuration file are ignored. After finishing the event, the finalization stage is run for every module to ensure all modules finish properly. This signal can be very useful when too many events are specified and the simulation takes too long to finish entirely, but the output generated so far should still be kept.
-\item \texttt{CTRL+\textbackslash} (SIGQUIT): Forcefully terminates the simulation. It is not recommmended to use this signal as it will normally lead to the loss of all generated data. This signal should only be used when graceful termination is for any reason not possible.
+    \item SIGINT (\texttt{CTRL+C}): Request a graceful shutdown of the simulation. This means all currently simulated events are finished, while all other events requested in the configuration file are ignored. After finishing the event, the finalization stage is run for every module to ensure all modules finish properly. This signal can be very useful when too many events are specified and the simulation takes too long to finish entirely, but the output generated so far should still be kept.
+    \item SIGTERM: Same as SIGINT, request a graceful shutdown of the simulation. This signal is emitted e.g.\ by the \command{kill} command or by cluster computing schedulers to ask for a termination of the job.
+    \item SIGQUIT (\texttt{CTRL+\textbackslash}): Forcefully terminates the simulation. It is not recommmended to use this signal as it will normally lead to the loss of all generated data. This signal should only be used when graceful termination is for any reason not possible.
 \end{itemize}
 
 
@@ -351,7 +352,6 @@ The simulation is started by passing the path of the main configuration file to 
 \begin{verbatim}
 $ allpix -c etc/manual.conf
 \end{verbatim}
-The output should look similar to the sample log provided in Appendix~\ref{sec:example_output}.
 The detector histograms such as the hit map are stored in the ROOT file \file{output/modules.root} in the TDirectory \textit{DetectorHistogrammer/}.
 
 If problems occur when exercising this example, it should be made sure that an up-to-date and properly installed version of \apsq is used (see the installation instructions in Chapter~\ref{ch:installation}).

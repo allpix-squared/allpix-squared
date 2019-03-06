@@ -54,12 +54,13 @@ namespace allpix {
                                                                        std::pair<double, double> thickness_domain);
 
         /**
-         * @brief Read field in the init format and apply it
+         * @brief Read field from a file in init or apf format and apply it
          * @param thickness_domain Domain of the thickness where the field is defined
          * @param field_scale Scaling parameters for the field size in x and y
          */
-        FieldData<double> read_init_field(std::pair<double, double> thickness_domain, std::array<double, 2> field_scale);
-        static FieldParser<double, 3> field_parser_;
+        FieldData<double>
+        read_field(std::pair<double, double> thickness_domain, std::array<double, 2> field_scale, const std::string& format);
+        static FieldParser<double> field_parser_;
 
         /**
          * @brief Create output plots of the electric field profile

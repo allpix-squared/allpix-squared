@@ -74,7 +74,7 @@ allpix::Units::UnitType Units::getSingle(std::string str) {
 allpix::Units::UnitType Units::get(std::string str) {
     UnitType ret_value = 1;
     if(allpix::trim(str).empty()) {
-        throw std::invalid_argument("empty unit is not defined");
+        return ret_value;
     }
 
     // Go through all units
