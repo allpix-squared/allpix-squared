@@ -39,27 +39,27 @@ namespace allpix {
         DepositionPointChargeModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector);
 
         /**
-         * @brief Deposit charge carriers for every simulated event
-         */
-        void run(unsigned int) override;
-
-        /**
          * @brief Initialize the histograms
          */
-        void init() override;
+        void init(std::mt19937_64&) override;
+
+        /**
+         * @brief Deposit charge carriers for every simulated event
+         */
+        void run(Event*) const override;
 
     private:
         /**
          * @brief Helper function to deposit charges at a single point
-         * @param event event number
+         * @param event Pointer to current event
          */
-        void DepositPoint(unsigned int event);
+        void DepositPoint(Event* event) const;
 
         /**
          * @brief Helper function to deposit charges along a line
-         * @param event event number
+         * @param event Pointer to current event
          */
-        void DepositLine(unsigned int event);
+        void DepositLine(Event* event) const;
 
         std::shared_ptr<Detector> detector_;
         Messenger* messenger_;
