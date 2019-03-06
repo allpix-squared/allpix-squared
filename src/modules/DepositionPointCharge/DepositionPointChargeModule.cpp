@@ -22,9 +22,9 @@
 using namespace allpix;
 
 DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
-                                                         Messenger* messenger,
+                                                         Messenger*,
                                                          std::shared_ptr<Detector> detector)
-    : Module(config, detector), detector_(std::move(detector)), messenger_(messenger) {
+    : Module(config, detector), detector_(std::move(detector)) {
 
     // Set default value for the number of charges deposited
     config_.setDefault("number_of_charges", 1);

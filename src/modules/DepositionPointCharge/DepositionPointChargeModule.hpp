@@ -62,7 +62,6 @@ namespace allpix {
         void DepositLine(Event* event) const;
 
         std::shared_ptr<Detector> detector_;
-        Messenger* messenger_;
 
         DepositionModel model_;
         ROOT::Math::XYZVector voxel_;
