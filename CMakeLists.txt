@@ -166,6 +166,9 @@ INCLUDE("cmake/clang-cpp-checks.cmake")
 ADD_SUBDIRECTORY(models)
 ADD_DEFINITIONS(-DALLPIX_MODEL_DIRECTORY="${MODEL_DIRECTORY}" -DALLPIX_MODEL_SUFFIX="${MODEL_SUFFIX}")
 
+# Include third-party libraries as system headers:
+INCLUDE_DIRECTORIES(SYSTEM 3rdparty)
+
 # Always include sources from top directory
 INCLUDE_DIRECTORIES(src)
 

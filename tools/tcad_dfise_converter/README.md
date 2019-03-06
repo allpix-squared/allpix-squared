@@ -3,10 +3,11 @@ This code takes the `.grd` and `.dat` files of the DF-ISE format from TCAD simul
 
 A new regular mesh is created by scanning the model volume in regular X Y and Z steps (not necessarily coinciding with original mesh nodes) and using a barycentric interpolation method to calculate the respective electric field vector on the new point. The interpolation uses the four closest, no-coplanar, neighbor vertex nodes such, that the respective tetrahedron encloses the query point. For the neighbors search, the software uses the Octree implementation [@octree].
 
-The output `.init` file can be imported into Allpix Squared. The INIT file has a header followed by a list of columns organized as
+The output `.init` or `.apf` file can be imported into Allpix Squared. The INIT file is an ASCII text file with a header followed by a list of columns organized as
 ```bash
 node.x node.y node.z observable.x observable.y observable.z
 ```
+The APF (Allpix Squared Field) data format contains the field data in binary form and is therefore a bit more compact and can be read much faster. Whenever possible, this format should be preferred.
 
 ### Compilation
 
@@ -30,6 +31,7 @@ It should be noted that the TCAD DF-ISE mesh converter depends on the core utili
 - Interpolated data visualization tool.
 
 ### Parameters
+* `model`: Field file format to use, can be **INIT** or **APF**, defaults to **APF** (binary format).
 * `dimension`: Specify mesh dimensionality (defaults to 3).
 * `region`: Region name to be meshed (defaults to `bulk`).
 * `observable`: Observable to be interpolated (defaults to `ElectricField`).
@@ -64,7 +66,7 @@ Possible options and their default values are:
 ```
 
 Observables currently implemented for interpolation are: `ElectrostaticPotential`, `ElectricField`, `DopingConcentration`, `DonorConcentration` and `AcceptorConcentration`.
-The output INIT file will be saved with the same file_prefix as the `.grd` and `.dat` files and the additional name suffix `_<observable>_interpolated.init`, where `<observable>` is replaced with the selected quantity.
+The output INIT/APF file will be saved with the same file_prefix as the `.grd` and `.dat` files and the additional name suffix `_<observable>_interpolated` and the appropriate file extension, where `<observable>` is replaced with the selected quantity.
 
 The new coordinate system of the mesh can be changed by providing an array for the *xyz* keyword in the configuration file. The first entry of the array, representing the new mesh *x* coordinate, should indicate the TCAD original mesh coordinate (*x*, *y* or *z*), and so on for the second (*y*) and third (*z*) array entry. For example, if one wants to have the TCAD *x*, *y* and *z* mesh coordinates mapped into the *y*, *z* and *x* coordinates of the new mesh, respectively, the configuration file should have `xyz = z x y`. If one wants to flip one of the coordinates, the minus symbol (`-`) can be used in front of one of the coordinates (such as `xyz = z x -y`).
 
@@ -79,18 +81,18 @@ mesh_plotter -f <file_name> [<options>] [<arguments>]
 ```
 The following command-line options are supported:
 ```
--f <file_name>         init file name
+-f <file_name>         name of the interpolated file in APF or INIT format
 -c <cut>               projection height index (default is mesh_pitch / 2)
 -h                     display this help text
 -l                     plot with logarithmic scale if set
 -o <output_file_name>  name of the file to output (default is efield.png)
--p <plane>             plane to be ploted. xy, yz or zx (default is yz)
+-p <plane>             plane to be plotted. xy, yz or zx (default is yz)
 ```
 
 The list with options and defaults is displayed with the `-h` option.
 In a 3D mesh, the plane to be plotted must be identified by using the option `-p` with argument *xy*, *yz* or *zx*, defaulting to *yz*.
 The data to be plotted can be selected with the `-d` option, the arguments are *ex*, *ey*, *ez* for the vector components or the default value *n* for the norm of the electric field.
-The number of mesh divisions in each dimension is automatically read from the `init` file, by default the cut in the third dimension is done in the center but can be shifted using the `-c` option described above.
+The number of mesh divisions in each dimension is automatically read from the `init`/`apf` file, by default the cut in the third dimension is done in the center but can be shifted using the `-c` option described above.
 
 ### Octree
 J. Behley, V. Steinhage, A.B. Cremers. *Efficient Radius Neighbor Search in Three-dimensional Point Clouds*, Proc. of the IEEE International Conference on Robotics and Automation (ICRA), 2015 [@octree].

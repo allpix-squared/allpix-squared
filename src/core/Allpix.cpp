@@ -26,6 +26,8 @@
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 
+#include "tools/units.h"
+
 using namespace allpix;
 
 /**
@@ -190,7 +192,7 @@ void Allpix::load() {
     }
 
     // Set the default units to use
-    add_units();
+    register_units();
 
     // Set the ROOT style
     set_style();
@@ -250,59 +252,6 @@ void Allpix::finalize() {
 void Allpix::terminate() {
     terminate_ = true;
     mod_mgr_->terminate();
-}
-
-void Allpix::add_units() {
-    LOG(TRACE) << "Adding physical units";
-
-    // UNITY
-    Units::add("1", 1);
-
-    // LENGTH
-    Units::add("nm", 1e-6);
-    Units::add("um", 1e-3);
-    Units::add("mm", 1);
-    Units::add("cm", 1e1);
-    Units::add("dm", 1e2);
-    Units::add("m", 1e3);
-    Units::add("km", 1e6);
-
-    // TIME
-    Units::add("ps", 1e-3);
-    Units::add("ns", 1);
-    Units::add("us", 1e3);
-    Units::add("ms", 1e6);
-    Units::add("s", 1e9);
-
-    // TEMPERATURE
-    Units::add("K", 1);
-
-    // ENERGY
-    Units::add("eV", 1e-6);
-    Units::add("keV", 1e-3);
-    Units::add("MeV", 1);
-    Units::add("GeV", 1e3);
-
-    // CHARGE
-    Units::add("e", 1);
-    Units::add("ke", 1e3);
-    Units::add("fC", 1 / 1.6021766208e-4);
-    Units::add("C", 1 / 1.6021766208e-19);
-
-    // VOLTAGE
-    // NOTE: fixed by above
-    Units::add("V", 1e-6);
-    Units::add("kV", 1e-3);
-
-    // MAGNETIC FIELD
-    Units::add("T", 1e-3);
-    Units::add("mT", 1e-6);
-
-    // ANGLES
-    // NOTE: these are fake units
-    Units::add("deg", 0.01745329252);
-    Units::add("rad", 1);
-    Units::add("mrad", 1e-3);
 }
 
 /**
