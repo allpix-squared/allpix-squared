@@ -30,9 +30,6 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
     messenger->bindSingle<DetectorHistogrammerModule, PixelHitMessage>(this);
     messenger->bindSingle<DetectorHistogrammerModule, MCParticleMessage, MsgFlags::REQUIRED>(this);
 
-    // Seed the random generator with the global seed
-    random_generator_.seed(getRandomSeed());
-
     auto model = detector_->getModel();
     matching_cut_ = config.get<ROOT::Math::XYVector>("matching_cut", model->getPixelSize() * 3);
     track_resolution_ = config.get<ROOT::Math::XYVector>("track_resolution",
@@ -240,6 +237,8 @@ void DetectorHistogrammerModule::run(Event* event) const {
     auto pixels_message = event->fetchMessage<PixelHitMessage>();
     auto mcparticle_message = event->fetchMessage<MCParticleMessage>();
 
+    auto random_generator = event->getRandomEngine();
+
     // Check that we actually received pixel hits - we might have none and just received MCParticles!
     if(pixels_message != nullptr) {
         LOG(DEBUG) << "Received " << pixels_message->getData().size() << " pixel hits";
@@ -264,8 +263,8 @@ void DetectorHistogrammerModule::run(Event* event) const {
 
     // Lambda for smearing the Monte Carlo truth position with the track resolution
     auto track_smearing = [&](auto residuals) {
-        double dx = std::normal_distribution<double>(0, residuals.x())(random_generator_);
-        double dy = std::normal_distribution<double>(0, residuals.y())(random_generator_);
+        double dx = std::normal_distribution<double>(0, residuals.x())(random_generator);
+        double dy = std::normal_distribution<double>(0, residuals.y())(random_generator);
         return DisplacementVector3D<Cartesian3D<double>>(dx, dy, 0);
     };
 
