@@ -429,7 +429,7 @@ int main(int argc, char** argv) {
     unibn::Octree<Point> octree;
     octree.initialize(points);
 
-    auto mesh_section = [&](double x) {
+    auto mesh_section = [&](double x, double y) {
         allpix::Log::setReportingLevel(log_level);
 
         // New mesh slice
@@ -438,182 +438,176 @@ int main(int argc, char** argv) {
         // Local index cut used:
         auto my_index_cut = index_cut;
 
-        double y = miny + ystep / 2.0;
-        for(int j = 0; j < divisions.y(); ++j) {
-            double z = minz + zstep / 2.0;
-            for(int k = 0; k < divisions.z(); ++k) {
-                Point q, e;
+        double z = minz + zstep / 2.0;
+        for(int k = 0; k < divisions.z(); ++k) {
+            Point q, e;
+            if(ss_flag) {
+                std::map<std::string, int> map;
+                map.emplace("x", ss_point[0]);
+                map.emplace("y", ss_point[1]);
+                map.emplace("z", ss_point[2]);
+                x = map.find(rot.at(0))->second;
+                y = map.find(rot.at(1))->second;
+                z = map.find(rot.at(2))->second;
+            }
+            if(dimension == 2) {
+                q.x = -1;
+                q.y = y;
+                q.z = z; // New mesh vertex
+                e.x = -1;
+                e.y = y;
+                e.z = z;
+            } else {
+                q.x = x;
+                q.y = y;
+                q.z = z; // New mesh vertex
+                e.x = x;
+                e.y = y;
+                e.z = z; // Corresponding, to be interpolated, electric field
+            }
+            bool valid = false;
+
+            size_t prev_neighbours = 0;
+            double radius = initial_radius;
+            size_t index_cut_up;
+            while(radius < max_radius) {
+                LOG(DEBUG) << "Search radius: " << radius;
+                // Calling octree neighbours search and sorting the results list with the closest neighbours first
+                std::vector<unsigned int> results;
+                std::vector<unsigned int> results_high;
+                octree.radiusNeighbors<unibn::L2Distance<Point>>(q, radius, results_high);
+                std::sort(results_high.begin(), results_high.end(), [&](unsigned int a, unsigned int b) {
+                    return unibn::L2Distance<Point>::compute(points[a], q) < unibn::L2Distance<Point>::compute(points[b], q);
+                });
+
+                if(threshold_flag) {
+                    size_t results_size = results_high.size();
+                    int count = 0;
+                    for(size_t index = 0; index < results_size; index++) {
+                        if(unibn::L2Distance<Point>::compute(points[results_high[index]], q) < radius_threshold) {
+                            count++;
+                            continue;
+                        }
+                        results.push_back(results_high[index]);
+                    }
+                    LOG(DEBUG) << "Applying radius threshold of " << radius_threshold << std::endl
+                               << "Removing " << count << " of " << results_size;
+                } else {
+                    results = results_high;
+                }
+
+                // If after a radius step no new neighbours are found, go to the next radius step
+                if(results.size() <= prev_neighbours || results.empty()) {
+                    prev_neighbours = results.size();
+                    LOG(WARNING) << "No (new) neighbour found with radius " << radius << ". Increasing search radius.";
+                    radius = radius + radius_step;
+                    continue;
+                }
+
+                if(results.size() < 4) {
+                    LOG(WARNING) << "Incomplete mesh element found for radius " << radius << std::endl
+                                 << "Increasing the readius (setting a higher initial radius may help)";
+                    radius = radius + radius_step;
+                    continue;
+                }
+
+                LOG(DEBUG) << "Number of vertices found: " << results.size();
+
                 if(ss_flag) {
-                    std::map<std::string, int> map;
-                    map.emplace("x", ss_point[0]);
-                    map.emplace("y", ss_point[1]);
-                    map.emplace("z", ss_point[2]);
-                    x = map.find(rot.at(0))->second;
-                    y = map.find(rot.at(1))->second;
-                    z = map.find(rot.at(2))->second;
+                    mesh_plotter(grid_file, ss_radius, radius, x, y, z, points, results);
+                    throw std::runtime_error("aborted interpolation, mesh point snapshot taken");
+                }
+
+                // Finding tetrahedrons
+                Eigen::Matrix4d matrix;
+                size_t num_nodes_element = 0;
+                if(dimension == 3) {
+                    num_nodes_element = 4;
                 }
                 if(dimension == 2) {
-                    q.x = -1;
-                    q.y = y;
-                    q.z = z; // New mesh vertex
-                    e.x = -1;
-                    e.y = y;
-                    e.z = z;
-                } else {
-                    q.x = x;
-                    q.y = y;
-                    q.z = z; // New mesh vertex
-                    e.x = x;
-                    e.y = y;
-                    e.z = z; // Corresponding, to be interpolated, electric field
+                    num_nodes_element = 3;
                 }
-                bool valid = false;
+                std::vector<Point> element_vertices;
+                std::vector<Point> element_vertices_field;
 
-                size_t prev_neighbours = 0;
-                double radius = initial_radius;
-                size_t index_cut_up;
-                while(radius < max_radius) {
-                    LOG(DEBUG) << "Search radius: " << radius;
-                    // Calling octree neighbours search and sorting the results list with the closest neighbours first
-                    std::vector<unsigned int> results;
-                    std::vector<unsigned int> results_high;
-                    octree.radiusNeighbors<unibn::L2Distance<Point>>(q, radius, results_high);
-                    std::sort(results_high.begin(), results_high.end(), [&](unsigned int a, unsigned int b) {
-                        return unibn::L2Distance<Point>::compute(points[a], q) <
-                               unibn::L2Distance<Point>::compute(points[b], q);
-                    });
+                std::vector<int> bitmask(num_nodes_element, 1);
+                bitmask.resize(results.size(), 0);
+                std::vector<size_t> index;
 
-                    if(threshold_flag) {
-                        size_t results_size = results_high.size();
-                        int count = 0;
-                        for(size_t index = 0; index < results_size; index++) {
-                            if(unibn::L2Distance<Point>::compute(points[results_high[index]], q) < radius_threshold) {
-                                count++;
-                                continue;
+                if(!index_cut_flag) {
+                    my_index_cut = results.size();
+                }
+                index_cut_up = my_index_cut;
+                while(index_cut_up <= results.size()) {
+                    do {
+                        valid = false;
+                        index.clear();
+                        element_vertices.clear();
+                        element_vertices_field.clear();
+                        // print integers and permute bitmask
+                        for(size_t idk = 0; idk < results.size(); ++idk) {
+                            if(bitmask[idk] != 0) {
+                                index.push_back(idk);
+                                element_vertices.push_back(points[results[idk]]);
+                                element_vertices_field.push_back(field[results[idk]]);
                             }
-                            results.push_back(results_high[index]);
-                        }
-                        LOG(DEBUG) << "Applying radius threshold of " << radius_threshold << std::endl
-                                   << "Removing " << count << " of " << results_size;
-                    } else {
-                        results = results_high;
-                    }
-
-                    // If after a radius step no new neighbours are found, go to the next radius step
-                    if(results.size() <= prev_neighbours || results.empty()) {
-                        prev_neighbours = results.size();
-                        LOG(WARNING) << "No (new) neighbour found with radius " << radius << ". Increasing search radius.";
-                        radius = radius + radius_step;
-                        continue;
-                    }
-
-                    if(results.size() < 4) {
-                        LOG(WARNING) << "Incomplete mesh element found for radius " << radius << std::endl
-                                     << "Increasing the readius (setting a higher initial radius may help)";
-                        radius = radius + radius_step;
-                        continue;
-                    }
-
-                    LOG(DEBUG) << "Number of vertices found: " << results.size();
-
-                    if(ss_flag) {
-                        mesh_plotter(grid_file, ss_radius, radius, x, y, z, points, results);
-                        throw std::runtime_error("aborted interpolation, mesh point snapshot taken");
-                    }
-
-                    // Finding tetrahedrons
-                    Eigen::Matrix4d matrix;
-                    size_t num_nodes_element = 0;
-                    if(dimension == 3) {
-                        num_nodes_element = 4;
-                    }
-                    if(dimension == 2) {
-                        num_nodes_element = 3;
-                    }
-                    std::vector<Point> element_vertices;
-                    std::vector<Point> element_vertices_field;
-
-                    std::vector<int> bitmask(num_nodes_element, 1);
-                    bitmask.resize(results.size(), 0);
-                    std::vector<size_t> index;
-
-                    if(!index_cut_flag) {
-                        my_index_cut = results.size();
-                    }
-                    index_cut_up = my_index_cut;
-                    while(index_cut_up <= results.size()) {
-                        do {
-                            valid = false;
-                            index.clear();
-                            element_vertices.clear();
-                            element_vertices_field.clear();
-                            // print integers and permute bitmask
-                            for(size_t idk = 0; idk < results.size(); ++idk) {
-                                if(bitmask[idk] != 0) {
-                                    index.push_back(idk);
-                                    element_vertices.push_back(points[results[idk]]);
-                                    element_vertices_field.push_back(field[results[idk]]);
-                                }
-                                if(index.size() == num_nodes_element) {
-                                    break;
-                                }
+                            if(index.size() == num_nodes_element) {
+                                break;
                             }
-
-                            bool index_flag = false;
-                            for(size_t ttt = 0; ttt < num_nodes_element; ttt++) {
-                                if(index[ttt] > index_cut_up) {
-                                    index_flag = true;
-                                    break;
-                                }
-                            }
-                            if(index_flag) {
-                                continue;
-                            }
-
-                            if(dimension == 3) {
-                                LOG(TRACE) << "Parsing neighbors [index]: " << index[0] << ", " << index[1] << ", "
-                                           << index[2] << ", " << index[3];
-                            }
-                            if(dimension == 2) {
-                                LOG(TRACE)
-                                    << "Parsing neighbors [index]: " << index[0] << ", " << index[1] << ", " << index[2];
-                            }
-
-                            MeshElement element(dimension, index, element_vertices, element_vertices_field);
-                            valid = element.validElement(volume_cut, q);
-                            if(!valid) {
-                                continue;
-                            }
-                            element.printElement(q);
-                            e = element.getObservable(q);
-                            break;
-                        } while(std::prev_permutation(bitmask.begin(), bitmask.end()));
-
-                        if(valid) {
-                            break;
                         }
 
-                        LOG(DEBUG) << "All combinations tried up to index " << index_cut_up
-                                   << " done. Increasing the index cut.";
-                        index_cut_up = index_cut_up + my_index_cut;
-                    }
+                        bool index_flag = false;
+                        for(size_t ttt = 0; ttt < num_nodes_element; ttt++) {
+                            if(index[ttt] > index_cut_up) {
+                                index_flag = true;
+                                break;
+                            }
+                        }
+                        if(index_flag) {
+                            continue;
+                        }
+
+                        if(dimension == 3) {
+                            LOG(TRACE) << "Parsing neighbors [index]: " << index[0] << ", " << index[1] << ", " << index[2]
+                                       << ", " << index[3];
+                        }
+                        if(dimension == 2) {
+                            LOG(TRACE) << "Parsing neighbors [index]: " << index[0] << ", " << index[1] << ", " << index[2];
+                        }
+
+                        MeshElement element(dimension, index, element_vertices, element_vertices_field);
+                        valid = element.validElement(volume_cut, q);
+                        if(!valid) {
+                            continue;
+                        }
+                        element.printElement(q);
+                        e = element.getObservable(q);
+                        break;
+                    } while(std::prev_permutation(bitmask.begin(), bitmask.end()));
 
                     if(valid) {
                         break;
                     }
 
-                    LOG(DEBUG) << "All combinations tried. Increasing the radius.";
-                    radius = radius + radius_step;
+                    LOG(DEBUG) << "All combinations tried up to index " << index_cut_up
+                               << " done. Increasing the index cut.";
+                    index_cut_up = index_cut_up + my_index_cut;
                 }
 
-                if(!valid) {
-                    throw std::runtime_error("Couldn't interpolate new mesh point, the grid might be too irregular");
+                if(valid) {
+                    break;
                 }
 
-                new_mesh.push_back(e);
-                z += zstep;
+                LOG(DEBUG) << "All combinations tried. Increasing the radius.";
+                radius = radius + radius_step;
             }
-            y += ystep;
+
+            if(!valid) {
+                throw std::runtime_error("Couldn't interpolate new mesh point, the grid might be too irregular");
+            }
+
+            new_mesh.push_back(e);
+            z += zstep;
         }
 
         return new_mesh;
@@ -631,7 +625,11 @@ int main(int argc, char** argv) {
         double x = minx + xstep / 2.0;
         // Loop over x coordinate, add tasks for each coorinate to the queue
         for(int i = 0; i < divisions.x(); ++i) {
-            mesh_futures.push_back(pool.submit(mesh_section, x));
+            double y = miny + ystep / 2.0;
+            for(int j = 0; j < divisions.y(); ++j) {
+                mesh_futures.push_back(pool.submit(mesh_section, x, y));
+                y += ystep;
+            }
             x += xstep;
         }
 
