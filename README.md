@@ -124,3 +124,5 @@ The documentation is distributed under the terms of the CC-BY-4.0 license. This 
 The LaTeX and Pandoc CMake modules used by Allpix<sup>2</sup> are licensed under the BSD 3-Clause License.
 
 The octree library of the TCAD DF-ISE converter is made available under the MIT license, more information [here](tools/tcad_dfise_converter/README.md).
+
+The cereal C++11 serialization library used by Allpix<sup>2</sup> is publised under the BSD 3-Clause License.

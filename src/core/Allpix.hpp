@@ -74,11 +74,6 @@ namespace allpix {
 
     private:
         /**
-         * @brief Sets the default unit conventions
-         */
-        void add_units();
-
-        /**
          * @brief Set the default ROOT plot style
          */
         void set_style();
