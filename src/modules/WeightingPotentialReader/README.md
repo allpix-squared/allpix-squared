@@ -39,20 +39,20 @@ While this is not a problem in general, it might hint at a wrong potential map b
 
 
 ### Parameters
-* `model` : Type of the weighting potential model, either **init** or **pad**.
-* `file_name` : Location of file containing the weighting potential in the INIT format. Only used if the *model* parameter has the value **init**.
+* `model` : Type of the weighting potential model, either **init**, **apf** or **pad**.
+* `file_name` : Location of file containing the weighting potential in the INIT or APF formats. Only used if the *model* parameter has the value **init** or **apf**.
 * `output_plots`:  Determines if output plots should be generated. Disabled by default.
 * `output_plots_steps` : Number of bins along the z-direction for which the weighting potential is evaluated. Defaults to 500 bins and is only used if `output_plots` is enabled.
 * `output_plots_position`: 2D Position in x and y at which the weighting potential is evaluated along the z-axis. By default, the potential is plotted for the position in the pixel center, i.e. (0, 0). Only used if `output_plots` is enabled.
 
 ### Usage
-An example to add a weighting potential via an INIT file to the detector called "dut" is given below.
+An example to add a weighting potential via an APF file to the detector called "dut" is given below.
 
 ```ini
 [WeightingPotentialReader]
 name = "dut"
-model = "init"
-file_name = "example_weighting_field.init"
+model = "apf"
+file_name = "example_weighting_field.apf"
 ```
 
 [@planecondenser]: https://doi.org/10.1016/j.nima.2014.08.044

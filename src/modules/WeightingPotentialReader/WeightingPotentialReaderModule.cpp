@@ -42,14 +42,14 @@ void WeightingPotentialReaderModule::init() {
     auto thickness_domain = std::make_pair(sensor_max_z - model->getSensorSize().z(), sensor_max_z);
 
     // Calculate the potential depending on the configuration
-    if(field_model == "init") {
-        auto field_data = read_init_field(thickness_domain);
+    if(field_model == "init" || field_model == "apf") {
+        auto field_data = read_field(thickness_domain, field_model);
 
-        // Get field scale from physical size read form the field data:
-        std::array<double, 2> field_scale{{std::get<2>(field_data)[0], std::get<2>(field_data)[1]}};
-
-        detector_->setWeightingPotentialGrid(
-            std::get<0>(field_data), std::get<1>(field_data), field_scale, std::array<double, 2>{{0, 0}}, thickness_domain);
+        detector_->setWeightingPotentialGrid(field_data.getData(),
+                                             field_data.getDimensions(),
+                                             std::array<double, 2>{{field_data.getSize()[0], field_data.getSize()[1]}},
+                                             std::array<double, 2>{{0, 0}},
+                                             thickness_domain);
     } else if(field_model == "pad") {
         LOG(TRACE) << "Adding weighting potential from pad in plane condenser";
 
@@ -170,18 +170,21 @@ void WeightingPotentialReaderModule::create_output_plots() {
  * The field read from the INIT format are shared between module instantiations
  * using the static WeightingPotentialReaderModule::get_by_file_name method.
  */
-FieldParser<double, 1> WeightingPotentialReaderModule::field_parser_("");
-FieldData<double> WeightingPotentialReaderModule::read_init_field(std::pair<double, double> thickness_domain) {
+FieldParser<double> WeightingPotentialReaderModule::field_parser_(FieldQuantity::SCALAR);
+FieldData<double> WeightingPotentialReaderModule::read_field(std::pair<double, double> thickness_domain,
+                                                             const std::string& format) {
     using namespace ROOT::Math;
+
+    FileType type = (format == "init" ? FileType::INIT : format == "apf" ? FileType::APF : FileType::UNKNOWN);
 
     try {
         LOG(TRACE) << "Fetching weighting potential from init file";
 
         // Get field from file
-        auto field_data = field_parser_.get_by_file_name(config_.getPath("file_name", true));
+        auto field_data = field_parser_.get_by_file_name(config_.getPath("file_name", true), type);
 
         // Check maximum/minimum values of the potential:
-        auto elements = std::minmax_element(std::get<0>(field_data)->begin(), std::get<0>(field_data)->end());
+        auto elements = std::minmax_element(field_data.getData()->begin(), field_data.getData()->end());
         if(*elements.first < 0 || *elements.second > 1) {
             throw InvalidValueError(config_,
                                     "file_name",
@@ -189,11 +192,11 @@ FieldData<double> WeightingPotentialReaderModule::read_init_field(std::pair<doub
                                         " < phi < " + std::to_string(*elements.second) + ", expected 0 < phi < 1");
         }
 
-        // Check if electric field matches chip
-        check_detector_match(std::get<2>(field_data), thickness_domain);
+        // Check if weigthing potential matches chip
+        check_detector_match(field_data.getSize(), thickness_domain);
 
-        LOG(INFO) << "Set weighting field with " << std::get<1>(field_data).at(0) << "x" << std::get<1>(field_data).at(1)
-                  << "x" << std::get<1>(field_data).at(2) << " cells";
+        LOG(INFO) << "Set weighting field with " << field_data.getDimensions()[0] << "x" << field_data.getDimensions()[1]
+                  << "x" << field_data.getDimensions()[2] << " cells";
 
         // Return the field data
         return field_data;

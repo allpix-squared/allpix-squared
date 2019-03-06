@@ -55,8 +55,8 @@ namespace allpix {
          * @brief Read field in the init format and apply it
          * @param thickness_domain Domain of the thickness where the field is defined
          */
-        FieldData<double> read_init_field(std::pair<double, double> thickness_domain);
-        static FieldParser<double, 1> field_parser_;
+        FieldData<double> read_field(std::pair<double, double> thickness_domain, const std::string& format);
+        static FieldParser<double> field_parser_;
 
         /**
          * @brief Create output plots of the electric field profile
