@@ -527,12 +527,9 @@ int main(int argc, char** argv) {
                 if(dimension == 2) {
                     num_nodes_element = 3;
                 }
-                std::vector<Point> element_vertices;
-                std::vector<Point> element_vertices_field;
 
                 std::vector<int> bitmask(num_nodes_element, 1);
                 bitmask.resize(results.size(), 0);
-                std::vector<size_t> index;
 
                 if(!index_cut_flag) {
                     my_index_cut = results.size();
@@ -541,9 +538,9 @@ int main(int argc, char** argv) {
                 while(index_cut_up <= results.size()) {
                     do {
                         valid = false;
-                        index.clear();
-                        element_vertices.clear();
-                        element_vertices_field.clear();
+                        std::vector<size_t> index;
+                        std::vector<Point> element_vertices;
+                        std::vector<Point> element_vertices_field;
                         // print integers and permute bitmask
                         for(size_t idk = 0; idk < results.size(); ++idk) {
                             if(bitmask[idk] != 0) {
