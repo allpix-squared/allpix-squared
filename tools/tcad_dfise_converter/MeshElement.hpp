@@ -122,8 +122,9 @@ namespace mesh_converter {
 
         /**
          * @brief Print tetrahedron information for debugging
+         * @return String describing the mesh element
          */
-        void printElement(Point& qp);
+        std::string printElement(Point& qp);
 
     private:
         int dimension_{3};

@@ -577,7 +577,8 @@ int main(int argc, char** argv) {
                         if(!valid) {
                             continue;
                         }
-                        element.printElement(q);
+
+                        LOG(DEBUG) << element.printElement(q);
                         e = element.getObservable(q);
                         break;
                     } while(std::prev_permutation(bitmask.begin(), bitmask.end()));
