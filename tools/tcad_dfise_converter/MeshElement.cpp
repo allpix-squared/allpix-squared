@@ -6,14 +6,6 @@
 
 using namespace mesh_converter;
 
-Point MeshElement::getVertex(size_t index) const {
-    return vertices_[index];
-}
-
-Point MeshElement::getVertexProperty(size_t index) const {
-    return e_field_[index];
-}
-
 void MeshElement::setDimension(int dimension) {
     dimension_ = dimension;
 }

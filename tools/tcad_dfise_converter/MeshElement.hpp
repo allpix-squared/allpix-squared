@@ -43,18 +43,6 @@ namespace mesh_converter {
         }
 
         /**
-         * @brief Get tetrahedron vertice defined by the index
-         * @param index Vertex to be returned
-         */
-        Point getVertex(size_t index) const;
-
-        /**
-         * @brief Get the point with the components of the electric field for a individual vertex
-         * @param index Vertex to return electric field Point
-         */
-        Point getVertexProperty(size_t index) const;
-
-        /**
          * @brief Get dimension of the element
          */
         int getDimension() const;
