@@ -17,14 +17,6 @@ namespace mesh_converter {
         MeshElement() = delete;
 
         /**
-         * @brief Constructor with vector containing the vertices points
-         * @param vertices_tetrahedron List containing 4 mesh node points
-         */
-        explicit MeshElement(std::vector<Point> vertices_tetrahedron) : vertices_(std::move(vertices_tetrahedron)) {
-            calculate_volume();
-        }
-
-        /**
          * @brief Constructor using a vector to store the index of the nodes and a list for the mesh and electric field
          * points
          * @param dimension Dimension of the nodes
@@ -33,7 +25,9 @@ namespace mesh_converter {
          * @param efield_vertices_tetrahedron List containing 4 points with the component of the electric field at the mesh
          * node
          */
-        MeshElement(int dimension, std::vector<Point> vertices_tetrahedron, std::vector<Point> efield_vertices_tetrahedron)
+        MeshElement(int dimension,
+                    std::vector<Point> vertices_tetrahedron,
+                    std::vector<Point> efield_vertices_tetrahedron = std::vector<Point>())
             : dimension_(dimension), vertices_(std::move(vertices_tetrahedron)),
               e_field_(std::move(efield_vertices_tetrahedron)) {
             calculate_volume();
@@ -43,11 +37,6 @@ namespace mesh_converter {
          * @brief Get dimension of the element
          */
         int getDimension() const;
-
-        /**
-         * @brief Set dimension of the element
-         */
-        void setDimension(int dimension);
 
         /**
          * @brief Get the volume of the tetrahedron

@@ -6,10 +6,6 @@
 
 using namespace mesh_converter;
 
-void MeshElement::setDimension(int dimension) {
-    dimension_ = dimension;
-}
-
 int MeshElement::getDimension() const {
     return dimension_;
 }
@@ -51,8 +47,7 @@ bool MeshElement::validElement(double volume_cut, Point& qp) const {
     for(size_t i = 0; i < static_cast<size_t>(this->getDimension()) + 1; i++) {
         std::vector<Point> sub_vertices = vertices_;
         sub_vertices[i] = qp;
-        MeshElement sub_tetrahedron(sub_vertices);
-        sub_tetrahedron.setDimension(this->getDimension());
+        MeshElement sub_tetrahedron(this->getDimension(), sub_vertices);
         double tetra_volume = sub_tetrahedron.getVolume();
         if(this->getVolume() * tetra_volume >= 0) {
             continue;
@@ -71,8 +66,7 @@ Point MeshElement::getObservable(Point& qp) const {
     for(size_t index = 0; index < static_cast<size_t>(this->getDimension()) + 1; index++) {
         auto sub_vertices = vertices_;
         sub_vertices[index] = qp;
-        MeshElement sub_tetrahedron(sub_vertices);
-        sub_tetrahedron.setDimension(this->getDimension());
+        MeshElement sub_tetrahedron(this->getDimension(), sub_vertices);
         double sub_volume = sub_tetrahedron.getVolume();
         LOG(DEBUG) << "Sub volume " << index << ": " << sub_volume;
         new_observable.x = new_observable.x + (sub_volume * e_field_[index].x) / this->getVolume();
