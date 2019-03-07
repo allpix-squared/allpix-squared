@@ -67,6 +67,8 @@ namespace mesh_converter {
 
         void calculate_volume();
 
+        double get_sub_volume(size_t index, Point& p) const;
+
         size_t dimension_{3};
         std::vector<Point> vertices_{};
         std::vector<Point> e_field_{};

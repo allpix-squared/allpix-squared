@@ -25,6 +25,39 @@ void MeshElement::calculate_volume() {
     }
 }
 
+double MeshElement::get_sub_volume(size_t index, Point& p) const {
+    double volume = 0;
+    if(dimension_ == 3) {
+        Eigen::Matrix4d element_matrix;
+        if(index == 0) {
+            element_matrix << 1, 1, 1, 1, p.x, vertices_[1].x, vertices_[2].x, vertices_[3].x, p.y, vertices_[1].y,
+                vertices_[2].y, vertices_[3].y, p.z, vertices_[1].z, vertices_[2].z, vertices_[3].z;
+        } else if(index == 1) {
+            element_matrix << 1, 1, 1, 1, vertices_[0].x, p.x, vertices_[2].x, vertices_[3].x, vertices_[0].y, p.y,
+                vertices_[2].y, vertices_[3].y, vertices_[0].z, p.z, vertices_[2].z, vertices_[3].z;
+        } else if(index == 2) {
+            element_matrix << 1, 1, 1, 1, vertices_[0].x, vertices_[1].x, p.x, vertices_[3].x, vertices_[0].y,
+                vertices_[1].y, p.y, vertices_[3].y, vertices_[0].z, vertices_[1].z, p.z, vertices_[3].z;
+        } else if(index == 3) {
+            element_matrix << 1, 1, 1, 1, vertices_[0].x, vertices_[1].x, vertices_[2].x, p.x, vertices_[0].y,
+                vertices_[1].y, vertices_[2].y, p.y, vertices_[0].z, vertices_[1].z, vertices_[2].z, p.z;
+        }
+        volume = (element_matrix.determinant()) / 6;
+    }
+    if(dimension_ == 2) {
+        Eigen::Matrix3d element_matrix;
+        if(index == 0) {
+            element_matrix << 1, 1, 1, p.y, vertices_[1].y, vertices_[2].y, p.z, vertices_[1].z, vertices_[2].z;
+        } else if(index == 1) {
+            element_matrix << 1, 1, 1, vertices_[0].y, p.y, vertices_[2].y, vertices_[0].z, p.z, vertices_[2].z;
+        } else if(index == 2) {
+            element_matrix << 1, 1, 1, vertices_[0].y, vertices_[1].y, p.y, vertices_[0].z, vertices_[1].z, p.z;
+        }
+        volume = (element_matrix.determinant()) / 2;
+    }
+    return volume;
+}
+
 double MeshElement::get_distance(size_t index, Point& qp) const {
     return unibn::L2Distance<Point>::compute(vertices_[index], qp);
 }
@@ -40,10 +73,7 @@ bool MeshElement::validElement(double volume_cut, Point& qp) const {
     }
 
     for(size_t i = 0; i < dimension_ + 1; i++) {
-        std::vector<Point> sub_vertices = vertices_;
-        sub_vertices[i] = qp;
-        MeshElement sub_tetrahedron(dimension_, sub_vertices);
-        double tetra_volume = sub_tetrahedron.getVolume();
+        double tetra_volume = get_sub_volume(i, qp);
         if(volume_ * tetra_volume >= 0) {
             continue;
         }
@@ -58,10 +88,7 @@ bool MeshElement::validElement(double volume_cut, Point& qp) const {
 Point MeshElement::getObservable(Point& qp) const {
     Point new_observable;
     for(size_t index = 0; index < dimension_ + 1; index++) {
-        auto sub_vertices = vertices_;
-        sub_vertices[index] = qp;
-        MeshElement sub_tetrahedron(dimension_, sub_vertices);
-        double sub_volume = sub_tetrahedron.getVolume();
+        double sub_volume = get_sub_volume(index, qp);
         LOG(DEBUG) << "Sub volume " << index << ": " << sub_volume;
         new_observable.x = new_observable.x + (sub_volume * e_field_[index].x) / volume_;
         new_observable.y = new_observable.y + (sub_volume * e_field_[index].y) / volume_;
