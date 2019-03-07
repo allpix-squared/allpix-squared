@@ -33,11 +33,8 @@ namespace mesh_converter {
          * @param efield_vertices_tetrahedron List containing 4 points with the component of the electric field at the mesh
          * node
          */
-        MeshElement(int dimension,
-                    std::vector<size_t> index,
-                    std::vector<Point> vertices_tetrahedron,
-                    std::vector<Point> efield_vertices_tetrahedron)
-            : dimension_(dimension), indices_(std::move(index)), vertices_(std::move(vertices_tetrahedron)),
+        MeshElement(int dimension, std::vector<Point> vertices_tetrahedron, std::vector<Point> efield_vertices_tetrahedron)
+            : dimension_(dimension), vertices_(std::move(vertices_tetrahedron)),
               e_field_(std::move(efield_vertices_tetrahedron)) {
             calculate_volume();
         }
@@ -87,7 +84,6 @@ namespace mesh_converter {
         void calculate_volume();
 
         int dimension_{3};
-        std::vector<size_t> indices_{};
         std::vector<Point> vertices_{};
         std::vector<Point> e_field_{};
 

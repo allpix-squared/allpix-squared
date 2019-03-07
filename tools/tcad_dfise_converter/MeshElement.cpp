@@ -87,8 +87,8 @@ Point MeshElement::getObservable(Point& qp) const {
 std::string MeshElement::printElement(Point& qp) const {
     std::stringstream stream;
     for(size_t index = 0; index < static_cast<size_t>(this->getDimension()) + 1; index++) {
-        stream << "Tetrahedron vertex " << indices_[index] << " (" << vertices_[index].x << ", " << vertices_[index].y
-               << ", " << vertices_[index].z << ") - "
+        stream << "Tetrahedron vertex (" << vertices_[index].x << ", " << vertices_[index].y << ", " << vertices_[index].z
+               << ") - "
                << " Distance: " << this->getDistance(index, qp) << " - Electric field: (" << e_field_[index].x << ", "
                << e_field_[index].y << ", " << e_field_[index].z << ")" << std::endl;
     }

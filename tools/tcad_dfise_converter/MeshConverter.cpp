@@ -498,7 +498,7 @@ int main(int argc, char** argv) {
                             LOG(TRACE) << "Parsing neighbors [index]: " << index[0] << ", " << index[1] << ", " << index[2];
                         }
 
-                        MeshElement element(dimension, index, element_vertices, element_vertices_field);
+                        MeshElement element(dimension, element_vertices, element_vertices_field);
                         valid = element.validElement(volume_cut, q);
                         if(!valid) {
                             continue;
