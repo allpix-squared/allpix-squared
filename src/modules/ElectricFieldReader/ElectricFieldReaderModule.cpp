@@ -122,6 +122,7 @@ ElectricFieldFunction ElectricFieldReaderModule::get_linear_field_function(doubl
     depletion_voltage = std::fabs(depletion_voltage);
     // But the direction of the field depends on the applied voltage:
     auto direction = std::signbit(config_.get<double>("bias_voltage"));
+    auto deplete_from_implants = config_.get<bool>("deplete_from_implants", true);
     double eff_thickness = thickness_domain.second - thickness_domain.first;
     // Reduce the effective thickness of the sensor if voltage is below full depletion
     if(bias_voltage < depletion_voltage) {
@@ -129,11 +130,13 @@ ElectricFieldFunction ElectricFieldReaderModule::get_linear_field_function(doubl
         depletion_voltage = bias_voltage;
     }
     LOG(TRACE) << "Effective thickness of the electric field: " << Units::display(eff_thickness, {"um", "mm"});
-    return [bias_voltage, depletion_voltage, direction, eff_thickness, thickness_domain](const ROOT::Math::XYZPoint& pos) {
+    return [bias_voltage, depletion_voltage, direction, eff_thickness, thickness_domain, deplete_from_implants](
+               const ROOT::Math::XYZPoint& pos) {
         double z_rel = thickness_domain.second - pos.z();
         double field_z = std::max(0.0,
                                   (bias_voltage - depletion_voltage) / eff_thickness +
-                                      2 * (depletion_voltage / eff_thickness) * (1 - z_rel / eff_thickness));
+                                      2 * (depletion_voltage / eff_thickness) *
+                                          (deplete_from_implants ? (1 - z_rel / eff_thickness) : z_rel / eff_thickness));
         return ROOT::Math::XYZVector(0, 0, (direction ? -1 : 1) * field_z);
     };
 }
