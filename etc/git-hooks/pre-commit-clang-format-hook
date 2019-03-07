@@ -8,7 +8,7 @@
 ##################################################################
 # SETTINGS
 # set path to clang-format binary
-for bin in "clang-format-6.0" "clang-format-5.0" "clang-format-4.0" "clang-format";
+for bin in "clang-format-4.0" "clang-format";
 do
     CLANG_FORMAT=$(which "$bin")
     [ -n "$CLANG_FORMAT" ] && break
@@ -59,6 +59,12 @@ if [ ! -x "$CLANG_FORMAT" ] ; then
     printf "Set the correct path in ${SCRIPTPATH}/$(basename "$0").\n"
     exit 1
 fi
+
+if ! "$CLANG_FORMAT" --version | grep 'clang-format version 4\.0' >/dev/null 2>/dev/null; then
+    printf "Error: clang-format version 4.0 is required (exactly), cannot check format!\n"
+    exit 1
+fi
+
 
 # create one patch containing all changes to the files
 git diff-index --cached --diff-filter=ACMR --name-only $against -- | while read file;
