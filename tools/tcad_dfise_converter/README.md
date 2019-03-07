@@ -43,9 +43,7 @@ It should be noted that the TCAD DF-ISE mesh converter depends on the core utili
 * `index_cut`: Index cut during permutation on vertex neighbors (disabled by default).
 * `divisions`: Number of divisions of the new regular mesh for each dimension, 2D or 3D vector depending on the `dimension` setting. Defaults to 100 bins in each dimension.
 * `xyz`: Array to replace the system coordinates of the mesh. A detailed description of how to use this parameter is given below.
-* `screen_shot`: Enables "screen-shot" of mesh points, point being interpolated (in red) and neighboring pixels (in blue) (defaults to -1 -1 -1, disabling the screen-shot).
-* `ss_radius`: Sets a region of interest around the point being interpolated to show the mesh points.
-* `mesh_tree`: Boolean to enable creation of a root file with the TCAD mesh nodes stored in a `ROOT::TTree`. This setting is automatically enabled if screen-shot is activated and deactivated by default.
+* `mesh_tree`: Boolean to enable creation of a root file with the TCAD mesh nodes stored in a `ROOT::TTree`. This setting is deactivated by default.
 * `workers`: Number of worker threads to be used for the interpolation. Defaults to the available number of cores on the machine (hardware concurrency).
 
 ### Usage

@@ -49,55 +49,6 @@ void interrupt_handler(int) {
     std::exit(0);
 }
 
-void mesh_converter::mesh_plotter(const std::string& grid_file,
-                                  double ss_radius,
-                                  double radius,
-                                  double x,
-                                  double y,
-                                  double z,
-                                  std::vector<mesh_converter::Point> points,
-                                  std::vector<unsigned int> results) {
-    auto tg = new TGraph2D();
-    tg->SetMarkerStyle(20);
-    tg->SetMarkerSize(0.5);
-    tg->SetMarkerColor(kBlack);
-
-    for(auto& point : points) {
-        if(ss_radius != -1) {
-            if((fabs(point.x - x) < radius * ss_radius) && (fabs(point.y - y) < radius * ss_radius) &&
-               (fabs(point.z - z) < radius * ss_radius)) {
-                tg->SetPoint(tg->GetN(), point.x, point.y, point.z);
-            }
-        } else {
-            tg->SetPoint(tg->GetN(), point.x, point.y, point.z);
-        }
-    }
-
-    auto tg1 = new TGraph2D();
-    auto tg2 = new TGraph2D();
-    tg1->SetMarkerStyle(20);
-    tg1->SetMarkerSize(1);
-    tg1->SetMarkerColor(kBlue);
-    tg2->SetMarkerStyle(34);
-    tg2->SetMarkerSize(1);
-    tg2->SetMarkerColor(kRed);
-    tg2->SetPoint(0, x, y, z);
-    for(auto& elem : results) {
-        tg1->SetPoint(tg1->GetN(), points[elem].x, points[elem].y, points[elem].z);
-    }
-
-    std::string root_file_name_out = grid_file + "_INTERPOLATION_POINT_SCREEN_SHOT.root";
-    auto root_output = new TFile(root_file_name_out.c_str(), "RECREATE");
-    auto c = new TCanvas();
-    tg->Draw("p");
-    tg1->Draw("p same");
-    tg2->Draw("p same");
-    c->Write("canvas");
-    root_output->Close();
-
-    LOG(STATUS) << "Mesh screen-shot created. Closing the program.";
-}
-
 int main(int argc, char** argv) {
     using XYZVectorInt = DisplacementVector3D<Cartesian3D<int>>;
     using XYVectorInt = DisplacementVector2D<Cartesian2D<int>>;
@@ -240,16 +191,6 @@ int main(int argc, char** argv) {
     }
 
     const auto mesh_tree = config.get<bool>("mesh_tree", false);
-
-    bool ss_flag = false;
-    const auto ss_radius = config.get<double>("ss_radius", -1);
-    std::vector<int> ss_point = {-1, -1, -1};
-    if(config.has("screen_shot")) {
-        ss_point = config.getArray<int>("screen_shot");
-    }
-    if(ss_point[0] != -1 && ss_point[1] != -1 && ss_point[2] != -1 && dimension == 3) {
-        ss_flag = true;
-    }
 
     // NOTE: this stream should be available for the duration of the logging
     std::ofstream log_file;
@@ -441,15 +382,6 @@ int main(int argc, char** argv) {
         double z = minz + zstep / 2.0;
         for(int k = 0; k < divisions.z(); ++k) {
             Point q, e;
-            if(ss_flag) {
-                std::map<std::string, int> map;
-                map.emplace("x", ss_point[0]);
-                map.emplace("y", ss_point[1]);
-                map.emplace("z", ss_point[2]);
-                x = map.find(rot.at(0))->second;
-                y = map.find(rot.at(1))->second;
-                z = map.find(rot.at(2))->second;
-            }
             if(dimension == 2) {
                 q.x = -1;
                 q.y = y;
@@ -512,11 +444,6 @@ int main(int argc, char** argv) {
                 }
 
                 LOG(DEBUG) << "Number of vertices found: " << results.size();
-
-                if(ss_flag) {
-                    mesh_plotter(grid_file, ss_radius, radius, x, y, z, points, results);
-                    throw std::runtime_error("aborted interpolation, mesh point snapshot taken");
-                }
 
                 // Finding tetrahedrons
                 Eigen::Matrix4d matrix;
