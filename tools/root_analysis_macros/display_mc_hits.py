@@ -1,15 +1,9 @@
 #ROOT imports
 import ROOT
-from ROOT import gROOT, TCanvas, TF1, gApplication
-from ROOT import TFile, TColor
-from ROOT import TH1F,TH2F,TGraph
-from ROOT import kBlack, kBlue, kRed, kCyan, kMagenta, kGreen, kGray
-from ROOT import TLegend
-from ROOT import gStyle
-from ROOT import gDirectory,gSystem
-from ROOT import std
+from ROOT import TFile, gDirectory,gSystem
 
 import os, sys
+import argparse
 
 #numpy
 import numpy as np
@@ -26,49 +20,50 @@ from matplotlib.colors import LinearSegmentedColormap
 #scipy
 from scipy import stats
 
-gStyle.SetPalette(109)
+#argument parser
+parser = argparse.ArgumentParser()
+parser.add_argument("-l", metavar='libAllpixObjects',required=True, help="specify path to the libAllpixObjects library (generally in allpix-squared/lib/)): ")
+parser.add_argument("-f", metavar=' rootfile', required=True, help="specify path to the rootfile to be processed ")
+args=parser.parse_args()
 
-gSystem.Load("/path/to/libAllpixObjects.dylib")
-filename="/path/to/data.root"
+root_file_name=(str(args.f))
+lib_file_name=(str(args.l))
+if (not os.path.isfile(lib_file_name)):
+    print "WARNING: ", lib_file_name, " does not exist, exiting"
+    exit(1)
+if (not os.path.isfile(root_file_name)):
+    print "WARNING: ", root_file_name, " does not exist, exiting"
+    exit(1)
 
-if (not os.path.isfile(filename)):
-    print "WARNING: ", filename, " does not exist, exiting"
-    exit()
-rootfile=ROOT.TFile(filename)
+#load library and rootfile
+gSystem.Load(lib_file_name)
+rootfile=ROOT.TFile(root_file_name)
 gDirectory.ls()
 
-mc_particle= rootfile.Get('MCParticle')
-pixel_charge= rootfile.Get('PixelCharge')
-prop_charge= rootfile.Get('PropagatedCharge')
-pixel_hit= rootfile.Get('PixelHit')
-mc_particle.Print()
+McParticle= rootfile.Get('MCParticle')
+PixelCharge= rootfile.Get('PixelCharge')
+PropCharge= rootfile.Get('PropagatedCharge')
+PixelHit= rootfile.Get('PixelHit')
 
-hit_x=np.array([])
-hit_y=np.array([])
-hit_signal=np.array([])
-np_pix_charge=np.array([])
-mc_local_endpoint_x=np.array([])
-mc_local_endpoint_y=np.array([])
-mc_local_endpoint_z=np.array([])
-
-mc_global_endpoint_x=np.array([])
-mc_global_endpoint_y=np.array([])
-mc_global_endpoint_z=np.array([])
+#example of python dictionnaries to fill
+mc_global_endpoints={'x': [],'y': [], 'z': []}
+mc_local_endpoints={'x': [],'y': [], 'z': []}
+pixel_hit={'x': [],'y': [], 'signal': []}
 
 #loop on pixel hit branch
 empty_mc_branch=0
-for iev in range(0, pixel_hit.GetEntries()):
-    print ' processing event number {0}\r'.format(iev), "out of", pixel_hit.GetEntries(), "events",#/ float(pixel_hit.GetEntries()),
-    pixel_hit.GetEntry(iev)
-    pixel_charge.GetEntry(iev)
-    mc_particle.GetEntry(iev)
+for iev in range(0, PixelHit.GetEntries()):
+    print ' processing event number {0}\r'.format(iev), "out of", PixelHit.GetEntries(), "events",#/ float(PixelHit.GetEntries()),
+    PixelHit.GetEntry(iev)
+    PixelCharge.GetEntry(iev)
+    McParticle.GetEntry(iev)
 
-    pixel_charge_branch= pixel_charge.detector
-    pixel_hit_branch= pixel_hit.detector
-    mc_particle_branch= mc_particle.detector
+    PixelCharge_branch= PixelCharge.detector
+    PixelHit_branch= PixelHit.detector
+    McParticle_branch= McParticle.detector
 
 #skip events which have no mc particles associated
-    if mc_particle_branch.size()<1:
+    if McParticle_branch.size()<1:
         empty_mc_branch+=1;
         continue
 
@@ -79,7 +74,7 @@ for iev in range(0, pixel_hit.GetEntries()):
     output_track_x_global=0.
     output_track_y_global=0.
     output_track_z_global=0.
-    for mc_part in mc_particle_branch:
+    for mc_part in McParticle_branch:
         output_track_x+=mc_part.getLocalEndPoint().x()
         output_track_y+=mc_part.getLocalEndPoint().y()
         output_track_z+=mc_part.getLocalEndPoint().z()
@@ -88,84 +83,74 @@ for iev in range(0, pixel_hit.GetEntries()):
         output_track_y_global+=mc_part.getGlobalEndPoint().y()
         output_track_z_global+=mc_part.getGlobalEndPoint().z()
 
-    output_track_x/=float(mc_particle_branch.size())
-    output_track_y/=float(mc_particle_branch.size())
-    output_track_z/=float(mc_particle_branch.size())
+    output_track_x/=float(McParticle_branch.size())
+    output_track_y/=float(McParticle_branch.size())
+    output_track_z/=float(McParticle_branch.size())
 
-    output_track_x_global/=float(mc_particle_branch.size())
-    output_track_y_global/=float(mc_particle_branch.size())
-    output_track_z_global/=float(mc_particle_branch.size())
+    output_track_x_global/=float(McParticle_branch.size())
+    output_track_y_global/=float(McParticle_branch.size())
+    output_track_z_global/=float(McParticle_branch.size())
 
-    for pix_hit in pixel_hit_branch:
-        hit_x=np.append(hit_x,pix_hit.getPixel().getLocalCenter().x())
-        hit_y=np.append(hit_y,pix_hit.getPixel().getLocalCenter().y())
-        hit_signal=np.append(hit_signal,pix_hit.getSignal())
-        mc_local_endpoint_x=np.append(mc_local_endpoint_x,output_track_x)
-        mc_local_endpoint_y=np.append(mc_local_endpoint_y,output_track_y)
-        mc_local_endpoint_z=np.append(mc_local_endpoint_z,output_track_z)
+    for pix_hit in PixelHit_branch:
 
-        mc_global_endpoint_x=np.append(mc_global_endpoint_x,output_track_x)
-        mc_global_endpoint_y=np.append(mc_global_endpoint_y,output_track_y)
-        mc_global_endpoint_z=np.append(mc_global_endpoint_z,output_track_z)
+        pixel_hit['x'].append(pix_hit.getPixel().getLocalCenter().x())
+        pixel_hit['y'].append(pix_hit.getPixel().getLocalCenter().y())
+        pixel_hit['signal'].append(pix_hit.getSignal())
+
+        mc_global_endpoints['x'].append(output_track_x_global)
+        mc_global_endpoints['y'].append(output_track_y_global)
+        mc_global_endpoints['z'].append(output_track_z_global)
+
+        mc_local_endpoints['x'].append(output_track_x)
+        mc_local_endpoints['y'].append(output_track_y)
+        mc_local_endpoints['z'].append(output_track_z)
 
 #print numner of events processed
-print " ----- processed events (pixelhit):", pixel_hit.GetEntries(), " empty_mc_branch:", empty_mc_branch
-
-#--- plot some output histograms----
-
-# hit signal
-histograms=plt.figure()
-plt.subplot(221)
-plt.hist(hit_x,100)
-plt.subplot(222)
-plt.hist(hit_signal,100)
-plt.yscale('log')
-plt.subplot(223)
-plt.hist2d(hit_x,hit_y,100)
+print " ----- processed events (pixelhit):", PixelHit.GetEntries(), " empty_mc_branch:", empty_mc_branch
 
 # plot pixel collected charge versus MC parcticle endpoint coordinates
 mc_hit_histogram=plt.figure(figsize=(11,7))
-H2, xedges, yedges, binnmmber = stats.binned_statistic_2d(mc_local_endpoint_x, mc_local_endpoint_y, values = hit_signal, statistic='mean' , bins = [150, 150])
+H2, xedges, yedges, binnmmber = stats.binned_statistic_2d(mc_local_endpoints['x'], mc_local_endpoints['y'], values = pixel_hit['signal'], statistic='mean' , bins = [100, 100])
 XX, YY = np.meshgrid(xedges, yedges)
 Hm = ma.masked_where(np.isnan(H2),H2)
 plt.pcolormesh(XX,YY,Hm,cmap="inferno")
-plt.ylabel("pixel x [mm]")
-plt.xlabel("pixel y [mm]")
+plt.ylabel("pixel y [mm]")
+plt.xlabel("pixel x [mm]")
 cbar = plt.colorbar(pad = .015, aspect=20)
-cbar.set_label("collected charge (e)")
+cbar.set_label("hit signal")
 
 mc_hit_histogram_z=plt.figure(figsize=(11,7))
-H2, xedges, yedges, binnmmber = stats.binned_statistic_2d(mc_local_endpoint_x, mc_local_endpoint_z, values = hit_signal, statistic='mean' , bins = [150, 150])
+H2, xedges, yedges, binnmmber = stats.binned_statistic_2d(mc_local_endpoints['x'], mc_local_endpoints['z'], values = pixel_hit['signal'], statistic='mean' , bins = [100, 100])
 XX, YY = np.meshgrid(xedges, yedges)
 Hm = ma.masked_where(np.isnan(H2),H2)
 plt.pcolormesh(XX,YY,Hm.T,cmap="inferno")
-plt.ylabel("pixel x [mm]")
-plt.xlabel("pixel z [mm]")
+plt.ylabel("pixel z [mm]")
+plt.xlabel("pixel x [mm]")
 cbar = plt.colorbar(pad = .015, aspect=20)
-cbar.set_label("collected charge (e)")
+cbar.set_label("hit signal ")
 
 
 figMC_z = plt.figure()
-plt.hist(mc_global_endpoint_z,100)
+plt.hist(mc_local_endpoints['z'],100)
 plt.title("MC global end point z coordinate")
 plt.xlabel("z_global [mm]")
 
 figMC_z_log = plt.figure()
-plt.hist(mc_global_endpoint_z,100)
+plt.hist(mc_global_endpoints['x'],100)
 plt.title("MC global end point z coordinate")
 plt.xlabel("z_global [mm]")
 plt.yscale('log')
 
-# 3D plot x,y,z MC particle endpoint with color scale representing the amount of charge (quite heavy may want to comment)
+# 3D plot x,y,z MC particle endpoint with color scale representing the amount of charge (quite heavy)
 fig3D = plt.figure()
 ax = fig3D.add_subplot(111, projection='3d')
-colors = LinearSegmentedColormap('colormap', cm.jet._segmentdata.copy(), np.max(hit_signal))
-plot=ax.scatter(mc_local_endpoint_x, mc_local_endpoint_y, mc_local_endpoint_z,c=hit_signal,cmap="jet",marker=".",s=2)#,c= marker=m)
+colors = LinearSegmentedColormap('colormap', cm.jet._segmentdata.copy(), np.max(pixel_hit['signal']))
+plot=ax.scatter(mc_local_endpoints['x'], mc_local_endpoints['y'], mc_local_endpoints['z'],c=pixel_hit['signal'],cmap="jet",marker=".",s=2)#,c= marker=m)
 ax.set_ylabel("y mc (mm)")
 ax.set_xlabel("x mc (mm)")
 ax.set_zlabel("z mc (mm)")
 cbar=fig3D.colorbar(plot , ax=ax)
-cbar.set_label("collected charge (e)")
+cbar.set_label("hit signal")
 
 #show plots
 plt.show()
