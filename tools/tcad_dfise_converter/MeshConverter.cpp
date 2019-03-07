@@ -504,7 +504,7 @@ int main(int argc, char** argv) {
                             continue;
                         }
 
-                        LOG(DEBUG) << element.printElement(q);
+                        LOG(DEBUG) << element.print(q);
                         e = element.getObservable(q);
                         break;
                     } while(std::prev_permutation(bitmask.begin(), bitmask.end()));

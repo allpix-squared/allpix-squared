@@ -25,7 +25,7 @@ void MeshElement::calculate_volume() {
     }
 }
 
-double MeshElement::getDistance(size_t index, Point& qp) const {
+double MeshElement::get_distance(size_t index, Point& qp) const {
     return unibn::L2Distance<Point>::compute(vertices_[index], qp);
 }
 
@@ -39,16 +39,15 @@ bool MeshElement::validElement(double volume_cut, Point& qp) const {
         return false;
     }
 
-    Eigen::Matrix4d sub_tetra_matrix;
     for(size_t i = 0; i < dimension_ + 1; i++) {
         std::vector<Point> sub_vertices = vertices_;
         sub_vertices[i] = qp;
         MeshElement sub_tetrahedron(dimension_, sub_vertices);
         double tetra_volume = sub_tetrahedron.getVolume();
-        if(this->getVolume() * tetra_volume >= 0) {
+        if(volume_ * tetra_volume >= 0) {
             continue;
         }
-        if(this->getVolume() * tetra_volume < 0) {
+        if(volume_ * tetra_volume < 0) {
             LOG(TRACE) << "New mesh Point outside found element.";
             return false;
         }
@@ -58,7 +57,6 @@ bool MeshElement::validElement(double volume_cut, Point& qp) const {
 
 Point MeshElement::getObservable(Point& qp) const {
     Point new_observable;
-    Eigen::Matrix4d sub_tetra_matrix;
     for(size_t index = 0; index < dimension_ + 1; index++) {
         auto sub_vertices = vertices_;
         sub_vertices[index] = qp;
@@ -74,12 +72,12 @@ Point MeshElement::getObservable(Point& qp) const {
     return new_observable;
 }
 
-std::string MeshElement::printElement(Point& qp) const {
+std::string MeshElement::print(Point& qp) const {
     std::stringstream stream;
     for(size_t index = 0; index < dimension_ + 1; index++) {
         stream << "Tetrahedron vertex (" << vertices_[index].x << ", " << vertices_[index].y << ", " << vertices_[index].z
                << ") - "
-               << " Distance: " << this->getDistance(index, qp) << " - Electric field: (" << e_field_[index].x << ", "
+               << " Distance: " << get_distance(index, qp) << " - Electric field: (" << e_field_[index].x << ", "
                << e_field_[index].y << ", " << e_field_[index].z << ")" << std::endl;
     }
     stream << "Volume: " << volume_;

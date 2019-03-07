@@ -39,13 +39,6 @@ namespace mesh_converter {
         double getVolume() const;
 
         /**
-         * @brief Get the distance from vertex to a random point
-         * @param index Vertex for which the distance will be calculated
-         * @param qp Point from which will be calculated the distance
-         */
-        double getDistance(size_t index, Point& qp) const;
-
-        /**
          * @brief Checks if the tetrahedron is valid for the interpolation
          * @param volume_cut Threshold for the minimum tetrahedron volume
          * @param qp Desired point for the interpolation
@@ -62,9 +55,16 @@ namespace mesh_converter {
          * @brief Print tetrahedron information for debugging
          * @return String describing the mesh element
          */
-        std::string printElement(Point& qp) const;
+        std::string print(Point& qp) const;
 
     private:
+        /**
+         * @brief Get the distance from vertex to a random point
+         * @param index Vertex for which the distance will be calculated
+         * @param qp Point from which will be calculated the distance
+         */
+        double get_distance(size_t index, Point& qp) const;
+
         void calculate_volume();
 
         size_t dimension_{3};
