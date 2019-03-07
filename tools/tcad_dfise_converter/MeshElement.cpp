@@ -6,10 +6,6 @@
 
 using namespace mesh_converter;
 
-double MeshElement::getVolume() const {
-    return volume_;
-}
-
 void MeshElement::calculate_volume() {
     if(dimension_ == 3) {
         Eigen::Matrix4d element_matrix;

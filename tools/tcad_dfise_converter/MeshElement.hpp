@@ -34,11 +34,6 @@ namespace mesh_converter {
         }
 
         /**
-         * @brief Get the volume of the tetrahedron
-         */
-        double getVolume() const;
-
-        /**
          * @brief Checks if the tetrahedron is valid for the interpolation
          * @param volume_cut Threshold for the minimum tetrahedron volume
          * @param qp Desired point for the interpolation
