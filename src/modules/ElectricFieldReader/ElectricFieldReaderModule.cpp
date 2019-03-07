@@ -130,7 +130,7 @@ ElectricFieldFunction ElectricFieldReaderModule::get_linear_field_function(doubl
         depletion_voltage = bias_voltage;
     }
     LOG(TRACE) << "Effective thickness of the electric field: " << Units::display(eff_thickness, {"um", "mm"});
-    LOG(TRACE) << "Depleting the sensor from the " << (deplete_from_implants ? "implant side." : "back side.");
+    LOG(DEBUG) << "Depleting the sensor from the " << (deplete_from_implants ? "implant side." : "back side.");
     return [bias_voltage, depletion_voltage, direction, eff_thickness, thickness_domain, deplete_from_implants](
                const ROOT::Math::XYZPoint& pos) {
         double z_rel = thickness_domain.second - pos.z();
