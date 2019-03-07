@@ -2,8 +2,15 @@
 
 # Check if the git pre-commit hook for formatting is installed:
 IF(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
-    IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/.git/hooks/pre-commit-clang-format")
+    SET(HOOK_SRC "${CMAKE_SOURCE_DIR}/etc/git-hooks/pre-commit-clang-format-hook")
+    SET(HOOK_DST "${CMAKE_SOURCE_DIR}/.git/hooks/pre-commit-clang-format")
+    IF(NOT EXISTS ${HOOK_DST})
         MESSAGE(WARNING "Git hooks are not installed - consider installing them via ${CMAKE_SOURCE_DIR}/etc/git-hooks/install-hooks.sh")
+    ELSE()
+        EXECUTE_PROCESS(COMMAND "cmake" "-E" "compare_files" ${HOOK_SRC} ${HOOK_DST} RESULT_VARIABLE HOOKS_DIFFER)
+        IF(${HOOKS_DIFFER})
+            MESSAGE(WARNING "Git hooks are outdated - consider updating them via ${CMAKE_SOURCE_DIR}/etc/git-hooks/install-hooks.sh")
+        ENDIF()
     ENDIF()
 ENDIF()
 
