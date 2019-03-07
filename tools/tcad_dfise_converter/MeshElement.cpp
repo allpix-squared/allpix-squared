@@ -6,39 +6,11 @@
 
 using namespace mesh_converter;
 
-void MeshElement::setVertices(std::vector<Point>& new_vertices) {
-    if(vertices_.size() != new_vertices.size()) {
-        LOG(ERROR) << "Invalid vertices vector";
-        return;
-    }
-    for(size_t index = 0; index < new_vertices.size(); index++) {
-        vertices_[index] = new_vertices[index];
-    }
-}
-
-void MeshElement::setVertex(size_t index, Point& new_vertice) {
-    vertices_[index] = new_vertice;
-}
-
-Point MeshElement::getVertex(size_t index) {
+Point MeshElement::getVertex(size_t index) const {
     return vertices_[index];
 }
 
-void MeshElement::setVerticesField(std::vector<Point>& new_observable) {
-    if(vertices_.size() != new_observable.size()) {
-        LOG(ERROR) << "Invalid field vector";
-        return;
-    }
-    for(size_t index = 0; index < 4; index++) {
-        e_field_[index] = new_observable[index];
-    }
-}
-
-void MeshElement::setVertexField(size_t index, Point& new_observable) {
-    e_field_[index] = new_observable;
-}
-
-Point MeshElement::getVertexProperty(size_t index) {
+Point MeshElement::getVertexProperty(size_t index) const {
     return e_field_[index];
 }
 
@@ -46,32 +18,34 @@ void MeshElement::setDimension(int dimension) {
     dimension_ = dimension;
 }
 
-int MeshElement::getDimension() {
+int MeshElement::getDimension() const {
     return dimension_;
 }
 
-double MeshElement::getVolume() {
-    double volume = 0;
+double MeshElement::getVolume() const {
+    return volume_;
+}
+
+void MeshElement::calculate_volume() {
     if(this->getDimension() == 3) {
         Eigen::Matrix4d element_matrix;
         element_matrix << 1, 1, 1, 1, vertices_[0].x, vertices_[1].x, vertices_[2].x, vertices_[3].x, vertices_[0].y,
             vertices_[1].y, vertices_[2].y, vertices_[3].y, vertices_[0].z, vertices_[1].z, vertices_[2].z, vertices_[3].z;
-        volume = (element_matrix.determinant()) / 6;
+        volume_ = (element_matrix.determinant()) / 6;
     }
     if(this->getDimension() == 2) {
         Eigen::Matrix3d element_matrix;
         element_matrix << 1, 1, 1, vertices_[0].y, vertices_[1].y, vertices_[2].y, vertices_[0].z, vertices_[1].z,
             vertices_[2].z;
-        volume = (element_matrix.determinant()) / 2;
+        volume_ = (element_matrix.determinant()) / 2;
     }
-    return volume;
 }
 
-double MeshElement::getDistance(size_t index, Point& qp) {
+double MeshElement::getDistance(size_t index, Point& qp) const {
     return unibn::L2Distance<Point>::compute(vertices_[index], qp);
 }
 
-bool MeshElement::validElement(double volume_cut, Point& qp) {
+bool MeshElement::validElement(double volume_cut, Point& qp) const {
     if(this->getVolume() < MIN_VOLUME) {
         LOG(TRACE) << "Invalid tetrahedron with coplanar(3D)/colinear(2D) vertices.";
         return false;
@@ -99,7 +73,7 @@ bool MeshElement::validElement(double volume_cut, Point& qp) {
     return true;
 }
 
-Point MeshElement::getObservable(Point& qp) {
+Point MeshElement::getObservable(Point& qp) const {
     Point new_observable;
     Eigen::Matrix4d sub_tetra_matrix;
     for(size_t index = 0; index < static_cast<size_t>(this->getDimension()) + 1; index++) {
@@ -118,7 +92,7 @@ Point MeshElement::getObservable(Point& qp) {
     return new_observable;
 }
 
-std::string MeshElement::printElement(Point& qp) {
+std::string MeshElement::printElement(Point& qp) const {
     std::stringstream stream;
     for(size_t index = 0; index < static_cast<size_t>(this->getDimension()) + 1; index++) {
         stream << "Tetrahedron vertex " << indices_[index] << " (" << vertices_[index].x << ", " << vertices_[index].y
