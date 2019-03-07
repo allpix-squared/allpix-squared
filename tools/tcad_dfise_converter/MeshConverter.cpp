@@ -1,5 +1,3 @@
-#include "MeshConverter.hpp"
-
 #include <algorithm>
 #include <cfloat>
 #include <chrono>
@@ -14,11 +12,7 @@
 #include <utility>
 
 #include <Math/Vector3D.h>
-#include "TCanvas.h"
-#include "TFile.h"
-#include "TGraph2D.h"
-#include "TH1.h"
-#include "TTree.h"
+#include <TTree.h>
 
 #include <Eigen/Eigen>
 
@@ -34,6 +28,7 @@
 #include "DFISEParser.hpp"
 #include "MeshElement.hpp"
 #include "ThreadPool.hpp"
+#include "octree/Octree.hpp"
 
 using namespace mesh_converter;
 using namespace ROOT::Math;
