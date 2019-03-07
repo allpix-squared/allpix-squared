@@ -28,7 +28,6 @@ from scipy import stats
 
 gStyle.SetPalette(109)
 
-#load AP2 object library and open file, change below with appropriate paths and filename
 gSystem.Load("/path/to/libAllpixObjects.dylib")
 filename="/path/to/data.root"
 
