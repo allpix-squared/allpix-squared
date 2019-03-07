@@ -6,22 +6,18 @@
 
 using namespace mesh_converter;
 
-int MeshElement::getDimension() const {
-    return dimension_;
-}
-
 double MeshElement::getVolume() const {
     return volume_;
 }
 
 void MeshElement::calculate_volume() {
-    if(this->getDimension() == 3) {
+    if(dimension_ == 3) {
         Eigen::Matrix4d element_matrix;
         element_matrix << 1, 1, 1, 1, vertices_[0].x, vertices_[1].x, vertices_[2].x, vertices_[3].x, vertices_[0].y,
             vertices_[1].y, vertices_[2].y, vertices_[3].y, vertices_[0].z, vertices_[1].z, vertices_[2].z, vertices_[3].z;
         volume_ = (element_matrix.determinant()) / 6;
     }
-    if(this->getDimension() == 2) {
+    if(dimension_ == 2) {
         Eigen::Matrix3d element_matrix;
         element_matrix << 1, 1, 1, vertices_[0].y, vertices_[1].y, vertices_[2].y, vertices_[0].z, vertices_[1].z,
             vertices_[2].z;
@@ -34,20 +30,20 @@ double MeshElement::getDistance(size_t index, Point& qp) const {
 }
 
 bool MeshElement::validElement(double volume_cut, Point& qp) const {
-    if(this->getVolume() < MIN_VOLUME) {
+    if(volume_ < MIN_VOLUME) {
         LOG(TRACE) << "Invalid tetrahedron with coplanar(3D)/colinear(2D) vertices.";
         return false;
     }
-    if(std::fabs(this->getVolume()) <= volume_cut) {
+    if(std::fabs(volume_) <= volume_cut) {
         LOG(TRACE) << "Tetrahedron volume smaller than volume cut.";
         return false;
     }
 
     Eigen::Matrix4d sub_tetra_matrix;
-    for(size_t i = 0; i < static_cast<size_t>(this->getDimension()) + 1; i++) {
+    for(size_t i = 0; i < dimension_ + 1; i++) {
         std::vector<Point> sub_vertices = vertices_;
         sub_vertices[i] = qp;
-        MeshElement sub_tetrahedron(this->getDimension(), sub_vertices);
+        MeshElement sub_tetrahedron(dimension_, sub_vertices);
         double tetra_volume = sub_tetrahedron.getVolume();
         if(this->getVolume() * tetra_volume >= 0) {
             continue;
@@ -63,15 +59,15 @@ bool MeshElement::validElement(double volume_cut, Point& qp) const {
 Point MeshElement::getObservable(Point& qp) const {
     Point new_observable;
     Eigen::Matrix4d sub_tetra_matrix;
-    for(size_t index = 0; index < static_cast<size_t>(this->getDimension()) + 1; index++) {
+    for(size_t index = 0; index < dimension_ + 1; index++) {
         auto sub_vertices = vertices_;
         sub_vertices[index] = qp;
-        MeshElement sub_tetrahedron(this->getDimension(), sub_vertices);
+        MeshElement sub_tetrahedron(dimension_, sub_vertices);
         double sub_volume = sub_tetrahedron.getVolume();
         LOG(DEBUG) << "Sub volume " << index << ": " << sub_volume;
-        new_observable.x = new_observable.x + (sub_volume * e_field_[index].x) / this->getVolume();
-        new_observable.y = new_observable.y + (sub_volume * e_field_[index].y) / this->getVolume();
-        new_observable.z = new_observable.z + (sub_volume * e_field_[index].z) / this->getVolume();
+        new_observable.x = new_observable.x + (sub_volume * e_field_[index].x) / volume_;
+        new_observable.y = new_observable.y + (sub_volume * e_field_[index].y) / volume_;
+        new_observable.z = new_observable.z + (sub_volume * e_field_[index].z) / volume_;
     }
     LOG(DEBUG) << "Interpolated electric field: (" << new_observable.x << "," << new_observable.y << "," << new_observable.z
                << ")";
@@ -80,12 +76,12 @@ Point MeshElement::getObservable(Point& qp) const {
 
 std::string MeshElement::printElement(Point& qp) const {
     std::stringstream stream;
-    for(size_t index = 0; index < static_cast<size_t>(this->getDimension()) + 1; index++) {
+    for(size_t index = 0; index < dimension_ + 1; index++) {
         stream << "Tetrahedron vertex (" << vertices_[index].x << ", " << vertices_[index].y << ", " << vertices_[index].z
                << ") - "
                << " Distance: " << this->getDistance(index, qp) << " - Electric field: (" << e_field_[index].x << ", "
                << e_field_[index].y << ", " << e_field_[index].z << ")" << std::endl;
     }
-    stream << "Volume: " << this->getVolume();
+    stream << "Volume: " << volume_;
     return stream.str();
 }

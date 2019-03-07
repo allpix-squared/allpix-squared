@@ -167,7 +167,7 @@ int main(int argc, char** argv) {
     auto index_cut = config.get<size_t>("index_cut", 999999);
 
     XYZVectorInt divisions;
-    const auto dimension = config.get<int>("dimension", 3);
+    const auto dimension = config.get<size_t>("dimension", 3);
     if(dimension == 2) {
         auto divisions_yz = config.get<XYVectorInt>("divisions", XYVectorInt(100, 100));
         divisions = XYZVectorInt(1, divisions_yz.x(), divisions_yz.y());
