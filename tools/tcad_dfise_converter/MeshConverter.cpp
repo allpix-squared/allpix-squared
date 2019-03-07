@@ -370,6 +370,10 @@ int main(int argc, char** argv) {
     unibn::Octree<Point> octree;
     octree.initialize(points);
 
+    // Total number of mesh points to interpolate:
+    auto total_mesh_points = divisions.x() * divisions.y() * divisions.z();
+    std::atomic<int> total_mesh_points_done{0};
+
     auto mesh_section = [&](double x, double y) {
         allpix::Log::setReportingLevel(log_level);
 
@@ -533,6 +537,13 @@ int main(int argc, char** argv) {
 
             new_mesh.push_back(e);
             z += zstep;
+
+            // count total number:
+            total_mesh_points_done++;
+
+            LOG_PROGRESS(INFO, "meshing") << "Interpolating new mesh: " << total_mesh_points_done << " of "
+                                          << total_mesh_points << " vertices done ("
+                                          << (100. * total_mesh_points_done / total_mesh_points) << "%)";
         }
 
         return new_mesh;
@@ -559,14 +570,11 @@ int main(int argc, char** argv) {
         }
 
         // Merge the result vectors:
-        unsigned int mesh_slices_done = 0;
         for(auto& mesh_future : mesh_futures) {
             auto mesh_slice = mesh_future.get();
             e_field_new_mesh.insert(e_field_new_mesh.end(), mesh_slice.begin(), mesh_slice.end());
-            LOG_PROGRESS(INFO, "meshing") << "Interpolating new mesh: " << (100 * mesh_slices_done / mesh_futures.size())
-                                          << "%";
-            mesh_slices_done++;
         }
+
         pool.shutdown();
     } catch(std::runtime_error& e) {
         LOG(FATAL) << "Failed to interpolate new mesh:\n" << e.what();
