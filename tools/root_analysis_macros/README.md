@@ -38,8 +38,8 @@ root -x 'recoverConfiguration.C("path/to/output/data.root",
 Here, the first argument is the input data file produced by the ROOTObjectWriter, while the second argument is the output file name and path for the framework configuration. The detector setup and model files will be named as defined in the main configuration and are placed in the same folder.
 
 ### Display Monte Carlo hits (Python)
-Simple macro that reads the required trees to plot Monte Carlo hits in pixel versus the pixel charge. Loops over all events and fills numpy arrays.
-A few relevant histograms are displayed at the end of the run.
+Simple macro that reads the required trees to plot Monte Carlo hits in pixel versus the pixel charge. Loops over all events of the root file.
+A few relevant histograms are displayed at the end of the event loop.
 Requires PyROOT, numpy, matplotlib. To execute:
 * run `python display_mc_hits.py -l path/to/libAllpixObjects.so -f path/to/data.root`
 
