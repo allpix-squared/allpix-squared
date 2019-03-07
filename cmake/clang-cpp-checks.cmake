@@ -7,13 +7,14 @@ IF(NOT CHECK_CXX_SOURCE_FILES)
 ENDIF()
 
 # Adding clang-format check and formatter if found
-FIND_PROGRAM(CLANG_FORMAT NAMES "clang-format-6.0" "clang-format-5.0" "clang-format-4.0" "clang-format")
+FIND_PROGRAM(CLANG_FORMAT NAMES "clang-format-4.0" "clang-format")
 IF(CLANG_FORMAT)
     EXEC_PROGRAM(${CLANG_FORMAT} ${CMAKE_CURRENT_SOURCE_DIR} ARGS --version OUTPUT_VARIABLE CLANG_VERSION)
     STRING(REGEX REPLACE ".*([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" CLANG_MAJOR_VERSION ${CLANG_VERSION})
 
-    IF((${CLANG_MAJOR_VERSION} GREATER "4") OR (${CLANG_MAJOR_VERSION} EQUAL "4"))
-        MESSAGE(STATUS "Found ${CLANG_FORMAT}, adding formatting targets")
+    # We currently require version 4
+    IF(${CLANG_MAJOR_VERSION} EQUAL "4")
+        MESSAGE(STATUS "Found ${CLANG_FORMAT} version 4, adding formatting targets")
         ADD_CUSTOM_TARGET(
             format
             COMMAND
@@ -40,7 +41,7 @@ IF(CLANG_FORMAT)
             COMMENT "Checking format compliance"
         )
     ELSE()
-        MESSAGE(STATUS "Could only find version ${CLANG_MAJOR_VERSION} of clang-format, but version >= 4 is required.")
+        MESSAGE(STATUS "Could only find version ${CLANG_MAJOR_VERSION} of clang-format, but version 4 is required.")
     ENDIF()
 ELSE()
     MESSAGE(STATUS "Could NOT find clang-format")
