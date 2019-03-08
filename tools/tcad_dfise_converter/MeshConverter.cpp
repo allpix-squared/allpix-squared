@@ -485,9 +485,11 @@ int main(int argc, char** argv) {
             // count total number:
             total_mesh_points_done++;
 
-            LOG_PROGRESS(INFO, "meshing") << "Interpolating new mesh: " << total_mesh_points_done << " of "
-                                          << total_mesh_points << " vertices done ("
-                                          << (100. * total_mesh_points_done / total_mesh_points) << "%)";
+            if(total_mesh_points_done % 200 == 0) {
+                LOG_PROGRESS(INFO, "meshing")
+                    << "Interpolating new mesh: " << total_mesh_points_done << " of " << total_mesh_points
+                    << " vertices done (" << (100. * total_mesh_points_done / total_mesh_points) << "%)";
+            }
         }
 
         return new_mesh;
