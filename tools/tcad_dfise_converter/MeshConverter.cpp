@@ -162,10 +162,6 @@ int main(int argc, char** argv) {
 
     const auto volume_cut = config.get<double>("volume_cut", 10e-9);
 
-    // Only use index cut if set.
-    const bool index_cut_flag = config.has("index_cut");
-    auto index_cut = config.get<size_t>("index_cut", 999999);
-
     XYZVectorInt divisions;
     const auto dimension = config.get<size_t>("dimension", 3);
     if(dimension == 2) {
@@ -375,9 +371,6 @@ int main(int argc, char** argv) {
         // New mesh slice
         std::vector<Point> new_mesh;
 
-        // Local index cut used:
-        auto my_index_cut = index_cut;
-
         double z = minz + zstep / 2.0;
         for(int k = 0; k < divisions.z(); ++k) {
             Point q, e;
@@ -400,15 +393,17 @@ int main(int argc, char** argv) {
 
             size_t prev_neighbours = 0;
             double radius = initial_radius;
-            size_t index_cut_up;
+
             while(radius < max_radius) {
                 LOG(DEBUG) << "Search radius: " << radius;
                 // Calling octree neighbours search and sorting the results list with the closest neighbours first
                 std::vector<unsigned int> results;
                 std::vector<unsigned int> results_high;
                 octree.radiusNeighbors<unibn::L2Distance<Point>>(q, radius, results_high);
+
+                // Sort by highest distance first, permutation from back of the vector
                 std::sort(results_high.begin(), results_high.end(), [&](unsigned int a, unsigned int b) {
-                    return unibn::L2Distance<Point>::compute(points[a], q) < unibn::L2Distance<Point>::compute(points[b], q);
+                    return unibn::L2Distance<Point>::compute(points[a], q) > unibn::L2Distance<Point>::compute(points[b], q);
                 });
 
                 if(threshold_flag) {
@@ -444,79 +439,33 @@ int main(int argc, char** argv) {
 
                 LOG(DEBUG) << "Number of vertices found: " << results.size();
 
-                // Finding tetrahedrons
-                Eigen::Matrix4d matrix;
-                size_t num_nodes_element = 0;
-                if(dimension == 3) {
-                    num_nodes_element = 4;
-                }
-                if(dimension == 2) {
-                    num_nodes_element = 3;
-                }
+                // Finding tetrahedrons using bitmask permutation
+                size_t num_nodes_element = (dimension == 3 ? 4 : 3);
+                std::vector<bool> bitmask(results.size() - num_nodes_element, false);
+                bitmask.resize(results.size(), true);
 
-                std::vector<int> bitmask(num_nodes_element, 1);
-                bitmask.resize(results.size(), 0);
-
-                if(!index_cut_flag) {
-                    my_index_cut = results.size();
-                }
-                index_cut_up = my_index_cut;
-                while(index_cut_up <= results.size()) {
-                    do {
-                        valid = false;
-                        std::vector<size_t> index;
-                        std::vector<Point> element_vertices;
-                        std::vector<Point> element_vertices_field;
-                        // print integers and permute bitmask
-                        for(size_t idk = 0; idk < results.size(); ++idk) {
-                            if(bitmask[idk] != 0) {
-                                index.push_back(idk);
-                                element_vertices.push_back(points[results[idk]]);
-                                element_vertices_field.push_back(field[results[idk]]);
-                            }
-                            if(index.size() == num_nodes_element) {
-                                break;
-                            }
+                do {
+                    valid = false;
+                    std::vector<Point> element_vertices;
+                    std::vector<Point> element_vertices_field;
+                    // print integers and permute bitmask
+                    for(size_t idk = 0; idk < results.size(); ++idk) {
+                        if(bitmask[idk]) {
+                            element_vertices.push_back(points[results[idk]]);
+                            element_vertices_field.push_back(field[results[idk]]);
                         }
-
-                        bool index_flag = false;
-                        for(size_t ttt = 0; ttt < num_nodes_element; ttt++) {
-                            if(index[ttt] > index_cut_up) {
-                                index_flag = true;
-                                break;
-                            }
-                        }
-                        if(index_flag) {
-                            continue;
-                        }
-
-                        if(dimension == 3) {
-                            LOG(TRACE) << "Parsing neighbors [index]: " << index[0] << ", " << index[1] << ", " << index[2]
-                                       << ", " << index[3];
-                        }
-                        if(dimension == 2) {
-                            LOG(TRACE) << "Parsing neighbors [index]: " << index[0] << ", " << index[1] << ", " << index[2];
-                        }
-
-                        MeshElement element(dimension, element_vertices, element_vertices_field);
-                        valid = element.validElement(volume_cut, q);
-                        if(!valid) {
-                            continue;
-                        }
-
-                        LOG(DEBUG) << element.print(q);
-                        e = element.getObservable(q);
-                        break;
-                    } while(std::prev_permutation(bitmask.begin(), bitmask.end()));
-
-                    if(valid) {
-                        break;
                     }
 
-                    LOG(DEBUG) << "All combinations tried up to index " << index_cut_up
-                               << " done. Increasing the index cut.";
-                    index_cut_up = index_cut_up + my_index_cut;
-                }
+                    MeshElement element(dimension, element_vertices, element_vertices_field);
+                    valid = element.validElement(volume_cut, q);
+                    if(!valid) {
+                        continue;
+                    }
+
+                    LOG(DEBUG) << element.print(q);
+                    e = element.getObservable(q);
+                    break;
+                } while(std::next_permutation(bitmask.begin(), bitmask.end()));
 
                 if(valid) {
                     break;
