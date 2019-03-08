@@ -1,6 +1,6 @@
 #include <Eigen/Eigen>
+#include <array>
 #include <utility>
-#include <vector>
 
 #include "DFISEParser.hpp"
 #include "octree/Octree.hpp"
