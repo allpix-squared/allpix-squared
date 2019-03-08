@@ -59,7 +59,7 @@ double MeshElement::get_distance(size_t index, Point& qp) const {
 }
 
 bool MeshElement::validElement(double volume_cut, Point& qp) const {
-    if(volume_ < MIN_VOLUME) {
+    if(std::fabs(volume_) < MIN_VOLUME) {
         LOG(TRACE) << "Invalid tetrahedron with coplanar(3D)/colinear(2D) vertices.";
         return false;
     }
