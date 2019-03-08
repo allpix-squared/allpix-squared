@@ -361,10 +361,6 @@ int main(int argc, char** argv) {
     unibn::Octree<Point> octree;
     octree.initialize(points);
 
-    // Total number of mesh points to interpolate:
-    auto total_mesh_points = divisions.x() * divisions.y() * divisions.z();
-    std::atomic<int> total_mesh_points_done{0};
-
     auto mesh_section = [&](double x, double y) {
         allpix::Log::setReportingLevel(log_level);
 
@@ -482,15 +478,6 @@ int main(int argc, char** argv) {
 
             new_mesh.push_back(e);
             z += zstep;
-
-            // count total number:
-            total_mesh_points_done++;
-
-            if(total_mesh_points_done % 200 == 0) {
-                LOG_PROGRESS(INFO, "meshing")
-                    << "Interpolating new mesh: " << total_mesh_points_done << " of " << total_mesh_points
-                    << " vertices done (" << (100. * total_mesh_points_done / total_mesh_points) << "%)";
-            }
         }
 
         return new_mesh;
