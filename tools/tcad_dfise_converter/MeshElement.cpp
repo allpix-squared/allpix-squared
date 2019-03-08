@@ -62,18 +62,13 @@ bool MeshElement::validElement(double volume_cut, Point& qp) const {
     if(std::fabs(volume_) < MIN_VOLUME) {
         LOG(TRACE) << "Invalid tetrahedron with coplanar(3D)/colinear(2D) vertices.";
         return false;
-    }
-    if(std::fabs(volume_) <= volume_cut) {
+    } else if(std::fabs(volume_) <= volume_cut) {
         LOG(TRACE) << "Tetrahedron volume smaller than volume cut.";
         return false;
     }
 
     for(size_t i = 0; i < dimension_ + 1; i++) {
-        double tetra_volume = get_sub_volume(i, qp);
-        if(volume_ * tetra_volume >= 0) {
-            continue;
-        }
-        if(volume_ * tetra_volume < 0) {
+        if(volume_ * get_sub_volume(i, qp) < 0) {
             LOG(TRACE) << "New mesh Point outside found element.";
             return false;
         }
