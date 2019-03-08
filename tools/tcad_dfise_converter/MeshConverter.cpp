@@ -370,6 +370,8 @@ int main(int argc, char** argv) {
 
         // New mesh slice
         std::vector<Point> new_mesh;
+        std::array<Point, 4> grid_elements;
+        std::array<Point, 4> field_elements;
 
         double z = minz + zstep / 2.0;
         for(int k = 0; k < divisions.z(); ++k) {
@@ -446,17 +448,16 @@ int main(int argc, char** argv) {
 
                 do {
                     valid = false;
-                    std::vector<Point> element_vertices;
-                    std::vector<Point> element_vertices_field;
+                    size_t idx = 0;
                     // print integers and permute bitmask
                     for(size_t idk = 0; idk < results.size(); ++idk) {
                         if(bitmask[idk]) {
-                            element_vertices.push_back(points[results[idk]]);
-                            element_vertices_field.push_back(field[results[idk]]);
+                            grid_elements[idx] = points[results[idk]];
+                            field_elements[idx++] = field[results[idk]];
                         }
                     }
 
-                    MeshElement element(dimension, element_vertices, element_vertices_field);
+                    MeshElement element(dimension, grid_elements, field_elements);
                     valid = element.validElement(volume_cut, q);
                     if(!valid) {
                         continue;

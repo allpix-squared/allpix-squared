@@ -26,10 +26,9 @@ namespace mesh_converter {
          * node
          */
         MeshElement(size_t dimension,
-                    std::vector<Point> vertices_tetrahedron,
-                    std::vector<Point> efield_vertices_tetrahedron = std::vector<Point>())
-            : dimension_(dimension), vertices_(std::move(vertices_tetrahedron)),
-              e_field_(std::move(efield_vertices_tetrahedron)) {
+                    const std::array<Point, 4>& vertices_tetrahedron,
+                    const std::array<Point, 4>& efield_vertices_tetrahedron)
+            : dimension_(dimension), vertices_(vertices_tetrahedron), e_field_(efield_vertices_tetrahedron) {
             calculate_volume();
         }
 
@@ -65,8 +64,8 @@ namespace mesh_converter {
         double get_sub_volume(size_t index, Point& p) const;
 
         size_t dimension_{3};
-        std::vector<Point> vertices_{};
-        std::vector<Point> e_field_{};
+        std::array<Point, 4> vertices_{};
+        std::array<Point, 4> e_field_{};
 
         double volume_{0};
     };
