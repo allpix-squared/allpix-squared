@@ -504,9 +504,12 @@ int main(int argc, char** argv) {
         }
 
         // Merge the result vectors:
+        unsigned int mesh_slices_done = 0;
         for(auto& mesh_future : mesh_futures) {
             auto mesh_slice = mesh_future.get();
             e_field_new_mesh.insert(e_field_new_mesh.end(), mesh_slice.begin(), mesh_slice.end());
+            LOG_PROGRESS(INFO, "m") << "Interpolating new mesh: " << (100 * mesh_slices_done / mesh_futures.size()) << "%";
+            mesh_slices_done++;
         }
 
         pool.shutdown();
