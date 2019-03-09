@@ -366,22 +366,8 @@ int main(int argc, char** argv) {
 
         double z = minz + zstep / 2.0;
         for(int k = 0; k < divisions.z(); ++k) {
-            Point q, e;
-            if(dimension == 2) {
-                q.x = -1;
-                q.y = y;
-                q.z = z; // New mesh vertex
-                e.x = -1;
-                e.y = y;
-                e.z = z;
-            } else {
-                q.x = x;
-                q.y = y;
-                q.z = z; // New mesh vertex
-                e.x = x;
-                e.y = y;
-                e.z = z; // Corresponding, to be interpolated, electric field
-            }
+            // New mesh vertex and field
+            Point q(dimension == 2 ? -1 : x, y, z), e;
             bool valid = false;
 
             size_t prev_neighbours = 0;
