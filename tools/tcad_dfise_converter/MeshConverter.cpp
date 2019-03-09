@@ -406,7 +406,7 @@ int main(int argc, char** argv) {
                 auto res = for_each_combination(results.begin(),
                                                 results.begin() + (dimension == 3 ? 4 : 3),
                                                 results.end(),
-                                                combination(&points, &field, q, volume_cut));
+                                                Combination(&points, &field, q, volume_cut));
                 valid = res.valid();
                 if(valid) {
                     e = res.result();
