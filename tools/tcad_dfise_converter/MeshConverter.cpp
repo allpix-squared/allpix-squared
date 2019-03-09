@@ -28,6 +28,7 @@
 #include "DFISEParser.hpp"
 #include "MeshElement.hpp"
 #include "ThreadPool.hpp"
+#include "combinations/combinations.h"
 #include "octree/Octree.hpp"
 
 using namespace mesh_converter;
