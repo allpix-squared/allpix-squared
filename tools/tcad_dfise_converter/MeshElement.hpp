@@ -79,7 +79,7 @@ namespace mesh_converter {
      * results found. It constructs a new MeshElement, checks for its validity and returns true to stop the iteration and
      * false to continue to the next combination of results.
     */
-    class f {
+    class combination {
         const std::vector<Point>* grid_;
         const std::vector<Point>* field_;
         Point reference_;
@@ -98,10 +98,10 @@ namespace mesh_converter {
          * @param  q          Reference point to interpolate at
          * @param  volume_cut Volume cut to be used
          */
-        explicit f(const std::vector<Point>* points,
-                   const std::vector<Point>* field,
-                   const Point& q,
-                   const double volume_cut)
+        explicit combination(const std::vector<Point>* points,
+                             const std::vector<Point>* field,
+                             const Point& q,
+                             const double volume_cut)
             : grid_(points), field_(field), reference_(q), cut_(volume_cut) {}
 
         /**
