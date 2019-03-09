@@ -367,8 +367,6 @@ int main(int argc, char** argv) {
 
         // New mesh slice
         std::vector<Point> new_mesh;
-        std::array<Point, 4> grid_elements;
-        std::array<Point, 4> field_elements;
 
         double z = minz + zstep / 2.0;
         for(int k = 0; k < divisions.z(); ++k) {
@@ -402,7 +400,7 @@ int main(int argc, char** argv) {
 
                 // Sort by highest distance first, permutation from back of the vector
                 std::sort(results_high.begin(), results_high.end(), [&](unsigned int a, unsigned int b) {
-                    return unibn::L2Distance<Point>::compute(points[a], q) > unibn::L2Distance<Point>::compute(points[b], q);
+                    return unibn::L2Distance<Point>::compute(points[a], q) < unibn::L2Distance<Point>::compute(points[b], q);
                 });
 
                 if(threshold_flag) {
@@ -439,33 +437,15 @@ int main(int argc, char** argv) {
                 LOG(DEBUG) << "Number of vertices found: " << results.size();
 
                 // Finding tetrahedrons using bitmask permutation
-                size_t num_nodes_element = (dimension == 3 ? 4 : 3);
-                std::vector<bool> bitmask(results.size() - num_nodes_element, false);
-                bitmask.resize(results.size(), true);
+                long int num_nodes_element = (dimension == 3 ? 4 : 3);
 
-                do {
-                    valid = false;
-                    size_t idx = 0;
-                    // print integers and permute bitmask
-                    for(size_t idk = 0; idk < results.size(); ++idk) {
-                        if(bitmask[idk]) {
-                            grid_elements[idx] = points[results[idk]];
-                            field_elements[idx++] = field[results[idk]];
-                        }
-                    }
-
-                    MeshElement element(dimension, grid_elements, field_elements);
-                    valid = element.validElement(volume_cut, q);
-                    if(!valid) {
-                        continue;
-                    }
-
-                    LOG(DEBUG) << element.print(q);
-                    e = element.getObservable(q);
-                    break;
-                } while(std::next_permutation(bitmask.begin(), bitmask.end()));
-
+                auto res = for_each_combination(results.begin(),
+                                                results.begin() + num_nodes_element,
+                                                results.end(),
+                                                f(points.data(), field.data(), q, volume_cut));
+                valid = res.valid();
                 if(valid) {
+                    e = res.result();
                     break;
                 }
 

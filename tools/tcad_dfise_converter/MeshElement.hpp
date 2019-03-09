@@ -2,6 +2,8 @@
 #include <array>
 #include <utility>
 
+#include "core/utils/log.h"
+
 #include "DFISEParser.hpp"
 #include "octree/Octree.hpp"
 
@@ -69,4 +71,45 @@ namespace mesh_converter {
 
         double volume_{0};
     };
+
+    class f {
+        Point* grid_;
+        Point* field_;
+        Point reference_;
+        Point result_;
+        bool valid_{};
+        double cut_;
+
+        std::array<Point, 4> grid_elements;
+        std::array<Point, 4> field_elements;
+
+    public:
+        explicit f(Point* points, Point* field, const Point& q, const double volume_cut)
+            : grid_(points), field_(field), reference_(q), cut_(volume_cut) {}
+
+        // called for each permutation
+        template <class It> bool operator()(It begin, It end) {
+            // Dimensionality is number of iterator elements minus one:
+            size_t dimensions = static_cast<size_t>(end - begin) - 1;
+            size_t idx = 0;
+            for(; begin < end; begin++) {
+                grid_elements[idx] = *(grid_ + (*begin));
+                field_elements[idx++] = *(field_ + (*begin));
+            }
+
+            LOG(TRACE) << "Constructing element with dim " << dimensions << " at " << reference_;
+            MeshElement element(dimensions, grid_elements, field_elements);
+            valid_ = element.validElement(cut_, reference_);
+            if(valid_) {
+                LOG(DEBUG) << element.print(reference_);
+                result_ = element.getObservable(reference_);
+            }
+
+            return valid_; // Don't break out of the loop
+        }
+
+        bool valid() const { return valid_; }
+        Point result() const { return result_; }
+    };
+
 } // namespace mesh_converter
