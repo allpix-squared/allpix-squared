@@ -157,10 +157,6 @@ int main(int argc, char** argv) {
     const auto radius_step = config.get<double>("radius_step", 0.5);
     const auto max_radius = config.get<double>("max_radius", 10);
 
-    // Only use a radius threshold if requested
-    const bool threshold_flag = config.has("radius_threshold");
-    const auto radius_threshold = config.get<double>("radius_threshold", -1);
-
     const auto volume_cut = config.get<double>("volume_cut", 10e-9);
 
     XYZVectorInt divisions;
@@ -395,29 +391,14 @@ int main(int argc, char** argv) {
                 LOG(DEBUG) << "Search radius: " << radius;
                 // Calling octree neighbours search and sorting the results list with the closest neighbours first
                 std::vector<unsigned int> results;
-                std::vector<unsigned int> results_high;
-                octree.radiusNeighbors<unibn::L2Distance<Point>>(q, radius, results_high);
+                octree.radiusNeighbors<unibn::L2Distance<Point>>(q, radius, results);
+                LOG(DEBUG) << "Number of vertices found: " << results.size();
 
-                // Sort by highest distance first, permutation from back of the vector
-                std::sort(results_high.begin(), results_high.end(), [&](unsigned int a, unsigned int b) {
+                // Sort by lowest distance first, this drastically reduces the number of permutations required to find a
+                // valid mesh element and also ensures that this is the one with the smallest volume.
+                std::sort(results.begin(), results.end(), [&](unsigned int a, unsigned int b) {
                     return unibn::L2Distance<Point>::compute(points[a], q) < unibn::L2Distance<Point>::compute(points[b], q);
                 });
-
-                if(threshold_flag) {
-                    size_t results_size = results_high.size();
-                    int count = 0;
-                    for(size_t index = 0; index < results_size; index++) {
-                        if(unibn::L2Distance<Point>::compute(points[results_high[index]], q) < radius_threshold) {
-                            count++;
-                            continue;
-                        }
-                        results.push_back(results_high[index]);
-                    }
-                    LOG(DEBUG) << "Applying radius threshold of " << radius_threshold << std::endl
-                               << "Removing " << count << " of " << results_size;
-                } else {
-                    results = results_high;
-                }
 
                 // If after a radius step no new neighbours are found, go to the next radius step
                 if(results.size() <= prev_neighbours || results.empty()) {
@@ -427,14 +408,13 @@ int main(int argc, char** argv) {
                     continue;
                 }
 
-                if(results.size() < 4) {
+                // If we have less than N close neighbors, no full mesh element can be formed. Increase radius.
+                if(results.size() < (dimension == 3 ? 4 : 3)) {
                     LOG(WARNING) << "Incomplete mesh element found for radius " << radius << std::endl
                                  << "Increasing the readius (setting a higher initial radius may help)";
                     radius = radius + radius_step;
                     continue;
                 }
-
-                LOG(DEBUG) << "Number of vertices found: " << results.size();
 
                 // Finding tetrahedrons by checking all combinations of N elements, starting with closest to reference point
                 auto res = for_each_combination(results.begin(),
