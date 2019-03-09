@@ -40,7 +40,6 @@ It should be noted that the TCAD DF-ISE mesh converter depends on the core utili
 * `max_radius`: Maximum search radius (default is `10um`).
 * `radius_threshold`: Minimum distance from node to new mesh point. By default, no threshold is applied.
 * `volume_cut`: Minimum volume for tetrahedron for non-coplanar vertices (defaults to minimum double value).
-* `index_cut`: Index cut during permutation on vertex neighbors (disabled by default).
 * `divisions`: Number of divisions of the new regular mesh for each dimension, 2D or 3D vector depending on the `dimension` setting. Defaults to 100 bins in each dimension.
 * `xyz`: Array to replace the system coordinates of the mesh. A detailed description of how to use this parameter is given below.
 * `mesh_tree`: Boolean to enable creation of a root file with the TCAD mesh nodes stored in a `ROOT::TTree`. This setting is deactivated by default.
@@ -70,8 +69,6 @@ The new coordinate system of the mesh can be changed by providing an array for t
 
 The program can be used to convert 3D and 2D TCAD mesh files. Note that when converting 2D meshes, the *x* coordinate will be fixed to 1 and the interpolation will happen over the *yz* plane.
 The keyword mesh_tree can be used as a switch to enable or disable the creation of a root file with the original TCAD mesh points stored as a `ROOT::TTree` for later, fast, inspection.
-
-It is possible to visualize the position of the new mesh point to be interpolated (in red) surrounded by the mesh points and the closest neighbors found (in blue) by providing the keyword `screen_shot` with the new mesh node coordinates (such as `screen_shot = 1 2 3`) as value pair. This can be useful if the interpolation gets stuck in some region. Currently, it is implemented only for 3D meshes. The 3D point-cloud will be saved as a `ROOT::TGraph2D` in a root file with the grid file name (including the `.grd` extension) as prefix and "_INTERPOLATION_POINT_SCREEN_SHOT.root" as suffix.
 
 In addition, the `mesh_plotter` tool can be used, in order to visualize the new mesh interpolation results, from the installation folder as follows:
 ```bash
