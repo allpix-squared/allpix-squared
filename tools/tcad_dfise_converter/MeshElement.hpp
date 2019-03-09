@@ -72,6 +72,13 @@ namespace mesh_converter {
         double volume_{0};
     };
 
+    /**
+     * @brief Functor class to be used by the for_each_combination algorithm.
+     *
+     * It receives pointers to the point and field vectors and its operator() member is called for every combination of
+     * results found. It constructs a new MeshElement, checks for its validity and returns true to stop the iteration and
+     * false to continue to the next combination of results.
+    */
     class f {
         const std::vector<Point>* grid_;
         const std::vector<Point>* field_;
@@ -84,13 +91,26 @@ namespace mesh_converter {
         std::array<Point, 4> field_elements;
 
     public:
+        /**
+         * @brief constructor for functor
+         * @param  points     Pointer to mesh point vector
+         * @param  field      Pointer to field vector
+         * @param  q          Reference point to interpolate at
+         * @param  volume_cut Volume cut to be used
+         */
         explicit f(const std::vector<Point>* points,
                    const std::vector<Point>* field,
                    const Point& q,
                    const double volume_cut)
             : grid_(points), field_(field), reference_(q), cut_(volume_cut) {}
 
-        // called for each permutation
+        /**
+         * @brief Operator called for each permutation
+         * @param begin First iterator element of current combination
+         * @param end Last iterator element of current combination
+         * @return True if valid mesh element was found, stops the loop, or False if not found, continuing loop through
+         * combinations.
+         */
         template <class It> bool operator()(It begin, It end) {
             // Dimensionality is number of iterator elements minus one:
             size_t dimensions = static_cast<size_t>(end - begin) - 1;
@@ -108,10 +128,20 @@ namespace mesh_converter {
                 result_ = element.getObservable(reference_);
             }
 
-            return valid_; // Don't break out of the loop
+            return valid_; // Don't break out of the loop if element is invalid
         }
 
+        /**
+         * @brief Member to check for validity of returned mesh element:
+         * @return True if element is valid and can be used, False if no valid element was found but iteration ended without
+         * result
+         */
         bool valid() const { return valid_; }
+
+        /**
+         * @brief Member to retrieve interpolated result from valid mesh element
+         * @return Interpolated result from valid mesh element
+         */
         Point result() const { return result_; }
     };
 

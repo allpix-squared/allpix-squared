@@ -436,7 +436,7 @@ int main(int argc, char** argv) {
 
                 LOG(DEBUG) << "Number of vertices found: " << results.size();
 
-                // Finding tetrahedrons by checking all combinations of N elements, starting with closest
+                // Finding tetrahedrons by checking all combinations of N elements, starting with closest to reference point
                 auto res = for_each_combination(results.begin(),
                                                 results.begin() + (dimension == 3 ? 4 : 3),
                                                 results.end(),
