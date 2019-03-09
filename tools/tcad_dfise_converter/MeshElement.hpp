@@ -73,8 +73,8 @@ namespace mesh_converter {
     };
 
     class f {
-        Point* grid_;
-        Point* field_;
+        const std::vector<Point>* grid_;
+        const std::vector<Point>* field_;
         Point reference_;
         Point result_;
         bool valid_{};
@@ -84,7 +84,10 @@ namespace mesh_converter {
         std::array<Point, 4> field_elements;
 
     public:
-        explicit f(Point* points, Point* field, const Point& q, const double volume_cut)
+        explicit f(const std::vector<Point>* points,
+                   const std::vector<Point>* field,
+                   const Point& q,
+                   const double volume_cut)
             : grid_(points), field_(field), reference_(q), cut_(volume_cut) {}
 
         // called for each permutation
@@ -93,8 +96,8 @@ namespace mesh_converter {
             size_t dimensions = static_cast<size_t>(end - begin) - 1;
             size_t idx = 0;
             for(; begin < end; begin++) {
-                grid_elements[idx] = *(grid_ + (*begin));
-                field_elements[idx++] = *(field_ + (*begin));
+                grid_elements[idx] = (*grid_)[*begin];
+                field_elements[idx++] = (*field_)[*begin];
             }
 
             LOG(TRACE) << "Constructing element with dim " << dimensions << " at " << reference_;

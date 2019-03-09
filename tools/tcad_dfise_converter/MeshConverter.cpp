@@ -436,21 +436,19 @@ int main(int argc, char** argv) {
 
                 LOG(DEBUG) << "Number of vertices found: " << results.size();
 
-                // Finding tetrahedrons using bitmask permutation
-                long int num_nodes_element = (dimension == 3 ? 4 : 3);
-
+                // Finding tetrahedrons by checking all combinations of N elements, starting with closest
                 auto res = for_each_combination(results.begin(),
-                                                results.begin() + num_nodes_element,
+                                                results.begin() + (dimension == 3 ? 4 : 3),
                                                 results.end(),
-                                                f(points.data(), field.data(), q, volume_cut));
+                                                f(&points, &field, q, volume_cut));
                 valid = res.valid();
                 if(valid) {
                     e = res.result();
                     break;
                 }
 
-                LOG(DEBUG) << "All combinations tried. Increasing the radius.";
                 radius = radius + radius_step;
+                LOG(DEBUG) << "All combinations tried. Increasing search radius to " << radius;
             }
 
             if(!valid) {
