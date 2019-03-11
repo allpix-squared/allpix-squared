@@ -150,8 +150,8 @@ int main(int argc, char** argv) {
     std::transform(format.begin(), format.end(), format.begin(), ::tolower);
     FileType file_type = (format == "init" ? FileType::INIT : format == "apf" ? FileType::APF : FileType::UNKNOWN);
 
-    std::string region = config.get<std::string>("region", "bulk");
-    std::string observable = config.get<std::string>("observable", "ElectricField");
+    auto regions = config.getArray<std::string>("region", {"bulk"});
+    auto observable = config.get<std::string>("observable", "ElectricField");
 
     const auto initial_radius = config.get<double>("initial_radius", 1);
     const auto radius_step = config.get<double>("radius_step", 0.5);
@@ -204,7 +204,16 @@ int main(int argc, char** argv) {
         for(auto& reg : region_grid) {
             LOG(INFO) << "\t" << std::left << std::setw(25) << reg.first << " " << reg.second.size();
         }
-        points = region_grid[region];
+
+        // Append all grid regions to the mesh:
+        for(const auto& region : regions) {
+            if(region_grid.find(region) != region_grid.end()) {
+                points.insert(points.end(), region_grid[region].begin(), region_grid[region].end());
+            } else {
+                LOG(ERROR) << "Region \"" << region << "\" not found in TCAD mesh";
+            }
+        }
+
         if(points.empty()) {
             throw std::runtime_error("Empty grid");
         }
@@ -221,7 +230,6 @@ int main(int argc, char** argv) {
     std::vector<Point> field;
     try {
         auto region_fields = read_electric_field(data_file);
-        field = region_fields[region][observable];
         LOG(INFO) << "Field sizes for all regions and observables:";
         for(auto& reg : region_fields) {
             LOG(INFO) << " " << reg.first << ":";
@@ -229,6 +237,18 @@ int main(int argc, char** argv) {
                 LOG(INFO) << "\t" << std::left << std::setw(25) << fld.first << " " << fld.second.size();
             }
         }
+
+        // Append all field regions to the field vector:
+        for(const auto& region : regions) {
+            if(region_fields.find(region) != region_fields.end() &&
+               region_fields[region].find(observable) != region_fields[region].end()) {
+                field.insert(
+                    field.end(), region_fields[region][observable].begin(), region_fields[region][observable].end());
+            } else {
+                LOG(ERROR) << "Region \"" << region << "\" with observable \"" << observable << "\" not found in TCAD field";
+            }
+        }
+
         if(field.empty()) {
             throw std::runtime_error("Empty observable data");
         }
@@ -503,7 +523,8 @@ int main(int argc, char** argv) {
     std::string init_file_name = init_file_prefix + "_" + observable + (file_type == FileType::INIT ? ".init" : ".apf");
 
     allpix::FieldWriter<double> field_writer(quantity);
-    field_writer.write_file(field_data, init_file_name, file_type, units);
+    field_writer.write_file(field_data, init_file_name, file_type, (file_type == FileType::INIT ? units : ""));
+    LOG(STATUS) << "New mesh written to file \"" << init_file_name << "\"";
 
     end = std::chrono::system_clock::now();
     elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();

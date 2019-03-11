@@ -33,7 +33,7 @@ It should be noted that the TCAD DF-ISE mesh converter depends on the core utili
 ### Parameters
 * `model`: Field file format to use, can be **INIT** or **APF**, defaults to **APF** (binary format).
 * `dimension`: Specify mesh dimensionality (defaults to 3).
-* `region`: Region name to be meshed (defaults to `bulk`).
+* `region`: Region name or list of region names to be meshed (defaults to `bulk`).
 * `observable`: Observable to be interpolated (defaults to `ElectricField`).
 * `initial_radius`: Initial node neighbors search radius in micro meters (defaults to `1um`).
 * `radius_step`: Radius step if no neighbor is found (defaults to `0.5um`).
