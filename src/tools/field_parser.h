@@ -10,6 +10,7 @@
 #ifndef ALLPIX_FIELD_PARSER_H
 #define ALLPIX_FIELD_PARSER_H
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -160,6 +161,29 @@ namespace allpix {
         }
 
         /**
+         * @brief Helper function to compare potential units defined in the INIT file against the ones provided:
+         * @param file_units Unit string read from the file
+         * @param units      Unit string provided via the parser interface
+         */
+        void check_unit_match(const std::string& file_units, const std::string& units) {
+            // If we read "##SEED#" or a number, the file is provided in the original format and we ignore it.
+            if(file_units == "##SEED##" || std::all_of(file_units.begin(), file_units.end(), ::isdigit)) {
+                LOG(DEBUG) << "INIT file does not contain unit information. Header states \"" << file_units << "\"";
+            } else if(file_units == "internal") { // File reports internal units
+                // Parser requests unit conversion:
+                if(!units.empty()) {
+                    LOG(ERROR) << "Requesting to interpret INIT field as units \"" << units
+                               << "\" while file header states internal units";
+                } else {
+                    LOG(DEBUG) << "INIT file states internal units, so does the parser";
+                }
+            } else if(Units::get(file_units) != Units::get(units)) { // File reports units
+                LOG(ERROR) << "Requesting to interpret INIT field as units \"" << units << "\" while file header states \""
+                           << file_units << "\"";
+            }
+        }
+
+        /**
          * @brief Function to read FieldData from INIT-formatted ASCII files. Values are interpreted in the units provided by
          * the argument and converted to the framework-internal base units. The size of the field given in the file is always
          * interpreted as micrometers.
@@ -175,7 +199,10 @@ namespace allpix {
 
             // Read the header
             std::string tmp;
-            file >> tmp >> tmp;        // ignore the init seed and cluster length
+            // WARNING the usage of this field as storage for the field units differs from the original INIT format!
+            file >> tmp;
+            check_unit_match(allpix::trim(tmp), units);
+            file >> tmp;               // ignore cluster length
             file >> tmp >> tmp >> tmp; // ignore the incident pion direction
             file >> tmp >> tmp >> tmp; // ignore the magnetic field (specify separately)
             double thickness, xpixsz, ypixsz;
@@ -322,10 +349,10 @@ namespace allpix {
             LOG(TRACE) << "Writing INIT file \"" << file_name << "\"";
 
             // Write INIT file header
-            file << field_data.getHeader() << std::endl;  // Header line
-            file << "##SEED## ##EVENTS##" << std::endl;   // Unused
-            file << "##TURN## ##TILT## 1.0" << std::endl; // Unused
-            file << "0.0 0.0 0.0" << std::endl;           // Magnetic field (unused)
+            file << field_data.getHeader() << std::endl;                                 // Header line
+            file << (!units.empty() ? units : "internal") << " ##EVENTS##" << std::endl; // Use placeholder for units
+            file << "##TURN## ##TILT## 1.0" << std::endl;                                // Unused
+            file << "0.0 0.0 0.0" << std::endl;                                          // Magnetic field (unused)
 
             auto size = field_data.getSize();
             file << Units::convert(size[2], "um") << " " << Units::convert(size[0], "um") << " "
