@@ -118,6 +118,10 @@ namespace allpix {
 
             switch(file_type) {
             case FileType::INIT:
+                if(units.empty()) {
+                    LOG(WARNING) << "No field units provided, interpreting field data in internal units, this might lead to "
+                                    "unexpected results.";
+                }
                 return parse_init_file(file_name, units);
             case FileType::APF:
                 if(!units.empty()) {
@@ -272,6 +276,9 @@ namespace allpix {
 
             switch(file_type) {
             case FileType::INIT:
+                if(units.empty()) {
+                    LOG(WARNING) << "No field units provided, writing field data in internal units.";
+                }
                 write_init_file(field_data, file_name, units);
                 break;
             case FileType::APF:
