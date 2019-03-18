@@ -23,3 +23,6 @@ The resulting induced charge is summed for all propagated charge carriers and re
 [InducedTransfer]
 induction_matrix = 3 3
 ```
+
+[@shockley]: https://doi.org/10.1063/1.1710367
+[@ramo]: https://doi.org/10.1109/JRPROC.1939.228757
