@@ -15,9 +15,10 @@ using namespace allpix;
 
 template <typename T> static void print_info(allpix::FieldData<T> field_data, size_t n, std::string units) {
     std::cout << "Header:     \"" << field_data.getHeader() << "\"" << std::endl;
-    std::cout << "Field size: " << field_data.getSize()[0] << "x" << field_data.getSize()[1] << "x"
-              << field_data.getSize()[2] << "um" << std::endl;
-    std::cout << "Dimensions: " << field_data.getDimensions()[0] << "x" << field_data.getDimensions()[1] << "x"
+    std::cout << "Field size: " << Units::display(field_data.getSize()[0], "um") << " x "
+              << Units::display(field_data.getSize()[1], "um") << " x " << Units::display(field_data.getSize()[2], "um")
+              << std::endl;
+    std::cout << "Dimensions: " << field_data.getDimensions()[0] << " x " << field_data.getDimensions()[1] << " x "
               << field_data.getDimensions()[2] << " cells" << std::endl;
     std::cout << "Field vector with " << field_data.getData()->size() << " entries" << std::endl;
 

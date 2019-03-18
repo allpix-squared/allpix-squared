@@ -666,7 +666,9 @@ int main(int argc, char** argv) {
     // Prepare header and auxiliary information:
     std::string header =
         "Allpix Squared " + std::string(ALLPIX_PROJECT_VERSION) + " TCAD Mesh Converter, observable: " + observable;
-    std::array<double, 3> size{{(maxx - minx), (maxy - miny), (maxz - minz)}};
+    std::array<double, 3> size{{allpix::Units::get(maxx - minx, "um"),
+                                allpix::Units::get(maxy - miny, "um"),
+                                allpix::Units::get(maxz - minz, "um")}};
     std::array<size_t, 3> gridsize{
         {static_cast<size_t>(divisions.x()), static_cast<size_t>(divisions.y()), static_cast<size_t>(divisions.z())}};
 
