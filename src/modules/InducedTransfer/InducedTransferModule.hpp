@@ -19,7 +19,7 @@
 namespace allpix {
     /**
      * @ingroup Modules
-     * @brief Module to calculate thr total induced charge from propagated charge carriers and to assign them to pixels
+     * @brief Module to calculate the total induced charge from propagated charge carriers and to assign them to pixels
      * @note This module supports parallelization
      *
      * This module calculates the total induced charge by a charge carrier via the Shockley-Ramo theorem by comparing the
