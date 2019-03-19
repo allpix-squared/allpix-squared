@@ -11,12 +11,13 @@
 
 #include <cassert>
 #include <fstream>
-#include <string>
 #include <utility>
 
 #include <TBranchElement.h>
 #include <TClass.h>
+#include <TDecompSVD.h>
 #include <TDirectory.h>
+#include <TMatrixD.h>
 
 #include "core/utils/file.h"
 #include "core/utils/log.h"
@@ -27,35 +28,60 @@
 
 using namespace allpix;
 
-RCEWriterModule::RCEWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
-    : Module(config), geo_mgr_(geo_mgr) {
-    // Bind to PixelHitMessage
-    messenger->bindMulti(this, &RCEWriterModule::pixel_hit_messages_);
+/** Orthogonalize the coordinates definition using singular value decomposition.
+ *
+ * \param unit_u  Unit vector along the first local axis
+ * \param unit_v  Unit vector along the second local axis
+ *
+ * The third local axis is derived from the first two by assuming a right-handed
+ * coordinate system. The resulting rotation matrix is then orthogonalized
+ * by finding the closest orthogonal matrix.
+ */
+static void orthogonalize(ROOT::Math::XYZVector& unit_u, ROOT::Math::XYZVector& unit_v) {
+    // definition of a right-handed coordinate system
+    auto unit_w = unit_u.Cross(unit_v);
+    // resulting local-to-global rotation matrix
+    TMatrixD rot(3, 3);
+    rot(0, 0) = unit_u.x();
+    rot(1, 0) = unit_u.y();
+    rot(2, 0) = unit_u.z();
+    rot(0, 1) = unit_v.x();
+    rot(1, 1) = unit_v.y();
+    rot(2, 1) = unit_v.z();
+    rot(0, 2) = unit_w.x();
+    rot(1, 2) = unit_w.y();
+    rot(2, 2) = unit_w.z();
+    // decompose
+    TDecompSVD svd(rot);
+    svd.Decompose();
+    // nearest orthogonal matrix is defined by unit singular values
+    rot = svd.GetU() * TMatrixD(svd.GetV()).T();
 
-    config_.setDefault("file_name", "rce-data.root");
-    config_.setDefault("geometry_file", "rce-geo.toml");
+    unit_u.SetXYZ(rot(0, 0), rot(1, 0), rot(2, 0));
+    unit_v.SetXYZ(rot(0, 1), rot(1, 1), rot(2, 1));
 }
 
-static void print_geo_detector(std::ostream& os, int index, const Detector& detector) {
-    // Proteus uses the following local to global transformation
-    //
-    //   r = r_0 + Q * q
-    //
-    // where the local origin (0, 0) is located on the lower-left
-    // pixel corner of the pixel closest to the the center of the
-    // active matrix
-
+static void print_geometry_sensor(std::ostream& os, int index, const Detector& detector) {
+    // Proteus uses the lower-left pixel edge closest to the geometric center
+    // of the active pixel matrix as the reference position.
+    // The position must be given in global coordinates
     auto size = detector.getModel()->getNPixels();
     auto pitch = detector.getModel()->getPixelSize();
     // pixel index in allpix is pixel center, i.e. pixel goes from (-0.5, 0.5)
-    auto pos_u = pitch.x() * (std::round(size.x() / 2.0) - 0.5);
-    auto pos_v = pitch.y() * (std::round(size.y() / 2.0) - 0.5);
-    auto pos = detector.getGlobalPosition({pos_u, pos_v, 0});
+    auto off_u = pitch.x() * (std::round(size.x() / 2.0) - 0.5);
+    auto off_v = pitch.y() * (std::round(size.y() / 2.0) - 0.5);
+    auto offset = detector.getGlobalPosition({off_u, off_v, 0});
 
-    // we need the column vectors of the local to global rotation
-    ROOT::Math::XYZVector uu, uv, uw;
-    auto rot = detector.getOrientation().Inverse();
-    rot.GetComponents(uu, uv, uw);
+    // Proteus defines the orientation of the sensor using two unit vectors
+    // along the two local axes of the active matrix as seen in the global
+    // system.
+    // They are computed as difference vectors here to avoid a dependency
+    // on the transformation implementation (which has led to errors before).
+    auto zero = detector.getGlobalPosition({0, 0, 0});
+    auto unit_u = (detector.getGlobalPosition({1, 0, 0}) - zero).Unit();
+    auto unit_v = (detector.getGlobalPosition({0, 1, 0}) - zero).Unit();
+    // try to fix round-off issues
+    orthogonalize(unit_u, unit_v);
 
     // we need to restore the ostream format state later on
     auto flags = os.flags();
@@ -65,22 +91,31 @@ static void print_geo_detector(std::ostream& os, int index, const Detector& dete
 
     os << "[[sensors]]\n";
     os << "id = " << index << '\n';
-    os << "offset = [" << pos.x() << ", " << pos.y() << ", " << pos.z() << "]\n";
-    os << "unit_u = [" << uu.x() << ", " << uu.y() << ", " << uu.z() << "]\n";
-    os << "unit_v = [" << uv.x() << ", " << uv.y() << ", " << uv.z() << "]\n";
+    os << "offset = [" << offset.x() << ", " << offset.y() << ", " << offset.z() << "]\n";
+    os << "unit_u = [" << unit_u.x() << ", " << unit_u.y() << ", " << unit_u.z() << "]\n";
+    os << "unit_v = [" << unit_v.x() << ", " << unit_v.y() << ", " << unit_v.z() << "]\n";
     os << '\n';
 
     os.flags(flags);
     os.precision(precision);
 }
 
-static void print_geo(std::ostream& os, const std::vector<std::string>& names, GeometryManager* geo_mgr) {
-    assert(geo_mgr && "geo_mgr must be non-null");
-
+static void print_geometry(std::ostream& os, const std::vector<std::string>& names, GeometryManager& geo_mgr) {
     int index = 0;
     for(const auto& name : names) {
-        print_geo_detector(os, index++, *geo_mgr->getDetector(name));
+        print_geometry_sensor(os, index++, *geo_mgr.getDetector(name));
     }
+}
+
+RCEWriterModule::RCEWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
+    : Module(config), geo_mgr_(geo_mgr) {
+    assert(geo_mgr_ and "GeometryManager must be non-null");
+
+    // Bind to PixelHitMessage
+    messenger->bindMulti(this, &RCEWriterModule::pixel_hit_messages_);
+
+    config_.setDefault("file_name", "rce-data.root");
+    config_.setDefault("geometry_file", "rce-geo.toml");
 }
 
 void RCEWriterModule::init() {
@@ -132,7 +167,7 @@ void RCEWriterModule::init() {
     // Write proteus geometry file
     std::string path_geo = createOutputFile(add_file_extension(config_.get<std::string>("geometry_file"), "toml"));
     std::ofstream geo_file(path_geo);
-    print_geo(geo_file, detector_names, geo_mgr_);
+    print_geometry(geo_file, detector_names, *geo_mgr_);
 }
 
 void RCEWriterModule::run(unsigned int event_id) {
@@ -153,8 +188,7 @@ void RCEWriterModule::run(unsigned int event_id) {
 
     // Loop over the pixel hit messages
     for(const auto& hit_msg : pixel_hit_messages_) {
-
-        std::string detector_name = hit_msg->getDetector()->getName();
+        const auto& detector_name = hit_msg->getDetector()->getName();
         auto& sensor = sensors_[detector_name];
 
         // Loop over all the hits
