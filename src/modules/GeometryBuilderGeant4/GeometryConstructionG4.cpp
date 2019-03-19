@@ -180,6 +180,15 @@ void GeometryConstructionG4::init_materials() {
     Solder->AddElement(Sn, 0.63);
     Solder->AddElement(Pb, 0.37);
     materials_["solder"] = Solder;
+
+    // Create paper material (cellulose C6H10O5)
+
+    G4Material* Paper = new G4Material("Paper", 0.8 * CLHEP::g / CLHEP::cm3, 3);
+    Paper->AddElement(C, 6);
+    Paper->AddElement(O, 10);
+    Paper->AddElement(H, 5);
+
+    materials_["paper"] = Paper;
 }
 
 void GeometryConstructionG4::build_detectors() {
