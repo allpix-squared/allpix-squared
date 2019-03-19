@@ -69,28 +69,112 @@ static double compute_model_relative_radlength(const DetectorModel& model) {
     return total;
 }
 
-static void print_device_sensor_type(std::ostream& os, const DetectorModel& model) {
-    os << "[sensor_types." << model.getType() << "]\n";
-    // this is only set as a reasonable default
-    // TODO if we can get access to the digitizer config we could set the
-    //      proper measurement and correct timestamp/value limits
-    os << "measurement = \"pixel_binary\"\n";
+// The Proteus sensor type is not identical w/ the Allpix² model since the
+// latter only defines the geometry while the former also includes some
+// digitization information. This leads to the situation where detectors
+// with the same model can end up as different sensor types.
+
+namespace {
+    struct sensor_type {
+        std::shared_ptr<const DetectorModel> model = nullptr;
+        std::string name;
+        std::string measurement = "pixel_binary";
+        int value_max = (1 << 15); // ~32k, raw charge w/o digitization
+    };
+} // namespace
+
+// Return the Proteus sensor type for each detector.
+static std::vector<sensor_type>
+list_sensor_types(const std::vector<std::string>& names, GeometryManager& geo_mgr, ConfigManager& cfg_mgr) {
+    std::vector<sensor_type> sensor_types;
+
+    for(const auto& name : names) {
+        // Define a default sensor config
+        sensor_type st;
+        st.model = geo_mgr.getDetector(name)->getModel();
+        st.name = st.model->getType();
+
+        // Search for a corresponding digitizer configuration
+        for(const auto& cfg : cfg_mgr.getInstanceConfigurations()) {
+            const auto& module = cfg.getName();
+            const auto& identifier = cfg.get<std::string>("identifier");
+
+            // NOTE
+            // Apart from the detector name, the identifier can contain
+            // additional input/output components. In that case, the
+            // configuration is a bit more complicated and can probably not
+            // be translated to a simplified Proteus configuration anyways.
+            // So, no need to check for that. (Thanks, Simon).
+
+            // _linearX name because digitizer only supports linear ADC map
+            if((module == "DefaultDigitizer") and (identifier == name)) {
+                auto adc_resolution = cfg.get<int>("adc_resolution", 0);
+                if(adc_resolution == 1) {
+                    // binary pixels
+                    st.name += "_linear1";
+                    st.measurement = "pixel_binary";
+                    st.value_max = 1;
+                } else if(1 < adc_resolution) {
+                    // pixel w/ digitized charge measurement
+                    st.name += "_linear" + std::to_string(adc_resolution);
+                    st.measurement = "pixel_tot";
+                    st.value_max = (1 << adc_resolution) - 1;
+                } else {
+                    // no digitization, use defaults
+                    st.name += "_raw";
+                }
+                // config can only appear once
+                break;
+            }
+        }
+        sensor_types.push_back(std::move(st));
+    }
+    return sensor_types;
+}
+
+static void print_device_sensor_type(std::ostream& os, const sensor_type& sensor_type) {
+    const DetectorModel& model = *sensor_type.model;
+
+    os << "[sensor_types." << sensor_type.name << "]\n";
     os << "cols = " << model.getNPixels().x() << "\n";
     os << "rows = " << model.getNPixels().y() << "\n";
+    // TODO add timestamp_{min,max} once the timing is supported by digitizer
+    os << "value_max = " << sensor_type.value_max << "\n";
     os << "pitch_col = " << model.getPixelSize().x() << "\n";
     os << "pitch_row = " << model.getPixelSize().y() << "\n";
-    // thickness is just the active thickness
+    // TODO add pitch_timestamp once timing is supported by digitizer
+    // thickness is the active thickness
     os << "thickness = " << model.getSensorSize().z() << "\n";
     // relative radiation length is for all material in the beam
     os << "x_x0 = " << compute_model_relative_radlength(model) << "\n";
+    os << "measurement = \"" << sensor_type.measurement << "\"\n";
     os << "\n";
 }
 
-static void print_device_sensor(std::ostream& os, const Detector& detector) {
+static void print_device_sensor(std::ostream& os, const std::string& name, const sensor_type& sensor_type) {
     os << "[[sensors]]\n";
     os << "name = \"" << name << "\"\n";
     os << "type = \"" << sensor_type.name << "\"\n";
     os << "\n";
+}
+
+static void
+print_device(std::ostream& os, const std::vector<std::string>& names, GeometryManager& geo_mgr, ConfigManager& cfg_mgr) {
+    // sensor type for each detector
+    std::vector<sensor_type> sensor_types = list_sensor_types(names, geo_mgr, cfg_mgr);
+    // reduce to unique sensor types
+    std::vector<sensor_type> unique_types = sensor_types;
+    std::sort(unique_types.begin(), unique_types.end(), [](const auto& a, const auto& b) { return a.name < b.name; });
+    unique_types.erase(
+        std::unique(unique_types.begin(), unique_types.end(), [](const auto& a, const auto& b) { return a.name == b.name; }),
+        unique_types.end());
+
+    for(const auto& sensor_type : unique_types) {
+        print_device_sensor_type(os, sensor_type);
+    }
+    for(size_t i = 0; i < std::min(names.size(), sensor_types.size()); ++i) {
+        print_device_sensor(os, names[i], sensor_types[i]);
+    }
 }
 
 /** Orthogonalize the coordinates definition using singular value decomposition.
@@ -202,12 +286,7 @@ static void write_proteus_config(const std::string& device_path,
     // TODO use path relative to the device file
     device_file << "geometry = \"" << get_canonical_path(geometry_path) << "\"\n";
     device_file << '\n';
-    for(const auto& model : geo_mgr.getModels()) {
-        print_device_sensor_type(device_file, *model);
-    }
-    for(const auto& name : names) {
-        print_device_sensor(device_file, *geo_mgr.getDetector(name));
-    }
+    print_device(device_file, names, geo_mgr, cfg_mgr);
 
     // geometry config
     print_geometry(geometry_file, names, geo_mgr, cfg_mgr);
