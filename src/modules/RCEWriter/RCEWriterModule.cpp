@@ -204,7 +204,7 @@ static void write_proteus_config(const std::string& device_path,
         auto dir = cfg.get<ROOT::Math::XYZVector>("beam_direction", {0, 0, 1});
         auto div = cfg.get<ROOT::Math::XYVector>("beam_divergence", {0, 0});
         print_geometry_beam(geometry_file, energy, dir, div);
-        // deposition module should appear at most once
+        // deposition module is a unique module that appears at most once
         break;
       }
     }
