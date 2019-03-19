@@ -193,15 +193,13 @@ void RCEWriterModule::run(unsigned int event_id) {
 
         // Loop over all the hits
         for(const auto& hit : hit_msg->getData()) {
-            int i = sensor.nhits_;
-
             if(sensor.kMaxHits <= sensor.nhits_) {
                 LOG(ERROR) << "More than " << sensor.kMaxHits << " in detector " << detector_name;
                 continue;
             }
 
             // Fill the tree with received messages
-            sensor.nhits_ += 1;
+            auto i = sensor.nhits_;
             sensor.pix_x_[i] = static_cast<Int_t>(hit.getPixel().getIndex().x()); // NOLINT
             sensor.pix_y_[i] = static_cast<Int_t>(hit.getPixel().getIndex().y()); // NOLINT
             sensor.value_[i] = static_cast<Int_t>(hit.getSignal());               // NOLINT
@@ -209,6 +207,7 @@ void RCEWriterModule::run(unsigned int event_id) {
             sensor.timing_[i] = static_cast<Int_t>(hit.getTime()); // NOLINT
             // This contains no useful information but it expected to be present
             sensor.hit_in_cluster_[i] = 0; // NOLINT
+            sensor.nhits_ += 1;
 
             LOG(TRACE) << detector_name << " x=" << hit.getPixel().getIndex().x() << " y=" << hit.getPixel().getIndex().y()
                        << " t=" << hit.getTime() << " signal=" << hit.getSignal();
