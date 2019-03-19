@@ -15,6 +15,7 @@
 #include <utility>
 
 #include <G4Box.hh>
+#include <G4EllipticalTube.hh>
 #include <G4LogicalVolume.hh>
 #include <G4NistManager.hh>
 #include <G4PVDivision.hh>
@@ -312,22 +313,49 @@ void GeometryConstructionG4::build_detectors() {
             solids_.push_back(support_box);
 
             std::shared_ptr<G4VSolid> support_solid = support_box;
+
             if(layer.hasHole()) {
                 // NOTE: Double the hole size in the z-direction to ensure no fake surfaces are created
-                auto hole_box = std::make_shared<G4Box>("support_" + name + "_hole_" + std::to_string(support_idx),
-                                                        layer.getHoleSize().x() / 2.0,
-                                                        layer.getHoleSize().y() / 2.0,
-                                                        layer.getHoleSize().z());
-                solids_.push_back(hole_box);
 
-                G4Transform3D transform(G4RotationMatrix(), toG4Vector(layer.getHoleCenter() - layer.getCenter()));
-                auto subtraction_solid =
-                    std::make_shared<G4SubtractionSolid>("support_" + name + "_subtraction_" + std::to_string(support_idx),
-                                                         support_box.get(),
-                                                         hole_box.get(),
-                                                         transform);
-                solids_.push_back(subtraction_solid);
-                support_solid = subtraction_solid;
+                std::cout << layer.isHoleType() << std::endl;
+
+                if(layer.isHoleType() == "cylinder") {
+
+                    auto hole_prim =
+                        std::make_shared<G4EllipticalTube>("support_" + name + "_hole_" + std::to_string(support_idx),
+                                                           layer.getHoleSize().x() / 2.0,
+                                                           layer.getHoleSize().y() / 2.0,
+                                                           layer.getHoleSize().z());
+                    solids_.push_back(hole_prim);
+
+                    G4Transform3D transform(G4RotationMatrix(), toG4Vector(layer.getHoleCenter() - layer.getCenter()));
+                    auto subtraction_solid = std::make_shared<G4SubtractionSolid>("support_" + name + "_subtraction_" +
+                                                                                      std::to_string(support_idx),
+                                                                                  support_box.get(),
+                                                                                  hole_prim.get(),
+                                                                                  transform);
+                    solids_.push_back(subtraction_solid);
+                    support_solid = subtraction_solid;
+
+                }
+
+                else {
+
+                    auto hole_prim = std::make_shared<G4Box>("support_" + name + "_hole_" + std::to_string(support_idx),
+                                                             layer.getHoleSize().x() / 2.0,
+                                                             layer.getHoleSize().y() / 2.0,
+                                                             layer.getHoleSize().z());
+                    solids_.push_back(hole_prim);
+
+                    G4Transform3D transform(G4RotationMatrix(), toG4Vector(layer.getHoleCenter() - layer.getCenter()));
+                    auto subtraction_solid = std::make_shared<G4SubtractionSolid>("support_" + name + "_subtraction_" +
+                                                                                      std::to_string(support_idx),
+                                                                                  support_box.get(),
+                                                                                  hole_prim.get(),
+                                                                                  transform);
+                    solids_.push_back(subtraction_solid);
+                    support_solid = subtraction_solid;
+                }
             }
 
             // Create the logical volume for the support
