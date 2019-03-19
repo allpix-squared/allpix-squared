@@ -88,23 +88,8 @@ static void print_device_sensor_type(std::ostream& os, const DetectorModel& mode
 
 static void print_device_sensor(std::ostream& os, const Detector& detector) {
     os << "[[sensors]]\n";
-    os << "type = \"" << detector.getType() << "\"\n";
-    os << "name = \"" << detector.getName() << "\"\n";
-    os << "\n";
-}
-
-static void print_geometry_beam(std::ostream& os,
-                                double energy,
-                                const ROOT::Math::XYZVector& direction,
-                                const ROOT::Math::XYVector& divergence) {
-    // direction vector to slope
-    auto slope_x = direction.x() / direction.z();
-    auto slope_y = direction.y() / direction.z();
-
-    os << "[beam]\n";
-    os << "energy = " << energy / Units::get(1, "GeV") << "\n";
-    os << "slope = [" << slope_x << ", " << slope_y << "]\n";
-    os << "divergence = [" << divergence.x() << ", " << divergence.y() << "]\n";
+    os << "name = \"" << name << "\"\n";
+    os << "type = \"" << sensor_type.name << "\"\n";
     os << "\n";
 }
 
@@ -171,6 +156,34 @@ static void print_geometry_sensor(std::ostream& os, int index, const Detector& d
     os << '\n';
 }
 
+static void
+print_geometry(std::ostream& os, const std::vector<std::string>& names, GeometryManager& geo_mgr, ConfigManager& cfg_mgr) {
+    // extract (optional) beam information
+    for(const auto& cfg : cfg_mgr.getModuleConfigurations()) {
+        if(cfg.getName() == "DepositionGeant4") {
+            auto energy = cfg.get<double>("source_energy", 0.0);
+            auto dir = cfg.get<ROOT::Math::XYZVector>("beam_direction", {0, 0, 1});
+            auto div = cfg.get<ROOT::Math::XYVector>("beam_divergence", {0, 0});
+
+            os << "[beam]\n";
+            os << "energy = " << energy / Units::get(1, "GeV") << "\n";
+            os << "slope = [" << dir.x() / dir.z() << ", " << dir.y() / dir.z() << "]\n";
+            os << "divergence = [" << div.x() << ", " << div.y() << "]\n";
+            os << "\n";
+
+            // deposition module is a unique module that appears at most once
+            break;
+        }
+    }
+
+    // per-detector geometry
+    int identifier = 0;
+    for(const auto& name : names) {
+        print_geometry_sensor(os, identifier, *geo_mgr.getDetector(name));
+        identifier += 1;
+    }
+}
+
 static void write_proteus_config(const std::string& device_path,
                                  const std::string& geometry_path,
                                  const std::vector<std::string>& names,
@@ -197,23 +210,7 @@ static void write_proteus_config(const std::string& device_path,
     }
 
     // geometry config
-    // extract (optional) beam information from config
-    for (const auto& cfg : cfg_mgr.getModuleConfigurations()) {
-      if (cfg.getName() == "DepositionGeant4") {
-        auto energy = cfg.get<double>("source_energy", 0.0);
-        auto dir = cfg.get<ROOT::Math::XYZVector>("beam_direction", {0, 0, 1});
-        auto div = cfg.get<ROOT::Math::XYVector>("beam_divergence", {0, 0});
-        print_geometry_beam(geometry_file, energy, dir, div);
-        // deposition module is a unique module that appears at most once
-        break;
-      }
-    }
-    // per-detector geometry
-    int identifier = 0;
-    for(const auto& name : names) {
-        print_geometry_sensor(geometry_file, identifier, *geo_mgr.getDetector(name));
-        identifier += 1;
-    }
+    print_geometry(geometry_file, names, geo_mgr, cfg_mgr);
 }
 
 RCEWriterModule::RCEWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
