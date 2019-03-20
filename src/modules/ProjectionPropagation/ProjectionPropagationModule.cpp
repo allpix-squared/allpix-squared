@@ -147,8 +147,9 @@ void ProjectionPropagationModule::run(unsigned int) {
             // Roll dice for charge carrier survival
             std::uniform_real_distribution<double> survival(0, 1);
             auto lifetime = (type == CarrierType::ELECTRON ? electron_lifetime_reference_ : hole_lifetime_reference_) /
-                            (1 + std::fabs(doping_concentration) /
-                                     (type == CarrierType::ELECTRON ? electron_doping_reference_ : hole_doping_reference_));
+                            (1 +
+                             std::fabs(doping_concentration) /
+                                 (type == CarrierType::ELECTRON ? electron_doping_reference_ : hole_doping_reference_));
             return survival(random_generator_) > (time / lifetime);
         };
 
