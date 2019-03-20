@@ -26,9 +26,14 @@ IF(CLANG_FORMAT)
     EXEC_PROGRAM(${CLANG_FORMAT} ${CMAKE_CURRENT_SOURCE_DIR} ARGS --version OUTPUT_VARIABLE CLANG_VERSION)
     STRING(REGEX REPLACE ".*([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" CLANG_MAJOR_VERSION ${CLANG_VERSION})
 
-    # We currently require version 4
-    IF(${CLANG_MAJOR_VERSION} EQUAL "4")
-        MESSAGE(STATUS "Found ${CLANG_FORMAT} version 4, adding formatting targets")
+    # We currently require version 4 - which is not available on OSX...
+    IF(${CLANG_MAJOR_VERSION} EQUAL "4" OR DEFINED ${APPLE})
+        IF(DEFINED ${APPLE})
+            MESSAGE(WARNING "Found ${CLANG_FORMAT} version ${CLANG_MAJOR_VERSION}, this might lead to incompatible formatting")
+        ELSE()
+            MESSAGE(STATUS "Found ${CLANG_FORMAT} version 4, adding formatting targets")
+        ENDIF()
+
         ADD_CUSTOM_TARGET(
             format
             COMMAND
