@@ -1,7 +1,7 @@
 /gps/particle alpha
 /gps/pos/type Plane
 /gps/pos/shape Circle
-/gps/pos/radius 3 mm
+/gps/pos/radius 1.5 mm
 
 /gps/ene/type User
 /gps/hist/type energy
