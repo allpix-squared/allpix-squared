@@ -326,8 +326,6 @@ void GeometryConstructionG4::build_detectors() {
             if(layer.hasHole()) {
                 // NOTE: Double the hole size in the z-direction to ensure no fake surfaces are created
 
-                std::cout << layer.isHoleType() << std::endl;
-
                 if(layer.isHoleType() == "cylinder") {
 
                     auto hole_prim =
