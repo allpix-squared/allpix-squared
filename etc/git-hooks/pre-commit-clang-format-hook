@@ -61,8 +61,13 @@ if [ ! -x "$CLANG_FORMAT" ] ; then
 fi
 
 if ! "$CLANG_FORMAT" --version | grep 'clang-format version 4\.0' >/dev/null 2>/dev/null; then
-    printf "Error: clang-format version 4.0 is required (exactly), cannot check format!\n"
-    exit 1
+    # Be indulgent with OSX users, no 4.0 seems to be available...
+    if [[ "$OSTYPE" != "darwin"* ]]; then
+        printf "Error: clang-format version 4.0 is required (exactly), cannot check format!\n"
+        exit 1
+    else
+        printf "Warning: clang-format version 4.0 is required, formatting might be incompatible!\n"
+    fi
 fi
 
 
