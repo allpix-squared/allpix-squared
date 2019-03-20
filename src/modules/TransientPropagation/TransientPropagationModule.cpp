@@ -31,6 +31,9 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     : Module(config, detector), detector_(std::move(detector)), messenger_(messenger) {
     using XYVectorInt = DisplacementVector2D<Cartesian2D<int>>;
 
+    // Enable parallelization of this module if multithreading is enabled:
+    enable_parallelization();
+
     // Save detector model
     model_ = detector_->getModel();
 
