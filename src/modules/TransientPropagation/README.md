@@ -39,7 +39,6 @@ The module can produces a variety of plots such as total integrated charge plots
 temperature = 293K
 charge_per_step = 10
 output_plots = true
-output_pulsegraphs = false
 timestep = 0.02ns
 ```
 

@@ -25,9 +25,12 @@
 namespace allpix {
     /**
      * @ingroup Modules
-     * @brief Module to do function
+     * @brief Module for simulation of transient current development using a Runge-Kutta approach
      *
-     * More detailed explanation of module
+     * This modules takes sets of deposited charge carriers and moves them through the electric field of the detector by
+     * means of a Runge-Kutta integration. Diffusion is added after each step. The weighting potential different for each
+     * step is calculated and the induced charge on neighboring pixels is deduced at every timestep in order to form a
+     * transient current pulse.
      */
     class TransientPropagationModule : public Module {
     public:
@@ -40,17 +43,17 @@ namespace allpix {
         TransientPropagationModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector);
 
         /**
-         * @brief [Initialise this module]
+         * @brief Initialize the module and check field configuration
          */
         void init() override;
 
         /**
-         * @brief [Run the function of this module]
+         * @brief Propagate all deposited charges through the sensor
          */
         void run(unsigned int) override;
 
         /**
-         * @brief Write statistical summary
+         * @brief Write statistical summary and histograms
          */
         void finalize() override;
 
@@ -63,9 +66,12 @@ namespace allpix {
 
         /**
          * @brief Propagate a single set of charges through the sensor
-         * @param pos Position of the deposit in the sensor
-         * @param type Type of the carrier to propagate
-         * @return Pair of the point where the deposit ended after propagation and the time the propagation took
+         * @param pos       Position of the deposit in the sensor
+         * @param type      Type of the carrier to propagate
+         * @param charge    Total charge of the observed charge carrier set
+         * @param pixel_map Map of surrounding pixels and their induced pulses. Provided as reference to store simulation
+         *                  result in
+         * @return          Pair of the point where the deposit ended after propagation and the time the propagation took
          */
         std::pair<ROOT::Math::XYZPoint, double> propagate(const ROOT::Math::XYZPoint& pos,
                                                           const CarrierType& type,
