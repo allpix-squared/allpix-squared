@@ -10,6 +10,7 @@ This module support two types of weighting potentials.
 
 When setting the **pad** model, the weighting potential of a pixel in a plane condenser is calculated numerically from first principles, following the procedure described in detail in [@planecondenser].
 It should be noted that this calculation is comparatively **slow and takes about a factor 100 longer** than a lookup from a pre-calculated field map.
+A tool to generate the field map using the method described herein is provided in the software repository.
 
 The weighting potential is calculated via Green's reciprocity theorem, the integral part of the expression are ignored.
 In [@planecondenser] it has been shown that the uncertainty on the weighting potential is smaller than
