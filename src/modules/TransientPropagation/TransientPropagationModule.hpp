@@ -97,6 +97,14 @@ namespace allpix {
         // Precalculated value for Boltzmann constant:
         double boltzmann_kT_;
 
+        // Predefined values for electron/hole velocity calculation in magnetic fields
+        double electron_Hall_;
+        double hole_Hall_;
+
+        // Magnetic field
+        bool has_magnetic_field_;
+        ROOT::Math::XYZVector magnetic_field_;
+
         // Output plots
         TH1D *potential_difference_, *induced_charge_histo_, *induced_charge_e_histo_, *induced_charge_h_histo_;
         TH1D* step_length_histo_;
