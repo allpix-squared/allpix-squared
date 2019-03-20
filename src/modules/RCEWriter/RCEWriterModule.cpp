@@ -11,7 +11,7 @@
 
 #include <cassert>
 #include <fstream>
-#include <utility>
+#include <stdexcept>
 
 #include <TBranchElement.h>
 #include <TClass.h>
@@ -19,14 +19,79 @@
 #include <TDirectory.h>
 #include <TMatrixD.h>
 
+#include "core/geometry/HybridPixelDetectorModel.hpp"
 #include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "core/utils/type.h"
-
+#include "core/utils/unit.h"
 #include "objects/Object.hpp"
 #include "objects/objects.h"
 
 using namespace allpix;
+
+static double compute_model_relative_radlength(const DetectorModel& model) {
+    const double X0_SI = Units::get(9.370, "cm");
+    const double X0_IN = Units::get(1.211, "cm");
+
+    double total = 0;
+    // helper functions to add component to total length w/ logging
+    auto add = [&](const char* what, double X0, double x) {
+        double xX0 = x / X0;
+        LOG(DEBUG) << "  " << what << " x/X0 = " << Units::display(x, {"um", "mm", "cm"}) << "/"
+                   << Units::display(X0, {"um", "mm", "cm", "m"}) << " = " << xX0;
+        total += xX0;
+    };
+
+    LOG(DEBUG) << "model '" << model.getType() << "' radiation length:";
+
+    // compute contributions from sensor and chip
+    add("sensor", X0_SI, model.getSensorSize().z());
+    add("chip", X0_SI, model.getChipSize().z());
+
+    // compute contributions from bumps if available
+    const auto* hybrid = dynamic_cast<const HybridPixelDetectorModel*>(&model);
+    if(hybrid != nullptr) {
+        // average the bump material over the full pixel size.
+        auto bump_radius = std::max(hybrid->getBumpSphereRadius(), hybrid->getBumpCylinderRadius());
+        auto bump_height = hybrid->getBumpHeight();
+        auto area_bump = M_PI * bump_radius * bump_radius;
+        auto area_pixel = hybrid->getPixelSize().x() * hybrid->getPixelSize().y();
+        // volume_bump = area_bump * thickness = area_pixel * effective_thickness
+        auto relative_area = area_bump / area_pixel;
+        LOG(DEBUG) << "  bump_height = " << Units::display(bump_height, "um") << " relative_area = " << relative_area;
+        // TODO use typical solder combination instead of just indium
+        add("bumps", X0_IN, relative_area * bump_height);
+    }
+
+    // TODO consider also support layers after material handling has been clarified
+
+    LOG(DEBUG) << "  total x/X0 = " << total;
+    return total;
+}
+
+static void print_device_sensor_type(std::ostream& os, const DetectorModel& model) {
+    os << "[sensor_types." << model.getType() << "]\n";
+    // this is only set as a reasonable default
+    // TODO if we can get access to the digitizer config we could set the
+    //      proper measurement and correct timestamp/value limits
+    os << "measurement = \"pixel_binary\"\n";
+    os << "cols = " << model.getNPixels().x() << "\n";
+    os << "rows = " << model.getNPixels().y() << "\n";
+    os << "pitch_col = " << model.getPixelSize().x() << "\n";
+    os << "pitch_row = " << model.getPixelSize().y() << "\n";
+    // thickness is just the active thickness
+    os << "thickness = " << model.getSensorSize().z() << "\n";
+    // relative radiation length is for all material in the beam
+    os << "x_x0 = " << compute_model_relative_radlength(model) << "\n";
+    os << "\n";
+}
+
+static void print_device_sensor(std::ostream& os, const Detector& detector) {
+    os << "[[sensors]]\n";
+    os << "type = \"" << detector.getType() << "\"\n";
+    os << "name = \"" << detector.getName() << "\"\n";
+    os << "\n";
+}
 
 /** Orthogonalize the coordinates definition using singular value decomposition.
  *
@@ -83,39 +148,59 @@ static void print_geometry_sensor(std::ostream& os, int index, const Detector& d
     // try to fix round-off issues
     orthogonalize(unit_u, unit_v);
 
-    // we need to restore the ostream format state later on
-    auto flags = os.flags();
-    auto precision = os.precision();
-    os << std::showpoint;
-    os << std::setprecision(std::numeric_limits<double>::max_digits10);
-
     os << "[[sensors]]\n";
     os << "id = " << index << '\n';
     os << "offset = [" << offset.x() << ", " << offset.y() << ", " << offset.z() << "]\n";
     os << "unit_u = [" << unit_u.x() << ", " << unit_u.y() << ", " << unit_u.z() << "]\n";
     os << "unit_v = [" << unit_v.x() << ", " << unit_v.y() << ", " << unit_v.z() << "]\n";
     os << '\n';
-
-    os.flags(flags);
-    os.precision(precision);
 }
 
-static void print_geometry(std::ostream& os, const std::vector<std::string>& names, GeometryManager& geo_mgr) {
-    int index = 0;
+static void write_proteus_config(const std::string& device_path,
+                                 const std::string& geometry_path,
+                                 const std::vector<std::string>& names,
+                                 GeometryManager& geo_mgr) {
+    std::ofstream device_file(device_path);
+    std::ofstream geometry_file(geometry_path);
+
+    // ensure float values are not printed as integers
+    device_file << std::showpoint;
+    geometry_file << std::showpoint;
+    // need full precision for geometry unit vector components
+    geometry_file << std::setprecision(std::numeric_limits<double>::max_digits10);
+
+    // device config
+    // TODO use path relative to the device file
+    device_file << "geometry = \"" << get_canonical_path(geometry_path) << "\"\n";
+    device_file << '\n';
+    for(const auto& model : geo_mgr.getModels()) {
+        print_device_sensor_type(device_file, *model);
+    }
     for(const auto& name : names) {
-        print_geometry_sensor(os, index++, *geo_mgr.getDetector(name));
+        print_device_sensor(device_file, *geo_mgr.getDetector(name));
+    }
+
+    // geometry config
+    // TODO how to get beam information?
+    int identifier = 0;
+    for(const auto& name : names) {
+        print_geometry_sensor(geometry_file, identifier, *geo_mgr.getDetector(name));
+        identifier += 1;
     }
 }
 
 RCEWriterModule::RCEWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
     : Module(config), geo_mgr_(geo_mgr) {
-    assert(geo_mgr_ and "GeometryManager must be non-null");
+    assert(messenger && "messenger must be non-null");
+    assert(geo_mgr && "geo_mgr must be non-null");
 
     // Bind to PixelHitMessage
     messenger->bindMulti(this, &RCEWriterModule::pixel_hit_messages_);
 
     config_.setDefault("file_name", "rce-data.root");
-    config_.setDefault("geometry_file", "rce-geo.toml");
+    // Use default names in Proteus
+    config_.setDefault("device_file", "device.toml");
+    config_.setDefault("geometry_file", "geometry.toml");
 }
 
 void RCEWriterModule::init() {
@@ -164,10 +249,10 @@ void RCEWriterModule::init() {
         det_index += 1;
     }
 
-    // Write proteus geometry file
-    std::string path_geo = createOutputFile(add_file_extension(config_.get<std::string>("geometry_file"), "toml"));
-    std::ofstream geo_file(path_geo);
-    print_geometry(geo_file, detector_names, *geo_mgr_);
+    // Write proteus config files
+    auto device_path = createOutputFile(add_file_extension(config_.get<std::string>("device_file"), "toml"));
+    auto geometry_path = createOutputFile(add_file_extension(config_.get<std::string>("geometry_file"), "toml"));
+    write_proteus_config(device_path, geometry_path, detector_names, *geo_mgr_);
 }
 
 void RCEWriterModule::run(unsigned int event_id) {
