@@ -62,7 +62,7 @@ void ElectricFieldReaderModule::init() {
     auto thickness_domain = std::make_pair(sensor_max_z - depletion_depth, sensor_max_z);
 
     // Calculate the field depending on the configuration
-    if(field_model == "init") {
+    if(field_model == "init" || field_model == "apf") {
         // Read the field scales from the configuration, defaulting to 1.0x1.0 pixel cell:
         auto scales = config_.get<ROOT::Math::XYVector>("field_scale", {1.0, 1.0});
         // FIXME Add sanity checks for scales here
@@ -78,10 +78,10 @@ void ElectricFieldReaderModule::init() {
         LOG(DEBUG) << "Electric field starts with offset " << offset << " to pixel boundary";
         std::array<double, 2> field_offset{{offset.x(), offset.y()}};
 
-        auto field_data = read_init_field(thickness_domain, field_scale);
+        auto field_data = read_field(thickness_domain, field_scale, field_model);
 
         detector_->setElectricFieldGrid(
-            std::get<0>(field_data), std::get<1>(field_data), field_scale, field_offset, thickness_domain);
+            field_data.getData(), field_data.getDimensions(), field_scale, field_offset, thickness_domain);
     } else if(field_model == "constant") {
         LOG(TRACE) << "Adding constant electric field";
         type = FieldType::CONSTANT;
@@ -121,6 +121,7 @@ ElectricFieldReaderModule::get_linear_field_function(double depletion_voltage, s
     depletion_voltage = std::fabs(depletion_voltage);
     // But the direction of the field depends on the applied voltage:
     auto direction = std::signbit(config_.get<double>("bias_voltage"));
+    auto deplete_from_implants = config_.get<bool>("deplete_from_implants", true);
     double eff_thickness = thickness_domain.second - thickness_domain.first;
     // Reduce the effective thickness of the sensor if voltage is below full depletion
     if(bias_voltage < depletion_voltage) {
@@ -128,11 +129,14 @@ ElectricFieldReaderModule::get_linear_field_function(double depletion_voltage, s
         depletion_voltage = bias_voltage;
     }
     LOG(TRACE) << "Effective thickness of the electric field: " << Units::display(eff_thickness, {"um", "mm"});
-    return [bias_voltage, depletion_voltage, direction, eff_thickness, thickness_domain](const ROOT::Math::XYZPoint& pos) {
+    LOG(DEBUG) << "Depleting the sensor from the " << (deplete_from_implants ? "implant side." : "back side.");
+    return [bias_voltage, depletion_voltage, direction, eff_thickness, thickness_domain, deplete_from_implants](
+        const ROOT::Math::XYZPoint& pos) {
         double z_rel = thickness_domain.second - pos.z();
         double field_z = std::max(0.0,
                                   (bias_voltage - depletion_voltage) / eff_thickness +
-                                      2 * (depletion_voltage / eff_thickness) * (1 - z_rel / eff_thickness));
+                                      2 * (depletion_voltage / eff_thickness) *
+                                          (deplete_from_implants ? (1 - z_rel / eff_thickness) : z_rel / eff_thickness));
         return ROOT::Math::XYZVector(0, 0, (direction ? -1 : 1) * field_z);
     };
 }
@@ -141,20 +145,25 @@ ElectricFieldReaderModule::get_linear_field_function(double depletion_voltage, s
  * The field read from the INIT format are shared between module instantiations using the static
  * ElectricFieldReaderModuleget_by_file_name method.
  */
-FieldParser<double, 3> ElectricFieldReaderModule::field_parser_("V/cm");
-FieldData<double> ElectricFieldReaderModule::read_init_field(std::pair<double, double> thickness_domain,
-                                                             std::array<double, 2> field_scale) {
+FieldParser<double> ElectricFieldReaderModule::field_parser_(FieldQuantity::VECTOR);
+FieldData<double> ElectricFieldReaderModule::read_field(std::pair<double, double> thickness_domain,
+                                                        std::array<double, 2> field_scale,
+                                                        const std::string& format) {
+
+    FileType type = (format == "init" ? FileType::INIT : format == "apf" ? FileType::APF : FileType::UNKNOWN);
+    std::string units = (type == FileType::INIT ? "V/cm" : "");
+
     try {
         LOG(TRACE) << "Fetching electric field from init file";
 
         // Get field from file
-        auto field_data = field_parser_.get_by_file_name(config_.getPath("file_name", true));
+        auto field_data = field_parser_.get_by_file_name(config_.getPath("file_name", true), type, units);
 
         // Check if electric field matches chip
-        check_detector_match(std::get<2>(field_data), thickness_domain, field_scale);
+        check_detector_match(field_data.getSize(), thickness_domain, field_scale);
 
-        LOG(INFO) << "Set electric field with " << std::get<1>(field_data).at(0) << "x" << std::get<1>(field_data).at(1)
-                  << "x" << std::get<1>(field_data).at(2) << " cells";
+        LOG(INFO) << "Set electric field with " << field_data.getDimensions().at(0) << "x"
+                  << field_data.getDimensions().at(1) << "x" << field_data.getDimensions().at(2) << " cells";
 
         // Return the field data
         return field_data;

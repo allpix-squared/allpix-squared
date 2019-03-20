@@ -230,7 +230,7 @@ namespace allpix {
          * @return List of all key value pairs
          */
         // FIXME Better name for this function
-        std::vector<std::pair<std::string, std::string>> getAll();
+        std::vector<std::pair<std::string, std::string>> getAll() const;
 
     private:
         /**

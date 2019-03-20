@@ -10,7 +10,7 @@ For more details about the project please have a look at the website at https://
 
 ## Dependencies
 * [ROOT](https://root.cern.ch/building-root) (required, with the GenVector component)
-* [Geant4](http://geant4.web.cern.ch/geant4/UserDocumentation/UsersGuides/InstallationGuide/html/ch02.html) (optional, but required for typical purposes)
+* [Geant4](http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/InstallationGuide/html/installguide.html) (optional, but required for typical purposes)
 * [Eigen3](http://eigen.tuxfamily.org/index.php?title=Main_Page) (optional, but required for typical purposes)
 
 ## Usage on CERN machines
@@ -55,7 +55,7 @@ For more detailed installation instructions, please refer to the documentation b
 
 ## Documentation
 The most recently published version of the User Manual is available online [here](https://cern.ch/allpix-squared/usermanual/allpix-manual.pdf).
-The Doxygen reference is published [online](https://cern.ch/allpix-squared/reference/html/) too.
+The Doxygen reference is published [online](https://cern.ch/allpix-squared/reference/) too.
 
 The latest PDF version of the User Manual can also be created from source by executing
 ```
@@ -124,3 +124,5 @@ The documentation is distributed under the terms of the CC-BY-4.0 license. This 
 The LaTeX and Pandoc CMake modules used by Allpix<sup>2</sup> are licensed under the BSD 3-Clause License.
 
 The octree library of the TCAD DF-ISE converter is made available under the MIT license, more information [here](tools/tcad_dfise_converter/README.md).
+
+The cereal C++11 serialization library used by Allpix<sup>2</sup> is publised under the BSD 3-Clause License.
