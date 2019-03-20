@@ -26,11 +26,30 @@ PulseTransferModule::PulseTransferModule(Configuration& config,
 
     config_.setDefault<bool>("output_pulsegraphs", false);
     config_.setDefault<bool>("output_plots", config_.get<bool>("output_pulsegraphs"));
+    config_.setDefault<int>("output_plots_scale", Units::get(30, "ke"));
+    config_.setDefault<int>("output_plots_bins", 100);
 
     output_plots_ = config_.get<bool>("output_plots");
     output_pulsegraphs_ = config_.get<bool>("output_pulsegraphs");
 
     messenger_->bindSingle(this, &PulseTransferModule::message_, MsgFlags::REQUIRED);
+}
+
+void PulseTransferModule::init() {
+
+    if(output_plots_) {
+        LOG(TRACE) << "Creating output plots";
+
+        // Plot axis are in kilo electrons - convert from framework units!
+        int maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
+        auto nbins = config_.get<int>("output_plots_bins");
+
+        // Create histograms if needed
+        h_total_induced_charge_ =
+            new TH1D("inducedcharge", "total induced charge;induced charge [ke];events", nbins, 0, maximum);
+        h_induced_pixel_charge_ =
+            new TH1D("pixelcharge", "induced charge per pixel;induced pixel charge [ke];pixels", nbins, 0, maximum);
+    }
 }
 
 void PulseTransferModule::run(unsigned int event_num) {
@@ -65,6 +84,11 @@ void PulseTransferModule::run(unsigned int event_num) {
         // Sum all pulses for informational output:
         total_pulse += pulse;
 
+        // Fill pixel charge histogram
+        if(output_plots_) {
+            h_induced_pixel_charge_->Fill(pulse.getCharge() / 1e3);
+        }
+
         // Fill a graphs with the individual pixel pulses:
         if(output_pulsegraphs_) {
             auto step = pulse.getBinning();
@@ -98,5 +122,20 @@ void PulseTransferModule::run(unsigned int event_num) {
     auto pixel_charge_message = std::make_shared<PixelChargeMessage>(std::move(pixel_charges), detector_);
     messenger_->dispatchMessage(this, pixel_charge_message);
 
+    // Fill pixel charge histogram
+    if(output_plots_) {
+        h_total_induced_charge_->Fill(total_pulse.getCharge() / 1e3);
+    }
+
     LOG(INFO) << "Total charge induced on all pixels: " << Units::display(total_pulse.getCharge(), "e");
+}
+
+void PulseTransferModule::finalize() {
+
+    if(output_plots_) {
+        // Write histograms
+        LOG(TRACE) << "Writing output plots to file";
+        h_induced_pixel_charge_->Write();
+        h_total_induced_charge_->Write();
+    }
 }

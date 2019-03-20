@@ -16,6 +16,8 @@
 
 #include "objects/PropagatedCharge.hpp"
 
+#include <TH1D.h>
+
 namespace allpix {
     /**
      * @ingroup Modules
@@ -35,9 +37,19 @@ namespace allpix {
         PulseTransferModule(Configuration& config, Messenger* messenger, const std::shared_ptr<Detector>& detector);
 
         /**
+         * @brief Initialize optional ROOT histograms
+         */
+        void init() override;
+
+        /**
          * @brief Combine pulses from propagated charges and transfer them to the pixels
          */
         void run(unsigned int) override;
+
+        /**
+         * @brief Finalize and write optional histograms
+         */
+        void finalize() override;
 
     private:
         bool output_plots_{}, output_pulsegraphs_{};
@@ -46,5 +58,8 @@ namespace allpix {
         std::shared_ptr<Detector> detector_;
         Messenger* messenger_;
         std::shared_ptr<PropagatedChargeMessage> message_;
+
+        // Output histograms
+        TH1D *h_total_induced_charge_{}, *h_induced_pixel_charge_{};
     };
 } // namespace allpix
