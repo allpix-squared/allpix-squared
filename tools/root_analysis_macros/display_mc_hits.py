@@ -1,6 +1,6 @@
 #ROOT imports
 import ROOT
-from ROOT import TFile, gDirectory,gSystem
+from ROOT import TFile, gDirectory,gSystem,TClass
 
 import os, sys
 import argparse
@@ -22,12 +22,17 @@ from scipy import stats
 
 #argument parser
 parser = argparse.ArgumentParser()
-parser.add_argument("-l", metavar='libAllpixObjects',required=True, help="specify path to the libAllpixObjects library (generally in allpix-squared/lib/)): ")
-parser.add_argument("-f", metavar=' rootfile', required=True, help="specify path to the rootfile to be processed ")
+parser.add_argument("-l", metavar='libAllpixObjects',required=True, help="specify path to the libAllpixObjects library (generally in allpix-squared/lib/)) ")
+parser.add_argument("-d", metavar='detector', required=True, help="specify your detector name (generally detector1, dut, ...) ")
+parser.add_argument("-f", metavar='rootfile', required=True, help="specify path to the rootfile to be processed ")
+
+
 args=parser.parse_args()
 
 root_file_name=(str(args.f))
 lib_file_name=(str(args.l))
+detector_name=(str(args.d))
+
 if (not os.path.isfile(lib_file_name)):
     print "WARNING: ", lib_file_name, " does not exist, exiting"
     exit(1)
@@ -53,17 +58,24 @@ pixel_hit={'x': [],'y': [], 'signal': []}
 #loop on pixel hit branch
 empty_mc_branch=0
 for iev in range(0, PixelHit.GetEntries()):
-    print ' processing event number {0}\r'.format(iev), "out of", PixelHit.GetEntries(), "events",#/ float(PixelHit.GetEntries()),
     PixelHit.GetEntry(iev)
     PixelCharge.GetEntry(iev)
     McParticle.GetEntry(iev)
+    PixelCharge_branch=PixelCharge.GetBranch(detector_name)
+    PixelHit_branch=PixelHit.GetBranch(detector_name)
+    McParticle_branch=McParticle.GetBranch(detector_name)
+    
+    if(not PixelCharge_branch):
+        print "WARNING: cannot find PixelCharge branch in the TTree with detector name: "+ detector_name+",  exiting"
+        exit(1)
+    print ' processing event number {0}\r'.format(iev), "out of", PixelHit.GetEntries(), "events",
 
-    PixelCharge_branch= PixelCharge.detector
-    PixelHit_branch= PixelHit.detector
-    McParticle_branch= McParticle.detector
-
-#skip events which have no mc particles associated
-    if McParticle_branch.size()<1:
+    #assign AP2 vectors to branches
+    br_pix_charge = getattr(PixelCharge, PixelCharge_branch.GetName()) 
+    br_pix_hit = getattr(PixelHit, PixelHit_branch.GetName())
+    br_mc_part = getattr(McParticle, McParticle_branch.GetName())
+   
+    if br_mc_part.size()<1:
         empty_mc_branch+=1;
         continue
 
@@ -74,7 +86,7 @@ for iev in range(0, PixelHit.GetEntries()):
     output_track_x_global=0.
     output_track_y_global=0.
     output_track_z_global=0.
-    for mc_part in McParticle_branch:
+    for mc_part in br_mc_part:
         output_track_x+=mc_part.getLocalEndPoint().x()
         output_track_y+=mc_part.getLocalEndPoint().y()
         output_track_z+=mc_part.getLocalEndPoint().z()
@@ -83,16 +95,15 @@ for iev in range(0, PixelHit.GetEntries()):
         output_track_y_global+=mc_part.getGlobalEndPoint().y()
         output_track_z_global+=mc_part.getGlobalEndPoint().z()
 
-    output_track_x/=float(McParticle_branch.size())
-    output_track_y/=float(McParticle_branch.size())
-    output_track_z/=float(McParticle_branch.size())
+    output_track_x/=float(br_mc_part.size())
+    output_track_y/=float(br_mc_part.size())
+    output_track_z/=float(br_mc_part.size())
 
-    output_track_x_global/=float(McParticle_branch.size())
-    output_track_y_global/=float(McParticle_branch.size())
-    output_track_z_global/=float(McParticle_branch.size())
+    output_track_x_global/=float(br_mc_part.size())
+    output_track_y_global/=float(br_mc_part.size())
+    output_track_z_global/=float(br_mc_part.size())
 
-    for pix_hit in PixelHit_branch:
-
+    for pix_hit in br_pix_hit:
         pixel_hit['x'].append(pix_hit.getPixel().getLocalCenter().x())
         pixel_hit['y'].append(pix_hit.getPixel().getLocalCenter().y())
         pixel_hit['signal'].append(pix_hit.getSignal())
