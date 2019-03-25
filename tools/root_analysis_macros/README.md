@@ -41,5 +41,5 @@ Here, the first argument is the input data file produced by the ROOTObjectWriter
 Simple macro that reads the required trees to plot Monte Carlo hits in pixel versus the pixel charge. Loops over all events of the root file.
 A few relevant histograms are displayed at the end of the event loop.
 Requires PyROOT, numpy, matplotlib. To execute:
-* run `python display_mc_hits.py -l path/to/libAllpixObjects.so -f path/to/data.root`
+* run `python display_mc_hits.py -l path/to/libAllpixObjects.so -f path/to/data.root -d <detector_name>`
 
