@@ -375,11 +375,9 @@ namespace allpix {
 
                         // Vector or scalar field:
                         for(size_t j = 0; j < N_; j++) {
-                            // clang-format off
                             file << " " << Units::convert(data->at(xind * dimensions[1] * dimensions[2] * N_ +
                                                                    yind * dimensions[2] * N_ + zind * N_ + j),
                                                           units);
-                            // clang-format off
                         }
                         // End this line
                         file << std::endl;
