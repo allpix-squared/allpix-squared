@@ -148,7 +148,7 @@ std::string Units::display(UnitType input, std::initializer_list<std::string> un
     }
 
     std::ostringstream stream;
-    if(std::fabs(input) < std::numeric_limits<Units::UnitType>::epsilon() * std::fabs(input)) {
+    if(std::fabs(input) <= std::numeric_limits<Units::UnitType>::epsilon() * std::fabs(input)) {
         // Zero needs no unit
         stream << input;
     } else {
