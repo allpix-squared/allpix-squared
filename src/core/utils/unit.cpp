@@ -142,7 +142,6 @@ allpix::Units::UnitType Units::convert(UnitType input, std::string str) {
  * - If there exists at least one unit for which the value is larger than one, the unit with value nearest to one is chosen
  *   from all units with values larger than one
  * - Otherwise the unit is chosen that has a value as close as possible to one (from below)
- *
  */
 std::string Units::display(UnitType input, std::initializer_list<std::string> units) {
     if(units.size() == 0) {
