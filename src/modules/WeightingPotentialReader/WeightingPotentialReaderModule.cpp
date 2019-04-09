@@ -144,7 +144,7 @@ void WeightingPotentialReaderModule::create_output_plots() {
 
     // Get the weighting potential at every index
     for(size_t j = 0; j < steps; ++j) {
-        LOG_PROGRESS(INFO, "plotting") << "Plotting progress " << 100 * j * steps / (steps * steps) << "%";
+        LOG_PROGRESS(INFO, "plotting") << "Plotting weighting potential: " << 100 * j * steps / (steps * steps) << "%";
         double z = min + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * (max - min);
 
         // Scan horizontally over three pixels (from -1.5 pitch to +1.5 pitch)
@@ -157,6 +157,7 @@ void WeightingPotentialReaderModule::create_output_plots() {
             histogram2D->Fill(x - model->getPixelSize().x(), z, potential);
         }
     }
+    LOG_PROGRESS(INFO, "plotting") << "Plotting weighting potential: done ";
 
     histogram->SetOption("hist");
     histogram2D->SetOption("colz");
