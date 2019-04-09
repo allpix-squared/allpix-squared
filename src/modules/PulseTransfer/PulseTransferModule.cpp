@@ -99,7 +99,7 @@ void PulseTransferModule::run(unsigned int event_num) {
                        << Units::display(step, {"ps", "ns"});
 
             std::string name =
-                "pulse_px" + std::to_string(index.x()) + "-" + std::to_string(index.y()) + "_" + std::to_string(event_num);
+                "pulse_ev" + std::to_string(event_num) + "_px" + std::to_string(index.x()) + "-" + std::to_string(index.y());
 
             // Generate x-axis:
             std::vector<double> time(pulse_vec.size());
@@ -115,7 +115,7 @@ void PulseTransferModule::run(unsigned int event_num) {
                                    "), Q_{tot} = " + std::to_string(pixel_index_pulse.second.getCharge()) + " e")
                                       .c_str());
             LOG(TRACE) << "Storing pulse as \"" << name << "\"";
-            pulse_graph->Write(name.c_str());
+            getROOTDirectory()->WriteTObject(pulse_graph, name.c_str());
         }
         LOG(DEBUG) << "Charge on pixel " << index << " has " << pixel_charge_map[index].size() << " ancestors";
 
