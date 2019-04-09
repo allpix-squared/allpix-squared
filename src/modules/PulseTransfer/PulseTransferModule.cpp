@@ -95,6 +95,8 @@ void PulseTransferModule::run(unsigned int event_num) {
         if(output_pulsegraphs_) {
             auto step = pulse.getBinning();
             auto pulse_vec = pulse.getPulse();
+            LOG(TRACE) << "Preparing pulse for pixel " << index << ", " << pulse_vec.size() << " bins of "
+                       << Units::display(step, {"ps", "ns"});
 
             std::string name =
                 "pulse_px" + std::to_string(index.x()) + "-" + std::to_string(index.y()) + "_" + std::to_string(event_num);
@@ -112,6 +114,7 @@ void PulseTransferModule::run(unsigned int event_num) {
                                    std::to_string(index.y()) +
                                    "), Q_{tot} = " + std::to_string(pixel_index_pulse.second.getCharge()) + " e")
                                       .c_str());
+            LOG(TRACE) << "Storing pulse as \"" << name << "\"";
             pulse_graph->Write(name.c_str());
         }
         LOG(DEBUG) << "Charge on pixel " << index << " has " << pixel_charge_map[index].size() << " ancestors";
