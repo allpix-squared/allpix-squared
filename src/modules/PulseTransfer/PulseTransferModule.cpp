@@ -98,15 +98,14 @@ void PulseTransferModule::run(unsigned int event_num) {
             LOG(TRACE) << "Preparing pulse for pixel " << index << ", " << pulse_vec.size() << " bins of "
                        << Units::display(step, {"ps", "ns"});
 
-            std::string name =
-                "pulse_ev" + std::to_string(event_num) + "_px" + std::to_string(index.x()) + "-" + std::to_string(index.y());
-
             // Generate x-axis:
             std::vector<double> time(pulse_vec.size());
             // clang-format off
             std::generate(time.begin(), time.end(), [n = 0.0, step]() mutable { return n += step; });
             // clang-format on
 
+            std::string name =
+                "pulse_ev" + std::to_string(event_num) + "_px" + std::to_string(index.x()) + "-" + std::to_string(index.y());
             auto pulse_graph = new TGraph(static_cast<int>(pulse_vec.size()), &time[0], &pulse_vec[0]);
             pulse_graph->GetXaxis()->SetTitle("t [ns]");
             pulse_graph->GetYaxis()->SetTitle("Q_{ind} [e]");
@@ -116,6 +115,26 @@ void PulseTransferModule::run(unsigned int event_num) {
                                       .c_str());
             LOG(TRACE) << "Storing pulse as \"" << name << "\"";
             getROOTDirectory()->WriteTObject(pulse_graph, name.c_str());
+
+            // Generate graphs of integrated charge over time:
+            std::vector<double> charge_vec;
+            double charge = 0;
+            for(const auto& bin : pulse_vec) {
+                charge += bin;
+                charge_vec.push_back(charge);
+            }
+
+            name = "charge_ev" + std::to_string(event_num) + "_px" + std::to_string(index.x()) + "-" +
+                   std::to_string(index.y());
+            auto charge_graph = new TGraph(static_cast<int>(charge_vec.size()), &time[0], &charge_vec[0]);
+            charge_graph->GetXaxis()->SetTitle("t [ns]");
+            charge_graph->GetYaxis()->SetTitle("Q_{tot} [e]");
+            charge_graph->SetTitle(("Accumulated induced charge in pixel (" + std::to_string(index.x()) + "," +
+                                    std::to_string(index.y()) +
+                                    "), Q_{tot} = " + std::to_string(pixel_index_pulse.second.getCharge()) + " e")
+                                       .c_str());
+            LOG(TRACE) << "Storing accumulated charge pulse as \"" << name << "\"";
+            getROOTDirectory()->WriteTObject(charge_graph, name.c_str());
         }
         LOG(DEBUG) << "Charge on pixel " << index << " has " << pixel_charge_map[index].size() << " ancestors";
 
