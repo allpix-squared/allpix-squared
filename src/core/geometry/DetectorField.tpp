@@ -45,11 +45,8 @@ namespace allpix {
         auto y_ind = (dimensions_[1] == 1 ? 0
                                           : static_cast<int>(std::floor(static_cast<double>(dimensions_[1]) *
                                                                         (dist.y() + scales_[1] / 2.0) / scales_[1])));
-        auto z_ind =
-            (dimensions_[2] == 1
-                 ? 0
-                 : static_cast<int>(std::floor(static_cast<double>(dimensions_[2]) * (dist.z() - thickness_domain_.first) /
-                                               (thickness_domain_.second - thickness_domain_.first))));
+        auto z_ind = static_cast<int>(std::floor(static_cast<double>(dimensions_[2]) * (dist.z() - thickness_domain_.first) /
+                                                 (thickness_domain_.second - thickness_domain_.first)));
         // clang-format on
 
         // Check for indices within the field map
