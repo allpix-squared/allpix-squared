@@ -88,9 +88,12 @@ namespace allpix {
          * @brief Get the value of the field at a position provided in local coordinates with respect to the reference
          * @param pos       Position in the local frame
          * @param reference Reference position to calculate the field for, x and y coordinate only
+         * @param extrapolate_z Extrapolate the field along z when outside the defined region
          * @return Value(s) of the field assigned to the reference pixel at the queried point
          */
-        T getRelativeTo(const ROOT::Math::XYZPoint& local_pos, const ROOT::Math::XYPoint& reference) const;
+        T getRelativeTo(const ROOT::Math::XYZPoint& local_pos,
+                        const ROOT::Math::XYPoint& reference,
+                        const bool extrapolate_z = false) const;
 
         /**
          * @brief Set the field in the detector using a grid
@@ -140,10 +143,11 @@ namespace allpix {
 
         /**
          * @brief Helper function to calculate the field index based on the distance from its center and to return the values
-         * @param  dist Distance from the center of the field to obtain the values for, given in local coordinates
-         * @return     Value(s) of the field at the queried point
+         * @param dist Distance from the center of the field to obtain the values for, given in local coordinates
+         * @param extrapolate_z Switch to either extrapolate the field along z when outside the grid or return zero
+         * @return Value(s) of the field at the queried point
          */
-        T get_field_from_grid(const ROOT::Math::XYZPoint& dist) const;
+        T get_field_from_grid(const ROOT::Math::XYZPoint& dist, const bool extrapolate_z = false) const;
 
         /**
          * Field properties

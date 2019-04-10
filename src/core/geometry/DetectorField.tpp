@@ -6,7 +6,9 @@ namespace allpix {
      * coordinates to the field origin in the given pixel.
      */
     template <typename T, size_t N>
-    T DetectorField<T, N>::getRelativeTo(const ROOT::Math::XYZPoint& pos, const ROOT::Math::XYPoint& ref) const {
+    T DetectorField<T, N>::getRelativeTo(const ROOT::Math::XYZPoint& pos,
+                                         const ROOT::Math::XYPoint& ref,
+                                         const bool extrapolate_z) const {
         if(type_ == FieldType::NONE) {
             return {};
         }
@@ -18,7 +20,7 @@ namespace allpix {
 
         T ret_val;
         if(type_ == FieldType::GRID) {
-            ret_val = get_field_from_grid(ROOT::Math::XYZPoint(x, y, z));
+            ret_val = get_field_from_grid(ROOT::Math::XYZPoint(x, y, z), extrapolate_z);
         } else {
             // Check if inside the thickness domain
             if(z < thickness_domain_.first || thickness_domain_.second < z) {
@@ -34,9 +36,10 @@ namespace allpix {
 
     // Maps the field indices onto the range of -d/2 < x < d/2, where d is the scale of the field in coordinate x.
     // This means, {x,y,z} = (0,0,0) is in the center of the field.
-    template <typename T, size_t N> T DetectorField<T, N>::get_field_from_grid(const ROOT::Math::XYZPoint& dist) const {
+    template <typename T, size_t N>
+    T DetectorField<T, N>::get_field_from_grid(const ROOT::Math::XYZPoint& dist, const bool extrapolate_z) const {
         // Compute indices
-        // If the dimension in a certain direction is 1, the field is assumed to be 2-dimensional and the respective index
+        // If the number of bins in x or y is 1, the field is assumed to be 2-dimensional and the respective index
         // is forced to zero. This circumvents that the field size in the respective dimension would otherwise be zero
         // clang-format off
         auto x_ind = (dimensions_[0] == 1 ? 0
@@ -51,7 +54,15 @@ namespace allpix {
 
         // Check for indices within the field map
         if(x_ind < 0 || x_ind >= static_cast<int>(dimensions_[0]) || y_ind < 0 ||
-           y_ind >= static_cast<int>(dimensions_[1]) || z_ind < 0 || z_ind >= static_cast<int>(dimensions_[2])) {
+           y_ind >= static_cast<int>(dimensions_[1])) {
+            return {};
+        }
+
+        // Check if we need to extrapolate along the z axis:
+        if(extrapolate_z) {
+            // TODO When moving to C++17, this can be replaced with std::clamp()
+            z_ind = std::max(0, std::min(z_ind, static_cast<int>(dimensions_[2]) - 1));
+        } else if(z_ind < 0 || z_ind >= static_cast<int>(dimensions_[2])) {
             return {};
         }
 
