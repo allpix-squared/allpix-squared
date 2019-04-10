@@ -12,7 +12,7 @@ The mobility is calculated as
 
 $`\mu \left(\vec{x}\right) = \frac{v_m}{E_c} \frac{1}{\left(1 + \left(E\left(\vec{x}\right) / E_c\right)^{\beta} \right)^{1 / \beta}}`$
 
-with $`v_m`$, $`E_c`$, $`\beta`$ defined for electrons and holes separately as detailed in [@jacononi].
+with $`v_m`$, $`E_c`$, $`\beta`$ defined for electrons and holes separately as detailed in [@jacoboni].
 
 The two parameters `propagate_electrons` and `propagate_holes` allow to control which type of charge carrier is propagated to their respective electrodes. Either one of the carrier types can be selected, or both can be propagated. It should be noted that this will slow down the simulation considerably since twice as many carriers have to be handled and it should only be used where sensible.
 The direction of the propagation depends on the electric and magnetic fields field configured, and it should be ensured that the carrier types selected are actually transported to the implant side. For linear electric fields, a warning is issued if a possible misconfiguration is detected.
