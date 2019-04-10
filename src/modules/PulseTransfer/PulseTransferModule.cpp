@@ -96,7 +96,8 @@ void PulseTransferModule::run(unsigned int event_num) {
             auto step = pulse.getBinning();
             auto pulse_vec = pulse.getPulse();
             LOG(TRACE) << "Preparing pulse for pixel " << index << ", " << pulse_vec.size() << " bins of "
-                       << Units::display(step, {"ps", "ns"});
+                       << Units::display(step, {"ps", "ns"})
+                       << ", total charge: " << Units::display(pixel_index_pulse.second.getCharge(), "e");
 
             // Generate x-axis:
             std::vector<double> time(pulse_vec.size());
@@ -113,7 +114,6 @@ void PulseTransferModule::run(unsigned int event_num) {
                                    std::to_string(index.y()) +
                                    "), Q_{tot} = " + std::to_string(pixel_index_pulse.second.getCharge()) + " e")
                                       .c_str());
-            LOG(TRACE) << "Storing pulse as \"" << name << "\"";
             getROOTDirectory()->WriteTObject(pulse_graph, name.c_str());
 
             // Generate graphs of integrated charge over time:
@@ -133,7 +133,6 @@ void PulseTransferModule::run(unsigned int event_num) {
                                     std::to_string(index.y()) +
                                     "), Q_{tot} = " + std::to_string(pixel_index_pulse.second.getCharge()) + " e")
                                        .c_str());
-            LOG(TRACE) << "Storing accumulated charge pulse as \"" << name << "\"";
             getROOTDirectory()->WriteTObject(charge_graph, name.c_str());
         }
         LOG(DEBUG) << "Charge on pixel " << index << " has " << pixel_charge_map[index].size() << " ancestors";
