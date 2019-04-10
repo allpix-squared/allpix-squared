@@ -22,8 +22,11 @@ namespace allpix {
         if(type_ == FieldType::GRID) {
             ret_val = get_field_from_grid(ROOT::Math::XYZPoint(x, y, z), extrapolate_z);
         } else {
-            // Check if inside the thickness domain
-            if(z < thickness_domain_.first || thickness_domain_.second < z) {
+            // Check if we need to extrapolate along the z axis or if is inside thickness domain:
+            if(extrapolate_z) {
+                // TODO When moving to C++17, this can be replaced with std::clamp()
+                z = std::max(thickness_domain_.first, std::min(z, thickness_domain_.second));
+            } else if(z < thickness_domain_.first || thickness_domain_.second < z) {
                 return {};
             }
 
