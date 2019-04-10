@@ -213,7 +213,9 @@ double Detector::getWeightingPotential(const ROOT::Math::XYZPoint& pos, const Pi
     auto local_x = size.x() * reference.x();
     auto local_y = size.y() * reference.y();
 
-    return weighting_potential_.getRelativeTo(pos, {local_x, local_y});
+    // Requiring to extrapolate the field along z because equilibrium means no change in weighting potential,
+    // Without this, we would get large jumps close to the electrode once charge carriers cross the boundary.
+    return weighting_potential_.getRelativeTo(pos, {local_x, local_y}, true);
 }
 
 /**
