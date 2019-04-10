@@ -132,9 +132,8 @@ namespace allpix {
         }
 
         /**
-         * @brief Helper function to retrieve the return type from a calculated index
-         * @param a the field data vector
-         * @param offset the calcilated global index to start from
+         * @brief Helper function to retrieve the return type from a calculated index of the field data vector
+         * @param offset The calculated global index to start from
          * @param index sequence expanded to the number of elements requested, depending on the template instance
          */
         template <std::size_t... I> auto get_impl(size_t offset, std::index_sequence<I...>) const;
