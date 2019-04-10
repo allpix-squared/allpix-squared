@@ -144,7 +144,7 @@ namespace allpix {
          * @param  dist Distance from the center of the field to obtain the values for, given in local coordinates
          * @return     Value(s) of the field at the queried point
          */
-        T getFieldFromGrid(const ROOT::Math::XYZPoint& dist) const;
+        T get_field_from_grid(const ROOT::Math::XYZPoint& dist) const;
 
         /**
          * Field properties

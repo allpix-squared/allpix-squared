@@ -18,7 +18,7 @@ namespace allpix {
 
         T ret_val;
         if(type_ == FieldType::GRID) {
-            ret_val = getFieldFromGrid(ROOT::Math::XYZPoint(x, y, z));
+            ret_val = get_field_from_grid(ROOT::Math::XYZPoint(x, y, z));
         } else {
             // Check if inside the thickness domain
             if(z < thickness_domain_.first || thickness_domain_.second < z) {
@@ -34,7 +34,7 @@ namespace allpix {
 
     // Maps the field indices onto the range of -d/2 < x < d/2, where d is the scale of the field in coordinate x.
     // This means, {x,y,z} = (0,0,0) is in the center of the field.
-    template <typename T, size_t N> T DetectorField<T, N>::getFieldFromGrid(const ROOT::Math::XYZPoint& dist) const {
+    template <typename T, size_t N> T DetectorField<T, N>::get_field_from_grid(const ROOT::Math::XYZPoint& dist) const {
         // Compute indices
         // If the dimension in a certain direction is 1, the field is assumed to be 2-dimensional and the respective index
         // is forced to zero. This circumvents that the field size in the respective dimension would otherwise be zero
@@ -100,7 +100,7 @@ namespace allpix {
         // Compute using the grid or a function depending on the setting
         T ret_val;
         if(type_ == FieldType::GRID) {
-            ret_val = getFieldFromGrid(ROOT::Math::XYZPoint(x, y, z));
+            ret_val = get_field_from_grid(ROOT::Math::XYZPoint(x, y, z));
         } else {
             // Check if inside the thickness domain
             if(z < thickness_domain_.first || thickness_domain_.second < z) {
