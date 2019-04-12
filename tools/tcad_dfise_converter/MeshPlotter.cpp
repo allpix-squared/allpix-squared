@@ -11,9 +11,14 @@
 
 #include "core/utils/unit.h"
 #include "tools/field_parser.h"
+#include "tools/units.h"
 
 using namespace allpix;
 int main(int argc, char** argv) {
+
+    // Register the default set of units with this executable:
+    allpix::register_units();
+
     // Set ROOT params
     gStyle->SetOptStat(0);
     gStyle->SetNumberContours(999);
