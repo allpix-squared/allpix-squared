@@ -1,4 +1,5 @@
 #include <cmath>
+#include <csignal>
 #include <cstdio>
 #include <fstream>
 #include <iostream>
@@ -9,11 +10,24 @@
 #include "TH2.h"
 #include "TStyle.h"
 
+#include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "tools/field_parser.h"
 #include "tools/units.h"
 
 using namespace allpix;
+
+void interrupt_handler(int);
+
+/**
+ * @brief Handle termination request (CTRL+C)
+ */
+void interrupt_handler(int) {
+    LOG(STATUS) << "Interrupted! Aborting conversion...";
+    allpix::Log::finish();
+    std::exit(0);
+}
+
 int main(int argc, char** argv) {
 
     // Register the default set of units with this executable:
@@ -30,6 +44,13 @@ int main(int argc, char** argv) {
         return_code = 1;
     }
 
+    // Add stream and set default logging level
+    allpix::Log::addStream(std::cout);
+
+    // Install abort handler (CTRL+\) and interrupt handler (CTRL+C)
+    std::signal(SIGQUIT, interrupt_handler);
+    std::signal(SIGINT, interrupt_handler);
+
     // Read parameters
     std::string file_name;
     std::string output_file_name;
@@ -39,9 +60,18 @@ int main(int argc, char** argv) {
     bool flag_cut = false;
     size_t slice_cut = 0;
     bool log_scale = false;
+    allpix::LogLevel log_level = allpix::LogLevel::INFO;
+
     for(int i = 1; i < argc; i++) {
         if(strcmp(argv[i], "-h") == 0) {
             print_help = true;
+        } else if(strcmp(argv[i], "-v") == 0 && (i + 1 < argc)) {
+            try {
+                log_level = allpix::Log::getLevelFromString(std::string(argv[++i]));
+            } catch(std::invalid_argument& e) {
+                LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
+                return_code = 1;
+            }
         } else if(strcmp(argv[i], "-f") == 0 && (i + 1 < argc)) {
             file_name = std::string(argv[++i]);
         } else if(strcmp(argv[i], "-o") == 0 && (i + 1 < argc)) {
@@ -62,6 +92,9 @@ int main(int argc, char** argv) {
         }
     }
 
+    // Set log level:
+    allpix::Log::setReportingLevel(log_level);
+
     if(file_name.empty()) {
         print_help = true;
         return_code = 1;
@@ -78,12 +111,15 @@ int main(int argc, char** argv) {
         std::cout << "\t -o <output_file_name>  name of the file to output (default is efield.png)" << std::endl;
         std::cout << "\t -p <plane>             plane to be ploted. xy, yz or zx (default is yz)" << std::endl;
         std::cout << "\t -u <units>             units to interpret the field data in" << std::endl;
+        std::cout << "\t -v <level>        verbosity level (default reporiting level is INFO)" << std::endl;
+
+        allpix::Log::finish();
         return return_code;
     }
 
     // Read file
-    std::cout << "Welcome to the Mesh Plotter Tool of Allpix^2 " << ALLPIX_PROJECT_VERSION << std::endl;
-    std::cout << "Reading file: " << file_name << std::endl;
+    LOG(STATUS) << "Welcome to the Mesh Plotter Tool of Allpix^2 " << ALLPIX_PROJECT_VERSION;
+    LOG(STATUS) << "Reading file: " << file_name;
 
     size_t firstindex = file_name.find_last_of('_');
     size_t lastindex = file_name.find_last_of('.');
@@ -100,7 +136,7 @@ int main(int argc, char** argv) {
         size_t xdiv = field_data.getDimensions()[0], ydiv = field_data.getDimensions()[1],
                zdiv = field_data.getDimensions()[2];
 
-        std::cout << "Number of divisions in x/y/z: " << xdiv << "/" << ydiv << "/" << zdiv << std::endl;
+        LOG(STATUS) << "Number of divisions in x/y/z: " << xdiv << "/" << ydiv << "/" << zdiv;
 
         // Find plotting indices
         int x_bin = 0;
@@ -234,10 +270,12 @@ int main(int argc, char** argv) {
         efield_map->Draw("colz");
         c1->SaveAs(output_file_name.c_str());
         tf->Close();
-        return 0;
 
+        allpix::Log::finish();
+        return 0;
     } catch(std::runtime_error& e) {
-        std::cout << "Failed to plot mesh:\n" << e.what() << std::endl;
+        LOG(FATAL) << "Failed to plot mesh:\n" << e.what();
+        allpix::Log::finish();
         return 1;
     }
 }
