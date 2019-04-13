@@ -35,12 +35,14 @@ namespace allpix {
          * @param detector Detector this sensitive device is bound to
          * @param msg Pointer to the messenger to send the charge deposits
          * @param charge_creation_energy Energy needed per deposited charge
+         * @param fano_factor Fano factor for fluctuations in the energy fraction going into e/h pair creation
          */
         SensitiveDetectorActionG4(Module* module,
                                   const std::shared_ptr<Detector>& detector,
                                   Messenger* msg,
                                   TrackInfoManager* track_info_manager,
-                                  double charge_creation_energy);
+                                  double charge_creation_energy,
+                                  double fano_factor);
 
         /**
          * @brief Get total number of charges deposited in the sensitive device bound to this action
@@ -80,6 +82,7 @@ namespace allpix {
         TrackInfoManager* track_info_manager_;
 
         double charge_creation_energy_;
+        double fano_factor_;
 
         // Statistics of total and per-event deposited charge
         unsigned int total_deposited_charge_{};

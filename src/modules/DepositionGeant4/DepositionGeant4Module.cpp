@@ -207,6 +207,7 @@ void DepositionGeant4Module::init() {
 
     // Get the creation energy for charge (default is silicon electron hole pair energy)
     auto charge_creation_energy = config_.get<double>("charge_creation_energy", Units::get(3.64, "eV"));
+    auto fano_factor = config_.get<double>("fano_factor", 0.115);
 
     // Loop through all detectors and set the sensitive detector action that handles the particle passage
     bool useful_deposition = false;
@@ -222,8 +223,8 @@ void DepositionGeant4Module::init() {
         useful_deposition = true;
 
         // Get model of the sensitive device
-        auto sensitive_detector_action =
-            new SensitiveDetectorActionG4(this, detector, messenger_, track_info_manager_.get(), charge_creation_energy);
+        auto sensitive_detector_action = new SensitiveDetectorActionG4(
+            this, detector, messenger_, track_info_manager_.get(), charge_creation_energy, fano_factor);
         auto logical_volume = detector->getExternalObject<G4LogicalVolume>("sensor_log");
         if(logical_volume == nullptr) {
             throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
