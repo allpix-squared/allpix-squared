@@ -68,7 +68,12 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     // Calculate the charge deposit at a local position
     auto deposit_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(mid_pos));
     auto deposit_position_g4 = theTouchable->GetHistory()->GetTopTransform().TransformPoint(mid_pos);
-    auto charge = static_cast<unsigned int>(edep / charge_creation_energy_);
+
+    // Calculate number of electron hole pairs produced, taking into acocunt fluctuations between ionization and lattice
+    // excitations via the Fano factor. We assume Gaussian statistics here.
+    auto mean_charge = static_cast<unsigned int>(edep / charge_creation_energy_);
+    std::normal_distribution<double> charge_fluctuation(mean_charge, std::sqrt(mean_charge * fano_factor_));
+    auto charge = charge_fluctuation(random_generator_);
 
     auto deposit_position_g4loc =
         ROOT::Math::XYZPoint(deposit_position_g4.x() + detector_->getModel()->getSensorCenter().x(),
