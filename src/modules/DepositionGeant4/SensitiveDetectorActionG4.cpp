@@ -38,7 +38,8 @@ SensitiveDetectorActionG4::SensitiveDetectorActionG4(Module* module,
                                                      Messenger* msg,
                                                      TrackInfoManager* track_info_manager,
                                                      double charge_creation_energy,
-                                                     double fano_factor)
+                                                     double fano_factor,
+                                                     uint64_t random_seed)
     : G4VSensitiveDetector("SensitiveDetector_" + detector->getName()), module_(module), detector_(detector),
       messenger_(msg), track_info_manager_(track_info_manager), charge_creation_energy_(charge_creation_energy),
       fano_factor_(fano_factor) {
@@ -46,6 +47,9 @@ SensitiveDetectorActionG4::SensitiveDetectorActionG4(Module* module,
     // Add the sensor to the internal sensitive detector manager
     G4SDManager* sd_man_g4 = G4SDManager::GetSDMpointer();
     sd_man_g4->AddNewDetector(this);
+
+    // Seed the random generator for Fano fluctuations with the seed received
+    random_generator_.seed(random_seed);
 }
 
 G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*) {
