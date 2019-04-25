@@ -209,6 +209,16 @@ void DepositionGeant4Module::init() {
     auto charge_creation_energy = config_.get<double>("charge_creation_energy", Units::get(3.64, "eV"));
     auto fano_factor = config_.get<double>("fano_factor", 0.115);
 
+    // Prepare seeds for Geant4:
+    // NOTE Assumes this is the only Geant4 module using random numbers
+    std::string seed_command = "/random/setSeeds ";
+    for(int i = 0; i < G4_NUM_SEEDS; ++i) {
+        seed_command += std::to_string(static_cast<uint32_t>(getRandomSeed() % INT_MAX));
+        if(i != G4_NUM_SEEDS - 1) {
+            seed_command += " ";
+        }
+    }
+
     // Loop through all detectors and set the sensitive detector action that handles the particle passage
     bool useful_deposition = false;
     for(auto& detector : geo_manager_->getDetectors()) {
@@ -263,14 +273,6 @@ void DepositionGeant4Module::init() {
     G4HadronicProcessStore::Instance()->SetVerbose(0);
 
     // Set the random seed for Geant4 generation
-    // NOTE Assumes this is the only Geant4 module using random numbers
-    std::string seed_command = "/random/setSeeds ";
-    for(int i = 0; i < G4_NUM_SEEDS; ++i) {
-        seed_command += std::to_string(static_cast<uint32_t>(getRandomSeed() % INT_MAX));
-        if(i != G4_NUM_SEEDS - 1) {
-            seed_command += " ";
-        }
-    }
     ui_g4->ApplyCommand(seed_command);
 
     // Release the output stream
