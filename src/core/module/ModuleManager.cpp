@@ -505,6 +505,7 @@ void ModuleManager::set_module_after(std::tuple<LogLevel, LogFormat> prev) {
  *  \ref Module::reset_delegates() "Resets" the delegates and the logging after initialization.
  */
 void ModuleManager::init(std::mt19937_64& seeder) {
+    auto start_time = std::chrono::steady_clock::now();
     LOG_PROGRESS(STATUS, "INIT_LOOP") << "Initializing " << modules_.size() << " module instantiations";
     for(auto& module : modules_) {
         LOG_PROGRESS(TRACE, "INIT_LOOP") << "Initializing " << module->get_identifier().getUniqueName();
@@ -560,6 +561,8 @@ void ModuleManager::init(std::mt19937_64& seeder) {
         module_execution_time_[module.get()] += static_cast<std::chrono::duration<long double>>(end - start).count();
     }
     LOG_PROGRESS(STATUS, "INIT_LOOP") << "Initialized " << modules_.size() << " module instantiations";
+    auto end_time = std::chrono::steady_clock::now();
+    total_time_ += static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
 }
 
 /**
@@ -686,6 +689,7 @@ static std::string seconds_to_time(long double seconds) {
  * after finalization. No method will be called after finalizing the module (except the destructor).
  */
 void ModuleManager::finalize() {
+    auto start_time = std::chrono::steady_clock::now();
     LOG_PROGRESS(TRACE, "FINALIZE_LOOP") << "Finalizing module instantiations";
     for(auto& module : modules_) {
         LOG_PROGRESS(TRACE, "FINALIZE_LOOP") << "Finalizing " << module->get_identifier().getUniqueName();
@@ -717,6 +721,8 @@ void ModuleManager::finalize() {
     // Close module ROOT file
     modules_file_->Close();
     LOG_PROGRESS(STATUS, "FINALIZE_LOOP") << "Finalization completed";
+    auto end_time = std::chrono::steady_clock::now();
+    total_time_ += static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
 
     // Find the slowest module, and accumulate the total run-time for all modules
     long double slowest_time = 0, total_module_time = 0;

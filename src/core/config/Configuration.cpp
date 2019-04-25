@@ -148,7 +148,7 @@ void Configuration::merge(const Configuration& other) {
     }
 }
 
-std::vector<std::pair<std::string, std::string>> Configuration::getAll() {
+std::vector<std::pair<std::string, std::string>> Configuration::getAll() const {
     std::vector<std::pair<std::string, std::string>> result;
 
     // Loop over all configuration keys
