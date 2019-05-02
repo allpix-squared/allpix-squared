@@ -403,15 +403,12 @@ int main(int argc, char** argv) {
                 // If after a radius step no new neighbours are found, go to the next radius step
                 if(results.size() <= prev_neighbours || results.empty()) {
                     prev_neighbours = results.size();
-                    LOG(WARNING) << "No (new) neighbour found with radius " << radius << ". Increasing search radius.";
                     radius = radius + radius_step;
                     continue;
                 }
 
                 // If we have less than N close neighbors, no full mesh element can be formed. Increase radius.
                 if(results.size() < (dimension == 3 ? 4 : 3)) {
-                    LOG(WARNING) << "Incomplete mesh element found for radius " << radius << std::endl
-                                 << "Increasing the readius (setting a higher initial radius may help)";
                     radius = radius + radius_step;
                     continue;
                 }
@@ -473,7 +470,8 @@ int main(int argc, char** argv) {
         for(auto& mesh_future : mesh_futures) {
             auto mesh_slice = mesh_future.get();
             e_field_new_mesh.insert(e_field_new_mesh.end(), mesh_slice.begin(), mesh_slice.end());
-            LOG_PROGRESS(INFO, "m") << "Interpolating new mesh: " << (100 * mesh_slices_done / mesh_futures.size()) << "%";
+            LOG_PROGRESS(INFO, "m") << "Interpolating new mesh: " << mesh_slices_done << " of " << mesh_futures.size()
+                                    << ", " << (100 * mesh_slices_done / mesh_futures.size()) << "%";
             mesh_slices_done++;
         }
 
