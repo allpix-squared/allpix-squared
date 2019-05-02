@@ -192,8 +192,14 @@ void ProjectionPropagationModule::run(unsigned int) {
             // Find projected position
             auto local_position = ROOT::Math::XYZPoint(position.x() + diffusion_x, position.y() + diffusion_y, top_z_);
 
-            // Only add if within sensor volume:
+            // Only add if within requested integration time:
             auto event_time = deposit.getEventTime() + drift_time;
+            if(event_time > integration_time_) {
+                LOG(DEBUG) << "Charge carriers drift time not within integration time: " << Units::display(event_time, "ns");
+                continue;
+            }
+
+            // Only add if within sensor volume:
             if(!detector_->isWithinSensor(local_position)) {
                 // FIXME: drop charges if it ends up outside the sensor, could be optimized to estimate position on border
                 continue;
