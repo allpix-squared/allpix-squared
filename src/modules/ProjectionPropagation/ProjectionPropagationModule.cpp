@@ -91,7 +91,11 @@ void ProjectionPropagationModule::init() {
 
     if(output_plots_) {
         // Initialize output plot
-        drift_time_histo_ = new TH1D("drift_time_histo", "Drift time;t[ns];particles", 75, 0., 25.);
+        drift_time_histo_ = new TH1D("drift_time_histo",
+                                     "Drift time;Drift time [ns];charge carriers",
+                                     static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                     0,
+                                     static_cast<double>(Units::convert(integration_time_, "ns")));
     }
 }
 
@@ -201,6 +205,7 @@ void ProjectionPropagationModule::run(unsigned int) {
 
             // Only add if within sensor volume:
             if(!detector_->isWithinSensor(local_position)) {
+                LOG(DEBUG) << "Charge carriers outside sensor volume at " << Units::display(local_position, {"mm", "um"});
                 // FIXME: drop charges if it ends up outside the sensor, could be optimized to estimate position on border
                 continue;
             }
@@ -210,8 +215,9 @@ void ProjectionPropagationModule::run(unsigned int) {
             propagated_charges.emplace_back(
                 local_position, global_position, deposit.getType(), charge_per_step, event_time, &deposit);
 
-            LOG(DEBUG) << "Propagated " << charge_per_step << " charge carriers (" << type << ") to "
-                       << Units::display(local_position, {"mm", "um"});
+            LOG(DEBUG) << "Propagated " << charge_per_step << " " << type << " to "
+                       << Units::display(local_position, {"mm", "um"}) << " in " << Units::display(event_time, "ns")
+                       << " time";
 
             projected_charge += charge_per_step;
         }
