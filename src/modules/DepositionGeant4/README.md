@@ -7,6 +7,7 @@
 Module which deposits charge carriers in the active volume of all detectors.
 It acts as wrapper around the Geant4 logic and depends on the global geometry constructed by the GeometryBuilderGeant4 module.
 It initializes the physical processes to simulate a particle source that will deposit charge carriers for every event simulated.
+The number of electron/hole pairs created is calculated using the mean pair creation energy `charge_creation_energy`, fluctuations are modeled using a Fano factor `fano_factor` assuming Gaussian statistics.
 
 #### Source Shapes
 
@@ -63,7 +64,8 @@ This module requires an installation Geant4.
 * `physics_list`: Geant4-internal list of physical processes to simulate, defaults to FTFP_BERT_LIV. More information about possible physics list and recommendations for defaults are available on the Geant4 website [@g4physicslists].
 * `enable_pai`: Determines if the Photoabsorption Ionization model is enabled in the sensors of all detectors. Defaults to false.
 * `pai_model`: Model can be **pai** for the normal Photoabsorption Ionization model or **paiphoton** for the photon model. Default is **pai**. Only used if *enable_pai* is set to true.
-* `charge_creation_energy` : Energy needed to create a charge deposit. Defaults to the energy needed to create an electron-hole pair in silicon (3.64 eV).
+* `charge_creation_energy` : Energy needed to create a charge deposit. Defaults to the energy needed to create an electron-hole pair in silicon (3.64 eV, [@chargecreation]).
+* `fano_factor`: Fano factor to calculate fluctuations in the number of electron/hole pairs produced by a given energy deposition. Defaults to 0.115 [@fano].
 * `max_step_length` : Maximum length of a simulation step in every sensitive device. Defaults to 1um.
 * `range_cut` : Geant4 range cut-off threshold for the production of gammas, electrons and positrons to avoid infrared divergence. Defaults to a fifth of the shortest pixel feature, i.e. either pitch or thickness.
 * `particle_type` : Type of the Geant4 particle to use in the source (string). Refer to the Geant4 documentation [@g4particles] for information about the available types of particles.
@@ -138,3 +140,5 @@ number_of_particles = 1
 [@g4gps]:  http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/ForApplicationDeveloper/html/GettingStarted/generalParticleSource.html
 [@pdg]: http://hepdata.cedar.ac.uk/lbl/2016/reviews/rpp2016-rev-monte-carlo-numbering.pdf
 [@pai]: https://doi.org/10.1016/S0168-9002(00)00457-5
+[@chargecreation]: https://doi.org/10.1103/PhysRevB.1.2945
+[@fano]: https://doi.org/10.1103%2FPhysRevB.22.5565
