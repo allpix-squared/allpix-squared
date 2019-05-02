@@ -194,7 +194,7 @@ void ProjectionPropagationModule::run(unsigned int) {
 
             // Only add if within requested integration time:
             auto event_time = deposit.getEventTime() + drift_time;
-            if(event_time > integration_time_) {
+            if(drift_time > integration_time_) {
                 LOG(DEBUG) << "Charge carriers drift time not within integration time: " << Units::display(event_time, "ns");
                 continue;
             }
