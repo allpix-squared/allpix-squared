@@ -44,6 +44,7 @@ void GeometryManager::load(ConfigManager* conf_manager, std::mt19937_64& seeder)
     // Set up a random number generator and seed it with the global seed:
     std::mt19937_64 random_generator;
     random_generator.seed(seeder());
+    //constructor_ = new GeometryConstructor();
 
     // Loop over all defined detectors
     LOG(DEBUG) << "Loading detectors";
@@ -507,3 +508,38 @@ MagneticFieldType GeometryManager::getMagneticFieldType() const {
 ROOT::Math::XYZVector GeometryManager::getMagneticField(const ROOT::Math::XYZPoint& position) const {
     return magnetic_field_function_(position);
 }
+
+
+
+/*GeometryConstructor* GeometryManager::getConstructor(){ 
+
+    return constructor_;
+
+}*/
+
+void GeometryManager::AddBuilder(std::shared_ptr<Builder> builder)
+{
+	builders.push_back(builder);
+
+}
+
+std::vector<std::shared_ptr<Builder>> GeometryManager::getBuilders() {
+    return builders;
+}
+
+
+/*
+void GeometryManager::AddBuilder(Builder* builder)
+{
+	builders.push_back(builder);
+
+}
+
+std::vector<Builder*> GeometryManager::getBuilders() {
+    return builders;
+}
+
+*/
+
+
+

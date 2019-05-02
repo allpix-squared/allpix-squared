@@ -21,6 +21,7 @@
 #pragma link C++ class allpix::DepositedCharge + ;
 #pragma link C++ class allpix::Pixel + ;
 #pragma link C++ class allpix::PixelCharge + ;
+#pragma link C++ class allpix::PixelPulse + ;
 #pragma link C++ class allpix::PixelHit + ;
 
 // Vector of Object for internal storage

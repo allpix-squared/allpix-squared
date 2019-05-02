@@ -7,8 +7,8 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#ifndef ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_H
-#define ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_H
+#ifndef ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_MODULE_H
+#define ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_MODULE_H
 
 #include <memory>
 #include <string>
@@ -42,14 +42,15 @@ namespace allpix {
         /**
          * @brief Initializes Geant4 and construct the Geant4 geometry from the internal geometry
          */
-        void init() override;
+      	void init() override;
 
     private:
         GeometryManager* geo_manager_;
 
         // Geant4 run manager is owned by this module
-        std::unique_ptr<G4RunManager> run_manager_g4_;
+        //std::unique_ptr<G4RunManager> run_manager_g4_;
+	G4RunManager* run_manager_g4_;
     };
 } // namespace allpix
 
-#endif /* ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_H */
+#endif /* ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_MODULE_H */

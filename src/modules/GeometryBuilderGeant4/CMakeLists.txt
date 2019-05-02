@@ -33,6 +33,8 @@ ALLPIX_MODULE_SOURCES(${MODULE_NAME}
     GeometryBuilderGeant4Module.cpp
     GeometryConstructionG4.cpp
     Parameterization2DG4.cpp
+    DetectorConstructionG4.cpp
+
 )
 
 # Include Geant4 directories (NOTE Geant4_USE_FILE is not used!)

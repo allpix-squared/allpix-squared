@@ -23,7 +23,6 @@
 #include <Math/Vector3D.h>
 
 #include "GeometryConstructionG4.hpp"
-
 #include "tools/ROOT.h"
 #include "tools/geant4.h"
 
@@ -31,6 +30,8 @@
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/utils/log.h"
+#include "DetectorConstructionG4.hpp"
+
 
 // Include GDML if Geant4 version has it
 #ifdef Geant4_GDML
@@ -84,17 +85,22 @@ void GeometryBuilderGeant4Module::init() {
     SUPPRESS_STREAM(G4cout);
 
     // Create the G4 run manager
-    run_manager_g4_ = std::make_unique<G4RunManager>();
+    //run_manager_g4_ = std::make_unique<G4RunManager>();
+    run_manager_g4_ =  new G4RunManager();
 
     // Release stdout again
     RELEASE_STREAM(std::cout);
 
     // Set the geometry construction to use
     auto geometry_construction = new GeometryConstructionG4(geo_manager_, config_);
-    run_manager_g4_->SetUserInitialization(geometry_construction);
+    
+    std::shared_ptr<DetectorConstructionG4> detBuilder = std::make_shared<DetectorConstructionG4>(geo_manager_, config_);
+
+    geo_manager_->AddBuilder(detBuilder);
+    run_manager_g4_->SetUserInitialization(geometry_construction);    
 
     // Run the geometry construct function in GeometryConstructionG4
-    LOG(TRACE) << "Building Geant4 geometry";
+    //LOG(TRACE) << "Building Geant4 geometry";
     run_manager_g4_->InitializeGeometry();
 
     // Export geometry in GDML if requested (and GDML support is available in Geant4)

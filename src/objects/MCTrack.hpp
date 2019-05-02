@@ -15,7 +15,7 @@
 
 #include "Object.hpp"
 
-namespace allpix {
+namespace allpix { 
     /**
      * @brief Monte-Carlo track through the world
      */
@@ -139,7 +139,7 @@ namespace allpix {
         /**
          * @brief Default constructor for ROOT I/O
          */
-        MCTrack() = default;
+     //   MCTrack() = default;
 
     private:
         ROOT::Math::XYZPoint start_point_{};
@@ -164,6 +164,14 @@ namespace allpix {
      * @brief Typedef for message carrying MC tracks
      */
     using MCTrackMessage = Message<MCTrack>;
+
 } // namespace allpix
 
 #endif
+
+
+
+
+
+
+

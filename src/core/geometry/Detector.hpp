@@ -33,6 +33,32 @@
 namespace allpix {
 
     /**
+<<<<<<< HEAD
+=======
+     * @brief Type of the electric field
+     */
+    enum class ElectricFieldType {
+        NONE = 0, ///< No electric field is simulated
+        CONSTANT, ///< Constant electric field (mostly for testing)
+        LINEAR,   ///< Linear electric field (linearity determined by function)
+        GRID,     ///< Electric field supplied through a regularized grid
+        CUSTOM,   ///< Custom electric field function
+    };
+
+    /**
+     * @brief Type of the electric field
+     */
+    enum class WeightingFieldType {
+        NONE = 0, ///< No weighting field is simulated
+        PAD,      ///< The equivalent weighting field of a pixel/pad in a plane condenser
+        GRID,     ///< Weighting field supplied through a regularized grid
+        CUSTOM,   ///< Custom weighting field function
+    };
+
+    using ElectricFieldFunction = std::function<ROOT::Math::XYZVector(const ROOT::Math::XYZPoint&)>;
+
+    /**
+>>>>>>> c72ebbaac0befc3dcade83e86e6ac6aa2cea7742
      * @brief Instantiation of a detector model in the world
      *
      * Contains the detector in the world with several unique properties (like the electric field). All model specific
@@ -148,11 +174,49 @@ namespace allpix {
                                       FieldType type = FieldType::CUSTOM);
 
         /**
-             * @brief Set the magnetic field in the detector
-             * @param function Function used to retrieve the magnetic field
-             * @param type Type of the magnetic field function used
-     holds
-             */
+         * @brief Returns if the detector has a weighting field in the sensor
+         * @return True if the detector has a weighting field, false otherwise
+         */
+        bool hasWeightingField() const;
+        /**
+         * @brief Return the type of weighting field that is simulated.
+         * @return The type of the weighting field
+         */
+        WeightingFieldType getWeightingFieldType() const;
+        /**
+         * @brief Get the weighting field in the sensor at a local position
+         * @param pos Position in the local frame
+         * @param x x-coordinate of the pixel for which we want the weighting field
+         * @param y y-coordinate of the pixel for which we want the weighting field
+         * @return Vector of the field at the queried point
+         */
+        ROOT::Math::XYZVector getWeightingField(const ROOT::Math::XYZPoint& local_pos, unsigned int x, unsigned int y) const;
+
+        /**
+         * @brief Set the weighting field in a single pixel in the detector using a grid
+         * @param field Flat array of the field vectors (see detailed description)
+         * @param sizes The dimensions of the flat weighting field array
+         * @param thickness_domain Domain in local coordinates in the thickness direction where the field holds
+         */
+        void setWeightingFieldGrid(std::shared_ptr<std::vector<double>> field,
+                                   std::array<size_t, 3> sizes,
+                                   std::array<double, 3> extent,
+                                   std::pair<double, double> thickness_domain);
+        /**
+         * @brief Set the weighting field in a single pixel using a function
+         * @param function Function used to retrieve the weighting field
+         * @param type Type of the weighting field function used
+         * @param thickness_domain Domain in local coordinates in the thickness direction where the field holds
+         */
+        void setWeightingFieldFunction(ElectricFieldFunction function,
+                                       std::pair<double, double> thickness_domain,
+                                       WeightingFieldType type = WeightingFieldType::CUSTOM);
+
+        /**
+         * @brief Set the magnetic field in the detector
+         * @param function Function used to retrieve the magnetic field
+         * @param type Type of the magnetic field function used
+         */
         void setMagneticField(ROOT::Math::XYZVector b_field);
 
         /**
@@ -215,10 +279,32 @@ namespace allpix {
         // Transform matrix from global to local coordinates
         ROOT::Math::Transform3D transform_;
 
+<<<<<<< HEAD
         // Electric field
         DetectorField<ROOT::Math::XYZVector, 3> electric_field_;
 
         // Magnetic field properties
+=======
+        // Electric field of the detector
+        std::array<size_t, 3> electric_field_sizes_;
+        std::array<double_t, 2> electric_field_scales_{{1., 1.}};
+        std::array<double_t, 2> electric_field_scales_inverse_{{1., 1.}};
+        std::array<double_t, 2> electric_field_offset_{{0., 0.}};
+        std::shared_ptr<std::vector<double>> electric_field_;
+        std::pair<double, double> electric_field_thickness_domain_;
+        ElectricFieldType electric_field_type_{ElectricFieldType::NONE};
+        ElectricFieldFunction electric_field_function_;
+
+        // Weighting field of the detector
+        std::array<size_t, 3> weighting_field_sizes_;
+        std::array<double, 3> weighting_field_extent_;
+        std::shared_ptr<std::vector<double>> weighting_field_;
+        std::pair<double, double> weighting_field_thickness_domain_;
+        WeightingFieldType weighting_field_type_{WeightingFieldType::NONE};
+        ElectricFieldFunction weighting_field_function_;
+
+        // Magnetic field at the position of the detector
+>>>>>>> c72ebbaac0befc3dcade83e86e6ac6aa2cea7742
         ROOT::Math::XYZVector magnetic_field_;
         bool magnetic_field_on_;
 

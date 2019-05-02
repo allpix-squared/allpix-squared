@@ -20,6 +20,7 @@
 
 #include "Detector.hpp"
 #include "DetectorModel.hpp"
+#include "Builder.hpp"
 #include "core/config/ConfigManager.hpp"
 #include "core/config/ConfigReader.hpp"
 
@@ -164,7 +165,9 @@ namespace allpix {
          * @note Closes the geometry if it not has been closed yet
          */
         std::vector<std::shared_ptr<Detector>> getDetectors();
+	
 
+	
         /**
          * @brief Get a detector by its name
          * @param name Name of the detector to search for
@@ -204,6 +207,22 @@ namespace allpix {
 
         MagneticFieldType getMagneticFieldType() const;
 
+	//GeometryConstructor* getConstructor();
+	
+	void AddBuilder(std::shared_ptr<Builder> builder);
+
+	std::vector<std::shared_ptr<Builder> > getBuilders();
+	std::vector<std::shared_ptr<Builder> > builders;
+	
+/*
+	void AddBuilder(Builder* builder);
+
+	std::vector<Builder*> getBuilders();
+	std::vector<Builder*> builders;
+*/
+	
+
+	
     private:
         /**
          * @brief Load all standard framework models (automatically done when the geometry is closed)
@@ -229,13 +248,16 @@ namespace allpix {
         std::vector<std::string> model_paths_;
         std::vector<std::shared_ptr<DetectorModel>> models_;
         std::set<std::string> model_names_;
-
+	
         std::map<std::string, std::vector<std::pair<Configuration, Detector*>>> nonresolved_models_;
         std::vector<std::shared_ptr<Detector>> detectors_;
         std::set<std::string> detector_names_;
 
+
         MagneticFieldType magnetic_field_type_{MagneticFieldType::NONE};
-        MagneticFieldFunction magnetic_field_function_;
+        MagneticFieldFunction magnetic_field_function_;	
+
+	//GeometryConstructor* constructor_;
     };
 } // namespace allpix
 

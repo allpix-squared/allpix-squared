@@ -12,3 +12,4 @@ FOREACH(subdir ${subdirs})
         ADD_SUBDIRECTORY(${subdir})
     ENDIF()
 ENDFOREACH()
+

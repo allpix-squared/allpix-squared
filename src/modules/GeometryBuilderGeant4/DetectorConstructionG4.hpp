@@ -7,63 +7,50 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#ifndef ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_H
-#define ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_H
+#ifndef ALLPIX_MODULE_DETECTOR_CONSTRUCTION_H
+#define ALLPIX_MODULE_DETECTOR_CONSTRUCTION_H
 
 #include <memory>
 #include <utility>
 
 #include "G4Material.hh"
 #include "G4VSolid.hh"
-#include "G4VUserDetectorConstruction.hh"
+#include "core/geometry/Builder.hpp"
+
 #include "core/geometry/GeometryManager.hpp"
+
+//class G4LogicalVolume
+//class G4Material
 
 namespace allpix {
     /**
      * @brief Constructs the Geant4 geometry during Geant4 initialization
      */
-    class GeometryConstructionG4 : public G4VUserDetectorConstruction{ 
-
+    class DetectorConstructionG4 : public Builder {
     public:
         /**
          * @brief Constructs geometry construction module
          * @param geo_manager Pointer to the geometry manager, containing the detectors
          * @param config Configuration object of the geometry builder module
          */
-        GeometryConstructionG4(GeometryManager* geo_manager, Configuration& config);
-	
+        DetectorConstructionG4(GeometryManager* geo_manager, Configuration& config);
+
 
         /**
          * @brief Constructs the world geometry with all detectors
          * @return Physical volume representing the world
          */
-        G4VPhysicalVolume* Construct() override;
+        void Build(void* world, void* materials) override;
 
     private:
         GeometryManager* geo_manager_;
         Configuration& config_;
 
-        /**
-         * @brief Initializes the list of materials from the supported allpix materials
-         */
-        void init_materials();
-
-        /**
-         * @brief Check all placed volumes for overlaps
-         */
-        void check_overlaps();
-
-        // List of all materials
-        std::map<std::string, G4Material*> materials_;
-
         // Storage of internal objects
         std::vector<std::shared_ptr<G4VSolid>> solids_;
         G4Material* world_material_{};
-
-
-        std::unique_ptr<G4LogicalVolume> world_log_;
-        std::unique_ptr<G4VPhysicalVolume> world_phys_;
+	
     };
 } // namespace allpix
 
-#endif /* ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_H */
+#endif /* ALLPIX_MODULE_DETECTOR_CONSTRUCTION_H */
