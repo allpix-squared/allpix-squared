@@ -400,12 +400,6 @@ int main(int argc, char** argv) {
                 octree.radiusNeighbors<unibn::L2Distance<Point>>(q, radius, results);
                 LOG(DEBUG) << "Number of vertices found: " << results.size();
 
-                // Sort by lowest distance first, this drastically reduces the number of permutations required to find a
-                // valid mesh element and also ensures that this is the one with the smallest volume.
-                std::sort(results.begin(), results.end(), [&](unsigned int a, unsigned int b) {
-                    return unibn::L2Distance<Point>::compute(points[a], q) < unibn::L2Distance<Point>::compute(points[b], q);
-                });
-
                 // If after a radius step no new neighbours are found, go to the next radius step
                 if(results.size() <= prev_neighbours || results.empty()) {
                     prev_neighbours = results.size();
@@ -421,6 +415,12 @@ int main(int argc, char** argv) {
                     radius = radius + radius_step;
                     continue;
                 }
+
+                // Sort by lowest distance first, this drastically reduces the number of permutations required to find a
+                // valid mesh element and also ensures that this is the one with the smallest volume.
+                std::sort(results.begin(), results.end(), [&](unsigned int a, unsigned int b) {
+                    return unibn::L2Distance<Point>::compute(points[a], q) < unibn::L2Distance<Point>::compute(points[b], q);
+                });
 
                 // Finding tetrahedrons by checking all combinations of N elements, starting with closest to reference point
                 auto res = for_each_combination(results.begin(),
