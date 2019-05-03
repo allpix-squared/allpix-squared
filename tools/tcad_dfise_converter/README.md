@@ -35,7 +35,7 @@ It should be noted that the TCAD DF-ISE mesh converter depends on the core utili
 * `dimension`: Specify mesh dimensionality (defaults to 3).
 * `region`: Region name or list of region names to be meshed (defaults to `bulk`).
 * `observable`: Observable to be interpolated (defaults to `ElectricField`).
-* `initial_radius`: Initial node neighbors search radius in micro meters (defaults to `1um`).
+* `initial_radius`: Initial node neighbors search radius in micro meters. Defaults to the minimal cell dimension of the final interpolated mesh.
 * `radius_step`: Radius step if no neighbor is found (defaults to `0.5um`).
 * `max_radius`: Maximum search radius (default is `10um`).
 * `volume_cut`: Minimum volume for tetrahedron for non-coplanar vertices (defaults to minimum double value).

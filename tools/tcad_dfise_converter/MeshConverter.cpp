@@ -153,7 +153,6 @@ int main(int argc, char** argv) {
     auto regions = config.getArray<std::string>("region", {"bulk"});
     auto observable = config.get<std::string>("observable", "ElectricField");
 
-    const auto initial_radius = config.get<double>("initial_radius", 1);
     const auto radius_step = config.get<double>("radius_step", 0.5);
     const auto max_radius = config.get<double>("max_radius", 10);
 
@@ -335,6 +334,10 @@ int main(int argc, char** argv) {
     const double ystep = (maxy - miny) / static_cast<double>(divisions.y());
     const double zstep = (maxz - minz) / static_cast<double>(divisions.z());
     const double cell_volume = xstep * ystep * zstep;
+
+    // Using the minimal cell dimension as initial search radius for the point cloud:
+    const auto initial_radius = config.get<double>("initial_radius", std::min(xstep, std::min(ystep, zstep)));
+    LOG(INFO) << "Using initial neighbor search radius of " << initial_radius;
 
     if(rot.at(0) != "x" || rot.at(1) != "y" || rot.at(2) != "z") {
         LOG(STATUS) << "TCAD mesh (x,y,z) coords. transformation into: (" << rot.at(0) << "," << rot.at(1) << ","
