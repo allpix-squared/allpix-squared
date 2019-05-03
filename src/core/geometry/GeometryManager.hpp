@@ -164,9 +164,7 @@ namespace allpix {
          * @returns List of all detectors
          * @note Closes the geometry if it not has been closed yet
          */
-        std::vector<std::shared_ptr<Detector>> getDetectors();
-	
-
+        std::vector<std::shared_ptr<Detector>> getDetectors();	
 	
         /**
          * @brief Get a detector by its name
@@ -207,21 +205,10 @@ namespace allpix {
 
         MagneticFieldType getMagneticFieldType() const;
 
-	//GeometryConstructor* getConstructor();
-	
 	void AddBuilder(std::shared_ptr<Builder> builder);
 
 	std::vector<std::shared_ptr<Builder> > getBuilders();
 	std::vector<std::shared_ptr<Builder> > builders;
-	
-/*
-	void AddBuilder(Builder* builder);
-
-	std::vector<Builder*> getBuilders();
-	std::vector<Builder*> builders;
-*/
-	
-
 	
     private:
         /**
@@ -253,11 +240,8 @@ namespace allpix {
         std::vector<std::shared_ptr<Detector>> detectors_;
         std::set<std::string> detector_names_;
 
-
         MagneticFieldType magnetic_field_type_{MagneticFieldType::NONE};
         MagneticFieldFunction magnetic_field_function_;	
-
-	//GeometryConstructor* constructor_;
     };
 } // namespace allpix
 

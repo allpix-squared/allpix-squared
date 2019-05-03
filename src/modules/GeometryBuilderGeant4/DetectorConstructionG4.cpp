@@ -56,10 +56,6 @@ template <typename T, typename... Args> static std::shared_ptr<T> make_shared_no
     return std::shared_ptr<T>(new T(args...), [](T*) {});
 }
 
-/**
- * First initializes all the materials. Then constructs the world from the internally calculated world size with a certain
- * margin. Finally builds all the individual detectors.
- */
 void DetectorConstructionG4::Build(void* world, void* materials){
     
 /*
@@ -67,14 +63,14 @@ Reinterpret the void* world and void* materials to make them fit as G4LogicalVol
 */
     G4LogicalVolume* world_log= reinterpret_cast<G4LogicalVolume*>(world);
     std::map<std::string, G4Material*>* materials_ = reinterpret_cast<std::map<std::string, G4Material*>*>(materials);
-
 /*
-Get the world_material !!! Could at as a function to the Build, function !!!
+Get the world material
 */
-       
     std::string world_material = config_.get<std::string>("world_material", "air");
     world_material_ = (*materials_)[world_material];
-
+/*
+Build the individual detectors
+*/
     std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
     LOG(TRACE) << "Building " << detectors.size() << " device(s)";
 
@@ -335,8 +331,3 @@ Get the world_material !!! Could at as a function to the Build, function !!!
     }
   
 }
-
-
-
-
-

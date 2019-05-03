@@ -23,6 +23,7 @@
 #include <Math/Vector3D.h>
 
 #include "GeometryConstructionG4.hpp"
+
 #include "tools/ROOT.h"
 #include "tools/geant4.h"
 
@@ -31,7 +32,6 @@
 #include "core/geometry/GeometryManager.hpp"
 #include "core/utils/log.h"
 #include "DetectorConstructionG4.hpp"
-
 
 // Include GDML if Geant4 version has it
 #ifdef Geant4_GDML
@@ -85,8 +85,8 @@ void GeometryBuilderGeant4Module::init() {
     SUPPRESS_STREAM(G4cout);
 
     // Create the G4 run manager
-    //run_manager_g4_ = std::make_unique<G4RunManager>();
-    run_manager_g4_ =  new G4RunManager();
+    run_manager_g4_ = std::make_unique<G4RunManager>();
+    //run_manager_g4_ =  new G4RunManager();
 
     // Release stdout again
     RELEASE_STREAM(std::cout);
