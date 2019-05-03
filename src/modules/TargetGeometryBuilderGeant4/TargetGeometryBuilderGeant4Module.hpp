@@ -48,8 +48,7 @@ namespace allpix {
     private:
         GeometryManager* geo_manager_;
 	
-        // Geant4 run manager is owned by GeometryBuilderG4
-        //std::unique_ptr<G4RunManager> run_manager_g4_;
+        // Geant4 run manager is owned by GeometryBuilderGeant4
 	G4RunManager* run_manager_g4_;
     };
 } // namespace allpix

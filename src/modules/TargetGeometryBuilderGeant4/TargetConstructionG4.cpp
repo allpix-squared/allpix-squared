@@ -40,8 +40,8 @@
 
 using namespace allpix;
 
-TargetConstructionG4::TargetConstructionG4(Configuration& config)//, ConfigReader& reader)
- : config_(config){}//, reader_(reader){}
+TargetConstructionG4::TargetConstructionG4(Configuration& config)
+ : config_(config){}
 
 /**
  * @brief Version of std::make_shared that does not delete the pointer
@@ -54,12 +54,7 @@ template <typename T, typename... Args> static std::shared_ptr<T> make_shared_no
 }
  
 
-/**
- * First initializes all the materials. Then constructs the world from the internally calculated world size with a certain
- * margin. Finally builds all the individual detectors.
- */
 void TargetConstructionG4::Build(void* world,void* materials){
-//(void) reader_;
 
 /*
 Reinterpret the void* world and void* materials to make them fit as G4LogicalVolume and std::map<std::string, G4Material*>
@@ -68,22 +63,13 @@ Reinterpret the void* world and void* materials to make them fit as G4LogicalVol
     G4LogicalVolume* world_log= reinterpret_cast<G4LogicalVolume*>(world);
     std::map<std::string, G4Material*>* materials_ = reinterpret_cast<std::map<std::string, G4Material*>*>(materials);
 
-/*
-Get the world_material !!! Could add as a function to the Build(), function !!!
-*/
        
     std::string world_material = config_.get<std::string>("world_material", "air");
     world_material_ = (*materials_)[world_material];
 
 /*
-Get all the required variables for the target
+Get all the required variables for the target from the config file
 */
-
-/*
-Add a way to add mulitple targets --> Look at the support layers --> ADD READER_ TO FILE! LOOK AT DETECTORMODEL.CPP TO FIGURE THIS OUT! 
-*/
-
-
 
 	    ROOT::Math::XYVector target_size = config_.get<ROOT::Math::XYVector>("target_size", {0,0});
 	    double target_thickness = config_.get<double>("target_thickness", 0); 
@@ -106,35 +92,5 @@ Add a way to add mulitple targets --> Look at the support layers --> ADD READER_
 	    auto target_pos = toG4Vector(target_location);
 	    auto target_phys_ = make_shared_no_delete<G4PVPlacement>(
 	        nullptr, target_pos, target_log.get(), "sensor_phys", world_log, false, 0, true);
-
-	 
-
-
-/*
-	for(auto& target_config : reader_.getConfigurations("target")) {
-	    auto target_size = target_config.get<ROOT::Math::XYVector>("target_size", {0,0});
-	    auto target_thickness = target_config.get<double>("target_thickness", 0); 
-
-	    auto target_location = target_config.get<ROOT::Math::XYZPoint>("target_location", {0.,0.,0.});
-
-	    auto target_material = target_config.get<std::string>("target_material", world_material);
-	    std::transform(target_material.begin(), target_material.end(), target_material.begin(), ::tolower);
-	
- 
-	    auto target_box = std::make_shared<G4Box>("target_",
-                                               target_size.x(),
-                                               target_size.y(),
-                                               target_thickness);
-	    solids_.push_back(target_box);
-	    auto target_log =
-	        make_shared_no_delete<G4LogicalVolume>(target_box.get(), (*materials_)[target_material], "target_log");
-
-	    // Place the target box
-	    auto target_pos = toG4Vector(target_location);
-	    auto target_phys_ = make_shared_no_delete<G4PVPlacement>(
-	        nullptr, target_pos, target_log.get(), "sensor_phys", world_log, false, 0, true);
-
-	} */
-    //return target_phys_.get();
 }
 

@@ -56,13 +56,11 @@ void TargetGeometryBuilderGeant4Module::init() {
     SUPPRESS_STREAM(G4cout);
 
     // Create the G4 run manager
-    //run_manager_g4_ = std::make_unique<G4RunManager>();
     run_manager_g4_ = G4RunManager::GetRunManager();
 
     // Release stdout again
     RELEASE_STREAM(std::cout);
-    //auto reader_ = new ConfigReader();
-    std::shared_ptr<TargetConstructionG4> tarBuilder = std::make_shared<TargetConstructionG4>(config_);//, reader_);
+    std::shared_ptr<TargetConstructionG4> tarBuilder = std::make_shared<TargetConstructionG4>(config_);
     
     geo_manager_->AddBuilder(tarBuilder);
 

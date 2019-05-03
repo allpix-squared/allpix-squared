@@ -19,9 +19,6 @@
 #include "core/geometry/GeometryManager.hpp"
 #include "core/config/ConfigReader.hpp"
 
-//class G4LogicalVolume;
-//class G4Material;
-
 namespace allpix {
     /**
      * @brief Constructs the Geant4 geometry during Geant4 initialization
@@ -30,11 +27,9 @@ namespace allpix {
     public:
         /**
          * @brief Constructs geometry construction module
-         * @param geo_manager Pointer to the geometry manager, containing the detectors
          * @param config Configuration object of the geometry builder module
          */
-        TargetConstructionG4(Configuration& config);//, ConfigReader& reader);
-
+        TargetConstructionG4(Configuration& config);
 
         /**
          * @brief Constructs the world geometry with all detectors
@@ -44,23 +39,11 @@ namespace allpix {
 
     private:
         Configuration& config_;
-      	//ConfigReader& reader_;
     
         // Storage of internal objects
         std::vector<std::shared_ptr<G4VSolid>> solids_;
 	G4Material* world_material_{};        
     };
-
-
-/*    explicit TargetConstructionG4(Configuration& config, ConfigReader reader);
-    virtual ~TargetConstructionG4() = default;
-        TargetConstructionG4(const TargetConstructionG4&) = default;
-        TargetConstructionG4& operator=(const TargetConstructionG4&) = default;
-
-        TargetConstructionG4(TargetConstructionG4&&) = default;
-        TargetConstructionG4& operator=(TargetConstructionG4&&) = default;
-*/
-
 
 } // namespace allpix
 
