@@ -283,8 +283,6 @@ void VisualizationGeant4Module::set_visualization_settings() {
         UI->ApplyCommand("/vis/scene/add/hits");
     }
 
-
-
     // Set viewer style
     auto view_style = config_.get<std::string>("view_style", "surface");
     ret_code = UI->ApplyCommand("/vis/viewer/set/style " + view_style);
@@ -294,9 +292,6 @@ void VisualizationGeant4Module::set_visualization_settings() {
 
     // Set default viewer orientation
     UI->ApplyCommand("/vis/viewer/set/viewpointThetaPhi -70 20");
-
-    // Set display List Limits
-    UI->ApplyCommand("/vis/ogl/set/displayListLimit 1000000");
 
     // Do auto refresh if not accumulating and start viewer already
     if(!accumulate) {
@@ -330,12 +325,6 @@ void VisualizationGeant4Module::set_visualization_attributes() {
     supportVisAtt.SetLineWidth(1);
     supportVisAtt.SetForceSolid(false);
 
-    // Target
-    auto targetColor = G4Color(0.36, 0.66, 0.055, alpha); // Greenish
-    G4VisAttributes targetVisAtt = G4VisAttributes(targetColor);
-    targetVisAtt.SetLineWidth(1);
-    targetVisAtt.SetForceSolid(false);
-
     // Chip
     auto chipColor = G4Color(0.18, 0.2, 0.21, alpha); // Blackish
     G4VisAttributes ChipVisAtt = G4VisAttributes(chipColor);
@@ -358,8 +347,6 @@ void VisualizationGeant4Module::set_visualization_attributes() {
     // The box holding all the pixels
     G4VisAttributes BoxVisAtt = G4VisAttributes(sensorColor);
     BoxVisAtt.SetForceSolid(false);
-
-	
 
     // In default simple view mode, pixels and bumps are set to invisible, not to be displayed.
     // The logical volumes holding them are instead displayed.
@@ -417,8 +404,6 @@ void VisualizationGeant4Module::set_visualization_attributes() {
         if(support_log != nullptr) {
             support_log->SetVisAttributes(supportVisAtt);
         }
-
-
     }
 }
 

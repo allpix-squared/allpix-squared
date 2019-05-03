@@ -32,7 +32,7 @@
 
 namespace allpix {
 
-     /**
+    /**
      * @brief Instantiation of a detector model in the world
      *
      * Contains the detector in the world with several unique properties (like the electric field). All model specific
@@ -148,10 +148,11 @@ namespace allpix {
                                       FieldType type = FieldType::CUSTOM);
 
         /**
-         * @brief Set the magnetic field in the detector
-         * @param function Function used to retrieve the magnetic field
-         * @param type Type of the magnetic field function used
-         */
+             * @brief Set the magnetic field in the detector
+             * @param function Function used to retrieve the magnetic field
+             * @param type Type of the magnetic field function used
+     holds
+             */
         void setMagneticField(ROOT::Math::XYZVector b_field);
 
         /**
@@ -218,9 +219,9 @@ namespace allpix {
         DetectorField<ROOT::Math::XYZVector, 3> electric_field_;
 
         // Magnetic field properties
-
-	ROOT::Math::XYZVector magnetic_field_;
+        ROOT::Math::XYZVector magnetic_field_;
         bool magnetic_field_on_;
+
         std::map<std::type_index, std::map<std::string, std::shared_ptr<void>>> external_objects_;
     };
 

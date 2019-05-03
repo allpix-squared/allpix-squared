@@ -15,13 +15,6 @@
 #include <Math/Vector2D.h>
 #include <TObject.h>
 
-namespace ROOT {
-    namespace Math { // NOLINT
-        bool operator<(const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>>& lhs,
-                       const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>>& rhs);
-    }
-} // namespace ROOT
-
 namespace allpix {
     /**
      * @ingroup Objects

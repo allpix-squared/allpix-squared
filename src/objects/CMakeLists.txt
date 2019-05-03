@@ -21,7 +21,6 @@ ROOT_GENERATE_DICTIONARY(AllpixObjectsDictionary
     ${CMAKE_CURRENT_SOURCE_DIR}/PropagatedCharge.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/DepositedCharge.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/PixelCharge.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/PixelPulse.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Pixel.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/PixelHit.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MCParticle.hpp
@@ -53,7 +52,6 @@ ADD_LIBRARY(AllpixObjects SHARED
     Object.cpp
     Pixel.cpp
     SensorCharge.cpp
-    PixelPulse.cpp
     PixelCharge.cpp
     DepositedCharge.cpp
     PropagatedCharge.cpp

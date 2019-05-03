@@ -11,14 +11,6 @@
 
 using namespace allpix;
 
-bool ROOT::Math::operator<(const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>>& lhs,
-                           const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>>& rhs) {
-    if(lhs.x() == rhs.x()) {
-        return lhs.y() < rhs.y();
-    }
-    return lhs.x() < rhs.x();
-}
-
 Pixel::Pixel(Pixel::Index index,
              ROOT::Math::XYZPoint local_center,
              ROOT::Math::XYZPoint global_center,

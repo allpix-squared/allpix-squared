@@ -1,7 +1,3 @@
-
-
-
-
 /**
  * @file
  * @brief Implementation of Monte-Carlo track object
@@ -81,8 +77,6 @@ std::string MCTrack::getCreationProcessName() const {
 /**
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
-
-
 const MCTrack* MCTrack::getParent() const {
     return dynamic_cast<MCTrack*>(parent_.GetObject());
 }
@@ -130,11 +124,3 @@ void MCTrack::print(std::ostream& out) const {
 }
 
 ClassImp(MCTrack)
-
-
-
-
-
-
-
-
