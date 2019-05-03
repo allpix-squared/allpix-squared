@@ -456,7 +456,15 @@ int main(int argc, char** argv) {
     std::vector<Point> e_field_new_mesh;
 
     try {
-        ThreadPool pool(num_threads, log_level);
+        // clang-format off
+        auto init_function = [log_level = allpix::Log::getReportingLevel(), log_format = allpix::Log::getFormat()]() {
+            // clang-format on
+            // Initialize the threads to the same log level and format as the master setting
+            allpix::Log::setReportingLevel(log_level);
+            allpix::Log::setFormat(log_format);
+        };
+
+        ThreadPool pool(num_threads, init_function);
         std::vector<std::future<std::vector<Point>>> mesh_futures;
         // Set starting point
         double x = minx + xstep / 2.0;
@@ -479,8 +487,7 @@ int main(int argc, char** argv) {
                                     << ", " << (100 * mesh_slices_done / mesh_futures.size()) << "%";
             mesh_slices_done++;
         }
-
-        pool.shutdown();
+        pool.destroy();
     } catch(std::runtime_error& e) {
         LOG(FATAL) << "Failed to interpolate new mesh:\n" << e.what();
         allpix::Log::finish();
