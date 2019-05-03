@@ -59,7 +59,6 @@ template <typename T, typename... Args> static std::shared_ptr<T> make_shared_no
  * margin. Finally builds all the individual detectors.
  */
 
-
 G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     // Initialize materials
     init_materials();
@@ -115,11 +114,12 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     world_phys_ =
         std::make_unique<G4PVPlacement>(nullptr, G4ThreeVector(0., 0., 0.), world_log_.get(), "World", nullptr, false, 0);
 
-    
+    // Build all the geometries that have been added to the Builder vector, including Detectors and Targets
     auto builders_ = geo_manager_->getBuilders();
     for( auto builder : builders_){
     	builder->Build(world_log_.get(), &materials_);
 	}
+	
     // Check for overlaps:
     check_overlaps();
 
@@ -134,6 +134,8 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
  * - epoxy
  * - kapton
  * - solder
+ * - lithium
+ * - beryllium
  */
 void GeometryConstructionG4::init_materials() {
     G4NistManager* nistman = G4NistManager::Instance();

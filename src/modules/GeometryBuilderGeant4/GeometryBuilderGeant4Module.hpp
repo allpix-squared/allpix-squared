@@ -49,7 +49,7 @@ namespace allpix {
 
         // Geant4 run manager is owned by this module
         std::unique_ptr<G4RunManager> run_manager_g4_;
-	//G4RunManager* run_manager_g4_;
+
     };
 } // namespace allpix
 

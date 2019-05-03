@@ -86,7 +86,6 @@ void GeometryBuilderGeant4Module::init() {
 
     // Create the G4 run manager
     run_manager_g4_ = std::make_unique<G4RunManager>();
-    //run_manager_g4_ =  new G4RunManager();
 
     // Release stdout again
     RELEASE_STREAM(std::cout);
@@ -100,7 +99,7 @@ void GeometryBuilderGeant4Module::init() {
     run_manager_g4_->SetUserInitialization(geometry_construction);    
 
     // Run the geometry construct function in GeometryConstructionG4
-    //LOG(TRACE) << "Building Geant4 geometry";
+    LOG(TRACE) << "Building Geant4 geometry";
     run_manager_g4_->InitializeGeometry();
 
     // Export geometry in GDML if requested (and GDML support is available in Geant4)
