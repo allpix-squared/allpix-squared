@@ -403,12 +403,14 @@ int main(int argc, char** argv) {
                 // If after a radius step no new neighbours are found, go to the next radius step
                 if(results.size() <= prev_neighbours || results.empty()) {
                     prev_neighbours = results.size();
+                    LOG(DEBUG) << "No (new) neighbour found with radius " << radius << ". Increasing search radius.";
                     radius = radius + radius_step;
                     continue;
                 }
 
                 // If we have less than N close neighbors, no full mesh element can be formed. Increase radius.
                 if(results.size() < (dimension == 3 ? 4 : 3)) {
+                    LOG(DEBUG) << "Incomplete mesh element found for radius " << radius << ", increasing radius";
                     radius = radius + radius_step;
                     continue;
                 }
