@@ -72,6 +72,8 @@ namespace allpix {
         std::shared_ptr<Detector> detector_;
         Messenger* messenger_;
 
+        std::mt19937_64 random_generator_;
+
         DepositionModel model_;
         SourceType type_;
         ROOT::Math::XYZVector voxel_;

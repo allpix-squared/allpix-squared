@@ -25,6 +25,9 @@ DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
                                                          std::shared_ptr<Detector> detector)
     : Module(config, detector), detector_(std::move(detector)), messenger_(messenger) {
 
+    // Seed the random generator with the global seed
+    random_generator_.seed(getRandomSeed());
+
     // Set default value for the number of charges deposited
     config_.setDefault("number_of_charges", 1);
     config_.setDefault("number_of_steps", 100);
