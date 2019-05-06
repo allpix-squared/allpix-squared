@@ -11,6 +11,7 @@
 #define ALLPIX_MC_TRACK_H
 
 #include <Math/Point3D.h>
+#include <Math/Vector3D.h>
 #include <TRef.h>
 
 #include "Object.hpp"
@@ -36,6 +37,7 @@ namespace allpix {
          */
         MCTrack(ROOT::Math::XYZPoint start_point,
                 ROOT::Math::XYZPoint end_point,
+		ROOT::Math::XYZVector momentum,
                 std::string g4_volume,
                 std::string g4_prod_process_name,
                 int g4_prod_process_type,
@@ -44,6 +46,18 @@ namespace allpix {
                 double final_kin_E,
                 double initial_tot_E,
                 double final_tot_E);
+
+
+	/**
+	
+	* @brief Get the momentum of the track
+	
+	* @return Track momentum
+	
+	*/
+	
+	ROOT::Math::XYZVector getMomentum() const;
+
 
         /**
          * @brief Get the point of where the track originated
@@ -144,6 +158,7 @@ namespace allpix {
     private:
         ROOT::Math::XYZPoint start_point_{};
         ROOT::Math::XYZPoint end_point_{};
+        ROOT::Math::XYZVector momentum_{};
 
         std::string origin_g4_vol_name_{};
         std::string origin_g4_process_name_{};

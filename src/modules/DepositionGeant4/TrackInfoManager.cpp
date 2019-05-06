@@ -37,6 +37,10 @@ void TrackInfoManager::storeTrackInfo(std::unique_ptr<TrackInfoG4> the_track_inf
         stored_track_infos_.push_back(std::move(the_track_info));
         to_store_track_ids_.erase(element);
     }
+    else {
+        stored_track_infos_.push_back(std::move(the_track_info));
+    }
+
 }
 
 void TrackInfoManager::resetTrackInfoManager() {
@@ -72,6 +76,7 @@ void TrackInfoManager::createMCTracks() {
     for(auto& track_info : stored_track_infos_) {
         stored_tracks_.emplace_back(track_info->getStartPoint(),
                                     track_info->getEndPoint(),
+				    track_info->getMomentum(),
                                     track_info->getOriginatingVolumeName(),
                                     track_info->getCreationProcessName(),
                                     track_info->getCreationProcessType(),
