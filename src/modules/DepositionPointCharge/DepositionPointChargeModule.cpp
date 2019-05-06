@@ -159,7 +159,7 @@ void DepositionPointChargeModule::run(unsigned int event) {
     }
 }
 
-void DepositionPointChargeModule::DepositPoint(ROOT::Math::XYZPoint position) {
+void DepositionPointChargeModule::DepositPoint(const ROOT::Math::XYZPoint& position) {
     // Vector of deposited charges and their "MCParticle"
     std::vector<DepositedCharge> charges;
     std::vector<MCParticle> mcparticles;
@@ -190,7 +190,7 @@ void DepositionPointChargeModule::DepositPoint(ROOT::Math::XYZPoint position) {
     messenger_->dispatchMessage(this, mcparticle_message);
 }
 
-void DepositionPointChargeModule::DepositLine(ROOT::Math::XYZPoint position) {
+void DepositionPointChargeModule::DepositLine(const ROOT::Math::XYZPoint& position) {
     auto model = detector_->getModel();
 
     // Vector of deposited charges and their "MCParticle"
