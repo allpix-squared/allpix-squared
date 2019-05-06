@@ -53,6 +53,9 @@ DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
         model_ = DepositionModel::FIXED;
     } else if(model == "scan") {
         model_ = DepositionModel::SCAN;
+    } else if(model == "spot") {
+        model_ = DepositionModel::SPOT;
+        spot_size_ = config.get<double>("spot_size");
     } else {
         throw InvalidValueError(
             config_, "model", "Invalid deposition model, only 'fixed', 'scan' and 'spot' are supported.");
@@ -135,10 +138,17 @@ void DepositionPointChargeModule::run(unsigned int event) {
                                         voxel_.y() * (((event - 1) / root_) % root_),
                                         voxel_.z() * (((event - 1) / root_ / root_) % root_)) +
                    ref;
-    }
+    } else {
+        // Calculate random offset from configured position
+        auto shift = [&](auto size) {
+            double dx = std::normal_distribution<double>(0, size)(random_generator_);
+            double dy = std::normal_distribution<double>(0, size)(random_generator_);
+            double dz = std::normal_distribution<double>(0, size)(random_generator_);
+            return ROOT::Math::XYZVector(dx, dy, dz);
+        };
 
-    if(!detector_->isWithinSensor(position)) {
-        LOG(WARNING) << "Outside: " << position;
+        // Spot around the configured position
+        position = get_position() + shift(config_.get<double>("spot_size"));
     }
 
     // Create charge carriers at requested position

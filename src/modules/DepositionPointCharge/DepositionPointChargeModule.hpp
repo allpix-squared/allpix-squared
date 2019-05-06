@@ -26,6 +26,7 @@ namespace allpix {
             NONE = 0, ///< No deposition
             FIXED,    ///< Deposition at a specific point
             SCAN,     ///< Scan through the volume of a pixel
+            SPOT,     ///< Deposition around fixed position with Gaussian profile
         };
 
         /**
@@ -76,6 +77,7 @@ namespace allpix {
 
         DepositionModel model_;
         SourceType type_;
+        double spot_size_{};
         ROOT::Math::XYZVector voxel_;
         unsigned int root_, carriers_;
     };
