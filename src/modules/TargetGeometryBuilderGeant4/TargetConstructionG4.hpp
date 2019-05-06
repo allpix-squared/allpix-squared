@@ -10,14 +10,14 @@
 #ifndef ALLPIX_MODULE_TARGET_CONSTRUCTION_H
 #define ALLPIX_MODULE_TARGET_CONSTRUCTION_H
 
+#include <G4LogicalVolume.hh>
 #include <memory>
 #include <utility>
-#include <G4LogicalVolume.hh>
 #include "G4Material.hh"
 #include "G4VSolid.hh"
+#include "core/config/ConfigReader.hpp"
 #include "core/geometry/Builder.hpp"
 #include "core/geometry/GeometryManager.hpp"
-#include "core/config/ConfigReader.hpp"
 
 namespace allpix {
     /**
@@ -39,10 +39,10 @@ namespace allpix {
 
     private:
         Configuration& config_;
-    
+
         // Storage of internal objects
         std::vector<std::shared_ptr<G4VSolid>> solids_;
-	G4Material* world_material_{};        
+        G4Material* world_material_{};
     };
 
 } // namespace allpix

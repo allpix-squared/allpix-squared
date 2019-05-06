@@ -29,10 +29,9 @@
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
 
-
-#include "core/utils/log.h"
 #include "TargetConstructionG4.hpp"
 #include "core/config/ConfigReader.hpp"
+#include "core/utils/log.h"
 
 // Include GDML if Geant4 version has it
 #ifdef Geant4_GDML
@@ -42,7 +41,9 @@
 using namespace allpix;
 using namespace ROOT;
 
-TargetGeometryBuilderGeant4Module::TargetGeometryBuilderGeant4Module(Configuration& config, Messenger*, GeometryManager* geo_manager)
+TargetGeometryBuilderGeant4Module::TargetGeometryBuilderGeant4Module(Configuration& config,
+                                                                     Messenger*,
+                                                                     GeometryManager* geo_manager)
     : Module(config), geo_manager_(geo_manager), run_manager_g4_(nullptr) {}
 
 /**
@@ -61,9 +62,8 @@ void TargetGeometryBuilderGeant4Module::init() {
     // Release stdout again
     RELEASE_STREAM(std::cout);
     std::shared_ptr<TargetConstructionG4> tarBuilder = std::make_shared<TargetConstructionG4>(config_);
-    
-    geo_manager_->AddBuilder(tarBuilder);
 
+    geo_manager_->AddBuilder(tarBuilder);
 
     // Run the geometry construct function in GeometryConstructionG4
     LOG(TRACE) << "Building Geant4 geometry";

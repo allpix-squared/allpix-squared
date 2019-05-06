@@ -32,7 +32,7 @@ using namespace allpix;
 
 MCTrack::MCTrack(ROOT::Math::XYZPoint start_point,
                  ROOT::Math::XYZPoint end_point,
-	 	 ROOT::Math::XYZVector momentum,
+                 ROOT::Math::XYZVector momentum,
                  std::string g4_volume,
                  std::string g4_prod_process_name,
                  int g4_prod_process_type,
@@ -52,13 +52,11 @@ ROOT::Math::XYZVector MCTrack::getMomentum() const {
     return momentum_;
 }
 
-
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!111
 ROOT::Math::XYZPoint MCTrack::getStartPoint() const {
     return start_point_;
 }
 //!!!!!!!!!!!!!!!!!!!!
-
 
 ROOT::Math::XYZPoint MCTrack::getEndPoint() const {
     return end_point_;

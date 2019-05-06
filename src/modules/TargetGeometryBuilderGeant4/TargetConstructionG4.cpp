@@ -13,9 +13,9 @@
 #include <string>
 #include <utility>
 
-#include <G4Material.hh>
 #include <G4Box.hh>
 #include <G4LogicalVolume.hh>
+#include <G4Material.hh>
 #include <G4NistManager.hh>
 #include <G4PVDivision.hh>
 #include <G4PVPlacement.hh>
@@ -36,12 +36,9 @@
 #include "tools/ROOT.h"
 #include "tools/geant4.h"
 
-
-
 using namespace allpix;
 
-TargetConstructionG4::TargetConstructionG4(Configuration& config)
- : config_(config){}
+TargetConstructionG4::TargetConstructionG4(Configuration& config) : config_(config) {}
 
 /**
  * @brief Version of std::make_shared that does not delete the pointer
@@ -52,45 +49,38 @@ TargetConstructionG4::TargetConstructionG4(Configuration& config)
 template <typename T, typename... Args> static std::shared_ptr<T> make_shared_no_delete(Args... args) {
     return std::shared_ptr<T>(new T(args...), [](T*) {});
 }
- 
 
-void TargetConstructionG4::Build(void* world,void* materials){
+void TargetConstructionG4::Build(void* world, void* materials) {
 
-/*
-Reinterpret the void* world and void* materials to make them fit as G4LogicalVolume and std::map<std::string, G4Material*>
-*/
+    /*
+    Reinterpret the void* world and void* materials to make them fit as G4LogicalVolume and std::map<std::string,
+    G4Material*>
+    */
 
-    G4LogicalVolume* world_log= reinterpret_cast<G4LogicalVolume*>(world);
+    G4LogicalVolume* world_log = reinterpret_cast<G4LogicalVolume*>(world);
     std::map<std::string, G4Material*>* materials_ = reinterpret_cast<std::map<std::string, G4Material*>*>(materials);
 
-       
     std::string world_material = config_.get<std::string>("world_material", "air");
     world_material_ = (*materials_)[world_material];
 
-/*
-Get all the required variables for the target from the config file
-*/
+    /*
+    Get all the required variables for the target from the config file
+    */
 
-	    ROOT::Math::XYVector target_size = config_.get<ROOT::Math::XYVector>("target_size", {0,0});
-	    double target_thickness = config_.get<double>("target_thickness", 0); 
+    ROOT::Math::XYVector target_size = config_.get<ROOT::Math::XYVector>("target_size", {0, 0});
+    double target_thickness = config_.get<double>("target_thickness", 0);
 
-	    ROOT::Math::XYZPoint target_location = config_.get<ROOT::Math::XYZPoint>("target_location", {0.,0.,0.});
+    ROOT::Math::XYZPoint target_location = config_.get<ROOT::Math::XYZPoint>("target_location", {0., 0., 0.});
 
-	    std::string target_material = config_.get<std::string>("target_material", world_material);
-	    std::transform(target_material.begin(), target_material.end(), target_material.begin(), ::tolower);
-	
- 
-	    auto target_box = std::make_shared<G4Box>("target_",
-                                               target_size.x(),
-                                               target_size.y(),
-                                               target_thickness);
-	    solids_.push_back(target_box);
-	    auto target_log =
-	        make_shared_no_delete<G4LogicalVolume>(target_box.get(), (*materials_)[target_material], "target_log");
+    std::string target_material = config_.get<std::string>("target_material", world_material);
+    std::transform(target_material.begin(), target_material.end(), target_material.begin(), ::tolower);
 
-	    // Place the target box
-	    auto target_pos = toG4Vector(target_location);
-	    auto target_phys_ = make_shared_no_delete<G4PVPlacement>(
-	        nullptr, target_pos, target_log.get(), "sensor_phys", world_log, false, 0, true);
+    auto target_box = std::make_shared<G4Box>("target_", target_size.x(), target_size.y(), target_thickness);
+    solids_.push_back(target_box);
+    auto target_log = make_shared_no_delete<G4LogicalVolume>(target_box.get(), (*materials_)[target_material], "target_log");
+
+    // Place the target box
+    auto target_pos = toG4Vector(target_location);
+    auto target_phys_ = make_shared_no_delete<G4PVPlacement>(
+        nullptr, target_pos, target_log.get(), "sensor_phys", world_log, false, 0, true);
 }
-

@@ -33,10 +33,10 @@ namespace allpix {
          */
         TrackInfoG4(int custom_track_id, int parent_track_id, const G4Track* const aTrack);
 
-  	/**
-         * @brief Get the momentum of the track in global coordiantes
-         * @return Momentum vector
-         */
+        /**
+             * @brief Get the momentum of the track in global coordiantes
+             * @return Momentum vector
+             */
         ROOT::Math::XYZVector getMomentum() const;
 
         /**

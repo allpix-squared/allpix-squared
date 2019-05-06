@@ -19,8 +19,8 @@
 
 #include "core/geometry/GeometryManager.hpp"
 
-//class G4LogicalVolume
-//class G4Material
+// class G4LogicalVolume
+// class G4Material
 
 namespace allpix {
     /**
@@ -35,7 +35,6 @@ namespace allpix {
          */
         DetectorConstructionG4(GeometryManager* geo_manager, Configuration& config);
 
-
         /**
          * @brief Constructs the world geometry with all detectors
          * @return Physical volume representing the world
@@ -49,7 +48,6 @@ namespace allpix {
         // Storage of internal objects
         std::vector<std::shared_ptr<G4VSolid>> solids_;
         G4Material* world_material_{};
-	
     };
 } // namespace allpix
 

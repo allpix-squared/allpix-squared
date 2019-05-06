@@ -18,27 +18,21 @@
 #include <string>
 #include <tuple>
 #include <typeindex>
-#include <vector>
 #include <utility>
+#include <vector>
 
 #include <Math/Point3D.h>
 #include <Math/Rotation3D.h>
 #include <Math/Transform3D.h>
 
-
-
 namespace allpix {
 
-
     class Builder {
-        
+
     public:
-        
         virtual void Build(void* world, void* materials);
-	
-        
+
     private:
-        
     };
 
 } // namespace allpix

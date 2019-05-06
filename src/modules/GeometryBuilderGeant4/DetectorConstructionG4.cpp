@@ -14,8 +14,6 @@
 #include <string>
 #include <utility>
 
-
-#include "G4Material.hh"
 #include <G4Box.hh>
 #include <G4LogicalVolume.hh>
 #include <G4NistManager.hh>
@@ -31,6 +29,7 @@
 #include <G4UserLimits.hh>
 #include <G4VSolid.hh>
 #include <G4VisAttributes.hh>
+#include "G4Material.hh"
 
 #include "core/geometry/HybridPixelDetectorModel.hpp"
 #include "core/module/exceptions.h"
@@ -56,21 +55,22 @@ template <typename T, typename... Args> static std::shared_ptr<T> make_shared_no
     return std::shared_ptr<T>(new T(args...), [](T*) {});
 }
 
-void DetectorConstructionG4::Build(void* world, void* materials){
-    
-/*
-Reinterpret the void* world and void* materials to make them fit as G4LogicalVolume and std::map<std::string, G4Material*>
-*/
-    G4LogicalVolume* world_log= reinterpret_cast<G4LogicalVolume*>(world);
+void DetectorConstructionG4::Build(void* world, void* materials) {
+
+    /*
+    Reinterpret the void* world and void* materials to make them fit as G4LogicalVolume and std::map<std::string,
+    G4Material*>
+    */
+    G4LogicalVolume* world_log = reinterpret_cast<G4LogicalVolume*>(world);
     std::map<std::string, G4Material*>* materials_ = reinterpret_cast<std::map<std::string, G4Material*>*>(materials);
-/*
-Get the world material
-*/
+    /*
+    Get the world material
+    */
     std::string world_material = config_.get<std::string>("world_material", "air");
     world_material_ = (*materials_)[world_material];
-/*
-Build the individual detectors
-*/
+    /*
+    Build the individual detectors
+    */
     std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
     LOG(TRACE) << "Building " << detectors.size() << " device(s)";
 
@@ -114,10 +114,10 @@ Build the individual detectors
         detector->setExternalObject("wrapper_phys", wrapper_phys);
 
         LOG(DEBUG) << " Center of the geometry parts relative to the detector wrapper geometric center:";
-/*
-         SENSOR
-         * the sensitive detector is the part that collects the deposits
-*/         
+        /*
+                 SENSOR
+                 * the sensitive detector is the part that collects the deposits
+        */
 
         // Create the sensor box and logical volume
         auto sensor_box = std::make_shared<G4Box>("sensor_" + name,
@@ -157,10 +157,10 @@ Build the individual detectors
         detector->setExternalObject("pixel_param", pixel_param);
 
         // WARNING: do not place the actual parameterization, only use it if we need it
-/*
-         CHIP
-         * the chip connected to the bumps bond and the support
-*/        
+        /*
+                 CHIP
+                 * the chip connected to the bumps bond and the support
+        */
 
         // Construct the chips only if necessary
         if(model->getChipSize().z() > 1e-9) {
@@ -184,10 +184,10 @@ Build the individual detectors
             detector->setExternalObject("chip_phys", chip_phys);
         }
 
-/*        
-         * SUPPORT
-         * optional layers of support
-*/         
+        /*
+                 * SUPPORT
+                 * optional layers of support
+        */
         auto supports_log = std::make_shared<std::vector<std::shared_ptr<G4LogicalVolume>>>();
         auto supports_phys = std::make_shared<std::vector<std::shared_ptr<G4PVPlacement>>>();
         int support_idx = 0;
@@ -218,11 +218,11 @@ Build the individual detectors
                 support_solid = subtraction_solid;
             }
 
-            //Create the logical volume for the support
+            // Create the logical volume for the support
             auto support_material_iter = (*materials_).find(layer.getMaterial());
             if(support_material_iter == (*materials_).end()) {
                 throw ModuleError("Cannot construct a support layer of material '" + layer.getMaterial() + "'");
-           }
+            }
             auto support_log =
                 make_shared_no_delete<G4LogicalVolume>(support_solid.get(),
                                                        support_material_iter->second,
@@ -251,11 +251,10 @@ Build the individual detectors
         // Build the bump bonds only for hybrid pixel detectors
         auto hybrid_model = std::dynamic_pointer_cast<HybridPixelDetectorModel>(model);
         if(hybrid_model != nullptr) {
-          
 
-	  /*   BUMPS
-              the bump bonds connect the sensor to the readout chip
-          */   
+            /*   BUMPS
+                    the bump bonds connect the sensor to the readout chip
+                */
 
             // Get parameters from model
             auto bump_height = hybrid_model->getBumpHeight();
@@ -326,8 +325,7 @@ Build the individual detectors
         }
 
         // ALERT: NO COVER LAYER YET
-	
+
         LOG(TRACE) << " Constructed detector " << detector->getName() << " successfully";
     }
-  
 }

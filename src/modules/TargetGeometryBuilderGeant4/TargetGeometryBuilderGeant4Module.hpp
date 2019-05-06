@@ -18,7 +18,6 @@
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 
-
 class G4RunManager;
 
 namespace allpix {
@@ -43,13 +42,13 @@ namespace allpix {
         /**
          * @brief Initializes Geant4 and construct the Geant4 geometry from the internal geometry
          */
-      	void init() override;
+        void init() override;
 
     private:
         GeometryManager* geo_manager_;
-	
+
         // Geant4 run manager is owned by GeometryBuilderGeant4
-	G4RunManager* run_manager_g4_;
+        G4RunManager* run_manager_g4_;
     };
 } // namespace allpix
 

@@ -27,11 +27,11 @@
 #include "tools/ROOT.h"
 #include "tools/geant4.h"
 
+#include "DetectorConstructionG4.hpp"
 #include "core/config/ConfigReader.hpp"
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/utils/log.h"
-#include "DetectorConstructionG4.hpp"
 
 // Include GDML if Geant4 version has it
 #ifdef Geant4_GDML
@@ -92,11 +92,11 @@ void GeometryBuilderGeant4Module::init() {
 
     // Set the geometry construction to use
     auto geometry_construction = new GeometryConstructionG4(geo_manager_, config_);
-    
+
     std::shared_ptr<DetectorConstructionG4> detBuilder = std::make_shared<DetectorConstructionG4>(geo_manager_, config_);
 
     geo_manager_->AddBuilder(detBuilder);
-    run_manager_g4_->SetUserInitialization(geometry_construction);    
+    run_manager_g4_->SetUserInitialization(geometry_construction);
 
     // Run the geometry construct function in GeometryConstructionG4
     LOG(TRACE) << "Building Geant4 geometry";

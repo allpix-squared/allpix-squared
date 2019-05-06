@@ -23,7 +23,7 @@ namespace allpix {
     /**
      * @brief Constructs the Geant4 geometry during Geant4 initialization
      */
-    class GeometryConstructionG4 : public G4VUserDetectorConstruction{ 
+    class GeometryConstructionG4 : public G4VUserDetectorConstruction {
 
     public:
         /**
@@ -32,7 +32,7 @@ namespace allpix {
          * @param config Configuration object of the geometry builder module
          */
         GeometryConstructionG4(GeometryManager* geo_manager, Configuration& config);
-	
+
         /**
          * @brief Constructs the world geometry with all detectors
          * @return Physical volume representing the world
