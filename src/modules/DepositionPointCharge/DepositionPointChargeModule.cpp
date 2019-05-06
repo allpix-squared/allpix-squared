@@ -109,15 +109,18 @@ void DepositionPointChargeModule::run(unsigned int event) {
     ROOT::Math::XYZPoint position;
     auto model = detector_->getModel();
 
-    if(model_ == DepositionModel::FIXED) {
-        // Fixed position as read from the configuration:
+    auto get_position = [&]() {
         if(config_.getArray<double>("position").size() == 2) {
             auto tmp_pos = config_.get<ROOT::Math::XYPoint>("position");
-            position = ROOT::Math::XYZPoint(tmp_pos.x(), tmp_pos.y(), 0);
+            return ROOT::Math::XYZPoint(tmp_pos.x(), tmp_pos.y(), 0);
         } else {
-            position = config_.get<ROOT::Math::XYZPoint>("position");
+            return config_.get<ROOT::Math::XYZPoint>("position");
         }
+    };
 
+    if(model_ == DepositionModel::FIXED) {
+        // Fixed position as read from the configuration:
+        position = get_position();
     } else if(model_ == DepositionModel::SCAN) {
         // Center the volume to be scanned in the center of the sensor,
         // reference point is lower left corner of one pixel volume
