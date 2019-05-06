@@ -149,6 +149,12 @@ void DepositionPointChargeModule::DepositPoint(ROOT::Math::XYZPoint position) {
     std::vector<MCParticle> mcparticles;
 
     LOG(DEBUG) << "Position (local coordinates): " << Units::display(position, {"um", "mm"});
+    // Cross-check calculated position to be within sensor:
+    if(!detector_->isWithinSensor(position)) {
+        LOG(DEBUG) << "Requested position is outside active sensor volume.";
+        return;
+    }
+
     auto position_global = detector_->getGlobalPosition(position);
 
     // Start and stop position is the same for the MCParticle
@@ -174,6 +180,12 @@ void DepositionPointChargeModule::DepositLine(ROOT::Math::XYZPoint position) {
     // Vector of deposited charges and their "MCParticle"
     std::vector<DepositedCharge> charges;
     std::vector<MCParticle> mcparticles;
+
+    // Cross-check calculated position to be within sensor:
+    if(!detector_->isWithinSensor(ROOT::Math::XYZPoint(position.x(), position.y(), 0))) {
+        LOG(DEBUG) << "Requested position is outside active sensor volume.";
+        return;
+    }
 
     // Start and end position of MCParticle:
     auto start_local = ROOT::Math::XYZPoint(position.x(), position.y(), -model->getSensorSize().z() / 2.0);
