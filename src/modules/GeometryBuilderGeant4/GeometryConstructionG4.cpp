@@ -150,7 +150,7 @@ void GeometryConstructionG4::init_materials() {
     materials_["lead"] = nistman->FindOrBuildMaterial("G4_Pb");
     materials_["tungsten"] = nistman->FindOrBuildMaterial("G4_W");
     materials_["lithium"] = nistman->FindOrBuildMaterial("G4_Li");
-    materials_["Beryllium"] = nistman->FindOrBuildMaterial("G4_Be");
+    materials_["beryllium"] = nistman->FindOrBuildMaterial("G4_Be");
 
     // Create required elements:
     G4Element* H = new G4Element("Hydrogen", "H", 1., 1.01 * CLHEP::g / CLHEP::mole);

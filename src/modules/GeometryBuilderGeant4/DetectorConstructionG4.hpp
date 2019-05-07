@@ -19,9 +19,6 @@
 
 #include "core/geometry/GeometryManager.hpp"
 
-// class G4LogicalVolume
-// class G4Material
-
 namespace allpix {
     /**
      * @brief Constructs the Geant4 geometry during Geant4 initialization

@@ -113,7 +113,7 @@ void VisualizationGeant4Module::init() {
         throw InvalidValueError(config_, "mode", "GUI session cannot be started because Qt is not available in this Geant4");
 #endif
     }
-
+  
     // Get the UI commander
     G4UImanager* UI = G4UImanager::GetUIpointer();
 
@@ -162,6 +162,9 @@ void VisualizationGeant4Module::init() {
 
     // Set default visualization settings
     set_visualization_settings();
+
+    //Set the displayListLimit to 1 million instead of the standard 50k
+    UI->ApplyCommand("/vis/ogl/set/displayListLimit 1000000");
 
     // Release the stream early in debugging mode
     IFLOG(DEBUG) { RELEASE_STREAM(G4cout); }

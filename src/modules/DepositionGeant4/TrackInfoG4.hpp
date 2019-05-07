@@ -33,12 +33,15 @@ namespace allpix {
          */
         TrackInfoG4(int custom_track_id, int parent_track_id, const G4Track* const aTrack);
 
+<<<<<<< HEAD
         /**
              * @brief Get the momentum of the track in global coordiantes
              * @return Momentum vector
              */
         ROOT::Math::XYZVector getMomentum() const;
 
+=======
+>>>>>>> parent of 75b7f49f... Adding Daniels ParticleDistribution module with corresponding altered files
         /**
          * @brief Getter for custom id of track
          * @return The custom track id
@@ -139,8 +142,6 @@ namespace allpix {
         ROOT::Math::XYZPoint start_point_{};
         // End point of track (in mm)
         ROOT::Math::XYZPoint end_point_{};
-        // Momentum vector at production
-        ROOT::Math::XYZVector momentum_{};
         // Geant4 volume in which the track was created
         std::string origin_g4_vol_name_{};
         // Name of Geant4 process which created this track

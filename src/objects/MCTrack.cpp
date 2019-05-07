@@ -12,7 +12,7 @@
 
 using namespace allpix;
 
-/*MCTrack::MCTrack(ROOT::Math::XYZPoint start_point,
+MCTrack::MCTrack(ROOT::Math::XYZPoint start_point,
                  ROOT::Math::XYZPoint end_point,
                  std::string g4_volume,
                  std::string g4_prod_process_name,
@@ -28,6 +28,7 @@ using namespace allpix;
       final_tot_E_(final_tot_E) {
     setParent(nullptr);
 }
+<<<<<<< HEAD
 */
 
 MCTrack::MCTrack(ROOT::Math::XYZPoint start_point,
@@ -57,6 +58,12 @@ ROOT::Math::XYZPoint MCTrack::getStartPoint() const {
     return start_point_;
 }
 //!!!!!!!!!!!!!!!!!!!!
+=======
+
+ROOT::Math::XYZPoint MCTrack::getStartPoint() const {
+    return start_point_;
+}
+>>>>>>> parent of 75b7f49f... Adding Daniels ParticleDistribution module with corresponding altered files
 
 ROOT::Math::XYZPoint MCTrack::getEndPoint() const {
     return end_point_;
