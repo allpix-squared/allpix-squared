@@ -36,11 +36,6 @@ void TrackInfoManager::storeTrackInfo(std::unique_ptr<TrackInfoG4> the_track_inf
     if(element != to_store_track_ids_.end()) {
         stored_track_infos_.push_back(std::move(the_track_info));
         to_store_track_ids_.erase(element);
-<<<<<<< HEAD
-    } else {
-        stored_track_infos_.push_back(std::move(the_track_info));
-=======
->>>>>>> parent of 75b7f49f... Adding Daniels ParticleDistribution module with corresponding altered files
     }
 }
 
@@ -77,10 +72,6 @@ void TrackInfoManager::createMCTracks() {
     for(auto& track_info : stored_track_infos_) {
         stored_tracks_.emplace_back(track_info->getStartPoint(),
                                     track_info->getEndPoint(),
-<<<<<<< HEAD
-                                    track_info->getMomentum(),
-=======
->>>>>>> parent of 75b7f49f... Adding Daniels ParticleDistribution module with corresponding altered files
                                     track_info->getOriginatingVolumeName(),
                                     track_info->getCreationProcessName(),
                                     track_info->getCreationProcessType(),

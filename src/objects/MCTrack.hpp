@@ -36,10 +36,6 @@ namespace allpix {
          */
         MCTrack(ROOT::Math::XYZPoint start_point,
                 ROOT::Math::XYZPoint end_point,
-<<<<<<< HEAD
-                ROOT::Math::XYZVector momentum,
-=======
->>>>>>> parent of 75b7f49f... Adding Daniels ParticleDistribution module with corresponding altered files
                 std::string g4_volume,
                 std::string g4_prod_process_name,
                 int g4_prod_process_type,
@@ -49,19 +45,6 @@ namespace allpix {
                 double initial_tot_E,
                 double final_tot_E);
 
-<<<<<<< HEAD
-        /**
-
-        * @brief Get the momentum of the track
-
-        * @return Track momentum
-
-        */
-
-        ROOT::Math::XYZVector getMomentum() const;
-
-=======
->>>>>>> parent of 75b7f49f... Adding Daniels ParticleDistribution module with corresponding altered files
         /**
          * @brief Get the point of where the track originated
          * @return Track start point
