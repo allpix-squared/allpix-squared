@@ -60,5 +60,9 @@ namespace allpix {
         std::unique_ptr<std::ifstream> input_file_;
 
         double charge_creation_energy_;
+        double fano_factor_;
+
+        // Random number generator for e/h pair creation fluctuation
+        std::mt19937_64 random_generator_;
     };
 } // namespace allpix

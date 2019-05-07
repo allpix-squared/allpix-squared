@@ -18,7 +18,11 @@
 using namespace allpix;
 
 DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
-    : Module(config), geo_manager_(geo_manager), messenger_(messenger) {}
+    : Module(config), geo_manager_(geo_manager), messenger_(messenger) {
+
+    // Seed the random generator for Fano fluctuations with the seed received
+    random_generator_.seed(getRandomSeed());
+}
 
 void DepositionReaderModule::init() {
 
@@ -36,6 +40,7 @@ void DepositionReaderModule::init() {
 
     // Get the creation energy for charge (default is silicon electron hole pair energy)
     charge_creation_energy_ = config_.get<double>("charge_creation_energy", Units::get(3.64, "eV"));
+    fano_factor_ = config_.get<double>("fano_factor", 0.115);
 
     // FIXME
     for(auto& detector : geo_manager_->getDetectors()) {
@@ -93,7 +98,12 @@ void DepositionReaderModule::run(unsigned int event) {
             LOG(DEBUG) << "Found deposition inside sensor at " << Units::display(deposit_position, {"mm", "um"}) << "";
         }
 
-        auto charge = static_cast<unsigned int>(Units::get(edep, "keV") / charge_creation_energy_);
+        // Calculate number of electron hole pairs produced, taking into acocunt fluctuations between ionization and lattice
+        // excitations via the Fano factor. We assume Gaussian statistics here.
+        auto mean_charge = static_cast<unsigned int>(Units::get(edep, "keV") / charge_creation_energy_);
+        std::normal_distribution<double> charge_fluctuation(mean_charge, std::sqrt(mean_charge * fano_factor_));
+        auto charge = charge_fluctuation(random_generator_);
+
         auto global_deposit_position = detector_->getGlobalPosition(deposit_position);
 
         // MCParticle:
