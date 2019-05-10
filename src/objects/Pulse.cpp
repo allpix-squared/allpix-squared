@@ -19,7 +19,7 @@ Pulse::Pulse(double time_bin) : bin_(time_bin), initialized_(true) {}
 
 void Pulse::addCharge(double charge, double time) {
     // For uninitialized pulses, store all charge in the first bin:
-    auto bin = (initialized_ ? static_cast<size_t>(time / bin_) : 0);
+    auto bin = (initialized_ ? static_cast<size_t>(std::lrint(time / bin_)) : 0);
 
     // Adapt pulse storage vector:
     if(bin >= pulse_.size()) {
