@@ -41,20 +41,14 @@ void DepositionReaderModule::init() {
     // Get the creation energy for charge (default is silicon electron hole pair energy)
     charge_creation_energy_ = config_.get<double>("charge_creation_energy", Units::get(3.64, "eV"));
     fano_factor_ = config_.get<double>("fano_factor", 0.115);
-
-    // FIXME
-    for(auto& detector : geo_manager_->getDetectors()) {
-        detector_ = detector;
-        break;
-    }
 }
 
 void DepositionReaderModule::run(unsigned int event) {
 
     // Set of deposited charges in this event
-    std::vector<DepositedCharge> deposits;
-    std::vector<MCParticle> mc_particles;
-    std::vector<size_t> particles_to_deposits;
+    std::map<std::shared_ptr<Detector>, std::vector<DepositedCharge>> deposits;
+    std::map<std::shared_ptr<Detector>, std::vector<MCParticle>> mc_particles;
+    std::map<std::shared_ptr<Detector>, std::vector<size_t>> particles_to_deposits;
 
     // Read input file line-by-line:
     std::string line;
@@ -84,18 +78,32 @@ void DepositionReaderModule::run(unsigned int event) {
 
         int pdg_code;
         double time, edep, px, py, pz;
-        ls >> pdg_code >> tmp >> time >> tmp >> edep >> tmp >> px >> tmp >> py >> tmp >> pz >> tmp >> tmp;
+        std::string volume;
+        ls >> pdg_code >> tmp >> time >> tmp >> edep >> tmp >> px >> tmp >> py >> tmp >> pz >> tmp >> volume;
+
+        // Select the detector name from this:
+        volume = volume.substr(0, 5);
+        auto detectors = geo_manager_->getDetectors();
+        auto pos = std::find_if(detectors.begin(), detectors.end(), [volume](const std::shared_ptr<Detector>& d) {
+            return d->getName() == volume;
+        });
+        if(pos == detectors.end()) {
+            LOG(WARNING) << "Did not find detector \"" << volume << "\" in the current simulation";
+            continue;
+        }
+        auto detector = (*pos);
 
         // Calculate the charge deposit at a local position, shift by half matrix in x and y:
         auto deposit_position = ROOT::Math::XYZPoint(
-            px + detector_->getModel()->getSensorSize().x() / 2, py + detector_->getModel()->getSensorSize().y() / 2, pz);
+            px + detector->getModel()->getSensorSize().x() / 2, py + detector->getModel()->getSensorSize().y() / 2, pz);
 
-        if(!detector_->isWithinSensor(deposit_position)) {
+        if(!detector->isWithinSensor(deposit_position)) {
             LOG(WARNING) << "Found deposition outside sensor at " << Units::display(deposit_position, {"mm", "um"})
                          << ". Skipping.";
             continue;
         } else {
-            LOG(DEBUG) << "Found deposition inside sensor at " << Units::display(deposit_position, {"mm", "um"}) << "";
+            LOG(DEBUG) << "Found deposition inside sensor at " << Units::display(deposit_position, {"mm", "um"})
+                       << " in volume " << volume;
         }
 
         // Calculate number of electron hole pairs produced, taking into acocunt fluctuations between ionization and lattice
@@ -104,44 +112,49 @@ void DepositionReaderModule::run(unsigned int event) {
         std::normal_distribution<double> charge_fluctuation(mean_charge, std::sqrt(mean_charge * fano_factor_));
         auto charge = charge_fluctuation(random_generator_);
 
-        auto global_deposit_position = detector_->getGlobalPosition(deposit_position);
+        auto global_deposit_position = detector->getGlobalPosition(deposit_position);
 
         // MCParticle:
-        mc_particles.emplace_back(deposit_position,
-                                  global_deposit_position,
-                                  deposit_position,
-                                  global_deposit_position,
-                                  pdg_code,
-                                  Units::get(time, "ns"));
+        mc_particles[detector].emplace_back(deposit_position,
+                                            global_deposit_position,
+                                            deposit_position,
+                                            global_deposit_position,
+                                            pdg_code,
+                                            Units::get(time, "ns"));
 
         // Deposit electron
-        deposits.emplace_back(
+        deposits[detector].emplace_back(
             deposit_position, global_deposit_position, CarrierType::ELECTRON, charge, Units::get(time, "ns"));
-        particles_to_deposits.push_back(mc_particles.size() - 1);
+        particles_to_deposits[detector].push_back(mc_particles.size() - 1);
 
         // Deposit hole
-        deposits.emplace_back(deposit_position, global_deposit_position, CarrierType::HOLE, charge, Units::get(time, "ns"));
-        particles_to_deposits.push_back(mc_particles.size() - 1);
+        deposits[detector].emplace_back(
+            deposit_position, global_deposit_position, CarrierType::HOLE, charge, Units::get(time, "ns"));
+        particles_to_deposits[detector].push_back(mc_particles.size() - 1);
     }
 
     LOG(INFO) << "Finished reading event " << event;
 
-    LOG(DEBUG) << mc_particles.size() << " MC particles";
-    // Send the mc particle information
-    auto mc_particle_message = std::make_shared<MCParticleMessage>(std::move(mc_particles), detector_);
-    messenger_->dispatchMessage(this, mc_particle_message);
+    // Loop over all known detectors and dispatch messages for them
+    for(const auto& detector : geo_manager_->getDetectors()) {
+        LOG(DEBUG) << detector->getName() << " has " << mc_particles[detector].size() << " MC particles";
+        // Send the mc particle information
+        auto mc_particle_message = std::make_shared<MCParticleMessage>(std::move(mc_particles[detector]), detector);
+        messenger_->dispatchMessage(this, mc_particle_message);
 
-    if(!deposits.empty()) {
-        // Assign MCParticles:
-        for(size_t i = 0; i < deposits.size(); ++i) {
-            deposits.at(i).setMCParticle(&mc_particle_message->getData().at(particles_to_deposits.at(i)));
+        if(!deposits[detector].empty()) {
+            // Assign MCParticles:
+            for(size_t i = 0; i < deposits[detector].size(); ++i) {
+                deposits[detector].at(i).setMCParticle(
+                    &mc_particle_message->getData().at(particles_to_deposits[detector].at(i)));
+            }
+
+            LOG(DEBUG) << detector->getName() << " has " << deposits[detector].size() << " deposits";
+            // Create a new charge deposit message
+            auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(deposits[detector]), detector);
+
+            // Dispatch the message
+            messenger_->dispatchMessage(this, deposit_message);
         }
-
-        LOG(DEBUG) << deposits.size() << " depositions";
-        // Create a new charge deposit message
-        auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(deposits), detector_);
-
-        // Dispatch the message
-        messenger_->dispatchMessage(this, deposit_message);
     }
 }

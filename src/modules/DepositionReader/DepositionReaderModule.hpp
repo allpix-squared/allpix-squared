@@ -54,8 +54,6 @@ namespace allpix {
         GeometryManager* geo_manager_;
         Messenger* messenger_;
 
-        std::shared_ptr<Detector> detector_;
-
         // File containing the input data
         std::unique_ptr<std::ifstream> input_file_;
 
