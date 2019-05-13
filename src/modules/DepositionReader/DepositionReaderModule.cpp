@@ -168,11 +168,11 @@ void DepositionReaderModule::read_csv(unsigned int event,
         // Deposit electron
         deposits[detector].emplace_back(
             deposit_position, global_deposit_position, CarrierType::ELECTRON, charge, Units::get(time, "ns"));
-        particles_to_deposits[detector].push_back(mc_particles.size() - 1);
+        particles_to_deposits[detector].push_back(mc_particles[detector].size() - 1);
 
         // Deposit hole
         deposits[detector].emplace_back(
             deposit_position, global_deposit_position, CarrierType::HOLE, charge, Units::get(time, "ns"));
-        particles_to_deposits[detector].push_back(mc_particles.size() - 1);
+        particles_to_deposits[detector].push_back(mc_particles[detector].size() - 1);
     }
 }
