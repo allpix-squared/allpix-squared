@@ -30,7 +30,17 @@ namespace allpix {
     class Builder {
 
     public:
+
+	/**
+         * @brief Empty Build function with 2 inputs
+         */
+
         virtual void Build(void* world, void* materials);
+
+	/**
+         * @brief Essential virtual destructor
+         */
+
 	virtual ~Builder()=0;
     private:
 	
