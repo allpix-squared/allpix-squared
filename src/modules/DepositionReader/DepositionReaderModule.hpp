@@ -19,6 +19,7 @@
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
+#include "objects/DepositedCharge.hpp"
 
 namespace allpix {
     /**
@@ -59,6 +60,15 @@ namespace allpix {
 
         double charge_creation_energy_;
         double fano_factor_;
+
+        std::string file_model_;
+
+        using DepositMap = std::map<std::shared_ptr<Detector>, std::vector<DepositedCharge>>;
+        using ParticleMap = std::map<std::shared_ptr<Detector>, std::vector<MCParticle>>;
+        using ParticleRelationMap = std::map<std::shared_ptr<Detector>, std::vector<size_t>>;
+
+        void read_csv(unsigned int event, DepositMap& deposits, ParticleMap& particles, ParticleRelationMap& relations);
+        void read_root(unsigned int event, DepositMap& deposits, ParticleMap& particles, ParticleRelationMap& relations);
 
         // Random number generator for e/h pair creation fluctuation
         std::mt19937_64 random_generator_;

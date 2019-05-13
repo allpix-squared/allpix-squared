@@ -13,7 +13,6 @@
 #include <utility>
 
 #include "core/utils/log.h"
-#include "objects/DepositedCharge.hpp"
 
 using namespace allpix;
 
@@ -27,8 +26,9 @@ DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger*
 void DepositionReaderModule::init() {
 
     // Check which file type we want to read:
-    auto file_model = config_.get<std::string>("model");
-    if(file_model != "csv") {
+    file_model_ = config_.get<std::string>("model");
+    std::transform(file_model_.begin(), file_model_.end(), file_model_.begin(), ::tolower);
+    if(file_model_ != "csv") {
         throw InvalidValueError(config_, "model", "only model 'csv' is currently supported");
     }
 
@@ -46,9 +46,47 @@ void DepositionReaderModule::init() {
 void DepositionReaderModule::run(unsigned int event) {
 
     // Set of deposited charges in this event
-    std::map<std::shared_ptr<Detector>, std::vector<DepositedCharge>> deposits;
-    std::map<std::shared_ptr<Detector>, std::vector<MCParticle>> mc_particles;
-    std::map<std::shared_ptr<Detector>, std::vector<size_t>> particles_to_deposits;
+    DepositMap deposits;
+    ParticleMap mc_particles;
+    ParticleRelationMap particles_to_deposits;
+
+    if(file_model_ == "csv")
+        read_csv(event, deposits, mc_particles, particles_to_deposits);
+    else if(file_model_ == "root")
+        read_root(event, deposits, mc_particles, particles_to_deposits);
+
+    LOG(INFO) << "Finished reading event " << event;
+
+    // Loop over all known detectors and dispatch messages for them
+    for(const auto& detector : geo_manager_->getDetectors()) {
+        LOG(DEBUG) << detector->getName() << " has " << mc_particles[detector].size() << " MC particles";
+        // Send the mc particle information
+        auto mc_particle_message = std::make_shared<MCParticleMessage>(std::move(mc_particles[detector]), detector);
+        messenger_->dispatchMessage(this, mc_particle_message);
+
+        if(!deposits[detector].empty()) {
+            // Assign MCParticles:
+            for(size_t i = 0; i < deposits[detector].size(); ++i) {
+                deposits[detector].at(i).setMCParticle(
+                    &mc_particle_message->getData().at(particles_to_deposits[detector].at(i)));
+            }
+
+            LOG(DEBUG) << detector->getName() << " has " << deposits[detector].size() << " deposits";
+            // Create a new charge deposit message
+            auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(deposits[detector]), detector);
+
+            // Dispatch the message
+            messenger_->dispatchMessage(this, deposit_message);
+        }
+    }
+}
+
+void DepositionReaderModule::read_root(unsigned int, DepositMap&, ParticleMap&, ParticleRelationMap&) {}
+
+void DepositionReaderModule::read_csv(unsigned int event,
+                                      DepositMap& deposits,
+                                      ParticleMap& mc_particles,
+                                      ParticleRelationMap& particles_to_deposits) {
 
     // Read input file line-by-line:
     std::string line;
@@ -131,30 +169,5 @@ void DepositionReaderModule::run(unsigned int event) {
         deposits[detector].emplace_back(
             deposit_position, global_deposit_position, CarrierType::HOLE, charge, Units::get(time, "ns"));
         particles_to_deposits[detector].push_back(mc_particles.size() - 1);
-    }
-
-    LOG(INFO) << "Finished reading event " << event;
-
-    // Loop over all known detectors and dispatch messages for them
-    for(const auto& detector : geo_manager_->getDetectors()) {
-        LOG(DEBUG) << detector->getName() << " has " << mc_particles[detector].size() << " MC particles";
-        // Send the mc particle information
-        auto mc_particle_message = std::make_shared<MCParticleMessage>(std::move(mc_particles[detector]), detector);
-        messenger_->dispatchMessage(this, mc_particle_message);
-
-        if(!deposits[detector].empty()) {
-            // Assign MCParticles:
-            for(size_t i = 0; i < deposits[detector].size(); ++i) {
-                deposits[detector].at(i).setMCParticle(
-                    &mc_particle_message->getData().at(particles_to_deposits[detector].at(i)));
-            }
-
-            LOG(DEBUG) << detector->getName() << " has " << deposits[detector].size() << " deposits";
-            // Create a new charge deposit message
-            auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(deposits[detector]), detector);
-
-            // Dispatch the message
-            messenger_->dispatchMessage(this, deposit_message);
-        }
     }
 }
