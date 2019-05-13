@@ -21,7 +21,10 @@
 
 using namespace allpix;
 
+Builder::~Builder() {};
+
 void Builder::Build(void* world, void* materials) {
     (void)world;
     (void)materials;
 }
+

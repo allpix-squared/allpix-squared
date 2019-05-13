@@ -31,8 +31,9 @@ namespace allpix {
 
     public:
         virtual void Build(void* world, void* materials);
-
+	virtual ~Builder()=0;
     private:
+	
     };
 
 } // namespace allpix
