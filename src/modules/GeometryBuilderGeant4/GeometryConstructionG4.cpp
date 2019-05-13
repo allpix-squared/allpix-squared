@@ -117,7 +117,7 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     // Build all the geometries that have been added to the Builder vector, including Detectors and Targets
     auto builders_ = geo_manager_->getBuilders();
     for(auto builder : builders_) {
-        builder->Build(world_log_.get(), &materials_);
+        builder->build(world_log_.get(), &materials_);
     }
 
     // Check for overlaps:

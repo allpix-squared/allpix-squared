@@ -95,7 +95,7 @@ void GeometryBuilderGeant4Module::init() {
 
     std::shared_ptr<DetectorConstructionG4> detBuilder = std::make_shared<DetectorConstructionG4>(geo_manager_, config_);
 
-    geo_manager_->AddBuilder(detBuilder);
+    geo_manager_->addBuilder(detBuilder);
     run_manager_g4_->SetUserInitialization(geometry_construction);
 
     //Comment out this initialization because the code becomes unstable when you doulbe initialize the geometry

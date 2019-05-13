@@ -35,7 +35,7 @@ namespace allpix {
          * @brief Empty Build function with 2 inputs
          */
 
-        virtual void Build(void* world, void* materials);
+        virtual void build(void* world, void* materials);
 
 	/**
          * @brief Essential virtual destructor

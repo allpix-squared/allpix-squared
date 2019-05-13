@@ -36,7 +36,7 @@ namespace allpix {
          * @brief Constructs the world geometry with all detectors
          * @return Physical volume representing the world
          */
-        void Build(void* world, void* materials) override;
+        void build(void* world, void* materials) override;
 
     private:
         GeometryManager* geo_manager_;

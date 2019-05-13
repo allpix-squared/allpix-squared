@@ -63,7 +63,7 @@ void TargetGeometryBuilderGeant4Module::init() {
     RELEASE_STREAM(std::cout);
     std::shared_ptr<TargetConstructionG4> tarBuilder = std::make_shared<TargetConstructionG4>(config_);
 
-    geo_manager_->AddBuilder(tarBuilder);
+    geo_manager_->addBuilder(tarBuilder);
 
     // Run the geometry construct function in GeometryConstructionG4
     LOG(TRACE) << "Building Geant4 geometry";

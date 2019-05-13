@@ -50,7 +50,7 @@ template <typename T, typename... Args> static std::shared_ptr<T> make_shared_no
     return std::shared_ptr<T>(new T(args...), [](T*) {});
 }
 
-void TargetConstructionG4::Build(void* world, void* materials) {
+void TargetConstructionG4::build(void* world, void* materials) {
 
     /*
     Reinterpret the void* world and void* materials to make them fit as G4LogicalVolume and std::map<std::string,
