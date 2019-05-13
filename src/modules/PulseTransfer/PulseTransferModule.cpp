@@ -102,7 +102,7 @@ void PulseTransferModule::run(unsigned int event_num) {
             // Generate x-axis:
             std::vector<double> time(pulse_vec.size());
             // clang-format off
-            std::generate(time.begin(), time.end(), [n = 0.0, step]() mutable { return n += step; });
+            std::generate(time.begin(), time.end(), [n = 0.0, step]() mutable {  auto now = n; n += step; return now; });
             // clang-format on
 
             std::string name =
