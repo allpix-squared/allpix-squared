@@ -75,6 +75,9 @@ void ElectricFieldReaderModule::init() {
             throw InvalidValueError(
                 config_, "field_offset", "shifting electric field by more than one pixel (offset > 1.0) is not allowed");
         }
+        if(offset.x() < 0.0 || offset.y() < 0.0) {
+            throw InvalidValueError(config_, "field_offset", "offsets for the electric field have to be positive");
+        }
         LOG(DEBUG) << "Electric field starts with offset " << offset << " to pixel boundary";
         std::array<double, 2> field_offset{{model->getPixelSize().x() * offset.x(), model->getPixelSize().y() * offset.y()}};
 
