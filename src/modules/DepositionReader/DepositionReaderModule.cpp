@@ -50,16 +50,19 @@ void DepositionReaderModule::run(unsigned int event) {
     ParticleMap mc_particles;
     ParticleRelationMap particles_to_deposits;
 
+    LOG(DEBUG) << "Start reading event " << event;
+
     if(file_model_ == "csv")
         read_csv(event, deposits, mc_particles, particles_to_deposits);
     else if(file_model_ == "root")
         read_root(event, deposits, mc_particles, particles_to_deposits);
 
-    LOG(INFO) << "Finished reading event " << event;
+    LOG(DEBUG) << "Finished reading event " << event;
 
     // Loop over all known detectors and dispatch messages for them
     for(const auto& detector : geo_manager_->getDetectors()) {
-        LOG(DEBUG) << detector->getName() << " has " << mc_particles[detector].size() << " MC particles";
+        LOG(DEBUG) << "Detector " << detector->getName() << " has " << mc_particles[detector].size() << " MC particles";
+
         // Send the mc particle information
         auto mc_particle_message = std::make_shared<MCParticleMessage>(std::move(mc_particles[detector]), detector);
         messenger_->dispatchMessage(this, mc_particle_message);
@@ -71,7 +74,7 @@ void DepositionReaderModule::run(unsigned int event) {
                     &mc_particle_message->getData().at(particles_to_deposits[detector].at(i)));
             }
 
-            LOG(DEBUG) << detector->getName() << " has " << deposits[detector].size() << " deposits";
+            LOG(DEBUG) << "Detector " << detector->getName() << " has " << deposits[detector].size() << " deposits";
             // Create a new charge deposit message
             auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(deposits[detector]), detector);
 
@@ -129,6 +132,8 @@ void DepositionReaderModule::read_csv(unsigned int event,
             LOG(WARNING) << "Did not find detector \"" << volume << "\" in the current simulation";
             continue;
         }
+
+        // Assign detector
         auto detector = (*pos);
 
         // Calculate the charge deposit at a local position, shift by half matrix in x and y:
@@ -139,9 +144,6 @@ void DepositionReaderModule::read_csv(unsigned int event,
             LOG(WARNING) << "Found deposition outside sensor at " << Units::display(deposit_position, {"mm", "um"})
                          << ". Skipping.";
             continue;
-        } else {
-            LOG(DEBUG) << "Found deposition inside sensor at " << Units::display(deposit_position, {"mm", "um"})
-                       << " in volume " << volume;
         }
 
         // Calculate number of electron hole pairs produced, taking into acocunt fluctuations between ionization and lattice
@@ -149,6 +151,9 @@ void DepositionReaderModule::read_csv(unsigned int event,
         auto mean_charge = static_cast<unsigned int>(Units::get(edep, "keV") / charge_creation_energy_);
         std::normal_distribution<double> charge_fluctuation(mean_charge, std::sqrt(mean_charge * fano_factor_));
         auto charge = charge_fluctuation(random_generator_);
+
+        LOG(DEBUG) << "Found deposition of " << charge << " e/h pairs inside sensor at "
+                   << Units::display(deposit_position, {"mm", "um"}) << " in volume " << volume;
 
         auto global_deposit_position = detector->getGlobalPosition(deposit_position);
 
