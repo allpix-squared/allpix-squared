@@ -42,7 +42,6 @@ namespace allpix {
 
         // Storage of internal objects
         std::vector<std::shared_ptr<G4VSolid>> solids_;
-        G4Material* world_material_{};
     };
 
 } // namespace allpix

@@ -61,7 +61,6 @@ void TargetConstructionG4::Build(void* world, void* materials) {
     std::map<std::string, G4Material*>* materials_ = reinterpret_cast<std::map<std::string, G4Material*>*>(materials);
 
     std::string world_material = config_.get<std::string>("world_material", "air");
-    world_material_ = (*materials_)[world_material];
 
     /*
     Get all the required variables for the target from the config file
