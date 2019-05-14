@@ -15,6 +15,7 @@
 #include <iostream>
 #include <map>
 
+#include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 
@@ -107,9 +108,11 @@ namespace allpix {
          * @param file_type  Type of file (file format) to be parsed
          * @param units      Optional units to convert the field from after reading from file. Only used by some formats.
          * @return           Field data object read from file or internal cache
+         *
+         * This function checks if the file contains binary data to interpret it as APF formator INIT format otherwise.
          */
         FieldData<T>
-        get_by_file_name(const std::string& file_name, const FileType& file_type, const std::string units = std::string()) {
+        get_by_file_name(const std::string& file_name, const FileType&, const std::string units = std::string()) {
             // Search in cache (NOTE: the path reached here is always a canonical name)
             auto iter = field_map_.find(file_name);
             if(iter != field_map_.end()) {
@@ -117,6 +120,7 @@ namespace allpix {
                 return iter->second;
             }
 
+            FileType file_type = (file_is_binary(file_name) ? FileType::APF : FileType::INIT);
             switch(file_type) {
             case FileType::INIT:
                 if(units.empty()) {
