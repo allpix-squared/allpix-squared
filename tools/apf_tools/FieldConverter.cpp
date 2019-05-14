@@ -90,8 +90,7 @@ int main(int argc, const char* argv[]) {
 
         FieldParser<double> field_parser(quantity);
         LOG(STATUS) << "Reading input file from " << file_input;
-        auto field_data =
-            field_parser.get_by_file_name(file_input, units);
+        auto field_data = field_parser.get_by_file_name(file_input, units);
         FieldWriter<double> field_writer(quantity);
         LOG(STATUS) << "Writing output file to " << file_output;
         field_writer.write_file(field_data, file_output, format_to, (format_to == FileType::INIT ? units : ""));

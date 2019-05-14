@@ -35,9 +35,8 @@ ElectricFieldReaderModule::ElectricFieldReaderModule(Configuration& config, Mess
     // NOTE Backwards-compatibility: interpret both "init" and "apf" as "mesh":
     auto model = config_.get<std::string>("model");
     if(model == "init" || model == "apf") {
-      config_.set("model", "mesh");
+        config_.set("model", "mesh");
     }
-
 }
 
 void ElectricFieldReaderModule::init() {
