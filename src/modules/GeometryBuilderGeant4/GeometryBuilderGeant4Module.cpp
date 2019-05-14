@@ -103,8 +103,8 @@ void GeometryBuilderGeant4Module::init() {
     //FIXME: Something has to be found to make the initialization independant of the number of modules 
 
     // Run the geometry construct function in GeometryConstructionG4
-    //LOG(TRACE) << "Building Geant4 geometry";
-    //run_manager_g4_->InitializeGeometry();
+    LOG(TRACE) << "Building Geant4 geometry";
+    run_manager_g4_->InitializeGeometry();
 
 
 

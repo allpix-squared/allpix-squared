@@ -16,14 +16,14 @@
 #include <Math/Rotation3D.h>
 #include <Math/Translation3D.h>
 
-#include "Builder.hpp"
+#include "GeometryBuilder.hpp"
 #include "core/module/exceptions.h"
 
 using namespace allpix;
 
-Builder::~Builder() {}
+GeometryBuilder::~GeometryBuilder() {}
 
-void Builder::build(void* world, void* materials) {
+void GeometryBuilder::build(void* world, void* materials) {
     (void)world;
     (void)materials;
 }

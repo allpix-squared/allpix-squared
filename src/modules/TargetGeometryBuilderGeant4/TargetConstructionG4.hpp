@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Defines the internal Geant4 geometry construction
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2019 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -16,14 +16,14 @@
 #include "G4Material.hh"
 #include "G4VSolid.hh"
 #include "core/config/ConfigReader.hpp"
-#include "core/geometry/Builder.hpp"
+#include "core/geometry/GeometryBuilder.hpp"
 #include "core/geometry/GeometryManager.hpp"
 
 namespace allpix {
     /**
      * @brief Constructs the Geant4 geometry during Geant4 initialization
      */
-    class TargetConstructionG4 : public Builder {
+    class TargetConstructionG4 : public GeometryBuilder {
     public:
         /**
          * @brief Constructs geometry construction module

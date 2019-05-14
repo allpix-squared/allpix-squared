@@ -18,7 +18,7 @@
 
 #include <Math/Vector3D.h>
 
-#include "Builder.hpp"
+#include "GeometryBuilder.hpp"
 #include "Detector.hpp"
 #include "DetectorModel.hpp"
 #include "core/config/ConfigManager.hpp"
@@ -205,9 +205,9 @@ namespace allpix {
 
         MagneticFieldType getMagneticFieldType() const;
 
-        void addBuilder(std::shared_ptr<Builder> builder);
+        void addBuilder(std::shared_ptr<GeometryBuilder> builder);
 
-        std::vector<std::shared_ptr<Builder>> getBuilders();
+        std::vector<std::shared_ptr<GeometryBuilder>> getBuilders();
 
     private:
         /**
@@ -242,7 +242,7 @@ namespace allpix {
         MagneticFieldType magnetic_field_type_{MagneticFieldType::NONE};
         MagneticFieldFunction magnetic_field_function_;
 
-        std::vector<std::shared_ptr<Builder>> builders_;
+        std::vector<std::shared_ptr<GeometryBuilder>> builders_;
     };
 } // namespace allpix
 
