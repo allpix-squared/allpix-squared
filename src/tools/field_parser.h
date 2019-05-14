@@ -129,7 +129,7 @@ namespace allpix {
                 return parse_init_file(file_name, units);
             case FileType::APF:
                 if(!units.empty()) {
-                    LOG(WARNING) << "Units will be ignored, APF file content is interpreted in internal units.";
+                    LOG(DEBUG) << "Units will be ignored, APF file content is interpreted in internal units.";
                 }
                 return parse_apf_file(file_name);
             default:
