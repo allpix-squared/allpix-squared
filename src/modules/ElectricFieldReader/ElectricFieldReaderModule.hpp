@@ -59,7 +59,7 @@ namespace allpix {
          * @param field_scale Scaling parameters for the field size in x and y
          */
         FieldData<double>
-        read_field(std::pair<double, double> thickness_domain, std::array<double, 2> field_scale, const std::string& format);
+        read_field(std::pair<double, double> thickness_domain, std::array<double, 2> field_scale);
         static FieldParser<double> field_parser_;
 
         /**
