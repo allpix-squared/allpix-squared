@@ -105,14 +105,13 @@ namespace allpix {
         /**
          * @brief Parse a file and retrieve the field data.
          * @param file_name  File name (as canonical path) of the input file to be parsed
-         * @param file_type  Type of file (file format) to be parsed
          * @param units      Optional units to convert the field from after reading from file. Only used by some formats.
          * @return           Field data object read from file or internal cache
          *
          * This function checks if the file contains binary data to interpret it as APF formator INIT format otherwise.
          */
         FieldData<T>
-        get_by_file_name(const std::string& file_name, const FileType&, const std::string units = std::string()) {
+        get_by_file_name(const std::string& file_name, const std::string units = std::string()) {
             // Search in cache (NOTE: the path reached here is always a canonical name)
             auto iter = field_map_.find(file_name);
             if(iter != field_map_.end()) {
