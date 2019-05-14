@@ -30,20 +30,19 @@ namespace allpix {
     class GeometryBuilder {
 
     public:
-
-	/**
-         * @brief Empty Build function with 2 inputs
-         */
+        /**
+             * @brief Empty Build function with 2 inputs
+             */
 
         virtual void build(void* world, void* materials);
 
-	/**
-         * @brief Essential virtual destructor
-         */
+        /**
+             * @brief Essential virtual destructor
+             */
 
-	virtual ~GeometryBuilder()=0;
+        virtual ~GeometryBuilder() = default;
+
     private:
-	
     };
 
 } // namespace allpix

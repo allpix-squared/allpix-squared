@@ -21,10 +21,7 @@
 
 using namespace allpix;
 
-GeometryBuilder::~GeometryBuilder() {}
-
 void GeometryBuilder::build(void* world, void* materials) {
     (void)world;
     (void)materials;
 }
-

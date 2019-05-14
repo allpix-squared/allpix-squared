@@ -18,9 +18,9 @@
 
 #include <Math/Vector3D.h>
 
-#include "GeometryBuilder.hpp"
 #include "Detector.hpp"
 #include "DetectorModel.hpp"
+#include "GeometryBuilder.hpp"
 #include "core/config/ConfigManager.hpp"
 #include "core/config/ConfigReader.hpp"
 

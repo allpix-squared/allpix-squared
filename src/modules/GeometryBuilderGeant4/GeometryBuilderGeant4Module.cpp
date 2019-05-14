@@ -98,17 +98,13 @@ void GeometryBuilderGeant4Module::init() {
     geo_manager_->addBuilder(detBuilder);
     run_manager_g4_->SetUserInitialization(geometry_construction);
 
-    //Comment out this initialization because the code becomes unstable when you doulbe initialize the geometry
-    //The initialization is done in the last geometrybuilder Module, which currently is the TargetGeometryBuilderGeant4
-    //FIXME: Something has to be found to make the initialization independant of the number of modules 
+    // Comment out this initialization because the code becomes unstable when you doulbe initialize the geometry
+    // The initialization is done in the last geometrybuilder Module, which currently is the TargetGeometryBuilderGeant4
+    // FIXME: Something has to be found to make the initialization independant of the number of modules
 
     // Run the geometry construct function in GeometryConstructionG4
     LOG(TRACE) << "Building Geant4 geometry";
     run_manager_g4_->InitializeGeometry();
-
-
-
-    
 
     // Export geometry in GDML if requested (and GDML support is available in Geant4)
     if(config_.has("GDML_output_file")) {

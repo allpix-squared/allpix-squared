@@ -290,7 +290,7 @@ void DepositionGeant4Module::run(unsigned int event_num) {
     LOG(TRACE) << "Enabling beam";
     run_manager_g4_->BeamOn(static_cast<int>(config_.get<unsigned int>("number_of_particles", 1)));
     last_event_num_ = event_num;
- 
+
     // Release the stream (if it was suspended)
     RELEASE_STREAM(G4cout);
 

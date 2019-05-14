@@ -57,8 +57,8 @@ void TargetConstructionG4::build(void* world, void* materials) {
     G4Material*>
     */
 
-    G4LogicalVolume* world_log = reinterpret_cast<G4LogicalVolume*>(world);
-    std::map<std::string, G4Material*>* materials_ = reinterpret_cast<std::map<std::string, G4Material*>*>(materials);
+    auto world_log = reinterpret_cast<G4LogicalVolume*>(world);
+    auto materials_ = reinterpret_cast<std::map<std::string, G4Material*>*>(materials);
 
     std::string world_material = config_.get<std::string>("world_material", "air");
 
@@ -67,7 +67,7 @@ void TargetConstructionG4::build(void* world, void* materials) {
     */
 
     ROOT::Math::XYVector target_size = config_.get<ROOT::Math::XYVector>("target_size", {0, 0});
-    double target_thickness = config_.get<double>("target_thickness", 0);
+    auto target_thickness = config_.get<double>("target_thickness", 0);
 
     ROOT::Math::XYZPoint target_location = config_.get<ROOT::Math::XYZPoint>("target_location", {0., 0., 0.});
 

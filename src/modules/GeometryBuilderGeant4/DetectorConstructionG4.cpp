@@ -58,10 +58,11 @@ template <typename T, typename... Args> static std::shared_ptr<T> make_shared_no
 void DetectorConstructionG4::build(void* world, void* materials) {
 
     /*
-    Reinterpret the void* world and void* materials to make them fit as G4LogicalVolume and std::map<std::string,G4Material*> respectively
+    Reinterpret the void* world and void* materials to make them fit as G4LogicalVolume and std::map<std::string,G4Material*>
+    respectively
     */
-    G4LogicalVolume* world_log = reinterpret_cast<G4LogicalVolume*>(world);
-    std::map<std::string, G4Material*>* materials_ = reinterpret_cast<std::map<std::string, G4Material*>*>(materials);
+    auto world_log = reinterpret_cast<G4LogicalVolume*>(world);
+    auto materials_ = reinterpret_cast<std::map<std::string, G4Material*>*>(materials);
     /*
     Get the world material
     */
