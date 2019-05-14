@@ -108,7 +108,7 @@ namespace allpix {
          * @param units      Optional units to convert the field from after reading from file. Only used by some formats.
          * @return           Field data object read from file or internal cache
          *
-         * This function checks if the file contains binary data to interpret it as APF formator INIT format otherwise.
+         * The type of the field data file to be read is deducted automatically from the file content
          */
         FieldData<T> get_by_file_name(const std::string& file_name, const std::string units = std::string()) {
             // Search in cache (NOTE: the path reached here is always a canonical name)
@@ -118,7 +118,7 @@ namespace allpix {
                 return iter->second;
             }
 
-            FileType file_type = (file_is_binary(file_name) ? FileType::APF : FileType::INIT);
+            auto file_type = guess_file_type(file_name);
             switch(file_type) {
             case FileType::INIT:
                 if(units.empty()) {
@@ -137,6 +137,17 @@ namespace allpix {
         }
 
     private:
+        /**
+         * @brief Function to guess the type of a field data file
+         * @param path Path to the file to be tested
+         * @return Type of the file
+         *
+         * This function checks if the file contains binary data to interpret it as APF formator INIT format otherwise.
+         */
+        FileType guess_file_type(const std::string& path) const {
+            return (file_is_binary(path) ? FileType::APF : FileType::INIT);
+        }
+
         /**
          * @brief Function to deserialize FieldData from an APF file, using the cereal library. This does not convert any
          * units, i.e. all values stored in APF files are given framework-internal base units. This includes the field data
