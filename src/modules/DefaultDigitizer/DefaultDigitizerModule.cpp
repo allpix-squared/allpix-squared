@@ -9,6 +9,7 @@
 
 #include "DefaultDigitizerModule.hpp"
 
+#include "core/utils/distributions.h"
 #include "core/utils/unit.h"
 #include "objects/PixelHit.hpp"
 #include "tools/ROOT.h"
@@ -167,7 +168,7 @@ void DefaultDigitizerModule::run(Event* event) {
         }
 
         // Add electronics noise from Gaussian:
-        std::normal_distribution<double> el_noise(0, config_.get<unsigned int>("electronics_noise"));
+        allpix::normal_distribution<double> el_noise(0, config_.get<unsigned int>("electronics_noise"));
         charge += el_noise(event->getRandomEngine());
 
         LOG(DEBUG) << "Charge with noise: " << Units::display(charge, "e");
@@ -176,7 +177,7 @@ void DefaultDigitizerModule::run(Event* event) {
         }
 
         // Smear the gain factor, Gaussian distribution around "gain" with width "gain_smearing"
-        std::normal_distribution<double> gain_smearing(config_.get<double>("gain"), config_.get<double>("gain_smearing"));
+        allpix::normal_distribution<double> gain_smearing(config_.get<double>("gain"), config_.get<double>("gain_smearing"));
         double gain = gain_smearing(event->getRandomEngine());
         if(config_.get<bool>("output_plots")) {
             h_gain->Fill(gain);
@@ -191,7 +192,7 @@ void DefaultDigitizerModule::run(Event* event) {
 
         // Simulate simple front-end saturation if enabled:
         if(config_.get<bool>("saturation")) {
-            std::normal_distribution<double> saturation_smearing(config_.get<unsigned int>("saturation_mean"),
+            allpix::normal_distribution<double> saturation_smearing(config_.get<unsigned int>("saturation_mean"),
                                                                  config_.get<unsigned int>("saturation_width"));
             auto saturation = saturation_smearing(event->getRandomEngine());
             if(charge > saturation) {
@@ -206,7 +207,7 @@ void DefaultDigitizerModule::run(Event* event) {
         }
 
         // Smear the threshold, Gaussian distribution around "threshold" with width "threshold_smearing"
-        std::normal_distribution<double> thr_smearing(config_.get<unsigned int>("threshold"),
+        allpix::normal_distribution<double> thr_smearing(config_.get<unsigned int>("threshold"),
                                                       config_.get<unsigned int>("threshold_smearing"));
         double threshold = thr_smearing(event->getRandomEngine());
         if(config_.get<bool>("output_plots")) {
@@ -231,7 +232,7 @@ void DefaultDigitizerModule::run(Event* event) {
             auto original_charge = charge;
 
             // Add ADC smearing:
-            std::normal_distribution<double> adc_smearing(0, config_.get<unsigned int>("qdc_smearing"));
+            allpix::normal_distribution<double> adc_smearing(0, config_.get<unsigned int>("qdc_smearing"));
             charge += adc_smearing(event->getRandomEngine());
             if(config_.get<bool>("output_plots")) {
                 h_pxq_adc_smear->Fill(charge / 1e3);
@@ -265,7 +266,7 @@ void DefaultDigitizerModule::run(Event* event) {
             auto original_time = time;
 
             // Add TDC smearing:
-            std::normal_distribution<double> tdc_smearing(0, config_.get<unsigned int>("tdc_smearing"));
+            allpix::normal_distribution<double> tdc_smearing(0, config_.get<unsigned int>("tdc_smearing"));
             time += tdc_smearing(event->getRandomEngine());
             if(config_.get<bool>("output_plots")) {
                 h_px_tdc_smear->Fill(time);
