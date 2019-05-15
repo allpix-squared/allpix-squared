@@ -243,13 +243,12 @@ void DetectorHistogrammerModule::run(unsigned int) {
         LOG(DEBUG) << "Received " << pixels_message_->getData().size() << " pixel hits";
 
         // Fill 2D hitmap histogram
-        for(auto& pixel_charge : pixels_message_->getData()) {
-            auto pixel_idx = pixel_charge.getPixel().getIndex();
+        for(auto& pixel_hit : pixels_message_->getData()) {
+            auto pixel_idx = pixel_hit.getPixel().getIndex();
 
             // Add pixel
             hit_map->Fill(pixel_idx.x(), pixel_idx.y());
-            charge_map->Fill(
-                pixel_idx.x(), pixel_idx.y(), static_cast<double>(Units::convert(pixel_charge.getSignal(), "ke")));
+            charge_map->Fill(pixel_idx.x(), pixel_idx.y(), static_cast<double>(Units::convert(pixel_hit.getSignal(), "ke")));
 
             // Update statistics
             total_vector_ += pixel_idx;
@@ -280,7 +279,7 @@ void DetectorHistogrammerModule::run(unsigned int) {
         cluster_size_y->Fill(clusSizesXY.second);
 
         auto clusterPos = clus.getPosition();
-        LOG(DEBUG) << "Cluster at coordinates " << clusterPos;
+        LOG(DEBUG) << "Cluster at coordinates " << clusterPos << " with charge " << Units::display(clus.getCharge(), "ke");
         cluster_map->Fill(clusterPos.x(), clusterPos.y());
         cluster_charge->Fill(static_cast<double>(Units::convert(clus.getCharge(), "ke")));
 
