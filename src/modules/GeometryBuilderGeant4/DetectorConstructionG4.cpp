@@ -55,19 +55,19 @@ template <typename T, typename... Args> static std::shared_ptr<T> make_shared_no
     return std::shared_ptr<T>(new T(args...), [](T*) {});
 }
 
-void DetectorConstructionG4::build(void* world, void* materials) {
+void DetectorConstructionG4::build(G4LogicalVolume* world_log, std::map<std::string, G4Material*> materials_){
 
     /*
     Reinterpret the void* world and void* materials to make them fit as G4LogicalVolume and std::map<std::string,G4Material*>
     respectively
     */
-    auto world_log = reinterpret_cast<G4LogicalVolume*>(world);
-    auto materials_ = reinterpret_cast<std::map<std::string, G4Material*>*>(materials);
+    //auto world_log = reinterpret_cast<G4LogicalVolume*>(world);
+    //auto materials_ = reinterpret_cast<std::map<std::string, G4Material*>*>(materials);
     /*
     Get the world material
     */
     std::string world_material = config_.get<std::string>("world_material", "air");
-    world_material_ = (*materials_)[world_material];
+    world_material_ = materials_[world_material];
     /*
     Build the individual detectors
     */
@@ -126,7 +126,7 @@ void DetectorConstructionG4::build(void* world, void* materials) {
                                                   model->getSensorSize().z() / 2.0);
         solids_.push_back(sensor_box);
         auto sensor_log =
-            make_shared_no_delete<G4LogicalVolume>(sensor_box.get(), (*materials_)["silicon"], "sensor_" + name + "_log");
+            make_shared_no_delete<G4LogicalVolume>(sensor_box.get(), materials_["silicon"], "sensor_" + name + "_log");
         detector->setExternalObject("sensor_log", sensor_log);
 
         // Place the sensor box
@@ -143,7 +143,7 @@ void DetectorConstructionG4::build(void* world, void* materials) {
                                                  model->getSensorSize().z() / 2.0);
         solids_.push_back(pixel_box);
         auto pixel_log =
-            make_shared_no_delete<G4LogicalVolume>(pixel_box.get(), (*materials_)["silicon"], "pixel_" + name + "_log");
+            make_shared_no_delete<G4LogicalVolume>(pixel_box.get(), materials_["silicon"], "pixel_" + name + "_log");
         detector->setExternalObject("pixel_log", pixel_log);
 
         // Create the parameterization for the pixel grid
@@ -173,7 +173,7 @@ void DetectorConstructionG4::build(void* world, void* materials) {
 
             // Create the logical volume for the chip
             auto chip_log =
-                make_shared_no_delete<G4LogicalVolume>(chip_box.get(), (*materials_)["silicon"], "chip_" + name + "_log");
+                make_shared_no_delete<G4LogicalVolume>(chip_box.get(), materials_["silicon"], "chip_" + name + "_log");
             detector->setExternalObject("chip_log", chip_log);
 
             // Place the chip
@@ -219,8 +219,8 @@ void DetectorConstructionG4::build(void* world, void* materials) {
             }
 
             // Create the logical volume for the support
-            auto support_material_iter = (*materials_).find(layer.getMaterial());
-            if(support_material_iter == (*materials_).end()) {
+            auto support_material_iter = materials_.find(layer.getMaterial());
+            if(support_material_iter == materials_.end()) {
                 throw ModuleError("Cannot construct a support layer of material '" + layer.getMaterial() + "'");
             }
             auto support_log =
@@ -298,7 +298,7 @@ void DetectorConstructionG4::build(void* world, void* materials) {
 
             // Create the logical volume for the individual bumps
             auto bumps_cell_log =
-                make_shared_no_delete<G4LogicalVolume>(bump.get(), (*materials_)["solder"], "bumps_" + name + "_log");
+                make_shared_no_delete<G4LogicalVolume>(bump.get(), materials_["solder"], "bumps_" + name + "_log");
             detector->setExternalObject("bumps_cell_log", bumps_cell_log);
 
             // Place the bump bonds grid

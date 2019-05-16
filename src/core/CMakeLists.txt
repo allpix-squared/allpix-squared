@@ -21,6 +21,7 @@ ADD_LIBRARY(AllpixCore SHARED
     geometry/DetectorModel.cpp
     geometry/GeometryManager.cpp
     geometry/GeometryBuilder.cpp
+    geometry/BaseBuilder.cpp
     Allpix.cpp
 )
 

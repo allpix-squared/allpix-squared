@@ -8,8 +8,8 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#ifndef ALLPIX_GEOMETRY_BUILDER_H
-#define ALLPIX_GEOMETRY_BUILDER_H
+#ifndef ALLPIX_BASE_BUILDER_H
+#define ALLPIX_BASE_BUILDER_H
 
 #include <array>
 #include <functional>
@@ -24,27 +24,28 @@
 #include <Math/Point3D.h>
 #include <Math/Rotation3D.h>
 #include <Math/Transform3D.h>
+#include "GeometryBuilder.hpp"
 
 namespace allpix {
-
-    class GeometryBuilder {
+    template<typename WorldVolume, typename Materials>
+    class BaseBuilder: public GeometryBuilder{
 
     public:
         /**
              * @brief Empty Build function with 2 inputs
              */
 
-        //virtual void build(void* world_log, void* materials_);
+        virtual void build(WorldVolume* world_log, std::map<std::string, Materials*> materials_);
 
-        /**
+        /*
              * @brief Essential virtual destructor
-             */
+         */    
 
-        //virtual ~GeometryBuilder() = default;
+        //virtual ~BaseBuilder() = default;
 
     private:
     };
 
 } // namespace allpix
 
-#endif /* ALLPIX_GEOMETRY_BUILDER_H */
+#endif /* ALLPIX_BASE_BUILDER_H */

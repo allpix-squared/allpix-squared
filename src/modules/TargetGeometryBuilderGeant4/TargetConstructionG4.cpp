@@ -50,15 +50,15 @@ template <typename T, typename... Args> static std::shared_ptr<T> make_shared_no
     return std::shared_ptr<T>(new T(args...), [](T*) {});
 }
 
-void TargetConstructionG4::build(void* world, void* materials) {
+void TargetConstructionG4::build(G4LogicalVolume* world_log, std::map<std::string, G4Material*> materials_){
 
     /*
     Reinterpret the void* world and void* materials to make them fit as G4LogicalVolume and std::map<std::string,
     G4Material*>
     */
 
-    auto world_log = reinterpret_cast<G4LogicalVolume*>(world);
-    auto materials_ = reinterpret_cast<std::map<std::string, G4Material*>*>(materials);
+    //auto world_log = reinterpret_cast<G4LogicalVolume*>(world);
+    //auto materials_ = reinterpret_cast<std::map<std::string, G4Material*>*>(materials);
 
     std::string world_material = config_.get<std::string>("world_material", "air");
 
@@ -76,7 +76,7 @@ void TargetConstructionG4::build(void* world, void* materials) {
 
     auto target_box = std::make_shared<G4Box>("target_", target_size.x(), target_size.y(), target_thickness);
     solids_.push_back(target_box);
-    auto target_log = make_shared_no_delete<G4LogicalVolume>(target_box.get(), (*materials_)[target_material], "target_log");
+    auto target_log = make_shared_no_delete<G4LogicalVolume>(target_box.get(), materials_[target_material], "target_log");
 
     // Place the target box
     auto target_pos = toG4Vector(target_location);

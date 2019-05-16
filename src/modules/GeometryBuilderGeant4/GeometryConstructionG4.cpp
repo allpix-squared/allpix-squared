@@ -29,7 +29,7 @@
 #include <G4UserLimits.hh>
 #include <G4VSolid.hh>
 #include <G4VisAttributes.hh>
-
+#include "core/geometry/BaseBuilder.hpp"
 #include "core/geometry/HybridPixelDetectorModel.hpp"
 #include "core/module/exceptions.h"
 #include "core/utils/log.h"
@@ -115,8 +115,14 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
         std::make_unique<G4PVPlacement>(nullptr, G4ThreeVector(0., 0., 0.), world_log_.get(), "World", nullptr, false, 0);
 
     // Build all the geometries that have been added to the Builder vector, including Detectors and Targets
+
+    
     auto builders_ = geo_manager_->getBuilders();
-    for(const auto builder : builders_) {
+    
+    auto builders__ =dynamic_cast<std::vector<std::shared_ptr<BaseBuilder<G4LogicalVolume, G4Material>>>>(builders_);
+
+
+    for(const auto &builder : builders__) {
         builder->build(world_log_.get(), &materials_);
     }
 

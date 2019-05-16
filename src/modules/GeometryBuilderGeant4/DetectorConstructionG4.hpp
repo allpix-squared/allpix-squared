@@ -15,7 +15,9 @@
 
 #include "G4Material.hh"
 #include "G4VSolid.hh"
-#include "core/geometry/GeometryBuilder.hpp"
+#include "G4LogicalVolume.hh"
+
+#include "core/geometry/BaseBuilder.hpp"
 
 #include "core/geometry/GeometryManager.hpp"
 
@@ -23,7 +25,7 @@ namespace allpix {
     /**
      * @brief Constructs the Geant4 geometry during Geant4 initialization
      */
-    class DetectorConstructionG4 : public GeometryBuilder {
+    class DetectorConstructionG4 : public BaseBuilder<G4LogicalVolume, G4Material> {
     public:
         /**
          * @brief Constructs geometry construction module
@@ -36,7 +38,7 @@ namespace allpix {
          * @brief Constructs the world geometry with all detectors
          * @return Physical volume representing the world
          */
-        void build(void* world, void* materials) override;
+        void build(G4LogicalVolume* world_log, std::map<std::string, G4Material*> materials_) override;
 
     private:
         GeometryManager* geo_manager_;
