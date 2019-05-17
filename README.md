@@ -82,6 +82,7 @@ The following authors, in alphabetical order, have contributed to Allpix<sup>2</
 * Mathieu Benoit, Université de Genève, @mbenoit
 * Thomas Billoud, Université de Montréal, @tbilloud
 * Tobias Bisanz, Georg-August-Universität Göttingen, @tbisanz
+* Koen van den Brandt, Nikhef National Institute for Subatomic Physics, @kvandenb
 * Liejian Chen, Institute of High Energy Physics Beijing, @chenlj
 * Katharina Dort, CERN Summer Student, @kdort
 * Neal Gauvin, Université de Genève, @ngauvin
