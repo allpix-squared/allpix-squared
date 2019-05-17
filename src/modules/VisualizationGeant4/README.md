@@ -34,7 +34,6 @@ This module requires an installation of Geant4.
 * `trajectories_draw_step_color` : Color of the markers used to display a trajectory step. Default value *red*. Only used if *trajectories_draw_step* is enabled.
 * `draw_hits` : Determines if hits in the detector should be displayed. Defaults to false. Option is only useful if Geant4 hits are generated in a module.
 * `macro_init` : Optional Geant4 macro to execute during initialization. Whenever possible, the configuration parameters above should be used instead of this option.
-* `display_limit` : Sets the displayListLimit of the visualization GUI, in case the current limit is too low. Defaults to 1000000.
 
 ### Usage
 An example configuration providing a wireframe viewing style with the same color for every particle and displaying the result after every event for 2s is provided below:
