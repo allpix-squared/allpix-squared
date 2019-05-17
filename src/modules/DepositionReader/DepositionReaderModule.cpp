@@ -28,14 +28,34 @@ void DepositionReaderModule::init() {
     // Check which file type we want to read:
     file_model_ = config_.get<std::string>("model");
     std::transform(file_model_.begin(), file_model_.end(), file_model_.begin(), ::tolower);
-    if(file_model_ != "csv") {
-        throw InvalidValueError(config_, "model", "only model 'csv' is currently supported");
-    }
+    auto file_path = config_.getPath("file_name", true);
+    if(file_model_ == "csv") {
+        // Open the file with the objects
+        input_file_ = std::make_unique<std::ifstream>(file_path);
+        if(!input_file_->is_open()) {
+            throw InvalidValueError(config_, "file_name", "could not open input file");
+        }
+    } else if(file_model_ == "root") {
+        input_file_root_ = std::make_unique<TFile>(file_path.c_str(), "READ");
+        if(!input_file_root_->IsOpen()) {
+            throw InvalidValueError(config_, "file_name", "could not open input file");
+        }
+        input_file_root_->cd();
+        tree_reader_ = std::make_shared<TTreeReader>("hitTree", input_file_root_.get());
+        LOG(DEBUG) << "Initialized tree reader, found " << tree_reader_->GetEntries(false) << " entries";
 
-    // Open the file with the objects
-    input_file_ = std::make_unique<std::ifstream>(config_.getPath("file_name", true));
-    if(!input_file_->is_open()) {
-        throw InvalidValueError(config_, "file_name", "could not open input file");
+        event_ = std::make_shared<TTreeReaderValue<int>>(*tree_reader_, "event");
+        edep_ = std::make_shared<TTreeReaderValue<double>>(*tree_reader_, "energy.Edep");
+        time_ = std::make_shared<TTreeReaderValue<double>>(*tree_reader_, "time");
+        px_ = std::make_shared<TTreeReaderValue<double>>(*tree_reader_, "position.x");
+        py_ = std::make_shared<TTreeReaderValue<double>>(*tree_reader_, "position.y");
+        pz_ = std::make_shared<TTreeReaderValue<double>>(*tree_reader_, "position.z");
+        volume_ = std::make_shared<TTreeReaderArray<char>>(*tree_reader_, "detector");
+        pdg_code_ = std::make_shared<TTreeReaderValue<int>>(*tree_reader_, "PDG_code");
+
+        tree_reader_->Next();
+    } else {
+        throw InvalidValueError(config_, "model", "only model 'csv' is currently supported");
     }
 
     // Get the creation energy for charge (default is silicon electron hole pair energy)
@@ -84,7 +104,62 @@ void DepositionReaderModule::run(unsigned int event) {
     }
 }
 
-void DepositionReaderModule::read_root(unsigned int, DepositMap&, ParticleMap&, ParticleRelationMap&) {}
+void DepositionReaderModule::read_root(unsigned int event_num, DepositMap&, ParticleMap&, ParticleRelationMap&) {
+
+    if(event_num >= tree_reader_->GetEntries(false)) {
+        throw EndOfRunException("Requesting end of run because TTree only contains data for " + std::to_string(event_num) +
+                                " events");
+    }
+
+    do {
+        // Separate individual events
+        if(static_cast<unsigned int>(*event_->Get()) > event_num) {
+            break;
+        }
+
+        // Read detector name
+        // NOTE volume_->GetSize() is the full length, but we only need five characters:
+        auto volume = std::string(static_cast<char*>(volume_->GetAddress()), 5);
+        auto detectors = geo_manager_->getDetectors();
+        auto pos = std::find_if(detectors.begin(), detectors.end(), [volume](const std::shared_ptr<Detector>& d) {
+            return d->getName() == volume;
+        });
+        if(pos == detectors.end()) {
+            LOG(WARNING) << "Did not find detector \"" << volume << "\" in the current simulation";
+            continue;
+        }
+
+        // Assign detector
+        auto detector = (*pos);
+
+        // Read position of energy deposit:
+        auto global_deposit_position =
+            ROOT::Math::XYZPoint(Units::get(*px_->Get(), "m"), Units::get(*py_->Get(), "m"), Units::get(*pz_->Get(), "m"));
+        auto deposit_position = detector->getLocalPosition(global_deposit_position);
+
+        if(!detector->isWithinSensor(deposit_position)) {
+            LOG(WARNING) << "Found deposition outside sensor at " << Units::display(deposit_position, {"mm", "um"})
+                         << ". Skipping.";
+            continue;
+        }
+
+        // Calculate number of electron hole pairs produced, taking into acocunt fluctuations between ionization and lattice
+        // excitations via the Fano factor. We assume Gaussian statistics here.
+        auto mean_charge = static_cast<unsigned int>(Units::get(*edep_->Get(), "MeV") / charge_creation_energy_);
+        std::normal_distribution<double> charge_fluctuation(mean_charge, std::sqrt(mean_charge * fano_factor_));
+        auto charge = charge_fluctuation(random_generator_);
+
+        LOG(DEBUG) << "Found deposition of " << charge << " e/h pairs inside sensor at "
+                   << Units::display(deposit_position, {"mm", "um"}) << " in volume " << volume;
+
+        // auto t = time.Get();
+        LOG(INFO) << " Detector: " << detector->getName() << " at " << Units::display(*time_->Get(), "ns") << " with "
+                  << Units::display(*edep_->Get(), "eV");
+        // The branch "py" contains floats, too; access those as myPy.
+        // TTreeReaderValue<Float_t> myPy(myReader, "py");
+        //
+    } while(tree_reader_->Next());
+}
 
 void DepositionReaderModule::read_csv(unsigned int event,
                                       DepositMap& deposits,

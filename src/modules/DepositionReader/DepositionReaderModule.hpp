@@ -15,6 +15,10 @@
 #include <fstream>
 #include <string>
 
+#include <TFile.h>
+#include <TTreeReader.h>
+#include <TTreeReaderArray.h>
+
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
@@ -57,7 +61,18 @@ namespace allpix {
 
         // File containing the input data
         std::unique_ptr<std::ifstream> input_file_;
+        std::unique_ptr<TFile> input_file_root_;
 
+        // Set up branches:
+        std::shared_ptr<TTreeReader> tree_reader_;
+        std::shared_ptr<TTreeReaderValue<int>> event_;
+        std::shared_ptr<TTreeReaderValue<double>> edep_;
+        std::shared_ptr<TTreeReaderValue<double>> time_;
+        std::shared_ptr<TTreeReaderValue<double>> px_;
+        std::shared_ptr<TTreeReaderValue<double>> py_;
+        std::shared_ptr<TTreeReaderValue<double>> pz_;
+        std::shared_ptr<TTreeReaderArray<char>> volume_;
+        std::shared_ptr<TTreeReaderValue<int>> pdg_code_;
         double charge_creation_energy_;
         double fano_factor_;
 
