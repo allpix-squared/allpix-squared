@@ -104,8 +104,12 @@ void DepositionReaderModule::run(unsigned int event) {
     }
 }
 
-void DepositionReaderModule::read_root(unsigned int event_num, DepositMap&, ParticleMap&, ParticleRelationMap&) {
+void DepositionReaderModule::read_root(unsigned int event_num,
+                                       DepositMap& deposits,
+                                       ParticleMap& mc_particles,
+                                       ParticleRelationMap& particles_to_deposits) {
 
+    // FIXME doesn't work, tree has more entries than events
     if(event_num >= tree_reader_->GetEntries(false)) {
         throw EndOfRunException("Requesting end of run because TTree only contains data for " + std::to_string(event_num) +
                                 " events");
@@ -152,12 +156,25 @@ void DepositionReaderModule::read_root(unsigned int event_num, DepositMap&, Part
         LOG(DEBUG) << "Found deposition of " << charge << " e/h pairs inside sensor at "
                    << Units::display(deposit_position, {"mm", "um"}) << " in volume " << volume;
 
-        // auto t = time.Get();
-        LOG(INFO) << " Detector: " << detector->getName() << " at " << Units::display(*time_->Get(), "ns") << " with "
-                  << Units::display(*edep_->Get(), "eV");
-        // The branch "py" contains floats, too; access those as myPy.
-        // TTreeReaderValue<Float_t> myPy(myReader, "py");
-        //
+        // FIXME time is not used, seems to be total run time?
+
+        // MCParticle:
+        mc_particles[detector].emplace_back(deposit_position,
+                                            global_deposit_position,
+                                            deposit_position,
+                                            global_deposit_position,
+                                            *pdg_code_->Get(),
+                                            Units::get(0, "ns"));
+
+        // Deposit electron
+        deposits[detector].emplace_back(
+            deposit_position, global_deposit_position, CarrierType::ELECTRON, charge, Units::get(0, "ns"));
+        particles_to_deposits[detector].push_back(mc_particles[detector].size() - 1);
+
+        // Deposit hole
+        deposits[detector].emplace_back(
+            deposit_position, global_deposit_position, CarrierType::HOLE, charge, Units::get(0, "ns"));
+        particles_to_deposits[detector].push_back(mc_particles[detector].size() - 1);
     } while(tree_reader_->Next());
 }
 
