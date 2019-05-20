@@ -1,19 +1,11 @@
 /gps/particle alpha
 /gps/pos/type Plane
 /gps/pos/shape Circle
-/gps/pos/radius 1.5 mm
-
-/gps/ene/type User
-/gps/hist/type energy
-
-# spectra	
-/gps/hist/point  5.38800   1.66  	
-/gps/hist/point  5.44280  13.10  	
-/gps/hist/point  5.48556  84.80	
-/gps/hist/point  5.51150   0.23	
-/gps/hist/point  5.54450   0.37
-
+/gps/pos/radius 1.1 mm
+/gps/ene/mono 5.4 MeV
 /gps/ang/type iso
+/gps/ang/mintheta 00 deg
+/gps/ang/maxtheta 80 deg
 
 
 
