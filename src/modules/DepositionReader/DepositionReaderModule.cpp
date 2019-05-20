@@ -186,37 +186,35 @@ bool DepositionReaderModule::read_root(unsigned int event_num,
     return (tree_reader_->Next());
 }
 
-bool DepositionReaderModule::read_csv(
-    unsigned int, std::string& volume, ROOT::Math::XYZPoint& position, double& time, double& energy, int& pdg_code) {
+bool DepositionReaderModule::read_csv(unsigned int event_num,
+                                      std::string& volume,
+                                      ROOT::Math::XYZPoint& position,
+                                      double& time,
+                                      double& energy,
+                                      int& pdg_code) {
 
-    // auto same_event = [event_num](std::string line) {
-    //     std::string tmp;
-    //     unsigned int event_read;
-    //     // Event separator:
-    //     if(line.front() == 'E') {
-    //         std::stringstream ls(line);
-    //         ls >> tmp >> event_read;
-    //         if(event_read + 1 > event_num) {
-    //             return false;
-    //         }
-    //         continue;
-    //     }
-    // };
-
-    std::string line;
-    // Ignore empty lines or comments
-    while(line.empty() || line.front() == '#') {
-        // Read input file line-by-line:
+    std::string line, tmp;
+    do {
+        LOG(DEBUG) << "here1";
+        // Read input file line-by-line and trim whitespaces at beginning and end:
         std::getline(*input_file_, line);
-    }
+        line = allpix::trim(line);
+        LOG(DEBUG) << "Input: " << line;
 
-    // Trim whitespaces at beginning and end of line:
-    line = allpix::trim(line);
+        // Check for event header:
+        if(line.front() == 'E') {
+            std::stringstream lse(line);
+            unsigned int event_read;
+            lse >> tmp >> event_read;
+            if(event_read + 1 > event_num) {
+                return false;
+            }
+            LOG(DEBUG) << "Parsed event, continuing";
+            continue;
+        }
+    } while(line.empty() || line.front() == '#' || line.front() == 'E');
 
     std::stringstream ls(line);
-    std::string tmp;
-
-    LOG(TRACE) << "Input: " << line;
     double t, edep, px, py, pz;
     ls >> pdg_code >> tmp >> t >> tmp >> edep >> tmp >> px >> tmp >> py >> tmp >> pz >> tmp >> volume;
 
