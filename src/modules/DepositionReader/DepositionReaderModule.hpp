@@ -82,8 +82,18 @@ namespace allpix {
         using ParticleMap = std::map<std::shared_ptr<Detector>, std::vector<MCParticle>>;
         using ParticleRelationMap = std::map<std::shared_ptr<Detector>, std::vector<size_t>>;
 
-        void read_csv(unsigned int event, DepositMap& deposits, ParticleMap& particles, ParticleRelationMap& relations);
-        void read_root(unsigned int event, DepositMap& deposits, ParticleMap& particles, ParticleRelationMap& relations);
+        bool read_csv(unsigned int event_num,
+                      std::string& volume,
+                      ROOT::Math::XYZPoint& position,
+                      double& time,
+                      double& energy,
+                      int& pdg_code);
+        bool read_root(unsigned int event_num,
+                       std::string& volume,
+                       ROOT::Math::XYZPoint& position,
+                       double& time,
+                       double& energy,
+                       int& pdg_code);
 
         // Random number generator for e/h pair creation fluctuation
         std::mt19937_64 random_generator_;

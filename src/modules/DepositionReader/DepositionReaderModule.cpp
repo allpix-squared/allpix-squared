@@ -72,10 +72,62 @@ void DepositionReaderModule::run(unsigned int event) {
 
     LOG(DEBUG) << "Start reading event " << event;
 
-    if(file_model_ == "csv")
-        read_csv(event, deposits, mc_particles, particles_to_deposits);
-    else if(file_model_ == "root")
-        read_root(event, deposits, mc_particles, particles_to_deposits);
+    do {
+        bool read_status = false;
+        ROOT::Math::XYZPoint global_deposit_position;
+        std::string volume;
+        double energy, time;
+        int pdg_code;
+
+        if(file_model_ == "csv") {
+            read_status = read_csv(event, volume, global_deposit_position, time, energy, pdg_code);
+        } else if(file_model_ == "root") {
+            read_status = read_root(event, volume, global_deposit_position, time, energy, pdg_code);
+        }
+
+        if(!read_status) {
+            break;
+        }
+
+        auto detectors = geo_manager_->getDetectors();
+        auto pos = std::find_if(detectors.begin(), detectors.end(), [volume](const std::shared_ptr<Detector>& d) {
+            return d->getName() == volume;
+        });
+        if(pos == detectors.end()) {
+            LOG(WARNING) << "Did not find detector \"" << volume << "\" in the current simulation";
+            continue;
+        }
+        // Assign detector
+        auto detector = (*pos);
+
+        auto deposit_position = detector->getLocalPosition(global_deposit_position);
+        if(!detector->isWithinSensor(deposit_position)) {
+            LOG(WARNING) << "Found deposition outside sensor at " << Units::display(deposit_position, {"mm", "um"})
+                         << ". Skipping.";
+            continue;
+        }
+
+        // Calculate number of electron hole pairs produced, taking into acocunt fluctuations between ionization and lattice
+        // excitations via the Fano factor. We assume Gaussian statistics here.
+        auto mean_charge = static_cast<unsigned int>(energy / charge_creation_energy_);
+        std::normal_distribution<double> charge_fluctuation(mean_charge, std::sqrt(mean_charge * fano_factor_));
+        auto charge = charge_fluctuation(random_generator_);
+
+        LOG(DEBUG) << "Found deposition of " << charge << " e/h pairs inside sensor at "
+                   << Units::display(deposit_position, {"mm", "um"}) << " in volume " << volume;
+
+        // MCParticle:
+        mc_particles[detector].emplace_back(
+            deposit_position, global_deposit_position, deposit_position, global_deposit_position, pdg_code, time);
+
+        // Deposit electron
+        deposits[detector].emplace_back(deposit_position, global_deposit_position, CarrierType::ELECTRON, charge, time);
+        particles_to_deposits[detector].push_back(mc_particles[detector].size() - 1);
+
+        // Deposit hole
+        deposits[detector].emplace_back(deposit_position, global_deposit_position, CarrierType::HOLE, charge, time);
+        particles_to_deposits[detector].push_back(mc_particles[detector].size() - 1);
+    } while(1);
 
     LOG(DEBUG) << "Finished reading event " << event;
 
@@ -104,167 +156,77 @@ void DepositionReaderModule::run(unsigned int event) {
     }
 }
 
-void DepositionReaderModule::read_root(unsigned int event_num,
-                                       DepositMap& deposits,
-                                       ParticleMap& mc_particles,
-                                       ParticleRelationMap& particles_to_deposits) {
+bool DepositionReaderModule::read_root(unsigned int event_num,
+                                       std::string& volume,
+                                       ROOT::Math::XYZPoint& position,
+                                       double& time,
+                                       double& energy,
+                                       int& pdg_code) {
+    using namespace ROOT::Math;
 
-    // FIXME doesn't work, tree has more entries than events
-    if(event_num >= tree_reader_->GetEntries(false)) {
-        throw EndOfRunException("Requesting end of run because TTree only contains data for " + std::to_string(event_num) +
-                                " events");
+    auto status = tree_reader_->GetEntryStatus();
+    if(status != TTreeReader::kEntryValid) {
+        throw EndOfRunException("Requesting end of run because TTree reported status \"" +
+                                std::string(tree_reader_->fgEntryStatusText[status]) + "\"");
     }
 
-    do {
-        // Separate individual events
-        if(static_cast<unsigned int>(*event_->Get()) > event_num) {
-            break;
-        }
+    // Separate individual events
+    if(static_cast<unsigned int>(*event_->Get()) > event_num) {
+        return false;
+    }
 
-        // Read detector name
-        // NOTE volume_->GetSize() is the full length, but we only need five characters:
-        auto volume = std::string(static_cast<char*>(volume_->GetAddress()), 5);
-        auto detectors = geo_manager_->getDetectors();
-        auto pos = std::find_if(detectors.begin(), detectors.end(), [volume](const std::shared_ptr<Detector>& d) {
-            return d->getName() == volume;
-        });
-        if(pos == detectors.end()) {
-            LOG(WARNING) << "Did not find detector \"" << volume << "\" in the current simulation";
-            continue;
-        }
+    // Read detector name
+    // NOTE volume_->GetSize() is the full length, but we only need five characters:
+    volume = std::string(static_cast<char*>(volume_->GetAddress()), 5);
+    position = XYZPoint(Units::get(*px_->Get(), "m"), Units::get(*py_->Get(), "m"), Units::get(*pz_->Get(), "m"));
+    time = Units::get(*time_->Get(), "ns");
+    energy = Units::get(*edep_->Get(), "MeV");
+    pdg_code = (*pdg_code_->Get());
 
-        // Assign detector
-        auto detector = (*pos);
-
-        // Read position of energy deposit:
-        auto global_deposit_position =
-            ROOT::Math::XYZPoint(Units::get(*px_->Get(), "m"), Units::get(*py_->Get(), "m"), Units::get(*pz_->Get(), "m"));
-        auto deposit_position = detector->getLocalPosition(global_deposit_position);
-
-        if(!detector->isWithinSensor(deposit_position)) {
-            LOG(WARNING) << "Found deposition outside sensor at " << Units::display(deposit_position, {"mm", "um"})
-                         << ". Skipping.";
-            continue;
-        }
-
-        // Calculate number of electron hole pairs produced, taking into acocunt fluctuations between ionization and lattice
-        // excitations via the Fano factor. We assume Gaussian statistics here.
-        auto mean_charge = static_cast<unsigned int>(Units::get(*edep_->Get(), "MeV") / charge_creation_energy_);
-        std::normal_distribution<double> charge_fluctuation(mean_charge, std::sqrt(mean_charge * fano_factor_));
-        auto charge = charge_fluctuation(random_generator_);
-
-        LOG(DEBUG) << "Found deposition of " << charge << " e/h pairs inside sensor at "
-                   << Units::display(deposit_position, {"mm", "um"}) << " in volume " << volume;
-
-        // FIXME time is not used, seems to be total run time?
-
-        // MCParticle:
-        mc_particles[detector].emplace_back(deposit_position,
-                                            global_deposit_position,
-                                            deposit_position,
-                                            global_deposit_position,
-                                            *pdg_code_->Get(),
-                                            Units::get(0, "ns"));
-
-        // Deposit electron
-        deposits[detector].emplace_back(
-            deposit_position, global_deposit_position, CarrierType::ELECTRON, charge, Units::get(0, "ns"));
-        particles_to_deposits[detector].push_back(mc_particles[detector].size() - 1);
-
-        // Deposit hole
-        deposits[detector].emplace_back(
-            deposit_position, global_deposit_position, CarrierType::HOLE, charge, Units::get(0, "ns"));
-        particles_to_deposits[detector].push_back(mc_particles[detector].size() - 1);
-    } while(tree_reader_->Next());
+    return (tree_reader_->Next());
 }
 
-void DepositionReaderModule::read_csv(unsigned int event,
-                                      DepositMap& deposits,
-                                      ParticleMap& mc_particles,
-                                      ParticleRelationMap& particles_to_deposits) {
+bool DepositionReaderModule::read_csv(
+    unsigned int, std::string& volume, ROOT::Math::XYZPoint& position, double& time, double& energy, int& pdg_code) {
 
-    // Read input file line-by-line:
+    // auto same_event = [event_num](std::string line) {
+    //     std::string tmp;
+    //     unsigned int event_read;
+    //     // Event separator:
+    //     if(line.front() == 'E') {
+    //         std::stringstream ls(line);
+    //         ls >> tmp >> event_read;
+    //         if(event_read + 1 > event_num) {
+    //             return false;
+    //         }
+    //         continue;
+    //     }
+    // };
+
     std::string line;
-    while(std::getline(*input_file_, line)) {
-        // Trim whitespaces at beginning and end of line:
-        line = allpix::trim(line);
-
-        // Ignore empty lines or comments
-        if(line.empty() || line.front() == '#') {
-            continue;
-        }
-
-        std::stringstream ls(line);
-
-        std::string tmp;
-        unsigned int event_read;
-        // Event separator:
-        if(line.front() == 'E') {
-            ls >> tmp >> event_read;
-            if(event_read + 1 > event) {
-                break;
-            }
-            continue;
-        }
-
-        LOG(TRACE) << "Input: " << line;
-
-        int pdg_code;
-        double time, edep, px, py, pz;
-        std::string volume;
-        ls >> pdg_code >> tmp >> time >> tmp >> edep >> tmp >> px >> tmp >> py >> tmp >> pz >> tmp >> volume;
-
-        // Select the detector name from this:
-        volume = volume.substr(0, 5);
-        auto detectors = geo_manager_->getDetectors();
-        auto pos = std::find_if(detectors.begin(), detectors.end(), [volume](const std::shared_ptr<Detector>& d) {
-            return d->getName() == volume;
-        });
-        if(pos == detectors.end()) {
-            LOG(WARNING) << "Did not find detector \"" << volume << "\" in the current simulation";
-            continue;
-        }
-
-        // Assign detector
-        auto detector = (*pos);
-
-        // Calculate the charge deposit at a local position, shift by half matrix in x and y:
-        auto deposit_position = ROOT::Math::XYZPoint(
-            px + detector->getModel()->getSensorSize().x() / 2, py + detector->getModel()->getSensorSize().y() / 2, pz);
-
-        if(!detector->isWithinSensor(deposit_position)) {
-            LOG(WARNING) << "Found deposition outside sensor at " << Units::display(deposit_position, {"mm", "um"})
-                         << ". Skipping.";
-            continue;
-        }
-
-        // Calculate number of electron hole pairs produced, taking into acocunt fluctuations between ionization and lattice
-        // excitations via the Fano factor. We assume Gaussian statistics here.
-        auto mean_charge = static_cast<unsigned int>(Units::get(edep, "keV") / charge_creation_energy_);
-        std::normal_distribution<double> charge_fluctuation(mean_charge, std::sqrt(mean_charge * fano_factor_));
-        auto charge = charge_fluctuation(random_generator_);
-
-        LOG(DEBUG) << "Found deposition of " << charge << " e/h pairs inside sensor at "
-                   << Units::display(deposit_position, {"mm", "um"}) << " in volume " << volume;
-
-        auto global_deposit_position = detector->getGlobalPosition(deposit_position);
-
-        // MCParticle:
-        mc_particles[detector].emplace_back(deposit_position,
-                                            global_deposit_position,
-                                            deposit_position,
-                                            global_deposit_position,
-                                            pdg_code,
-                                            Units::get(time, "ns"));
-
-        // Deposit electron
-        deposits[detector].emplace_back(
-            deposit_position, global_deposit_position, CarrierType::ELECTRON, charge, Units::get(time, "ns"));
-        particles_to_deposits[detector].push_back(mc_particles[detector].size() - 1);
-
-        // Deposit hole
-        deposits[detector].emplace_back(
-            deposit_position, global_deposit_position, CarrierType::HOLE, charge, Units::get(time, "ns"));
-        particles_to_deposits[detector].push_back(mc_particles[detector].size() - 1);
+    // Ignore empty lines or comments
+    while(line.empty() || line.front() == '#') {
+        // Read input file line-by-line:
+        std::getline(*input_file_, line);
     }
+
+    // Trim whitespaces at beginning and end of line:
+    line = allpix::trim(line);
+
+    std::stringstream ls(line);
+    std::string tmp;
+
+    LOG(TRACE) << "Input: " << line;
+    double t, edep, px, py, pz;
+    ls >> pdg_code >> tmp >> t >> tmp >> edep >> tmp >> px >> tmp >> py >> tmp >> pz >> tmp >> volume;
+
+    // Select the detector name from this:
+    volume = volume.substr(0, 5);
+
+    // Calculate the charge deposit at a global position
+    position = ROOT::Math::XYZPoint(px, py, pz);
+    time = Units::get(time, "s");
+    energy = Units::get(edep, "keV");
+
+    return true;
 }
