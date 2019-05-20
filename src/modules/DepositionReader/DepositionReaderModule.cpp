@@ -41,8 +41,13 @@ void DepositionReaderModule::init() {
             throw InvalidValueError(config_, "file_name", "could not open input file");
         }
         input_file_root_->cd();
-        tree_reader_ = std::make_shared<TTreeReader>("hitTree", input_file_root_.get());
-        LOG(DEBUG) << "Initialized tree reader, found " << tree_reader_->GetEntries(false) << " entries";
+        auto tree = config_.get<std::string>("tree_name");
+        tree_reader_ = std::make_shared<TTreeReader>(tree.c_str(), input_file_root_.get());
+        if(tree_reader_->GetEntryStatus() == TTreeReader::kEntryNoTree) {
+            throw InvalidValueError(config_, "tree_name", "could not open tree");
+        }
+        LOG(INFO) << "Initialized tree reader for tree " << tree << ", found " << tree_reader_->GetEntries(false)
+                  << " entries";
 
         event_ = std::make_shared<TTreeReaderValue<int>>(*tree_reader_, "event");
         edep_ = std::make_shared<TTreeReaderValue<double>>(*tree_reader_, "energy.Edep");
@@ -168,6 +173,12 @@ bool DepositionReaderModule::read_root(unsigned int event_num,
     if(status != TTreeReader::kEntryValid) {
         throw EndOfRunException("Requesting end of run because TTree reported status \"" +
                                 std::string(tree_reader_->fgEntryStatusText[status]) + "\"");
+    } else if(status != TTreeReader::kEntryValid) {
+#ifdef ROOT_TTREEREADER_NOTEXT
+        throw ModuleError("Problem reading from tree");
+#else
+        throw ModuleError("Problem reading from tree: \"" + std::string(tree_reader_->fgEntryStatusText[status]) + "\"");
+#endif
     }
 
     // Separate individual events
