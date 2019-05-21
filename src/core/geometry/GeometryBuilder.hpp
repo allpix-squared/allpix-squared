@@ -51,7 +51,7 @@ namespace allpix {
              * @brief Essential virtual destructor
          */
 
-        virtual ~GeometryBuilder() = default;
+        ~GeometryBuilder() override = default;
 
     private:
     };

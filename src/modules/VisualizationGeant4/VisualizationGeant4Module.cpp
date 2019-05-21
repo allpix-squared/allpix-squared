@@ -165,7 +165,7 @@ void VisualizationGeant4Module::init() {
 
     // Reset the default displayListLimit
     std::string display_limit = config_.get<std::string>("display_limit", "1000000");
-    UI->ApplyCommand("/vis/ogl/set/displayListLimit" + display_limit);
+    UI->ApplyCommand("/vis/ogl/set/displayListLimit " + display_limit);
 
     // Release the stream early in debugging mode
     IFLOG(DEBUG) { RELEASE_STREAM(G4cout); }
