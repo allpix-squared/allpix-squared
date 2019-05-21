@@ -336,7 +336,7 @@ int main(int argc, char** argv) {
     const double cell_volume = xstep * ystep * zstep;
 
     // Using the minimal cell dimension as initial search radius for the point cloud:
-    const auto initial_radius = config.get<double>("initial_radius", std::min(xstep, std::min(ystep, zstep)));
+    const auto initial_radius = config.get<double>("initial_radius", std::min({xstep, ystep, zstep}));
     LOG(INFO) << "Using initial neighbor search radius of " << initial_radius;
 
     if(rot.at(0) != "x" || rot.at(1) != "y" || rot.at(2) != "z") {
