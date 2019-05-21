@@ -213,7 +213,7 @@ void DepositionGeant4Module::init(std::mt19937_64& seeder) {
     // NOTE Assumes this is the only Geant4 module using random numbers
     std::string seed_command = "/random/setSeeds ";
     for(int i = 0; i < G4_NUM_SEEDS; ++i) {
-        seed_command += std::to_string(static_cast<uint32_t>(getRandomSeed() % INT_MAX));
+        seed_command += std::to_string(static_cast<uint32_t>(seeder() % INT_MAX));
         if(i != G4_NUM_SEEDS - 1) {
             seed_command += " ";
         }
@@ -234,7 +234,7 @@ void DepositionGeant4Module::init(std::mt19937_64& seeder) {
 
         // Get model of the sensitive device
         auto sensitive_detector_action = new SensitiveDetectorActionG4(
-            detector, track_info_manager_.get(), charge_creation_energy, fano_factor, getRandomSeed());
+            detector, track_info_manager_.get(), charge_creation_energy, fano_factor, seeder());
         auto logical_volume = detector->getExternalObject<G4LogicalVolume>("sensor_log");
         if(logical_volume == nullptr) {
             throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
