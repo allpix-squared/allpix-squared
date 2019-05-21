@@ -13,11 +13,11 @@
 #include <memory>
 #include <utility>
 
+#include "G4LogicalVolume.hh"
 #include "G4Material.hh"
 #include "G4VSolid.hh"
-#include "G4LogicalVolume.hh"
 
-#include "core/geometry/BaseBuilder.hpp"
+#include "core/geometry/GeometryBuilder.hpp"
 
 #include "core/geometry/GeometryManager.hpp"
 
@@ -25,7 +25,7 @@ namespace allpix {
     /**
      * @brief Constructs the Geant4 geometry during Geant4 initialization
      */
-    class DetectorConstructionG4 : public BaseBuilder<G4LogicalVolume, G4Material> {
+    class DetectorConstructionG4 : public GeometryBuilder<G4LogicalVolume, G4Material> {
     public:
         /**
          * @brief Constructs geometry construction module

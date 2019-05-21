@@ -27,20 +27,31 @@
 
 namespace allpix {
 
-    class GeometryBuilder {
+    class BaseBuilder {
+
+    public:
+        /**
+            * @brief Essential virtual destructor
+            */
+        virtual ~BaseBuilder() = default;
+
+    private:
+    };
+
+    template <typename WorldVolume, typename Materials> class GeometryBuilder : public BaseBuilder {
 
     public:
         /**
              * @brief Empty Build function with 2 inputs
              */
 
-        //virtual void build(void* world_log, void* materials_);
+        virtual void build(WorldVolume* world_log, std::map<std::string, Materials*> materials_);
 
-        /**
+        /*
              * @brief Essential virtual destructor
-             */
+         */
 
-        //virtual ~GeometryBuilder() = default;
+        virtual ~GeometryBuilder() = default;
 
     private:
     };

@@ -21,7 +21,8 @@
 
 using namespace allpix;
 
-/*void GeometryBuilder::build(void* world_log, void* materials_) {
+template <typename WorldVolume, typename Materials>
+void GeometryBuilder<WorldVolume, Materials>::build(WorldVolume* world_log, std::map<std::string, Materials*> materials_) {
     (void)world_log;
     (void)materials_;
-}*/
+}

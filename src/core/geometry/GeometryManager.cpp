@@ -508,10 +508,10 @@ ROOT::Math::XYZVector GeometryManager::getMagneticField(const ROOT::Math::XYZPoi
     return magnetic_field_function_(position);
 }
 
-void GeometryManager::addBuilder(const std::shared_ptr<GeometryBuilder> &builder) {
+void GeometryManager::addBuilder(const std::shared_ptr<BaseBuilder>& builder) {
     builders_.push_back(builder);
 }
 
-std::vector<std::shared_ptr<GeometryBuilder>> GeometryManager::getBuilders() {
+std::vector<std::shared_ptr<BaseBuilder>> GeometryManager::getBuilders() {
     return builders_;
 }

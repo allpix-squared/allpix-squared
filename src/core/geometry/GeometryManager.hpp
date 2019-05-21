@@ -205,9 +205,9 @@ namespace allpix {
 
         MagneticFieldType getMagneticFieldType() const;
 
-        void addBuilder(const std::shared_ptr<GeometryBuilder> &builder);
+        void addBuilder(const std::shared_ptr<BaseBuilder>& builder);
 
-        std::vector<std::shared_ptr<GeometryBuilder>> getBuilders();
+        std::vector<std::shared_ptr<BaseBuilder>> getBuilders();
 
     private:
         /**
@@ -242,7 +242,7 @@ namespace allpix {
         MagneticFieldType magnetic_field_type_{MagneticFieldType::NONE};
         MagneticFieldFunction magnetic_field_function_;
 
-        std::vector<std::shared_ptr<GeometryBuilder>> builders_;
+        std::vector<std::shared_ptr<BaseBuilder>> builders_;
     };
 } // namespace allpix
 
