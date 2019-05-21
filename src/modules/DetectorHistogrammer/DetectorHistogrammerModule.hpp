@@ -84,7 +84,6 @@ namespace allpix {
 
         // Reference track resolution
         ROOT::Math::XYVector track_resolution_{};
-        std::mt19937_64 random_generator_;
 
         // Histograms to output
         TH2D *hit_map, *charge_map, *cluster_map;

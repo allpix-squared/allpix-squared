@@ -60,8 +60,6 @@ namespace allpix {
         void finalize() override;
 
     private:
-        std::mt19937_64 random_generator_;
-
         Messenger* messenger_;
 
         // Statistics

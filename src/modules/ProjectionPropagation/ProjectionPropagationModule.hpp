@@ -61,9 +61,6 @@ namespace allpix {
         std::shared_ptr<const Detector> detector_;
         std::shared_ptr<DetectorModel> model_;
 
-        // Random generator for diffusion calculation
-        std::mt19937_64 random_generator_;
-
         // Config parameters: Check whether plots should be generated
         bool output_plots_;
 

@@ -85,9 +85,6 @@ namespace allpix {
                                                           std::mt19937_64& random_generator,
                                                           OutputPlotPoints& output_plot_points) const;
 
-        // Random generator for this module
-        std::mt19937_64 random_generator_;
-
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_min_{}, timestep_max_{}, timestep_start_{}, integration_time_{},
             target_spatial_precision_{}, output_plots_step_{};
