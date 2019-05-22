@@ -24,7 +24,7 @@ CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration& config, Messen
     : WriterModule(config), messenger_(messenger), geometryManager_(geoManager) {
 
     // Require PixelCharge messages for single detector
-    messenger_->bindMulti<CorryvreckanWriterModule, PixelHitMessage, MsgFlags::REQUIRED>(this);
+    messenger_->bindMulti<CorryvreckanWriterModule, PixelHitMessage>(this);
 
     config_.setDefault("file_name", "corryvreckanOutput.root");
     config_.setDefault("geometry_file", "corryvreckanGeometry.conf");
@@ -224,4 +224,15 @@ void CorryvreckanWriterModule::finalize() {
             geometry_file << std::endl;
         }
     }
+}
+
+// check if the required messages are present in the event
+bool CorryvreckanWriterModule::isSatisfied(Event* event) const {
+    try {
+        auto pixel_messages = event->fetchMultiMessage<PixelHitMessage>();
+    } catch (std::out_of_range&) {
+        return false;
+    }
+
+    return true;
 }

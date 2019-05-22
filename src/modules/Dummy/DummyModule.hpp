@@ -48,9 +48,14 @@ namespace allpix {
          */
         void run(Event* event) const override;
 
+        /**
+         * @brief Checks if the module is ready to run in the given event
+         * @param Event pointer to the event the module will run
+         */
+        virtual bool isSatisfied(Event* event) const;
+
     private:
         // General module members
         GeometryManager* geo_manager_;
-        Messenger* messenger_;
     };
 } // namespace allpix

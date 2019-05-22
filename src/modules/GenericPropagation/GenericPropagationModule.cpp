@@ -57,7 +57,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     model_ = detector_->getModel();
 
     // Require deposits message for single detector
-    messenger_->bindSingle<GenericPropagationModule, DepositedChargeMessage, MsgFlags::REQUIRED>(this);
+    messenger_->bindSingle<GenericPropagationModule, DepositedChargeMessage>(this);
 
     // Set default value for config variables
     config_.setDefault<double>("spatial_precision", Units::get(0.25, "nm"));
@@ -819,4 +819,15 @@ void GenericPropagationModule::finalize() {
     long double average_time = total_time_ / std::max(1u, total_propagated_charges_);
     LOG(INFO) << "Propagated total of " << total_propagated_charges_ << " charges in " << total_steps_
               << " steps in average time of " << Units::display(average_time, "ns");
+}
+
+// check if the required messages are present in the event
+bool GenericPropagationModule::isSatisfied(Event* event) const {
+    try {
+        auto deposits_message = event->fetchMessage<DepositedChargeMessage>();
+    } catch (std::out_of_range&) {
+        return false;
+    }
+
+    return true;
 }

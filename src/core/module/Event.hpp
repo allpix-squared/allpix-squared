@@ -162,15 +162,6 @@ namespace allpix {
          */
         void handle_iomodule(const std::shared_ptr<Module>& module);
 
-        /**
-         * @brief Changes the current context of the event to that of the given module
-         * @param module The new context to change to
-         * @warning This function should be called before calling the same module's \ref Module::run() "run function"
-         *
-         * Simplifies message handling.
-         */
-        Event* with_context(const std::shared_ptr<Module>& module);
-
         // List of modules that constitutes this event
         ModuleList modules_;
 

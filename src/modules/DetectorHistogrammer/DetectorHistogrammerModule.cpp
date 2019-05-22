@@ -28,7 +28,7 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
     : WriterModule(config, detector), detector_(std::move(detector)) {
     // Bind messages
     messenger->bindSingle<DetectorHistogrammerModule, PixelHitMessage>(this);
-    messenger->bindSingle<DetectorHistogrammerModule, MCParticleMessage, MsgFlags::REQUIRED>(this);
+    messenger->bindSingle<DetectorHistogrammerModule, MCParticleMessage>(this);
 
     auto model = detector_->getModel();
     matching_cut_ = config.get<ROOT::Math::XYVector>("matching_cut", model->getPixelSize() * 3);
@@ -574,3 +574,17 @@ DetectorHistogrammerModule::getPrimaryParticles(std::shared_ptr<MCParticleMessag
 
     return primaries;
 }
+
+// check if the required messages are present in the event
+bool DetectorHistogrammerModule::isSatisfied(Event* event) const {
+    try {
+        auto pixels_message = event->fetchMessage<PixelHitMessage>();
+        auto mcparticle_message = event->fetchMessage<MCParticleMessage>();
+    } catch (std::out_of_range&) {
+        return false;
+    }
+
+    return true;
+}
+
+

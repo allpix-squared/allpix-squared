@@ -54,6 +54,12 @@ namespace allpix {
          */
         void finalize() override;
 
+        /**
+         * @brief Checks if the module is ready to run in the given event
+         * @param Event pointer to the event the module will run
+         */
+        virtual bool isSatisfied(Event* event) const;
+
     private:
         GeometryManager* geo_mgr_{};
         mutable std::shared_ptr<IO::LCWriter> lcWriter_{};

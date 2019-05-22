@@ -94,8 +94,8 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
     : WriterModule(config), geo_mgr_(geo) {
 
     // Bind pixel hits message
-    messenger->bindMulti<LCIOWriterModule, PixelHitMessage, MsgFlags::REQUIRED>(this);
-    messenger->bindSingle<LCIOWriterModule, MCTrackMessage, MsgFlags::REQUIRED>(this);
+    messenger->bindMulti<LCIOWriterModule, PixelHitMessage>(this);
+    messenger->bindSingle<LCIOWriterModule, MCTrackMessage>(this);
 
     // Set configuration defaults:
     config_.setDefault("file_name", "output.slcio");
@@ -548,3 +548,15 @@ void LCIOWriterModule::finalize() {
         LOG(STATUS) << "Wrote GEAR geometry to file:" << std::endl << geometry_file_name_;
     }
 }
+
+// check if the required messages are present in the event
+bool LCIOWriterModule::isSatisfied(Event* event) const {
+    try {
+        auto pixel_messages = event->fetchMultiMessage<PixelHitMessage>();
+    } catch (std::out_of_range&) {
+        return false;
+    }
+
+    return true;
+}
+

@@ -17,11 +17,11 @@
 using namespace allpix;
 
 DummyModule::DummyModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
-    : Module(config), geo_manager_(geo_manager), messenger_(messenger) {
+    : Module(config), geo_manager_(geo_manager) {
 
     // ... Implement ... (Typically bounds the required messages and optionally sets configuration defaults)
     // Input required by this module
-    messenger_->bindMulti<DummyModule, PixelHitMessage, MsgFlags::REQUIRED>(this);
+    messenger->bindMulti<DummyModule, PixelHitMessage>(this);
 }
 
 void DummyModule::init(std::mt19937_64&) {
@@ -42,4 +42,15 @@ void DummyModule::run(Event* event) const {
         std::string detectorName = message->getDetector()->getName();
         LOG(DEBUG) << "Picked up " << message->getData().size() << " objects from detector " << detectorName;
     }
+}
+
+// check if the required messages are present in the event
+bool DummyModule::isSatisfied(Event* event) const {
+    try {
+        auto messages = event->fetchMultiMessage<PixelHitMessage>();
+    } catch (std::out_of_range&) {
+        return false;
+    }
+
+    return true;
 }

@@ -47,7 +47,7 @@ SimpleTransferModule::SimpleTransferModule(Configuration& config, Messenger* mes
     output_plots_ = config_.get<bool>("output_plots");
 
     // Require propagated deposits for single detector
-    messenger->bindSingle<SimpleTransferModule, PropagatedChargeMessage, MsgFlags::REQUIRED>(this);
+    messenger->bindSingle<SimpleTransferModule, PropagatedChargeMessage>(this);
 }
 
 void SimpleTransferModule::init(std::mt19937_64&) {
@@ -168,4 +168,15 @@ void SimpleTransferModule::finalize() {
     if(output_plots_) {
         drift_time_histo->Write();
     }
+}
+
+// check if the required messages are present in the event
+bool SimpleTransferModule::isSatisfied(Event* event) const {
+    try {
+        auto propagated_message = event->fetchMessage<PropagatedChargeMessage>();
+    } catch (std::out_of_range&) {
+        return false;
+    }
+
+    return true;
 }

@@ -58,6 +58,12 @@ namespace allpix {
          */
         void finalize() override;
 
+        /**
+         * @brief Checks if the module is ready to run in the given event
+         * @param Event pointer to the event the module will run
+         */
+        virtual bool isSatisfied(Event* event) const;
+
     private:
         // General module members
         Messenger* messenger_;

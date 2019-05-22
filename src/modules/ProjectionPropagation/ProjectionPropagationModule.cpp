@@ -26,7 +26,7 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
     model_ = detector_->getModel();
 
     // Require deposits message for single detector
-    messenger_->bindSingle<ProjectionPropagationModule, DepositedChargeMessage, MsgFlags::REQUIRED>(this);
+    messenger_->bindSingle<ProjectionPropagationModule, DepositedChargeMessage>(this);
 
     // Set default value for config variables
     config_.setDefault<int>("charge_per_step", 10);
@@ -226,4 +226,15 @@ void ProjectionPropagationModule::finalize() {
         // Write output plot
         drift_time_histo_->Write();
     }
+}
+
+// check if the required messages are present in the event
+bool ProjectionPropagationModule::isSatisfied(Event* event) const {
+    try {
+        auto deposits_message = event->fetchMessage<DepositedChargeMessage>();
+    } catch (std::out_of_range&) {
+        return false;
+    }
+
+    return true;
 }

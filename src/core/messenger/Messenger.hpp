@@ -131,12 +131,6 @@ namespace allpix {
          */
         bool hasReceiver(Module* source, const std::shared_ptr<BaseMessage>& message);
 
-        /**
-         * @brief Check if a module is satisfied for running (all required messages received)
-         * @return True if satisfied, false otherwise
-         */
-        bool isSatisfied(Module* module) const;
-
     private:
         /**
          * @brief Add a delegate to the listeners
@@ -167,8 +161,7 @@ namespace allpix {
         static DelegateMap delegates_;
         static DelegateIteratorMap delegate_to_iterator_;
 
-        std::map<std::string, DelegateTypes> messages_;
-        std::map<std::string, bool> satisfied_modules_;
+        std::map<std::string, std::map<std::type_index, DelegateTypes>> messages_;
         std::vector<std::shared_ptr<BaseMessage>> sent_messages_;
 
         mutable std::mutex mutex_;

@@ -111,11 +111,6 @@ void Event::handle_iomodule(const std::shared_ptr<Module>& module) {
     };
 }
 
-Event* Event::with_context(const std::shared_ptr<Module>& module) {
-    current_module_ = module.get();
-    return this;
-}
-
 /**
  * Runs a single module.
  * The run for a module is skipped if it isn't \ref Event::is_satisfied() "satisfied".
@@ -128,9 +123,11 @@ void Event::run(std::shared_ptr<Module>& module) {
     LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << this->number << " [" << module->get_identifier().getUniqueName()
                                       << "]";
 
+    current_module_ = module.get();
+
     // Check if the module is satisfied to run
-    if(!messenger_.isSatisfied(module.get())) {
-        LOG(TRACE) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
+    if(!module->isSatisfied(this)) {
+        LOG(STATUS) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
                    << ", skipping module!";
         return;
     }
@@ -152,7 +149,7 @@ void Event::run(std::shared_ptr<Module>& module) {
 
     // Run module
     try {
-        module->run(with_context(module));
+        module->run(this);
     } catch(const EndOfRunException& e) {
         // Terminate if the module threw the EndOfRun request exception:
         LOG(WARNING) << "Request to terminate:" << std::endl << e.what();

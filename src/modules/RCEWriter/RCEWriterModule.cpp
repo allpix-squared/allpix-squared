@@ -415,3 +415,14 @@ void RCEWriterModule::finalize() {
     output_file_->Write();
     LOG(TRACE) << "Wrote data to file";
 }
+
+// check if the required messages are present in the event
+bool RCEWriterModule::isSatisfied(Event* event) const {
+    try {
+        auto pixel_hit_messages = event->fetchMultiMessage<PixelHitMessage>();
+    } catch (std::out_of_range&) {
+        return false;
+    }
+
+    return true;
+}

@@ -25,7 +25,7 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
                                                std::shared_ptr<Detector> detector)
     : Module(config, std::move(detector)), messenger_(messenger) {
     // Require PixelCharge message for single detector
-    messenger_->bindSingle<DefaultDigitizerModule, PixelChargeMessage, MsgFlags::REQUIRED>(this);
+    messenger_->bindSingle<DefaultDigitizerModule, PixelChargeMessage>(this);
 
     // Set defaults for config variables
     config_.setDefault<int>("electronics_noise", Units::get(110, "e"));
@@ -218,3 +218,15 @@ void DefaultDigitizerModule::finalize() {
 
     LOG(INFO) << "Digitized " << total_hits_ << " pixel hits in total";
 }
+
+// check if the required messages are present in the event
+bool DefaultDigitizerModule::isSatisfied(Event* event) const {
+    try {
+        auto pixel_message = event->fetchMessage<PixelChargeMessage>();
+    } catch (std::out_of_range&) {
+        return false;
+    }
+
+    return true;
+}
+

@@ -142,6 +142,12 @@ namespace allpix {
          */
         virtual void finalize() {}
 
+        /**
+         * @brief Checks if the module is ready to run in the given event
+         * @param Event pointer to the event the module will run
+         */
+        virtual bool isSatisfied(Event* event) const { (void)event; return true; }
+
     protected:
         /**
          * @brief Get the module configuration for internal use
@@ -185,10 +191,7 @@ namespace allpix {
          * @param delegate Delegate object
          */
         void add_delegate(Messenger* messenger, BaseDelegate* delegate);
-        /**
-         * @brief Check if all delegates are satisfied
-         */
-        bool check_delegates();
+
         std::vector<std::pair<Messenger*, BaseDelegate*>> delegates_;
 
         std::shared_ptr<Detector> detector_;
