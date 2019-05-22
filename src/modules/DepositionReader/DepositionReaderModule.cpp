@@ -99,16 +99,17 @@ void DepositionReaderModule::run(unsigned int event) {
             return d->getName() == volume;
         });
         if(pos == detectors.end()) {
-            LOG(WARNING) << "Did not find detector \"" << volume << "\" in the current simulation";
+            LOG(DEBUG) << "Ignored detector \"" << volume << "\", not found in current simulation";
             continue;
         }
         // Assign detector
         auto detector = (*pos);
+        LOG(DEBUG) << "Found detector \"" << detector->getName() << "\"";
 
         auto deposit_position = detector->getLocalPosition(global_deposit_position);
         if(!detector->isWithinSensor(deposit_position)) {
             LOG(WARNING) << "Found deposition outside sensor at " << Units::display(deposit_position, {"mm", "um"})
-                         << ". Skipping.";
+                         << ", global " << Units::display(global_deposit_position, {"mm", "um"}) << ". Skipping.";
             continue;
         }
 
@@ -119,7 +120,8 @@ void DepositionReaderModule::run(unsigned int event) {
         auto charge = charge_fluctuation(random_generator_);
 
         LOG(DEBUG) << "Found deposition of " << charge << " e/h pairs inside sensor at "
-                   << Units::display(deposit_position, {"mm", "um"}) << " in volume " << volume;
+                   << Units::display(deposit_position, {"mm", "um"}) << " in detector " << detector->getName() << ", global "
+                   << Units::display(global_deposit_position, {"mm", "um"});
 
         // MCParticle:
         mc_particles[detector].emplace_back(
