@@ -50,6 +50,10 @@ unsigned int PixelCharge::getCharge() const {
     return charge_;
 }
 
+const Pulse& PixelCharge::getPulse() const {
+    return pulse_;
+}
+
 /**
  * @throws MissingReferenceException If the pointed object is not in scope
  *

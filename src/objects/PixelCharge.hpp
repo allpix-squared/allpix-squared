@@ -77,6 +77,12 @@ namespace allpix {
         std::vector<const MCParticle*> getMCParticles() const;
 
         /**
+         *  @brief Get recoded charge pulse
+         *  @return Constatnt reference to the full charge pulse
+         */
+        const Pulse& getPulse() const;
+
+        /**
          * @brief ROOT class definition
          */
         ClassDefOverride(PixelCharge, 5);
