@@ -165,7 +165,7 @@ bool Messenger::dispatch_message(Module* source,
     // Send messages only to their specific listeners
     for(auto& delegate : delegates_[type_idx][id]) {
         if(check_send(message.get(), delegate.get())) {
-            LOG(TRACE) << "Sending message " << allpix::demangle(type_idx.name()) << " " << name << " " << id << " from " << source->getUniqueName()
+            LOG(TRACE) << "Sending message " << allpix::demangle(type_idx.name()) << " from " << source->getUniqueName()
                        << " to " << delegate->getUniqueName();
             // Construct BaseMessage where message should be stored
             auto& dest = messages_[delegate->getUniqueName()][type_idx];
