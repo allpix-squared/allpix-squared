@@ -162,17 +162,13 @@ bool Messenger::dispatch_message(Module* source,
     const BaseMessage* inst = message.get();
     std::type_index type_idx = typeid(*inst);
 
-    LOG(STATUS) << "SENDING MSG " << source->getUniqueName() << " " << name << " " << id << " " << allpix::demangle(type_idx.name());
-
     // Send messages only to their specific listeners
     for(auto& delegate : delegates_[type_idx][id]) {
         if(check_send(message.get(), delegate.get())) {
-            LOG(STATUS) << "Sending message " << allpix::demangle(type_idx.name()) << " " << name << " " << id << " from " << source->getUniqueName()
+            LOG(TRACE) << "Sending message " << allpix::demangle(type_idx.name()) << " " << name << " " << id << " from " << source->getUniqueName()
                        << " to " << delegate->getUniqueName();
             // Construct BaseMessage where message should be stored
             auto& dest = messages_[delegate->getUniqueName()][type_idx];
-
-            LOG(STATUS) << "SENT MSG " << delegate->getUniqueName() << ' ' << allpix::demangle(type_idx.name());
 
             delegate->process(message, name, dest);
             send = true;

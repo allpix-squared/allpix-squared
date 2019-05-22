@@ -46,7 +46,6 @@ namespace allpix {
     template <typename T> std::shared_ptr<T> Messenger::fetchMessage(Module* module) {
         static_assert(std::is_base_of<BaseMessage, T>::value, "Fetched message should inherit from Message class");
         std::type_index type_idx = typeid(T);
-        LOG(STATUS) << "Fetching MSG " << module->getUniqueName() << ' ' << allpix::demangle(type_idx.name());
         return std::static_pointer_cast<T>(messages_.at(module->getUniqueName()).at(type_idx).single);
     }
 

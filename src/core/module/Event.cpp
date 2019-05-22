@@ -127,7 +127,7 @@ void Event::run(std::shared_ptr<Module>& module) {
 
     // Check if the module is satisfied to run
     if(!module->isSatisfied(this)) {
-        LOG(STATUS) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
+        LOG(TRACE) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
                    << ", skipping module!";
         return;
     }
