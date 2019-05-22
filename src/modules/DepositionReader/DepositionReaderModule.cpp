@@ -172,15 +172,17 @@ bool DepositionReaderModule::read_root(unsigned int event_num,
     using namespace ROOT::Math;
 
     auto status = tree_reader_->GetEntryStatus();
-    if(status != TTreeReader::kEntryValid) {
-        throw EndOfRunException("Requesting end of run because TTree reported status \"" +
-                                std::string(tree_reader_->fgEntryStatusText[status]) + "\"");
-    } else if(status != TTreeReader::kEntryValid) {
-#ifdef ROOT_TTREEREADER_NOTEXT
-        throw ModuleError("Problem reading from tree");
+
+#ifdef ROOT_TTREEREADER_VERBOSE
+    auto status_message = std::string(tree_reader_->fgEntryStatusText[status]);
 #else
-        throw ModuleError("Problem reading from tree: \"" + std::string(tree_reader_->fgEntryStatusText[status]) + "\"");
+    auto status_message = std::string("unkown error");
 #endif
+
+    if(status != TTreeReader::kEntryValid) {
+        throw EndOfRunException("Requesting end of run because TTree reported status \"" + status_message + "\"");
+    } else if(status != TTreeReader::kEntryValid) {
+        throw ModuleError("Problem reading from tree: \"" + status_message + "\"");
     }
 
     // Separate individual events
