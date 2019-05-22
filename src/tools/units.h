@@ -21,9 +21,6 @@ namespace allpix {
     static void register_units() {
         LOG(TRACE) << "Adding physical units";
 
-        // UNITY
-        Units::add("1", 1);
-
         // LENGTH
         Units::add("nm", 1e-6);
         Units::add("um", 1e-3);
@@ -57,6 +54,7 @@ namespace allpix {
 
         // VOLTAGE
         // NOTE: fixed by above
+        Units::add("mV", 1e-9);
         Units::add("V", 1e-6);
         Units::add("kV", 1e-3);
 
