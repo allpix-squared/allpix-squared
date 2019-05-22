@@ -11,8 +11,8 @@ namespace allpix {
         }
 
         // Shift the coordinates by the offset configured for the field:
-        auto x = pos.x() - offset_[0];
-        auto y = pos.y() - offset_[1];
+        auto x = pos.x() + offset_[0];
+        auto y = pos.y() + offset_[1];
         auto z = pos.z();
 
         // Compute corresponding field replica coordinates:
