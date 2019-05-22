@@ -143,3 +143,14 @@ void TextWriterModule::finalize() {
     LOG(STATUS) << "Wrote " << write_cnt_ << " objects from " << msg_cnt_ << " messages to file:" << std::endl
                 << output_file_name_;
 }
+
+// check if the required messages are present in the event
+bool TextWriterModule::isSatisfied(Event* event) const {
+    try {
+        auto messages = event->fetchFilteredMessages();
+    } catch (std::out_of_range&) {
+        return false;
+    }
+
+    return true;
+}
