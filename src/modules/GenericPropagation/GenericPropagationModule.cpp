@@ -538,7 +538,7 @@ void GenericPropagationModule::init(std::mt19937_64&) {
     }
 }
 
-void GenericPropagationModule::run(Event* event) const {
+void GenericPropagationModule::run(Event* event) {
     auto deposits_message = event->fetchMessage<DepositedChargeMessage>();
 
     // Create vector of propagated charges to output

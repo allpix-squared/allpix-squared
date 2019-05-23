@@ -46,7 +46,7 @@ namespace allpix {
         /**
          * @brief Deposit charge carriers for every simulated event
          */
-        void run(Event*) const override;
+        void run(Event*) override;
 
     private:
         /**

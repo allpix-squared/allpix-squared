@@ -56,7 +56,7 @@ namespace allpix {
         /**
          * @brief Propagate all deposited charges through the sensor
          */
-        void run(Event*) const override;
+        void run(Event*) override;
 
         /**
          * @brief Write statistical summary
@@ -110,9 +110,9 @@ namespace allpix {
         ROOT::Math::XYZVector magnetic_field_;
 
         // Statistical information
-        mutable unsigned int total_propagated_charges_{};
-        mutable unsigned int total_steps_{};
-        mutable long double total_time_{};
+        unsigned int total_propagated_charges_{};
+        unsigned int total_steps_{};
+        long double total_time_{};
         TH1D* step_length_histo_;
         TH1D* drift_time_histo_;
         TH1D* uncertainty_histo_;

@@ -249,7 +249,7 @@ void ROOTObjectReaderModule::init(std::mt19937_64&) {
     }
 }
 
-void ROOTObjectReaderModule::run(Event* event) const {
+void ROOTObjectReaderModule::run(Event* event) {
     unsigned int event_num = event->number;
     --event_num;
     for(auto& tree : trees_) {

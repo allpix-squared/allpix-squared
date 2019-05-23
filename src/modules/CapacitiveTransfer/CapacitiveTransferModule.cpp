@@ -259,7 +259,7 @@ void CapacitiveTransferModule::init(std::mt19937_64&) {
     }
 }
 
-void CapacitiveTransferModule::run(Event* event) const {
+void CapacitiveTransferModule::run(Event* event) {
     auto propagated_message = event->fetchMessage<PropagatedChargeMessage>();
 
     // Find corresponding pixels for all propagated charges

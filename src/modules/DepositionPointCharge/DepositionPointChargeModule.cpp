@@ -77,7 +77,7 @@ void DepositionPointChargeModule::init(std::mt19937_64&) {
     }
 }
 
-void DepositionPointChargeModule::run(Event* event) const {
+void DepositionPointChargeModule::run(Event* event) {
 
     if(model_ == DepositionModel::MIP) {
         DepositLine(event);

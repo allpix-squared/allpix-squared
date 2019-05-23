@@ -279,7 +279,7 @@ void DepositionGeant4Module::init(std::mt19937_64& seeder) {
     RELEASE_STREAM(G4cout);
 }
 
-void DepositionGeant4Module::run(Event* event) const {
+void DepositionGeant4Module::run(Event* event) {
     // Suppress output stream if not in debugging mode
     IFLOG(DEBUG);
     else {

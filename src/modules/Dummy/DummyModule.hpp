@@ -46,7 +46,7 @@ namespace allpix {
         /**
          * @brief [Run the function of this module]
          */
-        void run(Event* event) const override;
+        void run(Event* event) override;
 
     private:
         // General module members

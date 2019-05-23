@@ -58,7 +58,7 @@ namespace allpix {
         /**
          * @brief Transfer the propagated charges to the pixels and its neighbours
          */
-        void run(Event*) const override;
+        void run(Event*) override;
 
         /**
          * @brief Display statistical summary
@@ -84,8 +84,8 @@ namespace allpix {
         };
 
         // Statistical information
-        mutable unsigned int total_transferred_charges_{};
-        mutable std::set<Pixel::Index, pixel_cmp> unique_pixels_;
+        unsigned int total_transferred_charges_{};
+        std::set<Pixel::Index, pixel_cmp> unique_pixels_;
 
         // Matrix to store cross-coupling values
         std::vector<std::vector<double>> relative_coupling;

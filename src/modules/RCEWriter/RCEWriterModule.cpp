@@ -358,7 +358,7 @@ void RCEWriterModule::init(std::mt19937_64&) {
     write_proteus_config(device_path, geometry_path, detector_names, *geo_mgr_, *getConfigManager());
 }
 
-void RCEWriterModule::run(Event* event) const {
+void RCEWriterModule::run(Event* event) {
     auto pixel_hit_messages = event->fetchMultiMessage<PixelHitMessage>();
 
     // fill per-event data

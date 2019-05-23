@@ -55,7 +55,7 @@ namespace allpix {
         /**
          * @brief Deposit charges for a single event
          */
-        void run(Event*) const override;
+        void run(Event*) override;
 
         /**
          * @brief Display statistical summary
@@ -73,7 +73,7 @@ namespace allpix {
         std::vector<SensitiveDetectorActionG4*> sensors_;
 
         // Number of the last event
-        mutable unsigned int last_event_num_;
+        unsigned int last_event_num_;
 
         // Class holding the limits for the step size
         std::unique_ptr<G4UserLimits> user_limits_;
@@ -82,7 +82,7 @@ namespace allpix {
         G4RunManager* run_manager_g4_;
 
         // Vector of histogram pointers for debugging plots
-        mutable std::map<std::string, TH1D*> charge_per_event_;
+        std::map<std::string, TH1D*> charge_per_event_;
 
         std::once_flag geant4_seed;
     };

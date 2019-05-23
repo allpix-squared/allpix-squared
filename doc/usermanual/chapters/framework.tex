@@ -431,7 +431,7 @@ Dispatching messages to their receivers is then performed following these rules:
 An example of how to dispatch a message containing an array of \parameter{Object} types bound to a detector named \texttt{dut} is provided below.
 As usual, the message is dispatched at the end of the \parameter{run()} function of the module.
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
-void run(Event* event) const {
+void run(Event* event) {
     std::vector<Object> data;
     // ..fill the data vector with objects ...
 
@@ -651,7 +651,7 @@ Signals any problem with the value of a configuration parameter not related to p
 Can for example be used for parameters where the possible valid values are limited, like the set of logging levels, or for paths that do not exist.
 An example is shown below:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
-void run(Event* event) const {
+void run(Event* event) {
     // Fetch a key from the configuration
     std::string value = config.get("key");
 
@@ -704,9 +704,7 @@ When all events have been executed \apsq begins terminating.
 An event is constructed with a shared list of the loaded modules.
 Inside an event, and thus for each worker, these modules are run sequentially, modifying the \texttt{Event} instance given to them.
 In the context of an event, the only module function used it the \texttt{run()}-method.
-To enable thread safety, this function is made constant;
-the \texttt{run()}-function may not access or modify member fields of the module unless the module-author has explicitly allowed this.
-If a module's \texttt{run()}-function does access a member field
+If a module's \texttt{run()}-function access a member field
 (which is then accessed by multiple workers)
 it must be appropriately protected with a mutex and should for performance reasons only be used to record module statistics.
 

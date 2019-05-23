@@ -245,7 +245,7 @@ void LCIOWriterModule::init(std::mt19937_64&) {
     lcWriter_->writeRunHeader(run.get());
 }
 
-void LCIOWriterModule::run(Event* event) const {
+void LCIOWriterModule::run(Event* event) {
     auto pixel_messages = event->fetchMultiMessage<PixelHitMessage>();
 
     auto evt = std::make_unique<LCEventImpl>(); // create the event

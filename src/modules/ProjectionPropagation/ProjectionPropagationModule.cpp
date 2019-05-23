@@ -91,7 +91,7 @@ void ProjectionPropagationModule::init(std::mt19937_64&) {
     }
 }
 
-void ProjectionPropagationModule::run(Event* event) const {
+void ProjectionPropagationModule::run(Event* event) {
     auto deposits_message = event->fetchMessage<DepositedChargeMessage>();
 
     // Create vector of propagated charges to output

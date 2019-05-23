@@ -109,7 +109,7 @@ bool ROOTObjectWriterModule::filter(const std::shared_ptr<BaseMessage>& message,
     return true;
 }
 
-void ROOTObjectWriterModule::pre_run(Event* event) const {
+void ROOTObjectWriterModule::pre_run(Event* event) {
     auto messages = event->fetchFilteredMessages();
 
     for(auto& pair : messages) {
@@ -172,7 +172,7 @@ void ROOTObjectWriterModule::pre_run(Event* event) const {
     }
 }
 
-void ROOTObjectWriterModule::run(Event* event) const {
+void ROOTObjectWriterModule::run(Event* event) {
     // Generate trees and index data
     pre_run(event);
 

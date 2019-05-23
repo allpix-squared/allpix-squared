@@ -34,7 +34,7 @@ void DummyModule::init(std::mt19937_64&) {
     }
 }
 
-void DummyModule::run(Event* event) const {
+void DummyModule::run(Event* event) {
     auto messages = event->fetchMultiMessage<PixelHitMessage>();
     // ... Implement ... (Typically uses the configuration to execute function and outputs an message)
     // Loop through all receieved messages and print some information

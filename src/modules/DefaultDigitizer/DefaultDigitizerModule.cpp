@@ -91,7 +91,7 @@ void DefaultDigitizerModule::init(std::mt19937_64&) {
     }
 }
 
-void DefaultDigitizerModule::run(Event* event) const {
+void DefaultDigitizerModule::run(Event* event) {
     auto pixel_message = event->fetchMessage<PixelChargeMessage>();
 
     // Loop through all pixels with charges

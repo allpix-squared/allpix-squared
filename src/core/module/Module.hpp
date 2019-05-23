@@ -132,7 +132,7 @@ namespace allpix {
          *
          * Does nothing if not overloaded.
          */
-        virtual void run(Event* event) const { (void)event; }
+        virtual void run(Event* event) { (void)event; }
         //
         /**
          * @brief Finalize the module after the event sequence
@@ -150,7 +150,7 @@ namespace allpix {
         Configuration& get_configuration();
         Configuration& config_;
 
-        mutable std::mutex stats_mutex_;
+        std::mutex stats_mutex_;
 
     private:
         /**

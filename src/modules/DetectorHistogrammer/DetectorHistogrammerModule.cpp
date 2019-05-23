@@ -232,7 +232,7 @@ void DetectorHistogrammerModule::init(std::mt19937_64&) {
         new TH1D("cluster_charge", cluster_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
 }
 
-void DetectorHistogrammerModule::run(Event* event) const {
+void DetectorHistogrammerModule::run(Event* event) {
     using namespace ROOT::Math;
     auto pixels_message = event->fetchMessage<PixelHitMessage>();
     auto mcparticle_message = event->fetchMessage<MCParticleMessage>();

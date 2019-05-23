@@ -49,7 +49,7 @@ namespace allpix {
         /**
          * @brief Projection of the electrons to the surface
          */
-        void run(Event*) const override;
+        void run(Event*) override;
 
         /**
          * @brief Write plots if needed

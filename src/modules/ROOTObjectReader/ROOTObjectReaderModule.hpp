@@ -57,7 +57,7 @@ namespace allpix {
         /**
          * @brief Convert the objects stored for the current event to messages
          */
-        void run(Event*) const override;
+        void run(Event*) override;
 
         /**
          * @brief Output summary and close the ROOT file
@@ -90,7 +90,7 @@ namespace allpix {
         std::list<message_info> message_info_array_;
 
         // Statistics for total amount of objects stored
-        mutable unsigned long read_cnt_{};
+        unsigned long read_cnt_{};
 
         // Internal map to construct an object from it's type index
         MessageCreatorMap message_creator_map_;

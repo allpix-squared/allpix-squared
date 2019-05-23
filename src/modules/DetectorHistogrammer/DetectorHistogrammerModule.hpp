@@ -54,7 +54,7 @@ namespace allpix {
         /**
          * @brief Fill the histograms
          */
-        void run(Event*) const override;
+        void run(Event*) override;
 
         /**
          * @brief Write the histograms to the modules file
@@ -76,8 +76,8 @@ namespace allpix {
         std::shared_ptr<Detector> detector_;
 
         // Statistics to compute mean position
-        mutable ROOT::Math::XYVector total_vector_{};
-        mutable unsigned long total_hits_{};
+        ROOT::Math::XYVector total_vector_{};
+        unsigned long total_hits_{};
 
         // Cut criteria for efficiency measurement:
         ROOT::Math::XYVector matching_cut_{};
