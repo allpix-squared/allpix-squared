@@ -40,24 +40,16 @@
 using namespace allpix;
 using namespace ROOT;
 
-GDMLOutputWriterModule::GDMLOutputWriterModule(Configuration& config, Messenger*, GeometryManager* geo_manager)
-    : Module(config), geo_manager_(geo_manager), run_manager_g4_(nullptr) {
-    (void)run_manager_g4_;
-    (void)geo_manager_;
-}
+GDMLOutputWriterModule::GDMLOutputWriterModule(Configuration& config, Messenger*, GeometryManager*) : Module(config) {}
 
-/**
- * @brief Checks if a particular Geant4 dataset is available in the environment
- * @throws ModuleError If a certain Geant4 dataset is not set or not available
- */
 void GDMLOutputWriterModule::init() {
 
     SUPPRESS_STREAM(G4cout);
 
 // Export geometry in GDML if requested (and GDML support is available in Geant4)
 #ifdef Geant4_GDML
-    auto GDML_output_file_name = config_.get<std::string>("GDML_output_file_name", "Output");
-    auto output_file = createOutputFile(GDML_output_file_name);
+    auto file_name = config_.get<std::string>("file_name", "Output");
+    auto output_file = createOutputFile(file_name);
     output_file += ".gdml";
     G4GDMLParser parser;
     parser.SetRegionExport(true);
