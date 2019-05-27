@@ -23,6 +23,10 @@ ROOT::Math::XYZPoint SensorCharge::getLocalPosition() const {
     return local_position_;
 }
 
+ROOT::Math::XYZPoint SensorCharge::getGlobalPosition() const {
+    return global_position_;
+}
+
 CarrierType SensorCharge::getType() const {
     return type_;
 }
