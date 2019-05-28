@@ -168,8 +168,8 @@ ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZPoint& pos
     }
 
     // Shift the coordinates by the offset configured for the electric field:
-    auto x = pos.x() - electric_field_offset_[0];
-    auto y = pos.y() - electric_field_offset_[1];
+    auto x = pos.x() + electric_field_offset_[0];
+    auto y = pos.y() + electric_field_offset_[1];
     auto z = pos.z();
 
     // Compute corresponding field replica coordinates:
