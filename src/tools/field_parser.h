@@ -26,6 +26,9 @@
 #include <cereal/types/string.hpp>
 #include <cereal/types/vector.hpp>
 
+// Mime type version for APF files
+#define APF_MIME_TYPE_VERSION 1
+
 namespace allpix {
 
     /**
@@ -74,13 +77,40 @@ namespace allpix {
 
         friend class cereal::access;
 
-        template <class Archive> void serialize(Archive& archive) {
+        // Versioned serialization function:
+        template <class Archive> void serialize(Archive& archive, std::uint32_t const version) {
+            // For now, we only know one version of this file type:
+            if(version != 1) {
+                throw std::runtime_error("unknown format version " + std::to_string(version));
+            }
+
+            // (De-) Serialize the data:
             archive(header_);
             archive(dimensions_);
             archive(size_);
             archive(data_);
         }
     };
+}
+
+// Enable versioning for the FieldData class template
+namespace cereal {
+    namespace detail {
+        template <class T> struct Version<allpix::FieldData<T>> {
+            static const std::uint32_t version;
+            static std::uint32_t registerVersion() {
+                ::cereal::detail::StaticObject<Versions>::getInstance().mapping.emplace(
+                    std::type_index(typeid(allpix::FieldData<T>)).hash_code(), APF_MIME_TYPE_VERSION);
+                return 3;
+            }
+            static void unused() { (void)version; }
+        }; /* end Version */
+        template <class T>
+        const std::uint32_t Version<allpix::FieldData<T>>::version = Version<allpix::FieldData<T>>::registerVersion();
+    }
+}
+
+namespace allpix {
 
     /**
      * @brief Class to parse Allpix Squared field data from files
