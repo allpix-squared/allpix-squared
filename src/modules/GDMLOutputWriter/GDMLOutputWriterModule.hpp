@@ -10,8 +10,8 @@
 #ifndef ALLPIX_MODULE_GDML_OUTPUT_WRITER_H
 #define ALLPIX_MODULE_GDML_OUTPUT_WRITER_H
 
-#include <memory>
 #include <map>
+#include <memory>
 #include <string>
 
 #include "core/config/Configuration.hpp"
@@ -36,16 +36,13 @@ namespace allpix {
         GDMLOutputWriterModule(Configuration& config, Messenger* messenger, GeometryManager*);
         ~GDMLOutputWriterModule() override;
 
-
         /**
          * @brief Initializes Geant4 and construct the GDML output file from the internal geometry
          */
         void init() override;
 
     private:
-    std::string output_file_name_{};
-
-
+        std::string output_file_name_{};
     };
 } // namespace allpix
 

@@ -9,8 +9,8 @@
 
 #include "GDMLOutputWriterModule.hpp"
 
-#include <fstream>
 #include <cassert>
+#include <fstream>
 #include <memory>
 #include <string>
 #include <utility>
@@ -43,10 +43,10 @@ GDMLOutputWriterModule::GDMLOutputWriterModule(Configuration& config, Messenger*
 GDMLOutputWriterModule::~GDMLOutputWriterModule() {}
 
 void GDMLOutputWriterModule::init() {
-    
+
     // Suppress output from G4
     SUPPRESS_STREAM(G4cout);
-  
+
     G4GDMLParser parser;
     parser.SetRegionExport(true);
     parser.Write(allpix::add_file_extension(config_.get<std::string>("file_name", "Output"), "gdml"),
@@ -57,10 +57,4 @@ void GDMLOutputWriterModule::init() {
 
     // Release output from G4
     RELEASE_STREAM(G4cout);
-  
 }
-
- 
-
-
-
