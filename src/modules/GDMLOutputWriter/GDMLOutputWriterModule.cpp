@@ -9,6 +9,7 @@
 
 #include "GDMLOutputWriterModule.hpp"
 
+#include <fstream>
 #include <cassert>
 #include <memory>
 #include <string>
@@ -25,46 +26,41 @@
 #include "tools/ROOT.h"
 #include "tools/geant4.h"
 
-#include "core/config/ConfigReader.hpp"
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
 
 #include "core/config/ConfigReader.hpp"
+#include "core/utils/file.h"
 #include "core/utils/log.h"
+#include "core/utils/type.h"
 
-// Include GDML if Geant4 version has it
-#ifdef Geant4_GDML
 #include "G4GDMLParser.hh"
-#endif
 
 using namespace allpix;
-using namespace ROOT;
 
 GDMLOutputWriterModule::GDMLOutputWriterModule(Configuration& config, Messenger*, GeometryManager*) : Module(config) {}
 
+GDMLOutputWriterModule::~GDMLOutputWriterModule() {}
+
 void GDMLOutputWriterModule::init() {
-
+    
+    // Suppress output from G4
     SUPPRESS_STREAM(G4cout);
-
-// Export geometry in GDML if requested (and GDML support is available in Geant4)
-#ifdef Geant4_GDML
-    auto file_name = config_.get<std::string>("file_name", "Output");
-    auto output_file = createOutputFile(file_name);
-    output_file += ".gdml";
+  
     G4GDMLParser parser;
     parser.SetRegionExport(true);
-    parser.Write(output_file,
+    parser.Write(allpix::add_file_extension(config_.get<std::string>("file_name", "Output"), "gdml"),
                  G4TransportationManager::GetTransportationManager()
                      ->GetNavigatorForTracking()
                      ->GetWorldVolume()
                      ->GetLogicalVolume());
-#else
-    std::string error = "You requested to export the geometry in GDML. ";
-    error += "However, GDML support is currently disabled in Geant4. ";
-    error += "To enable it, configure and compile Geant4 with the option -DGEANT4_USE_GDML=ON.";
-    throw allpix::InvalidValueError(config_, "GDML_output_file_name", error);
-#endif
 
     // Release output from G4
     RELEASE_STREAM(G4cout);
+  
 }
+
+ 
+
+
+

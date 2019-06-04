@@ -2,8 +2,7 @@
 ALLPIX_UNIQUE_MODULE(MODULE_NAME)
 
 # Geant4 is required
-FIND_PACKAGE(Geant4)
-ADD_DEFINITIONS(-DGeant4_GDML)
+FIND_PACKAGE(Geant4 COMPONENTS gdml)
 
 # Add "geant4.sh" as runtime dependency for setup.sh file:
 ADD_RUNTIME_DEP(geant4.sh)

@@ -14,6 +14,8 @@ This module requires an installation `Geant4_GDML`. This option can be added by 
 * `file_name` : sets the name of the name of the GDML output file. Don't include the .gdml extension or the module will give an error. Defaults to `Output`
 
 ### Usage
+Creating a GDML output file  with the name myOutputfile.gdml
+
 [GDMLOutputWriter]
-GDML_output_file_name = myOutput
+file_name = myOutputfile
 ```
