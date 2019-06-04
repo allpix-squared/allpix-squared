@@ -40,8 +40,6 @@ using namespace allpix;
 
 GDMLOutputWriterModule::GDMLOutputWriterModule(Configuration& config, Messenger*, GeometryManager*) : Module(config) {}
 
-GDMLOutputWriterModule::~GDMLOutputWriterModule() {}
-
 void GDMLOutputWriterModule::init() {
 
     // Suppress output from G4
