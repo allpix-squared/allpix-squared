@@ -148,7 +148,10 @@ namespace allpix {
                 return iter->second;
             }
 
+            // Deduce the file format
             auto file_type = guess_file_type(file_name);
+            LOG(DEBUG) << "Assuming file type \"" << (file_type == FileType::APF ? "APF" : "INIT") << "\"";
+
             switch(file_type) {
             case FileType::INIT:
                 if(units.empty()) {
