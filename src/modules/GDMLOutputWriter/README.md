@@ -11,7 +11,7 @@ A new name has to be added for each new GDML output file, the software is unable
 This module requires an installation `Geant4_GDML`. This option can be added by configuring and compiling Geant4 with the option `-DGEANT4_USE_GDML=ON`
 
 ### Parameters
-* `file_name` : sets the name of the name of the GDML output file. Defaults to `Output`
+* `file_name` : Name of the data file to create, relative to the output directory of the framework. The file extension .gdml will be appended if not present. Defaults to `Output.gdml`
 
 ### Usage
 Creating a GDML output file  with the name myOutputfile.gdml
