@@ -4,7 +4,6 @@
 
 ### Description
 Constructs a GDML output file of the geometry if this module is added.
-A new name has to be added for each new GDML output file, the software is unable to overwrite previous files.
 
 ### Dependencies
 
