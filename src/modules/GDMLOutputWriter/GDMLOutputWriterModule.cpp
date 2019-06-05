@@ -42,12 +42,15 @@ GDMLOutputWriterModule::GDMLOutputWriterModule(Configuration& config, Messenger*
 
 void GDMLOutputWriterModule::init() {
 
+    std::string GDML_output_file =
+        createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name", "Output"), "gdml"), false, true);
+
     // Suppress output from G4
     SUPPRESS_STREAM(G4cout);
 
     G4GDMLParser parser;
     parser.SetRegionExport(true);
-    parser.Write(allpix::add_file_extension(config_.get<std::string>("file_name", "Output"), "gdml"),
+    parser.Write(GDML_output_file,
                  G4TransportationManager::GetTransportationManager()
                      ->GetNavigatorForTracking()
                      ->GetWorldVolume()
