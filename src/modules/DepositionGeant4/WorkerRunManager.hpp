@@ -18,8 +18,11 @@ namespace allpix {
     /**
      * @brief Run manager for Geant4 that can be used by multiple threads where each thread will have its own instance.
      *
-     * This manager overrides G4WorkerRunManager behaviour so it can be used on user defined threads. Therefore, there
+     * This manager overrides \ref G4WorkerRunManager behaviour so it can be used on user defined threads. Therefore, there
      * is no dependency on the master run manager except only in initialization.
+     * APIs inherited from \ref G4WorkerRunManager which communicate with master run manager are suppressed because they
+     * are not needed anymore. This manager assumes that the client is only interested into its own results and it is
+     * independent from other instances running on different threads.
      */
     class WorkerRunManager : public G4WorkerRunManager {
         friend class RunManager;
@@ -27,6 +30,20 @@ namespace allpix {
         virtual ~WorkerRunManager();
     protected:
         WorkerRunManager() = default;
+
+        /**
+         * @brief Previously used to communicate work with master manager.
+         *
+         * Thread loop for receiving work from master run manager. It will now do nothing.
+         */
+        virtual void DoWork() override {}
+
+        /**
+         * @brief Previously used to merge the partial results obtained by this manager and the master.
+         *
+         * Merge the run results with the master results. It will now do nothing.
+         */
+        virtual void MergePartialResults() override {}
     };
 } // namespace allpix
 
