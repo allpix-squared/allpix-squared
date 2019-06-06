@@ -16,8 +16,8 @@ G4ThreadLocal WorkerRunManager* RunManager::worker_run_manager_ = nullptr;
 
 void RunManager::BeamOn(G4int n_event, const char* macroFile, G4int n_select) {
     if (!worker_run_manager_) {
-        // TODO: Initialize worker
-        return;
+        // construct a new thread worker
+        worker_run_manager_ = WorkerRunManager::GetNewInstanceForThread();
     }
 
     // Draw the nessecary seeds so that each event will be seeded
@@ -56,6 +56,7 @@ void RunManager::Initialize() {
 }
 
 void RunManager::TerminateForThread() {
+    // thread local instance
     worker_run_manager_->RunTermination();
     delete worker_run_manager_;
     worker_run_manager_ = nullptr;

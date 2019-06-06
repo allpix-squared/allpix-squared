@@ -29,6 +29,14 @@ namespace allpix {
         friend class RunManager;
     public:
         virtual ~WorkerRunManager();
+
+        /**
+         * @brief Factory method to create new worker for calling thread.
+         *
+         * Creates a new worker and initialize it to be used by the calling thread.
+         */
+        static WorkerRunManager* GetNewInstanceForThread();
+
     protected:
         WorkerRunManager() = default;
 
