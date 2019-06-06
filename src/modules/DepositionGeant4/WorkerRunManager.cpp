@@ -32,6 +32,16 @@ namespace {
 }
 
 WorkerRunManager::~WorkerRunManager() {
+    G4MTRunManager* master_run_manager = G4MTRunManager::GetMasterRunManager();
+
+    // Step-6: Terminate worker thread
+    if (master_run_manager->GetUserWorkerInitialization()) { 
+        master_run_manager->GetUserWorkerInitialization()->WorkerStop();
+    }
+
+    // Step-7: Cleanup split classes
+    // TODO: crashes! is it needed anyways?
+    //G4WorkerThread::DestroyGeometryAndPhysicsVector();
 }
 
 WorkerRunManager* WorkerRunManager::GetNewInstanceForThread() {
