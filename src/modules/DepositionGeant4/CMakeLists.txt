@@ -28,6 +28,8 @@ ALLPIX_MODULE_SOURCES(${MODULE_NAME}
     TrackInfoG4.cpp
     TrackInfoManager.cpp
     SetTrackInfoUserHookG4.cpp
+    RunManager.cpp
+    WorkerRunManager.cpp
 )
 
 # Include Geant4 directories (NOTE Geant4_USE_FILE is not used!)
