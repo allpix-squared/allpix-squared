@@ -23,3 +23,10 @@ void RunManager::Initialize()
     // refilling later
     G4MTRunManager::InitializeEventLoop(nSeedsMax, nullptr, 0);
 }
+
+void RunManager::TerminateForThread()
+{
+    worker_run_manager_->RunTermination();
+    delete worker_run_manager_;
+    worker_run_manager_ = nullptr;
+}

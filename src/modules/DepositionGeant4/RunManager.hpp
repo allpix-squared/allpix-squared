@@ -41,6 +41,14 @@ namespace allpix {
          */
         virtual void Initialize() override;
 
+        /**
+         * @brief Cleanup worker specific data stored as thread local.
+         *
+         * Cleanup all thread local objects allocated previously by the calling thread. Each thread that ever used
+         * this class must call this method to ensure correct termination.
+         */
+        void TerminateForThread();
+
     protected:
         RunManager() = default;
 
