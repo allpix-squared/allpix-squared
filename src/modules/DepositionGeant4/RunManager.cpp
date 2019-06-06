@@ -8,5 +8,18 @@
  */
 
 #include "RunManager.hpp"
+#include "WorkerRunManager.hpp"
 
 using namespace allpix;
+
+G4ThreadLocal WorkerRunManager* RunManager::worker_run_manager_ = nullptr;
+
+void RunManager::Initialize()
+{
+    G4MTRunManager::Initialize();
+
+    // This is needed to draw random seeds and fill the internal seed array
+    // use nSeedsMax to fill as much as possible now and hopefully avoid
+    // refilling later
+    G4MTRunManager::InitializeEventLoop(nSeedsMax, nullptr, 0);
+}

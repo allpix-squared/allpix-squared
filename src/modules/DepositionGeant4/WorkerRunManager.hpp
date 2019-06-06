@@ -12,9 +12,10 @@
 
 #include <G4WorkerRunManager.hh>
 
-class RunManager;
-
 namespace allpix {
+
+    class RunManager;
+
     /**
      * @brief Run manager for Geant4 that can be used by multiple threads where each thread will have its own instance.
      *

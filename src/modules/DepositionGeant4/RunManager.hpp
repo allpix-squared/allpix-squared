@@ -12,9 +12,10 @@
 
 #include <G4MTRunManager.hh>
 
-class WorkerRunManager;
-
 namespace allpix {
+
+    class WorkerRunManager;
+
     /**
      * @brief A custom run manager for Geant4 that can work with external threads and be used concurrently.
      *
@@ -30,6 +31,16 @@ namespace allpix {
         friend class WorkerRunManager;
     public:
         virtual ~RunManager() = default;
+
+        /**
+         * @brief Initialize the run manager to be ready for run.
+         *
+         * Initializes the manager to be in a ready state. It will also prepare the random seeds which will be used
+         * to seed the RNG on each worker thread.
+         * If you want to set the seeds for G4 RNG it must happen before calling this method.
+         */
+        virtual void Initialize() override;
+
     protected:
         RunManager() = default;
 
@@ -124,6 +135,10 @@ namespace allpix {
          * Wait for all the workers to finish initialization. It will now do nothing.
          */
         virtual void WaitForReadyWorkers() override {}
+    
+    private:
+        // \ref WorkerRunManager worker manager that run on each thread.
+        static G4ThreadLocal WorkerRunManager* worker_run_manager_; 
     };
 } // namespace allpix
 
