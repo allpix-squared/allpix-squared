@@ -14,8 +14,39 @@ using namespace allpix;
 
 G4ThreadLocal WorkerRunManager* RunManager::worker_run_manager_ = nullptr;
 
-void RunManager::Initialize()
-{
+void RunManager::BeamOn(G4int n_event, const char* macroFile, G4int n_select) {
+    if (!worker_run_manager_) {
+        // TODO: Initialize worker
+        return;
+    }
+
+    // Draw the nessecary seeds so that each event will be seeded
+    // TODO: maybe we only need to seed the RNG once for a worker run and not for each loop iteration
+    G4RNGHelper* helper = G4RNGHelper::GetInstance();
+    for (G4int i = 0; i < n_event; ++i) {
+        G4int idx_rndm = nSeedsPerEvent*nSeedsUsed;
+        long s1 = helper->GetSeed(idx_rndm), s2 = helper->GetSeed(idx_rndm+1);
+        worker_run_manager_->seedsQueue.push(s1);
+        worker_run_manager_->seedsQueue.push(s2);
+
+        nSeedsUsed++;
+
+        if(nSeedsUsed==nSeedsFilled) {
+            // The RefillSeeds call will refill the array with 1024 new entries
+            // the number of seeds refilled = numberOfEventToBeProcessed - nSeedsFilled
+            numberOfEventToBeProcessed = nSeedsFilled + 1024;
+            RefillSeeds();
+        }
+    }
+
+    // for book keeping
+    numberOfEventProcessed += n_event;
+
+    // redirect the call to the correct manager responsible for this thread
+    worker_run_manager_->BeamOn(n_event, macroFile, n_select);
+}
+
+void RunManager::Initialize() {
     G4MTRunManager::Initialize();
 
     // This is needed to draw random seeds and fill the internal seed array
@@ -24,8 +55,7 @@ void RunManager::Initialize()
     G4MTRunManager::InitializeEventLoop(nSeedsMax, nullptr, 0);
 }
 
-void RunManager::TerminateForThread()
-{
+void RunManager::TerminateForThread() {
     worker_run_manager_->RunTermination();
     delete worker_run_manager_;
     worker_run_manager_ = nullptr;
