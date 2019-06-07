@@ -94,6 +94,10 @@ void TransientPropagationModule::init() {
         throw ModuleError("This module requires a weighting potential.");
     }
 
+    if(detector_->getElectricFieldType() == FieldType::LINEAR) {
+        throw ModuleError("This module cannot be used with linear electric fields.");
+    }
+
     // Check for magnetic field
     has_magnetic_field_ = detector->hasMagneticField();
     if(has_magnetic_field_) {
