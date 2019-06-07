@@ -121,7 +121,7 @@ void DepositionReaderModule::run(unsigned int event) {
 
         LOG(DEBUG) << "Found deposition of " << charge << " e/h pairs inside sensor at "
                    << Units::display(deposit_position, {"mm", "um"}) << " in detector " << detector->getName() << ", global "
-                   << Units::display(global_deposit_position, {"mm", "um"});
+                   << Units::display(global_deposit_position, {"mm", "um"}) << ", particleID " << pdg_code;
 
         // MCParticle:
         mc_particles[detector].emplace_back(
