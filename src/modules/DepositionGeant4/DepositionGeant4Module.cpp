@@ -39,6 +39,7 @@
 #include "GeneratorActionG4.hpp"
 #include "SensitiveDetectorActionG4.hpp"
 #include "SetTrackInfoUserHookG4.hpp"
+#include "ActionInitializationG4.hpp"
 
 #define G4_NUM_SEEDS 10
 
@@ -196,15 +197,12 @@ void DepositionGeant4Module::init(std::mt19937_64& seeder) {
     run_manager_g4_->Initialize();
 
     // Build particle generator
+    // User hook to store additional information at track initialization and termination as well as custom track ids
     LOG(TRACE) << "Constructing particle source";
-    auto generator = new GeneratorActionG4(config_);
-    run_manager_g4_->SetUserAction(generator);
-
     track_info_manager_ = std::make_unique<TrackInfoManager>();
 
-    // User hook to store additional information at track initialization and termination as well as custom track ids
-    auto userTrackIDHook = new SetTrackInfoUserHookG4(track_info_manager_.get());
-    run_manager_g4_->SetUserAction(userTrackIDHook);
+    auto action_initialization = new ActionInitializationG4(config_, track_info_manager_.get());
+    run_manager_g4_->SetUserInitialization(action_initialization);
 
     if(geo_manager_->hasMagneticField()) {
         MagneticFieldType magnetic_field_type_ = geo_manager_->getMagneticFieldType();
