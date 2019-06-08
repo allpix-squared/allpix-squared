@@ -44,6 +44,38 @@ WorkerRunManager::~WorkerRunManager() {
     //G4WorkerThread::DestroyGeometryAndPhysicsVector();
 }
 
+void WorkerRunManager::DoEventLoop(G4int n_event,const char* macroFile,G4int n_select)
+{
+    if(!userPrimaryGeneratorAction)
+    {
+      G4Exception("WorkerRunManager::GenerateEvent()", "Run0032", FatalException,
+                "G4VUserPrimaryGeneratorAction is not defined!");
+    }
+
+    InitializeEventLoop(n_event, macroFile, n_select);
+
+    runIsSeeded = true; 
+
+    // Event loop
+    eventLoopOnGoing = true;
+    G4int i_event = -1;
+    nevModulo = -1;
+    currEvID = -1;
+
+    while(eventLoopOnGoing)
+    {
+      ProcessOneEvent(i_event);
+      if(eventLoopOnGoing)
+      {
+        TerminateOneEvent();
+        if(runAborted)
+        { eventLoopOnGoing = false; }
+      }
+    }
+     
+    TerminateEventLoop();
+}
+
 G4Event* WorkerRunManager::GenerateEvent(G4int i_event)
 {
     (void)i_event;

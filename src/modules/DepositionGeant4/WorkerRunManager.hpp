@@ -41,6 +41,15 @@ namespace allpix {
         WorkerRunManager() = default;
 
         /**
+         * @brief Run the event loop for specified number of events.
+         * @param n_event number of events
+         *
+         * Run the event loop. Everything is the same as base implementation except that we keep
+         * the seedsQueue since the master manager has already pushed the seeds in it.
+         */
+        virtual void DoEventLoop(G4int n_event, const char* macroFile = nullptr, G4int n_select = -1) override;
+
+        /**
          * @brief Previously used to communicate work with master manager.
          *
          * Thread loop for receiving work from master run manager. It will now do nothing.
