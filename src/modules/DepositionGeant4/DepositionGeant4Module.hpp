@@ -25,9 +25,10 @@
 #include <TH1D.h>
 
 class G4UserLimits;
-class G4RunManager;
 
 namespace allpix {
+    class RunManager;
+
     /**
      * @ingroup Modules
      * @brief Module to simulate the particle beam and generating the charge deposits in the sensor
@@ -79,7 +80,7 @@ namespace allpix {
         std::unique_ptr<G4UserLimits> user_limits_;
 
         // Pointer to the Geant4 manager (owned by GeometryBuilderGeant4)
-        G4RunManager* run_manager_g4_;
+        RunManager* run_manager_g4_;
 
         // Vector of histogram pointers for debugging plots
         std::map<std::string, TH1D*> charge_per_event_;

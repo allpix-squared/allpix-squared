@@ -30,6 +30,7 @@ namespace allpix {
     class RunManager : public G4MTRunManager {
         friend class WorkerRunManager;
     public:
+        RunManager() = default;
         virtual ~RunManager() = default;
 
         /**
@@ -60,7 +61,6 @@ namespace allpix {
         void TerminateForThread();
 
     protected:
-        RunManager() = default;
 
         /**
          * @brief Previously used by workers to wait for master commands.

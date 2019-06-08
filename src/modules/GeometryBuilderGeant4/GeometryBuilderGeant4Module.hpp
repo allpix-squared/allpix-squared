@@ -18,9 +18,9 @@
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 
-class G4RunManager;
-
 namespace allpix {
+    class RunManager;
+
     /**
      * @ingroup Modules
      * @brief Module to construct the Geant4 geometry from the internal geometry
@@ -48,7 +48,7 @@ namespace allpix {
         GeometryManager* geo_manager_;
 
         // Geant4 run manager is owned by this module
-        std::unique_ptr<G4RunManager> run_manager_g4_;
+        std::unique_ptr<RunManager> run_manager_g4_;
     };
 } // namespace allpix
 

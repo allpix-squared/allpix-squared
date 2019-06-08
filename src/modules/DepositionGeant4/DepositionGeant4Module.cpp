@@ -19,7 +19,6 @@
 #include <G4LogicalVolume.hh>
 #include <G4PhysListFactory.hh>
 #include <G4RadioactiveDecayPhysics.hh>
-#include <G4RunManager.hh>
 #include <G4StepLimiterPhysics.hh>
 #include <G4UImanager.hh>
 #include <G4UserLimits.hh>
@@ -35,6 +34,7 @@
 #include "objects/DepositedCharge.hpp"
 #include "tools/ROOT.h"
 #include "tools/geant4.h"
+#include "G4RunManager/RunManager.hpp"
 
 #include "GeneratorActionG4.hpp"
 #include "SensitiveDetectorActionG4.hpp"
@@ -73,7 +73,7 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
  */
 void DepositionGeant4Module::init(std::mt19937_64& seeder) {
     // Load the G4 run manager (which is owned by the geometry builder)
-    run_manager_g4_ = G4RunManager::GetRunManager();
+    run_manager_g4_ = static_cast<RunManager*> (G4MTRunManager::GetMasterRunManager());
     if(run_manager_g4_ == nullptr) {
         throw ModuleError("Cannot deposit charges using Geant4 without a Geant4 geometry builder");
     }
@@ -177,6 +177,21 @@ void DepositionGeant4Module::init(std::mt19937_64& seeder) {
     run_manager_g4_->SetUserInitialization(physicsList);
     run_manager_g4_->InitializePhysics();
 
+
+    // Prepare seeds for Geant4:
+    // NOTE Assumes this is the only Geant4 module using random numbers
+    std::string seed_command = "/random/setSeeds ";
+    for(int i = 0; i < G4_NUM_SEEDS; ++i) {
+        seed_command += std::to_string(static_cast<uint32_t>(seeder() % INT_MAX));
+        if(i != G4_NUM_SEEDS - 1) {
+            seed_command += " ";
+        }
+    }
+
+    // Set the random seed for Geant4 generation before calling initialize
+    // since it draws random numbers
+    ui_g4->ApplyCommand(seed_command);
+
     // Initialize the full run manager to ensure correct state flags
     run_manager_g4_->Initialize();
 
@@ -208,16 +223,6 @@ void DepositionGeant4Module::init(std::mt19937_64& seeder) {
     // Get the creation energy for charge (default is silicon electron hole pair energy)
     auto charge_creation_energy = config_.get<double>("charge_creation_energy", Units::get(3.64, "eV"));
     auto fano_factor = config_.get<double>("fano_factor", 0.115);
-
-    // Prepare seeds for Geant4:
-    // NOTE Assumes this is the only Geant4 module using random numbers
-    std::string seed_command = "/random/setSeeds ";
-    for(int i = 0; i < G4_NUM_SEEDS; ++i) {
-        seed_command += std::to_string(static_cast<uint32_t>(seeder() % INT_MAX));
-        if(i != G4_NUM_SEEDS - 1) {
-            seed_command += " ";
-        }
-    }
 
     // Loop through all detectors and set the sensitive detector action that handles the particle passage
     bool useful_deposition = false;
@@ -271,9 +276,6 @@ void DepositionGeant4Module::init(std::mt19937_64& seeder) {
     ui_g4->ApplyCommand("/process/em/verbose 0");
     ui_g4->ApplyCommand("/process/eLoss/verbose 0");
     G4HadronicProcessStore::Instance()->SetVerbose(0);
-
-    // Set the random seed for Geant4 generation
-    ui_g4->ApplyCommand(seed_command);
 
     // Release the output stream
     RELEASE_STREAM(G4cout);
