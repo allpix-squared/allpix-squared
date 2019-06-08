@@ -644,8 +644,7 @@ void ModuleManager::run(std::mt19937_64& seeder) {
         // TODO [doc] make this a unique pointer
         auto event =
             std::make_shared<ConcreteEvent>(modules_, i, terminate_, master_condition, module_execution_time_, seeder);
-        // Event initialization must be done on the main thread
-        event->run_geant4();
+
         auto event_function = [ event = std::move(event), number_of_events, event_num = i, &finished_events ]() mutable {
             LOG(STATUS) << "Running event " << event_num << " of " << number_of_events;
             event->run();

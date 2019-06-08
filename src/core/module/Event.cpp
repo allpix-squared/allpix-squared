@@ -47,36 +47,6 @@ Event::Event(ModuleList modules,
 }
 
 /**
- * Geant4 modules must be run single-threaded on the main thread.
- * Runs all modules up to and including the last Geant4 module and pops them from the \ref Event::modules_ "list of modules".
- */
-void Event::run_geant4() {
-    // Figure out how many modules must run on the main thread
-    auto remove_modules = modules_.size();
-    for(auto module = modules_.crbegin(); module != modules_.crend(); module++) {
-        if(dynamic_cast<Geant4Module*>(module->get()) == nullptr) {
-            remove_modules--;
-        } else {
-            break;
-        }
-    }
-
-    for(auto i = remove_modules; i != 0; i--) {
-        auto module = modules_.front();
-        LOG(DEBUG) << module->getUniqueName() << " is a Geant4 module; running on main thread";
-        run(module);
-        modules_.pop_front();
-    }
-
-#ifndef NDEBUG
-    // Ensure all Geant4 modules have been removed
-    for(auto& module : modules_) {
-        assert(module->getUniqueName().find("Geant4") == std::string::npos);
-    }
-#endif
-}
-
-/**
  * Runs modules that read from or write to files in order of increasing event number.
  * The appropriate \ref Event::IOOrderLock "order lock" is operated upon -- counter read/modified and condition watched -- to
  * achieve this.

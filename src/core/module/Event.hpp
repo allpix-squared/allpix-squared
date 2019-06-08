@@ -130,16 +130,7 @@ namespace allpix {
         ~Event() = default;
 
         /**
-         * @brief Run all Geant4 module, initializing the event
-         * @warning This function must be called from the main thread
-         *
-         * When this function returns, the \Ref Event::modules_ "list of modules" no longer contain any Geant4 modules.
-         */
-        void run_geant4();
-
-        /**
          * @brief Sequentially run the event's remaining modules
-         * @warning Should be called after the \ref Event::run_geant4 "init function"
          *
          * May be called in a spawned thread.
          */
@@ -212,7 +203,6 @@ namespace allpix {
         template <typename... Params> explicit ConcreteEvent(Params&&... params) : Event(std::forward<Params>(params)...) {}
 
     private:
-        void run_geant4() { Event::run_geant4(); }
         void run() { Event::run(); }
     };
 
