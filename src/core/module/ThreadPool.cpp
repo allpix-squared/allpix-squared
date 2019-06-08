@@ -14,8 +14,9 @@ using namespace allpix;
  */
 ThreadPool::ThreadPool(unsigned int num_threads,
                        std::function<void()> worker_init_function,
+                       std::function<void()> worker_finalize_function,
                        std::condition_variable& master_condition)
-    : master_condition_(master_condition) {
+    : master_condition_(master_condition), worker_finalize_function_(worker_finalize_function) {
     // Create threads
     try {
         for(unsigned int i = 0u; i < num_threads; ++i) {
@@ -97,6 +98,11 @@ void ThreadPool::worker(const std::function<void()>& init_function) {
         std::lock_guard<std::mutex> lock{run_mutex_};
         --run_cnt_;
         run_condition_.notify_all();
+    }
+
+    // Execute the cleanup function at the end of loop
+    if (worker_finalize_function_) {
+        worker_finalize_function_();
     }
 }
 

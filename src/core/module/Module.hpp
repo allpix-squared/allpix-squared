@@ -142,6 +142,14 @@ namespace allpix {
          */
         virtual void finalize() {}
 
+        /**
+         * @brief Finalize the module after the event sequence for each thread
+         * @note Useful to cleanup thread local objects
+         *
+         * Does nothing if not overloaded.
+         */
+        virtual void finalizeForThread() {}
+
     protected:
         /**
          * @brief Get the module configuration for internal use

@@ -604,8 +604,16 @@ void ModuleManager::run(std::mt19937_64& seeder) {
         Log::setReportingLevel(log_level);
         Log::setFormat(log_format);
     };
+
+    // Finalize modules for each thread
+    auto finialize_function = [modules_list = modules_]() {
+        for (auto & module : modules_list) {
+            module->finalizeForThread();
+        }
+    };
+
     std::condition_variable master_condition;
-    std::shared_ptr<ThreadPool> thread_pool = std::make_unique<ThreadPool>(threads_num, init_function, master_condition);
+    std::shared_ptr<ThreadPool> thread_pool = std::make_unique<ThreadPool>(threads_num, init_function, finialize_function, master_condition);
 
     std::atomic<unsigned int> finished_events{0};
 
