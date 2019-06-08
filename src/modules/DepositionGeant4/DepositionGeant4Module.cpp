@@ -336,3 +336,7 @@ void DepositionGeant4Module::finalize() {
         LOG(WARNING) << "No charges deposited";
     }
 }
+
+void DepositionGeant4Module::finalizeForThread() {
+    run_manager_g4_->TerminateForThread();
+}

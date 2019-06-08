@@ -63,6 +63,11 @@ namespace allpix {
          */
         void finalize() override;
 
+        /**
+         * @brief Cleanup \ref RunManager for each thread
+         */
+        void finalizeForThread() override;
+
     private:
         Messenger* messenger_;
         GeometryManager* geo_manager_;
