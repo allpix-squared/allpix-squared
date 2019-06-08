@@ -44,6 +44,45 @@ WorkerRunManager::~WorkerRunManager() {
     //G4WorkerThread::DestroyGeometryAndPhysicsVector();
 }
 
+G4Event* WorkerRunManager::GenerateEvent(G4int i_event)
+{
+    (void)i_event;
+    if(!userPrimaryGeneratorAction)
+    {
+        G4Exception("WorkerRunManager::GenerateEvent()", "Run0032", FatalException,
+                "G4VUserPrimaryGeneratorAction is not defined!");
+        return nullptr;
+    }
+
+    G4Event* anEvent = nullptr;
+    long s1, s2, s3;
+    s1 = s2 = s3 = 0;
+
+    if( numberOfEventProcessed < numberOfEventToBeProcessed && !runAborted ) {
+        anEvent  = new G4Event(numberOfEventProcessed);
+
+        // Seeds are stored in this queue to ensure we can reproduce the results of events
+        // each event will reseed the random number generator
+        s1 = seedsQueue.front(); seedsQueue.pop();
+        s2 = seedsQueue.front(); seedsQueue.pop();
+
+        // seed RNG for this event run
+        // TODO: check if we should seed each event or just the first one
+        // since the rest are executed sequentially here
+        long seeds[3] = { s1, s2, s3 };
+        G4Random::setTheSeeds(seeds,-1);
+        runIsSeeded = true;
+
+        userPrimaryGeneratorAction->GeneratePrimaries(anEvent);
+    } else {
+        // This flag must be set so the event loop exits if no more events
+        // to be processed
+        eventLoopOnGoing = false;
+    }
+
+  return anEvent;
+}
+
 WorkerRunManager* WorkerRunManager::GetNewInstanceForThread() {
     WorkerRunManager* thread_run_manager = nullptr;
     G4MTRunManager* master_run_manager = G4MTRunManager::GetMasterRunManager();

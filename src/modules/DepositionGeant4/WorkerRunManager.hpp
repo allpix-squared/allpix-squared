@@ -48,6 +48,14 @@ namespace allpix {
         virtual void DoWork() override {}
 
         /**
+         * @brief Constructs an event object and set the seeds for RNG.
+         * @param i_event the event number.
+         *
+         * Creats a new \ref G4Event object and set its event number, seeds for the thread RNG.
+         */
+        virtual G4Event* GenerateEvent(G4int i_event) override;
+
+        /**
          * @brief Previously used to merge the partial results obtained by this manager and the master.
          *
          * Merge the run results with the master results. It will now do nothing.
