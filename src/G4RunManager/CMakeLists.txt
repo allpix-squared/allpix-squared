@@ -34,12 +34,3 @@ INSTALL(TARGETS AllpixGeant4RunManager
     COMPONENT application
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib)
-
-# Also install the dictionary objects
-INSTALL(FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/libAllpixGeant4RunManager_rdict.pcm
-    ${CMAKE_CURRENT_BINARY_DIR}/libAllpixGeant4RunManager.rootmap
-    COMPONENT application
-    DESTINATION lib)
-
-
