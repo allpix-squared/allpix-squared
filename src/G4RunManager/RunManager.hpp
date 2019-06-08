@@ -41,7 +41,7 @@ namespace allpix {
          * The worker will be initialized with a new set of seeds to be used specifically for this event run such
          * that events are seeded in the order of creation which ensures that results can be reproduced.
          */
-        virtual void BeamOn(G4int n_event, const char* macroFile = nullptr, G4int n_select = -1) override;
+        void Run(G4int n_event);
 
         /**
          * @brief Initialize the run manager to be ready for run.

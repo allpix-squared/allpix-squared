@@ -14,7 +14,7 @@ using namespace allpix;
 
 G4ThreadLocal WorkerRunManager* RunManager::worker_run_manager_ = nullptr;
 
-void RunManager::BeamOn(G4int n_event, const char* macroFile, G4int n_select) {
+void RunManager::Run(G4int n_event) {
     if (!worker_run_manager_) {
         // construct a new thread worker
         worker_run_manager_ = WorkerRunManager::GetNewInstanceForThread();
@@ -43,7 +43,7 @@ void RunManager::BeamOn(G4int n_event, const char* macroFile, G4int n_select) {
     numberOfEventProcessed += n_event;
 
     // redirect the call to the correct manager responsible for this thread
-    worker_run_manager_->BeamOn(n_event, macroFile, n_select);
+    worker_run_manager_->BeamOn(n_event);
 }
 
 void RunManager::Initialize() {
