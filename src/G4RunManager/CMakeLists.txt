@@ -1,7 +1,4 @@
-# Define module
-ALLPIX_UNIQUE_MODULE(MODULE_NAME)
-
-# Geant4 is required for geometry description and charge deposition.
+# Geant4 is required by the run manager
 FIND_PACKAGE(Geant4)
 IF(NOT Geant4_FOUND)
     MESSAGE(FATAL_ERROR "Could not find Geant4, make sure to source the Geant4 environment\n"
@@ -20,21 +17,29 @@ ELSEIF(CMAKE_BUILD_TYPE MATCHES RELEASE)
     SET(CMAKE_CXX_FLAGS "${Geant4_CXX_FLAGS_RELEASE} ${CMAKE_CXX_FLAGS}")
 ENDIF()
 
-# Add source files to library
-ALLPIX_MODULE_SOURCES(${MODULE_NAME}
-    DepositionGeant4Module.cpp
-    GeneratorActionG4.cpp
-    SensitiveDetectorActionG4.cpp
-    TrackInfoG4.cpp
-    TrackInfoManager.cpp
-    SetTrackInfoUserHookG4.cpp
+# Define the library adding the object file created above
+ADD_LIBRARY(AllpixGeant4RunManager SHARED
+    RunManager.cpp
+    WorkerRunManager.cpp
 )
 
 # Include Geant4 directories (NOTE Geant4_USE_FILE is not used!)
-TARGET_INCLUDE_DIRECTORIES(${MODULE_NAME} SYSTEM PRIVATE ${Geant4_INCLUDE_DIRS})
+TARGET_INCLUDE_DIRECTORIES(AllpixGeant4RunManager SYSTEM PRIVATE ${Geant4_INCLUDE_DIRS})
 
 # Add Geant4 libraries
-TARGET_LINK_LIBRARIES(${MODULE_NAME} ${Geant4_LIBRARIES})
+TARGET_LINK_LIBRARIES(AllpixGeant4RunManager ${Geant4_LIBRARIES})
 
-# Provide standard install target
-ALLPIX_MODULE_INSTALL(${MODULE_NAME})
+# Specify install for the messages
+INSTALL(TARGETS AllpixGeant4RunManager
+    COMPONENT application
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib)
+
+# Also install the dictionary objects
+INSTALL(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/libAllpixGeant4RunManager_rdict.pcm
+    ${CMAKE_CURRENT_BINARY_DIR}/libAllpixGeant4RunManager.rootmap
+    COMPONENT application
+    DESTINATION lib)
+
+

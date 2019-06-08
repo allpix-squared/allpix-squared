@@ -31,6 +31,14 @@ namespace allpix {
         virtual ~WorkerRunManager();
 
         /**
+         * @brief Executes specified number of events.
+         *
+         * Executes the specified number of events. Reimplemented to execute UI commands and maybe
+         * reinitialize workspace if there are changes between multiple calls.
+         */
+        virtual void BeamOn(G4int n_event, const char* macroFile = nullptr, G4int n_select = -1) override;
+
+        /**
          * @brief Factory method to create new worker for calling thread.
          *
          * Creates a new worker and initialize it to be used by the calling thread.
