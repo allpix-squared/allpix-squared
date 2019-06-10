@@ -63,15 +63,15 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
         while(std::getline(file, line)) {
             // Check for the "/gps/" pattern in the line:
             if(!line.empty()) {
-                if(line.substr(0, 13) == "/gps/position" || line.substr(0, 15) == "/gps/pos/centre") {
+                if(line.rfind("/gps/position", 0) == 0 || line.rfind("/gps/pos/centre") == 0) {
                     throw ModuleError(
                         "The source position must be defined in the main configuration file, not in the macro.");
-                } else if(line.substr(0, 11) == "/gps/number") {
+                } else if(line.rfind("/gps/number", 0) == 0) {
                     throw ModuleError(
                         "The number of particles must be defined in the main configuration file, not in the macro.");
-                } else if(line.substr(0, 13) == "/gps/particle" || line.substr(0, 10) == "/gps/hist/" ||
-                          line.substr(0, 9) == "/gps/ang/" || line.substr(0, 9) == "/gps/pos/" ||
-                          line.substr(0, 9) == "/gps/ene/" || line.substr(0, 15) == "/gps/direction/" || line.at(0) == '#') {
+                } else if(line.rfind("/gps/particle", 0) == 0 || line.rfind("/gps/hist/", 0) == 0 ||
+                          line.rfind("/gps/ang/", 0) == 0 || line.rfind("/gps/pos/", 0) == 0 ||
+                          line.rfind("/gps/ene/", 0) == 0 || line.rfind("/gps/direction/", 0) == 0 || line.at(0) == '#') {
                     UI->ApplyCommand(line);
                 } else {
                     LOG(WARNING) << "Ignoring Geant4 macro command: \"" + line + "\" - not related to particle source.";
