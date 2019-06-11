@@ -327,8 +327,8 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(co
                 }
 
                 // Carrier left sensor on top or bottom surface, interpolate
-                auto z_cur_border = std::fabs(position.z() - model_->getSensorSize().z() / 2.0) + 1e-9;
-                auto z_last_border = std::fabs(model_->getSensorSize().z() / 2.0 - last_position.z()) - 1e-9;
+                auto z_cur_border = std::fabs(position.z() - model_->getSensorSize().z() / 2.0);
+                auto z_last_border = std::fabs(model_->getSensorSize().z() / 2.0 - last_position.z());
                 auto z_total = z_cur_border + z_last_border;
                 position = (z_last_border / z_total) * position + (z_cur_border / z_total) * last_position;
                 LOG(TRACE) << "Moved carrier to: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
