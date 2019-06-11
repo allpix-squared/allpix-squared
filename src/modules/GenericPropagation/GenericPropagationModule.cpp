@@ -777,8 +777,8 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         check_position.z() = last_position.z();
         if(position.z() > 0 && detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(check_position))) {
             // Carrier left sensor on the side of the pixel grid, interpolate end point on surface
-            auto z_cur_border = std::fabs(position.z() - model_->getSensorSize().z() / 2.0) + 1e-9;
-            auto z_last_border = std::fabs(model_->getSensorSize().z() / 2.0 - last_position.z()) - 1e-9;
+            auto z_cur_border = std::fabs(position.z() - model_->getSensorSize().z() / 2.0);
+            auto z_last_border = std::fabs(model_->getSensorSize().z() / 2.0 - last_position.z());
             auto z_total = z_cur_border + z_last_border;
             position = (z_last_border / z_total) * position + (z_cur_border / z_total) * last_position;
             time = (z_last_border / z_total) * time + (z_cur_border / z_total) * last_time;
