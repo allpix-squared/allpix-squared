@@ -608,7 +608,7 @@ void ModuleManager::run(std::mt19937_64& seeder) {
     // Finalize modules for each thread
     auto finialize_function = [modules_list = modules_]() {
         for (auto & module : modules_list) {
-            module->finalizeForThread();
+            module->finalizeThread();
         }
     };
 

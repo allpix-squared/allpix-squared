@@ -59,14 +59,14 @@ namespace allpix {
         void run(Event*) override;
 
         /**
+         * @brief Cleanup \ref RunManager for each thread
+         */
+        void finalizeThread() override;
+
+        /**
          * @brief Display statistical summary
          */
         void finalize() override;
-
-        /**
-         * @brief Cleanup \ref RunManager for each thread
-         */
-        void finalizeForThread() override;
 
     private:
         Messenger* messenger_;

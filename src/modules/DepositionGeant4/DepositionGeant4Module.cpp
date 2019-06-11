@@ -335,6 +335,6 @@ void DepositionGeant4Module::finalize() {
     }
 }
 
-void DepositionGeant4Module::finalizeForThread() {
+void DepositionGeant4Module::finalizeThread() {
     run_manager_g4_->TerminateForThread();
 }

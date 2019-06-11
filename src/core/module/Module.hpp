@@ -133,14 +133,6 @@ namespace allpix {
          * Does nothing if not overloaded.
          */
         virtual void run(Event* event) { (void)event; }
-        //
-        /**
-         * @brief Finalize the module after the event sequence
-         * @note Useful to have before destruction to allow for raising exceptions
-         *
-         * Does nothing if not overloaded.
-         */
-        virtual void finalize() {}
 
         /**
          * @brief Finalize the module after the event sequence for each thread
@@ -148,7 +140,15 @@ namespace allpix {
          *
          * Does nothing if not overloaded.
          */
-        virtual void finalizeForThread() {}
+        virtual void finalizeThread() {}
+
+        /**
+         * @brief Finalize the module after the event sequence
+         * @note Useful to have before destruction to allow for raising exceptions
+         *
+         * Does nothing if not overloaded.
+         */
+        virtual void finalize() {}
 
     protected:
         /**
