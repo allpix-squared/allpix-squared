@@ -51,7 +51,6 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     single_source->GetPosDist()->SetCentreCoords(config.get<G4ThreeVector>("source_position"));
 
     if(source_type == "macro") {
-
         LOG(INFO) << "Using user macro for particle source.";
 
         // Get the UI commander
@@ -69,9 +68,8 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
                 } else if(line.rfind("/gps/number", 0) == 0) {
                     throw ModuleError(
                         "The number of particles must be defined in the main configuration file, not in the macro.");
-                } else if(line.rfind("/gps/particle", 0) == 0 || line.rfind("/gps/hist/", 0) == 0 ||
-                          line.rfind("/gps/ang/", 0) == 0 || line.rfind("/gps/pos/", 0) == 0 ||
-                          line.rfind("/gps/ene/", 0) == 0 || line.rfind("/gps/direction/", 0) == 0 || line.at(0) == '#') {
+                } else if(line.rfind("/gps/", 0) == 0 || line.at(0) == '#') {
+                    LOG(DEBUG) << "Applying Geant4 macro command: \"" << line << "\"";
                     UI->ApplyCommand(line);
                 } else {
                     LOG(WARNING) << "Ignoring Geant4 macro command: \"" + line + "\" - not related to particle source.";
