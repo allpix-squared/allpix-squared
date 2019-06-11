@@ -2,11 +2,7 @@
 ALLPIX_UNIQUE_MODULE(MODULE_NAME)
 
 # Geant4 is required
-FIND_PACKAGE(Geant4 OPTIONAL_COMPONENTS gdml)
-IF(NOT Geant4_FOUND)
-    MESSAGE(FATAL_ERROR "Could not find Geant4, make sure to source the Geant4 environment\n"
-    "$ source YOUR_GEANT4_DIR/bin/geant4.sh")
-ENDIF()
+FIND_PACKAGE(Geant4 COMPONENTS gdml)
 
 # Add "geant4.sh" as runtime dependency for setup.sh file:
 ADD_RUNTIME_DEP(geant4.sh)
@@ -22,9 +18,7 @@ ENDIF()
 
 # Add source files to library
 ALLPIX_MODULE_SOURCES(${MODULE_NAME}
-    GeometryBuilderGeant4Module.cpp
-    GeometryConstructionG4.cpp
-    Parameterization2DG4.cpp
+    GDMLOutputWriterModule.cpp
 )
 
 # Include Geant4 directories (NOTE Geant4_USE_FILE is not used!)
