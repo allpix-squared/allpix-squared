@@ -7,8 +7,8 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#ifndef ALLPIX_MODULE_TARGET_GEOMETRY_CONSTRUCTION_MODULE_H
-#define ALLPIX_MODULE_TARGET_GEOMETRY_CONSTRUCTION_MODULE_H
+#ifndef ALLPIX_MODULE_PASSIVE_MATERIAL_CONSTRUCTION_MODULE_H
+#define ALLPIX_MODULE_PASSIVE_MATERIAL_CONSTRUCTION_MODULE_H
 
 #include <memory>
 #include <string>
@@ -29,7 +29,7 @@ namespace allpix {
      * detector, building it from the internal detector model. The geometry that is eventually constructed is used to
      * simulate the charge deposition in the \ref DepositionGeant4Module.
      */
-    class TargetGeometryBuilderGeant4Module : public Module {
+    class PassiveMaterialBuilderGeant4Module : public Module {
     public:
         /**
          * @brief Constructor for this unique module
@@ -37,7 +37,7 @@ namespace allpix {
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
          * @param geo_manager Pointer to the geometry manager, containing the detectors
          */
-        TargetGeometryBuilderGeant4Module(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
+        PassiveMaterialBuilderGeant4Module(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
 
         /**
          * @brief Initializes Geant4 and construct the Geant4 geometry from the internal geometry
@@ -52,4 +52,4 @@ namespace allpix {
     };
 } // namespace allpix
 
-#endif /* ALLPIX_MODULE_TARGET_GEOMETRY_CONSTRUCTION_MODULE_H */
+#endif /* ALLPIX_MODULE_PASSIVE_MATERIAL_CONSTRUCTION_MODULE_H */

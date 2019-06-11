@@ -2,7 +2,7 @@
 ALLPIX_UNIQUE_MODULE(MODULE_NAME)
 
 # Geant4 is required
-FIND_PACKAGE(Geant4 OPTIONAL_COMPONENTS gdml)
+FIND_PACKAGE(Geant4)
 
 # Add "geant4.sh" as runtime dependency for setup.sh file:
 ADD_RUNTIME_DEP(geant4.sh)
@@ -18,8 +18,8 @@ ENDIF()
 
 # Add source files to library
 ALLPIX_MODULE_SOURCES(${MODULE_NAME}
-    TargetGeometryBuilderGeant4Module.cpp
-    TargetConstructionG4.cpp
+    PassiveMaterialBuilderGeant4Module.cpp
+    PassiveMaterialConstructionG4.cpp
 
 )
 

@@ -334,6 +334,7 @@ std::shared_ptr<Detector> GeometryManager::getDetector(const std::string& name) 
     }
     throw allpix::InvalidDetectorError(name);
 }
+
 /**
  * @throws InvalidDetectorError If not a single detector with this type exists
  */

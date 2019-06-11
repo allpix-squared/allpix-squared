@@ -103,6 +103,12 @@ namespace allpix {
         std::list<Configuration>& getDetectorConfigurations();
 
         /**
+         * @brief Get all the passive material configurations
+         * @return Reference to list of passive material configurations
+         */
+        std::list<Configuration>& getPassiveMaterialConfigurations();
+
+        /**
          * @brief Load detector specific options
          * @param options List of options to load and apply
          * @return True if any actual options where applied
@@ -120,7 +126,9 @@ namespace allpix {
 
         // Helper function for delayed parsing of detectors file
         void parse_detectors();
+        void parse_passive_materials();
         std::list<Configuration> detector_configs_;
+        std::list<Configuration> passive_material_configs_;
 
         std::list<Configuration> instance_configs_;
         std::map<std::string, std::list<Configuration>::iterator> instance_name_to_config_;

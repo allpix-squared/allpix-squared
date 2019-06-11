@@ -7,8 +7,8 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#ifndef ALLPIX_MODULE_TARGET_CONSTRUCTION_H
-#define ALLPIX_MODULE_TARGET_CONSTRUCTION_H
+#ifndef ALLPIX_MODULE_PASSIVE_MATERIAL_CONSTRUCTION_H
+#define ALLPIX_MODULE_PASSIVE_MATERIAL_CONSTRUCTION_H
 
 #include <G4LogicalVolume.hh>
 #include <memory>
@@ -16,7 +16,8 @@
 #include "G4LogicalVolume.hh"
 #include "G4Material.hh"
 #include "G4VSolid.hh"
-#include "core/config/ConfigReader.hpp"
+#include "core/config/ConfigManager.hpp"
+#include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryBuilder.hpp"
 #include "core/geometry/GeometryManager.hpp"
 
@@ -24,13 +25,14 @@ namespace allpix {
     /**
      * @brief Constructs the Geant4 geometry during Geant4 initialization
      */
-    class TargetConstructionG4 : public GeometryBuilder<G4LogicalVolume, G4Material> {
+    class PassiveMaterialConstructionG4 : public GeometryBuilder<G4LogicalVolume, G4Material> {
     public:
         /**
          * @brief Constructs geometry construction module
          * @param config Configuration object of the geometry builder module
          */
-        TargetConstructionG4(Configuration& config);
+        // TargetConstructionG4(ConfigReader& reader);
+        PassiveMaterialConstructionG4(Configuration& config);
 
         /**
          * @brief Constructs the world geometry with all detectors
@@ -40,11 +42,10 @@ namespace allpix {
 
     private:
         Configuration& config_;
-
         // Storage of internal objects
         std::vector<std::shared_ptr<G4VSolid>> solids_;
     };
 
 } // namespace allpix
 
-#endif /* ALLPIX_MODULE_TARGET_CONSTRUCTION_H */
+#endif /* ALLPIX_MODULE_PASSIVE_MATERIAL_CONSTRUCTION_H */

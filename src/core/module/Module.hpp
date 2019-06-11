@@ -103,7 +103,7 @@ namespace allpix {
          * @param global True if the global output directory should be used instead of the module-specific version
          * @return Canonical path to an output file
          */
-        std::string createOutputFile(const std::string& path, bool global = false);
+        std::string createOutputFile(const std::string& path, bool global = false, bool delete_file = false);
 
         /**
          * @brief Get seed to initialize random generators
