@@ -21,6 +21,7 @@
 
 #include <G4Box.hh>
 #include <G4LogicalVolume.hh>
+#include <G4LogicalVolumeStore.hh>
 #include <G4Material.hh>
 #include <G4NistManager.hh>
 #include <G4PVDivision.hh>
@@ -35,7 +36,6 @@
 #include <G4UserLimits.hh>
 #include <G4VSolid.hh>
 #include <G4VisAttributes.hh>
-#include <G4LogicalVolumeStore.hh>
 #include "core/module/exceptions.h"
 #include "core/utils/log.h"
 #include "tools/ROOT.h"
@@ -56,9 +56,6 @@ template <typename T, typename... Args> static std::shared_ptr<T> make_shared_no
 }
 
 void PassiveMaterialConstructionG4::build(G4LogicalVolume* world_log, std::map<std::string, G4Material*> materials_) {
-    //(void) world_log;
-    //G4LogicalVolumeStore* kel = G4LogicalVolumeStore::GetInstance();
-    //G4LogicalVolume* vent = kel->GetVolume("World");
     /*
     Get the name of the Passive Material
     */
@@ -66,9 +63,6 @@ void PassiveMaterialConstructionG4::build(G4LogicalVolume* world_log, std::map<s
     /*
     Get the world_material
     */
-
-    //G4LogicalVolumeStore* kel = G4LogicalVolumeStore::GetInstance();
-    //G4LogicalVolume* vent = kel->GetVolume("World");    
     auto world_material = world_log->GetMaterial()->GetName();
 
     /*
