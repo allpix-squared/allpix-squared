@@ -35,7 +35,7 @@
 #include <G4UserLimits.hh>
 #include <G4VSolid.hh>
 #include <G4VisAttributes.hh>
-
+#include <G4LogicalVolumeStore.hh>
 #include "core/module/exceptions.h"
 #include "core/utils/log.h"
 #include "tools/ROOT.h"
@@ -56,11 +56,20 @@ template <typename T, typename... Args> static std::shared_ptr<T> make_shared_no
 }
 
 void PassiveMaterialConstructionG4::build(G4LogicalVolume* world_log, std::map<std::string, G4Material*> materials_) {
-
+    //(void) world_log;
+    //G4LogicalVolumeStore* kel = G4LogicalVolumeStore::GetInstance();
+    //G4LogicalVolume* vent = kel->GetVolume("World");
+    /*
+    Get the name of the Passive Material
+    */
+    std::string name = config_.getName();
     /*
     Get the world_material
     */
-    std::string world_material = config_.get<std::string>("world_material", "air");
+
+    //G4LogicalVolumeStore* kel = G4LogicalVolumeStore::GetInstance();
+    //G4LogicalVolume* vent = kel->GetVolume("World");    
+    auto world_material = world_log->GetMaterial()->GetName();
 
     /*
     Get the information for the passive materials
@@ -83,5 +92,5 @@ void PassiveMaterialConstructionG4::build(G4LogicalVolume* world_log, std::map<s
     // Place the passive_material box
     auto passive_material_pos = toG4Vector(passive_material_location);
     auto passive_material_phys_ = make_shared_no_delete<G4PVPlacement>(
-        nullptr, passive_material_pos, passive_material_log.get(), "sensor_phys", world_log, false, 0, true);
+        nullptr, passive_material_pos, passive_material_log.get(), name + "_phys", world_log, false, 0, true);
 }
