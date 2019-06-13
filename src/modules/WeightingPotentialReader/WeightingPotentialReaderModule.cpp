@@ -197,6 +197,15 @@ FieldData<double> WeightingPotentialReaderModule::read_field(std::pair<double, d
                                         " < phi < " + std::to_string(*elements.second) + ", expected 0 < phi < 1");
         }
 
+        // Check that we actually have a three-dimensional potential field, otherwise we get very unphysical results in
+        // neighboring pixels along the "missing" dimension:
+        if(field_data.getDimensionality() < 3) {
+            throw InvalidValueError(config_,
+                                    "file_name",
+                                    "Weighting potential with " + std::to_string(field_data.getDimensionality()) +
+                                        " dimensions detected, requiring three-dimensional scalar field.");
+        }
+
         // Check if weigthing potential matches chip
         check_detector_match(field_data.getSize(), thickness_domain);
 
