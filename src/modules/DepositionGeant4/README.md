@@ -19,8 +19,9 @@ For the sphere, unless a focus point is set, the particle directions follow the 
 
 To define more complex sources or angular distributions, the user can create a macro file with Geant4 commands.
 These commands are those defined for the GPS source and are explained in the Geant4 website [@g4gps].
-In order to avoid collisions with internal configurations, the three commands `/gps/position`, `/gps/pos/centre` and `/gps/number` should be replaced by the configuration parameters `source_position` and `number_of_particles` in this module.
-The source position is used to automatically extend the world volume around the source and the number of particles is required in order to correctly execute the Geant4 event loop.
+In order to avoid collisions with internal configurations, the command `/gps/number` should be replaced by the configuration parameter `number_of_particles` in this module in order to correctly execute the Geant4 event loop.
+
+All source positions defined in the macro via the commands `/gps/position` and `/gps/pos/centre` are used to automatically extend the Geant4 world volume to always include the sources.
 
 #### Particles, Ions and Radioactive Decays
 
