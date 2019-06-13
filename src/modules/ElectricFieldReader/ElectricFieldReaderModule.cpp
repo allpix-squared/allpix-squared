@@ -31,6 +31,12 @@ ElectricFieldReaderModule::ElectricFieldReaderModule(Configuration& config, Mess
     : Module(config, detector), detector_(std::move(detector)) {
     // NOTE use voltage as a synonym for bias voltage
     config_.setAlias("bias_voltage", "voltage");
+
+    // NOTE Backwards-compatibility: interpret both "init" and "apf" as "mesh":
+    auto model = config_.get<std::string>("model");
+    if(model == "init" || model == "apf") {
+        config_.set("model", "mesh");
+    }
 }
 
 void ElectricFieldReaderModule::init() {
@@ -62,7 +68,7 @@ void ElectricFieldReaderModule::init() {
     auto thickness_domain = std::make_pair(sensor_max_z - depletion_depth, sensor_max_z);
 
     // Calculate the field depending on the configuration
-    if(field_model == "init" || field_model == "apf") {
+    if(field_model == "mesh") {
         // Read the field scales from the configuration, defaulting to 1.0x1.0 pixel cell:
         auto scales = config_.get<ROOT::Math::XYVector>("field_scale", {1.0, 1.0});
         // FIXME Add sanity checks for scales here
@@ -81,7 +87,7 @@ void ElectricFieldReaderModule::init() {
         LOG(DEBUG) << "Electric field starts with offset " << offset << " to pixel boundary";
         std::array<double, 2> field_offset{{model->getPixelSize().x() * offset.x(), model->getPixelSize().y() * offset.y()}};
 
-        auto field_data = read_field(thickness_domain, field_scale, field_model);
+        auto field_data = read_field(thickness_domain, field_scale);
 
         detector_->setElectricFieldGrid(
             field_data.getData(), field_data.getDimensions(), field_scale, field_offset, thickness_domain);
@@ -145,22 +151,18 @@ ElectricFieldReaderModule::get_linear_field_function(double depletion_voltage, s
 }
 
 /**
- * The field read from the INIT format are shared between module instantiations using the static
- * ElectricFieldReaderModuleget_by_file_name method.
+ * The field data read from files are shared between module instantiations using the static
+ * FieldParser's get_by_file_name method.
  */
 FieldParser<double> ElectricFieldReaderModule::field_parser_(FieldQuantity::VECTOR);
 FieldData<double> ElectricFieldReaderModule::read_field(std::pair<double, double> thickness_domain,
-                                                        std::array<double, 2> field_scale,
-                                                        const std::string& format) {
-
-    FileType type = (format == "init" ? FileType::INIT : format == "apf" ? FileType::APF : FileType::UNKNOWN);
-    std::string units = (type == FileType::INIT ? "V/cm" : "");
+                                                        std::array<double, 2> field_scale) {
 
     try {
-        LOG(TRACE) << "Fetching electric field from init file";
+        LOG(TRACE) << "Fetching electric field from mesh file";
 
         // Get field from file
-        auto field_data = field_parser_.get_by_file_name(config_.getPath("file_name", true), type, units);
+        auto field_data = field_parser_.get_by_file_name(config_.getPath("file_name", true), "V/cm");
 
         // Check if electric field matches chip
         check_detector_match(field_data.getSize(), thickness_domain, field_scale);

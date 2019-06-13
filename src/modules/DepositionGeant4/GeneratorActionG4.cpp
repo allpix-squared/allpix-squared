@@ -71,7 +71,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
                         "The number of particles must be defined in the main configuration file, not in the macro.");
                 } else if(line.substr(0, 13) == "/gps/particle" || line.substr(0, 10) == "/gps/hist/" ||
                           line.substr(0, 9) == "/gps/ang/" || line.substr(0, 9) == "/gps/pos/" ||
-                          line.substr(0, 9) == "/gps/ene/" || line.at(0) == '#') {
+                          line.substr(0, 9) == "/gps/ene/" || line.substr(0, 15) == "/gps/direction/" || line.at(0) == '#') {
                     UI->ApplyCommand(line);
                 } else {
                     LOG(WARNING) << "Ignoring Geant4 macro command: \"" + line + "\" - not related to particle source.";
