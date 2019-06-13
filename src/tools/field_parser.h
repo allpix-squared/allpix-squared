@@ -57,16 +57,46 @@ namespace allpix {
      */
     template <typename T = double> class FieldData {
     public:
+        /**
+         * @brief Default constructor to create an empty field data object
+         */
         FieldData() = default;
+
+        /**
+         * @brief Constructor for field data
+         * @param header     Human readable header string to identify file content, program version used for generation etc.
+         * @param dimensions Number of bins of the field in each coordinate
+         * @param size       Physical extent of the field in each dimension, given in internal units
+         * @param data       Shared pointer to the flat field data
+         */
         FieldData(std::string header,
                   std::array<size_t, 3> dimensions,
                   std::array<T, 3> size,
                   std::shared_ptr<std::vector<T>> data)
             : header_(header), dimensions_(dimensions), size_(size), data_(data){};
 
+        /**
+         * @brief Function to obtain the header (human readbale content description) of the field data
+         * @return header string
+         */
         std::string getHeader() const { return header_; }
+
+        /**
+         * @brief Member to get the dimensions of the field as number of bins in x, y, z
+         * @return array with the number of bins in x, y and z
+         */
         std::array<size_t, 3> getDimensions() const { return dimensions_; }
+
+        /**
+         * @brief Member to get the physical extent of the field in each dimension as parsed from the input in internal units
+         * @return array with physical size in x, y and z
+         */
         std::array<T, 3> getSize() const { return size_; }
+
+        /**
+         * @brief Member to access the actual field data
+         * @return shared pointer to the flat vector of field data
+         */
         std::shared_ptr<std::vector<T>> getData() const { return data_; }
 
     private:
