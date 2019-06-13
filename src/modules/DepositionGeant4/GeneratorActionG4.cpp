@@ -44,11 +44,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     particle_source_->SetVerbosity(0);
 
     // Get source specific parameters
-    auto single_source = particle_source_->GetCurrentSource();
     auto source_type = config.get<std::string>("source_type");
-
-    // Set the centre coordinate of the source
-    single_source->GetPosDist()->SetCentreCoords(config.get<G4ThreeVector>("source_position"));
 
     if(source_type == "macro") {
         LOG(INFO) << "Using user macro for particle source.";
@@ -78,6 +74,10 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
         }
 
     } else {
+
+        // Get the source and set the centre coordinate of the source
+        auto single_source = particle_source_->GetCurrentSource();
+        single_source->GetPosDist()->SetCentreCoords(config.get<G4ThreeVector>("source_position"));
 
         // Set position and direction parameters according to shape
         if(source_type == "beam") {
