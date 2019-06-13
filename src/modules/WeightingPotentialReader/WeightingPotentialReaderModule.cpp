@@ -30,7 +30,14 @@ using namespace allpix;
 WeightingPotentialReaderModule::WeightingPotentialReaderModule(Configuration& config,
                                                                Messenger*,
                                                                std::shared_ptr<Detector> detector)
-    : Module(config, detector), detector_(std::move(detector)) {}
+    : Module(config, detector), detector_(std::move(detector)) {
+
+    // NOTE Backwards-compatibility: interpret both "init" and "apf" as "mesh":
+    auto model = config_.get<std::string>("model");
+    if(model == "init" || model == "apf") {
+        config_.set("model", "mesh");
+    }
+}
 
 void WeightingPotentialReaderModule::init() {
 
@@ -42,8 +49,8 @@ void WeightingPotentialReaderModule::init() {
     auto thickness_domain = std::make_pair(sensor_max_z - model->getSensorSize().z(), sensor_max_z);
 
     // Calculate the potential depending on the configuration
-    if(field_model == "init" || field_model == "apf") {
-        auto field_data = read_field(thickness_domain, field_model);
+    if(field_model == "mesh") {
+        auto field_data = read_field(thickness_domain);
 
         detector_->setWeightingPotentialGrid(field_data.getData(),
                                              field_data.getDimensions(),
@@ -168,21 +175,18 @@ void WeightingPotentialReaderModule::create_output_plots() {
 }
 
 /**
- * The field read from the INIT format are shared between module instantiations
+ * The field data read from files are shared between module instantiations
  * using the static WeightingPotentialReaderModule::get_by_file_name method.
  */
 FieldParser<double> WeightingPotentialReaderModule::field_parser_(FieldQuantity::SCALAR);
-FieldData<double> WeightingPotentialReaderModule::read_field(std::pair<double, double> thickness_domain,
-                                                             const std::string& format) {
+FieldData<double> WeightingPotentialReaderModule::read_field(std::pair<double, double> thickness_domain) {
     using namespace ROOT::Math;
-
-    FileType type = (format == "init" ? FileType::INIT : format == "apf" ? FileType::APF : FileType::UNKNOWN);
 
     try {
         LOG(TRACE) << "Fetching weighting potential from init file";
 
         // Get field from file
-        auto field_data = field_parser_.get_by_file_name(config_.getPath("file_name", true), type);
+        auto field_data = field_parser_.get_by_file_name(config_.getPath("file_name", true));
 
         // Check maximum/minimum values of the potential:
         auto elements = std::minmax_element(field_data.getData()->begin(), field_data.getData()->end());

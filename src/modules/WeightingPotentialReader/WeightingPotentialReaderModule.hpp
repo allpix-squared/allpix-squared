@@ -53,7 +53,7 @@ namespace allpix {
          * @brief Read pre-calculated field from file and apply it
          * @param thickness_domain Domain of the thickness where the field is defined
          */
-        FieldData<double> read_field(std::pair<double, double> thickness_domain, const std::string& format);
+        FieldData<double> read_field(std::pair<double, double> thickness_domain);
         static FieldParser<double> field_parser_;
 
         /**
