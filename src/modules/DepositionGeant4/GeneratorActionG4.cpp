@@ -58,10 +58,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
         while(std::getline(file, line)) {
             // Check for the "/gps/" pattern in the line:
             if(!line.empty()) {
-                if(line.rfind("/gps/position", 0) == 0 || line.rfind("/gps/pos/centre") == 0) {
-                    throw ModuleError(
-                        "The source position must be defined in the main configuration file, not in the macro.");
-                } else if(line.rfind("/gps/number", 0) == 0) {
+                if(line.rfind("/gps/number", 0) == 0) {
                     throw ModuleError(
                         "The number of particles must be defined in the main configuration file, not in the macro.");
                 } else if(line.rfind("/gps/", 0) == 0 || line.at(0) == '#') {
