@@ -84,7 +84,7 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
     }
 
     // Add the particle source position to the geometry
-    geo_manager_->addPoint(config_.get<ROOT::Math::XYZPoint>("source_position"));
+    geo_manager_->addPoint(config_.get<ROOT::Math::XYZPoint>("source_position", ROOT::Math::XYZPoint()));
 }
 
 /**
