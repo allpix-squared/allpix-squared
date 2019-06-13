@@ -99,6 +99,17 @@ namespace allpix {
          */
         std::shared_ptr<std::vector<T>> getData() const { return data_; }
 
+        /**
+         * @brief get the dimensionality of the configured field in the x-y plane, e.g whether it is defined in 1D, 2D or 3D.
+         * @return Dimensionality of the field
+         */
+        size_t getDimensionality() const {
+            size_t dim = 3;
+            dim -= (dimensions_[0] == 1 ? 1u : 0);
+            dim -= (dimensions_[1] == 1 ? 1u : 0);
+            return dim;
+        }
+
     private:
         std::string header_;
         std::array<size_t, 3> dimensions_{};
