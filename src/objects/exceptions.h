@@ -35,6 +35,33 @@ namespace allpix {
             error_message_ += allpix::demangle(reference.name());
         }
     };
+
+    /**
+     * @ingroup Exceptions
+     * @brief Indicates that two objects are of incompatible data types and cannot be combined
+     */
+    class IncompatibleDatatypesException : public RuntimeError {
+    public:
+        /**
+         * @brief Constructs an error for two objects with incompatible data types
+         * @param source1 Type of the first object
+         * @param source2 Type of the second object
+         * @param reason Reason why the types are incompatible
+         */
+        explicit IncompatibleDatatypesException(const std::type_info& source1,
+                                                const std::type_info& source2,
+                                                const std::string& reason) {
+            error_message_ = "Objects ";
+            error_message_ += allpix::demangle(source1.name());
+            error_message_ += " and ";
+            error_message_ += allpix::demangle(source2.name());
+            error_message_ += " have incompatible types";
+
+            if(!reason.empty()) {
+                error_message_ += ": " + reason;
+            }
+        }
+    };
 } // namespace allpix
 
 #endif /* ALLPIX_OBJECT_EXCEPTIONS_H */

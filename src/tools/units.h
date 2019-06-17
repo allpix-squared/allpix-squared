@@ -54,6 +54,7 @@ namespace allpix {
 
         // VOLTAGE
         // NOTE: fixed by above
+        Units::add("mV", 1e-9);
         Units::add("V", 1e-6);
         Units::add("kV", 1e-3);
 

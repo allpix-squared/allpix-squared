@@ -15,6 +15,13 @@
 #include <Math/Vector2D.h>
 #include <TObject.h>
 
+namespace ROOT {
+    namespace Math { // NOLINT
+        bool operator<(const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>>& lhs,
+                       const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>>& rhs);
+    }
+} // namespace ROOT
+
 namespace allpix {
     /**
      * @ingroup Objects
@@ -71,6 +78,7 @@ namespace allpix {
         ROOT::Math::XYZPoint global_center_;
         ROOT::Math::XYVector size_;
     };
+
 } // namespace allpix
 
 #endif

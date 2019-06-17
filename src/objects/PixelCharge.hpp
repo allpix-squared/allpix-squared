@@ -18,6 +18,7 @@
 #include "Object.hpp"
 #include "Pixel.hpp"
 #include "PropagatedCharge.hpp"
+#include "Pulse.hpp"
 
 namespace allpix {
     /**
@@ -36,6 +37,16 @@ namespace allpix {
          */
         PixelCharge(Pixel pixel,
                     unsigned int charge,
+                    std::vector<const PropagatedCharge*> propagated_charges = std::vector<const PropagatedCharge*>());
+
+        /**
+         * @brief Construct a set of charges at a pixel
+         * @param pixel Object holding the information of the pixel
+         * @param pulse Pulse of induced or collected charges
+         * @param propagated_charges Optional pointer to the related propagated charges
+         */
+        PixelCharge(Pixel pixel,
+                    Pulse pulse,
                     std::vector<const PropagatedCharge*> propagated_charges = std::vector<const PropagatedCharge*>());
 
         /**
@@ -66,9 +77,15 @@ namespace allpix {
         std::vector<const MCParticle*> getMCParticles() const;
 
         /**
+         *  @brief Get recoded charge pulse
+         *  @return Constatnt reference to the full charge pulse
+         */
+        const Pulse& getPulse() const;
+
+        /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(PixelCharge, 4);
+        ClassDefOverride(PixelCharge, 5);
         /**
          * @brief Default constructor for ROOT I/O
          */
@@ -77,6 +94,7 @@ namespace allpix {
     private:
         Pixel pixel_;
         unsigned int charge_{};
+        Pulse pulse_{};
 
         std::vector<TRef> propagated_charges_;
         std::vector<TRef> mc_particles_;
