@@ -15,13 +15,14 @@ MACRO(_allpix_module_define_common name)
     # Build all modules by default if not specified otherwise
     OPTION(BUILD_${_allpix_module_dir} "Build module in directory ${_allpix_module_dir}?" ON)
 
+    # Put message
+    MESSAGE(STATUS "Building module " ${BUILD_${_allpix_module_dir}} "\t- " ${_allpix_module_dir})
+
     # Quit the file if not building this file or all modules
     IF(NOT (BUILD_${_allpix_module_dir} OR BUILD_ALL_MODULES))
         RETURN()
     ENDIF()
 
-    # Put message
-    MESSAGE( STATUS "Building module: " ${_allpix_module_dir} )
 
     # Prepend with the allpix module prefix to create the name of the module
     SET(${name} "AllpixModule${_allpix_module_dir}")

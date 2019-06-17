@@ -58,8 +58,7 @@ namespace allpix {
          * @param thickness_domain Domain of the thickness where the field is defined
          * @param field_scale Scaling parameters for the field size in x and y
          */
-        FieldData<double>
-        read_field(std::pair<double, double> thickness_domain, std::array<double, 2> field_scale, const std::string& format);
+        FieldData<double> read_field(std::pair<double, double> thickness_domain, std::array<double, 2> field_scale);
         static FieldParser<double> field_parser_;
 
         /**

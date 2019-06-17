@@ -7,6 +7,8 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
+#include <numeric>
+
 #include "PropagatedCharge.hpp"
 
 #include "exceptions.h"
@@ -24,6 +26,26 @@ PropagatedCharge::PropagatedCharge(ROOT::Math::XYZPoint local_position,
     if(deposited_charge != nullptr) {
         mc_particle_ = deposited_charge->mc_particle_;
     }
+}
+
+PropagatedCharge::PropagatedCharge(ROOT::Math::XYZPoint local_position,
+                                   ROOT::Math::XYZPoint global_position,
+                                   CarrierType type,
+                                   std::map<Pixel::Index, Pulse> pulses,
+                                   double event_time,
+                                   const DepositedCharge* deposited_charge)
+    : PropagatedCharge(std::move(local_position),
+                       std::move(global_position),
+                       type,
+                       std::accumulate(pulses.begin(),
+                                       pulses.end(),
+                                       0u,
+                                       [](const unsigned int prev, const auto& elem) {
+                                           return prev + static_cast<unsigned int>(std::abs(elem.second.getCharge()));
+                                       }),
+                       event_time,
+                       deposited_charge) {
+    pulses_ = std::move(pulses);
 }
 
 /**
@@ -50,4 +72,8 @@ const MCParticle* PropagatedCharge::getMCParticle() const {
         throw MissingReferenceException(typeid(*this), typeid(MCParticle));
     }
     return mc_particle;
+}
+
+std::map<Pixel::Index, Pulse> PropagatedCharge::getPulses() const {
+    return pulses_;
 }
