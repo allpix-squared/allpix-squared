@@ -40,10 +40,14 @@
 #include "SensitiveDetectorActionG4.hpp"
 #include "SetTrackInfoUserHookG4.hpp"
 #include "ActionInitializationG4.hpp"
+#include "MyDetectorConstruction.hpp"
 
 #define G4_NUM_SEEDS 10
 
 using namespace allpix;
+
+thread_local std::unique_ptr<TrackInfoManager> DepositionGeant4Module::track_info_manager_ = nullptr;
+thread_local std::vector<SensitiveDetectorActionG4*> DepositionGeant4Module::sensors_;
 
 /**
  * Includes the particle source point to the geometry using \ref GeometryManager::addPoint.
@@ -80,7 +84,7 @@ void DepositionGeant4Module::init(std::mt19937_64& seeder) {
     }
 
     // Suppress all output from G4
-    SUPPRESS_STREAM(G4cout);
+    // SUPPRESS_STREAM(G4cout);
 
     // Get UI manager for sending commands
     G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
@@ -199,75 +203,17 @@ void DepositionGeant4Module::init(std::mt19937_64& seeder) {
     // Build particle generator
     // User hook to store additional information at track initialization and termination as well as custom track ids
     LOG(TRACE) << "Constructing particle source";
-    track_info_manager_ = std::make_unique<TrackInfoManager>();
 
-    auto action_initialization = new ActionInitializationG4(config_, track_info_manager_.get());
+
+    auto action_initialization = new ActionInitializationG4(config_, this);
     run_manager_g4_->SetUserInitialization(action_initialization);
-
-    if(geo_manager_->hasMagneticField()) {
-        MagneticFieldType magnetic_field_type_ = geo_manager_->getMagneticFieldType();
-
-        if(magnetic_field_type_ == MagneticFieldType::CONSTANT) {
-            ROOT::Math::XYZVector b_field = geo_manager_->getMagneticField(ROOT::Math::XYZPoint(0., 0., 0.));
-            G4MagneticField* magField = new G4UniformMagField(G4ThreeVector(b_field.x(), b_field.y(), b_field.z()));
-            G4FieldManager* globalFieldMgr = G4TransportationManager::GetTransportationManager()->GetFieldManager();
-            globalFieldMgr->SetDetectorField(magField);
-            globalFieldMgr->CreateChordFinder(magField);
-        } else {
-            throw ModuleError("Magnetic field enabled, but not constant. This can't be handled by this module yet.");
-        }
-    }
 
     // Get the creation energy for charge (default is silicon electron hole pair energy)
     auto charge_creation_energy = config_.get<double>("charge_creation_energy", Units::get(3.64, "eV"));
     auto fano_factor = config_.get<double>("fano_factor", 0.115);
 
-    // Loop through all detectors and set the sensitive detector action that handles the particle passage
-    bool useful_deposition = false;
-    for(auto& detector : geo_manager_->getDetectors()) {
-        // Do not add sensitive detector for detectors that have no listeners for the deposited charges
-        // FIXME Probably the MCParticle has to be checked as well
-        if(!messenger_->hasReceiver(this,
-                                    std::make_shared<DepositedChargeMessage>(std::vector<DepositedCharge>(), detector))) {
-            LOG(INFO) << "Not depositing charges in " << detector->getName()
-                      << " because there is no listener for its output";
-            continue;
-        }
-        useful_deposition = true;
-
-        // Get model of the sensitive device
-        auto sensitive_detector_action = new SensitiveDetectorActionG4(
-            detector, track_info_manager_.get(), charge_creation_energy, fano_factor, seeder());
-        auto logical_volume = detector->getExternalObject<G4LogicalVolume>("sensor_log");
-        if(logical_volume == nullptr) {
-            throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
-        }
-
-        // Apply the user limits to this element
-        logical_volume->SetUserLimits(user_limits_.get());
-
-        // Add the sensitive detector action
-        logical_volume->SetSensitiveDetector(sensitive_detector_action);
-        sensors_.push_back(sensitive_detector_action);
-
-        // If requested, prepare output plots
-        if(config_.get<bool>("output_plots")) {
-            LOG(TRACE) << "Creating output plots";
-
-            // Plot axis are in kilo electrons - convert from framework units!
-            int maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
-            int nbins = 5 * maximum;
-
-            // Create histograms if needed
-            std::string plot_name = "deposited_charge_" + sensitive_detector_action->getName();
-            charge_per_event_[sensitive_detector_action->getName()] =
-                new TH1D(plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum);
-        }
-    }
-
-    if(!useful_deposition) {
-        LOG(ERROR) << "Not a single listener for deposited charges, module is useless!";
-    }
+    auto detector_construction = new MyDetectorConstruction(this, charge_creation_energy, fano_factor);
+    run_manager_g4_->SetDetectorConstruction(detector_construction);
 
     // Disable verbose messages from processes
     ui_g4->ApplyCommand("/process/verbose 0");
@@ -276,14 +222,18 @@ void DepositionGeant4Module::init(std::mt19937_64& seeder) {
     G4HadronicProcessStore::Instance()->SetVerbose(0);
 
     // Release the output stream
-    RELEASE_STREAM(G4cout);
+    // RELEASE_STREAM(G4cout);
 }
 
 void DepositionGeant4Module::run(Event* event) {
     // Suppress output stream if not in debugging mode
-    IFLOG(DEBUG);
-    else {
-        SUPPRESS_STREAM(G4cout);
+    // IFLOG(DEBUG);
+    // else {
+    //     SUPPRESS_STREAM(G4cout);
+    // }
+
+    if (track_info_manager_ == nullptr) {
+        track_info_manager_ = std::make_unique<TrackInfoManager>();
     }
 
     // Start a single event from the beam
@@ -292,7 +242,7 @@ void DepositionGeant4Module::run(Event* event) {
     last_event_num_ = event->number;
 
     // Release the stream (if it was suspended)
-    RELEASE_STREAM(G4cout);
+    // RELEASE_STREAM(G4cout);
 
     track_info_manager_->createMCTracks();
 

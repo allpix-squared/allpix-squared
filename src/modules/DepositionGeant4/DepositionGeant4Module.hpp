@@ -39,6 +39,8 @@ namespace allpix {
      * MCParticle).
      */
     class DepositionGeant4Module : public Geant4Module {
+        friend class MyDetectorConstruction;
+        friend class SetTrackInfoUserHookG4;
     public:
         /**
          * @brief Constructor for this unique module
@@ -73,10 +75,10 @@ namespace allpix {
         GeometryManager* geo_manager_;
 
         // The track manager which this module uses to assign custom track IDs and manage & create MCTracks
-        std::unique_ptr<TrackInfoManager> track_info_manager_;
+        static thread_local std::unique_ptr<TrackInfoManager> track_info_manager_;
 
         // Handling of the charge deposition in all the sensitive devices
-        std::vector<SensitiveDetectorActionG4*> sensors_;
+        static thread_local std::vector<SensitiveDetectorActionG4*> sensors_;
 
         // Number of the last event
         unsigned int last_event_num_;

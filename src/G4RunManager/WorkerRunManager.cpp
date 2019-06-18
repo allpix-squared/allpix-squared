@@ -8,7 +8,8 @@
  */
 
 #include "WorkerRunManager.hpp"
-#include "WorkerRunManager.hpp"
+#include "RunManager.hpp"
+#include "DetectorConstruction.hpp"
 
 #include <atomic>
 
@@ -23,6 +24,7 @@
 #include <G4WorkerThread.hh>
 #include <G4UserWorkerInitialization.hh>
 #include <G4VUserActionInitialization.hh>
+#include <G4TransportationManager.hh>
 
 using namespace allpix;
 
@@ -71,6 +73,35 @@ void WorkerRunManager::BeamOn(G4int n_event,const char* macroFile,G4int n_select
     }
 
     G4RunManager::BeamOn(n_event, macroFile, n_select);
+}
+
+void WorkerRunManager::InitializeGeometry() {
+    if(!userDetector)
+    {
+        G4Exception("WorkerRunManager::InitializeGeometry", "Run0033",
+            FatalException, "G4VUserDetectorConstruction is not defined!");
+        return;
+    }
+    if(fGeometryHasBeenDestroyed) 
+    { G4TransportationManager::GetTransportationManager()->ClearParallelWorlds(); }
+
+    //Step1: Get pointer to the physiWorld (note: needs to get the "super pointer, i.e. the one shared by all threads"
+    G4RunManagerKernel* masterKernel = G4MTRunManager::GetMasterRunManagerKernel();
+    G4VPhysicalVolume* worldVol = masterKernel->GetCurrentWorld();
+    //Step2:, Call a new "WorkerDefineWorldVolume( pointer from 2-, false); 
+    kernel->WorkerDefineWorldVolume(worldVol,false);
+    kernel->SetNumberOfParallelWorld(masterKernel->GetNumberOfParallelWorld());
+    //Step3: Call user's ConstructSDandField()
+    RunManager* master_run_manager = static_cast<RunManager*>(G4MTRunManager::GetMasterRunManager());
+    DetectorConstruction* detector_construction = master_run_manager->GetDetectorConstruction();
+    if (!detector_construction) {
+        G4Exception("WorkerRunManager::InitializeGeometry", "Run0033",
+            FatalException, "DetectorConstruction is not defined!");
+        return;
+    }
+    detector_construction->ConstructSDandField();
+    //userDetector->ConstructParallelSD();
+    geometryInitialized = true;
 }
 
 void WorkerRunManager::DoEventLoop(G4int n_event,const char* macroFile,G4int n_select)

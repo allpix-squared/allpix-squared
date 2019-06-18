@@ -49,10 +49,17 @@ void RunManager::Run(G4int n_event) {
 void RunManager::Initialize() {
     G4MTRunManager::Initialize();
 
+    G4bool cond = ConfirmBeamOnCondition();
+    if(cond) {
+        G4cout << "BeamON Confirmed!" << G4endl;
+        G4MTRunManager::ConstructScoringWorlds();
+        G4MTRunManager::RunInitialization();
+
     // This is needed to draw random seeds and fill the internal seed array
     // use nSeedsMax to fill as much as possible now and hopefully avoid
     // refilling later
-    G4MTRunManager::InitializeEventLoop(nSeedsMax, nullptr, 0);
+    G4MTRunManager::DoEventLoop(nSeedsMax, nullptr, 0);
+    }
 }
 
 void RunManager::TerminateForThread() {

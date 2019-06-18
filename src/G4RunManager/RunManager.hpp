@@ -15,6 +15,7 @@
 namespace allpix {
 
     class WorkerRunManager;
+    class DetectorConstruction;
 
     /**
      * @brief A custom run manager for Geant4 that can work with external threads and be used concurrently.
@@ -59,6 +60,14 @@ namespace allpix {
          * this class must call this method to ensure correct termination.
          */
         void TerminateForThread();
+
+        DetectorConstruction* GetDetectorConstruction() const {
+            return detector_construction_;
+        }
+        void SetDetectorConstruction(DetectorConstruction* detector) {
+            detector_construction_ = detector;
+        }
+
 
     protected:
 
@@ -156,7 +165,9 @@ namespace allpix {
     
     private:
         // \ref WorkerRunManager worker manager that run on each thread.
-        static G4ThreadLocal WorkerRunManager* worker_run_manager_; 
+        static G4ThreadLocal WorkerRunManager* worker_run_manager_;
+
+        DetectorConstruction* detector_construction_ {nullptr};
     };
 } // namespace allpix
 

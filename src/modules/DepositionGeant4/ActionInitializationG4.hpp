@@ -18,13 +18,14 @@
 #include "SetTrackInfoUserHookG4.hpp"
 
 namespace allpix {
+    class DepositionGeant4Module;
     /**
     * @brief Initializer for the tracker and generator actions, required for \ref RunManager
     */
     class ActionInitializationG4 : public G4VUserActionInitialization {
     public:
-        explicit ActionInitializationG4(const Configuration& config, TrackInfoManager* track_info_mgr_ptr)
-            : config_(config), track_info_mgr_ptr_(track_info_mgr_ptr){};
+        explicit ActionInitializationG4(const Configuration& config, DepositionGeant4Module* module)
+            : config_(config), module_(module){};
 
         /**
         * @brief Build the user action to be executed by the worker
@@ -35,14 +36,14 @@ namespace allpix {
             SetUserAction(new GeneratorActionG4(config_));
 
             // tracker hook
-            SetUserAction(new SetTrackInfoUserHookG4(track_info_mgr_ptr_));
+            SetUserAction(new SetTrackInfoUserHookG4(module_));
         };
 
     private:
         const Configuration& config_;
 
         // Raw ptr to track info manager to create instances of TrackInfoG4
-        TrackInfoManager* track_info_mgr_ptr_;
+        DepositionGeant4Module* module_;
     };
 } // namespace allpix 
 

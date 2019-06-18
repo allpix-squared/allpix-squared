@@ -38,6 +38,8 @@ namespace allpix {
          */
         virtual void BeamOn(G4int n_event, const char* macroFile = nullptr, G4int n_select = -1) override;
 
+        void InitializeGeometry() override;
+
         /**
          * @brief Factory method to create new worker for calling thread.
          *

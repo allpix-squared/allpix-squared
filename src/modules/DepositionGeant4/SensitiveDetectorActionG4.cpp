@@ -47,6 +47,8 @@ SensitiveDetectorActionG4::SensitiveDetectorActionG4(const std::shared_ptr<Detec
 
     // Seed the random generator for Fano fluctuations with the seed received
     random_generator_.seed(random_seed);
+
+    G4cout << "New SensitiveDetectorActionG4" << G4endl;
 }
 
 G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*) {
@@ -61,6 +63,7 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     // Put the charge deposit in the middle of the step
     G4ThreeVector mid_pos = (preStepPoint->GetPosition() + postStepPoint->GetPosition()) / 2;
     double mid_time = (preStepPoint->GetGlobalTime() + postStepPoint->GetGlobalTime()) / 2;
+    std::cout << "**** HIT X=" << mid_pos.x() <<  std::endl;
 
     // Calculate the charge deposit at a local position
     auto deposit_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(mid_pos));
