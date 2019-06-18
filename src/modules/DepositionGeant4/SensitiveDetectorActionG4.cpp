@@ -36,8 +36,7 @@ using namespace allpix;
 SensitiveDetectorActionG4::SensitiveDetectorActionG4(const std::shared_ptr<Detector>& detector,
                                                      TrackInfoManager* track_info_manager,
                                                      double charge_creation_energy,
-                                                     double fano_factor,
-                                                     uint64_t random_seed)
+                                                     double fano_factor)
     : G4VSensitiveDetector("SensitiveDetector_" + detector->getName()), detector_(detector),
       track_info_manager_(track_info_manager), charge_creation_energy_(charge_creation_energy), fano_factor_(fano_factor) {
 
@@ -46,7 +45,8 @@ SensitiveDetectorActionG4::SensitiveDetectorActionG4(const std::shared_ptr<Detec
     sd_man_g4->AddNewDetector(this);
 
     // Seed the random generator for Fano fluctuations with the seed received
-    random_generator_.seed(random_seed);
+    random_generator_.seed(4);
+    // random_generator_.seed(random_seed);
 
     G4cout << "New SensitiveDetectorActionG4" << G4endl;
 }
@@ -63,7 +63,7 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     // Put the charge deposit in the middle of the step
     G4ThreeVector mid_pos = (preStepPoint->GetPosition() + postStepPoint->GetPosition()) / 2;
     double mid_time = (preStepPoint->GetGlobalTime() + postStepPoint->GetGlobalTime()) / 2;
-    std::cout << "**** HIT X=" << mid_pos.x() <<  std::endl;
+
 
     // Calculate the charge deposit at a local position
     auto deposit_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(mid_pos));
@@ -74,6 +74,7 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     auto mean_charge = static_cast<unsigned int>(edep / charge_creation_energy_);
     std::normal_distribution<double> charge_fluctuation(mean_charge, std::sqrt(mean_charge * fano_factor_));
     auto charge = charge_fluctuation(random_generator_);
+    std::cout << "**** HIT X=" << mid_pos.x() << " EDEP=" << edep << " CCE=" << charge_creation_energy_ << " CHARGE=" << charge <<  std::endl;
 
     auto deposit_position_g4loc =
         ROOT::Math::XYZPoint(deposit_position_g4.x() + detector_->getModel()->getSensorCenter().x(),

@@ -212,7 +212,7 @@ void DepositionGeant4Module::init(std::mt19937_64& seeder) {
     auto charge_creation_energy = config_.get<double>("charge_creation_energy", Units::get(3.64, "eV"));
     auto fano_factor = config_.get<double>("fano_factor", 0.115);
 
-    auto detector_construction = new MyDetectorConstruction(this, charge_creation_energy, fano_factor);
+    auto detector_construction = new MyDetectorConstruction(this, fano_factor, charge_creation_energy);
     run_manager_g4_->SetDetectorConstruction(detector_construction);
 
     // Disable verbose messages from processes
@@ -235,6 +235,10 @@ void DepositionGeant4Module::run(Event* event) {
     if (track_info_manager_ == nullptr) {
         track_info_manager_ = std::make_unique<TrackInfoManager>();
     }
+
+    //for(auto& sensor : sensors_) {
+    //    sensor->seed(event->getRandomNumber());
+    //}
 
     // Start a single event from the beam
     LOG(TRACE) << "Enabling beam";

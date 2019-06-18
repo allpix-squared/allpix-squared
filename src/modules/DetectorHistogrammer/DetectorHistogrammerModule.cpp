@@ -246,6 +246,7 @@ void DetectorHistogrammerModule::run(Event* event) {
         // Fill 2D hitmap histogram
         for(auto& pixel_charge : pixels_message->getData()) {
             auto pixel_idx = pixel_charge.getPixel().getIndex();
+            LOG(DEBUG) << " PIXEL X=" << pixel_idx.x() << " Y=" << pixel_idx.y() << " CHARGE=" << pixel_charge.getSignal();
 
             // Add pixel
             hit_map->Fill(pixel_idx.x(), pixel_idx.y());

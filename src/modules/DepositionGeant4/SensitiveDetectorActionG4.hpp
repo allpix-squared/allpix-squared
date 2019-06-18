@@ -42,8 +42,7 @@ namespace allpix {
         SensitiveDetectorActionG4(const std::shared_ptr<Detector>& detector,
                                   TrackInfoManager* track_info_manager,
                                   double charge_creation_energy,
-                                  double fano_factor,
-                                  uint64_t random_seed);
+                                  double fano_factor);
 
         /**
          * @brief Get total number of charges deposited in the sensitive device bound to this action
@@ -61,6 +60,8 @@ namespace allpix {
          * @brief Get the name of the sensitive device bound to this action
          */
         std::string getName();
+
+        void seed(uint64_t random_seed) { random_generator_.seed(random_seed); }
 
         /**
          * @brief Process a single step of a particle passage through this sensor

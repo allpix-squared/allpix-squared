@@ -57,7 +57,7 @@ void MyDetectorConstruction::ConstructSDandField() {
 
         // Get model of the sensitive device
         auto sensitive_detector_action = new SensitiveDetectorActionG4(
-            detector, module_->track_info_manager_.get(), charge_creation_energy_, fano_factor_, 4 /* seeder()*/);
+            detector, module_->track_info_manager_.get(), charge_creation_energy_, fano_factor_);
         auto logical_volume = detector->getExternalObject<G4LogicalVolume>("sensor_log");
         if(logical_volume == nullptr) {
             throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
