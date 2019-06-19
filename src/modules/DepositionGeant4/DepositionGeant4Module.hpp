@@ -12,6 +12,7 @@
 
 #include <memory>
 #include <string>
+#include <atomic>
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
@@ -81,7 +82,7 @@ namespace allpix {
         static thread_local std::vector<SensitiveDetectorActionG4*> sensors_;
 
         // Number of the last event
-        unsigned int last_event_num_;
+        std::atomic_uint last_event_num_{0};
 
         // Class holding the limits for the step size
         std::unique_ptr<G4UserLimits> user_limits_;
@@ -93,6 +94,11 @@ namespace allpix {
         std::map<std::string, TH1D*> charge_per_event_;
 
         std::once_flag geant4_seed;
+
+        // Total deposited charges
+        std::atomic_uint total_charges_{0};
+
+        std::atomic_size_t number_of_sensors_{0};
     };
 } // namespace allpix
 
