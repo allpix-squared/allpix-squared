@@ -50,20 +50,6 @@ void WorkerRunManager::BeamOn(G4int n_event,const char* macroFile,G4int n_select
 {
     G4MTRunManager* mrm = G4MTRunManager::GetMasterRunManager();
 
-    // G4Comment: The following code deals with changing materials between runs
-    // While we don't really change materials between runs, but this is here
-    // for completeness.
-    static G4ThreadLocal G4bool skipInitialization = true;
-    if(skipInitialization)
-    {
-        // G4Comment: re-initialization is not necessary for the first run
-        skipInitialization = false;
-    }
-    else
-    {
-        G4WorkerThread::UpdateGeometryAndPhysicsVectorFromMaster();
-    }
-
     // G4Comment: Execute UI commands stored in the master UI manager
     std::vector<G4String> cmds = mrm->GetCommandStack();
     G4UImanager* uimgr = G4UImanager::GetUIpointer(); //TLS instance
