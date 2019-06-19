@@ -84,7 +84,7 @@ void DepositionGeant4Module::init(std::mt19937_64& seeder) {
     }
 
     // Suppress all output from G4
-    // SUPPRESS_STREAM(G4cout);
+    SUPPRESS_STREAM(G4cout);
 
     // Get UI manager for sending commands
     G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
@@ -222,23 +222,23 @@ void DepositionGeant4Module::init(std::mt19937_64& seeder) {
     G4HadronicProcessStore::Instance()->SetVerbose(0);
 
     // Release the output stream
-    // RELEASE_STREAM(G4cout);
+    RELEASE_STREAM(G4cout);
 }
 
 void DepositionGeant4Module::run(Event* event) {
     // Suppress output stream if not in debugging mode
-    // IFLOG(DEBUG);
-    // else {
-    //     SUPPRESS_STREAM(G4cout);
-    // }
+    IFLOG(DEBUG);
+    else {
+        SUPPRESS_STREAM(G4cout);
+    }
 
     if (track_info_manager_ == nullptr) {
         track_info_manager_ = std::make_unique<TrackInfoManager>();
     }
 
-    //for(auto& sensor : sensors_) {
-    //    sensor->seed(event->getRandomNumber());
-    //}
+    for(auto& sensor : sensors_) {
+        sensor->seed(event->getRandomNumber());
+    }
 
     // Start a single event from the beam
     LOG(TRACE) << "Enabling beam";
@@ -246,7 +246,7 @@ void DepositionGeant4Module::run(Event* event) {
     last_event_num_ = event->number;
 
     // Release the stream (if it was suspended)
-    // RELEASE_STREAM(G4cout);
+    RELEASE_STREAM(G4cout);
 
     track_info_manager_->createMCTracks();
 
