@@ -8,4 +8,3 @@ The charge deposition is performed by Geant4 using a standard physics list and a
 The `ProjectionPropagation` module with a setting of `charge_per_step = 500` is used to simulate the charge carrier propagation and the simulation result is stored to file.
 
 
-![diode display](diode_display.png)
