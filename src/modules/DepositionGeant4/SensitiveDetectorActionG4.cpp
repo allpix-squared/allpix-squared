@@ -43,12 +43,6 @@ SensitiveDetectorActionG4::SensitiveDetectorActionG4(const std::shared_ptr<Detec
     // Add the sensor to the internal sensitive detector manager
     G4SDManager* sd_man_g4 = G4SDManager::GetSDMpointer();
     sd_man_g4->AddNewDetector(this);
-
-    // Seed the random generator for Fano fluctuations with the seed received
-    random_generator_.seed(4);
-    // random_generator_.seed(random_seed);
-
-    G4cout << "New SensitiveDetectorActionG4" << G4endl;
 }
 
 G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*) {
