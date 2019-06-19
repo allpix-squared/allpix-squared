@@ -40,10 +40,6 @@ WorkerRunManager::~WorkerRunManager() {
     if (master_run_manager->GetUserWorkerInitialization()) { 
         master_run_manager->GetUserWorkerInitialization()->WorkerStop();
     }
-
-    // Step-7: Cleanup split classes
-    // TODO: crashes! is it needed anyways?
-    //G4WorkerThread::DestroyGeometryAndPhysicsVector();
 }
 
 void WorkerRunManager::BeamOn(G4int n_event,const char* macroFile,G4int n_select)
