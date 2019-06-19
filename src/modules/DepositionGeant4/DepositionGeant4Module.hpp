@@ -39,7 +39,7 @@ namespace allpix {
      * MCParticle).
      */
     class DepositionGeant4Module : public Geant4Module {
-        friend class MyDetectorConstruction;
+        friend class SDAndFieldConstruction;
         friend class SetTrackInfoUserHookG4;
     public:
         /**

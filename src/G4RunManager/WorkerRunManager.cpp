@@ -9,7 +9,7 @@
 
 #include "WorkerRunManager.hpp"
 #include "RunManager.hpp"
-#include "DetectorConstruction.hpp"
+#include "SensitiveDetectorAndFieldConstruction.hpp"
 
 #include <atomic>
 
@@ -93,7 +93,7 @@ void WorkerRunManager::InitializeGeometry() {
     kernel->SetNumberOfParallelWorld(masterKernel->GetNumberOfParallelWorld());
     //Step3: Call user's ConstructSDandField()
     RunManager* master_run_manager = static_cast<RunManager*>(G4MTRunManager::GetMasterRunManager());
-    DetectorConstruction* detector_construction = master_run_manager->GetDetectorConstruction();
+    SensitiveDetectorAndFieldConstruction* detector_construction = master_run_manager->GetSDAndFieldConstruction();
     if (!detector_construction) {
         G4Exception("WorkerRunManager::InitializeGeometry", "Run0033",
             FatalException, "DetectorConstruction is not defined!");

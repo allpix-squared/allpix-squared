@@ -15,7 +15,7 @@
 namespace allpix {
 
     class WorkerRunManager;
-    class DetectorConstruction;
+    class SensitiveDetectorAndFieldConstruction;
 
     /**
      * @brief A custom run manager for Geant4 that can work with external threads and be used concurrently.
@@ -61,13 +61,19 @@ namespace allpix {
          */
         void TerminateForThread();
 
-        DetectorConstruction* GetDetectorConstruction() const {
-            return detector_construction_;
-        }
-        void SetDetectorConstruction(DetectorConstruction* detector) {
-            detector_construction_ = detector;
+        /**
+         * @brief Returns the user's sensitive detector construction.
+         */
+        SensitiveDetectorAndFieldConstruction* GetSDAndFieldConstruction() const {
+            return sd_field_construction_;
         }
 
+        /**
+         * @brief Sets the user's sensitive detector construction.
+         */
+        void SetSDAndFieldConstruction(SensitiveDetectorAndFieldConstruction* sd_field_construction) {
+            sd_field_construction_ = sd_field_construction;
+        }
 
     protected:
 
@@ -167,7 +173,7 @@ namespace allpix {
         // \ref WorkerRunManager worker manager that run on each thread.
         static G4ThreadLocal WorkerRunManager* worker_run_manager_;
 
-        DetectorConstruction* detector_construction_ {nullptr};
+        SensitiveDetectorAndFieldConstruction* sd_field_construction_{nullptr};
     };
 } // namespace allpix
 

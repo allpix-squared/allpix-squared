@@ -40,7 +40,7 @@
 #include "SensitiveDetectorActionG4.hpp"
 #include "SetTrackInfoUserHookG4.hpp"
 #include "ActionInitializationG4.hpp"
-#include "MyDetectorConstruction.hpp"
+#include "SDAndFieldConstruction.hpp"
 
 #define G4_NUM_SEEDS 10
 
@@ -212,8 +212,8 @@ void DepositionGeant4Module::init(std::mt19937_64& seeder) {
     auto charge_creation_energy = config_.get<double>("charge_creation_energy", Units::get(3.64, "eV"));
     auto fano_factor = config_.get<double>("fano_factor", 0.115);
 
-    auto detector_construction = new MyDetectorConstruction(this, fano_factor, charge_creation_energy);
-    run_manager_g4_->SetDetectorConstruction(detector_construction);
+    auto detector_construction = new SDAndFieldConstruction(this, fano_factor, charge_creation_energy);
+    run_manager_g4_->SetSDAndFieldConstruction(detector_construction);
 
     // Disable verbose messages from processes
     ui_g4->ApplyCommand("/process/verbose 0");
