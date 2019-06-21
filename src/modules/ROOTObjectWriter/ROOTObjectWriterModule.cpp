@@ -127,6 +127,7 @@ void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::
                     branch_name.c_str(), (std::string("std::vector<") + cls->GetName() + "*>").c_str(), addr);
 
                 // Prefill the tree with empty records for all events that were missed since the start
+                LOG(DEBUG) << "Pre-filling new tree of " << class_name << " with " << last_event_ << " empty events";
                 for(unsigned int i = 0; i < last_event_; ++i) {
                     trees_[class_name]->Fill();
                 }
