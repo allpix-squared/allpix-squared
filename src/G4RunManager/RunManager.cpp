@@ -64,7 +64,9 @@ void RunManager::Initialize() {
 
 void RunManager::TerminateForThread() {
     // thread local instance
-    worker_run_manager_->RunTermination();
-    delete worker_run_manager_;
-    worker_run_manager_ = nullptr;
+    if (worker_run_manager_) {
+        worker_run_manager_->RunTermination();
+        delete worker_run_manager_;
+        worker_run_manager_ = nullptr;
+    }
 }
