@@ -125,6 +125,11 @@ void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::
 
                 trees_[class_name]->Bronch(
                     branch_name.c_str(), (std::string("std::vector<") + cls->GetName() + "*>").c_str(), addr);
+
+                // Prefill the tree with empty records for all events that were missed since the start
+                for(unsigned int i = 0; i < last_event_; ++i) {
+                    trees_[class_name]->Fill();
+                }
             }
 
             // Fill the branch vector
@@ -141,9 +146,12 @@ void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::
     }
 }
 
-void ROOTObjectWriterModule::run(unsigned int) {
+void ROOTObjectWriterModule::run(unsigned int event) {
     LOG(TRACE) << "Writing new objects to tree";
     output_file_->cd();
+
+    // Save last event number for trees created later
+    last_event_ = event;
 
     // Fill the tree with the current received messages
     for(auto& tree : trees_) {
