@@ -23,20 +23,19 @@ void RunManager::Run(G4int n_event) {
     // Draw the nessecary seeds so that each event will be seeded
     // TODO: maybe we only need to seed the RNG once for a worker run and not for each loop iteration
     G4RNGHelper* helper = G4RNGHelper::GetInstance();
-    for (G4int i = 0; i < n_event; ++i) {
-        G4int idx_rndm = nSeedsPerEvent*nSeedsUsed;
-        long s1 = helper->GetSeed(idx_rndm), s2 = helper->GetSeed(idx_rndm+1);
-        worker_run_manager_->seedsQueue.push(s1);
-        worker_run_manager_->seedsQueue.push(s2);
+    G4int idx_rndm = nSeedsPerEvent*nSeedsUsed;
+    long s1 = helper->GetSeed(idx_rndm), s2 = helper->GetSeed(idx_rndm+1);
 
-        nSeedsUsed++;
+    worker_run_manager_->seedsQueue.push(s1);
+    worker_run_manager_->seedsQueue.push(s2);
 
-        if(nSeedsUsed==nSeedsFilled) {
-            // The RefillSeeds call will refill the array with 1024 new entries
-            // the number of seeds refilled = numberOfEventToBeProcessed - nSeedsFilled
-            numberOfEventToBeProcessed = nSeedsFilled + 1024;
-            RefillSeeds();
-        }
+    nSeedsUsed++;
+
+    if(nSeedsUsed==nSeedsFilled) {
+        // The RefillSeeds call will refill the array with 1024 new entries
+        // the number of seeds refilled = numberOfEventToBeProcessed - nSeedsFilled
+        numberOfEventToBeProcessed = nSeedsFilled + 1024;
+        RefillSeeds();
     }
 
     // for book keeping
