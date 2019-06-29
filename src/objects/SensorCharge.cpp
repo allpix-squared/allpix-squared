@@ -38,3 +38,12 @@ unsigned int SensorCharge::getCharge() const {
 double SensorCharge::getEventTime() const {
     return event_time_;
 }
+
+void SensorCharge::print(std::ostream& out) const {
+    out << "Type: " << (type_ == CarrierType::ELECTRON ? "\"e\"" : "\"h\"")
+        << "\nCharge: " << charge_ << " ke"
+        << "\nLocal Position: (" << local_position_.X() << ", " << local_position_.Y()
+        << ", " << local_position_.Z() << ") mm\n"
+        << "Global Position: (" << global_position_.X() << ", " << global_position_.Y()
+        << ", " << global_position_.Z() << ") mm\n";
+}

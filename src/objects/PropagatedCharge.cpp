@@ -77,3 +77,8 @@ const MCParticle* PropagatedCharge::getMCParticle() const {
 std::map<Pixel::Index, Pulse> PropagatedCharge::getPulses() const {
     return pulses_;
 }
+
+void PropagatedCharge::print(std::ostream& out) const {
+    out << "--- Propagated charge information\n";
+    SensorCharge::print(out);
+}
