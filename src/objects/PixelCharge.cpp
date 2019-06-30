@@ -100,6 +100,6 @@ void PixelCharge::print(std::ostream& out) const {
         << local_center_location.Z() << ") mm\n"
         << "Global Position: (" << global_center_location.X() << ", " << global_center_location.Y() << ", "
         << global_center_location.Z() << ") mm\n"
-        << "Charge: " << charge_ << " ke\n"
+        << "Charge: " << charge_ << " e\n"
         << "Size: " << pixel_size.X() << ' ' << pixel_size.Y() << '\n';
 }
