@@ -40,9 +40,14 @@ namespace allpix {
          */
         void build(G4LogicalVolume* world_log, std::map<std::string, G4Material*> materials_) override;
 
+        std::vector<ROOT::Math::XYZPoint> addPoints();
+
     private:
         Configuration& config_;
         // Storage of internal objects
+
+        std::vector<ROOT::Math::XYZPoint> points_;
+
         std::vector<std::shared_ptr<G4VSolid>> solids_;
     };
 

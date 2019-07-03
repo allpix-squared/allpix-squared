@@ -47,6 +47,8 @@ namespace allpix {
     private:
         GeometryManager* geo_manager_;
 
+        std::vector<ROOT::Math::XYZPoint> points_;
+
         // Geant4 run manager is owned by GeometryBuilderGeant4
         G4RunManager* run_manager_g4_;
     };

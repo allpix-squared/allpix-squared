@@ -64,9 +64,17 @@ void PassiveMaterialBuilderGeant4Module::init() {
 
         geo_manager_->addBuilder(passive_material_builder);
     }
+
+    // Add the max and min points of the passive material to the world volume
+    // auto points = new PassiveMaterialConstructionG4(passive_material_section);
+    // points_ = points->addPoints();
+    // for(auto& point : points_) {
+    // geo_manager_->addPoint(point);
+    // }
+
     // Run the geometry construct function in GeometryConstructionG4
-    LOG(TRACE) << "Building Geant4 geometry";
-    run_manager_g4_->InitializeGeometry();
+    // LOG(TRACE) << "Building Geant4 geometry";
+    // run_manager_g4_->InitializeGeometry();
 
     // Release output from G4
     RELEASE_STREAM(G4cout);
