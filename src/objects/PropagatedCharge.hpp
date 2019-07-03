@@ -78,6 +78,12 @@ namespace allpix {
         std::map<Pixel::Index, Pulse> getPulses() const;
 
         /**
+         * @brief Print an ASCII representation of PropagatedCharge to the given stream
+         * @param out Stream to print to
+         */
+        void print(std::ostream& out) const override;
+
+        /**
          * @brief ROOT class definition
          */
         ClassDefOverride(PropagatedCharge, 4);

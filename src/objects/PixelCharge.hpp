@@ -83,6 +83,12 @@ namespace allpix {
         const Pulse& getPulse() const;
 
         /**
+         * @brief Print an ASCII representation of PixelCharge to the given stream
+         * @param out Stream to print to
+         */
+        void print(std::ostream& out) const override;
+
+        /**
          * @brief ROOT class definition
          */
         ClassDefOverride(PixelCharge, 5);
