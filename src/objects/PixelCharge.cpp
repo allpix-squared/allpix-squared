@@ -93,13 +93,13 @@ std::vector<const MCParticle*> PixelCharge::getMCParticles() const {
 void PixelCharge::print(std::ostream& out) const {
     auto local_center_location = pixel_.getLocalCenter();
     auto global_center_location = pixel_.getGlobalCenter();
-    auto pixel_size = pixel_.getSize();
+    auto pixel_index = pixel_.getIndex();
 
     out << "--- Pixel charge information\n";
-    out << "Local Position: (" << local_center_location.X() << ", " << local_center_location.Y() << ", "
+    out << "Pixel: (" << pixel_index.X() << ", " << pixel_index.Y() << ")\n"
+        << "Charge: " << charge_ << " e\n"
+        << "Local Position: (" << local_center_location.X() << ", " << local_center_location.Y() << ", "
         << local_center_location.Z() << ") mm\n"
         << "Global Position: (" << global_center_location.X() << ", " << global_center_location.Y() << ", "
-        << global_center_location.Z() << ") mm\n"
-        << "Charge: " << charge_ << " e\n"
-        << "Size: " << pixel_size.X() << ' ' << pixel_size.Y() << '\n';
+        << global_center_location.Z() << ") mm\n";
 }
