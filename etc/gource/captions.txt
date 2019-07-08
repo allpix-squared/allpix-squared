@@ -32,3 +32,4 @@
 1560417948|MR!216: Automatically Deduce File Type for Field Data
 1560799445|MR!214: Implement transient simulation of signal formation
 1561108178|MR!221: Allow more freedom in Geant4 macro usage
+1562598460|Stable Release: Allpix Squared v1.4
