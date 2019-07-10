@@ -111,7 +111,8 @@ namespace allpix {
 
     private:
         /**
-         * @brief Submit wrapped event function for worker execution
+         * @brief Submit wrapped event function for worker execution. In case no workers, the
+         * event_function will be immediatly executed on the caller thread.
          * @param event_function Function to execute (should call the run-method of the event)
          */
         void submit_event_function(std::function<void()> event_function);

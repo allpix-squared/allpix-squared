@@ -591,7 +591,7 @@ void ModuleManager::run(std::mt19937_64& seeder) {
         }
     } else {
         // Default to no additional thread without multithreading
-        threads_num = 1;
+        threads_num = 0;
     }
     global_config.set<size_t>("workers", threads_num);
 
