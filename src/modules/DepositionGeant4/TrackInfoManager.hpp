@@ -114,8 +114,6 @@ namespace allpix {
         std::vector<int> stored_track_ids_;
         // Id to index in #stored_tracks_ for easier handling
         std::map<int, size_t> id_to_track_;
-
-        std::mutex mutex_;
     };
 } // namespace allpix
 #endif

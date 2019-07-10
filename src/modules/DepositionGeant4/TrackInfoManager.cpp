@@ -14,7 +14,6 @@ using namespace allpix;
 TrackInfoManager::TrackInfoManager() : counter_(1) {}
 
 std::unique_ptr<TrackInfoG4> TrackInfoManager::makeTrackInfo(const G4Track* const track) {
-    std::lock_guard<std::mutex> lck (mutex_);
     auto custom_id = counter_++;
     auto G4ParentID = track->GetParentID();
     auto parent_track_id = G4ParentID == 0 ? G4ParentID : g4_to_custom_id_.at(G4ParentID);
@@ -24,7 +23,6 @@ std::unique_ptr<TrackInfoG4> TrackInfoManager::makeTrackInfo(const G4Track* cons
 }
 
 void TrackInfoManager::setTrackInfoToBeStored(int track_id) {
-    std::lock_guard<std::mutex> lck (mutex_);
     auto element = std::find(to_store_track_ids_.begin(), to_store_track_ids_.end(), track_id);
     // If track id is not present we add it, otherwise skip as we only need each track once
     if(element == to_store_track_ids_.end()) {
@@ -33,7 +31,6 @@ void TrackInfoManager::setTrackInfoToBeStored(int track_id) {
 }
 
 void TrackInfoManager::storeTrackInfo(std::unique_ptr<TrackInfoG4> the_track_info) {
-    std::lock_guard<std::mutex> lck (mutex_);
     auto track_id = the_track_info->getID();
     auto element = std::find(to_store_track_ids_.begin(), to_store_track_ids_.end(), track_id);
     if(element != to_store_track_ids_.end()) {
@@ -43,7 +40,6 @@ void TrackInfoManager::storeTrackInfo(std::unique_ptr<TrackInfoG4> the_track_inf
 }
 
 void TrackInfoManager::resetTrackInfoManager() {
-   // std::lock_guard<std::mutex> lck (mutex_);
     counter_ = 1;
     stored_tracks_.clear();
     to_store_track_ids_.clear();
@@ -55,7 +51,6 @@ void TrackInfoManager::resetTrackInfoManager() {
 }
 
 void TrackInfoManager::dispatchMessage(Event* event) {
-   // std::lock_guard<std::mutex> lck (mutex_);
     setAllTrackParents();
     IFLOG(DEBUG) {
         LOG(DEBUG) << "Dispatching " << stored_tracks_.size() << " MCTrack(s) from TrackInfoManager::dispatchMessage()";
@@ -74,7 +69,6 @@ MCTrack const* TrackInfoManager::findMCTrack(int track_id) const {
 }
 
 void TrackInfoManager::createMCTracks() {
-    std::lock_guard<std::mutex> lck (mutex_);
     for(auto& track_info : stored_track_infos_) {
         stored_tracks_.emplace_back(track_info->getStartPoint(),
                                     track_info->getEndPoint(),
@@ -93,7 +87,6 @@ void TrackInfoManager::createMCTracks() {
 }
 
 void TrackInfoManager::setAllTrackParents() {
-    //std::lock_guard<std::mutex> lck (mutex_);
     for(size_t ix = 0; ix < stored_track_ids_.size(); ++ix) {
         auto track_id = stored_track_ids_[ix];
         auto parent_id = track_id_to_parent_id_[track_id];
