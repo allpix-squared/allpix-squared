@@ -77,8 +77,19 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
  * Module depends on \ref GeometryBuilderGeant4Module loaded first, because it owns the pointer to the Geant4 run manager.
  */
 void DepositionGeant4Module::init(std::mt19937_64& seeder) {
+    Configuration& global_config = getConfigManager()->getGlobalConfiguration();
+    RunManager* run_manager_mt = nullptr;
+
     // Load the G4 run manager (which is owned by the geometry builder)
-    run_manager_g4_ = static_cast<RunManager*> (G4MTRunManager::GetMasterRunManager());
+    if (global_config.get<bool>("experimental_multithreading", false)) {
+        run_manager_g4_ = G4MTRunManager::GetMasterRunManager();
+        run_manager_mt = static_cast<RunManager*>(run_manager_g4_);
+
+        using_multithreading_ = true;
+    } else {
+        run_manager_g4_ = G4RunManager::GetRunManager();
+    }
+
     if(run_manager_g4_ == nullptr) {
         throw ModuleError("Cannot deposit charges using Geant4 without a Geant4 geometry builder");
     }
@@ -204,7 +215,6 @@ void DepositionGeant4Module::init(std::mt19937_64& seeder) {
     // User hook to store additional information at track initialization and termination as well as custom track ids
     LOG(TRACE) << "Constructing particle source";
 
-
     auto action_initialization = new ActionInitializationG4(config_, this);
     run_manager_g4_->SetUserInitialization(action_initialization);
 
@@ -212,8 +222,12 @@ void DepositionGeant4Module::init(std::mt19937_64& seeder) {
     auto charge_creation_energy = config_.get<double>("charge_creation_energy", Units::get(3.64, "eV"));
     auto fano_factor = config_.get<double>("fano_factor", 0.115);
 
-    auto detector_construction = new SDAndFieldConstruction(this, fano_factor, charge_creation_energy);
-    run_manager_g4_->SetSDAndFieldConstruction(detector_construction);
+    if (using_multithreading_) {
+        auto detector_construction = new SDAndFieldConstruction(this, fano_factor, charge_creation_energy);
+        run_manager_mt->SetSDAndFieldConstruction(detector_construction);
+    } else {
+        construct_sensitive_detectors_and_fields(fano_factor, charge_creation_energy);
+    }
 
     // Disable verbose messages from processes
     ui_g4->ApplyCommand("/process/verbose 0");
@@ -242,7 +256,12 @@ void DepositionGeant4Module::run(Event* event) {
 
     // Start a single event from the beam
     LOG(TRACE) << "Enabling beam";
-    run_manager_g4_->Run(static_cast<int>(config_.get<unsigned int>("number_of_particles", 1)));
+    if (using_multithreading_) {
+        RunManager* run_manager_mt = static_cast<RunManager*>(run_manager_g4_);
+        run_manager_mt->Run(static_cast<int>(config_.get<unsigned int>("number_of_particles", 1)));
+    } else {
+        run_manager_g4_->BeamOn(static_cast<int>(config_.get<unsigned int>("number_of_particles", 1)));
+    }
 
     unsigned int last_event_num = last_event_num_.load();
     last_event_num_.compare_exchange_strong(last_event_num, event->number);
@@ -287,12 +306,75 @@ void DepositionGeant4Module::finalize() {
 }
 
 void DepositionGeant4Module::finalizeThread() {
-    run_manager_g4_->TerminateForThread();
+    if (using_multithreading_) {
+        RunManager* run_manager_mt = static_cast<RunManager*>(run_manager_g4_);
+        run_manager_mt->TerminateForThread();
+    }
 
     number_of_sensors_ = sensors_.size();
 
     // We calculate the total deposited charges here, since sensors exist per thread
     for(auto& sensor : sensors_) {
         total_charges_ += sensor->getTotalDepositedCharge();
+    }
+}
+
+void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fano_factor, double charge_creation_energy) {
+    track_info_manager_ = std::make_unique<TrackInfoManager>();
+
+    if(geo_manager_->hasMagneticField()) {
+        MagneticFieldType magnetic_field_type_ = geo_manager_->getMagneticFieldType();
+
+        if(magnetic_field_type_ == MagneticFieldType::CONSTANT) {
+            ROOT::Math::XYZVector b_field = geo_manager_->getMagneticField(ROOT::Math::XYZPoint(0., 0., 0.));
+            G4MagneticField* magField = new G4UniformMagField(G4ThreeVector(b_field.x(), b_field.y(), b_field.z()));
+            G4FieldManager* globalFieldMgr = G4TransportationManager::GetTransportationManager()->GetFieldManager();
+            globalFieldMgr->SetDetectorField(magField);
+            globalFieldMgr->CreateChordFinder(magField);
+        } else {
+            throw ModuleError("Magnetic field enabled, but not constant. This can't be handled by this module yet.");
+        }
+    }
+
+    // Loop through all detectors and set the sensitive detector action that handles the particle passage
+    for(auto& detector : geo_manager_->getDetectors()) {
+        // Do not add sensitive detector for detectors that have no listeners for the deposited charges
+        // FIXME Probably the MCParticle has to be checked as well
+        // if(!messenger_->hasReceiver(this,
+        //                             std::make_shared<DepositedChargeMessage>(std::vector<DepositedCharge>(), detector))) {
+        //     LOG(INFO) << "Not depositing charges in " << detector->getName()
+        //               << " because there is no listener for its output";
+        //     continue;
+        // }
+        // useful_deposition = true;
+
+        // Get model of the sensitive device
+        auto sensitive_detector_action = new SensitiveDetectorActionG4(
+            detector, track_info_manager_.get(), charge_creation_energy, fano_factor);
+        auto logical_volume = detector->getExternalObject<G4LogicalVolume>("sensor_log");
+        if(logical_volume == nullptr) {
+            throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
+        }
+
+        // Apply the user limits to this element
+        logical_volume->SetUserLimits(user_limits_.get());
+
+        // Add the sensitive detector action
+        logical_volume->SetSensitiveDetector(sensitive_detector_action);
+        sensors_.push_back(sensitive_detector_action);
+
+        // If requested, prepare output plots
+        if(config_.get<bool>("output_plots")) {
+            LOG(TRACE) << "Creating output plots";
+
+            // Plot axis are in kilo electrons - convert from framework units!
+            int maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
+            int nbins = 5 * maximum;
+
+            // Create histograms if needed
+            std::string plot_name = "deposited_charge_" + sensitive_detector_action->getName();
+            charge_per_event_[sensitive_detector_action->getName()] =
+                new TH1D(plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum);
+        }
     }
 }

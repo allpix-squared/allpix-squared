@@ -83,8 +83,15 @@ void GeometryBuilderGeant4Module::init(std::mt19937_64&) {
     SUPPRESS_STREAM(std::cout);
     SUPPRESS_STREAM(G4cout);
 
-    // Create the G4 run manager
-    run_manager_g4_ = std::make_unique<RunManager>();
+    Configuration& global_config = getConfigManager()->getGlobalConfiguration();
+
+    // Create the G4 run manager. If multithreading was requested we use the custom run manager
+    // that support calling BeamOn operations in parallel. Otherwise we use default manager.
+    if (global_config.get<bool>("experimental_multithreading", false)) {
+        run_manager_g4_ = std::make_unique<RunManager>();
+    } else {
+        run_manager_g4_ = std::make_unique<G4RunManager>();
+    }
 
     // Release stdout again
     RELEASE_STREAM(std::cout);

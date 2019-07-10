@@ -86,13 +86,22 @@ VisualizationGeant4Module::~VisualizationGeant4Module() {
 }
 
 void VisualizationGeant4Module::init(std::mt19937_64&) {
+    Configuration& global_config = getConfigManager()->getGlobalConfiguration();
+
+    // The Geant4 RunManager in multithreaded mode doesn't support visualization
+    // therefore, we prevent users from including this module when the multithreading
+    // flag is set    
+    if (global_config.get<bool>("experimental_multithreading", false)) {
+        throw ModuleError("Cannot use visualization in multithreading mode.");
+    }
+
     // Suppress all geant4 output
-    // SUPPRESS_STREAM(G4cout);
+    SUPPRESS_STREAM(G4cout);
 
     // Check if we have a running G4 manager
-    RunManager* run_manager_g4 = static_cast<RunManager*> (G4MTRunManager::GetMasterRunManager());
+    G4RunManager* run_manager_g4 = G4RunManager::GetRunManager();
     if(run_manager_g4 == nullptr) {
-        // RELEASE_STREAM(G4cout);
+        RELEASE_STREAM(G4cout);
         throw ModuleError("Cannot visualize using Geant4 without a Geant4 geometry builder");
     }
 
@@ -134,7 +143,7 @@ void VisualizationGeant4Module::init(std::mt19937_64&) {
     // Initialize the driver and checking it actually exists
     int check_driver = UI->ApplyCommand("/vis/sceneHandler/create " + config_.get<std::string>("driver"));
     if(check_driver != 0) {
-        // RELEASE_STREAM(G4cout);
+        RELEASE_STREAM(G4cout);
         std::set<G4String> candidates;
         for(auto system : vis_manager_g4_->GetAvailableGraphicsSystems()) {
             for(auto& nickname : system->GetNicknames()) {
@@ -164,7 +173,7 @@ void VisualizationGeant4Module::init(std::mt19937_64&) {
     set_visualization_settings();
 
     // Release the stream early in debugging mode
-    // IFLOG(DEBUG) { RELEASE_STREAM(G4cout); }
+    IFLOG(DEBUG) { RELEASE_STREAM(G4cout); }
 
     // Execute initialization macro if provided
     if(config_.has("macro_init")) {
@@ -172,7 +181,7 @@ void VisualizationGeant4Module::init(std::mt19937_64&) {
     }
 
     // Release the g4 output
-    // RELEASE_STREAM(G4cout);
+    RELEASE_STREAM(G4cout);
 }
 
 /**
