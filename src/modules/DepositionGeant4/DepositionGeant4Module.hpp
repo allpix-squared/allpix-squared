@@ -24,6 +24,7 @@
 #include "TrackInfoManager.hpp"
 
 #include <TH1D.h>
+#include <ROOT/TThreadedObject.hxx>
 
 class G4UserLimits;
 class G4RunManager;
@@ -97,7 +98,7 @@ namespace allpix {
         G4RunManager* run_manager_g4_;
 
         // Vector of histogram pointers for debugging plots
-        std::map<std::string, TH1D*> charge_per_event_;
+        std::map<std::string, ROOT::TThreadedObject<TH1D>*> charge_per_event_;
 
         std::once_flag geant4_seed;
 
