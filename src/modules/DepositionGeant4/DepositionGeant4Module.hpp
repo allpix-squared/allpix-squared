@@ -71,6 +71,11 @@ namespace allpix {
         void finalize() override;
 
     private:
+        /**
+         * @brief Construct the sensitive detectors and magnetic fields.
+         * @param fano_factor
+         * @param charge_creation_energy
+         */
         void construct_sensitive_detectors_and_fields(double fano_factor, double charge_creation_energy);
 
         Messenger* messenger_;
@@ -103,6 +108,9 @@ namespace allpix {
 
         // cached copy of the multithreading configuration flag
         bool using_multithreading_{false};
+
+        // Mutex used for the construction of histograms
+        std::mutex histogram_mutex_;
     };
 } // namespace allpix
 

@@ -222,10 +222,14 @@ void DepositionGeant4Module::init(std::mt19937_64& seeder) {
     auto charge_creation_energy = config_.get<double>("charge_creation_energy", Units::get(3.64, "eV"));
     auto fano_factor = config_.get<double>("fano_factor", 0.115);
 
+    // Construct the sensitive detectors and fields. In MT-mode we register a builder that will be called for each
+    // thread to construct the SD when needed. While in sequential mode we construct it now.
     if (using_multithreading_) {
         auto detector_construction = new SDAndFieldConstruction(this, fano_factor, charge_creation_energy);
         run_manager_mt->SetSDAndFieldConstruction(detector_construction);
     } else {
+        // Create the info track manager for the main thread before creating the Sensitive detectors.
+        track_info_manager_ = std::make_unique<TrackInfoManager>();
         construct_sensitive_detectors_and_fields(fano_factor, charge_creation_energy);
     }
 
@@ -246,6 +250,8 @@ void DepositionGeant4Module::run(Event* event) {
         SUPPRESS_STREAM(G4cout);
     }
 
+    // In MT-mode the sensitive detectors will be created with the calls to BeamOn. So we construct the
+    // track manager for each calling thread here.
     if (track_info_manager_ == nullptr) {
         track_info_manager_ = std::make_unique<TrackInfoManager>();
     }
@@ -320,8 +326,6 @@ void DepositionGeant4Module::finalizeThread() {
 }
 
 void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fano_factor, double charge_creation_energy) {
-    track_info_manager_ = std::make_unique<TrackInfoManager>();
-
     if(geo_manager_->hasMagneticField()) {
         MagneticFieldType magnetic_field_type_ = geo_manager_->getMagneticFieldType();
 
@@ -337,16 +341,17 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fan
     }
 
     // Loop through all detectors and set the sensitive detector action that handles the particle passage
+    bool useful_deposition = false;
     for(auto& detector : geo_manager_->getDetectors()) {
         // Do not add sensitive detector for detectors that have no listeners for the deposited charges
         // FIXME Probably the MCParticle has to be checked as well
-        // if(!messenger_->hasReceiver(this,
-        //                             std::make_shared<DepositedChargeMessage>(std::vector<DepositedCharge>(), detector))) {
-        //     LOG(INFO) << "Not depositing charges in " << detector->getName()
-        //               << " because there is no listener for its output";
-        //     continue;
-        // }
-        // useful_deposition = true;
+        if(!messenger_->hasReceiver(this,
+                                    std::make_shared<DepositedChargeMessage>(std::vector<DepositedCharge>(), detector))) {
+            LOG(INFO) << "Not depositing charges in " << detector->getName()
+                      << " because there is no listener for its output";
+            continue;
+        }
+        useful_deposition = true;
 
         // Get model of the sensitive device
         auto sensitive_detector_action = new SensitiveDetectorActionG4(
@@ -373,8 +378,18 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fan
 
             // Create histograms if needed
             std::string plot_name = "deposited_charge_" + sensitive_detector_action->getName();
-            charge_per_event_[sensitive_detector_action->getName()] =
-                new TH1D(plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum);
+
+            {
+                std::lock_guard<std::mutex> lock(histogram_mutex_);
+                if (charge_per_event_.find(sensitive_detector_action->getName()) == charge_per_event_.end()) {
+                    charge_per_event_[sensitive_detector_action->getName()] =
+                    new TH1D(plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum);
+                }
+            }
         }
+    }
+
+    if(!useful_deposition) {
+        LOG(ERROR) << "Not a single listener for deposited charges, module is useless!";
     }
 }
