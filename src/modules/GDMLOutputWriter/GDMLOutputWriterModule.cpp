@@ -40,7 +40,7 @@ using namespace allpix;
 
 GDMLOutputWriterModule::GDMLOutputWriterModule(Configuration& config, Messenger*, GeometryManager*) : Module(config) {}
 
-void GDMLOutputWriterModule::init() {
+void GDMLOutputWriterModule::init(std::mt19937_64&) {
 
     std::string GDML_output_file =
         createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name", "Output"), "gdml"), false, true);
