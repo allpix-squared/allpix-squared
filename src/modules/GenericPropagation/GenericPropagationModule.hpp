@@ -72,7 +72,7 @@ namespace allpix {
          * @brief Create output plots in every event
          * @param event_num Index for this event
          */
-        void create_output_plots(unsigned int event_num, OutputPlotPoints& output_plot_points) const;
+        void create_output_plots(unsigned int event_num, OutputPlotPoints& output_plot_points);
 
         /**
          * @brief Propagate a single set of charges through the sensor
