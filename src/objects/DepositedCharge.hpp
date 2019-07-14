@@ -54,6 +54,12 @@ namespace allpix {
         void setMCParticle(const MCParticle* mc_particle);
 
         /**
+         * @brief Print an ASCII representation of DepositedCharge to the given stream
+         * @param out Stream to print to
+         */
+        void print(std::ostream& out) const override;
+
+        /**
          * @brief ROOT class definition
          */
         ClassDefOverride(DepositedCharge, 2);

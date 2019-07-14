@@ -72,6 +72,11 @@ namespace allpix {
          * @return Time from start event
          */
         double getEventTime() const;
+        /**
+         * @brief Print an ASCII representation of SensorCharge to the given stream
+         * @param out Stream to print to
+         */
+        void print(std::ostream& out) const override;
 
         /**
          * @brief ROOT class definition
