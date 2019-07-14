@@ -20,6 +20,7 @@ ENDIF()
 # Define the library adding the object file created above
 ADD_LIBRARY(AllpixGeant4RunManager SHARED
     MTRunManager.cpp
+    RunManager.cpp
     WorkerRunManager.cpp
 )
 
