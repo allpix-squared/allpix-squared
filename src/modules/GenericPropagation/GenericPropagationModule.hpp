@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Definition of generic charge propagation module
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -72,7 +72,7 @@ namespace allpix {
          * @brief Create output plots in every event
          * @param event_num Index for this event
          */
-        void create_output_plots(unsigned int event_num, OutputPlotPoints& output_plot_points) const;
+        void create_output_plots(unsigned int event_num, OutputPlotPoints& output_plot_points);
 
         /**
          * @brief Propagate a single set of charges through the sensor

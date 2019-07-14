@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of generic charge propagation module
  * @remarks Based on code from Paul Schuetze
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -128,7 +128,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     hole_Hall_ = 0.9;
 }
 
-void GenericPropagationModule::create_output_plots(unsigned int event_num, OutputPlotPoints& output_plot_points) const {
+void GenericPropagationModule::create_output_plots(unsigned int event_num, OutputPlotPoints& output_plot_points) {
     LOG(TRACE) << "Writing output plots";
 
     // Convert to pixel units if necessary

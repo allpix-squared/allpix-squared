@@ -78,7 +78,7 @@ namespace mesh_converter {
      * It receives pointers to the point and field vectors and its operator() member is called for every combination of
      * results found. It constructs a new MeshElement, checks for its validity and returns true to stop the iteration and
      * false to continue to the next combination of results.
-    */
+     */
     class Combination {
         const std::vector<Point>* grid_;
         const std::vector<Point>* field_;
