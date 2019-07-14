@@ -39,12 +39,12 @@ namespace allpix {
         /**
          * @brief Initialize optional ROOT histograms
          */
-        void init() override;
+        void init(std::mt19937_64&) override;
 
         /**
          * @brief Combine pulses from propagated charges and transfer them to the pixels
          */
-        void run(unsigned int) override;
+        void run(Event*) override;
 
         /**
          * @brief Finalize and write optional histograms
@@ -57,7 +57,18 @@ namespace allpix {
         // General module members
         std::shared_ptr<Detector> detector_;
         Messenger* messenger_;
-        std::shared_ptr<PropagatedChargeMessage> message_;
+        
+        /**
+         * @brief Compare two pixels, necessary to store them in the a std::map
+         */
+        struct pixel_cmp {
+            bool operator()(const Pixel::Index& p1, const Pixel::Index& p2) const {
+                if(p1.x() == p2.x()) {
+                    return p1.y() < p2.y();
+                }
+                return p1.x() < p2.x();
+            }
+        };
 
         // Output histograms
         TH1D *h_total_induced_charge_{}, *h_induced_pixel_charge_{};
