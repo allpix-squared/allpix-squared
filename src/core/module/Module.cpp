@@ -69,7 +69,7 @@ std::shared_ptr<Detector> Module::getDetector() const {
  * The output path is automatically created if it does not exists. The path is always accessible if this functions returns.
  * Obeys the "deny_overwrite" parameter of the module.
  */
-std::string Module::createOutputFile(const std::string& path, bool global) const {
+std::string Module::createOutputFile(const std::string& path, bool global, bool delete_file) {
     std::string file;
     if(global) {
         file = config_.get<std::string>("_global_dir", std::string());

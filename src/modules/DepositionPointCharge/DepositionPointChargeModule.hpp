@@ -62,13 +62,13 @@ namespace allpix {
          * @brief Helper function to deposit charges at a single point
          * @param event Pointer to current event
          */
-        void DepositPoint(Event* event) const;
+        void DepositPoint(const ROOT::Math::XYZPoint& position);
 
         /**
          * @brief Helper function to deposit charges along a line
          * @param event Pointer to current event
          */
-        void DepositLine(Event* event) const;
+        void DepositLine(const ROOT::Math::XYZPoint& position);
 
         std::shared_ptr<Detector> detector_;
 

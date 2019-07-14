@@ -105,7 +105,8 @@ namespace allpix {
          * @param delete_file True if the created output file should be deleted after testing access
          * @return Canonical path to an output file
          */
-        std::string createOutputFile(const std::string& path, bool global = false) const;
+        std::string createOutputFile(const std::string& path, bool global = false, bool delete_file = false);
+
 
         /**
          * @brief Get ROOT directory which should be used to output histograms et cetera
