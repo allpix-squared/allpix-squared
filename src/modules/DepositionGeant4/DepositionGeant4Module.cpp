@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of Geant4 deposition module
  * @remarks Based on code from Mathieu Benoit
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -64,8 +64,27 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
     config_.setAlias("source_energy", "beam_energy");
     config_.setAlias("source_energy_spread", "beam_energy_spread");
 
+    // If macro, parse for positions of sources and add these as points to the GeoManager to extend the world:
+    if(config.get<std::string>("source_type") == "macro") {
+        std::ifstream file(config.getPath("file_name", true));
+        std::string line;
+        while(std::getline(file, line)) {
+            if(line.rfind("/gps/position", 0) == 0 || line.rfind("/gps/pos/centre") == 0) {
+                LOG(TRACE) << "Macro contains source position: \"" << line << "\"";
+                std::stringstream sstr(line);
+                std::string command, units;
+                double pos_x, pos_y, pos_z;
+                sstr >> command >> pos_x >> pos_y >> pos_z >> units;
+                ROOT::Math::XYZPoint source_position(
+                    Units::get(pos_x, units), Units::get(pos_y, units), Units::get(pos_z, units));
+                LOG(DEBUG) << "Found source positioned at " << Units::display(source_position, {"mm", "cm"});
+                geo_manager_->addPoint(source_position);
+            }
+        }
+    }
+
     // Add the particle source position to the geometry
-    geo_manager_->addPoint(config_.get<ROOT::Math::XYZPoint>("source_position"));
+    geo_manager_->addPoint(config_.get<ROOT::Math::XYZPoint>("source_position", ROOT::Math::XYZPoint()));
 }
 
 /**
