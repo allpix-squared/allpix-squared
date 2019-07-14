@@ -8,7 +8,7 @@
  */
 
 #include "WorkerRunManager.hpp"
-#include "RunManager.hpp"
+#include "MTRunManager.hpp"
 #include "SensitiveDetectorAndFieldConstruction.hpp"
 
 #include <atomic>
@@ -74,7 +74,7 @@ void WorkerRunManager::InitializeGeometry() {
     kernel->WorkerDefineWorldVolume(worldVol,false);
     kernel->SetNumberOfParallelWorld(masterKernel->GetNumberOfParallelWorld());
     //Step3: Call user's ConstructSDandField()
-    RunManager* master_run_manager = static_cast<RunManager*>(G4MTRunManager::GetMasterRunManager());
+    MTRunManager* master_run_manager = static_cast<MTRunManager*>(G4MTRunManager::GetMasterRunManager());
     SensitiveDetectorAndFieldConstruction* detector_construction = master_run_manager->GetSDAndFieldConstruction();
     if (!detector_construction) {
         G4Exception("WorkerRunManager::InitializeGeometry", "Run0033",

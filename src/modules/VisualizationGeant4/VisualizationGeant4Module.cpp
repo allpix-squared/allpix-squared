@@ -31,13 +31,13 @@
 #include <G4UIsession.hh>
 #include <G4UItcsh.hh>
 #include <G4UIterminal.hh>
+#include <G4RunManager.hh>
 #include <G4VPVParameterisation.hh>
 #include <G4VisAttributes.hh>
 #include <G4VisExecutive.hh>
 
 #include "core/config/exceptions.h"
 #include "core/utils/log.h"
-#include "G4RunManager/RunManager.hpp"
 
 using namespace allpix;
 

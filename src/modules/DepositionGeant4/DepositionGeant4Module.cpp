@@ -34,7 +34,7 @@
 #include "objects/DepositedCharge.hpp"
 #include "tools/ROOT.h"
 #include "tools/geant4.h"
-#include "G4RunManager/RunManager.hpp"
+#include "G4RunManager/MTRunManager.hpp"
 
 #include "GeneratorActionG4.hpp"
 #include "SensitiveDetectorActionG4.hpp"
@@ -78,12 +78,12 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
  */
 void DepositionGeant4Module::init(std::mt19937_64& seeder) {
     Configuration& global_config = getConfigManager()->getGlobalConfiguration();
-    RunManager* run_manager_mt = nullptr;
+    MTRunManager* run_manager_mt = nullptr;
 
     // Load the G4 run manager (which is owned by the geometry builder)
     if (global_config.get<bool>("experimental_multithreading", false)) {
         run_manager_g4_ = G4MTRunManager::GetMasterRunManager();
-        run_manager_mt = static_cast<RunManager*>(run_manager_g4_);
+        run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
 
         using_multithreading_ = true;
     } else {
@@ -263,7 +263,7 @@ void DepositionGeant4Module::run(Event* event) {
     // Start a single event from the beam
     LOG(TRACE) << "Enabling beam";
     if (using_multithreading_) {
-        RunManager* run_manager_mt = static_cast<RunManager*>(run_manager_g4_);
+        MTRunManager* run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
         run_manager_mt->Run(static_cast<int>(config_.get<unsigned int>("number_of_particles", 1)));
     } else {
         run_manager_g4_->BeamOn(static_cast<int>(config_.get<unsigned int>("number_of_particles", 1)));
@@ -315,7 +315,7 @@ void DepositionGeant4Module::finalize() {
 
 void DepositionGeant4Module::finalizeThread() {
     if (using_multithreading_) {
-        RunManager* run_manager_mt = static_cast<RunManager*>(run_manager_g4_);
+        MTRunManager* run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
         run_manager_mt->TerminateForThread();
     }
 

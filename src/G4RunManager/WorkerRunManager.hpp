@@ -14,7 +14,7 @@
 
 namespace allpix {
 
-    class RunManager;
+    class MTRunManager;
 
     /**
      * @brief Run manager for Geant4 that can be used by multiple threads where each thread will have its own instance.
@@ -26,7 +26,7 @@ namespace allpix {
      * independent from other instances running on different threads.
      */
     class WorkerRunManager : public G4WorkerRunManager {
-        friend class RunManager;
+        friend class MTRunManager;
     public:
         virtual ~WorkerRunManager();
 

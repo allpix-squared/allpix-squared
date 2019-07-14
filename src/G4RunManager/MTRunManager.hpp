@@ -1,14 +1,14 @@
 /**
  * @file
- * @brief The RunManager class, defines a custom Geant4 RunManager that works with Allpix threads.
+ * @brief The MTRunManager class, defines a custom Geant4 RunManager that works with Allpix threads.
  * @copyright Copyright (c) 2019 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#ifndef ALLPIX_RUN_MANAGER_H
-#define ALLPIX_RUN_MANAGER_H
+#ifndef ALLPIX_MT_RUN_MANAGER_H
+#define ALLPIX_MT_RUN_MANAGER_H
 
 #include <G4MTRunManager.hh>
 
@@ -28,11 +28,11 @@ namespace allpix {
      * of each event are independet from each other. Also, this  manager doesn't maintain any threads, it only
      * maintains the worker managers which are allocated on a per thread basis.
      */
-    class RunManager : public G4MTRunManager {
+    class MTRunManager : public G4MTRunManager {
         friend class WorkerRunManager;
     public:
-        RunManager() = default;
-        virtual ~RunManager() = default;
+        MTRunManager() = default;
+        virtual ~MTRunManager() = default;
 
         /**
          * @brief Thread safe version of \ref G4RunManager BeamOn. Offload the work to a thread specific worker.
@@ -177,4 +177,4 @@ namespace allpix {
     };
 } // namespace allpix
 
-#endif /* ALLPIX_RUN_MANAGER_H */
+#endif /* ALLPIX_MT_RUN_MANAGER_H */

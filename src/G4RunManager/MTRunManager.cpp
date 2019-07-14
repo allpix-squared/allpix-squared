@@ -1,13 +1,13 @@
 /**
  * @file
- * @brief Implementation of RunManager
+ * @brief Implementation of MTRunManager
  * @copyright Copyright (c) 2019 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#include "RunManager.hpp"
+#include "MTRunManager.hpp"
 #include "WorkerRunManager.hpp"
 
 using namespace allpix;
@@ -16,9 +16,9 @@ namespace {
  G4Mutex worker_seed_mutex = G4MUTEX_INITIALIZER;
 }
 
-G4ThreadLocal WorkerRunManager* RunManager::worker_run_manager_ = nullptr;
+G4ThreadLocal WorkerRunManager* MTRunManager::worker_run_manager_ = nullptr;
 
-void RunManager::Run(G4int n_event) {
+void MTRunManager::Run(G4int n_event) {
     if (!worker_run_manager_) {
         // construct a new thread worker
         worker_run_manager_ = WorkerRunManager::GetNewInstanceForThread();
@@ -52,7 +52,7 @@ void RunManager::Run(G4int n_event) {
     worker_run_manager_->BeamOn(n_event);
 }
 
-void RunManager::Initialize() {
+void MTRunManager::Initialize() {
     G4MTRunManager::Initialize();
 
     G4bool cond = ConfirmBeamOnCondition();
@@ -68,7 +68,7 @@ void RunManager::Initialize() {
     }
 }
 
-void RunManager::TerminateForThread() {
+void MTRunManager::TerminateForThread() {
     // thread local instance
     if (worker_run_manager_) {
         worker_run_manager_->RunTermination();
