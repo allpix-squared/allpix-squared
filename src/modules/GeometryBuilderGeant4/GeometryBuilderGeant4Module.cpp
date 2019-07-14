@@ -31,6 +31,7 @@
 #include "core/geometry/GeometryManager.hpp"
 #include "core/utils/log.h"
 #include "G4RunManager/MTRunManager.hpp"
+#include "G4RunManager/RunManager.hpp"
 
 // Include GDML if Geant4 version has it
 #ifdef Geant4_GDML
@@ -90,7 +91,7 @@ void GeometryBuilderGeant4Module::init(std::mt19937_64&) {
     if (global_config.get<bool>("experimental_multithreading", false)) {
         run_manager_g4_ = std::make_unique<MTRunManager>();
     } else {
-        run_manager_g4_ = std::make_unique<G4RunManager>();
+        run_manager_g4_ = std::make_unique<RunManager>();
     }
 
     // Release stdout again
