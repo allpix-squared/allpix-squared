@@ -180,7 +180,7 @@ void ROOTObjectWriterModule::run(Event* event) {
     output_file_->cd();
 
     // Save last event number for trees created later
-    last_event_ = event;
+    last_event_ = event->number;
 
     // Fill the tree with the current received messages
     for(auto& tree : trees_) {
