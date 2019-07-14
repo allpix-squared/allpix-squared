@@ -12,6 +12,7 @@
 #include <string>
 #include <utility>
 
+#include "core/module/Event.hpp"
 #include "core/utils/log.h"
 #include "objects/PixelCharge.hpp"
 
@@ -23,8 +24,6 @@ InducedTransferModule::InducedTransferModule(Configuration& config,
                                              const std::shared_ptr<Detector>& detector)
     : Module(config, detector), messenger_(messenger), detector_(detector) {
     using XYVectorInt = DisplacementVector2D<Cartesian2D<int>>;
-    // Enable parallelization of this module if multithreading is enabled
-    enable_parallelization();
 
     // Save detector model
     model_ = detector_->getModel();
@@ -34,10 +33,10 @@ InducedTransferModule::InducedTransferModule(Configuration& config,
     matrix_ = config_.get<XYVectorInt>("induction_matrix");
 
     // Require propagated deposits for single detector
-    messenger_->bindSingle(this, &InducedTransferModule::propagated_message_, MsgFlags::REQUIRED);
+    messenger->bindSingle<InducedTransferModule, PropagatedChargeMessage, MsgFlags::REQUIRED>(this);
 }
 
-void InducedTransferModule::init() {
+void InducedTransferModule::init(std::mt19937_64&) {
 
     // This module requires a weighting potential - otherwise everything is lost...
     if(!detector_->hasWeightingPotential()) {
@@ -45,13 +44,15 @@ void InducedTransferModule::init() {
     }
 }
 
-void InducedTransferModule::run(unsigned int) {
+void InducedTransferModule::run(Event* event) {
+    auto propagated_message = event->fetchMessage<PropagatedChargeMessage>();
+
     // Calculate induced charge by total motion of charge carriers
     LOG(TRACE) << "Calculating induced charge on pixels";
     bool found_electrons = false, found_holes = false;
 
-    std::map<Pixel::Index, std::vector<std::pair<double, const PropagatedCharge*>>> pixel_map;
-    for(auto& propagated_charge : propagated_message_->getData()) {
+    std::map<Pixel::Index, std::vector<std::pair<double, const PropagatedCharge*>>, pixel_cmp> pixel_map;
+    for(auto& propagated_charge : propagated_message->getData()) {
 
         // Make sure both electrons and holes are present in the input data
         if(propagated_charge.getType() == CarrierType::ELECTRON) {
@@ -126,5 +127,5 @@ void InducedTransferModule::run(unsigned int) {
 
     // Dispatch message of pixel charges
     auto pixel_message = std::make_shared<PixelChargeMessage>(pixel_charges, detector_);
-    messenger_->dispatchMessage(this, pixel_message);
+    event->dispatchMessage(pixel_message);
 }

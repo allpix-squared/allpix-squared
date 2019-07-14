@@ -42,20 +42,29 @@ namespace allpix {
         /**
          * @brief Initial check for the presence of a weighting potential
          */
-        void init() override;
+        void init(std::mt19937_64&) override;
 
         /**
          * @brief Calculation of the individual total induced charge and combination for all pixels
          */
-        void run(unsigned int) override;
+        void run(Event*) override;
 
     private:
         Messenger* messenger_;
         std::shared_ptr<Detector> detector_;
         std::shared_ptr<DetectorModel> model_;
 
-        // Message containing the propagated charges
-        std::shared_ptr<PropagatedChargeMessage> propagated_message_;
+        /**
+         * @brief Compare two pixels, necessary to store them in the a std::map
+         */
+        struct pixel_cmp {
+            bool operator()(const Pixel::Index& p1, const Pixel::Index& p2) const {
+                if(p1.x() == p2.x()) {
+                    return p1.y() < p2.y();
+                }
+                return p1.x() < p2.x();
+            }
+        };
 
         // Induction matrix size in number of pixels along x and y
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> matrix_;
