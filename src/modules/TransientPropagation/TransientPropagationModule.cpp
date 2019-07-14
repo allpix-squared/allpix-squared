@@ -31,17 +31,11 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     : Module(config, detector), detector_(std::move(detector)), messenger_(messenger) {
     using XYVectorInt = DisplacementVector2D<Cartesian2D<int>>;
 
-    // Enable parallelization of this module if multithreading is enabled:
-    enable_parallelization();
-
     // Save detector model
     model_ = detector_->getModel();
 
     // Require deposits message for single detector:
-    messenger_->bindSingle(this, &TransientPropagationModule::deposits_message_, MsgFlags::REQUIRED);
-
-    // Seed the random generator with the module seed
-    random_generator_.seed(getRandomSeed());
+    messenger->bindSingle<TransientPropagationModule, DepositedChargeMessage, MsgFlags::REQUIRED>(this);
 
     // Set default value for config variables
     config_.setDefault<double>("timestep", Units::get(0.01, "ns"));
@@ -81,7 +75,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     hole_Hall_ = 0.9;
 }
 
-void TransientPropagationModule::init() {
+void TransientPropagationModule::init(std::mt19937_64&) {
 
     auto detector = getDetector();
 
@@ -146,14 +140,15 @@ void TransientPropagationModule::init() {
     }
 }
 
-void TransientPropagationModule::run(unsigned int) {
+void TransientPropagationModule::run(Event* event) {
+    auto deposits_message = event->fetchMessage<DepositedChargeMessage>();
 
     // Create vector of propagated charges to output
     std::vector<PropagatedCharge> propagated_charges;
 
     // Loop over all deposits for propagation
     LOG(TRACE) << "Propagating charges in sensor";
-    for(auto& deposit : deposits_message_->getData()) {
+    for(auto& deposit : deposits_message->getData()) {
 
         // Loop over all charges in the deposit
         unsigned int charges_remaining = deposit.getCharge();
@@ -201,7 +196,7 @@ void TransientPropagationModule::run(unsigned int) {
     auto propagated_charge_message = std::make_shared<PropagatedChargeMessage>(std::move(propagated_charges), detector_);
 
     // Dispatch the message with propagated charges
-    messenger_->dispatchMessage(this, propagated_charge_message);
+    event->dispatchMessage(propagated_charge_message);
 }
 
 /**

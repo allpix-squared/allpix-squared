@@ -17,6 +17,7 @@
 #include "core/geometry/DetectorModel.hpp"
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
+#include "core/module/Event.hpp"
 
 #include "objects/DepositedCharge.hpp"
 #include "objects/Pulse.hpp"
@@ -45,12 +46,12 @@ namespace allpix {
         /**
          * @brief Initialize the module and check field configuration
          */
-        void init() override;
+        void init(std::mt19937_64&) override;
 
         /**
          * @brief Propagate all deposited charges through the sensor
          */
-        void run(unsigned int) override;
+        void run(Event*) override;
 
         /**
          * @brief Write statistical summary and histograms
