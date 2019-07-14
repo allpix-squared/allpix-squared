@@ -39,7 +39,7 @@ WeightingPotentialReaderModule::WeightingPotentialReaderModule(Configuration& co
     }
 }
 
-void WeightingPotentialReaderModule::init() {
+void WeightingPotentialReaderModule::init(std::mt19937_64&) {
 
     auto field_model = config_.get<std::string>("model");
 
