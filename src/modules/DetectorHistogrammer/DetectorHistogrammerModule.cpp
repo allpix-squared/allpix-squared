@@ -249,7 +249,7 @@ void DetectorHistogrammerModule::run(Event* event) {
 
             // Add pixel
             hit_map->Fill(pixel_idx.x(), pixel_idx.y());
-            charge_map->Fill(pixel_idx.x(), pixel_idx.y(), static_cast<double>(Units::convert(pixel_hit.getSignal(), "ke")));
+            charge_map->Fill(pixel_idx.x(), pixel_idx.y(), static_cast<double>(Units::convert(pixel_charge.getSignal(), "ke")));
 
             // Update statistics
             total_vector_ += pixel_idx;
