@@ -77,7 +77,7 @@ cmp:cc7-llvm:
         - export COMPILER_TYPE="llvm"
         - source .gitlab/ci/init_x86_64.sh
 
-cmp:mac1013-clang:
+cmp:mac1014-clang:
     extends: .compile
     tags:
         - mac
@@ -277,22 +277,22 @@ core:cc7-llvm:
 
 # Mac OS X
 
-mod:mac1013-clang:
+mod:mac1014-clang:
     extends: .testmod
     tags:
         - mac
     dependencies:
-        - cmp:mac1013-clang
+        - cmp:mac1014-clang
     before_script:
         - source .gitlab/ci/init_mac.sh
         - source .gitlab/ci/load_deps.sh
 
-core:mac1013-clang:
+core:mac1014-clang:
     extends: .testcore
     tags:
         - mac
     dependencies:
-        - cmp:mac1013-clang
+        - cmp:mac1014-clang
     before_script:
         - source .gitlab/ci/init_mac.sh
         - source .gitlab/ci/load_deps.sh
@@ -338,10 +338,10 @@ perf:cc7-gcc:
 
 # Mac OS X
 # Temporarily disable Mac OS X performance until tests are adapted to actual performance
-.perf:mac1013-clang:
+.perf:mac1014-clang:
     extends: .testperf
     dependencies:
-        - cmp:mac1013-clang
+        - cmp:mac1014-clang
     before_script:
         - source .gitlab/ci/init_mac.sh
         - source .gitlab/ci/load_deps.sh

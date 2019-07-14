@@ -21,3 +21,15 @@
 1541489096|MR!168: Scaling and Shifting of Electric Fields
 1542358071|MR!150: Detector Model Wrapper and Overlap Check
 1542791646|Stable Release: Allpix Squared v1.3
+1543587520|MR!180: Change detector parameters from command line
+1543594790|MR!173: Generalized handling of field data
+1548332344|MR!188: Introduce "Coding Conventions" section to manual
+1549967410|MR!194: New module DepositionPointCharge
+1551852439|MR!197: New field data file format
+1551958922|MR!198: Allow depletion from sensor backside
+1553160023|MR!203: Provide full Proteus configuration
+1553246487|MR!200: Improved TCAD Mesh Converter tool
+1560417948|MR!216: Automatically Deduce File Type for Field Data
+1560799445|MR!214: Implement transient simulation of signal formation
+1561108178|MR!221: Allow more freedom in Geant4 macro usage
+1562598460|Stable Release: Allpix Squared v1.4
