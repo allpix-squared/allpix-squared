@@ -23,7 +23,7 @@ using namespace allpix;
 PulseTransferModule::PulseTransferModule(Configuration& config,
                                          Messenger* messenger,
                                          const std::shared_ptr<Detector>& detector)
-    : Module(config, detector), detector_(detector), messenger_(messenger) {
+    : Module(config, detector), detector_(detector) {
 
     config_.setDefault<bool>("output_pulsegraphs", false);
     config_.setDefault<bool>("output_plots", config_.get<bool>("output_pulsegraphs"));

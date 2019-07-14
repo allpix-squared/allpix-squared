@@ -22,7 +22,7 @@ using namespace ROOT::Math;
 InducedTransferModule::InducedTransferModule(Configuration& config,
                                              Messenger* messenger,
                                              const std::shared_ptr<Detector>& detector)
-    : Module(config, detector), messenger_(messenger), detector_(detector) {
+    : Module(config, detector), detector_(detector) {
     using XYVectorInt = DisplacementVector2D<Cartesian2D<int>>;
 
     // Save detector model

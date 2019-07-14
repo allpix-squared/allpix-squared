@@ -28,7 +28,7 @@ using namespace ROOT::Math;
 TransientPropagationModule::TransientPropagationModule(Configuration& config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
-    : Module(config, detector), detector_(std::move(detector)), messenger_(messenger) {
+    : Module(config, detector), detector_(std::move(detector)) {
     using XYVectorInt = DisplacementVector2D<Cartesian2D<int>>;
 
     // Save detector model
@@ -204,7 +204,8 @@ void TransientPropagationModule::run(Event* event) {
  * velocity at every point with help of the electric field map of the detector. A Runge-Kutta integration is applied in
  * multiple steps, adding a random diffusion to the propagating charge every step.
  */
-std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
+std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(Event* event,
+                                                                              const ROOT::Math::XYZPoint& pos,
                                                                               const CarrierType& type,
                                                                               const unsigned int charge,
                                                                               std::map<Pixel::Index, Pulse>& pixel_map) {
@@ -236,7 +237,7 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(co
         std::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
         Eigen::Vector3d diffusion;
         for(int i = 0; i < 3; ++i) {
-            diffusion[i] = gauss_distribution(random_generator_);
+            diffusion[i] = gauss_distribution(event->getRandomEngine());
         }
         return diffusion;
     };
