@@ -283,7 +283,7 @@ void DepositionGeant4Module::run(Event* event) {
     LOG(TRACE) << "Enabling beam";
     if (using_multithreading_) {
         MTRunManager* run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
-        run_manager_mt->Run(static_cast<int>(config_.get<unsigned int>("number_of_particles", 1)));
+        run_manager_mt->Run(static_cast<G4int>(event->number), static_cast<int>(config_.get<unsigned int>("number_of_particles", 1)));
     } else {
         run_manager_g4_->BeamOn(static_cast<int>(config_.get<unsigned int>("number_of_particles", 1)));
     }

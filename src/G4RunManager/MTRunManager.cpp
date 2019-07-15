@@ -18,7 +18,7 @@ namespace {
 
 G4ThreadLocal WorkerRunManager* MTRunManager::worker_run_manager_ = nullptr;
 
-void MTRunManager::Run(G4int n_event) {
+void MTRunManager::Run(G4int allpix_event, G4int n_event) {
     if (!worker_run_manager_) {
         // construct a new thread worker
         worker_run_manager_ = WorkerRunManager::GetNewInstanceForThread();
@@ -29,9 +29,9 @@ void MTRunManager::Run(G4int n_event) {
         // Draw the nessecary seeds so that each event will be seeded
         // TODO: maybe we only need to seed the RNG once for a worker run and not for each loop iteration
         G4RNGHelper* helper = G4RNGHelper::GetInstance();
-        G4int idx_rndm = nSeedsPerEvent*nSeedsUsed;
+        G4int idx_rndm = nSeedsPerEvent * (allpix_event - 1);
         long s1 = helper->GetSeed(idx_rndm), s2 = helper->GetSeed(idx_rndm+1);
-
+        std::cout << "****** E=" << allpix_event << " S1=" << s1 << " S2=" << s2 << std::endl;
         worker_run_manager_->seedsQueue.push(s1);
         worker_run_manager_->seedsQueue.push(s2);
 
@@ -40,7 +40,7 @@ void MTRunManager::Run(G4int n_event) {
         if(nSeedsUsed==nSeedsFilled) {
             // The RefillSeeds call will refill the array with 1024 new entries
             // the number of seeds refilled = numberOfEventToBeProcessed - nSeedsFilled
-            numberOfEventToBeProcessed = nSeedsFilled + 1024;
+            numberOfEventToBeProcessed = nSeedsFilled + nSeedsMax;
             RefillSeeds();
         }
 

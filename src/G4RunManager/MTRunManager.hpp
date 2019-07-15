@@ -36,13 +36,14 @@ namespace allpix {
 
         /**
          * @brief Thread safe version of \ref G4RunManager BeamOn. Offload the work to a thread specific worker.
+         * @param allpix_event The allpix event number
          * @param n_event number of events to simulate in one run.
          *
          * Run the specified number of events on a seperate worker that is associated with the calling thread.
          * The worker will be initialized with a new set of seeds to be used specifically for this event run such
          * that events are seeded in the order of creation which ensures that results can be reproduced.
          */
-        void Run(G4int n_event);
+        void Run(G4int allpix_event, G4int n_event);
 
         /**
          * @brief Initialize the run manager to be ready for run.
