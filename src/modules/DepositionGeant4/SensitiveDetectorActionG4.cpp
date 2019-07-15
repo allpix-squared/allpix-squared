@@ -68,7 +68,6 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     auto mean_charge = static_cast<unsigned int>(edep / charge_creation_energy_);
     std::normal_distribution<double> charge_fluctuation(mean_charge, std::sqrt(mean_charge * fano_factor_));
     auto charge = charge_fluctuation(random_generator_);
-    std::cout << "**** HIT X=" << mid_pos.x() << " EDEP=" << edep << " CCE=" << charge_creation_energy_ << " CHARGE=" << charge <<  std::endl;
 
     auto deposit_position_g4loc =
         ROOT::Math::XYZPoint(deposit_position_g4.x() + detector_->getModel()->getSensorCenter().x(),
