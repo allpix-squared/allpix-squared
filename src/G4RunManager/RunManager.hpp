@@ -27,7 +27,7 @@ namespace allpix {
      */
     class RunManager : public G4RunManager {
     public:
-        RunManager();
+        RunManager() = default;
         virtual ~RunManager() = default;
 
         /**

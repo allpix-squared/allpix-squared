@@ -11,14 +11,15 @@
 
 using namespace allpix;
 
-RunManager::RunManager() {
-    master_random_engine_ = G4Random::getTheEngine();
-}
-
 void RunManager::BeamOn(G4int n_event, const char *macro_file, G4int n_select) {
     if (!fakeRun) {
         // Create a new engine with the same type as the default engine
         if (event_random_engine_ == nullptr) {
+            // Remember the default RNG engine before replacing it so we can use it
+            // later.
+            // TODO: maybe we should delete it ourselves too
+            master_random_engine_ = G4Random::getTheEngine();
+
             if (dynamic_cast<const CLHEP::HepJamesRandom*>(master_random_engine_)) {
                 event_random_engine_ = new CLHEP::HepJamesRandom;
             }
