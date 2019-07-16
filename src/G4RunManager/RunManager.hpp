@@ -33,7 +33,7 @@ namespace allpix {
         /**
          * @brief Initialize the event loop for a given number of events. Seed the RNG with unique seed.
          */
-        virtual void InitializeEventLoop(G4int n_event, const char *macro_file, G4int n_select) override;
+        virtual void BeamOn(G4int n_event, const char *macro_file, G4int n_select) override;
 
     private:
         static constexpr G4int number_seeds_per_event_{2};

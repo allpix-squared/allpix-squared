@@ -15,7 +15,7 @@ RunManager::RunManager() {
     master_random_engine_ = G4Random::getTheEngine();
 }
 
-void RunManager::InitializeEventLoop(G4int n_event, const char *macro_file, G4int n_select) {
+void RunManager::BeamOn(G4int n_event, const char *macro_file, G4int n_select) {
     if (!fakeRun) {
         // create a new engine with the same type as the default engine
         if (event_random_engine_ == nullptr) {
@@ -63,6 +63,6 @@ void RunManager::InitializeEventLoop(G4int n_event, const char *macro_file, G4in
         G4Random::setTheSeeds(seeds, -1);
     }
 
-    G4RunManager::InitializeEventLoop(n_event, macro_file, n_select);
+    G4RunManager::BeamOn(n_event, macro_file, n_select);
 
 }
