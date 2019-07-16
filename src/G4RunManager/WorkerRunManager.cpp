@@ -96,7 +96,8 @@ void WorkerRunManager::DoEventLoop(G4int n_event,const char* macroFile,G4int n_s
 
     InitializeEventLoop(n_event, macroFile, n_select);
 
-    runIsSeeded = true; 
+    // For each run, worker should receive exactly one set of random number seeds.
+    runIsSeeded = false; 
 
     // Event loop
     eventLoopOnGoing = true;
@@ -135,17 +136,17 @@ G4Event* WorkerRunManager::GenerateEvent(G4int i_event)
     if( numberOfEventProcessed < numberOfEventToBeProcessed && !runAborted ) {
         anEvent  = new G4Event(numberOfEventProcessed);
 
-        // Seeds are stored in this queue to ensure we can reproduce the results of events
-        // each event will reseed the random number generator
-        s1 = seedsQueue.front(); seedsQueue.pop();
-        s2 = seedsQueue.front(); seedsQueue.pop();
+        if (!runIsSeeded) {
+            // Seeds are stored in this queue to ensure we can reproduce the results of events
+            // each event will reseed the random number generator
+            s1 = seedsQueue.front(); seedsQueue.pop();
+            s2 = seedsQueue.front(); seedsQueue.pop();
 
-        // seed RNG for this event run
-        // TODO: check if we should seed each event or just the first one
-        // since the rest are executed sequentially here
-        long seeds[3] = { s1, s2, s3 };
-        G4Random::setTheSeeds(seeds,-1);
-        runIsSeeded = true;
+            // Seed RNG for this run only once
+            long seeds[3] = { s1, s2, s3 };
+            G4Random::setTheSeeds(seeds,-1);
+            runIsSeeded = true;
+        }
 
         userPrimaryGeneratorAction->GeneratePrimaries(anEvent);
     } else {
