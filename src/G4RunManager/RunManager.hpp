@@ -39,7 +39,7 @@ namespace allpix {
         static constexpr G4int number_seeds_per_event_{2};
         CLHEP::HepRandomEngine* master_random_engine_{nullptr};
         CLHEP::HepRandomEngine* event_random_engine_{nullptr};
-        std::array<double, 1024 * number_seeds_per_event_> seed_array_;
+        std::array<double, number_seeds_per_event_> seed_array_;
     };
 } // namespace allpix
 

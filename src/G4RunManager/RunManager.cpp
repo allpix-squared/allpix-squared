@@ -54,8 +54,10 @@ void RunManager::BeamOn(G4int n_event, const char *macro_file, G4int n_select) {
         // and use them as seeds to the second one. This is exactly what the MTRunManager
         // does where the second engine is a thread local version
         G4RNGHelper* helper = G4RNGHelper::GetInstance();
-        master_random_engine_->flatArray(number_seeds_per_event_ * n_event, &seed_array_[0]);
-        helper->Fill(&seed_array_[0], n_event, n_event, 2);
+
+        // Fill 1 set of seeds only
+        master_random_engine_->flatArray(number_seeds_per_event_, &seed_array_[0]);
+        helper->Fill(&seed_array_[0], 1, 1, number_seeds_per_event_);
 
         long s1 = helper->GetSeed(0);
         long s2 = helper->GetSeed(1);
