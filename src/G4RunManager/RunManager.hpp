@@ -31,7 +31,8 @@ namespace allpix {
         virtual ~RunManager() = default;
 
         /**
-         * @brief Initialize the event loop for a given number of events. Seed the RNG with unique seed.
+         * @brief Wrapper around G4RunManager BeamOn that seeds the RNG before actually calling
+         * BeamOn
          */
         virtual void BeamOn(G4int n_event, const char *macro_file, G4int n_select) override;
 

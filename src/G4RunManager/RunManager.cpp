@@ -17,7 +17,7 @@ RunManager::RunManager() {
 
 void RunManager::BeamOn(G4int n_event, const char *macro_file, G4int n_select) {
     if (!fakeRun) {
-        // create a new engine with the same type as the default engine
+        // Create a new engine with the same type as the default engine
         if (event_random_engine_ == nullptr) {
             if (dynamic_cast<const CLHEP::HepJamesRandom*>(master_random_engine_)) {
                 event_random_engine_ = new CLHEP::HepJamesRandom;
@@ -44,8 +44,9 @@ void RunManager::BeamOn(G4int n_event, const char *macro_file, G4int n_select) {
                 event_random_engine_ = new CLHEP::RanshiEngine;
             }
 
+            // Replace the RNG engine with the new one
+            // TODO: maybe need to do something if it was null?!
             if (event_random_engine_ != nullptr) {
-                // Replace the RNG engine with the new one
                 G4Random::setTheEngine(event_random_engine_);
             }
         }
@@ -65,6 +66,6 @@ void RunManager::BeamOn(G4int n_event, const char *macro_file, G4int n_select) {
         G4Random::setTheSeeds(seeds, -1);
     }
 
+    // Redirect the call to BeamOn
     G4RunManager::BeamOn(n_event, macro_file, n_select);
-
 }
