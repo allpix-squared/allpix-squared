@@ -40,7 +40,6 @@ outDir = os.path.dirname(root_file_name)
 
 if save_pdf:
     matplotlib.use('pdf')
-    print("YESSSSS")
 
 import matplotlib.pyplot as plt
 from matplotlib import pyplot
@@ -50,19 +49,15 @@ from matplotlib import cm
 from matplotlib.colors import LinearSegmentedColormap
 
 
-
 if args.l is not None:
     lib_file_name = (str(args.l))
     if (not os.path.isfile(lib_file_name)):
         print("WARNING: ", lib_file_name, " does not exist, exiting")
         exit(1)
-elif os.path.isfile(path.abspath(path.join(__file__ ,"../.."))+"/opt/allpix-squared/lib/libAllpixObjects.so"):
+elif os.path.isfile(path.abspath(path.join(__file__ ,"../.."))+"/opt/allpix-squared/lib/libAllpixObjects.so"): # For native installs
     lib_file_name = path.abspath(path.join(__file__, "../..")) + "/opt/allpix-squared/lib/libAllpixObjects.so"
-elif os.path.isfile("/opt/allpix-squared/lib/libAllpixObjects.so"):
+elif os.path.isfile("/opt/allpix-squared/lib/libAllpixObjects.so"): # For Docker installs
     lib_file_name = "/opt/allpix-squared/lib/libAllpixObjects.so"
-
-
-
 
 
 if (not os.path.isfile(lib_file_name)):
@@ -152,48 +147,44 @@ for iev in range(0, PixelHit.GetEntries()):
 print
 " ----- processed events (pixelhit):", PixelHit.GetEntries(), " empty_mc_branch:", empty_mc_branch
 
-if print_all:
-    # plot pixel collected charge versus MC parcticle endpoint coordinates
-    mc_hit_histogram = plt.figure(figsize=(11, 7))
-    H2, xedges, yedges, binnmmber = stats.binned_statistic_2d(mc_local_endpoints['x'], mc_local_endpoints['y'],
-                                                              values=pixel_hit['signal'], statistic='mean', bins=[100, 100])
-    XX, YY = np.meshgrid(xedges, yedges)
-    Hm = ma.masked_where(np.isnan(H2), H2)
-    plt.pcolormesh(XX, YY, Hm, cmap="inferno")
-    plt.ylabel("pixel y [mm]")
-    plt.xlabel("pixel x [mm]")
-    cbar = plt.colorbar(pad=.015, aspect=20)
-    cbar.set_label("hit signal")
-    mc_hit_histogram.savefig(outDir + "/XY_Hist.pdf", bbox_inches='tight') # Added
 
-if print_all:
-    mc_hit_histogram_z = plt.figure(figsize=(11, 7))
-    H2, xedges, yedges, binnmmber = stats.binned_statistic_2d(mc_local_endpoints['x'], mc_local_endpoints['z'],
-                                                              values=pixel_hit['signal'], statistic='mean', bins=[100, 100])
-    XX, YY = np.meshgrid(xedges, yedges)
-    Hm = ma.masked_where(np.isnan(H2), H2)
-    plt.pcolormesh(XX, YY, Hm.T, cmap="inferno")
-    plt.ylabel("pixel z [mm]")
-    plt.xlabel("pixel x [mm]")
-    cbar = plt.colorbar(pad=.015, aspect=20)
-    cbar.set_label("hit signal ")
-
-    if save_pdf: mc_hit_histogram_z.savefig(outDir + "/Z_Hist.pdf", bbox_inches='tight') # Added
+# plot pixel collected charge versus MC parcticle endpoint coordinates
+mc_hit_histogram = plt.figure(figsize=(11, 7))
+H2, xedges, yedges, binnmmber = stats.binned_statistic_2d(mc_local_endpoints['x'], mc_local_endpoints['y'], values=pixel_hit['signal'], statistic='mean', bins=[100, 100])
+XX, YY = np.meshgrid(xedges, yedges)
+Hm = ma.masked_where(np.isnan(H2), H2)
+plt.pcolormesh(XX, YY, Hm, cmap="inferno")
+plt.ylabel("pixel y [mm]")
+plt.xlabel("pixel x [mm]")
+cbar = plt.colorbar(pad=.015, aspect=20)
+cbar.set_label("hit signal")
+if save_pdf:  mc_hit_histogram.savefig(outDir + "/GlobalHeatMap.pdf", bbox_inches='tight')
 
 
-if print_all:
-    figMC_z = plt.figure()
-    plt.hist(mc_local_endpoints['z'], 100)
-    plt.title("MC global end point z coordinate")
-    plt.xlabel("z_global [mm]")
+mc_hit_histogram_z = plt.figure(figsize=(11, 7))
+H2, xedges, yedges, binnmmber = stats.binned_statistic_2d(mc_local_endpoints['x'], mc_local_endpoints['z'],
+                                                          values=pixel_hit['signal'], statistic='mean', bins=[100, 100])
+XX, YY = np.meshgrid(xedges, yedges)
+Hm = ma.masked_where(np.isnan(H2), H2)
+plt.pcolormesh(XX, YY, Hm.T, cmap="inferno")
+plt.ylabel("pixel z [mm]")
+plt.xlabel("pixel x [mm]")
+cbar = plt.colorbar(pad=.015, aspect=20)
+cbar.set_label("hit signal ")
+if save_pdf: mc_hit_histogram_z.savefig(outDir + "/Z_Hist.pdf", bbox_inches='tight')
 
-    figMC_z_log = plt.figure()
-    plt.hist(mc_global_endpoints['x'], 100)
-    plt.title("MC global end point z coordinate")
-    plt.xlabel("z_global [mm]")
-    plt.yscale('log')
+figMC_z = plt.figure()
+plt.hist(mc_local_endpoints['z'], 100)
+plt.title("MC global end point z coordinate")
+plt.xlabel("z_global [mm]")
 
-    if save_pdf: figMC_z_log.savefig(outDir + "/ZLog_Hist.pdf", bbox_inches='tight')
+figMC_z_log = plt.figure()
+plt.hist(mc_global_endpoints['x'], 100)
+plt.title("MC global end point z coordinate")
+plt.xlabel("z_global [mm]")
+plt.yscale('log')
+
+if save_pdf: figMC_z_log.savefig(outDir + "/ZLog_Hist.pdf", bbox_inches='tight')
 
 if print_all:
     # X Pixel Hit (Added)
@@ -212,12 +203,6 @@ if print_all:
                                                               values=pixel_hit['signal'], statistic='mean', bins=[len(np.unique(pixel_hit['x'])),len(np.unique(pixel_hit['y']))])
     XX, YY = np.meshgrid(xedges, yedges)
     Hm = ma.masked_where(np.isnan(H2), H2)
-    #plt.pcolormesh(XX, YY, Hm, cmap="inferno")
-    #plt.ylabel("pixel y [mm]")
-    #plt.xlabel("pixel x [mm]")
-    #cbar = plt.colorbar(pad=.015, aspect=20)
-    #cbar.set_label("hit signal")
-    #px_hit_histogram.savefig(outDir + "/XY_PixHist.pdf", bbox_inches='tight') # Added
 
 if print_all:
     # plot pixel hits in pixel Bins? (Added)
@@ -229,9 +214,9 @@ if print_all:
     plt.imshow(heatmap.T, origin='lower')
     plt.xlabel('pixel x position')
     plt.ylabel('pixel y position')
-    plt.title('Pixel heatmap')
+    plt.title('Pixel Heatmap (Number of Hits)')
     cbar = plt.colorbar(pad=.015, aspect=20)
-    if save_pdf: px_bins_hm.savefig(outDir + "/XY_HistBins.pdf", bbox_inches='tight', dpi=900)
+    if save_pdf: px_bins_hm.savefig(outDir + "/PixelNumHits.pdf", bbox_inches='tight', dpi=900)
 
 if print_all:
     # Pixel Charge Spectrum (Added)
