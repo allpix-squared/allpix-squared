@@ -55,6 +55,9 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
     conf_manager_ = conf_manager;
     auto& configs = conf_manager_->getModuleConfigurations();
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
+    
+    // Store the messenger
+    messenger_ = messenger;
 
     // (Re)create the main ROOT file
     auto path = std::string(gSystem->pwd()) + "/" + global_config.get<std::string>("root_file", "modules");
@@ -643,7 +646,7 @@ void ModuleManager::run(std::mt19937_64& seeder) {
         // Create an event, initialize it, and submit it wrapped in a lambda to the thread pool
         // TODO [doc] make this a unique pointer
         auto event =
-            std::make_shared<ConcreteEvent>(modules_, i, terminate_, master_condition, module_execution_time_, seeder);
+            std::make_shared<ConcreteEvent>(modules_, i, *messenger_, terminate_, master_condition, module_execution_time_, seeder);
 
         auto event_function = [ event = std::move(event), number_of_events, event_num = i, &finished_events ]() mutable {
             LOG(STATUS) << "Running event " << event_num << " of " << number_of_events;

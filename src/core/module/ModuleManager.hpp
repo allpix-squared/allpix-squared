@@ -155,6 +155,8 @@ namespace allpix {
         std::map<std::string, void*> loaded_libraries_;
 
         std::atomic<bool> terminate_;
+
+        Messenger* messenger_;
     };
 } // namespace allpix
 

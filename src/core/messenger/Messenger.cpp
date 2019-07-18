@@ -28,20 +28,8 @@ Messenger::DelegateIteratorMap Messenger::delegate_to_iterator_;
 
 thread_local std::unique_ptr<Messenger::LocalMessenger> Messenger::local_messenger_;
 
-#ifdef NDEBUG
 Messenger::Messenger() = default;
 Messenger::~Messenger() = default;
-#else
-unsigned int Messenger::instance_count_;
-Messenger::Messenger() {
-    instance_count_++;
-}
-Messenger::~Messenger() {
-    if(--instance_count_ == 0) {
-        assert(delegate_to_iterator_.empty());
-    }
-}
-#endif
 
 // Check if the detectors match for the message and the delegate
 static bool check_send(BaseMessage* message, BaseDelegate* delegate) {

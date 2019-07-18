@@ -221,10 +221,6 @@ namespace allpix {
         static thread_local std::unique_ptr<LocalMessenger> local_messenger_;
 
         mutable std::mutex mutex_;
-
-#ifndef NDEBUG
-        static unsigned int instance_count_;
-#endif
     };
 } // namespace allpix
 

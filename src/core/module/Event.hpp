@@ -119,6 +119,7 @@ namespace allpix {
          */
         explicit Event(ModuleList modules,
                        const unsigned int event_num,
+                       Messenger& global_messenger,
                        std::atomic<bool>& terminate,
                        std::condition_variable& master_condition,
                        std::map<Module*, long double>& module_execution_time,
@@ -182,7 +183,7 @@ namespace allpix {
         bool previous_was_reader_{false};
 
         // For module messages
-        Messenger messenger_;
+        Messenger& messenger_;
         Module* current_module_;
 
 #ifndef NDEBUG
