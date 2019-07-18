@@ -137,6 +137,11 @@ namespace allpix {
          */
         bool isSatisfied(Module* module) const;
 
+        /**
+         * @brief Resets the messenger and clear any stored messages.
+         */
+        void reset();
+
     private:
         /**
          * @brief Add a delegate to the listeners
@@ -177,11 +182,22 @@ namespace allpix {
             public:
                 LocalMessenger(Messenger& global_messenger);
 
+                /**
+                * @brief Resets the messenger and clear any stored messages.
+                */
+                void reset();
+
                 void dispatch_message(Module* source, std::shared_ptr<BaseMessage> message, std::string name);
                 bool dispatch_message(Module* source,
                                     const std::shared_ptr<BaseMessage>& message,
                                     const std::string& name,
                                     const std::string& id);
+
+                /**
+                * @brief Check if a module is satisfied for running (all required messages received)
+                * @return True if satisfied, false otherwise
+                */
+                bool isSatisfied(Module* module) const;
 
                 /**
                 * @brief Fetches a single message of specified type meant for the calling module

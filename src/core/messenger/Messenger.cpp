@@ -207,6 +207,14 @@ std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> Messenger::fet
     return messages_[module->getUniqueName()].filter_multi;
 }
 
+void Messenger::reset() {
+    if (local_messenger_ == nullptr) {
+        local_messenger_ = std::make_unique<LocalMessenger> (*this);
+    }
+
+    local_messenger_->reset();
+}
+
 Messenger::LocalMessenger::LocalMessenger(Messenger& global_messenger) : global_messenger_(global_messenger) {
 }
 
@@ -277,4 +285,19 @@ bool Messenger::LocalMessenger::dispatch_message(Module* source,
 
 std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> Messenger::LocalMessenger::fetchFilteredMessages(Module* module) {
     return messages_[module->getUniqueName()].filter_multi;
+}
+
+bool Messenger::LocalMessenger::isSatisfied(Module* module) const {
+    // Check delegate flags. If false, check event-local satisfaction.
+    try {
+        return module->check_delegates() || satisfied_modules_.at(module->getUniqueName());
+    } catch(const std::out_of_range&) {
+        return false;
+    }
+}
+
+void Messenger::LocalMessenger::reset() {
+    messages_.clear();
+    satisfied_modules_.clear();
+    sent_messages_.clear();
 }
