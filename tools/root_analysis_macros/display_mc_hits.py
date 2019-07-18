@@ -12,12 +12,6 @@ import numpy.ma as ma
 
 # matplotlib
 import matplotlib
-import matplotlib.pyplot as plt
-from matplotlib import pyplot
-from matplotlib.colors import LogNorm
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import cm
-from matplotlib.colors import LinearSegmentedColormap
 
 # scipy
 from scipy import stats
@@ -32,11 +26,30 @@ parser.add_argument("-f", metavar='rootfile', required=True, help="specify path 
 
 parser.add_argument("-a", required=False, help="Produce All Graphs", action="store_true")
 
-parser.add_argument("-pdf", required=False, help="Create PDF rather than pop up (Useful for Docker)", action="store_true")
+parser.add_argument("-pdf", help="Create PDF rather than pop up (Useful for Docker)", action="store_true")
 
 print(path.abspath(path.join(__file__ ,"../.."))+"/opt/allpix-squared/lib/libAllpixObjects.so")
 
 args = parser.parse_args()
+
+root_file_name = (str(args.f))
+detector_name = (str(args.d))
+print_all = args.a
+save_pdf = args.pdf
+outDir = os.path.dirname(root_file_name)
+
+if save_pdf:
+    matplotlib.use('pdf')
+    print("YESSSSS")
+
+import matplotlib.pyplot as plt
+from matplotlib import pyplot
+from matplotlib.colors import LogNorm
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
+from matplotlib.colors import LinearSegmentedColormap
+
+
 
 if args.l is not None:
     lib_file_name = (str(args.l))
@@ -48,14 +61,8 @@ elif os.path.isfile(path.abspath(path.join(__file__ ,"../.."))+"/opt/allpix-squa
 elif os.path.isfile("/opt/allpix-squared/lib/libAllpixObjects.so"):
     lib_file_name = "/opt/allpix-squared/lib/libAllpixObjects.so"
 
-root_file_name = (str(args.f))
-detector_name = (str(args.d))
-print_all = args.a
-save_pdf = args.pdf
-outDir = os.path.dirname(root_file_name)
 
-if save_pdf:
-    matplotlib.use('pdf')
+
 
 
 if (not os.path.isfile(lib_file_name)):
@@ -254,3 +261,5 @@ if print_all:
 print(str([len(np.unique(pixel_hit['x'])),len(np.unique(pixel_hit['y']))]))
 
 print(str(print_all))
+
+print(str(args.pdf))
