@@ -26,7 +26,13 @@ using namespace allpix;
 thread_local std::unique_ptr<Messenger::LocalMessenger> Messenger::local_messenger_;
 
 Messenger::Messenger() = default;
+#ifdef NDEBUG
 Messenger::~Messenger() = default;
+#else
+Messenger::~Messenger() {
+    assert(delegate_to_iterator_.empty());
+}
+#endif
 
 // Check if the detectors match for the message and the delegate
 static bool check_send(BaseMessage* message, BaseDelegate* delegate) {
