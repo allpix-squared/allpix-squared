@@ -163,8 +163,8 @@ namespace allpix {
             std::map<BaseDelegate*,
                      std::tuple<std::type_index, std::string, std::list<std::shared_ptr<BaseDelegate>>::iterator>>;
 
-        static DelegateMap delegates_;
-        static DelegateIteratorMap delegate_to_iterator_;
+        DelegateMap delegates_;
+        DelegateIteratorMap delegate_to_iterator_;
 
         /**
          * @breif Responsible for the actual handling of messages between Modules.

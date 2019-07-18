@@ -23,9 +23,6 @@
 
 using namespace allpix;
 
-Messenger::DelegateMap Messenger::delegates_;
-Messenger::DelegateIteratorMap Messenger::delegate_to_iterator_;
-
 thread_local std::unique_ptr<Messenger::LocalMessenger> Messenger::local_messenger_;
 
 Messenger::Messenger() = default;
