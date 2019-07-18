@@ -176,8 +176,18 @@ namespace allpix {
         class LocalMessenger {
             public:
                 LocalMessenger(Messenger& global_messenger);
+
+                void dispatch_message(Module* source, std::shared_ptr<BaseMessage> message, std::string name);
+                bool dispatch_message(Module* source,
+                                    const std::shared_ptr<BaseMessage>& message,
+                                    const std::string& name,
+                                    const std::string& id);
             private:
                 Messenger& global_messenger_;
+
+                std::map<std::string, DelegateTypes> messages_;
+                std::map<std::string, bool> satisfied_modules_;
+                std::vector<std::shared_ptr<BaseMessage>> sent_messages_;
         };
 
         static thread_local std::unique_ptr<LocalMessenger> local_messenger_;
