@@ -26,6 +26,8 @@ using namespace allpix;
 Messenger::DelegateMap Messenger::delegates_;
 Messenger::DelegateIteratorMap Messenger::delegate_to_iterator_;
 
+thread_local std::unique_ptr<Messenger::LocalMessenger> Messenger::local_messenger_;
+
 #ifdef NDEBUG
 Messenger::Messenger() = default;
 Messenger::~Messenger() = default;
@@ -203,4 +205,7 @@ bool Messenger::dispatch_message(Module* source,
 
 std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> Messenger::fetchFilteredMessages(Module* module) {
     return messages_[module->getUniqueName()].filter_multi;
+}
+
+Messenger::LocalMessenger::LocalMessenger(Messenger& global_messenger) : global_messenger_(global_messenger) {
 }

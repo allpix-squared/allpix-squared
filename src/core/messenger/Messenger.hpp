@@ -24,7 +24,7 @@ namespace allpix {
 
     /**
      * @ingroup Managers
-     * @brief Manager responsible for setting up communicatio between objects and sending messages between them
+     * @brief Manager responsible for setting up communication between objects and sending messages between them
      *
      * Registers and sets up communication (delegates) from modules to other listening modules. Dispatches messages from
      * modules to other listening modules. There are various way to receive the messages using \ref Delegates. Messages are
@@ -166,6 +166,21 @@ namespace allpix {
 
         static DelegateMap delegates_;
         static DelegateIteratorMap delegate_to_iterator_;
+
+        /**
+         * @breif Responsible for the actual handling of messages between Modules.
+         *
+         * The local messenger is an internal object that is allocated for each thread seperatly. It handles dispatching
+         * and fetching messages between Modules.
+         */
+        class LocalMessenger {
+            public:
+                LocalMessenger(Messenger& global_messenger);
+            private:
+                Messenger& global_messenger_;
+        };
+
+        static thread_local std::unique_ptr<LocalMessenger> local_messenger_;
 
         std::map<std::string, DelegateTypes> messages_;
         std::map<std::string, bool> satisfied_modules_;
