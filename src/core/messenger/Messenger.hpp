@@ -11,7 +11,7 @@
 #define ALLPIX_MESSENGER_H
 
 #include <list>
-#include <map>
+#include <unordered_map>
 #include <memory>
 #include <typeindex>
 #include <utility>
@@ -132,10 +132,10 @@ namespace allpix {
         bool hasReceiver(Module* source, const std::shared_ptr<BaseMessage>& message);
 
         /**
-         * @brief Check if a module is satisfied for running (all required messages received)
+         * @brief Check if a delegate has recieved its message
          * @return True if satisfied, false otherwise
          */
-        bool isSatisfied(Module* module) const;
+        bool isSatisfied(BaseDelegate* delegate) const;
 
         /**
          * @brief Resets the messenger and clear any stored messages.
@@ -188,10 +188,10 @@ namespace allpix {
                                     const std::string& id);
 
                 /**
-                * @brief Check if a module is satisfied for running (all required messages received)
+                * @brief Check if a delegate has recieved its message
                 * @return True if satisfied, false otherwise
                 */
-                bool isSatisfied(Module* module) const;
+                bool isSatisfied(BaseDelegate* delegate) const;
 
                 /**
                 * @brief Fetches a single message of specified type meant for the calling module
@@ -213,8 +213,7 @@ namespace allpix {
             private:
                 Messenger& global_messenger_;
 
-                std::map<std::string, std::map<std::type_index, DelegateTypes>> messages_;
-                std::map<std::string, bool> satisfied_modules_;
+                std::unordered_map<std::string, std::unordered_map<std::type_index, DelegateTypes>> messages_;
                 std::vector<std::shared_ptr<BaseMessage>> sent_messages_;
         };
 

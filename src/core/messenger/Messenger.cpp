@@ -77,8 +77,8 @@ bool Messenger::hasReceiver(Module* source, const std::shared_ptr<BaseMessage>& 
     return false;
 }
 
-bool Messenger::isSatisfied(Module* module) const {
-    return local_messenger_->isSatisfied(module);
+bool Messenger::isSatisfied(BaseDelegate* delegate) const {
+    return local_messenger_->isSatisfied(delegate);
 }
 
 void Messenger::add_delegate(const std::type_info& message_type,
@@ -177,7 +177,6 @@ bool Messenger::LocalMessenger::dispatch_message(Module* source,
             auto& dest = messages_[delegate->getUniqueName()][type_idx];
 
             delegate->process(message, name, dest);
-            satisfied_modules_[delegate->getUniqueName()] = true;
             send = true;
         }
     }
@@ -190,7 +189,6 @@ bool Messenger::LocalMessenger::dispatch_message(Module* source,
                        << " to generic listener " << delegate->getUniqueName();
             auto& dest = messages_[delegate->getUniqueName()][typeid(BaseMessage)];
             delegate->process(message, name, dest);
-            satisfied_modules_[delegate->getUniqueName()] = true;
             send = true;
         }
     }
@@ -203,17 +201,30 @@ std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> Messenger::Loc
     return messages_.at(module->getUniqueName()).at(type_idx).filter_multi;
 }
 
-bool Messenger::LocalMessenger::isSatisfied(Module* module) const {
-    // Check delegate flags. If false, check event-local satisfaction.
-    try {
-        return module->check_delegates() || satisfied_modules_.at(module->getUniqueName());
-    } catch(const std::out_of_range&) {
+bool Messenger::LocalMessenger::isSatisfied(BaseDelegate* delegate) const {
+    // check our records for messages for this module
+    const std::string name = delegate->getUniqueName();
+    auto messages_iter = messages_.find(name);
+    if (messages_iter == messages_.end()) {
         return false;
     }
+
+    // check if this delegate is in our records
+    auto delegate_iter = global_messenger_.delegate_to_iterator_.find(delegate);
+    if(delegate_iter == global_messenger_.delegate_to_iterator_.end()) {
+        throw std::out_of_range("delegate not found in listeners");
+    }
+
+    // check our records for messages for this delegate
+    auto iter = messages_iter->second.find(std::get<0>(delegate_iter->second));
+    if (iter == messages_iter->second.end()) {
+        return false;
+    }
+
+    return true;
 }
 
 void Messenger::LocalMessenger::reset() {
     messages_.clear();
-    satisfied_modules_.clear();
     sent_messages_.clear();
 }

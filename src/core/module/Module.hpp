@@ -195,10 +195,12 @@ namespace allpix {
          * @param delegate Delegate object
          */
         void add_delegate(Messenger* messenger, BaseDelegate* delegate);
+
         /**
          * @brief Check if all delegates are satisfied
+         * @param messenger Pointer to the messenger we want to check with
          */
-        bool check_delegates();
+        bool check_delegates(Messenger* messenger);
         std::vector<std::pair<Messenger*, BaseDelegate*>> delegates_;
 
         std::shared_ptr<Detector> detector_;
