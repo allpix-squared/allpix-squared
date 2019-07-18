@@ -213,7 +213,7 @@ namespace allpix {
             private:
                 Messenger& global_messenger_;
 
-                std::map<std::string, DelegateTypes> messages_;
+                std::map<std::string, std::map<std::type_index, DelegateTypes>> messages_;
                 std::map<std::string, bool> satisfied_modules_;
                 std::vector<std::shared_ptr<BaseMessage>> sent_messages_;
         };

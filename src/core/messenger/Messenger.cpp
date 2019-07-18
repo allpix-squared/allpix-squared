@@ -174,7 +174,7 @@ bool Messenger::LocalMessenger::dispatch_message(Module* source,
             LOG(TRACE) << "Sending message " << allpix::demangle(type_idx.name()) << " from " << source->getUniqueName()
                        << " to " << delegate->getUniqueName();
             // Construct BaseMessage where message should be stored
-            auto& dest = messages_[delegate->getUniqueName()];
+            auto& dest = messages_[delegate->getUniqueName()][type_idx];
 
             delegate->process(message, name, dest);
             satisfied_modules_[delegate->getUniqueName()] = true;
@@ -188,7 +188,7 @@ bool Messenger::LocalMessenger::dispatch_message(Module* source,
         if(check_send(message.get(), delegate.get())) {
             LOG(TRACE) << "Sending message " << allpix::demangle(type_idx.name()) << " from " << source->getUniqueName()
                        << " to generic listener " << delegate->getUniqueName();
-            auto& dest = messages_[delegate->getUniqueName()];
+            auto& dest = messages_[delegate->getUniqueName()][typeid(BaseMessage)];
             delegate->process(message, name, dest);
             satisfied_modules_[delegate->getUniqueName()] = true;
             send = true;
@@ -199,7 +199,8 @@ bool Messenger::LocalMessenger::dispatch_message(Module* source,
 }
 
 std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> Messenger::LocalMessenger::fetchFilteredMessages(Module* module) {
-    return messages_[module->getUniqueName()].filter_multi;
+    const std::type_index type_idx = typeid(BaseMessage);
+    return messages_.at(module->getUniqueName()).at(type_idx).filter_multi;
 }
 
 bool Messenger::LocalMessenger::isSatisfied(Module* module) const {

@@ -52,16 +52,18 @@ namespace allpix {
 
     template <typename T> std::shared_ptr<T> Messenger::LocalMessenger::fetchMessage(Module* module) {
         static_assert(std::is_base_of<BaseMessage, T>::value, "Fetched message should inherit from Message class");
-        return std::static_pointer_cast<T>(messages_.at(module->getUniqueName()).single);
+        std::type_index type_idx = typeid(T);
+        return std::static_pointer_cast<T>(messages_.at(module->getUniqueName()).at(type_idx).single);
     }
 
     template <typename T> std::vector<std::shared_ptr<T>> Messenger::LocalMessenger::fetchMultiMessage(Module* module) {
         static_assert(std::is_base_of<BaseMessage, T>::value, "Fetched message should inherit from Message class");
 
         // TODO: do nothing if T == BaseMessage; there is no need to cast (optimized out)?
+        std::type_index type_idx = typeid(T);
 
         // Construct an empty vector in case no previous modules created one during dispatch
-        auto base_messages = messages_[module->getUniqueName()].multi;
+        auto base_messages = messages_.at(module->getUniqueName()).at(type_idx).multi;
 
         std::vector<std::shared_ptr<T>> derived_messages;
         for(auto& message : base_messages) {
