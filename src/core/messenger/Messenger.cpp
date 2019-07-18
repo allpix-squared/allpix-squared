@@ -274,3 +274,7 @@ bool Messenger::LocalMessenger::dispatch_message(Module* source,
 
     return send;
 }
+
+std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> Messenger::LocalMessenger::fetchFilteredMessages(Module* module) {
+    return messages_[module->getUniqueName()].filter_multi;
+}
