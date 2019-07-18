@@ -79,6 +79,11 @@ namespace allpix {
          */
         void construct_sensitive_detectors_and_fields(double fano_factor, double charge_creation_energy);
 
+        /**
+         * @brief Record statistics for the module run.
+         */
+        void record_module_statistics();
+
         Messenger* messenger_;
         GeometryManager* geo_manager_;
 

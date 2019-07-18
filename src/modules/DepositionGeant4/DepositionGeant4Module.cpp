@@ -322,6 +322,11 @@ void DepositionGeant4Module::finalize() {
         }
     }
 
+    // Record the number of sensors and the total charges
+    if (!using_multithreading_) {
+        record_module_statistics();
+    }
+
     // Print summary or warns if module did not output any charges
     if(number_of_sensors_ > 0 && total_charges_ > 0 && last_event_num_ > 0) {
         size_t average_charge = total_charges_ / number_of_sensors_ / last_event_num_;
@@ -333,17 +338,11 @@ void DepositionGeant4Module::finalize() {
 }
 
 void DepositionGeant4Module::finalizeThread() {
-    if (using_multithreading_) {
-        MTRunManager* run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
-        run_manager_mt->TerminateForThread();
-    }
+    MTRunManager* run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
+    run_manager_mt->TerminateForThread();
 
-    number_of_sensors_ = sensors_.size();
-
-    // We calculate the total deposited charges here, since sensors exist per thread
-    for(auto& sensor : sensors_) {
-        total_charges_ += sensor->getTotalDepositedCharge();
-    }
+    // Record the number of sensors and the total charges
+    record_module_statistics();
 }
 
 void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fano_factor, double charge_creation_energy) {
@@ -412,5 +411,14 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fan
 
     if(!useful_deposition) {
         LOG(ERROR) << "Not a single listener for deposited charges, module is useless!";
+    }
+}
+
+void DepositionGeant4Module::record_module_statistics() {
+    number_of_sensors_ = sensors_.size();
+
+    // We calculate the total deposited charges here, since sensors exist per thread
+    for(auto& sensor : sensors_) {
+        total_charges_ += sensor->getTotalDepositedCharge();
     }
 }
