@@ -158,12 +158,6 @@ namespace allpix {
          */
         void remove_delegate(BaseDelegate* delegate);
 
-        void dispatch_message(Module* source, std::shared_ptr<BaseMessage> message, std::string name);
-        bool dispatch_message(Module* source,
-                              const std::shared_ptr<BaseMessage>& message,
-                              const std::string& name,
-                              const std::string& id);
-
         using DelegateMap = std::map<std::type_index, std::map<std::string, std::list<std::shared_ptr<BaseDelegate>>>>;
         using DelegateIteratorMap =
             std::map<BaseDelegate*,
@@ -225,10 +219,6 @@ namespace allpix {
         };
 
         static thread_local std::unique_ptr<LocalMessenger> local_messenger_;
-
-        std::map<std::string, DelegateTypes> messages_;
-        std::map<std::string, bool> satisfied_modules_;
-        std::vector<std::shared_ptr<BaseMessage>> sent_messages_;
 
         mutable std::mutex mutex_;
 
