@@ -4,7 +4,6 @@ from ROOT import TFile, gDirectory, gSystem, TClass
 
 import os, sys
 import argparse
-
 import os.path as path
 
 # numpy
@@ -25,7 +24,7 @@ from scipy import stats
 
 # argument parser
 parser = argparse.ArgumentParser()
-parser.add_argument("-l", metavar='libAllpixObjects', required=False, default=path.abspath(path.join(__file__ ,"../.."))+"/opt/allpix-squared/lib/libAllpixObjects.so"
+parser.add_argument("-l", metavar='libAllpixObjects', required=False,
                     help="specify path to the libAllpixObjects library (generally in allpix-squared/lib/)) ")
 parser.add_argument("-d", metavar='detector', required=True,
                     help="specify your detector name (generally detector1, dut, ...) ")
@@ -35,10 +34,21 @@ parser.add_argument("-a", required=False, help="Produce All Graphs", action="sto
 
 parser.add_argument("-pdf", required=False, help="Create PDF rather than pop up (Useful for Docker)", action="store_true")
 
+print(path.abspath(path.join(__file__ ,"../.."))+"/opt/allpix-squared/lib/libAllpixObjects.so")
+
 args = parser.parse_args()
 
+if args.l is not None:
+    lib_file_name = (str(args.l))
+    if (not os.path.isfile(lib_file_name)):
+        print("WARNING: ", lib_file_name, " does not exist, exiting")
+        exit(1)
+elif os.path.isfile(path.abspath(path.join(__file__ ,"../.."))+"/opt/allpix-squared/lib/libAllpixObjects.so"):
+    lib_file_name = path.abspath(path.join(__file__, "../..")) + "/opt/allpix-squared/lib/libAllpixObjects.so"
+elif os.path.isfile("/opt/allpix-squared/lib/libAllpixObjects.so"):
+    lib_file_name = "/opt/allpix-squared/lib/libAllpixObjects.so"
+
 root_file_name = (str(args.f))
-lib_file_name = (str(args.l))
 detector_name = (str(args.d))
 print_all = args.a
 save_pdf = args.pdf
@@ -47,15 +57,12 @@ outDir = os.path.dirname(root_file_name)
 if save_pdf:
     matplotlib.use('pdf')
 
-print(str(print_all))
 
 if (not os.path.isfile(lib_file_name)):
-    print
-    "WARNING: ", lib_file_name, " does not exist, exiting"
+    print("WARNING: no allpix library found, exiting (Use -l to manually set location of libraries)")
     exit(1)
 if (not os.path.isfile(root_file_name)):
-    print
-    "WARNING: ", root_file_name, " does not exist, exiting"
+    print("WARNING: ", root_file_name, " does not exist, exiting")
     exit(1)
 
 # load library and rootfile
@@ -84,11 +91,9 @@ for iev in range(0, PixelHit.GetEntries()):
     McParticle_branch = McParticle.GetBranch(detector_name)
 
     if (not PixelCharge_branch):
-        print
-        "WARNING: cannot find PixelCharge branch in the TTree with detector name: " + detector_name + ",  exiting"
+        print("WARNING: cannot find PixelCharge branch in the TTree with detector name: " + detector_name + ",  exiting")
         exit(1)
-    print
-    ' processing event number {0}\r'.format(iev), "out of", PixelHit.GetEntries(), "events",
+    print(' processing event number {0}\r'.format(iev), "out of", PixelHit.GetEntries(), "events",)
 
     # assign AP2 vectors to branches
     br_pix_charge = getattr(PixelCharge, PixelCharge_branch.GetName())
@@ -245,4 +250,7 @@ if print_all:
     plt.show()
 
     if save_pdf: fig3D.savefig(outDir + "/3D.pdf", bbox_inches='tight')
+
 print(str([len(np.unique(pixel_hit['x'])),len(np.unique(pixel_hit['y']))]))
+
+print(str(print_all))
