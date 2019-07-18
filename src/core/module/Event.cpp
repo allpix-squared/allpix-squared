@@ -143,6 +143,8 @@ void Event::run(std::shared_ptr<Module>& module) {
 }
 
 void Event::run() {
+    messenger_.reset();
+
     for(auto& module : modules_) {
         run(module);
     }
