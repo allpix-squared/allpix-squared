@@ -15,6 +15,7 @@ import matplotlib
 
 # scipy
 from scipy import stats
+from scipy.stats import norm
 
 # argument parser
 parser = argparse.ArgumentParser()
@@ -29,6 +30,7 @@ parser.add_argument("-a", required=False, help="Produce All Graphs", action="sto
 parser.add_argument("-pdf", help="Create PDF rather than pop up (Useful for Docker)", action="store_true")
 
 parser.add_argument("-v", "-verbose", help="Toggle verbose settings", action="store_true")
+
 
 args = parser.parse_args()
 
@@ -85,6 +87,7 @@ pixel_hit = {'x': [], 'y': [], 'signal': []}
 
 # loop on pixel hit branch
 empty_mc_branch = 0
+print("Loading in Data...")
 for iev in range(0, PixelHit.GetEntries()):
     PixelHit.GetEntry(iev)
     PixelCharge.GetEntry(iev)
@@ -145,8 +148,9 @@ for iev in range(0, PixelHit.GetEntries()):
         mc_local_endpoints['z'].append(output_track_z)
 
 # print numner of events processed
-print
-" ----- processed events (pixelhit):", PixelHit.GetEntries(), " empty_mc_branch:", empty_mc_branch
+print(" ----- processed events (pixelhit):" + str(PixelHit.GetEntries()) + " empty_mc_branch:" + str(empty_mc_branch))
+
+print("Plotting...")
 
 
 # plot pixel collected charge versus MC parcticle endpoint coordinates
@@ -191,19 +195,46 @@ if print_all:
     # X Pixel Hit (Added)
     plt.clf()
     figMC_x = plt.figure()
-    plt.hist(pixel_hit['x'], 10)
+    plt.hist(pixel_hit['x'], len(np.unique(pixel_hit['x'])))
     plt.title("Hit Pixel x coordinate")
     plt.xlabel("hit pixel x coordinate pixels")
     if save_pdf: figMC_x.savefig(outDir + "/XPixelHit.pdf", bbox_inches='tight')
 
 
 if print_all:
-    # plot pixel hits (Added)
-    px_hit_histogram = plt.figure(figsize=(11, 7))
-    H2, xedges, yedges, binnmmber = stats.binned_statistic_2d(pixel_hit['x'], pixel_hit['y'],
-                                                              values=pixel_hit['signal'], statistic='mean', bins=[len(np.unique(pixel_hit['x'])),len(np.unique(pixel_hit['y']))])
-    XX, YY = np.meshgrid(xedges, yedges)
-    Hm = ma.masked_where(np.isnan(H2), H2)
+    # X Pixel Hit Gaussian Density (Added)
+    plt.clf()
+    x_gauss = plt.figure()
+    plt.hist(pixel_hit['x'], len(np.unique(pixel_hit['x'])), density=True)
+    plt.xlabel("hit pixel x coordinate pixels")
+
+    mu, sigma = norm.fit(pixel_hit['x'])
+    x = np.linspace(min(pixel_hit['x']), max(pixel_hit['x']), len(np.unique(pixel_hit['x'])))
+    plt.plot(x, stats.norm.pdf(x, mu, sigma))
+    plt.title("Hit Pixel Density \n (mean = " + str(round(mu,2)) + "  sigma = " + str(round(sigma,2)))
+    if save_pdf: x_gauss.savefig(outDir + "/XGaussianDist.pdf", bbox_inches='tight')
+
+if print_all:
+    # Y Pixel Hit (Added)
+    plt.clf()
+    figMC_x = plt.figure()
+    plt.hist(pixel_hit['y'], len(np.unique(pixel_hit['y'])))
+    plt.title("Hit Pixel y coordinate")
+    plt.xlabel("hit pixel y coordinate pixels")
+    if save_pdf: figMC_x.savefig(outDir + "/YPixelHit.pdf", bbox_inches='tight')
+
+if print_all:
+    # Y Pixel Hit Gaussian Density (Added)
+    plt.clf()
+    x_gauss = plt.figure()
+    plt.hist(pixel_hit['y'], len(np.unique(pixel_hit['y'])), density=True)
+    plt.xlabel("hit pixel y coordinate pixels")
+
+    mu, sigma = norm.fit(pixel_hit['y'])
+    x = np.linspace(min(pixel_hit['y']), max(pixel_hit['y']), len(np.unique(pixel_hit['y'])))
+    plt.plot(x, stats.norm.pdf(x, mu, sigma))
+    plt.title("Hit Pixel Density\n (mean = " + str(round(mu,2)) + "  sigma = " + str(round(sigma,2)) + ")")
+    if save_pdf: x_gauss.savefig(outDir + "/YGaussianDist.pdf", bbox_inches='tight')
 
 if print_all:
     # plot pixel hits in pixel Bins? (Added)
