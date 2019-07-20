@@ -55,6 +55,15 @@ namespace allpix {
         virtual void Initialize() override;
 
         /**
+         * @brief Initializes thread local objects including the worker manager.
+         *
+         * Initializes the worker run manager associated to the calling thread. This must be called by every thread
+         * that intends to call \ref Run method. Only the first call by a given thread will actually initialize the
+         * workers and further calls by the same thread will be ignored.
+         */
+        void InitializeForThread();
+
+        /**
          * @brief Cleanup worker specific data stored as thread local.
          *
          * Cleanup all thread local objects allocated previously by the calling thread. Each thread that ever used

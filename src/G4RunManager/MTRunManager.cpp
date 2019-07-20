@@ -19,11 +19,6 @@ namespace {
 G4ThreadLocal WorkerRunManager* MTRunManager::worker_run_manager_ = nullptr;
 
 void MTRunManager::Run(G4int allpix_event, G4int n_event) {
-    if (!worker_run_manager_) {
-        // construct a new thread worker
-        worker_run_manager_ = WorkerRunManager::GetNewInstanceForThread();
-    }
-
     {
         G4AutoLock l(&worker_seed_mutex);
         // Draw the nessecary seeds so that each event will be seeded
@@ -65,6 +60,13 @@ void MTRunManager::Initialize() {
     // use nSeedsMax to fill as much as possible now and hopefully avoid
     // refilling later
     G4MTRunManager::DoEventLoop(nSeedsMax, nullptr, 0);
+    }
+}
+
+void MTRunManager::InitializeForThread() {
+    if (worker_run_manager_ == nullptr) {
+        // construct a new thread worker
+        worker_run_manager_ = WorkerRunManager::GetNewInstanceForThread();
     }
 }
 

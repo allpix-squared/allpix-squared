@@ -61,6 +61,9 @@ namespace allpix {
          */
         std::string getName();
 
+        /**
+         * @brief Set the seed of the associated random number generator
+         */
         void seed(uint64_t random_seed) { random_generator_.seed(random_seed); }
 
         /**
