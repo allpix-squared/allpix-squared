@@ -298,7 +298,7 @@ RCEWriterModule::RCEWriterModule(Configuration& config, Messenger* messenger, Ge
     assert(geo_mgr && "geo_mgr must be non-null");
 
     // Bind to PixelHitMessage
-    messenger->bindMulti<RCEWriterModule, PixelHitMessage>(this);
+    messenger->bindMulti<RCEWriterModule, PixelHitMessage, MsgFlags::REQUIRED>(this);
 
     config_.setDefault("file_name", "rce-data.root");
     // Use default names in Proteus

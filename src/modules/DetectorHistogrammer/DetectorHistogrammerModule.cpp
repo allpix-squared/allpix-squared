@@ -27,7 +27,7 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
                                                        std::shared_ptr<Detector> detector)
     : WriterModule(config, detector), detector_(std::move(detector)) {
     // Bind messages
-    messenger->bindSingle<DetectorHistogrammerModule, PixelHitMessage>(this);
+    messenger->bindSingle<DetectorHistogrammerModule, PixelHitMessage,  MsgFlags::REQUIRED>(this);
     messenger->bindSingle<DetectorHistogrammerModule, MCParticleMessage, MsgFlags::REQUIRED>(this);
 
     auto model = detector_->getModel();
