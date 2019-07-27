@@ -26,7 +26,6 @@ void MTRunManager::Run(G4int allpix_event, G4int n_event) {
         G4RNGHelper* helper = G4RNGHelper::GetInstance();
         G4int idx_rndm = nSeedsPerEvent * (allpix_event - 1);
         long s1 = helper->GetSeed(idx_rndm), s2 = helper->GetSeed(idx_rndm+1);
-        std::cout << "****** E=" << allpix_event << " S1=" << s1 << " S2=" << s2 << std::endl;
         worker_run_manager_->seedsQueue.push(s1);
         worker_run_manager_->seedsQueue.push(s2);
 
