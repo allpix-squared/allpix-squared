@@ -49,18 +49,18 @@ cmp:slc6-llvm:
         - source .gitlab/ci/init_x86_64.sh
 
 # Ensure that our LXPLUS setup script is functional:
-cmp:lxplus-gcc:
-    extends: .compile
-    image: clicdp/slc6-base
-    before_script:
-        - export COMPILER_TYPE="gcc"
-        - source etc/scripts/setup_lxplus.sh
-    script:
-        - mkdir build
-        - cd build
-        - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
-        - ninja
-        - ninja install
+#cmp:lxplus-gcc:
+#    extends: .compile
+#    image: clicdp/slc6-base
+#    before_script:
+#        - export COMPILER_TYPE="gcc"
+#        - source etc/scripts/setup_lxplus.sh
+#    script:
+#        - mkdir build
+#        - cd build
+#        - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
+#        - ninja
+#        - ninja install
 
 cmp:cc7-gcc:
     extends: .compile
@@ -201,21 +201,21 @@ core:slc6-gcc:
     before_script:
         - source .gitlab/ci/init_x86_64.sh
 
-mod:lxplus-gcc:
-    extends: .testmod
-    dependencies:
-        - cmp:lxplus-gcc
-    image: clicdp/slc6-base
-    before_script:
-        - source etc/scripts/setup_lxplus.sh
+#mod:lxplus-gcc:
+#    extends: .testmod
+#    dependencies:
+#        - cmp:lxplus-gcc
+#    image: clicdp/slc6-base
+#    before_script:
+#        - source etc/scripts/setup_lxplus.sh
 
-core:lxplus-gcc:
-    extends: .testcore
-    dependencies:
-        - cmp:lxplus-gcc
-    image: clicdp/slc6-base
-    before_script:
-        - source etc/scripts/setup_lxplus.sh
+#core:lxplus-gcc:
+#    extends: .testcore
+#    dependencies:
+#        - cmp:lxplus-gcc
+#    image: clicdp/slc6-base
+#    before_script:
+#        - source etc/scripts/setup_lxplus.sh
 
 mod:slc6-llvm:
     extends: .testmod
