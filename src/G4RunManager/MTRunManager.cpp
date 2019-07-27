@@ -50,7 +50,6 @@ void MTRunManager::Initialize() {
 
     G4bool cond = ConfirmBeamOnCondition();
     if(cond) {
-        G4cout << "BeamON Confirmed!" << G4endl;
         G4MTRunManager::ConstructScoringWorlds();
         G4MTRunManager::RunInitialization();
 
