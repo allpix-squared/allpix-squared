@@ -22,7 +22,6 @@ void MTRunManager::Run(G4int allpix_event, G4int n_event) {
     {
         G4AutoLock l(&worker_seed_mutex);
         // Draw the nessecary seeds so that each event will be seeded
-        // TODO: maybe we only need to seed the RNG once for a worker run and not for each loop iteration
         G4RNGHelper* helper = G4RNGHelper::GetInstance();
         G4int idx_rndm = nSeedsPerEvent * (allpix_event - 1);
         long s1 = helper->GetSeed(idx_rndm), s2 = helper->GetSeed(idx_rndm+1);
