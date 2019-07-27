@@ -40,6 +40,8 @@ namespace allpix {
 
     private:
         std::unique_ptr<G4GeneralParticleSource> particle_source_;
+
+        static std::map<std::string, std::tuple<int, int, int, double>> isotopes_;
     };
 } // namespace allpix
 
