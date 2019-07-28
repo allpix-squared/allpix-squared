@@ -29,18 +29,19 @@ using namespace allpix;
 
 namespace {
     // counter to give each worker a unique id
-    static std::atomic<int> counter;
+    std::atomic<int> counter;
 } // namespace
 
 WorkerRunManager::~WorkerRunManager() {
     G4MTRunManager* master_run_manager = G4MTRunManager::GetMasterRunManager();
 
     // Step-6: Terminate worker thread
-    if(master_run_manager->GetUserWorkerInitialization()) {
+    if(master_run_manager->GetUserWorkerInitialization() != nullptr) {
         master_run_manager->GetUserWorkerInitialization()->WorkerStop();
     }
 }
 
+// NOLINTNEXTLINE(google-default-arguments)
 void WorkerRunManager::BeamOn(G4int n_event, const char* macroFile, G4int n_select) {
     G4MTRunManager* mrm = G4MTRunManager::GetMasterRunManager();
 
@@ -56,7 +57,7 @@ void WorkerRunManager::BeamOn(G4int n_event, const char* macroFile, G4int n_sele
 }
 
 void WorkerRunManager::InitializeGeometry() {
-    if(!userDetector) {
+    if(userDetector == nullptr) {
         G4Exception("WorkerRunManager::InitializeGeometry",
                     "Run0033",
                     FatalException,
@@ -76,7 +77,7 @@ void WorkerRunManager::InitializeGeometry() {
     // Step3: Call user's ConstructSDandField()
     MTRunManager* master_run_manager = static_cast<MTRunManager*>(G4MTRunManager::GetMasterRunManager());
     SensitiveDetectorAndFieldConstruction* detector_construction = master_run_manager->GetSDAndFieldConstruction();
-    if(!detector_construction) {
+    if(detector_construction == nullptr) {
         G4Exception(
             "WorkerRunManager::InitializeGeometry", "Run0033", FatalException, "DetectorConstruction is not defined!");
         return;
@@ -87,7 +88,7 @@ void WorkerRunManager::InitializeGeometry() {
 }
 
 void WorkerRunManager::DoEventLoop(G4int n_event, const char* macroFile, G4int n_select) {
-    if(!userPrimaryGeneratorAction) {
+    if(userPrimaryGeneratorAction == nullptr) {
         G4Exception(
             "WorkerRunManager::GenerateEvent()", "Run0032", FatalException, "G4VUserPrimaryGeneratorAction is not defined!");
     }
@@ -118,15 +119,14 @@ void WorkerRunManager::DoEventLoop(G4int n_event, const char* macroFile, G4int n
 
 G4Event* WorkerRunManager::GenerateEvent(G4int i_event) {
     (void)i_event;
-    if(!userPrimaryGeneratorAction) {
+    if(userPrimaryGeneratorAction == nullptr) {
         G4Exception(
             "WorkerRunManager::GenerateEvent()", "Run0032", FatalException, "G4VUserPrimaryGeneratorAction is not defined!");
         return nullptr;
     }
 
     G4Event* anEvent = nullptr;
-    long s1, s2, s3;
-    s1 = s2 = s3 = 0;
+    long s1, s2;
 
     if(numberOfEventProcessed < numberOfEventToBeProcessed && !runAborted) {
         anEvent = new G4Event(numberOfEventProcessed);
@@ -140,7 +140,7 @@ G4Event* WorkerRunManager::GenerateEvent(G4int i_event) {
             seedsQueue.pop();
 
             // Seed RNG for this run only once
-            long seeds[3] = {s1, s2, s3};
+            long seeds[3] = {s1, s2, 0};
             G4Random::setTheSeeds(seeds, -1);
             runIsSeeded = true;
         }
@@ -173,14 +173,14 @@ WorkerRunManager* WorkerRunManager::GetNewInstanceForThread() {
     master_run_manager->GetUserWorkerThreadInitialization()->SetupRNGEngine(master_engine);
 
     // Step-2: Initialize worker thread
-    if(master_run_manager->GetUserWorkerInitialization()) {
+    if(master_run_manager->GetUserWorkerInitialization() != nullptr) {
         master_run_manager->GetUserWorkerInitialization()->WorkerInitialize();
     }
 
-    if(master_run_manager->GetUserActionInitialization()) {
+    if(master_run_manager->GetUserActionInitialization() != nullptr) {
         G4VSteppingVerbose* stepping_verbose =
             master_run_manager->GetUserActionInitialization()->InitializeSteppingVerbose();
-        if(stepping_verbose) {
+        if(stepping_verbose != nullptr) {
             G4VSteppingVerbose::SetInstance(stepping_verbose);
         }
     }
@@ -195,17 +195,19 @@ WorkerRunManager* WorkerRunManager::GetNewInstanceForThread() {
     // Set the detector and physics list to the worker thread. Share with master
     const G4VUserDetectorConstruction* detector = master_run_manager->GetUserDetectorConstruction();
 
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     thread_run_manager->G4RunManager::SetUserInitialization(const_cast<G4VUserDetectorConstruction*>(detector));
 
     const G4VUserPhysicsList* physicslist = master_run_manager->GetUserPhysicsList();
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     thread_run_manager->SetUserInitialization(const_cast<G4VUserPhysicsList*>(physicslist));
 
     // Step-4: Initialize worker run manager
-    if(master_run_manager->GetUserActionInitialization()) {
+    if(master_run_manager->GetUserActionInitialization() != nullptr) {
         master_run_manager->GetNonConstUserActionInitialization()->Build();
     }
 
-    if(master_run_manager->GetUserWorkerInitialization()) {
+    if(master_run_manager->GetUserWorkerInitialization() != nullptr) {
         master_run_manager->GetUserWorkerInitialization()->WorkerStart();
     }
 

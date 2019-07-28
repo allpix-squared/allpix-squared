@@ -29,7 +29,7 @@ namespace allpix {
         friend class MTRunManager;
 
     public:
-        virtual ~WorkerRunManager();
+        ~WorkerRunManager() override;
 
         /**
          * @brief Executes specified number of events.
@@ -37,7 +37,8 @@ namespace allpix {
          * Executes the specified number of events. Reimplemented to execute UI commands and maybe
          * reinitialize workspace if there are changes between multiple calls.
          */
-        virtual void BeamOn(G4int n_event, const char* macroFile = nullptr, G4int n_select = -1) override;
+        // NOLINTNEXTLINE(google-default-arguments)
+        void BeamOn(G4int n_event, const char* macroFile = nullptr, G4int n_select = -1) override;
 
         void InitializeGeometry() override;
 
@@ -58,14 +59,14 @@ namespace allpix {
          * Run the event loop. Everything is the same as base implementation except that we keep
          * the seedsQueue since the master manager has already pushed the seeds in it.
          */
-        virtual void DoEventLoop(G4int n_event, const char* macroFile = nullptr, G4int n_select = -1) override;
+        void DoEventLoop(G4int n_event, const char* macroFile = nullptr, G4int n_select = -1) override;
 
         /**
          * @brief Previously used to communicate work with master manager.
          *
          * Thread loop for receiving work from master run manager. It will now do nothing.
          */
-        virtual void DoWork() override {}
+        void DoWork() override {}
 
         /**
          * @brief Constructs an event object and set the seeds for RNG.
@@ -73,14 +74,14 @@ namespace allpix {
          *
          * Creats a new \ref G4Event object and set its event number, seeds for the thread RNG.
          */
-        virtual G4Event* GenerateEvent(G4int i_event) override;
+        G4Event* GenerateEvent(G4int i_event) override;
 
         /**
          * @brief Previously used to merge the partial results obtained by this manager and the master.
          *
          * Merge the run results with the master results. It will now do nothing.
          */
-        virtual void MergePartialResults() override {}
+        void MergePartialResults() override {}
     };
 } // namespace allpix
 

@@ -33,7 +33,7 @@ namespace allpix {
 
     public:
         MTRunManager() = default;
-        virtual ~MTRunManager() = default;
+        ~MTRunManager() override = default;
 
         /**
          * @brief Thread safe version of \ref G4RunManager BeamOn. Offload the work to a thread specific worker.
@@ -44,6 +44,7 @@ namespace allpix {
          * The worker will be initialized with a new set of seeds to be used specifically for this event run such
          * that events are seeded in the order of creation which ensures that results can be reproduced.
          */
+        // NOLINTNEXTLINE(readability-identifier-naming)
         void Run(G4int allpix_event, G4int n_event);
 
         /**
@@ -53,7 +54,7 @@ namespace allpix {
          * to seed the RNG on each worker thread.
          * If you want to set the seeds for G4 RNG it must happen before calling this method.
          */
-        virtual void Initialize() override;
+        void Initialize() override;
 
         /**
          * @brief Initializes thread local objects including the worker manager.
@@ -62,6 +63,7 @@ namespace allpix {
          * that intends to call \ref Run method. Only the first call by a given thread will actually initialize the
          * workers and further calls by the same thread will be ignored.
          */
+        // NOLINTNEXTLINE(readability-identifier-naming)
         void InitializeForThread();
 
         /**
@@ -70,16 +72,19 @@ namespace allpix {
          * Cleanup all thread local objects allocated previously by the calling thread. Each thread that ever used
          * this class must call this method to ensure correct termination.
          */
+        // NOLINTNEXTLINE(readability-identifier-naming)
         void TerminateForThread();
 
         /**
          * @brief Returns the user's sensitive detector construction.
          */
+        // NOLINTNEXTLINE(readability-identifier-naming)
         SensitiveDetectorAndFieldConstruction* GetSDAndFieldConstruction() const { return sd_field_construction_; }
 
         /**
          * @brief Sets the user's sensitive detector construction.
          */
+        // NOLINTNEXTLINE(readability-identifier-naming)
         void SetSDAndFieldConstruction(SensitiveDetectorAndFieldConstruction* sd_field_construction) {
             sd_field_construction_ = sd_field_construction;
         }
@@ -90,28 +95,28 @@ namespace allpix {
          *
          * Worker manager waits on the shared barrier untill master issues a new command. It will now do nothing.
          */
-        virtual WorkerActionRequest ThisWorkerWaitForNextAction() override { return WorkerActionRequest::UNDEFINED; }
+        WorkerActionRequest ThisWorkerWaitForNextAction() override { return WorkerActionRequest::UNDEFINED; }
 
         /**
          * @brief Previously used to create threads and start worker managers.
          *
          * Creates my own threads and start the worker run managers. It will now do nothing.
          */
-        virtual void CreateAndStartWorkers() override {}
+        void CreateAndStartWorkers() override {}
 
         /**
          * @brief Previously used to issue a new command to the workers.
          *
          * Send a new command to workers waiting for master to tell them what to do. It will now do nothing.
          */
-        virtual void NewActionRequest(WorkerActionRequest) override {}
+        void NewActionRequest(WorkerActionRequest) override {}
 
         /**
          * @brief Previously used to tell workers to execute UI commands.
          *
          * Send commands to workers to execute the UI commands stored in master. It will now do nothing.
          */
-        virtual void RequestWorkersProcessCommandsStack() override {}
+        void RequestWorkersProcessCommandsStack() override {}
 
         /**
          * @brief Previously used by the worker to initialize an event.
@@ -119,7 +124,7 @@ namespace allpix {
          * Worker will ask us to setup the event. This includes figuring out the event number that worker will do
          * and setting up the seeds to ensure results can be reproduced. It will now do nothing.
          */
-        virtual G4bool SetUpAnEvent(G4Event*, long&, long&, long&, G4bool) override { return false; }
+        G4bool SetUpAnEvent(G4Event*, long&, long&, long&, G4bool) override { return false; }
 
         /**
          * @brief Previously used by the worker to initialize N event.
@@ -127,49 +132,49 @@ namespace allpix {
          * Worker will ask us to setup the events. This includes figuring out the event numbers that worker will do
          * and setting up the seeds to ensure results can be reproduced. It will now do nothing.
          */
-        virtual G4int SetUpNEvents(G4Event*, G4SeedsQueue*, G4bool) override { return 0; }
+        G4int SetUpNEvents(G4Event*, G4SeedsQueue*, G4bool) override { return 0; }
 
         /**
          * @brief Previously used to stop all the workers.
          *
          * Stop the workers. It will now do nothing.
          */
-        virtual void TerminateWorkers() override {}
+        void TerminateWorkers() override {}
 
         /**
          * @brief Previously used by workers to signal they finished the event loop.
          *
          * Synchronize with master about finishing the assigned work. It will now do nothing.
          */
-        virtual void ThisWorkerEndEventLoop() override {}
+        void ThisWorkerEndEventLoop() override {}
 
         /**
          * @brief Previously used by workers to signal they finished running UI commands.
          *
          * Synchronize with master about finishing UI commands. It will now do nothing.
          */
-        virtual void ThisWorkerProcessCommandsStackDone() override {}
+        void ThisWorkerProcessCommandsStackDone() override {}
 
         /**
          * @brief Previously used by workers to signal they are ready to do work.
          *
          * Synchronize with master we finished initialization and ready for work. It will now do nothing.
          */
-        virtual void ThisWorkerReady() override {}
+        void ThisWorkerReady() override {}
 
         /**
          * @brief Previously used to wait untill all workers have finished the event loop.
          *
          * Wait for all the workers to finish and signal the end of event loop. It will now do nothing.
          */
-        virtual void WaitForEndEventLoopWorkers() override {}
+        void WaitForEndEventLoopWorkers() override {}
 
         /**
          * @brief Previously used to wait for workers to finish initialization.
          *
          * Wait for all the workers to finish initialization. It will now do nothing.
          */
-        virtual void WaitForReadyWorkers() override {}
+        void WaitForReadyWorkers() override {}
 
     private:
         // \ref WorkerRunManager worker manager that run on each thread.

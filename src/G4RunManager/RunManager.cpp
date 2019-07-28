@@ -20,28 +20,28 @@ void RunManager::BeamOn(G4int n_event, const char* macro_file, G4int n_select) {
             // TODO: maybe we should delete it ourselves too
             master_random_engine_ = G4Random::getTheEngine();
 
-            if(dynamic_cast<const CLHEP::HepJamesRandom*>(master_random_engine_)) {
+            if(dynamic_cast<const CLHEP::HepJamesRandom*>(master_random_engine_) != nullptr) {
                 event_random_engine_ = new CLHEP::HepJamesRandom;
             }
-            if(dynamic_cast<const CLHEP::MixMaxRng*>(master_random_engine_)) {
+            if(dynamic_cast<const CLHEP::MixMaxRng*>(master_random_engine_) != nullptr) {
                 event_random_engine_ = new CLHEP::MixMaxRng;
             }
-            if(dynamic_cast<const CLHEP::RanecuEngine*>(master_random_engine_)) {
+            if(dynamic_cast<const CLHEP::RanecuEngine*>(master_random_engine_) != nullptr) {
                 event_random_engine_ = new CLHEP::RanecuEngine;
             }
-            if(dynamic_cast<const CLHEP::Ranlux64Engine*>(master_random_engine_)) {
+            if(dynamic_cast<const CLHEP::Ranlux64Engine*>(master_random_engine_) != nullptr) {
                 event_random_engine_ = new CLHEP::Ranlux64Engine;
             }
-            if(dynamic_cast<const CLHEP::MTwistEngine*>(master_random_engine_)) {
+            if(dynamic_cast<const CLHEP::MTwistEngine*>(master_random_engine_) != nullptr) {
                 event_random_engine_ = new CLHEP::MTwistEngine;
             }
-            if(dynamic_cast<const CLHEP::DualRand*>(master_random_engine_)) {
+            if(dynamic_cast<const CLHEP::DualRand*>(master_random_engine_) != nullptr) {
                 event_random_engine_ = new CLHEP::DualRand;
             }
-            if(dynamic_cast<const CLHEP::RanluxEngine*>(master_random_engine_)) {
+            if(dynamic_cast<const CLHEP::RanluxEngine*>(master_random_engine_) != nullptr) {
                 event_random_engine_ = new CLHEP::RanluxEngine;
             }
-            if(dynamic_cast<const CLHEP::RanshiEngine*>(master_random_engine_)) {
+            if(dynamic_cast<const CLHEP::RanshiEngine*>(master_random_engine_) != nullptr) {
                 event_random_engine_ = new CLHEP::RanshiEngine;
             }
 
