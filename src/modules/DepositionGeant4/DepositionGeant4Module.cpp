@@ -351,7 +351,7 @@ void DepositionGeant4Module::finalize() {
 }
 
 void DepositionGeant4Module::finalizeThread() {
-    MTRunManager* run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
+    auto run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
     run_manager_mt->TerminateForThread();
 
     // Record the number of sensors and the total charges

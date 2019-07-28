@@ -175,7 +175,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
 
         LOG(DEBUG) << "Using particle " << particle->GetParticleName() << " (ID " << particle->GetPDGEncoding() << ").";
 
-        if(particle) {
+        if(particle != nullptr) {
             // Set global parameters of the source
             single_source->SetNumberOfParticles(1);
             single_source->SetParticleDefinition(particle);
