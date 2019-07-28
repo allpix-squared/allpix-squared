@@ -64,14 +64,14 @@ namespace allpix {
         GeometryManager* geometryManager_;
 
         // Parameters for output writing
-        std::string fileName_;                                           // Output filename
-        std::string geometryFileName_;                                   // Output geometry filename
-        std::unique_ptr<TFile> outputFile_;                              // Output file
+        std::string fileName_;                                   // Output filename
+        std::string geometryFileName_;                           // Output geometry filename
+        std::unique_ptr<TFile> outputFile_;                      // Output file
         long long int time_;                                     // Event time being written
         std::map<std::string, TTree*> outputTrees_;              // Output trees
         std::map<std::string, corryvreckan::Pixel*> treePixels_; // Objects attached to trees for writing
 
-        bool outputMCtruth_;                                                       // Decision to write out MC particle info
+        bool outputMCtruth_;                                               // Decision to write out MC particle info
         std::map<std::string, TTree*> outputTreesMC_;                      // Output trees for MC particles
         std::map<std::string, corryvreckan::MCParticle*> treeMCParticles_; // Objects attached to trees for writing
     };
