@@ -27,11 +27,11 @@
 #include <G4UIQt.hh>
 #endif
 #include <G4PVParameterised.hh>
+#include <G4RunManager.hh>
 #include <G4UImanager.hh>
 #include <G4UIsession.hh>
 #include <G4UItcsh.hh>
 #include <G4UIterminal.hh>
-#include <G4RunManager.hh>
 #include <G4VPVParameterisation.hh>
 #include <G4VisAttributes.hh>
 #include <G4VisExecutive.hh>
@@ -90,8 +90,8 @@ void VisualizationGeant4Module::init(std::mt19937_64&) {
 
     // The Geant4 RunManager in multithreaded mode doesn't support visualization
     // therefore, we prevent users from including this module when the multithreading
-    // flag is set    
-    if (global_config.get<bool>("experimental_multithreading", false)) {
+    // flag is set
+    if(global_config.get<bool>("experimental_multithreading", false)) {
         throw ModuleError("Cannot use visualization in multithreading mode.");
     }
 
