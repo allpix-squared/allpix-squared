@@ -169,9 +169,7 @@ void Module::add_delegate(Messenger* messenger, BaseDelegate* delegate) {
 }
 bool Module::check_delegates(Messenger* messenger) {
     // Return false if any delegate is not satisfied
-    return std::all_of(
-        delegates_.cbegin(), delegates_.cend(), [messenger](auto& delegate) { 
-            return delegate.second->isSatisfied() || messenger->isSatisfied(delegate.second);
-        }
-    );
+    return std::all_of(delegates_.cbegin(), delegates_.cend(), [messenger](auto& delegate) {
+        return delegate.second->isSatisfied() || messenger->isSatisfied(delegate.second);
+    });
 }

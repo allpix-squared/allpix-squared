@@ -36,7 +36,7 @@ ThreadPool::~ThreadPool() {
 }
 
 void ThreadPool::submit_event_function(std::function<void()> event_function) {
-    if (threads_.size() > 0) {
+    if(threads_.size() > 0) {
         event_queue_.push(std::make_unique<std::packaged_task<void()>>(std::move(event_function)));
     } else {
         event_function();
@@ -105,7 +105,7 @@ void ThreadPool::worker(const std::function<void()>& init_function) {
     }
 
     // Execute the cleanup function at the end of loop
-    if (worker_finalize_function_) {
+    if(worker_finalize_function_) {
         worker_finalize_function_();
     }
 }

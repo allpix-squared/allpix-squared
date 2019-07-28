@@ -107,7 +107,6 @@ namespace allpix {
          */
         std::string createOutputFile(const std::string& path, bool global = false, bool delete_file = false);
 
-
         /**
          * @brief Get ROOT directory which should be used to output histograms et cetera
          * @return ROOT directory for storage

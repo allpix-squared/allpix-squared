@@ -11,9 +11,9 @@
 #define ALLPIX_MESSENGER_H
 
 #include <list>
-#include <unordered_map>
 #include <memory>
 #include <typeindex>
+#include <unordered_map>
 #include <utility>
 
 #include "../module/Module.hpp"
@@ -173,48 +173,49 @@ namespace allpix {
          * and fetching messages between Modules.
          */
         class LocalMessenger {
-            public:
-                LocalMessenger(Messenger& global_messenger);
+        public:
+            LocalMessenger(Messenger& global_messenger);
 
-                /**
-                * @brief Resets the messenger and clear any stored messages.
-                */
-                void reset();
+            /**
+             * @brief Resets the messenger and clear any stored messages.
+             */
+            void reset();
 
-                void dispatch_message(Module* source, std::shared_ptr<BaseMessage> message, std::string name);
-                bool dispatch_message(Module* source,
-                                    const std::shared_ptr<BaseMessage>& message,
-                                    const std::string& name,
-                                    const std::string& id);
+            void dispatch_message(Module* source, std::shared_ptr<BaseMessage> message, std::string name);
+            bool dispatch_message(Module* source,
+                                  const std::shared_ptr<BaseMessage>& message,
+                                  const std::string& name,
+                                  const std::string& id);
 
-                /**
-                * @brief Check if a delegate has recieved its message
-                * @return True if satisfied, false otherwise
-                */
-                bool isSatisfied(BaseDelegate* delegate) const;
+            /**
+             * @brief Check if a delegate has recieved its message
+             * @return True if satisfied, false otherwise
+             */
+            bool isSatisfied(BaseDelegate* delegate) const;
 
-                /**
-                * @brief Fetches a single message of specified type meant for the calling module
-                * @return Shared pointer to message
-                */
-                template <typename T> std::shared_ptr<T> fetchMessage(Module* module);
+            /**
+             * @brief Fetches a single message of specified type meant for the calling module
+             * @return Shared pointer to message
+             */
+            template <typename T> std::shared_ptr<T> fetchMessage(Module* module);
 
-                /**
-                * @brief Fetches multiple messages of specified type meant for the calling module
-                * @return Vector of shared pointers to messages
-                */
-                template <typename T> std::vector<std::shared_ptr<T>> fetchMultiMessage(Module* module);
+            /**
+             * @brief Fetches multiple messages of specified type meant for the calling module
+             * @return Vector of shared pointers to messages
+             */
+            template <typename T> std::vector<std::shared_ptr<T>> fetchMultiMessage(Module* module);
 
-                /**
-                * @brief Fetches filtered messages meant for the calling module
-                * @return Vector of pairs containing shared pointer to and name of message
-                */
-                std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> fetchFilteredMessages(Module* module);
-            private:
-                Messenger& global_messenger_;
+            /**
+             * @brief Fetches filtered messages meant for the calling module
+             * @return Vector of pairs containing shared pointer to and name of message
+             */
+            std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> fetchFilteredMessages(Module* module);
 
-                std::unordered_map<std::string, std::unordered_map<std::type_index, DelegateTypes>> messages_;
-                std::vector<std::shared_ptr<BaseMessage>> sent_messages_;
+        private:
+            Messenger& global_messenger_;
+
+            std::unordered_map<std::string, std::unordered_map<std::type_index, DelegateTypes>> messages_;
+            std::vector<std::shared_ptr<BaseMessage>> sent_messages_;
         };
 
         static thread_local std::unique_ptr<LocalMessenger> local_messenger_;

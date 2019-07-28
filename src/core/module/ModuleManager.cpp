@@ -55,7 +55,7 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
     conf_manager_ = conf_manager;
     auto& configs = conf_manager_->getModuleConfigurations();
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
-    
+
     // Store the messenger
     messenger_ = messenger;
 
@@ -610,13 +610,14 @@ void ModuleManager::run(std::mt19937_64& seeder) {
 
     // Finalize modules for each thread
     auto finialize_function = [modules_list = modules_]() {
-        for (auto & module : modules_list) {
+        for(auto& module : modules_list) {
             module->finalizeThread();
         }
     };
 
     std::condition_variable master_condition;
-    std::shared_ptr<ThreadPool> thread_pool = std::make_unique<ThreadPool>(threads_num, init_function, finialize_function, master_condition);
+    std::shared_ptr<ThreadPool> thread_pool =
+        std::make_unique<ThreadPool>(threads_num, init_function, finialize_function, master_condition);
 
     std::atomic<unsigned int> finished_events{0};
 
@@ -645,10 +646,10 @@ void ModuleManager::run(std::mt19937_64& seeder) {
 
         // Create an event, initialize it, and submit it wrapped in a lambda to the thread pool
         // TODO [doc] make this a unique pointer
-        auto event =
-            std::make_shared<ConcreteEvent>(modules_, i, *messenger_, terminate_, master_condition, module_execution_time_, seeder);
+        auto event = std::make_shared<ConcreteEvent>(
+            modules_, i, *messenger_, terminate_, master_condition, module_execution_time_, seeder);
 
-        auto event_function = [ event = std::move(event), number_of_events, event_num = i, &finished_events ]() mutable {
+        auto event_function = [event = std::move(event), number_of_events, event_num = i, &finished_events]() mutable {
             LOG(STATUS) << "Running event " << event_num << " of " << number_of_events;
             event->run();
             finished_events++;

@@ -127,21 +127,20 @@ void Messenger::remove_delegate(BaseDelegate* delegate) {
 std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> Messenger::fetchFilteredMessages(Module* module) {
     try {
         return local_messenger_->fetchFilteredMessages(module);
-    } catch (const std::out_of_range& e) {
+    } catch(const std::out_of_range& e) {
         throw MessageNotFoundException(module->getUniqueName(), typeid(BaseMessage));
     }
 }
 
 void Messenger::reset() {
-    if (local_messenger_ == nullptr) {
-        local_messenger_ = std::make_unique<LocalMessenger> (*this);
+    if(local_messenger_ == nullptr) {
+        local_messenger_ = std::make_unique<LocalMessenger>(*this);
     }
 
     local_messenger_->reset();
 }
 
-Messenger::LocalMessenger::LocalMessenger(Messenger& global_messenger) : global_messenger_(global_messenger) {
-}
+Messenger::LocalMessenger::LocalMessenger(Messenger& global_messenger) : global_messenger_(global_messenger) {}
 
 void Messenger::LocalMessenger::dispatch_message(Module* source, std::shared_ptr<BaseMessage> message, std::string name) {
     // Get the name of the output message
@@ -169,9 +168,9 @@ void Messenger::LocalMessenger::dispatch_message(Module* source, std::shared_ptr
 }
 
 bool Messenger::LocalMessenger::dispatch_message(Module* source,
-                                 const std::shared_ptr<BaseMessage>& message,
-                                 const std::string& name,
-                                 const std::string& id) {
+                                                 const std::shared_ptr<BaseMessage>& message,
+                                                 const std::string& name,
+                                                 const std::string& id) {
     bool send = false;
 
     // Create type identifier from the typeid
@@ -206,7 +205,8 @@ bool Messenger::LocalMessenger::dispatch_message(Module* source,
     return send;
 }
 
-std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> Messenger::LocalMessenger::fetchFilteredMessages(Module* module) {
+std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>>
+Messenger::LocalMessenger::fetchFilteredMessages(Module* module) {
     const std::type_index type_idx = typeid(BaseMessage);
     return messages_.at(module->getUniqueName()).at(type_idx).filter_multi;
 }
@@ -215,7 +215,7 @@ bool Messenger::LocalMessenger::isSatisfied(BaseDelegate* delegate) const {
     // check our records for messages for this module
     const std::string name = delegate->getUniqueName();
     auto messages_iter = messages_.find(name);
-    if (messages_iter == messages_.end()) {
+    if(messages_iter == messages_.end()) {
         return false;
     }
 
@@ -227,7 +227,7 @@ bool Messenger::LocalMessenger::isSatisfied(BaseDelegate* delegate) const {
 
     // check our records for messages for this delegate
     auto iter = messages_iter->second.find(std::get<0>(delegate_iter->second));
-    if (iter == messages_iter->second.end()) {
+    if(iter == messages_iter->second.end()) {
         return false;
     }
 
