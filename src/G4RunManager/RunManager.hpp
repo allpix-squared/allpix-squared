@@ -34,7 +34,7 @@ namespace allpix {
          * @brief Wrapper around G4RunManager BeamOn that seeds the RNG before actually calling
          * BeamOn
          */
-        virtual void BeamOn(G4int n_event, const char *macro_file, G4int n_select) override;
+        virtual void BeamOn(G4int n_event, const char* macro_file, G4int n_select) override;
 
     private:
         static constexpr G4int number_seeds_per_event_{2};

@@ -13,7 +13,7 @@
 using namespace allpix;
 
 namespace {
- G4Mutex worker_seed_mutex = G4MUTEX_INITIALIZER;
+    G4Mutex worker_seed_mutex = G4MUTEX_INITIALIZER;
 }
 
 G4ThreadLocal WorkerRunManager* MTRunManager::worker_run_manager_ = nullptr;
@@ -24,13 +24,13 @@ void MTRunManager::Run(G4int allpix_event, G4int n_event) {
         // Draw the nessecary seeds so that each event will be seeded
         G4RNGHelper* helper = G4RNGHelper::GetInstance();
         G4int idx_rndm = nSeedsPerEvent * (allpix_event - 1);
-        long s1 = helper->GetSeed(idx_rndm), s2 = helper->GetSeed(idx_rndm+1);
+        long s1 = helper->GetSeed(idx_rndm), s2 = helper->GetSeed(idx_rndm + 1);
         worker_run_manager_->seedsQueue.push(s1);
         worker_run_manager_->seedsQueue.push(s2);
 
         nSeedsUsed++;
 
-        if(nSeedsUsed==nSeedsFilled) {
+        if(nSeedsUsed == nSeedsFilled) {
             // The RefillSeeds call will refill the array with 1024 new entries
             // the number of seeds refilled = numberOfEventToBeProcessed - nSeedsFilled
             numberOfEventToBeProcessed = nSeedsFilled + nSeedsMax;
@@ -53,15 +53,15 @@ void MTRunManager::Initialize() {
         G4MTRunManager::ConstructScoringWorlds();
         G4MTRunManager::RunInitialization();
 
-    // This is needed to draw random seeds and fill the internal seed array
-    // use nSeedsMax to fill as much as possible now and hopefully avoid
-    // refilling later
-    G4MTRunManager::DoEventLoop(nSeedsMax, nullptr, 0);
+        // This is needed to draw random seeds and fill the internal seed array
+        // use nSeedsMax to fill as much as possible now and hopefully avoid
+        // refilling later
+        G4MTRunManager::DoEventLoop(nSeedsMax, nullptr, 0);
     }
 }
 
 void MTRunManager::InitializeForThread() {
-    if (worker_run_manager_ == nullptr) {
+    if(worker_run_manager_ == nullptr) {
         // construct a new thread worker
         worker_run_manager_ = WorkerRunManager::GetNewInstanceForThread();
     }
@@ -69,7 +69,7 @@ void MTRunManager::InitializeForThread() {
 
 void MTRunManager::TerminateForThread() {
     // thread local instance
-    if (worker_run_manager_) {
+    if(worker_run_manager_) {
         worker_run_manager_->RunTermination();
         delete worker_run_manager_;
         worker_run_manager_ = nullptr;

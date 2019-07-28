@@ -17,10 +17,9 @@ namespace allpix {
     class SensitiveDetectorAndFieldConstruction {
     public:
         /**
-        * @brief Constructs the sensitive detectors and field for each worker.
-        */
-        virtual void ConstructSDandField() {
-        }
+         * @brief Constructs the sensitive detectors and field for each worker.
+         */
+        virtual void ConstructSDandField() {}
     };
 } // namespace allpix
 

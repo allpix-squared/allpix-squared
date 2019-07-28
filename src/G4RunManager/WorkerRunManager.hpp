@@ -27,6 +27,7 @@ namespace allpix {
      */
     class WorkerRunManager : public G4WorkerRunManager {
         friend class MTRunManager;
+
     public:
         virtual ~WorkerRunManager();
 

@@ -30,6 +30,7 @@ namespace allpix {
      */
     class MTRunManager : public G4MTRunManager {
         friend class WorkerRunManager;
+
     public:
         MTRunManager() = default;
         virtual ~MTRunManager() = default;
@@ -74,9 +75,7 @@ namespace allpix {
         /**
          * @brief Returns the user's sensitive detector construction.
          */
-        SensitiveDetectorAndFieldConstruction* GetSDAndFieldConstruction() const {
-            return sd_field_construction_;
-        }
+        SensitiveDetectorAndFieldConstruction* GetSDAndFieldConstruction() const { return sd_field_construction_; }
 
         /**
          * @brief Sets the user's sensitive detector construction.
@@ -86,15 +85,12 @@ namespace allpix {
         }
 
     protected:
-
         /**
          * @brief Previously used by workers to wait for master commands.
          *
          * Worker manager waits on the shared barrier untill master issues a new command. It will now do nothing.
          */
-        virtual WorkerActionRequest ThisWorkerWaitForNextAction() override {
-            return WorkerActionRequest::UNDEFINED;
-        }
+        virtual WorkerActionRequest ThisWorkerWaitForNextAction() override { return WorkerActionRequest::UNDEFINED; }
 
         /**
          * @brief Previously used to create threads and start worker managers.
@@ -107,8 +103,8 @@ namespace allpix {
          * @brief Previously used to issue a new command to the workers.
          *
          * Send a new command to workers waiting for master to tell them what to do. It will now do nothing.
-         */        
-        virtual void NewActionRequest( WorkerActionRequest ) override {}
+         */
+        virtual void NewActionRequest(WorkerActionRequest) override {}
 
         /**
          * @brief Previously used to tell workers to execute UI commands.
@@ -123,9 +119,7 @@ namespace allpix {
          * Worker will ask us to setup the event. This includes figuring out the event number that worker will do
          * and setting up the seeds to ensure results can be reproduced. It will now do nothing.
          */
-        virtual G4bool SetUpAnEvent(G4Event*, long&, long&, long&, G4bool) override {
-            return false;
-        }
+        virtual G4bool SetUpAnEvent(G4Event*, long&, long&, long&, G4bool) override { return false; }
 
         /**
          * @brief Previously used by the worker to initialize N event.
@@ -133,9 +127,7 @@ namespace allpix {
          * Worker will ask us to setup the events. This includes figuring out the event numbers that worker will do
          * and setting up the seeds to ensure results can be reproduced. It will now do nothing.
          */
-        virtual G4int SetUpNEvents(G4Event*, G4SeedsQueue*, G4bool) override {
-            return 0;
-        }
+        virtual G4int SetUpNEvents(G4Event*, G4SeedsQueue*, G4bool) override { return 0; }
 
         /**
          * @brief Previously used to stop all the workers.
@@ -178,7 +170,7 @@ namespace allpix {
          * Wait for all the workers to finish initialization. It will now do nothing.
          */
         virtual void WaitForReadyWorkers() override {}
-    
+
     private:
         // \ref WorkerRunManager worker manager that run on each thread.
         static G4ThreadLocal WorkerRunManager* worker_run_manager_;
