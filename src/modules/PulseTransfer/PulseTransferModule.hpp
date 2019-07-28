@@ -56,7 +56,7 @@ namespace allpix {
 
         // General module members
         std::shared_ptr<Detector> detector_;
-        
+
         /**
          * @brief Compare two pixels, necessary to store them in the a std::map
          */

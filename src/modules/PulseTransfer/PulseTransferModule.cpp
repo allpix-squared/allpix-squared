@@ -105,8 +105,8 @@ void PulseTransferModule::run(Event* event) {
             std::generate(time.begin(), time.end(), [n = 0.0, step]() mutable {  auto now = n; n += step; return now; });
             // clang-format on
 
-            std::string name =
-                "pulse_ev" + std::to_string(event->number) + "_px" + std::to_string(index.x()) + "-" + std::to_string(index.y());
+            std::string name = "pulse_ev" + std::to_string(event->number) + "_px" + std::to_string(index.x()) + "-" +
+                               std::to_string(index.y());
             auto pulse_graph = new TGraph(static_cast<int>(pulse_vec.size()), &time[0], &pulse_vec[0]);
             pulse_graph->GetXaxis()->SetTitle("t [ns]");
             pulse_graph->GetYaxis()->SetTitle("Q_{ind} [e]");
