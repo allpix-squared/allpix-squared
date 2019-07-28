@@ -174,15 +174,15 @@ namespace allpix {
          */
         class LocalMessenger {
         public:
-            LocalMessenger(Messenger& global_messenger);
+            explicit LocalMessenger(Messenger& global_messenger);
 
             /**
              * @brief Resets the messenger and clear any stored messages.
              */
             void reset();
 
-            void dispatch_message(Module* source, std::shared_ptr<BaseMessage> message, std::string name);
-            bool dispatch_message(Module* source,
+            void dispatchMessage(Module* source, std::shared_ptr<BaseMessage> message, std::string name);
+            bool dispatchMessage(Module* source,
                                   const std::shared_ptr<BaseMessage>& message,
                                   const std::string& name,
                                   const std::string& id);

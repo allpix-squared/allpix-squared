@@ -142,7 +142,7 @@ void Messenger::reset() {
 
 Messenger::LocalMessenger::LocalMessenger(Messenger& global_messenger) : global_messenger_(global_messenger) {}
 
-void Messenger::LocalMessenger::dispatch_message(Module* source, std::shared_ptr<BaseMessage> message, std::string name) {
+void Messenger::LocalMessenger::dispatchMessage(Module* source, std::shared_ptr<BaseMessage> message, std::string name) {
     // Get the name of the output message
     if(name == "-") {
         name = source->get_configuration().get<std::string>("output");
@@ -151,10 +151,10 @@ void Messenger::LocalMessenger::dispatch_message(Module* source, std::shared_ptr
     bool send = false;
 
     // Send messages to specific listeners
-    send = dispatch_message(source, message, name, name) || send;
+    send = dispatchMessage(source, message, name, name) || send;
 
     // Send to generic listeners
-    send = dispatch_message(source, message, name, "*") || send;
+    send = dispatchMessage(source, message, name, "*") || send;
 
     // Display a TRACE log message if the message is send to no receiver
     if(!send) {
@@ -167,7 +167,7 @@ void Messenger::LocalMessenger::dispatch_message(Module* source, std::shared_ptr
     sent_messages_.emplace_back(message);
 }
 
-bool Messenger::LocalMessenger::dispatch_message(Module* source,
+bool Messenger::LocalMessenger::dispatchMessage(Module* source,
                                                  const std::shared_ptr<BaseMessage>& message,
                                                  const std::string& name,
                                                  const std::string& id) {

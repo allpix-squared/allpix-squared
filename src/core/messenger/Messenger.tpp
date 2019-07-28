@@ -39,7 +39,7 @@ namespace allpix {
 
     template <typename T>
     void Messenger::dispatchMessage(Module* module, std::shared_ptr<T> message, const std::string& name) {
-        local_messenger_->dispatch_message(module, message, name);
+        local_messenger_->dispatchMessage(module, message, name);
     }
 
     template <typename T> std::shared_ptr<T> Messenger::fetchMessage(Module* module) {
