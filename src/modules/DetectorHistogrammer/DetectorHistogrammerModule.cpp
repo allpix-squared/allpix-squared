@@ -27,7 +27,7 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
                                                        std::shared_ptr<Detector> detector)
     : WriterModule(config, detector), detector_(std::move(detector)) {
     // Bind messages
-    messenger->bindSingle<DetectorHistogrammerModule, PixelHitMessage,  MsgFlags::REQUIRED>(this);
+    messenger->bindSingle<DetectorHistogrammerModule, PixelHitMessage>(this);
     messenger->bindSingle<DetectorHistogrammerModule, MCParticleMessage, MsgFlags::REQUIRED>(this);
 
     auto model = detector_->getModel();
@@ -234,12 +234,17 @@ void DetectorHistogrammerModule::init(std::mt19937_64&) {
 
 void DetectorHistogrammerModule::run(Event* event) {
     using namespace ROOT::Math;
-    auto pixels_message = event->fetchMessage<PixelHitMessage>();
+    std::shared_ptr<PixelHitMessage> pixels_message;
     auto mcparticle_message = event->fetchMessage<MCParticleMessage>();
 
-    auto random_generator = event->getRandomEngine();
-
     // Check that we actually received pixel hits - we might have none and just received MCParticles!
+    try {
+        pixels_message = event->fetchMessage<PixelHitMessage>();
+    } catch (const MessageNotFoundException&) {
+        pixels_message = nullptr;
+    }
+
+    auto random_generator = event->getRandomEngine();
     if(pixels_message != nullptr) {
         LOG(DEBUG) << "Received " << pixels_message->getData().size() << " pixel hits";
 
