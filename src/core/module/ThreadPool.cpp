@@ -36,10 +36,10 @@ ThreadPool::~ThreadPool() {
 }
 
 void ThreadPool::submit_event_function(std::function<void()> event_function) {
-    if(threads_.size() > 0) {
-        event_queue_.push(std::make_unique<std::packaged_task<void()>>(std::move(event_function)));
-    } else {
+    if(threads_.empty()) {
         event_function();
+    } else {
+        event_queue_.push(std::make_unique<std::packaged_task<void()>>(std::move(event_function)));
     }
 }
 
