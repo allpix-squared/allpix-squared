@@ -103,7 +103,7 @@ void DepositionGeant4Module::init(std::mt19937_64& seeder) {
     if (global_config.get<bool>("experimental_multithreading", false)) {
         run_manager_g4_ = G4MTRunManager::GetMasterRunManager();
         run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
-
+        G4Threading::SetMultithreadedApplication(true);
         using_multithreading_ = true;
     } else {
         run_manager_g4_ = G4RunManager::GetRunManager();
@@ -265,12 +265,6 @@ void DepositionGeant4Module::init(std::mt19937_64& seeder) {
 void DepositionGeant4Module::run(Event* event) {
     MTRunManager* run_manager_mt = nullptr;
 
-    // Suppress output stream if not in debugging mode
-    IFLOG(DEBUG);
-    else {
-        SUPPRESS_STREAM(G4cout);
-    }
-
     // Initialize the thread local G4RunManager in case of MT
     if (using_multithreading_) {
         run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
@@ -282,6 +276,13 @@ void DepositionGeant4Module::run(Event* event) {
         }
 
         run_manager_mt->InitializeForThread();
+    }
+
+    // Suppress output stream if not in debugging mode
+    IFLOG(DEBUG);
+    else {
+        std::lock_guard<std::mutex> lock(g4cout_mutex_);
+        SUPPRESS_STREAM(G4cout);
     }
 
     // Seed the sensitive detectors RNG
@@ -300,8 +301,11 @@ void DepositionGeant4Module::run(Event* event) {
     unsigned int last_event_num = last_event_num_.load();
     last_event_num_.compare_exchange_strong(last_event_num, event->number);
 
-    // Release the stream (if it was suspended)
-    RELEASE_STREAM(G4cout);
+    {
+        // Release the stream (if it was suspended)
+        std::lock_guard<std::mutex> lock(g4cout_mutex_);
+        RELEASE_STREAM(G4cout);
+    }
 
     track_info_manager_->createMCTracks();
 
