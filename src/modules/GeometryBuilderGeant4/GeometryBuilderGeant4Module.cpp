@@ -26,12 +26,12 @@
 #include "tools/ROOT.h"
 #include "tools/geant4.h"
 
+#include "G4RunManager/MTRunManager.hpp"
+#include "G4RunManager/RunManager.hpp"
 #include "core/config/ConfigReader.hpp"
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/utils/log.h"
-#include "G4RunManager/MTRunManager.hpp"
-#include "G4RunManager/RunManager.hpp"
 
 // Include GDML if Geant4 version has it
 #ifdef Geant4_GDML
@@ -51,13 +51,15 @@ GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config, 
 static void check_dataset_g4(const std::string& env_name) {
     const char* file_name = std::getenv(env_name.c_str());
     if(file_name == nullptr) {
-        throw ModuleError("Geant4 environment variable " + env_name + " is not set, make sure to source a Geant4 "
-                                                                      "environment with all datasets");
+        throw ModuleError("Geant4 environment variable " + env_name +
+                          " is not set, make sure to source a Geant4 "
+                          "environment with all datasets");
     }
     std::ifstream file(file_name);
     if(!file.good()) {
-        throw ModuleError("Geant4 environment variable " + env_name + " does not point to existing dataset, the Geant4 "
-                                                                      "environment is invalid");
+        throw ModuleError("Geant4 environment variable " + env_name +
+                          " does not point to existing dataset, the Geant4 "
+                          "environment is invalid");
     }
     // FIXME: check if file does actually contain a correct dataset
 }
@@ -88,7 +90,7 @@ void GeometryBuilderGeant4Module::init(std::mt19937_64&) {
 
     // Create the G4 run manager. If multithreading was requested we use the custom run manager
     // that support calling BeamOn operations in parallel. Otherwise we use default manager.
-    if (global_config.get<bool>("experimental_multithreading", false)) {
+    if(global_config.get<bool>("experimental_multithreading", false)) {
         run_manager_g4_ = std::make_unique<MTRunManager>();
     } else {
         run_manager_g4_ = std::make_unique<RunManager>();
