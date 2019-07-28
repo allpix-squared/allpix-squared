@@ -43,11 +43,19 @@ namespace allpix {
     }
 
     template <typename T> std::shared_ptr<T> Messenger::fetchMessage(Module* module) {
-        return local_messenger_->fetchMessage<T>(module);
+        try {
+            return local_messenger_->fetchMessage<T>(module);
+        } catch (const std::out_of_range& e) {
+            throw MessageNotFoundException(module->getUniqueName(), typeid(T));
+        }
     }
 
     template <typename T> std::vector<std::shared_ptr<T>> Messenger::fetchMultiMessage(Module* module) {
-        return local_messenger_->fetchMultiMessage<T>(module);
+        try {
+            return local_messenger_->fetchMultiMessage<T>(module);
+        } catch (const std::out_of_range& e) {
+            throw MessageNotFoundException(module->getUniqueName(), typeid(T));
+        }
     }
 
     template <typename T> std::shared_ptr<T> Messenger::LocalMessenger::fetchMessage(Module* module) {

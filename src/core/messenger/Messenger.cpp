@@ -125,7 +125,11 @@ void Messenger::remove_delegate(BaseDelegate* delegate) {
 }
 
 std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> Messenger::fetchFilteredMessages(Module* module) {
-    return local_messenger_->fetchFilteredMessages(module);
+    try {
+        return local_messenger_->fetchFilteredMessages(module);
+    } catch (const std::out_of_range& e) {
+        throw MessageNotFoundException(module->getUniqueName(), typeid(BaseMessage));
+    }
 }
 
 void Messenger::reset() {

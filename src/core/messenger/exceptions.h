@@ -56,6 +56,21 @@ namespace allpix {
             error_message_ += " does not contain a valid object";
         }
     };
+
+    /**
+     * @ingroup Exceptions
+     * @brief Trying to fetch a message that wasn't delivered
+     *
+     * Raised if a module tries to fetch a message that it didn't receive. This is more
+     * likely to be raised with non-required messages.
+     */
+    class MessageNotFoundException : public RuntimeError {
+    public:
+        explicit MessageNotFoundException(const std::string& module, const std::type_info& message) {
+            error_message_ = "Module " + module + " did not receive message ";
+            error_message_ += allpix::demangle(message.name());
+        }
+    };
 } // namespace allpix
 
 #endif /* ALLPIX_MESSENGER_EXCEPTIONS_H */
