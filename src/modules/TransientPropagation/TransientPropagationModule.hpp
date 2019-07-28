@@ -16,8 +16,8 @@
 #include "core/config/Configuration.hpp"
 #include "core/geometry/DetectorModel.hpp"
 #include "core/messenger/Messenger.hpp"
-#include "core/module/Module.hpp"
 #include "core/module/Event.hpp"
+#include "core/module/Module.hpp"
 
 #include "objects/DepositedCharge.hpp"
 #include "objects/Pulse.hpp"
