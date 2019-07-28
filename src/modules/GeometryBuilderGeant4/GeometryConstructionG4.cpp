@@ -426,12 +426,12 @@ void GeometryConstructionG4::build_detectors() {
 
             std::shared_ptr<G4PVParameterised> bumps_param_phys =
                 make_shared_no_delete<ParameterisedG4>("bumps_" + name + "_phys",
-                                                  bumps_cell_log.get(),
-                                                  bumps_wrapper_log.get(),
-                                                  kUndefined,
-                                                  hybrid_model->getNPixels().x() * hybrid_model->getNPixels().y(),
-                                                  bumps_param.get(),
-                                                  false);
+                                                       bumps_cell_log.get(),
+                                                       bumps_wrapper_log.get(),
+                                                       kUndefined,
+                                                       hybrid_model->getNPixels().x() * hybrid_model->getNPixels().y(),
+                                                       bumps_param.get(),
+                                                       false);
             detector->setExternalObject("bumps_param_phys", bumps_param_phys);
         }
 
