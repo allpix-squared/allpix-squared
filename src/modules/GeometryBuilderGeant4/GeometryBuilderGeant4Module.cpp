@@ -51,15 +51,13 @@ GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config, 
 static void check_dataset_g4(const std::string& env_name) {
     const char* file_name = std::getenv(env_name.c_str());
     if(file_name == nullptr) {
-        throw ModuleError("Geant4 environment variable " + env_name +
-                          " is not set, make sure to source a Geant4 "
-                          "environment with all datasets");
+        throw ModuleError("Geant4 environment variable " + env_name + " is not set, make sure to source a Geant4 "
+                                                                      "environment with all datasets");
     }
     std::ifstream file(file_name);
     if(!file.good()) {
-        throw ModuleError("Geant4 environment variable " + env_name +
-                          " does not point to existing dataset, the Geant4 "
-                          "environment is invalid");
+        throw ModuleError("Geant4 environment variable " + env_name + " does not point to existing dataset, the Geant4 "
+                                                                      "environment is invalid");
     }
     // FIXME: check if file does actually contain a correct dataset
 }
