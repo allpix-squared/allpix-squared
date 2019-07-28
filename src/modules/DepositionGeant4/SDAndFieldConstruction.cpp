@@ -22,9 +22,9 @@
 #include <G4TransportationManager.hh>
 #include <G4UniformMagField.hh>
 
+#include "DepositionGeant4Module.hpp"
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
-#include "DepositionGeant4Module.hpp"
 
 using namespace allpix;
 

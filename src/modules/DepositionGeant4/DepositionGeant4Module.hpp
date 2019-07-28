@@ -10,9 +10,9 @@
 #ifndef ALLPIX_SIMPLE_DEPOSITION_MODULE_H
 #define ALLPIX_SIMPLE_DEPOSITION_MODULE_H
 
+#include <atomic>
 #include <memory>
 #include <string>
-#include <atomic>
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
@@ -23,8 +23,8 @@
 #include "SensitiveDetectorActionG4.hpp"
 #include "TrackInfoManager.hpp"
 
-#include <TH1D.h>
 #include <ROOT/TThreadedObject.hxx>
+#include <TH1D.h>
 
 class G4UserLimits;
 class G4RunManager;
@@ -42,6 +42,7 @@ namespace allpix {
     class DepositionGeant4Module : public Geant4Module {
         friend class SDAndFieldConstruction;
         friend class SetTrackInfoUserHookG4;
+
     public:
         /**
          * @brief Constructor for this unique module

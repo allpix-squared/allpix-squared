@@ -27,6 +27,7 @@
 #include "G4TransportationManager.hh"
 #include "G4UniformMagField.hh"
 
+#include "G4RunManager/MTRunManager.hpp"
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/module/exceptions.h"
@@ -34,13 +35,12 @@
 #include "objects/DepositedCharge.hpp"
 #include "tools/ROOT.h"
 #include "tools/geant4.h"
-#include "G4RunManager/MTRunManager.hpp"
 
+#include "ActionInitializationG4.hpp"
 #include "GeneratorActionG4.hpp"
+#include "SDAndFieldConstruction.hpp"
 #include "SensitiveDetectorActionG4.hpp"
 #include "SetTrackInfoUserHookG4.hpp"
-#include "ActionInitializationG4.hpp"
-#include "SDAndFieldConstruction.hpp"
 
 #define G4_NUM_SEEDS 10
 
@@ -100,7 +100,7 @@ void DepositionGeant4Module::init(std::mt19937_64& seeder) {
     MTRunManager* run_manager_mt = nullptr;
 
     // Load the G4 run manager (which is owned by the geometry builder)
-    if (global_config.get<bool>("experimental_multithreading", false)) {
+    if(global_config.get<bool>("experimental_multithreading", false)) {
         run_manager_g4_ = G4MTRunManager::GetMasterRunManager();
         run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
         G4Threading::SetMultithreadedApplication(true);
@@ -212,7 +212,6 @@ void DepositionGeant4Module::init(std::mt19937_64& seeder) {
     run_manager_g4_->SetUserInitialization(physicsList);
     run_manager_g4_->InitializePhysics();
 
-
     // Prepare seeds for Geant4:
     // NOTE Assumes this is the only Geant4 module using random numbers
     std::string seed_command = "/random/setSeeds ";
@@ -243,7 +242,7 @@ void DepositionGeant4Module::init(std::mt19937_64& seeder) {
 
     // Construct the sensitive detectors and fields. In MT-mode we register a builder that will be called for each
     // thread to construct the SD when needed. While in sequential mode we construct it now.
-    if (using_multithreading_) {
+    if(using_multithreading_) {
         auto detector_construction = new SDAndFieldConstruction(this, fano_factor, charge_creation_energy);
         run_manager_mt->SetSDAndFieldConstruction(detector_construction);
     } else {
@@ -266,12 +265,12 @@ void DepositionGeant4Module::run(Event* event) {
     MTRunManager* run_manager_mt = nullptr;
 
     // Initialize the thread local G4RunManager in case of MT
-    if (using_multithreading_) {
+    if(using_multithreading_) {
         run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
 
         // In MT-mode the sensitive detectors will be created with the calls to BeamOn. So we construct the
         // track manager for each calling thread here.
-        if (track_info_manager_ == nullptr) {
+        if(track_info_manager_ == nullptr) {
             track_info_manager_ = std::make_unique<TrackInfoManager>();
         }
 
@@ -292,8 +291,9 @@ void DepositionGeant4Module::run(Event* event) {
 
     // Start a single event from the beam
     LOG(TRACE) << "Enabling beam";
-    if (using_multithreading_) {
-        run_manager_mt->Run(static_cast<G4int>(event->number), static_cast<int>(config_.get<unsigned int>("number_of_particles", 1)));
+    if(using_multithreading_) {
+        run_manager_mt->Run(static_cast<G4int>(event->number),
+                            static_cast<int>(config_.get<unsigned int>("number_of_particles", 1)));
     } else {
         run_manager_g4_->BeamOn(static_cast<int>(config_.get<unsigned int>("number_of_particles", 1)));
     }
@@ -336,15 +336,15 @@ void DepositionGeant4Module::finalize() {
     }
 
     // Record the number of sensors and the total charges
-    if (!using_multithreading_) {
+    if(!using_multithreading_) {
         record_module_statistics();
     }
 
     // Print summary or warns if module did not output any charges
     if(number_of_sensors_ > 0 && total_charges_ > 0 && last_event_num_ > 0) {
         size_t average_charge = total_charges_ / number_of_sensors_ / last_event_num_;
-        LOG(INFO) << "Deposited total of " << total_charges_ << " charges in " << number_of_sensors_ << " sensor(s) (average of "
-                  << average_charge << " per sensor for every event)";
+        LOG(INFO) << "Deposited total of " << total_charges_ << " charges in " << number_of_sensors_
+                  << " sensor(s) (average of " << average_charge << " per sensor for every event)";
     } else {
         LOG(WARNING) << "No charges deposited";
     }
@@ -387,8 +387,8 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fan
         useful_deposition = true;
 
         // Get model of the sensitive device
-        auto sensitive_detector_action = new SensitiveDetectorActionG4(
-            detector, track_info_manager_.get(), charge_creation_energy, fano_factor);
+        auto sensitive_detector_action =
+            new SensitiveDetectorActionG4(detector, track_info_manager_.get(), charge_creation_energy, fano_factor);
         auto logical_volume = detector->getExternalObject<G4LogicalVolume>("sensor_log");
         if(logical_volume == nullptr) {
             throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
@@ -414,9 +414,9 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fan
 
             {
                 std::lock_guard<std::mutex> lock(histogram_mutex_);
-                if (charge_per_event_.find(sensitive_detector_action->getName()) == charge_per_event_.end()) {
-                    charge_per_event_[sensitive_detector_action->getName()] =
-                    new ROOT::TThreadedObject<TH1D>(plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum);
+                if(charge_per_event_.find(sensitive_detector_action->getName()) == charge_per_event_.end()) {
+                    charge_per_event_[sensitive_detector_action->getName()] = new ROOT::TThreadedObject<TH1D>(
+                        plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum);
                 }
             }
         }

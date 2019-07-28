@@ -20,17 +20,17 @@
 namespace allpix {
     class DepositionGeant4Module;
     /**
-    * @brief Initializer for the tracker and generator actions, required for \ref RunManager
-    */
+     * @brief Initializer for the tracker and generator actions, required for \ref RunManager
+     */
     class ActionInitializationG4 : public G4VUserActionInitialization {
     public:
         explicit ActionInitializationG4(const Configuration& config, DepositionGeant4Module* module)
             : config_(config), module_(module){};
 
         /**
-        * @brief Build the user action to be executed by the worker
-        * @note All SetUserAction must be called from here
-        */
+         * @brief Build the user action to be executed by the worker
+         * @note All SetUserAction must be called from here
+         */
         void Build() const override {
             // primary particles generator
             SetUserAction(new GeneratorActionG4(config_));
@@ -45,6 +45,6 @@ namespace allpix {
         // Raw ptr to track info manager to create instances of TrackInfoG4
         DepositionGeant4Module* module_;
     };
-} // namespace allpix 
+} // namespace allpix
 
 #endif /* ALLPIX_SIMPLE_DEPOSITION_MODULE_ACTION_INITIALIZATION_H */

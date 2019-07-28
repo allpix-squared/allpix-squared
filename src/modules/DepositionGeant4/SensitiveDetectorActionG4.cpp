@@ -58,7 +58,6 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     G4ThreeVector mid_pos = (preStepPoint->GetPosition() + postStepPoint->GetPosition()) / 2;
     double mid_time = (preStepPoint->GetGlobalTime() + postStepPoint->GetGlobalTime()) / 2;
 
-
     // Calculate the charge deposit at a local position
     auto deposit_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(mid_pos));
     auto deposit_position_g4 = theTouchable->GetHistory()->GetTopTransform().TransformPoint(mid_pos);

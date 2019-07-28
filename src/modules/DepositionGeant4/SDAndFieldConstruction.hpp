@@ -16,7 +16,7 @@ namespace allpix {
     /**
      * @brief User hook to construct the sensitive detector and magnetic field.
      */
-    class SDAndFieldConstruction: public SensitiveDetectorAndFieldConstruction {
+    class SDAndFieldConstruction : public SensitiveDetectorAndFieldConstruction {
     public:
         SDAndFieldConstruction(DepositionGeant4Module* module, double fano_factor, double charge_creation_energy)
             : module_(module), fano_factor_(fano_factor), charge_creation_energy_(charge_creation_energy){};
@@ -25,6 +25,7 @@ namespace allpix {
          * @brief Constructs the SD and field.
          */
         virtual void ConstructSDandField() override;
+
     private:
         DepositionGeant4Module* module_;
         double fano_factor_;

@@ -1,6 +1,6 @@
 #include "SetTrackInfoUserHookG4.hpp"
-#include "TrackInfoG4.hpp"
 #include "DepositionGeant4Module.hpp"
+#include "TrackInfoG4.hpp"
 
 using namespace allpix;
 

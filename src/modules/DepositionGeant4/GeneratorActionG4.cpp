@@ -151,8 +151,9 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
                     throw InvalidValueError(config_, "particle_code", "particle code does not exist.");
                 }
             } else {
-                throw InvalidValueError(
-                    config_, "particle_type", "Given particle_type does not match particle_code. Please remove one of them.");
+                throw InvalidValueError(config_,
+                                        "particle_type",
+                                        "Given particle_type does not match particle_code. Please remove one of them.");
             }
         } else if(particle_type_.empty() && particle_code == 0) {
             throw InvalidValueError(config_, "particle_code", "Please set particle_code or particle_type.");
@@ -174,7 +175,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
 
         LOG(DEBUG) << "Using particle " << particle->GetParticleName() << " (ID " << particle->GetPDGEncoding() << ").";
 
-        if (particle) {
+        if(particle) {
             // Set global parameters of the source
             single_source->SetNumberOfParticles(1);
             single_source->SetParticleDefinition(particle);
@@ -193,7 +194,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
  * Called automatically for every event
  */
 void GeneratorActionG4::GeneratePrimaries(G4Event* event) {
-    if (initialize_ion_as_particle_) {
+    if(initialize_ion_as_particle_) {
         auto single_source = particle_source_->GetCurrentSource();
         G4ParticleDefinition* particle = nullptr;
 
