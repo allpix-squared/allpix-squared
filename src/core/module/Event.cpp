@@ -123,7 +123,8 @@ void Event::run(std::shared_ptr<Module>& module) {
 
     // Run module
     try {
-        module->run(with_context(module));
+        current_module_ = module;
+        module->run(this);
     } catch(const EndOfRunException& e) {
         // Terminate if the module threw the EndOfRun request exception:
         LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
