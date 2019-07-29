@@ -168,9 +168,9 @@ void Messenger::LocalMessenger::dispatchMessage(Module* source, std::shared_ptr<
 }
 
 bool Messenger::LocalMessenger::dispatchMessage(Module* source,
-                                                 const std::shared_ptr<BaseMessage>& message,
-                                                 const std::string& name,
-                                                 const std::string& id) {
+                                                const std::shared_ptr<BaseMessage>& message,
+                                                const std::string& name,
+                                                const std::string& id) {
     bool send = false;
 
     // Create type identifier from the typeid

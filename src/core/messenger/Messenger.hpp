@@ -183,9 +183,9 @@ namespace allpix {
 
             void dispatchMessage(Module* source, std::shared_ptr<BaseMessage> message, std::string name);
             bool dispatchMessage(Module* source,
-                                  const std::shared_ptr<BaseMessage>& message,
-                                  const std::string& name,
-                                  const std::string& id);
+                                 const std::shared_ptr<BaseMessage>& message,
+                                 const std::string& name,
+                                 const std::string& id);
 
             /**
              * @brief Check if a delegate has recieved its message
