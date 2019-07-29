@@ -82,11 +82,6 @@ void Event::handle_iomodule(const std::shared_ptr<Module>& module) {
     };
 }
 
-Event* Event::with_context(const std::shared_ptr<Module>& module) {
-    current_module_ = module.get();
-    return this;
-}
-
 /**
  * Runs a single module.
  * The run for a module is skipped if it isn't \ref Event::is_satisfied() "satisfied".
@@ -123,7 +118,7 @@ void Event::run(std::shared_ptr<Module>& module) {
 
     // Run module
     try {
-        current_module_ = module;
+        current_module_ = module.get();
         module->run(this);
     } catch(const EndOfRunException& e) {
         // Terminate if the module threw the EndOfRun request exception:
