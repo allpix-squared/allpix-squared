@@ -16,7 +16,7 @@ ThreadPool::ThreadPool(unsigned int num_threads,
                        std::function<void()> worker_init_function,
                        std::function<void()> worker_finalize_function,
                        std::condition_variable& master_condition)
-    : master_condition_(master_condition), worker_finalize_function_(worker_finalize_function) {
+    : master_condition_(master_condition), worker_finalize_function_(std::move(worker_finalize_function)) {
     // Create threads
     try {
         for(unsigned int i = 0u; i < num_threads; ++i) {
