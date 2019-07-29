@@ -74,7 +74,7 @@ void WorkerRunManager::InitializeGeometry() {
     kernel->WorkerDefineWorldVolume(worldVol, false);
     kernel->SetNumberOfParallelWorld(masterKernel->GetNumberOfParallelWorld());
     // Step3: Call user's ConstructSDandField()
-    MTRunManager* master_run_manager = static_cast<MTRunManager*>(G4MTRunManager::GetMasterRunManager());
+    auto master_run_manager = static_cast<MTRunManager*>(G4MTRunManager::GetMasterRunManager());
     SensitiveDetectorAndFieldConstruction* detector_construction = master_run_manager->GetSDAndFieldConstruction();
     if(detector_construction == nullptr) {
         G4Exception(
@@ -194,12 +194,10 @@ WorkerRunManager* WorkerRunManager::GetNewInstanceForThread() { // NOLINT
     // Set the detector and physics list to the worker thread. Share with master
     const G4VUserDetectorConstruction* detector = master_run_manager->GetUserDetectorConstruction();
 
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-    thread_run_manager->G4RunManager::SetUserInitialization(const_cast<G4VUserDetectorConstruction*>(detector));
+    thread_run_manager->G4RunManager::SetUserInitialization(const_cast<G4VUserDetectorConstruction*>(detector)); // NOLINT
 
     const G4VUserPhysicsList* physicslist = master_run_manager->GetUserPhysicsList();
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-    thread_run_manager->SetUserInitialization(const_cast<G4VUserPhysicsList*>(physicslist));
+    thread_run_manager->SetUserInitialization(const_cast<G4VUserPhysicsList*>(physicslist)); // NOLINT
 
     // Step-4: Initialize worker run manager
     if(master_run_manager->GetUserActionInitialization() != nullptr) {

@@ -19,7 +19,7 @@ namespace allpix {
         /**
          * @brief Constructs the sensitive detectors and field for each worker.
          */
-        virtual void ConstructSDandField() {}
+        virtual void ConstructSDandField() {} // NOLINT
     };
 } // namespace allpix
 
