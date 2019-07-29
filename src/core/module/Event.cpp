@@ -34,10 +34,9 @@ Event::Event(ModuleList modules,
              const unsigned int event_num,
              Messenger& global_messenger,
              std::atomic<bool>& terminate,
-             std::condition_variable& master_condition,
              std::map<Module*, long double>& module_execution_time,
              std::mt19937_64& seeder)
-    : number(event_num), modules_(std::move(modules)), terminate_(terminate), master_condition_(master_condition),
+    : number(event_num), modules_(std::move(modules)), terminate_(terminate),
       module_execution_time_(module_execution_time), messenger_(global_messenger) {
     random_engine_.seed(seeder());
 #ifndef NDEBUG
@@ -124,8 +123,6 @@ void Event::run(std::shared_ptr<Module>& module) {
         // Terminate if the module threw the EndOfRun request exception:
         LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
         this->terminate_ = true;
-        // Notify master thread that we wish to terminate
-        master_condition_.notify_one();
     }
 
     // Reset logging

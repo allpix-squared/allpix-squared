@@ -615,9 +615,8 @@ void ModuleManager::run(std::mt19937_64& seeder) {
         }
     };
 
-    std::condition_variable master_condition;
     std::shared_ptr<ThreadPool> thread_pool =
-        std::make_unique<ThreadPool>(threads_num, init_function, finialize_function, master_condition);
+        std::make_unique<ThreadPool>(threads_num, init_function, finialize_function);
 
     std::atomic<unsigned int> finished_events{0};
 
@@ -637,7 +636,7 @@ void ModuleManager::run(std::mt19937_64& seeder) {
         // Create an event, initialize it, and submit it wrapped in a lambda to the thread pool
         // TODO [doc] make this a unique pointer
         auto event = std::make_shared<ConcreteEvent>(
-            modules_, i, *messenger_, terminate_, master_condition, module_execution_time_, seeder);
+            modules_, i, *messenger_, terminate_, module_execution_time_, seeder);
 
         auto event_function = [ event = std::move(event), number_of_events, event_num = i, &finished_events ]() mutable {
             LOG(STATUS) << "Running event " << event_num << " of " << number_of_events;

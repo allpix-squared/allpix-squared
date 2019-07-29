@@ -89,12 +89,10 @@ namespace allpix {
          * @param num_threads Number of threads in the pool
          * @param worker_init_function Function run by all the workers to initialize
          * @param worker_finalize_function Function run by all the workers to cleanup
-         * @param master_condition Condition to notify when modifying the event queue
          */
         explicit ThreadPool(unsigned int num_threads,
                             std::function<void()> worker_init_function,
-                            std::function<void()> worker_finalize_function,
-                            std::condition_variable& master_condition);
+                            std::function<void()> worker_finalize_function);
 
         /// @{
         /**
@@ -158,7 +156,6 @@ namespace allpix {
 
         std::atomic_flag has_exception_;
         std::exception_ptr exception_ptr_{nullptr};
-        std::condition_variable& master_condition_;
 
         std::function<void()> worker_finalize_function_;
     };

@@ -14,9 +14,8 @@ using namespace allpix;
  */
 ThreadPool::ThreadPool(unsigned int num_threads,
                        std::function<void()> worker_init_function,
-                       std::function<void()> worker_finalize_function,
-                       std::condition_variable& master_condition)
-    : master_condition_(master_condition), worker_finalize_function_(std::move(worker_finalize_function)) {
+                       std::function<void()> worker_finalize_function)
+    : worker_finalize_function_(std::move(worker_finalize_function)) {
     // Create threads
     try {
         for(unsigned int i = 0u; i < num_threads; ++i) {
@@ -71,13 +70,11 @@ void ThreadPool::worker(const std::function<void()>& init_function) {
     // Increase the atomic run count and notify the master thread that we popped an event
     auto increase_run_cnt_func = [this]() {
         ++run_cnt_;
-        master_condition_.notify_one();
     };
 
     while(!done_) {
         Task task{nullptr};
 
-        master_condition_.notify_one();
         if(event_queue_.pop(task, true, increase_run_cnt_func)) {
             // Try to run the task
             try {
@@ -92,8 +89,6 @@ void ThreadPool::worker(const std::function<void()>& init_function) {
                     exception_ptr_ = std::current_exception();
                     // Invalidate the queue to terminate other threads
                     event_queue_.invalidate();
-                    // Notify master thread that an exception has thrown
-                    master_condition_.notify_one();
                 }
             }
         }
