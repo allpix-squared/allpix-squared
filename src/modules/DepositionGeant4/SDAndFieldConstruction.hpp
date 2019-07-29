@@ -24,7 +24,7 @@ namespace allpix {
         /**
          * @brief Constructs the SD and field.
          */
-        virtual void ConstructSDandField() override;
+        void ConstructSDandField() override;
 
     private:
         DepositionGeant4Module* module_;
