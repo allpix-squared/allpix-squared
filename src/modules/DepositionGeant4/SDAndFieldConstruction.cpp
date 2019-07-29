@@ -8,23 +8,7 @@
  */
 
 #include "SDAndFieldConstruction.hpp"
-
-#include <G4EmParameters.hh>
-#include <G4HadronicProcessStore.hh>
-#include <G4LogicalVolume.hh>
-#include <G4PhysListFactory.hh>
-#include <G4RadioactiveDecayPhysics.hh>
-#include <G4StepLimiterPhysics.hh>
-#include <G4UImanager.hh>
-#include <G4UserLimits.hh>
-
-#include <G4FieldManager.hh>
-#include <G4TransportationManager.hh>
-#include <G4UniformMagField.hh>
-
 #include "DepositionGeant4Module.hpp"
-#include "core/config/exceptions.h"
-#include "core/geometry/GeometryManager.hpp"
 
 using namespace allpix;
 
