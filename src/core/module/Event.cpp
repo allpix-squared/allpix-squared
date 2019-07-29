@@ -25,21 +25,16 @@ using namespace allpix;
 std::mutex Event::stats_mutex_;
 Event::IOOrderLock Event::reader_lock_;
 Event::IOOrderLock Event::writer_lock_;
+EventContext* Event::context_ = nullptr;
 
 #ifndef NDEBUG
 std::set<unsigned int> Event::unique_ids_;
 #endif
 
-Event::Event(ModuleList modules,
-             const unsigned int event_num,
-             Messenger& global_messenger,
-             std::atomic<bool>& terminate,
-             std::map<Module*, long double>& module_execution_time,
-             std::mt19937_64& seeder)
-    : number(event_num), modules_(std::move(modules)), terminate_(terminate),
-      module_execution_time_(module_execution_time), messenger_(global_messenger) {
-    random_engine_.seed(seeder());
+Event::Event(const unsigned int event_num, std::mt19937_64& random_engine)
+    : number(event_num), random_engine_(random_engine) {
 #ifndef NDEBUG
+    assert(context_ != nullptr);
     // Ensure that the ID is unique
     assert(unique_ids_.find(event_num) == unique_ids_.end());
     unique_ids_.insert(event_num);
@@ -94,7 +89,7 @@ void Event::run(std::shared_ptr<Module>& module) {
                                       << "]";
 
     // Check if the module is satisfied to run
-    if(!module->check_delegates(&messenger_)) {
+    if(!module->check_delegates(&context_->messenger_)) {
         LOG(TRACE) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
                    << ", skipping module!";
         return;
@@ -122,7 +117,7 @@ void Event::run(std::shared_ptr<Module>& module) {
     } catch(const EndOfRunException& e) {
         // Terminate if the module threw the EndOfRun request exception:
         LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
-        this->terminate_ = true;
+        context_->terminate_ = true;
     }
 
     // Reset logging
@@ -133,13 +128,13 @@ void Event::run(std::shared_ptr<Module>& module) {
     // Update execution time
     auto end = std::chrono::steady_clock::now();
     std::lock_guard<std::mutex> stat_lock{stats_mutex_};
-    module_execution_time_[module.get()] += static_cast<std::chrono::duration<long double>>(end - start).count();
+    context_->module_execution_time_[module.get()] += static_cast<std::chrono::duration<long double>>(end - start).count();
 }
 
 void Event::run() {
-    messenger_.reset();
+    context_->messenger_.reset();
 
-    for(auto& module : modules_) {
+    for(auto& module : context_->modules_) {
         run(module);
     }
 

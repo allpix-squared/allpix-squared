@@ -624,6 +624,10 @@ void ModuleManager::run(std::mt19937_64& seeder) {
     global_config.setDefault<unsigned int>("number_of_events", 1u);
     auto number_of_events = global_config.get<unsigned int>("number_of_events");
 
+    // Wrap all objects shared by all events
+    EventContext event_context(*messenger_, modules_, module_execution_time_, terminate_);
+    Event::setEventContext(&event_context);
+
     // Push all events to the thread pool
     for(unsigned int i = 1; i <= number_of_events; i++) {
         if(terminate_) {
@@ -633,14 +637,18 @@ void ModuleManager::run(std::mt19937_64& seeder) {
             break;
         }
 
-        // Create an event, initialize it, and submit it wrapped in a lambda to the thread pool
-        // TODO [doc] make this a unique pointer
-        auto event = std::make_shared<ConcreteEvent>(
-            modules_, i, *messenger_, terminate_, module_execution_time_, seeder);
+        // Get a new seed for the new event
+        uint64_t seed = seeder();
 
-        auto event_function = [ event = std::move(event), number_of_events, event_num = i, &finished_events ]() mutable {
+        auto event_function = [ number_of_events, event_num = i, event_seed = seed, &finished_events ]() mutable {
+            static thread_local std::mt19937_64 random_engine;
+
+            // ReSeed the RNG for the new event
+            random_engine.seed(event_seed);
+            
             LOG(STATUS) << "Running event " << event_num << " of " << number_of_events;
-            event->run();
+            Event event(event_num, random_engine);
+            event.run();
             finished_events++;
             LOG(STATUS) << "Finished event " << event_num;
         };
