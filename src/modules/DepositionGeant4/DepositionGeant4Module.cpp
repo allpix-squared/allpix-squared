@@ -53,7 +53,7 @@ thread_local std::vector<SensitiveDetectorActionG4*> DepositionGeant4Module::sen
  * Includes the particle source point to the geometry using \ref GeometryManager::addPoint.
  */
 DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
-    : Geant4Module(config), messenger_(messenger), geo_manager_(geo_manager), run_manager_g4_(nullptr) {
+    : Module(config), messenger_(messenger), geo_manager_(geo_manager), run_manager_g4_(nullptr) {
     // Create user limits for maximum step length in the sensor
     user_limits_ = std::make_unique<G4UserLimits>(config_.get<double>("max_step_length", Units::get(1.0, "um")));
 

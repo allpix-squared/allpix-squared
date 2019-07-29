@@ -29,7 +29,7 @@ namespace allpix {
      * detector, building it from the internal detector model. The geometry that is eventually constructed is used to
      * simulate the charge deposition in the \ref DepositionGeant4Module.
      */
-    class GeometryBuilderGeant4Module : public Geant4Module {
+    class GeometryBuilderGeant4Module : public Module {
     public:
         /**
          * @brief Constructor for this unique module
