@@ -21,9 +21,9 @@ namespace allpix {
      */
     struct event_context {
         event_context(Messenger& messenger,
-                     ModuleList modules,
-                     std::map<Module*, long double>& module_execution_time,
-                     std::atomic<bool>& terminate)
+                      ModuleList modules,
+                      std::map<Module*, long double>& module_execution_time,
+                      std::atomic<bool>& terminate)
             : messenger_(messenger), modules_(std::move(modules)), module_execution_time_(module_execution_time),
               terminate_(terminate) {}
 
