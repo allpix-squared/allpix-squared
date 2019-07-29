@@ -626,17 +626,7 @@ void ModuleManager::run(std::mt19937_64& seeder) {
     auto number_of_events = global_config.get<unsigned int>("number_of_events");
 
     // Push all events to the thread pool
-    std::mutex mutex;
-    std::unique_lock<std::mutex> lock{mutex};
     for(unsigned int i = 1; i <= number_of_events; i++) {
-        // Don't initialize all events directly. That would take up too much memory.
-        // 4 x thread_num should give us a sufficient buffer (meaning that workers should never end up idle).
-        // TODO [doc] don't pseudo-busy loop here
-        master_condition.wait_for(lock, 50ms, [&]() {
-            thread_pool->check_exception();
-            return thread_pool->queue_size() < threads_num * 4 || terminate_;
-        });
-
         if(terminate_) {
             LOG(INFO) << "Interrupting prematurely because of request";
             thread_pool->destroy();
@@ -656,6 +646,7 @@ void ModuleManager::run(std::mt19937_64& seeder) {
             LOG(STATUS) << "Finished event " << event_num;
         };
         thread_pool->submit_event_function(std::move(event_function));
+        thread_pool->check_exception();
     }
 
     LOG(STATUS) << "All events have been initialized. Waiting for thread pool to finish...";
