@@ -15,7 +15,30 @@
 #include "../messenger/Messenger.hpp"
 
 namespace allpix {
-    struct ConcreteEvent;
+
+    /**
+     * @brief Wrapper for the objects shared and used by all event objects.
+     */
+    struct EventContext {
+        EventContext(Messenger& messenger,
+                     ModuleList modules,
+                     std::map<Module*, long double>& module_execution_time,
+                     std::atomic<bool>& terminate)
+            : messenger_(messenger), modules_(modules), module_execution_time_(module_execution_time),
+              terminate_(terminate) {}
+
+        // Global messenger object
+        Messenger& messenger_;
+
+        // List of modules that constitutes this event
+        ModuleList modules_;
+
+        // Storage of module run-time statistics
+        std::map<Module*, long double>& module_execution_time_;
+
+        // Simulation-global termination flag
+        std::atomic<bool>& terminate_;
+    };
 
     /**
      * @ingroup Managers
@@ -25,7 +48,7 @@ namespace allpix {
      * Exposes an API for usage by the modules' \ref Module::run() "run functions".
      */
     class Event {
-        friend struct ConcreteEvent;
+        friend class ModuleManager;
 
     public:
         /// @{
@@ -53,21 +76,23 @@ namespace allpix {
          * parameter)
          */
         template <typename T> void dispatchMessage(std::shared_ptr<T> message, const std::string& name = "-") {
-            return messenger_.dispatchMessage(current_module_, message, name);
+            return context_->messenger_.dispatchMessage(current_module_, message, name);
         }
 
         /**
          * @brief Fetches a single message of specified type meant for the calling module
          * @return Shared pointer to message
          */
-        template <typename T> std::shared_ptr<T> fetchMessage() { return messenger_.fetchMessage<T>(current_module_); }
+        template <typename T> std::shared_ptr<T> fetchMessage() {
+            return context_->messenger_.fetchMessage<T>(current_module_);
+        }
 
         /**
          * @brief Fetches multiple messages of specified type meant for the calling module
          * @return Vector of shared pointers to messages
          */
         template <typename T> std::vector<std::shared_ptr<T>> fetchMultiMessage() {
-            return messenger_.fetchMultiMessage<T>(current_module_);
+            return context_->messenger_.fetchMultiMessage<T>(current_module_);
         }
 
         /**
@@ -75,7 +100,7 @@ namespace allpix {
          * @return Vector of pairs containing shared pointer to and name of message
          */
         std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> fetchFilteredMessages() {
-            return messenger_.fetchFilteredMessages(current_module_);
+            return context_->messenger_.fetchFilteredMessages(current_module_);
         }
 
         /**
@@ -110,18 +135,10 @@ namespace allpix {
 
         /**
          * @brief Construct an Event
-         * @param modules The modules that constitutes the event
          * @param event_num The unique event identifier
-         * @param terminate Reference to simulation-global termination flag
-         * @param module_execution_time Map to store module statistics
-         * @param seeder Seeder to seed the random engine
+         * @param random_engine Random generator for this event
          */
-        explicit Event(ModuleList modules,
-                       const unsigned int event_num,
-                       Messenger& global_messenger,
-                       std::atomic<bool>& terminate,
-                       std::map<Module*, long double>& module_execution_time,
-                       std::mt19937_64& seeder);
+        explicit Event(const unsigned int event_num, std::mt19937_64& random_engine);
 
         /**
          * @brief Use default destructor
@@ -152,47 +169,28 @@ namespace allpix {
          */
         void handle_iomodule(const std::shared_ptr<Module>& module);
 
-        // List of modules that constitutes this event
-        ModuleList modules_;
+        /**
+         * @brief Sets the common objects used by all events.
+         */
+        static void setEventContext(EventContext* context) { context_ = context; }
 
-        // Simulation-global termination flag
-        std::atomic<bool>& terminate_;
-
-        // Storage of module run-time statistics
         static std::mutex stats_mutex_;
-        std::map<Module*, long double>& module_execution_time_;
-
-        // Random engine for usage by modules
-        std::mt19937_64 random_engine_;
 
         // For executing readers/writers in order of event number
         static IOOrderLock reader_lock_;
         static IOOrderLock writer_lock_;
         bool previous_was_reader_{false};
 
-        // For module messages
-        Messenger& messenger_;
+        std::mt19937_64& random_engine_;
+
         Module* current_module_;
+
+        // Shared objects between all events
+        static EventContext* context_;
 
 #ifndef NDEBUG
         static std::set<unsigned int> unique_ids_;
 #endif
-    };
-
-    /**
-     * @brief Wrapper for Event for compatibility with smart pointers
-     *
-     * This wrapper allows the Event's constructor's and destructor's privacy while also enforcing \ref Module::run()
-     * "modules' run functions" to not overwrite the passed Event pointer.
-     */
-    struct ConcreteEvent : public Event {
-        friend class ModuleManager;
-
-    public:
-        template <typename... Params> explicit ConcreteEvent(Params&&... params) : Event(std::forward<Params>(params)...) {}
-
-    private:
-        void run() { Event::run(); }
     };
 
 } // namespace allpix
