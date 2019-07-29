@@ -25,7 +25,7 @@ using namespace allpix;
 std::mutex Event::stats_mutex_;
 Event::IOOrderLock Event::reader_lock_;
 Event::IOOrderLock Event::writer_lock_;
-EventContext* Event::context_ = nullptr;
+event_context* Event::context_ = nullptr;
 
 #ifndef NDEBUG
 std::set<unsigned int> Event::unique_ids_;

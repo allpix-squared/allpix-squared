@@ -624,8 +624,8 @@ void ModuleManager::run(std::mt19937_64& seeder) {
     auto number_of_events = global_config.get<unsigned int>("number_of_events");
 
     // Wrap all objects shared by all events
-    EventContext event_context(*messenger_, modules_, module_execution_time_, terminate_);
-    Event::setEventContext(&event_context);
+    event_context context(*messenger_, modules_, module_execution_time_, terminate_);
+    Event::setEventContext(&context);
 
     // Push all events to the thread pool
     for(unsigned int i = 1; i <= number_of_events; i++) {
@@ -651,7 +651,7 @@ void ModuleManager::run(std::mt19937_64& seeder) {
             finished_events++;
             LOG(STATUS) << "Finished event " << event_num;
         };
-        thread_pool->submit_event_function(std::move(event_function));
+        thread_pool->submit_event_function(event_function);
         thread_pool->check_exception();
     }
 

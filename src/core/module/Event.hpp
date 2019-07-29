@@ -19,12 +19,12 @@ namespace allpix {
     /**
      * @brief Wrapper for the objects shared and used by all event objects.
      */
-    struct EventContext {
-        EventContext(Messenger& messenger,
+    struct event_context {
+        event_context(Messenger& messenger,
                      ModuleList modules,
                      std::map<Module*, long double>& module_execution_time,
                      std::atomic<bool>& terminate)
-            : messenger_(messenger), modules_(modules), module_execution_time_(module_execution_time),
+            : messenger_(messenger), modules_(std::move(modules)), module_execution_time_(module_execution_time),
               terminate_(terminate) {}
 
         // Global messenger object
@@ -172,7 +172,7 @@ namespace allpix {
         /**
          * @brief Sets the common objects used by all events.
          */
-        static void setEventContext(EventContext* context) { context_ = context; }
+        static void setEventContext(event_context* context) { context_ = context; }
 
         static std::mutex stats_mutex_;
 
@@ -186,7 +186,7 @@ namespace allpix {
         Module* current_module_;
 
         // Shared objects between all events
-        static EventContext* context_;
+        static event_context* context_;
 
 #ifndef NDEBUG
         static std::set<unsigned int> unique_ids_;
