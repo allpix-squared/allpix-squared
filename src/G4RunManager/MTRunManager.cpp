@@ -18,8 +18,7 @@ namespace {
 
 G4ThreadLocal WorkerRunManager* MTRunManager::worker_run_manager_ = nullptr;
 
-// NOLINTNEXTLINE(readability-identifier-naming)
-void MTRunManager::Run(G4int allpix_event, G4int n_event) {
+void MTRunManager::Run(G4int allpix_event, G4int n_event) { // NOLINT
     {
         G4AutoLock l(&worker_seed_mutex);
         // Draw the nessecary seeds so that each event will be seeded
@@ -61,16 +60,14 @@ void MTRunManager::Initialize() {
     }
 }
 
-// NOLINTNEXTLINE(readability-identifier-naming)
-void MTRunManager::InitializeForThread() {
+void MTRunManager::InitializeForThread() { // NOLINT
     if(worker_run_manager_ == nullptr) {
         // construct a new thread worker
         worker_run_manager_ = WorkerRunManager::GetNewInstanceForThread();
     }
 }
 
-// NOLINTNEXTLINE(readability-identifier-naming)
-void MTRunManager::TerminateForThread() {
+void MTRunManager::TerminateForThread() { // NOLINT
     // thread local instance
     if(worker_run_manager_ != nullptr) {
         worker_run_manager_->RunTermination();

@@ -37,8 +37,7 @@ namespace allpix {
          * Executes the specified number of events. Reimplemented to execute UI commands and maybe
          * reinitialize workspace if there are changes between multiple calls.
          */
-        // NOLINTNEXTLINE(google-default-arguments)
-        void BeamOn(G4int n_event, const char* macroFile = nullptr, G4int n_select = -1) override;
+        void BeamOn(G4int n_event, const char* macroFile = nullptr, G4int n_select = -1) override; // NOLINT
 
         void InitializeGeometry() override;
 
@@ -47,7 +46,7 @@ namespace allpix {
          *
          * Creates a new worker and initialize it to be used by the calling thread.
          */
-        static WorkerRunManager* GetNewInstanceForThread();
+        static WorkerRunManager* GetNewInstanceForThread(); // NOLINT
 
     protected:
         WorkerRunManager() = default;
@@ -59,7 +58,7 @@ namespace allpix {
          * Run the event loop. Everything is the same as base implementation except that we keep
          * the seedsQueue since the master manager has already pushed the seeds in it.
          */
-        void DoEventLoop(G4int n_event, const char* macroFile = nullptr, G4int n_select = -1) override;
+        void DoEventLoop(G4int n_event, const char* macroFile = nullptr, G4int n_select = -1) override; // NOLINT
 
         /**
          * @brief Previously used to communicate work with master manager.

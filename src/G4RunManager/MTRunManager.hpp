@@ -44,8 +44,7 @@ namespace allpix {
          * The worker will be initialized with a new set of seeds to be used specifically for this event run such
          * that events are seeded in the order of creation which ensures that results can be reproduced.
          */
-        // NOLINTNEXTLINE(readability-identifier-naming)
-        void Run(G4int allpix_event, G4int n_event);
+        void Run(G4int allpix_event, G4int n_event); // NOLINT
 
         /**
          * @brief Initialize the run manager to be ready for run.
@@ -63,8 +62,7 @@ namespace allpix {
          * that intends to call \ref Run method. Only the first call by a given thread will actually initialize the
          * workers and further calls by the same thread will be ignored.
          */
-        // NOLINTNEXTLINE(readability-identifier-naming)
-        void InitializeForThread();
+        void InitializeForThread(); // NOLINT
 
         /**
          * @brief Cleanup worker specific data stored as thread local.
@@ -72,20 +70,17 @@ namespace allpix {
          * Cleanup all thread local objects allocated previously by the calling thread. Each thread that ever used
          * this class must call this method to ensure correct termination.
          */
-        // NOLINTNEXTLINE(readability-identifier-naming)
-        void TerminateForThread();
+        void TerminateForThread(); // NOLINT
 
         /**
          * @brief Returns the user's sensitive detector construction.
          */
-        // NOLINTNEXTLINE(readability-identifier-naming)
-        SensitiveDetectorAndFieldConstruction* GetSDAndFieldConstruction() const { return sd_field_construction_; }
+        SensitiveDetectorAndFieldConstruction* GetSDAndFieldConstruction() const { return sd_field_construction_; } // NOLINT
 
         /**
          * @brief Sets the user's sensitive detector construction.
          */
-        // NOLINTNEXTLINE(readability-identifier-naming)
-        void SetSDAndFieldConstruction(SensitiveDetectorAndFieldConstruction* sd_field_construction) {
+        void SetSDAndFieldConstruction(SensitiveDetectorAndFieldConstruction* sd_field_construction) { // NOLINT
             sd_field_construction_ = sd_field_construction;
         }
 
@@ -124,7 +119,7 @@ namespace allpix {
          * Worker will ask us to setup the event. This includes figuring out the event number that worker will do
          * and setting up the seeds to ensure results can be reproduced. It will now do nothing.
          */
-        G4bool SetUpAnEvent(G4Event*, long&, long&, long&, G4bool) override { return false; }
+        G4bool SetUpAnEvent(G4Event*, long&, long&, long&, G4bool) override { return false; } // NOLINT
 
         /**
          * @brief Previously used by the worker to initialize N event.

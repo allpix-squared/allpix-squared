@@ -41,8 +41,7 @@ WorkerRunManager::~WorkerRunManager() {
     }
 }
 
-// NOLINTNEXTLINE(google-default-arguments)
-void WorkerRunManager::BeamOn(G4int n_event, const char* macroFile, G4int n_select) {
+void WorkerRunManager::BeamOn(G4int n_event, const char* macroFile, G4int n_select) { // NOLINT
     G4MTRunManager* mrm = G4MTRunManager::GetMasterRunManager();
 
     // G4Comment: Execute UI commands stored in the master UI manager
@@ -87,7 +86,7 @@ void WorkerRunManager::InitializeGeometry() {
     geometryInitialized = true;
 }
 
-void WorkerRunManager::DoEventLoop(G4int n_event, const char* macroFile, G4int n_select) {
+void WorkerRunManager::DoEventLoop(G4int n_event, const char* macroFile, G4int n_select) { // NOLINT
     if(userPrimaryGeneratorAction == nullptr) {
         G4Exception(
             "WorkerRunManager::GenerateEvent()", "Run0032", FatalException, "G4VUserPrimaryGeneratorAction is not defined!");
@@ -155,7 +154,7 @@ G4Event* WorkerRunManager::GenerateEvent(G4int i_event) {
     return anEvent;
 }
 
-WorkerRunManager* WorkerRunManager::GetNewInstanceForThread() {
+WorkerRunManager* WorkerRunManager::GetNewInstanceForThread() { // NOLINT
     WorkerRunManager* thread_run_manager = nullptr;
     G4MTRunManager* master_run_manager = G4MTRunManager::GetMasterRunManager();
 

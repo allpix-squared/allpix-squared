@@ -28,13 +28,13 @@ namespace allpix {
     class RunManager : public G4RunManager {
     public:
         RunManager() = default;
-        virtual ~RunManager() = default;
+        ~RunManager() override = default;
 
         /**
          * @brief Wrapper around G4RunManager BeamOn that seeds the RNG before actually calling
          * BeamOn
          */
-        virtual void BeamOn(G4int n_event, const char* macro_file, G4int n_select) override;
+        void BeamOn(G4int n_event, const char* macro_file, G4int n_select) override; // NOLINT
 
     private:
         static constexpr G4int number_seeds_per_event_{2};

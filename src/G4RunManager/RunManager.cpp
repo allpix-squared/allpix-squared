@@ -11,7 +11,7 @@
 
 using namespace allpix;
 
-void RunManager::BeamOn(G4int n_event, const char* macro_file, G4int n_select) {
+void RunManager::BeamOn(G4int n_event, const char* macro_file, G4int n_select) { // NOLINT
     if(!fakeRun) {
         // Create a new engine with the same type as the default engine
         if(event_random_engine_ == nullptr) {
