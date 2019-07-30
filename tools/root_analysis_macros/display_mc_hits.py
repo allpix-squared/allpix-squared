@@ -1,3 +1,8 @@
+# Create Plots to visualize MC Data from Allpix Squared
+
+# ===TO DO== #
+# Create Batch processing for multiple detectors
+
 # ROOT imports
 import ROOT
 from ROOT import TFile, gDirectory, gSystem, TClass
@@ -25,11 +30,19 @@ parser.add_argument("-d", metavar='detector', required=True,
                     help="specify your detector name (generally detector1, dut, ...) ")
 parser.add_argument("-f", metavar='rootfile', required=True, help="specify path to the rootfile to be processed ")
 
-parser.add_argument("-a", required=False, help="Produce All Graphs", action="store_true")
+parser.add_argument("-a", "-all", required=False, help="Produce All Graphs", action="store_true")
 
 parser.add_argument("-pdf", help="Create PDF rather than pop up (Useful for Docker)", action="store_true")
 
 parser.add_argument("-v", "-verbose", help="Toggle verbose settings", action="store_true")
+
+parser.add_argument("-onedim", "-1d", help="Print all one dimensional plots (Histograms)", action="store_true")
+
+parser.add_argument("-twodim", "-2d", help="Print all two dimensional plots (Heatmaps)", action="store_true")
+
+parser.add_argument("-threedim", "-3d", help="Print all Three dimensional plots", action="store_true")
+
+parser.add_argument("-g", "-gaussian", "-norm", help="Print all Three dimensional plots", action="store_true")
 
 
 args = parser.parse_args()
@@ -37,30 +50,44 @@ args = parser.parse_args()
 root_file_name = (str(args.f))
 detector_name = (str(args.d))
 print_all = args.a
+print_1d = args.onedim
+print_2d = args.twodim
+print_3d = args.threedim
+print_gauss = args.g
 save_pdf = args.pdf
 verbose = args.v
 outDir = os.path.dirname(root_file_name)
 
+if not (print_1d or print_2d or print_3d or print_gauss):
+    print_og = True
+else:
+    print_og = False
+
 if save_pdf:
     matplotlib.use('pdf')
 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt # These imports must be called after the use pdf argument
 from matplotlib import pyplot
 from matplotlib.colors import LogNorm
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from matplotlib.colors import LinearSegmentedColormap
 
-
-if args.l is not None:
+if args.l is not None:  # Try to find Allpix Library
     lib_file_name = (str(args.l))
     if (not os.path.isfile(lib_file_name)):
         print("WARNING: ", lib_file_name, " does not exist, exiting")
         exit(1)
-elif os.path.isfile(path.abspath(path.join(__file__ ,"../.."))+"/opt/allpix-squared/lib/libAllpixObjects.so"): # For native installs
-    lib_file_name = path.abspath(path.join(__file__, "../..")) + "/opt/allpix-squared/lib/libAllpixObjects.so"
-elif os.path.isfile("/opt/allpix-squared/lib/libAllpixObjects.so"): # For Docker installs
-    lib_file_name = "/opt/allpix-squared/lib/libAllpixObjects.so"
+
+elif os.path.isfile(path.abspath(path.join(__file__ ,"..","..","opt","allpix-squared","lib","libAllpixObjects.so"))): # For native installs
+    lib_file_name = path.abspath(path.join(__file__ ,"..","..","opt","allpix-squared","lib","libAllpixObjects.so"))
+
+elif os.path.isfile(path.join(path.sep, "opt","allpix-squared","lib","libAllpixObjects.so")): # For Docker installs
+    lib_file_name = path.join(path.sep, "opt","allpix-squared","lib","libAllpixObjects.so")
+
+else:
+    print("WARNING: No Allpix Objects Library found, exitting")
+    exit(1)
 
 
 if (not os.path.isfile(lib_file_name)):
@@ -80,7 +107,7 @@ PixelCharge = rootfile.Get('PixelCharge')
 PropCharge = rootfile.Get('PropagatedCharge')
 PixelHit = rootfile.Get('PixelHit')
 
-# example of python dictionnaries to fill
+# example of python dictionaries to fill
 mc_global_endpoints = {'x': [], 'y': [], 'z': []}
 mc_local_endpoints = {'x': [], 'y': [], 'z': []}
 pixel_hit = {'x': [], 'y': [], 'signal': []}
@@ -152,57 +179,57 @@ print(" ----- processed events (pixelhit):" + str(PixelHit.GetEntries()) + " emp
 
 print("Plotting...")
 
-
 # plot pixel collected charge versus MC parcticle endpoint coordinates
-mc_hit_histogram = plt.figure(figsize=(11, 7))
-H2, xedges, yedges, binnmmber = stats.binned_statistic_2d(mc_local_endpoints['x'], mc_local_endpoints['y'], values=pixel_hit['signal'], statistic='mean', bins=[100, 100])
-XX, YY = np.meshgrid(xedges, yedges)
-Hm = ma.masked_where(np.isnan(H2), H2)
-plt.pcolormesh(XX, YY, Hm, cmap="inferno")
-plt.ylabel("pixel y [mm]")
-plt.xlabel("pixel x [mm]")
-cbar = plt.colorbar(pad=.015, aspect=20)
-cbar.set_label("hit signal")
-if save_pdf:  mc_hit_histogram.savefig(outDir + "/GlobalHeatMap.pdf", bbox_inches='tight')
+if print_all or print_og or print_2d:
+    mc_hit_histogram = plt.figure(figsize=(11, 7))
+    H2, xedges, yedges, binnmmber = stats.binned_statistic_2d(mc_local_endpoints['x'], mc_local_endpoints['y'], values=pixel_hit['signal'], statistic='mean', bins=[100, 100])
+    XX, YY = np.meshgrid(xedges, yedges)
+    Hm = ma.masked_where(np.isnan(H2), H2)
+    plt.pcolormesh(XX, YY, Hm, cmap="inferno")
+    plt.ylabel("pixel y [mm]")
+    plt.xlabel("pixel x [mm]")
+    cbar = plt.colorbar(pad=.015, aspect=20)
+    cbar.set_label("hit signal")
+    if save_pdf:  mc_hit_histogram.savefig(path.join(outDir , "GlobalHeatMap.pdf"), bbox_inches='tight')
 
+if print_all or print_og or print_2d:
+    mc_hit_histogram_z = plt.figure(figsize=(11, 7))
+    H2, xedges, yedges, binnmmber = stats.binned_statistic_2d(mc_local_endpoints['x'], mc_local_endpoints['z'],
+                                                              values=pixel_hit['signal'], statistic='mean', bins=[100, 100])
+    XX, YY = np.meshgrid(xedges, yedges)
+    Hm = ma.masked_where(np.isnan(H2), H2)
+    plt.pcolormesh(XX, YY, Hm.T, cmap="inferno")
+    plt.ylabel("pixel z [mm]")
+    plt.xlabel("pixel x [mm]")
+    cbar = plt.colorbar(pad=.015, aspect=20)
+    cbar.set_label("hit signal ")
+    if save_pdf: mc_hit_histogram_z.savefig(path.join(outDir , "Z_Hist.pdf"), bbox_inches='tight')
 
-mc_hit_histogram_z = plt.figure(figsize=(11, 7))
-H2, xedges, yedges, binnmmber = stats.binned_statistic_2d(mc_local_endpoints['x'], mc_local_endpoints['z'],
-                                                          values=pixel_hit['signal'], statistic='mean', bins=[100, 100])
-XX, YY = np.meshgrid(xedges, yedges)
-Hm = ma.masked_where(np.isnan(H2), H2)
-plt.pcolormesh(XX, YY, Hm.T, cmap="inferno")
-plt.ylabel("pixel z [mm]")
-plt.xlabel("pixel x [mm]")
-cbar = plt.colorbar(pad=.015, aspect=20)
-cbar.set_label("hit signal ")
-if save_pdf: mc_hit_histogram_z.savefig(outDir + "/Z_Hist.pdf", bbox_inches='tight')
+if print_all or print_og:
+    figMC_z = plt.figure()
+    plt.hist(mc_local_endpoints['z'], 100)
+    plt.title("MC global end point z coordinate")
+    plt.xlabel("z_global [mm]")
 
-figMC_z = plt.figure()
-plt.hist(mc_local_endpoints['z'], 100)
-plt.title("MC global end point z coordinate")
-plt.xlabel("z_global [mm]")
+    figMC_z_log = plt.figure()
+    plt.hist(mc_global_endpoints['x'], 100)
+    plt.title("MC global end point z coordinate")
+    plt.xlabel("z_global [mm]")
+    plt.yscale('log')
+    if save_pdf: figMC_z_log.savefig(path.join(outDir , "ZLog_Hist.pdf"), bbox_inches='tight')
 
-figMC_z_log = plt.figure()
-plt.hist(mc_global_endpoints['x'], 100)
-plt.title("MC global end point z coordinate")
-plt.xlabel("z_global [mm]")
-plt.yscale('log')
-
-if save_pdf: figMC_z_log.savefig(outDir + "/ZLog_Hist.pdf", bbox_inches='tight')
-
-if print_all:
-    # X Pixel Hit (Added)
+# X Pixel Hit
+if print_all or print_1d:
     plt.clf()
     figMC_x = plt.figure()
     plt.hist(pixel_hit['x'], len(np.unique(pixel_hit['x'])))
     plt.title("Hit Pixel x coordinate")
     plt.xlabel("hit pixel x coordinate pixels")
-    if save_pdf: figMC_x.savefig(outDir + "/XPixelHit.pdf", bbox_inches='tight')
+    if save_pdf: figMC_x.savefig(path.join(outDir , "XPixelHit.pdf"), bbox_inches='tight')
 
 
-if print_all:
-    # X Pixel Hit Gaussian Density (Added)
+# X Pixel Hit Gaussian Density
+if print_all or print_1d or print_gauss:
     plt.clf()
     x_gauss = plt.figure()
     plt.hist(pixel_hit['x'], len(np.unique(pixel_hit['x'])), density=True)
@@ -212,19 +239,19 @@ if print_all:
     x = np.linspace(min(pixel_hit['x']), max(pixel_hit['x']), len(np.unique(pixel_hit['x'])))
     plt.plot(x, stats.norm.pdf(x, mu, sigma))
     plt.title("Hit Pixel Density \n (mean = " + str(round(mu,2)) + "  sigma = " + str(round(sigma,2)))
-    if save_pdf: x_gauss.savefig(outDir + "/XGaussianDist.pdf", bbox_inches='tight')
+    if save_pdf: x_gauss.savefig(path.join(outDir , "XGaussianDist.pdf"), bbox_inches='tight')
 
-if print_all:
-    # Y Pixel Hit (Added)
+# Y Pixel Hit (Added)
+if print_all or print_1d:
     plt.clf()
     figMC_x = plt.figure()
     plt.hist(pixel_hit['y'], len(np.unique(pixel_hit['y'])))
     plt.title("Hit Pixel y coordinate")
     plt.xlabel("hit pixel y coordinate pixels")
-    if save_pdf: figMC_x.savefig(outDir + "/YPixelHit.pdf", bbox_inches='tight')
+    if save_pdf: figMC_x.savefig(path.join(outDir , "YPixelHit.pdf"), bbox_inches='tight')
 
-if print_all:
-    # Y Pixel Hit Gaussian Density (Added)
+# Y Pixel Hit Gaussian Density
+if print_all or print_1d or print_gauss:
     plt.clf()
     x_gauss = plt.figure()
     plt.hist(pixel_hit['y'], len(np.unique(pixel_hit['y'])), density=True)
@@ -234,13 +261,12 @@ if print_all:
     x = np.linspace(min(pixel_hit['y']), max(pixel_hit['y']), len(np.unique(pixel_hit['y'])))
     plt.plot(x, stats.norm.pdf(x, mu, sigma))
     plt.title("Hit Pixel Density\n (mean = " + str(round(mu,2)) + "  sigma = " + str(round(sigma,2)) + ")")
-    if save_pdf: x_gauss.savefig(outDir + "/YGaussianDist.pdf", bbox_inches='tight')
+    if save_pdf: x_gauss.savefig(path.join(outDir , "YGaussianDist.pdf"), bbox_inches='tight')
 
-if print_all:
-    # plot pixel hits in pixel Bins? (Added)
+# plot pixel hits in pixel Bins?
+if print_all or print_2d:
     plt.clf()
     px_bins_hm =plt.figure()
-    #plt.scatter(pixel_hit['x'], pixel_hit['y'], c=pixel_hit['signal'], s=4, marker='s')
     heatmap, xedges, yedges = np.histogram2d(pixel_hit['x'], pixel_hit['y'], bins=[len(np.unique(pixel_hit['x'])),len(np.unique(pixel_hit['y']))])
     extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
     plt.imshow(heatmap.T, origin='lower')
@@ -248,17 +274,17 @@ if print_all:
     plt.ylabel('pixel y position')
     plt.title('Pixel Heatmap (Number of Hits)')
     cbar = plt.colorbar(pad=.015, aspect=20)
-    if save_pdf: px_bins_hm.savefig(outDir + "/PixelNumHits.pdf", bbox_inches='tight', dpi=900)
+    if save_pdf: px_bins_hm.savefig(path.join(outDir , "PixelNumHits.pdf"), bbox_inches='tight', dpi=900)
 
-if print_all:
+if print_all or print_1d:
     # Pixel Charge Spectrum (Added)
     plt.clf()
     px_charge_spectrum = plt.figure()
     plt.hist(pixel_hit['signal'], bins=100)
-    if save_pdf: px_charge_spectrum.savefig(outDir + "/PixelChargeSpectrum.pdf", bbox_inches='tight')
+    if save_pdf: px_charge_spectrum.savefig(path.join(outDir , "PixelChargeSpectrum.pdf"), bbox_inches='tight')
 
-if print_all:
-    # 3D plot x,y,z MC particle endpoint with color scale representing the amount of charge (quite heavy)
+# 3D plot x,y,z MC particle endpoint with color scale representing the amount of charge (quite heavy)
+if print_all or print_3d or print_og:
     fig3D = plt.figure()
     ax = fig3D.add_subplot(111, projection='3d')
     colors = LinearSegmentedColormap('colormap', cm.jet._segmentdata.copy(), np.max(pixel_hit['signal']))
@@ -269,9 +295,7 @@ if print_all:
     ax.set_zlabel("z mc (mm)")
     cbar = fig3D.colorbar(plot, ax=ax)
     cbar.set_label("hit signal")
-
+    if save_pdf: fig3D.savefig(path.join(outDir , "3D.pdf"), bbox_inches='tight')
     # show plots
-    plt.show()
 
-    if save_pdf: fig3D.savefig(outDir + "/3D.pdf", bbox_inches='tight')
-
+plt.show()
