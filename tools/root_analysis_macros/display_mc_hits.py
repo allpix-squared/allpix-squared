@@ -42,7 +42,9 @@ parser.add_argument("-twodim", "-2d", help="Print all two dimensional plots (Hea
 
 parser.add_argument("-threedim", "-3d", help="Print all Three dimensional plots", action="store_true")
 
-parser.add_argument("-g", "-gaussian", "-norm", help="Print all Three dimensional plots", action="store_true")
+parser.add_argument("-g", "-gaussian", "-norm", help="Print histograms with gaussian curve", action="store_true")
+
+parser.add_argument("-c", "-cauchy", "-lorentz", help="Print histograms with Cauchy-Lorentz curve", action="store_true")
 
 
 args = parser.parse_args()
@@ -54,11 +56,12 @@ print_1d = args.onedim
 print_2d = args.twodim
 print_3d = args.threedim
 print_gauss = args.g
+print_cauch = args.c
 save_pdf = args.pdf
 verbose = args.v
 outDir = os.path.dirname(root_file_name)
 
-if not (print_1d or print_2d or print_3d or print_gauss):
+if not (print_1d or print_2d or print_3d or print_gauss or print_cauch):
     print_og = True
 else:
     print_og = False
@@ -241,7 +244,22 @@ if print_all or print_1d or print_gauss:
     plt.title("Hit Pixel Density \n (mean = " + str(round(mu,2)) + "  sigma = " + str(round(sigma,2)))
     if save_pdf: x_gauss.savefig(path.join(outDir , "XGaussianDist.pdf"), bbox_inches='tight')
 
-# Y Pixel Hit (Added)
+# X Pixel Hit Cauchy Density
+if print_all or print_1d or print_cauch:
+    plt.clf()
+    x_cauch = plt.figure()
+    plt.hist(pixel_hit['x'], len(np.unique(pixel_hit['x'])), density=True)
+    plt.xlabel("hit pixel X coordinate pixels")
+
+    mean, var = stats.cauchy.fit(pixel_hit['x'])
+    x = np.linspace(min(pixel_hit['y']), max(pixel_hit['x']), len(np.unique(pixel_hit['x'])))
+    plt.plot(x, stats.cauchy.pdf(x, mean, var))
+    plt.title("Hit Pixel Density (with Cauchy curve) \n (mean = " + str(round(mean,2)) + "  Variance = " + str(round(var,2)) + ")")
+    if save_pdf: x_cauch.savefig(path.join(outDir , "XCauchyDist.pdf"), bbox_inches='tight')
+
+
+
+# Y Pixel Hit
 if print_all or print_1d:
     plt.clf()
     figMC_x = plt.figure()
@@ -253,7 +271,7 @@ if print_all or print_1d:
 # Y Pixel Hit Gaussian Density
 if print_all or print_1d or print_gauss:
     plt.clf()
-    x_gauss = plt.figure()
+    y_gauss = plt.figure()
     plt.hist(pixel_hit['y'], len(np.unique(pixel_hit['y'])), density=True)
     plt.xlabel("hit pixel y coordinate pixels")
 
@@ -261,7 +279,23 @@ if print_all or print_1d or print_gauss:
     x = np.linspace(min(pixel_hit['y']), max(pixel_hit['y']), len(np.unique(pixel_hit['y'])))
     plt.plot(x, stats.norm.pdf(x, mu, sigma))
     plt.title("Hit Pixel Density\n (mean = " + str(round(mu,2)) + "  sigma = " + str(round(sigma,2)) + ")")
-    if save_pdf: x_gauss.savefig(path.join(outDir , "YGaussianDist.pdf"), bbox_inches='tight')
+    if save_pdf: y_gauss.savefig(path.join(outDir , "YGaussianDist.pdf"), bbox_inches='tight')
+
+
+# Y Pixel Hit Cauchy Density
+if print_all or print_1d or print_cauch:
+    plt.clf()
+    y_cauch = plt.figure()
+    plt.hist(pixel_hit['y'], len(np.unique(pixel_hit['y'])), density=True)
+    plt.xlabel("hit pixel y coordinate pixels")
+
+    mean, var = stats.cauchy.fit(pixel_hit['y'])
+    x = np.linspace(min(pixel_hit['y']), max(pixel_hit['y']), len(np.unique(pixel_hit['y'])))
+    plt.plot(x, stats.cauchy.pdf(x, mean, var))
+    plt.title("Hit Pixel Density (with Cauchy curve) \n (mean = " + str(round(mean,2)) + "  Variance = " + str(round(var,2)) + ")")
+    if save_pdf: y_cauch.savefig(path.join(outDir , "YCauchyDist.pdf"), bbox_inches='tight')
+
+
 
 # plot pixel hits in pixel Bins?
 if print_all or print_2d:
