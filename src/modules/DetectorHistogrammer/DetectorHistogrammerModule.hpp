@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 
+#include <ROOT/TThreadedObject.hxx>
 #include <TH1I.h>
 #include <TH2I.h>
 #include <TProfile.h>
@@ -36,7 +37,7 @@ namespace allpix {
      *
      * Generates a hitmap of all the produced pixel hits, together with a histogram of the cluster size
      */
-    class DetectorHistogrammerModule : public WriterModule {
+    class DetectorHistogrammerModule : public Module {
     public:
         /**
          * @brief Constructor for this detector-specific module
@@ -86,20 +87,20 @@ namespace allpix {
         ROOT::Math::XYVector track_resolution_{};
 
         // Histograms to output
-        TH2D *hit_map, *charge_map, *cluster_map;
-        TProfile2D *cluster_size_map, *cluster_size_x_map, *cluster_size_y_map;
-        TProfile2D *cluster_charge_map, *seed_charge_map;
-        TProfile2D *residual_map, *residual_x_map, *residual_y_map;
-        TH1D *residual_x, *residual_y;
-        TProfile *residual_x_vs_x, *residual_y_vs_y, *residual_x_vs_y, *residual_y_vs_x;
-        TProfile2D *efficiency_map, *efficiency_detector;
-        TProfile *efficiency_vs_x, *efficiency_vs_y;
-        TH1D* event_size;
-        TH1D* cluster_size;
-        TH1D* cluster_size_x;
-        TH1D* cluster_size_y;
-        TH1D* n_cluster;
-        TH1D* cluster_charge;
+        ROOT::TThreadedObject<TH2D>*hit_map, *charge_map, *cluster_map;
+        ROOT::TThreadedObject<TProfile2D>*cluster_size_map, *cluster_size_x_map, *cluster_size_y_map;
+        ROOT::TThreadedObject<TProfile2D>*cluster_charge_map, *seed_charge_map;
+        ROOT::TThreadedObject<TProfile2D>*residual_map, *residual_x_map, *residual_y_map;
+        ROOT::TThreadedObject<TH1D>*residual_x, *residual_y;
+        ROOT::TThreadedObject<TProfile>*residual_x_vs_x, *residual_y_vs_y, *residual_x_vs_y, *residual_y_vs_x;
+        ROOT::TThreadedObject<TProfile2D>*efficiency_map, *efficiency_detector;
+        ROOT::TThreadedObject<TProfile>*efficiency_vs_x, *efficiency_vs_y;
+        ROOT::TThreadedObject<TH1D>* event_size;
+        ROOT::TThreadedObject<TH1D>* cluster_size;
+        ROOT::TThreadedObject<TH1D>* cluster_size_x;
+        ROOT::TThreadedObject<TH1D>* cluster_size_y;
+        ROOT::TThreadedObject<TH1D>* n_cluster;
+        ROOT::TThreadedObject<TH1D>* cluster_charge;
     };
 } // namespace allpix
 
