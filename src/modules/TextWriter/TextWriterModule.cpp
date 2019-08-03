@@ -30,15 +30,6 @@ TextWriterModule::TextWriterModule(Configuration& config, Messenger* messenger, 
     // Bind to all messages with filter
     messenger->registerFilter(this, &TextWriterModule::filter);
 }
-/**
- * @note Objects cannot be stored in smart pointers due to internal ROOT logic
- */
-TextWriterModule::~TextWriterModule() {
-    // Delete all object pointers
-    for(auto& index_data : write_list_) {
-        delete index_data.second;
-    }
-}
 
 void TextWriterModule::init(std::mt19937_64&) {
     // Create output file

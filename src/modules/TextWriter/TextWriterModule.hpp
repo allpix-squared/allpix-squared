@@ -33,10 +33,6 @@ namespace allpix {
          * @param geo_mgr Pointer to the geometry manager, containing the detectors
          */
         TextWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr);
-        /**
-         * @brief Destructor deletes the internal objects used to build the ROOT Tree
-         */
-        ~TextWriterModule() override;
 
         /**
          * @brief Receive a single message containing objects of arbitrary type
@@ -69,9 +65,6 @@ namespace allpix {
         // Output data file to write
         std::string output_file_name_{};
         std::unique_ptr<std::ofstream> output_file_;
-
-        // List of objects of a particular type, bound to a specific detector and having a particular name
-        std::map<std::tuple<std::type_index, std::string, std::string>, std::vector<Object*>*> write_list_;
 
         // Statistical information about number of objects
         unsigned long write_cnt_{};
