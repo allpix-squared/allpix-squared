@@ -302,7 +302,4 @@ void ROOTObjectReaderModule::finalize() {
 
     // Print statistics
     LOG(INFO) << "Read " << read_cnt_ << " objects from " << branch_count << " branches";
-
-    // Close the file
-    input_file_->Close();
 }
