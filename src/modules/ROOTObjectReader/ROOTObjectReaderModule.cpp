@@ -32,7 +32,7 @@
 using namespace allpix;
 
 ROOTObjectReaderModule::ROOTObjectReaderModule(Configuration& config, Messenger*, GeometryManager* geo_mgr)
-    : ReaderModule(config), geo_mgr_(geo_mgr) {}
+    : Module(config), geo_mgr_(geo_mgr) {}
 
 /**
  * @note Objects cannot be stored in smart pointers due to internal ROOT logic
@@ -250,7 +250,9 @@ void ROOTObjectReaderModule::init(std::mt19937_64&) {
 }
 
 void ROOTObjectReaderModule::run(Event* event) {
-    auto messenger = event->getMessenger();
+    // We can not read multiple events at the same time so we need to synchronize access
+    std::lock_guard<std::mutex> lock{stats_mutex_};
+
     unsigned int event_num = event->number;
     --event_num;
     for(auto& tree : trees_) {
@@ -281,15 +283,13 @@ void ROOTObjectReaderModule::run(Event* event) {
         }
 
         // Update statistics
-        {
-            std::lock_guard<std::mutex> lock{stats_mutex_};
-            read_cnt_ += objects->size();
-        }
+        read_cnt_ += objects->size();
 
         // Create a message
         std::shared_ptr<BaseMessage> message = iter->second(*objects, message_inf.detector);
 
         // Dispatch the message
+        auto messenger = event->getMessenger();
         messenger->dispatchMessage(this, message, message_inf.name);
     }
 }
