@@ -583,7 +583,12 @@ void ModuleManager::run(std::mt19937_64& seeder) {
 
     if(global_config.get<bool>("multithreading")) {
         // Try to fetch a suitable number of workers if multithreading is enabled
-        threads_num = global_config.get<unsigned int>("workers", std::max(std::thread::hardware_concurrency(), 1u));
+        auto available_hardware_concurrency = std::thread::hardware_concurrency();
+        if(available_hardware_concurrency > 0u) {
+            // Try to be graceful and leave one core out if the number of workers was not specified
+            available_hardware_concurrency -= 1u;
+        }
+        threads_num = global_config.get<unsigned int>("workers", std::max(available_hardware_concurrency, 1u));
         if(threads_num == 0) {
             throw InvalidValueError(global_config, "workers", "number of workers should be strictly more than zero");
         }
