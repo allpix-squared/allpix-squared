@@ -27,8 +27,8 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
                                                        std::shared_ptr<Detector> detector)
     : WriterModule(config, detector), detector_(std::move(detector)) {
     // Bind messages
-    messenger->bindSingle<DetectorHistogrammerModule, PixelHitMessage>(this);
-    messenger->bindSingle<DetectorHistogrammerModule, MCParticleMessage, MsgFlags::REQUIRED>(this);
+    messenger->bindSingle<PixelHitMessage>(this);
+    messenger->bindSingle<MCParticleMessage>(this, MsgFlags::REQUIRED);
 
     auto model = detector_->getModel();
     matching_cut_ = config.get<ROOT::Math::XYVector>("matching_cut", model->getPixelSize() * 3);

@@ -33,7 +33,7 @@ PulseTransferModule::PulseTransferModule(Configuration& config,
     output_plots_ = config_.get<bool>("output_plots");
     output_pulsegraphs_ = config_.get<bool>("output_pulsegraphs");
 
-    messenger->bindSingle<PulseTransferModule, PropagatedChargeMessage, MsgFlags::REQUIRED>(this);
+    messenger->bindSingle<PropagatedChargeMessage>(this, MsgFlags::REQUIRED);
 }
 
 void PulseTransferModule::init(std::mt19937_64&) {

@@ -57,7 +57,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     model_ = detector_->getModel();
 
     // Require deposits message for single detector
-    messenger_->bindSingle<GenericPropagationModule, DepositedChargeMessage, MsgFlags::REQUIRED>(this);
+    messenger_->bindSingle<DepositedChargeMessage>(this, MsgFlags::REQUIRED);
 
     // Set default value for config variables
     config_.setDefault<double>("spatial_precision", Units::get(0.25, "nm"));

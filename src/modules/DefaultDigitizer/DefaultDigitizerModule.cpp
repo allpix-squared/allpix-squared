@@ -25,7 +25,7 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
                                                std::shared_ptr<Detector> detector)
     : Module(config, std::move(detector)), messenger_(messenger) {
     // Require PixelCharge message for single detector
-    messenger_->bindSingle<DefaultDigitizerModule, PixelChargeMessage, MsgFlags::REQUIRED>(this);
+    messenger_->bindSingle<PixelChargeMessage>(this, MsgFlags::REQUIRED);
 
     // Set defaults for config variables
     config_.setDefault<int>("electronics_noise", Units::get(110, "e"));

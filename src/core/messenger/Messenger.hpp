@@ -87,15 +87,14 @@ namespace allpix {
          * @warning This allows to only receive a single message of the type per run unless the
          *           \ref MsgFlags::ALLOW_OVERWRITE "ALLOW_OVERWRITE" flag is passed
          */
-        template <typename T, typename R, MsgFlags flags = MsgFlags::NONE> void bindSingle(T* receiver);
+        template <typename T> void bindSingle(Module* receiver, MsgFlags flags = MsgFlags::NONE);
 
         /**
          * @brief Register subscription for multiple messages
          * @param receiver Receiving module
-         * @param member Pointer to the vector of messages to listen to
          * @param flags Message configuration flags
          */
-        template <typename T, typename R, MsgFlags flags = MsgFlags::NONE> void bindMulti(T* receiver);
+        template <typename T> void bindMulti(Module* receiver, MsgFlags flags = MsgFlags::NONE);
 
         /**
          * @brief Dispatches a message to subscribing modules

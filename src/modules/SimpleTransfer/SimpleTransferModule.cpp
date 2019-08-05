@@ -47,7 +47,7 @@ SimpleTransferModule::SimpleTransferModule(Configuration& config, Messenger* mes
     output_plots_ = config_.get<bool>("output_plots");
 
     // Require propagated deposits for single detector
-    messenger->bindSingle<SimpleTransferModule, PropagatedChargeMessage, MsgFlags::REQUIRED>(this);
+    messenger->bindSingle<PropagatedChargeMessage>(this, MsgFlags::REQUIRED);
 }
 
 void SimpleTransferModule::init(std::mt19937_64&) {

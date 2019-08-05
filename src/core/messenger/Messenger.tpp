@@ -19,22 +19,20 @@ namespace allpix {
         add_delegate(typeid(R), receiver, std::move(delegate));
     }
 
-    template <typename T, typename R, MsgFlags flags> void Messenger::bindSingle(T* receiver) {
-        static_assert(std::is_base_of<Module, T>::value, "Receiver should have Module as a base class");
-        static_assert(std::is_base_of<BaseMessage, R>::value,
+    template <typename T> void Messenger::bindSingle(Module* receiver, MsgFlags flags) {
+        static_assert(std::is_base_of<BaseMessage, T>::value,
                       "Bound variable should be a shared pointer to a message derived from the Message class");
 
-        auto delegate = std::make_shared<SingleBindDelegate<T, R>>(flags, receiver);
-        add_delegate(typeid(R), receiver, std::move(delegate));
+        auto delegate = std::make_shared<SingleBindDelegate<Module, T>>(flags, receiver);
+        add_delegate(typeid(T), receiver, std::move(delegate));
     }
 
-    template <typename T, typename R, MsgFlags flags> void Messenger::bindMulti(T* receiver) {
-        static_assert(std::is_base_of<Module, T>::value, "Receiver should have Module as a base class");
-        static_assert(std::is_base_of<BaseMessage, R>::value,
+    template <typename T> void Messenger::bindMulti(Module* receiver, MsgFlags flags) {
+        static_assert(std::is_base_of<BaseMessage, T>::value,
                       "Bound variable should be a shared pointer to a message derived from the Message class");
 
-        auto delegate = std::make_shared<VectorBindDelegate<T, R>>(flags, receiver);
-        add_delegate(typeid(R), receiver, std::move(delegate));
+        auto delegate = std::make_shared<VectorBindDelegate<Module, T>>(flags, receiver);
+        add_delegate(typeid(T), receiver, std::move(delegate));
     }
 
     template <typename T>

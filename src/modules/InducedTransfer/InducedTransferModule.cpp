@@ -33,7 +33,7 @@ InducedTransferModule::InducedTransferModule(Configuration& config,
     matrix_ = config_.get<XYVectorInt>("induction_matrix");
 
     // Require propagated deposits for single detector
-    messenger->bindSingle<InducedTransferModule, PropagatedChargeMessage, MsgFlags::REQUIRED>(this);
+    messenger->bindSingle<PropagatedChargeMessage>(this, MsgFlags::REQUIRED);
 }
 
 void InducedTransferModule::init(std::mt19937_64&) {

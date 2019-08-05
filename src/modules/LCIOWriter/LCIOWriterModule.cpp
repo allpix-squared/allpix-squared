@@ -94,8 +94,8 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
     : WriterModule(config), geo_mgr_(geo) {
 
     // Bind pixel hits message
-    messenger->bindMulti<LCIOWriterModule, PixelHitMessage, MsgFlags::REQUIRED>(this);
-    messenger->bindSingle<LCIOWriterModule, MCTrackMessage, MsgFlags::REQUIRED>(this);
+    messenger->bindMulti<PixelHitMessage>(this, MsgFlags::REQUIRED);
+    messenger->bindSingle<MCTrackMessage>(this, MsgFlags::REQUIRED);
 
     // Set configuration defaults:
     config_.setDefault("file_name", "output.slcio");

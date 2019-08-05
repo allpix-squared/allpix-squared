@@ -35,7 +35,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     model_ = detector_->getModel();
 
     // Require deposits message for single detector:
-    messenger->bindSingle<TransientPropagationModule, DepositedChargeMessage, MsgFlags::REQUIRED>(this);
+    messenger->bindSingle<DepositedChargeMessage>(this, MsgFlags::REQUIRED);
 
     // Set default value for config variables
     config_.setDefault<double>("timestep", Units::get(0.01, "ns"));
