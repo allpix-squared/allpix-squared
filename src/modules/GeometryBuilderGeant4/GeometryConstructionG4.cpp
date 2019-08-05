@@ -34,7 +34,7 @@
 #include "core/module/exceptions.h"
 #include "core/utils/log.h"
 #include "tools/ROOT.h"
-#include "tools/geant4.h"
+#include "tools/geant4/geant4.h"
 
 #include "Parameterization2DG4.hpp"
 

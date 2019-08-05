@@ -29,7 +29,7 @@
 
 #include "core/utils/log.h"
 #include "tools/ROOT.h"
-#include "tools/geant4.h"
+#include "tools/geant4/geant4.h"
 
 using namespace allpix;
 

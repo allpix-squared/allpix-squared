@@ -9,7 +9,7 @@
 
 #ifndef ALLPIX_MODULE_DETECTOR_CONSTRUCTION_H
 #define ALLPIX_MODULE_DETECTOR_CONSTRUCTION_H
-#include "G4RunManager/SensitiveDetectorAndFieldConstruction.hpp"
+#include "tools/geant4/SensitiveDetectorAndFieldConstruction.hpp"
 
 namespace allpix {
     class DepositionGeant4Module;

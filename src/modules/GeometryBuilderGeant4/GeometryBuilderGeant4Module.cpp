@@ -24,14 +24,14 @@
 #include "GeometryConstructionG4.hpp"
 
 #include "tools/ROOT.h"
-#include "tools/geant4.h"
+#include "tools/geant4/geant4.h"
 
-#include "G4RunManager/MTRunManager.hpp"
-#include "G4RunManager/RunManager.hpp"
 #include "core/config/ConfigReader.hpp"
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/utils/log.h"
+#include "tools/geant4/MTRunManager.hpp"
+#include "tools/geant4/RunManager.hpp"
 
 // Include GDML if Geant4 version has it
 #ifdef Geant4_GDML

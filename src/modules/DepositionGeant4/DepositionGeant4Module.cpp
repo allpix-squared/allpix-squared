@@ -27,14 +27,14 @@
 #include "G4TransportationManager.hh"
 #include "G4UniformMagField.hh"
 
-#include "G4RunManager/MTRunManager.hpp"
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/module/exceptions.h"
 #include "core/utils/log.h"
 #include "objects/DepositedCharge.hpp"
 #include "tools/ROOT.h"
-#include "tools/geant4.h"
+#include "tools/geant4/MTRunManager.hpp"
+#include "tools/geant4/geant4.h"
 
 #include "ActionInitializationG4.hpp"
 #include "GeneratorActionG4.hpp"

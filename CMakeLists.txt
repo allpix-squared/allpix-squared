@@ -180,9 +180,9 @@ SET(ALLPIX_LIBRARIES ${ALLPIX_LIBRARIES} AllpixObjects)
 ADD_SUBDIRECTORY(src/core)
 SET(ALLPIX_LIBRARIES ${ALLPIX_LIBRARIES} AllpixCore)
 
-# Build Custom Geant4 RunManager
-ADD_SUBDIRECTORY(src/G4RunManager)
-SET(ALLPIX_LIBRARIES ${ALLPIX_LIBRARIES} AllpixGeant4RunManager)
+# Build geant4 interface library
+ADD_SUBDIRECTORY(src/tools/geant4)
+SET(ALLPIX_LIBRARIES ${ALLPIX_LIBRARIES} AllpixGeant4Interface)
 
 # Build required modules
 ADD_SUBDIRECTORY(src/modules)

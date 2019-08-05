@@ -18,20 +18,20 @@ ELSEIF(CMAKE_BUILD_TYPE MATCHES RELEASE)
 ENDIF()
 
 # Define the library adding the object file created above
-ADD_LIBRARY(AllpixGeant4RunManager SHARED
+ADD_LIBRARY(AllpixGeant4Interface SHARED
     MTRunManager.cpp
     RunManager.cpp
     WorkerRunManager.cpp
 )
 
 # Include Geant4 directories (NOTE Geant4_USE_FILE is not used!)
-TARGET_INCLUDE_DIRECTORIES(AllpixGeant4RunManager SYSTEM PRIVATE ${Geant4_INCLUDE_DIRS})
+TARGET_INCLUDE_DIRECTORIES(AllpixGeant4Interface SYSTEM PRIVATE ${Geant4_INCLUDE_DIRS})
 
 # Add Geant4 libraries
-TARGET_LINK_LIBRARIES(AllpixGeant4RunManager ${Geant4_LIBRARIES})
+TARGET_LINK_LIBRARIES(AllpixGeant4Interface ${Geant4_LIBRARIES})
 
 # Specify install for the messages
-INSTALL(TARGETS AllpixGeant4RunManager
+INSTALL(TARGETS AllpixGeant4Interface
     COMPONENT application
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib)
