@@ -61,8 +61,7 @@ namespace allpix {
      * @ingroup Exceptions
      * @brief Trying to fetch a message that wasn't delivered
      *
-     * Raised if a module tries to fetch a message that it didn't receive. This is more
-     * likely to be raised with non-required messages.
+     * Raised if a module tries to fetch a non-required message that it didn't receive
      */
     class MessageNotFoundException : public RuntimeError {
     public:

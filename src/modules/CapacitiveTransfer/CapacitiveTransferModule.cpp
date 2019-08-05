@@ -236,7 +236,7 @@ void CapacitiveTransferModule::init(std::mt19937_64&) {
 
                     Eigen::Vector3d pixel_point(local_x, local_y, 0);
                     Eigen::Vector3d pixel_projection = plane.projection(pixel_point);
-                    double pixel_gap = pixel_projection[2];
+                    auto pixel_gap = pixel_projection[2];
 
                     gap_map->Fill(col, row, static_cast<double>(Units::convert(pixel_gap, "um")));
                     capacitance_map->Fill(
