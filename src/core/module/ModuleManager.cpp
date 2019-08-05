@@ -577,8 +577,8 @@ void ModuleManager::run(std::mt19937_64& seeder) {
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
 
     // Set alias for backward compatibility with the previous keyword for multithreading
-    global_config.setAlias("experimental_multithreading", "multithreading");
     global_config.setDefault("multithreading", false);
+    global_config.setAlias("experimental_multithreading", "multithreading");
     size_t threads_num;
 
     if(global_config.get<bool>("multithreading")) {
