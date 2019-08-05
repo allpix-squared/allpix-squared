@@ -100,7 +100,7 @@ void DepositionGeant4Module::init(std::mt19937_64& seeder) {
     MTRunManager* run_manager_mt = nullptr;
 
     // Load the G4 run manager (which is owned by the geometry builder)
-    if(global_config.get<bool>("experimental_multithreading", false)) {
+    if(global_config.get<bool>("multithreading", false)) {
         run_manager_g4_ = G4MTRunManager::GetMasterRunManager();
         run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
         G4Threading::SetMultithreadedApplication(true);

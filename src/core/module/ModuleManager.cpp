@@ -576,16 +576,18 @@ void ModuleManager::run(std::mt19937_64& seeder) {
 
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
 
-    global_config.setDefault("experimental_multithreading", false);
+    // Set alias for backward compatibility with the previous keyword for multithreading
+    global_config.setAlias("experimental_multithreading", "multithreading");
+    global_config.setDefault("multithreading", false);
     size_t threads_num;
 
-    if(global_config.get<bool>("experimental_multithreading")) {
+    if(global_config.get<bool>("multithreading")) {
         // Try to fetch a suitable number of workers if multithreading is enabled
         threads_num = global_config.get<unsigned int>("workers", std::max(std::thread::hardware_concurrency(), 1u));
         if(threads_num == 0) {
             throw InvalidValueError(global_config, "workers", "number of workers should be strictly more than zero");
         }
-        LOG(WARNING) << "Experimental multithreading enabled - using " << threads_num << " worker threads.";
+        LOG(INFO) << "Multithreading enabled - using " << threads_num << " worker threads.";
         if(threads_num > 8) {
             LOG(WARNING) << "Using more than 8 worker threads may severely impact simulation performance due to ROOT "
                             "internals. See "
