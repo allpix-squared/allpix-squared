@@ -78,7 +78,7 @@ Allpix<sup>2</sup> has been developed and is maintained by
 * Simon Spannagel, CERN, @simonspa
 
 The following authors, in alphabetical order, have contributed to Allpix<sup>2</sup>:
-* Mohamed Moanis Ali, Free University of Bozen-Bolzano, @mmoanis
+* Mohamed Moanis Ali, GSOC19 student, @mmoanis
 * Mathieu Benoit, Université de Genève, @mbenoit
 * Thomas Billoud, Université de Montréal, @tbilloud
 * Tobias Bisanz, Georg-August-Universität Göttingen, @tbisanz
