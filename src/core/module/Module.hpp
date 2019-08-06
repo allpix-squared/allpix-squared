@@ -10,7 +10,10 @@
 #ifndef ALLPIX_MODULE_H
 #define ALLPIX_MODULE_H
 
+#include <atomic>
+#include <map>
 #include <memory>
+#include <mutex>
 #include <random>
 #include <string>
 #include <vector>
@@ -239,6 +242,69 @@ namespace allpix {
             : Module(config, std::move(detector)) {}
     };
 
+    /**
+     * @brief A Module that always ensure to execute events in the order of event numbers. It
+     * implements buffering out of the box so interested modules can directly use it
+     */
+    template <typename T> class BufferedModule : public Module {
+        friend class Event;
+        friend class ModuleManager;
+        friend class Messenger;
+
+    public:
+        explicit BufferedModule(Configuration& config) : Module(config) {}
+        explicit BufferedModule(Configuration& config, std::shared_ptr<Detector> detector)
+            : Module(config, std::move(detector)) {}
+
+        /**
+         * @brief Execute the module for in order events and buffer out of order ones
+         */
+        void run(Event*) override;
+
+        /**
+         * @brief Ensures all events are flushed from the buffer
+         */
+        void finalize() override;
+
+    protected:
+        /**
+         * @brief Fetch the needed data from the event object
+         */
+        virtual T fetch_event_data(Event*) = 0;
+
+        /**
+         * @brief Execute the function of the module for event
+         * @param event The number of the current event
+         * @param T The user specified data specific to this event
+         *
+         * Does nothing if not overloaded.
+         */
+        virtual void run_inorder(unsigned int, T&) {}
+
+        /**
+         * @brief Finalize the module after the event sequence
+         */
+        virtual void finalize_module() {}
+
+    private:
+        /**
+         * @brief Flush the buffered events
+         */
+        void flush_buffered_events();
+
+        // The buffer that holds out of order events
+        std::map<unsigned int, T> buffered_events_;
+
+        // Mutex used to guard access to \ref buffered_events_
+        std::mutex buffer_mutex_;
+
+        // The expected in order event to write
+        std::atomic<unsigned int> next_event_to_write_;
+    };
+
 } // namespace allpix
+
+// Include template members
+#include "Module.tpp"
 
 #endif /* ALLPIX_MODULE_H */
