@@ -92,6 +92,7 @@ The following authors, in alphabetical order, have contributed to Allpix<sup>2</
 * Sebastien Murphy, ETHZ, @smurphy
 * Andreas Matthias Nürnberg, CERN, @nurnberg
 * Marko Petric, CERN, @mpetric
+* Nashad Rahman, The Ohio State University, @nashadroid
 * Edoardo Rossi, DESY, @edrossi
 * Andre Sailer, CERN, @sailer
 * Paul Schütze, DESY, @pschutze
