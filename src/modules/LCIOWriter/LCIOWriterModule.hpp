@@ -21,13 +21,22 @@
 #include <IO/LCWriter.h>
 
 namespace allpix {
+
+    /**
+     * @brief Data needed by the module in each event
+     */
+    struct LCIOWriterModuleData {
+        std::vector<std::shared_ptr<PixelHitMessage>> pixel_messages;
+        std::vector<std::shared_ptr<MCParticleMessage>> mc_particles;
+    };
+
     /**
      * @ingroup Modules
      * @brief Module to write hit data to LCIO file
      *
      * Create LCIO file, compatible to EUTelescope analysis framework.
      */
-    class LCIOWriterModule : public WriterModule {
+    class LCIOWriterModule : public BufferedModule<LCIOWriterModuleData> {
     public:
         /**
          * @brief Constructor for this unique module
@@ -44,15 +53,21 @@ namespace allpix {
          */
         void init(std::mt19937_64&) override;
 
+    protected:
         /**
-         * @brief Receive pixel hit messages, create lcio event, add hit collection and write event to file.
+         * @brief Fetch the needed data from the event object
          */
-        void run(Event*) override;
+        LCIOWriterModuleData fetch_event_data(Event*) override;
 
         /**
          * @brief Close the output file
          */
-        void finalize() override;
+        void finalize_module() override;
+
+        /**
+         * @brief Receive pixel hit messages, create lcio event, add hit collection and write event to file.
+         */
+        void run_inorder(unsigned int, LCIOWriterModuleData&) override;
 
     private:
         GeometryManager* geo_mgr_{};
@@ -69,6 +84,6 @@ namespace allpix {
         std::string detector_name_;
         std::string lcio_file_name_;
         std::string geometry_file_name_;
-        int write_cnt_{0};
+        std::atomic<int> write_cnt_{0};
     };
 } // namespace allpix

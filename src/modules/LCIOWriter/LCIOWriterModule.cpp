@@ -91,10 +91,11 @@ inline std::array<long double, 3> getRotationAnglesFromMatrix(ROOT::Math::Rotati
 }
 
 LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo)
-    : WriterModule(config), geo_mgr_(geo) {
+    : BufferedModule<LCIOWriterModuleData>(config), geo_mgr_(geo) {
 
     // Bind pixel hits message
     messenger->bindMulti<PixelHitMessage>(this, MsgFlags::REQUIRED);
+    messenger->bindMulti<MCParticleMessage>(this, MsgFlags::REQUIRED);
     messenger->bindSingle<MCTrackMessage>(this, MsgFlags::REQUIRED);
 
     // Set configuration defaults:
@@ -245,13 +246,12 @@ void LCIOWriterModule::init(std::mt19937_64&) {
     lcWriter_->writeRunHeader(run.get());
 }
 
-void LCIOWriterModule::run(Event* event) {
-    auto messenger = event->getMessenger();
-    auto pixel_messages = messenger->fetchMultiMessage<PixelHitMessage>(this);
+void LCIOWriterModule::run_inorder(unsigned int event_number, LCIOWriterModuleData& data) {
+    auto& pixel_messages = data.pixel_messages;
 
     auto evt = std::make_unique<LCEventImpl>(); // create the event
     evt->setRunNumber(1);
-    evt->setEventNumber(static_cast<int>(event->number)); // set the event attributes
+    evt->setEventNumber(static_cast<int>(event_number)); // set the event attributes
     evt->parameters().setValue("EventType", 2);
 
     auto output_col_vec = std::vector<LCCollectionVec*>();
@@ -449,7 +449,7 @@ void LCIOWriterModule::run(Event* event) {
     write_cnt_++;
 }
 
-void LCIOWriterModule::finalize() {
+void LCIOWriterModule::finalize_module() {
     lcWriter_->close();
     // Print statistics
     LOG(STATUS) << "Wrote " << write_cnt_ << " events to file:" << std::endl << lcio_file_name_;
@@ -548,4 +548,15 @@ void LCIOWriterModule::finalize() {
 
         LOG(STATUS) << "Wrote GEAR geometry to file:" << std::endl << geometry_file_name_;
     }
+}
+
+LCIOWriterModuleData LCIOWriterModule::fetch_event_data(Event* event) {
+    auto messenger = event->getMessenger();
+
+    // Fill the struct with the data we process in each event
+    LCIOWriterModuleData data;
+    data.pixel_messages = messenger->fetchMultiMessage<PixelHitMessage>(this);
+    data.mc_particles = messenger->fetchMultiMessage<MCParticleMessage>(this);
+
+    return data;
 }
