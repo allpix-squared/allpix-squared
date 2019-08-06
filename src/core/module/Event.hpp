@@ -129,8 +129,6 @@ namespace allpix {
 
         std::mt19937_64& random_engine_;
 
-        Module* current_module_;
-
         // Shared objects between all events
         static event_context* context_;
 

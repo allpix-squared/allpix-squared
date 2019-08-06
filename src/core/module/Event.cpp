@@ -73,7 +73,6 @@ void Event::run(std::shared_ptr<Module>& module) {
 
     // Run module
     try {
-        current_module_ = module.get();
         module->run(this);
     } catch(const EndOfRunException& e) {
         // Terminate if the module threw the EndOfRun request exception:
