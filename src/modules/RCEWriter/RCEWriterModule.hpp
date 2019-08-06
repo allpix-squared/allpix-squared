@@ -24,6 +24,13 @@
 
 namespace allpix {
     /**
+     * @brief Data used by the module in each event
+     */
+    struct RCEWriterModuleData {
+        std::vector<std::shared_ptr<PixelHitMessage>> messages;
+    };
+
+    /**
      * @ingroup Modules
      * @brief Module to write object data to ROOT trees in RCE format for telescope reconstruction
      *
@@ -32,7 +39,7 @@ namespace allpix {
      * sub-directory, it creates a Hits tree. Upon receiving the Pixel Hit messages, it writes the information to
      * the respective trees.
      */
-    class RCEWriterModule : public WriterModule {
+    class RCEWriterModule : public BufferedModule<RCEWriterModuleData> {
     public:
         /**
          * @brief Constructor for this unique module
@@ -51,15 +58,21 @@ namespace allpix {
          */
         void init(std::mt19937_64&) override;
 
+    protected:
+        /**
+         * @brief Fetch the needed data from the event object
+         */
+        RCEWriterModuleData fetch_event_data(Event*) override;
+
         /**
          * @brief Writes the objects fetched to their specific tree
          */
-        void run(Event*) override;
+        void run_inorder(unsigned int, RCEWriterModuleData&) override;
 
         /**
          * @brief Write the output file
          */
-        void finalize() override;
+        void finalize_module() override;
 
     private:
         GeometryManager* geo_mgr_;
