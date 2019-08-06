@@ -27,7 +27,7 @@
 using namespace allpix;
 
 ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
-    : WriterModule(config), geo_mgr_(geo_mgr) {
+    : BufferedModule<ROOTObjectWriterModuleData>(config), geo_mgr_(geo_mgr) {
     // Bind to all messages with filter
     messenger->registerFilter(this, &ROOTObjectWriterModule::filter);
 }
@@ -109,9 +109,8 @@ bool ROOTObjectWriterModule::filter(const std::shared_ptr<BaseMessage>& message,
     return true;
 }
 
-void ROOTObjectWriterModule::pre_run(Event* event) {
-    auto messenger = event->getMessenger();
-    auto messages = messenger->fetchFilteredMessages(this);
+void ROOTObjectWriterModule::pre_run(ROOTObjectWriterModuleData& data) {
+    auto& messages = data.messages;
 
     for(auto& pair : messages) {
         auto& message = pair.first;
@@ -166,22 +165,18 @@ void ROOTObjectWriterModule::pre_run(Event* event) {
 
         // Fill the branch vector
         for(Object& object : object_array) {
-            std::lock_guard<std::mutex> lock{stats_mutex_};
             ++write_cnt_;
             write_list_[index_tuple]->push_back(&object);
         }
     }
 }
 
-void ROOTObjectWriterModule::run(Event* event) {
+void ROOTObjectWriterModule::run_inorder(unsigned int, ROOTObjectWriterModuleData& data) {
     // Generate trees and index data
-    pre_run(event);
+    pre_run(data);
 
     LOG(TRACE) << "Writing new objects to tree";
     output_file_->cd();
-
-    // Save last event number for trees created later
-    last_event_ = event->number;
 
     // Fill the tree with the current received messages
     for(auto& tree : trees_) {
@@ -194,7 +189,7 @@ void ROOTObjectWriterModule::run(Event* event) {
     }
 }
 
-void ROOTObjectWriterModule::finalize() {
+void ROOTObjectWriterModule::finalize_module() {
     LOG(TRACE) << "Writing objects to file";
     output_file_->cd();
 
@@ -285,4 +280,13 @@ void ROOTObjectWriterModule::finalize() {
     // Print statistics
     LOG(STATUS) << "Wrote " << write_cnt_ << " objects to " << branch_count << " branches in file:" << std::endl
                 << output_file_name_;
+}
+
+ROOTObjectWriterModuleData ROOTObjectWriterModule::fetch_event_data(Event* event) {
+    auto messenger = event->getMessenger();
+
+    ROOTObjectWriterModuleData data;
+    data.messages = messenger->fetchFilteredMessages(this);
+
+    return data;
 }
