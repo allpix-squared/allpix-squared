@@ -30,21 +30,21 @@ parser.add_argument("-d", metavar='detector', required=True,
                     help="specify your detector name (generally detector1, dut, ...) ")
 parser.add_argument("-f", metavar='rootfile', required=True, help="specify path to the rootfile to be processed ")
 
-parser.add_argument("-a", "-all", required=False, help="Produce All Graphs", action="store_true")
+parser.add_argument("-a", "--all", required=False, help="Produce All Graphs", action="store_true")
 
-parser.add_argument("-pdf", help="Create PDF rather than pop up (Useful for Docker)", action="store_true")
+parser.add_argument("--pdf", help="Create PDF rather than pop up (Useful for Docker)", action="store_true")
 
-parser.add_argument("-v", "-verbose", help="Toggle verbose settings", action="store_true")
+parser.add_argument("-v", "--verbose", help="Toggle verbose settings", action="store_true")
 
-parser.add_argument("-onedim", "-1d", help="Print all one dimensional plots (Histograms)", action="store_true")
+parser.add_argument("--onedim", "-1d", help="Print all one dimensional plots (Histograms)", action="store_true")
 
-parser.add_argument("-twodim", "-2d", help="Print all two dimensional plots (Heatmaps)", action="store_true")
+parser.add_argument("--twodim", "-2d", help="Print all two dimensional plots (Heatmaps)", action="store_true")
 
-parser.add_argument("-threedim", "-3d", help="Print all Three dimensional plots", action="store_true")
+parser.add_argument("--threedim", "-3d", help="Print all Three dimensional plots", action="store_true")
 
-parser.add_argument("-g", "-gaussian", "-norm", help="Print histograms with gaussian curve", action="store_true")
+parser.add_argument("-g", "--gaussian", "--norm", help="Print histograms with gaussian curve", action="store_true")
 
-parser.add_argument("-c", "-cauchy", "-lorentz", help="Print histograms with Cauchy-Lorentz curve", action="store_true")
+parser.add_argument("-c", "--cauchy", "--lorentz", help="Print histograms with Cauchy-Lorentz curve", action="store_true")
 
 
 args = parser.parse_args()
