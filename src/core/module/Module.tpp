@@ -11,16 +11,18 @@ namespace allpix {
 
         // Check if the new event is in the expected order or not
         if(next_event_to_write_.compare_exchange_strong(event_number, next_event)) {
+            LOG(STATUS) << "Writing Event " << event_number;
             // Process the in order event
             run_inorder(event_number, data);
 
             // Flush any in order buffered events
-            std::lock_guard<std::mutex> lock(buffered_events_);
+            std::lock_guard<std::mutex> lock(buffer_mutex_);
             flush_buffered_events();
         } else {
+            LOG(STATUS) << "Buffering event " << event->number;
             // Buffer out of order events to write them later
-            std::lock_guard<std::mutex> lock(buffered_events_);
-            buffered_events_.insert(std::make_pair(event->number, data));
+            std::lock_guard<std::mutex> lock(buffer_mutex_);
+            buffered_events_.insert(std::make_pair(event->number, std::move(data)));
         }
     }
 

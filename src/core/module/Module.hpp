@@ -273,6 +273,11 @@ namespace allpix {
         virtual T fetch_event_data(Event*) = 0;
 
         /**
+         * @brief Finalize the module after the event sequence
+         */
+        virtual void finalize_module() {}
+
+        /**
          * @brief Execute the function of the module for event
          * @param event The number of the current event
          * @param T The user specified data specific to this event
@@ -280,11 +285,6 @@ namespace allpix {
          * Does nothing if not overloaded.
          */
         virtual void run_inorder(unsigned int, T&) {}
-
-        /**
-         * @brief Finalize the module after the event sequence
-         */
-        virtual void finalize_module() {}
 
     private:
         /**
@@ -299,7 +299,7 @@ namespace allpix {
         std::mutex buffer_mutex_;
 
         // The expected in order event to write
-        std::atomic<unsigned int> next_event_to_write_;
+        std::atomic<unsigned int> next_event_to_write_{1};
     };
 
 } // namespace allpix
