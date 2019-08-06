@@ -36,11 +36,11 @@ parser.add_argument("--pdf", help="Create PDF rather than pop up (Useful for Doc
 
 parser.add_argument("-v", "--verbose", help="Toggle verbose settings", action="store_true")
 
-parser.add_argument("--onedim", "-1d", help="Print all one dimensional plots (Histograms)", action="store_true")
+parser.add_argument("--onedim", "--1d", help="Print all one dimensional plots (Histograms)", action="store_true")
 
-parser.add_argument("--twodim", "-2d", help="Print all two dimensional plots (Heatmaps)", action="store_true")
+parser.add_argument("--twodim", "--2d", help="Print all two dimensional plots (Heatmaps)", action="store_true")
 
-parser.add_argument("--threedim", "-3d", help="Print all Three dimensional plots", action="store_true")
+parser.add_argument("--threedim", "--3d", help="Print all Three dimensional plots", action="store_true")
 
 parser.add_argument("-g", "--gaussian", "--norm", help="Print histograms with gaussian curve", action="store_true")
 
