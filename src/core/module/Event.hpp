@@ -125,16 +125,14 @@ namespace allpix {
          */
         static void setEventContext(event_context* context) { context_ = context; }
 
+        // Mutex needed to record execution time since atomics doesn't fully support floating points
         static std::mutex stats_mutex_;
 
+        // The random number engine associated with this event
         std::mt19937_64& random_engine_;
 
         // Shared objects between all events
         static event_context* context_;
-
-#ifndef NDEBUG
-        static std::set<unsigned int> unique_ids_;
-#endif
     };
 
 } // namespace allpix

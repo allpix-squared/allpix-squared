@@ -26,17 +26,10 @@ using namespace allpix;
 std::mutex Event::stats_mutex_;
 event_context* Event::context_ = nullptr;
 
-#ifndef NDEBUG
-std::set<unsigned int> Event::unique_ids_;
-#endif
-
 Event::Event(const unsigned int event_num, std::mt19937_64& random_engine)
     : number(event_num), random_engine_(random_engine) {
 #ifndef NDEBUG
     assert(context_ != nullptr);
-    // Ensure that the ID is unique
-    assert(unique_ids_.find(event_num) == unique_ids_.end());
-    unique_ids_.insert(event_num);
 #endif
 }
 
@@ -92,6 +85,7 @@ void Event::run(std::shared_ptr<Module>& module) {
 }
 
 void Event::run() {
+    // Reset the messenger for the new event
     context_->messenger_.reset();
 
     for(auto& module : context_->modules_) {
