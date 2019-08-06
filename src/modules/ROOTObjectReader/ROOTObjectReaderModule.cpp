@@ -250,6 +250,7 @@ void ROOTObjectReaderModule::init(std::mt19937_64&) {
 }
 
 void ROOTObjectReaderModule::run(Event* event) {
+    auto messenger = event->getMessenger();
     unsigned int event_num = event->number;
     --event_num;
     for(auto& tree : trees_) {
@@ -289,7 +290,7 @@ void ROOTObjectReaderModule::run(Event* event) {
         std::shared_ptr<BaseMessage> message = iter->second(*objects, message_inf.detector);
 
         // Dispatch the message
-        event->dispatchMessage(message, message_inf.name);
+        messenger->dispatchMessage(this, message, message_inf.name);
     }
 }
 

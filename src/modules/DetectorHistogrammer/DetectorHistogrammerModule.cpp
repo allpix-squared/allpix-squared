@@ -234,12 +234,13 @@ void DetectorHistogrammerModule::init(std::mt19937_64&) {
 
 void DetectorHistogrammerModule::run(Event* event) {
     using namespace ROOT::Math;
+    auto messenger = event->getMessenger();
     std::shared_ptr<PixelHitMessage> pixels_message;
-    auto mcparticle_message = event->fetchMessage<MCParticleMessage>();
+    auto mcparticle_message = messenger->fetchMessage<MCParticleMessage>(this);
 
     // Check that we actually received pixel hits - we might have none and just received MCParticles!
     try {
-        pixels_message = event->fetchMessage<PixelHitMessage>();
+        pixels_message = messenger->fetchMessage<PixelHitMessage>(this);
     } catch(const MessageNotFoundException&) {
         pixels_message = nullptr;
     }

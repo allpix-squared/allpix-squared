@@ -10,11 +10,19 @@
 #ifndef ALLPIX_MODULE_EVENT_H
 #define ALLPIX_MODULE_EVENT_H
 
-#include "ModuleManager.hpp"
-
-#include "../messenger/Messenger.hpp"
+#include <atomic>
+#include <condition_variable>
+#include <list>
+#include <map>
+#include <mutex>
+#include <random>
+#include <vector>
 
 namespace allpix {
+    class Module;
+    class Messenger;
+    class BaseMessage;
+    using ModuleList = std::list<std::shared_ptr<Module>>;
 
     /**
      * @brief Wrapper for the objects shared and used by all event objects.
@@ -70,38 +78,9 @@ namespace allpix {
         const unsigned int number;
 
         /**
-         * @brief Dispatches a message to subscribing modules
-         * @param message Pointer to the message to dispatch
-         * @param name Optional message name (defaults to - indicating that it should dispatch to the module output
-         * parameter)
+         * @brief Returns the messenger instance used within this event
          */
-        template <typename T> void dispatchMessage(std::shared_ptr<T> message, const std::string& name = "-") {
-            return context_->messenger_.dispatchMessage(current_module_, message, name);
-        }
-
-        /**
-         * @brief Fetches a single message of specified type meant for the calling module
-         * @return Shared pointer to message
-         */
-        template <typename T> std::shared_ptr<T> fetchMessage() {
-            return context_->messenger_.fetchMessage<T>(current_module_);
-        }
-
-        /**
-         * @brief Fetches multiple messages of specified type meant for the calling module
-         * @return Vector of shared pointers to messages
-         */
-        template <typename T> std::vector<std::shared_ptr<T>> fetchMultiMessage() {
-            return context_->messenger_.fetchMultiMessage<T>(current_module_);
-        }
-
-        /**
-         * @brief Fetches filtered messages meant for the calling module
-         * @return Vector of pairs containing shared pointer to and name of message
-         */
-        std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> fetchFilteredMessages() {
-            return context_->messenger_.fetchFilteredMessages(current_module_);
-        }
+        Messenger* getMessenger() const;
 
         /**
          * @brief Access the random engine of this event

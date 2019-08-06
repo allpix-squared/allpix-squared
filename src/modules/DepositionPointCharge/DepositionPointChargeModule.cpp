@@ -158,6 +158,8 @@ void DepositionPointChargeModule::run(Event* event) {
 }
 
 void DepositionPointChargeModule::DepositPoint(Event* event, const ROOT::Math::XYZPoint& position) {
+    auto messenger = event->getMessenger();
+
     // Vector of deposited charges and their "MCParticle"
     std::vector<DepositedCharge> charges;
     std::vector<MCParticle> mcparticles;
@@ -184,11 +186,12 @@ void DepositionPointChargeModule::DepositPoint(Event* event, const ROOT::Math::X
     // Dispatch the messages to the framework
     auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(charges), detector_);
     auto mcparticle_message = std::make_shared<MCParticleMessage>(std::move(mcparticles), detector_);
-    event->dispatchMessage(deposit_message);
-    event->dispatchMessage(mcparticle_message);
+    messenger->dispatchMessage(this, deposit_message);
+    messenger->dispatchMessage(this, mcparticle_message);
 }
 
 void DepositionPointChargeModule::DepositLine(Event* event, const ROOT::Math::XYZPoint& position) {
+    auto messenger = event->getMessenger();
     auto model = detector_->getModel();
 
     // Vector of deposited charges and their "MCParticle"
@@ -227,6 +230,6 @@ void DepositionPointChargeModule::DepositLine(Event* event, const ROOT::Math::XY
     // Dispatch the messages to the framework
     auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(charges), detector_);
     auto mcparticle_message = std::make_shared<MCParticleMessage>(std::move(mcparticles), detector_);
-    event->dispatchMessage(deposit_message);
-    event->dispatchMessage(mcparticle_message);
+    messenger->dispatchMessage(this, deposit_message);
+    messenger->dispatchMessage(this, mcparticle_message);
 }

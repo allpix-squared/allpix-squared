@@ -262,6 +262,7 @@ void DepositionGeant4Module::init(std::mt19937_64& seeder) {
 }
 
 void DepositionGeant4Module::run(Event* event) {
+    auto messenger = event->getMessenger();
     MTRunManager* run_manager_mt = nullptr;
 
     // Initialize the thread local G4RunManager in case of MT
@@ -311,7 +312,7 @@ void DepositionGeant4Module::run(Event* event) {
 
     // Dispatch the necessary messages
     for(auto& sensor : sensors_) {
-        sensor->dispatchMessages(event);
+        sensor->dispatchMessages(this, messenger);
 
         // Fill output plots if requested:
         if(config_.get<bool>("output_plots")) {
@@ -321,7 +322,7 @@ void DepositionGeant4Module::run(Event* event) {
         }
     }
 
-    track_info_manager_->dispatchMessage(event);
+    track_info_manager_->dispatchMessage(this, messenger);
     track_info_manager_->resetTrackInfoManager();
 }
 

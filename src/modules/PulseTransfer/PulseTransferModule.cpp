@@ -54,7 +54,8 @@ void PulseTransferModule::init(std::mt19937_64&) {
 }
 
 void PulseTransferModule::run(Event* event) {
-    auto propagated_message = event->fetchMessage<PropagatedChargeMessage>();
+    auto messenger = event->getMessenger();
+    auto propagated_message = messenger->fetchMessage<PropagatedChargeMessage>(this);
 
     // Create map for all pixels: pulse and propagated charges
     std::map<Pixel::Index, Pulse> pixel_pulse_map;
@@ -143,7 +144,7 @@ void PulseTransferModule::run(Event* event) {
 
     // Create a new message with pixel pulses and dispatch:
     auto pixel_charge_message = std::make_shared<PixelChargeMessage>(std::move(pixel_charges), detector_);
-    event->dispatchMessage(pixel_charge_message);
+    messenger->dispatchMessage(this, pixel_charge_message);
 
     // Fill pixel charge histogram
     if(output_plots_) {

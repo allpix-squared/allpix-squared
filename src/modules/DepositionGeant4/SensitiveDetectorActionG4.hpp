@@ -17,7 +17,6 @@
 
 #include "core/geometry/Detector.hpp"
 #include "core/messenger/Messenger.hpp"
-#include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
 
 #include "objects/DepositedCharge.hpp"
@@ -75,9 +74,10 @@ namespace allpix {
 
         /**
          * @brief Send the MCParticle and DepositedCharge messages
-         * @param event_num Event from which the messages are dispatched from
+         * @param module The module which is responsible for dispatching the message
+         * @param messenger The messenger used to dispatch it
          */
-        void dispatchMessages(Event* event);
+        void dispatchMessages(Module* module, Messenger* messenger);
 
     private:
         std::shared_ptr<Detector> detector_;

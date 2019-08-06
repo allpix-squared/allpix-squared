@@ -359,7 +359,8 @@ void RCEWriterModule::init(std::mt19937_64&) {
 }
 
 void RCEWriterModule::run(Event* event) {
-    auto pixel_hit_messages = event->fetchMultiMessage<PixelHitMessage>();
+    auto messenger = event->getMessenger();
+    auto pixel_hit_messages = messenger->fetchMultiMessage<PixelHitMessage>(this);
 
     // fill per-event data
     timestamp_ = 0;

@@ -110,7 +110,8 @@ bool ROOTObjectWriterModule::filter(const std::shared_ptr<BaseMessage>& message,
 }
 
 void ROOTObjectWriterModule::pre_run(Event* event) {
-    auto messages = event->fetchFilteredMessages();
+    auto messenger = event->getMessenger();
+    auto messages = messenger->fetchFilteredMessages(this);
 
     for(auto& pair : messages) {
         auto& message = pair.first;

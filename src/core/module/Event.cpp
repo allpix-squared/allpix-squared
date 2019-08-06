@@ -18,6 +18,7 @@
 
 #include "Module.hpp"
 #include "ModuleManager.hpp"
+#include "core/messenger/Messenger.hpp"
 #include "core/utils/log.h"
 
 using namespace allpix;
@@ -140,4 +141,8 @@ void Event::run() {
 
     // All writers have been run for this event, let the next event run its writers
     writer_lock_.next();
+}
+
+Messenger* Event::getMessenger() const {
+    return &context_->messenger_;
 }

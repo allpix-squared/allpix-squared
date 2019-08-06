@@ -45,7 +45,8 @@ void InducedTransferModule::init(std::mt19937_64&) {
 }
 
 void InducedTransferModule::run(Event* event) {
-    auto propagated_message = event->fetchMessage<PropagatedChargeMessage>();
+    auto messenger = event->getMessenger();
+    auto propagated_message = messenger->fetchMessage<PropagatedChargeMessage>(this);
 
     // Calculate induced charge by total motion of charge carriers
     LOG(TRACE) << "Calculating induced charge on pixels";
@@ -127,5 +128,5 @@ void InducedTransferModule::run(Event* event) {
 
     // Dispatch message of pixel charges
     auto pixel_message = std::make_shared<PixelChargeMessage>(pixel_charges, detector_);
-    event->dispatchMessage(pixel_message);
+    messenger->dispatchMessage(this, pixel_message);
 }

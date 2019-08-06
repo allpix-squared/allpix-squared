@@ -102,7 +102,8 @@ namespace allpix {
          * @param name Optional message name (defaults to - indicating that it should dispatch to the module output
          * parameter)
          */
-        template <typename T> void dispatchMessage(Module* module, std::shared_ptr<T> message, const std::string&);
+        template <typename T>
+        void dispatchMessage(Module* module, std::shared_ptr<T> message, const std::string& name = "-");
 
         /**
          * @brief Fetches a single message of specified type meant for the calling module

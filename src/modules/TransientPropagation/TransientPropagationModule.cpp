@@ -141,7 +141,8 @@ void TransientPropagationModule::init(std::mt19937_64&) {
 }
 
 void TransientPropagationModule::run(Event* event) {
-    auto deposits_message = event->fetchMessage<DepositedChargeMessage>();
+    auto messenger = event->getMessenger();
+    auto deposits_message = messenger->fetchMessage<DepositedChargeMessage>(this);
 
     // Create vector of propagated charges to output
     std::vector<PropagatedCharge> propagated_charges;
@@ -196,7 +197,7 @@ void TransientPropagationModule::run(Event* event) {
     auto propagated_charge_message = std::make_shared<PropagatedChargeMessage>(std::move(propagated_charges), detector_);
 
     // Dispatch the message with propagated charges
-    event->dispatchMessage(propagated_charge_message);
+    messenger->dispatchMessage(this, propagated_charge_message);
 }
 
 /**

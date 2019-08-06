@@ -73,7 +73,8 @@ void SimpleTransferModule::init(std::mt19937_64&) {
 }
 
 void SimpleTransferModule::run(Event* event) {
-    auto propagated_message = event->fetchMessage<PropagatedChargeMessage>();
+    auto messenger = event->getMessenger();
+    auto propagated_message = messenger->fetchMessage<PropagatedChargeMessage>(this);
 
     // Find corresponding pixels for all propagated charges
     LOG(TRACE) << "Transferring charges to pixels";
@@ -157,7 +158,7 @@ void SimpleTransferModule::run(Event* event) {
 
     // Dispatch message of pixel charges
     auto pixel_message = std::make_shared<PixelChargeMessage>(pixel_charges, detector_);
-    event->dispatchMessage(pixel_message);
+    messenger->dispatchMessage(this, pixel_message);
 }
 
 void SimpleTransferModule::finalize() {

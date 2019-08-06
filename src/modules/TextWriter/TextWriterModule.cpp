@@ -110,7 +110,8 @@ bool TextWriterModule::filter(const std::shared_ptr<BaseMessage>& message, const
 }
 
 void TextWriterModule::run(Event* event) {
-    auto messages = event->fetchFilteredMessages();
+    auto messenger = event->getMessenger();
+    auto messages = messenger->fetchFilteredMessages(this);
     LOG(TRACE) << "Writing new objects to text file";
 
     // Print the current event:
