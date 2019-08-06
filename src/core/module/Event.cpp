@@ -24,8 +24,6 @@
 using namespace allpix;
 
 std::mutex Event::stats_mutex_;
-Event::IOOrderLock Event::reader_lock_;
-Event::IOOrderLock Event::writer_lock_;
 event_context* Event::context_ = nullptr;
 
 #ifndef NDEBUG
@@ -43,49 +41,11 @@ Event::Event(const unsigned int event_num, std::mt19937_64& random_engine)
 }
 
 /**
- * Runs modules that read from or write to files in order of increasing event number.
- * The appropriate \ref Event::IOOrderLock "order lock" is operated upon -- counter read/modified and condition watched -- to
- * achieve this.
- * When a previous event has yet to write to file, the current event waits until it's its own turn to write.
- * No work is done while waiting.
- */
-void Event::handle_iomodule(const std::shared_ptr<Module>& module) {
-    using namespace std::chrono_literals;
-
-    const bool reader = dynamic_cast<ReaderModule*>(module.get()) != nullptr,
-               writer = dynamic_cast<WriterModule*>(module.get()) != nullptr;
-    if(previous_was_reader_ && !reader) {
-        // All readers have been run for this event, let the next event run its readers
-        reader_lock_.next();
-    }
-    previous_was_reader_ = reader;
-
-    if(!reader && !writer) {
-        // Module doesn't require IO; nothing else to do
-        return;
-    }
-    LOG(DEBUG) << module->getUniqueName() << " is a " << (reader ? "reader" : "writer")
-               << "; running in order of event number";
-
-    // Acquire reader/writer lock
-    auto& typelock = reader ? reader_lock_ : writer_lock_;
-    auto lock = std::unique_lock<std::mutex>(typelock.mutex);
-    // Check every 50ms if it's this event's turn to run
-    // TODO [doc] don't pseudo-busy loop
-    while(!typelock.condition.wait_for(
-        lock, 50ms, [this, &typelock]() { return this->number == typelock.current_event.load(); })) {
-    };
-}
-
-/**
  * Runs a single module.
  * The run for a module is skipped if it isn't \ref Event::is_satisfied() "satisfied".
  * Sets the section header and logging settings before exeuting the \ref Module::run() function.
  */
 void Event::run(std::shared_ptr<Module>& module) {
-    // Modules that read/write files must be run in order of event number
-    handle_iomodule(module);
-
     LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << this->number << " [" << module->get_identifier().getUniqueName()
                                       << "]";
 
@@ -138,9 +98,6 @@ void Event::run() {
     for(auto& module : context_->modules_) {
         run(module);
     }
-
-    // All writers have been run for this event, let the next event run its writers
-    writer_lock_.next();
 }
 
 Messenger* Event::getMessenger() const {

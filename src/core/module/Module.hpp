@@ -209,40 +209,6 @@ namespace allpix {
     };
 
     /**
-     * @brief Simple wrapper around Module to define a module that writes data to file
-     * @warning All modules that writes data to files must inherit from this class
-     *
-     * Used to simplify the ordered execution of modules requiring I/O operations.
-     */
-    class WriterModule : public Module {
-        friend class Event;
-        friend class ModuleManager;
-        friend class Messenger;
-
-    public:
-        explicit WriterModule(Configuration& config) : Module(config) {}
-        explicit WriterModule(Configuration& config, std::shared_ptr<Detector> detector)
-            : Module(config, std::move(detector)) {}
-    };
-
-    /**
-     * @brief Simple wrapper around Module to define a module that reads data from file
-     * @warning All modules that reads data from files must inherit from this class
-     *
-     * Used to simplify the ordered execution of modules requiring I/O operations.
-     */
-    class ReaderModule : public Module {
-        friend class Event;
-        friend class ModuleManager;
-        friend class Messenger;
-
-    public:
-        explicit ReaderModule(Configuration& config) : Module(config) {}
-        explicit ReaderModule(Configuration& config, std::shared_ptr<Detector> detector)
-            : Module(config, std::move(detector)) {}
-    };
-
-    /**
      * @brief A Module that always ensure to execute events in the order of event numbers. It
      * implements buffering out of the box so interested modules can directly use it
      */
@@ -299,7 +265,7 @@ namespace allpix {
         std::mutex buffer_mutex_;
 
         // The expected in order event to write
-        std::atomic<unsigned int> next_event_to_write_{1};
+        unsigned int next_event_to_write_{1};
     };
 
 } // namespace allpix

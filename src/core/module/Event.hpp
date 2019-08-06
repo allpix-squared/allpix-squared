@@ -96,23 +96,6 @@ namespace allpix {
 
     private:
         /**
-         * @brief Helper struct used to run modules requiring I/O operations in order of event number
-         */
-        struct IOOrderLock { // NOLINT
-            std::mutex mutex;
-            std::condition_variable condition;
-            std::atomic<unsigned int> current_event{1};
-
-            /**
-             * @brief Increment the current event and notify all waiting threads
-             */
-            void next() {
-                current_event++;
-                condition.notify_all();
-            }
-        };
-
-        /**
          * @brief Construct an Event
          * @param event_num The unique event identifier
          * @param random_engine Random generator for this event
@@ -138,27 +121,11 @@ namespace allpix {
         void run(std::shared_ptr<Module>& module);
 
         /**
-         * @brief Handles the execution of modules requiring I/O operations
-         * @param module The module to execute
-         * @warning This function should be called for every module in \ref Event::modules_
-         *
-         * If modules that require I/O operations are passed to this function from multiple threads, each thread will exit
-         * this function in order of increasgin event number. This ensures that readers and writers run in the same order
-         * between two same-configuration simulations.
-         */
-        void handle_iomodule(const std::shared_ptr<Module>& module);
-
-        /**
          * @brief Sets the common objects used by all events.
          */
         static void setEventContext(event_context* context) { context_ = context; }
 
         static std::mutex stats_mutex_;
-
-        // For executing readers/writers in order of event number
-        static IOOrderLock reader_lock_;
-        static IOOrderLock writer_lock_;
-        bool previous_was_reader_{false};
 
         std::mt19937_64& random_engine_;
 
