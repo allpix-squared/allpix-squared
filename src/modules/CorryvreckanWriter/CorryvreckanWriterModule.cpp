@@ -21,10 +21,11 @@
 using namespace allpix;
 
 CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geoManager)
-    : WriterModule(config), messenger_(messenger), geometryManager_(geoManager) {
+    : BufferedModule<CorryvreckanWriterModuleData>(config), messenger_(messenger), geometryManager_(geoManager) {
 
     // Require PixelCharge messages for single detector
     messenger_->bindMulti<PixelHitMessage>(this, MsgFlags::REQUIRED);
+    messenger_->bindMulti<MCParticleMessage>(this, MsgFlags::REQUIRED);
 
     config_.setDefault("file_name", "corryvreckanOutput.root");
     config_.setDefault("geometry_file", "corryvreckanGeometry.conf");
@@ -88,9 +89,8 @@ void CorryvreckanWriterModule::init(std::mt19937_64&) {
 }
 
 // Make instantiations of Corryvreckan pixels, and store these in the trees during run time
-void CorryvreckanWriterModule::run(Event* event) {
-    auto messenger = event->getMessenger();
-    auto pixel_messages = messenger->fetchMultiMessage<PixelHitMessage>(this);
+void CorryvreckanWriterModule::run_inorder(unsigned int, CorryvreckanWriterModuleData& data) {
+    auto& pixel_messages = data.pixel_messages;
 
     // Loop through all receieved messages
     for(auto& message : pixel_messages) {
@@ -153,7 +153,7 @@ void CorryvreckanWriterModule::run(Event* event) {
 }
 
 // Save the output trees to file
-void CorryvreckanWriterModule::finalize() {
+void CorryvreckanWriterModule::finalize_module() {
 
     // Loop over all detectors and store the trees
     auto detectors = geometryManager_->getDetectors();
@@ -225,4 +225,17 @@ void CorryvreckanWriterModule::finalize() {
             geometry_file << std::endl;
         }
     }
+}
+
+CorryvreckanWriterModuleData CorryvreckanWriterModule::fetch_event_data(Event* event) {
+    auto messenger = event->getMessenger();
+
+    CorryvreckanWriterModuleData data;
+    data.pixel_messages = messenger->fetchMultiMessage<PixelHitMessage>(this);
+
+    if(outputMCtruth_) {
+        data.mc_particles = messenger->fetchMultiMessage<MCParticleMessage>(this);
+    }
+
+    return data;
 }
