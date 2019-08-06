@@ -26,7 +26,8 @@
 
 using namespace allpix;
 
-TextWriterModule::TextWriterModule(Configuration& config, Messenger* messenger, GeometryManager*) : WriterModule(config) {
+TextWriterModule::TextWriterModule(Configuration& config, Messenger* messenger, GeometryManager*)
+    : BufferedModule<TextWriterModuleData>(config) {
     // Bind to all messages with filter
     messenger->registerFilter(this, &TextWriterModule::filter);
 }
@@ -100,17 +101,15 @@ bool TextWriterModule::filter(const std::shared_ptr<BaseMessage>& message, const
     return false;
 }
 
-void TextWriterModule::run(Event* event) {
-    auto messenger = event->getMessenger();
-    auto messages = messenger->fetchFilteredMessages(this);
+void TextWriterModule::run_inorder(unsigned int event_number, TextWriterModuleData& data) {
+    auto& messages = data.messages;
     LOG(TRACE) << "Writing new objects to text file";
 
     // Print the current event:
-    *output_file_ << "=== " << event->number << " ===" << std::endl;
+    *output_file_ << "=== " << event_number << " ===" << std::endl;
 
     for(auto& pair : messages) {
         auto& message = pair.first;
-        std::lock_guard<std::mutex> lock{stats_mutex_};
 
         // Print the current detector:
         if(message->getDetector() != nullptr) {
@@ -127,11 +126,20 @@ void TextWriterModule::run(Event* event) {
     }
 }
 
-void TextWriterModule::finalize() {
+void TextWriterModule::finalize_module() {
     // Finish writing to output file
     *output_file_ << "# " << write_cnt_ << " objects from " << msg_cnt_ << " messages" << std::endl;
 
     // Print statistics
     LOG(STATUS) << "Wrote " << write_cnt_ << " objects from " << msg_cnt_ << " messages to file:" << std::endl
                 << output_file_name_;
+}
+
+TextWriterModuleData TextWriterModule::fetch_event_data(Event* event) {
+    auto messenger = event->getMessenger();
+
+    TextWriterModuleData data;
+    data.messages = messenger->fetchFilteredMessages(this);
+
+    return data;
 }
