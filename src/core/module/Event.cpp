@@ -43,9 +43,10 @@ void Event::run(std::shared_ptr<Module>& module) {
                                       << "]";
 
     // Check if the module is satisfied to run
-    if(!module->check_delegates(&context_->messenger_)) {
+    if(!module->check_delegates(getMessenger())) {
         LOG(TRACE) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
                    << ", skipping module!";
+        module->skip_event(number);
         return;
     }
 

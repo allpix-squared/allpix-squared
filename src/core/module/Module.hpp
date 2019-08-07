@@ -203,6 +203,13 @@ namespace allpix {
          * @param messenger Pointer to the messenger we want to check with
          */
         bool check_delegates(Messenger* messenger);
+
+        /**
+         * @brief Inform the module that a certain event will be skipped
+         * @param event Number of event skipped
+         */
+        virtual void skip_event(unsigned int) {}
+
         std::vector<std::pair<Messenger*, BaseDelegate*>> delegates_;
 
         std::shared_ptr<Detector> detector_;
@@ -254,6 +261,18 @@ namespace allpix {
 
     private:
         /**
+         * @brief Returns the next event number to run
+         * @param event Current event number to check from
+         */
+        unsigned int get_next_event(unsigned int);
+
+        /**
+         * @brief Inform the module that a certain event will be skipped
+         * @param event Number of event skipped
+         */
+        void skip_event(unsigned int) override;
+
+        /**
          * @brief Flush the buffered events
          */
         void flush_buffered_events();
@@ -266,6 +285,8 @@ namespace allpix {
 
         // The expected in order event to write
         unsigned int next_event_to_write_{1};
+
+        std::set<unsigned int> skipped_events_;
     };
 
 } // namespace allpix
