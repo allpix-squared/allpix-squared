@@ -150,10 +150,7 @@ void SimpleTransferModule::run(Event* event) {
 
     // Writing summary and update statistics
     LOG(INFO) << "Transferred " << transferred_charges_count << " charges to " << pixel_map.size() << " pixels";
-    {
-        std::lock_guard<std::mutex> lock{stats_mutex_};
-        total_transferred_charges_ += transferred_charges_count;
-    }
+    total_transferred_charges_ += transferred_charges_count;
 
     // Dispatch message of pixel charges
     auto pixel_message = std::make_shared<PixelChargeMessage>(pixel_charges, detector_);

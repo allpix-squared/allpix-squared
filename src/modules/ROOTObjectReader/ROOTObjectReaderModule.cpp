@@ -280,10 +280,7 @@ void ROOTObjectReaderModule::run(Event* event) {
         }
 
         // Update statistics
-        {
-            std::lock_guard<std::mutex> lock{stats_mutex_};
-            read_cnt_ += objects->size();
-        }
+        read_cnt_ += objects->size();
 
         // Create a message
         std::shared_ptr<BaseMessage> message = iter->second(*objects, message_inf.detector);

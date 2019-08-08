@@ -159,8 +159,6 @@ namespace allpix {
         Configuration& get_configuration();
         Configuration& config_;
 
-        std::mutex stats_mutex_;
-
     private:
         /**
          * @brief Set the module identifier for internal use

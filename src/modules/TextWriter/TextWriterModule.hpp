@@ -76,5 +76,6 @@ namespace allpix {
         // Statistical information about number of objects
         unsigned long write_cnt_{};
         unsigned long msg_cnt_{};
+        std::mutex stats_mutex_;
     };
 } // namespace allpix

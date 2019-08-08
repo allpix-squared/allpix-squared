@@ -186,10 +186,7 @@ void DefaultDigitizerModule::run(Event* event) {
 
     // Output summary and update statistics
     LOG(INFO) << "Digitized " << hits.size() << " pixel hits";
-    {
-        std::lock_guard<std::mutex> lock{stats_mutex_};
-        total_hits_ += hits.size();
-    }
+    total_hits_ += hits.size();
 
     if(!hits.empty()) {
         // Create and dispatch hit message

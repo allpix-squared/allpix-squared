@@ -81,7 +81,8 @@ namespace allpix {
         bool output_plots_{};
 
         // Statistical information
-        unsigned int total_transferred_charges_{};
+        std::atomic<unsigned int> total_transferred_charges_{};
         std::set<Pixel::Index> unique_pixels_;
+        std::mutex stats_mutex_;
     };
 } // namespace allpix

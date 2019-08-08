@@ -90,7 +90,7 @@ namespace allpix {
         std::list<message_info> message_info_array_;
 
         // Statistics for total amount of objects stored
-        unsigned long read_cnt_{};
+        std::atomic<unsigned long> read_cnt_{};
 
         // Internal map to construct an object from it's type index
         MessageCreatorMap message_creator_map_;

@@ -63,7 +63,7 @@ namespace allpix {
         Messenger* messenger_;
 
         // Statistics
-        unsigned long long total_hits_{};
+        std::atomic<unsigned long long> total_hits_{};
 
         // Output histograms
         TH1D *h_pxq{}, *h_pxq_noise{}, *h_gain{}, *h_pxq_gain{}, *h_thr{}, *h_pxq_thr{}, *h_pxq_adc_smear{}, *h_pxq_adc{};
