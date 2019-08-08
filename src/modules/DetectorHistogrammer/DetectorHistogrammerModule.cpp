@@ -238,6 +238,35 @@ void DetectorHistogrammerModule::init(std::mt19937_64&) {
     std::string cluster_charge_title = "Cluster charge for " + detector_->getName() + ";cluster charge [ke];clusters";
     cluster_charge = new ROOT::TThreadedObject<TH1D>(
         "cluster_charge", cluster_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
+
+    // Initializes empty histograms
+    hit_map->Get();
+    charge_map->Get();
+    cluster_map->Get();
+    cluster_size_map->Get();
+    cluster_size_x_map->Get();
+    cluster_size_y_map->Get();
+    cluster_size->Get();
+    cluster_size_x->Get();
+    cluster_size_y->Get();
+    event_size->Get();
+    residual_x->Get();
+    residual_y->Get();
+    residual_x_vs_x->Get();
+    residual_y_vs_y->Get();
+    residual_x_vs_y->Get();
+    residual_y_vs_x->Get();
+    residual_map->Get();
+    residual_x_map->Get();
+    residual_y_map->Get();
+    efficiency_vs_x->Get();
+    efficiency_vs_y->Get();
+    efficiency_detector->Get();
+    efficiency_map->Get();
+    n_cluster->Get();
+    cluster_charge->Get();
+    cluster_charge_map->Get();
+    seed_charge_map->Get();
 }
 
 void DetectorHistogrammerModule::run(Event* event) {
