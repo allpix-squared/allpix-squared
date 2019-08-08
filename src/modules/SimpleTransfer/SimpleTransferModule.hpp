@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include <ROOT/TThreadedObject.hxx>
 #include <TH1D.h>
 
 #include "core/config/Configuration.hpp"
@@ -75,7 +76,7 @@ namespace allpix {
             }
         };
 
-        TH1D* drift_time_histo;
+        ROOT::TThreadedObject<TH1D>* drift_time_histo;
 
         // Flag whether to store output plots:
         bool output_plots_{};
