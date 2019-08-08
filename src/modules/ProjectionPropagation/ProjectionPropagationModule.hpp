@@ -11,6 +11,7 @@
 #include <random>
 #include <string>
 
+#include <ROOT/TThreadedObject.hxx>
 #include <TH1D.h>
 
 #include "core/config/Configuration.hpp"
@@ -82,6 +83,6 @@ namespace allpix {
         double boltzmann_kT_;
 
         // Output plot for drift time
-        TH1D* drift_time_histo_;
+        ROOT::TThreadedObject<TH1D>* drift_time_histo_;
     };
 } // namespace allpix
