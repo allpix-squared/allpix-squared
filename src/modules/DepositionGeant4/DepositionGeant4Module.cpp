@@ -352,11 +352,11 @@ void DepositionGeant4Module::finalize() {
 }
 
 void DepositionGeant4Module::finalizeThread() {
-    auto run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
-    run_manager_mt->TerminateForThread();
-
     // Record the number of sensors and the total charges
     record_module_statistics();
+
+    auto run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
+    run_manager_mt->TerminateForThread();
 }
 
 void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fano_factor, double charge_creation_energy) {
