@@ -121,7 +121,7 @@ SET(ALLPIX_LIBRARIES "")
 
 # Define the optional libraries
 SET(ALLPIX_GEANT4_INTERFACE "AllpixGeant4Interface")
-SET(ALLPIX_BUILD_GEANT4_INTERFACE "OFF" CACHE BOOL "Build Gean4 interface library" FORCE)
+SET(ALLPIX_BUILD_GEANT4_INTERFACE "OFF" CACHE BOOL "Build Geant4 interface library" FORCE)
 
 # ROOT is required for vector and persistency etc
 FIND_PACKAGE(ROOT REQUIRED COMPONENTS Geom GenVector)
