@@ -56,6 +56,10 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
     auto& configs = conf_manager_->getModuleConfigurations();
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
 
+    // Set alias for backward compatibility with the previous keyword for multithreading
+    global_config.setDefault("experimental_multithreading", false);
+    global_config.setAlias("multithreading", "experimental_multithreading");
+
     // Store the messenger
     messenger_ = messenger;
 
@@ -575,10 +579,6 @@ void ModuleManager::run(std::mt19937_64& seeder) {
     using namespace std::chrono_literals;
 
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
-
-    // Set alias for backward compatibility with the previous keyword for multithreading
-    global_config.setDefault("multithreading", false);
-    global_config.setAlias("experimental_multithreading", "multithreading");
     size_t threads_num;
 
     if(global_config.get<bool>("multithreading")) {
