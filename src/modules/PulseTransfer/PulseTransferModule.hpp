@@ -16,6 +16,7 @@
 
 #include "objects/PropagatedCharge.hpp"
 
+#include <ROOT/TThreadedObject.hxx>
 #include <TH1D.h>
 
 namespace allpix {
@@ -70,6 +71,6 @@ namespace allpix {
         };
 
         // Output histograms
-        TH1D *h_total_induced_charge_{}, *h_induced_pixel_charge_{};
+        ROOT::TThreadedObject<TH1D>*h_total_induced_charge_{}, *h_induced_pixel_charge_{};
     };
 } // namespace allpix

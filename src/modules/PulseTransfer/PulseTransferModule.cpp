@@ -46,10 +46,10 @@ void PulseTransferModule::init(std::mt19937_64&) {
         auto nbins = config_.get<int>("output_plots_bins");
 
         // Create histograms if needed
-        h_total_induced_charge_ =
-            new TH1D("inducedcharge", "total induced charge;induced charge [ke];events", nbins, 0, maximum);
-        h_induced_pixel_charge_ =
-            new TH1D("pixelcharge", "induced charge per pixel;induced pixel charge [ke];pixels", nbins, 0, maximum);
+        h_total_induced_charge_ = new ROOT::TThreadedObject<TH1D>(
+            "inducedcharge", "total induced charge;induced charge [ke];events", nbins, 0, maximum);
+        h_induced_pixel_charge_ = new ROOT::TThreadedObject<TH1D>(
+            "pixelcharge", "induced charge per pixel;induced pixel charge [ke];pixels", nbins, 0, maximum);
     }
 }
 
@@ -88,7 +88,7 @@ void PulseTransferModule::run(Event* event) {
 
         // Fill pixel charge histogram
         if(output_plots_) {
-            h_induced_pixel_charge_->Fill(pulse.getCharge() / 1e3);
+            h_induced_pixel_charge_->Get()->Fill(pulse.getCharge() / 1e3);
         }
 
         // Fill a graphs with the individual pixel pulses:
@@ -147,7 +147,7 @@ void PulseTransferModule::run(Event* event) {
 
     // Fill pixel charge histogram
     if(output_plots_) {
-        h_total_induced_charge_->Fill(total_pulse.getCharge() / 1e3);
+        h_total_induced_charge_->Get()->Fill(total_pulse.getCharge() / 1e3);
     }
 
     LOG(INFO) << "Total charge induced on all pixels: " << Units::display(total_pulse.getCharge(), "e");
@@ -158,7 +158,7 @@ void PulseTransferModule::finalize() {
     if(output_plots_) {
         // Write histograms
         LOG(TRACE) << "Writing output plots to file";
-        h_induced_pixel_charge_->Write();
-        h_total_induced_charge_->Write();
+        h_induced_pixel_charge_->Merge()->Write();
+        h_total_induced_charge_->Merge()->Write();
     }
 }
