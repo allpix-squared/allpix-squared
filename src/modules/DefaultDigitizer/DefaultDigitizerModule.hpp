@@ -21,6 +21,7 @@
 
 #include "objects/PixelCharge.hpp"
 
+#include <ROOT/TThreadedObject.hxx>
 #include <TH1D.h>
 #include <TH2D.h>
 
@@ -66,8 +67,9 @@ namespace allpix {
         std::atomic<unsigned long long> total_hits_{};
 
         // Output histograms
-        TH1D *h_pxq{}, *h_pxq_noise{}, *h_gain{}, *h_pxq_gain{}, *h_thr{}, *h_pxq_thr{}, *h_pxq_adc_smear{}, *h_pxq_adc{};
-        TH2D* h_calibration{};
+        ROOT::TThreadedObject<TH1D>*h_pxq{}, *h_pxq_noise{}, *h_gain{}, *h_pxq_gain{}, *h_thr{}, *h_pxq_thr{},
+            *h_pxq_adc_smear{}, *h_pxq_adc{};
+        ROOT::TThreadedObject<TH2D>* h_calibration{};
     };
 } // namespace allpix
 

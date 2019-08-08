@@ -62,31 +62,37 @@ void DefaultDigitizerModule::init(std::mt19937_64&) {
         auto nbins = config_.get<int>("output_plots_bins");
 
         // Create histograms if needed
-        h_pxq = new TH1D("pixelcharge", "raw pixel charge;pixel charge [ke];pixels", nbins, 0, maximum);
-        h_pxq_noise = new TH1D("pixelcharge_noise", "pixel charge w/ el. noise;pixel charge [ke];pixels", nbins, 0, maximum);
-        h_gain = new TH1D("gain", "applied gain; gain factor;events", 40, -20, 20);
-        h_pxq_gain =
-            new TH1D("pixelcharge_gain", "pixel charge w/ gain applied;pixel charge [ke];pixels", nbins, 0, maximum);
-        h_thr = new TH1D("threshold", "applied threshold; threshold [ke];events", maximum, 0, maximum / 10);
-        h_pxq_thr =
-            new TH1D("pixelcharge_threshold", "pixel charge above threshold;pixel charge [ke];pixels", nbins, 0, maximum);
-        h_pxq_adc_smear = new TH1D(
+        h_pxq =
+            new ROOT::TThreadedObject<TH1D>("pixelcharge", "raw pixel charge;pixel charge [ke];pixels", nbins, 0, maximum);
+        h_pxq_noise = new ROOT::TThreadedObject<TH1D>(
+            "pixelcharge_noise", "pixel charge w/ el. noise;pixel charge [ke];pixels", nbins, 0, maximum);
+        h_gain = new ROOT::TThreadedObject<TH1D>("gain", "applied gain; gain factor;events", 40, -20, 20);
+        h_pxq_gain = new ROOT::TThreadedObject<TH1D>(
+            "pixelcharge_gain", "pixel charge w/ gain applied;pixel charge [ke];pixels", nbins, 0, maximum);
+        h_thr = new ROOT::TThreadedObject<TH1D>(
+            "threshold", "applied threshold; threshold [ke];events", maximum, 0, maximum / 10);
+        h_pxq_thr = new ROOT::TThreadedObject<TH1D>(
+            "pixelcharge_threshold", "pixel charge above threshold;pixel charge [ke];pixels", nbins, 0, maximum);
+        h_pxq_adc_smear = new ROOT::TThreadedObject<TH1D>(
             "pixelcharge_adc_smeared", "pixel charge after ADC smearing;pixel charge [ke];pixels", nbins, 0, maximum);
 
         // Create final pixel charge plot with different axis, depending on whether ADC simulation is enabled or not
         if(config_.get<int>("adc_resolution") > 0) {
             int adcbins = ((1 << config_.get<int>("adc_resolution")) - 1);
-            h_pxq_adc = new TH1D("pixelcharge_adc", "pixel charge after ADC;pixel charge [ADC];pixels", adcbins, 0, adcbins);
-            h_calibration = new TH2D("charge_adc_calibration",
-                                     "calibration curve of pixel charge to ADC units;pixel charge [ke];pixel charge [ADC]",
-                                     nbins,
-                                     0,
-                                     maximum,
-                                     adcbins,
-                                     0,
-                                     adcbins);
+            h_pxq_adc = new ROOT::TThreadedObject<TH1D>(
+                "pixelcharge_adc", "pixel charge after ADC;pixel charge [ADC];pixels", adcbins, 0, adcbins);
+            h_calibration = new ROOT::TThreadedObject<TH2D>(
+                "charge_adc_calibration",
+                "calibration curve of pixel charge to ADC units;pixel charge [ke];pixel charge [ADC]",
+                nbins,
+                0,
+                maximum,
+                adcbins,
+                0,
+                adcbins);
         } else {
-            h_pxq_adc = new TH1D("pixelcharge_adc", "final pixel charge;pixel charge [ke];pixels", nbins, 0, maximum);
+            h_pxq_adc = new ROOT::TThreadedObject<TH1D>(
+                "pixelcharge_adc", "final pixel charge;pixel charge [ke];pixels", nbins, 0, maximum);
         }
     }
 }
@@ -103,7 +109,7 @@ void DefaultDigitizerModule::run(Event* event) {
 
         LOG(DEBUG) << "Received pixel " << pixel_index << ", charge " << Units::display(charge, "e");
         if(config_.get<bool>("output_plots")) {
-            h_pxq->Fill(charge / 1e3);
+            h_pxq->Get()->Fill(charge / 1e3);
         }
 
         // Add electronics noise from Gaussian:
@@ -112,21 +118,21 @@ void DefaultDigitizerModule::run(Event* event) {
 
         LOG(DEBUG) << "Charge with noise: " << Units::display(charge, "e");
         if(config_.get<bool>("output_plots")) {
-            h_pxq_noise->Fill(charge / 1e3);
+            h_pxq_noise->Get()->Fill(charge / 1e3);
         }
 
         // Smear the gain factor, Gaussian distribution around "gain" with width "gain_smearing"
         std::normal_distribution<double> gain_smearing(config_.get<double>("gain"), config_.get<double>("gain_smearing"));
         double gain = gain_smearing(event->getRandomEngine());
         if(config_.get<bool>("output_plots")) {
-            h_gain->Fill(gain);
+            h_gain->Get()->Fill(gain);
         }
 
         // Apply the gain to the charge:
         charge *= gain;
         LOG(DEBUG) << "Charge after amplifier (gain): " << Units::display(charge, "e");
         if(config_.get<bool>("output_plots")) {
-            h_pxq_gain->Fill(charge / 1e3);
+            h_pxq_gain->Get()->Fill(charge / 1e3);
         }
 
         // Smear the threshold, Gaussian distribution around "threshold" with width "threshold_smearing"
@@ -134,7 +140,7 @@ void DefaultDigitizerModule::run(Event* event) {
                                                       config_.get<unsigned int>("threshold_smearing"));
         double threshold = thr_smearing(event->getRandomEngine());
         if(config_.get<bool>("output_plots")) {
-            h_thr->Fill(threshold / 1e3);
+            h_thr->Get()->Fill(threshold / 1e3);
         }
 
         // Discard charges below threshold:
@@ -146,7 +152,7 @@ void DefaultDigitizerModule::run(Event* event) {
 
         LOG(DEBUG) << "Passed threshold: " << Units::display(charge, "e") << " > " << Units::display(threshold, "e");
         if(config_.get<bool>("output_plots")) {
-            h_pxq_thr->Fill(charge / 1e3);
+            h_pxq_thr->Get()->Fill(charge / 1e3);
         }
 
         // Simulate ADC if resolution set to more than 0bit
@@ -158,7 +164,7 @@ void DefaultDigitizerModule::run(Event* event) {
             std::normal_distribution<double> adc_smearing(0, config_.get<unsigned int>("adc_smearing"));
             charge += adc_smearing(event->getRandomEngine());
             if(config_.get<bool>("output_plots")) {
-                h_pxq_adc_smear->Fill(charge / 1e3);
+                h_pxq_adc_smear->Get()->Fill(charge / 1e3);
             }
             LOG(DEBUG) << "Smeared for simulating limited ADC sensitivity: " << Units::display(charge, "e");
 
@@ -170,13 +176,13 @@ void DefaultDigitizerModule::run(Event* event) {
             LOG(DEBUG) << "Charge converted to ADC units: " << charge;
 
             if(config_.get<bool>("output_plots")) {
-                h_calibration->Fill(original_charge / 1e3, charge);
-                h_pxq_adc->Fill(charge);
+                h_calibration->Get()->Fill(original_charge / 1e3, charge);
+                h_pxq_adc->Get()->Fill(charge);
             }
         } else {
             // Fill the final pixel charge
             if(config_.get<bool>("output_plots")) {
-                h_pxq_adc->Fill(charge / 1e3);
+                h_pxq_adc->Get()->Fill(charge / 1e3);
             }
         }
 
@@ -199,17 +205,17 @@ void DefaultDigitizerModule::finalize() {
     if(config_.get<bool>("output_plots")) {
         // Write histograms
         LOG(TRACE) << "Writing output plots to file";
-        h_pxq->Write();
-        h_pxq_noise->Write();
-        h_gain->Write();
-        h_pxq_gain->Write();
-        h_thr->Write();
-        h_pxq_thr->Write();
-        h_pxq_adc->Write();
+        h_pxq->Merge()->Write();
+        h_pxq_noise->Merge()->Write();
+        h_gain->Merge()->Write();
+        h_pxq_gain->Merge()->Write();
+        h_thr->Merge()->Write();
+        h_pxq_thr->Merge()->Write();
+        h_pxq_adc->Merge()->Write();
 
         if(config_.get<int>("adc_resolution") > 0) {
-            h_pxq_adc_smear->Write();
-            h_calibration->Write();
+            h_pxq_adc_smear->Merge()->Write();
+            h_calibration->Merge()->Write();
         }
     }
 
