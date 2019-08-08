@@ -94,6 +94,9 @@ void ProjectionPropagationModule::init(std::mt19937_64&) {
                                                             static_cast<int>(Units::convert(integration_time_, "ns") * 5),
                                                             0,
                                                             static_cast<double>(Units::convert(integration_time_, "ns")));
+
+        // Initialize empty histogram
+        drift_time_histo_->Get();
     }
 }
 

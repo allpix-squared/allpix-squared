@@ -76,6 +76,15 @@ void DefaultDigitizerModule::init(std::mt19937_64&) {
         h_pxq_adc_smear = new ROOT::TThreadedObject<TH1D>(
             "pixelcharge_adc_smeared", "pixel charge after ADC smearing;pixel charge [ke];pixels", nbins, 0, maximum);
 
+        // Initialize empty histograms
+        h_pxq->Get();
+        h_pxq_noise->Get();
+        h_gain->Get();
+        h_pxq_gain->Get();
+        h_thr->Get();
+        h_pxq_thr->Get();
+        h_pxq_adc_smear->Get();
+
         // Create final pixel charge plot with different axis, depending on whether ADC simulation is enabled or not
         if(config_.get<int>("adc_resolution") > 0) {
             int adcbins = ((1 << config_.get<int>("adc_resolution")) - 1);
@@ -90,9 +99,16 @@ void DefaultDigitizerModule::init(std::mt19937_64&) {
                 adcbins,
                 0,
                 adcbins);
+
+            // Initialize empty histograms
+            h_pxq_adc->Get();
+            h_calibration->Get();
         } else {
             h_pxq_adc = new ROOT::TThreadedObject<TH1D>(
                 "pixelcharge_adc", "final pixel charge;pixel charge [ke];pixels", nbins, 0, maximum);
+
+            // Initialize empty histograms
+            h_pxq_adc->Get();
         }
     }
 }

@@ -141,6 +141,14 @@ void TransientPropagationModule::init(std::mt19937_64&) {
                                                             static_cast<int>(Units::convert(integration_time_, "ns") * 5),
                                                             0,
                                                             static_cast<double>(Units::convert(integration_time_, "ns")));
+
+        // Initialize empty histograms
+        potential_difference_->Get();
+        induced_charge_histo_->Get();
+        induced_charge_e_histo_->Get();
+        induced_charge_h_histo_->Get();
+        step_length_histo_->Get();
+        drift_time_histo_->Get();
     }
 }
 

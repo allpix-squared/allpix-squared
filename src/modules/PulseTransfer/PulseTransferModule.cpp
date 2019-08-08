@@ -50,6 +50,10 @@ void PulseTransferModule::init(std::mt19937_64&) {
             "inducedcharge", "total induced charge;induced charge [ke];events", nbins, 0, maximum);
         h_induced_pixel_charge_ = new ROOT::TThreadedObject<TH1D>(
             "pixelcharge", "induced charge per pixel;induced pixel charge [ke];pixels", nbins, 0, maximum);
+
+        // Initialize empty histograms
+        h_total_induced_charge_->Get();
+        h_induced_pixel_charge_->Get();
     }
 }
 

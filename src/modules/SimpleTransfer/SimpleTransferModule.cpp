@@ -69,6 +69,9 @@ void SimpleTransferModule::init(std::mt19937_64&) {
                                                            time_bins,
                                                            0.,
                                                            config_.get<double>("output_plots_range"));
+
+        // Initialize empty histogram
+        drift_time_histo->Get();
     }
 }
 

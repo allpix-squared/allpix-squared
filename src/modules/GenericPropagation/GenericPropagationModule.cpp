@@ -537,6 +537,12 @@ void GenericPropagationModule::init(std::mt19937_64&) {
                                             config_.get<int>("charge_per_step") - 1,
                                             1,
                                             static_cast<double>(config_.get<unsigned int>("charge_per_step")));
+
+        // Initialize empty histograms
+        step_length_histo_->Get();
+        drift_time_histo_->Get();
+        uncertainty_histo_->Get();
+        group_size_histo_->Get();
     }
 }
 

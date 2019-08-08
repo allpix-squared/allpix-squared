@@ -417,6 +417,9 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fan
                 if(charge_per_event_.find(sensitive_detector_action->getName()) == charge_per_event_.end()) {
                     charge_per_event_[sensitive_detector_action->getName()] = new ROOT::TThreadedObject<TH1D>(
                         plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum);
+
+                    // Initialize empty histogram
+                    charge_per_event_[sensitive_detector_action->getName()]->Get();
                 }
             }
         }
