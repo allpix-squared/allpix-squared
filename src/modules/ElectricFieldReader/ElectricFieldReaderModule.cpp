@@ -39,7 +39,7 @@ ElectricFieldReaderModule::ElectricFieldReaderModule(Configuration& config, Mess
     }
 }
 
-void ElectricFieldReaderModule::init(std::mt19937_64&) {
+void ElectricFieldReaderModule::init() {
     FieldType type = FieldType::GRID;
 
     // Check field strength

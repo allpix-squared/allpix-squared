@@ -50,7 +50,7 @@ namespace allpix {
         /**
          * @brief Initialize the histograms
          */
-        void init(std::mt19937_64&) override;
+        void init() override;
 
         /**
          * @brief Deposit charge carriers for every simulated event

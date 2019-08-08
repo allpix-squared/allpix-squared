@@ -85,7 +85,7 @@ VisualizationGeant4Module::~VisualizationGeant4Module() {
     }
 }
 
-void VisualizationGeant4Module::init(std::mt19937_64&) {
+void VisualizationGeant4Module::init() {
     Configuration& global_config = getConfigManager()->getGlobalConfiguration();
 
     // The Geant4 RunManager in multithreaded mode doesn't support visualization

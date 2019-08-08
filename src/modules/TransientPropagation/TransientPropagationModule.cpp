@@ -75,7 +75,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     hole_Hall_ = 0.9;
 }
 
-void TransientPropagationModule::init(std::mt19937_64&) {
+void TransientPropagationModule::init() {
 
     auto detector = getDetector();
 

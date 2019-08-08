@@ -60,7 +60,7 @@ DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
     }
 }
 
-void DepositionPointChargeModule::init(std::mt19937_64&) {
+void DepositionPointChargeModule::init() {
 
     auto model = detector_->getModel();
 

@@ -36,7 +36,7 @@ namespace allpix {
      *
      * The module base is the core of the modular framework. All modules should be descendants of this class. The base class
      * defines the methods the children can implement:
-     * - Module::init(uint_64t): for initializing the module at the start
+     * - Module::init(): for initializing the module at the start
      * - Module::run(Event*): for doing the job of every module for every event
      * - Module::finalize(): for finalizing the module at the end
      *
@@ -108,6 +108,12 @@ namespace allpix {
         std::string createOutputFile(const std::string& path, bool global = false, bool delete_file = false);
 
         /**
+         * @brief Get seed to initialize random generators
+         * @warning This should be the only method used by modules to seed random numbers to allow reproducing results
+         */
+        uint64_t getRandomSeed();
+
+        /**
          * @brief Get ROOT directory which should be used to output histograms et cetera
          * @return ROOT directory for storage
          */
@@ -121,11 +127,10 @@ namespace allpix {
 
         /**
          * @brief Initialize the module before the event sequence
-         * @param random_seed Random seed, if required
          *
          * Does nothing if not overloaded.
          */
-        virtual void init(std::mt19937_64& seeder) { (void)seeder; }
+        virtual void init() {}
 
         /**
          * @brief Execute the function of the module for every event
@@ -199,6 +204,13 @@ namespace allpix {
          */
         bool check_delegates(Messenger* messenger);
         std::vector<std::pair<Messenger*, BaseDelegate*>> delegates_;
+
+        /**
+         * @brief Set the random number generator for this module
+         * @param random_generator Generator to produce random numbers
+         */
+        void set_random_generator(std::mt19937_64* random_generator);
+        std::mt19937_64* random_generator_{nullptr};
 
         std::shared_ptr<Detector> detector_;
     };

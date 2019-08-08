@@ -52,7 +52,7 @@ namespace allpix {
         /**
          * @brief Initialize the module and check field configuration
          */
-        void init(std::mt19937_64&) override;
+        void init() override;
 
         /**
          * @brief Propagate all deposited charges through the sensor

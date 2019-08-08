@@ -60,7 +60,7 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
     config_.setDefault<bool>("ignore_magnetic_field", false);
 }
 
-void ProjectionPropagationModule::init(std::mt19937_64&) {
+void ProjectionPropagationModule::init() {
     if(detector_->getElectricFieldType() != FieldType::LINEAR) {
         throw ModuleError("This module should only be used with linear electric fields.");
     }

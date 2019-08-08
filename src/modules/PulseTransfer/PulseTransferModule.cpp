@@ -36,7 +36,7 @@ PulseTransferModule::PulseTransferModule(Configuration& config,
     messenger->bindSingle<PropagatedChargeMessage>(this, MsgFlags::REQUIRED);
 }
 
-void PulseTransferModule::init(std::mt19937_64&) {
+void PulseTransferModule::init() {
 
     if(output_plots_) {
         LOG(TRACE) << "Creating output plots";

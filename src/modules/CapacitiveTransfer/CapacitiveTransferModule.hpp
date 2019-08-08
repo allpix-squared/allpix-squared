@@ -53,7 +53,7 @@ namespace allpix {
         /**
          * @brief Initialize the module, creating the cross-coupling matrixs
          */
-        void init(std::mt19937_64&) override;
+        void init() override;
 
         /**
          * @brief Transfer the propagated charges to the pixels and its neighbours

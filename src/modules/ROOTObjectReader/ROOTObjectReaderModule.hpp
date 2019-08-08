@@ -52,7 +52,7 @@ namespace allpix {
         /**
          * @brief Open the ROOT file containing the stored output data
          */
-        void init(std::mt19937_64&) override;
+        void init() override;
 
         /**
          * @brief Convert the objects stored for the current event to messages
