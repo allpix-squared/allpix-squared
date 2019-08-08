@@ -105,38 +105,42 @@ void TransientPropagationModule::init(std::mt19937_64&) {
     }
 
     if(output_plots_) {
-        potential_difference_ =
-            new TH1D("potential_difference",
-                     "Weighting potential difference between two steps;#left|#Delta#phi_{w}#right| [a.u.];events",
-                     500,
-                     0,
-                     1);
-        induced_charge_histo_ = new TH1D("induced_charge_histo",
-                                         "Induced charge per time, all pixels;Drift time [ns];charge [e]",
-                                         static_cast<int>(integration_time_ / timestep_),
-                                         0,
-                                         static_cast<double>(Units::convert(integration_time_, "ns")));
-        induced_charge_e_histo_ = new TH1D("induced_charge_e_histo",
-                                           "Induced charge per time, electrons only, all pixels;Drift time [ns];charge [e]",
-                                           static_cast<int>(integration_time_ / timestep_),
-                                           0,
-                                           static_cast<double>(Units::convert(integration_time_, "ns")));
-        induced_charge_h_histo_ = new TH1D("induced_charge_h_histo",
-                                           "Induced charge per time, holes only, all pixels;Drift time [ns];charge [e]",
-                                           static_cast<int>(integration_time_ / timestep_),
-                                           0,
-                                           static_cast<double>(Units::convert(integration_time_, "ns")));
-        step_length_histo_ = new TH1D("step_length_histo",
-                                      "Step length;length [#mum];integration steps",
-                                      100,
-                                      0,
-                                      static_cast<double>(Units::convert(0.25 * model_->getSensorSize().z(), "um")));
+        potential_difference_ = new ROOT::TThreadedObject<TH1D>(
+            "potential_difference",
+            "Weighting potential difference between two steps;#left|#Delta#phi_{w}#right| [a.u.];events",
+            500,
+            0,
+            1);
+        induced_charge_histo_ =
+            new ROOT::TThreadedObject<TH1D>("induced_charge_histo",
+                                            "Induced charge per time, all pixels;Drift time [ns];charge [e]",
+                                            static_cast<int>(integration_time_ / timestep_),
+                                            0,
+                                            static_cast<double>(Units::convert(integration_time_, "ns")));
+        induced_charge_e_histo_ =
+            new ROOT::TThreadedObject<TH1D>("induced_charge_e_histo",
+                                            "Induced charge per time, electrons only, all pixels;Drift time [ns];charge [e]",
+                                            static_cast<int>(integration_time_ / timestep_),
+                                            0,
+                                            static_cast<double>(Units::convert(integration_time_, "ns")));
+        induced_charge_h_histo_ =
+            new ROOT::TThreadedObject<TH1D>("induced_charge_h_histo",
+                                            "Induced charge per time, holes only, all pixels;Drift time [ns];charge [e]",
+                                            static_cast<int>(integration_time_ / timestep_),
+                                            0,
+                                            static_cast<double>(Units::convert(integration_time_, "ns")));
+        step_length_histo_ =
+            new ROOT::TThreadedObject<TH1D>("step_length_histo",
+                                            "Step length;length [#mum];integration steps",
+                                            100,
+                                            0,
+                                            static_cast<double>(Units::convert(0.25 * model_->getSensorSize().z(), "um")));
 
-        drift_time_histo_ = new TH1D("drift_time_histo",
-                                     "Drift time;Drift time [ns];charge carriers",
-                                     static_cast<int>(Units::convert(integration_time_, "ns") * 5),
-                                     0,
-                                     static_cast<double>(Units::convert(integration_time_, "ns")));
+        drift_time_histo_ = new ROOT::TThreadedObject<TH1D>("drift_time_histo",
+                                                            "Drift time;Drift time [ns];charge carriers",
+                                                            static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                                            0,
+                                                            static_cast<double>(Units::convert(integration_time_, "ns")));
     }
 }
 
@@ -187,7 +191,7 @@ void TransientPropagationModule::run(Event* event) {
             propagated_charges.push_back(std::move(propagated_charge));
 
             if(output_plots_) {
-                drift_time_histo_->Fill(static_cast<double>(Units::convert(prop_pair.second, "ns")), charge_per_step);
+                drift_time_histo_->Get()->Fill(static_cast<double>(Units::convert(prop_pair.second, "ns")), charge_per_step);
             }
         }
     }
@@ -299,7 +303,7 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(Ev
 
         // Update step length histogram
         if(output_plots_) {
-            step_length_histo_->Fill(static_cast<double>(Units::convert(step.value.norm(), "um")));
+            step_length_histo_->Get()->Fill(static_cast<double>(Units::convert(step.value.norm(), "um")));
         }
 
         // Check for overshooting outside the sensor and correct for it:
@@ -366,12 +370,12 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(Ev
                 pixel_map_iterator.first->second.addCharge(induced, runge_kutta.getTime());
 
                 if(output_plots_) {
-                    potential_difference_->Fill(std::fabs(ramo - last_ramo));
-                    induced_charge_histo_->Fill(runge_kutta.getTime(), induced);
+                    potential_difference_->Get()->Fill(std::fabs(ramo - last_ramo));
+                    induced_charge_histo_->Get()->Fill(runge_kutta.getTime(), induced);
                     if(type == CarrierType::ELECTRON) {
-                        induced_charge_e_histo_->Fill(runge_kutta.getTime(), induced);
+                        induced_charge_e_histo_->Get()->Fill(runge_kutta.getTime(), induced);
                     } else {
-                        induced_charge_h_histo_->Fill(runge_kutta.getTime(), induced);
+                        induced_charge_h_histo_->Get()->Fill(runge_kutta.getTime(), induced);
                     }
                 }
             }
@@ -384,11 +388,11 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(Ev
 
 void TransientPropagationModule::finalize() {
     if(output_plots_) {
-        potential_difference_->Write();
-        step_length_histo_->Write();
-        drift_time_histo_->Write();
-        induced_charge_histo_->Write();
-        induced_charge_e_histo_->Write();
-        induced_charge_h_histo_->Write();
+        potential_difference_->Merge()->Write();
+        step_length_histo_->Merge()->Write();
+        drift_time_histo_->Merge()->Write();
+        induced_charge_histo_->Merge()->Write();
+        induced_charge_e_histo_->Merge()->Write();
+        induced_charge_h_histo_->Merge()->Write();
     }
 }
