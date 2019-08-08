@@ -51,7 +51,7 @@ void InducedTransferModule::run(Event* event) {
     LOG(TRACE) << "Calculating induced charge on pixels";
     bool found_electrons = false, found_holes = false;
 
-    std::map<Pixel::Index, std::vector<std::pair<double, const PropagatedCharge*>>, pixel_cmp> pixel_map;
+    std::map<Pixel::Index, std::vector<std::pair<double, const PropagatedCharge*>>> pixel_map;
     for(auto& propagated_charge : propagated_message->getData()) {
 
         // Make sure both electrons and holes are present in the input data

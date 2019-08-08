@@ -62,7 +62,7 @@ void PulseTransferModule::run(Event* event) {
 
     // Create map for all pixels: pulse and propagated charges
     std::map<Pixel::Index, Pulse> pixel_pulse_map;
-    std::map<Pixel::Index, std::vector<const PropagatedCharge*>, pixel_cmp> pixel_charge_map;
+    std::map<Pixel::Index, std::vector<const PropagatedCharge*>> pixel_charge_map;
 
     LOG(DEBUG) << "Received " << propagated_message->getData().size() << " propagated charge objects.";
     for(auto& propagated_charge : propagated_message->getData()) {
