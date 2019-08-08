@@ -102,3 +102,8 @@ MACRO(allpix_module_install name)
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
 ENDMACRO()
+
+MACRO(allpix_module_require_geant4_interface name)
+    SET(ALLPIX_BUILD_GEANT4_INTERFACE "ON" CACHE BOOL "Build Gean4 interface library" FORCE)
+    TARGET_LINK_LIBRARIES(${name} ${ALLPIX_GEANT4_INTERFACE})
+ENDMACRO()
