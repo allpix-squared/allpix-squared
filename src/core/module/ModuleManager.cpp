@@ -24,6 +24,7 @@
 #include <stdexcept>
 #include <string>
 
+#include <TROOT.h>
 #include <TSystem.h>
 
 #include "core/config/ConfigManager.hpp"
@@ -593,7 +594,10 @@ void ModuleManager::run(std::mt19937_64& seeder) {
             throw InvalidValueError(global_config, "workers", "number of workers should be strictly more than zero");
         }
         LOG(INFO) << "Multithreading enabled - using " << threads_num << " worker threads.";
-        if(threads_num > 8) {
+
+        // ROOT 6.12/00 introduces a new type of locking for operations with TObjects that impacts the performance
+        // of the framework since all threads are waiting if any is using a TObject
+        if(threads_num > 8 && gROOT->GetVersionInt() >= 61200) {
             LOG(WARNING) << "Using more than 8 worker threads may severely impact simulation performance due to ROOT "
                             "internals. See "
                             "<https://root-forum.cern.ch/t/copying-trefs-and-accessing-tref-data-from-multiple-threads/"
