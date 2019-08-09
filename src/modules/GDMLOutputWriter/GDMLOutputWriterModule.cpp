@@ -38,7 +38,10 @@
 
 using namespace allpix;
 
-GDMLOutputWriterModule::GDMLOutputWriterModule(Configuration& config, Messenger*, GeometryManager*) : Module(config) {}
+GDMLOutputWriterModule::GDMLOutputWriterModule(Configuration& config, Messenger*, GeometryManager*) : Module(config) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+}
 
 void GDMLOutputWriterModule::init() {
 
