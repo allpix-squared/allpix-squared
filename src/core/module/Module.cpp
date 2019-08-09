@@ -168,6 +168,16 @@ void Module::set_config_manager(ConfigManager* conf_manager) {
     conf_manager_ = conf_manager;
 }
 
+bool Module::canParallelize() {
+    return parallelize_;
+}
+void Module::enable_parallelization() {
+    parallelize_ = true;
+}
+void Module::set_parallelize(bool parallelize) {
+    parallelize_ = parallelize;
+}
+
 Configuration& Module::get_configuration() {
     return config_;
 }

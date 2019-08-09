@@ -126,6 +126,12 @@ namespace allpix {
         ConfigManager* getConfigManager() const;
 
         /**
+         * @brief Returns if parallelization of this module is enabled
+         * @return True if parallelization is enabled, false otherwise (the default)
+         */
+        bool canParallelize();
+
+        /**
          * @brief Initialize the module before the event sequence
          *
          * Does nothing if not overloaded.
@@ -157,6 +163,11 @@ namespace allpix {
         virtual void finalize() {}
 
     protected:
+        /**
+         * @brief Enable parallelization for this module
+         */
+        void enable_parallelization();
+
         /**
          * @brief Get the module configuration for internal use
          * @return Configuration of the module
@@ -213,6 +224,12 @@ namespace allpix {
         std::mt19937_64* random_generator_{nullptr};
 
         std::shared_ptr<Detector> detector_;
+
+        /**
+         * @brief Sets the parallelize flag
+         */
+        void set_parallelize(bool parallelize);
+        bool parallelize_{false};
     };
 
     /**
