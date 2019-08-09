@@ -22,6 +22,9 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
                                                          Messenger* messenger,
                                                          std::shared_ptr<Detector> detector)
     : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+
     // Save detector model
     model_ = detector_->getModel();
 
