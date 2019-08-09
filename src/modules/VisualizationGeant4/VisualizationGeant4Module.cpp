@@ -86,15 +86,6 @@ VisualizationGeant4Module::~VisualizationGeant4Module() {
 }
 
 void VisualizationGeant4Module::init() {
-    Configuration& global_config = getConfigManager()->getGlobalConfiguration();
-
-    // The Geant4 RunManager in multithreaded mode doesn't support visualization
-    // therefore, we prevent users from including this module when the multithreading
-    // flag is set
-    if(global_config.get<bool>("multithreading", false)) {
-        throw ModuleError("Cannot use visualization in multithreading mode.");
-    }
-
     // Suppress all geant4 output
     SUPPRESS_STREAM(G4cout);
 
