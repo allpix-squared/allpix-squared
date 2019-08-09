@@ -92,6 +92,8 @@ inline std::array<long double, 3> getRotationAnglesFromMatrix(ROOT::Math::Rotati
 
 LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo)
     : WriterModule(config), geo_mgr_(geo) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
 
     // Bind pixel hits message
     messenger->bindMulti<PixelHitMessage>(this, MsgFlags::REQUIRED);
