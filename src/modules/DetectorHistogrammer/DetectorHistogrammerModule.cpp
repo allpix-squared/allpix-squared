@@ -26,6 +26,9 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
     : WriterModule(config, detector), detector_(std::move(detector)) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+
     // Bind messages
     messenger->bindSingle<PixelHitMessage>(this);
     messenger->bindSingle<MCParticleMessage>(this, MsgFlags::REQUIRED);
