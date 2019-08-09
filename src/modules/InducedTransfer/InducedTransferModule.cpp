@@ -23,6 +23,9 @@ InducedTransferModule::InducedTransferModule(Configuration& config,
                                              Messenger* messenger,
                                              const std::shared_ptr<Detector>& detector)
     : Module(config, detector), detector_(detector) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+
     using XYVectorInt = DisplacementVector2D<Cartesian2D<int>>;
 
     // Save detector model
