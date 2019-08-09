@@ -624,7 +624,7 @@ void ModuleManager::run(std::mt19937_64& seeder) {
     } else {
         // Issue a warning in case MT was requested but we can't actually run in MT
         if(multithreading_flag_ && !can_parallelize_) {
-            global_config.set<size_t>("multithreading", false);
+            global_config.set<bool>("multithreading", false);
             LOG(WARNING)
                 << "Multithreading was requested, however, the current module configuration doesn't support multithreading."
                    " Turning multithreading OFF!";
