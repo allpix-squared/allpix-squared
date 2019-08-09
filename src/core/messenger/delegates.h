@@ -111,12 +111,10 @@ namespace allpix {
         /// @}
 
         /**
-         * @brief Check if delegate satisfied its requirements
-         * @return True if satisfied, false otherwise
-         *
-         * The delegate is always satisfied if the \ref MsgFlags::REQUIRED "REQUIRED" flag has not been passed.
+         * @brief Check if delegate has a required message
+         * @return True if message is required, false otherwise
          */
-        bool isSatisfied() const { return (getFlags() & MsgFlags::REQUIRED) == MsgFlags::NONE; }
+        bool isRequired() const { return (getFlags() & MsgFlags::REQUIRED) != MsgFlags::NONE; }
 
         /**
          * @brief Get the flags for this delegate
