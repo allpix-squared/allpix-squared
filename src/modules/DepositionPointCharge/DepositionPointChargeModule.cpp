@@ -25,6 +25,8 @@ DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
                                                          Messenger*,
                                                          std::shared_ptr<Detector> detector)
     : Module(config, detector), detector_(std::move(detector)) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
 
     // Set default value for the number of charges deposited
     config_.setDefault("number_of_charges", 1);
