@@ -106,9 +106,9 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     output_plots_lines_at_implants_ = config_.get<bool>("output_plots_lines_at_implants");
 
     // Enable parallelization of this module if multithreading is enabled and no per-event output plots are requested:
+    // FIXME: Review if this is really the case or we can still use multithreading
     if(!(output_animations_ || output_linegraphs_)) {
-        // FIXME without the possibility to disbale parallelization we got a problem with the way we generate plots here...
-        // enable_parallelization();
+        enable_parallelization();
     }
 
     // Parameterization variables from https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2)
