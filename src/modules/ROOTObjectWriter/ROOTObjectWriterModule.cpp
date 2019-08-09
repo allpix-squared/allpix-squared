@@ -28,6 +28,9 @@ using namespace allpix;
 
 ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
     : WriterModule(config), geo_mgr_(geo_mgr) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+
     // Bind to all messages with filter
     messenger->registerFilter(this, &ROOTObjectWriterModule::filter);
 }
