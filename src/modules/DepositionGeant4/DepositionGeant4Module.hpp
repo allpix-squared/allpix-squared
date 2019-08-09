@@ -111,9 +111,6 @@ namespace allpix {
 
         std::atomic_size_t number_of_sensors_{0};
 
-        // cached copy of the multithreading configuration flag
-        bool using_multithreading_{false};
-
         // Mutex used for the construction of histograms
         std::mutex histogram_mutex_;
 

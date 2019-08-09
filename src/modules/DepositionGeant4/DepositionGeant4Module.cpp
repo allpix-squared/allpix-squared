@@ -54,6 +54,9 @@ thread_local std::vector<SensitiveDetectorActionG4*> DepositionGeant4Module::sen
  */
 DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
     : Module(config), messenger_(messenger), geo_manager_(geo_manager), run_manager_g4_(nullptr) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+
     // Create user limits for maximum step length in the sensor
     user_limits_ = std::make_unique<G4UserLimits>(config_.get<double>("max_step_length", Units::get(1.0, "um")));
 
@@ -96,15 +99,13 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
  * Module depends on \ref GeometryBuilderGeant4Module loaded first, because it owns the pointer to the Geant4 run manager.
  */
 void DepositionGeant4Module::init() {
-    Configuration& global_config = getConfigManager()->getGlobalConfiguration();
     MTRunManager* run_manager_mt = nullptr;
 
     // Load the G4 run manager (which is owned by the geometry builder)
-    if(global_config.get<bool>("multithreading", false)) {
+    if(canParallelize()) {
         run_manager_g4_ = G4MTRunManager::GetMasterRunManager();
         run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
         G4Threading::SetMultithreadedApplication(true);
-        using_multithreading_ = true;
     } else {
         run_manager_g4_ = G4RunManager::GetRunManager();
     }
@@ -240,15 +241,16 @@ void DepositionGeant4Module::init() {
     auto charge_creation_energy = config_.get<double>("charge_creation_energy", Units::get(3.64, "eV"));
     auto fano_factor = config_.get<double>("fano_factor", 0.115);
 
-    // Construct the sensitive detectors and fields. In MT-mode we register a builder that will be called for each
-    // thread to construct the SD when needed. While in sequential mode we construct it now.
-    if(using_multithreading_) {
-        auto detector_construction = new SDAndFieldConstruction(this, fano_factor, charge_creation_energy);
-        run_manager_mt->SetSDAndFieldConstruction(detector_construction);
-    } else {
+    // Construct the sensitive detectors and fields.
+    if(run_manager_mt == nullptr) {
         // Create the info track manager for the main thread before creating the Sensitive detectors.
         track_info_manager_ = std::make_unique<TrackInfoManager>();
         construct_sensitive_detectors_and_fields(fano_factor, charge_creation_energy);
+    } else {
+        // In MT-mode we register a builder that will be called for each thread to construct the SD
+        // when needed.
+        auto detector_construction = new SDAndFieldConstruction(this, fano_factor, charge_creation_energy);
+        run_manager_mt->SetSDAndFieldConstruction(detector_construction);
     }
 
     // Disable verbose messages from processes
@@ -265,7 +267,7 @@ void DepositionGeant4Module::run(Event* event) {
     MTRunManager* run_manager_mt = nullptr;
 
     // Initialize the thread local G4RunManager in case of MT
-    if(using_multithreading_) {
+    if(canParallelize()) {
         run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
 
         // In MT-mode the sensitive detectors will be created with the calls to BeamOn. So we construct the
@@ -291,11 +293,11 @@ void DepositionGeant4Module::run(Event* event) {
 
     // Start a single event from the beam
     LOG(TRACE) << "Enabling beam";
-    if(using_multithreading_) {
+    if(run_manager_mt == nullptr) {
+        run_manager_g4_->BeamOn(static_cast<int>(config_.get<unsigned int>("number_of_particles", 1)));
+    } else {
         run_manager_mt->Run(static_cast<G4int>(event->number),
                             static_cast<int>(config_.get<unsigned int>("number_of_particles", 1)));
-    } else {
-        run_manager_g4_->BeamOn(static_cast<int>(config_.get<unsigned int>("number_of_particles", 1)));
     }
 
     unsigned int last_event_num = last_event_num_.load();
@@ -336,7 +338,7 @@ void DepositionGeant4Module::finalize() {
     }
 
     // Record the number of sensors and the total charges
-    if(!using_multithreading_) {
+    if(!canParallelize()) {
         record_module_statistics();
     }
 
