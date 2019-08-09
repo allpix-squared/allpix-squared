@@ -245,9 +245,10 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
         }
     }
 
-    // Force MT off for all modules in case one module can't run in parallel
-    if(!can_parallelize_) {
+    // Force MT off for all modules in case MT was not requested or some modules didn't enable parallelization
+    if(!(multithreading_flag_ && can_parallelize_)) {
         for(auto& module : modules_) {
+            LOG(STATUS) << "TURN PARALL OFF " << module->getUniqueName();
             module->set_parallelize(false);
         }
     }
