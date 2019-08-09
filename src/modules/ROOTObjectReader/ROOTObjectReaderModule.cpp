@@ -32,7 +32,10 @@
 using namespace allpix;
 
 ROOTObjectReaderModule::ROOTObjectReaderModule(Configuration& config, Messenger*, GeometryManager* geo_mgr)
-    : ReaderModule(config), geo_mgr_(geo_mgr) {}
+    : ReaderModule(config), geo_mgr_(geo_mgr) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+}
 
 /**
  * @note Objects cannot be stored in smart pointers due to internal ROOT logic
