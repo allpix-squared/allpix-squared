@@ -23,7 +23,7 @@
 
 using namespace allpix;
 
-thread_local std::unique_ptr<Messenger::LocalMessenger> Messenger::local_messenger_;
+thread_local std::unique_ptr<LocalMessenger> Messenger::local_messenger_;
 
 Messenger::Messenger() = default;
 #ifdef NDEBUG
@@ -140,9 +140,9 @@ void Messenger::reset() {
     local_messenger_->reset();
 }
 
-Messenger::LocalMessenger::LocalMessenger(Messenger& global_messenger) : global_messenger_(global_messenger) {}
+LocalMessenger::LocalMessenger(Messenger& global_messenger) : global_messenger_(global_messenger) {}
 
-void Messenger::LocalMessenger::dispatchMessage(Module* source, std::shared_ptr<BaseMessage> message, std::string name) {
+void LocalMessenger::dispatchMessage(Module* source, std::shared_ptr<BaseMessage> message, std::string name) {
     // Get the name of the output message
     if(name == "-") {
         name = source->get_configuration().get<std::string>("output");
@@ -167,10 +167,10 @@ void Messenger::LocalMessenger::dispatchMessage(Module* source, std::shared_ptr<
     sent_messages_.emplace_back(message);
 }
 
-bool Messenger::LocalMessenger::dispatchMessage(Module* source,
-                                                const std::shared_ptr<BaseMessage>& message,
-                                                const std::string& name,
-                                                const std::string& id) {
+bool LocalMessenger::dispatchMessage(Module* source,
+                                     const std::shared_ptr<BaseMessage>& message,
+                                     const std::string& name,
+                                     const std::string& id) {
     bool send = false;
 
     // Create type identifier from the typeid
@@ -205,13 +205,12 @@ bool Messenger::LocalMessenger::dispatchMessage(Module* source,
     return send;
 }
 
-std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>>
-Messenger::LocalMessenger::fetchFilteredMessages(Module* module) {
+std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> LocalMessenger::fetchFilteredMessages(Module* module) {
     const std::type_index type_idx = typeid(BaseMessage);
     return messages_.at(module->getUniqueName()).at(type_idx).filter_multi;
 }
 
-bool Messenger::LocalMessenger::isSatisfied(BaseDelegate* delegate) const {
+bool LocalMessenger::isSatisfied(BaseDelegate* delegate) const {
     // check our records for messages for this module
     const std::string name = delegate->getUniqueName();
     auto messages_iter = messages_.find(name);
@@ -234,7 +233,7 @@ bool Messenger::LocalMessenger::isSatisfied(BaseDelegate* delegate) const {
     return true;
 }
 
-void Messenger::LocalMessenger::reset() {
+void LocalMessenger::reset() {
     messages_.clear();
     sent_messages_.clear();
 }

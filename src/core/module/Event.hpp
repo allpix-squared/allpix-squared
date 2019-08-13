@@ -22,6 +22,7 @@ namespace allpix {
     class Module;
     class Messenger;
     class BaseMessage;
+    class LocalMessenger;
     using ModuleList = std::list<std::shared_ptr<Module>>;
 
     /**
@@ -133,6 +134,8 @@ namespace allpix {
 
         // Shared objects between all events
         static event_context* context_;
+
+        LocalMessenger* local_messenger_;
     };
 
 } // namespace allpix
