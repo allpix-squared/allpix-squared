@@ -679,11 +679,9 @@ void ModuleManager::run(std::mt19937_64& seeder) {
         auto event_function = [ number_of_events, event_num = i, event_seed = seed, &finished_events ]() mutable {
             static thread_local std::mt19937_64 random_engine;
 
-            // ReSeed the RNG for the new event
-            random_engine.seed(event_seed);
-
             LOG(STATUS) << "Running event " << event_num << " of " << number_of_events;
-            Event event(event_num, random_engine);
+            Event event(event_num, event_seed);
+            event.set_and_seed_random_engine(&random_engine);
             event.run();
             finished_events++;
             LOG(STATUS) << "Finished event " << event_num;

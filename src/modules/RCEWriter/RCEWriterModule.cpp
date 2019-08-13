@@ -293,7 +293,7 @@ static void write_proteus_config(const std::string& device_path,
 }
 
 RCEWriterModule::RCEWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
-    : BufferedModule<RCEWriterModuleData>(config), geo_mgr_(geo_mgr) {
+    : BufferedModule<RCEWriterModuleData>(config), messenger_(messenger), geo_mgr_(geo_mgr) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
@@ -301,7 +301,7 @@ RCEWriterModule::RCEWriterModule(Configuration& config, Messenger* messenger, Ge
     assert(geo_mgr && "geo_mgr must be non-null");
 
     // Bind to PixelHitMessage
-    messenger->bindMulti<PixelHitMessage>(this, MsgFlags::REQUIRED);
+    messenger_->bindMulti<PixelHitMessage>(this, MsgFlags::REQUIRED);
 
     config_.setDefault("file_name", "rce-data.root");
     // Use default names in Proteus
@@ -420,10 +420,8 @@ void RCEWriterModule::finalize_module() {
 }
 
 RCEWriterModuleData RCEWriterModule::fetch_event_data(Event* event) {
-    auto messenger = event->getMessenger();
-
     RCEWriterModuleData data;
-    data.messages = messenger->fetchMultiMessage<PixelHitMessage>(this);
+    data.messages = messenger_->fetchMultiMessage<PixelHitMessage>(this, event);
 
     return data;
 }

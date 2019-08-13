@@ -82,6 +82,7 @@ namespace allpix {
     private:
         void pre_run(ROOTObjectWriterModuleData&);
 
+        Messenger* messenger_;
         GeometryManager* geo_mgr_;
 
         // Object names to include or exclude from writing

@@ -216,8 +216,9 @@ namespace allpix {
         /**
          * @brief Check if all delegates are satisfied
          * @param messenger Pointer to the messenger we want to check with
+         * @param event Pointer to the event we want to check with
          */
-        bool check_delegates(Messenger* messenger);
+        bool check_delegates(Messenger* messenger, Event* event);
 
         /**
          * @brief Inform the module that a certain event will be skipped

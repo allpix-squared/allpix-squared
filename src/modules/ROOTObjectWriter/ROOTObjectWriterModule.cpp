@@ -27,12 +27,12 @@
 using namespace allpix;
 
 ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
-    : BufferedModule<ROOTObjectWriterModuleData>(config), geo_mgr_(geo_mgr) {
+    : BufferedModule<ROOTObjectWriterModuleData>(config), messenger_(messenger), geo_mgr_(geo_mgr) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
     // Bind to all messages with filter
-    messenger->registerFilter(this, &ROOTObjectWriterModule::filter);
+    messenger_->registerFilter(this, &ROOTObjectWriterModule::filter);
 }
 /**
  * @note Objects cannot be stored in smart pointers due to internal ROOT logic
@@ -286,10 +286,8 @@ void ROOTObjectWriterModule::finalize_module() {
 }
 
 ROOTObjectWriterModuleData ROOTObjectWriterModule::fetch_event_data(Event* event) {
-    auto messenger = event->getMessenger();
-
     ROOTObjectWriterModuleData data;
-    data.messages = messenger->fetchFilteredMessages(this);
+    data.messages = messenger_->fetchFilteredMessages(this, event);
 
     return data;
 }

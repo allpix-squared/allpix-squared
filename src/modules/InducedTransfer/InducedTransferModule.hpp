@@ -50,6 +50,8 @@ namespace allpix {
         void run(Event*) override;
 
     private:
+        Messenger* messenger_;
+
         std::shared_ptr<Detector> detector_;
         std::shared_ptr<DetectorModel> model_;
 

@@ -91,14 +91,14 @@ inline std::array<long double, 3> getRotationAnglesFromMatrix(ROOT::Math::Rotati
 }
 
 LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo)
-    : BufferedModule<LCIOWriterModuleData>(config), geo_mgr_(geo) {
+    : BufferedModule<LCIOWriterModuleData>(config), messenger_(messenger), geo_mgr_(geo) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
     // Bind pixel hits message
-    messenger->bindMulti<PixelHitMessage>(this, MsgFlags::REQUIRED);
-    messenger->bindMulti<MCParticleMessage>(this, MsgFlags::REQUIRED);
-    messenger->bindSingle<MCTrackMessage>(this, MsgFlags::REQUIRED);
+    messenger_->bindMulti<PixelHitMessage>(this, MsgFlags::REQUIRED);
+    messenger_->bindMulti<MCParticleMessage>(this, MsgFlags::REQUIRED);
+    messenger_->bindSingle<MCTrackMessage>(this, MsgFlags::REQUIRED);
 
     // Set configuration defaults:
     config_.setDefault("file_name", "output.slcio");
@@ -553,12 +553,10 @@ void LCIOWriterModule::finalize_module() {
 }
 
 LCIOWriterModuleData LCIOWriterModule::fetch_event_data(Event* event) {
-    auto messenger = event->getMessenger();
-
     // Fill the struct with the data we process in each event
     LCIOWriterModuleData data;
-    data.pixel_messages = messenger->fetchMultiMessage<PixelHitMessage>(this);
-    data.mc_particles = messenger->fetchMultiMessage<MCParticleMessage>(this);
+    data.pixel_messages = messenger_->fetchMultiMessage<PixelHitMessage>(this, event);
+    data.mc_particles = messenger_->fetchMultiMessage<MCParticleMessage>(this, event);
 
     return data;
 }

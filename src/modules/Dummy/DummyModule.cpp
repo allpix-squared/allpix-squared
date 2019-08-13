@@ -35,8 +35,7 @@ void DummyModule::init() {
 }
 
 void DummyModule::run(Event* event) {
-    auto messenger = event->getMessenger();
-    auto messages = messenger->fetchMultiMessage<PixelHitMessage>(this);
+    auto messages = messenger_->fetchMultiMessage<PixelHitMessage>(this, event);
     // ... Implement ... (Typically uses the configuration to execute function and outputs an message)
     // Loop through all receieved messages and print some information
     for(auto& message : messages) {

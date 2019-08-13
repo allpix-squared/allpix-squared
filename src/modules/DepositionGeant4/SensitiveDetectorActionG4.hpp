@@ -25,6 +25,8 @@
 #include "TrackInfoManager.hpp"
 
 namespace allpix {
+    class Event;
+
     /**
      * @brief Handles the steps of the particles in all sensitive devices
      */
@@ -76,8 +78,9 @@ namespace allpix {
          * @brief Send the MCParticle and DepositedCharge messages
          * @param module The module which is responsible for dispatching the message
          * @param messenger The messenger used to dispatch it
+         * @param event Event to dispatch the messages to
          */
-        void dispatchMessages(Module* module, Messenger* messenger);
+        void dispatchMessages(Module* module, Messenger* messenger, Event* event);
 
     private:
         std::shared_ptr<Detector> detector_;

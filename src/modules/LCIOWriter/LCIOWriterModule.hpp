@@ -70,6 +70,7 @@ namespace allpix {
         void run_inorder(unsigned int, LCIOWriterModuleData&) override;
 
     private:
+        Messenger* messenger_;
         GeometryManager* geo_mgr_{};
         std::shared_ptr<IO::LCWriter> lcWriter_{};
 

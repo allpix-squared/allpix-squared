@@ -25,13 +25,13 @@ using namespace allpix;
 DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
-    : Module(config, detector), detector_(std::move(detector)) {
+    : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
     // Bind messages
-    messenger->bindSingle<PixelHitMessage>(this);
-    messenger->bindSingle<MCParticleMessage>(this, MsgFlags::REQUIRED);
+    messenger_->bindSingle<PixelHitMessage>(this);
+    messenger_->bindSingle<MCParticleMessage>(this, MsgFlags::REQUIRED);
 
     auto model = detector_->getModel();
     matching_cut_ = config.get<ROOT::Math::XYVector>("matching_cut", model->getPixelSize() * 3);
@@ -274,13 +274,13 @@ void DetectorHistogrammerModule::init() {
 
 void DetectorHistogrammerModule::run(Event* event) {
     using namespace ROOT::Math;
-    auto messenger = event->getMessenger();
+
     std::shared_ptr<PixelHitMessage> pixels_message;
-    auto mcparticle_message = messenger->fetchMessage<MCParticleMessage>(this);
+    auto mcparticle_message = messenger_->fetchMessage<MCParticleMessage>(this, event);
 
     // Check that we actually received pixel hits - we might have none and just received MCParticles!
     try {
-        pixels_message = messenger->fetchMessage<PixelHitMessage>(this);
+        pixels_message = messenger_->fetchMessage<PixelHitMessage>(this, event);
     } catch(const MessageNotFoundException&) {
         pixels_message = nullptr;
     }

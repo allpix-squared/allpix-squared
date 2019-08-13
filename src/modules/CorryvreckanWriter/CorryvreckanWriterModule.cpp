@@ -230,13 +230,11 @@ void CorryvreckanWriterModule::finalize_module() {
 }
 
 CorryvreckanWriterModuleData CorryvreckanWriterModule::fetch_event_data(Event* event) {
-    auto messenger = event->getMessenger();
-
     CorryvreckanWriterModuleData data;
-    data.pixel_messages = messenger->fetchMultiMessage<PixelHitMessage>(this);
+    data.pixel_messages = messenger_->fetchMultiMessage<PixelHitMessage>(this, event);
 
     if(outputMCtruth_) {
-        data.mc_particles = messenger->fetchMultiMessage<MCParticleMessage>(this);
+        data.mc_particles = messenger_->fetchMultiMessage<MCParticleMessage>(this, event);
     }
 
     return data;

@@ -31,8 +31,8 @@
 
 using namespace allpix;
 
-ROOTObjectReaderModule::ROOTObjectReaderModule(Configuration& config, Messenger*, GeometryManager* geo_mgr)
-    : Module(config), geo_mgr_(geo_mgr) {
+ROOTObjectReaderModule::ROOTObjectReaderModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
+    : Module(config), messenger_(messenger), geo_mgr_(geo_mgr) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 }
@@ -292,8 +292,7 @@ void ROOTObjectReaderModule::run(Event* event) {
         std::shared_ptr<BaseMessage> message = iter->second(*objects, message_inf.detector);
 
         // Dispatch the message
-        auto messenger = event->getMessenger();
-        messenger->dispatchMessage(this, message, message_inf.name);
+        messenger_->dispatchMessage(this, message, event, message_inf.name);
     }
 }
 

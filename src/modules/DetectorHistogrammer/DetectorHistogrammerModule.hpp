@@ -74,6 +74,8 @@ namespace allpix {
          */
         static std::vector<const MCParticle*> getPrimaryParticles(std::shared_ptr<MCParticleMessage>& mcparticle_message);
 
+        Messenger* messenger_;
+
         std::shared_ptr<Detector> detector_;
 
         // Statistics to compute mean position

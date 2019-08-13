@@ -71,8 +71,9 @@ namespace allpix {
          * @brief Dispatch the stored tracks as a MCTrackMessage
          * @param module The module which is responsible for dispatching the message
          * @param messenger The messenger used to dispatch it
+         * @param event The event to dispatch the message to
          */
-        void dispatchMessage(Module* module, Messenger* messenger);
+        void dispatchMessage(Module* module, Messenger* messenger, Event* event);
 
         /**
          * @brief Populate the #stored_tracks_ with MCTrack objects

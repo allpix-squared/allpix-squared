@@ -27,12 +27,12 @@
 using namespace allpix;
 
 TextWriterModule::TextWriterModule(Configuration& config, Messenger* messenger, GeometryManager*)
-    : BufferedModule<TextWriterModuleData>(config) {
+    : BufferedModule<TextWriterModuleData>(config), messenger_(messenger) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
     // Bind to all messages with filter
-    messenger->registerFilter(this, &TextWriterModule::filter);
+    messenger_->registerFilter(this, &TextWriterModule::filter);
 }
 
 void TextWriterModule::init() {
@@ -139,10 +139,8 @@ void TextWriterModule::finalize_module() {
 }
 
 TextWriterModuleData TextWriterModule::fetch_event_data(Event* event) {
-    auto messenger = event->getMessenger();
-
     TextWriterModuleData data;
-    data.messages = messenger->fetchFilteredMessages(this);
+    data.messages = messenger_->fetchFilteredMessages(this, event);
 
     return data;
 }

@@ -75,6 +75,7 @@ namespace allpix {
         void finalize_module() override;
 
     private:
+        Messenger* messenger_;
         GeometryManager* geo_mgr_;
 
         // Struct to store tree and information for each detector

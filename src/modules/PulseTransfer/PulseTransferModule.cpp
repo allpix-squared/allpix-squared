@@ -23,7 +23,7 @@ using namespace allpix;
 PulseTransferModule::PulseTransferModule(Configuration& config,
                                          Messenger* messenger,
                                          const std::shared_ptr<Detector>& detector)
-    : Module(config, detector), detector_(detector) {
+    : Module(config, detector), messenger_(messenger), detector_(detector) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
@@ -35,7 +35,7 @@ PulseTransferModule::PulseTransferModule(Configuration& config,
     output_plots_ = config_.get<bool>("output_plots");
     output_pulsegraphs_ = config_.get<bool>("output_pulsegraphs");
 
-    messenger->bindSingle<PropagatedChargeMessage>(this, MsgFlags::REQUIRED);
+    messenger_->bindSingle<PropagatedChargeMessage>(this, MsgFlags::REQUIRED);
 }
 
 void PulseTransferModule::init() {
@@ -60,8 +60,7 @@ void PulseTransferModule::init() {
 }
 
 void PulseTransferModule::run(Event* event) {
-    auto messenger = event->getMessenger();
-    auto propagated_message = messenger->fetchMessage<PropagatedChargeMessage>(this);
+    auto propagated_message = messenger_->fetchMessage<PropagatedChargeMessage>(this, event);
 
     // Create map for all pixels: pulse and propagated charges
     std::map<Pixel::Index, Pulse> pixel_pulse_map;
@@ -150,7 +149,7 @@ void PulseTransferModule::run(Event* event) {
 
     // Create a new message with pixel pulses and dispatch:
     auto pixel_charge_message = std::make_shared<PixelChargeMessage>(std::move(pixel_charges), detector_);
-    messenger->dispatchMessage(this, pixel_charge_message);
+    messenger_->dispatchMessage(this, pixel_charge_message, event);
 
     // Fill pixel charge histogram
     if(output_plots_) {

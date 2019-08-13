@@ -71,6 +71,8 @@ namespace allpix {
         void finalize_module() override;
 
     private:
+        Messenger* messenger_;
+
         // Object names to include or exclude from writing
         std::set<std::string> include_;
         std::set<std::string> exclude_;

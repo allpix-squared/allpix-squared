@@ -26,11 +26,12 @@ using namespace allpix;
 std::mutex Event::stats_mutex_;
 event_context* Event::context_ = nullptr;
 
-Event::Event(const unsigned int event_num, std::mt19937_64& random_engine)
-    : number(event_num), random_engine_(random_engine) {
+Event::Event(const unsigned int event_num, uint64_t seed) : number(event_num), seed_(seed) {
 #ifndef NDEBUG
     assert(context_ != nullptr);
 #endif
+
+    local_messenger_ = std::make_unique<LocalMessenger>(context_->messenger_);
 }
 
 /**
@@ -43,7 +44,7 @@ void Event::run(std::shared_ptr<Module>& module) {
                                       << "]";
 
     // Check if the module is satisfied to run
-    if(!module->check_delegates(getMessenger())) {
+    if(!module->check_delegates(&context_->messenger_, this)) {
         LOG(TRACE) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
                    << ", skipping module!";
         module->skip_event(number);
@@ -86,14 +87,16 @@ void Event::run(std::shared_ptr<Module>& module) {
 }
 
 void Event::run() {
-    // Reset the messenger for the new event
-    context_->messenger_.reset();
-
     for(auto& module : context_->modules_) {
         run(module);
     }
 }
 
-Messenger* Event::getMessenger() const {
-    return &context_->messenger_;
+void Event::set_and_seed_random_engine(std::mt19937_64* random_engine) {
+    random_engine_ = random_engine;
+    random_engine_->seed(seed_);
+}
+
+LocalMessenger* Event::get_local_messenger() const {
+    return local_messenger_.get();
 }
