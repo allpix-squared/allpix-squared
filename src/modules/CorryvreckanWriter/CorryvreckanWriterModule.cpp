@@ -21,13 +21,12 @@
 using namespace allpix;
 
 CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geoManager)
-    : BufferedModule<CorryvreckanWriterModuleData>(config), messenger_(messenger), geometryManager_(geoManager) {
+    : BufferedModule(config), messenger_(messenger), geometryManager_(geoManager) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
     // Require PixelCharge messages for single detector
     messenger_->bindMulti<PixelHitMessage>(this, MsgFlags::REQUIRED);
-    messenger_->bindMulti<MCParticleMessage>(this, MsgFlags::REQUIRED);
 
     config_.setDefault("file_name", "corryvreckanOutput.root");
     config_.setDefault("geometry_file", "corryvreckanGeometry.conf");
@@ -91,8 +90,8 @@ void CorryvreckanWriterModule::init() {
 }
 
 // Make instantiations of Corryvreckan pixels, and store these in the trees during run time
-void CorryvreckanWriterModule::run_inorder(unsigned int, CorryvreckanWriterModuleData& data) {
-    auto& pixel_messages = data.pixel_messages;
+void CorryvreckanWriterModule::run(Event* event) {
+    auto pixel_messages = messenger_->fetchMultiMessage<PixelHitMessage>(this, event);
 
     // Loop through all receieved messages
     for(auto& message : pixel_messages) {
@@ -155,7 +154,7 @@ void CorryvreckanWriterModule::run_inorder(unsigned int, CorryvreckanWriterModul
 }
 
 // Save the output trees to file
-void CorryvreckanWriterModule::finalize_module() {
+void CorryvreckanWriterModule::finalize() {
 
     // Loop over all detectors and store the trees
     auto detectors = geometryManager_->getDetectors();
@@ -227,15 +226,4 @@ void CorryvreckanWriterModule::finalize_module() {
             geometry_file << std::endl;
         }
     }
-}
-
-CorryvreckanWriterModuleData CorryvreckanWriterModule::fetch_event_data(Event* event) {
-    CorryvreckanWriterModuleData data;
-    data.pixel_messages = messenger_->fetchMultiMessage<PixelHitMessage>(this, event);
-
-    if(outputMCtruth_) {
-        data.mc_particles = messenger_->fetchMultiMessage<MCParticleMessage>(this, event);
-    }
-
-    return data;
 }

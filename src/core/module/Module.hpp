@@ -248,7 +248,7 @@ namespace allpix {
      * @brief A Module that always ensure to execute events in the order of event numbers. It
      * implements buffering out of the box so interested modules can directly use it
      */
-    template <typename T> class BufferedModule : public Module {
+    class BufferedModule : public Module {
         friend class Event;
         friend class ModuleManager;
         friend class Messenger;
@@ -258,35 +258,19 @@ namespace allpix {
         explicit BufferedModule(Configuration& config, std::shared_ptr<Detector> detector)
             : Module(config, std::move(detector)) {}
 
-        /**
-         * @brief Execute the module for in order events and buffer out of order ones
-         */
-        void run(Event*) override;
-
-        /**
-         * @brief Ensures all events are flushed from the buffer
-         */
-        void finalize() override;
-
     protected:
-        /**
-         * @brief Fetch the needed data from the event object
-         */
-        virtual T fetch_event_data(Event*) = 0;
-
         /**
          * @brief Finalize the module after the event sequence
          */
-        virtual void finalize_module() {}
+        virtual void finalize_buffer();
 
         /**
-         * @brief Execute the function of the module for event
-         * @param event The number of the current event
-         * @param T The user specified data specific to this event
+         * @brief Run the event in the order of increasing event number
+         * @param event The event to run
          *
-         * Does nothing if not overloaded.
+         * Execute the event if it is in the correct order, otherwise buffer the event and execute it later
          */
-        virtual void run_inorder(unsigned int, T&) {}
+        virtual void run_in_order(std::shared_ptr<Event> event);
 
     private:
         /**
@@ -307,7 +291,7 @@ namespace allpix {
         void flush_buffered_events();
 
         // The buffer that holds out of order events
-        std::map<unsigned int, T> buffered_events_;
+        std::map<unsigned int, std::shared_ptr<Event>> buffered_events_;
 
         // Mutex used to guard access to \ref buffered_events_
         std::mutex buffer_mutex_;
@@ -315,12 +299,10 @@ namespace allpix {
         // The expected in order event to write
         unsigned int next_event_to_write_{1};
 
+        // Set of event numbers that was skipped because not all messages were present
         std::set<unsigned int> skipped_events_;
     };
 
 } // namespace allpix
-
-// Include template members
-#include "Module.tpp"
 
 #endif /* ALLPIX_MODULE_H */

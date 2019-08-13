@@ -27,7 +27,7 @@
 using namespace allpix;
 
 ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
-    : BufferedModule<ROOTObjectWriterModuleData>(config), messenger_(messenger), geo_mgr_(geo_mgr) {
+    : BufferedModule(config), messenger_(messenger), geo_mgr_(geo_mgr) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
@@ -112,8 +112,8 @@ bool ROOTObjectWriterModule::filter(const std::shared_ptr<BaseMessage>& message,
     return true;
 }
 
-void ROOTObjectWriterModule::pre_run(ROOTObjectWriterModuleData& data) {
-    auto& messages = data.messages;
+void ROOTObjectWriterModule::pre_run(Event* event) {
+    auto messages = messenger_->fetchFilteredMessages(this, event);
 
     for(auto& pair : messages) {
         auto& message = pair.first;
@@ -174,9 +174,9 @@ void ROOTObjectWriterModule::pre_run(ROOTObjectWriterModuleData& data) {
     }
 }
 
-void ROOTObjectWriterModule::run_inorder(unsigned int, ROOTObjectWriterModuleData& data) {
+void ROOTObjectWriterModule::run(Event* event) {
     // Generate trees and index data
-    pre_run(data);
+    pre_run(event);
 
     LOG(TRACE) << "Writing new objects to tree";
     output_file_->cd();
@@ -192,7 +192,7 @@ void ROOTObjectWriterModule::run_inorder(unsigned int, ROOTObjectWriterModuleDat
     }
 }
 
-void ROOTObjectWriterModule::finalize_module() {
+void ROOTObjectWriterModule::finalize() {
     LOG(TRACE) << "Writing objects to file";
     output_file_->cd();
 
@@ -283,11 +283,4 @@ void ROOTObjectWriterModule::finalize_module() {
     // Print statistics
     LOG(STATUS) << "Wrote " << write_cnt_ << " objects to " << branch_count << " branches in file:" << std::endl
                 << output_file_name_;
-}
-
-ROOTObjectWriterModuleData ROOTObjectWriterModule::fetch_event_data(Event* event) {
-    ROOTObjectWriterModuleData data;
-    data.messages = messenger_->fetchFilteredMessages(this, event);
-
-    return data;
 }

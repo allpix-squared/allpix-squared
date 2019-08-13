@@ -27,21 +27,13 @@
 
 namespace allpix {
     /**
-     * @brief Data needed by the module in each event
-     */
-    struct CorryvreckanWriterModuleData {
-        std::vector<std::shared_ptr<PixelHitMessage>> pixel_messages;
-        std::vector<std::shared_ptr<MCParticleMessage>> mc_particles;
-    };
-
-    /**
      * @ingroup Modules
      * @brief Module to do function
      *
      * More detailed explanation of module
      */
 
-    class CorryvreckanWriterModule : public BufferedModule<CorryvreckanWriterModuleData> {
+    class CorryvreckanWriterModule : public BufferedModule {
     public:
         /**
          * @brief Constructor for this unique module
@@ -56,21 +48,15 @@ namespace allpix {
          */
         void init() override;
 
-    protected:
-        /**
-         * @brief Fetch the needed data from the event object
-         */
-        CorryvreckanWriterModuleData fetch_event_data(Event*) override;
-
         /**
          * @brief Take the digitised pixel hits and write them into the output file
          */
-        void run_inorder(unsigned int, CorryvreckanWriterModuleData&) override;
+        void run(Event* event) override;
 
         /**
          * @brief Write output trees to file
          */
-        void finalize_module() override;
+        void finalize() override;
 
     private:
         // General module members

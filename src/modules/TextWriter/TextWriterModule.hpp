@@ -19,19 +19,12 @@
 
 namespace allpix {
     /**
-     * @brief Data used by the module in each event
-     */
-    struct TextWriterModuleData {
-        std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> messages;
-    };
-
-    /**
      * @ingroup Modules
      * @brief Module to write object data to simple ASCII text files
      *
      * Listens to all objects dispatched in the framework and stores an ASCII representation of every object to file.
      */
-    class TextWriterModule : public BufferedModule<TextWriterModuleData> {
+    class TextWriterModule : public BufferedModule {
     public:
         /**
          * @brief Constructor for this unique module
@@ -53,22 +46,16 @@ namespace allpix {
          */
         void init() override;
 
-    protected:
-        /**
-         * @brief Fetch the needed data from the event object
-         */
-        TextWriterModuleData fetch_event_data(Event*) override;
-
         /**
          * @brief Writes the objects fetched to their specific tree, constructing trees on the fly for new objects.
          */
-        void run_inorder(unsigned int, TextWriterModuleData&) override;
+        void run(Event* event) override;
 
         /**
          * @brief Add the main configuration and the detector setup to the data file and write it, also write statistics
          * information.
          */
-        void finalize_module() override;
+        void finalize() override;
 
     private:
         Messenger* messenger_;

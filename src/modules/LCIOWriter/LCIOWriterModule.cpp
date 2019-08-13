@@ -91,13 +91,12 @@ inline std::array<long double, 3> getRotationAnglesFromMatrix(ROOT::Math::Rotati
 }
 
 LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo)
-    : BufferedModule<LCIOWriterModuleData>(config), messenger_(messenger), geo_mgr_(geo) {
+    : BufferedModule(config), messenger_(messenger), geo_mgr_(geo) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
     // Bind pixel hits message
     messenger_->bindMulti<PixelHitMessage>(this, MsgFlags::REQUIRED);
-    messenger_->bindMulti<MCParticleMessage>(this, MsgFlags::REQUIRED);
     messenger_->bindSingle<MCTrackMessage>(this, MsgFlags::REQUIRED);
 
     // Set configuration defaults:
@@ -248,12 +247,12 @@ void LCIOWriterModule::init() {
     lcWriter_->writeRunHeader(run.get());
 }
 
-void LCIOWriterModule::run_inorder(unsigned int event_number, LCIOWriterModuleData& data) {
-    auto& pixel_messages = data.pixel_messages;
+void LCIOWriterModule::run(Event* event) {
+    auto pixel_messages = messenger_->fetchMultiMessage<PixelHitMessage>(this, event);
 
     auto evt = std::make_unique<LCEventImpl>(); // create the event
     evt->setRunNumber(1);
-    evt->setEventNumber(static_cast<int>(event_number)); // set the event attributes
+    evt->setEventNumber(static_cast<int>(event->number)); // set the event attributes
     evt->parameters().setValue("EventType", 2);
 
     auto output_col_vec = std::vector<LCCollectionVec*>();
@@ -451,7 +450,7 @@ void LCIOWriterModule::run_inorder(unsigned int event_number, LCIOWriterModuleDa
     write_cnt_++;
 }
 
-void LCIOWriterModule::finalize_module() {
+void LCIOWriterModule::finalize() {
     lcWriter_->close();
     // Print statistics
     LOG(STATUS) << "Wrote " << write_cnt_ << " events to file:" << std::endl << lcio_file_name_;
@@ -550,13 +549,4 @@ void LCIOWriterModule::finalize_module() {
 
         LOG(STATUS) << "Wrote GEAR geometry to file:" << std::endl << geometry_file_name_;
     }
-}
-
-LCIOWriterModuleData LCIOWriterModule::fetch_event_data(Event* event) {
-    // Fill the struct with the data we process in each event
-    LCIOWriterModuleData data;
-    data.pixel_messages = messenger_->fetchMultiMessage<PixelHitMessage>(this, event);
-    data.mc_particles = messenger_->fetchMultiMessage<MCParticleMessage>(this, event);
-
-    return data;
 }

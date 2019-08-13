@@ -23,20 +23,12 @@
 namespace allpix {
 
     /**
-     * @brief Data needed by the module in each event
-     */
-    struct LCIOWriterModuleData {
-        std::vector<std::shared_ptr<PixelHitMessage>> pixel_messages;
-        std::vector<std::shared_ptr<MCParticleMessage>> mc_particles;
-    };
-
-    /**
      * @ingroup Modules
      * @brief Module to write hit data to LCIO file
      *
      * Create LCIO file, compatible to EUTelescope analysis framework.
      */
-    class LCIOWriterModule : public BufferedModule<LCIOWriterModuleData> {
+    class LCIOWriterModule : public BufferedModule {
     public:
         /**
          * @brief Constructor for this unique module
@@ -53,21 +45,15 @@ namespace allpix {
          */
         void init() override;
 
-    protected:
         /**
-         * @brief Fetch the needed data from the event object
+         * @brief Receive pixel hit messages, create lcio event, add hit collection and write event to file.
          */
-        LCIOWriterModuleData fetch_event_data(Event*) override;
+        void run(Event* event) override;
 
         /**
          * @brief Close the output file
          */
-        void finalize_module() override;
-
-        /**
-         * @brief Receive pixel hit messages, create lcio event, add hit collection and write event to file.
-         */
-        void run_inorder(unsigned int, LCIOWriterModuleData&) override;
+        void finalize() override;
 
     private:
         Messenger* messenger_;

@@ -27,7 +27,7 @@
 using namespace allpix;
 
 TextWriterModule::TextWriterModule(Configuration& config, Messenger* messenger, GeometryManager*)
-    : BufferedModule<TextWriterModuleData>(config), messenger_(messenger) {
+    : BufferedModule(config), messenger_(messenger) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
@@ -104,12 +104,12 @@ bool TextWriterModule::filter(const std::shared_ptr<BaseMessage>& message, const
     return false;
 }
 
-void TextWriterModule::run_inorder(unsigned int event_number, TextWriterModuleData& data) {
-    auto& messages = data.messages;
+void TextWriterModule::run(Event* event) {
+    auto messages = messenger_->fetchFilteredMessages(this, event);
     LOG(TRACE) << "Writing new objects to text file";
 
     // Print the current event:
-    *output_file_ << "=== " << event_number << " ===" << std::endl;
+    *output_file_ << "=== " << event->number << " ===" << std::endl;
 
     for(auto& pair : messages) {
         auto& message = pair.first;
@@ -129,18 +129,11 @@ void TextWriterModule::run_inorder(unsigned int event_number, TextWriterModuleDa
     }
 }
 
-void TextWriterModule::finalize_module() {
+void TextWriterModule::finalize() {
     // Finish writing to output file
     *output_file_ << "# " << write_cnt_ << " objects from " << msg_cnt_ << " messages" << std::endl;
 
     // Print statistics
     LOG(STATUS) << "Wrote " << write_cnt_ << " objects from " << msg_cnt_ << " messages to file:" << std::endl
                 << output_file_name_;
-}
-
-TextWriterModuleData TextWriterModule::fetch_event_data(Event* event) {
-    TextWriterModuleData data;
-    data.messages = messenger_->fetchFilteredMessages(this, event);
-
-    return data;
 }

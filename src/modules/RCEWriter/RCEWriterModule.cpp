@@ -293,7 +293,7 @@ static void write_proteus_config(const std::string& device_path,
 }
 
 RCEWriterModule::RCEWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
-    : BufferedModule<RCEWriterModuleData>(config), messenger_(messenger), geo_mgr_(geo_mgr) {
+    : BufferedModule(config), messenger_(messenger), geo_mgr_(geo_mgr) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
@@ -361,12 +361,12 @@ void RCEWriterModule::init() {
     write_proteus_config(device_path, geometry_path, detector_names, *geo_mgr_, *getConfigManager());
 }
 
-void RCEWriterModule::run_inorder(unsigned int event_number, RCEWriterModuleData& data) {
-    auto& pixel_hit_messages = data.messages;
+void RCEWriterModule::run(Event* event) {
+    auto pixel_hit_messages = messenger_->fetchMultiMessage<PixelHitMessage>(this, event);
 
     // fill per-event data
     timestamp_ = 0;
-    frame_number_ = event_number;
+    frame_number_ = event->number;
     trigger_time_ = 0;
     trigger_offset_ = 0;
     trigger_info_ = 0;
@@ -414,14 +414,7 @@ void RCEWriterModule::run_inorder(unsigned int event_number, RCEWriterModuleData
     }
 }
 
-void RCEWriterModule::finalize_module() {
+void RCEWriterModule::finalize() {
     output_file_->Write();
     LOG(TRACE) << "Wrote data to file";
-}
-
-RCEWriterModuleData RCEWriterModule::fetch_event_data(Event* event) {
-    RCEWriterModuleData data;
-    data.messages = messenger_->fetchMultiMessage<PixelHitMessage>(this, event);
-
-    return data;
 }

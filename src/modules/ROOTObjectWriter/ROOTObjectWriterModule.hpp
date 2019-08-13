@@ -20,14 +20,6 @@
 #include "core/module/Module.hpp"
 
 namespace allpix {
-
-    /**
-     * @brief Data used by the module in each event
-     */
-    struct ROOTObjectWriterModuleData {
-        std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> messages;
-    };
-
     /**
      * @ingroup Modules
      * @brief Module to write object data to ROOT trees in file for persistent storage
@@ -36,7 +28,7 @@ namespace allpix {
      * saves the data in those objects to tree for every event. The tree name is the class name of the object. A separate
      * branch is created for every combination of detector name and message name that outputs this object.
      */
-    class ROOTObjectWriterModule : public BufferedModule<ROOTObjectWriterModuleData> {
+    class ROOTObjectWriterModule : public BufferedModule {
     public:
         /**
          * @brief Constructor for this unique module
@@ -62,25 +54,19 @@ namespace allpix {
          */
         void init() override;
 
-    protected:
         /**
          * @brief Writes the objects fetched to their specific tree, constructing trees on the fly for new objects.
          */
-        void run_inorder(unsigned int, ROOTObjectWriterModuleData&) override;
-
-        /**
-         * @brief Fetches the messages from the event
-         */
-        ROOTObjectWriterModuleData fetch_event_data(Event*) override;
+        void run(Event* event) override;
 
         /**
          * @brief Add the main configuration and the detector setup to the data file and write it, also write statistics
          * information.
          */
-        void finalize_module() override;
+        void finalize() override;
 
     private:
-        void pre_run(ROOTObjectWriterModuleData&);
+        void pre_run(Event* event);
 
         Messenger* messenger_;
         GeometryManager* geo_mgr_;
