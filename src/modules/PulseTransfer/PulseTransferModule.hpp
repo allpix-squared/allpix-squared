@@ -16,6 +16,7 @@
 
 #include "objects/PropagatedCharge.hpp"
 
+#include <ROOT/TThreadedObject.hxx>
 #include <TH1D.h>
 
 namespace allpix {
@@ -39,7 +40,7 @@ namespace allpix {
         /**
          * @brief Initialize optional ROOT histograms
          */
-        void init(std::mt19937_64&) override;
+        void init() override;
 
         /**
          * @brief Combine pulses from propagated charges and transfer them to the pixels
@@ -57,19 +58,7 @@ namespace allpix {
         // General module members
         std::shared_ptr<Detector> detector_;
 
-        /**
-         * @brief Compare two pixels, necessary to store them in the a std::map
-         */
-        struct pixel_cmp {
-            bool operator()(const Pixel::Index& p1, const Pixel::Index& p2) const {
-                if(p1.x() == p2.x()) {
-                    return p1.y() < p2.y();
-                }
-                return p1.x() < p2.x();
-            }
-        };
-
         // Output histograms
-        TH1D *h_total_induced_charge_{}, *h_induced_pixel_charge_{};
+        ROOT::TThreadedObject<TH1D>*h_total_induced_charge_{}, *h_induced_pixel_charge_{};
     };
 } // namespace allpix

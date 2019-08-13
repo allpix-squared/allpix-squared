@@ -51,7 +51,7 @@ namespace allpix {
         /**
          * @brief Opens the file to write the objects to
          */
-        void init(std::mt19937_64&) override;
+        void init() override;
 
     protected:
         /**
@@ -82,5 +82,6 @@ namespace allpix {
         // Statistical information about number of objects
         unsigned long write_cnt_{};
         unsigned long msg_cnt_{};
+        std::mutex stats_mutex_;
     };
 } // namespace allpix

@@ -22,6 +22,9 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
                                                          Messenger* messenger,
                                                          std::shared_ptr<Detector> detector)
     : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+
     // Save detector model
     model_ = detector_->getModel();
 
@@ -60,7 +63,7 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
     config_.setDefault<bool>("ignore_magnetic_field", false);
 }
 
-void ProjectionPropagationModule::init(std::mt19937_64&) {
+void ProjectionPropagationModule::init() {
     if(detector_->getElectricFieldType() != FieldType::LINEAR) {
         throw ModuleError("This module should only be used with linear electric fields.");
     }
@@ -89,11 +92,14 @@ void ProjectionPropagationModule::init(std::mt19937_64&) {
 
     if(output_plots_) {
         // Initialize output plot
-        drift_time_histo_ = new TH1D("drift_time_histo",
-                                     "Drift time;Drift time [ns];charge carriers",
-                                     static_cast<int>(Units::convert(integration_time_, "ns") * 5),
-                                     0,
-                                     static_cast<double>(Units::convert(integration_time_, "ns")));
+        drift_time_histo_ = new ROOT::TThreadedObject<TH1D>("drift_time_histo",
+                                                            "Drift time;Drift time [ns];charge carriers",
+                                                            static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                                            0,
+                                                            static_cast<double>(Units::convert(integration_time_, "ns")));
+
+        // Initialize empty histogram
+        drift_time_histo_->Get();
     }
 }
 
@@ -171,7 +177,7 @@ void ProjectionPropagationModule::run(Event* event) {
         LOG(TRACE) << "Drift time is " << Units::display(drift_time, "ns");
 
         if(output_plots_) {
-            drift_time_histo_->Fill(drift_time, deposit.getCharge());
+            drift_time_histo_->Get()->Fill(drift_time, deposit.getCharge());
         }
 
         double diffusion_std_dev = std::sqrt(2. * diffusion_constant * drift_time);
@@ -239,6 +245,6 @@ void ProjectionPropagationModule::run(Event* event) {
 void ProjectionPropagationModule::finalize() {
     if(output_plots_) {
         // Write output plot
-        drift_time_histo_->Write();
+        drift_time_histo_->Merge()->Write();
     }
 }

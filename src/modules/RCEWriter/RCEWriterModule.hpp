@@ -56,7 +56,7 @@ namespace allpix {
         /**
          * @brief Opens the file to write the objects to, and initializes the trees
          */
-        void init(std::mt19937_64&) override;
+        void init() override;
 
     protected:
         /**

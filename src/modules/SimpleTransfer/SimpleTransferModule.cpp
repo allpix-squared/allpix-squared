@@ -29,6 +29,9 @@ using namespace allpix;
 
 SimpleTransferModule::SimpleTransferModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector)
     : Module(config, detector), detector_(std::move(detector)) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+
     // Set default value for the maximum depth distance to transfer
     config_.setDefault("max_depth_distance", Units::get(5.0, "um"));
 
@@ -50,7 +53,7 @@ SimpleTransferModule::SimpleTransferModule(Configuration& config, Messenger* mes
     messenger->bindSingle<PropagatedChargeMessage>(this, MsgFlags::REQUIRED);
 }
 
-void SimpleTransferModule::init(std::mt19937_64&) {
+void SimpleTransferModule::init() {
 
     if(config_.get<bool>("collect_from_implant")) {
         if(detector_->getElectricFieldType() == FieldType::LINEAR) {
@@ -64,11 +67,14 @@ void SimpleTransferModule::init(std::mt19937_64&) {
     if(output_plots_) {
         auto time_bins =
             static_cast<int>(config_.get<double>("output_plots_range") / config_.get<double>("output_plots_step"));
-        drift_time_histo = new TH1D("drift_time_histo",
-                                    "Charge carrier arrival time;t[ns];charge carriers",
-                                    time_bins,
-                                    0.,
-                                    config_.get<double>("output_plots_range"));
+        drift_time_histo = new ROOT::TThreadedObject<TH1D>("drift_time_histo",
+                                                           "Charge carrier arrival time;t[ns];charge carriers",
+                                                           time_bins,
+                                                           0.,
+                                                           config_.get<double>("output_plots_range"));
+
+        // Initialize empty histogram
+        drift_time_histo->Get();
     }
 }
 
@@ -79,7 +85,7 @@ void SimpleTransferModule::run(Event* event) {
     // Find corresponding pixels for all propagated charges
     LOG(TRACE) << "Transferring charges to pixels";
     unsigned int transferred_charges_count = 0;
-    std::map<Pixel::Index, std::vector<const PropagatedCharge*>, pixel_cmp> pixel_map;
+    std::map<Pixel::Index, std::vector<const PropagatedCharge*>> pixel_map;
     for(auto& propagated_charge : propagated_message->getData()) {
         auto position = propagated_charge.getLocalPosition();
         // Ignore if outside depth range of implant
@@ -122,7 +128,7 @@ void SimpleTransferModule::run(Event* event) {
         transferred_charges_count += propagated_charge.getCharge();
 
         if(output_plots_) {
-            drift_time_histo->Fill(propagated_charge.getEventTime(), propagated_charge.getCharge());
+            drift_time_histo->Get()->Fill(propagated_charge.getEventTime(), propagated_charge.getCharge());
         }
 
         LOG(DEBUG) << "Set of " << propagated_charge.getCharge() << " propagated charges at "
@@ -151,10 +157,7 @@ void SimpleTransferModule::run(Event* event) {
 
     // Writing summary and update statistics
     LOG(INFO) << "Transferred " << transferred_charges_count << " charges to " << pixel_map.size() << " pixels";
-    {
-        std::lock_guard<std::mutex> lock{stats_mutex_};
-        total_transferred_charges_ += transferred_charges_count;
-    }
+    total_transferred_charges_ += transferred_charges_count;
 
     // Dispatch message of pixel charges
     auto pixel_message = std::make_shared<PixelChargeMessage>(pixel_charges, detector_);
@@ -167,6 +170,6 @@ void SimpleTransferModule::finalize() {
               << " different pixels";
 
     if(output_plots_) {
-        drift_time_histo->Write();
+        drift_time_histo->Merge()->Write();
     }
 }

@@ -54,7 +54,7 @@ namespace allpix {
         /**
          * @brief Set up output file and ntuple for filewriting
          */
-        void init(std::mt19937_64&) override;
+        void init() override;
 
     protected:
         /**

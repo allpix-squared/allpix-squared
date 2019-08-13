@@ -157,6 +157,12 @@ namespace allpix {
         std::atomic<bool> terminate_;
 
         Messenger* messenger_;
+
+        // User defined multithreading flag in configuration
+        bool multithreading_flag_{false};
+
+        // Possibility of running loaded modules in parallel
+        bool can_parallelize_{true};
     };
 } // namespace allpix
 

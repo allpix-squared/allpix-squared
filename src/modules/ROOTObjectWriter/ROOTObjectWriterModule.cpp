@@ -28,6 +28,9 @@ using namespace allpix;
 
 ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
     : BufferedModule<ROOTObjectWriterModuleData>(config), geo_mgr_(geo_mgr) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+
     // Bind to all messages with filter
     messenger->registerFilter(this, &ROOTObjectWriterModule::filter);
 }
@@ -41,7 +44,7 @@ ROOTObjectWriterModule::~ROOTObjectWriterModule() {
     }
 }
 
-void ROOTObjectWriterModule::init(std::mt19937_64&) {
+void ROOTObjectWriterModule::init() {
     // Create output file
     output_file_name_ =
         createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name", "data"), "root"), true);

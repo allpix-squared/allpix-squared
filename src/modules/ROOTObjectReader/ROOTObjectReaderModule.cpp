@@ -32,7 +32,10 @@
 using namespace allpix;
 
 ROOTObjectReaderModule::ROOTObjectReaderModule(Configuration& config, Messenger*, GeometryManager* geo_mgr)
-    : Module(config), geo_mgr_(geo_mgr) {}
+    : Module(config), geo_mgr_(geo_mgr) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+}
 
 /**
  * @note Objects cannot be stored in smart pointers due to internal ROOT logic
@@ -98,7 +101,7 @@ template <typename T> static ROOTObjectReaderModule::MessageCreatorMap gen_creat
     return ret_map;
 }
 
-void ROOTObjectReaderModule::init(std::mt19937_64&) {
+void ROOTObjectReaderModule::init() {
     // Read include and exclude list
     if(config_.has("include") && config_.has("exclude")) {
         throw InvalidCombinationError(
@@ -251,7 +254,7 @@ void ROOTObjectReaderModule::init(std::mt19937_64&) {
 
 void ROOTObjectReaderModule::run(Event* event) {
     // We can not read multiple events at the same time so we need to synchronize access
-    std::lock_guard<std::mutex> lock{stats_mutex_};
+    std::lock_guard<std::mutex> lock{mutex_};
 
     unsigned int event_num = event->number;
     --event_num;

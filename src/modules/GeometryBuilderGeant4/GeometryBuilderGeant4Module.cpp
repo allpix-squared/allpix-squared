@@ -42,7 +42,10 @@ using namespace allpix;
 using namespace ROOT;
 
 GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config, Messenger*, GeometryManager* geo_manager)
-    : Module(config), geo_manager_(geo_manager), run_manager_g4_(nullptr) {}
+    : Module(config), geo_manager_(geo_manager), run_manager_g4_(nullptr) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+}
 
 /**
  * @brief Checks if a particular Geant4 dataset is available in the environment
@@ -62,7 +65,7 @@ static void check_dataset_g4(const std::string& env_name) {
     // FIXME: check if file does actually contain a correct dataset
 }
 
-void GeometryBuilderGeant4Module::init(std::mt19937_64&) {
+void GeometryBuilderGeant4Module::init() {
     // Check if all the required geant4 datasets are defined
     LOG(DEBUG) << "Checking Geant4 datasets";
     check_dataset_g4("G4LEVELGAMMADATA");
@@ -84,11 +87,9 @@ void GeometryBuilderGeant4Module::init(std::mt19937_64&) {
     SUPPRESS_STREAM(std::cout);
     SUPPRESS_STREAM(G4cout);
 
-    Configuration& global_config = getConfigManager()->getGlobalConfiguration();
-
     // Create the G4 run manager. If multithreading was requested we use the custom run manager
     // that support calling BeamOn operations in parallel. Otherwise we use default manager.
-    if(global_config.get<bool>("multithreading", false)) {
+    if(canParallelize()) {
         run_manager_g4_ = std::make_unique<MTRunManager>();
     } else {
         run_manager_g4_ = std::make_unique<RunManager>();

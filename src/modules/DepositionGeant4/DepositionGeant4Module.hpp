@@ -55,7 +55,7 @@ namespace allpix {
         /**
          * @brief Initializes the physics list of processes and constructs the particle source
          */
-        void init(std::mt19937_64&) override;
+        void init() override;
 
         /**
          * @brief Deposit charges for a single event
@@ -110,9 +110,6 @@ namespace allpix {
         std::atomic_uint total_charges_{0};
 
         std::atomic_size_t number_of_sensors_{0};
-
-        // cached copy of the multithreading configuration flag
-        bool using_multithreading_{false};
 
         // Mutex used for the construction of histograms
         std::mutex histogram_mutex_;

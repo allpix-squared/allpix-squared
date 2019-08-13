@@ -113,6 +113,7 @@ Another name can be used by overwriting the variable content, but in the example
 Only ROOT is automatically included and linked to the module.
 \item A line with \texttt{\textbf{ALLPIX\_MODULE\_SOURCES(\$\{MODULE\_NAME\} \textit{sources})}} defines the module source files. Here, \texttt{sources} should be replaced by a list of all source files relevant to this module.
 \item Possible lines to include additional directories and to link libraries for dependencies loaded earlier.
+\item A line with \texttt{\textbf{ALLPIX\_MODULE\_REQUIRE\_GEANT4\_INTERFACE(\$\{MODULE\_NAME\})}} adds the Geant4 interface library as explained in Section~\ref{sec:geant4_interface}.
 \item A line containing \parameter{ALLPIX_MODULE_INSTALL(${MODULE_NAME})} to set up the required target for the module to be installed to.
 \end{enumerate}
 
@@ -137,6 +138,9 @@ ALLPIX_MODULE_SOURCES(${MODULE_NAME}
 
 # Add Geant4 to the include directories
 TARGET_INCLUDE_DIRECTORIES(${MODULE_NAME} SYSTEM PRIVATE ${Geant4_INCLUDE_DIRS})
+
+# Allpix Geant4 interface is required for this module
+ALLPIX_MODULE_REQUIRE_GEANT4_INTERFACE(${MODULE_NAME})
 
 # Link the Geant4 libraries to the module library
 TARGET_LINK_LIBRARIES(${MODULE_NAME} ${Geant4_LIBRARIES})
@@ -203,8 +207,9 @@ In addition to the constructor, each module can override the following methods:
 \begin{itemize}
 \item \parameter{init()}: Called after loading and constructing all modules and before starting the event loop.
 This method can for example be used to initialize histograms.
-\item \parameter{run(unsigned int event_number)}: Called for every event in the simulation, with the event number (starting from one).
+\item \parameter{run(Event* event)}: Called for every event in the simulation, with the event number (starting from one).
 An exception should be thrown for serious errors, otherwise a warning should be logged.
+\item \parameter{finalizeThread()}: Called after processing all events in the run by each worker thread if multi-threading was used.
 \item \parameter{finalize()}: Called after processing all events in the run and before destructing the module.
 Typically used to save the output data (like histograms).
 Any exceptions should be thrown from here instead of the destructor.

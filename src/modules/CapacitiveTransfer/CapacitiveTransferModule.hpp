@@ -53,7 +53,7 @@ namespace allpix {
         /**
          * @brief Initialize the module, creating the cross-coupling matrixs
          */
-        void init(std::mt19937_64&) override;
+        void init() override;
 
         /**
          * @brief Transfer the propagated charges to the pixels and its neighbours
@@ -71,21 +71,10 @@ namespace allpix {
         std::shared_ptr<Detector> detector_;
         std::shared_ptr<DetectorModel> model_;
 
-        /**
-         * @brief Compare two pixels, necessary to store them in the a std::map
-         */
-        struct pixel_cmp {
-            bool operator()(const Pixel::Index& p1, const Pixel::Index& p2) const {
-                if(p1.x() == p2.x()) {
-                    return p1.y() < p2.y();
-                }
-                return p1.x() < p2.x();
-            }
-        };
-
         // Statistical information
-        unsigned int total_transferred_charges_{};
+        std::atomic<unsigned int> total_transferred_charges_{};
         std::set<Pixel::Index> unique_pixels_;
+        std::mutex stats_mutex_;
 
         // Matrix to store cross-coupling values
         std::vector<std::vector<double>> relative_coupling;

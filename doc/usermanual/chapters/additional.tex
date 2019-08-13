@@ -15,6 +15,14 @@ An important part is the extension of the custom conversion \texttt{to\_string} 
 This allows to directly read configuration parameters to these types, making the code in the modules both shorter and cleaner.
 In addition, more conversions functions are provided together with other useful utilities such as the possibility to display a ROOT vector with units.
 
+\subsection{Geant4 Interface}
+\label{sec:geant4_interface}
+The framework provides an interfacing library with Geant4 that provides alternative run managers to be used by modules interested in using Geant4.
+These run managers, unlike the deafult Geant4 managers, allow the modules to execute in parallel within the framework assigned worker threads.
+Moreover, these managers are thread safe and allow reproducing of results.
+
+The DepositionGeant4 module uses such managers to be able to call the \texttt{BeamOn} method in parallel thus benefiting from the multi-threading feature.
+
 \subsection{Runge-Kutta integrator}
 A fast Eigen-powered~\cite{eigen3} Runge-Kutta integrator is provided as a tool to numerically solve differential equations~\cite{fehlberg}.
 The Runge-Kutta integrator is designed in a generic way and supports multiple methods using different tableaus.

@@ -24,6 +24,7 @@
 #include <stdexcept>
 #include <string>
 
+#include <TROOT.h>
 #include <TSystem.h>
 
 #include "core/config/ConfigManager.hpp"
@@ -59,6 +60,7 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
     // Set alias for backward compatibility with the previous keyword for multithreading
     global_config.setDefault("experimental_multithreading", false);
     global_config.setAlias("multithreading", "experimental_multithreading");
+    multithreading_flag_ = global_config.get<bool>("multithreading");
 
     // Store the messenger
     messenger_ = messenger;
@@ -234,9 +236,19 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
             // Save the identifier in the module
             mod->set_identifier(identifier);
 
+            // Check if module can't run in parallel
+            can_parallelize_ = mod->canParallelize() && can_parallelize_;
+
             // Add the new module to the run list
             modules_.emplace_back(std::move(mod));
             id_to_module_[identifier] = --modules_.end();
+        }
+    }
+
+    // Force MT off for all modules in case MT was not requested or some modules didn't enable parallelization
+    if(!(multithreading_flag_ && can_parallelize_)) {
+        for(auto& module : modules_) {
+            module->set_parallelize(false);
         }
     }
     LOG_PROGRESS(STATUS, "LOAD_LOOP") << "Loaded " << configs.size() << " modules";
@@ -547,6 +559,9 @@ void ModuleManager::init(std::mt19937_64& seeder) {
         local_directory->cd();
         module->set_ROOT_directory(local_directory);
 
+        // Set the RNG to be used by the module initialization
+        module->set_random_generator(&seeder);
+
         // Get current time
         auto start = std::chrono::steady_clock::now();
         // Set init module section header
@@ -559,13 +574,16 @@ void ModuleManager::init(std::mt19937_64& seeder) {
         // Change to our ROOT directory
         module->getROOTDirectory()->cd();
         // Init module
-        module->init(seeder);
+        module->init();
         // Reset logging
         Log::setSection(old_section_name);
         set_module_after(old_settings);
         // Update execution time
         auto end = std::chrono::steady_clock::now();
         module_execution_time_[module.get()] += static_cast<std::chrono::duration<long double>>(end - start).count();
+
+        // Reset the random number generator for this module
+        module->set_random_generator(nullptr);
     }
     LOG_PROGRESS(STATUS, "INIT_LOOP") << "Initialized " << modules_.size() << " module instantiations";
     auto end_time = std::chrono::steady_clock::now();
@@ -581,7 +599,8 @@ void ModuleManager::run(std::mt19937_64& seeder) {
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
     size_t threads_num;
 
-    if(global_config.get<bool>("multithreading")) {
+    // See if we can run in parallel with how many workers
+    if(multithreading_flag_ && can_parallelize_) {
         // Try to fetch a suitable number of workers if multithreading is enabled
         auto available_hardware_concurrency = std::thread::hardware_concurrency();
         if(available_hardware_concurrency > 0u) {
@@ -593,13 +612,24 @@ void ModuleManager::run(std::mt19937_64& seeder) {
             throw InvalidValueError(global_config, "workers", "number of workers should be strictly more than zero");
         }
         LOG(INFO) << "Multithreading enabled - using " << threads_num << " worker threads.";
-        if(threads_num > 8) {
+
+        // ROOT 6.12/00 introduces a new type of locking for operations with TObjects that impacts the performance
+        // of the framework since all threads are waiting if any is using a TObject
+        if(threads_num > 8 && gROOT->GetVersionInt() >= 61200) {
             LOG(WARNING) << "Using more than 8 worker threads may severely impact simulation performance due to ROOT "
                             "internals. See "
                             "<https://root-forum.cern.ch/t/copying-trefs-and-accessing-tref-data-from-multiple-threads/"
                             "29417/7> for more info.";
         }
     } else {
+        // Issue a warning in case MT was requested but we can't actually run in MT
+        if(multithreading_flag_ && !can_parallelize_) {
+            global_config.set<bool>("multithreading", false);
+            LOG(WARNING)
+                << "Multithreading was requested, however, the current module configuration doesn't support multithreading."
+                   " Turning multithreading OFF!";
+        }
+
         // Default to no additional thread without multithreading
         threads_num = 0;
     }

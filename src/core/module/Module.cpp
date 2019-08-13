@@ -122,6 +122,21 @@ std::string Module::createOutputFile(const std::string& path, bool global, bool 
 }
 
 /**
+* @throws InvalidModuleActionException If this method is called from the constructor or destructor
+* @warning This should not be used in \ref run method to allow reproducing the results
+*/
+uint64_t Module::getRandomSeed() {
+    if(random_generator_ == nullptr) {
+        throw InvalidModuleActionException("Cannot use this generator outside of \"init\" method");
+    }
+
+    return (*random_generator_)();
+}
+void Module::set_random_generator(std::mt19937_64* random_generator) {
+    random_generator_ = random_generator;
+}
+
+/**
  * @throws InvalidModuleActionException If this method is called from the constructor or destructor
  * @warning Cannot be used from the constructor, because the instantiation logic has not finished yet
  * @warning This method should not be accessed from the destructor (the file is then already closed)
@@ -153,6 +168,16 @@ void Module::set_config_manager(ConfigManager* conf_manager) {
     conf_manager_ = conf_manager;
 }
 
+bool Module::canParallelize() {
+    return parallelize_;
+}
+void Module::enable_parallelization() {
+    parallelize_ = true;
+}
+void Module::set_parallelize(bool parallelize) {
+    parallelize_ = parallelize;
+}
+
 Configuration& Module::get_configuration() {
     return config_;
 }
@@ -170,6 +195,6 @@ void Module::add_delegate(Messenger* messenger, BaseDelegate* delegate) {
 bool Module::check_delegates(Messenger* messenger) {
     // Return false if any delegate is not satisfied
     return std::all_of(delegates_.cbegin(), delegates_.cend(), [messenger](auto& delegate) {
-        return delegate.second->isSatisfied() || messenger->isSatisfied(delegate.second);
+        return !delegate.second->isRequired() || messenger->isSatisfied(delegate.second);
     });
 }

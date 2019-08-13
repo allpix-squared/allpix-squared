@@ -112,6 +112,12 @@ namespace allpix {
         std::string createOutputFile(const std::string& path, bool global = false, bool delete_file = false);
 
         /**
+         * @brief Get seed to initialize random generators
+         * @warning This should be the only method used by modules to seed random numbers to allow reproducing results
+         */
+        uint64_t getRandomSeed();
+
+        /**
          * @brief Get ROOT directory which should be used to output histograms et cetera
          * @return ROOT directory for storage
          */
@@ -124,12 +130,17 @@ namespace allpix {
         ConfigManager* getConfigManager() const;
 
         /**
+         * @brief Returns if parallelization of this module is enabled
+         * @return True if parallelization is enabled, false otherwise (the default)
+         */
+        bool canParallelize();
+
+        /**
          * @brief Initialize the module before the event sequence
-         * @param random_seed Random seed, if required
          *
          * Does nothing if not overloaded.
          */
-        virtual void init(std::mt19937_64& seeder) { (void)seeder; }
+        virtual void init() {}
 
         /**
          * @brief Execute the function of the module for every event
@@ -157,13 +168,16 @@ namespace allpix {
 
     protected:
         /**
+         * @brief Enable parallelization for this module
+         */
+        void enable_parallelization();
+
+        /**
          * @brief Get the module configuration for internal use
          * @return Configuration of the module
          */
         Configuration& get_configuration();
         Configuration& config_;
-
-        std::mutex stats_mutex_;
 
     private:
         /**
@@ -213,7 +227,20 @@ namespace allpix {
 
         std::vector<std::pair<Messenger*, BaseDelegate*>> delegates_;
 
+        /**
+         * @brief Set the random number generator for this module
+         * @param random_generator Generator to produce random numbers
+         */
+        void set_random_generator(std::mt19937_64* random_generator);
+        std::mt19937_64* random_generator_{nullptr};
+
         std::shared_ptr<Detector> detector_;
+
+        /**
+         * @brief Sets the parallelize flag
+         */
+        void set_parallelize(bool parallelize);
+        bool parallelize_{false};
     };
 
     /**

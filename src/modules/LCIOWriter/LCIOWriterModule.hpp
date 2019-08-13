@@ -51,7 +51,7 @@ namespace allpix {
         /**
          * @brief Initialize LCIO and GEAR output files
          */
-        void init(std::mt19937_64&) override;
+        void init() override;
 
     protected:
         /**

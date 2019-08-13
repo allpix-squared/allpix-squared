@@ -11,6 +11,7 @@
 
 #include <Math/DisplacementVector2D.h>
 #include <Math/Point3D.h>
+#include <ROOT/TThreadedObject.hxx>
 #include <TH1D.h>
 
 #include "core/config/Configuration.hpp"
@@ -46,7 +47,7 @@ namespace allpix {
         /**
          * @brief Initialize the module and check field configuration
          */
-        void init(std::mt19937_64&) override;
+        void init() override;
 
         /**
          * @brief Propagate all deposited charges through the sensor
@@ -105,8 +106,9 @@ namespace allpix {
         ROOT::Math::XYZVector magnetic_field_;
 
         // Output plots
-        TH1D *potential_difference_, *induced_charge_histo_, *induced_charge_e_histo_, *induced_charge_h_histo_;
-        TH1D* step_length_histo_;
-        TH1D* drift_time_histo_;
+        ROOT::TThreadedObject<TH1D>*potential_difference_, *induced_charge_histo_, *induced_charge_e_histo_,
+            *induced_charge_h_histo_;
+        ROOT::TThreadedObject<TH1D>* step_length_histo_;
+        ROOT::TThreadedObject<TH1D>* drift_time_histo_;
     };
 } // namespace allpix

@@ -11,7 +11,7 @@
 #define ALLPIX_MODULE_DETECTOR_HISTOGRAMMER_H
 
 #include <memory>
-
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -50,7 +50,7 @@ namespace allpix {
         /**
          * @brief Initialize the histograms
          */
-        void init(std::mt19937_64&) override;
+        void init() override;
 
         /**
          * @brief Fill the histograms
@@ -79,6 +79,7 @@ namespace allpix {
         // Statistics to compute mean position
         ROOT::Math::XYVector total_vector_{};
         unsigned long total_hits_{};
+        std::mutex mutex_;
 
         // Cut criteria for efficiency measurement:
         ROOT::Math::XYVector matching_cut_{};

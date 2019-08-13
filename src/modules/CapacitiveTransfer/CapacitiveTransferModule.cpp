@@ -31,6 +31,9 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration& config,
                                                    Messenger* messenger,
                                                    std::shared_ptr<Detector> detector)
     : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+
     model_ = detector_->getModel();
     config_.setDefault("output_plots", 0);
     config_.setDefault("cross_coupling", 1);
@@ -41,7 +44,7 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration& config,
     messenger->bindSingle<PropagatedChargeMessage>(this, MsgFlags::REQUIRED);
 }
 
-void CapacitiveTransferModule::init(std::mt19937_64&) {
+void CapacitiveTransferModule::init() {
 
     if(config_.count({"coupling_matrix", "coupling_file", "coupling_scan_file"}) > 1) {
         throw InvalidCombinationError(
@@ -266,7 +269,7 @@ void CapacitiveTransferModule::run(Event* event) {
     // Find corresponding pixels for all propagated charges
     LOG(TRACE) << "Transferring charges to pixels";
     unsigned int transferred_charges_count = 0;
-    std::map<Pixel::Index, std::pair<double, std::vector<const PropagatedCharge*>>, pixel_cmp> pixel_map;
+    std::map<Pixel::Index, std::pair<double, std::vector<const PropagatedCharge*>>> pixel_map;
     for(auto& propagated_charge : propagated_message->getData()) {
         auto position = propagated_charge.getLocalPosition();
         // Ignore if outside depth range of implant
@@ -365,10 +368,7 @@ void CapacitiveTransferModule::run(Event* event) {
 
     // Writing summary and update statistics
     LOG(INFO) << "Transferred " << transferred_charges_count << " charges to " << pixel_map.size() << " pixels";
-    {
-        std::lock_guard<std::mutex> lock{stats_mutex_};
-        total_transferred_charges_ += transferred_charges_count;
-    }
+    total_transferred_charges_ += transferred_charges_count;
 
     // Dispatch message of pixel charges
     auto pixel_message = std::make_shared<PixelChargeMessage>(pixel_charges, detector_);

@@ -23,6 +23,9 @@ InducedTransferModule::InducedTransferModule(Configuration& config,
                                              Messenger* messenger,
                                              const std::shared_ptr<Detector>& detector)
     : Module(config, detector), detector_(detector) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+
     using XYVectorInt = DisplacementVector2D<Cartesian2D<int>>;
 
     // Save detector model
@@ -36,7 +39,7 @@ InducedTransferModule::InducedTransferModule(Configuration& config,
     messenger->bindSingle<PropagatedChargeMessage>(this, MsgFlags::REQUIRED);
 }
 
-void InducedTransferModule::init(std::mt19937_64&) {
+void InducedTransferModule::init() {
 
     // This module requires a weighting potential - otherwise everything is lost...
     if(!detector_->hasWeightingPotential()) {
@@ -52,7 +55,7 @@ void InducedTransferModule::run(Event* event) {
     LOG(TRACE) << "Calculating induced charge on pixels";
     bool found_electrons = false, found_holes = false;
 
-    std::map<Pixel::Index, std::vector<std::pair<double, const PropagatedCharge*>>, pixel_cmp> pixel_map;
+    std::map<Pixel::Index, std::vector<std::pair<double, const PropagatedCharge*>>> pixel_map;
     for(auto& propagated_charge : propagated_message->getData()) {
 
         // Make sure both electrons and holes are present in the input data

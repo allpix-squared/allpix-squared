@@ -22,6 +22,8 @@ using namespace allpix;
 
 CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geoManager)
     : BufferedModule<CorryvreckanWriterModuleData>(config), messenger_(messenger), geometryManager_(geoManager) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
 
     // Require PixelCharge messages for single detector
     messenger_->bindMulti<PixelHitMessage>(this, MsgFlags::REQUIRED);
@@ -33,7 +35,7 @@ CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration& config, Messen
 }
 
 // Set up the output trees
-void CorryvreckanWriterModule::init(std::mt19937_64&) {
+void CorryvreckanWriterModule::init() {
 
     // Check if MC data to be saved
     outputMCtruth_ = config_.get<bool>("output_mctruth", false);

@@ -16,7 +16,7 @@ Messages are identified by the object type they are carrying, but can also be re
 Messages are intended to be read-only and a copy of the data should be made if a module wishes to change the data.
 All objects are compiled into a separate library which is automatically linked to every module.
 More information about the messaging system and the supported objects can be found in Section~\ref{sec:objects_messages}.
-\item \textbf{Tools}: \apsq provides a set of header-only 'tools' that allow access to common logic shared by various modules.
+\item \textbf{Tools}: \apsq provides a set of header-only 'tools' and a shared library that allow access to common logic shared by various modules.
 Examples are the Runge-Kutta solver~\cite{fehlberg} implemented using the Eigen3 library and the set of template specializations for ROOT and Geant4 configurations.
 More information about the tools can be found in Chapter~\ref{ch:additional_tools_resources}.
 This set of tools is different from the set of core utilities the framework itself provides, which is part of the core and explained in Section~\ref{sec:logging_utilities}.
@@ -169,7 +169,7 @@ The module search order is as follows:
 \begin{enumerate}
 \item Modules already loaded before from an earlier section header
 \item All directories in the global configuration parameter \parameter{library_directories} in the provided order, if this parameter exists.
-\item \item The internal library paths of the executable, that should automatically point to the libraries that are built and installed together with the executable.
+\item The internal library paths of the executable, that should automatically point to the libraries that are built and installed together with the executable.
 These library paths are stored in \dir{RPATH} on Linux, see the next point for more information.
 \item The other standard locations to search for libraries depending on the operating system.
 Details about the procedure Linux follows can be found in~\cite{linuxld}.
@@ -193,12 +193,21 @@ If multiple instantiations with the same unique name and the same priority exist
 
 \subsection{Parallel execution of events}
 \label{sec:multithreading}
-The framework has experimental support for running several events in parallel.
-A significant speed improvement can be achieved if the used modules' \texttt{run()}-functions do not modify shared member fields.
+The framework supports running several events in parallel.
+This feature is disabled for new modules by default, and has to be both supported by all modules in the simulation and enabled by the user as described in Section~\ref{sec:framework_parameters}.
+When enabled this feature can provides a significant speed improvement.
 
-The framework allows to parallelize the execution of the same module for multiple events if the module is not a reader of writer.
-If not, a module is run for a single event as a time.
-To yield the same output files between two simulations with the same configuration, reader and writer modules are never run concurrently, and are run in-order.
+The framework allows to parallelize the execution of the same module for multiple events, if these would otherwise be executed directly after each other in a linear order.
+Thus, events are added to a work queue and then distributed to a set of worker threads as specified in the configuration or determined from system parameters.
+
+To enable parallelization for a module, the following line of code has to be added to the constructor of a module:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+// Enable parallelization of this module if multithreading is enabled
+enable_parallelization();
+\end{minted}
+By adding this, the module promises that it will work correctly if the run-method is executed multiple times in parallel, for different events.
+This means in particular that the module will safely handle access to shared (for example static) variables and it will properly bind ROOT histograms to their directory before the \parameter{run()}-method.
+Access to constant operations in the GeometryManager, Detector and DetectorModel is always valid between various threads. In addition, sending and receiving messages is thread-safe.
 
 For a more detailed look into the multithreading approach of \apsq, refer to Section~\ref{sec:multithreading_approach}.
 
@@ -275,7 +284,7 @@ The detectors and models can be accessed by name and type through the geometry m
 All detectors can be fetched at once using the \parameter{getDetectors} method.
 If the module is a detector-specific module its related Detector can be accessed through the \parameter{getDetector} method of the module base class instead (returns a null pointer for unique modules) as follows:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
-void run(unsigned int event_id) {
+void run(Event* event) {
     // Returns the linked detector
     std::shared_ptr<Detector> detector = this->getDetector();
 }
@@ -438,8 +447,9 @@ void run(Event* event) {
     // The message is dispatched only for the module's detector, stored in "detector_"
     auto message = std::make_shared<Message<Object>>(data, detector_);
 
-    // Send the message using the Messenger object
-    event->dispatchMessage(event_id, this, message);
+    // Send the message using the Messenger object for the given event
+    auto& messenger = event->getMessenger();
+    messenger->dispatchMessage(message);
 }
 \end{minted}
 
@@ -453,7 +463,7 @@ The following example binds to a message containing an array of objects and is p
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 TestModule(Configuration&, Messenger* messenger, std::shared_ptr<Detector>) {
     // Subscribe to a single message, with no special messenger flags
-    messenger->bindSingle<TestModule, Message<Object>, MsgFlags::NONE>(this);,
+    messenger->bindSingle<Message<Object>>(this, MsgFlags::NONE);
 }
 \end{minted}
 \item Bind a \textbf{set of messages}.
@@ -462,7 +472,7 @@ An example to bind multiple messages containing an array of objects in the const
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 TestModule(Configuration&, Messenger* messenger, GeometryManager* geo_manager) {
     // Subscribe to multiple messages, with no special messenger flags
-    messenger->bindMulti<TestModule, Message<Object>, MsgFlags::NONE>(this);
+    messenger->bindMulti<Message<Object>>(this, MsgFlags::NONE);
 }
 \end{minted}
 \item Listen to a particular message type and execute a \textbf{filter function} as soon as an object is received.
@@ -502,7 +512,7 @@ Flags can be added to the bind and listening methods which enable a particular b
 
 \subsection{Persistency}
 \label{ch:objects_persistency}
-As objects may contain information relating to other objects, in particular for storing their corresponding Monte Carlo history (see Section~\ref{sec:objhistory}), objects are by default persistent until the end of each event. All messages are stored as shared pointers by the event from the modules which send them, and are released at the end of each event. If no other copies of the shared message pointer are created, then these will be subsequently deleted, including the objects stored therein. Where a module requires access to data from a previous event (such as to simulate the effects of pile-up etc.), local copies of the data objects must be created. Note that at the point of creating copies the corresponding history will be lost.
+As objects may contain information relating to other objects, in particular for storing their corresponding Monte Carlo history (see Section~\ref{sec:objhistory}), objects are by default persistent until the end of each event. All messages are stored as shared pointers from the modules which send them, and are released at the end of each event. If no other copies of the shared message pointer are created, then these will be subsequently deleted, including the objects stored therein. Where a module requires access to data from a previous event (such as to simulate the effects of pile-up etc.), local copies of the data objects must be created. Note that at the point of creating copies the corresponding history will be lost.
 
 
 \section{Redirect Module Inputs and Outputs}
@@ -669,7 +679,7 @@ This could be used if several optional but mutually exclusive parameters are pre
 The exceptions accepts the list of keys as initializer list.
 An example is shown below:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
-void run(unsigned int event_id) {
+void run(Event* event) {
     // Check if we have mutually exclusive options defined:
     if(config.count({"exclusive_opt_a", "exclusive_opt_b"}) > 1) {
         // Raise an error if the combination of keys is not valid
@@ -688,64 +698,3 @@ Should be used to request the end of event processing in the current run, e.g. i
 \end{itemize}
 
 \todo{add more info about error reporting style?}
-
-\section{Multithreading approach}
-\label{sec:multithreading_approach}
-\apsq supports experimental multithreading by running events in parallel.
-The module manager, responsible for the execution of a simulation reads the configuration and loads the requested modules.
-A thread pool is the created with the configured amount of workers or alternatively determined from system parameters.
-(E.g., for a system with four cores, four workers are spawned.)
-After this, for the number of events configured, an \texttt{Event} instance is constructed and submitted to the thread pool.
-As soon as an event is pushed to the thread pool a free worker will pick it up and execute it;
-when done it will pick up the next event.
-When all events have been executed \apsq begins terminating.
-
-\subsection{Module thread safety}
-An event is constructed with a shared list of the loaded modules.
-Inside an event, and thus for each worker, these modules are run sequentially, modifying the \texttt{Event} instance given to them.
-In the context of an event, the only module function used it the \texttt{run()}-method.
-If a module's \texttt{run()}-function access a member field
-(which is then accessed by multiple workers)
-it must be appropriately protected with a mutex and should for performance reasons only be used to record module statistics.
-
-\subsection{Reader and writers}
-Modules that read from and write to files are not subject to the rule presented in the previous section.
-Between two simulations using the same configuration, if the simulated events are to be written to file,
-the two simulations must produce the same output file.
-To achieve this, a module author will appropriately mark their module as a reader or writer via inheritance.
-During run-time, \apsq checks whether the module is a reader, writer or neither;
-if it does access files, it will be run in order of increasing event number.
-E.g. a reader/writer of event 4 will be run before the same module(s) for event 5.
-If it isn't this events turn to run this module, the thread will block and wait for its turn.
-While blocking, the thread does no work.
-A reader and a writer may run in parallel, as they do not access the same files.
-
-\subsection{Seed distribution}
-To enable two matching simulations to produce the same output, the seed distribution must also match.
-Each event owns a random engine that can be accessed and modified in whatever manner a module wishes.
-For a stable seed distribution, \apsq holds a master random engine that seeds every event's engine in a sequential manner,
-in order of increasing event number.
-This ensures that two matching simulations produce the same output, even when the number of workers do not match.
-
-\subsection{Messages}
-As mentioned, modules communicate with each other via messages.
-Considering that events are independent of each other, messages from a module to another must be local to the event.
-Subscription to specific messages are done in the modules' constructors and is thus global,
-but this read-only delegate information is then shared with all event-local messengers.
-These are then responsible for dispatching and fetching messages in the event.
-Upon the termination of an event, all messages local to that event are deleted.
-
-\subsection{Geant4 and ROOT}
-Unfortunately, because of the dependencies on Geant4 and ROOT and their incorporation into event execution,
-\apsq cannot simply spawn $n$ workers and expect a performance improvement of $n$ magnitudes.
-
-Geant4 is responsible for building the simulation geometry and depositing charges in the detectors.
-When working in a multithreaded context, Geant4 expects to handle the parallel work internally;
-this clashes with the design of \apsq.
-Because of this, all modules that runs Geant4 code may not run on spawned threads, lest the program will segfault.
-In \apsq, all instanced events are thus initialized by the master thread by running these modules before submission to the thread pool.
-To prevent workers from being idle, a buffer of initialized events is maintained by the module manager.
-
-ROOT, specifically the \texttt{TObject} and \text{TRef} classes, are used by all objects in \apsq to relate to other events,
-but because of legacy reasons, does not scale well to a high number of threads.
-For this reason, it is not currently recommended to use more than 8 workers during simulation as this will greatly impact performance negatively.

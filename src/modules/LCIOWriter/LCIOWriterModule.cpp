@@ -92,6 +92,8 @@ inline std::array<long double, 3> getRotationAnglesFromMatrix(ROOT::Math::Rotati
 
 LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo)
     : BufferedModule<LCIOWriterModuleData>(config), geo_mgr_(geo) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
 
     // Bind pixel hits message
     messenger->bindMulti<PixelHitMessage>(this, MsgFlags::REQUIRED);
@@ -233,7 +235,7 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
     }
 }
 
-void LCIOWriterModule::init(std::mt19937_64&) {
+void LCIOWriterModule::init() {
     // Create the output GEAR file for the detector geometry
     geometry_file_name_ = createOutputFile(allpix::add_file_extension(config_.get<std::string>("geometry_file"), "xml"));
     // Open LCIO file and write run header

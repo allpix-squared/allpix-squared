@@ -28,11 +28,14 @@ using namespace allpix;
 
 TextWriterModule::TextWriterModule(Configuration& config, Messenger* messenger, GeometryManager*)
     : BufferedModule<TextWriterModuleData>(config) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+
     // Bind to all messages with filter
     messenger->registerFilter(this, &TextWriterModule::filter);
 }
 
-void TextWriterModule::init(std::mt19937_64&) {
+void TextWriterModule::init() {
     // Create output file
     output_file_name_ =
         createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name", "data"), "txt"), true);

@@ -13,6 +13,7 @@
 #include <vector>
 
 #include <Math/Point3D.h>
+#include <ROOT/TThreadedObject.hxx>
 #include <TFile.h>
 #include <TH1D.h>
 
@@ -51,7 +52,7 @@ namespace allpix {
         /**
          * @brief Initialize the module and check field configuration
          */
-        void init(std::mt19937_64&) override;
+        void init() override;
 
         /**
          * @brief Propagate all deposited charges through the sensor
@@ -113,10 +114,11 @@ namespace allpix {
         unsigned int total_propagated_charges_{};
         unsigned int total_steps_{};
         long double total_time_{};
-        TH1D* step_length_histo_;
-        TH1D* drift_time_histo_;
-        TH1D* uncertainty_histo_;
-        TH1D* group_size_histo_;
+        ROOT::TThreadedObject<TH1D>* step_length_histo_;
+        ROOT::TThreadedObject<TH1D>* drift_time_histo_;
+        ROOT::TThreadedObject<TH1D>* uncertainty_histo_;
+        ROOT::TThreadedObject<TH1D>* group_size_histo_;
+        std::mutex stats_mutex_;
     };
 
 } // namespace allpix

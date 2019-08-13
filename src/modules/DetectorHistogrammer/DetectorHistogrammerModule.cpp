@@ -26,6 +26,9 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
     : Module(config, detector), detector_(std::move(detector)) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+
     // Bind messages
     messenger->bindSingle<PixelHitMessage>(this);
     messenger->bindSingle<MCParticleMessage>(this, MsgFlags::REQUIRED);
@@ -36,7 +39,7 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
                                                          ROOT::Math::XYVector(Units::get(2.0, "um"), Units::get(2.0, "um")));
 }
 
-void DetectorHistogrammerModule::init(std::mt19937_64&) {
+void DetectorHistogrammerModule::init() {
     using namespace ROOT::Math;
 
     // Fetch detector model
@@ -297,7 +300,7 @@ void DetectorHistogrammerModule::run(Event* event) {
                 pixel_idx.x(), pixel_idx.y(), static_cast<double>(Units::convert(pixel_charge.getSignal(), "ke")));
 
             // Update statistics
-            std::lock_guard<std::mutex> lock(stats_mutex_);
+            std::lock_guard<std::mutex> lock(mutex_);
             total_vector_ += pixel_idx;
             total_hits_ += 1;
         }

@@ -1,4 +1,9 @@
-# Geant4 is required by the run manager
+# Optional library to interface with Geant4
+
+# Put message
+MESSAGE(STATUS "Building Geant4 Interface")
+
+# Find Geant4
 FIND_PACKAGE(Geant4)
 IF(NOT Geant4_FOUND)
     MESSAGE(FATAL_ERROR "Could not find Geant4, make sure to source the Geant4 environment\n"
@@ -34,4 +39,5 @@ TARGET_LINK_LIBRARIES(AllpixGeant4Interface ${Geant4_LIBRARIES})
 INSTALL(TARGETS AllpixGeant4Interface
     COMPONENT application
     RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib)
+    LIBRARY DESTINATION lib
+    OPTIONAL)
