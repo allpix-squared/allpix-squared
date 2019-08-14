@@ -26,21 +26,13 @@
 
 using namespace allpix;
 
-TextWriterModule::TextWriterModule(Configuration& config, Messenger* messenger, GeometryManager*) : WriterModule(config) {
+TextWriterModule::TextWriterModule(Configuration& config, Messenger* messenger, GeometryManager*)
+    : BufferedModule(config), messenger_(messenger) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
     // Bind to all messages with filter
-    messenger->registerFilter(this, &TextWriterModule::filter);
-}
-/**
- * @note Objects cannot be stored in smart pointers due to internal ROOT logic
- */
-TextWriterModule::~TextWriterModule() {
-    // Delete all object pointers
-    for(auto& index_data : write_list_) {
-        delete index_data.second;
-    }
+    messenger_->registerFilter(this, &TextWriterModule::filter);
 }
 
 void TextWriterModule::init() {
@@ -113,7 +105,7 @@ bool TextWriterModule::filter(const std::shared_ptr<BaseMessage>& message, const
 }
 
 void TextWriterModule::run(Event* event) {
-    auto messages = event->fetchFilteredMessages();
+    auto messages = messenger_->fetchFilteredMessages(this, event);
     LOG(TRACE) << "Writing new objects to text file";
 
     // Print the current event:
@@ -121,7 +113,6 @@ void TextWriterModule::run(Event* event) {
 
     for(auto& pair : messages) {
         auto& message = pair.first;
-        std::lock_guard<std::mutex> lock{stats_mutex_};
 
         // Print the current detector:
         if(message->getDetector() != nullptr) {

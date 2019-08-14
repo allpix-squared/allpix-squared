@@ -72,6 +72,8 @@ namespace allpix {
          */
         void DepositLine(Event*, const ROOT::Math::XYZPoint& position);
 
+        Messenger* messenger_;
+
         std::shared_ptr<Detector> detector_;
 
         std::mt19937_64 random_generator_;

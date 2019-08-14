@@ -28,7 +28,7 @@ using namespace ROOT::Math;
 TransientPropagationModule::TransientPropagationModule(Configuration& config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
-    : Module(config, detector), detector_(std::move(detector)) {
+    : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
@@ -38,7 +38,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     model_ = detector_->getModel();
 
     // Require deposits message for single detector:
-    messenger->bindSingle<DepositedChargeMessage>(this, MsgFlags::REQUIRED);
+    messenger_->bindSingle<DepositedChargeMessage>(this, MsgFlags::REQUIRED);
 
     // Set default value for config variables
     config_.setDefault<double>("timestep", Units::get(0.01, "ns"));
@@ -156,7 +156,7 @@ void TransientPropagationModule::init() {
 }
 
 void TransientPropagationModule::run(Event* event) {
-    auto deposits_message = event->fetchMessage<DepositedChargeMessage>();
+    auto deposits_message = messenger_->fetchMessage<DepositedChargeMessage>(this, event);
 
     // Create vector of propagated charges to output
     std::vector<PropagatedCharge> propagated_charges;
@@ -211,7 +211,7 @@ void TransientPropagationModule::run(Event* event) {
     auto propagated_charge_message = std::make_shared<PropagatedChargeMessage>(std::move(propagated_charges), detector_);
 
     // Dispatch the message with propagated charges
-    event->dispatchMessage(propagated_charge_message);
+    messenger_->dispatchMessage(this, propagated_charge_message, event);
 }
 
 /**

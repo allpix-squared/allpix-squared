@@ -22,7 +22,7 @@ using namespace ROOT::Math;
 InducedTransferModule::InducedTransferModule(Configuration& config,
                                              Messenger* messenger,
                                              const std::shared_ptr<Detector>& detector)
-    : Module(config, detector), detector_(detector) {
+    : Module(config, detector), messenger_(messenger), detector_(detector) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
@@ -36,7 +36,7 @@ InducedTransferModule::InducedTransferModule(Configuration& config,
     matrix_ = config_.get<XYVectorInt>("induction_matrix");
 
     // Require propagated deposits for single detector
-    messenger->bindSingle<PropagatedChargeMessage>(this, MsgFlags::REQUIRED);
+    messenger_->bindSingle<PropagatedChargeMessage>(this, MsgFlags::REQUIRED);
 }
 
 void InducedTransferModule::init() {
@@ -48,7 +48,7 @@ void InducedTransferModule::init() {
 }
 
 void InducedTransferModule::run(Event* event) {
-    auto propagated_message = event->fetchMessage<PropagatedChargeMessage>();
+    auto propagated_message = messenger_->fetchMessage<PropagatedChargeMessage>(this, event);
 
     // Calculate induced charge by total motion of charge carriers
     LOG(TRACE) << "Calculating induced charge on pixels";
@@ -130,5 +130,5 @@ void InducedTransferModule::run(Event* event) {
 
     // Dispatch message of pixel charges
     auto pixel_message = std::make_shared<PixelChargeMessage>(pixel_charges, detector_);
-    event->dispatchMessage(pixel_message);
+    messenger_->dispatchMessage(this, pixel_message, event);
 }

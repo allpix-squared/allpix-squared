@@ -55,6 +55,8 @@ namespace allpix {
     private:
         bool output_plots_{}, output_pulsegraphs_{};
 
+        Messenger* messenger_;
+
         // General module members
         std::shared_ptr<Detector> detector_;
 

@@ -22,9 +22,9 @@
 using namespace allpix;
 
 DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
-                                                         Messenger*,
+                                                         Messenger* messenger,
                                                          std::shared_ptr<Detector> detector)
-    : Module(config, detector), detector_(std::move(detector)) {
+    : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
@@ -186,8 +186,8 @@ void DepositionPointChargeModule::DepositPoint(Event* event, const ROOT::Math::X
     // Dispatch the messages to the framework
     auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(charges), detector_);
     auto mcparticle_message = std::make_shared<MCParticleMessage>(std::move(mcparticles), detector_);
-    event->dispatchMessage(deposit_message);
-    event->dispatchMessage(mcparticle_message);
+    messenger_->dispatchMessage(this, deposit_message, event);
+    messenger_->dispatchMessage(this, mcparticle_message, event);
 }
 
 void DepositionPointChargeModule::DepositLine(Event* event, const ROOT::Math::XYZPoint& position) {
@@ -229,6 +229,6 @@ void DepositionPointChargeModule::DepositLine(Event* event, const ROOT::Math::XY
     // Dispatch the messages to the framework
     auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(charges), detector_);
     auto mcparticle_message = std::make_shared<MCParticleMessage>(std::move(mcparticles), detector_);
-    event->dispatchMessage(deposit_message);
-    event->dispatchMessage(mcparticle_message);
+    messenger_->dispatchMessage(this, deposit_message, event);
+    messenger_->dispatchMessage(this, mcparticle_message, event);
 }

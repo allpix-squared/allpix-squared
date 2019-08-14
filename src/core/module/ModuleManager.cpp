@@ -660,10 +660,6 @@ void ModuleManager::run(std::mt19937_64& seeder) {
     global_config.setDefault<unsigned int>("number_of_events", 1u);
     auto number_of_events = global_config.get<unsigned int>("number_of_events");
 
-    // Wrap all objects shared by all events
-    event_context context(*messenger_, modules_, module_execution_time_, terminate_);
-    Event::setEventContext(&context);
-
     // Push all events to the thread pool
     for(unsigned int i = 1; i <= number_of_events; i++) {
         if(terminate_) {
@@ -676,15 +672,70 @@ void ModuleManager::run(std::mt19937_64& seeder) {
         // Get a new seed for the new event
         uint64_t seed = seeder();
 
-        auto event_function = [ number_of_events, event_num = i, event_seed = seed, &finished_events ]() mutable {
+        auto event_function = [ this, number_of_events, event_num = i, event_seed = seed, &finished_events ]() mutable {
+            // The RNG to be used by all events running on this thread
             static thread_local std::mt19937_64 random_engine;
 
-            // ReSeed the RNG for the new event
-            random_engine.seed(event_seed);
-
             LOG(STATUS) << "Running event " << event_num << " of " << number_of_events;
-            Event event(event_num, random_engine);
-            event.run();
+
+            // Create the event data
+            std::shared_ptr<Event> event = std::make_shared<Event>(*this->messenger_, event_num, event_seed);
+            event->set_and_seed_random_engine(&random_engine);
+
+            for(auto& module : modules_) {
+                LOG_PROGRESS(TRACE, "EVENT_LOOP")
+                    << "Running event " << event->number << " [" << module->get_identifier().getUniqueName() << "]";
+
+                // Check if the module is satisfied to run
+                if(!module->check_delegates(this->messenger_, event.get())) {
+                    LOG(TRACE) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
+                               << ", skipping module!";
+                    module->skip_event(event->number);
+                    continue;
+                }
+
+                // Get current time
+                auto start = std::chrono::steady_clock::now();
+
+                // Set run module section header
+                std::string old_section_name = Log::getSection();
+                unsigned int old_event_num = Log::getEventNum();
+                std::string section_name = "R:";
+                section_name += module->get_identifier().getUniqueName();
+                Log::setSection(section_name);
+                Log::setEventNum(event->number);
+
+                // Set module specific settings
+                auto old_settings =
+                    ModuleManager::set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
+
+                auto buffered_module = dynamic_cast<BufferedModule*>(module.get());
+
+                // Run module
+                try {
+                    if(buffered_module == nullptr) {
+                        module->run(event.get());
+                    } else {
+                        buffered_module->run_in_order(event);
+                    }
+                } catch(const EndOfRunException& e) {
+                    // Terminate if the module threw the EndOfRun request exception:
+                    LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
+                    this->terminate_ = true;
+                }
+
+                // Reset logging
+                Log::setSection(old_section_name);
+                Log::setEventNum(old_event_num);
+                ModuleManager::set_module_after(old_settings);
+
+                // Update execution time
+                auto end = std::chrono::steady_clock::now();
+                std::lock_guard<std::mutex> stat_lock{event->stats_mutex_};
+                this->module_execution_time_[module.get()] +=
+                    static_cast<std::chrono::duration<long double>>(end - start).count();
+            }
+
             finished_events++;
             LOG(STATUS) << "Finished event " << event_num;
         };
@@ -751,7 +802,12 @@ void ModuleManager::finalize() {
         // Change to our ROOT directory
         module->getROOTDirectory()->cd();
         // Finalize module
-        module->finalize();
+        auto buffered_module = dynamic_cast<BufferedModule*>(module.get());
+        if(buffered_module == nullptr) {
+            module->finalize();
+        } else {
+            buffered_module->finalize_buffer();
+        }
         // Remove the pointer to the ROOT directory after finalizing
         module->set_ROOT_directory(nullptr);
         // Remove the config manager

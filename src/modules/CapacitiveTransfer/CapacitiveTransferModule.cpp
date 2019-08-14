@@ -41,7 +41,7 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration& config,
     config_.setDefault("minimum_gap", config_.get<double>("nominal_gap"));
 
     // Require propagated deposits for single detector
-    messenger->bindSingle<PropagatedChargeMessage>(this, MsgFlags::REQUIRED);
+    messenger_->bindSingle<PropagatedChargeMessage>(this, MsgFlags::REQUIRED);
 }
 
 void CapacitiveTransferModule::init() {
@@ -263,7 +263,7 @@ void CapacitiveTransferModule::init() {
 }
 
 void CapacitiveTransferModule::run(Event* event) {
-    auto propagated_message = event->fetchMessage<PropagatedChargeMessage>();
+    auto propagated_message = messenger_->fetchMessage<PropagatedChargeMessage>(this, event);
 
     // Find corresponding pixels for all propagated charges
     LOG(TRACE) << "Transferring charges to pixels";
@@ -371,7 +371,7 @@ void CapacitiveTransferModule::run(Event* event) {
 
     // Dispatch message of pixel charges
     auto pixel_message = std::make_shared<PixelChargeMessage>(pixel_charges, detector_);
-    event->dispatchMessage(pixel_message);
+    messenger_->dispatchMessage(this, pixel_message, event);
 }
 
 void CapacitiveTransferModule::finalize() {

@@ -21,7 +21,7 @@
 using namespace allpix;
 
 CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geoManager)
-    : WriterModule(config), messenger_(messenger), geometryManager_(geoManager) {
+    : BufferedModule(config), messenger_(messenger), geometryManager_(geoManager) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
@@ -91,7 +91,7 @@ void CorryvreckanWriterModule::init() {
 
 // Make instantiations of Corryvreckan pixels, and store these in the trees during run time
 void CorryvreckanWriterModule::run(Event* event) {
-    auto pixel_messages = event->fetchMultiMessage<PixelHitMessage>();
+    auto pixel_messages = messenger_->fetchMultiMessage<PixelHitMessage>(this, event);
 
     // Loop through all receieved messages
     for(auto& message : pixel_messages) {

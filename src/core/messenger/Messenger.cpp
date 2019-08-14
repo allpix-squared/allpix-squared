@@ -23,8 +23,6 @@
 
 using namespace allpix;
 
-thread_local std::unique_ptr<Messenger::LocalMessenger> Messenger::local_messenger_;
-
 Messenger::Messenger() = default;
 #ifdef NDEBUG
 Messenger::~Messenger() = default;
@@ -83,8 +81,9 @@ bool Messenger::hasReceiver(Module* source, const std::shared_ptr<BaseMessage>& 
     return false;
 }
 
-bool Messenger::isSatisfied(BaseDelegate* delegate) const {
-    return local_messenger_->isSatisfied(delegate);
+bool Messenger::isSatisfied(BaseDelegate* delegate, Event* event) const {
+    auto local_messenger = event->get_local_messenger();
+    return local_messenger->isSatisfied(delegate);
 }
 
 void Messenger::add_delegate(const std::type_info& message_type,
@@ -124,25 +123,19 @@ void Messenger::remove_delegate(BaseDelegate* delegate) {
     delegate_to_iterator_.erase(iter);
 }
 
-std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> Messenger::fetchFilteredMessages(Module* module) {
+std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> Messenger::fetchFilteredMessages(Module* module,
+                                                                                                   Event* event) {
     try {
-        return local_messenger_->fetchFilteredMessages(module);
+        auto local_messenger = event->get_local_messenger();
+        return local_messenger->fetchFilteredMessages(module);
     } catch(const std::out_of_range& e) {
         throw MessageNotFoundException(module->getUniqueName(), typeid(BaseMessage));
     }
 }
 
-void Messenger::reset() {
-    if(local_messenger_ == nullptr) {
-        local_messenger_ = std::make_unique<LocalMessenger>(*this);
-    }
+LocalMessenger::LocalMessenger(Messenger& global_messenger) : global_messenger_(global_messenger) {}
 
-    local_messenger_->reset();
-}
-
-Messenger::LocalMessenger::LocalMessenger(Messenger& global_messenger) : global_messenger_(global_messenger) {}
-
-void Messenger::LocalMessenger::dispatchMessage(Module* source, std::shared_ptr<BaseMessage> message, std::string name) {
+void LocalMessenger::dispatchMessage(Module* source, std::shared_ptr<BaseMessage> message, std::string name) {
     // Get the name of the output message
     if(name == "-") {
         name = source->get_configuration().get<std::string>("output");
@@ -167,10 +160,10 @@ void Messenger::LocalMessenger::dispatchMessage(Module* source, std::shared_ptr<
     sent_messages_.emplace_back(message);
 }
 
-bool Messenger::LocalMessenger::dispatchMessage(Module* source,
-                                                const std::shared_ptr<BaseMessage>& message,
-                                                const std::string& name,
-                                                const std::string& id) {
+bool LocalMessenger::dispatchMessage(Module* source,
+                                     const std::shared_ptr<BaseMessage>& message,
+                                     const std::string& name,
+                                     const std::string& id) {
     bool send = false;
 
     // Create type identifier from the typeid
@@ -205,13 +198,12 @@ bool Messenger::LocalMessenger::dispatchMessage(Module* source,
     return send;
 }
 
-std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>>
-Messenger::LocalMessenger::fetchFilteredMessages(Module* module) {
+std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> LocalMessenger::fetchFilteredMessages(Module* module) {
     const std::type_index type_idx = typeid(BaseMessage);
     return messages_.at(module->getUniqueName()).at(type_idx).filter_multi;
 }
 
-bool Messenger::LocalMessenger::isSatisfied(BaseDelegate* delegate) const {
+bool LocalMessenger::isSatisfied(BaseDelegate* delegate) const {
     // check our records for messages for this module
     const std::string name = delegate->getUniqueName();
     auto messages_iter = messages_.find(name);
@@ -232,9 +224,4 @@ bool Messenger::LocalMessenger::isSatisfied(BaseDelegate* delegate) const {
     }
 
     return true;
-}
-
-void Messenger::LocalMessenger::reset() {
-    messages_.clear();
-    sent_messages_.clear();
 }

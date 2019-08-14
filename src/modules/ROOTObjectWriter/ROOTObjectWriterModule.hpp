@@ -28,7 +28,7 @@ namespace allpix {
      * saves the data in those objects to tree for every event. The tree name is the class name of the object. A separate
      * branch is created for every combination of detector name and message name that outputs this object.
      */
-    class ROOTObjectWriterModule : public WriterModule {
+    class ROOTObjectWriterModule : public BufferedModule {
     public:
         /**
          * @brief Constructor for this unique module
@@ -57,7 +57,7 @@ namespace allpix {
         /**
          * @brief Writes the objects fetched to their specific tree, constructing trees on the fly for new objects.
          */
-        void run(Event*) override;
+        void run(Event* event) override;
 
         /**
          * @brief Add the main configuration and the detector setup to the data file and write it, also write statistics
@@ -66,8 +66,9 @@ namespace allpix {
         void finalize() override;
 
     private:
-        void pre_run(Event*);
+        void pre_run(Event* event);
 
+        Messenger* messenger_;
         GeometryManager* geo_mgr_;
 
         // Object names to include or exclude from writing
@@ -77,9 +78,6 @@ namespace allpix {
         // Output data file to write
         std::unique_ptr<TFile> output_file_;
         std::string output_file_name_{};
-
-        // Last event processed
-        unsigned int last_event_{0};
 
         // List of trees that are stored in data file
         std::map<std::string, std::unique_ptr<TTree>> trees_;

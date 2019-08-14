@@ -60,6 +60,8 @@ namespace allpix {
         void finalize() override;
 
     private:
+        Messenger* messenger_;
+
         // General module members
         std::shared_ptr<const Detector> detector_;
         std::shared_ptr<DetectorModel> model_;

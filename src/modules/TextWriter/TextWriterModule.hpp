@@ -24,7 +24,7 @@ namespace allpix {
      *
      * Listens to all objects dispatched in the framework and stores an ASCII representation of every object to file.
      */
-    class TextWriterModule : public WriterModule {
+    class TextWriterModule : public BufferedModule {
     public:
         /**
          * @brief Constructor for this unique module
@@ -33,10 +33,6 @@ namespace allpix {
          * @param geo_mgr Pointer to the geometry manager, containing the detectors
          */
         TextWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr);
-        /**
-         * @brief Destructor deletes the internal objects used to build the ROOT Tree
-         */
-        ~TextWriterModule() override;
 
         /**
          * @brief Receive a single message containing objects of arbitrary type
@@ -53,7 +49,7 @@ namespace allpix {
         /**
          * @brief Writes the objects fetched to their specific tree, constructing trees on the fly for new objects.
          */
-        void run(Event*) override;
+        void run(Event* event) override;
 
         /**
          * @brief Add the main configuration and the detector setup to the data file and write it, also write statistics
@@ -62,6 +58,8 @@ namespace allpix {
         void finalize() override;
 
     private:
+        Messenger* messenger_;
+
         // Object names to include or exclude from writing
         std::set<std::string> include_;
         std::set<std::string> exclude_;
@@ -69,9 +67,6 @@ namespace allpix {
         // Output data file to write
         std::string output_file_name_{};
         std::unique_ptr<std::ofstream> output_file_;
-
-        // List of objects of a particular type, bound to a specific detector and having a particular name
-        std::map<std::tuple<std::type_index, std::string, std::string>, std::vector<Object*>*> write_list_;
 
         // Statistical information about number of objects
         unsigned long write_cnt_{};

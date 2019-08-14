@@ -313,7 +313,7 @@ void DepositionGeant4Module::run(Event* event) {
 
     // Dispatch the necessary messages
     for(auto& sensor : sensors_) {
-        sensor->dispatchMessages(event);
+        sensor->dispatchMessages(this, messenger_, event);
 
         // Fill output plots if requested:
         if(config_.get<bool>("output_plots")) {
@@ -323,7 +323,7 @@ void DepositionGeant4Module::run(Event* event) {
         }
     }
 
-    track_info_manager_->dispatchMessage(event);
+    track_info_manager_->dispatchMessage(this, messenger_, event);
     track_info_manager_->resetTrackInfoManager();
 }
 

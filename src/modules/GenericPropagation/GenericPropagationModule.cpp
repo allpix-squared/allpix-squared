@@ -547,7 +547,7 @@ void GenericPropagationModule::init() {
 }
 
 void GenericPropagationModule::run(Event* event) {
-    auto deposits_message = event->fetchMessage<DepositedChargeMessage>();
+    auto deposits_message = messenger_->fetchMessage<DepositedChargeMessage>(this, event);
 
     // Create vector of propagated charges to output
     std::vector<PropagatedCharge> propagated_charges;
@@ -644,7 +644,7 @@ void GenericPropagationModule::run(Event* event) {
     auto propagated_charge_message = std::make_shared<PropagatedChargeMessage>(std::move(propagated_charges), detector_);
 
     // Dispatch the message with propagated charges
-    event->dispatchMessage(propagated_charge_message);
+    messenger_->dispatchMessage(this, propagated_charge_message, event);
 }
 
 /**

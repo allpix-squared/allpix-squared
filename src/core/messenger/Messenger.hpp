@@ -18,9 +18,12 @@
 
 #include "../module/Module.hpp"
 #include "Message.hpp"
+#include "core/module/Event.hpp"
 #include "delegates.h"
 
 namespace allpix {
+    class Event;
+    class LocalMessenger;
 
     /**
      * @ingroup Managers
@@ -32,6 +35,8 @@ namespace allpix {
      */
     class Messenger {
         friend class Module;
+        friend class Event;
+        friend class LocalMessenger;
 
     public:
         /**
@@ -98,29 +103,39 @@ namespace allpix {
 
         /**
          * @brief Dispatches a message to subscribing modules
+         * @param module Pointer to the module that dispatched the message
          * @param message Pointer to the message to dispatch
+         * @param event Pointer to the event to dispatch the message to
          * @param name Optional message name (defaults to - indicating that it should dispatch to the module output
          * parameter)
          */
-        template <typename T> void dispatchMessage(Module* module, std::shared_ptr<T> message, const std::string&);
+        template <typename T>
+        void dispatchMessage(Module* module, std::shared_ptr<T> message, Event* event, const std::string& name = "-");
 
         /**
          * @brief Fetches a single message of specified type meant for the calling module
+         * @param module Module to fetch the messages for
+         * @param event Event to fetch the messages from
          * @return Shared pointer to message
          */
-        template <typename T> std::shared_ptr<T> fetchMessage(Module* module);
+        template <typename T> std::shared_ptr<T> fetchMessage(Module* module, Event* event);
 
         /**
          * @brief Fetches multiple messages of specified type meant for the calling module
+         * @param module Module to fetch the messages for
+         * @param event Event to fetch the messages from
          * @return Vector of shared pointers to messages
          */
-        template <typename T> std::vector<std::shared_ptr<T>> fetchMultiMessage(Module* module);
+        template <typename T> std::vector<std::shared_ptr<T>> fetchMultiMessage(Module* module, Event* event);
 
         /**
          * @brief Fetches filtered messages meant for the calling module
+         * @param module Module to fetch the messages for
+         * @param event Event to fetch the messages from
          * @return Vector of pairs containing shared pointer to and name of message
          */
-        std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> fetchFilteredMessages(Module* module);
+        std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> fetchFilteredMessages(Module* module,
+                                                                                                Event* event);
 
         /**
          * @brief Check if a specific message has a receiver
@@ -132,14 +147,11 @@ namespace allpix {
 
         /**
          * @brief Check if a delegate has recieved its message
+         * @param delegate Delegate to check if it was satisfied
+         * @param event Event to check the messages for this delegate
          * @return True if satisfied, false otherwise
          */
-        bool isSatisfied(BaseDelegate* delegate) const;
-
-        /**
-         * @brief Resets the messenger and clear any stored messages.
-         */
-        void reset();
+        bool isSatisfied(BaseDelegate* delegate, Event* event) const;
 
     private:
         /**
@@ -165,61 +177,54 @@ namespace allpix {
         DelegateMap delegates_;
         DelegateIteratorMap delegate_to_iterator_;
 
-        /**
-         * @breif Responsible for the actual handling of messages between Modules.
-         *
-         * The local messenger is an internal object that is allocated for each thread seperatly. It handles dispatching
-         * and fetching messages between Modules.
-         */
-        class LocalMessenger {
-        public:
-            explicit LocalMessenger(Messenger& global_messenger);
-
-            /**
-             * @brief Resets the messenger and clear any stored messages.
-             */
-            void reset();
-
-            void dispatchMessage(Module* source, std::shared_ptr<BaseMessage> message, std::string name);
-            bool dispatchMessage(Module* source,
-                                 const std::shared_ptr<BaseMessage>& message,
-                                 const std::string& name,
-                                 const std::string& id);
-
-            /**
-             * @brief Check if a delegate has recieved its message
-             * @return True if satisfied, false otherwise
-             */
-            bool isSatisfied(BaseDelegate* delegate) const;
-
-            /**
-             * @brief Fetches a single message of specified type meant for the calling module
-             * @return Shared pointer to message
-             */
-            template <typename T> std::shared_ptr<T> fetchMessage(Module* module);
-
-            /**
-             * @brief Fetches multiple messages of specified type meant for the calling module
-             * @return Vector of shared pointers to messages
-             */
-            template <typename T> std::vector<std::shared_ptr<T>> fetchMultiMessage(Module* module);
-
-            /**
-             * @brief Fetches filtered messages meant for the calling module
-             * @return Vector of pairs containing shared pointer to and name of message
-             */
-            std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> fetchFilteredMessages(Module* module);
-
-        private:
-            Messenger& global_messenger_;
-
-            std::unordered_map<std::string, std::unordered_map<std::type_index, DelegateTypes>> messages_;
-            std::vector<std::shared_ptr<BaseMessage>> sent_messages_;
-        };
-
-        static thread_local std::unique_ptr<LocalMessenger> local_messenger_;
-
         mutable std::mutex mutex_;
+    };
+
+    /**
+    * @breif Responsible for the actual handling of messages between Modules.
+    *
+    * The local messenger is an internal object that is allocated for each thread seperatly. It handles dispatching
+    * and fetching messages between Modules.
+    */
+    class LocalMessenger {
+    public:
+        explicit LocalMessenger(Messenger& global_messenger);
+
+        void dispatchMessage(Module* source, std::shared_ptr<BaseMessage> message, std::string name);
+        bool dispatchMessage(Module* source,
+                             const std::shared_ptr<BaseMessage>& message,
+                             const std::string& name,
+                             const std::string& id);
+
+        /**
+        * @brief Check if a delegate has recieved its message
+        * @return True if satisfied, false otherwise
+        */
+        bool isSatisfied(BaseDelegate* delegate) const;
+
+        /**
+        * @brief Fetches a single message of specified type meant for the calling module
+        * @return Shared pointer to message
+        */
+        template <typename T> std::shared_ptr<T> fetchMessage(Module* module);
+
+        /**
+        * @brief Fetches multiple messages of specified type meant for the calling module
+        * @return Vector of shared pointers to messages
+        */
+        template <typename T> std::vector<std::shared_ptr<T>> fetchMultiMessage(Module* module);
+
+        /**
+        * @brief Fetches filtered messages meant for the calling module
+        * @return Vector of pairs containing shared pointer to and name of message
+        */
+        std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> fetchFilteredMessages(Module* module);
+
+    private:
+        Messenger& global_messenger_;
+
+        std::unordered_map<std::string, std::unordered_map<std::type_index, DelegateTypes>> messages_;
+        std::vector<std::shared_ptr<BaseMessage>> sent_messages_;
     };
 } // namespace allpix
 

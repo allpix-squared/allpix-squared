@@ -31,7 +31,7 @@ namespace allpix {
      * Reads the tree of objects in the data format of the \ref ROOTObjectWriterModule. Converts all the stored objects that
      * are supported back to messages containing those objects and dispatches those messages.
      */
-    class ROOTObjectReaderModule : public ReaderModule {
+    class ROOTObjectReaderModule : public Module {
     public:
         using MessageCreatorMap =
             std::map<std::type_index,
@@ -65,6 +65,7 @@ namespace allpix {
         void finalize() override;
 
     private:
+        Messenger* messenger_;
         GeometryManager* geo_mgr_;
 
         /**
@@ -94,5 +95,7 @@ namespace allpix {
 
         // Internal map to construct an object from it's type index
         MessageCreatorMap message_creator_map_;
+
+        std::mutex mutex_;
     };
 } // namespace allpix

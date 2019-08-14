@@ -33,7 +33,7 @@ namespace allpix {
      * More detailed explanation of module
      */
 
-    class CorryvreckanWriterModule : public WriterModule {
+    class CorryvreckanWriterModule : public BufferedModule {
     public:
         /**
          * @brief Constructor for this unique module
@@ -51,7 +51,7 @@ namespace allpix {
         /**
          * @brief Take the digitised pixel hits and write them into the output file
          */
-        void run(Event*) override;
+        void run(Event* event) override;
 
         /**
          * @brief Write output trees to file

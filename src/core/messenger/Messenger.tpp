@@ -36,33 +36,36 @@ namespace allpix {
     }
 
     template <typename T>
-    void Messenger::dispatchMessage(Module* module, std::shared_ptr<T> message, const std::string& name) {
-        local_messenger_->dispatchMessage(module, message, name);
+    void Messenger::dispatchMessage(Module* module, std::shared_ptr<T> message, Event* event, const std::string& name) {
+        auto local_messenger = event->get_local_messenger();
+        local_messenger->dispatchMessage(module, message, name);
     }
 
-    template <typename T> std::shared_ptr<T> Messenger::fetchMessage(Module* module) {
+    template <typename T> std::shared_ptr<T> Messenger::fetchMessage(Module* module, Event* event) {
         try {
-            return local_messenger_->fetchMessage<T>(module);
+            auto local_messenger = event->get_local_messenger();
+            return local_messenger->fetchMessage<T>(module);
         } catch(const std::out_of_range& e) {
             throw MessageNotFoundException(module->getUniqueName(), typeid(T));
         }
     }
 
-    template <typename T> std::vector<std::shared_ptr<T>> Messenger::fetchMultiMessage(Module* module) {
+    template <typename T> std::vector<std::shared_ptr<T>> Messenger::fetchMultiMessage(Module* module, Event* event) {
         try {
-            return local_messenger_->fetchMultiMessage<T>(module);
+            auto local_messenger = event->get_local_messenger();
+            return local_messenger->fetchMultiMessage<T>(module);
         } catch(const std::out_of_range& e) {
             throw MessageNotFoundException(module->getUniqueName(), typeid(T));
         }
     }
 
-    template <typename T> std::shared_ptr<T> Messenger::LocalMessenger::fetchMessage(Module* module) {
+    template <typename T> std::shared_ptr<T> LocalMessenger::fetchMessage(Module* module) {
         static_assert(std::is_base_of<BaseMessage, T>::value, "Fetched message should inherit from Message class");
         std::type_index type_idx = typeid(T);
         return std::static_pointer_cast<T>(messages_.at(module->getUniqueName()).at(type_idx).single);
     }
 
-    template <typename T> std::vector<std::shared_ptr<T>> Messenger::LocalMessenger::fetchMultiMessage(Module* module) {
+    template <typename T> std::vector<std::shared_ptr<T>> LocalMessenger::fetchMultiMessage(Module* module) {
         static_assert(std::is_base_of<BaseMessage, T>::value, "Fetched message should inherit from Message class");
 
         // TODO: do nothing if T == BaseMessage; there is no need to cast (optimized out)?

@@ -10,7 +10,10 @@
 #ifndef ALLPIX_MODULE_H
 #define ALLPIX_MODULE_H
 
+#include <atomic>
+#include <map>
 #include <memory>
+#include <mutex>
 #include <random>
 #include <string>
 #include <vector>
@@ -47,6 +50,7 @@ namespace allpix {
         friend class Event;
         friend class ModuleManager;
         friend class Messenger;
+        friend class LocalMessenger;
 
     public:
         /**
@@ -212,8 +216,16 @@ namespace allpix {
         /**
          * @brief Check if all delegates are satisfied
          * @param messenger Pointer to the messenger we want to check with
+         * @param event Pointer to the event we want to check with
          */
-        bool check_delegates(Messenger* messenger);
+        bool check_delegates(Messenger* messenger, Event* event);
+
+        /**
+         * @brief Inform the module that a certain event will be skipped
+         * @param event Number of event skipped
+         */
+        virtual void skip_event(unsigned int) {}
+
         std::vector<std::pair<Messenger*, BaseDelegate*>> delegates_;
 
         /**
@@ -233,37 +245,62 @@ namespace allpix {
     };
 
     /**
-     * @brief Simple wrapper around Module to define a module that writes data to file
-     * @warning All modules that writes data to files must inherit from this class
-     *
-     * Used to simplify the ordered execution of modules requiring I/O operations.
+     * @brief A Module that always ensure to execute events in the order of event numbers. It
+     * implements buffering out of the box so interested modules can directly use it
      */
-    class WriterModule : public Module {
+    class BufferedModule : public Module {
         friend class Event;
         friend class ModuleManager;
         friend class Messenger;
 
     public:
-        explicit WriterModule(Configuration& config) : Module(config) {}
-        explicit WriterModule(Configuration& config, std::shared_ptr<Detector> detector)
+        explicit BufferedModule(Configuration& config) : Module(config) {}
+        explicit BufferedModule(Configuration& config, std::shared_ptr<Detector> detector)
             : Module(config, std::move(detector)) {}
-    };
 
-    /**
-     * @brief Simple wrapper around Module to define a module that reads data from file
-     * @warning All modules that reads data from files must inherit from this class
-     *
-     * Used to simplify the ordered execution of modules requiring I/O operations.
-     */
-    class ReaderModule : public Module {
-        friend class Event;
-        friend class ModuleManager;
-        friend class Messenger;
+    protected:
+        /**
+         * @brief Finalize the module after the event sequence
+         */
+        virtual void finalize_buffer();
 
-    public:
-        explicit ReaderModule(Configuration& config) : Module(config) {}
-        explicit ReaderModule(Configuration& config, std::shared_ptr<Detector> detector)
-            : Module(config, std::move(detector)) {}
+        /**
+         * @brief Run the event in the order of increasing event number
+         * @param event The event to run
+         *
+         * Execute the event if it is in the correct order, otherwise buffer the event and execute it later
+         */
+        virtual void run_in_order(std::shared_ptr<Event> event);
+
+    private:
+        /**
+         * @brief Returns the next event number to run
+         * @param event Current event number to check from
+         */
+        unsigned int get_next_event(unsigned int);
+
+        /**
+         * @brief Inform the module that a certain event will be skipped
+         * @param event Number of event skipped
+         */
+        void skip_event(unsigned int) override;
+
+        /**
+         * @brief Flush the buffered events
+         */
+        void flush_buffered_events();
+
+        // The buffer that holds out of order events
+        std::map<unsigned int, std::shared_ptr<Event>> buffered_events_;
+
+        // Mutex used to guard access to \ref buffered_events_
+        std::mutex buffer_mutex_;
+
+        // The expected in order event to write
+        unsigned int next_event_to_write_{1};
+
+        // Set of event numbers that was skipped because not all messages were present
+        std::set<unsigned int> skipped_events_;
     };
 
 } // namespace allpix

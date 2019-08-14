@@ -32,7 +32,7 @@ namespace allpix {
      * sub-directory, it creates a Hits tree. Upon receiving the Pixel Hit messages, it writes the information to
      * the respective trees.
      */
-    class RCEWriterModule : public WriterModule {
+    class RCEWriterModule : public BufferedModule {
     public:
         /**
          * @brief Constructor for this unique module
@@ -54,7 +54,7 @@ namespace allpix {
         /**
          * @brief Writes the objects fetched to their specific tree
          */
-        void run(Event*) override;
+        void run(Event* event) override;
 
         /**
          * @brief Write the output file
@@ -62,6 +62,7 @@ namespace allpix {
         void finalize() override;
 
     private:
+        Messenger* messenger_;
         GeometryManager* geo_mgr_;
 
         // Struct to store tree and information for each detector

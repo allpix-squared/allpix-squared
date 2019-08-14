@@ -27,12 +27,12 @@
 using namespace allpix;
 
 ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
-    : WriterModule(config), geo_mgr_(geo_mgr) {
+    : BufferedModule(config), messenger_(messenger), geo_mgr_(geo_mgr) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
     // Bind to all messages with filter
-    messenger->registerFilter(this, &ROOTObjectWriterModule::filter);
+    messenger_->registerFilter(this, &ROOTObjectWriterModule::filter);
 }
 /**
  * @note Objects cannot be stored in smart pointers due to internal ROOT logic
@@ -113,7 +113,7 @@ bool ROOTObjectWriterModule::filter(const std::shared_ptr<BaseMessage>& message,
 }
 
 void ROOTObjectWriterModule::pre_run(Event* event) {
-    auto messages = event->fetchFilteredMessages();
+    auto messages = messenger_->fetchFilteredMessages(this, event);
 
     for(auto& pair : messages) {
         auto& message = pair.first;
@@ -168,7 +168,6 @@ void ROOTObjectWriterModule::pre_run(Event* event) {
 
         // Fill the branch vector
         for(Object& object : object_array) {
-            std::lock_guard<std::mutex> lock{stats_mutex_};
             ++write_cnt_;
             write_list_[index_tuple]->push_back(&object);
         }
@@ -181,9 +180,6 @@ void ROOTObjectWriterModule::run(Event* event) {
 
     LOG(TRACE) << "Writing new objects to tree";
     output_file_->cd();
-
-    // Save last event number for trees created later
-    last_event_ = event->number;
 
     // Fill the tree with the current received messages
     for(auto& tree : trees_) {

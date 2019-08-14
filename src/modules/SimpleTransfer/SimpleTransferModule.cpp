@@ -28,7 +28,7 @@
 using namespace allpix;
 
 SimpleTransferModule::SimpleTransferModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector)
-    : Module(config, detector), detector_(std::move(detector)) {
+    : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
@@ -50,7 +50,7 @@ SimpleTransferModule::SimpleTransferModule(Configuration& config, Messenger* mes
     output_plots_ = config_.get<bool>("output_plots");
 
     // Require propagated deposits for single detector
-    messenger->bindSingle<PropagatedChargeMessage>(this, MsgFlags::REQUIRED);
+    messenger_->bindSingle<PropagatedChargeMessage>(this, MsgFlags::REQUIRED);
 }
 
 void SimpleTransferModule::init() {
@@ -79,7 +79,7 @@ void SimpleTransferModule::init() {
 }
 
 void SimpleTransferModule::run(Event* event) {
-    auto propagated_message = event->fetchMessage<PropagatedChargeMessage>();
+    auto propagated_message = messenger_->fetchMessage<PropagatedChargeMessage>(this, event);
 
     // Find corresponding pixels for all propagated charges
     LOG(TRACE) << "Transferring charges to pixels";
@@ -160,7 +160,7 @@ void SimpleTransferModule::run(Event* event) {
 
     // Dispatch message of pixel charges
     auto pixel_message = std::make_shared<PixelChargeMessage>(pixel_charges, detector_);
-    event->dispatchMessage(pixel_message);
+    messenger_->dispatchMessage(this, pixel_message, event);
 }
 
 void SimpleTransferModule::finalize() {

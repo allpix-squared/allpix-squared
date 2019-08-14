@@ -91,13 +91,13 @@ inline std::array<long double, 3> getRotationAnglesFromMatrix(ROOT::Math::Rotati
 }
 
 LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo)
-    : WriterModule(config), geo_mgr_(geo) {
+    : BufferedModule(config), messenger_(messenger), geo_mgr_(geo) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
     // Bind pixel hits message
-    messenger->bindMulti<PixelHitMessage>(this, MsgFlags::REQUIRED);
-    messenger->bindSingle<MCTrackMessage>(this, MsgFlags::REQUIRED);
+    messenger_->bindMulti<PixelHitMessage>(this, MsgFlags::REQUIRED);
+    messenger_->bindSingle<MCTrackMessage>(this, MsgFlags::REQUIRED);
 
     // Set configuration defaults:
     config_.setDefault("file_name", "output.slcio");
@@ -248,7 +248,7 @@ void LCIOWriterModule::init() {
 }
 
 void LCIOWriterModule::run(Event* event) {
-    auto pixel_messages = event->fetchMultiMessage<PixelHitMessage>();
+    auto pixel_messages = messenger_->fetchMultiMessage<PixelHitMessage>(this, event);
 
     auto evt = std::make_unique<LCEventImpl>(); // create the event
     evt->setRunNumber(1);
