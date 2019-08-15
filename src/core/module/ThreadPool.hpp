@@ -32,7 +32,7 @@ namespace allpix {
             /**
              * @brief Default constructor, initializes empty queue
              */
-            SafeQueue(unsigned int max_size);
+            explicit SafeQueue(unsigned int max_size);
 
             /**
              * @brief Erases the queue and release waiting threads on destruction
