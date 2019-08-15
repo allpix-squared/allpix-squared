@@ -32,7 +32,7 @@ namespace allpix {
             /**
              * @brief Default constructor, initializes empty queue
              */
-            SafeQueue() = default;
+            SafeQueue(unsigned int max_size);
 
             /**
              * @brief Erases the queue and release waiting threads on destruction
@@ -82,15 +82,18 @@ namespace allpix {
             mutable std::mutex mutex_;
             std::queue<T> queue_;
             std::condition_variable condition_;
+            const unsigned int max_size_;
         };
 
         /**
          * @brief Construct thread pool with provided number of threads
          * @param num_threads Number of threads in the pool
+         * @param max_queue_size Maximum size of the task queue
          * @param worker_init_function Function run by all the workers to initialize
          * @param worker_finalize_function Function run by all the workers to cleanup
          */
         explicit ThreadPool(unsigned int num_threads,
+                            unsigned int max_queue_size,
                             std::function<void()> worker_init_function,
                             std::function<void()> worker_finalize_function);
 

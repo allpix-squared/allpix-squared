@@ -13,9 +13,10 @@ using namespace allpix;
  * The threads are created in an exception-safe way and all of them will be destroyed when creation of one fails
  */
 ThreadPool::ThreadPool(unsigned int num_threads,
+                       unsigned int max_queue_size,
                        std::function<void()> worker_init_function,
                        std::function<void()> worker_finalize_function)
-    : worker_finalize_function_(std::move(worker_finalize_function)) {
+    : event_queue_(max_queue_size), worker_finalize_function_(std::move(worker_finalize_function)) {
     // Create threads
     try {
         for(unsigned int i = 0u; i < num_threads; ++i) {

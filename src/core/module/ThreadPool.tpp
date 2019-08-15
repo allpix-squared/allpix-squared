@@ -1,4 +1,6 @@
 namespace allpix {
+    template <typename T> ThreadPool::SafeQueue<T>::SafeQueue(unsigned int max_size) : max_size_(max_size) {}
+
     template <typename T> ThreadPool::SafeQueue<T>::~SafeQueue() { invalidate(); }
 
     /*
@@ -22,11 +24,28 @@ namespace allpix {
         if(func != nullptr) {
             func();
         }
+
+        // Notify possible producers waiting to fill the queue
+        condition_.notify_all();
+
         return true;
     }
 
     template <typename T> void ThreadPool::SafeQueue<T>::push(T value) {
-        std::lock_guard<std::mutex> lock{mutex_};
+        std::unique_lock<std::mutex> lock{mutex_};
+
+        // Check if the queue reached its full size
+        if(queue_.size() >= max_size_) {
+            // Wait until the queue is below the max size or it was invalidated(shutdown)
+            condition_.wait(lock, [this]() { return queue_.size() < max_size_ || !valid_; });
+        }
+
+        // Abort the push operation if conditions not met
+        if(queue_.size() >= max_size_ || !valid_) {
+            return;
+        }
+
+        // Push a new element to the queue and notify consumers
         queue_.push(std::move(value));
         condition_.notify_one();
     }

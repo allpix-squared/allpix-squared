@@ -652,16 +652,20 @@ void ModuleManager::run(std::mt19937_64& seeder) {
         }
     };
 
-    std::shared_ptr<ThreadPool> thread_pool = std::make_unique<ThreadPool>(threads_num, init_function, finialize_function);
+    // Push 128 events for each event to maintain enough work for each worker
+    auto max_queue_size = threads_num * 128;
+    std::unique_ptr<ThreadPool> thread_pool =
+        std::make_unique<ThreadPool>(threads_num, max_queue_size, init_function, finialize_function);
 
-    std::atomic<unsigned int> finished_events{0};
-
+    // Record the run stage total time
     auto start_time = std::chrono::steady_clock::now();
-    global_config.setDefault<unsigned int>("number_of_events", 1u);
-    auto number_of_events = global_config.get<unsigned int>("number_of_events");
 
     // Push all events to the thread pool
+    std::atomic<unsigned int> finished_events{0};
+    global_config.setDefault<unsigned int>("number_of_events", 1u);
+    auto number_of_events = global_config.get<unsigned int>("number_of_events");
     for(unsigned int i = 1; i <= number_of_events; i++) {
+        // Check if run was aborted and stop pushing extra events to the threadpool
         if(terminate_) {
             LOG(INFO) << "Interrupting prematurely because of request";
             thread_pool->destroy();

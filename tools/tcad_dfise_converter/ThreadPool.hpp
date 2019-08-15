@@ -73,9 +73,13 @@ public:
     /**
      * @brief Construct thread pool with provided number of threads
      * @param num_threads Number of threads in the pool
+     * @param max_queue_size Maximum queue size
      * @param worker_init_function Function run by all the workers to initialize
      */
-    explicit ThreadPool(const unsigned int num_threads, std::function<void()> worker_init_function) {
+    explicit ThreadPool(const unsigned int num_threads,
+                        const unsigned int max_queue_size,
+                        std::function<void()> worker_init_function)
+        : queue_(max_queue_size) {
         // Create threads
         try {
             for(unsigned int i = 0u; i < num_threads; ++i) {
