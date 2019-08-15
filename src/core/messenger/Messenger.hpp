@@ -222,7 +222,7 @@ namespace allpix {
         std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> fetchFilteredMessages(Module* module);
 
     private:
-        Messenger& global_messenger_;
+        const Messenger& global_messenger_;
 
         std::unordered_map<std::string, std::unordered_map<std::type_index, DelegateTypes>> messages_;
         std::vector<std::shared_ptr<BaseMessage>> sent_messages_;
