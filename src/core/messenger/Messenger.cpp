@@ -170,28 +170,43 @@ bool LocalMessenger::dispatchMessage(Module* source,
     const BaseMessage* inst = message.get();
     std::type_index type_idx = typeid(*inst);
 
-    // Send messages only to their specific listeners
-    for(auto& delegate : global_messenger_.delegates_[type_idx][id]) {
-        if(check_send(message.get(), delegate.get())) {
-            LOG(TRACE) << "Sending message " << allpix::demangle(type_idx.name()) << " from " << source->getUniqueName()
-                       << " to " << delegate->getUniqueName();
-            // Construct BaseMessage where message should be stored
-            auto& dest = messages_[delegate->getUniqueName()][type_idx];
+    // Retrieve listeners for the given message type and name
+    // We only use const methods since we don't need to modify the global messenger registery information by mistake
+    // if there was no listeners for the given message
+    const auto msg_type_iterator = global_messenger_.delegates_.find(type_idx);
+    if(msg_type_iterator != global_messenger_.delegates_.end()) {
+        const auto msg_name_iterator = msg_type_iterator->second.find(id);
+        if(msg_name_iterator != msg_type_iterator->second.end()) {
+            // Send messages only to their specific listeners
+            for(auto& delegate : msg_name_iterator->second) {
+                if(check_send(message.get(), delegate.get())) {
+                    LOG(TRACE) << "Sending message " << allpix::demangle(type_idx.name()) << " from "
+                               << source->getUniqueName() << " to " << delegate->getUniqueName();
+                    // Construct BaseMessage where message should be stored
+                    auto& dest = messages_[delegate->getUniqueName()][type_idx];
 
-            delegate->process(message, name, dest);
-            send = true;
+                    delegate->process(message, name, dest);
+                    send = true;
+                }
+            }
         }
     }
 
     // Dispatch to base message listeners
     assert(typeid(BaseMessage) != typeid(*inst));
-    for(auto& delegate : global_messenger_.delegates_[typeid(BaseMessage)][id]) {
-        if(check_send(message.get(), delegate.get())) {
-            LOG(TRACE) << "Sending message " << allpix::demangle(type_idx.name()) << " from " << source->getUniqueName()
-                       << " to generic listener " << delegate->getUniqueName();
-            auto& dest = messages_[delegate->getUniqueName()][typeid(BaseMessage)];
-            delegate->process(message, name, dest);
-            send = true;
+    const auto base_msg_type_iterator = global_messenger_.delegates_.find(typeid(BaseMessage));
+    if(base_msg_type_iterator != global_messenger_.delegates_.end()) {
+        const auto msg_name_iterator = base_msg_type_iterator->second.find(id);
+        if(msg_name_iterator != base_msg_type_iterator->second.end()) {
+            for(auto& delegate : msg_name_iterator->second) {
+                if(check_send(message.get(), delegate.get())) {
+                    LOG(TRACE) << "Sending message " << allpix::demangle(type_idx.name()) << " from "
+                               << source->getUniqueName() << " to generic listener " << delegate->getUniqueName();
+                    auto& dest = messages_[delegate->getUniqueName()][typeid(BaseMessage)];
+                    delegate->process(message, name, dest);
+                    send = true;
+                }
+            }
         }
     }
 
