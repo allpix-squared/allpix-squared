@@ -209,8 +209,6 @@ By adding this, the module promises that it will work correctly if the run-metho
 This means in particular that the module will safely handle access to shared (for example static) variables and it will properly bind ROOT histograms to their directory before the \parameter{run()}-method.
 Access to constant operations in the GeometryManager, Detector and DetectorModel is always valid between various threads. In addition, sending and receiving messages is thread-safe.
 
-For a more detailed look into the multithreading approach of \apsq, refer to Section~\ref{sec:multithreading_approach}.
-
 \section{Geometry and Detectors}
 \label{sec:models_geometry}
 Simulations are frequently performed for a set of different detectors (such as a beam telescope and a device under test).
@@ -448,8 +446,7 @@ void run(Event* event) {
     auto message = std::make_shared<Message<Object>>(data, detector_);
 
     // Send the message using the Messenger object for the given event
-    auto& messenger = event->getMessenger();
-    messenger->dispatchMessage(message);
+    messenger->dispatchMessage(message, event);
 }
 \end{minted}
 
