@@ -16,9 +16,10 @@
 #include <unordered_map>
 #include <utility>
 
-#include "../module/Module.hpp"
 #include "Message.hpp"
 #include "core/module/Event.hpp"
+#include "core/module/Module.hpp"
+#include "core/module/exceptions.h"
 #include "delegates.h"
 
 namespace allpix {
