@@ -23,6 +23,7 @@
 #include <TString.h>
 
 #include <ROOT/TThreadedObject.hxx>
+#include <TH1.h>
 
 #include "core/utils/text.h"
 #include "core/utils/type.h"
