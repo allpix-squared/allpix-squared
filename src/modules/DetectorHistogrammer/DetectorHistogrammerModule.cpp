@@ -50,35 +50,35 @@ void DetectorHistogrammerModule::init() {
     // Create histogram of hitmap
     LOG(TRACE) << "Creating histograms";
     std::string hit_map_title = "Hitmap for " + detector_->getName() + ";x (pixels);y (pixels);hits";
-    hit_map = new ROOT::TThreadedObject<TH2D>("hit_map",
-                                              hit_map_title.c_str(),
-                                              model->getNPixels().x(),
-                                              -0.5,
-                                              model->getNPixels().x() - 0.5,
-                                              model->getNPixels().y(),
-                                              -0.5,
-                                              model->getNPixels().y() - 0.5);
+    hit_map = new TThreadedObject<TH2D>("hit_map",
+                                        hit_map_title.c_str(),
+                                        model->getNPixels().x(),
+                                        -0.5,
+                                        model->getNPixels().x() - 0.5,
+                                        model->getNPixels().y(),
+                                        -0.5,
+                                        model->getNPixels().y() - 0.5);
 
     std::string charge_map_title = "Charge map for " + detector_->getName() + ";x (pixels);y (pixels); charge [ke]";
-    charge_map = new ROOT::TThreadedObject<TH2D>("charge_map",
-                                                 charge_map_title.c_str(),
-                                                 model->getNPixels().x(),
-                                                 -0.5,
-                                                 model->getNPixels().x() - 0.5,
-                                                 model->getNPixels().y(),
-                                                 -0.5,
-                                                 model->getNPixels().y() - 0.5);
+    charge_map = new TThreadedObject<TH2D>("charge_map",
+                                           charge_map_title.c_str(),
+                                           model->getNPixels().x(),
+                                           -0.5,
+                                           model->getNPixels().x() - 0.5,
+                                           model->getNPixels().y(),
+                                           -0.5,
+                                           model->getNPixels().y() - 0.5);
 
     // Create histogram of cluster map
     std::string cluster_map_title = "Cluster map for " + detector_->getName() + ";x (pixels);y (pixels); clusters";
-    cluster_map = new ROOT::TThreadedObject<TH2D>("cluster_map",
-                                                  cluster_map_title.c_str(),
-                                                  model->getNPixels().x(),
-                                                  -0.5,
-                                                  model->getNPixels().x() - 0.5,
-                                                  model->getNPixels().y(),
-                                                  -0.5,
-                                                  model->getNPixels().y() - 0.5);
+    cluster_map = new TThreadedObject<TH2D>("cluster_map",
+                                            cluster_map_title.c_str(),
+                                            model->getNPixels().x(),
+                                            -0.5,
+                                            model->getNPixels().x() - 0.5,
+                                            model->getNPixels().y(),
+                                            -0.5,
+                                            model->getNPixels().y() - 0.5);
 
     // Calculate the granularity of in-pixel maps:
     auto inpixel_bins = config_.get<DisplacementVector2D<Cartesian2D<int>>>(
@@ -94,182 +94,153 @@ void DetectorHistogrammerModule::init() {
     // Create histogram of cluster map
     std::string cluster_size_map_title = "Cluster size as function of in-pixel impact position for " + detector_->getName() +
                                          ";x%pitch [#mum];y%pitch [#mum]";
-    cluster_size_map = new ROOT::TThreadedObject<TProfile2D>(
+    cluster_size_map = new TThreadedObject<TProfile2D>(
         "cluster_size_map", cluster_size_map_title.c_str(), inpixel_bins.x(), 0., pitch_x, inpixel_bins.y(), 0., pitch_y);
 
     std::string cluster_size_x_map_title = "Cluster size in X as function of in-pixel impact position for " +
                                            detector_->getName() + ";x%pitch [#mum];y%pitch [#mum]";
-    cluster_size_x_map = new ROOT::TThreadedObject<TProfile2D>("cluster_size_x_map",
-                                                               cluster_size_x_map_title.c_str(),
-                                                               inpixel_bins.x(),
-                                                               0.,
-                                                               pitch_x,
-                                                               inpixel_bins.y(),
-                                                               0.,
-                                                               pitch_y);
+    cluster_size_x_map = new TThreadedObject<TProfile2D>("cluster_size_x_map",
+                                                         cluster_size_x_map_title.c_str(),
+                                                         inpixel_bins.x(),
+                                                         0.,
+                                                         pitch_x,
+                                                         inpixel_bins.y(),
+                                                         0.,
+                                                         pitch_y);
 
     std::string cluster_size_y_map_title = "Cluster size in Y as function of in-pixel impact position for " +
                                            detector_->getName() + ";x%pitch [#mum];y%pitch [#mum]";
-    cluster_size_y_map = new ROOT::TThreadedObject<TProfile2D>("cluster_size_y_map",
-                                                               cluster_size_y_map_title.c_str(),
-                                                               inpixel_bins.x(),
-                                                               0.,
-                                                               pitch_x,
-                                                               inpixel_bins.y(),
-                                                               0.,
-                                                               pitch_y);
+    cluster_size_y_map = new TThreadedObject<TProfile2D>("cluster_size_y_map",
+                                                         cluster_size_y_map_title.c_str(),
+                                                         inpixel_bins.x(),
+                                                         0.,
+                                                         pitch_x,
+                                                         inpixel_bins.y(),
+                                                         0.,
+                                                         pitch_y);
 
     // Charge maps:
     std::string cluster_charge_map_title = "Cluster charge as function of in-pixel impact position for " +
                                            detector_->getName() + ";x%pitch [#mum];y%pitch [#mum];<cluster charge> [ke]";
-    cluster_charge_map = new ROOT::TThreadedObject<TProfile2D>("cluster_charge_map",
-                                                               cluster_charge_map_title.c_str(),
-                                                               inpixel_bins.x(),
-                                                               0.,
-                                                               pitch_x,
-                                                               inpixel_bins.y(),
-                                                               0.,
-                                                               pitch_y);
+    cluster_charge_map = new TThreadedObject<TProfile2D>("cluster_charge_map",
+                                                         cluster_charge_map_title.c_str(),
+                                                         inpixel_bins.x(),
+                                                         0.,
+                                                         pitch_x,
+                                                         inpixel_bins.y(),
+                                                         0.,
+                                                         pitch_y);
     std::string seed_charge_map_title = "Seed pixel charge as function of in-pixel impact position for " +
                                         detector_->getName() + ";x%pitch [#mum];y%pitch [#mum];<seed pixel charge> [ke]";
-    seed_charge_map = new ROOT::TThreadedObject<TProfile2D>(
+    seed_charge_map = new TThreadedObject<TProfile2D>(
         "seed_charge_map", seed_charge_map_title.c_str(), inpixel_bins.x(), 0., pitch_x, inpixel_bins.y(), 0., pitch_y);
 
     // Create cluster size plots, preventing a zero-bin histogram by scaling with integer ceiling: (x + y - 1) / y
     std::string cluster_size_title = "Cluster size for " + detector_->getName() + ";cluster size [px];clusters";
-    cluster_size = new ROOT::TThreadedObject<TH1D>("cluster_size",
-                                                   cluster_size_title.c_str(),
-                                                   (model->getNPixels().x() * model->getNPixels().y() + 9) / 10,
-                                                   0.5,
-                                                   (model->getNPixels().x() * model->getNPixels().y() + 9) / 10 + 0.5);
+    cluster_size = new TThreadedObject<TH1D>("cluster_size",
+                                             cluster_size_title.c_str(),
+                                             (model->getNPixels().x() * model->getNPixels().y() + 9) / 10,
+                                             0.5,
+                                             (model->getNPixels().x() * model->getNPixels().y() + 9) / 10 + 0.5);
 
     std::string cluster_size_x_title = "Cluster size X for " + detector_->getName() + ";cluster size x [px];clusters";
-    cluster_size_x = new ROOT::TThreadedObject<TH1D>(
+    cluster_size_x = new TThreadedObject<TH1D>(
         "cluster_size_x", cluster_size_x_title.c_str(), model->getNPixels().x(), 0.5, model->getNPixels().x() + 0.5);
 
     std::string cluster_size_y_title = "Cluster size Y for " + detector_->getName() + ";cluster size y [px];clusters";
-    cluster_size_y = new ROOT::TThreadedObject<TH1D>(
+    cluster_size_y = new TThreadedObject<TH1D>(
         "cluster_size_y", cluster_size_y_title.c_str(), model->getNPixels().y(), 0.5, model->getNPixels().y() + 0.5);
 
     // Create event size plot
     std::string event_size_title = "Event size for " + detector_->getName() + ";event size [px];events";
-    event_size = new ROOT::TThreadedObject<TH1D>("event_size",
-                                                 event_size_title.c_str(),
-                                                 model->getNPixels().x() * model->getNPixels().y(),
-                                                 0.5,
-                                                 model->getNPixels().x() * model->getNPixels().y() + 0.5);
+    event_size = new TThreadedObject<TH1D>("event_size",
+                                           event_size_title.c_str(),
+                                           model->getNPixels().x() * model->getNPixels().y(),
+                                           0.5,
+                                           model->getNPixels().x() * model->getNPixels().y() + 0.5);
 
     // Create residual plots
     std::string residual_x_title = "Residual in X for " + detector_->getName() + ";x_{track} - x_{cluster} [#mum];events";
-    residual_x = new ROOT::TThreadedObject<TH1D>(
+    residual_x = new TThreadedObject<TH1D>(
         "residual_x", residual_x_title.c_str(), static_cast<int>(12 * pitch_x), -2 * pitch_x, 2 * pitch_x);
     std::string residual_y_title = "Residual in Y for " + detector_->getName() + ";y_{track} - y_{cluster} [#mum];events";
-    residual_y = new ROOT::TThreadedObject<TH1D>(
+    residual_y = new TThreadedObject<TH1D>(
         "residual_y", residual_y_title.c_str(), static_cast<int>(12 * pitch_y), -2 * pitch_y, 2 * pitch_y);
 
     // Residual projections
     std::string residual_x_vs_x_title = "Mean absolute deviation of residual in X as function of in-pixel X position for " +
                                         detector_->getName() + ";x%pitch [#mum];MAD(#Deltax) [#mum]";
     residual_x_vs_x =
-        new ROOT::TThreadedObject<TProfile>("residual_x_vs_x", residual_x_vs_x_title.c_str(), inpixel_bins.x(), 0., pitch_x);
+        new TThreadedObject<TProfile>("residual_x_vs_x", residual_x_vs_x_title.c_str(), inpixel_bins.x(), 0., pitch_x);
     std::string residual_y_vs_y_title = "Mean absolute deviation of residual in Y as function of in-pixel Y position for " +
                                         detector_->getName() + ";y%pitch [#mum];MAD(#Deltay) [#mum]";
     residual_y_vs_y =
-        new ROOT::TThreadedObject<TProfile>("residual_y_vs_y", residual_y_vs_y_title.c_str(), inpixel_bins.y(), 0., pitch_y);
+        new TThreadedObject<TProfile>("residual_y_vs_y", residual_y_vs_y_title.c_str(), inpixel_bins.y(), 0., pitch_y);
     std::string residual_x_vs_y_title = "Mean absolute deviation of residual in X as function of in-pixel Y position for " +
                                         detector_->getName() + ";y%pitch [#mum];MAD(#Deltax) [#mum]";
     residual_x_vs_y =
-        new ROOT::TThreadedObject<TProfile>("residual_x_vs_y", residual_x_vs_y_title.c_str(), inpixel_bins.y(), 0., pitch_y);
+        new TThreadedObject<TProfile>("residual_x_vs_y", residual_x_vs_y_title.c_str(), inpixel_bins.y(), 0., pitch_y);
     std::string residual_y_vs_x_title = "Mean absolute deviation of residual in Y as function of in-pixel X position for " +
                                         detector_->getName() + ";x%pitch [#mum];MAD(#Deltay) [#mum]";
     residual_y_vs_x =
-        new ROOT::TThreadedObject<TProfile>("residual_y_vs_x", residual_y_vs_x_title.c_str(), inpixel_bins.x(), 0., pitch_x);
+        new TThreadedObject<TProfile>("residual_y_vs_x", residual_y_vs_x_title.c_str(), inpixel_bins.x(), 0., pitch_x);
 
     // Residual maps
     std::string residual_map_title = "Mean absolute deviation of residual as function of in-pixel impact position for " +
                                      detector_->getName() +
                                      ";x%pitch [#mum];y%pitch [#mum];MAD(#sqrt{#Deltax^{2}+#Deltay^{2}}) [#mum]";
-    residual_map = new ROOT::TThreadedObject<TProfile2D>(
+    residual_map = new TThreadedObject<TProfile2D>(
         "residual_map", residual_map_title.c_str(), inpixel_bins.x(), 0., pitch_x, inpixel_bins.y(), 0., pitch_y);
     std::string residual_x_map_title =
         "Mean absolute deviation of residual in X as function of in-pixel impact position for " + detector_->getName() +
         ";x%pitch [#mum];y%pitch [#mum];MAD(#Deltax) [#mum]";
-    residual_x_map = new ROOT::TThreadedObject<TProfile2D>(
+    residual_x_map = new TThreadedObject<TProfile2D>(
         "residual_x_map", residual_x_map_title.c_str(), inpixel_bins.x(), 0., pitch_x, inpixel_bins.y(), 0., pitch_y);
     std::string residual_y_map_title =
         "Mean absolute deviation of residual in Y as function of in-pixel impact position for " + detector_->getName() +
         ";x%pitch [#mum];y%pitch [#mum];MAD(#Deltay) [#mum]";
-    residual_y_map = new ROOT::TThreadedObject<TProfile2D>(
+    residual_y_map = new TThreadedObject<TProfile2D>(
         "residual_y_map", residual_y_map_title.c_str(), inpixel_bins.x(), 0., pitch_x, inpixel_bins.y(), 0., pitch_y);
 
     // Efficiency maps:
     std::string efficiency_map_title = "Efficiency as function of in-pixel impact position for " + detector_->getName() +
                                        ";x%pitch [#mum];y%pitch [#mum];efficiency";
-    efficiency_map = new ROOT::TThreadedObject<TProfile2D>(
+    efficiency_map = new TThreadedObject<TProfile2D>(
         "efficiency_map", efficiency_map_title.c_str(), inpixel_bins.x(), 0, pitch_x, inpixel_bins.y(), 0, pitch_y, 0, 1);
     std::string efficiency_detector_title = "Efficiency of " + detector_->getName() + ";x (pixels);y (pixels);efficiency";
-    efficiency_detector = new ROOT::TThreadedObject<TProfile2D>("efficiency_detector",
-                                                                efficiency_detector_title.c_str(),
-                                                                model->getNPixels().x(),
-                                                                -0.5,
-                                                                model->getNPixels().x() - 0.5,
-                                                                model->getNPixels().y(),
-                                                                -0.5,
-                                                                model->getNPixels().y() - 0.5,
-                                                                0,
-                                                                1);
+    efficiency_detector = new TThreadedObject<TProfile2D>("efficiency_detector",
+                                                          efficiency_detector_title.c_str(),
+                                                          model->getNPixels().x(),
+                                                          -0.5,
+                                                          model->getNPixels().x() - 0.5,
+                                                          model->getNPixels().y(),
+                                                          -0.5,
+                                                          model->getNPixels().y() - 0.5,
+                                                          0,
+                                                          1);
     // Efficiency projections
     std::string efficiency_vs_x_title =
         "Efficiency as function of in-pixel X position for " + detector_->getName() + ";x%pitch [#mum];efficiency";
-    efficiency_vs_x = new ROOT::TThreadedObject<TProfile>(
-        "efficiency_vs_x", efficiency_vs_x_title.c_str(), inpixel_bins.x(), 0., pitch_x, 0, 1);
+    efficiency_vs_x =
+        new TThreadedObject<TProfile>("efficiency_vs_x", efficiency_vs_x_title.c_str(), inpixel_bins.x(), 0., pitch_x, 0, 1);
     std::string efficiency_vs_y_title =
         "Efficiency as function of in-pixel Y position for " + detector_->getName() + ";y%pitch [#mum];efficiency";
-    efficiency_vs_y = new ROOT::TThreadedObject<TProfile>(
-        "efficiency_vs_y", efficiency_vs_y_title.c_str(), inpixel_bins.y(), 0., pitch_y, 0, 1);
+    efficiency_vs_y =
+        new TThreadedObject<TProfile>("efficiency_vs_y", efficiency_vs_y_title.c_str(), inpixel_bins.y(), 0., pitch_y, 0, 1);
 
     // Create number of clusters plot
     std::string n_cluster_title = "Number of clusters for " + detector_->getName() + ";clusters;events";
-    n_cluster = new ROOT::TThreadedObject<TH1D>("n_cluster",
-                                                n_cluster_title.c_str(),
-                                                model->getNPixels().x() * model->getNPixels().y(),
-                                                0.5,
-                                                model->getNPixels().x() * model->getNPixels().y() + 0.5);
+    n_cluster = new TThreadedObject<TH1D>("n_cluster",
+                                          n_cluster_title.c_str(),
+                                          model->getNPixels().x() * model->getNPixels().y(),
+                                          0.5,
+                                          model->getNPixels().x() * model->getNPixels().y() + 0.5);
 
     // Create cluster charge plot
     auto max_cluster_charge = Units::convert(config_.get<double>("max_cluster_charge", Units::get(50., "ke")), "ke");
     std::string cluster_charge_title = "Cluster charge for " + detector_->getName() + ";cluster charge [ke];clusters";
-    cluster_charge = new ROOT::TThreadedObject<TH1D>(
+    cluster_charge = new TThreadedObject<TH1D>(
         "cluster_charge", cluster_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
-
-    // Initializes empty histograms
-    hit_map->Get();
-    charge_map->Get();
-    cluster_map->Get();
-    cluster_size_map->Get();
-    cluster_size_x_map->Get();
-    cluster_size_y_map->Get();
-    cluster_size->Get();
-    cluster_size_x->Get();
-    cluster_size_y->Get();
-    event_size->Get();
-    residual_x->Get();
-    residual_y->Get();
-    residual_x_vs_x->Get();
-    residual_y_vs_y->Get();
-    residual_x_vs_y->Get();
-    residual_y_vs_x->Get();
-    residual_map->Get();
-    residual_x_map->Get();
-    residual_y_map->Get();
-    efficiency_vs_x->Get();
-    efficiency_vs_y->Get();
-    efficiency_detector->Get();
-    efficiency_map->Get();
-    n_cluster->Get();
-    cluster_charge->Get();
-    cluster_charge_map->Get();
-    seed_charge_map->Get();
 }
 
 void DetectorHistogrammerModule::run(Event* event) {
@@ -295,8 +266,8 @@ void DetectorHistogrammerModule::run(Event* event) {
             LOG(DEBUG) << " PIXEL X=" << pixel_idx.x() << " Y=" << pixel_idx.y() << " CHARGE=" << pixel_charge.getSignal();
 
             // Add pixel
-            hit_map->Get()->Fill(pixel_idx.x(), pixel_idx.y());
-            charge_map->Get()->Fill(
+            hit_map->Fill(pixel_idx.x(), pixel_idx.y());
+            charge_map->Fill(
                 pixel_idx.x(), pixel_idx.y(), static_cast<double>(Units::convert(pixel_charge.getSignal(), "ke")));
 
             // Update statistics
@@ -323,15 +294,15 @@ void DetectorHistogrammerModule::run(Event* event) {
     // Evaluate the clusters
     for(const auto& clus : clusters) {
         // Fill cluster histograms
-        cluster_size->Get()->Fill(static_cast<double>(clus.getSize()));
+        cluster_size->Fill(static_cast<double>(clus.getSize()));
         auto clusSizesXY = clus.getSizeXY();
-        cluster_size_x->Get()->Fill(clusSizesXY.first);
-        cluster_size_y->Get()->Fill(clusSizesXY.second);
+        cluster_size_x->Fill(clusSizesXY.first);
+        cluster_size_y->Fill(clusSizesXY.second);
 
         auto clusterPos = clus.getPosition();
         LOG(DEBUG) << "Cluster at coordinates " << clusterPos << " with charge " << Units::display(clus.getCharge(), "ke");
-        cluster_map->Get()->Fill(clusterPos.x(), clusterPos.y());
-        cluster_charge->Get()->Fill(static_cast<double>(Units::convert(clus.getCharge(), "ke")));
+        cluster_map->Fill(clusterPos.x(), clusterPos.y());
+        cluster_charge->Fill(static_cast<double>(Units::convert(clus.getCharge(), "ke")));
 
         auto cluster_particles = clus.getMCParticles();
         LOG(DEBUG) << "This cluster is connected to " << cluster_particles.size() << " MC particles";
@@ -358,12 +329,12 @@ void DetectorHistogrammerModule::run(Event* event) {
 
             auto inPixel_um_x = static_cast<double>(Units::convert(inPixelPos.x(), "um"));
             auto inPixel_um_y = static_cast<double>(Units::convert(inPixelPos.y(), "um"));
-            cluster_size_map->Get()->Fill(inPixel_um_x, inPixel_um_y, static_cast<double>(clus.getSize()));
-            cluster_size_x_map->Get()->Fill(inPixel_um_x, inPixel_um_y, clusSizesXY.first);
-            cluster_size_y_map->Get()->Fill(inPixel_um_x, inPixel_um_y, clusSizesXY.second);
+            cluster_size_map->Fill(inPixel_um_x, inPixel_um_y, static_cast<double>(clus.getSize()));
+            cluster_size_x_map->Fill(inPixel_um_x, inPixel_um_y, clusSizesXY.first);
+            cluster_size_y_map->Fill(inPixel_um_x, inPixel_um_y, clusSizesXY.second);
 
             // Charge maps:
-            cluster_charge_map->Get()->Fill(
+            cluster_charge_map->Fill(
                 inPixel_um_x, inPixel_um_y, static_cast<double>(Units::convert(clus.getCharge(), "ke")));
 
             // Find the nearest pixel
@@ -373,24 +344,24 @@ void DetectorHistogrammerModule::run(Event* event) {
             // Retrieve the pixel to which this MCParticle points:
             auto pixel = clus.getPixelHit(xpixel, ypixel);
             if(pixel != nullptr) {
-                seed_charge_map->Get()->Fill(
+                seed_charge_map->Fill(
                     inPixel_um_x, inPixel_um_y, static_cast<double>(Units::convert(pixel->getSignal(), "ke")));
             }
 
             // Calculate residual with cluster position:
             auto residual_um_x = static_cast<double>(Units::convert(particlePos.x() - clusterPos.x() * pitch.x(), "um"));
             auto residual_um_y = static_cast<double>(Units::convert(particlePos.y() - clusterPos.y() * pitch.y(), "um"));
-            residual_x->Get()->Fill(residual_um_x);
-            residual_y->Get()->Fill(residual_um_y);
-            residual_x_vs_x->Get()->Fill(inPixel_um_x, std::fabs(residual_um_x));
-            residual_y_vs_y->Get()->Fill(inPixel_um_y, std::fabs(residual_um_y));
-            residual_x_vs_y->Get()->Fill(inPixel_um_y, std::fabs(residual_um_x));
-            residual_y_vs_x->Get()->Fill(inPixel_um_x, std::fabs(residual_um_y));
-            residual_map->Get()->Fill(inPixel_um_x,
-                                      inPixel_um_y,
-                                      std::fabs(std::sqrt(residual_um_x * residual_um_x + residual_um_y * residual_um_y)));
-            residual_x_map->Get()->Fill(inPixel_um_x, inPixel_um_y, std::fabs(residual_um_x));
-            residual_y_map->Get()->Fill(inPixel_um_x, inPixel_um_y, std::fabs(residual_um_y));
+            residual_x->Fill(residual_um_x);
+            residual_y->Fill(residual_um_y);
+            residual_x_vs_x->Fill(inPixel_um_x, std::fabs(residual_um_x));
+            residual_y_vs_y->Fill(inPixel_um_y, std::fabs(residual_um_y));
+            residual_x_vs_y->Fill(inPixel_um_y, std::fabs(residual_um_x));
+            residual_y_vs_x->Fill(inPixel_um_x, std::fabs(residual_um_y));
+            residual_map->Fill(inPixel_um_x,
+                               inPixel_um_y,
+                               std::fabs(std::sqrt(residual_um_x * residual_um_x + residual_um_y * residual_um_y)));
+            residual_x_map->Fill(inPixel_um_x, inPixel_um_y, std::fabs(residual_um_x));
+            residual_y_map->Fill(inPixel_um_x, inPixel_um_y, std::fabs(residual_um_y));
         }
     }
 
@@ -421,15 +392,15 @@ void DetectorHistogrammerModule::run(Event* event) {
         LOG(DEBUG) << "Particle at " << Units::display(particlePos, {"mm", "um"})
                    << (matched ? " has a matching cluster" : " has no matching cluster");
 
-        efficiency_vs_x->Get()->Fill(inPixel_um_x, static_cast<double>(matched));
-        efficiency_vs_y->Get()->Fill(inPixel_um_y, static_cast<double>(matched));
-        efficiency_map->Get()->Fill(inPixel_um_x, inPixel_um_y, static_cast<double>(matched));
-        efficiency_detector->Get()->Fill(xpixel, ypixel, static_cast<double>(matched));
+        efficiency_vs_x->Fill(inPixel_um_x, static_cast<double>(matched));
+        efficiency_vs_y->Fill(inPixel_um_y, static_cast<double>(matched));
+        efficiency_map->Fill(inPixel_um_x, inPixel_um_y, static_cast<double>(matched));
+        efficiency_detector->Fill(xpixel, ypixel, static_cast<double>(matched));
     }
 
     // Fill further histograms
-    event_size->Get()->Fill(pixels_message != nullptr ? static_cast<double>(pixels_message->getData().size()) : 0.);
-    n_cluster->Get()->Fill(static_cast<double>(clusters.size()));
+    event_size->Fill(pixels_message != nullptr ? static_cast<double>(pixels_message->getData().size()) : 0.);
+    n_cluster->Fill(static_cast<double>(clusters.size()));
 }
 
 void DetectorHistogrammerModule::finalize() {

@@ -23,7 +23,8 @@
 #include "SensitiveDetectorActionG4.hpp"
 #include "TrackInfoManager.hpp"
 
-#include <ROOT/TThreadedObject.hxx>
+#include "tools/ROOT.h"
+
 #include <TH1D.h>
 
 class G4UserLimits;
@@ -104,7 +105,7 @@ namespace allpix {
         G4RunManager* run_manager_g4_;
 
         // Vector of histogram pointers for debugging plots
-        std::map<std::string, ROOT::TThreadedObject<TH1D>*> charge_per_event_;
+        std::map<std::string, TThreadedObject<TH1D>*> charge_per_event_;
 
         // Total deposited charges
         std::atomic_uint total_charges_{0};

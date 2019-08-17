@@ -92,14 +92,11 @@ void ProjectionPropagationModule::init() {
 
     if(output_plots_) {
         // Initialize output plot
-        drift_time_histo_ = new ROOT::TThreadedObject<TH1D>("drift_time_histo",
-                                                            "Drift time;Drift time [ns];charge carriers",
-                                                            static_cast<int>(Units::convert(integration_time_, "ns") * 5),
-                                                            0,
-                                                            static_cast<double>(Units::convert(integration_time_, "ns")));
-
-        // Initialize empty histogram
-        drift_time_histo_->Get();
+        drift_time_histo_ = new TThreadedObject<TH1D>("drift_time_histo",
+                                                      "Drift time;Drift time [ns];charge carriers",
+                                                      static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                                      0,
+                                                      static_cast<double>(Units::convert(integration_time_, "ns")));
     }
 }
 
@@ -176,7 +173,7 @@ void ProjectionPropagationModule::run(Event* event) {
         LOG(TRACE) << "Drift time is " << Units::display(drift_time, "ns");
 
         if(output_plots_) {
-            drift_time_histo_->Get()->Fill(drift_time, deposit.getCharge());
+            drift_time_histo_->Fill(drift_time, deposit.getCharge());
         }
 
         double diffusion_std_dev = std::sqrt(2. * diffusion_constant * drift_time);
@@ -244,6 +241,6 @@ void ProjectionPropagationModule::run(Event* event) {
 void ProjectionPropagationModule::finalize() {
     if(output_plots_) {
         // Write output plot
-        drift_time_histo_->Merge()->Write();
+        drift_time_histo_->Write();
     }
 }

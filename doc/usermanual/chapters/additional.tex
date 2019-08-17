@@ -13,7 +13,7 @@ They are intended as centralized components which can be shared between differen
 The framework provides a set of methods to ease the integration of ROOT and Geant4 in the framework.
 An important part is the extension of the custom conversion \texttt{to\_string} and \texttt{from\_string} methods from the internal string utilities (see Section~\ref{sec:string_utilities}) to support internal ROOT and Geant4 classes.
 This allows to directly read configuration parameters to these types, making the code in the modules both shorter and cleaner.
-In addition, more conversions functions are provided together with other useful utilities such as the possibility to display a ROOT vector with units.
+In addition, more conversions functions are provided together with other useful utilities such as the possibility to display a ROOT vector with units and a thin wrapper for threadsafe ROOT histograms.
 
 \subsection{Geant4 Interface}
 \label{sec:geant4_interface}

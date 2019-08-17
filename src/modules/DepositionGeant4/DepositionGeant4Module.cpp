@@ -318,7 +318,7 @@ void DepositionGeant4Module::run(Event* event) {
         // Fill output plots if requested:
         if(config_.get<bool>("output_plots")) {
             double charge = static_cast<double>(Units::convert(sensor->getDepositedCharge(), "ke"));
-            auto histogram = charge_per_event_[sensor->getName()]->Get();
+            auto histogram = charge_per_event_[sensor->getName()];
             histogram->Fill(charge);
         }
     }
@@ -332,8 +332,7 @@ void DepositionGeant4Module::finalize() {
         // Write histograms
         LOG(TRACE) << "Writing output plots to file";
         for(auto& histogram : charge_per_event_) {
-            auto plot = histogram.second->Merge();
-            plot->Write();
+            histogram.second->Write();
         }
     }
 
@@ -417,11 +416,8 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fan
             {
                 std::lock_guard<std::mutex> lock(histogram_mutex_);
                 if(charge_per_event_.find(sensitive_detector_action->getName()) == charge_per_event_.end()) {
-                    charge_per_event_[sensitive_detector_action->getName()] = new ROOT::TThreadedObject<TH1D>(
+                    charge_per_event_[sensitive_detector_action->getName()] = new TThreadedObject<TH1D>(
                         plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum);
-
-                    // Initialize empty histogram
-                    charge_per_event_[sensitive_detector_action->getName()]->Get();
                 }
             }
         }

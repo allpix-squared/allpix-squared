@@ -512,37 +512,30 @@ void GenericPropagationModule::init() {
 
     if(output_plots_) {
         step_length_histo_ =
-            new ROOT::TThreadedObject<TH1D>("step_length_histo",
-                                            "Step length;length [#mum];integration steps",
-                                            100,
-                                            0,
-                                            static_cast<double>(Units::convert(0.25 * model_->getSensorSize().z(), "um")));
+            new TThreadedObject<TH1D>("step_length_histo",
+                                      "Step length;length [#mum];integration steps",
+                                      100,
+                                      0,
+                                      static_cast<double>(Units::convert(0.25 * model_->getSensorSize().z(), "um")));
 
-        drift_time_histo_ = new ROOT::TThreadedObject<TH1D>("drift_time_histo",
-                                                            "Drift time;Drift time [ns];charge carriers",
-                                                            static_cast<int>(Units::convert(integration_time_, "ns") * 5),
-                                                            0,
-                                                            static_cast<double>(Units::convert(integration_time_, "ns")));
+        drift_time_histo_ = new TThreadedObject<TH1D>("drift_time_histo",
+                                                      "Drift time;Drift time [ns];charge carriers",
+                                                      static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                                      0,
+                                                      static_cast<double>(Units::convert(integration_time_, "ns")));
 
-        uncertainty_histo_ = new ROOT::TThreadedObject<TH1D>(
+        uncertainty_histo_ = new TThreadedObject<TH1D>(
             "uncertainty_histo",
             "Position uncertainty;uncertainty [nm];integration steps",
             100,
             0,
             static_cast<double>(4 * Units::convert(config_.get<double>("spatial_precision"), "nm")));
 
-        group_size_histo_ =
-            new ROOT::TThreadedObject<TH1D>("group_size_histo",
-                                            "Charge carrier group size;group size;number of groups trasnported",
-                                            config_.get<int>("charge_per_step") - 1,
-                                            1,
-                                            static_cast<double>(config_.get<unsigned int>("charge_per_step")));
-
-        // Initialize empty histograms
-        step_length_histo_->Get();
-        drift_time_histo_->Get();
-        uncertainty_histo_->Get();
-        group_size_histo_->Get();
+        group_size_histo_ = new TThreadedObject<TH1D>("group_size_histo",
+                                                      "Charge carrier group size;group size;number of groups trasnported",
+                                                      config_.get<int>("charge_per_step") - 1,
+                                                      1,
+                                                      static_cast<double>(config_.get<unsigned int>("charge_per_step")));
     }
 }
 
@@ -618,8 +611,8 @@ void GenericPropagationModule::run(Event* event) {
             propagated_charges_count += charge_per_step;
             total_time += charge_per_step * prop_pair.second;
             if(output_plots_) {
-                drift_time_histo_->Get()->Fill(static_cast<double>(Units::convert(prop_pair.second, "ns")), charge_per_step);
-                group_size_histo_->Get()->Fill(charge_per_step);
+                drift_time_histo_->Fill(static_cast<double>(Units::convert(prop_pair.second, "ns")), charge_per_step);
+                group_size_histo_->Fill(charge_per_step);
             }
         }
     }
@@ -762,8 +755,8 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
 
         // Update step length histogram
         if(output_plots_) {
-            step_length_histo_->Get()->Fill(static_cast<double>(Units::convert(step.value.norm(), "um")));
-            uncertainty_histo_->Get()->Fill(static_cast<double>(Units::convert(step.error.norm(), "nm")));
+            step_length_histo_->Fill(static_cast<double>(Units::convert(step.value.norm(), "um")));
+            uncertainty_histo_->Fill(static_cast<double>(Units::convert(step.error.norm(), "nm")));
         }
 
         // Lower timestep when reaching the sensor edge
@@ -818,10 +811,10 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
 
 void GenericPropagationModule::finalize() {
     if(output_plots_) {
-        step_length_histo_->Merge()->Write();
-        drift_time_histo_->Merge()->Write();
-        uncertainty_histo_->Merge()->Write();
-        group_size_histo_->Merge()->Write();
+        step_length_histo_->Write();
+        drift_time_histo_->Write();
+        uncertainty_histo_->Write();
+        group_size_histo_->Write();
     }
 
     long double average_time = total_time_ / std::max(1u, total_propagated_charges_);

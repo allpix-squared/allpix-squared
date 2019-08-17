@@ -11,7 +11,6 @@
 #include <random>
 #include <string>
 
-#include <ROOT/TThreadedObject.hxx>
 #include <TH1D.h>
 
 #include "core/config/Configuration.hpp"
@@ -22,6 +21,8 @@
 
 #include "objects/DepositedCharge.hpp"
 #include "objects/PropagatedCharge.hpp"
+
+#include "tools/ROOT.h"
 
 namespace allpix {
     /**
@@ -83,6 +84,6 @@ namespace allpix {
         double boltzmann_kT_;
 
         // Output plot for drift time
-        ROOT::TThreadedObject<TH1D>* drift_time_histo_;
+        TThreadedObject<TH1D>* drift_time_histo_;
     };
 } // namespace allpix

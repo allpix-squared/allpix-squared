@@ -7,13 +7,11 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
+#include <TH1D.h>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
-
-#include <ROOT/TThreadedObject.hxx>
-#include <TH1D.h>
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
@@ -24,6 +22,8 @@
 #include "objects/Pixel.hpp"
 #include "objects/PixelCharge.hpp"
 #include "objects/PropagatedCharge.hpp"
+
+#include "tools/ROOT.h"
 
 namespace allpix {
     /**
@@ -66,7 +66,7 @@ namespace allpix {
         std::shared_ptr<Detector> detector_;
         std::shared_ptr<DetectorModel> model_;
 
-        ROOT::TThreadedObject<TH1D>* drift_time_histo;
+        TThreadedObject<TH1D>* drift_time_histo;
 
         // Flag whether to store output plots:
         bool output_plots_{};

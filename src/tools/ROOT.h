@@ -22,6 +22,8 @@
 #include <Math/PositionVector3D.h>
 #include <TString.h>
 
+#include <ROOT/TThreadedObject.hxx>
+
 #include "core/utils/text.h"
 #include "core/utils/type.h"
 
@@ -146,6 +148,31 @@ namespace allpix {
     inline std::ostream& operator<<(std::ostream& os, const ROOT::Math::PositionVector2D<T, U>& vec) {
         return os << "(" << vec.x() << "," << vec.y() << ")";
     }
+
+    /**
+     * @brief A thin wrapper over ROOT::TThreadedObject to make sure at least an instance exists
+     */
+    template <typename T> class TThreadedObject : public ROOT::TThreadedObject<T> {
+    public:
+        template <class... ARGS> TThreadedObject(ARGS&&... args) : ROOT::TThreadedObject<T>(std::forward<ARGS>(args)...) {
+            this->Get();
+        }
+
+        /**
+         * @brief An easy way to fill a histogram
+         */
+        template <class... ARGS, typename std::enable_if<std::is_base_of<TH1, T>::value>::type* = nullptr>
+        Int_t Fill(ARGS&&... args) {
+            return this->Get()->Fill(std::forward<ARGS>(args)...);
+        }
+
+        /**
+         * @brief An easy way to write a histogram
+         */
+        template <typename std::enable_if<std::is_base_of<TObject, T>::value>::type* = nullptr> void Write() {
+            this->Merge()->Write();
+        }
+    };
 } // namespace allpix
 
 #endif /* ALLPIX_ROOT_H */

@@ -11,7 +11,6 @@
 
 #include <Math/DisplacementVector2D.h>
 #include <Math/Point3D.h>
-#include <ROOT/TThreadedObject.hxx>
 #include <TH1D.h>
 
 #include "core/config/Configuration.hpp"
@@ -108,9 +107,9 @@ namespace allpix {
         ROOT::Math::XYZVector magnetic_field_;
 
         // Output plots
-        ROOT::TThreadedObject<TH1D>*potential_difference_, *induced_charge_histo_, *induced_charge_e_histo_,
+        TThreadedObject<TH1D>*potential_difference_, *induced_charge_histo_, *induced_charge_e_histo_,
             *induced_charge_h_histo_;
-        ROOT::TThreadedObject<TH1D>* step_length_histo_;
-        ROOT::TThreadedObject<TH1D>* drift_time_histo_;
+        TThreadedObject<TH1D>* step_length_histo_;
+        TThreadedObject<TH1D>* drift_time_histo_;
     };
 } // namespace allpix
