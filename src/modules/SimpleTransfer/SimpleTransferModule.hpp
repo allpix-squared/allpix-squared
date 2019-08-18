@@ -7,11 +7,12 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#include <TH1D.h>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
+
+#include <TH1D.h>
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
