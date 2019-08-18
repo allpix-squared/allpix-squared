@@ -13,13 +13,13 @@ They are intended as centralized components which can be shared between differen
 The framework provides a set of methods to ease the integration of ROOT and Geant4 in the framework.
 An important part is the extension of the custom conversion \texttt{to\_string} and \texttt{from\_string} methods from the internal string utilities (see Section~\ref{sec:string_utilities}) to support internal ROOT and Geant4 classes.
 This allows to directly read configuration parameters to these types, making the code in the modules both shorter and cleaner.
-In addition, more conversions functions are provided together with other useful utilities such as the possibility to display a ROOT vector with units and a thin wrapper for threadsafe ROOT histograms.
+In addition, more conversions functions are provided together with other useful utilities such as the possibility to display a ROOT vector with units and a thin wrapper for thread-safe ROOT histograms.
 
 \subsection{Geant4 Interface}
 \label{sec:geant4_interface}
 The framework provides an interfacing library with Geant4 that provides alternative run managers to be used by modules interested in using Geant4.
 These run managers, unlike the deafult Geant4 managers, allow the modules to execute in parallel within the framework assigned worker threads.
-Moreover, these managers are thread safe and allow reproducing of results.
+Moreover, these managers are thread-safe and allow results to reproduced.
 
 The DepositionGeant4 module uses such managers to be able to call the \texttt{BeamOn} method in parallel thus benefiting from the multi-threading feature.
 

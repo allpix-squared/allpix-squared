@@ -209,7 +209,7 @@ In addition to the constructor, each module can override the following methods:
 This method can for example be used to initialize histograms.
 \item \parameter{run(Event* event)}: Called for every event in the simulation, with the event number (starting from one).
 An exception should be thrown for serious errors, otherwise a warning should be logged.
-\item \parameter{finalizeThread()}: Called after processing all events in the run by each worker thread if multi-threading was used.
+\item \parameter{finalizeThread()}: Called after processing all events in the run by each worker thread separately if multi-threading was used.
 \item \parameter{finalize()}: Called after processing all events in the run and before destructing the module.
 Typically used to save the output data (like histograms).
 Any exceptions should be thrown from here instead of the destructor.
