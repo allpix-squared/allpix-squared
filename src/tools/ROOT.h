@@ -151,28 +151,26 @@ namespace allpix {
     }
 
     /**
-     * @brief A thin wrapper over ROOT::TThreadedObject to make sure at least an instance exists
+     * @brief A thin wrapper over ROOT::TThreadedObject for histograms
+     *
+     * Enables filling histograms in parallel and makes sure an empty instance will exist if not filled.
      */
-    template <typename T> class TThreadedObject : public ROOT::TThreadedObject<T> {
+    template <typename T, typename std::enable_if<std::is_base_of<TH1, T>::value>::type* = nullptr>
+    class ThreadedHistogram : public ROOT::TThreadedObject<T> {
     public:
-        template <class... ARGS> TThreadedObject(ARGS&&... args) : ROOT::TThreadedObject<T>(std::forward<ARGS>(args)...) {
+        template <class... ARGS> ThreadedHistogram(ARGS&&... args) : ROOT::TThreadedObject<T>(std::forward<ARGS>(args)...) {
             this->Get();
         }
 
         /**
          * @brief An easy way to fill a histogram
          */
-        template <class... ARGS, typename std::enable_if<std::is_base_of<TH1, T>::value>::type* = nullptr>
-        Int_t Fill(ARGS&&... args) {
-            return this->Get()->Fill(std::forward<ARGS>(args)...);
-        }
+        template <class... ARGS> Int_t Fill(ARGS&&... args) { return this->Get()->Fill(std::forward<ARGS>(args)...); }
 
         /**
          * @brief An easy way to write a histogram
          */
-        template <typename std::enable_if<std::is_base_of<TObject, T>::value>::type* = nullptr> void Write() {
-            this->Merge()->Write();
-        }
+        void Write() { this->Merge()->Write(); }
     };
 } // namespace allpix
 

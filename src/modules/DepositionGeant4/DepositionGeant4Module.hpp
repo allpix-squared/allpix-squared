@@ -105,7 +105,7 @@ namespace allpix {
         G4RunManager* run_manager_g4_;
 
         // Vector of histogram pointers for debugging plots
-        std::map<std::string, TThreadedObject<TH1D>*> charge_per_event_;
+        std::map<std::string, ThreadedHistogram<TH1D>*> charge_per_event_;
 
         // Total deposited charges
         std::atomic_uint total_charges_{0};

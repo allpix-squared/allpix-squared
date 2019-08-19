@@ -65,24 +65,25 @@ void DefaultDigitizerModule::init() {
         auto nbins = config_.get<int>("output_plots_bins");
 
         // Create histograms if needed
-        h_pxq = new TThreadedObject<TH1D>("pixelcharge", "raw pixel charge;pixel charge [ke];pixels", nbins, 0, maximum);
-        h_pxq_noise = new TThreadedObject<TH1D>(
+        h_pxq = new ThreadedHistogram<TH1D>("pixelcharge", "raw pixel charge;pixel charge [ke];pixels", nbins, 0, maximum);
+        h_pxq_noise = new ThreadedHistogram<TH1D>(
             "pixelcharge_noise", "pixel charge w/ el. noise;pixel charge [ke];pixels", nbins, 0, maximum);
-        h_gain = new TThreadedObject<TH1D>("gain", "applied gain; gain factor;events", 40, -20, 20);
-        h_pxq_gain = new TThreadedObject<TH1D>(
+        h_gain = new ThreadedHistogram<TH1D>("gain", "applied gain; gain factor;events", 40, -20, 20);
+        h_pxq_gain = new ThreadedHistogram<TH1D>(
             "pixelcharge_gain", "pixel charge w/ gain applied;pixel charge [ke];pixels", nbins, 0, maximum);
-        h_thr = new TThreadedObject<TH1D>("threshold", "applied threshold; threshold [ke];events", maximum, 0, maximum / 10);
-        h_pxq_thr = new TThreadedObject<TH1D>(
+        h_thr =
+            new ThreadedHistogram<TH1D>("threshold", "applied threshold; threshold [ke];events", maximum, 0, maximum / 10);
+        h_pxq_thr = new ThreadedHistogram<TH1D>(
             "pixelcharge_threshold", "pixel charge above threshold;pixel charge [ke];pixels", nbins, 0, maximum);
-        h_pxq_adc_smear = new TThreadedObject<TH1D>(
+        h_pxq_adc_smear = new ThreadedHistogram<TH1D>(
             "pixelcharge_adc_smeared", "pixel charge after ADC smearing;pixel charge [ke];pixels", nbins, 0, maximum);
 
         // Create final pixel charge plot with different axis, depending on whether ADC simulation is enabled or not
         if(config_.get<int>("adc_resolution") > 0) {
             int adcbins = ((1 << config_.get<int>("adc_resolution")) - 1);
-            h_pxq_adc = new TThreadedObject<TH1D>(
+            h_pxq_adc = new ThreadedHistogram<TH1D>(
                 "pixelcharge_adc", "pixel charge after ADC;pixel charge [ADC];pixels", adcbins, 0, adcbins);
-            h_calibration = new TThreadedObject<TH2D>(
+            h_calibration = new ThreadedHistogram<TH2D>(
                 "charge_adc_calibration",
                 "calibration curve of pixel charge to ADC units;pixel charge [ke];pixel charge [ADC]",
                 nbins,
@@ -92,7 +93,7 @@ void DefaultDigitizerModule::init() {
                 0,
                 adcbins);
         } else {
-            h_pxq_adc = new TThreadedObject<TH1D>(
+            h_pxq_adc = new ThreadedHistogram<TH1D>(
                 "pixelcharge_adc", "final pixel charge;pixel charge [ke];pixels", nbins, 0, maximum);
         }
     }

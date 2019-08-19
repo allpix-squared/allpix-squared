@@ -48,9 +48,9 @@ void PulseTransferModule::init() {
         auto nbins = config_.get<int>("output_plots_bins");
 
         // Create histograms if needed
-        h_total_induced_charge_ =
-            new TThreadedObject<TH1D>("inducedcharge", "total induced charge;induced charge [ke];events", nbins, 0, maximum);
-        h_induced_pixel_charge_ = new TThreadedObject<TH1D>(
+        h_total_induced_charge_ = new ThreadedHistogram<TH1D>(
+            "inducedcharge", "total induced charge;induced charge [ke];events", nbins, 0, maximum);
+        h_induced_pixel_charge_ = new ThreadedHistogram<TH1D>(
             "pixelcharge", "induced charge per pixel;induced pixel charge [ke];pixels", nbins, 0, maximum);
     }
 }

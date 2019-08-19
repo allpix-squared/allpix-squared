@@ -108,41 +108,41 @@ void TransientPropagationModule::init() {
     }
 
     if(output_plots_) {
-        potential_difference_ = new TThreadedObject<TH1D>(
+        potential_difference_ = new ThreadedHistogram<TH1D>(
             "potential_difference",
             "Weighting potential difference between two steps;#left|#Delta#phi_{w}#right| [a.u.];events",
             500,
             0,
             1);
-        induced_charge_histo_ = new TThreadedObject<TH1D>("induced_charge_histo",
-                                                          "Induced charge per time, all pixels;Drift time [ns];charge [e]",
-                                                          static_cast<int>(integration_time_ / timestep_),
-                                                          0,
-                                                          static_cast<double>(Units::convert(integration_time_, "ns")));
+        induced_charge_histo_ = new ThreadedHistogram<TH1D>("induced_charge_histo",
+                                                            "Induced charge per time, all pixels;Drift time [ns];charge [e]",
+                                                            static_cast<int>(integration_time_ / timestep_),
+                                                            0,
+                                                            static_cast<double>(Units::convert(integration_time_, "ns")));
         induced_charge_e_histo_ =
-            new TThreadedObject<TH1D>("induced_charge_e_histo",
-                                      "Induced charge per time, electrons only, all pixels;Drift time [ns];charge [e]",
-                                      static_cast<int>(integration_time_ / timestep_),
-                                      0,
-                                      static_cast<double>(Units::convert(integration_time_, "ns")));
+            new ThreadedHistogram<TH1D>("induced_charge_e_histo",
+                                        "Induced charge per time, electrons only, all pixels;Drift time [ns];charge [e]",
+                                        static_cast<int>(integration_time_ / timestep_),
+                                        0,
+                                        static_cast<double>(Units::convert(integration_time_, "ns")));
         induced_charge_h_histo_ =
-            new TThreadedObject<TH1D>("induced_charge_h_histo",
-                                      "Induced charge per time, holes only, all pixels;Drift time [ns];charge [e]",
-                                      static_cast<int>(integration_time_ / timestep_),
-                                      0,
-                                      static_cast<double>(Units::convert(integration_time_, "ns")));
+            new ThreadedHistogram<TH1D>("induced_charge_h_histo",
+                                        "Induced charge per time, holes only, all pixels;Drift time [ns];charge [e]",
+                                        static_cast<int>(integration_time_ / timestep_),
+                                        0,
+                                        static_cast<double>(Units::convert(integration_time_, "ns")));
         step_length_histo_ =
-            new TThreadedObject<TH1D>("step_length_histo",
-                                      "Step length;length [#mum];integration steps",
-                                      100,
-                                      0,
-                                      static_cast<double>(Units::convert(0.25 * model_->getSensorSize().z(), "um")));
+            new ThreadedHistogram<TH1D>("step_length_histo",
+                                        "Step length;length [#mum];integration steps",
+                                        100,
+                                        0,
+                                        static_cast<double>(Units::convert(0.25 * model_->getSensorSize().z(), "um")));
 
-        drift_time_histo_ = new TThreadedObject<TH1D>("drift_time_histo",
-                                                      "Drift time;Drift time [ns];charge carriers",
-                                                      static_cast<int>(Units::convert(integration_time_, "ns") * 5),
-                                                      0,
-                                                      static_cast<double>(Units::convert(integration_time_, "ns")));
+        drift_time_histo_ = new ThreadedHistogram<TH1D>("drift_time_histo",
+                                                        "Drift time;Drift time [ns];charge carriers",
+                                                        static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                                        0,
+                                                        static_cast<double>(Units::convert(integration_time_, "ns")));
     }
 }
 

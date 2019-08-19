@@ -92,11 +92,11 @@ void ProjectionPropagationModule::init() {
 
     if(output_plots_) {
         // Initialize output plot
-        drift_time_histo_ = new TThreadedObject<TH1D>("drift_time_histo",
-                                                      "Drift time;Drift time [ns];charge carriers",
-                                                      static_cast<int>(Units::convert(integration_time_, "ns") * 5),
-                                                      0,
-                                                      static_cast<double>(Units::convert(integration_time_, "ns")));
+        drift_time_histo_ = new ThreadedHistogram<TH1D>("drift_time_histo",
+                                                        "Drift time;Drift time [ns];charge carriers",
+                                                        static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                                        0,
+                                                        static_cast<double>(Units::convert(integration_time_, "ns")));
     }
 }
 

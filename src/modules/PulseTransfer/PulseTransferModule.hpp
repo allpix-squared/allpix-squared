@@ -62,6 +62,6 @@ namespace allpix {
         std::shared_ptr<Detector> detector_;
 
         // Output histograms
-        TThreadedObject<TH1D>*h_total_induced_charge_{}, *h_induced_pixel_charge_{};
+        ThreadedHistogram<TH1D>*h_total_induced_charge_{}, *h_induced_pixel_charge_{};
     };
 } // namespace allpix
