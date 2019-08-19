@@ -17,11 +17,13 @@ In addition, more conversions functions are provided together with other useful 
 
 \subsection{Geant4 Interface}
 \label{sec:geant4_interface}
-The framework provides an interfacing library with Geant4 that provides alternative run managers to be used by modules interested in using Geant4.
-These run managers, unlike the deafult Geant4 managers, allow the modules to execute in parallel within the framework assigned worker threads.
-Moreover, these managers are thread-safe and allow results to reproduced.
+The framework provides an interfacing library with Geant4 that provides alternative run managers to be used by modules interested in using Geant4 as follows:
+\begin{enumerate}
+\item \texttt{MTRunManager}: A run manager that can only be used in parallel. Internally, it creates thread-local managers to handle operations for each calling thread independently. It also maintain a stable seed distribution mechanism to ensure results are the same regardless of the number of threads that used the manager in parallel.
+\item \texttt{RunManager}: A run manager that can not be used in parallel. It uses the same seeding mechanism as the multithreaded version so they can be used interchangeably depending on whether multithreading is enabled or not.
+\end{enumerate}
 
-The DepositionGeant4 module uses such managers to be able to call the \texttt{BeamOn} method in parallel thus benefiting from the multi-threading feature.
+The DepositionGeant4 module uses \texttt{MTRunManager} to be able to call the \texttt{BeamOn} method in parallel thus benefiting from the multi-threading feature while the VisualizationGeant4 module uses \texttt{RunManager} to be able to visualize the particles passage through the detectors.
 
 \subsection{Runge-Kutta integrator}
 A fast Eigen-powered~\cite{eigen3} Runge-Kutta integrator is provided as a tool to numerically solve differential equations~\cite{fehlberg}.
