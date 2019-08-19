@@ -90,20 +90,20 @@ namespace allpix {
         ROOT::Math::XYVector track_resolution_{};
 
         // Histograms to output
-        ThreadedHistogram<TH2D>*hit_map, *charge_map, *cluster_map;
-        ThreadedHistogram<TProfile2D>*cluster_size_map, *cluster_size_x_map, *cluster_size_y_map;
-        ThreadedHistogram<TProfile2D>*cluster_charge_map, *seed_charge_map;
-        ThreadedHistogram<TProfile2D>*residual_map, *residual_x_map, *residual_y_map;
-        ThreadedHistogram<TH1D>*residual_x, *residual_y;
-        ThreadedHistogram<TProfile>*residual_x_vs_x, *residual_y_vs_y, *residual_x_vs_y, *residual_y_vs_x;
-        ThreadedHistogram<TProfile2D>*efficiency_map, *efficiency_detector;
-        ThreadedHistogram<TProfile>*efficiency_vs_x, *efficiency_vs_y;
-        ThreadedHistogram<TH1D>* event_size;
-        ThreadedHistogram<TH1D>* cluster_size;
-        ThreadedHistogram<TH1D>* cluster_size_x;
-        ThreadedHistogram<TH1D>* cluster_size_y;
-        ThreadedHistogram<TH1D>* n_cluster;
-        ThreadedHistogram<TH1D>* cluster_charge;
+        std::unique_ptr<ThreadedHistogram<TH2D>> hit_map, charge_map, cluster_map;
+        std::unique_ptr<ThreadedHistogram<TProfile2D>> cluster_size_map, cluster_size_x_map, cluster_size_y_map;
+        std::unique_ptr<ThreadedHistogram<TProfile2D>> cluster_charge_map, seed_charge_map;
+        std::unique_ptr<ThreadedHistogram<TProfile2D>> residual_map, residual_x_map, residual_y_map;
+        std::unique_ptr<ThreadedHistogram<TH1D>> residual_x, residual_y;
+        std::unique_ptr<ThreadedHistogram<TProfile>> residual_x_vs_x, residual_y_vs_y, residual_x_vs_y, residual_y_vs_x;
+        std::unique_ptr<ThreadedHistogram<TProfile2D>> efficiency_map, efficiency_detector;
+        std::unique_ptr<ThreadedHistogram<TProfile>> efficiency_vs_x, efficiency_vs_y;
+        std::unique_ptr<ThreadedHistogram<TH1D>> event_size;
+        std::unique_ptr<ThreadedHistogram<TH1D>> cluster_size;
+        std::unique_ptr<ThreadedHistogram<TH1D>> cluster_size_x;
+        std::unique_ptr<ThreadedHistogram<TH1D>> cluster_size_y;
+        std::unique_ptr<ThreadedHistogram<TH1D>> n_cluster;
+        std::unique_ptr<ThreadedHistogram<TH1D>> cluster_charge;
     };
 } // namespace allpix
 

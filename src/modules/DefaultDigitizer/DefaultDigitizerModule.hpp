@@ -68,9 +68,9 @@ namespace allpix {
         std::atomic<unsigned long long> total_hits_{};
 
         // Output histograms
-        ThreadedHistogram<TH1D>*h_pxq{}, *h_pxq_noise{}, *h_gain{}, *h_pxq_gain{}, *h_thr{}, *h_pxq_thr{},
-            *h_pxq_adc_smear{}, *h_pxq_adc{};
-        ThreadedHistogram<TH2D>* h_calibration{};
+        std::unique_ptr<ThreadedHistogram<TH1D>> h_pxq, h_pxq_noise, h_gain, h_pxq_gain, h_thr, h_pxq_thr, h_pxq_adc_smear,
+            h_pxq_adc;
+        std::unique_ptr<ThreadedHistogram<TH2D>> h_calibration;
     };
 } // namespace allpix
 

@@ -84,6 +84,6 @@ namespace allpix {
         double boltzmann_kT_;
 
         // Output plot for drift time
-        ThreadedHistogram<TH1D>* drift_time_histo_;
+        std::unique_ptr<ThreadedHistogram<TH1D>> drift_time_histo_;
     };
 } // namespace allpix

@@ -107,9 +107,9 @@ namespace allpix {
         ROOT::Math::XYZVector magnetic_field_;
 
         // Output plots
-        ThreadedHistogram<TH1D>*potential_difference_, *induced_charge_histo_, *induced_charge_e_histo_,
-            *induced_charge_h_histo_;
-        ThreadedHistogram<TH1D>* step_length_histo_;
-        ThreadedHistogram<TH1D>* drift_time_histo_;
+        std::unique_ptr<ThreadedHistogram<TH1D>> potential_difference_, induced_charge_histo_, induced_charge_e_histo_,
+            induced_charge_h_histo_;
+        std::unique_ptr<ThreadedHistogram<TH1D>> step_length_histo_;
+        std::unique_ptr<ThreadedHistogram<TH1D>> drift_time_histo_;
     };
 } // namespace allpix
