@@ -202,20 +202,20 @@ core:slc6-gcc:
         - source .gitlab/ci/init_x86_64.sh
 
 mod:lxplus-gcc:
-   extends: .testmod
-   dependencies:
-       - cmp:lxplus-gcc
-   image: clicdp/slc6-base
-   before_script:
-       - source etc/scripts/setup_lxplus.sh
+    extends: .testmod
+    dependencies:
+        - cmp:lxplus-gcc
+    image: clicdp/slc6-base
+    before_script:
+        - source etc/scripts/setup_lxplus.sh
 
 core:lxplus-gcc:
-   extends: .testcore
-   dependencies:
-       - cmp:lxplus-gcc
-   image: clicdp/slc6-base
-   before_script:
-       - source etc/scripts/setup_lxplus.sh
+    extends: .testcore
+    dependencies:
+        - cmp:lxplus-gcc
+    image: clicdp/slc6-base
+    before_script:
+        - source etc/scripts/setup_lxplus.sh
 
 mod:slc6-llvm:
     extends: .testmod
