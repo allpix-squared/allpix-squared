@@ -249,7 +249,7 @@ void BufferedModule::flush_buffered_events() {
 
     next_event_to_write_ = get_next_event(next_event_to_write_);
     while((iter = buffered_events_.find(next_event_to_write_)) != buffered_events_.end()) {
-        LOG(TRACE) << "Writing bufffered event " << iter->first;
+        LOG(TRACE) << "Writing buffered event " << iter->first;
 
         // set the buffered event RNG
         iter->second->set_and_seed_random_engine(&random_generator);
