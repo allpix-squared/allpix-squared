@@ -229,7 +229,7 @@ namespace allpix {
          * @brief Calls the filter function with the supplied message
          * @param msg Message to process
          * @warning The filter function is called directly from the delegate, no heavy processing should be done in the
-         * filer function
+         * filter function
          */
         void process(std::shared_ptr<BaseMessage> msg, std::string, DelegateTypes& dest) override {
 #ifndef NDEBUG

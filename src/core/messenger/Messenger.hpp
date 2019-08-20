@@ -182,7 +182,7 @@ namespace allpix {
     };
 
     /**
-    * @breif Responsible for the actual handling of messages between Modules.
+    * @brief Responsible for the actual handling of messages between Modules.
     *
     * The local messenger is an internal object that is allocated for each thread seperatly. It handles dispatching
     * and fetching messages between Modules.
