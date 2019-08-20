@@ -636,7 +636,7 @@ void ModuleManager::run(std::mt19937_64& seeder) {
     global_config.set<size_t>("workers", threads_num);
 
     // Creates the thread pool
-    LOG(DEBUG) << "Initializing thread pool with " << threads_num << " thread";
+    LOG(TRACE) << "Initializing thread pool with " << threads_num << " thread";
     // clang-format off
     auto init_function = [log_level = Log::getReportingLevel(), log_format = Log::getFormat()]() {
         // clang-format on
@@ -679,8 +679,6 @@ void ModuleManager::run(std::mt19937_64& seeder) {
         auto event_function = [ this, number_of_events, event_num = i, event_seed = seed, &finished_events ]() mutable {
             // The RNG to be used by all events running on this thread
             static thread_local std::mt19937_64 random_engine;
-
-            LOG(STATUS) << "Running event " << event_num << " of " << number_of_events;
 
             // Create the event data
             std::shared_ptr<Event> event = std::make_shared<Event>(*this->messenger_, event_num, event_seed);
@@ -741,13 +739,13 @@ void ModuleManager::run(std::mt19937_64& seeder) {
             }
 
             finished_events++;
-            LOG(INFO) << "Finished event " << event_num;
+            LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished " << finished_events << " of " << number_of_events << " events";
         };
         thread_pool->submit_event_function(event_function);
         thread_pool->check_exception();
     }
 
-    LOG(STATUS) << "All events have been initialized. Waiting for thread pool to finish...";
+    LOG(TRACE) << "All events have been initialized. Waiting for thread pool to finish...";
 
     // Wait for workers to finish
     thread_pool->wait();
@@ -755,7 +753,7 @@ void ModuleManager::run(std::mt19937_64& seeder) {
     // Check exception for last events
     thread_pool->check_exception();
 
-    LOG(STATUS) << "Finished run of " << finished_events << " events";
+    LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of " << finished_events << " events";
     auto end_time = std::chrono::steady_clock::now();
     total_time_ += static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
 
