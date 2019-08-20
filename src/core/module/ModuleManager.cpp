@@ -611,7 +611,7 @@ void ModuleManager::run(std::mt19937_64& seeder) {
         if(threads_num == 0) {
             throw InvalidValueError(global_config, "workers", "number of workers should be strictly more than zero");
         }
-        LOG(INFO) << "Multithreading enabled - using " << threads_num << " worker threads.";
+        LOG(STATUS) << "Multithreading enabled, processing events in parallel on " << threads_num << " worker threads";
 
         // ROOT 6.12/00 introduces a new type of locking for operations with TObjects that impacts the performance
         // of the framework since all threads are waiting if any is using a TObject
@@ -741,7 +741,7 @@ void ModuleManager::run(std::mt19937_64& seeder) {
             }
 
             finished_events++;
-            LOG(STATUS) << "Finished event " << event_num;
+            LOG(INFO) << "Finished event " << event_num;
         };
         thread_pool->submit_event_function(event_function);
         thread_pool->check_exception();
