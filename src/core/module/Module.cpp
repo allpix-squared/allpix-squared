@@ -122,9 +122,9 @@ std::string Module::createOutputFile(const std::string& path, bool global, bool 
 }
 
 /**
-* @throws InvalidModuleActionException If this method is called from the constructor or destructor
-* @warning This should not be used in \ref run method to allow reproducing the results
-*/
+ * @throws InvalidModuleActionException If this method is called from the constructor or destructor
+ * @warning This should not be used in \ref run method to allow reproducing the results
+ */
 uint64_t Module::getRandomSeed() {
     if(random_generator_ == nullptr) {
         throw InvalidModuleActionException("Cannot use this generator outside of \"init\" method");
