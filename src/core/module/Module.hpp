@@ -242,6 +242,11 @@ namespace allpix {
          */
         void set_parallelize(bool parallelize);
         bool parallelize_{false};
+
+        /**
+         * @brief Checks if object is instance of BufferedModule class
+         */
+        virtual bool is_buffered() const { return false; }
     };
 
     /**
@@ -301,6 +306,11 @@ namespace allpix {
 
         // Set of event numbers that was skipped because not all messages were present
         std::set<unsigned int> skipped_events_;
+
+        /**
+         * @brief Checks if object is instance of BufferedModule class
+         */
+        virtual bool is_buffered() const { return true; }
     };
 
 } // namespace allpix
