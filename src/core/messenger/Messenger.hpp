@@ -222,6 +222,7 @@ namespace allpix {
         std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> fetchFilteredMessages(Module* module);
 
     private:
+        // The global messenger which contains the shared delegate information
         const Messenger& global_messenger_;
 
         std::unordered_map<std::string, std::unordered_map<std::type_index, DelegateTypes>> messages_;

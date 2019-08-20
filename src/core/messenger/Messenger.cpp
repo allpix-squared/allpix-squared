@@ -171,8 +171,6 @@ bool LocalMessenger::dispatchMessage(Module* source,
     std::type_index type_idx = typeid(*inst);
 
     // Retrieve listeners for the given message type and name
-    // We only use const methods since we don't need to modify the global messenger registery information by mistake
-    // if there was no listeners for the given message
     const auto msg_type_iterator = global_messenger_.delegates_.find(type_idx);
     if(msg_type_iterator != global_messenger_.delegates_.end()) {
         const auto msg_name_iterator = msg_type_iterator->second.find(id);
