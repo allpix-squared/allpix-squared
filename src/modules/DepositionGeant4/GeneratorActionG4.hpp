@@ -49,6 +49,20 @@ namespace allpix {
 
         bool initialize_ion_as_particle_{false};
     };
+
+    /**
+     * @brief Creates and initialize the GPS messenger on master before workers use it
+     */
+    class GeneratorActionInitializationMaster {
+    public:
+        /**
+         * Constructs a particle source for master and apply common UI macros if requested.
+         */
+        explicit GeneratorActionInitializationMaster(const Configuration& config);
+
+    private:
+        std::unique_ptr<G4GeneralParticleSource> particle_source_;
+    };
 } // namespace allpix
 
 #endif /* ALLPIX_SIMPLE_DEPOSITION_MODULE_GENERATOR_ACTION_H */

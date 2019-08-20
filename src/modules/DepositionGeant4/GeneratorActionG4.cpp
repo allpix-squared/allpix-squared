@@ -28,6 +28,32 @@
 
 using namespace allpix;
 
+/**
+ * @brief Applys GPS UI command from a file
+ */
+static void apply_GPS_UI_commands(const std::string& file_name) {
+    // Get the UI commander
+    G4UImanager* UI = G4UImanager::GetUIpointer();
+
+    // Execute the user's macro
+    std::ifstream file(file_name);
+    std::string line;
+    while(std::getline(file, line)) {
+        // Check for the "/gps/" pattern in the line:
+        if(!line.empty()) {
+            if(line.rfind("/gps/number", 0) == 0) {
+                throw ModuleError(
+                    "The number of particles must be defined in the main configuration file, not in the macro.");
+            } else if(line.rfind("/gps/", 0) == 0 || line.at(0) == '#') {
+                LOG(DEBUG) << "Applying Geant4 macro command: \"" << line << "\"";
+                UI->ApplyCommand(line);
+            } else {
+                LOG(WARNING) << "Ignoring Geant4 macro command: \"" + line + "\" - not related to particle source.";
+            }
+        }
+    }
+}
+
 // Define radioactive isotopes:
 std::map<std::string, std::tuple<int, int, int, double>> GeneratorActionG4::isotopes_ = {
     {"fe55", std::make_tuple(26, 55, 0, 0.)},
@@ -49,26 +75,9 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     if(source_type == "macro") {
         LOG(INFO) << "Using user macro for particle source.";
 
-        // Get the UI commander
-        G4UImanager* UI = G4UImanager::GetUIpointer();
-
-        // Execute the user's macro
-        std::ifstream file(config_.getPath("file_name", true));
-        std::string line;
-        while(std::getline(file, line)) {
-            // Check for the "/gps/" pattern in the line:
-            if(!line.empty()) {
-                if(line.rfind("/gps/number", 0) == 0) {
-                    throw ModuleError(
-                        "The number of particles must be defined in the main configuration file, not in the macro.");
-                } else if(line.rfind("/gps/", 0) == 0 || line.at(0) == '#') {
-                    LOG(DEBUG) << "Applying Geant4 macro command: \"" << line << "\"";
-                    UI->ApplyCommand(line);
-                } else {
-                    LOG(WARNING) << "Ignoring Geant4 macro command: \"" + line + "\" - not related to particle source.";
-                }
-            }
-        }
+        // Get the macro file and apply its commands
+        auto file_name = config.getPath("file_name", true);
+        apply_GPS_UI_commands(file_name);
 
     } else {
 
@@ -238,4 +247,22 @@ void GeneratorActionG4::GeneratePrimaries(G4Event* event) {
     }
 
     particle_source_->GeneratePrimaryVertex(event);
+}
+
+GeneratorActionInitializationMaster::GeneratorActionInitializationMaster(const Configuration& config)
+    : particle_source_(std::make_unique<G4GeneralParticleSource>()) {
+
+    // Set verbosity of source to off
+    particle_source_->SetVerbosity(0);
+
+    // Get source specific parameters
+    auto source_type = config.get<std::string>("source_type");
+
+    if(source_type == "macro") {
+        LOG(INFO) << "Using user macro for particle source.";
+
+        // Get the macro file and apply its commands
+        auto file_name = config.getPath("file_name", true);
+        apply_GPS_UI_commands(file_name);
+    }
 }

@@ -429,7 +429,11 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fan
 }
 
 void DepositionGeant4Module::record_module_statistics() {
-    number_of_sensors_ = sensors_.size();
+    // Since sensors is thread local, some instances may not be used, hence, skip them
+    auto num_sensors = sensors_.size();
+    if(num_sensors > 0) {
+        number_of_sensors_ = num_sensors;
+    }
 
     // We calculate the total deposited charges here, since sensors exist per thread
     for(auto& sensor : sensors_) {

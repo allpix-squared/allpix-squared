@@ -39,6 +39,22 @@ namespace allpix {
             SetUserAction(new SetTrackInfoUserHookG4(module_));
         };
 
+        /**
+         * @brief Constructs a actions for Master
+         *
+         * Used to set up a particle source for master when UI commands are used
+         */
+        void BuildForMaster() const override {
+            // UI Commands are applied throught the GPS messenger which is a singleton instance
+            // that modifies shared resources across threads and therefore must only be executed
+            // on the master thread.
+            // We force the creation of the messenger early on master and apply UI commands so
+            // that when workers are ready to use their own instances of GPS class they are
+            // initialized with common UI commands
+            static GeneratorActionInitializationMaster generator(config_);
+            (void)generator;
+        }
+
     private:
         const Configuration& config_;
         DepositionGeant4Module* module_;

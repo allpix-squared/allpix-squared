@@ -57,6 +57,9 @@ void MTRunManager::Initialize() {
         // use nSeedsMax to fill as much as possible now and hopefully avoid
         // refilling later
         G4MTRunManager::DoEventLoop(nSeedsMax, nullptr, 0);
+
+        // Prepare UI commands for workers
+        PrepareCommandsStack();
     }
 }
 
