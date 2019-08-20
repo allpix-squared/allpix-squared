@@ -29,15 +29,13 @@
 using namespace allpix;
 
 /**
- * @brief Applys GPS UI command from a file
+ * @brief Parse the given file and save the UI macros in the given vector
  */
-static void apply_GPS_UI_commands(const std::string& file_name) {
-    // Get the UI commander
-    G4UImanager* UI = G4UImanager::GetUIpointer();
-
-    // Execute the user's macro
+static void parse_macro_file_and_prepare_commands(const std::string& file_name, std::vector<std::string>& cmd_list) {
     std::ifstream file(file_name);
     std::string line;
+
+    LOG(TRACE) << "Parsing macro file " << file_name;
     while(std::getline(file, line)) {
         // Check for the "/gps/" pattern in the line:
         if(!line.empty()) {
@@ -45,12 +43,33 @@ static void apply_GPS_UI_commands(const std::string& file_name) {
                 throw ModuleError(
                     "The number of particles must be defined in the main configuration file, not in the macro.");
             } else if(line.rfind("/gps/", 0) == 0 || line.at(0) == '#') {
-                LOG(DEBUG) << "Applying Geant4 macro command: \"" << line << "\"";
-                UI->ApplyCommand(line);
+                cmd_list.push_back(line);
             } else {
                 LOG(WARNING) << "Ignoring Geant4 macro command: \"" + line + "\" - not related to particle source.";
             }
         }
+    }
+}
+
+/**
+ * @brief Apply GPS UI command from a file. File is only read once and commands are buffered for later calls
+ */
+static void apply_GPS_UI_commands_from_file(const std::string& file_name) {
+    // Commands read from the file and ready to be applied
+    static std::vector<std::string> ui_commands;
+
+    // Get the UI commander
+    G4UImanager* UI = G4UImanager::GetUIpointer();
+
+    // Parse the macro file only once
+    if(ui_commands.empty()) {
+        parse_macro_file_and_prepare_commands(file_name, ui_commands);
+    }
+
+    // Apply UI macros
+    for(auto& cmd : ui_commands) {
+        LOG(DEBUG) << "Applying Geant4 macro command: \"" << cmd << "\"";
+        UI->ApplyCommand(cmd);
     }
 }
 
@@ -77,7 +96,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
 
         // Get the macro file and apply its commands
         auto file_name = config.getPath("file_name", true);
-        apply_GPS_UI_commands(file_name);
+        apply_GPS_UI_commands_from_file(file_name);
 
     } else {
 
@@ -263,6 +282,6 @@ GeneratorActionInitializationMaster::GeneratorActionInitializationMaster(const C
 
         // Get the macro file and apply its commands
         auto file_name = config.getPath("file_name", true);
-        apply_GPS_UI_commands(file_name);
+        apply_GPS_UI_commands_from_file(file_name);
     }
 }
