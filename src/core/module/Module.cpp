@@ -233,7 +233,8 @@ void BufferedModule::finalize_buffer() {
 
     // Make sure everything was written
     if(!buffered_events_.empty()) {
-        throw ModuleError("Buffered Events where not written to output");
+        std::string msg =
+            std::to_string(buffered_events_.size()) + "buffered event(s) where not written to output" throw ModuleError(msg);
     }
 
     // Call user finalize
