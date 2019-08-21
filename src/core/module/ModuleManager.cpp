@@ -849,6 +849,11 @@ void ModuleManager::finalize() {
 
     LOG(STATUS) << "Average processing time is \x1B[1m" << processing_time << " ms/event\x1B[0m, event generation at \x1B[1m"
                 << std::round(global_config.get<double>("number_of_events") / total_time_) << " Hz\x1B[0m";
+
+    if(global_config.get<unsigned int>("workers") > 0) {
+        auto event_processing_time = std::round(processing_time * global_config.get<unsigned int>("workers"));
+        LOG(STATUS) << "Average processing time for an event is \x1B[1m" << event_processing_time << " ms\x1B[0m";
+    }
 }
 
 /**
