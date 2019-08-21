@@ -15,9 +15,7 @@ void RunManager::BeamOn(G4int n_event, const char* macro_file, G4int n_select) {
     if(!fakeRun) {
         // Create a new engine with the same type as the default engine
         if(event_random_engine_ == nullptr) {
-            // Remember the default RNG engine before replacing it so we can use it
-            // later.
-            // TODO: maybe we should delete it ourselves too
+            // Remember the default RNG engine before replacing it so we can use it later.
             master_random_engine_ = G4Random::getTheEngine();
 
             if(dynamic_cast<const CLHEP::HepJamesRandom*>(master_random_engine_) != nullptr) {
@@ -46,9 +44,11 @@ void RunManager::BeamOn(G4int n_event, const char* macro_file, G4int n_select) {
             }
 
             // Replace the RNG engine with the new one
-            // TODO: maybe need to do something if it was null?!
             if(event_random_engine_ != nullptr) {
                 G4Random::setTheEngine(event_random_engine_);
+            } else {
+                // Should never happen
+                G4Exception("RunManager::BeamOn", "Run0033", FatalException, "Couldn't identify G4Random engine type.");
             }
         }
 
