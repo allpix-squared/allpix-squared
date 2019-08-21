@@ -112,9 +112,10 @@ bool ROOTObjectWriterModule::filter(const std::shared_ptr<BaseMessage>& message,
     return true;
 }
 
-void ROOTObjectWriterModule::pre_run(Event* event) {
+void ROOTObjectWriterModule::run(Event* event) {
     auto messages = messenger_->fetchFilteredMessages(this, event);
 
+    // Generate trees and index data
     for(auto& pair : messages) {
         auto& message = pair.first;
         auto& message_name = pair.second;
@@ -164,6 +165,11 @@ void ROOTObjectWriterModule::pre_run(Event* event) {
 
             trees_[class_name]->Bronch(
                 branch_name.c_str(), (std::string("std::vector<") + cls->GetName() + "*>").c_str(), addr);
+
+            LOG(DEBUG) << "Pre-filling new tree of " << class_name << " with " << last_event_ << " empty events";
+            for(unsigned int i = 0; i < last_event_; ++i) {
+                trees_[class_name]->Fill();
+            }
         }
 
         // Fill the branch vector
@@ -172,14 +178,12 @@ void ROOTObjectWriterModule::pre_run(Event* event) {
             write_list_[index_tuple]->push_back(&object);
         }
     }
-}
-
-void ROOTObjectWriterModule::run(Event* event) {
-    // Generate trees and index data
-    pre_run(event);
 
     LOG(TRACE) << "Writing new objects to tree";
     output_file_->cd();
+
+    // Save last event number for trees created later
+    last_event_ = event->number;
 
     // Fill the tree with the current received messages
     for(auto& tree : trees_) {
