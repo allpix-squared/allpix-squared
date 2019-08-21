@@ -657,7 +657,8 @@ void ModuleManager::run(std::mt19937_64& seeder) {
     std::unique_ptr<ThreadPool> thread_pool =
         std::make_unique<ThreadPool>(threads_num, max_queue_size, init_function, finialize_function);
 
-    // Record the run stage total time
+    // Record the execution time of the event
+    std::mutex events_execution_time_mutex;
     auto start_time = std::chrono::steady_clock::now();
 
     // Push all events to the thread pool
@@ -676,9 +677,19 @@ void ModuleManager::run(std::mt19937_64& seeder) {
         // Get a new seed for the new event
         uint64_t seed = seeder();
 
-        auto event_function = [ this, number_of_events, event_num = i, event_seed = seed, &finished_events ]() mutable {
+        auto event_function = [
+            this,
+            number_of_events,
+            event_num = i,
+            event_seed = seed,
+            &finished_events,
+            &events_execution_time_mutex
+        ]() mutable {
             // The RNG to be used by all events running on this thread
             static thread_local std::mt19937_64 random_engine;
+
+            // Record the execution time of the event
+            auto event_start_time = std::chrono::steady_clock::now();
 
             // Create the event data
             std::shared_ptr<Event> event = std::make_shared<Event>(*this->messenger_, event_num, event_seed);
@@ -739,6 +750,12 @@ void ModuleManager::run(std::mt19937_64& seeder) {
 
             finished_events++;
             LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished " << finished_events << " of " << number_of_events << " events";
+
+            // Record the execution time of the event
+            auto event_end_time = std::chrono::steady_clock::now();
+            std::lock_guard<std::mutex> event_lock{events_execution_time_mutex};
+            events_execution_time_ +=
+                static_cast<std::chrono::duration<long double>>(event_end_time - event_start_time).count();
         };
         thread_pool->submit_event_function(event_function);
         thread_pool->check_exception();
@@ -754,7 +771,8 @@ void ModuleManager::run(std::mt19937_64& seeder) {
 
     LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of " << finished_events << " events";
     auto end_time = std::chrono::steady_clock::now();
-    total_time_ += static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
+    run_stage_execution_time_ = static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
+    total_time_ += run_stage_execution_time_;
 
     LOG(TRACE) << "Destroying thread pool";
 }
@@ -846,7 +864,8 @@ void ModuleManager::finalize() {
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
     long double processing_time = 0;
     if(global_config.get<unsigned int>("number_of_events") > 0) {
-        processing_time = std::round((1000 * total_time_) / global_config.get<unsigned int>("number_of_events"));
+        processing_time = std::round((1000 * (total_time_ - run_stage_execution_time_ + events_execution_time_)) /
+                                     global_config.get<unsigned int>("number_of_events"));
     }
 
     LOG(STATUS) << "Average processing time is \x1B[1m" << processing_time << " ms/event\x1B[0m, event generation at \x1B[1m"

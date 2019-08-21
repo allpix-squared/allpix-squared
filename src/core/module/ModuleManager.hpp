@@ -163,6 +163,9 @@ namespace allpix {
 
         // Possibility of running loaded modules in parallel
         bool can_parallelize_{true};
+
+        long double events_execution_time_{0.0};
+        long double run_stage_execution_time_{0.0};
     };
 } // namespace allpix
 
