@@ -652,7 +652,7 @@ void ModuleManager::run(std::mt19937_64& seeder) {
         }
     };
 
-    // Push 128 events for each event to maintain enough work for each worker
+    // Push 128 events for each worker to maintain enough work
     auto max_queue_size = threads_num * 128;
     std::unique_ptr<ThreadPool> thread_pool =
         std::make_unique<ThreadPool>(threads_num, max_queue_size, init_function, finialize_function);
