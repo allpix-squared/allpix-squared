@@ -711,14 +711,13 @@ void ModuleManager::run(std::mt19937_64& seeder) {
                 auto old_settings =
                     ModuleManager::set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
 
-                auto buffered_module = dynamic_cast<BufferedModule*>(module.get());
-
                 // Run module
                 try {
-                    if(buffered_module == nullptr) {
-                        module->run(event.get());
-                    } else {
+                    if(module->is_buffered()) {
+                        auto buffered_module = static_cast<BufferedModule*>(module.get());
                         buffered_module->run_in_order(event);
+                    } else {
+                        module->run(event.get());
                     }
                 } catch(const EndOfRunException& e) {
                     // Terminate if the module threw the EndOfRun request exception:
@@ -804,11 +803,11 @@ void ModuleManager::finalize() {
         // Change to our ROOT directory
         module->getROOTDirectory()->cd();
         // Finalize module
-        auto buffered_module = dynamic_cast<BufferedModule*>(module.get());
-        if(buffered_module == nullptr) {
-            module->finalize();
-        } else {
+        if(module->is_buffered()) {
+            auto buffered_module = static_cast<BufferedModule*>(module.get());
             buffered_module->finalize_buffer();
+        } else {
+            module->finalize();
         }
         // Remove the pointer to the ROOT directory after finalizing
         module->set_ROOT_directory(nullptr);
