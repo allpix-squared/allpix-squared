@@ -700,56 +700,45 @@ Should be used to request the end of event processing in the current run, e.g. i
 \section{Multi-threading}
 \label{sec:multithreading_approach}
 \apsq supports multi-threading by running events in parallel.
-The module manager, responsible for the execution of a simulation reads the configuration and loads the requested modules.
-It creates a thread pool with the configured number of workers or determines them from system parameters if not specified.
+The module manager creates a thread pool with the configured number of workers or determines them from system parameters if not specified.
+Each event is represented by an instance of the \texttt{Event} class which encapsulates the data used during this event.
 The configured number of events are then submitted to the thread pool and executed by the thread pool's workers.
-Each event is represented by an instance of \texttt{Event} class which encapsulate the data used during this event.
-The thread pool has a fixed queue size so that not all events are submitted at the same time and consume additional memory.
-When all events have been executed \apsq begins terminating.
+This thread pool has a fixed queue size so that not all events are submitted at the same time and consume additional memory.
 
-\subsection{Seed Distribution}
-A stable seed distribution to modules and core components of \apsq is guaranteed in order to be able to exactly reproduce a simulation result from the same inputs.
-Each event has a random engine that can be used by a moudle in it's \texttt{run()} method.
-For a stable seed distribution, \apsq holds a master random engine that is used to draw seeds for every event in a sequential manner,
-in order of increasing event number.
-This ensures that two matching simulations produce the same output, even when the number of workers do not match.
-
-To avoid the memory overhead of maintaining random engine objects equal to the number of events, the storage of such object is thus made static thread local.
-This way ensures that the framework maintains the minimum number of such heavy objects equal to the number of workers used.
-When a worker starts to execute a new event, it seeds its local random engine first and pass it to the event object.
-
-\subsection{Messages}
-Considering that events are independent of each other, messages from a module to another must be local to the event it was produced in.
-Therefore, the \texttt{LocalMessenger} was created to handle communication local to an event.
-Each event has its own copy of the local messenger, however, all communication is managed by the main messenger class for ease of use.
-
-The main messenger class handles subscription to specific messages by modules.
-It shares the read-only delegate information with all the event-local messengers and it internally redirects calls for dispatching and fetching messages to them.
-Upon the termination of an event, all messages local to that event are deleted.
-
-\subsection{Module Thread Safety}
-Modules are expected to run multiple events at the same time, therefore, the module's \texttt{run()} method should be re-entrant and any shared member variables should be protected.
 By default, \apsq assumes the module doesn't support parallelization and each module must explicitly enable multi-threading in its constructor as described in Section~\ref{sec:multithreading}.
+To support multi-threading, the module's \texttt{run()} method should be re-entrant and any shared member variables should be protected.
 If multi-threading is enabled, the module manager will check if all the loaded modules support multi-threading.
 In case, one or more modules do not support multi-threading, a warning is printed and the feature is disabled. Modules can inform themselves about the decision via the \texttt{canParallelize()} method.
 
-\subsection{Writer Modules}
-Between two simulations using the same configuration, if the simulated events are to be written to file, the two simulations must produce the exact same output file.
-To achieve this, the \texttt{BufferedModule} can be used as the module parent class instead of the \texttt{Module} class which provides the exact same module interface.
-The module author should expect the events executed to be in the correct order without having to do any additional synchronization.
+\subsection{Seed Distribution}
+A stable seed distribution to modules and core components of \apsq is guaranteed in order to be able to exactly reproduce a simulation result from the same inputs even when the number of workers is different.
+Each event holds a random engine that can be used by a moudle in it's \texttt{run()} method.
+\apsq has a master random engine that is used to seed such engines for every event in a sequential manner, in order of increasing event number.
 
-During run-time, the module will transparently check if the given event is in order and decide whether to execute it immediately or store it in a buffer if it is out of order.
-The module keeps track of which event should be written first and will write the stored events when their turn comes.
-Such modules are restricted not to dispatch messages using the messenger since other modules may have already finished processing the current event.
-Therefore, the \texttt{BufferedModule} class is suitable for writer modules that runs at the end of the event and don't produce any output messages.
+To avoid the memory overhead of maintaining random engine objects equal to the number of events, the storage of such objects is thus made static thread local.
+This way ensures that the framework maintains the minimum number of such heavy objects equal to the number of workers used.
+When a worker starts to execute a new event, it seeds its local random engine first and passes it to the event object.
+
+\subsection{Using Messenger in Parallel}
+The \texttt{Messenger} handles communication in different events concurrently. It supports dispatching and fetching messages via the \texttt{LocalMessenger}.
+Each event has its own local messenger which stores all messages that was produced in this event.
+The \texttt{Messenger} owns the global message subscription information and internally forwards the module's requests to dispatch or fetch messages to the local messenger of the event in a thread-safe manner.
+
+\subsection{Running Events in order using BufferedModule}
+The \texttt{BufferedModule} class is made available for modules that are interested in running events in the correct order without disabling multi-threading.
+Inheriting from this class will allow the module to transparently check if the given event is in order and decide whether to execute it immediately or to store it in a buffer if it is out of order.
+It should be noted that such modules cannot dispatch messages to the framework.
+
+Using the \texttt{BufferedModule} is more suitable for the writer modules that runs at the end of each event.
+It allows the writers to produce the exact same output file for the same simulation inputs without sacrificing the benefits of using multi-threading for other modules.
 
 \subsection{Geant4 Modules}
-Geant4 is used by different modules for building the simulation geometry and depositing charges in the detectors.
-When working in a multi-threaded context, Geant4 expects to handle the parallel work internally; this clashes with the design of \apsq.
-Therefore, all modules that depends on Geant4 shall not use its provided run managers.
-Instead, they must use the custom run managers as described in Section~\ref{sec:geant4_interface}.
+The usage of the Geant4 library in \apsq has some constraints because the Geant4 multi-threaded run manager expects to handle parallelization internally which violates \apsq design.
+Furthermore, Geant4 does not guarante results reproducibility between both its multi-threaded and sequential run managers.
+Modules that would like to use the Geant4 library shall not use the run managers provided by Geant4. 
+Instead, they must use the custom run managers provided by \apsq as described in Section~\ref{sec:geant4_interface}.
 
-\subsection{ROOT Dependency}
+\subsection{Issues with ROOT Dependency}
 ROOT \texttt{TObject} and \text{TRef} classes are used by all objects in \apsq to relate to other events.
 Because of legacy reasons, they does not scale well to a high number of threads.
 Starting from ROOT 6.12, it is not currently recommended to use more than 8 workers during simulation as this will greatly impact performance negatively.
