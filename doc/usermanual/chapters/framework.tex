@@ -712,7 +712,7 @@ In case, one or more modules do not support multi-threading, a warning is printe
 
 \subsection{Seed Distribution}
 A stable seed distribution to modules and core components of \apsq is guaranteed in order to be able to exactly reproduce a simulation result from the same inputs even when the number of workers is different.
-Each event holds a random engine that can be used by a moudle in it's \texttt{run()} method.
+Each event holds a random engine that can be used by a module in it's \texttt{run()} method.
 \apsq has a master random engine that is used to seed such engines for every event in a sequential manner, in order of increasing event number.
 
 To avoid the memory overhead of maintaining random engine objects equal to the number of events, the storage of such objects is thus made static thread local.
@@ -734,11 +734,11 @@ It allows the writers to produce the exact same output file for the same simulat
 
 \subsection{Geant4 Modules}
 The usage of the Geant4 library in \apsq has some constraints because the Geant4 multi-threaded run manager expects to handle parallelization internally which violates \apsq design.
-Furthermore, Geant4 does not guarante results reproducibility between both its multi-threaded and sequential run managers.
+Furthermore, Geant4 does not guarantee results reproducibility between both its multi-threaded and sequential run managers.
 Modules that would like to use the Geant4 library shall not use the run managers provided by Geant4. 
 Instead, they must use the custom run managers provided by \apsq as described in Section~\ref{sec:geant4_interface}.
 
 \subsection{Issues with ROOT Dependency}
 ROOT \texttt{TObject} and \text{TRef} classes are used by all objects in \apsq to relate to other events.
-Because of legacy reasons, they does not scale well to a high number of threads.
+Because of legacy reasons, they do not scale well to a high number of threads.
 Starting from ROOT 6.12, it is not currently recommended to use more than 8 workers during simulation as this will greatly impact performance negatively.
