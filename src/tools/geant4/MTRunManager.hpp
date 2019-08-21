@@ -23,9 +23,9 @@ namespace allpix {
      * This manager overrides G4MTRunManager class so it doesn't create its own thread and work with the threads
      * already created by \ref ModuleManager class. Also, it provides a concurrent API that can be used by
      * multiple threads safely at the same time.
-     * Most of the APIs defiend by \ref G4MTRunManager are overriden to simply do nothing since this custom run
+     * Most of the APIs defined by \ref G4MTRunManager are overridden to simply do nothing since this custom run
      * manager doesn't operate its own event loop and assumes it is part of the client event loop and the results
-     * of each event are independet from each other. Also, this  manager doesn't maintain any threads, it only
+     * of each event are independent from each other. Also, this  manager doesn't maintain any threads, it only
      * maintains the worker managers which are allocated on a per thread basis.
      */
     class MTRunManager : public G4MTRunManager {

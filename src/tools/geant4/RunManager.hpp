@@ -17,7 +17,7 @@
 
 namespace allpix {
     /**
-     * @brief A modfied version of G4RunManager that is totally compatiable with G4MTRunManager.
+     * @brief A modified version of G4RunManager that is totally compatible with G4MTRunManager.
      *
      * This manager uses the same event seeding mechanism as the G4MTRunManager to ensure that
      * they can be used interchangeably producing the same results.

@@ -22,7 +22,7 @@ namespace allpix {
      * This manager overrides \ref G4WorkerRunManager behaviour so it can be used on user defined threads. Therefore, there
      * is no dependency on the master run manager except only in initialization.
      * APIs inherited from \ref G4WorkerRunManager which communicate with master run manager are suppressed because they
-     * are not needed anymore. This manager assumes that the client is only interested into its own results and it is
+     * are not needed anymore. This manager assumes that the client is only interested in its own results and it is
      * independent from other instances running on different threads.
      */
     class WorkerRunManager : public G4WorkerRunManager {
