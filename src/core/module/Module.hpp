@@ -310,7 +310,7 @@ namespace allpix {
         /**
          * @brief Checks if object is instance of BufferedModule class
          */
-        virtual bool is_buffered() const { return true; }
+        bool is_buffered() const override { return true; }
     };
 
 } // namespace allpix
