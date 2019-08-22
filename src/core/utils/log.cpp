@@ -201,6 +201,15 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
     }
     os << "\x1B[0m"; // RESET
 
+    // Add event number if any (shortly in the short format)
+    if(getEventNum() != 0) {
+        if(get_format() != LogFormat::SHORT) {
+            os << "(Event " << getEventNum() << ") ";
+        } else {
+            os << "(E: " << getEventNum() << ") ";
+        }
+    }
+
     // Add section if available
     if(!get_section().empty()) {
         os << "\x1B[1m"; // BOLD
@@ -364,6 +373,23 @@ void DefaultLogger::setSection(std::string section) {
 }
 std::string DefaultLogger::getSection() {
     return get_section();
+}
+
+// Getters and setters for the event number
+unsigned int& DefaultLogger::get_event_num() {
+    thread_local unsigned int event_num;
+
+    // Make sure event_num is initialized to zero.
+    thread_local std::once_flag flag;
+    std::call_once(flag, []() noexcept { event_num = 0; });
+
+    return event_num;
+}
+void DefaultLogger::setEventNum(unsigned int event_num) {
+    get_event_num() = event_num;
+}
+unsigned int DefaultLogger::getEventNum() {
+    return get_event_num();
 }
 
 /**

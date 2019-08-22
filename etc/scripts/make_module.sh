@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 echo -e "\nPreparing code basis for a new module:\n"
 
@@ -25,7 +25,7 @@ OBJDIR=$OBJDIR/../../src/objects
 if [ ! -e ${OBJDIR}/${MESSAGETYPE}.hpp ]
 then
   echo -e "\nMessage type ${MESSAGETYPE} does not exist. \nPlease see the message types in ${OBJDIR}\n"
-  exit
+  exit 1
 fi
 
 echo "Creating directory and files..."
@@ -109,10 +109,10 @@ if [ "$type" == 2 ]; then
   eval $command
 fi
 
-# Replace the corresponding message type in the header file
+# Replace the corresponding message type in the header and source file
 command="sed ${opt} \
 -e 's/PixelHit/${MESSAGETYPE}/g' \
-$MODDIR/$MODNAME/${MODNAME}Module.hpp"
+$MODDIR/$MODNAME/${MODNAME}Module.*pp"
 eval $command
 
 # Print a summary of the module created:

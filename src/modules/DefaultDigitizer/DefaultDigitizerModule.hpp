@@ -16,9 +16,12 @@
 
 #include "core/config/Configuration.hpp"
 #include "core/messenger/Messenger.hpp"
+#include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
 
 #include "objects/PixelCharge.hpp"
+
+#include "tools/ROOT.h"
 
 #include <TH1D.h>
 #include <TH2D.h>
@@ -51,7 +54,7 @@ namespace allpix {
         /**
          * @brief Simulate digitization process
          */
-        void run(unsigned int) override;
+        void run(Event*) override;
 
         /**
          * @brief Finalize and write optional histograms
@@ -59,19 +62,15 @@ namespace allpix {
         void finalize() override;
 
     private:
-        std::mt19937_64 random_generator_;
-
         Messenger* messenger_;
 
-        // Input message with the charges on the pixels
-        std::shared_ptr<PixelChargeMessage> pixel_message_;
-
         // Statistics
-        unsigned long long total_hits_{};
+        std::atomic<unsigned long long> total_hits_{};
 
         // Output histograms
-        TH1D *h_pxq{}, *h_pxq_noise{}, *h_gain{}, *h_pxq_gain{}, *h_thr{}, *h_pxq_thr{}, *h_pxq_adc_smear{}, *h_pxq_adc{};
-        TH2D* h_calibration{};
+        std::unique_ptr<ThreadedHistogram<TH1D>> h_pxq, h_pxq_noise, h_gain, h_pxq_gain, h_thr, h_pxq_thr, h_pxq_adc_smear,
+            h_pxq_adc;
+        std::unique_ptr<ThreadedHistogram<TH2D>> h_calibration;
     };
 } // namespace allpix
 

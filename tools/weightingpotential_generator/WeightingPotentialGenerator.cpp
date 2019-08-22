@@ -205,7 +205,7 @@ int main(int argc, char** argv) {
             allpix::Log::setFormat(log_format);
         };
 
-        ThreadPool pool(num_threads, init_function);
+        ThreadPool pool(num_threads, num_threads * 1024, init_function);
         std::vector<std::future<std::vector<double>>> wp_futures;
 
         // Loop over x coordinate, add tasks for each coorinate to the queue

@@ -9,6 +9,7 @@
  */
 
 #include "ModuleManager.hpp"
+#include "Event.hpp"
 
 #include <dlfcn.h>
 #include <unistd.h>
@@ -23,7 +24,7 @@
 #include <stdexcept>
 #include <string>
 
-#include <TProcessID.h>
+#include <TROOT.h>
 #include <TSystem.h>
 
 #include "core/config/ConfigManager.hpp"
@@ -50,14 +51,19 @@ ModuleManager::ModuleManager() : terminate_(false) {}
  * Loads the modules specified in the configuration file. Each module is contained within its own library which is loaded
  * automatically. After that the required modules are created from the configuration.
  */
-void ModuleManager::load(Messenger* messenger,
-                         ConfigManager* conf_manager,
-                         GeometryManager* geo_manager,
-                         std::mt19937_64& seeder) {
+void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager) {
     // Store config manager and get configurations
     conf_manager_ = conf_manager;
     auto& configs = conf_manager_->getModuleConfigurations();
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
+
+    // Set alias for backward compatibility with the previous keyword for multithreading
+    global_config.setAlias("multithreading", "experimental_multithreading");
+    global_config.setDefault("multithreading", false);
+    multithreading_flag_ = global_config.get<bool>("multithreading");
+
+    // Store the messenger
+    messenger_ = messenger;
 
     // (Re)create the main ROOT file
     auto path = std::string(gSystem->pwd()) + "/" + global_config.get<std::string>("root_file", "modules");
@@ -194,10 +200,9 @@ void ModuleManager::load(Messenger* messenger,
         // Create the modules from the library depending on the module type
         std::vector<std::pair<ModuleIdentifier, Module*>> mod_list;
         if(unique) {
-            mod_list.emplace_back(
-                create_unique_modules(loaded_libraries_[lib_name], config, messenger, geo_manager, seeder));
+            mod_list.emplace_back(create_unique_modules(loaded_libraries_[lib_name], config, messenger, geo_manager));
         } else {
-            mod_list = create_detector_modules(loaded_libraries_[lib_name], config, messenger, geo_manager, seeder);
+            mod_list = create_detector_modules(loaded_libraries_[lib_name], config, messenger, geo_manager);
         }
 
         // Loop through all created instantiations
@@ -231,9 +236,19 @@ void ModuleManager::load(Messenger* messenger,
             // Save the identifier in the module
             mod->set_identifier(identifier);
 
+            // Check if module can't run in parallel
+            can_parallelize_ = mod->canParallelize() && can_parallelize_;
+
             // Add the new module to the run list
             modules_.emplace_back(std::move(mod));
             id_to_module_[identifier] = --modules_.end();
+        }
+    }
+
+    // Force MT off for all modules in case MT was not requested or some modules didn't enable parallelization
+    if(!(multithreading_flag_ && can_parallelize_)) {
+        for(auto& module : modules_) {
+            module->set_parallelize(false);
         }
     }
     LOG_PROGRESS(STATUS, "LOAD_LOOP") << "Loaded " << configs.size() << " modules";
@@ -242,8 +257,10 @@ void ModuleManager::load(Messenger* messenger,
 /**
  * For unique modules a single instance is created per section
  */
-std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
-    void* library, Configuration& config, Messenger* messenger, GeometryManager* geo_manager, std::mt19937_64& seeder) {
+std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* library,
+                                                                          Configuration& config,
+                                                                          Messenger* messenger,
+                                                                          GeometryManager* geo_manager) {
     // Make the vector to return
     std::string module_name = config.getName();
 
@@ -280,7 +297,6 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
     Configuration& instance_config = conf_manager_->addInstanceConfiguration(identifier, config);
 
     // Specialize instance configuration
-    instance_config.set<uint64_t>("_seed", seeder());
     std::string output_dir;
     output_dir = instance_config.get<std::string>("_global_dir");
     output_dir += "/";
@@ -324,8 +340,10 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(
  * For detector modules multiple instantiations may be created per section. An instantiation is created for every detector if
  * no selection parameters are provided. Otherwise instantiations are created for every linked detector name and type.
  */
-std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector_modules(
-    void* library, Configuration& config, Messenger* messenger, GeometryManager* geo_manager, std::mt19937_64& seeder) {
+std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector_modules(void* library,
+                                                                                         Configuration& config,
+                                                                                         Messenger* messenger,
+                                                                                         GeometryManager* geo_manager) {
     std::string module_name = config.getName();
     LOG(DEBUG) << "Creating instantions for detector module " << module_name;
 
@@ -407,7 +425,6 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         Configuration& instance_config = conf_manager_->addInstanceConfiguration(instance.second, config);
 
         // Add internal module config
-        instance_config.set<uint64_t>("_seed", seeder());
         std::string output_dir;
         output_dir = instance_config.get<std::string>("_global_dir");
         output_dir += "/";
@@ -506,7 +523,7 @@ void ModuleManager::set_module_after(std::tuple<LogLevel, LogFormat> prev) {
  * Sets the section header and logging settings before executing the  \ref Module::init() function.
  *  \ref Module::reset_delegates() "Resets" the delegates and the logging after initialization.
  */
-void ModuleManager::init() {
+void ModuleManager::init(std::mt19937_64& seeder) {
     auto start_time = std::chrono::steady_clock::now();
     LOG_PROGRESS(STATUS, "INIT_LOOP") << "Initializing " << modules_.size() << " module instantiations";
     for(auto& module : modules_) {
@@ -542,6 +559,9 @@ void ModuleManager::init() {
         local_directory->cd();
         module->set_ROOT_directory(local_directory);
 
+        // Set the RNG to be used by the module initialization
+        module->set_random_generator(&seeder);
+
         // Get current time
         auto start = std::chrono::steady_clock::now();
         // Set init module section header
@@ -555,15 +575,15 @@ void ModuleManager::init() {
         module->getROOTDirectory()->cd();
         // Init module
         module->init();
-        // Reset delegates
-        LOG(TRACE) << "Resetting messages";
-        module->reset_delegates();
         // Reset logging
         Log::setSection(old_section_name);
         set_module_after(old_settings);
         // Update execution time
         auto end = std::chrono::steady_clock::now();
         module_execution_time_[module.get()] += static_cast<std::chrono::duration<long double>>(end - start).count();
+
+        // Reset the random number generator for this module
+        module->set_random_generator(nullptr);
     }
     LOG_PROGRESS(STATUS, "INIT_LOOP") << "Initialized " << modules_.size() << " module instantiations";
     auto end_time = std::chrono::steady_clock::now();
@@ -571,149 +591,170 @@ void ModuleManager::init() {
 }
 
 /**
- * Initializes the thread pool for excuting multiple modules and module tasks in parallel. The run for a module is skipped if
- * its delegates are not \ref Module::check_delegates() "satisfied". Sets the section header and logging settings before
- * executing the \ref Module::run() function. \ref Module::reset_delegates() "Resets" the delegates and the logging after
- * initialization
+ * Initializes the thread pool and executes each event in parallel.
  */
-void ModuleManager::run() {
+void ModuleManager::run(std::mt19937_64& seeder) {
+    using namespace std::chrono_literals;
+
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
+    size_t threads_num;
 
-    global_config.setDefault("experimental_multithreading", false);
-    unsigned int threads_num;
-
-    if(global_config.get<bool>("experimental_multithreading")) {
+    // See if we can run in parallel with how many workers
+    if(multithreading_flag_ && can_parallelize_) {
         // Try to fetch a suitable number of workers if multithreading is enabled
-        threads_num = global_config.get<unsigned int>("workers", std::max(std::thread::hardware_concurrency(), 1u));
+        auto available_hardware_concurrency = std::thread::hardware_concurrency();
+        if(available_hardware_concurrency > 0u) {
+            // Try to be graceful and leave one core out if the number of workers was not specified
+            available_hardware_concurrency -= 1u;
+        }
+        threads_num = global_config.get<unsigned int>("workers", std::max(available_hardware_concurrency, 1u));
         if(threads_num == 0) {
             throw InvalidValueError(global_config, "workers", "number of workers should be strictly more than zero");
         }
-        LOG(WARNING) << "Experimental multithreading enabled - using " << threads_num << " worker threads.";
-        --threads_num;
+        LOG(STATUS) << "Multithreading enabled, processing events in parallel on " << threads_num << " worker threads";
+
+        // ROOT 6.12/00 introduces a new type of locking for operations with TObjects that impacts the performance
+        // of the framework since all threads are waiting if any is using a TObject
+        if(threads_num > 8 && gROOT->GetVersionInt() >= 61200) {
+            LOG(WARNING) << "Using more than 8 worker threads may severely impact simulation performance due to ROOT "
+                            "internals. See "
+                            "<https://root-forum.cern.ch/t/copying-trefs-and-accessing-tref-data-from-multiple-threads/"
+                            "29417/7> for more info.";
+        }
     } else {
+        // Issue a warning in case MT was requested but we can't actually run in MT
+        if(multithreading_flag_ && !can_parallelize_) {
+            global_config.set<bool>("multithreading", false);
+            LOG(WARNING) << "Multithreading disabled since the current module configuration doesn't support it";
+        }
+
         // Default to no additional thread without multithreading
         threads_num = 0;
     }
+    global_config.set<size_t>("workers", threads_num);
 
     // Creates the thread pool
-    LOG(DEBUG) << "Initializing thread pool with " << threads_num << " additional thread(s)";
-    std::vector<Module*> module_list;
-    for(auto& module : modules_) {
-        module_list.emplace_back(module.get());
-    }
-    auto init_function = [ log_level = Log::getReportingLevel(), log_format = Log::getFormat() ]() {
+    LOG(TRACE) << "Initializing thread pool with " << threads_num << " thread";
+    // clang-format off
+    auto init_function = [log_level = Log::getReportingLevel(), log_format = Log::getFormat()]() {
+        // clang-format on
         // Initialize the threads to the same log level and format as the master setting
         Log::setReportingLevel(log_level);
         Log::setFormat(log_format);
     };
-    std::shared_ptr<ThreadPool> thread_pool = std::make_shared<ThreadPool>(threads_num, module_list, init_function);
-    for(auto& module : modules_) {
-        module->set_thread_pool(thread_pool);
-    }
 
-    // Loop over all the events
+    // Finalize modules for each thread
+    auto finialize_function = [modules_list = modules_]() {
+        for(auto& module : modules_list) {
+            module->finalizeThread();
+        }
+    };
+
+    // Push 128 events for each worker to maintain enough work
+    auto max_queue_size = threads_num * 128;
+    std::unique_ptr<ThreadPool> thread_pool =
+        std::make_unique<ThreadPool>(threads_num, max_queue_size, init_function, finialize_function);
+
+    // Record the run stage total time
     auto start_time = std::chrono::steady_clock::now();
+
+    // Push all events to the thread pool
+    std::atomic<unsigned int> finished_events{0};
     global_config.setDefault<unsigned int>("number_of_events", 1u);
     auto number_of_events = global_config.get<unsigned int>("number_of_events");
-    for(unsigned int i = 0; i < number_of_events; ++i) {
-        // Check for termination
+    for(unsigned int i = 1; i <= number_of_events; i++) {
+        // Check if run was aborted and stop pushing extra events to the threadpool
         if(terminate_) {
-            LOG(INFO) << "Interrupting event loop after " << i << " events because of request to terminate";
-            number_of_events = i;
-            global_config.set<unsigned int>("number_of_events", i);
+            LOG(INFO) << "Interrupting prematurely as requested";
+            thread_pool->destroy();
+            global_config.set<unsigned int>("number_of_events", finished_events);
             break;
         }
 
-        LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Running event " << (i + 1) << " of " << number_of_events;
+        // Get a new seed for the new event
+        uint64_t seed = seeder();
 
-        // Get object count for linking objects in current event
-        auto save_id = TProcessID::GetObjectCount();
+        auto event_function = [ this, number_of_events, event_num = i, event_seed = seed, &finished_events ]() mutable {
+            // The RNG to be used by all events running on this thread
+            static thread_local std::mt19937_64 random_engine;
 
-        std::string module_name;
-        if(!modules_.empty()) {
-            module_name = modules_.front()->get_identifier().getName();
-        }
-        for(auto& module : modules_) {
-            // Execute all remaining jobs in the thread pool when switching to a new module type
-            if(module->get_identifier().getName() != module_name) {
-                module_name = module->get_identifier().getName();
-                thread_pool->execute_all();
-            }
+            // Create the event data
+            std::shared_ptr<Event> event = std::make_shared<Event>(*this->messenger_, event_num, event_seed);
+            event->set_and_seed_random_engine(&random_engine);
 
-            auto execute_module = [ module = module.get(), event_num = i + 1, this, number_of_events ]() {
-                LOG_PROGRESS(TRACE, "EVENT_LOOP") << "Running event " << event_num << " of " << number_of_events << " ["
-                                                  << module->get_identifier().getUniqueName() << "]";
-                // Check if module is satisfied to run
-                if(!module->check_delegates()) {
+            for(auto& module : modules_) {
+                LOG_PROGRESS(TRACE, "EVENT_LOOP")
+                    << "Running event " << event->number << " [" << module->get_identifier().getUniqueName() << "]";
+
+                // Check if the module is satisfied to run
+                if(!module->check_delegates(this->messenger_, event.get())) {
                     LOG(TRACE) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
                                << ", skipping module!";
-                    return;
+                    module->skip_event(event->number);
+                    continue;
                 }
 
                 // Get current time
                 auto start = std::chrono::steady_clock::now();
+
                 // Set run module section header
                 std::string old_section_name = Log::getSection();
+                unsigned int old_event_num = Log::getEventNum();
                 std::string section_name = "R:";
                 section_name += module->get_identifier().getUniqueName();
                 Log::setSection(section_name);
+                Log::setEventNum(event->number);
+
                 // Set module specific settings
-                auto old_settings = set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
-                // Change to ROOT directory is not thread safe, only do this for module without parallelization support
-                if(!module->canParallelize()) {
-                    // DEPRECATED: Switching to the directory should be removed, but can break current modules
-                    module->getROOTDirectory()->cd();
-                }
+                auto old_settings =
+                    ModuleManager::set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
+
                 // Run module
                 try {
-                    module->run(event_num);
-                } catch(EndOfRunException& e) {
+                    if(module->is_buffered()) {
+                        auto buffered_module = static_cast<BufferedModule*>(module.get());
+                        buffered_module->run_in_order(event);
+                    } else {
+                        module->run(event.get());
+                    }
+                } catch(const EndOfRunException& e) {
                     // Terminate if the module threw the EndOfRun request exception:
                     LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
-                    terminate_ = true;
+                    this->terminate_ = true;
                 }
+
                 // Reset logging
                 Log::setSection(old_section_name);
-                set_module_after(old_settings);
+                Log::setEventNum(old_event_num);
+                ModuleManager::set_module_after(old_settings);
+
                 // Update execution time
                 auto end = std::chrono::steady_clock::now();
-                module_execution_time_[module] += static_cast<std::chrono::duration<long double>>(end - start).count();
-            };
-
-            if(module->canParallelize()) {
-                // Submit the module function
-                thread_pool->submit_module_function(execute_module);
-            } else {
-                // Finish thread pool
-                thread_pool->execute_all();
-                // Execute current module
-                execute_module();
+                std::lock_guard<std::mutex> stat_lock{event->stats_mutex_};
+                this->module_execution_time_[module.get()] +=
+                    static_cast<std::chrono::duration<long double>>(end - start).count();
             }
-        }
 
-        // Finish executing the last remaining tasks
-        thread_pool->execute_all();
-
-        // Resetting delegates
-        for(auto& module : modules_) {
-            LOG(TRACE) << "Resetting messages";
-            module->reset_delegates();
-        }
-
-        // Reset object count for next event
-        TProcessID::SetObjectCount(save_id);
+            finished_events++;
+            LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished " << finished_events << " of " << number_of_events << " events";
+        };
+        thread_pool->submit_event_function(event_function);
+        thread_pool->check_exception();
     }
-    LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of " << number_of_events << " events";
+
+    LOG(TRACE) << "All events have been initialized. Waiting for thread pool to finish...";
+
+    // Wait for workers to finish
+    thread_pool->wait();
+
+    // Check exception for last events
+    thread_pool->check_exception();
+
+    LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of " << finished_events << " events";
     auto end_time = std::chrono::steady_clock::now();
     total_time_ += static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
 
-    // Remove pool from modules, wait for the threads to finish and destroy pool
     LOG(TRACE) << "Destroying thread pool";
-    for(auto& module : modules_) {
-        module->set_thread_pool(nullptr);
-    }
-    thread_pool.reset();
-    assert(thread_pool.use_count() == 0);
 }
 
 static std::string seconds_to_time(long double seconds) {
@@ -760,7 +801,12 @@ void ModuleManager::finalize() {
         // Change to our ROOT directory
         module->getROOTDirectory()->cd();
         // Finalize module
-        module->finalize();
+        if(module->is_buffered()) {
+            auto buffered_module = static_cast<BufferedModule*>(module.get());
+            buffered_module->finalize_buffer();
+        } else {
+            module->finalize();
+        }
         // Remove the pointer to the ROOT directory after finalizing
         module->set_ROOT_directory(nullptr);
         // Remove the config manager
@@ -778,17 +824,19 @@ void ModuleManager::finalize() {
     auto end_time = std::chrono::steady_clock::now();
     total_time_ += static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
 
-    long double slowest_time = 0;
+    // Find the slowest module, and accumulate the total run-time for all modules
+    long double slowest_time = 0, total_module_time = 0;
     std::string slowest_module;
     for(auto& module_time : module_execution_time_) {
+        total_module_time += module_time.second;
         if(module_time.second > slowest_time) {
             slowest_time = module_time.second;
             slowest_module = module_time.first->getUniqueName();
         }
     }
     LOG(STATUS) << "Executed " << modules_.size() << " instantiations in " << seconds_to_time(total_time_) << ", spending "
-                << std::round((100 * slowest_time) / std::max(1.0l, total_time_)) << "% of time in slowest instantiation "
-                << slowest_module;
+                << std::round((100 * slowest_time) / std::max(1.0l, total_module_time))
+                << "% of time in slowest instantiation " << slowest_module;
     for(auto& module : modules_) {
         LOG(INFO) << " Module " << module->getUniqueName() << " took " << module_execution_time_[module.get()] << " seconds";
     }
@@ -801,6 +849,11 @@ void ModuleManager::finalize() {
 
     LOG(STATUS) << "Average processing time is \x1B[1m" << processing_time << " ms/event\x1B[0m, event generation at \x1B[1m"
                 << std::round(global_config.get<double>("number_of_events") / total_time_) << " Hz\x1B[0m";
+
+    if(global_config.get<unsigned int>("workers") > 0) {
+        auto event_processing_time = std::round(processing_time * global_config.get<unsigned int>("workers"));
+        LOG(STATUS) << "Average processing time for an event is \x1B[1m" << event_processing_time << " ms\x1B[0m";
+    }
 }
 
 /**

@@ -12,6 +12,7 @@
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
+#include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
 
 // Local includes
@@ -32,7 +33,7 @@ namespace allpix {
      * More detailed explanation of module
      */
 
-    class CorryvreckanWriterModule : public Module {
+    class CorryvreckanWriterModule : public BufferedModule {
     public:
         /**
          * @brief Constructor for this unique module
@@ -50,7 +51,7 @@ namespace allpix {
         /**
          * @brief Take the digitised pixel hits and write them into the output file
          */
-        void run(unsigned int) override;
+        void run(Event* event) override;
 
         /**
          * @brief Write output trees to file
@@ -59,7 +60,6 @@ namespace allpix {
 
     private:
         // General module members
-        std::vector<std::shared_ptr<PixelHitMessage>> pixel_messages_; // Receieved pixels
         Messenger* messenger_;
         GeometryManager* geometryManager_;
 
@@ -67,7 +67,7 @@ namespace allpix {
         std::string fileName_;                                   // Output filename
         std::string geometryFileName_;                           // Output geometry filename
         std::unique_ptr<TFile> outputFile_;                      // Output file
-        double time_;                                            // Event time being written
+        long long int time_;                                     // Event time being written
         std::map<std::string, TTree*> outputTrees_;              // Output trees
         std::map<std::string, corryvreckan::Pixel*> treePixels_; // Objects attached to trees for writing
 

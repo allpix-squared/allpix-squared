@@ -32,7 +32,10 @@
 using namespace allpix;
 
 ROOTObjectReaderModule::ROOTObjectReaderModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
-    : Module(config), messenger_(messenger), geo_mgr_(geo_mgr) {}
+    : Module(config), messenger_(messenger), geo_mgr_(geo_mgr) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+}
 
 /**
  * @note Objects cannot be stored in smart pointers due to internal ROOT logic
@@ -249,7 +252,11 @@ void ROOTObjectReaderModule::init() {
     }
 }
 
-void ROOTObjectReaderModule::run(unsigned int event_num) {
+void ROOTObjectReaderModule::run(Event* event) {
+    // We can not read multiple events at the same time so we need to synchronize access
+    std::lock_guard<std::mutex> lock{mutex_};
+
+    unsigned int event_num = event->number;
     --event_num;
     for(auto& tree : trees_) {
         if(event_num >= tree->GetEntries()) {
@@ -285,7 +292,7 @@ void ROOTObjectReaderModule::run(unsigned int event_num) {
         std::shared_ptr<BaseMessage> message = iter->second(*objects, message_inf.detector);
 
         // Dispatch the message
-        messenger_->dispatchMessage(this, message, message_inf.name);
+        messenger_->dispatchMessage(this, message, event, message_inf.name);
     }
 }
 
@@ -297,7 +304,4 @@ void ROOTObjectReaderModule::finalize() {
 
     // Print statistics
     LOG(INFO) << "Read " << read_cnt_ << " objects from " << branch_count << " branches";
-
-    // Close the file
-    input_file_->Close();
 }

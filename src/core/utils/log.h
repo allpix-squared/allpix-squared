@@ -185,6 +185,17 @@ namespace allpix {
          */
         static std::string getSection();
 
+        /**
+         * @brief Set the current event number from now on
+         * @param event_num Event number to use
+         */
+        static void setEventNum(unsigned int event_num);
+        /**
+         * @brief Get the current event numbers
+         * @return Event number used
+         */
+        static unsigned int getEventNum();
+
     private:
         /**
          * @brief The number of exceptions that are uncaught
@@ -214,6 +225,7 @@ namespace allpix {
 
         // Internal methods to store static values
         static std::string& get_section();
+        static unsigned int& get_event_num();
         static LogLevel& get_reporting_level();
         static LogFormat& get_format();
         static std::vector<std::ostream*>& get_streams();

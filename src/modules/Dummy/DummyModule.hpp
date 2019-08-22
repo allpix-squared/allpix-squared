@@ -16,6 +16,7 @@
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
+#include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
 
 #include "objects/PixelHit.hpp"
@@ -45,12 +46,11 @@ namespace allpix {
         /**
          * @brief [Run the function of this module]
          */
-        void run(unsigned int) override;
+        void run(Event* event) override;
 
     private:
         // General module members
         GeometryManager* geo_manager_;
         Messenger* messenger_;
-        std::vector<std::shared_ptr<PixelHitMessage>> messages_;
     };
 } // namespace allpix

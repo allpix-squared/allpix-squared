@@ -22,6 +22,9 @@
 #include <Math/PositionVector3D.h>
 #include <TString.h>
 
+#include <ROOT/TThreadedObject.hxx>
+#include <TH1.h>
+
 #include "core/utils/text.h"
 #include "core/utils/type.h"
 
@@ -146,6 +149,29 @@ namespace allpix {
     inline std::ostream& operator<<(std::ostream& os, const ROOT::Math::PositionVector2D<T, U>& vec) {
         return os << "(" << vec.x() << "," << vec.y() << ")";
     }
+
+    /**
+     * @brief A thin wrapper over ROOT::TThreadedObject for histograms
+     *
+     * Enables filling histograms in parallel and makes sure an empty instance will exist if not filled.
+     */
+    template <typename T, typename std::enable_if<std::is_base_of<TH1, T>::value>::type* = nullptr>
+    class ThreadedHistogram : public ROOT::TThreadedObject<T> {
+    public:
+        template <class... ARGS> ThreadedHistogram(ARGS&&... args) : ROOT::TThreadedObject<T>(std::forward<ARGS>(args)...) {
+            this->Get();
+        }
+
+        /**
+         * @brief An easy way to fill a histogram
+         */
+        template <class... ARGS> Int_t Fill(ARGS&&... args) { return this->Get()->Fill(std::forward<ARGS>(args)...); }
+
+        /**
+         * @brief An easy way to write a histogram
+         */
+        void Write() { this->Merge()->Write(); }
+    };
 } // namespace allpix
 
 #endif /* ALLPIX_ROOT_H */

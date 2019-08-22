@@ -41,7 +41,7 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration& config,
     config_.setDefault("minimum_gap", config_.get<double>("nominal_gap"));
 
     // Require propagated deposits for single detector
-    messenger->bindSingle(this, &CapacitiveTransferModule::propagated_message_, MsgFlags::REQUIRED);
+    messenger_->bindSingle<PropagatedChargeMessage>(this, MsgFlags::REQUIRED);
 }
 
 void CapacitiveTransferModule::init() {
@@ -239,7 +239,7 @@ void CapacitiveTransferModule::init() {
 
                     Eigen::Vector3d pixel_point(local_x, local_y, 0);
                     Eigen::Vector3d pixel_projection = plane.projection(pixel_point);
-                    pixel_gap = pixel_projection[2];
+                    auto pixel_gap = pixel_projection[2];
 
                     gap_map->Fill(col, row, static_cast<double>(Units::convert(pixel_gap, "um")));
                     capacitance_map->Fill(
@@ -262,13 +262,14 @@ void CapacitiveTransferModule::init() {
     }
 }
 
-void CapacitiveTransferModule::run(unsigned int) {
+void CapacitiveTransferModule::run(Event* event) {
+    auto propagated_message = messenger_->fetchMessage<PropagatedChargeMessage>(this, event);
 
     // Find corresponding pixels for all propagated charges
     LOG(TRACE) << "Transferring charges to pixels";
     unsigned int transferred_charges_count = 0;
     std::map<Pixel::Index, std::pair<double, std::vector<const PropagatedCharge*>>> pixel_map;
-    for(auto& propagated_charge : propagated_message_->getData()) {
+    for(auto& propagated_charge : propagated_message->getData()) {
         auto position = propagated_charge.getLocalPosition();
         // Ignore if outside depth range of implant
         if(std::fabs(position.z() - (model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0)) >
@@ -319,7 +320,7 @@ void CapacitiveTransferModule::run(unsigned int) {
                     double local_y = pixel_index.y() * model_->getPixelSize().y();
                     pixel_point = Eigen::Vector3d(local_x, local_y, 0);
                     pixel_projection = plane.projection(pixel_point);
-                    pixel_gap = pixel_projection[2];
+                    double pixel_gap = pixel_projection[2];
 
                     ccpd_factor = capacitances[row * 3 + col]->Eval(
                                       static_cast<double>(Units::convert(pixel_gap, "um")), nullptr, "S") *
@@ -334,8 +335,10 @@ void CapacitiveTransferModule::run(unsigned int) {
                 }
 
                 // Update statistics
-                unique_pixels_.insert(pixel_index);
-
+                {
+                    std::lock_guard<std::mutex> lock{stats_mutex_};
+                    unique_pixels_.insert(pixel_index);
+                }
                 transferred_charges_count += static_cast<unsigned int>(propagated_charge.getCharge() * ccpd_factor);
                 neighbour_charge = propagated_charge.getCharge() * ccpd_factor;
 
@@ -368,7 +371,7 @@ void CapacitiveTransferModule::run(unsigned int) {
 
     // Dispatch message of pixel charges
     auto pixel_message = std::make_shared<PixelChargeMessage>(pixel_charges, detector_);
-    messenger_->dispatchMessage(this, pixel_message);
+    messenger_->dispatchMessage(this, pixel_message, event);
 }
 
 void CapacitiveTransferModule::finalize() {

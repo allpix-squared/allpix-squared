@@ -23,11 +23,11 @@
 #endif
 
 #include <G4LogicalVolume.hh>
-#include <G4RunManager.hh>
 #ifdef G4UI_USE_QT
 #include <G4UIQt.hh>
 #endif
 #include <G4PVParameterised.hh>
+#include <G4RunManager.hh>
 #include <G4UImanager.hh>
 #include <G4UIsession.hh>
 #include <G4UItcsh.hh>
@@ -411,7 +411,7 @@ void VisualizationGeant4Module::set_visualization_attributes() {
     }
 }
 
-void VisualizationGeant4Module::run(unsigned int) {
+void VisualizationGeant4Module::run(Event*) {
     if(!config_.get<bool>("accumulate")) {
         vis_manager_g4_->GetCurrentViewer()->ShowView();
         std::this_thread::sleep_for(

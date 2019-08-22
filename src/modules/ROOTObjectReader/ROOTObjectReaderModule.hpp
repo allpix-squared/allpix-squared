@@ -17,6 +17,7 @@
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
+#include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
 
 // Contains tuple of all defined objects
@@ -56,7 +57,7 @@ namespace allpix {
         /**
          * @brief Convert the objects stored for the current event to messages
          */
-        void run(unsigned int) override;
+        void run(Event*) override;
 
         /**
          * @brief Output summary and close the ROOT file
@@ -90,9 +91,11 @@ namespace allpix {
         std::list<message_info> message_info_array_;
 
         // Statistics for total amount of objects stored
-        unsigned long read_cnt_{};
+        std::atomic<unsigned long> read_cnt_{};
 
         // Internal map to construct an object from it's type index
         MessageCreatorMap message_creator_map_;
+
+        std::mutex mutex_;
     };
 } // namespace allpix

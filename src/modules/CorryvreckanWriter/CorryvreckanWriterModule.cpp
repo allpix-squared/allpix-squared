@@ -21,10 +21,12 @@
 using namespace allpix;
 
 CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geoManager)
-    : Module(config), messenger_(messenger), geometryManager_(geoManager) {
+    : BufferedModule(config), messenger_(messenger), geometryManager_(geoManager) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
 
     // Require PixelCharge messages for single detector
-    messenger_->bindMulti(this, &CorryvreckanWriterModule::pixel_messages_, MsgFlags::REQUIRED);
+    messenger_->bindMulti<PixelHitMessage>(this, MsgFlags::REQUIRED);
 
     config_.setDefault("file_name", "corryvreckanOutput.root");
     config_.setDefault("geometry_file", "corryvreckanGeometry.conf");
@@ -88,10 +90,11 @@ void CorryvreckanWriterModule::init() {
 }
 
 // Make instantiations of Corryvreckan pixels, and store these in the trees during run time
-void CorryvreckanWriterModule::run(unsigned int) {
+void CorryvreckanWriterModule::run(Event* event) {
+    auto pixel_messages = messenger_->fetchMultiMessage<PixelHitMessage>(this, event);
 
     // Loop through all receieved messages
-    for(auto& message : pixel_messages_) {
+    for(auto& message : pixel_messages) {
 
         auto detectorID = message->getDetector()->getName();
         auto objectID = detectorID + "_pixels";
@@ -105,7 +108,7 @@ void CorryvreckanWriterModule::run(unsigned int) {
             unsigned int pixelX = allpix_pixel.getPixel().getIndex().X();
             unsigned int pixelY = allpix_pixel.getPixel().getIndex().Y();
             double adc = allpix_pixel.getSignal();
-            double time(time_);
+            auto time = static_cast<double>(time_);
             auto outputPixel = new corryvreckan::Pixel(detectorID, int(pixelY), int(pixelX), int(adc), time);
 
             LOG(DEBUG) << "Pixel (" << pixelX << "," << pixelY << ") written to device " << detectorID;

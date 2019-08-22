@@ -50,7 +50,7 @@ SimpleTransferModule::SimpleTransferModule(Configuration& config, Messenger* mes
     output_plots_ = config_.get<bool>("output_plots");
 
     // Require propagated deposits for single detector
-    messenger->bindSingle(this, &SimpleTransferModule::propagated_message_, MsgFlags::REQUIRED);
+    messenger_->bindSingle<PropagatedChargeMessage>(this, MsgFlags::REQUIRED);
 }
 
 void SimpleTransferModule::init() {
@@ -67,20 +67,22 @@ void SimpleTransferModule::init() {
     if(output_plots_) {
         auto time_bins =
             static_cast<int>(config_.get<double>("output_plots_range") / config_.get<double>("output_plots_step"));
-        drift_time_histo = new TH1D("drift_time_histo",
-                                    "Charge carrier arrival time;t[ns];charge carriers",
-                                    time_bins,
-                                    0.,
-                                    config_.get<double>("output_plots_range"));
+        drift_time_histo = std::make_unique<ThreadedHistogram<TH1D>>("drift_time_histo",
+                                                                     "Charge carrier arrival time;t[ns];charge carriers",
+                                                                     time_bins,
+                                                                     0.,
+                                                                     config_.get<double>("output_plots_range"));
     }
 }
 
-void SimpleTransferModule::run(unsigned int) {
+void SimpleTransferModule::run(Event* event) {
+    auto propagated_message = messenger_->fetchMessage<PropagatedChargeMessage>(this, event);
+
     // Find corresponding pixels for all propagated charges
     LOG(TRACE) << "Transferring charges to pixels";
     unsigned int transferred_charges_count = 0;
     std::map<Pixel::Index, std::vector<const PropagatedCharge*>> pixel_map;
-    for(auto& propagated_charge : propagated_message_->getData()) {
+    for(auto& propagated_charge : propagated_message->getData()) {
         auto position = propagated_charge.getLocalPosition();
         // Ignore if outside depth range of implant
         // FIXME This logic should be improved
@@ -115,7 +117,10 @@ void SimpleTransferModule::run(unsigned int) {
         Pixel::Index pixel_index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel));
 
         // Update statistics
-        unique_pixels_.insert(pixel_index);
+        {
+            std::lock_guard<std::mutex> lock{stats_mutex_};
+            unique_pixels_.insert(pixel_index);
+        }
         transferred_charges_count += propagated_charge.getCharge();
 
         if(output_plots_) {
@@ -152,7 +157,7 @@ void SimpleTransferModule::run(unsigned int) {
 
     // Dispatch message of pixel charges
     auto pixel_message = std::make_shared<PixelChargeMessage>(pixel_charges, detector_);
-    messenger_->dispatchMessage(this, pixel_message);
+    messenger_->dispatchMessage(this, pixel_message, event);
 }
 
 void SimpleTransferModule::finalize() {

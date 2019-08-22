@@ -28,20 +28,17 @@ using namespace ROOT::Math;
 TransientPropagationModule::TransientPropagationModule(Configuration& config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
-    : Module(config, detector), detector_(std::move(detector)), messenger_(messenger) {
-    using XYVectorInt = DisplacementVector2D<Cartesian2D<int>>;
-
-    // Enable parallelization of this module if multithreading is enabled:
+    : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
+    // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
+
+    using XYVectorInt = DisplacementVector2D<Cartesian2D<int>>;
 
     // Save detector model
     model_ = detector_->getModel();
 
     // Require deposits message for single detector:
-    messenger_->bindSingle(this, &TransientPropagationModule::deposits_message_, MsgFlags::REQUIRED);
-
-    // Seed the random generator with the module seed
-    random_generator_.seed(getRandomSeed());
+    messenger_->bindSingle<DepositedChargeMessage>(this, MsgFlags::REQUIRED);
 
     // Set default value for config variables
     config_.setDefault<double>("timestep", Units::get(0.01, "ns"));
@@ -111,49 +108,55 @@ void TransientPropagationModule::init() {
     }
 
     if(output_plots_) {
-        potential_difference_ =
-            new TH1D("potential_difference",
-                     "Weighting potential difference between two steps;#left|#Delta#phi_{w}#right| [a.u.];events",
-                     500,
-                     0,
-                     1);
-        induced_charge_histo_ = new TH1D("induced_charge_histo",
-                                         "Induced charge per time, all pixels;Drift time [ns];charge [e]",
-                                         static_cast<int>(integration_time_ / timestep_),
-                                         0,
-                                         static_cast<double>(Units::convert(integration_time_, "ns")));
-        induced_charge_e_histo_ = new TH1D("induced_charge_e_histo",
-                                           "Induced charge per time, electrons only, all pixels;Drift time [ns];charge [e]",
-                                           static_cast<int>(integration_time_ / timestep_),
-                                           0,
-                                           static_cast<double>(Units::convert(integration_time_, "ns")));
-        induced_charge_h_histo_ = new TH1D("induced_charge_h_histo",
-                                           "Induced charge per time, holes only, all pixels;Drift time [ns];charge [e]",
-                                           static_cast<int>(integration_time_ / timestep_),
-                                           0,
-                                           static_cast<double>(Units::convert(integration_time_, "ns")));
-        step_length_histo_ = new TH1D("step_length_histo",
-                                      "Step length;length [#mum];integration steps",
-                                      100,
-                                      0,
-                                      static_cast<double>(Units::convert(0.25 * model_->getSensorSize().z(), "um")));
+        potential_difference_ = std::make_unique<ThreadedHistogram<TH1D>>(
+            "potential_difference",
+            "Weighting potential difference between two steps;#left|#Delta#phi_{w}#right| [a.u.];events",
+            500,
+            0,
+            1);
+        induced_charge_histo_ =
+            std::make_unique<ThreadedHistogram<TH1D>>("induced_charge_histo",
+                                                      "Induced charge per time, all pixels;Drift time [ns];charge [e]",
+                                                      static_cast<int>(integration_time_ / timestep_),
+                                                      0,
+                                                      static_cast<double>(Units::convert(integration_time_, "ns")));
+        induced_charge_e_histo_ = std::make_unique<ThreadedHistogram<TH1D>>(
+            "induced_charge_e_histo",
+            "Induced charge per time, electrons only, all pixels;Drift time [ns];charge [e]",
+            static_cast<int>(integration_time_ / timestep_),
+            0,
+            static_cast<double>(Units::convert(integration_time_, "ns")));
+        induced_charge_h_histo_ = std::make_unique<ThreadedHistogram<TH1D>>(
+            "induced_charge_h_histo",
+            "Induced charge per time, holes only, all pixels;Drift time [ns];charge [e]",
+            static_cast<int>(integration_time_ / timestep_),
+            0,
+            static_cast<double>(Units::convert(integration_time_, "ns")));
+        step_length_histo_ = std::make_unique<ThreadedHistogram<TH1D>>(
+            "step_length_histo",
+            "Step length;length [#mum];integration steps",
+            100,
+            0,
+            static_cast<double>(Units::convert(0.25 * model_->getSensorSize().z(), "um")));
 
-        drift_time_histo_ = new TH1D("drift_time_histo",
-                                     "Drift time;Drift time [ns];charge carriers",
-                                     static_cast<int>(Units::convert(integration_time_, "ns") * 5),
-                                     0,
-                                     static_cast<double>(Units::convert(integration_time_, "ns")));
+        drift_time_histo_ =
+            std::make_unique<ThreadedHistogram<TH1D>>("drift_time_histo",
+                                                      "Drift time;Drift time [ns];charge carriers",
+                                                      static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                                      0,
+                                                      static_cast<double>(Units::convert(integration_time_, "ns")));
     }
 }
 
-void TransientPropagationModule::run(unsigned int) {
+void TransientPropagationModule::run(Event* event) {
+    auto deposits_message = messenger_->fetchMessage<DepositedChargeMessage>(this, event);
 
     // Create vector of propagated charges to output
     std::vector<PropagatedCharge> propagated_charges;
 
     // Loop over all deposits for propagation
     LOG(TRACE) << "Propagating charges in sensor";
-    for(auto& deposit : deposits_message_->getData()) {
+    for(auto& deposit : deposits_message->getData()) {
 
         // Loop over all charges in the deposit
         unsigned int charges_remaining = deposit.getCharge();
@@ -174,7 +177,7 @@ void TransientPropagationModule::run(unsigned int) {
 
             // Propagate a single charge deposit
             std::map<Pixel::Index, Pulse> px_map;
-            auto prop_pair = propagate(position, deposit.getType(), charge_per_step, px_map);
+            auto prop_pair = propagate(event, position, deposit.getType(), charge_per_step, px_map);
 
             // Create a new propagated charge and add it to the list
             auto global_position = detector_->getGlobalPosition(prop_pair.first);
@@ -201,7 +204,7 @@ void TransientPropagationModule::run(unsigned int) {
     auto propagated_charge_message = std::make_shared<PropagatedChargeMessage>(std::move(propagated_charges), detector_);
 
     // Dispatch the message with propagated charges
-    messenger_->dispatchMessage(this, propagated_charge_message);
+    messenger_->dispatchMessage(this, propagated_charge_message, event);
 }
 
 /**
@@ -209,7 +212,8 @@ void TransientPropagationModule::run(unsigned int) {
  * velocity at every point with help of the electric field map of the detector. A Runge-Kutta integration is applied in
  * multiple steps, adding a random diffusion to the propagating charge every step.
  */
-std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
+std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(Event* event,
+                                                                              const ROOT::Math::XYZPoint& pos,
                                                                               const CarrierType& type,
                                                                               const unsigned int charge,
                                                                               std::map<Pixel::Index, Pulse>& pixel_map) {
@@ -241,7 +245,7 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(co
         std::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
         Eigen::Vector3d diffusion;
         for(int i = 0; i < 3; ++i) {
-            diffusion[i] = gauss_distribution(random_generator_);
+            diffusion[i] = gauss_distribution(event->getRandomEngine());
         }
         return diffusion;
     };

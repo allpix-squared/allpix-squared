@@ -22,13 +22,14 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
                                                          Messenger* messenger,
                                                          std::shared_ptr<Detector> detector)
     : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+
     // Save detector model
     model_ = detector_->getModel();
 
-    random_generator_.seed(getRandomSeed());
-
     // Require deposits message for single detector
-    messenger_->bindSingle(this, &ProjectionPropagationModule::deposits_message_, MsgFlags::REQUIRED);
+    messenger_->bindSingle<DepositedChargeMessage>(this, MsgFlags::REQUIRED);
 
     // Set default value for config variables
     config_.setDefault<int>("charge_per_step", 10);
@@ -91,15 +92,17 @@ void ProjectionPropagationModule::init() {
 
     if(output_plots_) {
         // Initialize output plot
-        drift_time_histo_ = new TH1D("drift_time_histo",
-                                     "Drift time;Drift time [ns];charge carriers",
-                                     static_cast<int>(Units::convert(integration_time_, "ns") * 5),
-                                     0,
-                                     static_cast<double>(Units::convert(integration_time_, "ns")));
+        drift_time_histo_ =
+            std::make_unique<ThreadedHistogram<TH1D>>("drift_time_histo",
+                                                      "Drift time;Drift time [ns];charge carriers",
+                                                      static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                                      0,
+                                                      static_cast<double>(Units::convert(integration_time_, "ns")));
     }
 }
 
-void ProjectionPropagationModule::run(unsigned int) {
+void ProjectionPropagationModule::run(Event* event) {
+    auto deposits_message = messenger_->fetchMessage<DepositedChargeMessage>(this, event);
 
     // Create vector of propagated charges to output
     std::vector<PropagatedCharge> propagated_charges;
@@ -109,7 +112,7 @@ void ProjectionPropagationModule::run(unsigned int) {
     double total_projected_charge = 0;
 
     // Loop over all deposits for propagation
-    for(auto& deposit : deposits_message_->getData()) {
+    for(auto& deposit : deposits_message->getData()) {
 
         auto position = deposit.getLocalPosition();
         auto type = deposit.getType();
@@ -145,14 +148,14 @@ void ProjectionPropagationModule::run(unsigned int) {
         LOG(TRACE) << "Electric field at carrier position / top of the sensor: " << Units::display(efield_mag_top, "V/cm")
                    << " , " << Units::display(efield_mag, "V/cm");
 
-        slope_efield_ = (efield_mag_top - efield_mag) / (std::abs(top_z_ - position.z()));
+        auto slope_efield = (efield_mag_top - efield_mag) / (std::abs(top_z_ - position.z()));
 
         // Calculate the drift time
-        auto calc_drift_time = [&]() {
+        auto calc_drift_time = [&, slope_efield]() {
             double Ec = (type == CarrierType::ELECTRON ? electron_Ec_ : hole_Ec_);
             double zero_mobility = (type == CarrierType::ELECTRON ? electron_Vm_ / electron_Ec_ : hole_Vm_ / hole_Ec_);
 
-            return ((log(efield_mag_top) - log(efield_mag)) / slope_efield_ + std::abs(top_z_ - position.z()) / Ec) /
+            return ((log(efield_mag_top) - log(efield_mag)) / slope_efield + std::abs(top_z_ - position.z()) / Ec) /
                    zero_mobility;
         };
 
@@ -190,8 +193,8 @@ void ProjectionPropagationModule::run(unsigned int) {
             charges_remaining -= charge_per_step;
 
             std::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
-            double diffusion_x = gauss_distribution(random_generator_);
-            double diffusion_y = gauss_distribution(random_generator_);
+            double diffusion_x = gauss_distribution(event->getRandomEngine());
+            double diffusion_y = gauss_distribution(event->getRandomEngine());
 
             // Find projected position
             auto local_position = ROOT::Math::XYZPoint(position.x() + diffusion_x, position.y() + diffusion_y, top_z_);
@@ -233,7 +236,7 @@ void ProjectionPropagationModule::run(unsigned int) {
     auto propagated_charge_message = std::make_shared<PropagatedChargeMessage>(std::move(propagated_charges), detector_);
 
     // Dispatch the message with propagated charges
-    messenger_->dispatchMessage(this, propagated_charge_message);
+    messenger_->dispatchMessage(this, propagated_charge_message, event);
 }
 
 void ProjectionPropagationModule::finalize() {

@@ -119,6 +119,10 @@ FIND_PACKAGE(Threads REQUIRED)
 # Define the libraries
 SET(ALLPIX_LIBRARIES "")
 
+# Define the optional libraries
+SET(ALLPIX_GEANT4_INTERFACE "AllpixGeant4Interface")
+SET(ALLPIX_BUILD_GEANT4_INTERFACE "OFF" CACHE BOOL "Build Geant4 interface library" FORCE)
+
 # ROOT is required for vector and persistency etc
 FIND_PACKAGE(ROOT REQUIRED COMPONENTS Geom GenVector)
 IF(NOT ROOT_FOUND)
@@ -182,6 +186,11 @@ SET(ALLPIX_LIBRARIES ${ALLPIX_LIBRARIES} AllpixCore)
 
 # Build required modules
 ADD_SUBDIRECTORY(src/modules)
+
+# Build geant4 interface library if needed by modules
+IF(${ALLPIX_BUILD_GEANT4_INTERFACE})
+    ADD_SUBDIRECTORY(src/tools/geant4)
+ENDIF()
 
 # Build the executable
 ADD_SUBDIRECTORY(src/exec)

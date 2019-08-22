@@ -281,8 +281,8 @@ Can be used to reproduce an earlier simulation run.
 See Section~\ref{sec:module_instantiation} for details.
 \item \parameter{model_paths}: Additional files or directories from which detector models should be read besides the standard search locations.
 Refer to Section~\ref{sec:detector_models} for more information.
-\item \parameter{experimental_multithreading}: Enable \textbf{experimental} multi-threading for the framework. This can speed up simulations of multiple detectors significantly. More information about multi-threading can be found in Section~\ref{sec:multithreading}.
-\item \parameter{workers}: Specify the number of workers to use in total, should be strictly larger than zero. Only used if \parameter{experimental_multithreading} is set to true. Defaults to the number of native threads available on the system if this can be determined, otherwise one thread is used.
+\item \parameter{multithreading}: Enable multi-threading for the framework. More information about multi-threading can be found in Section~\ref{sec:multithreading}.
+\item \parameter{workers}: Specify the number of workers to use in total, should be strictly larger than zero. Only used if \parameter{multithreading} is set to true. Defaults to the number of native threads available on the system if this can be determined, otherwise one thread is used.
 \end{itemize}
 
 \section{The \textit{allpix} Executable}
@@ -316,7 +316,7 @@ These are specified by adding a dot (\texttt{.}) between the detector and the ac
 
 No interaction with the framework is possible during the simulation. Signals can however be send using keyboard shortcuts to terminate the simulation, either gracefully or with force. The executable understand the following signals:
 \begin{itemize}
-    \item SIGINT (\texttt{CTRL+C}): Request a graceful shutdown of the simulation. This means the current simulated event is finished, while all other events requested in the configuration file are ignored. After finishing the event, the finalization stage is run for every module to ensure all modules finish properly. This signal can be very useful when too many events are specified and the simulation takes too long to finish entirely, but the output generated so far should still be kept.
+    \item SIGINT (\texttt{CTRL+C}): Request a graceful shutdown of the simulation. This means all currently simulated events are finished, while all other events requested in the configuration file are ignored. After finishing the event, the finalization stage is run for every module to ensure all modules finish properly. This signal can be very useful when too many events are specified and the simulation takes too long to finish entirely, but the output generated so far should still be kept.
     \item SIGTERM: Same as SIGINT, request a graceful shutdown of the simulation. This signal is emitted e.g.\ by the \command{kill} command or by cluster computing schedulers to ask for a termination of the job.
     \item SIGQUIT (\texttt{CTRL+\textbackslash}): Forcefully terminates the simulation. It is not recommmended to use this signal as it will normally lead to the loss of all generated data. This signal should only be used when graceful termination is for any reason not possible.
 \end{itemize}

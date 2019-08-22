@@ -25,13 +25,13 @@ using namespace allpix;
 DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
-    : Module(config, detector), detector_(std::move(detector)), pixels_message_(nullptr) {
-    // Bind messages
-    messenger->bindSingle(this, &DetectorHistogrammerModule::pixels_message_);
-    messenger->bindSingle(this, &DetectorHistogrammerModule::mcparticle_message_, MsgFlags::REQUIRED);
+    : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
 
-    // Seed the random generator with the global seed
-    random_generator_.seed(getRandomSeed());
+    // Bind messages
+    messenger_->bindSingle<PixelHitMessage>(this);
+    messenger_->bindSingle<MCParticleMessage>(this, MsgFlags::REQUIRED);
 
     auto model = detector_->getModel();
     matching_cut_ = config.get<ROOT::Math::XYVector>("matching_cut", model->getPixelSize() * 3);
@@ -50,35 +50,35 @@ void DetectorHistogrammerModule::init() {
     // Create histogram of hitmap
     LOG(TRACE) << "Creating histograms";
     std::string hit_map_title = "Hitmap for " + detector_->getName() + ";x (pixels);y (pixels);hits";
-    hit_map = new TH2D("hit_map",
-                       hit_map_title.c_str(),
-                       model->getNPixels().x(),
-                       -0.5,
-                       model->getNPixels().x() - 0.5,
-                       model->getNPixels().y(),
-                       -0.5,
-                       model->getNPixels().y() - 0.5);
+    hit_map = std::make_unique<ThreadedHistogram<TH2D>>("hit_map",
+                                                        hit_map_title.c_str(),
+                                                        model->getNPixels().x(),
+                                                        -0.5,
+                                                        model->getNPixels().x() - 0.5,
+                                                        model->getNPixels().y(),
+                                                        -0.5,
+                                                        model->getNPixels().y() - 0.5);
 
     std::string charge_map_title = "Charge map for " + detector_->getName() + ";x (pixels);y (pixels); charge [ke]";
-    charge_map = new TH2D("charge_map",
-                          charge_map_title.c_str(),
-                          model->getNPixels().x(),
-                          -0.5,
-                          model->getNPixels().x() - 0.5,
-                          model->getNPixels().y(),
-                          -0.5,
-                          model->getNPixels().y() - 0.5);
+    charge_map = std::make_unique<ThreadedHistogram<TH2D>>("charge_map",
+                                                           charge_map_title.c_str(),
+                                                           model->getNPixels().x(),
+                                                           -0.5,
+                                                           model->getNPixels().x() - 0.5,
+                                                           model->getNPixels().y(),
+                                                           -0.5,
+                                                           model->getNPixels().y() - 0.5);
 
     // Create histogram of cluster map
     std::string cluster_map_title = "Cluster map for " + detector_->getName() + ";x (pixels);y (pixels); clusters";
-    cluster_map = new TH2D("cluster_map",
-                           cluster_map_title.c_str(),
-                           model->getNPixels().x(),
-                           -0.5,
-                           model->getNPixels().x() - 0.5,
-                           model->getNPixels().y(),
-                           -0.5,
-                           model->getNPixels().y() - 0.5);
+    cluster_map = std::make_unique<ThreadedHistogram<TH2D>>("cluster_map",
+                                                            cluster_map_title.c_str(),
+                                                            model->getNPixels().x(),
+                                                            -0.5,
+                                                            model->getNPixels().x() - 0.5,
+                                                            model->getNPixels().y(),
+                                                            -0.5,
+                                                            model->getNPixels().y() - 0.5);
 
     // Calculate the granularity of in-pixel maps:
     auto inpixel_bins = config_.get<DisplacementVector2D<Cartesian2D<int>>>(
@@ -94,180 +94,202 @@ void DetectorHistogrammerModule::init() {
     // Create histogram of cluster map
     std::string cluster_size_map_title = "Cluster size as function of in-pixel impact position for " + detector_->getName() +
                                          ";x%pitch [#mum];y%pitch [#mum]";
-    cluster_size_map = new TProfile2D(
+    cluster_size_map = std::make_unique<ThreadedHistogram<TProfile2D>>(
         "cluster_size_map", cluster_size_map_title.c_str(), inpixel_bins.x(), 0., pitch_x, inpixel_bins.y(), 0., pitch_y);
 
     std::string cluster_size_x_map_title = "Cluster size in X as function of in-pixel impact position for " +
                                            detector_->getName() + ";x%pitch [#mum];y%pitch [#mum]";
-    cluster_size_x_map = new TProfile2D("cluster_size_x_map",
-                                        cluster_size_x_map_title.c_str(),
-                                        inpixel_bins.x(),
-                                        0.,
-                                        pitch_x,
-                                        inpixel_bins.y(),
-                                        0.,
-                                        pitch_y);
+    cluster_size_x_map = std::make_unique<ThreadedHistogram<TProfile2D>>("cluster_size_x_map",
+                                                                         cluster_size_x_map_title.c_str(),
+                                                                         inpixel_bins.x(),
+                                                                         0.,
+                                                                         pitch_x,
+                                                                         inpixel_bins.y(),
+                                                                         0.,
+                                                                         pitch_y);
 
     std::string cluster_size_y_map_title = "Cluster size in Y as function of in-pixel impact position for " +
                                            detector_->getName() + ";x%pitch [#mum];y%pitch [#mum]";
-    cluster_size_y_map = new TProfile2D("cluster_size_y_map",
-                                        cluster_size_y_map_title.c_str(),
-                                        inpixel_bins.x(),
-                                        0.,
-                                        pitch_x,
-                                        inpixel_bins.y(),
-                                        0.,
-                                        pitch_y);
+    cluster_size_y_map = std::make_unique<ThreadedHistogram<TProfile2D>>("cluster_size_y_map",
+                                                                         cluster_size_y_map_title.c_str(),
+                                                                         inpixel_bins.x(),
+                                                                         0.,
+                                                                         pitch_x,
+                                                                         inpixel_bins.y(),
+                                                                         0.,
+                                                                         pitch_y);
 
     // Charge maps:
     std::string cluster_charge_map_title = "Cluster charge as function of in-pixel impact position for " +
                                            detector_->getName() + ";x%pitch [#mum];y%pitch [#mum];<cluster charge> [ke]";
-    cluster_charge_map = new TProfile2D("cluster_charge_map",
-                                        cluster_charge_map_title.c_str(),
-                                        inpixel_bins.x(),
-                                        0.,
-                                        pitch_x,
-                                        inpixel_bins.y(),
-                                        0.,
-                                        pitch_y);
+    cluster_charge_map = std::make_unique<ThreadedHistogram<TProfile2D>>("cluster_charge_map",
+                                                                         cluster_charge_map_title.c_str(),
+                                                                         inpixel_bins.x(),
+                                                                         0.,
+                                                                         pitch_x,
+                                                                         inpixel_bins.y(),
+                                                                         0.,
+                                                                         pitch_y);
     std::string seed_charge_map_title = "Seed pixel charge as function of in-pixel impact position for " +
                                         detector_->getName() + ";x%pitch [#mum];y%pitch [#mum];<seed pixel charge> [ke]";
-    seed_charge_map = new TProfile2D(
+    seed_charge_map = std::make_unique<ThreadedHistogram<TProfile2D>>(
         "seed_charge_map", seed_charge_map_title.c_str(), inpixel_bins.x(), 0., pitch_x, inpixel_bins.y(), 0., pitch_y);
 
     // Create cluster size plots, preventing a zero-bin histogram by scaling with integer ceiling: (x + y - 1) / y
     std::string cluster_size_title = "Cluster size for " + detector_->getName() + ";cluster size [px];clusters";
-    cluster_size = new TH1D("cluster_size",
-                            cluster_size_title.c_str(),
-                            (model->getNPixels().x() * model->getNPixels().y() + 9) / 10,
-                            0.5,
-                            (model->getNPixels().x() * model->getNPixels().y() + 9) / 10 + 0.5);
+    cluster_size =
+        std::make_unique<ThreadedHistogram<TH1D>>("cluster_size",
+                                                  cluster_size_title.c_str(),
+                                                  (model->getNPixels().x() * model->getNPixels().y() + 9) / 10,
+                                                  0.5,
+                                                  (model->getNPixels().x() * model->getNPixels().y() + 9) / 10 + 0.5);
 
     std::string cluster_size_x_title = "Cluster size X for " + detector_->getName() + ";cluster size x [px];clusters";
-    cluster_size_x = new TH1D(
+    cluster_size_x = std::make_unique<ThreadedHistogram<TH1D>>(
         "cluster_size_x", cluster_size_x_title.c_str(), model->getNPixels().x(), 0.5, model->getNPixels().x() + 0.5);
 
     std::string cluster_size_y_title = "Cluster size Y for " + detector_->getName() + ";cluster size y [px];clusters";
-    cluster_size_y = new TH1D(
+    cluster_size_y = std::make_unique<ThreadedHistogram<TH1D>>(
         "cluster_size_y", cluster_size_y_title.c_str(), model->getNPixels().y(), 0.5, model->getNPixels().y() + 0.5);
 
     // Create event size plot
     std::string event_size_title = "Event size for " + detector_->getName() + ";event size [px];events";
-    event_size = new TH1D("event_size",
-                          event_size_title.c_str(),
-                          model->getNPixels().x() * model->getNPixels().y(),
-                          0.5,
-                          model->getNPixels().x() * model->getNPixels().y() + 0.5);
+    event_size = std::make_unique<ThreadedHistogram<TH1D>>("event_size",
+                                                           event_size_title.c_str(),
+                                                           model->getNPixels().x() * model->getNPixels().y(),
+                                                           0.5,
+                                                           model->getNPixels().x() * model->getNPixels().y() + 0.5);
 
     // Create residual plots
     std::string residual_x_title = "Residual in X for " + detector_->getName() + ";x_{track} - x_{cluster} [#mum];events";
-    residual_x = new TH1D("residual_x", residual_x_title.c_str(), static_cast<int>(12 * pitch_x), -2 * pitch_x, 2 * pitch_x);
+    residual_x = std::make_unique<ThreadedHistogram<TH1D>>(
+        "residual_x", residual_x_title.c_str(), static_cast<int>(12 * pitch_x), -2 * pitch_x, 2 * pitch_x);
     std::string residual_y_title = "Residual in Y for " + detector_->getName() + ";y_{track} - y_{cluster} [#mum];events";
-    residual_y = new TH1D("residual_y", residual_y_title.c_str(), static_cast<int>(12 * pitch_y), -2 * pitch_y, 2 * pitch_y);
+    residual_y = std::make_unique<ThreadedHistogram<TH1D>>(
+        "residual_y", residual_y_title.c_str(), static_cast<int>(12 * pitch_y), -2 * pitch_y, 2 * pitch_y);
 
     // Residual projections
     std::string residual_x_vs_x_title = "Mean absolute deviation of residual in X as function of in-pixel X position for " +
                                         detector_->getName() + ";x%pitch [#mum];MAD(#Deltax) [#mum]";
-    residual_x_vs_x = new TProfile("residual_x_vs_x", residual_x_vs_x_title.c_str(), inpixel_bins.x(), 0., pitch_x);
+    residual_x_vs_x = std::make_unique<ThreadedHistogram<TProfile>>(
+        "residual_x_vs_x", residual_x_vs_x_title.c_str(), inpixel_bins.x(), 0., pitch_x);
     std::string residual_y_vs_y_title = "Mean absolute deviation of residual in Y as function of in-pixel Y position for " +
                                         detector_->getName() + ";y%pitch [#mum];MAD(#Deltay) [#mum]";
-    residual_y_vs_y = new TProfile("residual_y_vs_y", residual_y_vs_y_title.c_str(), inpixel_bins.y(), 0., pitch_y);
+    residual_y_vs_y = std::make_unique<ThreadedHistogram<TProfile>>(
+        "residual_y_vs_y", residual_y_vs_y_title.c_str(), inpixel_bins.y(), 0., pitch_y);
     std::string residual_x_vs_y_title = "Mean absolute deviation of residual in X as function of in-pixel Y position for " +
                                         detector_->getName() + ";y%pitch [#mum];MAD(#Deltax) [#mum]";
-    residual_x_vs_y = new TProfile("residual_x_vs_y", residual_x_vs_y_title.c_str(), inpixel_bins.y(), 0., pitch_y);
+    residual_x_vs_y = std::make_unique<ThreadedHistogram<TProfile>>(
+        "residual_x_vs_y", residual_x_vs_y_title.c_str(), inpixel_bins.y(), 0., pitch_y);
     std::string residual_y_vs_x_title = "Mean absolute deviation of residual in Y as function of in-pixel X position for " +
                                         detector_->getName() + ";x%pitch [#mum];MAD(#Deltay) [#mum]";
-    residual_y_vs_x = new TProfile("residual_y_vs_x", residual_y_vs_x_title.c_str(), inpixel_bins.x(), 0., pitch_x);
+    residual_y_vs_x = std::make_unique<ThreadedHistogram<TProfile>>(
+        "residual_y_vs_x", residual_y_vs_x_title.c_str(), inpixel_bins.x(), 0., pitch_x);
 
     // Residual maps
     std::string residual_map_title = "Mean absolute deviation of residual as function of in-pixel impact position for " +
                                      detector_->getName() +
                                      ";x%pitch [#mum];y%pitch [#mum];MAD(#sqrt{#Deltax^{2}+#Deltay^{2}}) [#mum]";
-    residual_map = new TProfile2D(
+    residual_map = std::make_unique<ThreadedHistogram<TProfile2D>>(
         "residual_map", residual_map_title.c_str(), inpixel_bins.x(), 0., pitch_x, inpixel_bins.y(), 0., pitch_y);
     std::string residual_x_map_title =
         "Mean absolute deviation of residual in X as function of in-pixel impact position for " + detector_->getName() +
         ";x%pitch [#mum];y%pitch [#mum];MAD(#Deltax) [#mum]";
-    residual_x_map = new TProfile2D(
+    residual_x_map = std::make_unique<ThreadedHistogram<TProfile2D>>(
         "residual_x_map", residual_x_map_title.c_str(), inpixel_bins.x(), 0., pitch_x, inpixel_bins.y(), 0., pitch_y);
     std::string residual_y_map_title =
         "Mean absolute deviation of residual in Y as function of in-pixel impact position for " + detector_->getName() +
         ";x%pitch [#mum];y%pitch [#mum];MAD(#Deltay) [#mum]";
-    residual_y_map = new TProfile2D(
+    residual_y_map = std::make_unique<ThreadedHistogram<TProfile2D>>(
         "residual_y_map", residual_y_map_title.c_str(), inpixel_bins.x(), 0., pitch_x, inpixel_bins.y(), 0., pitch_y);
 
     // Efficiency maps:
     std::string efficiency_map_title = "Efficiency as function of in-pixel impact position for " + detector_->getName() +
                                        ";x%pitch [#mum];y%pitch [#mum];efficiency";
-    efficiency_map = new TProfile2D(
+    efficiency_map = std::make_unique<ThreadedHistogram<TProfile2D>>(
         "efficiency_map", efficiency_map_title.c_str(), inpixel_bins.x(), 0, pitch_x, inpixel_bins.y(), 0, pitch_y, 0, 1);
     std::string efficiency_detector_title = "Efficiency of " + detector_->getName() + ";x (pixels);y (pixels);efficiency";
-    efficiency_detector = new TProfile2D("efficiency_detector",
-                                         efficiency_detector_title.c_str(),
-                                         model->getNPixels().x(),
-                                         -0.5,
-                                         model->getNPixels().x() - 0.5,
-                                         model->getNPixels().y(),
-                                         -0.5,
-                                         model->getNPixels().y() - 0.5,
-                                         0,
-                                         1);
+    efficiency_detector = std::make_unique<ThreadedHistogram<TProfile2D>>("efficiency_detector",
+                                                                          efficiency_detector_title.c_str(),
+                                                                          model->getNPixels().x(),
+                                                                          -0.5,
+                                                                          model->getNPixels().x() - 0.5,
+                                                                          model->getNPixels().y(),
+                                                                          -0.5,
+                                                                          model->getNPixels().y() - 0.5,
+                                                                          0,
+                                                                          1);
     // Efficiency projections
     std::string efficiency_vs_x_title =
         "Efficiency as function of in-pixel X position for " + detector_->getName() + ";x%pitch [#mum];efficiency";
-    efficiency_vs_x = new TProfile("efficiency_vs_x", efficiency_vs_x_title.c_str(), inpixel_bins.x(), 0., pitch_x, 0, 1);
+    efficiency_vs_x = std::make_unique<ThreadedHistogram<TProfile>>(
+        "efficiency_vs_x", efficiency_vs_x_title.c_str(), inpixel_bins.x(), 0., pitch_x, 0, 1);
     std::string efficiency_vs_y_title =
         "Efficiency as function of in-pixel Y position for " + detector_->getName() + ";y%pitch [#mum];efficiency";
-    efficiency_vs_y = new TProfile("efficiency_vs_y", efficiency_vs_y_title.c_str(), inpixel_bins.y(), 0., pitch_y, 0, 1);
+    efficiency_vs_y = std::make_unique<ThreadedHistogram<TProfile>>(
+        "efficiency_vs_y", efficiency_vs_y_title.c_str(), inpixel_bins.y(), 0., pitch_y, 0, 1);
 
     // Create number of clusters plot
     std::string n_cluster_title = "Number of clusters for " + detector_->getName() + ";clusters;events";
-    n_cluster = new TH1D("n_cluster",
-                         n_cluster_title.c_str(),
-                         model->getNPixels().x() * model->getNPixels().y(),
-                         0.5,
-                         model->getNPixels().x() * model->getNPixels().y() + 0.5);
+    n_cluster = std::make_unique<ThreadedHistogram<TH1D>>("n_cluster",
+                                                          n_cluster_title.c_str(),
+                                                          model->getNPixels().x() * model->getNPixels().y(),
+                                                          0.5,
+                                                          model->getNPixels().x() * model->getNPixels().y() + 0.5);
 
     // Create cluster charge plot
     auto max_cluster_charge = Units::convert(config_.get<double>("max_cluster_charge", Units::get(50., "ke")), "ke");
     std::string cluster_charge_title = "Cluster charge for " + detector_->getName() + ";cluster charge [ke];clusters";
-    cluster_charge =
-        new TH1D("cluster_charge", cluster_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
+    cluster_charge = std::make_unique<ThreadedHistogram<TH1D>>(
+        "cluster_charge", cluster_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
 }
 
-void DetectorHistogrammerModule::run(unsigned int) {
+void DetectorHistogrammerModule::run(Event* event) {
     using namespace ROOT::Math;
 
+    std::shared_ptr<PixelHitMessage> pixels_message;
+    auto mcparticle_message = messenger_->fetchMessage<MCParticleMessage>(this, event);
+
     // Check that we actually received pixel hits - we might have none and just received MCParticles!
-    if(pixels_message_ != nullptr) {
-        LOG(DEBUG) << "Received " << pixels_message_->getData().size() << " pixel hits";
+    try {
+        pixels_message = messenger_->fetchMessage<PixelHitMessage>(this, event);
+    } catch(const MessageNotFoundException&) {
+        pixels_message = nullptr;
+    }
+
+    auto random_generator = event->getRandomEngine();
+    if(pixels_message != nullptr) {
+        LOG(DEBUG) << "Received " << pixels_message->getData().size() << " pixel hits";
 
         // Fill 2D hitmap histogram
-        for(auto& pixel_hit : pixels_message_->getData()) {
-            auto pixel_idx = pixel_hit.getPixel().getIndex();
+        for(auto& pixel_charge : pixels_message->getData()) {
+            auto pixel_idx = pixel_charge.getPixel().getIndex();
+            LOG(DEBUG) << " PIXEL X=" << pixel_idx.x() << " Y=" << pixel_idx.y() << " CHARGE=" << pixel_charge.getSignal();
 
             // Add pixel
             hit_map->Fill(pixel_idx.x(), pixel_idx.y());
-            charge_map->Fill(pixel_idx.x(), pixel_idx.y(), static_cast<double>(Units::convert(pixel_hit.getSignal(), "ke")));
+            charge_map->Fill(
+                pixel_idx.x(), pixel_idx.y(), static_cast<double>(Units::convert(pixel_charge.getSignal(), "ke")));
 
             // Update statistics
+            std::lock_guard<std::mutex> lock(mutex_);
             total_vector_ += pixel_idx;
             total_hits_ += 1;
         }
     }
 
     // Perform a clustering
-    std::vector<Cluster> clusters = doClustering();
+    std::vector<Cluster> clusters = doClustering(pixels_message);
 
     // Lambda for smearing the Monte Carlo truth position with the track resolution
     auto track_smearing = [&](auto residuals) {
-        double dx = std::normal_distribution<double>(0, residuals.x())(random_generator_);
-        double dy = std::normal_distribution<double>(0, residuals.y())(random_generator_);
+        double dx = std::normal_distribution<double>(0, residuals.x())(random_generator);
+        double dy = std::normal_distribution<double>(0, residuals.y())(random_generator);
         return DisplacementVector3D<Cartesian3D<double>>(dx, dy, 0);
     };
 
     // Retrieve all MC particles in this detector which are primary particles (not produced within the sensor):
-    auto primary_particles = getPrimaryParticles();
+    auto primary_particles = getPrimaryParticles(mcparticle_message);
     LOG(DEBUG) << "Found " << primary_particles.size() << " primary particles in this event";
 
     // Evaluate the clusters
@@ -378,7 +400,7 @@ void DetectorHistogrammerModule::run(unsigned int) {
     }
 
     // Fill further histograms
-    event_size->Fill(pixels_message_ != nullptr ? static_cast<double>(pixels_message_->getData().size()) : 0.);
+    event_size->Fill(pixels_message != nullptr ? static_cast<double>(pixels_message->getData().size()) : 0.);
     n_cluster->Fill(static_cast<double>(clusters.size()));
 }
 
@@ -389,121 +411,159 @@ void DetectorHistogrammerModule::finalize() {
                   << total_vector_ / static_cast<double>(total_hits_);
     }
 
+    // Merge the histograms that was possiblly filled in parallel
+    auto hit_map_histogram = hit_map->Merge();
+    auto charge_map_histogram = charge_map->Merge();
+    auto cluster_map_histogram = cluster_map->Merge();
+    auto cluster_size_map_histogram = cluster_size_map->Merge();
+    auto cluster_size_x_map_histogram = cluster_size_x_map->Merge();
+    auto cluster_size_y_map_histogram = cluster_size_y_map->Merge();
+    auto cluster_size_histogram = cluster_size->Merge();
+    auto cluster_size_x_histogram = cluster_size_x->Merge();
+    auto cluster_size_y_histogram = cluster_size_y->Merge();
+    auto event_size_histogram = event_size->Merge();
+    auto residual_x_histogram = residual_x->Merge();
+    auto residual_y_histogram = residual_y->Merge();
+    auto residual_x_vs_x_histogram = residual_x_vs_x->Merge();
+    auto residual_y_vs_y_histogram = residual_y_vs_y->Merge();
+    auto residual_x_vs_y_histogram = residual_x_vs_y->Merge();
+    auto residual_y_vs_x_histogram = residual_y_vs_x->Merge();
+    auto residual_map_histogram = residual_map->Merge();
+    auto residual_x_map_histogram = residual_x_map->Merge();
+    auto residual_y_map_histogram = residual_y_map->Merge();
+    auto efficiency_vs_x_histogram = efficiency_vs_x->Merge();
+    auto efficiency_vs_y_histogram = efficiency_vs_y->Merge();
+    auto efficiency_detector_histogram = efficiency_detector->Merge();
+    auto efficiency_map_histogram = efficiency_map->Merge();
+    auto n_cluster_histogram = n_cluster->Merge();
+    auto cluster_charge_histogram = cluster_charge->Merge();
+    auto cluster_charge_map_histogram = cluster_charge_map->Merge();
+    auto seed_charge_map_histogram = seed_charge_map->Merge();
+
     // FIXME Set more useful spacing maximum for cluster size histogram
-    auto xmax = std::ceil(cluster_size->GetBinCenter(cluster_size->FindLastBinAbove()) + 1);
-    cluster_size->GetXaxis()->SetRangeUser(0, xmax);
+    auto xmax = std::ceil(cluster_size_histogram->GetBinCenter(cluster_size_histogram->FindLastBinAbove()) + 1);
+    cluster_size_histogram->GetXaxis()->SetRangeUser(0, xmax);
     // Set cluster size axis spacing
     if(static_cast<int>(xmax) < 10) {
-        cluster_size->GetXaxis()->SetNdivisions(static_cast<int>(xmax) + 1, 0, 0, true);
+        cluster_size_histogram->GetXaxis()->SetNdivisions(static_cast<int>(xmax) + 1, 0, 0, true);
     }
 
-    xmax = std::ceil(cluster_size_x->GetBinCenter(cluster_size_x->FindLastBinAbove()) + 1);
-    cluster_size_x->GetXaxis()->SetRangeUser(0, xmax);
+    xmax = std::ceil(cluster_size_x_histogram->GetBinCenter(cluster_size_x_histogram->FindLastBinAbove()) + 1);
+    cluster_size_x_histogram->GetXaxis()->SetRangeUser(0, xmax);
     // Set cluster size_x axis spacing
     if(static_cast<int>(xmax) < 10) {
-        cluster_size_x->GetXaxis()->SetNdivisions(static_cast<int>(xmax) + 1, 0, 0, true);
+        cluster_size_x_histogram->GetXaxis()->SetNdivisions(static_cast<int>(xmax) + 1, 0, 0, true);
     }
 
-    xmax = std::ceil(cluster_size_y->GetBinCenter(cluster_size_y->FindLastBinAbove()) + 1);
-    cluster_size_y->GetXaxis()->SetRangeUser(0, xmax);
+    xmax = std::ceil(cluster_size_y_histogram->GetBinCenter(cluster_size_y_histogram->FindLastBinAbove()) + 1);
+    cluster_size_y_histogram->GetXaxis()->SetRangeUser(0, xmax);
     // Set cluster size_y axis spacing
     if(static_cast<int>(xmax) < 10) {
-        cluster_size_y->GetXaxis()->SetNdivisions(static_cast<int>(xmax) + 1, 0, 0, true);
+        cluster_size_y_histogram->GetXaxis()->SetNdivisions(static_cast<int>(xmax) + 1, 0, 0, true);
     }
 
     // FIXME Set more useful spacing maximum for event size histogram
-    xmax = std::ceil(event_size->GetBinCenter(event_size->FindLastBinAbove()) + 1);
-    event_size->GetXaxis()->SetRangeUser(0, xmax);
+    xmax = std::ceil(event_size_histogram->GetBinCenter(event_size_histogram->FindLastBinAbove()) + 1);
+    event_size_histogram->GetXaxis()->SetRangeUser(0, xmax);
     // Set event size axis spacing
     if(static_cast<int>(xmax) < 10) {
-        event_size->GetXaxis()->SetNdivisions(static_cast<int>(xmax) + 1, 0, 0, true);
+        event_size_histogram->GetXaxis()->SetNdivisions(static_cast<int>(xmax) + 1, 0, 0, true);
     }
 
     // FIXME Set more useful spacing maximum for n_cluster histogram
-    xmax = std::ceil(n_cluster->GetBinCenter(n_cluster->FindLastBinAbove()) + 1);
-    n_cluster->GetXaxis()->SetRangeUser(0, xmax);
+    xmax = std::ceil(n_cluster_histogram->GetBinCenter(n_cluster_histogram->FindLastBinAbove()) + 1);
+    n_cluster_histogram->GetXaxis()->SetRangeUser(0, xmax);
     // Set cluster size axis spacing
     if(static_cast<int>(xmax) < 10) {
-        n_cluster->GetXaxis()->SetNdivisions(static_cast<int>(xmax) + 1, 0, 0, true);
+        n_cluster_histogram->GetXaxis()->SetNdivisions(static_cast<int>(xmax) + 1, 0, 0, true);
     }
 
     // FIXME Set more useful spacing maximum for cluster_charge histogram
-    xmax = std::ceil(cluster_charge->GetBinCenter(cluster_charge->FindLastBinAbove()) + 1);
-    cluster_charge->GetXaxis()->SetRangeUser(0, xmax);
+    xmax = std::ceil(cluster_charge_histogram->GetBinCenter(cluster_charge_histogram->FindLastBinAbove()) + 1);
+    cluster_charge_histogram->GetXaxis()->SetRangeUser(0, xmax);
     // Set cluster size axis spacing
     if(static_cast<int>(xmax) < 10) {
-        cluster_charge->GetXaxis()->SetNdivisions(static_cast<int>(xmax) + 1, 0, 0, true);
+        cluster_charge_histogram->GetXaxis()->SetNdivisions(static_cast<int>(xmax) + 1, 0, 0, true);
     }
 
     // Set default drawing option histogram for hitmap
-    hit_map->SetOption("colz");
+    hit_map_histogram->SetOption("colz");
     // Set hit_map axis spacing
-    if(static_cast<int>(hit_map->GetXaxis()->GetXmax()) < 10) {
-        hit_map->GetXaxis()->SetNdivisions(static_cast<int>(hit_map->GetXaxis()->GetXmax()) + 1, 0, 0, true);
+    if(static_cast<int>(hit_map_histogram->GetXaxis()->GetXmax()) < 10) {
+        hit_map_histogram->GetXaxis()->SetNdivisions(
+            static_cast<int>(hit_map_histogram->GetXaxis()->GetXmax()) + 1, 0, 0, true);
     }
-    if(static_cast<int>(hit_map->GetYaxis()->GetXmax()) < 10) {
-        hit_map->GetYaxis()->SetNdivisions(static_cast<int>(hit_map->GetYaxis()->GetXmax()) + 1, 0, 0, true);
+    if(static_cast<int>(hit_map_histogram->GetYaxis()->GetXmax()) < 10) {
+        hit_map_histogram->GetYaxis()->SetNdivisions(
+            static_cast<int>(hit_map_histogram->GetYaxis()->GetXmax()) + 1, 0, 0, true);
     }
 
-    charge_map->SetOption("colz");
+    charge_map_histogram->SetOption("colz");
     // Set hit_map axis spacing
-    if(static_cast<int>(charge_map->GetXaxis()->GetXmax()) < 10) {
-        charge_map->GetXaxis()->SetNdivisions(static_cast<int>(charge_map->GetXaxis()->GetXmax()) + 1, 0, 0, true);
+    if(static_cast<int>(charge_map_histogram->GetXaxis()->GetXmax()) < 10) {
+        charge_map_histogram->GetXaxis()->SetNdivisions(
+            static_cast<int>(charge_map_histogram->GetXaxis()->GetXmax()) + 1, 0, 0, true);
     }
-    if(static_cast<int>(charge_map->GetYaxis()->GetXmax()) < 10) {
-        charge_map->GetYaxis()->SetNdivisions(static_cast<int>(charge_map->GetYaxis()->GetXmax()) + 1, 0, 0, true);
+    if(static_cast<int>(charge_map_histogram->GetYaxis()->GetXmax()) < 10) {
+        charge_map_histogram->GetYaxis()->SetNdivisions(
+            static_cast<int>(charge_map_histogram->GetYaxis()->GetXmax()) + 1, 0, 0, true);
     }
 
-    cluster_map->SetOption("colz");
+    cluster_map_histogram->SetOption("colz");
     // Set cluster_map axis spacing
-    if(static_cast<int>(cluster_map->GetXaxis()->GetXmax()) < 10) {
-        cluster_map->GetXaxis()->SetNdivisions(static_cast<int>(cluster_map->GetXaxis()->GetXmax()) + 1, 0, 0, true);
+    if(static_cast<int>(cluster_map_histogram->GetXaxis()->GetXmax()) < 10) {
+        cluster_map_histogram->GetXaxis()->SetNdivisions(
+            static_cast<int>(cluster_map_histogram->GetXaxis()->GetXmax()) + 1, 0, 0, true);
     }
-    if(static_cast<int>(cluster_map->GetYaxis()->GetXmax()) < 10) {
-        cluster_map->GetYaxis()->SetNdivisions(static_cast<int>(cluster_map->GetYaxis()->GetXmax()) + 1, 0, 0, true);
+    if(static_cast<int>(cluster_map_histogram->GetYaxis()->GetXmax()) < 10) {
+        cluster_map_histogram->GetYaxis()->SetNdivisions(
+            static_cast<int>(cluster_map_histogram->GetYaxis()->GetXmax()) + 1, 0, 0, true);
     }
 
     // Write histograms
     LOG(TRACE) << "Writing histograms to file";
-    hit_map->Write();
-    charge_map->Write();
-    cluster_map->Write();
-    cluster_size_map->Write();
-    cluster_size_x_map->Write();
-    cluster_size_y_map->Write();
-    cluster_size->Write();
-    cluster_size_x->Write();
-    cluster_size_y->Write();
-    event_size->Write();
-    residual_x->Write();
-    residual_y->Write();
-    residual_x_vs_x->Write();
-    residual_y_vs_y->Write();
-    residual_x_vs_y->Write();
-    residual_y_vs_x->Write();
-    residual_map->Write();
-    residual_x_map->Write();
-    residual_y_map->Write();
-    efficiency_vs_x->Write();
-    efficiency_vs_y->Write();
-    efficiency_detector->Write();
-    efficiency_map->Write();
-    n_cluster->Write();
-    cluster_charge->Write();
-    cluster_charge_map->Write();
-    seed_charge_map->Write();
+    hit_map_histogram->Write();
+    charge_map_histogram->Write();
+    cluster_map_histogram->Write();
+    cluster_size_map_histogram->Write();
+    cluster_size_x_map_histogram->Write();
+    cluster_size_y_map_histogram->Write();
+    cluster_size_histogram->Write();
+    cluster_size_x_histogram->Write();
+    cluster_size_y_histogram->Write();
+    event_size_histogram->Write();
+    residual_x_histogram->Write();
+    residual_y_histogram->Write();
+    residual_x_vs_x_histogram->Write();
+    residual_y_vs_y_histogram->Write();
+    residual_x_vs_y_histogram->Write();
+    residual_y_vs_x_histogram->Write();
+    residual_map_histogram->Write();
+    residual_x_map_histogram->Write();
+    residual_y_map_histogram->Write();
+    efficiency_vs_x_histogram->Write();
+    efficiency_vs_y_histogram->Write();
+    efficiency_detector_histogram->Write();
+    efficiency_map_histogram->Write();
+    n_cluster_histogram->Write();
+    cluster_charge_histogram->Write();
+    cluster_charge_map_histogram->Write();
+    seed_charge_map_histogram->Write();
 }
 
-std::vector<Cluster> DetectorHistogrammerModule::doClustering() {
+/**
+ * @brief Perform a sparse clustering on the PixelHits
+ */
+std::vector<Cluster> DetectorHistogrammerModule::doClustering(std::shared_ptr<PixelHitMessage>& pixels_message) {
     std::vector<Cluster> clusters;
     std::map<const PixelHit*, bool> usedPixel;
 
-    if(pixels_message_ == nullptr) {
+    if(pixels_message == nullptr) {
         return clusters;
     }
 
-    auto pixel_it = pixels_message_->getData().begin();
-    for(; pixel_it != pixels_message_->getData().end(); pixel_it++) {
+    auto pixel_it = pixels_message->getData().begin();
+    for(; pixel_it != pixels_message->getData().end(); pixel_it++) {
         const PixelHit* pixel_hit = &(*pixel_it);
 
         // Check if the pixel has been used:
@@ -531,7 +591,7 @@ std::vector<Cluster> DetectorHistogrammerModule::doClustering() {
         };
 
         // Keep adding pixels to the cluster:
-        for(auto other_pixel = pixel_it + 1; other_pixel != pixels_message_->getData().end(); other_pixel++) {
+        for(auto other_pixel = pixel_it + 1; other_pixel != pixels_message->getData().end(); other_pixel++) {
             const PixelHit* neighbor = &(*other_pixel);
 
             // Check if neighbor has been used or if it touches the current cluster:
@@ -549,11 +609,12 @@ std::vector<Cluster> DetectorHistogrammerModule::doClustering() {
     return clusters;
 }
 
-std::vector<const MCParticle*> DetectorHistogrammerModule::getPrimaryParticles() const {
+std::vector<const MCParticle*>
+DetectorHistogrammerModule::getPrimaryParticles(std::shared_ptr<MCParticleMessage>& mcparticle_message) {
     std::vector<const MCParticle*> primaries;
 
     // Loop over all MCParticles available
-    for(auto& mc_particle : mcparticle_message_->getData()) {
+    for(auto& mc_particle : mcparticle_message->getData()) {
         // Check for possible parents:
         auto parent = mc_particle.getParent();
         if(parent != nullptr) {

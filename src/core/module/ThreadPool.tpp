@@ -1,19 +1,5 @@
 namespace allpix {
-    template <typename Func, typename... Args> auto ThreadPool::submit(Module* module, Func&& func, Args&&... args) {
-        // Bind the arguments to the tasks
-        auto bound_task = std::bind(std::forward<Func>(func), std::forward<Args>(args)...);
-
-        // Construct packaged task with correct return type
-        using PackagedTask = std::packaged_task<decltype(bound_task())()>;
-        PackagedTask task(bound_task);
-
-        // Get future and wrapper to add to vector
-        auto future = task.get_future();
-        auto task_function = [task = std::move(task)]() mutable { task(); };
-        task_queues_.at(module).push(std::make_unique<std::packaged_task<void()>>(std::move(task_function)));
-        all_queue_.push(&task_queues_.at(module));
-        return future;
-    }
+    template <typename T> ThreadPool::SafeQueue<T>::SafeQueue(unsigned int max_size) : max_size_(max_size) {}
 
     template <typename T> ThreadPool::SafeQueue<T>::~SafeQueue() { invalidate(); }
 
@@ -23,7 +9,7 @@ namespace allpix {
     template <typename T> bool ThreadPool::SafeQueue<T>::pop(T& out, bool wait, const std::function<void()>& func) {
         // Lock the mutex
         std::unique_lock<std::mutex> lock{mutex_};
-        if(wait) {
+        if(queue_.empty() && wait) {
             // Wait for new item in the queue (unlocks the mutex while waiting)
             condition_.wait(lock, [this]() { return !queue_.empty() || !valid_; });
         }
@@ -38,11 +24,28 @@ namespace allpix {
         if(func != nullptr) {
             func();
         }
+
+        // Notify possible producers waiting to fill the queue
+        condition_.notify_all();
+
         return true;
     }
 
     template <typename T> void ThreadPool::SafeQueue<T>::push(T value) {
-        std::lock_guard<std::mutex> lock{mutex_};
+        std::unique_lock<std::mutex> lock{mutex_};
+
+        // Check if the queue reached its full size
+        if(queue_.size() >= max_size_) {
+            // Wait until the queue is below the max size or it was invalidated(shutdown)
+            condition_.wait(lock, [this]() { return queue_.size() < max_size_ || !valid_; });
+        }
+
+        // Abort the push operation if conditions not met
+        if(queue_.size() >= max_size_ || !valid_) {
+            return;
+        }
+
+        // Push a new element to the queue and notify consumers
         queue_.push(std::move(value));
         condition_.notify_one();
     }
@@ -55,6 +58,11 @@ namespace allpix {
     template <typename T> bool ThreadPool::SafeQueue<T>::empty() const {
         std::lock_guard<std::mutex> lock{mutex_};
         return !valid_ || queue_.empty();
+    }
+
+    template <typename T> size_t ThreadPool::SafeQueue<T>::size() const {
+        std::lock_guard<std::mutex> lock{mutex_};
+        return queue_.size();
     }
 
     /*

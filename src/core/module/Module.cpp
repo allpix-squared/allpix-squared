@@ -122,38 +122,18 @@ std::string Module::createOutputFile(const std::string& path, bool global, bool 
 }
 
 /**
- * The framework will automatically create proper values for the seeds. Those are either generated from a predefined seed if
- * results have to be reproduced or from a high-entropy source to ensure a good quality of randomness
+ * @throws InvalidModuleActionException If this method is called from the constructor or destructor
+ * @warning This should not be used in \ref run method to allow reproducing the results
  */
 uint64_t Module::getRandomSeed() {
-    if(initialized_random_generator_ == false) {
-        auto seed = config_.get<uint64_t>("_seed");
-        std::seed_seq seed_seq({seed});
-        random_generator_.seed(seed_seq);
-
-        initialized_random_generator_ = true;
+    if(random_generator_ == nullptr) {
+        throw InvalidModuleActionException("Cannot use this generator outside of \"init\" method");
     }
 
-    return random_generator_();
+    return (*random_generator_)();
 }
-
-/**
- * @throws InvalidModuleActionException If the thread pool is accessed outside the run-method
- * @warning Any multithreaded task should be carefully checked to ensure it is thread-safe
- *
- * The thread pool is only available during the run-phase of every module. If no error is thrown by thrown, the threadpool
- * should be safe to use.
- */
-ThreadPool& Module::getThreadPool() {
-    // The thread pool will only be set when the run-method is executed
-    if(thread_pool_ == nullptr) {
-        throw InvalidModuleActionException("Cannot access thread pool outside the run method");
-    }
-
-    return *thread_pool_;
-}
-void Module::set_thread_pool(std::shared_ptr<ThreadPool> thread_pool) {
-    thread_pool_ = std::move(thread_pool);
+void Module::set_random_generator(std::mt19937_64* random_generator) {
+    random_generator_ = random_generator;
 }
 
 /**
@@ -178,7 +158,7 @@ void Module::set_ROOT_directory(TDirectory* directory) {
  * @throws InvalidModuleActionException If this method is called from the constructor or destructor
  * @warning This function technically allows to write to the configurations of other modules, but this should never be done
  */
-ConfigManager* Module::getConfigManager() {
+ConfigManager* Module::getConfigManager() const {
     if(conf_manager_ == nullptr) {
         throw InvalidModuleActionException("Cannot access the config manager in constructor or destructor.");
     };
@@ -193,6 +173,9 @@ bool Module::canParallelize() {
 }
 void Module::enable_parallelization() {
     parallelize_ = true;
+}
+void Module::set_parallelize(bool parallelize) {
+    parallelize_ = parallelize;
 }
 
 Configuration& Module::get_configuration() {
@@ -209,18 +192,97 @@ ModuleIdentifier Module::get_identifier() const {
 void Module::add_delegate(Messenger* messenger, BaseDelegate* delegate) {
     delegates_.emplace_back(messenger, delegate);
 }
-void Module::reset_delegates() {
-    for(auto& delegate : delegates_) {
-        delegate.first->clearMessages();
-        delegate.second->reset();
+bool Module::check_delegates(Messenger* messenger, Event* event) {
+    // Return false if any delegate is not satisfied
+    return std::all_of(delegates_.cbegin(), delegates_.cend(), [messenger, event](auto& delegate) {
+        return !delegate.second->isRequired() || messenger->isSatisfied(delegate.second, event);
+    });
+}
+
+void BufferedModule::run_in_order(std::shared_ptr<Event> event) {
+    auto event_number = event->number;
+
+    std::lock_guard<std::mutex> lock(buffer_mutex_);
+
+    // Make sure we are waiting for the right event
+    next_event_to_write_ = get_next_event(next_event_to_write_);
+
+    // Check if the new event is in the expected order or not
+    if(next_event_to_write_ == event_number) {
+        LOG(TRACE) << "Writing Event " << event_number;
+
+        // Process the in order event
+        run(event.get());
+
+        // Advance the expected event
+        next_event_to_write_++;
+
+        // Flush any in order buffered events
+        flush_buffered_events();
+    } else {
+        LOG(TRACE) << "Buffering event " << event->number;
+
+        // Buffer out of order events to write them later
+        buffered_events_.insert(std::make_pair(event->number, event));
     }
 }
-bool Module::check_delegates() {
-    for(auto& delegate : delegates_) {
-        // Return false if any delegate is not satisfied
-        if(!delegate.second->isSatisfied()) {
-            return false;
-        }
+
+void BufferedModule::finalize_buffer() {
+    // Write any remaining buffered events
+    flush_buffered_events();
+
+    // Make sure everything was written
+    if(!buffered_events_.empty()) {
+        std::string msg = std::to_string(buffered_events_.size()) + " buffered event(s) where not written to output";
+        throw ModuleError(msg);
     }
-    return true;
+
+    // Call user finalize
+    finalize();
+}
+
+void BufferedModule::flush_buffered_events() {
+    // Sepcial random generator for events executed out of order
+    static thread_local std::mt19937_64 random_generator;
+
+    std::map<unsigned int, std::shared_ptr<Event>>::iterator iter;
+
+    next_event_to_write_ = get_next_event(next_event_to_write_);
+    while((iter = buffered_events_.find(next_event_to_write_)) != buffered_events_.end()) {
+        LOG(TRACE) << "Writing buffered event " << iter->first;
+
+        // set the buffered event RNG
+        iter->second->set_and_seed_random_engine(&random_generator);
+
+        // Process the buffered event
+        run(iter->second.get());
+
+        // Remove it from buffer
+        buffered_events_.erase(iter);
+
+        // Move to the next event
+        next_event_to_write_ = get_next_event(next_event_to_write_ + 1);
+    }
+}
+
+unsigned int BufferedModule::get_next_event(unsigned int current) {
+    std::set<unsigned int>::iterator iter;
+    auto next = current;
+
+    // Check sequentially if events were skipped
+    while((iter = skipped_events_.find(next)) != skipped_events_.end()) {
+        LOG(TRACE) << "Event skipped " << *iter;
+
+        // Remove from the skipped set because no point of checking it again
+        skipped_events_.erase(iter);
+
+        // Move on...
+        next++;
+    }
+    return next;
+}
+
+void BufferedModule::skip_event(unsigned int event) {
+    std::lock_guard<std::mutex> lock(buffer_mutex_);
+    skipped_events_.insert(event);
 }

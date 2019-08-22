@@ -29,27 +29,20 @@
 
 #include "core/utils/log.h"
 #include "tools/ROOT.h"
-#include "tools/geant4.h"
+#include "tools/geant4/geant4.h"
 
 using namespace allpix;
 
-SensitiveDetectorActionG4::SensitiveDetectorActionG4(Module* module,
-                                                     const std::shared_ptr<Detector>& detector,
-                                                     Messenger* msg,
+SensitiveDetectorActionG4::SensitiveDetectorActionG4(const std::shared_ptr<Detector>& detector,
                                                      TrackInfoManager* track_info_manager,
                                                      double charge_creation_energy,
-                                                     double fano_factor,
-                                                     uint64_t random_seed)
-    : G4VSensitiveDetector("SensitiveDetector_" + detector->getName()), module_(module), detector_(detector),
-      messenger_(msg), track_info_manager_(track_info_manager), charge_creation_energy_(charge_creation_energy),
-      fano_factor_(fano_factor) {
+                                                     double fano_factor)
+    : G4VSensitiveDetector("SensitiveDetector_" + detector->getName()), detector_(detector),
+      track_info_manager_(track_info_manager), charge_creation_energy_(charge_creation_energy), fano_factor_(fano_factor) {
 
     // Add the sensor to the internal sensitive detector manager
     G4SDManager* sd_man_g4 = G4SDManager::GetSDMpointer();
     sd_man_g4->AddNewDetector(this);
-
-    // Seed the random generator for Fano fluctuations with the seed received
-    random_generator_.seed(random_seed);
 }
 
 G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*) {
@@ -140,7 +133,7 @@ unsigned int SensitiveDetectorActionG4::getDepositedCharge() {
     return deposited_charge_;
 }
 
-void SensitiveDetectorActionG4::dispatchMessages() {
+void SensitiveDetectorActionG4::dispatchMessages(Module* module, Messenger* messenger, Event* event) {
     // Create the mc particles
     std::vector<MCParticle> mc_particles;
     for(auto& track_id_point : track_begin_) {
@@ -178,7 +171,7 @@ void SensitiveDetectorActionG4::dispatchMessages() {
 
     // Send the mc particle information
     auto mc_particle_message = std::make_shared<MCParticleMessage>(std::move(mc_particles), detector_);
-    messenger_->dispatchMessage(module_, mc_particle_message);
+    messenger->dispatchMessage(module, mc_particle_message, event);
 
     // Clear track data for the next event
     track_parents_.clear();
@@ -209,7 +202,7 @@ void SensitiveDetectorActionG4::dispatchMessages() {
         auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(deposits_), detector_);
 
         // Dispatch the message
-        messenger_->dispatchMessage(module_, deposit_message);
+        messenger->dispatchMessage(module, deposit_message, event);
     }
 
     // Clear deposits for next event

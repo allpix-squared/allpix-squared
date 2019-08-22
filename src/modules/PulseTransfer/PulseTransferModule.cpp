@@ -8,6 +8,7 @@
  */
 
 #include "PulseTransferModule.hpp"
+#include "core/module/Event.hpp"
 #include "core/utils/log.h"
 #include "objects/PixelCharge.hpp"
 
@@ -22,7 +23,7 @@ using namespace allpix;
 PulseTransferModule::PulseTransferModule(Configuration& config,
                                          Messenger* messenger,
                                          const std::shared_ptr<Detector>& detector)
-    : Module(config, detector), detector_(detector), messenger_(messenger) {
+    : Module(config, detector), messenger_(messenger), detector_(detector) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
@@ -34,7 +35,7 @@ PulseTransferModule::PulseTransferModule(Configuration& config,
     output_plots_ = config_.get<bool>("output_plots");
     output_pulsegraphs_ = config_.get<bool>("output_pulsegraphs");
 
-    messenger_->bindSingle(this, &PulseTransferModule::message_, MsgFlags::REQUIRED);
+    messenger_->bindSingle<PropagatedChargeMessage>(this, MsgFlags::REQUIRED);
 }
 
 void PulseTransferModule::init() {
@@ -47,21 +48,22 @@ void PulseTransferModule::init() {
         auto nbins = config_.get<int>("output_plots_bins");
 
         // Create histograms if needed
-        h_total_induced_charge_ =
-            new TH1D("inducedcharge", "total induced charge;induced charge [ke];events", nbins, 0, maximum);
-        h_induced_pixel_charge_ =
-            new TH1D("pixelcharge", "induced charge per pixel;induced pixel charge [ke];pixels", nbins, 0, maximum);
+        h_total_induced_charge_ = std::make_unique<ThreadedHistogram<TH1D>>(
+            "inducedcharge", "total induced charge;induced charge [ke];events", nbins, 0, maximum);
+        h_induced_pixel_charge_ = std::make_unique<ThreadedHistogram<TH1D>>(
+            "pixelcharge", "induced charge per pixel;induced pixel charge [ke];pixels", nbins, 0, maximum);
     }
 }
 
-void PulseTransferModule::run(unsigned int event_num) {
+void PulseTransferModule::run(Event* event) {
+    auto propagated_message = messenger_->fetchMessage<PropagatedChargeMessage>(this, event);
 
     // Create map for all pixels: pulse and propagated charges
     std::map<Pixel::Index, Pulse> pixel_pulse_map;
     std::map<Pixel::Index, std::vector<const PropagatedCharge*>> pixel_charge_map;
 
-    LOG(DEBUG) << "Received " << message_->getData().size() << " propagated charge objects.";
-    for(const auto& propagated_charge : message_->getData()) {
+    LOG(DEBUG) << "Received " << propagated_message->getData().size() << " propagated charge objects.";
+    for(auto& propagated_charge : propagated_message->getData()) {
         for(auto& pulse : propagated_charge.getPulses()) {
             auto pixel_index = pulse.first;
 
@@ -105,8 +107,8 @@ void PulseTransferModule::run(unsigned int event_num) {
             std::generate(time.begin(), time.end(), [n = 0.0, step]() mutable {  auto now = n; n += step; return now; });
             // clang-format on
 
-            std::string name =
-                "pulse_ev" + std::to_string(event_num) + "_px" + std::to_string(index.x()) + "-" + std::to_string(index.y());
+            std::string name = "pulse_ev" + std::to_string(event->number) + "_px" + std::to_string(index.x()) + "-" +
+                               std::to_string(index.y());
             auto pulse_graph = new TGraph(static_cast<int>(pulse_vec.size()), &time[0], &pulse_vec[0]);
             pulse_graph->GetXaxis()->SetTitle("t [ns]");
             pulse_graph->GetYaxis()->SetTitle("Q_{ind} [e]");
@@ -124,7 +126,7 @@ void PulseTransferModule::run(unsigned int event_num) {
                 charge_vec.push_back(charge);
             }
 
-            name = "charge_ev" + std::to_string(event_num) + "_px" + std::to_string(index.x()) + "-" +
+            name = "charge_ev" + std::to_string(event->number) + "_px" + std::to_string(index.x()) + "-" +
                    std::to_string(index.y());
             auto charge_graph = new TGraph(static_cast<int>(charge_vec.size()), &time[0], &charge_vec[0]);
             charge_graph->GetXaxis()->SetTitle("t [ns]");
@@ -143,7 +145,7 @@ void PulseTransferModule::run(unsigned int event_num) {
 
     // Create a new message with pixel pulses and dispatch:
     auto pixel_charge_message = std::make_shared<PixelChargeMessage>(std::move(pixel_charges), detector_);
-    messenger_->dispatchMessage(this, pixel_charge_message);
+    messenger_->dispatchMessage(this, pixel_charge_message, event);
 
     // Fill pixel charge histogram
     if(output_plots_) {

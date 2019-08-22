@@ -14,7 +14,6 @@
 #include <string>
 #include <utility>
 
-#include <G4RunManager.hh>
 #include <G4UImanager.hh>
 #include <G4UIterminal.hh>
 #include <G4Version.hh>
@@ -25,12 +24,14 @@
 #include "GeometryConstructionG4.hpp"
 
 #include "tools/ROOT.h"
-#include "tools/geant4.h"
+#include "tools/geant4/geant4.h"
 
 #include "core/config/ConfigReader.hpp"
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/utils/log.h"
+#include "tools/geant4/MTRunManager.hpp"
+#include "tools/geant4/RunManager.hpp"
 
 // Include GDML if Geant4 version has it
 #ifdef Geant4_GDML
@@ -41,7 +42,10 @@ using namespace allpix;
 using namespace ROOT;
 
 GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config, Messenger*, GeometryManager* geo_manager)
-    : Module(config), geo_manager_(geo_manager), run_manager_g4_(nullptr) {}
+    : Module(config), geo_manager_(geo_manager), run_manager_g4_(nullptr) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+}
 
 /**
  * @brief Checks if a particular Geant4 dataset is available in the environment
@@ -83,8 +87,13 @@ void GeometryBuilderGeant4Module::init() {
     SUPPRESS_STREAM(std::cout);
     SUPPRESS_STREAM(G4cout);
 
-    // Create the G4 run manager
-    run_manager_g4_ = std::make_unique<G4RunManager>();
+    // Create the G4 run manager. If multithreading was requested we use the custom run manager
+    // that support calling BeamOn operations in parallel. Otherwise we use default manager.
+    if(canParallelize()) {
+        run_manager_g4_ = std::make_unique<MTRunManager>();
+    } else {
+        run_manager_g4_ = std::make_unique<RunManager>();
+    }
 
     // Release stdout again
     RELEASE_STREAM(std::cout);

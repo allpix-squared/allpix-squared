@@ -24,7 +24,7 @@
 #include <Math/Vector3D.h>
 
 #include "tools/ROOT.h"
-#include "tools/geant4.h"
+#include "tools/geant4/geant4.h"
 
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
@@ -38,7 +38,10 @@
 
 using namespace allpix;
 
-GDMLOutputWriterModule::GDMLOutputWriterModule(Configuration& config, Messenger*, GeometryManager*) : Module(config) {}
+GDMLOutputWriterModule::GDMLOutputWriterModule(Configuration& config, Messenger*, GeometryManager*) : Module(config) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+}
 
 void GDMLOutputWriterModule::init() {
 

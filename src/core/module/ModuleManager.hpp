@@ -27,6 +27,8 @@
 
 namespace allpix {
 
+    using ModuleList = std::list<std::shared_ptr<Module>>;
+
     class ConfigManager;
     class Messenger;
     class GeometryManager;
@@ -43,6 +45,8 @@ namespace allpix {
      * - Finalizing the modules
      */
     class ModuleManager {
+        friend class Event;
+
     public:
         /**
          * @brief Construct manager
@@ -74,21 +78,22 @@ namespace allpix {
          * @param messenger Pointer to the messenger
          * @param conf_manager Pointer to the configuration manager
          * @param geo_manager Pointer to the manager holding the geometry
-         * @param seeder PRNG to generate the seeds for the module instantiations
          */
-        void load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager, std::mt19937_64& seeder);
+        void load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager);
 
         /**
          * @brief Initialize all modules before the event sequence
+         * @param seeder Reference to the seeder
          * @warning Should be called after the \ref ModuleManager::load "load function"
          */
-        void init();
+        void init(std::mt19937_64& seeder);
 
         /**
          * @brief Run all modules for the number of events
+         * @param seeder Reference to the seeder
          * @warning Should be called after the \ref ModuleManager::init "init function"
          */
-        void run();
+        void run(std::mt19937_64& seeder);
 
         /**
          * @brief Finalize all modules after the event sequence
@@ -112,8 +117,7 @@ namespace allpix {
          * @param seeder Seeder used to construct the PRNG of the modules
          * @return An unique module together with its identifier
          */
-        std::pair<ModuleIdentifier, Module*>
-        create_unique_modules(void*, Configuration&, Messenger*, GeometryManager*, std::mt19937_64& seeder);
+        std::pair<ModuleIdentifier, Module*> create_unique_modules(void*, Configuration&, Messenger*, GeometryManager*);
 
         /**
          * @brief Create detector modules
@@ -125,18 +129,17 @@ namespace allpix {
          * @return A list of all created detector modules and their identifiers
          */
         std::vector<std::pair<ModuleIdentifier, Module*>>
-        create_detector_modules(void*, Configuration&, Messenger*, GeometryManager*, std::mt19937_64& seeder);
+        create_detector_modules(void*, Configuration&, Messenger*, GeometryManager*);
 
         /**
          * @brief Set module specific log setting before running init/run/finalize
          */
-        std::tuple<LogLevel, LogFormat> set_module_before(const std::string& mod_name, const Configuration& config);
+        static std::tuple<LogLevel, LogFormat> set_module_before(const std::string& mod_name, const Configuration& config);
         /**
          * @brief Reset global log setting after running init/run/finalize
          */
-        void set_module_after(std::tuple<LogLevel, LogFormat> prev);
+        static void set_module_after(std::tuple<LogLevel, LogFormat> prev);
 
-        using ModuleList = std::list<std::unique_ptr<Module>>;
         using IdentifierToModuleMap = std::map<ModuleIdentifier, ModuleList::iterator>;
 
         ModuleList modules_;
@@ -152,6 +155,14 @@ namespace allpix {
         std::map<std::string, void*> loaded_libraries_;
 
         std::atomic<bool> terminate_;
+
+        Messenger* messenger_;
+
+        // User defined multithreading flag in configuration
+        bool multithreading_flag_{false};
+
+        // Possibility of running loaded modules in parallel
+        bool can_parallelize_{true};
     };
 } // namespace allpix
 
