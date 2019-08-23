@@ -222,6 +222,14 @@ $ docker push gitlab-registry.cern.ch/allpix-squared/\
 \end{verbatim}
 These images are created manually and only updated when necessary, i.e.\ if major new version of the underlying dependencies are available.
 
+\begin{warning}
+  The dependencies Docker images should not be flattend with commands like
+
+  \command{docker export <container id> | docker import - <tag name>}
+
+  because it strips any \parameter{ENV} variables set or used during the build process. They are used to set up the ROOT6 and Geant4 environments. When flattening, their executables and data paths cannot be found in the final \apsq image.
+\end{warning}
+
 Finally, the latest revision of \apsq is built using the file \file{etc/docker/Dockerfile}.
 This job is performed automatically by the continuous integration and the created containers are directly uploaded to the project's Docker registry.
 \begin{verbatim}
