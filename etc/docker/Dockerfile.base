@@ -12,13 +12,15 @@ RUN yum -y install \
     eigen3-devel \
     openssl-devel pcre-devel \
     fftw-devel cfitsio-devel graphviz-devel \
-    avahi-compat-libdns_sd-devel python-devel \
+    avahi-compat-libdns_sd-devel \
     libxml2-devel gsl-devel \
     libX11-devel libXpm-devel \
     libXft-devel libXext-devel \
-    python \
+    python python-devel python-pip tkinter \
     redhat-lsb-core \
-    git
+    git && \
+    pip install --upgrade pip && \
+    pip install numpy matplotlib scipy pandas
 
 ENTRYPOINT ["scl", "enable", "devtoolset-7"]
 CMD ["bash"]
