@@ -11,7 +11,7 @@ This module writes output compatible with Corryvreckan 0.7 and later.
 ### Parameters
 * `file_name` : Output filename (file extension `.root` will be appended if not present). Defaults to `corryvreckanOutput.root`
 * `geometry_file` : Name of the output geometry file in the Corryvreckan format. Defaults to `corryvreckanGeometry.conf`
-* `output_mctruth` : Flag to write out MCParticle information for each hit. Defaults to false.
+* `output_mctruth` : Flag to write out MCParticle information for each hit. Defaults to true.
 
 ### Usage
 Typical usage is:
