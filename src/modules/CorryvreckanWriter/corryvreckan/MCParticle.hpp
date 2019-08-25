@@ -5,7 +5,10 @@
 #include "Object.hpp"
 
 namespace corryvreckan {
-
+    /**
+     * @ingroup Objects
+     * @brief Monte Carlo particle from simulation
+     */
     class MCParticle : public Object {
 
     public:
@@ -19,22 +22,22 @@ namespace corryvreckan {
             : Object(detectorID, timestamp), m_particle_id(particle_id), m_local_start_point(local_start_point),
               m_local_end_point(local_end_point) {}
 
-        // Member variables
+        // Member functions
+        int getID() const { return m_particle_id; }
+        ROOT::Math::XYZPoint getLocalStart() const { return m_local_start_point; }
+        ROOT::Math::XYZPoint getLocalEnd() const { return m_local_end_point; }
+
+    private:
         int m_particle_id;
         ROOT::Math::XYZPoint m_local_start_point;
         ROOT::Math::XYZPoint m_local_end_point;
 
-        // Member functions
-        int getID() { return m_particle_id; }
-        ROOT::Math::XYZPoint getLocalStart() { return m_local_start_point; }
-        ROOT::Math::XYZPoint getLocalEnd() { return m_local_end_point; }
-
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(MCParticle, 2)
+        ClassDef(MCParticle, 3)
     };
 
     // Vector type declaration
-    using MCParticles = std::vector<MCParticle*>;
+    using MCParticleVector = std::vector<MCParticle*>;
 } // namespace corryvreckan
 
 #endif // MCPARTICLE_H
