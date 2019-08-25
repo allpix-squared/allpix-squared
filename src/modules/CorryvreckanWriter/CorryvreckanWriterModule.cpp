@@ -28,14 +28,14 @@ CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration& config, Messen
 
     config_.setDefault("file_name", "corryvreckanOutput.root");
     config_.setDefault("geometry_file", "corryvreckanGeometry.conf");
-    config_.setDefault("output_mctruth", false);
+    config_.setDefault("output_mctruth", true);
 }
 
 // Set up the output trees
 void CorryvreckanWriterModule::init() {
 
     // Check if MC data to be saved
-    outputMCtruth_ = config_.get<bool>("output_mctruth", false);
+    outputMCtruth_ = config_.get<bool>("output_mctruth");
 
     // Create output file and directories
     fileName_ = createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name"), "root"));
