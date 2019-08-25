@@ -71,6 +71,9 @@ namespace allpix {
         double time_;                        // Event time being written
         bool output_mc_truth_;               // Decision to write out MC
 
+        std::string reference_;
+        std::vector<std::string> dut_;
+
         std::unique_ptr<TTree> event_tree_;
         corryvreckan::Event* event_{};
 
