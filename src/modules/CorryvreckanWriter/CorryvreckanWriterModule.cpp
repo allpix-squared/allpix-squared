@@ -37,6 +37,17 @@ void CorryvreckanWriterModule::init() {
     // Check if MC data to be saved
     output_mc_truth_ = config_.get<bool>("output_mctruth");
 
+    reference_ = config_.get<std::string>("reference");
+    if(!geometryManager_->hasDetector(reference_)) {
+        throw InvalidValueError(config_, "reference", "detector not defined");
+    }
+    dut_ = config_.getArray<std::string>("dut");
+    for(auto& dut : dut_) {
+        if(!geometryManager_->hasDetector(dut)) {
+            throw InvalidValueError(config_, "dut", "detector not defined");
+        }
+    }
+
     // Create output file and directories
     fileName_ = createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name"), "root"));
     output_file_ = std::make_unique<TFile>(fileName_.c_str(), "RECREATE");
@@ -198,6 +209,17 @@ void CorryvreckanWriterModule::finalize() {
             geometry_file << "number_of_pixels = " << model->getNPixels().x() << ", " << model->getNPixels().y()
                           << std::endl;
 
+            std::string roles;
+            if(detector->getName() == reference_) {
+                roles += "reference";
+            }
+            if(std::find(dut_.begin(), dut_.end(), detector->getName()) != dut_.end()) {
+                if(!roles.empty()) {
+                    roles += ",";
+                }
+                roles += "dut";
+            }
+            geometry_file << "role = " << roles;
             geometry_file << std::endl;
         }
     }
