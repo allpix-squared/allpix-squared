@@ -41,7 +41,7 @@ void CorryvreckanWriterModule::init() {
     if(!geometryManager_->hasDetector(reference_)) {
         throw InvalidValueError(config_, "reference", "detector not defined");
     }
-    dut_ = config_.getArray<std::string>("dut");
+    dut_ = config_.getArray<std::string>("dut", std::vector<std::string>());
     for(auto& dut : dut_) {
         if(!geometryManager_->hasDetector(dut)) {
             throw InvalidValueError(config_, "dut", "detector not defined");
