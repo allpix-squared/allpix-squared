@@ -85,6 +85,9 @@ void CorryvreckanWriterModule::run(unsigned int event) {
         auto detector_name = message->getDetector()->getName();
         LOG(DEBUG) << "Receieved " << message->getData().size() << " pixel hits from detector " << detector_name;
 
+        // Events start with 1, pre-filling only with empty events before:
+        event--;
+
         if(write_list_px_.find(detector_name) == write_list_px_.end()) {
             write_list_px_[detector_name] = new std::vector<corryvreckan::Pixel*>();
             pixel_tree_->Bronch(detector_name.c_str(),
