@@ -79,11 +79,11 @@ void CorryvreckanWriterModule::run(unsigned int event) {
                << Units::display(event_->end(), {"ns", "um"}) << "]";
     event_tree_->Fill();
 
-    // Loop through all receieved messages
+    // Loop through all received messages
     for(auto& message : pixel_messages_) {
 
         auto detector_name = message->getDetector()->getName();
-        LOG(DEBUG) << "Receieved " << message->getData().size() << " pixel hits from detector " << detector_name;
+        LOG(DEBUG) << "Received " << message->getData().size() << " pixel hits from detector " << detector_name;
 
         // Events start with 1, pre-filling only with empty events before:
         event--;
