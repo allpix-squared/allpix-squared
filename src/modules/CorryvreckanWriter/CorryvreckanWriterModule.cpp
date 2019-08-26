@@ -148,7 +148,9 @@ void CorryvreckanWriterModule::run(unsigned int event) {
     output_file_->cd();
 
     pixel_tree_->Fill();
-    mcparticle_tree_->Fill();
+    if(output_mc_truth_) {
+        mcparticle_tree_->Fill();
+    }
 
     // Clear the current write lists
     for(auto& index_data : write_list_px_) {
