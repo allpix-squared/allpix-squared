@@ -181,7 +181,7 @@ examples:
         - source .gitlab/ci/load_deps.sh
     script:
         - cd build/
-        - ctest -R examples --output-on-failure -j4
+        - ctest -R examples --output-on-failure -V
 
 # SLC 6
 
