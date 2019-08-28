@@ -9,9 +9,9 @@ namespace corryvreckan {
 
     public:
         // Constructors and destructors
-        Event(){};
+        Event() = default;
         Event(double start, double end, std::map<uint32_t, double> trigger_list = std::map<uint32_t, double>())
-            : Object(start), end_(end), trigger_list_(trigger_list){};
+            : Object(start), end_(end), trigger_list_(std::move(trigger_list)){};
 
         double start() const { return timestamp(); };
         double end() const { return end_; };
