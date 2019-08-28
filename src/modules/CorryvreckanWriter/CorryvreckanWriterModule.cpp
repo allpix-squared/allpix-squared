@@ -50,6 +50,7 @@ void CorryvreckanWriterModule::init() {
 
     // Create output file and directories
     fileName_ = createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name"), "root"));
+    LOG(TRACE) << "Creating ouput file \"" << fileName_ << "\"";
     output_file_ = std::make_unique<TFile>(fileName_.c_str(), "RECREATE");
     output_file_->cd();
 
@@ -57,12 +58,15 @@ void CorryvreckanWriterModule::init() {
     geometryFileName_ = createOutputFile(allpix::add_file_extension(config_.get<std::string>("geometry_file"), "conf"));
 
     // Create trees:
+    LOG(TRACE) << "Booking event tree";
     event_tree_ = std::make_unique<TTree>("Event", (std::string("Tree of Events").c_str()));
     event_tree_->Bronch("global", "corryvreckan::Event", &event_);
 
+    LOG(TRACE) << "Booking pixel tree";
     pixel_tree_ = std::make_unique<TTree>("Pixel", (std::string("Tree of Pixels").c_str()));
 
     if(output_mc_truth_) {
+        LOG(TRACE) << "Booking MCParticle tree";
         mcparticle_tree_ = std::make_unique<TTree>("MCParticle", (std::string("Tree of MCParticles").c_str()));
     }
 
@@ -73,11 +77,16 @@ void CorryvreckanWriterModule::init() {
 // Make instantiations of Corryvreckan pixels, and store these in the trees during run time
 void CorryvreckanWriterModule::run(unsigned int event) {
 
+    LOG(TRACE) << "Processing event " << event;
+
     // Create and store a new Event:
     event_ = new corryvreckan::Event(time_, time_ + 5);
     LOG(DEBUG) << "Defining event for Corryvreckan: [" << Units::display(event_->start(), {"ns", "um"}) << ","
                << Units::display(event_->end(), {"ns", "um"}) << "]";
     event_tree_->Fill();
+
+    // Events start with 1, pre-filling only with empty events before:
+    event--;
 
     // Loop through all received messages
     for(auto& message : pixel_messages_) {
@@ -85,20 +94,19 @@ void CorryvreckanWriterModule::run(unsigned int event) {
         auto detector_name = message->getDetector()->getName();
         LOG(DEBUG) << "Received " << message->getData().size() << " pixel hits from detector " << detector_name;
 
-        // Events start with 1, pre-filling only with empty events before:
-        event--;
-
         if(write_list_px_.find(detector_name) == write_list_px_.end()) {
             write_list_px_[detector_name] = new std::vector<corryvreckan::Pixel*>();
             pixel_tree_->Bronch(detector_name.c_str(),
                                 std::string("std::vector<corryvreckan::Pixel*>").c_str(),
                                 &write_list_px_[detector_name]);
 
-            LOG(DEBUG) << "Pre-filling new branch " << detector_name << " of corryvreckan::Pixel with " << event
-                       << " empty events";
-            auto* branch = pixel_tree_->GetBranch(detector_name.c_str());
-            for(unsigned int i = 0; i < event; ++i) {
-                branch->Fill();
+            if(event > 0) {
+                LOG(DEBUG) << "Pre-filling new branch " << detector_name << " of corryvreckan::Pixel with " << event
+                           << " empty events";
+                auto* branch = pixel_tree_->GetBranch(detector_name.c_str());
+                for(unsigned int i = 0; i < event; ++i) {
+                    branch->Fill();
+                }
             }
         }
 
@@ -108,11 +116,14 @@ void CorryvreckanWriterModule::run(unsigned int event) {
                                      std::string("std::vector<corryvreckan::MCParticle*>").c_str(),
                                      &write_list_mcp_[detector_name]);
 
-            LOG(DEBUG) << "Pre-filling new branch " << detector_name << " of corryvreckan::MCParticle with " << event
-                       << " empty events";
-            auto* branch = mcparticle_tree_->GetBranch(detector_name.c_str());
-            for(unsigned int i = 0; i < event; ++i) {
-                branch->Fill();
+            if(event > 0) {
+
+                LOG(DEBUG) << "Pre-filling new branch " << detector_name << " of corryvreckan::MCParticle with " << event
+                           << " empty events";
+                auto* branch = mcparticle_tree_->GetBranch(detector_name.c_str());
+                for(unsigned int i = 0; i < event; ++i) {
+                    branch->Fill();
+                }
             }
         }
 
@@ -133,6 +144,7 @@ void CorryvreckanWriterModule::run(unsigned int event) {
 
             // Get all associated particles
             auto mcp = apx_pixel.getMCParticles();
+            LOG(DEBUG) << "Received " << mcp.size() << " Monte Carlo particles from pixel hit";
             for(auto& particle : mcp) {
                 auto mcParticle = new corryvreckan::MCParticle(detector_name,
                                                                particle->getParticleID(),
