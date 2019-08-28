@@ -236,7 +236,9 @@ void CorryvreckanWriterModule::finalize() {
                 }
                 roles += "dut";
             }
-            geometry_file << "role = " << roles;
+            if(!roles.empty()) {
+                geometry_file << "role = " << roles;
+            }
             geometry_file << std::endl;
         }
     }
