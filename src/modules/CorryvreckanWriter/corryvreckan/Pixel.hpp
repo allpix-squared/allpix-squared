@@ -34,7 +34,7 @@ namespace corryvreckan {
          * is available. If `raw` is not available either, it should be set to 1.
          */
         Pixel(std::string detectorID, int col, int row, int raw, double charge, double timestamp)
-            : Object(detectorID, timestamp), m_column(col), m_row(row), m_raw(raw), m_charge(charge) {}
+            : Object(std::move(detectorID), timestamp), m_column(col), m_row(row), m_raw(raw), m_charge(charge) {}
 
         // Methods to get member variables:
         /**
