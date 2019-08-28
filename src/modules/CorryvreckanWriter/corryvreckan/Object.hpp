@@ -59,10 +59,6 @@ namespace corryvreckan {
         // Methods to set member variables
         void setDetectorID(std::string detectorID) { m_detectorID = std::move(detectorID); }
 
-        // Function to get instantiation of inherited class (given a string, give back an object of type 'daughter')
-        static Object* Factory(std::string, Object* object = nullptr);
-        static Object* Factory(std::string, std::string, Object* object = nullptr);
-
         /**
          * @brief ROOT class definition
          */
