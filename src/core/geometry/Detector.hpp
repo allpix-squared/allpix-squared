@@ -2,7 +2,7 @@
  * @file
  * @brief Base of detector implementation
  *
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -106,7 +106,13 @@ namespace allpix {
          * @brief Return a pixel object from the x- and y-index values
          * @return Pixel object
          */
-        Pixel getPixel(unsigned int x, unsigned int y);
+        Pixel getPixel(unsigned int x, unsigned int y) const;
+
+        /**
+         * @brief Return a pixel object from the pixel index
+         * @return Pixel object
+         */
+        Pixel getPixel(const Pixel::Index& index) const;
 
         /**
          * @brief Returns if the detector has an electric field in the sensor
@@ -148,11 +154,51 @@ namespace allpix {
                                       FieldType type = FieldType::CUSTOM);
 
         /**
-             * @brief Set the magnetic field in the detector
-             * @param function Function used to retrieve the magnetic field
-             * @param type Type of the magnetic field function used
-     holds
-             */
+         * @brief Returns if the detector has a weighting potential in the sensor
+         * @return True if the detector has a weighting potential, false otherwise
+         */
+        bool hasWeightingPotential() const;
+        /**
+         * @brief Return the type of weighting potential that is simulated.
+         * @return The type of the weighting potential
+         */
+        FieldType getWeightingPotentialType() const;
+
+        /**
+         * @brief Get the weighting potential in the sensor at a local position
+         * @param pos Position in the local frame
+         * @param x x-coordinate of the pixel for which we want the weighting potential
+         * @param y y-coordinate of the pixel for which we want the weighting potential
+         * @return Value of the potential at the queried point
+         */
+        double getWeightingPotential(const ROOT::Math::XYZPoint& local_pos, const Pixel::Index& reference) const;
+
+        /**
+         * @brief Set the weighting potential in a single pixel in the detector using a grid
+         * @param potential Flat array of the potential vectors (see detailed description)
+         * @param sizes The dimensions of the flat weighting potential array
+         * @param thickness_domain Domain in local coordinates in the thickness direction where the potential holds
+         */
+        void setWeightingPotentialGrid(std::shared_ptr<std::vector<double>> potential,
+                                       std::array<size_t, 3> sizes,
+                                       std::array<double, 2> scales,
+                                       std::array<double, 2> offset,
+                                       std::pair<double, double> thickness_domain);
+        /**
+         * @brief Set the weighting potential in a single pixel using a function
+         * @param function Function used to retrieve the weighting potential
+         * @param type Type of the weighting potential function used
+         * @param thickness_domain Domain in local coordinates in the thickness direction where the potential holds
+         */
+        void setWeightingPotentialFunction(FieldFunction<double> function,
+                                           std::pair<double, double> thickness_domain,
+                                           FieldType type = FieldType::CUSTOM);
+
+        /**
+         * @brief Set the magnetic field in the detector
+         * @param function Function used to retrieve the magnetic field
+         * @param type Type of the magnetic field function used
+         */
         void setMagneticField(ROOT::Math::XYZVector b_field);
 
         /**
@@ -217,6 +263,9 @@ namespace allpix {
 
         // Electric field
         DetectorField<ROOT::Math::XYZVector, 3> electric_field_;
+
+        // Weighting potential
+        DetectorField<double, 1> weighting_potential_;
 
         // Magnetic field properties
         ROOT::Math::XYZVector magnetic_field_;

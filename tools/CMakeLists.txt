@@ -8,3 +8,6 @@ ADD_SUBDIRECTORY(root_analysis_macros)
 
 # Add APF filed format helper tools
 ADD_SUBDIRECTORY(apf_tools)
+
+# Add APF filed format helper tools
+ADD_SUBDIRECTORY(weightingpotential_generator)

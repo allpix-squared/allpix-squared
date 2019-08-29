@@ -153,7 +153,6 @@ int main(int argc, char** argv) {
     auto regions = config.getArray<std::string>("region", {"bulk"});
     auto observable = config.get<std::string>("observable", "ElectricField");
 
-    const auto initial_radius = config.get<double>("initial_radius", 1);
     const auto radius_step = config.get<double>("radius_step", 0.5);
     const auto max_radius = config.get<double>("max_radius", 10);
 
@@ -336,6 +335,10 @@ int main(int argc, char** argv) {
     const double zstep = (maxz - minz) / static_cast<double>(divisions.z());
     const double cell_volume = xstep * ystep * zstep;
 
+    // Using the minimal cell dimension as initial search radius for the point cloud:
+    const auto initial_radius = config.get<double>("initial_radius", std::min({xstep, ystep, zstep}));
+    LOG(INFO) << "Using initial neighbor search radius of " << initial_radius;
+
     if(rot.at(0) != "x" || rot.at(1) != "y" || rot.at(2) != "z") {
         LOG(STATUS) << "TCAD mesh (x,y,z) coords. transformation into: (" << rot.at(0) << "," << rot.at(1) << ","
                     << rot.at(2) << ")";
@@ -400,27 +403,26 @@ int main(int argc, char** argv) {
                 octree.radiusNeighbors<unibn::L2Distance<Point>>(q, radius, results);
                 LOG(DEBUG) << "Number of vertices found: " << results.size();
 
-                // Sort by lowest distance first, this drastically reduces the number of permutations required to find a
-                // valid mesh element and also ensures that this is the one with the smallest volume.
-                std::sort(results.begin(), results.end(), [&](unsigned int a, unsigned int b) {
-                    return unibn::L2Distance<Point>::compute(points[a], q) < unibn::L2Distance<Point>::compute(points[b], q);
-                });
-
                 // If after a radius step no new neighbours are found, go to the next radius step
                 if(results.size() <= prev_neighbours || results.empty()) {
                     prev_neighbours = results.size();
-                    LOG(WARNING) << "No (new) neighbour found with radius " << radius << ". Increasing search radius.";
+                    LOG(DEBUG) << "No (new) neighbour found with radius " << radius << ". Increasing search radius.";
                     radius = radius + radius_step;
                     continue;
                 }
 
                 // If we have less than N close neighbors, no full mesh element can be formed. Increase radius.
                 if(results.size() < (dimension == 3 ? 4 : 3)) {
-                    LOG(WARNING) << "Incomplete mesh element found for radius " << radius << std::endl
-                                 << "Increasing the readius (setting a higher initial radius may help)";
+                    LOG(DEBUG) << "Incomplete mesh element found for radius " << radius << ", increasing radius";
                     radius = radius + radius_step;
                     continue;
                 }
+
+                // Sort by lowest distance first, this drastically reduces the number of permutations required to find a
+                // valid mesh element and also ensures that this is the one with the smallest volume.
+                std::sort(results.begin(), results.end(), [&](unsigned int a, unsigned int b) {
+                    return unibn::L2Distance<Point>::compute(points[a], q) < unibn::L2Distance<Point>::compute(points[b], q);
+                });
 
                 // Finding tetrahedrons by checking all combinations of N elements, starting with closest to reference point
                 auto res = for_each_combination(results.begin(),
@@ -454,7 +456,15 @@ int main(int argc, char** argv) {
     std::vector<Point> e_field_new_mesh;
 
     try {
-        ThreadPool pool(num_threads, log_level);
+        // clang-format off
+        auto init_function = [log_level = allpix::Log::getReportingLevel(), log_format = allpix::Log::getFormat()]() {
+            // clang-format on
+            // Initialize the threads to the same log level and format as the master setting
+            allpix::Log::setReportingLevel(log_level);
+            allpix::Log::setFormat(log_format);
+        };
+
+        ThreadPool pool(num_threads, init_function);
         std::vector<std::future<std::vector<Point>>> mesh_futures;
         // Set starting point
         double x = minx + xstep / 2.0;
@@ -473,11 +483,11 @@ int main(int argc, char** argv) {
         for(auto& mesh_future : mesh_futures) {
             auto mesh_slice = mesh_future.get();
             e_field_new_mesh.insert(e_field_new_mesh.end(), mesh_slice.begin(), mesh_slice.end());
-            LOG_PROGRESS(INFO, "m") << "Interpolating new mesh: " << (100 * mesh_slices_done / mesh_futures.size()) << "%";
+            LOG_PROGRESS(INFO, "m") << "Interpolating new mesh: " << mesh_slices_done << " of " << mesh_futures.size()
+                                    << ", " << (100 * mesh_slices_done / mesh_futures.size()) << "%";
             mesh_slices_done++;
         }
-
-        pool.shutdown();
+        pool.destroy();
     } catch(std::runtime_error& e) {
         LOG(FATAL) << "Failed to interpolate new mesh:\n" << e.what();
         allpix::Log::finish();
