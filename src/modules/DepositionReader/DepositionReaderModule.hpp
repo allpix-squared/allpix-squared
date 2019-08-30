@@ -80,10 +80,6 @@ namespace allpix {
 
         std::string file_model_;
 
-        using DepositMap = std::map<std::shared_ptr<Detector>, std::vector<DepositedCharge>>;
-        using ParticleMap = std::map<std::shared_ptr<Detector>, std::vector<MCParticle>>;
-        using ParticleRelationMap = std::map<std::shared_ptr<Detector>, std::vector<int>>;
-
         bool read_csv(unsigned int event_num,
                       std::string& volume,
                       ROOT::Math::XYZPoint& position,

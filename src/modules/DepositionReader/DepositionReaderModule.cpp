@@ -74,10 +74,10 @@ void DepositionReaderModule::init() {
 void DepositionReaderModule::run(unsigned int event) {
 
     // Set of deposited charges in this event
-    DepositMap deposits;
-    ParticleMap mc_particles;
-    std::map<int, size_t> track_id_to_mcparticle;
-    ParticleRelationMap particles_to_deposits;
+    std::map<std::shared_ptr<Detector>, std::vector<DepositedCharge>> deposits;
+    std::map<std::shared_ptr<Detector>, std::vector<MCParticle>> mc_particles;
+    std::map<std::shared_ptr<Detector>, std::vector<int>> particles_to_deposits;
+    std::map<std::shared_ptr<Detector>, std::map<int, size_t>> track_id_to_mcparticle;
 
     LOG(DEBUG) << "Start reading event " << event;
 
@@ -128,16 +128,16 @@ void DepositionReaderModule::run(unsigned int event) {
                    << Units::display(global_deposit_position, {"mm", "um"}) << ", particleID " << pdg_code;
 
         // MCParticle:
-        if(track_id_to_mcparticle.find(track_id) == track_id_to_mcparticle.end()) {
+        if(track_id_to_mcparticle[detector].find(track_id) == track_id_to_mcparticle[detector].end()) {
             // We have not yet seen this MCParticle, let's store it and meep track of the track id
             LOG(DEBUG) << "Adding new MCParticle, track id " << track_id << ", PDG code " << pdg_code;
             mc_particles[detector].emplace_back(
                 deposit_position, global_deposit_position, deposit_position, global_deposit_position, pdg_code, time);
-            track_id_to_mcparticle[track_id] = (mc_particles[detector].size() - 1);
+            track_id_to_mcparticle[detector][track_id] = (mc_particles[detector].size() - 1);
 
             // Check if we know the parent - and set it:
-            auto parent = track_id_to_mcparticle.find(parent_id);
-            if(parent != track_id_to_mcparticle.end()) {
+            auto parent = track_id_to_mcparticle[detector].find(parent_id);
+            if(parent != track_id_to_mcparticle[detector].end()) {
                 LOG(DEBUG) << "Adding parent relation to MCParticle with track id " << parent_id;
                 mc_particles[detector].back().setParent(&mc_particles[detector].at(parent->second));
             } else {
@@ -169,8 +169,8 @@ void DepositionReaderModule::run(unsigned int event) {
         if(!deposits[detector].empty()) {
             // Assign MCParticles:
             for(size_t i = 0; i < deposits[detector].size(); ++i) {
-                deposits[detector].at(i).setMCParticle(
-                    &mc_particle_message->getData().at(track_id_to_mcparticle.at(particles_to_deposits[detector].at(i))));
+                deposits[detector].at(i).setMCParticle(&mc_particle_message->getData().at(
+                    track_id_to_mcparticle[detector].at(particles_to_deposits[detector].at(i))));
             }
 
             LOG(DEBUG) << "Detector " << detector->getName() << " has " << deposits[detector].size() << " deposits";
