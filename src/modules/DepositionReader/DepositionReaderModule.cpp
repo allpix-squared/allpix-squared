@@ -134,6 +134,15 @@ void DepositionReaderModule::run(unsigned int event) {
             mc_particles[detector].emplace_back(
                 deposit_position, global_deposit_position, deposit_position, global_deposit_position, pdg_code, time);
             track_id_to_mcparticle[track_id] = (mc_particles[detector].size() - 1);
+
+            // Check if we know the parent - and set it:
+            auto parent = track_id_to_mcparticle.find(parent_id);
+            if(parent != track_id_to_mcparticle.end()) {
+                LOG(DEBUG) << "Adding parent relation to MCParticle with track id " << parent_id;
+                mc_particles[detector].back().setParent(&mc_particles[detector].at(parent->second));
+            } else {
+                LOG(DEBUG) << "Parent MCParticle is unknown, parent id " << parent_id;
+            }
         } else {
             LOG(DEBUG) << "Found MCParticle with track id " << track_id;
         }
