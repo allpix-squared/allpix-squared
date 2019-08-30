@@ -63,7 +63,7 @@ void DepositionReaderModule::init() {
 
         tree_reader_->Next();
     } else {
-        throw InvalidValueError(config_, "model", "only model 'csv' is currently supported");
+        throw InvalidValueError(config_, "model", "only models 'root' and 'csv' are currently supported");
     }
 
     // Get the creation energy for charge (default is silicon electron hole pair energy)
