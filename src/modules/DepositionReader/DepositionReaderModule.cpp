@@ -76,6 +76,7 @@ void DepositionReaderModule::run(unsigned int event) {
     // Set of deposited charges in this event
     DepositMap deposits;
     ParticleMap mc_particles;
+    std::map<int, size_t> track_id_to_mcparticle;
     ParticleRelationMap particles_to_deposits;
 
     LOG(DEBUG) << "Start reading event " << event;
@@ -102,7 +103,7 @@ void DepositionReaderModule::run(unsigned int event) {
             return d->getName() == volume;
         });
         if(pos == detectors.end()) {
-            LOG(DEBUG) << "Ignored detector \"" << volume << "\", not found in current simulation";
+            LOG(TRACE) << "Ignored detector \"" << volume << "\", not found in current simulation";
             continue;
         }
         // Assign detector
@@ -127,19 +128,26 @@ void DepositionReaderModule::run(unsigned int event) {
                    << Units::display(global_deposit_position, {"mm", "um"}) << ", particleID " << pdg_code;
 
         // MCParticle:
-        mc_particles[detector].emplace_back(
-            deposit_position, global_deposit_position, deposit_position, global_deposit_position, pdg_code, time);
+        if(track_id_to_mcparticle.find(track_id) == track_id_to_mcparticle.end()) {
+            // We have not yet seen this MCParticle, let's store it and meep track of the track id
+            LOG(DEBUG) << "Adding new MCParticle, track id " << track_id;
+            mc_particles[detector].emplace_back(
+                deposit_position, global_deposit_position, deposit_position, global_deposit_position, pdg_code, time);
+            track_id_to_mcparticle[track_id] = (mc_particles[detector].size() - 1);
+        } else {
+            LOG(DEBUG) << "Found MCParticle with track id " << track_id;
+        }
 
         // Deposit electron
         deposits[detector].emplace_back(deposit_position, global_deposit_position, CarrierType::ELECTRON, charge, time);
-        particles_to_deposits[detector].push_back(mc_particles[detector].size() - 1);
+        particles_to_deposits[detector].push_back(track_id);
 
         // Deposit hole
         deposits[detector].emplace_back(deposit_position, global_deposit_position, CarrierType::HOLE, charge, time);
-        particles_to_deposits[detector].push_back(mc_particles[detector].size() - 1);
+        particles_to_deposits[detector].push_back(track_id);
     } while(1);
 
-    LOG(DEBUG) << "Finished reading event " << event;
+    LOG(INFO) << "Finished reading event " << event;
 
     // Loop over all known detectors and dispatch messages for them
     for(const auto& detector : geo_manager_->getDetectors()) {
@@ -153,7 +161,7 @@ void DepositionReaderModule::run(unsigned int event) {
             // Assign MCParticles:
             for(size_t i = 0; i < deposits[detector].size(); ++i) {
                 deposits[detector].at(i).setMCParticle(
-                    &mc_particle_message->getData().at(particles_to_deposits[detector].at(i)));
+                    &mc_particle_message->getData().at(track_id_to_mcparticle.at(particles_to_deposits[detector].at(i))));
             }
 
             LOG(DEBUG) << "Detector " << detector->getName() << " has " << deposits[detector].size() << " deposits";
