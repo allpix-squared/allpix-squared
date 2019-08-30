@@ -73,6 +73,8 @@ namespace allpix {
         std::shared_ptr<TTreeReaderValue<double>> pz_;
         std::shared_ptr<TTreeReaderArray<char>> volume_;
         std::shared_ptr<TTreeReaderValue<int>> pdg_code_;
+        std::shared_ptr<TTreeReaderValue<int>> track_id_;
+        std::shared_ptr<TTreeReaderValue<int>> parent_id_;
         double charge_creation_energy_;
         double fano_factor_;
 
@@ -80,20 +82,24 @@ namespace allpix {
 
         using DepositMap = std::map<std::shared_ptr<Detector>, std::vector<DepositedCharge>>;
         using ParticleMap = std::map<std::shared_ptr<Detector>, std::vector<MCParticle>>;
-        using ParticleRelationMap = std::map<std::shared_ptr<Detector>, std::vector<size_t>>;
+        using ParticleRelationMap = std::map<std::shared_ptr<Detector>, std::vector<int>>;
 
         bool read_csv(unsigned int event_num,
                       std::string& volume,
                       ROOT::Math::XYZPoint& position,
                       double& time,
                       double& energy,
-                      int& pdg_code);
+                      int& pdg_code,
+                      int& track_id,
+                      int& parent_id);
         bool read_root(unsigned int event_num,
                        std::string& volume,
                        ROOT::Math::XYZPoint& position,
                        double& time,
                        double& energy,
-                       int& pdg_code);
+                       int& pdg_code,
+                       int& track_id,
+                       int& parent_id);
 
         // Random number generator for e/h pair creation fluctuation
         std::mt19937_64 random_generator_;

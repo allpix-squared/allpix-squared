@@ -58,6 +58,9 @@ void DepositionReaderModule::init() {
         volume_ = std::make_shared<TTreeReaderArray<char>>(*tree_reader_, "detector");
         pdg_code_ = std::make_shared<TTreeReaderValue<int>>(*tree_reader_, "PDG_code");
 
+        track_id_ = std::make_shared<TTreeReaderValue<int>>(*tree_reader_, "track_id");
+        parent_id_ = std::make_shared<TTreeReaderValue<int>>(*tree_reader_, "parent_id");
+
         tree_reader_->Next();
     } else {
         throw InvalidValueError(config_, "model", "only model 'csv' is currently supported");
@@ -82,12 +85,12 @@ void DepositionReaderModule::run(unsigned int event) {
         ROOT::Math::XYZPoint global_deposit_position;
         std::string volume;
         double energy, time;
-        int pdg_code;
+        int pdg_code, track_id, parent_id;
 
         if(file_model_ == "csv") {
-            read_status = read_csv(event, volume, global_deposit_position, time, energy, pdg_code);
+            read_status = read_csv(event, volume, global_deposit_position, time, energy, pdg_code, track_id, parent_id);
         } else if(file_model_ == "root") {
-            read_status = read_root(event, volume, global_deposit_position, time, energy, pdg_code);
+            read_status = read_root(event, volume, global_deposit_position, time, energy, pdg_code, track_id, parent_id);
         }
 
         if(!read_status) {
@@ -168,7 +171,9 @@ bool DepositionReaderModule::read_root(unsigned int event_num,
                                        ROOT::Math::XYZPoint& position,
                                        double& time,
                                        double& energy,
-                                       int& pdg_code) {
+                                       int& pdg_code,
+                                       int& track_id,
+                                       int& parent_id) {
     using namespace ROOT::Math;
 
     auto status = tree_reader_->GetEntryStatus();
@@ -197,7 +202,8 @@ bool DepositionReaderModule::read_root(unsigned int event_num,
     time = Units::get(*time_->Get(), "ns");
     energy = Units::get(*edep_->Get(), "MeV");
     pdg_code = (*pdg_code_->Get());
-
+    track_id = (*track_id_->Get());
+    parent_id = (*parent_id_->Get());
     return (tree_reader_->Next());
 }
 
@@ -206,7 +212,9 @@ bool DepositionReaderModule::read_csv(unsigned int event_num,
                                       ROOT::Math::XYZPoint& position,
                                       double& time,
                                       double& energy,
-                                      int& pdg_code) {
+                                      int& pdg_code,
+                                      int&,
+                                      int&) {
 
     std::string line, tmp;
     do {
