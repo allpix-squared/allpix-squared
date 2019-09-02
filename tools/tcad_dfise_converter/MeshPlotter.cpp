@@ -124,15 +124,13 @@ int main(int argc, char** argv) {
     size_t firstindex = file_name.find_last_of('_');
     size_t lastindex = file_name.find_last_of('.');
     std::string observable = file_name.substr(firstindex + 1, lastindex - (firstindex + 1));
-    std::string extension = file_name.substr(lastindex + 1, file_name.size() - lastindex);
 
     try {
         // FIXME this should be done in a more elegant way
         FieldQuantity quantity = (observable == "ElectricField" ? FieldQuantity::VECTOR : FieldQuantity::SCALAR);
-        FileType type = (extension == "apf" ? FileType::APF : FileType::INIT);
 
         FieldParser<double> field_parser(quantity);
-        auto field_data = field_parser.get_by_file_name(file_name, type, units);
+        auto field_data = field_parser.get_by_file_name(file_name, units);
         size_t xdiv = field_data.getDimensions()[0], ydiv = field_data.getDimensions()[1],
                zdiv = field_data.getDimensions()[2];
 

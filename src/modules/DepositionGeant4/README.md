@@ -18,7 +18,10 @@ By default, the particle directions for the square are random, as would be for a
 For the sphere, unless a focus point is set, the particle directions follow the cosine-law defined by Geant4 [@g4gps] and the field inside the sphere is hence isotropic.
 
 To define more complex sources or angular distributions, the user can create a macro file with Geant4 commands.
-These commands are those defined for the GPS source and are explained in the Geant4 website [@g4gps] (only the source position and number of particles must still be defined in the main configuration file).
+These commands are those defined for the GPS source and are explained in the Geant4 website [@g4gps].
+In order to avoid collisions with internal configurations, the command `/gps/number` should be replaced by the configuration parameter `number_of_particles` in this module in order to correctly execute the Geant4 event loop.
+
+All source positions defined in the macro via the commands `/gps/position` and `/gps/pos/centre` are used to automatically extend the Geant4 world volume to always include the sources.
 
 #### Particles, Ions and Radioactive Decays
 

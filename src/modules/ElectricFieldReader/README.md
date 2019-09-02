@@ -18,14 +18,14 @@ It should be noted that `depletion_voltage` and `depletion_depth` are mutually e
 Furthermore the module can produce a plot the electric field profile on an projection axis normal to the x,y or z-axis at a particular plane in the sensor.
 
 ### Parameters
-* `model` : Type of the electric field model, either **linear**, **constant**, **init** or **apf**.
+* `model` : Type of the electric field model, either **linear**, **constant** or **mesh**.
 * `bias_voltage` : Voltage over the whole sensor thickness. Used to calculate the electric field if the *model* parameter is equal to **constant** or **linear**.
 * `depletion_voltage` : Indicates the voltage at which the sensor is fully depleted. Used to calculate the electric field if the *model* parameter is equal to **linear**.
 * `depletion_depth` : Thickness of the depleted region. Used for all electric fields. When using the depletion depth for the **linear** model, no depletion voltage can be specified.
 * `deplete_from_implants` : Indicates whether the sensor is depleted from the implants or the back side for the **linear** model. Defaults to true (depletion from the implant side).
-* `file_name` : Location of file containing the electric field in the INIT format. Only used if the *model* parameter has the value **init** or **apf**.
-* `field_scale` : Scale of the electric field in x- and y-direction. This parameter allows to use electric fields for fractions or multiple pixels. For example, an electric field calculated for a quarter pixel cell can be used by setting this parameter to `0.5 0.5` (half pitch in both directions) while a field calculated for four pixel cells in y and a single cell in x could be mapped to the pixel grid using `1 4`. Defaults to `1.0 1.0`. Only used if the *model* parameter has the value **init** or **apf**.
-* `field_offset`: Offset of the field from the pixel edge in x- and y-direction. By default, the framework assumes that the provided electric field starts at the edge of the pixel, i.e. with an offset of `0.0`. With this parameter, the field can be shifted e.g. by half a pixel pitch to accommodate for fields which have been simulated starting from the pixel center. In this case, a parameter of `0.5 0.5` should be used. Only used if the *model* parameter has the value **init** or **apf**.
+* `file_name` : Location of file containing the meshed electric field data. Only used if the *model* parameter has the value **mesh**.
+* `field_scale` : Scale of the electric field in x- and y-direction. This parameter allows to use electric fields for fractions or multiple pixels. For example, an electric field calculated for a quarter pixel cell can be used by setting this parameter to `0.5 0.5` (half pitch in both directions) while a field calculated for four pixel cells in y and a single cell in x could be mapped to the pixel grid using `1 4`. Defaults to `1.0 1.0`. Only used if the *model* parameter has the value **mesh**.
+* `field_offset`: Offset of the field from the pixel edge in x- and y-direction. By default, the framework assumes that the provided electric field starts at the edge of the pixel, i.e. with an offset of `0.0`. With this parameter, the field can be shifted e.g. by half a pixel pitch to accommodate for fields which have been simulated starting from the pixel center. In this case, a parameter of `0.5 0.5` should be used. The shift is applied in positive direction of the respective coordinate. Only used if the *model* parameter has the value **mesh**.
 * `output_plots` : Determines if output plots should be generated. Disabled by default.
 * `output_plots_steps` : Number of bins in both x- and y-direction in the 2D histogram used to plot the electric field in the detectors. Only used if `output_plots` is enabled.
 * `output_plots_project` : Axis to project the 3D electric field on to create the 2D histogram. Either **x**, **y** or **z**. Only used if `output_plots` is enabled.
@@ -33,7 +33,7 @@ Furthermore the module can produce a plot the electric field profile on an proje
 * `output_plots_single_pixel`: Determines if the whole sensor has to be plotted or only a single pixel. Defaults to true (plotting a single pixel).
 
 ### Usage
-An example to add a linear field with a bias voltage of -150 V and a full depletion voltage of -50 V to all the detectors, apart from the detector named 'dut' where a specific INIT field is added, is given below
+An example to add a linear field with a bias voltage of -150 V and a full depletion voltage of -50 V to all the detectors, apart from the detector named 'dut' where a specific meshed field from an INIT file is added, is given below
 
 ```ini
 [ElectricFieldReader]
@@ -43,7 +43,7 @@ depletion_voltage = -50V
 
 [ElectricFieldReader]
 name = "dut"
-model = "init"
+model = "mesh"
 # Should point to the example electric field in the repositories etc directory
 file_name = "example_electric_field.init"
 ```

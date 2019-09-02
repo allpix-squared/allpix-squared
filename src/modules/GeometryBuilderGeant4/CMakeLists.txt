@@ -2,7 +2,7 @@
 ALLPIX_UNIQUE_MODULE(MODULE_NAME)
 
 # Geant4 is required
-FIND_PACKAGE(Geant4 OPTIONAL_COMPONENTS)
+FIND_PACKAGE(Geant4)
 IF(NOT Geant4_FOUND)
     MESSAGE(FATAL_ERROR "Could not find Geant4, make sure to source the Geant4 environment\n"
     "$ source YOUR_GEANT4_DIR/bin/geant4.sh")
