@@ -70,4 +70,4 @@ namespace allpix {
     }
 } // namespace allpix
 
-#endif /* ALLPIX_FIELD_PARSER_H */
+#endif /* ALLPIX_ADD_UNITS_H */
