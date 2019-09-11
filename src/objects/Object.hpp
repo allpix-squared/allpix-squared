@@ -95,4 +95,4 @@ namespace allpix {
  */
 bool operator<(const TRef& ref1, const TRef& ref2);
 
-#endif
+#endif /* ALLPIX_OBJECT_H */

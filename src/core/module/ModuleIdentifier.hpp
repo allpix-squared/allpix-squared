@@ -91,4 +91,4 @@ namespace allpix {
     };
 } // namespace allpix
 
-#endif
+#endif /*ALLPIX_MODULE_IDENTIFIER_H */
