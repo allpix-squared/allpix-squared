@@ -112,4 +112,4 @@ namespace allpix {
     using PixelChargeMessage = Message<PixelCharge>;
 } // namespace allpix
 
-#endif
+#endif /* ALLPIX_PIXEL_CHARGE_H */

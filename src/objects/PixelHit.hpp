@@ -98,4 +98,4 @@ namespace allpix {
     using PixelHitMessage = Message<PixelHit>;
 } // namespace allpix
 
-#endif
+#endif /* ALLPIX_PIXEL_HIT_H */

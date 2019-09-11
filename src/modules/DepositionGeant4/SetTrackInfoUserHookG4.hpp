@@ -51,4 +51,4 @@ namespace allpix {
     };
 
 } // namespace allpix
-#endif
+#endif /* SetTrackInfoUserHookG4_H */
