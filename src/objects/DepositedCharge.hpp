@@ -78,4 +78,4 @@ namespace allpix {
     using DepositedChargeMessage = Message<DepositedCharge>;
 } // namespace allpix
 
-#endif
+#endif /* ALLPIX_DEPOSITED_CHARGE_H */
