@@ -23,7 +23,7 @@ void MTRunManager::Run(G4int allpix_event, G4int n_event) { // NOLINT
         G4AutoLock l(&worker_seed_mutex);
         // Draw the nessecary seeds so that each event will be seeded
         G4RNGHelper* helper = G4RNGHelper::GetInstance();
-        G4int idx_rndm = nSeedsPerEvent * (allpix_event - 1);
+        G4int idx_rndm = (nSeedsPerEvent * (allpix_event - 1)) % nSeedsMax;
         long s1 = helper->GetSeed(idx_rndm), s2 = helper->GetSeed(idx_rndm + 1);
         worker_run_manager_->seedsQueue.push(s1);
         worker_run_manager_->seedsQueue.push(s2);
@@ -31,7 +31,7 @@ void MTRunManager::Run(G4int allpix_event, G4int n_event) { // NOLINT
         nSeedsUsed++;
 
         if(nSeedsUsed == nSeedsFilled) {
-            // The RefillSeeds call will refill the array with 1024 new entries
+            // The RefillSeeds call will refill the array with nSeedsMax new entries
             // the number of seeds refilled = numberOfEventToBeProcessed - nSeedsFilled
             numberOfEventToBeProcessed = nSeedsFilled + nSeedsMax;
             RefillSeeds();
