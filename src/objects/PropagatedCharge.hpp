@@ -104,4 +104,4 @@ namespace allpix {
     using PropagatedChargeMessage = Message<PropagatedCharge>;
 } // namespace allpix
 
-#endif
+#endif /* ALLPIX_PROPAGATED_CHARGE_H */

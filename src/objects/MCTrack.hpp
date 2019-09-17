@@ -166,4 +166,4 @@ namespace allpix {
     using MCTrackMessage = Message<MCTrack>;
 } // namespace allpix
 
-#endif
+#endif /* ALLPIX_MC_TRACK_H */

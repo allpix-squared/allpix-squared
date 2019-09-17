@@ -89,4 +89,4 @@ namespace allpix {
     }
 } // namespace allpix
 
-#endif
+#endif /* ALLPIX_GEANT4_H */
