@@ -114,9 +114,6 @@ namespace allpix {
 
         // Mutex used for the construction of histograms
         std::mutex histogram_mutex_;
-
-        // Mutex used to modify G4cout stream properties
-        std::mutex g4cout_mutex_;
     };
 } // namespace allpix
 
