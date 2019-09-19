@@ -80,6 +80,8 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
         if(source_type == "beam") {
 
             // Set position parameters
+            UI->ApplyCommand("/gps/direction 1 0 0");
+
             single_source->GetPosDist()->SetPosDisType("Beam");
             single_source->GetPosDist()->SetBeamSigmaInR(config.get<double>("beam_size", 0));
 
@@ -93,7 +95,6 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             if(fabs(direction.mag() - 1.0) > std::numeric_limits<double>::epsilon()) {
                 LOG(WARNING) << "Momentum direction is not a unit vector: magnitude is ignored";
             }
-            UI->ApplyCommand("/gps/direction 1 0 0");
             single_source->GetAngDist()->SetParticleMomentumDirection(direction);
 
         } else if(source_type == "sphere") {
