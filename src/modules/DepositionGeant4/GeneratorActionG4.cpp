@@ -80,6 +80,8 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
         if(source_type == "beam") {
 
             // Set position parameters
+            UI->ApplyCommand("/gps/direction 1 0 0");
+
             single_source->GetPosDist()->SetPosDisType("Beam");
             single_source->GetPosDist()->SetBeamSigmaInR(config.get<double>("beam_size", 0));
 
