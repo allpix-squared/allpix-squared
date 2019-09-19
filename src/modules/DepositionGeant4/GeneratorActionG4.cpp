@@ -46,11 +46,11 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     // Get source specific parameters
     auto source_type = config.get<std::string>("source_type");
 
-    // Get the UI commander
-    G4UImanager* UI = G4UImanager::GetUIpointer();
-
     if(source_type == "macro") {
         LOG(INFO) << "Using user macro for particle source.";
+
+        // Get the UI commander
+        G4UImanager* UI = G4UImanager::GetUIpointer();
 
         // Execute the user's macro
         std::ifstream file(config.getPath("file_name", true));
