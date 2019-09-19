@@ -46,11 +46,11 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     // Get source specific parameters
     auto source_type = config.get<std::string>("source_type");
 
+    // Get the UI commander
+    G4UImanager* UI = G4UImanager::GetUIpointer();
+
     if(source_type == "macro") {
         LOG(INFO) << "Using user macro for particle source.";
-
-        // Get the UI commander
-        G4UImanager* UI = G4UImanager::GetUIpointer();
 
         // Execute the user's macro
         std::ifstream file(config.getPath("file_name", true));
@@ -93,6 +93,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             if(fabs(direction.mag() - 1.0) > std::numeric_limits<double>::epsilon()) {
                 LOG(WARNING) << "Momentum direction is not a unit vector: magnitude is ignored";
             }
+            UI->ApplyCommand("/gps/direction 1 0 0");
             single_source->GetAngDist()->SetParticleMomentumDirection(direction);
 
         } else if(source_type == "sphere") {
