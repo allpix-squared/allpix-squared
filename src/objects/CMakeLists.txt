@@ -80,3 +80,10 @@ INSTALL(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/libAllpixObjects.rootmap
     COMPONENT application
     DESTINATION lib)
+
+INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+        DESTINATION include
+        PATTERN "*.hpp"
+        PATTERN "*.h"
+        PATTERN "objects.h" EXCLUDE
+        PATTERN "Linkdef.h" EXCLUDE)
