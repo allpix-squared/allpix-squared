@@ -152,7 +152,7 @@ SET(ALLPIX_DEPS_LIBRARIES ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES} Threads:
 ADD_RUNTIME_DEP(thisroot.sh)
 
 # Include allpix cmake functions
-INCLUDE("cmake/allpix.cmake")
+INCLUDE("cmake/AllpixMacros.cmake")
 
 ###################################
 # Load cpp format and check tools #
