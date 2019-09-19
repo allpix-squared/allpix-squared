@@ -37,3 +37,10 @@ INSTALL(TARGETS AllpixCore
     COMPONENT application
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib)
+
+INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+        DESTINATION include
+        FILES_MATCHING
+        PATTERN "*.hpp"
+        PATTERN "*.h"
+        PATTERN "Allpix.hpp" EXCLUDE)
