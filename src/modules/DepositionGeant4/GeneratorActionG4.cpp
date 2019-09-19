@@ -46,11 +46,11 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     // Get source specific parameters
     auto source_type = config.get<std::string>("source_type");
 
+    // Get the UI commander
+    G4UImanager* UI = G4UImanager::GetUIpointer();
+
     if(source_type == "macro") {
         LOG(INFO) << "Using user macro for particle source.";
-
-        // Get the UI commander
-        G4UImanager* UI = G4UImanager::GetUIpointer();
 
         // Execute the user's macro
         std::ifstream file(config.getPath("file_name", true));
@@ -80,13 +80,14 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
         if(source_type == "beam") {
 
             // Set position parameters
-            UI->ApplyCommand("/gps/direction 1 0 0");
 
             single_source->GetPosDist()->SetPosDisType("Beam");
             single_source->GetPosDist()->SetBeamSigmaInR(config.get<double>("beam_size", 0));
 
             // Set angle distribution parameters
             single_source->GetAngDist()->SetAngDistType("beam2d");
+            UI->ApplyCommand("/gps/direction 1 0 0");
+
             single_source->GetAngDist()->DefineAngRefAxes("angref1", G4ThreeVector(-1., 0, 0));
             G4TwoVector divergence = config.get<G4TwoVector>("beam_divergence", G4TwoVector(0., 0.));
             single_source->GetAngDist()->SetBeamSigmaInAngX(divergence.x());
