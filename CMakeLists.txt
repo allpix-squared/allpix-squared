@@ -238,10 +238,11 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/setup.cmake.sh" "${CMAKE_CURRE
 
 INCLUDE(CMakePackageConfigHelpers)
 SET(ALLPIX_INCLUDE_DIR "include")
+SET(ALLPIX_LIBRARY_DIR "lib")
 CONFIGURE_PACKAGE_CONFIG_FILE(${CMAKE_CURRENT_SOURCE_DIR}/cmake/AllpixConfig.cmake.in
                               ${CMAKE_CURRENT_BINARY_DIR}/AllpixConfig.cmake
                               INSTALL_DESTINATION cmake
-                              PATH_VARS ALLPIX_INCLUDE_DIR)
+                              PATH_VARS ALLPIX_INCLUDE_DIR ALLPIX_LIBRARY_DIR)
 
 WRITE_BASIC_PACKAGE_VERSION_FILE(AllpixConfigVersion.cmake
                                  VERSION ${PROJECT_VERSION}
