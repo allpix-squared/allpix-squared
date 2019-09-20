@@ -10,8 +10,9 @@
 #ifndef ALLPIX_MT_RUN_MANAGER_H
 #define ALLPIX_MT_RUN_MANAGER_H
 
-#include <G4MTRunManager.hh>
 #include <unordered_map>
+
+#include <G4MTRunManager.hh>
 
 namespace allpix {
 
