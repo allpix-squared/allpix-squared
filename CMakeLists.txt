@@ -239,9 +239,10 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/setup.cmake.sh" "${CMAKE_CURRE
 INCLUDE(CMakePackageConfigHelpers)
 SET(ALLPIX_INCLUDE_DIR "include")
 SET(ALLPIX_LIBRARY_DIR "lib")
+SET(ALLPIX_CMAKE_DIR "share/cmake")
 CONFIGURE_PACKAGE_CONFIG_FILE(${CMAKE_CURRENT_SOURCE_DIR}/cmake/AllpixConfig.cmake.in
                               ${CMAKE_CURRENT_BINARY_DIR}/AllpixConfig.cmake
-                              INSTALL_DESTINATION cmake
+                              INSTALL_DESTINATION ${ALLPIX_CMAKE_DIR}
                               PATH_VARS ALLPIX_INCLUDE_DIR ALLPIX_LIBRARY_DIR)
 
 WRITE_BASIC_PACKAGE_VERSION_FILE(AllpixConfigVersion.cmake
@@ -251,7 +252,7 @@ INSTALL(FILES
     ${PROJECT_BINARY_DIR}/AllpixConfig.cmake
     ${PROJECT_BINARY_DIR}/AllpixConfigVersion.cmake
     ${PROJECT_SOURCE_DIR}/cmake/AllpixMacros.cmake
-    DESTINATION cmake)
+    DESTINATION ${ALLPIX_CMAKE_DIR})
 
 INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/tools"
         DESTINATION include
@@ -260,4 +261,4 @@ INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/tools"
 INSTALL(EXPORT Allpix
     NAMESPACE Allpix::
     FILE AllpixConfigTargets.cmake
-    DESTINATION cmake)
+    DESTINATION ${ALLPIX_CMAKE_DIR})
