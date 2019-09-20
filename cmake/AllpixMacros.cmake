@@ -55,11 +55,18 @@ Create the header or provide the alternative class name as first argument")
 
     # Set the special header flags and add the special dynamic implementation file
     TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE ALLPIX_MODULE_NAME=${_allpix_module_class})
-    TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE ALLPIX_MODULE_HEADER="${_allpix_module_class}.hpp")
+    TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE ALLPIX_MODULE_HEADER=${_allpix_module_class}.hpp)
 
-    TARGET_SOURCES(${${name}} PRIVATE "${PROJECT_SOURCE_DIR}/src/core/module/dynamic_module_impl.cpp")
-    SET_PROPERTY(SOURCE "${PROJECT_SOURCE_DIR}/src/core/module/dynamic_module_impl.cpp" APPEND PROPERTY OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${_allpix_module_class}.hpp")
-    SET_PROPERTY(SOURCE "${PROJECT_SOURCE_DIR}/src/core/module/Module.cpp" APPEND PROPERTY OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${_allpix_module_class}.hpp")
+    # If modules are build externally, the path to the dynamic implementation changes and we need to link differently:
+    IF(${ALLPIX_MODULE_EXTERNAL})
+        TARGET_SOURCES(${${name}} PRIVATE "${ALLPIX_INCLUDE_DIR}/core/module/dynamic_module_impl.cpp")
+        SET_PROPERTY(SOURCE "${ALLPIX_INCLUDE_DIR}/dynamic_module_impl.cpp" APPEND PROPERTY OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${_allpix_module_class}.hpp")
+        TARGET_LINK_LIBRARIES(${${name}} PRIVATE Allpix::AllpixCore Allpix::AllpixObjects)
+    ELSE()
+        TARGET_SOURCES(${${name}} PRIVATE "${PROJECT_SOURCE_DIR}/src/core/module/dynamic_module_impl.cpp")
+        SET_PROPERTY(SOURCE "${PROJECT_SOURCE_DIR}/src/core/module/dynamic_module_impl.cpp" APPEND PROPERTY OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${_allpix_module_class}.hpp")
+        SET_PROPERTY(SOURCE "${PROJECT_SOURCE_DIR}/src/core/module/Module.cpp" APPEND PROPERTY OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${_allpix_module_class}.hpp")
+    ENDIF()
 ENDMACRO()
 
 # Put this at the start of every unique module
