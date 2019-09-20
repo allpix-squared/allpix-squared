@@ -76,7 +76,7 @@ ALLPIX_MODULE_SOURCES(${MODULE_NAME}
     CorryvreckanWriterModule.cpp
 )
 
-TARGET_LINK_LIBRARIES(${MODULE_NAME} CorryvreckanObjects)
+TARGET_LINK_LIBRARIES(${MODULE_NAME} CorryvreckanObjects ROOT::Tree)
 
 # Provide standard install target
 ALLPIX_MODULE_INSTALL(${MODULE_NAME})
