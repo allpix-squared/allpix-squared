@@ -61,7 +61,6 @@ Create the header or provide the alternative class name as first argument")
     IF(${ALLPIX_MODULE_EXTERNAL})
         TARGET_SOURCES(${${name}} PRIVATE "${ALLPIX_INCLUDE_DIR}/core/module/dynamic_module_impl.cpp")
         SET_PROPERTY(SOURCE "${ALLPIX_INCLUDE_DIR}/dynamic_module_impl.cpp" APPEND PROPERTY OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${_allpix_module_class}.hpp")
-        TARGET_LINK_LIBRARIES(${${name}} PRIVATE Allpix::AllpixCore Allpix::AllpixObjects)
     ELSE()
         TARGET_SOURCES(${${name}} PRIVATE "${PROJECT_SOURCE_DIR}/src/core/module/dynamic_module_impl.cpp")
         SET_PROPERTY(SOURCE "${PROJECT_SOURCE_DIR}/src/core/module/dynamic_module_impl.cpp" APPEND PROPERTY OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${_allpix_module_class}.hpp")
@@ -97,8 +96,12 @@ MACRO(allpix_module_sources name)
     # Add the library
     TARGET_SOURCES(${name} PRIVATE ${_list_var})
 
-    # Link the standard allpix libraries
-    TARGET_LINK_LIBRARIES(${name} ${ALLPIX_LIBRARIES} ${ALLPIX_DEPS_LIBRARIES})
+    # Link the standard allpix libraries, either directly or via targets
+    IF(${ALLPIX_MODULE_EXTERNAL})
+        TARGET_LINK_LIBRARIES(${name} Allpix::AllpixCore Allpix::AllpixObjects)
+    ELSE()
+        TARGET_LINK_LIBRARIES(${name} ${ALLPIX_LIBRARIES} ${ALLPIX_DEPS_LIBRARIES})
+    ENDIF()
 ENDMACRO()
 
 # Provide default install target for the module
