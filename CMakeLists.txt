@@ -38,11 +38,6 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake.h" "${CMAKE_CURRE
 INCLUDE(cmake/CPackConfig.cmake)
 INCLUDE(CPack)
 
-# If available, use CMake's link-what-you-use feature
-IF(${CMAKE_VERSION} VERSION_GREATER "3.6.3" AND NOT CMAKE_LINK_WHAT_YOU_USE)
-  SET(CMAKE_LINK_WHAT_YOU_USE TRUE CACHE STRING "Choose whether to only link libraries which contain symbols actually used by the target." FORCE)
-ENDIF()
-
 ###############################################
 # Setup the environment for the documentation #
 ###############################################
@@ -85,6 +80,11 @@ LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib"
 IF("${IsSystemDir}" STREQUAL "-1")
    SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 ENDIF("${IsSystemDir}" STREQUAL "-1")
+
+# If available, use CMake's link-what-you-use feature, not on APPLE
+IF(${CMAKE_VERSION} VERSION_GREATER "3.6.3" AND NOT APPLE AND NOT CMAKE_LINK_WHAT_YOU_USE)
+  SET(CMAKE_LINK_WHAT_YOU_USE TRUE CACHE STRING "Choose whether to only link libraries which contain symbols actually used by the target." FORCE)
+ENDIF()
 
 # Include allpix cmake functions
 INCLUDE("cmake/AllpixMacros.cmake")
