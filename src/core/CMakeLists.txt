@@ -45,4 +45,6 @@ INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
         FILES_MATCHING
         PATTERN "*.hpp"
         PATTERN "*.h"
+        PATTERN "*.tpp"
+        PATTERN "dynamic_module_impl.cpp"
         PATTERN "Allpix.hpp" EXCLUDE)
