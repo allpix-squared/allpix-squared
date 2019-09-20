@@ -178,8 +178,8 @@ void PassiveMaterialConstructionG4::build(G4LogicalVolume* world_log, std::map<s
                               "' is larget than its outer diameter! Can't construct the tube");
         }
 
-        auto tube_outer_volume = new G4Box(
-            name + "_outer_volume", tube_outer_diameter.x() / 2, tube_outer_diameter.y() / 2, tube_length / 2);
+        auto tube_outer_volume =
+            new G4Box(name + "_outer_volume", tube_outer_diameter.x() / 2, tube_outer_diameter.y() / 2, tube_length / 2);
 
         auto tube_inner_volume = new G4Box(
             name + "_inner_volume", tube_inner_diameter.x() / 2, tube_inner_diameter.y() / 2, 1.1 * tube_length / 2);
