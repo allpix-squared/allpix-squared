@@ -65,6 +65,9 @@ Create the header or provide the alternative class name as first argument")
         TARGET_SOURCES(${${name}} PRIVATE "${PROJECT_SOURCE_DIR}/src/core/module/dynamic_module_impl.cpp")
         SET_PROPERTY(SOURCE "${PROJECT_SOURCE_DIR}/src/core/module/dynamic_module_impl.cpp" APPEND PROPERTY OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${_allpix_module_class}.hpp")
         SET_PROPERTY(SOURCE "${PROJECT_SOURCE_DIR}/src/core/module/Module.cpp" APPEND PROPERTY OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${_allpix_module_class}.hpp")
+
+        # Add to the interface library for devices:
+        TARGET_LINK_LIBRARIES(Modules INTERFACE ${${name}})
     ENDIF()
 ENDMACRO()
 
@@ -108,6 +111,7 @@ ENDMACRO()
 MACRO(allpix_module_install name)
     INSTALL(TARGETS ${name}
         COMPONENT modules
+        EXPORT Allpix
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
