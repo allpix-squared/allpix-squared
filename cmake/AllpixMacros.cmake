@@ -55,7 +55,7 @@ Create the header or provide the alternative class name as first argument")
 
     # Set the special header flags and add the special dynamic implementation file
     TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE ALLPIX_MODULE_NAME=${_allpix_module_class})
-    TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE ALLPIX_MODULE_HEADER=${_allpix_module_class}.hpp)
+    TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE ALLPIX_MODULE_HEADER="${_allpix_module_class}.hpp")
 
     # If modules are build externally, the path to the dynamic implementation changes and we need to link differently:
     IF(${ALLPIX_MODULE_EXTERNAL})
