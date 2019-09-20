@@ -81,4 +81,4 @@ namespace allpix {
 
 } // namespace allpix
 
-#endif
+#endif /* ALLPIX_PIXEL_H */

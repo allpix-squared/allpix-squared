@@ -76,4 +76,4 @@ namespace allpix {
 
 } // namespace allpix
 
-#endif
+#endif /* ALLPIX_PULSE_H */

@@ -116,4 +116,4 @@ namespace allpix {
         std::map<int, size_t> id_to_track_;
     };
 } // namespace allpix
-#endif
+#endif /* TrackInfoManager_H */
