@@ -120,7 +120,7 @@ FIND_PACKAGE(Threads REQUIRED)
 SET(ALLPIX_LIBRARIES "")
 
 # ROOT is required for vector and persistency etc
-FIND_PACKAGE(ROOT REQUIRED COMPONENTS Geom GenVector)
+FIND_PACKAGE(ROOT REQUIRED COMPONENTS Geom Core GenVector Hist RIO)
 IF(NOT ROOT_FOUND)
     MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
     "$ source YOUR_ROOT_DIR/bin/thisroot.sh")
