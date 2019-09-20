@@ -222,3 +222,33 @@ FOREACH(dep ${ALLPIX_RUNTIME_LIBS})
 ENDFOREACH()
 # Create setup file
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/setup.cmake.sh" "${CMAKE_CURRENT_BINARY_DIR}/setup/setup.sh" @ONLY)
+
+
+#######################################
+# Generate CMake Configuration Module #
+#######################################
+
+INCLUDE(CMakePackageConfigHelpers)
+SET(ALLPIX_INCLUDE_DIR "include")
+CONFIGURE_PACKAGE_CONFIG_FILE(${CMAKE_CURRENT_SOURCE_DIR}/cmake/AllpixConfig.cmake.in
+                              ${CMAKE_CURRENT_BINARY_DIR}/AllpixConfig.cmake
+                              INSTALL_DESTINATION cmake
+                              PATH_VARS ALLPIX_INCLUDE_DIR)
+
+WRITE_BASIC_PACKAGE_VERSION_FILE(AllpixConfigVersion.cmake
+                                 VERSION ${PROJECT_VERSION}
+                                 COMPATIBILITY AnyNewerVersion)
+INSTALL(FILES
+    ${PROJECT_BINARY_DIR}/AllpixConfig.cmake
+    ${PROJECT_BINARY_DIR}/AllpixConfigVersion.cmake
+    ${PROJECT_SOURCE_DIR}/cmake/AllpixMacros.cmake
+    DESTINATION cmake)
+
+INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/tools"
+        DESTINATION include
+        PATTERN "*.h")
+
+INSTALL(EXPORT Allpix
+    NAMESPACE Allpix::
+    FILE AllpixConfigTargets.cmake
+    DESTINATION cmake)
