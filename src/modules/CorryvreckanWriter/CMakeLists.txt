@@ -61,6 +61,7 @@ TARGET_LINK_LIBRARIES(CorryvreckanObjects ${ALLPIX_DEPS_LIBRARIES})
 # Specify install for the messages
 INSTALL(TARGETS CorryvreckanObjects
     COMPONENT modules
+    EXPORT Allpix
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib)
 
