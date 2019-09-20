@@ -86,6 +86,9 @@ IF("${IsSystemDir}" STREQUAL "-1")
    SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 ENDIF("${IsSystemDir}" STREQUAL "-1")
 
+# Include allpix cmake functions
+INCLUDE("cmake/AllpixMacros.cmake")
+
 ###################################
 # Define build flags for allpix   #
 ###################################
@@ -141,15 +144,15 @@ IF (NOT ${ROOT_VERSION} VERSION_GREATER "6.0")
     MESSAGE(FATAL_ERROR "ROOT versions below 6.0 are not supported")
 ENDIF()
 
+# Prepare ROOT Targets if necessary:
+ALLPIX_SETUP_ROOT_TARGETS()
+
 # Set the dependencies
 SET(ALLPIX_DEPS_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS})
 SET(ALLPIX_DEPS_LIBRARIES Threads::Threads ROOT::Core ROOT::GenVector ROOT::Geom ROOT::RIO ROOT::Hist)
 
 # Add "thisroot.sh" as runtime dependency for setup.sh file:
 ADD_RUNTIME_DEP(thisroot.sh)
-
-# Include allpix cmake functions
-INCLUDE("cmake/AllpixMacros.cmake")
 
 ###################################
 # Load cpp format and check tools #
