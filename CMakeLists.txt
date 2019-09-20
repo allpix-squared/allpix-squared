@@ -38,6 +38,11 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake.h" "${CMAKE_CURRE
 INCLUDE(cmake/CPackConfig.cmake)
 INCLUDE(CPack)
 
+# If available, use CMake's link-what-you-use feature
+IF(${CMAKE_VERSION} VERSION_GREATER "3.6.3" AND NOT CMAKE_LINK_WHAT_YOU_USE)
+  SET(CMAKE_LINK_WHAT_YOU_USE TRUE CACHE STRING "Choose whether to only link libraries which contain symbols actually used by the target." FORCE)
+ENDIF()
+
 ###############################################
 # Setup the environment for the documentation #
 ###############################################
