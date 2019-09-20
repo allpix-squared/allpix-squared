@@ -18,24 +18,41 @@ namespace {
 
 G4ThreadLocal WorkerRunManager* MTRunManager::worker_run_manager_ = nullptr;
 
+void MTRunManager::FillWorkerSeedsMap(G4int n_event) { // NOLINT
+    // Fill the auxilary array with new random numbers drawn from the main engine
+    auto engine = G4Random::getTheEngine();
+    engine->flatArray(nSeedsPerEvent * n_event, randDbl);
+
+    // Fill the mapping between event number and pair of seeds to be used
+    for(G4int i = 0, event_number = nSeedsFilled + 1; i < nSeedsPerEvent * n_event; i += 2, event_number++) {
+        // Convert floating points to long
+        auto pairs =
+            std::make_pair(static_cast<long>(100000000L * randDbl[i]), static_cast<long>(100000000L * randDbl[i + 1]));
+        workers_seeds_.insert(std::make_pair(event_number, pairs));
+    }
+
+    // Update the number of filled seeds so far
+    nSeedsFilled += n_event;
+}
+
 void MTRunManager::Run(G4int allpix_event, G4int n_event) { // NOLINT
     {
         G4AutoLock l(&worker_seed_mutex);
+
         // Draw the nessecary seeds so that each event will be seeded
-        G4RNGHelper* helper = G4RNGHelper::GetInstance();
-        G4int idx_rndm = (nSeedsPerEvent * (allpix_event - 1)) % nSeedsMax;
-        long s1 = helper->GetSeed(idx_rndm), s2 = helper->GetSeed(idx_rndm + 1);
-        worker_run_manager_->seedsQueue.push(s1);
-        worker_run_manager_->seedsQueue.push(s2);
+        auto itr = workers_seeds_.find(allpix_event);
+        if(itr == workers_seeds_.end()) {
+            // We need to fill more seeds
+            FillWorkerSeedsMap(nSeedsMax);
+            itr = workers_seeds_.find(allpix_event);
+        }
+
+        auto seeds = itr->second;
+        worker_run_manager_->seedsQueue.push(seeds.first);
+        worker_run_manager_->seedsQueue.push(seeds.second);
+        workers_seeds_.erase(itr);
 
         nSeedsUsed++;
-
-        if(nSeedsUsed == nSeedsFilled) {
-            // The RefillSeeds call will refill the array with nSeedsMax new entries
-            // the number of seeds refilled = numberOfEventToBeProcessed - nSeedsFilled
-            numberOfEventToBeProcessed = nSeedsFilled + nSeedsMax;
-            RefillSeeds();
-        }
 
         // for book keeping
         numberOfEventProcessed += n_event;
@@ -77,4 +94,9 @@ void MTRunManager::TerminateForThread() { // NOLINT
         delete worker_run_manager_;
         worker_run_manager_ = nullptr;
     }
+}
+
+G4bool MTRunManager::InitializeSeeds(G4int nevts) { // NOLINT
+    FillWorkerSeedsMap(nevts);
+    return true;
 }
