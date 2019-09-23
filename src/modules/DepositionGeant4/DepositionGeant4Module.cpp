@@ -282,7 +282,6 @@ void DepositionGeant4Module::run(Event* event) {
     // Suppress output stream if not in debugging mode
     IFLOG(DEBUG);
     else {
-        std::lock_guard<std::mutex> lock(g4cout_mutex_);
         SUPPRESS_STREAM(G4cout);
     }
 
@@ -303,11 +302,7 @@ void DepositionGeant4Module::run(Event* event) {
     unsigned int last_event_num = last_event_num_.load();
     last_event_num_.compare_exchange_strong(last_event_num, event->number);
 
-    {
-        // Release the stream (if it was suspended)
-        std::lock_guard<std::mutex> lock(g4cout_mutex_);
-        RELEASE_STREAM(G4cout);
-    }
+    RELEASE_STREAM(G4cout);
 
     track_info_manager_->createMCTracks();
 
