@@ -22,8 +22,9 @@ ENDIF()
 # Generate the ROOT dictionary
 ROOT_GENERATE_DICTIONARY(CorryvreckanObjectsDictionary
     ${CMAKE_CURRENT_SOURCE_DIR}/corryvreckan/Object.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/corryvreckan/Pixel.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/corryvreckan/MCParticle.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/corryvreckan/Pixel.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/corryvreckan/MCParticle.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/corryvreckan/Event.hpp
     LINKDEF
     ${CMAKE_CURRENT_SOURCE_DIR}/corryvreckan/Linkdef.h
     OPTIONS
@@ -49,6 +50,8 @@ ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDiction
 # Define the library adding the object file created above
 ADD_LIBRARY(CorryvreckanObjects SHARED
     corryvreckan/Object.cpp
+    corryvreckan/Pixel.cpp
+    corryvreckan/Event.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDictionary.cxx.o
 )
 

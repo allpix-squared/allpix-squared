@@ -67,7 +67,12 @@ namespace allpix {
          * @return List of all related Monte-Carlo particles
          */
         std::vector<const MCParticle*> getMCParticles() const;
-
+        /**
+         * @brief Get all primary Monte-Carlo particles resulting in this pixel hit. A particle is considered primary if it
+         * has no parent particle set.
+         * @return List of all related primary Monte-Carlo particles
+         */
+        std::vector<const MCParticle*> getPrimaryMCParticles() const;
         /**
          * @brief Print an ASCII representation of PixelHit to the given stream
          * @param out Stream to print to
