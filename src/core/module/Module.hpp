@@ -260,13 +260,9 @@ namespace allpix {
         friend class Messenger;
 
     public:
-        explicit BufferedModule(Configuration& config) : Module(config) {
-            std::cout << "next_event_to_write_=" << next_event_to_write_ << std::endl;
-        }
+        explicit BufferedModule(Configuration& config) : Module(config) {}
         explicit BufferedModule(Configuration& config, std::shared_ptr<Detector> detector)
-            : Module(config, std::move(detector)) {
-            std::cout << "next_event_to_write_=" << next_event_to_write_ << std::endl;
-        }
+            : Module(config, std::move(detector)) {}
 
     protected:
         /**
