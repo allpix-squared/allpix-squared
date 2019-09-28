@@ -10,6 +10,8 @@
 #ifndef ALLPIX_MT_RUN_MANAGER_H
 #define ALLPIX_MT_RUN_MANAGER_H
 
+#include <unordered_map>
+
 #include <G4MTRunManager.hh>
 
 namespace allpix {
@@ -100,11 +102,23 @@ namespace allpix {
         void CreateAndStartWorkers() override {}
 
         /**
+         * @brief Fills the helper map with new seeds for new events
+         * @param n_event The number of events to fill seeds for
+         */
+        void FillWorkerSeedsMap(G4int n_event); // NOLINT
+
+        /**
          * @brief Previously used to issue a new command to the workers.
          *
          * Send a new command to workers waiting for master to tell them what to do. It will now do nothing.
          */
         void NewActionRequest(WorkerActionRequest) override {}
+
+        /**
+        * @brief Initialize the workers seeds for the given number of events.
+        * @param nevts Number of events
+        */
+        G4bool InitializeSeeds(G4int nevts) override;
 
         /**
          * @brief Previously used to tell workers to execute UI commands.
@@ -176,6 +190,8 @@ namespace allpix {
         static G4ThreadLocal WorkerRunManager* worker_run_manager_;
 
         SensitiveDetectorAndFieldConstruction* sd_field_construction_{nullptr};
+
+        std::unordered_map<G4int, std::pair<long, long>> workers_seeds_;
     };
 } // namespace allpix
 
