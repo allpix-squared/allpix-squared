@@ -199,31 +199,29 @@ bool Module::check_delegates(Messenger* messenger, Event* event) {
     });
 }
 
+size_t BufferedModule::max_buffer_size_ = 128;
+
 void BufferedModule::run_in_order(std::shared_ptr<Event> event) {
     auto event_number = event->number;
 
-    std::lock_guard<std::mutex> lock(buffer_mutex_);
+    {
+        // Store the event in the buffer
+        std::unique_lock<std::mutex> lock(buffer_mutex_);
+        cond_var_.wait(lock, [this, event_number]() {
+            return event_number == next_event_to_write_ || buffered_events_.size() < max_buffer_size_;
+        });
 
-    // Make sure we are waiting for the right event
-    next_event_to_write_ = get_next_event(next_event_to_write_);
-
-    // Check if the new event is in the expected order or not
-    if(next_event_to_write_ == event_number) {
-        LOG(TRACE) << "Writing Event " << event_number;
-
-        // Process the in order event
-        run(event.get());
-
-        // Advance the expected event
-        next_event_to_write_++;
-
-        // Flush any in order buffered events
-        flush_buffered_events();
-    } else {
         LOG(TRACE) << "Buffering event " << event->number;
 
         // Buffer out of order events to write them later
-        buffered_events_.insert(std::make_pair(event->number, event));
+        buffered_events_.insert(std::make_pair(event_number, event));
+    }
+
+    // Allow only one write to run at a time
+    if(writer_mutex_.try_lock()) {
+        // Flush any in order buffered events
+        flush_buffered_events();
+        writer_mutex_.unlock();
     }
 }
 
@@ -246,19 +244,34 @@ void BufferedModule::flush_buffered_events() {
     static thread_local std::mt19937_64 random_generator;
 
     std::map<unsigned int, std::shared_ptr<Event>>::iterator iter;
+    std::shared_ptr<Event> event;
 
     next_event_to_write_ = get_next_event(next_event_to_write_);
-    while((iter = buffered_events_.find(next_event_to_write_)) != buffered_events_.end()) {
+    while(true) {
+        {
+            // Find the next event to write
+            std::lock_guard<std::mutex> lock(buffer_mutex_);
+            iter = buffered_events_.find(next_event_to_write_);
+
+            if(iter == buffered_events_.end()) {
+                break;
+            }
+
+            event = std::move(iter->second);
+            iter->second.reset();
+
+            // Remove it from buffer
+            buffered_events_.erase(iter);
+            cond_var_.notify_one();
+        }
+
         LOG(TRACE) << "Writing buffered event " << iter->first;
 
         // set the buffered event RNG
-        iter->second->set_and_seed_random_engine(&random_generator);
+        event->set_and_seed_random_engine(&random_generator);
 
         // Process the buffered event
-        run(iter->second.get());
-
-        // Remove it from buffer
-        buffered_events_.erase(iter);
+        run(event.get());
 
         // Move to the next event
         next_event_to_write_ = get_next_event(next_event_to_write_ + 1);
@@ -270,6 +283,7 @@ unsigned int BufferedModule::get_next_event(unsigned int current) {
     auto next = current;
 
     // Check sequentially if events were skipped
+    std::lock_guard<std::mutex> lock(skipped_events_mutex_);
     while((iter = skipped_events_.find(next)) != skipped_events_.end()) {
         LOG(TRACE) << "Event skipped " << *iter;
 
@@ -283,6 +297,6 @@ unsigned int BufferedModule::get_next_event(unsigned int current) {
 }
 
 void BufferedModule::skip_event(unsigned int event) {
-    std::lock_guard<std::mutex> lock(buffer_mutex_);
+    std::lock_guard<std::mutex> lock(skipped_events_mutex_);
     skipped_events_.insert(event);
 }

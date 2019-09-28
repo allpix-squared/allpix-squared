@@ -11,6 +11,7 @@
 #define ALLPIX_MODULE_H
 
 #include <atomic>
+#include <condition_variable>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -259,9 +260,13 @@ namespace allpix {
         friend class Messenger;
 
     public:
-        explicit BufferedModule(Configuration& config) : Module(config) {}
+        explicit BufferedModule(Configuration& config) : Module(config) {
+            std::cout << "next_event_to_write_=" << next_event_to_write_ << std::endl;
+        }
         explicit BufferedModule(Configuration& config, std::shared_ptr<Detector> detector)
-            : Module(config, std::move(detector)) {}
+            : Module(config, std::move(detector)) {
+            std::cout << "next_event_to_write_=" << next_event_to_write_ << std::endl;
+        }
 
     protected:
         /**
@@ -295,22 +300,39 @@ namespace allpix {
          */
         void flush_buffered_events();
 
+        /**
+         * @brief Checks if object is instance of BufferedModule class
+         */
+        bool is_buffered() const override { return true; }
+
         // The buffer that holds out of order events
         std::map<unsigned int, std::shared_ptr<Event>> buffered_events_;
 
         // Mutex used to guard access to \ref buffered_events_
         std::mutex buffer_mutex_;
 
-        // The expected in order event to write
-        unsigned int next_event_to_write_{1};
+        // Mutex used to allow only one thread to run the writer module
+        std::mutex writer_mutex_;
+
+        std::condition_variable cond_var_;
 
         // Set of event numbers that was skipped because not all messages were present
         std::set<unsigned int> skipped_events_;
 
+        // Mutex to guard access to \ref skipped_events_mutex_
+        std::mutex skipped_events_mutex_;
+
+        // The expected in order event to write
+        std::atomic_uint next_event_to_write_{1};
+
+        // Maximum buffer size to store events
+        static size_t max_buffer_size_;
+
         /**
-         * @brief Checks if object is instance of BufferedModule class
+         * @brief Sets the buffer size.
+         * @param size The new buffer size
          */
-        bool is_buffered() const override { return true; }
+        static void set_max_buffer_size(size_t size) { max_buffer_size_ = size; }
     };
 
 } // namespace allpix
