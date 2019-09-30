@@ -85,15 +85,31 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
 
             // Set angle distribution parameters
             single_source->GetAngDist()->SetAngDistType("beam2d");
-            single_source->GetAngDist()->DefineAngRefAxes("angref1", G4ThreeVector(-1., 0, 0));
-            G4TwoVector divergence = config.get<G4TwoVector>("beam_divergence", G4TwoVector(0., 0.));
-            single_source->GetAngDist()->SetBeamSigmaInAngX(divergence.x());
-            single_source->GetAngDist()->SetBeamSigmaInAngY(divergence.y());
             G4ThreeVector direction = config.get<G4ThreeVector>("beam_direction");
             if(fabs(direction.mag() - 1.0) > std::numeric_limits<double>::epsilon()) {
                 LOG(WARNING) << "Momentum direction is not a unit vector: magnitude is ignored";
             }
-            single_source->GetAngDist()->SetParticleMomentumDirection(direction);
+            auto a = direction.x();
+            auto b = direction.y();
+            auto c = direction.z();
+            G4ThreeVector angref1, angref2;
+            if(std::abs(a) <= std::abs(b) && std::abs(a) <= std::abs(c)) {
+                angref1 = {0, c, -b};
+                angref2 = {b * b + c * c, -a * b, -a * c};
+            }
+            if(std::abs(b) <= std::abs(a) && std::abs(b) <= std::abs(c)) {
+                angref1 = {-c, 0, a};
+                angref2 = {-a * b, a * a + c * c, -b * c};
+            }
+            if(std::abs(c) <= std::abs(a) && std::abs(c) <= std::abs(b)) {
+                angref1 = {b, -a, 0};
+                angref2 = {-a * c, -b * c, a * a + b * b};
+            }
+            single_source->GetAngDist()->DefineAngRefAxes("angref1", angref1);
+            single_source->GetAngDist()->DefineAngRefAxes("angref2", angref2);
+            G4TwoVector divergence = config.get<G4TwoVector>("beam_divergence", G4TwoVector(0., 0.));
+            single_source->GetAngDist()->SetBeamSigmaInAngX(divergence.x());
+            single_source->GetAngDist()->SetBeamSigmaInAngY(divergence.y());
 
         } else if(source_type == "sphere") {
 
