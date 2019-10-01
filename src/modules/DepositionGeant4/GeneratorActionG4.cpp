@@ -84,23 +84,25 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             single_source->GetPosDist()->SetBeamSigmaInR(config.get<double>("beam_size", 0));
 
             // Set angle distribution parameters
+            // NOTE beam2d will always fire in the -z direction of the system
             single_source->GetAngDist()->SetAngDistType("beam2d");
+
+            // Allign the -z axis of the system with the direction vector
             G4ThreeVector direction = config.get<G4ThreeVector>("beam_direction");
             if(fabs(direction.mag() - 1.0) > std::numeric_limits<double>::epsilon()) {
                 LOG(WARNING) << "Momentum direction is not a unit vector: magnitude is ignored";
             }
             auto min_element = std::min(std::abs(direction.x()), std::min(std::abs(direction.y()), std::abs(direction.z())));
-            G4ThreeVector angref1, angref2;
+            G4ThreeVector angref1;
             if(min_element == std::abs(direction.x())) {
                 angref1 = direction.cross({1, 0, 0});
-                angref2 = angref1.cross(direction);
             } else if(min_element == std::abs(direction.y())) {
                 angref1 = direction.cross({0, 1, 0});
-                angref2 = angref1.cross(direction);
             } else if(min_element == std::abs((direction.z()))) {
                 angref1 = direction.cross({0, 0, 1});
-                angref2 = angref1.cross(direction);
             }
+            G4ThreeVector angref2 = angref1.cross(direction);
+
             single_source->GetAngDist()->DefineAngRefAxes("angref1", angref1);
             single_source->GetAngDist()->DefineAngRefAxes("angref2", angref2);
             G4TwoVector divergence = config.get<G4TwoVector>("beam_divergence", G4TwoVector(0., 0.));
