@@ -89,21 +89,17 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             if(fabs(direction.mag() - 1.0) > std::numeric_limits<double>::epsilon()) {
                 LOG(WARNING) << "Momentum direction is not a unit vector: magnitude is ignored";
             }
-            auto a = direction.x();
-            auto b = direction.y();
-            auto c = direction.z();
+            auto min_element = std::min(std::abs(direction.x()), std::min(std::abs(direction.y()), std::abs(direction.z())));
             G4ThreeVector angref1, angref2;
-            if(std::abs(a) <= std::abs(b) && std::abs(a) <= std::abs(c)) {
-                angref1 = {0, c, -b};
-                angref2 = {b * b + c * c, -a * b, -a * c};
-            }
-            if(std::abs(b) <= std::abs(a) && std::abs(b) <= std::abs(c)) {
-                angref1 = {-c, 0, a};
-                angref2 = {-a * b, a * a + c * c, -b * c};
-            }
-            if(std::abs(c) <= std::abs(a) && std::abs(c) <= std::abs(b)) {
-                angref1 = {b, -a, 0};
-                angref2 = {-a * c, -b * c, a * a + b * b};
+            if(min_element == std::abs(direction.x())) {
+                angref1 = direction.cross({1, 0, 0});
+                angref2 = angref1.cross(direction);
+            } else if(min_element == std::abs(direction.y())) {
+                angref1 = direction.cross({0, 1, 0});
+                angref2 = angref1.cross(direction);
+            } else if(min_element == std::abs((direction.z()))) {
+                angref1 = direction.cross({0, 0, 1});
+                angref2 = angref1.cross(direction);
             }
             single_source->GetAngDist()->DefineAngRefAxes("angref1", angref1);
             single_source->GetAngDist()->DefineAngRefAxes("angref2", angref2);
