@@ -94,4 +94,4 @@ namespace allpix {
         unsigned int minX_, minY_, maxX_, maxY_;
     };
 } // namespace allpix
-#endif
+#endif /*ALLPIX_DETECTOR_HISTOGRAMMER_CLUSTER_H */
