@@ -166,11 +166,11 @@ void DefaultDigitizerModule::run(unsigned int) {
             }
             LOG(DEBUG) << "Smeared for simulating limited ADC sensitivity: " << Units::display(charge, "e");
 
-            // Convert to ADC units and precision:
+            // Convert to ADC units and precision, make sure ADC count is at least 1:
             charge = static_cast<double>(std::max(
                 std::min(static_cast<int>((config_.get<double>("adc_offset") + charge) / config_.get<double>("adc_slope")),
                          (1 << config_.get<int>("adc_resolution")) - 1),
-                0));
+                1));
             LOG(DEBUG) << "Charge converted to ADC units: " << charge;
 
             if(config_.get<bool>("output_plots")) {
