@@ -27,7 +27,7 @@ The chapter is structured as follows.
 Section~\ref{sec:arch} provides an overview of the architectural design of the core and describes its interaction with the rest of the \apsq framework.
 The different subcomponents such as configuration, modules and messages are discussed in Sections~\ref{sec:config_parameters}--\ref{sec:objects_messages}.
 The chapter closes with a description of the available framework tools in Section~\ref{sec:logging_utilities}.
-Some C++ code will be provided in the text, but readers not interested may skip the technical details.
+Some \CPP code will be provided in the text, but readers not interested may skip the technical details.
 
 \section{Architecture of the Core}
 \label{sec:arch}
@@ -50,7 +50,7 @@ The messenger object is passed to every module and can be used to bind to messag
 Messages with objects are also dispatched through the messenger as described in Section~\ref{sec:objects_messages}.
 \item \textbf{Utilities}: The framework provides a set of utilities for logging, file and directory access, and unit conversion.
 An explanation on how to use of these utilities can be found in Section~\ref{sec:logging_utilities}.
-A set of C++ exceptions is also provided in the utilities, which are inherited and extended by the other components.
+A set of \CPP exceptions is also provided in the utilities, which are inherited and extended by the other components.
 Proper use of exceptions, together with logging information and reporting errors, makes the framework easier to use and debug.
 A few notes about the use and structure of exceptions are provided in Section~\ref{sec:error_reporting_exceptions}.
 \end{enumerate}
@@ -106,7 +106,7 @@ The conversion to the elements to the actual type is performed when accessing th
 \subsection{Accessing parameters}
 \label{sec:accessing_parameters}
 Values are accessed via the configuration object.
-In the following example, the key is a string called \parameter{key}, the object is named \parameter{config} and the type \parameter{TYPE} is a valid C++ type the value should represent.
+In the following example, the key is a string called \parameter{key}, the object is named \parameter{config} and the type \parameter{TYPE} is a valid \CPP type the value should represent.
 The values can be accessed via the following methods:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 // Returns true if the key exists and false otherwise
@@ -136,8 +136,8 @@ config.setAlias("new_key", "old_key")
 \end{minted}
 
 Conversions to the requested type are using the \parameter{from_string} and \parameter{to_string} methods provided by the string utility library described in Section~\ref{sec:string_utilities}.
-These conversions largely follow standard C++ parsing, with one important exception.
-If (and only if) the value is retrieved as a C/C++ string and the string is fully enclosed by a pair of \texttt{"} characters, these are stripped before returning the value.
+These conversions largely follow standard \CPP parsing, with one important exception.
+If (and only if) the value is retrieved as a C/\CPP string and the string is fully enclosed by a pair of \texttt{"} characters, these are stripped before returning the value.
 Strings can thus also be provided with or without quotation marks.
 
 \begin{warning}
@@ -566,9 +566,9 @@ input = "high_noise"
 
 \section{Logging and other Utilities}
 \label{sec:logging_utilities}
-The \apsq framework provides a set of utilities which improve the usability of the framework and extend the functionality provided by the C++ Standard Template Library (STL).
+The \apsq framework provides a set of utilities which improve the usability of the framework and extend the functionality provided by the \CPP Standard Template Library (STL).
 The former includes a flexible and easy-to-use logging system, introduced in Section~\ref{sec:logger} and an easy-to-use framework for units that supports converting arbitrary combinations of units to common base units which can  be used transparently throughout the framework, and which will be discussed in more detail in Section~\ref{sec:unit_system}.
-The latter comprise tools which provide functionality the C++14 standard does not contain.
+The latter comprise tools which provide functionality the {\CPP}14 standard does not contain.
 These utilities are used internally in the framework and are only shortly discussed in Section~\ref{sec:filesystem} (file system support) and Section~\ref{sec:string_utilities} (string utilities).
 
 \subsection{Logging system}
@@ -595,7 +595,7 @@ More details about the logging levels and formats can be found in Section~\ref{s
 \subsection{Unit system}
 \label{sec:unit_system}
 Correctly handling units and conversions is of paramount importance.
-Having a separate C++ type for every unit would however be too cumbersome for a lot of operations, therefore units are stored in standard C++ floating point types in a default unit which all code in the framework should use for calculations.
+Having a separate \CPP type for every unit would however be too cumbersome for a lot of operations, therefore units are stored in standard \CPP floating point types in a default unit which all code in the framework should use for calculations.
 In configuration files, as well as for logging, it is however very useful to provide quantities in different units.
 
 The unit system allows adding, retrieving, converting and displaying units.
@@ -621,7 +621,7 @@ A description of the use of units in config files within \apsq was presented in 
 \subsection{Internal utilities}
 \label{sec:filesystem}
 The \textbf{filesystem} utilities provide functions to convert relative to absolute canonical paths, to iterate through all files in a directory and to create new directories.
-These functions should be replaced by the C++17 file system API~\cite{cppfilesystem} as soon as the framework minimum standard is updated to C++17.
+These functions should be replaced by the {\CPP}17 file system API~\cite{cppfilesystem} as soon as the framework minimum standard is updated to {\CPP}17.
 
 \label{sec:string_utilities}
 STL only provides string conversions for standard types using \texttt{std::stringstream} and \texttt{std::to\_string}, which do not allow parsing strings encapsulated in pairs of double quote (\texttt{"}) characters nor integrating different units.
