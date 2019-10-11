@@ -87,7 +87,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             // NOTE beam2d will always fire in the -z direction of the system
             single_source->GetAngDist()->SetAngDistType("beam2d");
 
-            // Allign the -z axis of the system with the direction vector
+            // Align the -z axis of the system with the direction vector
             G4ThreeVector direction = config.get<G4ThreeVector>("beam_direction");
             if(fabs(direction.mag() - 1.0) > std::numeric_limits<double>::epsilon()) {
                 LOG(WARNING) << "Momentum direction is not a unit vector: magnitude is ignored";
