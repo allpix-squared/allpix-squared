@@ -38,6 +38,7 @@ TARGET_LINK_LIBRARIES(AllpixGeant4Interface ${Geant4_LIBRARIES})
 # Specify install for the messages
 INSTALL(TARGETS AllpixGeant4Interface
     COMPONENT application
+    EXPORT Allpix
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     OPTIONAL)
