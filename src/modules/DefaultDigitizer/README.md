@@ -31,6 +31,7 @@ In addition, the distribution of the actually applied threshold is provided as h
 * `adc_smearing` : Standard deviation of the Gaussian noise in the ADC conversion (after applying the threshold). Defaults to 300 electrons.
 * `adc_slope` : Slope of the ADC calibration in electrons per ADC unit (unit: "e"). Defaults to 10e.
 * `adc_offset` : Offset of the ADC calibration in electrons. In order to simulate a ToT (time-over-threshold) device, this offset should be configured to the negative value of the threshold. Defaults to 0.
+* `allow_zero_adc`: Allows the ADC to return a value of zero if enabled, otherwise the minimum value returned is one. Defaults to `false`. When enabled special care should be taken when analyzing data since charge-weighted cluster position interpolation might return unexpected results.
 * `output_plots` : Enables output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
 * `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 30ke.
 * `output_plots_bins` : Set the number of bins for the output plot histograms, defaults to 100.
