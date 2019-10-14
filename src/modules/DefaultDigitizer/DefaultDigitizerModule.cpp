@@ -44,6 +44,7 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
     config_.setDefault<int>("adc_smearing", Units::get(300, "e"));
     config_.setDefault<double>("adc_offset", Units::get(0, "e"));
     config_.setDefault<double>("adc_slope", Units::get(10, "e"));
+    config_.setDefault<bool>("allow_zero_adc", false);
 
     config_.setDefault<bool>("output_plots", false);
     config_.setDefault<int>("output_plots_scale", Units::get(30, "ke"));
@@ -170,7 +171,7 @@ void DefaultDigitizerModule::run(unsigned int) {
             charge = static_cast<double>(std::max(
                 std::min(static_cast<int>((config_.get<double>("adc_offset") + charge) / config_.get<double>("adc_slope")),
                          (1 << config_.get<int>("adc_resolution")) - 1),
-                1));
+                (config_.get<bool>("allow_zero_adc") ? 0 : 1)));
             LOG(DEBUG) << "Charge converted to ADC units: " << charge;
 
             if(config_.get<bool>("output_plots")) {
