@@ -42,8 +42,7 @@
 
 using namespace allpix;
 
-DetectorConstructionG4::DetectorConstructionG4(GeometryManager* geo_manager, Configuration& config)
-    : geo_manager_(geo_manager), config_(config) {}
+DetectorConstructionG4::DetectorConstructionG4(GeometryManager* geo_manager) : geo_manager_(geo_manager) {}
 
 /**
  * @brief Version of std::make_shared that does not delete the pointer
@@ -57,11 +56,6 @@ template <typename T, typename... Args> static std::shared_ptr<T> make_shared_no
 
 void DetectorConstructionG4::build(G4LogicalVolume* world_log, std::map<std::string, G4Material*> materials_) {
 
-    /*
-    Get the world material
-    */
-    std::string world_material = config_.get<std::string>("world_material", "air");
-    world_material_ = materials_[world_material];
     /*
     Build the individual detectors
     */
@@ -83,8 +77,8 @@ void DetectorConstructionG4::build(G4LogicalVolume* world_log, std::map<std::str
         auto wrapper_box = std::make_shared<G4Box>(
             "wrapper_" + name, model->getSize().x() / 2.0, model->getSize().y() / 2.0, model->getSize().z() / 2.0);
         solids_.push_back(wrapper_box);
-        auto wrapper_log =
-            make_shared_no_delete<G4LogicalVolume>(wrapper_box.get(), world_material_, "wrapper_" + name + "_log");
+        auto wrapper_log = make_shared_no_delete<G4LogicalVolume>(
+            wrapper_box.get(), materials_["world_material"], "wrapper_" + name + "_log");
         detector->setExternalObject("wrapper_log", wrapper_log);
 
         // Get position and orientation
@@ -104,7 +98,7 @@ void DetectorConstructionG4::build(G4LogicalVolume* world_log, std::map<std::str
 
         // Place the wrapper
         auto wrapper_phys = make_shared_no_delete<G4PVPlacement>(
-            transform_phys, wrapper_log.get(), "wrapper_" + name + "_phys", /*nullptr*/ world_log, false, 0, true);
+            transform_phys, wrapper_log.get(), "wrapper_" + name + "_phys", world_log, false, 0, true);
         detector->setExternalObject("wrapper_phys", wrapper_phys);
 
         LOG(DEBUG) << " Center of the geometry parts relative to the detector wrapper geometric center:";
@@ -263,8 +257,8 @@ void DetectorConstructionG4::build(G4LogicalVolume* world_log, std::map<std::str
             solids_.push_back(bump_box);
 
             // Create the logical wrapper volume
-            auto bumps_wrapper_log =
-                make_shared_no_delete<G4LogicalVolume>(bump_box.get(), world_material_, "bumps_wrapper_" + name + "_log");
+            auto bumps_wrapper_log = make_shared_no_delete<G4LogicalVolume>(
+                bump_box.get(), materials_["world_material"], "bumps_wrapper_" + name + "_log");
             detector->setExternalObject("bumps_wrapper_log", bumps_wrapper_log);
 
             // Place the general bumps volume

@@ -71,6 +71,8 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     }
 
     world_material_ = materials_[world_material];
+    // Add world_material to the list of materials to be called from other modules
+    materials_["world_material"] = world_material_;
     LOG(TRACE) << "Material of world is " << world_material_->GetName();
 
     // Calculate world size

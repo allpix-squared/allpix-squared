@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Definition of Geant4 geometry construction module
- * @copyright Copyright (c) 2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -23,10 +23,10 @@ class G4RunManager;
 namespace allpix {
     /**
      * @ingroup Modules
-     * @brief Module to construct the Geant4 geometry from the internal geometry
+     * @brief Module to construct the passive materials from the passive material file
      *
-     * Creates the world from the information available from the \ref GeometryManager. Then continues with constructing every
-     * detector, building it from the internal detector model. The geometry that is eventually constructed is used to
+     * Creates the passvie materials from an internal configuration file and adds them to the world. The geometry that is
+     * eventually constructed is used to
      * simulate the charge deposition in the \ref DepositionGeant4Module.
      */
     class PassiveMaterialBuilderGeant4Module : public Module {
@@ -40,7 +40,7 @@ namespace allpix {
         PassiveMaterialBuilderGeant4Module(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
 
         /**
-         * @brief Initializes Geant4 and construct the Geant4 geometry from the internal geometry
+         * @brief Initializes Geant4 and construct the passive materials
          */
         void init() override;
 
@@ -48,9 +48,6 @@ namespace allpix {
         GeometryManager* geo_manager_;
 
         std::vector<ROOT::Math::XYZPoint> points_;
-
-        // Geant4 run manager is owned by GeometryBuilderGeant4
-        G4RunManager* run_manager_g4_;
     };
 } // namespace allpix
 
