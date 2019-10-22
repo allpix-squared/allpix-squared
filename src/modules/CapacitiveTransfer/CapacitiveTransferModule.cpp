@@ -1,5 +1,5 @@
 /*
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -267,7 +267,7 @@ void CapacitiveTransferModule::run(unsigned int) {
     // Find corresponding pixels for all propagated charges
     LOG(TRACE) << "Transferring charges to pixels";
     unsigned int transferred_charges_count = 0;
-    std::map<Pixel::Index, std::pair<double, std::vector<const PropagatedCharge*>>, pixel_cmp> pixel_map;
+    std::map<Pixel::Index, std::pair<double, std::vector<const PropagatedCharge*>>> pixel_map;
     for(auto& propagated_charge : propagated_message_->getData()) {
         auto position = propagated_charge.getLocalPosition();
         // Ignore if outside depth range of implant

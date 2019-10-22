@@ -2,7 +2,7 @@
  * @file
  * @brief Implements the handling of the sensitive device
  * @remarks Based on code from John Idarraga
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -188,16 +188,13 @@ void SensitiveDetectorActionG4::dispatchMessages() {
     track_time_.clear();
 
     // Send a deposit message if we have any deposits
+    unsigned int charges = 0;
     if(!deposits_.empty()) {
-        unsigned int charges = 0;
         for(auto& ch : deposits_) {
             charges += ch.getCharge();
             total_deposited_charge_ += ch.getCharge();
         }
         LOG(INFO) << "Deposited " << charges << " charges in sensor of detector " << detector_->getName();
-
-        // Store the number of charge carriers:
-        deposited_charge_ = charges;
 
         // Match deposit with mc particle if possible
         for(size_t i = 0; i < deposits_.size(); ++i) {
@@ -211,6 +208,8 @@ void SensitiveDetectorActionG4::dispatchMessages() {
         // Dispatch the message
         messenger_->dispatchMessage(module_, deposit_message);
     }
+    // Store the number of charge carriers:
+    deposited_charge_ = charges;
 
     // Clear deposits for next event
     deposits_ = std::vector<DepositedCharge>();

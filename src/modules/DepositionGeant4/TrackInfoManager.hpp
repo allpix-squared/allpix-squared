@@ -2,7 +2,7 @@
  * @file
  * @brief The TrackInfoManager class, contains a factory method for TrackInfoG4 to be used in AP2 as well as handling and
  * dispatching MCTracks
- * @copyright Copyright (c) 2018 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2018-2019 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -113,4 +113,4 @@ namespace allpix {
         std::map<int, size_t> id_to_track_;
     };
 } // namespace allpix
-#endif
+#endif /* TrackInfoManager_H */

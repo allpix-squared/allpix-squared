@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Utility to register unit conversions with the framework's unit system
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -54,6 +54,7 @@ namespace allpix {
 
         // VOLTAGE
         // NOTE: fixed by above
+        Units::add("mV", 1e-9);
         Units::add("V", 1e-6);
         Units::add("kV", 1e-3);
 
@@ -69,4 +70,4 @@ namespace allpix {
     }
 } // namespace allpix
 
-#endif /* ALLPIX_FIELD_PARSER_H */
+#endif /* ALLPIX_ADD_UNITS_H */

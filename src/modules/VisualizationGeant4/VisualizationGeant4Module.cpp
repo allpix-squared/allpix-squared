@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Implementation of Geant4 geometry visualization module
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -162,6 +162,10 @@ void VisualizationGeant4Module::init() {
 
     // Set default visualization settings
     set_visualization_settings();
+
+    // Reset the default displayListLimit
+    std::string display_limit = config_.get<std::string>("display_limit", "1000000");
+    UI->ApplyCommand("/vis/ogl/set/displayListLimit " + display_limit);
 
     // Release the stream early in debugging mode
     IFLOG(DEBUG) { RELEASE_STREAM(G4cout); }

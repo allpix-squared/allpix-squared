@@ -67,7 +67,9 @@ The internal base units of the framework are not chosen for user convenience but
   \toprule
 \textbf{Quantity}                 & \textbf{Default unit}                   & \textbf{Auxiliary units} \\
  \midrule
-\multirow{6}{*}{\textit{Length}}  & \multirow{6}{*}{mm (millimeter)}        & nm (nanometer)           \\
+ \textit{Unity}                   & 1                                       & ---                      \\
+ \midrule
+ \multirow{6}{*}{\textit{Length}} & \multirow{6}{*}{mm (millimeter)}        & nm (nanometer)           \\
                                   &                                         & um (micrometer)          \\
                                   &                                         & cm (centimeter)          \\
                                   &                                         & dm (decimeter)           \\
@@ -92,7 +94,7 @@ The internal base units of the framework are not chosen for user convenience but
 \multirow{2}{*}{\textit{Voltage}} & \multirow{2}{*}{MV (megavolt)}          & V (volt)                 \\
                                   &                                         & kV (kilovolt)            \\
 \midrule
-\textit{Magnetic field strength}  & T (tesla)                               & mT (millitesla)                 \\
+\textit{Magnetic field strength}  & T (tesla)                               & mT (millitesla)          \\
 \midrule
 \multirow{2}{*}{\textit{Angle}}   & \multirow{2}{*}{rad (radian)}           & deg (degree)             \\
                                   &                                         & mrad (milliradian)       \\
@@ -271,7 +273,7 @@ Defaults to the current working directory with the subdirectory \textit{output/}
 \item \parameter{purge_output_directory}: Decides whether the content of an already existing output directory is deleted before a new run starts. Defaults to \texttt{false}, i.e. files are kept but will be overwritten by new files created by the framework.
 \item \parameter{deny_overwrite}: Forces the framework to abort the run and throw an exception when attempting to overwrite an existing file. Defaults to \texttt{false}, i.e. files are overwritten when requested. This setting is inherited by all modules, but can be overwritten in the configuration section of each of the modules.
 \item \parameter{random_seed}: Seed for the global random seed generator used to initialize seeds for module instantiations.
-The 64-bit Mersenne Twister \command{mt19937_64} from the C++ Standard Library is used to generate seeds.
+The 64-bit Mersenne Twister \command{mt19937_64} from the \CPP Standard Library is used to generate seeds.
 A random seed from multiple entropy sources will be generated if the parameter is not specified.
 Can be used to reproduce an earlier simulation run.
 \item \parameter{random_seed_core}: Optional seed used for pseudo-random number generators in the core components of the framework. If not set explictely, the value $(\textrm{\parameter{random_seed}} + 1)$ is used.
@@ -433,8 +435,8 @@ A possible configuration would be:
 [ElectricFieldReader]
 # Bind the electric field to the detector named `dut`
 name = "dut"
-# Specify that the model is provided in the `init` electric field map format converted from TCAD
-model = "init"
+# Specify that the model is provided as meshed electric field map format, e.g. converted from TCAD
+model = "mesh"
 # Name of the file containing the electric field
 file_name = "example_electric_field.init"
 \end{minted}

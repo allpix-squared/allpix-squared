@@ -3,10 +3,13 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.4.3 FATAL_ERROR)
 IF(COMMAND CMAKE_POLICY)
   CMAKE_POLICY(SET CMP0003 NEW) # change linker path search behaviour
   CMAKE_POLICY(SET CMP0048 NEW) # set project version
+  IF(${CMAKE_VERSION} VERSION_GREATER "3.13")
+    CMAKE_POLICY(SET CMP0079 NEW) # Allow lookup of linking libraries in other directories
+  ENDIF()
 ENDIF(COMMAND CMAKE_POLICY)
 
 # Set default version
-SET(ALLPIX_VERSION "v1.3.0")
+SET(ALLPIX_VERSION "v1.4.0")
 
 # Set default build type
 IF(NOT CMAKE_BUILD_TYPE)
@@ -81,6 +84,14 @@ IF("${IsSystemDir}" STREQUAL "-1")
    SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 ENDIF("${IsSystemDir}" STREQUAL "-1")
 
+# If available, use CMake's link-what-you-use feature, not on APPLE
+IF(${CMAKE_VERSION} VERSION_GREATER "3.6.3" AND NOT APPLE AND NOT CMAKE_LINK_WHAT_YOU_USE)
+  SET(CMAKE_LINK_WHAT_YOU_USE TRUE CACHE STRING "Choose whether to only link libraries which contain symbols actually used by the target." FORCE)
+ENDIF()
+
+# Include allpix cmake functions
+INCLUDE("cmake/AllpixMacros.cmake")
+
 ###################################
 # Define build flags for allpix   #
 ###################################
@@ -120,7 +131,7 @@ FIND_PACKAGE(Threads REQUIRED)
 SET(ALLPIX_LIBRARIES "")
 
 # ROOT is required for vector and persistency etc
-FIND_PACKAGE(ROOT REQUIRED COMPONENTS Geom GenVector)
+FIND_PACKAGE(ROOT REQUIRED COMPONENTS Geom Core GenVector Hist RIO)
 IF(NOT ROOT_FOUND)
     MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
     "$ source YOUR_ROOT_DIR/bin/thisroot.sh")
@@ -136,15 +147,15 @@ IF (NOT ${ROOT_VERSION} VERSION_GREATER "6.0")
     MESSAGE(FATAL_ERROR "ROOT versions below 6.0 are not supported")
 ENDIF()
 
+# Prepare ROOT Targets if necessary:
+ALLPIX_SETUP_ROOT_TARGETS()
+
 # Set the dependencies
 SET(ALLPIX_DEPS_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS})
-SET(ALLPIX_DEPS_LIBRARIES ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES} Threads::Threads)
+SET(ALLPIX_DEPS_LIBRARIES Threads::Threads ROOT::Core ROOT::GenVector ROOT::Geom ROOT::RIO ROOT::Hist)
 
 # Add "thisroot.sh" as runtime dependency for setup.sh file:
 ADD_RUNTIME_DEP(thisroot.sh)
-
-# Include allpix cmake functions
-INCLUDE("cmake/allpix.cmake")
 
 ###################################
 # Load cpp format and check tools #
@@ -222,3 +233,35 @@ FOREACH(dep ${ALLPIX_RUNTIME_LIBS})
 ENDFOREACH()
 # Create setup file
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/setup.cmake.sh" "${CMAKE_CURRENT_BINARY_DIR}/setup/setup.sh" @ONLY)
+
+
+#######################################
+# Generate CMake Configuration Module #
+#######################################
+
+INCLUDE(CMakePackageConfigHelpers)
+SET(ALLPIX_INCLUDE_DIR "include")
+SET(ALLPIX_LIBRARY_DIR "lib")
+SET(ALLPIX_CMAKE_DIR "share/cmake")
+CONFIGURE_PACKAGE_CONFIG_FILE(${CMAKE_CURRENT_SOURCE_DIR}/cmake/AllpixConfig.cmake.in
+                              ${CMAKE_CURRENT_BINARY_DIR}/AllpixConfig.cmake
+                              INSTALL_DESTINATION ${ALLPIX_CMAKE_DIR}
+                              PATH_VARS ALLPIX_INCLUDE_DIR ALLPIX_LIBRARY_DIR)
+
+WRITE_BASIC_PACKAGE_VERSION_FILE(AllpixConfigVersion.cmake
+                                 VERSION ${PROJECT_VERSION}
+                                 COMPATIBILITY AnyNewerVersion)
+INSTALL(FILES
+    ${PROJECT_BINARY_DIR}/AllpixConfig.cmake
+    ${PROJECT_BINARY_DIR}/AllpixConfigVersion.cmake
+    ${PROJECT_SOURCE_DIR}/cmake/AllpixMacros.cmake
+    DESTINATION ${ALLPIX_CMAKE_DIR})
+
+INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/tools"
+        DESTINATION include
+        PATTERN "*.h")
+
+INSTALL(EXPORT Allpix
+    NAMESPACE Allpix::
+    FILE AllpixConfigTargets.cmake
+    DESTINATION ${ALLPIX_CMAKE_DIR})
