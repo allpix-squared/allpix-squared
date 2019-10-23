@@ -155,6 +155,12 @@ bool ConfigManager::loadDetectorOptions(const std::vector<std::string>& options)
         optionsApplied = detector_option_parser.applyOptions(config.getName(), config) || optionsApplied;
     }
 
+    // Apply Passive Material options
+    parse_passive_materials();
+    for(auto& config : passive_material_configs_) {
+        optionsApplied = detector_option_parser.applyOptions(config.getName(), config) || optionsApplied;
+    }
+
     return optionsApplied;
 }
 
