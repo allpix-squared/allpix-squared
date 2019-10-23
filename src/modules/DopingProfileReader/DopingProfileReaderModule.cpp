@@ -26,7 +26,7 @@ void DopingProfileReaderModule::init() {
     auto field_model = config_.get<std::string>("model");
 
     // Calculate the field depending on the configuration
-    if(field_model == "init" || field_model == "apf") {
+    if(field_model == "mesh") {
         // Read the field scales from the configuration, defaulting to 1.0x1.0 pixel cell:
         auto scales = config_.get<ROOT::Math::XYVector>("field_scale", {1.0, 1.0});
         // FIXME Add sanity checks for scales here
@@ -44,7 +44,7 @@ void DopingProfileReaderModule::init() {
         LOG(DEBUG) << "Doping concentration map starts with offset " << offset << " to pixel boundary";
         std::array<double, 2> field_offset{{offset.x(), offset.y()}};
 
-        auto field_data = read_field(field_scale, field_model);
+        auto field_data = read_field(field_scale);
         detector_->setDopingProfileGrid(field_data.getData(), field_data.getDimensions(), field_scale, field_offset);
 
     } else if(field_model == "constant") {
@@ -57,7 +57,7 @@ void DopingProfileReaderModule::init() {
 
         detector_->setDopingProfileFunction(function, type);
     } else {
-        throw InvalidValueError(config_, "model", "model should be 'constant' or 'init'");
+        throw InvalidValueError(config_, "model", "model should be 'constant' or 'mesh'");
     }
 }
 
@@ -65,16 +65,13 @@ void DopingProfileReaderModule::init() {
  * The field read from the INIT format are shared between module instantiations using the static FieldParser.
  */
 FieldParser<double> DopingProfileReaderModule::field_parser_(FieldQuantity::SCALAR);
-FieldData<double> DopingProfileReaderModule::read_field(std::array<double, 2> field_scale, const std::string& format) {
-
-    FileType type = (format == "init" ? FileType::INIT : format == "apf" ? FileType::APF : FileType::UNKNOWN);
-    std::string units = (type == FileType::INIT ? "/cm/cm/cm" : "");
+FieldData<double> DopingProfileReaderModule::read_field(std::array<double, 2> field_scale) {
 
     try {
-        LOG(TRACE) << "Fetching doping concentration map from init file";
+        LOG(TRACE) << "Fetching doping concentration map from mesh file";
 
         // Get field from file
-        auto field_data = field_parser_.get_by_file_name(config_.getPath("file_name", true), type, units);
+        auto field_data = field_parser_.get_by_file_name(config_.getPath("file_name", true), "/cm/cm/cm");
 
         // Check if electric field matches chip
         check_detector_match(field_data.getSize(), field_scale);
