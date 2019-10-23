@@ -149,14 +149,16 @@ void ProjectionPropagationModule::run(unsigned int) {
             return numerator / denominator;
         };
 
+        // Survival probability of this charge carrier package, evaluated once
+        std::uniform_real_distribution<double> survival(0, 1);
+        auto survival_probability = survival(random_generator_);
+
         auto carrier_alive = [&](double doping_concentration, double time) -> bool {
-            // Roll dice for charge carrier survival
-            std::uniform_real_distribution<double> survival(0, 1);
             auto lifetime = (type == CarrierType::ELECTRON ? electron_lifetime_reference_ : hole_lifetime_reference_) /
                             (1 +
                              std::fabs(doping_concentration) /
                                  (type == CarrierType::ELECTRON ? electron_doping_reference_ : hole_doping_reference_));
-            return survival(random_generator_) > (time / lifetime);
+            return survival_probability > (1 - std::exp(-1 * time / lifetime));
         };
 
         // Get the electric field at the position of the deposited charge and the top of the sensor:
