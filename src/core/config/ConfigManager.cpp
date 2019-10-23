@@ -93,7 +93,7 @@ void ConfigManager::parse_passive_materials() {
         return;
     }
 
-    // Reading detector file
+    // Reading passive material file
     std::string passive_material_file_name = global_config_.getPath("passive_materials_file", true);
     LOG(TRACE) << "Reading passive material configuration";
 
@@ -155,10 +155,12 @@ bool ConfigManager::loadDetectorOptions(const std::vector<std::string>& options)
         optionsApplied = detector_option_parser.applyOptions(config.getName(), config) || optionsApplied;
     }
 
-    // Apply Passive Material options
-    parse_passive_materials();
-    for(auto& config : passive_material_configs_) {
-        optionsApplied = detector_option_parser.applyOptions(config.getName(), config) || optionsApplied;
+    // Apply Passive Material options if needed
+    if(global_config_.has("passive_materials_file")) {
+        parse_passive_materials();
+        for(auto& config : passive_material_configs_) {
+            optionsApplied = detector_option_parser.applyOptions(config.getName(), config) || optionsApplied;
+        }
     }
 
     return optionsApplied;
