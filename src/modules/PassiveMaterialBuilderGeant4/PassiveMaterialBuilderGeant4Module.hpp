@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Definition of Geant4 geometry construction module
+ * @brief Definition of Geant4 passive material construction module
  * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
@@ -34,10 +34,9 @@ namespace allpix {
         /**
          * @brief Constructor for this unique module
          * @param config Configuration object for this module as retrieved from the steering file
-         * @param messenger Pointer to the messenger object to allow binding to messages on the bus
          * @param geo_manager Pointer to the geometry manager, containing the detectors
          */
-        PassiveMaterialBuilderGeant4Module(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
+        PassiveMaterialBuilderGeant4Module(Configuration& config, Messenger*, GeometryManager* geo_manager);
 
         /**
          * @brief Initializes Geant4 and construct the passive materials

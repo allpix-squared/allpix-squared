@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Defines the internal Geant4 geometry construction
+ * @brief Defines the internal Geant4 passive material construction
  * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
@@ -10,17 +10,12 @@
 #ifndef ALLPIX_MODULE_PASSIVE_MATERIAL_CONSTRUCTION_H
 #define ALLPIX_MODULE_PASSIVE_MATERIAL_CONSTRUCTION_H
 
-#include <G4LogicalVolume.hh>
 #include <memory>
 #include <utility>
 #include <vector>
 
-#include <Math/Vector3D.h>
-
 #include "G4LogicalVolume.hh"
 #include "G4Material.hh"
-#include "G4VSolid.hh"
-#include "core/config/ConfigManager.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryBuilder.hpp"
 #include "core/geometry/GeometryManager.hpp"

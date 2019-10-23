@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Implements the Geant4 geometry construction process
+ * @brief Implements the Geant4 passive material construction process
  * @remarks Code is based on code from Mathieu Benoit
  * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
@@ -25,15 +25,13 @@
 #include <G4SubtractionSolid.hh>
 #include <G4Tubs.hh>
 #include <G4UnionSolid.hh>
-#include <G4VSolid.hh>
 
 #include <G4LogicalVolume.hh>
-#include <G4Material.hh>
 #include <G4PVPlacement.hh>
 #include <G4RotationMatrix.hh>
 #include <G4ThreeVector.hh>
+
 #include "core/module/exceptions.h"
-#include "core/utils/log.h"
 #include "tools/ROOT.h"
 #include "tools/geant4.h"
 
