@@ -49,8 +49,8 @@ namespace allpix {
         // CHARGE
         Units::add("e", 1);
         Units::add("ke", 1e3);
-        Units::add("fC", 1 / 1.6021766208e-4);
-        Units::add("C", 1 / 1.6021766208e-19);
+        Units::add("fC", 1 / 1.602176634e-4);
+        Units::add("C", 1 / 1.602176634e-19);
 
         // VOLTAGE
         // NOTE: fixed by above
@@ -64,7 +64,7 @@ namespace allpix {
 
         // ANGLES
         // NOTE: these are fake units
-        Units::add("deg", 0.01745329252);
+        Units::add("deg", 0.01745329251994);
         Units::add("rad", 1);
         Units::add("mrad", 1e-3);
     }
