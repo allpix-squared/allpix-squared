@@ -110,7 +110,7 @@ void PassiveMaterialConstructionG4::build(G4LogicalVolume* world_log, std::map<s
     LOG(TRACE) << " -Position\t\t:\t " << Units::display(passive_material_location, {"mm", "um"});
 
     // Get the solid from the Model
-    auto solid = std::shared_ptr<G4VSolid>(model_->GetSolid());
+    auto solid = std::shared_ptr<G4VSolid>(model_->getSolid());
     if(solid == nullptr) {
         throw ModuleError("Pasive Material '" + name_ + "' does not have a solid associated with its model");
     }
@@ -126,7 +126,7 @@ void PassiveMaterialConstructionG4::build(G4LogicalVolume* world_log, std::map<s
     // Fill the material with the filling_material if needed
     auto filling_material = config_.get<std::string>("filling_material", std::string());
     if(!filling_material.empty()) {
-        auto filling_solid = std::shared_ptr<G4VSolid>(model_->GetFillingSolid());
+        auto filling_solid = std::shared_ptr<G4VSolid>(model_->getFillingSolid());
         if(filling_solid == nullptr) {
             throw ModuleError("Pasive Material '" + name_ + "' does not have a filling solid associated with its model");
         }
@@ -145,7 +145,7 @@ std::vector<XYZPoint> PassiveMaterialConstructionG4::addPoints() {
     std::array<int, 8> offset_y = {{1, 1, -1, -1, 1, 1, -1, -1}};
     std::array<int, 8> offset_z = {{1, -1, 1, -1, 1, -1, 1, -1}};
     // Add the min and max points for every type
-    auto max_size = model_->GetMaxSize();
+    auto max_size = model_->getMaxSize();
     if(max_size == 0) {
         throw ModuleError("Pasive Material '" + name_ +
                           "' does not have a maximum size parameter associated with its model");
