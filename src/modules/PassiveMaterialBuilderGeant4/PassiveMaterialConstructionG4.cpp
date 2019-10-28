@@ -47,16 +47,17 @@ PassiveMaterialConstructionG4::PassiveMaterialConstructionG4(Configuration& conf
     name_ = config_.getName();
     passive_material_type = config_.get<std::string>("type");
     passive_material_location = config_.get<XYZPoint>("position");
-    if(passive_material_type == "box")
+    if(passive_material_type == "box") {
         model_ = std::make_shared<BoxModel>(config_);
-    else if(passive_material_type == "cylinder")
+    } else if(passive_material_type == "cylinder") {
         model_ = std::make_shared<CylinderModel>(config_);
-    else if(passive_material_type == "tube")
+    } else if(passive_material_type == "tube") {
         model_ = std::make_shared<TubeModel>(config_);
-    else if(passive_material_type == "sphere")
+    } else if(passive_material_type == "sphere") {
         model_ = std::make_shared<SphereModel>(config_);
-    else
+    } else {
         throw ModuleError("Pasive Material '" + name_ + "' has an incorrect type.");
+    }
 }
 
 /**

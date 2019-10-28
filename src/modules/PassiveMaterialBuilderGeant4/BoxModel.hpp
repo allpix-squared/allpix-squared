@@ -72,9 +72,9 @@ namespace allpix {
         void setFillingSize(ROOT::Math::XYZVector val) { inner_size_ = std::move(val); }
 
         // Set the override functions of PassiveMaterialModel
-        G4SubtractionSolid* GetSolid() override {return solid_;}
-        G4Box* GetFillingSolid() override {return filling_solid_;}
-        double GetMaxSize() override {return max_size_;}
+        G4SubtractionSolid* getSolid() override {return solid_;}
+        G4Box* getFillingSolid() override {return filling_solid_;}
+        double getMaxSize() override {return max_size_;}
 
     private:
         Configuration& config_;
