@@ -29,8 +29,10 @@ void PassiveMaterialBuilderGeant4Module::init() {
 
     // Suppress output from G4
     SUPPRESS_STREAM(G4cout);
+
     ConfigManager* conf_manager = getConfigManager();
-    LOG(TRACE) << "Building " << conf_manager->getPassiveMaterialConfigurations().size() << " passive material(s)";
+    LOG(TRACE) << "Adding " << conf_manager->getPassiveMaterialConfigurations().size()
+               << " passive material(s) to the list of builders.";
 
     for(auto& passive_material_section : conf_manager->getPassiveMaterialConfigurations()) {
         std::shared_ptr<PassiveMaterialConstructionG4> passive_material_builder =
@@ -38,13 +40,12 @@ void PassiveMaterialBuilderGeant4Module::init() {
 
         // Add the passive materials to objects that will be built in GeometryBuilderGeant4 Module
         geo_manager_->addBuilder(passive_material_builder);
-        // Get the min and max points for the passive materials
-        points_ = passive_material_builder->addPoints();
-    }
-    // Add the max and min points to the world volume
-    for(auto& point : points_) {
-        LOG(TRACE) << "adding point " << Units::display(point, {"mm", "um"}) << "to the geometry";
-        geo_manager_->addPoint(point);
+
+        // Add the min and max points to the world volume
+        for(auto& point : passive_material_builder->addPoints()) {
+            LOG(TRACE) << "adding point " << Units::display(point, {"mm", "um"}) << "to the geometry";
+            geo_manager_->addPoint(point);
+        }
     }
 
     // Release output from G4

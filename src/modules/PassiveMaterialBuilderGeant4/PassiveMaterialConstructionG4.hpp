@@ -16,6 +16,7 @@
 
 #include "G4LogicalVolume.hh"
 #include "G4Material.hh"
+#include "PassiveMaterialModel.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryBuilder.hpp"
 #include "core/geometry/GeometryManager.hpp"
@@ -43,6 +44,7 @@ namespace allpix {
     private:
         Configuration& config_;
         // Storage of internal objects
+        std::shared_ptr<PassiveMaterialModel> model_;
         ROOT::Math::XYZPoint passive_material_location;
         std::string passive_material_type;
         std::vector<ROOT::Math::XYZPoint> points_;

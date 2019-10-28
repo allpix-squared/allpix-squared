@@ -45,8 +45,6 @@ namespace allpix {
 
     private:
         GeometryManager* geo_manager_;
-
-        std::vector<ROOT::Math::XYZPoint> points_;
     };
 } // namespace allpix
 

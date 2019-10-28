@@ -35,9 +35,26 @@
 #include "tools/ROOT.h"
 #include "tools/geant4.h"
 
+#include "BoxModel.hpp"
+#include "CylinderModel.hpp"
+#include "PassiveMaterialModel.hpp"
+#include "SphereModel.hpp"
+#include "TubeModel.hpp"
+
 using namespace allpix;
 using namespace ROOT::Math;
-PassiveMaterialConstructionG4::PassiveMaterialConstructionG4(Configuration& config) : config_(config) {}
+PassiveMaterialConstructionG4::PassiveMaterialConstructionG4(Configuration& config) : config_(config) {
+    passive_material_type = config_.get<std::string>("type");
+    passive_material_location = config_.get<XYZPoint>("position");
+    if(passive_material_type == "box")
+        model_ = std::make_shared<BoxModel>(config_);
+    if(passive_material_type == "cylinder")
+        model_ = std::make_shared<CylinderModel>(config_);
+    if(passive_material_type == "tube")
+        model_ = std::make_shared<TubeModel>(config_);
+    if(passive_material_type == "sphere")
+        model_ = std::make_shared<SphereModel>(config_);
+}
 
 /**
  * @brief Version of std::make_shared that does not delete the pointer
@@ -57,9 +74,7 @@ void PassiveMaterialConstructionG4::build(G4LogicalVolume* world_log, std::map<s
     /*
     Get the information for the passive materials
     */
-    auto passive_material = config_.get<std::string>("material", "world_material");
-    std::transform(passive_material.begin(), passive_material.end(), passive_material.begin(), ::tolower);
-
+    auto passive_material = config_.get<std::string>("material");
     auto orientation_vector = config_.get<XYZVector>("orientation", XYZVector());
 
     Rotation3D orientation;
@@ -81,7 +96,6 @@ void PassiveMaterialConstructionG4::build(G4LogicalVolume* world_log, std::map<s
     } else {
         throw InvalidValueError(config_, "orientation_mode", "orientation_mode should be either 'zyx', xyz' or 'zxz'");
     }
-
     std::vector<double> copy_vec(9);
     orientation.GetComponents(copy_vec.begin(), copy_vec.end());
     XYZPoint vx, vy, vz;
@@ -89,217 +103,48 @@ void PassiveMaterialConstructionG4::build(G4LogicalVolume* world_log, std::map<s
     auto rotWrapper = std::make_shared<G4RotationMatrix>(copy_vec.data());
     G4ThreeVector posWrapper = toG4Vector(passive_material_location);
     G4Transform3D transform_phys(*rotWrapper, posWrapper);
+    std::transform(passive_material.begin(), passive_material.end(), passive_material.begin(), ::tolower);
 
-    LOG(TRACE) << "Creating Geant4 model for " << name << " of type " << passive_material_type;
-    LOG(TRACE) << " of Material: " << passive_material << "( " << materials_[passive_material]->GetName() << " )";
-    LOG(TRACE) << " at Position: " << Units::display(passive_material_location, {"mm", "um"});
+    LOG(TRACE) << "Creating Geant4 model for '" << name << "' of type '" << passive_material_type << "'";
+    LOG(TRACE) << " -Material\t\t:\t " << passive_material << "( " << materials_[passive_material]->GetName() << " )";
+    LOG(TRACE) << " -Position\t\t:\t " << Units::display(passive_material_location, {"mm", "um"});
 
-    if(passive_material_type == "box") {
-        auto box_size = config_.get<XYVector>("size", {0, 0});
-        auto box_thickness = config_.get<double>("thickness", 0);
-        auto box_volume = std::make_shared<G4Box>(name + "_volume", box_size.x() / 2, box_size.y() / 2, box_thickness / 2);
-        solids_.push_back(box_volume);
+    // Get the solid from the Model
+    auto solid = std::shared_ptr<G4VSolid>(model_->GetSolid());
+    solids_.push_back(solid);
 
-        // Place the logical volume of the box
-        auto box_log = make_shared_no_delete<G4LogicalVolume>(box_volume.get(), materials_[passive_material], name + "_log");
+    // Place the logical volume of the passive material
+    auto log_volume = make_shared_no_delete<G4LogicalVolume>(solid.get(), materials_[passive_material], name + "_log");
 
-        // Place the physical volume of the box
-        auto box_phys_ =
-            make_shared_no_delete<G4PVPlacement>(transform_phys, box_log.get(), name + "_phys", world_log, false, 0, true);
+    // Place the physical volume of the passive material
+    auto phys_volume =
+        make_shared_no_delete<G4PVPlacement>(transform_phys, log_volume.get(), name + "_phys", world_log, false, 0, true);
+
+    // Fill the material with the filling_material if needed
+    auto filling_material = config_.get<std::string>("filling_material", std::string());
+    if(!filling_material.empty()) {
+        auto filling_solid = std::shared_ptr<G4VSolid>(model_->GetFillingSolid());
+        solids_.push_back(filling_solid);
+
+        auto filling_log =
+            make_shared_no_delete<G4LogicalVolume>(filling_solid.get(), materials_[filling_material], name + "filling_log");
+        auto filling_phys_ = make_shared_no_delete<G4PVPlacement>(
+            transform_phys, filling_log.get(), name + "filling_phys", world_log, false, 0, true);
     }
-
-    if(passive_material_type == "cylinder") {
-        auto cylinder_inner_radius = config_.get<double>("inner_radius", 0);
-        auto cylinder_outer_radius = config_.get<double>("outer_radius", 0);
-        auto cylinder_height = config_.get<double>("height", 0);
-        auto cylinder_starting_angle = config_.get<double>("starting_angle", 0);
-        auto cylinder_arc_length = config_.get<double>("arc_length", 2);
-        if(cylinder_inner_radius >= cylinder_outer_radius) {
-            throw InvalidValueError(config_, "inner_radius", "inner_radius cannot be larger than the outer_raidus");
-        }
-        if(cylinder_arc_length > 2) {
-            throw InvalidValueError(config_, "arc_length", "arc_length exceeds the maximum value of 2 pi");
-        }
-        auto cylinder_volume = std::make_shared<G4Tubs>(name + "_volume",
-                                                        cylinder_inner_radius,
-                                                        cylinder_outer_radius,
-                                                        cylinder_height / 2,
-                                                        cylinder_starting_angle * CLHEP::pi,
-                                                        cylinder_arc_length * CLHEP::pi);
-        solids_.push_back(cylinder_volume);
-
-        // Place the logical volume of the cylinder
-        auto cylinder_log =
-            make_shared_no_delete<G4LogicalVolume>(cylinder_volume.get(), materials_[passive_material], name + "_log");
-
-        // Place the physical volume of the cylinder
-        auto cylinder_phys_ = make_shared_no_delete<G4PVPlacement>(
-            transform_phys, cylinder_log.get(), name + "_phys", world_log, false, 0, true);
-
-        auto filling_material = config_.get<std::string>("filling_material", "");
-
-        if(filling_material != "") {
-            if(cylinder_arc_length != 2) {
-                throw ModuleError("Cylinder '" + name + "' is not closed! Can't fill it with material");
-            }
-            auto cylinder_filling_volume = std::make_shared<G4Tubs>(name + "_filling_volume",
-                                                                    0,
-                                                                    cylinder_inner_radius,
-                                                                    cylinder_height,
-                                                                    cylinder_starting_angle * CLHEP::pi,
-                                                                    cylinder_arc_length * CLHEP::pi);
-            solids_.push_back(cylinder_filling_volume);
-
-            // Place the logical volume of the filling material
-            auto cylinder_filling_log = make_shared_no_delete<G4LogicalVolume>(
-                cylinder_filling_volume.get(), materials_[filling_material], name + "_filling_log");
-
-            // Place the physical volume of the filling material
-            auto cylinder_filling_phys_ = make_shared_no_delete<G4PVPlacement>(
-                transform_phys, cylinder_filling_log.get(), name + "_filling_phys", world_log, false, 0, true);
-        }
-    }
-
-    if(passive_material_type == "tube") {
-        auto tube_outer_diameter = config_.get<XYVector>("outer_diameter", XYVector());
-        auto tube_inner_diameter = config_.get<XYVector>("inner_diameter", XYVector());
-        auto tube_length = config_.get<double>("length", 0);
-        if(tube_inner_diameter.x() >= tube_outer_diameter.x() || tube_inner_diameter.y() >= tube_outer_diameter.y()) {
-            throw InvalidValueError(config_, "inner_diameter", "inner_diameter cannot be larger than the outer_diameter");
-        }
-
-        auto tube_outer_volume =
-            new G4Box(name + "_outer_volume", tube_outer_diameter.x() / 2, tube_outer_diameter.y() / 2, tube_length / 2);
-
-        auto tube_inner_volume = new G4Box(
-            name + "_inner_volume", tube_inner_diameter.x() / 2, tube_inner_diameter.y() / 2, 1.1 * tube_length / 2);
-
-        auto tube_final_volume =
-            std::make_shared<G4SubtractionSolid>(name + "_final_volume", tube_outer_volume, tube_inner_volume);
-        solids_.push_back(tube_final_volume);
-
-        // Place the logical volume of the tube
-        auto tube_log =
-            make_shared_no_delete<G4LogicalVolume>(tube_final_volume.get(), materials_[passive_material], name + "_log");
-
-        // Place the physical volume of the tube
-        auto tube_phys_ =
-            make_shared_no_delete<G4PVPlacement>(transform_phys, tube_log.get(), name + "_phys", world_log, false, 0, true);
-
-        // Fill the material with the filling_material if needed
-        auto filling_material = config_.get<std::string>("filling_material", "");
-        if(filling_material != "") {
-            auto tube_filling_volume = std::make_shared<G4Box>(
-                name + "_filling_volume", tube_inner_diameter.x() / 2, tube_inner_diameter.y() / 2, tube_length / 2);
-            solids_.push_back(tube_filling_volume);
-            auto tube_filling_log = make_shared_no_delete<G4LogicalVolume>(
-                tube_filling_volume.get(), materials_[filling_material], name + "filling_log");
-            auto tube_filling_phys_ = make_shared_no_delete<G4PVPlacement>(
-                transform_phys, tube_filling_log.get(), name + "filling_phys", world_log, false, 0, true);
-        }
-    }
-
-    if(passive_material_type == "sphere") {
-        auto sphere_inner_radius = config_.get<double>("inner_radius", 0);
-        auto sphere_outer_radius = config_.get<double>("outer_radius", 0);
-        auto sphere_starting_angle_phi = config_.get<double>("starting_angle_phi", 0);
-        auto sphere_arc_length_phi = config_.get<double>("arc_length_phi", 2);
-        auto sphere_starting_angle_theta = config_.get<double>("starting_angle_theta", 0);
-        auto sphere_arc_length_theta = config_.get<double>("arc_length_theta", 1);
-        if(sphere_inner_radius >= sphere_outer_radius) {
-            throw InvalidValueError(config_, "inner_radius", "inner_radius cannot be larger than the outer_radius");
-        }
-        if(sphere_arc_length_phi > 2) {
-            throw InvalidValueError(config_, "arc_length_phi", "arc_length_phi exceeds the maximum value of 2 pi");
-        }
-        if(sphere_arc_length_theta > 2) {
-            throw InvalidValueError(config_, "arc_length_theta", "arc_length_theta exceeds the maximum value of pi");
-        }
-        auto sphere_volume = std::make_shared<G4Sphere>(name + "_volume",
-                                                        sphere_inner_radius,
-                                                        sphere_outer_radius,
-                                                        sphere_starting_angle_phi * CLHEP::pi,
-                                                        sphere_arc_length_phi * CLHEP::pi,
-                                                        sphere_starting_angle_theta * CLHEP::pi,
-                                                        sphere_arc_length_theta * CLHEP::pi);
-        solids_.push_back(sphere_volume);
-
-        // Place the logical volume of the sphere
-        auto sphere_log =
-            make_shared_no_delete<G4LogicalVolume>(sphere_volume.get(), materials_[passive_material], name + "_log");
-
-        // Place the physical volume of the sphere
-        auto sphere_phys_ = make_shared_no_delete<G4PVPlacement>(
-            transform_phys, sphere_log.get(), name + "_phys", world_log, false, 0, true);
-
-        auto filling_material = config_.get<std::string>("filling_material", "");
-
-        if(filling_material != "") {
-            auto sphere_filling_volume = std::make_shared<G4Sphere>(name + "_filling_volume",
-                                                                    0,
-                                                                    sphere_inner_radius,
-                                                                    sphere_starting_angle_phi * CLHEP::pi,
-                                                                    sphere_arc_length_phi * CLHEP::pi,
-                                                                    sphere_starting_angle_theta * CLHEP::pi,
-                                                                    sphere_arc_length_theta * CLHEP::pi);
-            solids_.push_back(sphere_filling_volume);
-
-            // Place the logical volume of the filling material
-            auto sphere_filling_log = make_shared_no_delete<G4LogicalVolume>(
-                sphere_filling_volume.get(), materials_[filling_material], name + "_filling_log");
-
-            // Place the physical volume of the filling material
-            auto sphere_filling_phys_ = make_shared_no_delete<G4PVPlacement>(
-                transform_phys, sphere_filling_log.get(), name + "_filling_phys", world_log, false, 0, true);
-        }
-    }
+    LOG(TRACE) << " Constructed passive material " << name << " successfully";
 }
 
 std::vector<XYZPoint> PassiveMaterialConstructionG4::addPoints() {
     // This function will be called before build() and will hold some definitions
-    passive_material_type = config_.get<std::string>("type");
-    passive_material_location = config_.get<XYZPoint>("position", XYZPoint());
     std::array<int, 8> offset_x = {{1, 1, 1, 1, -1, -1, -1, -1}};
     std::array<int, 8> offset_y = {{1, 1, -1, -1, 1, 1, -1, -1}};
     std::array<int, 8> offset_z = {{1, -1, 1, -1, 1, -1, 1, -1}};
     // Add the min and max points for every type
-    if(passive_material_type == "box") {
-        XYVector box_size = config_.get<XYVector>("size", XYVector());
-        auto box_thickness = config_.get<double>("thickness", 0);
-        for(size_t i = 0; i < 8; ++i) {
-            points_.emplace_back(XYZPoint(passive_material_location.x() + offset_x.at(i) * box_size.x() / 2,
-                                          passive_material_location.y() + offset_y.at(i) * box_size.y() / 2,
-                                          passive_material_location.z() + offset_z.at(i) * box_thickness / 2));
-        }
+    auto max_size = model_->GetMaxSize();
+    for(size_t i = 0; i < 8; ++i) {
+        points_.emplace_back(XYZPoint(passive_material_location.x() + offset_x.at(i) * max_size / 2,
+                                      passive_material_location.y() + offset_y.at(i) * max_size / 2,
+                                      passive_material_location.z() + offset_z.at(i) * max_size / 2));
     }
-    if(passive_material_type == "tube") {
-        auto tube_outer_diameter = config_.get<XYVector>("outer_diameter", XYVector());
-        auto tube_length = config_.get<double>("length", 0);
-        for(size_t i = 0; i < 8; ++i) {
-            points_.emplace_back(XYZPoint(passive_material_location.x() + offset_x.at(i) * tube_outer_diameter.x() / 2,
-                                          passive_material_location.y() + offset_y.at(i) * tube_outer_diameter.y() / 2,
-                                          passive_material_location.z() + offset_z.at(i) * tube_length / 2));
-        }
-    }
-
-    if(passive_material_type == "cylinder") {
-        auto cylinder_outer_radius = config_.get<double>("outer_radius", 0);
-        auto cylinder_height = config_.get<double>("height", 0);
-        for(size_t i = 0; i < 8; ++i) {
-            points_.emplace_back(XYZPoint(passive_material_location.x() + offset_x.at(i) * cylinder_outer_radius,
-                                          passive_material_location.y() + offset_y.at(i) * cylinder_outer_radius,
-                                          passive_material_location.z() + offset_z.at(i) * cylinder_height / 2));
-        }
-    }
-
-    if(passive_material_type == "sphere") {
-        auto sphere_outer_radius = config_.get<double>("outer_radius", 0);
-        for(size_t i = 0; i < 8; ++i) {
-            points_.emplace_back(XYZPoint(passive_material_location.x() + offset_x.at(i) * sphere_outer_radius,
-                                          passive_material_location.y() + offset_y.at(i) * sphere_outer_radius,
-                                          passive_material_location.z() + offset_z.at(i) * sphere_outer_radius));
-        }
-    }
-
     return points_;
 }
