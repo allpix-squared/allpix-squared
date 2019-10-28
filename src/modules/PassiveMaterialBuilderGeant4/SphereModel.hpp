@@ -36,46 +36,47 @@ namespace allpix {
          * @brief Constructs the sphere passive material model
          * @param config Configuration with description of the model
          */
-        explicit SphereModel(Configuration& config)
-            : PassiveMaterialModel(config), config_(config) {
+        explicit SphereModel(Configuration& config) : PassiveMaterialModel(config), config_(config) {
 
             // Set the cylinder specifications
             setInnerRadius(config_.get<double>("inner_radius", 0));
             setOuterRadius(config_.get<double>("outer_radius"));
             setStartingAnglePhi(config_.get<double>("starting_angle_phi", 0));
-            setArcLengthPhi(config_.get<double>("arc_length_phi", 360*CLHEP::deg));
+            setArcLengthPhi(config_.get<double>("arc_length_phi", 360 * CLHEP::deg));
             setStartingAngleTheta(config_.get<double>("starting_angle_theta", 0));
-            setArcLengthTheta(config_.get<double>("arc_length_theta", 180*CLHEP::deg));
+            setArcLengthTheta(config_.get<double>("arc_length_theta", 180 * CLHEP::deg));
             std::string name = config_.getName();
-            
-            //Limit the values that can be given
-             if(inner_radius >= outer_radius) {
+
+            // Limit the values that can be given
+            if(inner_radius >= outer_radius) {
                 throw InvalidValueError(config_, "inner_radius", "inner_radius cannot be larger than the outer_radius");
             }
-            if(arc_length_phi > 360*CLHEP::deg) {
-                throw InvalidValueError(config_, "arc_length_phi", "arc_length_phi exceeds the maximum value of 360 degrees");
+            if(arc_length_phi > 360 * CLHEP::deg) {
+                throw InvalidValueError(
+                    config_, "arc_length_phi", "arc_length_phi exceeds the maximum value of 360 degrees");
             }
-            if(arc_length_theta > 180*CLHEP::deg) {
-                throw InvalidValueError(config_, "arc_length_theta", "arc_length_theta exceeds the maximum value of 180 degrees");
+            if(arc_length_theta > 180 * CLHEP::deg) {
+                throw InvalidValueError(
+                    config_, "arc_length_theta", "arc_length_theta exceeds the maximum value of 180 degrees");
             }
             // Create the G4VSolids which make the sphere
             solid_ = new G4Sphere(name + "_volume",
-                                                            inner_radius,
-                                                            outer_radius,
-                                                            starting_angle_phi,
-                                                            arc_length_phi,
-                                                            starting_angle_theta,
-                                                            arc_length_theta);
+                                  inner_radius,
+                                  outer_radius,
+                                  starting_angle_phi,
+                                  arc_length_phi,
+                                  starting_angle_theta,
+                                  arc_length_theta);
 
             filling_solid_ = new G4Sphere(name + "_filling_volume",
-                                                                    0,
-                                                                    inner_radius,
-                                                                    starting_angle_phi,
-                                                                    arc_length_phi,
-                                                                    starting_angle_theta,
-                                                                    arc_length_theta);
-            //Get the maximum of the size parameters
-            max_size_ = 2*outer_radius;
+                                          0,
+                                          inner_radius,
+                                          starting_angle_phi,
+                                          arc_length_phi,
+                                          starting_angle_theta,
+                                          arc_length_theta);
+            // Get the maximum of the size parameters
+            max_size_ = 2 * outer_radius;
         }
 
         /**
@@ -110,10 +111,9 @@ namespace allpix {
         void setArcLengthTheta(double val) { arc_length_theta = std::move(val); }
 
         // Set the override functions of PassiveMaterialModel
-        G4Sphere* getSolid() override {return solid_;}
-        G4Sphere* getFillingSolid() override {return filling_solid_;}
-        double getMaxSize() override {return max_size_;}
-
+        G4Sphere* getSolid() override { return solid_; }
+        G4Sphere* getFillingSolid() override { return filling_solid_; }
+        double getMaxSize() override { return max_size_; }
 
     private:
         Configuration& config_;
@@ -130,7 +130,6 @@ namespace allpix {
         double arc_length_phi;
         double starting_angle_theta;
         double arc_length_theta;
-
     };
 } // namespace allpix
 

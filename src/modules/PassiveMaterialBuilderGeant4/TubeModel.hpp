@@ -37,8 +37,7 @@ namespace allpix {
          * @brief Constructs the tube passive material model
          * @param config Configuration with description of the model
          */
-        explicit TubeModel(Configuration& config)
-            : PassiveMaterialModel(config), config_(config) {
+        explicit TubeModel(Configuration& config) : PassiveMaterialModel(config), config_(config) {
 
             // Set the box specifications
             setOuterWidth(config_.get<double>("outer_width"));
@@ -47,29 +46,25 @@ namespace allpix {
             setInnerHeight(config.get<double>("inner_height", 0));
             setLength(config.get<double>("length"));
             std::string name = config_.getName();
-            //Limit the values that can be given
-            if(inner_width >= outer_width){ 
+            // Limit the values that can be given
+            if(inner_width >= outer_width) {
                 throw InvalidValueError(config_, "inner_width", "inner_width cannot be larger than the outer_width");
             }
             if(inner_height >= outer_height) {
                 throw InvalidValueError(config_, "inner_height", "inner_height cannot be larger than the outer_height");
             }
             // Create the G4VSolids which make the tube
-            auto outer_volume =
-                new G4Box(name + "_outer_volume", outer_width / 2, outer_height / 2, length / 2);
+            auto outer_volume = new G4Box(name + "_outer_volume", outer_width / 2, outer_height / 2, length / 2);
 
-            auto inner_volume = new G4Box(
-                name + "_inner_volume", inner_width / 2, inner_height / 2, 1.1 * length / 2);
+            auto inner_volume = new G4Box(name + "_inner_volume", inner_width / 2, inner_height / 2, 1.1 * length / 2);
 
-            solid_ =
-                new G4SubtractionSolid(name + "_volume", outer_volume, inner_volume);
+            solid_ = new G4SubtractionSolid(name + "_volume", outer_volume, inner_volume);
 
-            filling_solid_ = new G4Box(
-                name + "_filling_volume", inner_width / 2, inner_height / 2, length / 2); 
+            filling_solid_ = new G4Box(name + "_filling_volume", inner_width / 2, inner_height / 2, length / 2);
 
-            //Get the maximum of the size parameters
+            // Get the maximum of the size parameters
             max_size_ = std::max(outer_width, std::max(outer_height, length));
-        }        
+        }
         /**
          * @brief Set the X-value of the outer size of the tube
          * @param val Outer width of the tube
@@ -97,10 +92,9 @@ namespace allpix {
         void setLength(double val) { length = std::move(val); }
 
         // Set the override functions of PassiveMaterialModel
-        G4SubtractionSolid* getSolid() override {return solid_;}
-        G4Box* getFillingSolid() override {return filling_solid_;}
-        double getMaxSize() override {return max_size_;}
-
+        G4SubtractionSolid* getSolid() override { return solid_; }
+        G4Box* getFillingSolid() override { return filling_solid_; }
+        double getMaxSize() override { return max_size_; }
 
     private:
         Configuration& config_;
