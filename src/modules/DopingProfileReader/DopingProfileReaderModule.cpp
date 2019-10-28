@@ -56,8 +56,37 @@ void DopingProfileReaderModule::init() {
         FieldFunction<double> function = [concentration](const ROOT::Math::XYZPoint&) { return concentration; };
 
         detector_->setDopingProfileFunction(function, type);
+    } else if(field_model == "regions") {
+        LOG(TRACE) << "Adding doping concentration depending on sensor region";
+        type = FieldType::CUSTOM;
+
+        auto concentration = config_.getMatrix<double>("doping_concentration");
+        std::map<double, double> concentration_map;
+        for(const auto& region : concentration) {
+            if(region.size() != 2) {
+                throw InvalidValueError(
+                    config_, "doping_concentration", "expecting two values per row, depth and concentration");
+            }
+
+            concentration_map[region.front()] = region.back();
+            LOG(INFO) << "Set constant doping concentration of " << Units::display(region.back(), {"/cm/cm/cm"})
+                      << " at sensor depth " << Units::display(region.front(), {"um", "mm"});
+        }
+        FieldFunction<double> function = [ concentration_map, thickness = detector_->getModel()->getSensorSize().z() ](
+            const ROOT::Math::XYZPoint& position) {
+            // Lower bound returns the first element that is *not less* than the given key - in this case, the z position
+            // should always be *before* the region boundary set in the vector
+            auto item = concentration_map.lower_bound(thickness / 2 - position.z());
+            if(item != concentration_map.end()) {
+                return item->second;
+            } else {
+                return concentration_map.rbegin()->second;
+            }
+        };
+
+        detector_->setDopingProfileFunction(function, type);
     } else {
-        throw InvalidValueError(config_, "model", "model should be 'constant' or 'mesh'");
+        throw InvalidValueError(config_, "model", "model should be 'constant', 'regions' or 'mesh'");
     }
 }
 
