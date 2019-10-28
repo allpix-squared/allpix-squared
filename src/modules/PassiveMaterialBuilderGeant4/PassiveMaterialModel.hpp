@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Base of detector models
+ * @brief Base of passive material models
  *
  * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
@@ -9,8 +9,8 @@
  */
 
 /**
- * @defgroup DetectorModels Detector models
- * @brief Collection of detector models supported by the framework
+ * @defgroup PassiveMaterialModels passive material models
+ * @brief Collection of passive material models supported by the framework
  */
 
 #ifndef ALLPIX_MODULE_PASSIVE_MATERIAL_MODEL_H
@@ -25,31 +25,27 @@
 #include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
 
-#include "core/config/ConfigReader.hpp"
+#include "core/config/Configuration.hpp"
 #include "core/config/exceptions.h"
 #include "core/utils/log.h"
 #include "tools/ROOT.h"
 
-#include <G4PVPlacement.hh>
-#include "G4LogicalVolume.hh"
 #include "G4VSolid.hh"
 
 namespace allpix {
     /**
-     * @ingroup DetectorModels
-     * @brief Base of all detector models
+     * @ingroup PassiveMaterialModels
+     * @brief Base of all passive material models
      *
-     * Implements the minimum required for a detector model. A model always has a pixel grid with a specific pixel size. The
-     * pixel grid defines the base size of the sensor, chip and support. Excess length can be specified. Every part of the
-     * detector model has a defined center and size which can be overloaded by specialized detector models. The basic
-     * detector model also defines the rotation center in the local coordinate system.
+     * Creates the functions that will be overwritten by the passive material models.
+     * The G4VSolid of the passive material and it's optional filling material are defined.
+     * The maximum size parameter is defined.
      */
     class PassiveMaterialModel {
     public:
         /**
-         * @brief Constructs the base detector model
-         * @param type Name of the model type
-         * @param reader Configuration reader with description of the model
+         * @brief Constructs the base passive material model
+         * @param Configuration with description of the model
          */
         PassiveMaterialModel(Configuration&);
 
@@ -58,14 +54,21 @@ namespace allpix {
          */
         virtual ~PassiveMaterialModel() = default;
 
-        virtual G4VSolid* GetSolid();
-        virtual G4VSolid* GetFillingSolid();
-        virtual double GetMaxSize();
-
-    private:
-        G4VSolid* solid_;
-        G4VSolid* filling_solid_;
-        double max_size_;
+        /**
+         * @brief Virtual function that will return a G4VSolid corresponding to the specific model
+         * @return Nullptr if no valid model type is defined
+         */
+        virtual G4VSolid* GetSolid() { return nullptr; }
+        /**
+         * @brief Virtual function that will return a G4VSolid corresponding to the filling material if required
+         * @return Nullptr if no valid model type is defined
+         */
+        virtual G4VSolid* GetFillingSolid() { return nullptr; }
+        /**
+         * @brief Virtual function that will return the maximum size parameter of the model
+         * @return 0 if no valid model type is defined
+         */
+        virtual double GetMaxSize() { return 0; }
     };
 } // namespace allpix
 

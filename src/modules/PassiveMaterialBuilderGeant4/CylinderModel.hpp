@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Parameters of a hybrid pixel detector model
+ * @brief Parameters of a cylinder passive material model
  *
  * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
@@ -27,33 +27,35 @@
 namespace allpix {
 
     /**
-     * @ingroup DetectorModels
-     * @brief Model of a hybrid pixel detector. This a model where the sensor is bump-bonded to the chip
+     * @ingroup PassiveMaterialModel
+     * @brief Model of an cylinder with inner and outer radius. The cylinder can be filled with a filling material.
      */
     class CylinderModel : public PassiveMaterialModel {
     public:
-        /**
-         * @brief Constructs the hybrid pixel detector model
-         * @param type Name of the model type
-         * @param reader Configuration reader with description of the model
+         /**
+         * @brief Constructs the cylinder passive material model
+         * @param config Configuration with description of the model
          */
         explicit CylinderModel(Configuration& config)
             : PassiveMaterialModel(config), config_(config) {
 
-            // Excess around the chip from the pixel grid
+            // Set the cylinder specifications
             setInnerRadius(config_.get<double>("inner_radius", 0));
             setOuterRadius(config_.get<double>("outer_radius"));
             setLength(config_.get<double>("length"));
             setStartingAngle(config_.get<double>("starting_angle", 0));
             setArcLength(config_.get<double>("arc_length", 360*CLHEP::deg));
-
             std::string name = config_.getName();
+
+            //Limit the values that can be given
             if(inner_radius >= outer_radius) {
                 throw InvalidValueError(config_, "inner_radius", "inner_radius cannot be larger than the outer_raidus");
             }
             if(arc_length > 360*CLHEP::deg) {
                 throw InvalidValueError(config_, "arc_length", "arc_length exceeds the maximum value of 360 degrees");
             }
+
+            // Create the G4VSolids which make the cylinder
             solid_ = new G4Tubs(name + "_volume",
                                                             inner_radius,
                                                             outer_radius,
@@ -67,56 +69,59 @@ namespace allpix {
                                                                     length/2,
                                                                     starting_angle ,
                                                                     arc_length);
+            //Get the maximum of the size parameters
             max_size_ = std::max(2*outer_radius, length);
         
         
         }
 
         /**
-         * @brief Set the XY-offset of the bumps from the center
-         * @param val Offset from the pixel grid center
+         * @brief Set the inner radius of the cylinder in the XY-plane
+         * @param val Inner radius of the cylinder
          */
         void setInnerRadius(double val) { inner_radius = std::move(val); }
         /**
-         * @brief Set the XY-offset of the bumps from the center
-         * @param val Offset from the pixel grid center
+         * @brief Set the outer radius of the cylinder in the XY-plane
+         * @param val Outer radius of the cylinder
          */
         void setOuterRadius(double val) { outer_radius = std::move(val); }
         /**
-         * @brief Set the XY-offset of the bumps from the center
+         * @brief Set the length of the cylinder in the Z-directior
          * @param val Offset from the pixel grid center
          */
         void setLength(double val) { length = std::move(val); }
         /**
-         * @brief Set the XY-offset of the bumps from the center
-         * @param val Offset from the pixel grid center
+         * @brief Set starting angle of the circumference of the cylinder in degrees
+         * @param val Starting angle of the cylinder
          */
         void setStartingAngle(double val) { starting_angle = std::move(val); }
         /**
-         * @brief Set the XY-offset of the bumps from the center
-         * @param val Offset from the pixel grid center
+         * @brief Set arc length of the circumference in degrees
+         * @param val Arc length of the cylinder
          */
         void setArcLength(double val) { arc_length = std::move(val); }
 
+        // Set the override functions of PassiveMaterialModel
         G4Tubs* GetSolid() override {return solid_;}
         G4Tubs* GetFillingSolid() override {return filling_solid_;}
         double GetMaxSize() override {return max_size_;}
 
 
     private:
+        Configuration& config_;
+
+        // G4VSolid returnables
         G4Tubs* solid_;
         G4Tubs* filling_solid_;
         double max_size_;
 
-        std::string type_;
-        Configuration& config_;
 
+        // G4VSolid specifications
         double inner_radius;
         double outer_radius;
         double length;
         double starting_angle;
         double arc_length;
-
     };
 } // namespace allpix
 

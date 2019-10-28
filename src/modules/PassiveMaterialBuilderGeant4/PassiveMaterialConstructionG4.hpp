@@ -38,17 +38,22 @@ namespace allpix {
          * @return Physical volume representing the passive materials
          */
         void build(G4LogicalVolume* world_log, std::map<std::string, G4Material*> materials_) override;
-
+        /**
+         * @brief Defines the points which represent the outer corners of the passive material
+         * @return Vector of all XYZ points of the corners
+         */
         std::vector<ROOT::Math::XYZPoint> addPoints();
 
     private:
         Configuration& config_;
+
         // Storage of internal objects
         std::shared_ptr<PassiveMaterialModel> model_;
-        ROOT::Math::XYZPoint passive_material_location;
+        std::string name_;
         std::string passive_material_type;
-        std::vector<ROOT::Math::XYZPoint> points_;
+        ROOT::Math::XYZPoint passive_material_location;
 
+        std::vector<ROOT::Math::XYZPoint> points_;
         std::vector<std::shared_ptr<G4VSolid>> solids_;
     };
 
