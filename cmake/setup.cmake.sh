@@ -16,3 +16,4 @@ CLIC_AllpixSquared_home=$THIS_HERE
 export PATH=${CLIC_AllpixSquared_home}/bin:${PATH}
 export LD_LIBRARY_PATH=${CLIC_AllpixSquared_home}/lib:${LD_LIBRARY_PATH}
 export XDG_DATA_DIRS=${CLIC_AllpixSquared_home}/share:${XDG_DATA_DIRS}
+export CMAKE_PREFIX_PATH=${CLIC_AllpixSquared_home}/share/cmake:$CMAKE_PREFIX_PATH
