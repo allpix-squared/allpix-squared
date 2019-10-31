@@ -50,14 +50,17 @@ namespace allpix {
             // Limit the values that can be given
             if(inner_radius >= outer_radius) {
                 throw InvalidValueError(config_, "inner_radius", "inner_radius cannot be larger than the outer_radius");
-            }
-            if(arc_length_phi > 360 * CLHEP::deg) {
+            } else if(arc_length_phi > 360 * CLHEP::deg) {
                 throw InvalidValueError(
                     config_, "arc_length_phi", "arc_length_phi exceeds the maximum value of 360 degrees");
-            }
-            if(arc_length_theta > 180 * CLHEP::deg) {
+            } else if(starting_angle_theta > 180 * CLHEP::deg) {
                 throw InvalidValueError(
-                    config_, "arc_length_theta", "arc_length_theta exceeds the maximum value of 180 degrees");
+                    config_, "starting_angle_theta", "starting_angle_theta exceeds the maximum value of 180 degrees");
+            } else if(starting_angle_theta + arc_length_theta > 180 * CLHEP::deg) {
+                LOG(WARNING) << "starting_angle_theta and arc_length_theta combined cannot be larger than 180 degrees for '"
+                             << name << "'. arc_length_theta will be set to 180deg - starting_angle_theta = "
+                             << Units::display(180 * CLHEP::deg - starting_angle_theta, "deg");
+                setArcLengthTheta(180 * CLHEP::deg - starting_angle_theta);
             }
             // Create the G4VSolids which make the sphere
             solid_ = new G4Sphere(name + "_volume",

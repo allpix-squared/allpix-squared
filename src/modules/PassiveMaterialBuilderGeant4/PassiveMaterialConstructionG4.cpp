@@ -75,7 +75,7 @@ void PassiveMaterialConstructionG4::build(G4LogicalVolume* world_log, std::map<s
     Get the information for the passive materials
     */
     auto passive_material = config_.get<std::string>("material");
-    auto orientation_vector = config_.get<XYZVector>("orientation", XYZVector());
+    auto orientation_vector = config_.get<XYZVector>("orientation");
 
     Rotation3D orientation;
 

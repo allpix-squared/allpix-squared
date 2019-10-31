@@ -242,6 +242,95 @@ An example configuration file describing a setup with one CLICpix2 detector and 
 Figure~\ref{fig:telescope} shows a visualization of the setup described in the file.
 This configuration is used in the rest of this chapter for explaining concepts.
 
+\subsection{Passive Material configuration}
+\label{sec:passive_material_config}
+The passive material configuration consists, similar to the detector configuarion, of a set of sections describing the passive material in the setup.
+Each section starts with a header describing the name used to identify the passive material; !!!!!!!!!!!!!!!all names are required to be unique!!!!!!!!!!!!!!!!!!!!!.
+Every passive material should contain all of the following parameters:
+\begin{itemize}
+
+
+\item The 3D \parameter{position} in the world frame in the order x, y, z.
+See Section~\ref{sec:models_geometry} for details.
+\item The \parameter{orientation} specified as X-Y-Z extrinsic Euler angles.
+This means the detector is rotated first around the world's X-axis, then around the world's Y-axis and then around the world's Z-axis.
+Alternatively the orientation can be set as Z-Y-X or X-Z-X extrinsic Euler angles, refer to Section~\ref{sec:models_geometry} for details.
+\item A string referring to the \parameter{type} of the passive material. 
+The model should be described by a model-file in module PassiveMaterialBuilderGeant4. Currently, the implented models are "box", "tube", "cylinder" and "sphere".
+\item A string referring to the \parameter{material} of the passive material. 
+The materials are defined in the GeometryBuilderGeant4 module and are described in the module section.
+\item A set of \parameter{size} paramaters specific for the model that is chosen. 
+The size parameters for the specific models are described below.
+All size paramaters that describe the total length of something are placed such that half of this total length extends from each side of the given \paramater{position}.
+If a parameter describes the radius, this means the radius will extend from the \paramater{position} on both sides, making its total size two times the radius in the given direction.
+
+\end{itemize}
+
+For each model, a set of specific size paramaters need to be given, of which some are optional.\\
+Box: A rectangular box which can be massive or have an inner volume.
+\begin{itemize}
+\item The \parameter{size} of the box is an XYZ vector which defines the total size of the box.
+\item (Optional) The \parameter{inner_size} of the box is an XYZ vector which defines a volume inside of the box which will be removed from the original box volume. Defaults to 0mm 0mm 0mm.
+\end{itemize}
+
+Tube: A rectangular tube which can be open at both ends along the z-axis.
+\begin{itemize}
+\item The \parameter{outer_width} of the tube is the total width of the tube (in the X-direction).
+\item The \parameter{outer_height} of the tube is the total height of the tube (in the Y-direction).
+\item The \parameter{length} of the tube is the total length of the tube (in the Z-direction).
+\item (Optional) The \parameter{inner_width} of the tube is the width of the inner tube. Defaults to 0mm.
+\item (Optional) The \parameter{inner_height} of the tube is the height of the inner tube. Defaults to 0mm.
+\end{itemize}
+
+Tube: A cylindrical tube which can be open at both ends along the z-axis.
+\begin{itemize}
+\item The \parameter{outer_radius} of the cylinder is the total radius of the cylinder (in the XY-plane).
+\item The \parameter{length} of the cylinder is the total length of the cylinder (in the Z-direction).
+\item (Optional) The \parameter{inner_radius} of the cylinder is the radius of the inner cylinder. Defaults to 0mm.
+\item (Optional) The \parameter{starting_angle} of the cylinder is the angle at which circumference of the cylinder will start. 0 degrees refers to the point along the positive x-axis and the angle moves counter clockwise. Defaults to 0deg.
+\item (Optional) The \parameter{arc_length} of the cylinder is the arc-length of the circumference that will be drawn, starting from the given \parameter{starting_angle}. Defaults to 360deg which is the full circumference.
+Note that the if the \parameter{arc_length} is set to 360 degrees, the \apsq framework will always draw the full circumference, regardless of the value of \paramater{starting_angle}.
+\end{itemize}
+
+Sphere: A full or partly made sphere with an inner- and outer radius.
+\begin{itemize}
+\item The \parameter{outer_radius} of the sphere is the total radius of the sphere in all directions.
+\item (Optional) The \parameter{inner_radius} of the sphere is the radius of the inner sphere. Defaults to 0mm.
+\item (Optional) The \parameter{starting_angle_phi} of the sphere is the azimuthal angle at which circumference of the sphere will start in the XY-plane. 0 degrees refers to the point along the positive x-axis and the angle moves counter clockwise. Defaults to 0deg.
+\item (Optional) The \parameter{arc_length_phi} of the sphere is the arc-length of the circumference that will be drawn, starting from the given \parameter{starting_angle_phi} in the XY-plane. Defaults to 360deg which is the full circumference.
+\item (Optional) The \parameter{starting_angle_theta} of the sphere is the polar angle at which the \paramater{arc_length_theta} will start. 0 degrees refers to the point along the positive z-axis. Defaults to 0deg.
+\item (Optional) The \parameter{arc_length_theta} of the sphere is the arc-length of the polar angle which will be rotated around the z-axis to build the sphere, starting from the given \parameter{starting_angle_theta}. Defaults to 1800deg which creates the full circle.\\
+Note that the \parameter{arc_length_phi} works the same as the \paramater{arc_length} from the cylinder, but the \paramater{arc_length_theta} works different.
+The \apsq framework will only draw the full circle if \parameter{starting_angle_theta} = 0deg, and \parameter{arc_length_theta} = 180deg. 
+In all other situations, the sphere will start at \parameter{starting_angle_theta} and continue the \parameter{arc_length_theta} untill \parameter{arc_length_theta} + \parameter{starting_angle_theta} = 180deg. After this it willl stop.
+The necessary module errors have been included to make sure the user will know will and won't be build.
+\end{itemize}
+
+For all above passive material, the empty space that's left inside the material (if any) can be filled with a given material.
+\begin{itemize}
+\item A string referring to the \parameter{filling_material} of the passive material. 
+The materials are defined in the GeometryBuilderGeant4 module and are described in the module section.
+The filling material will follow the shape of the outer material in the case of the cylinder and the sphere.
+\end{itemize}
+
+Similar to the detector configuration, it is also possible to define an orientation mode.
+\begin{itemize}
+\item An \parameter{orientation_mode} that determines the way that the orientation is applied.
+The orientation mode is further explained in Section~\ref{sec:models_geometry}.
+\end{itemize}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.6\textwidth]{passive_materials.png}
+  \caption{Visualization of 9 different passive materials, each showing the different features of each model.}
+  \label{fig:passivematerials}
+\end{figure}
+
+An example configuration file describing a set of 9 passive materials, displaying all of the software features, is the following:
+\inputminted[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}{../../etc/passive_materials.conf}
+Figure~\ref{fig:passivematerials} shows a visualization of the setup described in the file.
+
+
 \section{Framework parameters}
 \label{sec:framework_parameters}
 The \apsq framework provides a set of global parameters which control and alter its behavior:
