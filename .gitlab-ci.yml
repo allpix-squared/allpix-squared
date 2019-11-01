@@ -69,6 +69,12 @@ cmp:cc7-docker:
         entrypoint: [""]
     before_script:
         - source scl_source enable devtoolset-7 || echo " "
+    script:
+        - mkdir build
+        - cd build
+        - cmake3 -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
+        - make
+        - make install
 
 cmp:cc7-gcc:
     extends: .compile
