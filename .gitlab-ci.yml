@@ -62,6 +62,14 @@ cmp:lxplus-gcc:
         - ninja
         - ninja install
 
+cmp:cc7-docker:
+    extends: .compile
+    image:
+        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps
+        entrypoint: [""]
+    before_script:
+        - source scl_source enable devtoolset-7 || echo " "
+
 cmp:cc7-gcc:
     extends: .compile
     image: clicdp/cc7-base
