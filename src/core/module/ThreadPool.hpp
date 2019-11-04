@@ -175,4 +175,4 @@ namespace allpix {
 // Include template members
 #include "ThreadPool.tpp"
 
-#endif
+#endif /* ALLPIX_THREADPOOL_H */

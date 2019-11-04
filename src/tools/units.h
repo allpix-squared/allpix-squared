@@ -49,8 +49,8 @@ namespace allpix {
         // CHARGE
         Units::add("e", 1);
         Units::add("ke", 1e3);
-        Units::add("fC", 1 / 1.6021766208e-4);
-        Units::add("C", 1 / 1.6021766208e-19);
+        Units::add("fC", 1 / 1.602176634e-4);
+        Units::add("C", 1 / 1.602176634e-19);
 
         // VOLTAGE
         // NOTE: fixed by above
@@ -70,4 +70,4 @@ namespace allpix {
     }
 } // namespace allpix
 
-#endif /* ALLPIX_FIELD_PARSER_H */
+#endif /* ALLPIX_ADD_UNITS_H */

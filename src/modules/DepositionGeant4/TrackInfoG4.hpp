@@ -147,4 +147,4 @@ namespace allpix {
         double final_tot_E_{};
     };
 } // namespace allpix
-#endif
+#endif /* TrackInfoG4_H */

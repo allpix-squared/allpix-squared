@@ -71,6 +71,30 @@ std::vector<const MCParticle*> PixelHit::getMCParticles() const {
     return mc_particles;
 }
 
+/**
+ * @throws MissingReferenceException If the pointed object is not in scope
+ *
+ * MCParticles can only be fetched if the full history of objects are in scope and stored
+ */
+std::vector<const MCParticle*> PixelHit::getPrimaryMCParticles() const {
+    std::vector<const MCParticle*> primary_particles;
+    for(auto& mc_particle : mc_particles_) {
+        if(!mc_particle.IsValid() || mc_particle.GetObject() == nullptr) {
+            throw MissingReferenceException(typeid(*this), typeid(MCParticle));
+        }
+        auto particle = dynamic_cast<MCParticle*>(mc_particle.GetObject());
+
+        // Check for possible parents:
+        if(particle->getParent() != nullptr) {
+            continue;
+        }
+        primary_particles.emplace_back(particle);
+    }
+
+    // Return as a vector of mc particles
+    return primary_particles;
+}
+
 void PixelHit::print(std::ostream& out) const {
     out << "PixelHit " << this->getIndex().X() << ", " << this->getIndex().Y() << ", " << this->getSignal() << ", "
         << this->getTime();
