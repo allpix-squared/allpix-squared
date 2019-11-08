@@ -764,6 +764,36 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         return diffusion;
     };
 
+    // Define a function to compute the charge carrier multiplcation
+    auto carrier_multiplication = [&](double efield_mag, double step_length) -> double {
+
+        // experimental parameters from Massey model
+        double a_n = 4.43e5; // in cm^-1
+        double a_p = 1.13e6; // in cm^-1
+        double c_n = 9.66e5; // in V cm^-1
+        double c_p = 1.71e6; // in V cm^-1
+        double d_n = 4.99e2; // in V cm^-1 K^-1
+        double d_p = 1.09e3; // in V cm^-1 K^-1
+
+        // ionisation coefficient for electrons
+        double b_n = c_n + d_n * temperature_;
+        double alpha_ = a_n * std::exp(-(b_n/efield_mag))
+
+        // ionisation coefficient for holes
+        double b_p = c_p + d_p * temperature_;
+        double beta_ = a_n * std::exp(-(b_n/efield_mag))
+
+        // Compute the multiplication
+        double multiplication = 0;
+        if (propagate_electrons_){
+            multiplication += std:;exp(step_length / alpha_);
+        }
+        if (propagate_holes_){
+            multiplication += std:;exp(step_length / beta_);
+        }
+        return multiplication;
+    };
+
     // Survival probability of this charge carrier package, evaluated at every step
     std::uniform_real_distribution<double> survival(0, 1);
 
