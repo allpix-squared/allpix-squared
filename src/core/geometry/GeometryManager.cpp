@@ -90,9 +90,13 @@ void GeometryManager::load(ConfigManager* conf_manager, std::mt19937_64& seeder)
                 detector_section, "orientation_mode", "orientation_mode should be either 'zyx', xyz' or 'zxz'");
         }
 
+        // Get the mother volume of the detector
+        auto mother_volume = detector_section.get<std::string>("mother_volume", "World");
+
         // Create the detector and add it without model
         // NOTE: cannot use make_shared here due to the private constructor
-        auto detector = std::shared_ptr<Detector>(new Detector(detector_section.getName(), position, orientation));
+        auto detector =
+            std::shared_ptr<Detector>(new Detector(detector_section.getName(), position, orientation, mother_volume));
         addDetector(detector);
 
         // Add a link to the detector to add the model later

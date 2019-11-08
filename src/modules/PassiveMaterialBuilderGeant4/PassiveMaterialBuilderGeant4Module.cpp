@@ -31,12 +31,21 @@ void PassiveMaterialBuilderGeant4Module::init() {
     SUPPRESS_STREAM(G4cout);
 
     ConfigManager* conf_manager = getConfigManager();
+    std::set<std::string> passive_material_names;
+
     LOG(TRACE) << "Adding " << conf_manager->getPassiveMaterialConfigurations().size()
                << " passive material(s) to the list of builders.";
 
     for(auto& passive_material_section : conf_manager->getPassiveMaterialConfigurations()) {
+        auto name = passive_material_section.getName();
+        if(passive_material_names.find(name) != passive_material_names.end()) {
+            throw ModuleError("Passive Material with name '" + name +
+                              "' is already registered, Passive Material names should be unique");
+        }
+        passive_material_names.insert(name);
+
         std::shared_ptr<PassiveMaterialConstructionG4> passive_material_builder =
-            std::make_shared<PassiveMaterialConstructionG4>(passive_material_section);
+            std::make_shared<PassiveMaterialConstructionG4>(passive_material_section, geo_manager_);
 
         // Add the passive materials to objects that will be built in GeometryBuilderGeant4 Module
         geo_manager_->addBuilder(passive_material_builder);

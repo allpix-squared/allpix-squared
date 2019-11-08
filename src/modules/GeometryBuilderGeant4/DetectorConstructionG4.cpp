@@ -16,6 +16,7 @@
 
 #include <G4Box.hh>
 #include <G4LogicalVolume.hh>
+#include <G4LogicalVolumeStore.hh>
 #include <G4NistManager.hh>
 #include <G4PVDivision.hh>
 #include <G4PVPlacement.hh>
@@ -54,7 +55,7 @@ template <typename T, typename... Args> static std::shared_ptr<T> make_shared_no
     return std::shared_ptr<T>(new T(args...), [](T*) {});
 }
 
-void DetectorConstructionG4::build(G4LogicalVolume* world_log, std::map<std::string, G4Material*> materials_) {
+void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_) {
 
     /*
     Build the individual detectors
@@ -65,13 +66,22 @@ void DetectorConstructionG4::build(G4LogicalVolume* world_log, std::map<std::str
     for(auto& detector : detectors) {
         // Get pointer to the model of the detector
         auto model = detector->getModel();
+        auto mother_volume = detector->getMotherVolume();
 
         std::string name = detector->getName();
         LOG(DEBUG) << "Creating Geant4 model for " << name;
         LOG(DEBUG) << " Wrapper dimensions of model: " << Units::display(model->getSize(), {"mm", "um"});
         LOG(TRACE) << " Sensor dimensions: " << model->getSensorSize();
         LOG(TRACE) << " Chip dimensions: " << model->getChipSize();
+        LOG(TRACE) << " Mother volume: " << mother_volume;
         LOG(DEBUG) << " Global position and orientation of the detector:";
+
+        G4LogicalVolumeStore* log_volume_store = G4LogicalVolumeStore::GetInstance();
+        auto mother_log_volume = log_volume_store->GetVolume(mother_volume);
+
+        if(mother_log_volume == nullptr) {
+            throw ModuleError("Cannot place detector in volume '" + mother_volume + "' because it does not exist");
+        }
 
         // Create the wrapper box and logical volume
         auto wrapper_box = std::make_shared<G4Box>(
@@ -79,7 +89,7 @@ void DetectorConstructionG4::build(G4LogicalVolume* world_log, std::map<std::str
         solids_.push_back(wrapper_box);
         auto wrapper_log = make_shared_no_delete<G4LogicalVolume>(
             wrapper_box.get(), materials_["world_material"], "wrapper_" + name + "_log");
-        detector->setExternalObject("wrapper_log", wrapper_log);
+        geo_manager_->setExternalObject("wrapper_log", wrapper_log, name);
 
         // Get position and orientation
         auto position = detector->getPosition();
@@ -93,13 +103,13 @@ void DetectorConstructionG4::build(G4LogicalVolume* world_log, std::map<std::str
         auto wrapperGeoTranslation = toG4Vector(model->getCenter() - model->getGeometricalCenter());
         wrapperGeoTranslation *= *rotWrapper;
         G4ThreeVector posWrapper = toG4Vector(position) - wrapperGeoTranslation;
-        detector->setExternalObject("rotation_matrix", rotWrapper);
+        geo_manager_->setExternalObject("rotation_matrix", rotWrapper, name);
         G4Transform3D transform_phys(*rotWrapper, posWrapper);
 
         // Place the wrapper
         auto wrapper_phys = make_shared_no_delete<G4PVPlacement>(
-            transform_phys, wrapper_log.get(), "wrapper_" + name + "_phys", world_log, false, 0, true);
-        detector->setExternalObject("wrapper_phys", wrapper_phys);
+            transform_phys, wrapper_log.get(), "wrapper_" + name + "_phys", mother_log_volume, false, 0, true);
+        geo_manager_->setExternalObject("wrapper_phys", wrapper_phys, name);
 
         LOG(DEBUG) << " Center of the geometry parts relative to the detector wrapper geometric center:";
         /*
@@ -115,14 +125,14 @@ void DetectorConstructionG4::build(G4LogicalVolume* world_log, std::map<std::str
         solids_.push_back(sensor_box);
         auto sensor_log =
             make_shared_no_delete<G4LogicalVolume>(sensor_box.get(), materials_["silicon"], "sensor_" + name + "_log");
-        detector->setExternalObject("sensor_log", sensor_log);
+        geo_manager_->setExternalObject("sensor_log", sensor_log, name);
 
         // Place the sensor box
         auto sensor_pos = toG4Vector(model->getSensorCenter() - model->getGeometricalCenter());
         LOG(DEBUG) << "  - Sensor\t\t:\t" << Units::display(sensor_pos, {"mm", "um"});
         auto sensor_phys = make_shared_no_delete<G4PVPlacement>(
             nullptr, sensor_pos, sensor_log.get(), "sensor_" + name + "_phys", wrapper_log.get(), false, 0, true);
-        detector->setExternalObject("sensor_phys", sensor_phys);
+        geo_manager_->setExternalObject("sensor_phys", sensor_phys, name);
 
         // Create the pixel box and logical volume
         auto pixel_box = std::make_shared<G4Box>("pixel_" + name,
@@ -132,7 +142,7 @@ void DetectorConstructionG4::build(G4LogicalVolume* world_log, std::map<std::str
         solids_.push_back(pixel_box);
         auto pixel_log =
             make_shared_no_delete<G4LogicalVolume>(pixel_box.get(), materials_["silicon"], "pixel_" + name + "_log");
-        detector->setExternalObject("pixel_log", pixel_log);
+        geo_manager_->setExternalObject("pixel_log", pixel_log, name);
 
         // Create the parameterization for the pixel grid
         std::shared_ptr<G4VPVParameterisation> pixel_param =
@@ -142,7 +152,7 @@ void DetectorConstructionG4::build(G4LogicalVolume* world_log, std::map<std::str
                                                    -model->getGridSize().x() / 2.0,
                                                    -model->getGridSize().y() / 2.0,
                                                    0);
-        detector->setExternalObject("pixel_param", pixel_param);
+        geo_manager_->setExternalObject("pixel_param", pixel_param, name);
 
         // WARNING: do not place the actual parameterization, only use it if we need it
         /*
@@ -162,14 +172,14 @@ void DetectorConstructionG4::build(G4LogicalVolume* world_log, std::map<std::str
             // Create the logical volume for the chip
             auto chip_log =
                 make_shared_no_delete<G4LogicalVolume>(chip_box.get(), materials_["silicon"], "chip_" + name + "_log");
-            detector->setExternalObject("chip_log", chip_log);
+            geo_manager_->setExternalObject("chip_log", chip_log, name);
 
             // Place the chip
             auto chip_pos = toG4Vector(model->getChipCenter() - model->getGeometricalCenter());
             LOG(DEBUG) << "  - Chip\t\t:\t" << Units::display(chip_pos, {"mm", "um"});
             auto chip_phys = make_shared_no_delete<G4PVPlacement>(
                 nullptr, chip_pos, chip_log.get(), "chip_" + name + "_phys", wrapper_log.get(), false, 0, true);
-            detector->setExternalObject("chip_phys", chip_phys);
+            geo_manager_->setExternalObject("chip_phys", chip_phys, name);
         }
 
         /*
@@ -233,8 +243,8 @@ void DetectorConstructionG4::build(G4LogicalVolume* world_log, std::map<std::str
 
             ++support_idx;
         }
-        detector->setExternalObject("supports_log", supports_log);
-        detector->setExternalObject("supports_phys", supports_phys);
+        geo_manager_->setExternalObject("supports_log", supports_log, name);
+        geo_manager_->setExternalObject("supports_phys", supports_phys, name);
 
         // Build the bump bonds only for hybrid pixel detectors
         auto hybrid_model = std::dynamic_pointer_cast<HybridPixelDetectorModel>(model);
@@ -259,7 +269,7 @@ void DetectorConstructionG4::build(G4LogicalVolume* world_log, std::map<std::str
             // Create the logical wrapper volume
             auto bumps_wrapper_log = make_shared_no_delete<G4LogicalVolume>(
                 bump_box.get(), materials_["world_material"], "bumps_wrapper_" + name + "_log");
-            detector->setExternalObject("bumps_wrapper_log", bumps_wrapper_log);
+            geo_manager_->setExternalObject("bumps_wrapper_log", bumps_wrapper_log, name);
 
             // Place the general bumps volume
             G4ThreeVector bumps_pos = toG4Vector(hybrid_model->getBumpsCenter() - hybrid_model->getGeometricalCenter());
@@ -272,7 +282,7 @@ void DetectorConstructionG4::build(G4LogicalVolume* world_log, std::map<std::str
                                                                            false,
                                                                            0,
                                                                            true);
-            detector->setExternalObject("bumps_wrapper_phys", bumps_wrapper_phys);
+            geo_manager_->setExternalObject("bumps_wrapper_phys", bumps_wrapper_phys, name);
 
             // Create the individual bump solid
             auto bump_sphere = std::make_shared<G4Sphere>(
@@ -287,7 +297,7 @@ void DetectorConstructionG4::build(G4LogicalVolume* world_log, std::map<std::str
             // Create the logical volume for the individual bumps
             auto bumps_cell_log =
                 make_shared_no_delete<G4LogicalVolume>(bump.get(), materials_["solder"], "bumps_" + name + "_log");
-            detector->setExternalObject("bumps_cell_log", bumps_cell_log);
+            geo_manager_->setExternalObject("bumps_cell_log", bumps_cell_log, name);
 
             // Place the bump bonds grid
             std::shared_ptr<G4VPVParameterisation> bumps_param = std::make_shared<Parameterization2DG4>(
@@ -299,7 +309,7 @@ void DetectorConstructionG4::build(G4LogicalVolume* world_log, std::map<std::str
                 -(hybrid_model->getNPixels().y() * hybrid_model->getPixelSize().y()) / 2.0 +
                     (hybrid_model->getBumpsCenter().y() - hybrid_model->getCenter().y()),
                 0);
-            detector->setExternalObject("bumps_param", bumps_param);
+            geo_manager_->setExternalObject("bumps_param", bumps_param, name);
 
             std::shared_ptr<G4PVParameterised> bumps_param_phys =
                 std::make_shared<ParameterisedG4>("bumps_" + name + "_phys",
@@ -309,7 +319,7 @@ void DetectorConstructionG4::build(G4LogicalVolume* world_log, std::map<std::str
                                                   hybrid_model->getNPixels().x() * hybrid_model->getNPixels().y(),
                                                   bumps_param.get(),
                                                   false);
-            detector->setExternalObject("bumps_param_phys", bumps_param_phys);
+            geo_manager_->setExternalObject("bumps_param_phys", bumps_param_phys, name);
         }
 
         // ALERT: NO COVER LAYER YET

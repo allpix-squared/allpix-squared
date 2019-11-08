@@ -29,7 +29,7 @@ namespace allpix {
 
     /**
      * @ingroup PassiveMaterialModel
-     * @brief Model of a rectangular tube. The tube can be filled with a filling material.
+     * @brief Model of a rectangular tube.
      */
     class TubeModel : public PassiveMaterialModel {
     public:
@@ -40,60 +40,48 @@ namespace allpix {
         explicit TubeModel(Configuration& config) : PassiveMaterialModel(config), config_(config) {
 
             // Set the box specifications
-            setOuterWidth(config_.get<double>("outer_width"));
-            setOuterHeight(config_.get<double>("outer_height"));
-            setInnerWidth(config.get<double>("inner_width", 0));
-            setInnerHeight(config.get<double>("inner_height", 0));
-            setLength(config.get<double>("length"));
+            setOuterSize(config.get<ROOT::Math::XYZVector>("outer_size"));
+            setInnerSize(config.get<ROOT::Math::XYVector>("inner_size", ROOT::Math::XYVector()));
+            auto thickness = config.get<double>("thickness", 0);
+            if(thickness != 0) {
+                if(inner_size_ != ROOT::Math::XYVector()) {
+                    throw InvalidValueError(config_, "thickness", "cannot have both 'thickness' and 'inner_size'");
+                }
+
+                setInnerSize({outer_size_.x() - thickness, outer_size_.y() - thickness});
+            }
+
             std::string name = config_.getName();
             // Limit the values that can be given
-            if(inner_width >= outer_width) {
-                throw InvalidValueError(config_, "inner_width", "inner_width cannot be larger than the outer_width");
+            if(inner_size_.x() >= outer_size_.x() || inner_size_.y() >= outer_size_.y()) {
+                throw InvalidValueError(config_, "inner_size_", "inner_size_ cannot be larger than the outer_size_");
             }
-            if(inner_height >= outer_height) {
-                throw InvalidValueError(config_, "inner_height", "inner_height cannot be larger than the outer_height");
-            }
-            // Create the G4VSolids which make the tube
-            auto outer_volume = new G4Box(name + "_outer_volume", outer_width / 2, outer_height / 2, length / 2);
 
-            auto inner_volume = new G4Box(name + "_inner_volume", inner_width / 2, inner_height / 2, 1.1 * length / 2);
+            // Create the G4VSolids which make the tube
+            auto outer_volume =
+                new G4Box(name + "_outer_volume", outer_size_.x() / 2, outer_size_.y() / 2, outer_size_.z() / 2);
+
+            auto inner_volume =
+                new G4Box(name + "_inner_volume", inner_size_.x() / 2, inner_size_.y() / 2, 1.1 * outer_size_.z() / 2);
 
             solid_ = new G4SubtractionSolid(name + "_volume", outer_volume, inner_volume);
 
-            filling_solid_ = new G4Box(name + "_filling_volume", inner_width / 2, inner_height / 2, length / 2);
-
             // Get the maximum of the size parameters
-            max_size_ = std::max(outer_width, std::max(outer_height, length));
+            max_size_ = std::max(outer_size_.x(), std::max(outer_size_.y(), outer_size_.z()));
         }
         /**
-         * @brief Set the X-value of the outer size of the tube
-         * @param val Outer width of the tube
+         * @brief Set the XYZ-value of the outer size of the tube
+         * @param val Outer size of the tube
          */
-        void setOuterWidth(double val) { outer_width = std::move(val); }
+        void setOuterSize(ROOT::Math::XYZVector val) { outer_size_ = std::move(val); }
         /**
-         * @brief Set the Y-value of the outer size of the tube
-         * @param val Outer height of the tube
+         * @brief Set the XYZ-value of the outer size of the tube
+         * @param val Outer size of the tube
          */
-        void setOuterHeight(double val) { outer_height = std::move(val); }
-        /**
-         * @brief Set the X-value of the inner size of the tube
-         * @param val Inner width of the tube
-         */
-        void setInnerWidth(double val) { inner_width = std::move(val); }
-        /**
-         * @brief Set the Y-value of the inner size of the tube
-         * @param val Inner height of the tube
-         */
-        void setInnerHeight(double val) { inner_height = std::move(val); }
-        /**
-         * @brief Set the z-value of the outer size of the tube
-         * @param val Length of the tube
-         */
-        void setLength(double val) { length = std::move(val); }
+        void setInnerSize(ROOT::Math::XYVector val) { inner_size_ = std::move(val); }
 
         // Set the override functions of PassiveMaterialModel
         G4SubtractionSolid* getSolid() override { return solid_; }
-        G4Box* getFillingSolid() override { return filling_solid_; }
         double getMaxSize() override { return max_size_; }
 
     private:
@@ -101,15 +89,11 @@ namespace allpix {
 
         // G4VSolid returnables
         G4SubtractionSolid* solid_;
-        G4Box* filling_solid_;
         double max_size_;
 
         // G4VSolid specifications
-        double outer_width;
-        double outer_height;
-        double inner_width;
-        double inner_height;
-        double length;
+        ROOT::Math::XYZVector outer_size_;
+        ROOT::Math::XYVector inner_size_;
     };
 } // namespace allpix
 

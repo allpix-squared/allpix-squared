@@ -60,11 +60,6 @@ namespace allpix {
          */
         virtual G4VSolid* getSolid() { return nullptr; }
         /**
-         * @brief Virtual function that will return a G4VSolid corresponding to the filling material if required
-         * @return Nullptr if no valid model type is defined
-         */
-        virtual G4VSolid* getFillingSolid() { return nullptr; }
-        /**
          * @brief Virtual function that will return the maximum size parameter of the model
          * @return 0 if no valid model type is defined
          */

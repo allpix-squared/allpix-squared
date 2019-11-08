@@ -27,6 +27,7 @@
 #include <G4UnionSolid.hh>
 
 #include <G4LogicalVolume.hh>
+#include <G4LogicalVolumeStore.hh>
 #include <G4PVPlacement.hh>
 #include <G4RotationMatrix.hh>
 #include <G4ThreeVector.hh>
@@ -43,17 +44,18 @@
 
 using namespace allpix;
 using namespace ROOT::Math;
-PassiveMaterialConstructionG4::PassiveMaterialConstructionG4(Configuration& config) : config_(config) {
+PassiveMaterialConstructionG4::PassiveMaterialConstructionG4(Configuration& config, GeometryManager* geo_manager)
+    : config_(config), geo_manager_(geo_manager) {
     name_ = config_.getName();
-    passive_material_type = config_.get<std::string>("type");
-    passive_material_location = config_.get<XYZPoint>("position");
-    if(passive_material_type == "box") {
+    passive_material_type_ = config_.get<std::string>("type");
+    passive_material_location_ = config_.get<XYZPoint>("position");
+    if(passive_material_type_ == "box") {
         model_ = std::make_shared<BoxModel>(config_);
-    } else if(passive_material_type == "cylinder") {
+    } else if(passive_material_type_ == "cylinder") {
         model_ = std::make_shared<CylinderModel>(config_);
-    } else if(passive_material_type == "tube") {
+    } else if(passive_material_type_ == "tube") {
         model_ = std::make_shared<TubeModel>(config_);
-    } else if(passive_material_type == "sphere") {
+    } else if(passive_material_type_ == "sphere") {
         model_ = std::make_shared<SphereModel>(config_);
     } else {
         throw ModuleError("Pasive Material '" + name_ + "' has an incorrect type.");
@@ -70,12 +72,18 @@ template <typename T, typename... Args> static std::shared_ptr<T> make_shared_no
     return std::shared_ptr<T>(new T(args...), [](T*) {});
 }
 
-void PassiveMaterialConstructionG4::build(G4LogicalVolume* world_log, std::map<std::string, G4Material*> materials_) {
+void PassiveMaterialConstructionG4::build(std::map<std::string, G4Material*> materials_) {
     /*
     Get the information for the passive materials
     */
     auto passive_material = config_.get<std::string>("material");
     auto orientation_vector = config_.get<XYZVector>("orientation");
+    auto mother_volume = config_.get<std::string>("mother_volume", "World");
+    G4LogicalVolumeStore* log_volume_store = G4LogicalVolumeStore::GetInstance();
+    mother_log_volume_ = log_volume_store->GetVolume(mother_volume);
+    if(mother_log_volume_ == nullptr) {
+        throw InvalidValueError(config_, "mother_volume", "mother_volume does not exist");
+    }
 
     Rotation3D orientation;
 
@@ -101,13 +109,13 @@ void PassiveMaterialConstructionG4::build(G4LogicalVolume* world_log, std::map<s
     XYZPoint vx, vy, vz;
     orientation.GetComponents(vx, vy, vz);
     auto rotWrapper = std::make_shared<G4RotationMatrix>(copy_vec.data());
-    G4ThreeVector posWrapper = toG4Vector(passive_material_location);
+    G4ThreeVector posWrapper = toG4Vector(passive_material_location_);
     G4Transform3D transform_phys(*rotWrapper, posWrapper);
     std::transform(passive_material.begin(), passive_material.end(), passive_material.begin(), ::tolower);
 
-    LOG(TRACE) << "Creating Geant4 model for '" << name_ << "' of type '" << passive_material_type << "'";
+    LOG(TRACE) << "Creating Geant4 model for '" << name_ << "' of type '" << passive_material_type_ << "'";
     LOG(TRACE) << " -Material\t\t:\t " << passive_material << "( " << materials_[passive_material]->GetName() << " )";
-    LOG(TRACE) << " -Position\t\t:\t " << Units::display(passive_material_location, {"mm", "um"});
+    LOG(TRACE) << " -Position\t\t:\t " << Units::display(passive_material_location_, {"mm", "um"});
 
     // Get the solid from the Model
     auto solid = std::shared_ptr<G4VSolid>(model_->getSolid());
@@ -118,25 +126,12 @@ void PassiveMaterialConstructionG4::build(G4LogicalVolume* world_log, std::map<s
 
     // Place the logical volume of the passive material
     auto log_volume = make_shared_no_delete<G4LogicalVolume>(solid.get(), materials_[passive_material], name_ + "_log");
+    geo_manager_->setExternalObject("passive_material_log", log_volume, name_);
 
     // Place the physical volume of the passive material
-    auto phys_volume =
-        make_shared_no_delete<G4PVPlacement>(transform_phys, log_volume.get(), name_ + "_phys", world_log, false, 0, true);
-
-    // Fill the material with the filling_material if needed
-    auto filling_material = config_.get<std::string>("filling_material", std::string());
-    if(!filling_material.empty()) {
-        auto filling_solid = std::shared_ptr<G4VSolid>(model_->getFillingSolid());
-        if(filling_solid == nullptr) {
-            throw ModuleError("Pasive Material '" + name_ + "' does not have a filling solid associated with its model");
-        }
-        solids_.push_back(filling_solid);
-
-        auto filling_log =
-            make_shared_no_delete<G4LogicalVolume>(filling_solid.get(), materials_[filling_material], name_ + "filling_log");
-        auto filling_phys_ = make_shared_no_delete<G4PVPlacement>(
-            transform_phys, filling_log.get(), name_ + "filling_phys", world_log, false, 0, true);
-    }
+    auto phys_volume = make_shared_no_delete<G4PVPlacement>(
+        transform_phys, log_volume.get(), name_ + "_phys", mother_log_volume_, false, 0, true);
+    geo_manager_->setExternalObject("passive_material_phys", phys_volume, name_);
     LOG(TRACE) << " Constructed passive material " << name_ << " successfully";
 }
 
@@ -151,9 +146,9 @@ std::vector<XYZPoint> PassiveMaterialConstructionG4::addPoints() {
                           "' does not have a maximum size parameter associated with its model");
     }
     for(size_t i = 0; i < 8; ++i) {
-        points_.emplace_back(XYZPoint(passive_material_location.x() + offset_x.at(i) * max_size / 2,
-                                      passive_material_location.y() + offset_y.at(i) * max_size / 2,
-                                      passive_material_location.z() + offset_z.at(i) * max_size / 2));
+        points_.emplace_back(XYZPoint(passive_material_location_.x() + offset_x.at(i) * max_size / 2,
+                                      passive_material_location_.y() + offset_y.at(i) * max_size / 2,
+                                      passive_material_location_.z() + offset_z.at(i) * max_size / 2));
     }
     return points_;
 }

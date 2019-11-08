@@ -38,14 +38,14 @@ namespace allpix {
     private:
     };
 
-    template <typename WorldVolume, typename Materials> class GeometryBuilder : public BaseBuilder {
+    template <typename Materials> class GeometryBuilder : public BaseBuilder {
 
     public:
         /**
              * @brief Empty Build function with 2 inputs
              */
 
-        virtual void build(WorldVolume* world_log, std::map<std::string, Materials*> materials_);
+        virtual void build(std::map<std::string, Materials*> materials_);
 
         /*
              * @brief Essential virtual destructor

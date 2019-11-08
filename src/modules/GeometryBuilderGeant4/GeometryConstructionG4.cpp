@@ -121,9 +121,9 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     auto builders = geo_manager_->getBuilders();
 
     for(const auto& builder : builders) {
-        auto g4_builder = std::dynamic_pointer_cast<GeometryBuilder<G4LogicalVolume, G4Material>>(builder);
+        auto g4_builder = std::dynamic_pointer_cast<GeometryBuilder<G4Material>>(builder);
         if(g4_builder != nullptr) {
-            g4_builder->build(world_log_.get(), materials_);
+            g4_builder->build(materials_);
         }
     }
 
