@@ -225,6 +225,9 @@ void CorryvreckanWriterModule::finalize() {
                           << Units::display(model->getPixelSize().y(), "um") << std::endl;
             geometry_file << "number_of_pixels = " << model->getNPixels().x() << ", " << model->getNPixels().y()
                           << std::endl;
+            // Time resolution hard-coded as 5ns due to time structure of written out events: events of length 5ns, with a
+            // gap of 10ns in between events
+            geometry_file << "time_resolution = 5ns" << std::endl;
 
             std::string roles;
             if(detector->getName() == reference_) {
