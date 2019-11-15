@@ -7,7 +7,4 @@ random_seed = 0
 [PassiveMaterialBuilderGeant4]
 log_level = "TRACE"
 
-#[GeometryBuilderGeant4]
-
 #PASS adding point (-0mm,-7.07107mm,-15mm)to the geometry
-
