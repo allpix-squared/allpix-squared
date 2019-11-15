@@ -54,7 +54,7 @@ namespace allpix {
         std::string passive_material_type_;
         ROOT::Math::XYZPoint passive_material_location_;
         G4LogicalVolume* mother_log_volume_;
-
+        std::shared_ptr<G4RotationMatrix> rotWrapper;
         std::vector<ROOT::Math::XYZPoint> points_;
         std::vector<std::shared_ptr<G4VSolid>> solids_;
     };
