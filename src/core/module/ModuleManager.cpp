@@ -617,9 +617,15 @@ void ModuleManager::run(std::mt19937_64& seeder) {
         // of the framework since all threads are waiting if any is using a TObject
         if(threads_num > 8 && gROOT->GetVersionInt() >= 61200) {
             LOG(WARNING) << "Using more than 8 worker threads may severely impact simulation performance due to ROOT "
-                            "internals. See "
-                            "<https://root-forum.cern.ch/t/copying-trefs-and-accessing-tref-data-from-multiple-threads/"
+                            "internals."
+                         << std::endl
+                         << "See <https://root-forum.cern.ch/t/copying-trefs-and-accessing-tref-data-from-multiple-threads/"
                             "29417/7> for more info.";
+        }
+
+        if(threads_num > available_hardware_concurrency) {
+            LOG(WARNING) << "Using more workers (" << threads_num << ") than supported concurrent threads on this system ("
+                         << available_hardware_concurrency + 1u << ") may impact simulation performance";
         }
 
         // Adjust the modules buffer size according to the number of threads used
