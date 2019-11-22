@@ -866,7 +866,8 @@ void ModuleManager::finalize() {
 
     if(global_config.get<unsigned int>("workers") > 0) {
         auto event_processing_time = std::round(processing_time * global_config.get<unsigned int>("workers"));
-        LOG(STATUS) << "Average processing time for an event is \x1B[1m" << event_processing_time << " ms\x1B[0m";
+        LOG(STATUS) << "This corresponds to a processing time of \x1B[1m" << event_processing_time
+                    << " ms/event\x1B[0m per worker";
     }
 }
 
