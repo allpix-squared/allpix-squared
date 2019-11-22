@@ -623,9 +623,9 @@ void ModuleManager::run(std::mt19937_64& seeder) {
                             "29417/7> for more info.";
         }
 
-        if(threads_num > available_hardware_concurrency) {
+        if(threads_num > std::thread::hardware_concurrency()) {
             LOG(WARNING) << "Using more workers (" << threads_num << ") than supported concurrent threads on this system ("
-                         << available_hardware_concurrency + 1u << ") may impact simulation performance";
+                         << std::thread::hardware_concurrency() << ") may impact simulation performance";
         }
 
         // Adjust the modules buffer size according to the number of threads used
