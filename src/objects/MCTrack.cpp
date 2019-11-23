@@ -45,10 +45,6 @@ int MCTrack::getCreationProcessType() const {
     return origin_g4_process_type_;
 }
 
-int MCTrack::getNumberOfSteps() const {
-    return n_steps_;
-}
-
 double MCTrack::getKineticEnergyInitial() const {
 
     return initial_kin_E_;
