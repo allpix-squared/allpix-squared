@@ -1,11 +1,7 @@
 /**
  * @file
  * @brief Implementation of Geant4 geometry construction module
-<<<<<<< HEAD
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
-=======
  * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
->>>>>>> 9ad369f6d0a83593a2cab4271b84af331110dfa4
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
