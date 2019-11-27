@@ -101,6 +101,8 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     }
 
     config_.setDefault<bool>("ignore_magnetic_field", false);
+    config_.setDefault<bool>("enable_charge_multiplication", true);
+    config_.setDefault<double>("charge_multiplication_threshold", 1e-2);
 
     // Copy some variables from configuration to avoid lookups:
     temperature_ = config_.get<double>("temperature");
@@ -109,6 +111,8 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     timestep_start_ = config_.get<double>("timestep_start");
     integration_time_ = config_.get<double>("integration_time");
     target_spatial_precision_ = config_.get<double>("spatial_precision");
+    enable_multiplication_ = config_.get<bool>("enable_charge_multiplication");
+    threshold_field_ = config_.get<double>("charge_multiplication_threshold");
     output_plots_ = config_.get<bool>("output_plots");
     output_linegraphs_ = config_.get<bool>("output_linegraphs");
     output_linegraphs_collected_ = config_.get<bool>("output_linegraphs_collected");
@@ -781,23 +785,20 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         double d_n = 4.99e-5; // in MV mm^-1 K^-1
         double d_p = 1.09e-4; // in MV mm^-1 K^-1
 
-        // ionisation coefficient for electrons
-        double b_n = c_n + d_n * temperature_;
-        double alpha_ = a_n * std::exp(-(b_n/efield_mag));
-
-        // ionisation coefficient for holes
-        double b_p = c_p + d_p * temperature_;
-        double beta_ = a_p * std::exp(-(b_p/efield_mag));
-
         // Compute the gain
-        double gain = 1;
         if (efield_mag > threshold_field_){
-            if (propagate_electrons_){
-                gain *= std::exp(step_length * alpha_);
-            }
-            else if (propagate_holes_){
-                gain *= std::exp(step_length * beta_);
-            }
+
+            // ionisation coefficient for electrons
+            double b_n = c_n + d_n * temperature_;
+            double alpha_ = a_n * std::exp(-(b_n/efield_mag));
+
+            // ionisation coefficient for holes
+            double b_p = c_p + d_p * temperature_;
+            double beta_ = a_p * std::exp(-(b_p/efield_mag));
+
+            return std::exp(step_length * (type == CarrierType::ELECTRON ? alpha_ : beta_));
+        } else {
+            return 1.0;
         }
         return gain;
     };
@@ -914,7 +915,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         double step_length = step.value.norm();
 
         // Apply multiplication step, fully determistic from local efield and step length
-        if (!ignore_multiplication_){
+        if (enable_multiplication_){
             gain = carrier_multiplication(std::sqrt(efield.Mag2()), step_length);
         }
 
