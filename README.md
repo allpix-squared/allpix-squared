@@ -99,6 +99,7 @@ The following authors, in alphabetical order, have contributed to Allpix<sup>2</
 * Xin Shi, Institute of High Energy Physics Beijing, @xshi
 * Ondrej Theiner, Charles University, @otheiner
 * Mateus Vicente Barreto Pinto, Université de Genève, @mvicente
+* Morag Williams, University of Glasgow, @williamm
 
 The authors would also like to express their thanks to the developers of [AllPix](https://twiki.cern.ch/twiki/bin/view/Main/AllPix).
 
@@ -114,6 +115,11 @@ Please cite this paper when publishing your work using Allpix Squared as:
 > Meth. A 901 (2018) 164 – 172, doi:10.1016/j.nima.2018.06.020, arXiv:1806.05813
 
 A preprint version is available on [arxiv.org](https://arxiv.org/abs/1806.05813).
+
+In addition, the software can be cited using the [versioned Zenodo record](https://doi.org/10.5281/zenodo.3550935) or the current version as:
+
+> S. Spannagel, K. Wolters, D. Hynds. (2019, July 9). Allpix Squared - Generic Pixel Detector Simulation Framework
+> (Version 1.4.0). Zenodo. http://doi.org/10.5281/zenodo.3550971
 
 ## Contributing
 All types of contributions, being it minor and major, are very welcome. Please refer to our [contribution guidelines](CONTRIBUTING.md) for a description on how to get started.

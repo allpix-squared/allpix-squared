@@ -70,12 +70,6 @@ namespace allpix {
         int getCreationProcessType() const;
 
         /**
-         * @brief Get the amount of stepping steps the Geant4 track made
-         * @return The amount of steps
-         */
-        int getNumberOfSteps() const;
-
-        /**
          * @brief Getter for the kinetic energy the particle had when the track was created
          * @return The kinetic energy in MeV of the particle at the beginning of the track
          */
@@ -135,7 +129,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(MCTrack, 1);
+        ClassDefOverride(MCTrack, 2);
         /**
          * @brief Default constructor for ROOT I/O
          */
@@ -150,7 +144,6 @@ namespace allpix {
 
         int origin_g4_process_type_{};
         int particle_id_{};
-        int n_steps_{};
 
         double initial_kin_E_{};
         double final_kin_E_{};
