@@ -173,6 +173,13 @@ namespace allpix {
         template <typename T> void setArray(const std::string& key, const std::vector<T>& val);
 
         /**
+         * @brief Set matrix of values for a key in a given type
+         * @param key Key to set values of
+         * @param val List of values to assign to the key
+         */
+        template <typename T> void setMatrix(const std::string& key, const Matrix<T>& val);
+
+        /**
          * @brief Set default value for a key only if it is not defined yet
          * @param key Key to possible set value of
          * @param val Value to assign if the key is not defined yet
