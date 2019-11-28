@@ -203,8 +203,9 @@ namespace allpix {
          * @brief Set alias name for an already existing key
          * @param new_key New alias to be created
          * @param old_key Key the alias is created for
+         * @param warn Optionally print a warning message to notify of deprecation
          */
-        void setAlias(const std::string& new_key, const std::string& old_key);
+        void setAlias(const std::string& new_key, const std::string& old_key, bool warn = false);
 
         /**
          * @brief Return total number of key / value pairs
