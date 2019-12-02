@@ -6,7 +6,7 @@
 ### Description
 Takes all digitised pixel hits and converts them into Corryvreckan pixel format. These are then written to an output file in the expected format to be read in by the reconstruction software. Will optionally write out the MC Truth information, storing the MC particle class from Corryvreckan. It is noted that the time resolution is hard-coded as `5ns` for all detectors due to time structure of written out events: events of length `5ns`, with a gap of `10ns` in between events.
 
-This module writes output compatible with Corryvreckan 0.9.12 and later.
+This module writes output compatible with Corryvreckan 1.0 and later.
 
 ### Parameters
 * `file_name` : Output filename (file extension `.root` will be appended if not present). Defaults to `corryvreckanOutput.root`

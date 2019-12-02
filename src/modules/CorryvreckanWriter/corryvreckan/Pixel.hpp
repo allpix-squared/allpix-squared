@@ -18,6 +18,16 @@ namespace corryvreckan {
         Pixel() = default;
 
         /**
+         * @brief Static member function to obtain base class for storage on the clipboard.
+         * This method is used to store objects from derived classes under the typeid of their base classes
+         *
+         * @warning This function should not be implemented for derived object classes
+         *
+         * @return Class type of the base object
+         */
+        static std::type_index getBaseType() { return typeid(Pixel); }
+
+        /**
          * @brief Class constructor
          * @param detectorID detectorID
          * @param col Pixel column
