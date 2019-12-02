@@ -916,7 +916,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
 
         // Apply multiplication step, fully determistic from local efield and step length
         if (enable_multiplication_){
-            gain = carrier_multiplication(std::sqrt(efield.Mag2()), step_length);
+            gain *= carrier_multiplication(std::sqrt(efield.Mag2()), step_length);
         }
 
         // Update step length histogram
