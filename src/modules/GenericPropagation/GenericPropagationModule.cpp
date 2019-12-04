@@ -101,7 +101,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     }
 
     config_.setDefault<bool>("ignore_magnetic_field", false);
-    config_.setDefault<bool>("enable_charge_multiplication", true);
+    config_.setDefault<bool>("enable_charge_multiplication", false);
     config_.setDefault<double>("charge_multiplication_threshold", 1e-2);
 
     // Copy some variables from configuration to avoid lookups:
