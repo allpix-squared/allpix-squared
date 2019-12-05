@@ -209,6 +209,8 @@ namespace allpix {
 
         std::vector<std::shared_ptr<BaseBuilder>> getBuilders();
 
+        std::pair<ROOT::Math::XYZPoint, ROOT::Math::Rotation3D> getOrientation(Configuration config);
+
         /**
          * @brief Fetch an external object linked to this detector
          * @param name Name of the external object
@@ -245,7 +247,6 @@ namespace allpix {
         std::atomic_bool closed_;
 
         std::vector<ROOT::Math::XYZPoint> points_;
-
         std::vector<std::string> model_paths_;
         std::vector<std::shared_ptr<DetectorModel>> models_;
         std::set<std::string> model_names_;
@@ -261,6 +262,8 @@ namespace allpix {
 
         std::map<std::type_index, std::map<std::pair<std::string, std::string>, std::shared_ptr<void>>> external_objects_;
         std::vector<std::string> external_object_names_;
+
+        std::mt19937_64 random_generator_;
     };
     /**
      * If the returned object is not a null pointer it is guaranteed to be of the correct type

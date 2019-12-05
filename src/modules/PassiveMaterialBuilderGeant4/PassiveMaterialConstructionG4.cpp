@@ -40,7 +40,6 @@
 #include "CylinderModel.hpp"
 #include "PassiveMaterialModel.hpp"
 #include "SphereModel.hpp"
-#include "TubeModel.hpp"
 
 using namespace allpix;
 using namespace ROOT::Math;
@@ -48,43 +47,23 @@ PassiveMaterialConstructionG4::PassiveMaterialConstructionG4(Configuration& conf
     : config_(config), geo_manager_(geo_manager) {
     name_ = config_.getName();
     passive_material_type_ = config_.get<std::string>("type");
-    passive_material_location_ = config_.get<XYZPoint>("position");
     if(passive_material_type_ == "box") {
         model_ = std::make_shared<BoxModel>(config_);
     } else if(passive_material_type_ == "cylinder") {
         model_ = std::make_shared<CylinderModel>(config_);
-    } else if(passive_material_type_ == "tube") {
-        model_ = std::make_shared<TubeModel>(config_);
     } else if(passive_material_type_ == "sphere") {
         model_ = std::make_shared<SphereModel>(config_);
     } else {
         throw ModuleError("Pasive Material '" + name_ + "' has an incorrect type.");
     }
-    auto orientation_vector = config_.get<XYZVector>("orientation");
+    // Get the orientation and position of the material
+    auto orientation = geo_manager->getOrientation(config_);
 
-    Rotation3D orientation;
-
-    auto orientation_mode = config_.get<std::string>("orientation_mode", "xyz");
-    if(orientation_mode == "zyx") {
-        // First angle given in the configuration file is around z, second around y, last around x:
-        LOG(DEBUG) << "Interpreting Euler angles as ZYX rotation";
-        orientation = RotationZYX(orientation_vector.x(), orientation_vector.y(), orientation_vector.z());
-    } else if(orientation_mode == "xyz") {
-        LOG(DEBUG) << "Interpreting Euler angles as XYZ rotation";
-        // First angle given in the configuration file is around x, second around y, last around z:
-        orientation =
-            RotationZ(orientation_vector.z()) * RotationY(orientation_vector.y()) * RotationX(orientation_vector.x());
-    } else if(orientation_mode == "zxz") {
-        LOG(DEBUG) << "Interpreting Euler angles as ZXZ rotation";
-        // First angle given in the configuration file is around z, second around x, last around z:
-        orientation = EulerAngles(orientation_vector.x(), orientation_vector.y(), orientation_vector.z());
-    } else {
-        throw InvalidValueError(config_, "orientation_mode", "orientation_mode should be either 'zyx', xyz' or 'zxz'");
-    }
+    position_ = orientation.first;
     std::vector<double> copy_vec(9);
-    orientation.GetComponents(copy_vec.begin(), copy_vec.end());
+    orientation.second.GetComponents(copy_vec.begin(), copy_vec.end());
     XYZPoint vx, vy, vz;
-    orientation.GetComponents(vx, vy, vz);
+    orientation.second.GetComponents(vx, vy, vz);
     rotWrapper = std::make_shared<G4RotationMatrix>(copy_vec.data());
 }
 
@@ -109,7 +88,7 @@ void PassiveMaterialConstructionG4::build(std::map<std::string, G4Material*> mat
         throw InvalidValueError(config_, "mother_volume", "mother_volume does not exist");
     }
 
-    G4ThreeVector posWrapper = toG4Vector(passive_material_location_);
+    G4ThreeVector posWrapper = toG4Vector(position_);
     G4Transform3D transform_phys(*rotWrapper, posWrapper);
 
     auto passive_material = config_.get<std::string>("material");
@@ -117,7 +96,7 @@ void PassiveMaterialConstructionG4::build(std::map<std::string, G4Material*> mat
 
     LOG(TRACE) << "Creating Geant4 model for '" << name_ << "' of type '" << passive_material_type_ << "'";
     LOG(TRACE) << " -Material\t\t:\t " << passive_material << "( " << materials_[passive_material]->GetName() << " )";
-    LOG(TRACE) << " -Position\t\t:\t " << Units::display(passive_material_location_, {"mm", "um"});
+    LOG(TRACE) << " -Position\t\t:\t " << Units::display(position_, {"mm", "um"});
 
     // Get the solid from the Model
     auto solid = std::shared_ptr<G4VSolid>(model_->getSolid());
@@ -150,10 +129,10 @@ std::vector<XYZPoint> PassiveMaterialConstructionG4::addPoints() {
     for(size_t i = 0; i < 8; ++i) {
         auto points_vector =
             G4ThreeVector(offset_x.at(i) * max_size / 2, offset_y.at(i) * max_size / 2, offset_z.at(i) * max_size / 2);
+        // Rotate the outer points of the material
         points_vector *= *rotWrapper;
-        points_.emplace_back(XYZPoint(passive_material_location_.x() + points_vector.x(),
-                                      passive_material_location_.y() + points_vector.y(),
-                                      passive_material_location_.z() + points_vector.z()));
+        points_.emplace_back(XYZPoint(
+            position_.x() + points_vector.x(), position_.y() + points_vector.y(), position_.z() + points_vector.z()));
     }
     return points_;
 }

@@ -50,6 +50,8 @@ namespace allpix {
 
         // Storage of internal objects
         std::shared_ptr<PassiveMaterialModel> model_;
+        ROOT::Math::XYZPoint position_;
+        ROOT::Math::Rotation3D orientation_;
         std::string name_;
         std::string passive_material_type_;
         ROOT::Math::XYZPoint passive_material_location_;
