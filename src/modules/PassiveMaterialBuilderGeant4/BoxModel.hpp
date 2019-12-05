@@ -60,12 +60,14 @@ namespace allpix {
             // Create the G4VSolids which make the Box
             auto outer_volume =
                 new G4Box(name + "_outer_volume", outer_size_.x() / 2, outer_size_.y() / 2, outer_size_.z() / 2);
+            if(inner_size_ == ROOT::Math::XYVector()) {
+                solid_ = outer_volume;
+            } else {
+                auto inner_volume =
+                    new G4Box(name + "_inner_volume", inner_size_.x() / 2, inner_size_.y() / 2, 1.1 * outer_size_.z() / 2);
 
-            auto inner_volume =
-                new G4Box(name + "_inner_volume", inner_size_.x() / 2, inner_size_.y() / 2, 1.1 * outer_size_.z() / 2);
-
-            solid_ = new G4SubtractionSolid(name + "_volume", outer_volume, inner_volume);
-
+                solid_ = new G4SubtractionSolid(name + "_volume", outer_volume, inner_volume);
+            }
             // Get the maximum of the size parameters
             max_size_ = std::max(outer_size_.x(), std::max(outer_size_.y(), outer_size_.z()));
         }
@@ -81,14 +83,15 @@ namespace allpix {
         void setInnerSize(ROOT::Math::XYVector val) { inner_size_ = std::move(val); }
 
         // Set the override functions of PassiveMaterialModel
-        G4SubtractionSolid* getSolid() override { return solid_; }
+        G4VSolid* getSolid() override { return solid_; }
         double getMaxSize() override { return max_size_; }
 
     private:
         Configuration& config_;
 
         // G4VSolid returnables
-        G4SubtractionSolid* solid_;
+        G4VSolid* solid_;
+
         double max_size_;
 
         // G4VSolid specifications
