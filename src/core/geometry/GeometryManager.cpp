@@ -92,7 +92,7 @@ void GeometryManager::load(ConfigManager* conf_manager, std::mt19937_64& seeder)
     }
 }
 
-std::pair<XYZPoint, Rotation3D> GeometryManager::getOrientation(Configuration config) {
+std::pair<XYZPoint, Rotation3D> GeometryManager::getOrientation(const Configuration config) {
     // Calculate possible detector misalignment to be added
     auto misalignment = [&](auto residuals) {
         double dx = std::normal_distribution<double>(0, residuals.x())(random_generator_);
