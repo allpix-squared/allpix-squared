@@ -209,7 +209,7 @@ namespace allpix {
 
         std::vector<std::shared_ptr<BaseBuilder>> getBuilders();
 
-        std::pair<ROOT::Math::XYZPoint, ROOT::Math::Rotation3D> getOrientation(const Configuration config);
+        std::pair<ROOT::Math::XYZPoint, ROOT::Math::Rotation3D> getOrientation(const Configuration& config);
 
         /**
          * @brief Fetch an external object linked to this detector

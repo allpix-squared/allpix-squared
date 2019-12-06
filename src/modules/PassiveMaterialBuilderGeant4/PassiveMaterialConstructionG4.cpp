@@ -31,6 +31,7 @@
 #include <G4PVPlacement.hh>
 #include <G4RotationMatrix.hh>
 #include <G4ThreeVector.hh>
+#include <G4VisAttributes.hh>
 
 #include "core/module/exceptions.h"
 #include "tools/ROOT.h"
@@ -108,6 +109,13 @@ void PassiveMaterialConstructionG4::build(std::map<std::string, G4Material*> mat
     // Place the logical volume of the passive material
     auto log_volume = make_shared_no_delete<G4LogicalVolume>(solid.get(), materials_[passive_material], name_ + "_log");
     geo_manager_->setExternalObject("passive_material_log", log_volume, name_);
+
+    // Set VisAttribute to invisible if material = world-material
+    if(materials_[passive_material] == materials_["world_material"]) {
+        LOG(WARNING) << "Material of passive material " << name_
+                     << "is the same as the world material! Material will not be shown in the simulation.";
+        log_volume->SetVisAttributes(G4VisAttributes::GetInvisible());
+    }
 
     // Place the physical volume of the passive material
     auto phys_volume = make_shared_no_delete<G4PVPlacement>(

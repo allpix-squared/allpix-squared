@@ -416,7 +416,10 @@ void VisualizationGeant4Module::set_visualization_attributes() {
 
         auto passive_material_log = geo_manager_->getExternalObject<G4LogicalVolume>("passive_material_log", name);
         if(passive_material_log != nullptr) {
-            passive_material_log->SetVisAttributes(PassiveMaterialVisAtt);
+            // If VisAttribute is not set to invisible, give it a blue colour
+            if(passive_material_log->GetVisAttributes() == nullptr) {
+                passive_material_log->SetVisAttributes(PassiveMaterialVisAtt);
+            }
         }
     }
 }
