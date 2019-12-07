@@ -75,4 +75,24 @@ namespace allpix {
         valid_ = false;
         condition_.notify_all();
     }
+
+    template <typename Func, typename... Args> auto ThreadPool::submit(Func&& func, Args&&... args) {
+        // Bind the arguments to the tasks
+        auto bound_task = std::bind(std::forward<Func>(func), std::forward<Args>(args)...);
+
+        // Construct packaged task with correct return type
+        using PackagedTask = std::packaged_task<decltype(bound_task())()>;
+        PackagedTask task(bound_task);
+
+        // Get future and wrapper to add to vector
+        auto future = task.get_future();
+        auto task_function = [task = std::move(task)]() mutable { task(); };
+        if(threads_.empty()) {
+            task_function();
+        } else {
+            queue_.push(std::make_unique<std::packaged_task<void()>>(std::move(task_function)));
+        }
+        return future;
+    }
+
 } // namespace allpix

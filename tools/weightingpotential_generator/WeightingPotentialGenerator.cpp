@@ -5,6 +5,7 @@
 #include "core/config/Configuration.hpp"
 #include "core/config/exceptions.h"
 #include "core/geometry/DetectorModel.hpp"
+#include "core/module/ThreadPool.hpp"
 #include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "tools/ROOT.h"
@@ -16,8 +17,7 @@
 #include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
 
-// FIXME use central ThreadPool once available
-#include "../tcad_dfise_converter/ThreadPool.hpp"
+using allpix::ThreadPool;
 
 void interrupt_handler(int);
 

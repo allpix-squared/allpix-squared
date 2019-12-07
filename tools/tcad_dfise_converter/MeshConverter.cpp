@@ -19,6 +19,7 @@
 #include "core/config/ConfigReader.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/config/exceptions.h"
+#include "core/module/ThreadPool.hpp"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "tools/ROOT.h"
@@ -27,12 +28,12 @@
 
 #include "DFISEParser.hpp"
 #include "MeshElement.hpp"
-#include "ThreadPool.hpp"
 #include "combinations/combinations.h"
 #include "octree/Octree.hpp"
 
 using namespace mesh_converter;
 using namespace ROOT::Math;
+using allpix::ThreadPool;
 
 void interrupt_handler(int);
 
