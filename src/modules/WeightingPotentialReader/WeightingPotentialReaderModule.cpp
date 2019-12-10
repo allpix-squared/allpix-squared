@@ -275,6 +275,11 @@ void WeightingPotentialReaderModule::check_detector_match(std::array<double, 3> 
                          << Units::display(ypixsz, {"um", "mm"}) << ") but expecting a multiple of the pixel pitch ("
                          << Units::display(model->getPixelSize().x(), {"um", "mm"}) << ", "
                          << Units::display(model->getPixelSize().y(), {"um", "mm"}) << ")";
+        } else {
+            LOG(INFO) << "Potential map size is (" << Units::display(xpixsz, {"um", "mm"}) << ","
+                      << Units::display(ypixsz, {"um", "mm"}) << "), matching detector model with pixel pitch ("
+                      << Units::display(model->getPixelSize().x(), {"um", "mm"}) << ", "
+                      << Units::display(model->getPixelSize().y(), {"um", "mm"}) << ")";
         }
     }
 }
