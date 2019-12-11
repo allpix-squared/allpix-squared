@@ -786,7 +786,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         double d_p = 1.09e-4; // in MV mm^-1 K^-1
 
         // Compute the gain
-        if (efield_mag > threshold_field_){
+        if (abs(efield_mag) > threshold_field_){
 
             // ionisation coefficient for electrons
             double b_n = c_n + d_n * temperature_;
@@ -914,7 +914,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         double uncertainty = step.error.norm();
         double step_length = step.value.norm();
 
-        // Apply multiplication step, fully determistic from local efield and step length
+        // Apply multiplication step, fully deterministic from local efield and step length
         if (enable_multiplication_){
             gain *= carrier_multiplication(std::sqrt(efield.Mag2()), step_length);
         }
