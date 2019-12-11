@@ -97,7 +97,7 @@ INCLUDE("cmake/AllpixMacros.cmake")
 ###################################
 
 # Set standard build flags
-SET(COMPILER_FLAGS -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wconversion -Wuseless-cast -Wctor-dtor-privacy -Wzero-as-null-pointer-constant -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Wredundant-decls -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Werror -Wshadow -Wformat-security -Wdeprecated -fdiagnostics-color=auto -Wheader-hygiene -Wno-overloaded-virtual)
+SET(COMPILER_FLAGS -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wconversion -Wuseless-cast -Wctor-dtor-privacy -Wzero-as-null-pointer-constant -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Wredundant-decls -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Wshadow -Wformat-security -Wdeprecated -fdiagnostics-color=auto -Wheader-hygiene -Wno-overloaded-virtual)
 
 INCLUDE("cmake/compiler-flag-checks.cmake")
 
@@ -138,7 +138,7 @@ IF(NOT ROOT_FOUND)
 ENDIF()
 
 # Downgrade to C++14 if ROOT is not build with C++17 support
-IF(NOT ROOT_cxx17_FOUND)
+IF(${ROOT_VERSION} VERSION_LESS "6.18.00" AND NOT ROOT_cxx17_FOUND)
     SET(CMAKE_CXX_STANDARD 14)
 ENDIF()
 
