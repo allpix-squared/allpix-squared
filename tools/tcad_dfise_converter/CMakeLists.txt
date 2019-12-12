@@ -43,7 +43,7 @@ FIND_PACKAGE(Eigen3 REQUIRED NO_MODULE)
 ALLPIX_SETUP_EIGEN_TARGETS()
 
 # Link the dependency libraries
-TARGET_LINK_LIBRARIES(mesh_converter ROOT::Core ROOT::RIO ROOT::Tree Threads::Threads Eigen3::Eigen)
+TARGET_LINK_LIBRARIES(mesh_converter ROOT::Core ROOT::GenVector ROOT::RIO ROOT::Tree Threads::Threads Eigen3::Eigen)
 
 # Create install target
 INSTALL(TARGETS mesh_converter

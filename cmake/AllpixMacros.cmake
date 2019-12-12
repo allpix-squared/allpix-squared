@@ -148,7 +148,7 @@ MACRO(ALLPIX_SETUP_ROOT_TARGETS)
         # there is also no dependency between the targets
         TARGET_LINK_LIBRARIES(ROOT::Core INTERFACE Core)
         # we list here the targets we use, as later versions of root have the namespace, we do not have to to this for ever
-        FOREACH(LIB Geom GenVector Graf3d RIO MathCore Tree Hist)
+        FOREACH(LIB Geom GenVector Graf3d RIO MathCore Tree Hist GuiBld)
             IF(TARGET ${LIB})
                 ADD_LIBRARY(ROOT::${LIB} INTERFACE IMPORTED GLOBAL)
                 TARGET_LINK_LIBRARIES(ROOT::${LIB} INTERFACE ${LIB} ROOT::Core)
