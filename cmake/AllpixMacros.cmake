@@ -117,6 +117,19 @@ MACRO(allpix_module_install name)
         ARCHIVE DESTINATION lib)
 ENDMACRO()
 
+# Macro to set up Eigen3:: targets
+MACRO(ALLPIX_SETUP_EIGEN_TARGETS)
+
+    IF(NOT TARGET Eigen3::Eigen)
+        ADD_LIBRARY(Eigen3::Eigen INTERFACE IMPORTED GLOBAL)
+        SET_TARGET_PROPERTIES(Eigen3::Eigen
+            PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES ${EIGEN3_INCLUDE_DIR}
+        )
+    ENDIF()
+
+ENDMACRO()
+
 # Macro to set up ROOT:: targets so that we can use the same code for root 6.8 and for root 6.10 and beyond
 # Inpsired by CMake build system of DD4Hep
 MACRO(ALLPIX_SETUP_ROOT_TARGETS)
