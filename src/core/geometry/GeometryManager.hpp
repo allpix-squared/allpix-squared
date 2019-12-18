@@ -226,6 +226,8 @@ namespace allpix {
         void setExternalObject(const std::string& name, std::shared_ptr<T> model, const std::string& obj_name);
         std::vector<std::string> getExternalObjectNames() { return external_object_names_; };
 
+        bool getGeometryClosed() { return static_cast<bool>(closed_); };
+
     private:
         /**
          * @brief Load all standard framework models (automatically done when the geometry is closed)

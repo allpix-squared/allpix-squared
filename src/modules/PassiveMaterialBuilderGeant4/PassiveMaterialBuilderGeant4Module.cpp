@@ -29,7 +29,10 @@ void PassiveMaterialBuilderGeant4Module::init() {
 
     // Suppress output from G4
     SUPPRESS_STREAM(G4cout);
-
+    if(geo_manager_->getGeometryClosed()) {
+        throw ModuleError(
+            "Geometry is already closed! Move this module above GeometryBuilderGeant4 in the configuration file");
+    }
     ConfigManager* conf_manager = getConfigManager();
     std::set<std::string> passive_material_names;
 
