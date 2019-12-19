@@ -110,11 +110,16 @@ void PassiveMaterialConstructionG4::build(std::map<std::string, G4Material*> mat
     auto log_volume = make_shared_no_delete<G4LogicalVolume>(solid.get(), materials_[passive_material], name_ + "_log");
     geo_manager_->setExternalObject("passive_material_log", log_volume, name_);
 
-    // Set VisAttribute to invisible if material = world-material
-    if(materials_[passive_material] == materials_["world_material"]) {
+    // Set VisAttribute to invisible if material is equal to the material of its mother volume
+    if(materials_[passive_material] == mother_log_volume_->GetMaterial()) {
         LOG(WARNING) << "Material of passive material " << name_
-                     << "is the same as the world material! Material will not be shown in the simulation.";
+                     << " is the same as the material of its mother volume! Material will not be shown in the simulation.";
         log_volume->SetVisAttributes(G4VisAttributes::GetInvisible());
+    }
+    // Set VisAttribute to white if material = world_material
+    else if(materials_[passive_material] == materials_["world_material"]) {
+        auto white_vol = new G4VisAttributes(G4Colour(1.0, 1.0, 1.0, 0.1));
+        log_volume->SetVisAttributes(white_vol);
     }
 
     // Place the physical volume of the passive material
