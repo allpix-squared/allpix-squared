@@ -15,6 +15,7 @@
 #include <string>
 
 #include "core/utils/file.h"
+#include "core/utils/log.h"
 #include "exceptions.h"
 
 using namespace allpix;
@@ -121,7 +122,7 @@ void Configuration::setText(const std::string& key, const std::string& val) {
 /**
  *  The alias is only used if new key does not exist but old key does
  */
-void Configuration::setAlias(const std::string& new_key, const std::string& old_key) {
+void Configuration::setAlias(const std::string& new_key, const std::string& old_key, bool warn) {
     if(!has(old_key) || has(new_key)) {
         return;
     }
@@ -129,6 +130,10 @@ void Configuration::setAlias(const std::string& new_key, const std::string& old_
         config_[new_key] = config_.at(old_key);
     } catch(std::out_of_range& e) {
         throw MissingKeyError(old_key, getName());
+    }
+
+    if(warn) {
+        LOG(WARNING) << "Parameter \"" << old_key << "\" is deprecated and superseded by \"" << new_key << "\"";
     }
 }
 
