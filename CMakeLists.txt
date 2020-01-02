@@ -135,14 +135,14 @@ SET(ALLPIX_GEANT4_INTERFACE "AllpixGeant4Interface")
 SET(ALLPIX_BUILD_GEANT4_INTERFACE "OFF" CACHE BOOL "Build Geant4 interface library" FORCE)
 
 # ROOT is required for vector and persistency etc
-FIND_PACKAGE(ROOT REQUIRED COMPONENTS Geom Core GenVector Hist RIO)
+FIND_PACKAGE(ROOT REQUIRED COMPONENTS Geom Core GenVector Hist RIO NO_MODULE)
 IF(NOT ROOT_FOUND)
     MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
     "$ source YOUR_ROOT_DIR/bin/thisroot.sh")
 ENDIF()
 
 # Downgrade to C++14 if ROOT is not build with C++17 support
-IF(${ROOT_VERSION} VERSION_LESS "6.18.00" AND NOT ROOT_cxx17_FOUND)
+IF(NOT ROOT_cxx17_FOUND)
     SET(CMAKE_CXX_STANDARD 14)
 ENDIF()
 

@@ -154,6 +154,27 @@ namespace allpix {
         config_[key] = str;
     }
 
+    template <typename T> void Configuration::setMatrix(const std::string& key, const Matrix<T>& val) {
+        // NOTE: not the most elegant way to support arrays
+        if(val.empty()) {
+            return;
+        }
+
+        std::string str = "[";
+        for(auto& col : val) {
+            str += "[";
+            for(auto& el : col) {
+                str += allpix::to_string(el);
+                str += ",";
+            }
+            str.pop_back();
+            str += "],";
+        }
+        str.pop_back();
+        str += "]";
+        config_[key] = str;
+    }
+
     template <typename T> void Configuration::setDefault(const std::string& key, const T& val) {
         if(!has(key)) {
             set<T>(key, val);
