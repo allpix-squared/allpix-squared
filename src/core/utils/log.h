@@ -283,7 +283,8 @@ namespace allpix {
     if(GET_LOG_VARIABLE(max_log_count) != 0 && GET_LOG_VARIABLE(max_log_count)-- != 0)                                      \
         if(allpix::LogLevel::level <= allpix::Log::getReportingLevel() && !allpix::Log::getStreams().empty())               \
     allpix::Log().getStream(                                                                                                \
-        allpix::LogLevel::level, __FILE_NAME__, std::string(static_cast<const char*>(__func__)), __LINE__)
+        allpix::LogLevel::level, __FILE_NAME__, std::string(static_cast<const char*>(__func__)), __LINE__)                  \
+        << (GET_LOG_VARIABLE(max_log_count) == 0 ? "[further messages will be suppressed] " : "")
 
     /**
      * @brief Suppress an stream from writing any output
